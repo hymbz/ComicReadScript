@@ -4,7 +4,7 @@ import winsound
 import re
 content=pyperclip.paste()
 
-with open('YamiboScript.js', 'r', encoding="utf-8") as f:
+with open('YamiboScriptRAW.js', 'r', encoding="utf-8") as f:
     mainStr = f.read()
 
 for fileName in re.findall(r"(?<=@@).+?(?=@@)", mainStr):
@@ -15,6 +15,9 @@ for fileName in re.findall(r"(?<=@@).+?(?=@@)", mainStr):
         with open(fileName, 'r', encoding="utf-8") as f:
             mainStr = mainStr.replace(f"@@{fileName}@@",f.read().replace("  ","").replace("\n",""))
 
+
+with open('YamiboScript.user.js', 'w', encoding="utf-8") as f:
+    f.write(mainStr)
 
 pyperclip.copy(mainStr)
 winsound.Beep(600, 600)

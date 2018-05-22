@@ -14,19 +14,19 @@
     </div>
   </div>
 
-  <div id="comicShow" :class="{TwoPage:readSetting['双页显示']}">
-    <div class="right" index="fill" v-if='fill' style='visibility:hidden'>
+  <div id="comicShow" :class="{TwoPage:readSetting['双页显示']}" v-if="ComicImgInfo[0]">
+    <div class="right" index="fill" v-if='readSetting["双页显示"] && fill' style='visibility:hidden'>
       <img alt="fill" :src="ComicImgInfo[0].src">
     </div>
 
-    <div v-for="(LineComicImg,index) in ComicImgInfo" :index="index" v-if="LineComicImg"
+    <div v-for="(LineComicImg,index) in ComicImgInfo" :index="index"
       :class="LineComicImg.longImg?'longImg':(LineComicImg.longImgFlag?LineComicImg.right:fill^LineComicImg.right)?'right':'left'">
       <img :alt="index+1" :src=LineComicImg.src v-on:load="++imgLoadNum"
         :style="{height:LineComicImg.longImg && LineComicImg.imgRatio > windoeRatio?'auto':'100%'}">
       <a :name=index+1></a>
     </div>
 
-    <div class="right" index="fill" v-if='fill && ComicImgInfo[ComicImgInfo.length - 1].longImgFlag?ComicImgInfo[ComicImgInfo.length - 1].right:!ComicImgInfo[ComicImgInfo.length - 1].right' style='visibility:hidden'>
+    <div class="right" index="fill" v-if='readSetting["双页显示"] && fill && ComicImgInfo[ComicImgInfo.length - 1].longImgFlag?ComicImgInfo[ComicImgInfo.length - 1].right:!ComicImgInfo[ComicImgInfo.length - 1].right' style='visibility:hidden'>
       <img alt="fill" :src="ComicImgInfo[ComicImgInfo.length - 1].src">
     </div>
 
