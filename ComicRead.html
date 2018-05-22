@@ -1,0 +1,44 @@
+<div id="comicRead">
+  <div id="Menu">
+    <div class="MenuItem"></div>
+    <div v-if="itemName!='Enable'" v-for="(item,itemName) in readSetting"
+      class="MenuItem" :switch="item" :setting="itemName"
+      @click="readSetting[itemName]=!item">
+      <p class="MenuItemSwitchText">&nbsp;&nbsp;關</p>
+      <p class="MenuItemSwitchText">開&nbsp;&nbsp;</p>
+      <div class="MenuItemSwitch" :style="{width: item?'88%':'6%',transition: 'width .9s'}"></div>
+      <p>[[itemName]]</p>
+    </div>
+    <div class="MenuItem bottom" @click="download">
+      <p>[[comicDownloadData]]</p>
+    </div>
+  </div>
+
+  <div id="comicShow" :class="{TwoPage:readSetting['双页显示']}">
+    <div class="right" index="fill" v-if='fill' style='visibility:hidden'>
+      <img alt="fill" :src="ComicImgInfo[0].src">
+    </div>
+
+    <div v-for="(LineComicImg,index) in ComicImgInfo" :index="index" v-if="LineComicImg"
+      :class="LineComicImg.longImg?'longImg':(LineComicImg.longImgFlag?LineComicImg.right:fill^LineComicImg.right)?'right':'left'">
+      <img :alt="index+1" :src=LineComicImg.src v-on:load="++imgLoadNum"
+        :style="{height:LineComicImg.longImg && LineComicImg.imgRatio > windoeRatio?'auto':'100%'}">
+      <a :name=index+1></a>
+    </div>
+
+    <div class="right" index="fill" v-if='fill && ComicImgInfo[ComicImgInfo.length - 1].longImgFlag?ComicImgInfo[ComicImgInfo.length - 1].right:!ComicImgInfo[ComicImgInfo.length - 1].right' style='visibility:hidden'>
+      <img alt="fill" :src="ComicImgInfo[ComicImgInfo.length - 1].src">
+    </div>
+
+    <a index="end" name="end" href="javascript:;" title="评论">
+      <h1>End</h1>
+    </a>
+
+    <template v-if="readSetting['点击翻页']">
+      <div id="PageControlLeft" @click="scrollPage(1)"></div>
+      <div id="PageControlRight" @click="scrollPage(-1)"></div>
+    </template>
+  </div>
+
+
+</div>

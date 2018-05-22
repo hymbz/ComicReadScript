@@ -1,0 +1,41 @@
+<div id="ScriptMenu">
+  <div class="SMtitle">
+    <p>脚本设置</p>
+    <a href="javascript:;" title="关闭" @click="saveUserSetting"></a>
+  </div>
+  <div class="SMtab tbn">
+    <ul>
+      <li @click="select" class="a"><a href="javascript:;">功能设置</a></li>
+      <li @click="select"><a href="javascript:;">其他</a></li>
+      <li @click="select"><a href="javascript:;">关于</a></li>
+    </ul>
+  </div>
+  <div class="SMconifg">
+    <template v-if="showWindow == '功能设置'">
+      <div v-for="(value, key) in UserSetting" :class="{disabled: !value.Enable}">
+        <p @click="select(key)">[[key]][[value.Enable?"":"(禁用)"]]</p>
+        <template v-if="value.Enable">
+          <div v-for="(v, k) in value" v-if="k!='Enable'">
+            <template v-if="typeof v == 'boolean'">
+              <input class="pc" type="checkbox" v-model="UserSetting[key][k]" checked="">[[k]]
+            </template>
+            <template v-else>
+              [[k]]：<input class="px" type="text" v-model.trim.lazy="UserSetting[key][k]">
+            </template>
+          </div>
+        </template>
+      </div>
+    </template>
+    <template v-if="showWindow == '其他'">
+      <button class="pn pnc" @click="ResetUserSetting">
+        <strong>恢复默认设置</strong>
+      </button>
+    </template>
+  </div>
+</div>
+
+<div id="curtain"></div>
+
+<div id="promptBox">
+  <p></p>
+</div>
