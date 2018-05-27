@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Yamibo Script
-// @version     1.0
+// @version     1.01
 // @author      hymbz
 // @description 百合会脚本
 // @namespace   YamiboScript
@@ -17,8 +17,8 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js
 // @supportURL  https://github.com/hymbz/YamiboScript/issues
-// @updateURL   https://raw.githubusercontent.com/hymbz/YamiboScript/master/YamiboScript.js
-// @downloadURL https://raw.githubusercontent.com/hymbz/YamiboScript/master/YamiboScript.js
+// @updateURL   https://github.com/hymbz/YamiboScript/raw/master/YamiboScript.user.js
+// @downloadURL https://github.com/hymbz/YamiboScript/raw/master/YamiboScript.user.js
 // ==/UserScript==
 
 // 添加公共资源
@@ -32,11 +32,12 @@ let ScriptMenu = new Vue({
   delimiters: ["[[", "]]"],
   data: {
     UserSetting: "",
-    showWindow:"功能设置"
+    showWindow:"功能设置",
+    scriptVersion: GM_info.script.version
   },
   methods: {
     select: function (event) {
-      if(typeof event == "string"){
+      if(typeof event === "string"){
         this.UserSetting[event].Enable = !this.UserSetting[event].Enable;
       }else{
         if(event.currentTarget.className != "a"){
@@ -109,7 +110,7 @@ if(ScriptMenu.UserSetting["功能增强"]["固定导航条"])
 if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
 
   // 启用漫画阅读模式
-  if(fid == 30 && ScriptMenu.UserSetting["漫画阅读"].Enable){
+  if(fid === 30 && ScriptMenu.UserSetting["漫画阅读"].Enable){
     GM_addStyle(`@@ComicRead.css@@`);
     $('body').append(`@@ComicRead.html@@`);
 
@@ -185,10 +186,10 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
               },
               responseType: "blob",
               onload: function(xhr,index=indext) {
-                if(xhr.status == 200){
+                if(xhr.status === 200){
                   zip.file(`${index}.${xhr.finalUrl.replace(/.+\./,"")}`, xhr.response);
                   comicReadWindow.comicDownloadData = `${++comicDownloadNum}/${comicReadWindow.ComicImgInfo.length}`;
-                  if(comicDownloadNum == comicReadWindow.ComicImgInfo.length){
+                  if(comicDownloadNum === comicReadWindow.ComicImgInfo.length){
                     comicReadWindow.comicDownloadData = "下载完毕";
                     zip.generateAsync({type:"blob"}).then(function (content) {
                       saveAs(content, `${document.getElementById("thread_subject").innerHTML}.zip`);
@@ -204,23 +205,23 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
         scrollPage: function(type) {
           const nowScrollTop = getTop(document.querySelector(`#comicShow [index='${PageNum}']`));
           let nextScrollTop = nowScrollTop;
-          while (nextScrollTop == nowScrollTop) {
+          while (nextScrollTop === nowScrollTop) {
             if (type) {
-              if (PageNum == 'end')
+              if (PageNum === 'end')
                 PageNum = comicReadWindow.comicImgLength;
               else if (PageNum > 0)
                 PageNum--;
               else
                 return;
             }else {
-              if (PageNum == comicReadWindow.comicImgLength)
+              if (PageNum === comicReadWindow.comicImgLength)
                 PageNum = 'end';
               else if (PageNum <= comicReadWindow.comicImgLength + 1)
                 PageNum++;
               else
                 return;
             }
-            if(PageNum=="end")
+            if(PageNum === "end")
               window.scrollTo(0,document.body.clientHeight);
             else
               nextScrollTop = getTop(document.querySelector(`#comicShow [index='${PageNum}']`));
@@ -232,8 +233,6 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
         this.windoeRatio = window.innerWidth/window.innerHeight;
         this.$nextTick(function () {
           this.fill = this.readSetting["页面填充"] && this.ComicImgInfo[0] && !this.ComicImgInfo[0].longImg;
-          // if(PageNum == "end")
-          //   PageNum = 0;
           try {
             $('html, body').animate({scrollTop: getTop(document.querySelector(`[index='${PageNum}']`))}, 0);
           } catch (error) {
@@ -247,7 +246,7 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
     history.scrollRestoration = "manual";
 
     document.getElementById("comicReadMode").addEventListener('click',function(){
-      if(comicReadWindow.imgLoadNum || confirm(`图片未全部加载完毕，请确认所有图片均已加载完毕\n当前加载进度：${comicReadWindow.imgLoadNum}/${comicImgList.length}`) == true){
+      if(comicReadWindow.imgLoadNum || confirm(`图片未全部加载完毕，请确认所有图片均已加载完毕\n当前加载进度：${comicReadWindow.imgLoadNum}/${comicImgList.length}`) === true){
         // 绑定滚动事件
         let scrollPage = function (e) {comicReadWindow.scrollPage(e.deltaY<0);};
         document.addEventListener("wheel", scrollPage);
@@ -402,7 +401,7 @@ if(RegExp("forum(-\\d+){2}|mod=forumdisplay").test(document.URL)){
 
     // 点击下一页后添加提示标签
     document.getElementById("autopbn").addEventListener('click',function(){
-      if(document.getElementById("autopbn").text == "下一页 »")
+      if(document.getElementById("autopbn").text === "下一页 »")
         addLastReadTag();
       else
         setTimeout(arguments.callee,100);

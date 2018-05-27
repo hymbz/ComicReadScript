@@ -35,8 +35,8 @@
     </a>
 
     <template v-if="readSetting['点击翻页']">
-      <div id="PageControlLeft" @click="scrollPage(1)"></div>
-      <div id="PageControlRight" @click="scrollPage(-1)"></div>
+      <div id="PageControlLeft" @click="scrollPage(false)"></div>
+      <div id="PageControlRight" @click="scrollPage(true)"></div>
     </template>
   </div>
 

@@ -26,10 +26,20 @@
         </template>
       </div>
     </template>
-    <template v-if="showWindow == '其他'">
+    <template v-else-if="showWindow == '其他'">
       <button class="pn pnc" @click="ResetUserSetting">
         <strong>恢复默认设置</strong>
       </button>
+    </template>
+    <template v-else-if="showWindow == '关于'">
+      <p>
+        <strong>当前版本号：[[scriptVersion]]</strong>
+        <br>
+        <strong>Github地址——<a href="https://github.com/hymbz/YamiboScript">https://github.com/hymbz/YamiboScript</a></strong>
+        <br>
+        <strong>论坛发补贴地址——<a href="https://bbs.yamibo.com/thread-491966-1-1.html">https://bbs.yamibo.com/thread-491966-1-1.html</a></strong></strong>
+      </p>
+
     </template>
   </div>
 </div>

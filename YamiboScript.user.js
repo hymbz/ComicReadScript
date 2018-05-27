@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Yamibo Script
-// @version     1.0
+// @version     1.01
 // @author      hymbz
 // @description 百合会脚本
 // @namespace   YamiboScript
@@ -17,13 +17,13 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js
 // @supportURL  https://github.com/hymbz/YamiboScript/issues
-// @updateURL   https://raw.githubusercontent.com/hymbz/YamiboScript/master/YamiboScript.js
-// @downloadURL https://raw.githubusercontent.com/hymbz/YamiboScript/master/YamiboScript.js
+// @updateURL   https://github.com/hymbz/YamiboScript/raw/master/YamiboScript.user.js
+// @downloadURL https://github.com/hymbz/YamiboScript/raw/master/YamiboScript.user.js
 // ==/UserScript==
 
 // 添加公共资源
-$('body').append(`<div id="ScriptMenu"><div class="SMtitle"><p>脚本设置</p><a href="javascript:;" title="关闭" @click="saveUserSetting"></a></div><div class="SMtab tbn"><ul><li @click="select" class="a"><a href="javascript:;">功能设置</a></li><li @click="select"><a href="javascript:;">其他</a></li><li @click="select"><a href="javascript:;">关于</a></li></ul></div><div class="SMconifg"><template v-if="showWindow == '功能设置'"><div v-for="(value, key) in UserSetting" :class="{disabled: !value.Enable}"><p @click="select(key)">[[key]][[value.Enable?"":"(禁用)"]]</p><template v-if="value.Enable"><div v-for="(v, k) in value" v-if="k!='Enable'"><template v-if="typeof v == 'boolean'"><input class="pc" type="checkbox" v-model="UserSetting[key][k]" checked="">[[k]]</template><template v-else>[[k]]：<input class="px" type="text" v-model.trim.lazy="UserSetting[key][k]"></template></div></template></div></template><template v-if="showWindow == '其他'"><button class="pn pnc" @click="ResetUserSetting"><strong>恢复默认设置</strong></button></template></div></div><div id="curtain"></div><div id="promptBox"><p></p></div>`);
-GM_addStyle(`#ScriptMenu{position:fixed;z-index:999;top:10vh;left:30vw;display:none;flex-wrap:wrap;width:40vw;height:45vh;border-radius:10px;background-color:#6E2B19;box-shadow:0 0 0 #6E2B19}#ScriptMenu .SMtitle{flex-basis:100%;height:2.6rem;cursor:move;color:#FFF}#ScriptMenu .SMtitle p{height:1rem;padding:.75rem 1rem;font-size:1rem;font-weight:bold}#ScriptMenu .SMtitle a{position:absolute;top:12px;right:1rem;width:18px;height:17px;cursor:pointer;border-radius:4px;background:url(https://bbs.yamibo.com/template/oyeeh_com_baihe/img/shdm1020/cls.gif) no-repeat -1px -2px}#ScriptMenu .SMtitle a:hover{background:url(https://bbs.yamibo.com/template/oyeeh_com_baihe/img/shdm1020/cls.gif) no-repeat -1px -21px}#ScriptMenu .SMtab{flex-basis:15%;height:calc(100% - 4.5rem - 2px);margin:0;padding:1rem 0;text-align:right;border-width:1px;border-color:#6E2B19;border-bottom-style:solid;border-left-style:solid;background-color:#FFEEBA;box-shadow:0 5px 2px -2px #888 inset}#ScriptMenu .SMtab li:first-of-type{border-top:1px solid #dbc38c}#ScriptMenu .SMconifg{flex-basis:0;flex-grow:1;height:calc(100% - 4.5rem - 2px);padding:2rem 1.5rem 0;border-width:1px;border-color:#6E2B19;border-right-style:solid;border-bottom-style:solid;background-color:#FFF5D7;box-shadow:0 5px 2px -2px #888 inset}#ScriptMenu .SMconifg>div{margin-bottom:2rem;padding:1rem;border-width:1px;border-style:solid;border-color:#6e2b19}#ScriptMenu .SMconifg>div p:first-child{position:absolute;margin-top:-1.8rem;padding:0 4px;cursor:default;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;color:#6e2b19;background-color:#FFF5D7;-webkit-touch-callout:none;-khtml-user-select:none}#ScriptMenu .SMconifg>div>div{display:inline-block;margin-right:2rem}#ScriptMenu .SMconifg>div>div input{margin:.5rem 0}#ScriptMenu .SMconifg>div.disabled{border-color:darkgray}#ScriptMenu .SMconifg>div.disabled p{color:darkgray}#promptBox{position:fixed;z-index:-1;top:calc(50vh - 200px);right:0;left:0;display:flex;align-items:center;justify-content:center;width:100%;height:80px;margin:auto;opacity:0;font-size:3rem;line-height:80px}#promptBox p{width:auto;padding:0 15px;color:#FFF;background-color:#000}#promptBox.show{z-index:999;animation:showPromptBox 2s linear}@keyframes showPromptBox{0%{opacity:0}10%{opacity:.8}40%{opacity:.8}100%{opacity:0}}@-webkit-keyframes showPromptBox{0%{opacity:0}10%{opacity:.8}40%{opacity:.8}100%{opacity:0}}#curtain{position:fixed;z-index:2;top:0;left:0;display:none;width:100vw;height:100vh;opacity:.3;background-color:#000}#curtain.show{display:inline}.lastReadTag{border-width:2px;border-style:solid;border-color:var(--lastReadTagColor)}a.lastReadTag{margin-left:1rem;padding:1px 4px;color:var(--lastReadTagColor);border-radius:6px 0 0 6px;font-weight:bold}div.lastReadTag{display:initial;margin-left:-0.4rem;padding:1px;color:#ffedbb;border-radius:0 6px 6px 0;background-color:var(--lastReadTagColor)}.lastReadTag.one{border-radius:6px}#threadlisttableid tbody:nth-child(2n) div.lastReadTag{color:#fff6d7}.tl th a:visited,.tl td.fn a:visited{color:#6E2B19}.header-tool.y{width:auto !important}`);
+$('body').append(`<div id="ScriptMenu"><div class="SMtitle"><p>脚本设置</p><a href="javascript:;" title="关闭" @click="saveUserSetting"></a></div><div class="SMtab tbn"><ul><li @click="select" class="a"><a href="javascript:;">功能设置</a></li><li @click="select"><a href="javascript:;">其他</a></li><li @click="select"><a href="javascript:;">关于</a></li></ul></div><div class="SMconifg"><template v-if="showWindow == '功能设置'"><div v-for="(value, key) in UserSetting" :class="{disabled: !value.Enable}"><p @click="select(key)">[[key]][[value.Enable?"":"(禁用)"]]</p><template v-if="value.Enable"><div v-for="(v, k) in value" v-if="k!='Enable'"><template v-if="typeof v == 'boolean'"><input class="pc" type="checkbox" v-model="UserSetting[key][k]" checked="">[[k]]</template><template v-else>[[k]]：<input class="px" type="text" v-model.trim.lazy="UserSetting[key][k]"></template></div></template></div></template><template v-else-if="showWindow == '其他'"><button class="pn pnc" @click="ResetUserSetting"><strong>恢复默认设置</strong></button></template><template v-else-if="showWindow == '关于'"><p><strong>当前版本号：[[scriptVersion]]</strong><br><strong>Github地址——<a href="https://github.com/hymbz/YamiboScript">https://github.com/hymbz/YamiboScript</a></strong><br><strong>论坛发补贴地址——<a href="https://bbs.yamibo.com/thread-491966-1-1.html">https://bbs.yamibo.com/thread-491966-1-1.html</a></strong></strong></p></template></div></div><div id="curtain"></div><div id="promptBox"><p></p></div>`);
+GM_addStyle(`#ScriptMenu{position:fixed;z-index:999;top:10vh;left:30vw;display:none;flex-wrap:wrap;width:40vw;height:45vh;border-radius:10px;background-color:#6E2B19;box-shadow:0 0 0 #6E2B19}#ScriptMenu .SMtitle{flex-basis:100%;height:2.6rem;cursor:move;color:#FFF}#ScriptMenu .SMtitle p{height:1rem;padding:.75rem 1rem;font-size:1rem;font-weight:bold}#ScriptMenu .SMtitle a{position:absolute;top:12px;right:1rem;width:18px;height:17px;cursor:pointer;border-radius:4px;background:url(https://bbs.yamibo.com/template/oyeeh_com_baihe/img/shdm1020/cls.gif) no-repeat -1px -2px}#ScriptMenu .SMtitle a:hover{background:url(https://bbs.yamibo.com/template/oyeeh_com_baihe/img/shdm1020/cls.gif) no-repeat -1px -21px}#ScriptMenu .SMtab{flex-basis:15%;height:calc(100% - 4.5rem - 2px);margin:0;padding:1rem 0;text-align:right;border-width:1px;border-color:#6E2B19;border-bottom-style:solid;border-left-style:solid;background-color:#FFEEBA;box-shadow:0 5px 2px -2px #888 inset}#ScriptMenu .SMtab li:first-of-type{border-top:1px solid #dbc38c}#ScriptMenu .SMconifg{overflow:auto;flex-basis:0;flex-grow:1;height:calc(100% - 4.5rem - 2px);padding:2rem 1.5rem 0;border-width:1px;border-color:#6E2B19;border-right-style:solid;border-bottom-style:solid;background-color:#FFF5D7;box-shadow:0 5px 2px -2px #888 inset}#ScriptMenu .SMconifg>div{margin-bottom:2rem;padding:1rem;border-width:1px;border-style:solid;border-color:#6e2b19}#ScriptMenu .SMconifg>div p:first-child{width:max-content;margin-top:-1.8rem;padding:0 4px;cursor:default;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;color:#6e2b19;background-color:#FFF5D7;-webkit-touch-callout:none;-khtml-user-select:none}#ScriptMenu .SMconifg>div>div{display:inline-block;margin-right:2rem}#ScriptMenu .SMconifg>div>div input{margin:.5rem 0}#ScriptMenu .SMconifg>div.disabled{border-color:darkgray}#ScriptMenu .SMconifg>div.disabled p{color:darkgray}#promptBox{position:fixed;z-index:-1;top:calc(50vh - 200px);right:0;left:0;display:flex;align-items:center;justify-content:center;width:100%;height:80px;margin:auto;opacity:0;font-size:3rem;line-height:80px}#promptBox p{width:auto;padding:0 15px;color:#FFF;background-color:#000}#promptBox.show{z-index:999;animation:showPromptBox 2s linear}@keyframes showPromptBox{0%{opacity:0}10%{opacity:.8}40%{opacity:.8}100%{opacity:0}}@-webkit-keyframes showPromptBox{0%{opacity:0}10%{opacity:.8}40%{opacity:.8}100%{opacity:0}}#curtain{position:fixed;z-index:2;top:0;left:0;display:none;width:100vw;height:100vh;opacity:.3;background-color:#000}#curtain.show{display:inline}.lastReadTag{border-width:2px;border-style:solid;border-color:var(--lastReadTagColor)}a.lastReadTag{margin-left:1rem;padding:1px 4px;color:var(--lastReadTagColor);border-radius:6px 0 0 6px;font-weight:bold}div.lastReadTag{display:initial;margin-left:-0.4rem;padding:1px;color:#ffedbb;border-radius:0 6px 6px 0;background-color:var(--lastReadTagColor)}.lastReadTag.one{border-radius:6px}#threadlisttableid tbody:nth-child(2n) div.lastReadTag{color:#fff6d7}.tl th a:visited,.tl td.fn a:visited{color:#6E2B19}.header-tool.y{width:auto !important}`);
 
 
 // 导入用户配置
@@ -32,11 +32,12 @@ let ScriptMenu = new Vue({
   delimiters: ["[[", "]]"],
   data: {
     UserSetting: "",
-    showWindow:"功能设置"
+    showWindow:"功能设置",
+    scriptVersion: GM_info.script.version
   },
   methods: {
     select: function (event) {
-      if(typeof event == "string"){
+      if(typeof event === "string"){
         this.UserSetting[event].Enable = !this.UserSetting[event].Enable;
       }else{
         if(event.currentTarget.className != "a"){
@@ -109,9 +110,9 @@ if(ScriptMenu.UserSetting["功能增强"]["固定导航条"])
 if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
 
   // 启用漫画阅读模式
-  if(fid == 30 && ScriptMenu.UserSetting["漫画阅读"].Enable){
+  if(fid === 30 && ScriptMenu.UserSetting["漫画阅读"].Enable){
     GM_addStyle(`#comicShow{top:0;left:0;display:none;flex-flow:row-reverse wrap;justify-content:center;width:100vw;background-color:#FFF}#comicShow img{display:inline-block;max-width:100%;height:100%;margin:auto;vertical-align:middle;image-rendering:-webkit-optimize-contrast}#comicShow>[index]{display:flex;flex-basis:100vw;justify-content:center;width:50vw;height:100vh;margin:1rem 0}#comicShow>[index="end"]{z-index:3;flex-basis:100vw !important;height:1rem;margin:2rem;font-size:2rem}#comicShow.TwoPage>div.left{flex-basis:50vw !important}#comicShow.TwoPage>div.left img{margin-right:0}#comicShow.TwoPage>div.right{flex-basis:50vw !important}#comicShow.TwoPage>div.right img{margin-left:0}.tc{display:flex;justify-content:center;margin:0}#sidebar{position:fixed;z-index:1;width:15%;height:100%;opacity:.6;color:#FFF;background-color:black}#sidebar>div{padding:14px;border-color:#FFF !important;border-bottom:1px solid #CCC !important}#fp-nav ul li .fp-tooltip{color:black}#Menu{position:fixed;z-index:2;top:0;left:-281px;width:280px;height:100%;transition:left 1s;opacity:.9;background-color:#03A9F4}#Menu .MenuItem{width:100%;height:3.5rem;cursor:pointer;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;border-color:#FFF;border-bottom-style:solid;background-color:#2196F3}#Menu .MenuItem:nth-child(1){cursor:default;background-color:var(--Blue1)}#Menu .MenuItem p{position:relative;z-index:100;margin:0 0 1em;text-align:center;color:#000;font-size:25px;line-height:3.5rem}#Menu .MenuItem .MenuItemSwitchText{position:absolute;width:100%}#Menu .MenuItem .MenuItemSwitchText:nth-child(1){text-align:left;color:#3F51B5}#Menu .MenuItem .MenuItemSwitchText:nth-child(2){text-align:right;color:#2196F3}#Menu .MenuItem .MenuItemSwitch{position:absolute;height:3px;border-width:0 15px 52px 0;border-style:solid solid solid solid;border-color:#2196F3 #2196F3 transparent transparent;background-color:#3F51B5}#Menu .MenuItem.bottom{position:absolute;bottom:0;border-top-style:solid}#Menu.showMenu{top:0;left:0}#scrolltop{z-index:3;transition:left .8s}#scrolltop.left{right:auto !important;left:-2px !important}#scrolltop.hide{left:-45px !important}[id^="PageControl"]{position:fixed;z-index:1;top:0;width:50vw;height:100vh}#PageControlLeft{left:0}#PageControlRight{right:0}`);
-    $('body').append(`<div id="comicRead"><div id="Menu"><div class="MenuItem"></div><div v-if="itemName!='Enable'" v-for="(item,itemName) in readSetting"class="MenuItem" :switch="item" :setting="itemName"@click="readSetting[itemName]=!item"><p class="MenuItemSwitchText">&nbsp;&nbsp;關</p><p class="MenuItemSwitchText">開&nbsp;&nbsp;</p><div class="MenuItemSwitch" :style="{width: item?'88%':'6%',transition: 'width .9s'}"></div><p>[[itemName]]</p></div><div class="MenuItem bottom" @click="download"><p>[[comicDownloadData]]</p></div></div><div id="comicShow" :class="{TwoPage:readSetting['双页显示']}" v-if="ComicImgInfo[0]"><div class="right" index="fill" v-if='readSetting["双页显示"] && fill' style='visibility:hidden'><img alt="fill" :src="ComicImgInfo[0].src"></div><div v-for="(LineComicImg,index) in ComicImgInfo" :index="index":class="LineComicImg.longImg?'longImg':(LineComicImg.longImgFlag?LineComicImg.right:fill^LineComicImg.right)?'right':'left'"><img :alt="index+1" :src=LineComicImg.src v-on:load="++imgLoadNum":style="{height:LineComicImg.longImg && LineComicImg.imgRatio > windoeRatio?'auto':'100%'}"><a :name=index+1></a></div><div class="right" index="fill" v-if='readSetting["双页显示"] && fill && ComicImgInfo[ComicImgInfo.length - 1].longImgFlag?ComicImgInfo[ComicImgInfo.length - 1].right:!ComicImgInfo[ComicImgInfo.length - 1].right' style='visibility:hidden'><img alt="fill" :src="ComicImgInfo[ComicImgInfo.length - 1].src"></div><a index="end" name="end" href="javascript:;" title="评论"><h1>End</h1></a><template v-if="readSetting['点击翻页']"><div id="PageControlLeft" @click="scrollPage(1)"></div><div id="PageControlRight" @click="scrollPage(-1)"></div></template></div></div>`);
+    $('body').append(`<div id="comicRead"><div id="Menu"><div class="MenuItem"></div><div v-if="itemName!='Enable'" v-for="(item,itemName) in readSetting"class="MenuItem" :switch="item" :setting="itemName"@click="readSetting[itemName]=!item"><p class="MenuItemSwitchText">&nbsp;&nbsp;關</p><p class="MenuItemSwitchText">開&nbsp;&nbsp;</p><div class="MenuItemSwitch" :style="{width: item?'88%':'6%',transition: 'width .9s'}"></div><p>[[itemName]]</p></div><div class="MenuItem bottom" @click="download"><p>[[comicDownloadData]]</p></div></div><div id="comicShow" :class="{TwoPage:readSetting['双页显示']}" v-if="ComicImgInfo[0]"><div class="right" index="fill" v-if='readSetting["双页显示"] && fill' style='visibility:hidden'><img alt="fill" :src="ComicImgInfo[0].src"></div><div v-for="(LineComicImg,index) in ComicImgInfo" :index="index":class="LineComicImg.longImg?'longImg':(LineComicImg.longImgFlag?LineComicImg.right:fill^LineComicImg.right)?'right':'left'"><img :alt="index+1" :src=LineComicImg.src v-on:load="++imgLoadNum":style="{height:LineComicImg.longImg && LineComicImg.imgRatio > windoeRatio?'auto':'100%'}"><a :name=index+1></a></div><div class="right" index="fill" v-if='readSetting["双页显示"] && fill && ComicImgInfo[ComicImgInfo.length - 1].longImgFlag?ComicImgInfo[ComicImgInfo.length - 1].right:!ComicImgInfo[ComicImgInfo.length - 1].right' style='visibility:hidden'><img alt="fill" :src="ComicImgInfo[ComicImgInfo.length - 1].src"></div><a index="end" name="end" href="javascript:;" title="评论"><h1>End</h1></a><template v-if="readSetting['点击翻页']"><div id="PageControlLeft" @click="scrollPage(false)"></div><div id="PageControlRight" @click="scrollPage(true)"></div></template></div></div>`);
 
     PageNum = 0;
     comicImgList = [];
@@ -185,10 +186,10 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
               },
               responseType: "blob",
               onload: function(xhr,index=indext) {
-                if(xhr.status == 200){
+                if(xhr.status === 200){
                   zip.file(`${index}.${xhr.finalUrl.replace(/.+\./,"")}`, xhr.response);
                   comicReadWindow.comicDownloadData = `${++comicDownloadNum}/${comicReadWindow.ComicImgInfo.length}`;
-                  if(comicDownloadNum == comicReadWindow.ComicImgInfo.length){
+                  if(comicDownloadNum === comicReadWindow.ComicImgInfo.length){
                     comicReadWindow.comicDownloadData = "下载完毕";
                     zip.generateAsync({type:"blob"}).then(function (content) {
                       saveAs(content, `${document.getElementById("thread_subject").innerHTML}.zip`);
@@ -204,23 +205,23 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
         scrollPage: function(type) {
           const nowScrollTop = getTop(document.querySelector(`#comicShow [index='${PageNum}']`));
           let nextScrollTop = nowScrollTop;
-          while (nextScrollTop == nowScrollTop) {
+          while (nextScrollTop === nowScrollTop) {
             if (type) {
-              if (PageNum == 'end')
+              if (PageNum === 'end')
                 PageNum = comicReadWindow.comicImgLength;
               else if (PageNum > 0)
                 PageNum--;
               else
                 return;
             }else {
-              if (PageNum == comicReadWindow.comicImgLength)
+              if (PageNum === comicReadWindow.comicImgLength)
                 PageNum = 'end';
               else if (PageNum <= comicReadWindow.comicImgLength + 1)
                 PageNum++;
               else
                 return;
             }
-            if(PageNum=="end")
+            if(PageNum === "end")
               window.scrollTo(0,document.body.clientHeight);
             else
               nextScrollTop = getTop(document.querySelector(`#comicShow [index='${PageNum}']`));
@@ -232,8 +233,6 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
         this.windoeRatio = window.innerWidth/window.innerHeight;
         this.$nextTick(function () {
           this.fill = this.readSetting["页面填充"] && this.ComicImgInfo[0] && !this.ComicImgInfo[0].longImg;
-          // if(PageNum == "end")
-          //   PageNum = 0;
           try {
             $('html, body').animate({scrollTop: getTop(document.querySelector(`[index='${PageNum}']`))}, 0);
           } catch (error) {
@@ -247,7 +246,7 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
     history.scrollRestoration = "manual";
 
     document.getElementById("comicReadMode").addEventListener('click',function(){
-      if(comicReadWindow.imgLoadNum || confirm(`图片未全部加载完毕，请确认所有图片均已加载完毕\n当前加载进度：${comicReadWindow.imgLoadNum}/${comicImgList.length}`) == true){
+      if(comicReadWindow.imgLoadNum || confirm(`图片未全部加载完毕，请确认所有图片均已加载完毕\n当前加载进度：${comicReadWindow.imgLoadNum}/${comicImgList.length}`) === true){
         // 绑定滚动事件
         let scrollPage = function (e) {comicReadWindow.scrollPage(e.deltaY<0);};
         document.addEventListener("wheel", scrollPage);
@@ -402,7 +401,7 @@ if(RegExp("forum(-\\d+){2}|mod=forumdisplay").test(document.URL)){
 
     // 点击下一页后添加提示标签
     document.getElementById("autopbn").addEventListener('click',function(){
-      if(document.getElementById("autopbn").text == "下一页 »")
+      if(document.getElementById("autopbn").text === "下一页 »")
         addLastReadTag();
       else
         setTimeout(arguments.callee,100);
