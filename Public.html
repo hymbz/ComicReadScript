@@ -1,5 +1,5 @@
-<div id="ScriptMenu">
-  <div class="SMtitle">
+<div id="ScriptMenu" :style="{top:top+'px',left:left+'px'}">
+  <div class="SMtitle" draggable="true" @touchstart="dragMoveStart" @touchmove="dragMove" @dragstart="dragMoveStart" @drag="dragMove">
     <p>脚本设置</p>
     <a href="javascript:;" title="关闭" @click="saveUserSetting"></a>
   </div>
@@ -12,7 +12,7 @@
   </div>
   <div class="SMconifg">
     <template v-if="showWindow == '功能设置'">
-      <div v-for="(value, key) in UserSetting" :class="{disabled: !value.Enable}">
+      <div v-for="(value, key) in UserSetting" v-if="key != 'info'" :class="{disabled: !value.Enable}">
         <p @click="select(key)">[[key]][[value.Enable?"":"(禁用)"]]</p>
         <template v-if="value.Enable">
           <div v-for="(v, k) in value" v-if="k!='Enable'">
@@ -33,13 +33,13 @@
     </template>
     <template v-else-if="showWindow == '关于'">
       <p>
-        <strong>当前版本号：[[scriptVersion]]</strong>
+        <strong>当前版本号：[[UserSetting.info.scriptVersion]]</strong>
+        <br>
         <br>
         <strong>Github地址——<a href="https://github.com/hymbz/YamiboScript">https://github.com/hymbz/YamiboScript</a></strong>
         <br>
-        <strong>论坛发补贴地址——<a href="https://bbs.yamibo.com/thread-491966-1-1.html">https://bbs.yamibo.com/thread-491966-1-1.html</a></strong></strong>
+        <strong>论坛发布贴地址——<a href="https://bbs.yamibo.com/thread-491966-1-1.html">https://bbs.yamibo.com/thread-491966-1-1.html</a></strong></strong>
       </p>
-
     </template>
   </div>
 </div>

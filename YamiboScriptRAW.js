@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Yamibo Script
-// @version     1.01
+// @version     1.1
 // @author      hymbz
 // @description 百合会脚本
 // @namespace   YamiboScript
@@ -13,7 +13,6 @@
 // @grant       GM_addStyle
 // @require     https://cdn.jsdelivr.net/npm/vue
 // @require     https://code.jquery.com/jquery-3.2.1.min.js
-// @require     https://code.jquery.com/ui/1.12.1/jquery-ui.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js
 // @supportURL  https://github.com/hymbz/YamiboScript/issues
@@ -26,68 +25,6 @@ $('body').append(`@@Public.html@@`);
 GM_addStyle(`@@Public.css@@`);
 
 
-// 导入用户配置
-let ScriptMenu = new Vue({
-  el: '#ScriptMenu',
-  delimiters: ["[[", "]]"],
-  data: {
-    UserSetting: "",
-    showWindow:"功能设置",
-    scriptVersion: GM_info.script.version
-  },
-  methods: {
-    select: function (event) {
-      if(typeof event === "string"){
-        this.UserSetting[event].Enable = !this.UserSetting[event].Enable;
-      }else{
-        if(event.currentTarget.className != "a"){
-          $(event.currentTarget).siblings().removeClass("a");
-          event.currentTarget.className = "a";
-          this.showWindow = event.currentTarget.children[0].innerText;
-        }
-      }
-    },
-    saveUserSetting: function () {
-      GM_setValue("UserSetting",JSON.stringify(ScriptMenu.UserSetting));
-      document.getElementById('ScriptMenu').style.display = 'none';
-    },
-    ResetUserSetting: function () {
-      ScriptMenu.UserSetting = {
-        "漫画阅读":{
-          "Enable" : true,
-          "双页显示": true,
-          "页面填充": true,
-          "点击翻页": false
-        },
-        "记录阅读历史":{
-          "Enable":true,
-          "上次阅读进度标签颜色":"#6e2b19",
-          "保留天数":-1
-        },
-        "功能增强":{
-          "Enable":true,
-          "关闭快捷导航的跳转":true,
-          "修正点击页数时的跳转判定":true,
-          "固定导航条":true
-        }
-      };
-      GM_setValue("UserSetting",JSON.stringify(ScriptMenu.UserSetting));
-      prompt("已恢复默认设置");
-    }
-  }
-});
-
-if(GM_getValue("UserSetting","")){
-  ScriptMenu.UserSetting = JSON.parse(GM_getValue("UserSetting"));
-}else{
-  ScriptMenu.ResetUserSetting();
-}
-
-// 添加脚本设置窗口
-$("#mycp_menu").append(`<a href="javascript:;" onclick="document.getElementById('ScriptMenu').style.display = 'flex';">脚本设置</a>`);
-$("#ScriptMenu").draggable();
-
-
 
 // 显示提示
 let prompt = function (text) {
@@ -98,6 +35,119 @@ let prompt = function (text) {
 let getTop = function(event){
   return event.getBoundingClientRect().top+document.body.scrollTop+document.documentElement.scrollTop;
 };
+
+
+
+// 导入用户配置
+let ScriptMenu = new Vue({
+  el: '#ScriptMenu',
+  delimiters: ["[[", "]]"],
+  data: {
+    defaultUserSetting: {
+      "漫画阅读":{
+        "Enable" : true,
+        "双页显示": true,
+        "页面填充": true,
+        "点击翻页": false
+      },
+      "记录阅读历史":{
+        "Enable":true,
+        "上次阅读进度标签颜色":"#6e2b19",
+        "保留天数":-1
+      },
+      "功能增强":{
+        "Enable":true,
+        "关闭快捷导航的跳转":true,
+        "修正点击页数时的跳转判定":true,
+        "固定导航条":true
+      },
+      "info":{
+        "scriptVersion":GM_info.script.version
+      }
+    },
+    UserSetting: "",
+    showWindow:"功能设置",
+    offsetX: 0,
+    offsetY: 0,
+    top: "",
+    left: ""
+  },
+  methods: {
+    select: function (event) {
+      if(typeof event === "string"){
+        this.UserSetting[event].Enable = !this.UserSetting[event].Enable;
+      }else{
+        if(event.currentTarget.className != "a"){
+          $(event.currentTarget).siblings().removeClass("a");
+          event.currentTarget.className = "a";
+          this.showWindow = event.currentTarget.firstChild.innerText;
+        }
+      }
+    },
+    dragMoveStart: function(event){
+      let temp = document.getElementById("ScriptMenu").getBoundingClientRect();
+      this.top = temp.top;
+      this.left = temp.left;
+      if(event.type === "touchstart"){
+        this.offsetX = event.changedTouches[0].clientX - temp.left;
+        this.offsetY = event.changedTouches[0].clientY - temp.top;
+      }else{
+        event.dataTransfer.setDragImage(new Image(), 0, 0);
+        this.offsetX = event.offsetX;
+        this.offsetY = event.offsetY;
+      }
+    },
+    dragMove: function(event){
+      event.preventDefault();
+      if(event.type === "touchmove")
+        event = event.changedTouches[0];
+      // 不知道为什么，在拖动触发的最后一次 drag 事件里，event 里的鼠标位置移到了(0,0)，所以在这里加了个判断
+      if(event.clientX && event.clientY){
+        this.top = event.clientY - this.offsetY;
+        this.left = event.clientX - this.offsetX;
+      }
+    },
+    saveUserSetting: function () {
+      GM_setValue("UserSetting",JSON.stringify(ScriptMenu.UserSetting));
+      document.getElementById('ScriptMenu').style.display = 'none';
+    },
+    ResetUserSetting: function () {
+      ScriptMenu.UserSetting = this.defaultUserSetting;
+      GM_setValue("UserSetting",JSON.stringify(ScriptMenu.UserSetting));
+      prompt("已恢复默认设置");
+    }
+  }
+});
+
+if(GM_getValue("UserSetting","")){
+  ScriptMenu.UserSetting = JSON.parse(GM_getValue("UserSetting"));
+  // 检查脚本版本，如果版本发生变化，将旧版设置移至新版设置
+  let moveUserSetting = function(){
+    let tempUserSetting = ScriptMenu.UserSetting;
+    ScriptMenu.ResetUserSetting();
+    for (let key in tempUserSetting){
+      if(key != "info"){
+        for (let k in tempUserSetting[key]){
+          try {
+            ScriptMenu.UserSetting[key][k] = tempUserSetting[key][k];
+          } catch (error) {}
+        }
+      }
+    }
+    prompt("设置更新完毕");
+  }
+  try {
+    if(ScriptMenu.UserSetting.info.scriptVersion != GM_info.script.version)
+      moveUserSetting();
+  } catch (error) {
+    moveUserSetting();
+  }
+}else{
+  ScriptMenu.ResetUserSetting();
+}
+
+// 添加脚本设置窗口
+$("#mycp_menu").append(`<a href="javascript:;" onclick="document.getElementById('ScriptMenu').style.display = 'flex';">脚本设置</a>`);
 
 
 if(ScriptMenu.UserSetting["功能增强"]["关闭快捷导航的跳转"])
@@ -114,8 +164,8 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
     GM_addStyle(`@@ComicRead.css@@`);
     $('body').append(`@@ComicRead.html@@`);
 
-    PageNum = 0;
-    comicImgList = [];
+    let PageNum = 0;
+    let comicImgList = [];
 
     let List = document.querySelectorAll(".t_fsz img"), i = List.length;
     while (i--){
@@ -126,17 +176,36 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
     }
 
 
-    comicReadWindow = new Vue({
+    let startMagnifier = function(updatable) {
+      // 启动放大镜，视情况而定向 magnifierComicIndex 放入要放大的图片或清空 magnifierComicIndex
+      const flag = comicReadWindow.magnifierComicIndex.length;
+      if(flag)
+        comicReadWindow.magnifierComicIndex = [];
+      if(updatable !== true ^ Boolean(flag)){
+        let comicItem = document.querySelectorAll(`#comicShow>[index]`);
+        let enlargeIndex = [];
+        let tempIndex = PageNum + comicReadWindow.fill;
+        if(getTop(comicItem[tempIndex]) == getTop(comicItem[tempIndex - 1]))
+          --tempIndex;
+        enlargeIndex.push(comicItem[tempIndex].getAttribute("index"));
+        while(getTop(comicItem[tempIndex++]) === getTop(comicItem[tempIndex]))
+          enlargeIndex.push(comicItem[tempIndex].getAttribute("index"));
+        comicReadWindow.magnifierComicIndex = enlargeIndex.reverse();
+      }
+    }
+
+    let comicReadWindow = new Vue({
       el: '#comicRead',
       delimiters: ["[[", "]]"],
       data: {
         windoeRatio:window.innerWidth/window.innerHeight,
-        ComicImgInfo: Array(),
+        ComicImgInfo: [],
         readSetting: ScriptMenu.UserSetting["漫画阅读"],
         comicImgLength: 0,
         imgLoadNum: 0,
         comicDownloadData: "下载",
-        fill: false
+        fill: false,
+        magnifierComicIndex: []
       },
       methods:{
         updatedData: function(){
@@ -203,7 +272,7 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
           }
         },
         scrollPage: function(type) {
-          const nowScrollTop = getTop(document.querySelector(`#comicShow [index='${PageNum}']`));
+          const nowScrollTop = getTop(document.querySelector(`#comicShow>[index='${PageNum}']`));
           let nextScrollTop = nowScrollTop;
           while (nextScrollTop === nowScrollTop) {
             if (type) {
@@ -224,19 +293,33 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
             if(PageNum === "end")
               window.scrollTo(0,document.body.clientHeight);
             else
-              nextScrollTop = getTop(document.querySelector(`#comicShow [index='${PageNum}']`));
+              nextScrollTop = getTop(document.querySelector(`#comicShow>[index='${PageNum}']`));
           }
           $('html, body').animate({scrollTop: nextScrollTop}, 0);
+          startMagnifier(true);
+        },
+        magnifier: function(event){
+          if(this.magnifierComicIndex.length){
+            let magnifier = document.getElementById("magnifier");
+            if(event.type === "touchmove")
+              event = event.changedTouches[0];
+            magnifier.style.top = `${event.clientY > window.innerHeight / 2 ? event.clientY - window.innerHeight * 0.5 : event.clientY + window.innerHeight * 0.1 + 5}px`;
+            magnifier.style.left = `${event.clientX > window.innerWidth / 2 ? event.clientX - window.innerWidth * 0.5 : event.clientX + window.innerWidth * 0.1 + 5}px`;
+            magnifier.firstChild.style.marginTop = `-${event.clientY * 2 - window.innerHeight * 0.2}px`;
+            magnifier.firstChild.style.marginLeft = `-${event.clientX * 2 - window.innerWidth * 0.2}px`;
+            document.getElementById("scope").style.top = `${event.clientY - window.innerHeight * 0.1}px`;
+            document.getElementById("scope").style.left = `${event.clientX - window.innerWidth * 0.1}px`;
+          }
         }
       },
-      updated:function(){
+      updated: function(){
         this.windoeRatio = window.innerWidth/window.innerHeight;
         this.$nextTick(function () {
           this.fill = this.readSetting["页面填充"] && this.ComicImgInfo[0] && !this.ComicImgInfo[0].longImg;
           try {
-            $('html, body').animate({scrollTop: getTop(document.querySelector(`[index='${PageNum}']`))}, 0);
+            $('html, body').animate({scrollTop: getTop(document.querySelector(`#comicShow>[index='${PageNum}']`))}, 0);
           } catch (error) {
-            $('html, body').animate({scrollTop: getTop(document.querySelector(`[index='0']`))}, 0);
+            $('html, body').animate({scrollTop: getTop(document.querySelector(`#comicShow>[index='0']`))}, 0);
           }
         });
       }
@@ -252,11 +335,14 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
         document.addEventListener("wheel", scrollPage);
 
         // 修改侧边滚动栏
-        scrolltopHtml = document.getElementById("scrolltop").innerHTML;
+        let scrolltopHtml = document.getElementById("scrolltop").innerHTML;
         $("#scrolltop").addClass("left").empty().append(`
           <span hidefocus="true">
             <a href="javascript:;" class="returnlist" title="菜单"
             onclick=""></a>
+          </span>
+          <span hidefocus="true">
+            <a href="javascript:;" class="magnifier" title="放大镜"></a>
           </span>
           <span hidefocus="true">
             <a href="javascript:;" title="退出" class="scrolltopa"></a>
@@ -284,12 +370,13 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
             document.getElementsByClassName("header-stackup")[0].style.position = "fixed";
         };
         // 退出并返回顶部
-        document.querySelectorAll("#scrolltop>span")[1].addEventListener('click',function() {
+        document.querySelectorAll("#scrolltop>span")[2].addEventListener('click',function() {
           exitComicRead();
           window.scrollTo('0','0');
         });
         // 退出并跳至评论（先试着跳转至评分，没有则跳至评论楼层
         document.querySelector("#comicShow a[name='end']").addEventListener('click',function(){
+          PageNum = 0;
           exitComicRead();
           try {
             $('html, body').animate({ scrollTop: getTop(document.getElementsByClassName("psth")[0]) }, 0);
@@ -303,6 +390,8 @@ if(RegExp("thread(-\\d+){3}|mod=viewthread").test(document.URL)){
             }
           }
         });
+        // 放大
+        document.querySelectorAll("#scrolltop>span")[1].addEventListener('click',startMagnifier);
 
         // 在所有图片加载完毕前，每隔一秒重新更新一次
         let updated = function(){
@@ -378,7 +467,7 @@ if(RegExp("forum(-\\d+){2}|mod=forumdisplay").test(document.URL)){
       let List = document.querySelectorAll("tbody[id^=normalthread]");
       for (let i=0, length = List.length; i < length; i++){
         let tid = List[i].id.split("_")[1];
-        ts = $(List[i]);
+        let ts = $(List[i]);
         ts.find(".lastReadTag").remove();
         if(GM_getValue(tid)){
           let lastReadInfo = JSON.parse(GM_getValue(tid));
@@ -410,7 +499,7 @@ if(RegExp("forum(-\\d+){2}|mod=forumdisplay").test(document.URL)){
     // 删除超过指定天数的阅读记录
     if(ScriptMenu.UserSetting["记录阅读历史"]["保留天数"] != -1){
       let timeNum = new Date().getTime() - ScriptMenu.UserSetting["记录阅读历史"]["保留天数"] * 24 * 60 * 60;
-      LastReadList = GM_listValues();
+      let LastReadList = GM_listValues();
       LastReadList.splice(-1);
       let i = LastReadList.length;
       while(i--){

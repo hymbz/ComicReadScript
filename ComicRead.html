@@ -14,14 +14,14 @@
     </div>
   </div>
 
-  <div id="comicShow" :class="{TwoPage:readSetting['双页显示']}" v-if="ComicImgInfo[0]">
+  <div id="comicShow" :class="{TwoPage:readSetting['双页显示']}" v-if="ComicImgInfo[0]" @mousemove="magnifier" @touchmove="magnifier">
     <div class="right" index="fill" v-if='readSetting["双页显示"] && fill' style='visibility:hidden'>
       <img alt="fill" :src="ComicImgInfo[0].src">
     </div>
 
     <div v-for="(LineComicImg,index) in ComicImgInfo" :index="index"
       :class="LineComicImg.longImg?'longImg':(LineComicImg.longImgFlag?LineComicImg.right:fill^LineComicImg.right)?'right':'left'">
-      <img :alt="index+1" :src=LineComicImg.src v-on:load="++imgLoadNum"
+      <img :alt="index+1" :src=LineComicImg.src @load="++imgLoadNum"
         :style="{height:LineComicImg.longImg && LineComicImg.imgRatio > windoeRatio?'auto':'100%'}">
       <a :name=index+1></a>
     </div>
@@ -35,10 +35,35 @@
     </a>
 
     <template v-if="readSetting['点击翻页']">
-      <div id="PageControlLeft" @click="scrollPage(false)"></div>
-      <div id="PageControlRight" @click="scrollPage(true)"></div>
+      <div id="PageControlLeft" @click="!magnifierComicIndex.length && scrollPage(false)"></div>
+      <div id="PageControlRight" @click="!magnifierComicIndex.length && scrollPage(true)"></div>
     </template>
-  </div>
+    <div id="magnifier" v-show="magnifierComicIndex.length">
+      <div class="show">
+        <template v-for="(index,i) in magnifierComicIndex">
+          <template v-if="index === 'fill'">
+            <template v-if="i">
+              <div class="right" index="fill" v-if='readSetting["双页显示"] && fill' style='visibility:hidden'>
+                <img alt="fill" :src="ComicImgInfo[0].src">
+              </div>
+            </template>
+            <template v-else>
+              <div class="right" index="fill" v-if='readSetting["双页显示"] && fill && ComicImgInfo[ComicImgInfo.length - 1].longImgFlag?ComicImgInfo[ComicImgInfo.length - 1].right:!ComicImgInfo[ComicImgInfo.length - 1].right' style='visibility:hidden'>
+                <img alt="fill" :src="ComicImgInfo[ComicImgInfo.length - 1].src">
+              </div>
+            </template>
+          </template>
+          <template v-else>
+            <div index :class="ComicImgInfo[index].longImg?'longImg':(ComicImgInfo[index].longImgFlag?ComicImgInfo[index].right:fill^ComicImgInfo[index].right)?'right':'left'">
+              <img alt=" " :src=ComicImgInfo[index].src :style="{height:ComicImgInfo[index].longImg && ComicImgInfo[index].imgRatio > windoeRatio?'auto':'100%'}">
+            </div>
+          </template>
+        </template>
+      </div>
+      <div id="scope">
 
+      </div>
+    </div>
+  </div>
 
 </div>
