@@ -1,257 +1,311 @@
-@Blue1:#3F51B5;
-@Blue2:#2196F3;
-@Blue3:#03A9F4;
+#comicRead{
+  position: relative;
+  z-index: 999999;
 
+  text-align: left;
+}
 
 #comicShow{
+  position: relative;
   top: 0;
   left: 0;
 
-  display: none;
-  flex-flow: row-reverse wrap;
-  justify-content: center;
-
-  width: 100vw;
-
-  background-color: #FFF;
+  background-color: white;
   [index]{
     display: flex;
-    flex-basis: 100vw;
     justify-content: center;
 
+    width: 100vw;
     height: 100vh;
     margin: 1rem 0;
 
     img{
       display: inline-block;
 
-      max-width: 100%;
+      width: auto;
       height: 100%;
-      margin: auto;
 
       vertical-align: middle;
 
       image-rendering: -webkit-optimize-contrast;
     }
+    img.long{
+      width: 100%;
+      height: auto;
+    }
+    img.fill{
+      visibility: hidden;
+    }
   }
-  [index="end"]{
+  h1{
+    font-size: 40px;
+    font-weight: bold;
+    line-height: 40px;
+
     z-index: 3;
 
-    flex-basis: 100vw !important;
+    height: 60px !important;
+    margin: 0 !important;
 
-    height: 1rem;
-    margin: 2rem;
+    cursor: pointer;
 
-    font-size: 2rem;
-  }
-  &.TwoPage div.left{
-    flex-basis: 50vw !important;
-    img{
-      margin-right: 0;
+    color: var(--color1);
+    &:hover{
+      text-decoration: underline;
     }
   }
-  &.TwoPage div.right{
-    flex-basis: 50vw !important;
-    img{
-      margin-left: 0;
-    }
-  }
-}
-
-.tc{
-  display: flex;
-  justify-content: center;
-
-  margin: 0;
 }
 
 #sidebar{
   position: fixed;
   z-index: 1;
+  top: 50vh;
+  left: -40px;
 
-  width: 15%;
-  height: 100%;
+  transition: left .6s;
+  transform: translate(0, -50%);
 
-  opacity: .6;
-  color: #FFF;
-  background-color: black;
-  &>div{
-    padding: 14px;
-
-    border-color: #FFF !important;
-    border-bottom: 1px solid #CCC !important;
+  &.show{
+    left: 0;
   }
-}
-
-#fp-nav ul li .fp-tooltip{
-  color: black;
-}
-
-#Menu{
-  position: fixed;
-  z-index: 2;
-  top: 0;
-  left: -281px;
-
-  width: 280px;
-  height: 100%;
-
-  transition: left 1s;
-
-  opacity: .9;
-  background-color: @Blue3;
-  .MenuItem{
-    width: 100%;
-    height: 3.5rem;
+  div{
+    width: 30px;
+    height: 30px;
+    margin: 10px;
 
     cursor: pointer;
-    -webkit-user-select: none;
-       -moz-user-select: none;
-        -ms-user-select: none;
 
-    border-color: #FFF;
-    border-bottom-style: solid;
-    background-color: @Blue2;
-    &:nth-child(1){
-      cursor: default;
-
-      background-color: var(--Blue1);
-    }
-    p{
+    border-radius: 15px;
+    background-color: white;
+    svg{
       position: relative;
-      z-index: 100;
+      top: 3px;
+      left: 3px;
 
-      margin: 0 0 1em;
+      width: 24px;
+      height: 24px;
 
       text-align: center;
 
-      color: #000;
-
-      font-size: 25px;
-      line-height: 3.5rem;
+      fill: #171717;
     }
-    .MenuItemSwitchText{
-      position: absolute;
 
-      width: 100%;
-      &:nth-child(1){
-        text-align: left;
-
-        color: @Blue1;
-      }
-      &:nth-child(2){
-        text-align: right;
-
-        color: @Blue2;
+    &[switch='true']{
+      background-color: #171717;
+      svg{
+        fill: white;
       }
     }
-    .MenuItemSwitch{
-      position: absolute;
 
-      height: 3px;
-
-      border-width: 0 15px 52px 0;
-      border-style: solid solid solid solid;
-      border-color: @Blue2 @Blue2 transparent transparent;
-      background-color: @Blue1;;
+    &:nth-last-of-type(3),
+    &:last-of-type{
+      margin-top: 5vh;
     }
-    &.bottom{
-      position: absolute;
-      bottom: 0;
-
-      border-top-style: solid;
-    }
-  }
-  &.showMenu{
-    top: 0;
-    left: 0;
   }
 }
 
-#scrolltop{
-  z-index: 3;
-
-  transition: left .8s;
-  &.left{
-    right: auto !important;
-    left: -2px !important;
-  }
-  &.hide{
-    left: -45px !important;
-  }
-  .magnifier{
-    position: relative;
-    left: -28px;
-
-    color: #a9a7a7;
-    border: 0;
-    border-right: 20px solid transparent;
-    background: url(https://bbs.yamibo.com/template/oyeeh_com_baihe/img/config/img/tb.png) repeat-x scroll 0 -144px transparent;
-    filter: drop-shadow(35px 0);
-  }
-  a{
-    border-bottom: 1px #cdcdcd solid;
-  }
-}
-
-[id^="PageControl"]{
+#comicPage{
   position: fixed;
-  z-index: 1;
-  top: 0;
-
-  width: 50vw;
-  height: 100vh;
-}
-
-#PageControlLeft{
-  left: 0;
-}
-
-#PageControlRight{
+  top: 50%;
   right: 0;
+
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap-reverse;
+
+  max-height: 60vh;
+
+  transform: translate(-50%, -50%);
+  div{
+    width: 12px;
+    height: 12px;
+    margin: 5px;
+
+    cursor: pointer;
+
+    border: 2px solid;
+    border-color: #171717;
+    border-radius: 25px;
+  }
+  div.now,
+  div:hover{
+    background-color: #171717;
+  }
 }
 
 #magnifier{
   position: fixed;
-  z-index: 9;
+  z-index: 1;
   top: 0;
   left: 0;
+
   overflow: hidden;
 
   width: 40vw;
   height: 40vh;
 
-  background: #fff;
-  box-shadow: grey 0px 6px 24px 4px;
+  background: white;
+  box-shadow: grey 0 6px 24px 4px;
 
-  &>div.show{
-    height: 200vh;
+  div[index]{
     width: 200vw;
-    display: flex;
-    flex-basis: 100% !important;
-    &>div{
-      display: flex;
-      height: 100%;
-
-      margin: 0;
-
-      &.left{
-        flex-basis: 50% !important;
-      }
-      &.right{
-        flex-basis: 50% !important;
-      }
-    }
+    height: 200vh;
   }
 
   #scope{
     position: fixed;
-    pointer-events: none;
+
     width: 20vw;
     height: 20vh;
 
-    border-width: 2px;
-    border: darkgrey;
-    border-style: dashed;
+    border: 2px dashed darkgrey;
   }
+}
+
+#comicRead.night{
+  #comicShow{
+    background-color: #171717;
+  }
+
+  #comicPage{
+    div{
+      border-color: white;
+    }
+    div.now,
+    div:hover{
+      background-color: white;
+    }
+  }
+
+  #sidebar{
+    div{
+      background-color: #171717;
+      svg{
+        fill: white;
+      }
+
+      &[switch='true']{
+        background-color: white;
+        svg{
+          fill: #171717;
+        }
+      }
+    }
+  }
+
+  #magnifier{
+    background: #171717;
+  }
+
+  [tooltip]:hover::after{
+    color: black;
+    background: #CCC;
+    box-shadow: 0 1em 2em -.5em rgba(255, 255, 255, .35);
+  }
+
+  [tooltip][flow^='left']:hover::before{
+    border-left-color: #CCC;
+  }
+
+  [tooltip][flow^='right']:hover::before{
+    border-right-color: #CCC;
+  }
+}
+
+
+
+
+/* 来自 https://webdesign.tutsplus.com/zh-hans/tutorials/css-tooltip-magic--cms-28082 的 CSS */
+/* START TOOLTIP STYLES */
+[tooltip]{
+  position: relative; /* opinion 1 */
+}
+
+/* Applies to all tooltips */
+[tooltip]:hover::before,
+[tooltip]:hover::after{
+  font-size: .9em; /* opinion 3 */
+  line-height: 1;
+
+  position: absolute;
+
+  display: block;
+
+  user-select: none;
+  text-transform: none; /* opinion 2 */
+  pointer-events: none;
+}
+[tooltip]:hover::before{
+  z-index: 1001; /* absurdity 1 */
+
+  content: '';
+
+  border: 5px solid transparent; /* opinion 4 */
+}
+[tooltip]:hover::after{
+  /* most of the rest of this is opinion */
+  font-family: Helvetica, sans-serif;
+
+  z-index: 1000; /* absurdity 2 */
+
+  overflow: hidden;
+
+/*
+    Let the content set the size of the tooltips
+    but this will also keep them from being obnoxious
+    */
+
+  min-width: 3em;
+  max-width: 21em;
+  padding: 1ch 1.5ch;
+
+  content: attr(tooltip); /* magic! */
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  color: #FFF;
+  border-radius: .3ch;
+  background: #333;
+  box-shadow: 0 1em 2em -.5em rgba(0, 0, 0, .35);
+}
+
+/* don't show empty tooltips */
+[tooltip='']:hover::before,
+[tooltip='']:hover::after{
+  display: none !important;
+}
+
+/* FLOW: LEFT */
+[tooltip][flow^='left']:hover::before{
+  top: 50%;
+  left: calc(~"0em - 5px");
+
+  transform: translate(-.5em, -50%);
+
+  border-right-width: 0;
+  border-left-color: #333;
+}
+[tooltip][flow^='left']:hover::after{
+  top: 50%;
+  right: calc(~"100% + 5px");
+
+  transform: translate(-.5em, -50%);
+}
+
+/* FLOW: RIGHT */
+[tooltip][flow^='right']:hover::before{
+  top: 50%;
+  right: calc(~"0em - 5px");
+
+  transform: translate(.5em, -50%);
+
+  border-right-color: #333;
+  border-left-width: 0;
+}
+[tooltip][flow^='right']:hover::after{
+  top: 50%;
+  left: calc(~"100% + 5px");
+
+  transform: translate(.5em, -50%);
 }

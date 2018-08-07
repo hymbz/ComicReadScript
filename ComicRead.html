@@ -1,69 +1,57 @@
-<div id="comicRead">
-  <div id="Menu">
-    <div class="MenuItem"></div>
-    <div v-if="itemName!='Enable'" v-for="(item,itemName) in readSetting"
-      class="MenuItem" :switch="item" :setting="itemName"
-      @click="readSetting[itemName]=!item">
-      <p class="MenuItemSwitchText">&nbsp;&nbsp;關</p>
-      <p class="MenuItemSwitchText">開&nbsp;&nbsp;</p>
-      <div class="MenuItemSwitch" :style="{width: item?'88%':'6%',transition: 'width .9s'}"></div>
-      <p>[[itemName]]</p>
+<div id="comicRead" v-show="show" :class="readSetting['夜间模式']?'night':''">
+  <div id="sidebar">
+    <div v-if="!readSetting['双页显示'] || ComicImgInfo.some(e=>e.length>1)" flow="right" tooltip="双页显示" :switch="readSetting['双页显示']" @click="readSetting['双页显示']=!readSetting['双页显示'];updatedData()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 5H1v16c0 1.1.9 2 2 2h16v-2H3V5zm18-4H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 16H7V3h14v14zm-4-4h-4v-2h2c1.1 0 2-.89 2-2V7c0-1.11-.9-2-2-2h-4v2h4v2h-2c-1.1 0-2 .89-2 2v4h6v-2z"/></svg>
     </div>
-    <div class="MenuItem bottom" @click="download">
-      <p>[[comicDownloadData]]</p>
-    </div>
-  </div>
-
-  <div id="comicShow" :class="{TwoPage:readSetting['双页显示']}" v-if="ComicImgInfo[0]" @mousemove="magnifier" @touchmove="magnifier">
-    <div class="right" index="fill" v-if='readSetting["双页显示"] && fill' style='visibility:hidden'>
-      <img alt="fill" :src="ComicImgInfo[0].src">
+    <div v-else flow="right" tooltip="因窗口比例问题，无法双页显示" switch="false">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 5H1v16c0 1.1.9 2 2 2h16v-2H3V5zm18-4H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 16H7V3h14v14zm-4-4h-4v-2h2c1.1 0 2-.89 2-2V7c0-1.11-.9-2-2-2h-4v2h4v2h-2c-1.1 0-2 .89-2 2v4h6v-2z"/></svg>
     </div>
 
-    <div v-for="(LineComicImg,index) in ComicImgInfo" :index="index"
-      :class="LineComicImg.longImg?'longImg':(LineComicImg.longImgFlag?LineComicImg.right:fill^LineComicImg.right)?'right':'left'">
-      <img :alt="index+1" :src=LineComicImg.src @load="++imgLoadNum"
-        :style="{height:LineComicImg.longImg && LineComicImg.imgRatio > windoeRatio?'auto':'100%'}">
-      <a :name=index+1></a>
+    <div flow="right" tooltip="页面填充" :switch="readSetting['页面填充']" @click="readSetting['页面填充']=!readSetting['页面填充'];updatedData()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 7H7v2h2V7zm0 4H7v2h2v-2zm0-8c-1.11 0-2 .9-2 2h2V3zm4 12h-2v2h2v-2zm6-12v2h2c0-1.1-.9-2-2-2zm-6 0h-2v2h2V3zM9 17v-2H7c0 1.1.89 2 2 2zm10-4h2v-2h-2v2zm0-4h2V7h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zM5 7H3v12c0 1.1.89 2 2 2h12v-2H5V7zm10-2h2V3h-2v2zm0 12h2v-2h-2v2z"/></svg>
+    </div>
+    <div flow="right" tooltip="点击翻页" :switch="readSetting['点击翻页']" @click="readSetting['点击翻页']=!readSetting['点击翻页']">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6c0-.83-.67-1.5-1.5-1.5S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.91-1.38z"/></svg>
+    </div>
+    <div flow="right" tooltip="阅读进度" :switch="readSetting['阅读进度']" @click="readSetting['阅读进度']=!readSetting['阅读进度']">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 13h-8v-2h8v2zm0-6h-8v2h8V7zm-8 10h8v-2h-8v2zm-2-8v6c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V9c0-1.1.9-2 2-2h6c1.1 0 2 .9 2 2zm-1.5 6l-2.25-3-1.75 2.26-1.25-1.51L3.5 15h7z"/></svg>
+    </div>
+    <div flow="right" tooltip="夜间模式" :switch="readSetting['夜间模式']" @click="readSetting['夜间模式']=!readSetting['夜间模式']">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69zM12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6c3.31 0 6 2.69 6 6s-2.69 6-6 6z"/></svg>
     </div>
 
-    <div class="right" index="fill" v-if='readSetting["双页显示"] && fill && ComicImgInfo[ComicImgInfo.length - 1].longImgFlag?ComicImgInfo[ComicImgInfo.length - 1].right:!ComicImgInfo[ComicImgInfo.length - 1].right' style='visibility:hidden'>
-      <img alt="fill" :src="ComicImgInfo[ComicImgInfo.length - 1].src">
+    <div flow="right" tooltip="放大" @click="magnifier = !magnifier">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    </div>
+    <div flow="right" tooltip="下载" @click="download($event)">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
     </div>
 
-    <a index="end" name="end" href="javascript:;" title="评论">
-      <h1>End</h1>
-    </a>
-
-    <template v-if="readSetting['点击翻页']">
-      <div id="PageControlLeft" @click="!magnifierComicIndex.length && scrollPage(false)"></div>
-      <div id="PageControlRight" @click="!magnifierComicIndex.length && scrollPage(true)"></div>
-    </template>
-    <div id="magnifier" v-show="magnifierComicIndex.length">
-      <div class="show">
-        <template v-for="(index,i) in magnifierComicIndex">
-          <template v-if="index === 'fill'">
-            <template v-if="i">
-              <div class="right" index="fill" v-if='readSetting["双页显示"] && fill' style='visibility:hidden'>
-                <img alt="fill" :src="ComicImgInfo[0].src">
-              </div>
-            </template>
-            <template v-else>
-              <div class="right" index="fill" v-if='readSetting["双页显示"] && fill && ComicImgInfo[ComicImgInfo.length - 1].longImgFlag?ComicImgInfo[ComicImgInfo.length - 1].right:!ComicImgInfo[ComicImgInfo.length - 1].right' style='visibility:hidden'>
-                <img alt="fill" :src="ComicImgInfo[ComicImgInfo.length - 1].src">
-              </div>
-            </template>
-          </template>
-          <template v-else>
-            <div index :class="ComicImgInfo[index].longImg?'longImg':(ComicImgInfo[index].longImgFlag?ComicImgInfo[index].right:fill^ComicImgInfo[index].right)?'right':'left'">
-              <img alt=" " :src=ComicImgInfo[index].src :style="{height:ComicImgInfo[index].longImg && ComicImgInfo[index].imgRatio > windoeRatio?'auto':'100%'}">
-            </div>
-          </template>
-        </template>
-      </div>
-      <div id="scope">
-
-      </div>
+    <div flow="right" tooltip="退出" @click="exitComicRead(false)">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
     </div>
   </div>
 
+  <div id="comicShow" v-if="ComicImgInfo.length" @dblclick="magnifier = !magnifier"
+    @wheel.stop="scrollPage" @touchstart="lastTouchmove = $event;" @touchend="TouchControl"
+    @click="MouseMoveControl" @mousemove.capture="MouseMoveControl" @touchmove="MouseMoveControl">
+
+    <div v-for="(LineComicImg,pageNum) in ComicImgInfo" :index="pageNum">
+      <img v-for="Img in LineComicImg" :src=Img.src :class="Img.class" :alt="Img.index">
+    </div>
+
+    <h1 index="end" @click="exitComicRead(true)" title="跳至评论">End</h1>
+
+    <div id="magnifier" v-show="magnifier">
+      <div :index="PageNum">
+        <img v-for="Img in ComicImgInfo[PageNum]" :src=Img.src :class="Img.class" :alt="Img.index">
+      </div>
+      <div id="scope"></div>
+    </div>
+
+    <div id="comicPage" v-if="readSetting['阅读进度']">
+      <div v-for="(LineComicImg,pageNum) in ComicImgInfo" :class="pageNum===PageNum?'now':''"
+       :tooltip="LineComicImg.map(e=>e.index).join('，')" flow="left" @click="PageNum=pageNum"></div>
+    </div>
+  </div>
 </div>
