@@ -19,8 +19,8 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js
 // @require     https://greasyfork.org/scripts/371295-comicread/code/ComicRead.js
 // @supportURL  https://github.com/hymbz/ComicReadScript/issues
-// @updateURL   https://github.com/hymbz/ComicReadScript/raw/master/NewYamiboScript/NewYamiboScript.user.js
-// @downloadURL https://github.com/hymbz/ComicReadScript/raw/master/NewYamiboScript/NewYamiboScript.user.js
+// @updateURL   https://github.com/hymbz/ComicReadScript/raw/master/BukaScript/BukaScript.user.js
+// @downloadURL https://github.com/hymbz/ComicReadScript/raw/master/BukaScript/BukaScript.user.js
 // ==/UserScript==
 /* global GM_addStyle, GM_info, appendDom, comicReadWindow, ScriptMenu */
 
