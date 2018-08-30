@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Buka Script
-// @version     1.0
+// @version     1.1
 // @author      hymbz
 // @description 布卡脚本——双页阅读
 // @namespace   BukaScript
@@ -19,12 +19,12 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js
 // @require     https://greasyfork.org/scripts/371295-comicread/code/ComicRead.js
 // @supportURL  https://github.com/hymbz/ComicReadScript/issues
-// @updateURL   https://github.com/hymbz/ComicReadScript/raw/master/NewYamiboScript/NewYamiboScript.user.js
-// @downloadURL https://github.com/hymbz/ComicReadScript/raw/master/NewYamiboScript/NewYamiboScript.user.js
+// @updateURL   https://github.com/hymbz/ComicReadScript/raw/master/BukaScript/BukaScript.user.js
+// @downloadURL https://github.com/hymbz/ComicReadScript/raw/master/BukaScript/BukaScript.user.js
 // ==/UserScript==
 /* global GM_addStyle, GM_info, appendDom, comicReadWindow, ScriptMenu */
 
-GM_addStyle(':root {--color1: #F4B440;--color2: rgb(246, 246, 246);;--color3: #fff;--color4: #aea5a5;}');
+GM_addStyle(':root {--color1: #F4B440;--color2: rgb(246, 246, 246);;--color3: #fff;--color4: #aea5a5;}.right-btns{position: absolute;left: 1037px;}');
 
 ScriptMenu.load({
   '漫画阅读': {

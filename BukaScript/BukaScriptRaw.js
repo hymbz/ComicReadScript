@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Buka Script
-// @version     1.0
+// @version     1.1
 // @author      hymbz
 // @description 布卡脚本——双页阅读
 // @namespace   BukaScript
@@ -24,7 +24,7 @@
 // ==/UserScript==
 /* global GM_addStyle, GM_info, appendDom, comicReadWindow, ScriptMenu */
 
-GM_addStyle(':root {--color1: #F4B440;--color2: rgb(246, 246, 246);;--color3: #fff;--color4: #aea5a5;}');
+GM_addStyle(':root {--color1: #F4B440;--color2: rgb(246, 246, 246);;--color3: #fff;--color4: #aea5a5;}.right-btns{position: absolute;left: 1037px;}');
 
 ScriptMenu.load({
   '漫画阅读': {
