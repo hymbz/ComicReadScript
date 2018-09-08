@@ -32,7 +32,7 @@
     </div>
   </div>
 
-  <div id="comicShow" v-if="ComicImgInfo.length" @dblclick="magnifier = !magnifier"
+  <div id="comicShow" v-if="ComicImgInfo.length" @dblclick="magnifier = !readSetting['点击翻页'] && !magnifier"
     @wheel.stop="scrollPage" @touchstart="lastTouchmove = $event;" @touchend="TouchControl"
     @click="MouseMoveControl" @mousemove.capture="MouseMoveControl" @touchmove="MouseMoveControl">
 

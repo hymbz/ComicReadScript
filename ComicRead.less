@@ -68,6 +68,12 @@
   &.show{
     left: 0;
   }
+
+  &:not(.show) div::before,
+  &:not(.show) div::after{
+    content: none;
+  }
+
   div{
     width: 30px;
     height: 30px;

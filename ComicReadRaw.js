@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     1.0
+// @version     1.1
 // @author      hymbz
 // @description 阅读和设置
 // @require     https://cdn.jsdelivr.net/npm/vue

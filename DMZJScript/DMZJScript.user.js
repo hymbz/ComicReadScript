@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      DMZJ Script
-// @version     1.1
+// @version     1.2
 // @author      hymbz
 // @description 动漫之家脚本——双页阅读、体验优化、可看被封漫画
 // @namespace   DMZJScript
@@ -23,9 +23,25 @@
 // @updateURL   https://github.com/hymbz/ComicReadScript/raw/master/DMZJScript/DMZJScript.user.js
 // @downloadURL https://github.com/hymbz/ComicReadScript/raw/master/DMZJScript/DMZJScript.user.js
 // ==/UserScript==
-/* global GM_xmlhttpRequest, GM_getResourceText, GM_addStyle, GM_info, GM_getValue, appendDom, getTop, comicReadWindow, ScriptMenu, qiehuan, huPoint, g_comic_name, g_chapter_name, g_comic_id */
+/* global GM_xmlhttpRequest, GM_getResourceText, GM_addStyle, GM_info, appendDom, getTop, comicReadWindow, ScriptMenu, qiehuan, huPoint, g_comic_name, g_chapter_name, g_comic_id, g_comic_url */
 
 GM_addStyle(':root {--color1: #05a7ca;--color2: #f8fcff;--color3: #ffffff;--color4: #aea5a5;}');
+
+ScriptMenu.load({
+  '漫画阅读': {
+    'Enable': true,
+    '双页显示': true,
+    '页面填充': true,
+    '点击翻页': false,
+    '阅读进度': true,
+    '夜间模式': true
+  },
+  '体验优化': {
+    'Enable': true,
+    '在新页面中打开链接': true
+  },
+  'Version': GM_info.script.version
+});
 
 const type = /(?<=\/\/).+?\./.exec(document.URL)[0];
 if (type === 'manhua.') {
@@ -43,21 +59,6 @@ if (type === 'manhua.') {
   } else {
     $(document).unbind();
 
-    ScriptMenu.load({
-      '漫画阅读': {
-        'Enable': true,
-        '双页显示': true,
-        '页面填充': true,
-        '点击翻页': false,
-        '阅读进度': true,
-        '夜间模式': true
-      },
-      '体验优化':{
-        'Enable': true,
-        '在新页面中打开链接': true
-      },
-      'Version': GM_info.script.version
-    });
     // 判断当前页是漫画内容
     if (typeof g_chapter_name !== 'undefined') {
       GM_addStyle(`${JSON.parse(GM_getResourceText('css')).sections[0].code}.mainNav{display:none !important}body.day{background-color:white !important}body.day .header-box{background-color:#DDD !important;box-shadow:0 1px 2px white}body.day .comic_gd_fb .gd_input{color:#666;background:white}`);
@@ -107,8 +108,8 @@ if (type === 'manhua.') {
         }
         comicReadWindow.start();
       });
-    } else{
-      GM_addStyle('#floatCode,.toppic_content+div:not(.wrap),#type_comics+a,icorss_acg{display: none !important;}');
+    } else {
+      GM_addStyle('#floatCode,.toppic_content+div:not(.wrap),#type_comics+a,icorss_acg{display: none !important;}.cartoon_online_border>img{transform: rotate(180deg);}');
 
       // 添加脚本设置窗口
       appendDom(document.getElementsByClassName('mainNav_in_l')[0], '<a id="ScriptMenuMode" href="javascript:;">脚本设置</a>');
@@ -134,71 +135,74 @@ if (type === 'manhua.') {
                   temp += `<div class="photo_part"><div class="h2_title2"><span class="h2_icon h2_icon22"></span><h2>${Info.title}：${List[i].title}</h2></div></div><div class="cartoon_online_border" style="border-top: 1px dashed #0187c5;"><ul>`;
                   let chaptersList = List[i].data;
                   for (let i = 0; i < chaptersList.length; i++)
-                    temp += `<li><a target="_blank" title="${chaptersList[i].chapter_title}" href="https://m.dmzj.com/view/${Info.id}/${chaptersList[i].chapter_id}.html">${chaptersList[i].chapter_title}</a></li>`;
+                    temp += `<li><a target="_blank" title="${chaptersList[i].chapter_title}" href="https://manhua.dmzj.com/${g_comic_url}${chaptersList[i].chapter_id}.shtml">${chaptersList[i].chapter_title}</a></li>`;
                   temp += '</ul><div class="clearfix"></div></div>';
                 }
                 appendDom(document.getElementsByClassName('middleright_mr')[0], temp);
               }
             }
           });
-        }else{
-          if(ScriptMenu.UserSetting['体验优化']['在新页面中打开链接'])
-            [...document.getElementsByTagName('a')].forEach(e=>e.setAttribute('target','_blank'));
+        } else {
+          if (ScriptMenu.UserSetting['体验优化']['在新页面中打开链接'])
+            [...document.getElementsByTagName('a')].forEach(e => e.setAttribute('target', '_blank'));
         }
       }
     }
   }
-} else if (type === 'm.' && document.getElementsByTagName('body')[0].innerText === '漫画内容不存在') {
-  GM_addStyle('img {display:none;}#comicRead{left: 0;position: absolute !important;}#comicRead img{visibility: visible;}');
-  document.getElementsByTagName('body')[0].innerText = '';
-  let num;
-  GM_xmlhttpRequest({
-    method: 'GET',
-    url: `http://v2api.dmzj.com/chapter/${RegExp('\\d+/\\d+').exec(document.URL)[0]}.json`,
-    onload: function (xhr) {
-      if (xhr.status === 200) {
-        let Info = JSON.parse(xhr.responseText);
-        num = Info.picnum;
-        document.title = Info.title;
-        let loadImg = function (index) {
-          let i = index;
-          GM_xmlhttpRequest({
-            method: 'GET',
-            url: Info.page_url[i],
-            headers: {
-              'Referer': 'http://images.dmzj.com/'
-            },
-            responseType: 'blob',
-            onload: function (xhr) {
-              if (xhr.status === 200) {
-                let temp = document.createElement('img');
-                temp.src = URL.createObjectURL(xhr.response);
-                temp.setAttribute('order', i);
-                appendDom(document.getElementsByTagName('body')[0], temp);
-                if (document.getElementsByTagName('img').length === num) {
-                  comicReadWindow.load({
-                    'comicImgList': [...document.getElementsByTagName('img')].sort((a, b) => a.getAttribute('order') - b.getAttribute('order')),
-                    'readSetting': JSON.parse(GM_getValue('UserSetting'))['漫画阅读'],
-                    'EndExit': false,
-                    'comicName': document.title
-                  });
-                  let start = function () {
-                    if (comicReadWindow.comicImgList.every(e => e.complete))
-                      comicReadWindow.start();
-                    else
-                      setTimeout(start, 100);
-                  };
-                  setTimeout(start, 100);
-                }
-              } else
-                loadImg(i);
-            }
-          });
-        };
-        for (let index = 0; index < Info.picnum; index++)
-          loadImg(index);
+} else if (type === 'm.') {
+  if (document.getElementsByTagName('body')[0].innerText === '漫画内容不存在') {
+    GM_addStyle('img {display:none;}#comicRead{left: 0;position: absolute !important;}#comicRead img{visibility: visible;}');
+    document.getElementsByTagName('body')[0].innerText = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
+    let num;
+    GM_xmlhttpRequest({
+      method: 'GET',
+      url: `http://v2api.dmzj.com/chapter/${RegExp('\\d+/\\d+').exec(document.URL)[0]}.json`,
+      onload: function (xhr) {
+        if (xhr.status === 200) {
+          let Info = JSON.parse(xhr.responseText);
+          num = Info.picnum;
+          document.title = Info.title;
+          let loadImg = function (index) {
+            let i = index;
+            GM_xmlhttpRequest({
+              method: 'GET',
+              url: Info.page_url[i],
+              headers: {
+                'Referer': 'http://images.dmzj.com/'
+              },
+              responseType: 'blob',
+              onload: function (xhr) {
+                if (xhr.status === 200) {
+                  let temp = document.createElement('img');
+                  temp.src = URL.createObjectURL(xhr.response);
+                  temp.setAttribute('order', i);
+                  appendDom(document.getElementsByTagName('body')[0], temp);
+                  if (document.getElementsByTagName('img').length === num) {
+                    comicReadWindow.load({
+                      'comicImgList': [...document.getElementsByTagName('img')].sort((a, b) => a.getAttribute('order') - b.getAttribute('order')),
+                      'readSetting': ScriptMenu.UserSetting['漫画阅读'],
+                      'EndExit': false,
+                      'comicName': document.title
+                    });
+                    let start = function () {
+                      if (comicReadWindow.comicImgList.every(e => e.complete))
+                        comicReadWindow.start();
+                      else
+                        setTimeout(start, 100);
+                    };
+                    setTimeout(start, 100);
+                  }
+                } else
+                  loadImg(i);
+              }
+            });
+          };
+          for (let index = 0; index < Info.picnum; index++)
+            loadImg(index);
+        }
       }
-    }
-  });
+    });
+  }else{
 
+  }
 }

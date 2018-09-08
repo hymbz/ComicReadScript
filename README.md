@@ -42,7 +42,7 @@ PC上，将鼠标移动至左侧边缘显示。
 - ![](http://wx4.sinaimg.cn/large/6d4090c8gy1fu85e8gcg0j200o00o04a.jpg)阅读进度：在右侧用一列小圆点显示总页数和当前页，点击对应圆点可以直接跳转至目标页数。
 - ![](http://wx4.sinaimg.cn/large/6d4090c8gy1fu85gvp8fvj200o00o070.jpg)夜间模式：顾名思义。
 
-- ![](http://ws3.sinaimg.cn/large/6d4090c8gy1fu85itqh26j200o00o06x.jpg)放大：顾名思义。（除点击按钮外，也可通过双击任意位置打开）
+- ![](http://ws3.sinaimg.cn/large/6d4090c8gy1fu85itqh26j200o00o06x.jpg)放大：顾名思义。（除点击按钮外，也可通过双击任意位置打开，开启点击翻页时除外，防止误点击。）
 - ![](http://wx1.sinaimg.cn/large/6d4090c8gy1fu85l7bbw0j200o00o06j.jpg)下载：顾名思义。
 - ![](http://ws3.sinaimg.cn/large/6d4090c8gy1fu85mb5676j200o00o04k.jpg)退出：顾名思义。（通过侧边栏退出视作中途离开，下次进入阅读模式会从上次中途离开的地方看起。在结尾会有另一个退出的按钮「End」，通过 End 退出视作阅读结束，退出的同时会跳转至评论——如果有评论的话，下次进入阅读模式会从头开始）
 
