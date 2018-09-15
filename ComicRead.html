@@ -40,7 +40,11 @@
       <img v-for="Img in LineComicImg" :src=Img.src :class="Img.class" :alt="Img.index">
     </div>
 
-    <h1 index="end" @click="exitComicRead(true)" title="跳至评论">End</h1>
+    <div index="end">
+      <a v-if="prevChapter" :href="prevChapter">上一话</a>
+      <a title="退出" href="javascript:;" @click="exitComicRead(true)">End</a>
+      <a v-if="nextChapter" :href="nextChapter">下一话</a>
+    </div>
 
     <div id="magnifier" v-show="magnifier">
       <div :index="PageNum">

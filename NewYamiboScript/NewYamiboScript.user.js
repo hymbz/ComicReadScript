@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      New Yamibo Script
-// @version     1.1
+// @version     1.2
 // @author      hymbz
 // @description 百合会新站脚本——双页阅读
 // @namespace   NewYamiboScript
@@ -95,7 +95,9 @@ if (document.URL.includes('view-chapter')) {
                     }),
                     'readSetting': ScriptMenu.UserSetting['漫画阅读'],
                     'EndExit': () => scrollTo(0, getTop(document.getElementById('new-comment-form')[0])),
-                    'comicName': `${document.querySelector('ul.breadcrumb > li:nth-child(4) > a').innerHTML} ${document.getElementsByTagName('h3')[0].innerHTML}`
+                    'comicName': `${document.querySelector('ul.breadcrumb > li:nth-child(4) > a').innerHTML} ${document.getElementsByTagName('h3')[0].innerHTML}`,
+                    'nextChapter': document.getElementById('btnNext') ? document.getElementById('btnNext').href : null,
+                    'prevChapter': document.getElementById('btnPrev') ? document.getElementById('btnPrev').href : null
                   });
                   document.getElementById('comicReadMode').className = 'btn btn-sm btn-yuri';
                 }

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     1.1
+// @version     1.2
 // @author      hymbz
 // @description 阅读和设置
 // @require     https://cdn.jsdelivr.net/npm/vue
@@ -57,7 +57,9 @@ let comicReadWindow = new Vue({
     ComicImgInfo: [],
     PageNum: 0,
     magnifier: false,
-    lastTouchmove: {}
+    lastTouchmove: {},
+    nextChapter: null,
+    prevChapter: null
   },
   methods: {
     updatedData: function () {
@@ -144,7 +146,7 @@ let comicReadWindow = new Vue({
       }
     },
     scrollPage: function (event) {
-      if (typeof event === 'object' ? event.deltaY < 0 : !event) {
+      if (typeof event === 'object' ? event.deltaY < 0 : event) {
         if (this.PageNum === 'end')
           this.PageNum = this.ComicImgInfo.length - 1;
         else if (this.PageNum > 0)
@@ -192,7 +194,7 @@ let comicReadWindow = new Vue({
         else if (document.getElementById('sidebar').className)
           document.getElementById('sidebar').className = '';
       } else if (event.type === 'click' && this.readSetting['点击翻页']) {
-        this.scrollPage(event.clientX < screen.availWidth / 2);
+        this.scrollPage(event.clientX > screen.availWidth / 2);
         document.getElementById('sidebar').className = '';
       }
     },
@@ -201,7 +203,7 @@ let comicReadWindow = new Vue({
       const x = this.lastTouchmove.touches[0].clientX - event.changedTouches[0].clientX;
       const y = this.lastTouchmove.touches[0].clientY - event.changedTouches[0].clientY;
       if (Math.abs(x) > 10 && Math.abs(y) > 10 && Math.abs(x / y) < 1)
-        this.scrollPage(y > 0);
+        this.scrollPage(y < 0);
       else
         document.getElementById('sidebar').className = x > 0 ? '' : 'show';
     }
@@ -219,6 +221,8 @@ let comicReadWindow = new Vue({
  * @param {Object} Info.readSetting 相关的配置数据
  * @param {Object} Info.EndExit 点击结尾 End 退出时执行的操作
  * @param {string} Info.comicName 漫画标题，用于下载漫画时命名用
+ * @param {string} Info.nextChapter 下一话链接
+ * @param {string} Info.prevChapter 上一话链接
  */
 comicReadWindow.load = function (Info) {
   Object.assign(this, Info);
@@ -230,6 +234,12 @@ comicReadWindow.load = function (Info) {
   comicReadWindow.$mount('#comicRead');
 
   window.onresize = comicReadWindow.updatedData;
+  document.onkeyup = function (e) {
+    if([32,37,40].includes(e.keyCode))
+      comicReadWindow.scrollPage(false);
+    else if ([38,39].includes(e.keyCode))
+      comicReadWindow.scrollPage(true);
+  };
 };
 
 comicReadWindow.start = function () {

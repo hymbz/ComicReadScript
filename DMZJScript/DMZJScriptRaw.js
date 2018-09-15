@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      DMZJ Script
-// @version     1.2
+// @version     1.3
 // @author      hymbz
 // @description 动漫之家脚本——双页阅读、体验优化、可看被封漫画
 // @namespace   DMZJScript
@@ -101,7 +101,9 @@ if (type === 'manhua.') {
                 huPoint();
                 scrollTo(0, getTop(document.getElementById('hd')));
               },
-              'comicName': `${g_comic_name} ${g_chapter_name}`
+              'comicName': `${g_comic_name} ${g_chapter_name}`,
+              'nextChapter': document.getElementById('next_chapter')?document.getElementById('next_chapter').href:null,
+              'prevChapter': document.getElementById('prev_chapter')?document.getElementById('prev_chapter').href:null
             });
           } else
             return;

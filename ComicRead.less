@@ -10,6 +10,8 @@
   top: 0;
   left: 0;
 
+  padding-top: 1rem;
+
   background-color: white;
   [index]{
     display: flex;
@@ -17,7 +19,7 @@
 
     width: 100vw;
     height: 100vh;
-    margin: 1rem 0;
+    margin: 0;
 
     img{
       display: inline-block;
@@ -37,21 +39,29 @@
       visibility: hidden;
     }
   }
-  h1{
-    font-size: 40px;
+  [index='end']{
     font-weight: bold;
-    line-height: 40px;
+    line-height: 60px;
 
     z-index: 3;
 
     height: 60px !important;
     margin: 0 !important;
+    a{
+      font-size: 20px;
 
-    cursor: pointer;
+      position: absolute;
 
-    color: var(--color1);
-    &:hover{
-      text-decoration: underline;
+      color: var(--color1);
+    }
+    a[title='退出']{
+      font-size: 40px;
+    }
+    a:first-child{
+      left: 40vw;
+    }
+    a:last-child{
+      right: 40vw;
     }
   }
 }

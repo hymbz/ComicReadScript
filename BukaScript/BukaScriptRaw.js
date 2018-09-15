@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Buka Script
-// @version     1.1
+// @version     1.2
 // @author      hymbz
 // @description 布卡脚本——双页阅读
 // @namespace   BukaScript
@@ -49,7 +49,9 @@ if (document.URL.split('/')[3] === 'view') {
     'comicImgList': [...document.querySelectorAll('.manga-imgs img')],
     'readSetting': ScriptMenu.UserSetting['漫画阅读'],
     'EndExit': () => { },
-    'comicName': document.title
+    'comicName': document.title,
+    'nextChapter': document.querySelector('.manga-btns-1 a+a') ? document.querySelector('.manga-btns-1 a+a').href : null,
+    'prevChapter': document.querySelector('.manga-btns-1 a') ? document.querySelector('.manga-btns-1 a').href : null
   });
 
   appendDom(document.getElementsByClassName('manga-btns-2')[0], '<a href="javascript:;" id="comicReadMode">阅读</a>');
