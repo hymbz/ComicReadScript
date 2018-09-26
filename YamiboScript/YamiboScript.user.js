@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Yamibo Script
-// @version     2.1
+// @version     2.2
 // @author      hymbz
 // @description 百合会脚本——双页阅读漫画、记录阅读历史、体验优化
 // @namespace   YamiboScript
@@ -13,6 +13,7 @@
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
+// @grant       GM_registerMenuCommand
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/vue
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
@@ -47,11 +48,6 @@ ScriptMenu.load({
     '固定导航条': true
   },
   'Version': GM_info.script.version
-});
-// 添加脚本设置窗口
-appendDom(document.getElementById('mycp_menu'), '<a href="javascript:;" id="ScriptMenuMode">脚本设置</a>');
-document.getElementById('ScriptMenuMode').addEventListener('click', function () {
-  ScriptMenu.show = true;
 });
 
 

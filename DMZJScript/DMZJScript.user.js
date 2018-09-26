@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      DMZJ Script
-// @version     1.3
+// @version     1.4
 // @author      hymbz
 // @description 动漫之家脚本——双页阅读、体验优化、可看被封漫画
 // @namespace   DMZJScript
@@ -13,6 +13,7 @@
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
+// @grant       GM_registerMenuCommand
 // @resource    css https://userstyles.org/styles/chrome/119945.json
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/vue
@@ -59,7 +60,7 @@ if (type === 'manhua.') {
   } else {
     $(document).unbind();
 
-    // 判断当前页是漫画内容
+    // 判断当前页是漫画页
     if (typeof g_chapter_name !== 'undefined') {
       GM_addStyle(`${JSON.parse(GM_getResourceText('css')).sections[0].code}.mainNav{display:none !important}body.day{background-color:white !important}body.day .header-box{background-color:#DDD !important;box-shadow:0 1px 2px white}body.day .comic_gd_fb .gd_input{color:#666;background:white}`);
       document.getElementsByTagName('body')[0].className = ScriptMenu.UserSetting['漫画阅读']['夜间模式'] ? '' : 'day';
@@ -71,17 +72,12 @@ if (type === 'manhua.') {
       let List = document.querySelectorAll('.inner_img img');
       let i = List.length;
       while (i--)
-        if (List[i].getAttribute('data-original'))
-          List[i].setAttribute('src', ` https:${List[i].getAttribute('data-original')}`);
+        if (List[i].getAttribute('data-original')) {
+          List[i].setAttribute('data-original', `${document.location.protocol}${List[i].getAttribute('data-original')}`);
+          List[i].setAttribute('src', `${document.location.protocol}${List[i].getAttribute('data-original')}`);
+        }
 
-      let tempDom = document.querySelector('.funcdiv a:nth-last-of-type(2)');
-      tempDom.innerHTML = '脚本设置';
-      tempDom.setAttribute('href', 'javascript:;');
-      tempDom.addEventListener('click', function () {
-        ScriptMenu.show = true;
-      });
-
-      tempDom = document.querySelector('.btns a:last-of-type');
+      let tempDom = document.querySelector('.btns a:last-of-type');
       tempDom.innerHTML = '阅读模式';
       tempDom.setAttribute('href', 'javascript:;');
       tempDom.addEventListener('click', function () {
@@ -102,8 +98,8 @@ if (type === 'manhua.') {
                 scrollTo(0, getTop(document.getElementById('hd')));
               },
               'comicName': `${g_comic_name} ${g_chapter_name}`,
-              'nextChapter': document.getElementById('next_chapter')?document.getElementById('next_chapter').href:null,
-              'prevChapter': document.getElementById('prev_chapter')?document.getElementById('prev_chapter').href:null
+              'nextChapter': document.getElementById('next_chapter') ? document.getElementById('next_chapter').href : null,
+              'prevChapter': document.getElementById('prev_chapter') ? document.getElementById('prev_chapter').href : null
             });
           } else
             return;
@@ -112,12 +108,6 @@ if (type === 'manhua.') {
       });
     } else {
       GM_addStyle('#floatCode,.toppic_content+div:not(.wrap),#type_comics+a,icorss_acg{display: none !important;}.cartoon_online_border>img{transform: rotate(180deg);}');
-
-      // 添加脚本设置窗口
-      appendDom(document.getElementsByClassName('mainNav_in_l')[0], '<a id="ScriptMenuMode" href="javascript:;">脚本设置</a>');
-      document.getElementById('ScriptMenuMode').addEventListener('click', function () {
-        ScriptMenu.show = true;
-      });
 
       // 判断当前页是漫画详情页
       if (typeof g_comic_name !== 'undefined') {
@@ -204,7 +194,5 @@ if (type === 'manhua.') {
         }
       }
     });
-  }else{
-
   }
 }

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      New Yamibo Script
-// @version     1.2
+// @version     1.3
 // @author      hymbz
 // @description 百合会新站脚本——双页阅读
 // @namespace   NewYamiboScript
@@ -13,6 +13,7 @@
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
+// @grant       GM_registerMenuCommand
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/vue
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
@@ -51,12 +52,6 @@ ScriptMenu.load({
   },
   'Version': GM_info.script.version
 });
-// 添加脚本设置窗口
-appendDom(document.getElementsByClassName('dropdown-menu')[4], '<li><a href="javascript:;" tabindex="-1" id="ScriptMenuMode"><i class="fa fa-wrench"></i> 脚本设置</a></li>');
-document.getElementById('ScriptMenuMode').addEventListener('click', function () {
-  ScriptMenu.show = true;
-});
-
 
 // 判断当前页是漫画内容
 if (document.URL.includes('view-chapter')) {

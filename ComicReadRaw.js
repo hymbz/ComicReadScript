@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     1.2
+// @version     1.3
 // @author      hymbz
 // @description 阅读和设置
 // @require     https://cdn.jsdelivr.net/npm/vue
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js
 // ==/UserScript==
-/* global GM_xmlhttpRequest, GM_setValue, GM_getValue, GM_addStyle, GM_info, Vue, JSZip, saveAs */
+/* global GM_xmlhttpRequest, GM_setValue, GM_getValue, GM_addStyle, GM_info, GM_registerMenuCommand, Vue, JSZip, saveAs */
 
 /**
  * 获取元素所在高度
@@ -59,57 +59,59 @@ let comicReadWindow = new Vue({
     magnifier: false,
     lastTouchmove: {},
     nextChapter: null,
-    prevChapter: null
+    prevChapter: null,
+    fillInfluence: {
+      'now': true
+    }
   },
   methods: {
     updatedData: function () {
       // 处理图片
       const twoPageRatio = window.innerWidth / 2 / window.innerHeight;
       const onePageRatio = window.innerWidth / window.innerHeight;
-      comicReadWindow.ComicImgInfo = [];
+      this.ComicImgInfo = [];
       let tempImgInfo = [];
 
-      if (comicReadWindow.readSetting['双页显示'] && comicReadWindow.readSetting['页面填充'] && comicReadWindow.comicImgList[0].width / comicReadWindow.comicImgList[0].height < twoPageRatio) {
-        tempImgInfo.push({
-          'src': comicReadWindow.comicImgList[0].getAttribute('src'),
-          'index': '填充',
-          'class': 'fill'
-        });
+      function fillPage(src) {
+        this.src = src;
+        this.index = '填充';
+        this.class = 'fill';
       }
 
-      let i;
-      for (i = 0; i < comicReadWindow.comicImgList.length; i++) {
-        const imgRatio = comicReadWindow.comicImgList[i].width / comicReadWindow.comicImgList[i].height;
+      for (let i = 0; i < this.comicImgList.length; i++) {
+        const imgRatio = this.comicImgList[i].width / this.comicImgList[i].height;
         let imgInfo = {
-          'src': comicReadWindow.comicImgList[i].getAttribute('src'),
+          'src': this.comicImgList[i].getAttribute('src'),
           'index': i,
           'class': ''
         };
 
-        if (comicReadWindow.readSetting['双页显示'] && imgRatio < twoPageRatio) {
-          if (tempImgInfo.length)
-            comicReadWindow.ComicImgInfo.push([imgInfo, tempImgInfo.shift()]);
-          else
-            tempImgInfo.push(imgInfo);
-        } else {
-          if (tempImgInfo.length)
-            comicReadWindow.ComicImgInfo.push([tempImgInfo.shift()]);
-          imgInfo['class'] = imgRatio > onePageRatio ? 'long' : 'wide';
-          comicReadWindow.ComicImgInfo.push([imgInfo]);
+        if (this.readSetting['双页显示']) {
+          if (this.fillInfluence[i - 1])
+            tempImgInfo.push(new fillPage(imgInfo.src));
+          if (imgRatio < twoPageRatio) {
+            if (tempImgInfo.length)
+              this.ComicImgInfo.push([imgInfo, tempImgInfo.shift()]);
+            else
+              tempImgInfo.push(imgInfo);
+            continue;
+          } else {
+            if (tempImgInfo.length) {
+              if (tempImgInfo[0].class === 'fill')
+                tempImgInfo = [];
+              else
+                this.ComicImgInfo.push([tempImgInfo.shift()]);
+            }
+            if (!this.fillInfluence.hasOwnProperty(i))
+              this.fillInfluence[i] = false;
+          }
         }
+        imgInfo['class'] = imgRatio > onePageRatio ? 'long' : 'wide';
+        this.ComicImgInfo.push([imgInfo]);
       }
 
-      if (tempImgInfo.length)
-        comicReadWindow.ComicImgInfo.push([tempImgInfo.shift()]);
-
-      let final = comicReadWindow.ComicImgInfo[comicReadWindow.ComicImgInfo.length - 1];
-      if (comicReadWindow.readSetting['页面填充'] && final.length === 1 && !final[0].class) {
-        final.unshift({
-          'src': final[0].src,
-          'index': '填充',
-          'class': 'fill'
-        });
-      }
+      if (tempImgInfo.length && tempImgInfo[0].class !== 'fill')
+        this.ComicImgInfo.push([new fillPage(tempImgInfo[0].src), tempImgInfo.shift()]);
     },
     download: function () {
       // 下载漫画
@@ -131,14 +133,14 @@ let comicReadWindow = new Vue({
           onload: function (xhr, index = tempIndex) {
             if (xhr.status === 200) {
               zip.file(`${index}.${xhr.finalUrl.replace(/.+\./, '')}`, xhr.response);
-              if (++comicDownloadNum === this.comicImgList.length) {
+              if (++comicDownloadNum === comicReadWindow.comicImgList.length) {
                 downDom.setAttribute('tooltip', '下载完成');
                 downDomSvg.setAttribute('d', 'M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17 15.18 9l1.41 1.41L10 17z');
                 zip.generateAsync({ type: 'blob' }).then(function (content) {
                   saveAs(content, `${comicReadWindow.comicName}.zip`);
                 });
               } else
-                downDom.setAttribute('tooltip', `${comicDownloadNum}/${this.comicImgList.length}`);
+                downDom.setAttribute('tooltip', `${comicDownloadNum}/${comicReadWindow.comicImgList.length}`);
             } else
               downDom.setAttribute('tooltip', '下载出错');
           }
@@ -206,9 +208,23 @@ let comicReadWindow = new Vue({
         this.scrollPage(y < 0);
       else
         document.getElementById('sidebar').className = x > 0 ? '' : 'show';
+    },
+    pageFill: function (type) {
+      // 根据 type 返回或修改当前页所在 fillInfluence 的值
+      if (this.PageNum === 'end')
+        return false;
+      let i = this.ComicImgInfo[this.PageNum][0].index;
+      while (i-- && !this.fillInfluence.hasOwnProperty(i));
+      if (type) {
+        this.fillInfluence[i] = !this.fillInfluence[i];
+        this.updatedData();
+      }
+      else
+        return this.fillInfluence[i];
     }
   },
   updated: function () {
+    this.fillInfluence['now'] = this.pageFill();
     this.$nextTick(function () {
       scrollTo(0, getTop(document.querySelector(`#comicShow>[index='${this.PageNum}']`)));
     });
@@ -226,6 +242,8 @@ let comicReadWindow = new Vue({
  */
 comicReadWindow.load = function (Info) {
   Object.assign(this, Info);
+  comicReadWindow.fillInfluence[-1] = Info.readSetting['页面填充'];
+
   // 关闭记录滚动历史
   history.scrollRestoration = 'manual';
 
@@ -235,9 +253,9 @@ comicReadWindow.load = function (Info) {
 
   window.onresize = comicReadWindow.updatedData;
   document.onkeyup = function (e) {
-    if([32,37,40].includes(e.keyCode))
+    if ([32, 37, 40].includes(e.keyCode))
       comicReadWindow.scrollPage(false);
-    else if ([38,39].includes(e.keyCode))
+    else if ([38, 39].includes(e.keyCode))
       comicReadWindow.scrollPage(true);
   };
 };
@@ -313,4 +331,8 @@ ScriptMenu.load = function (defaultUserSetting) {
     GM_setValue('UserSetting', JSON.stringify(ScriptMenu.UserSetting));
     showNotice('脚本更新完毕');
   }
+
+  GM_registerMenuCommand('漫画阅读脚本设置', function () {
+    ScriptMenu.show = true;
+  });
 };

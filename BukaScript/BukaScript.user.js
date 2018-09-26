@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Buka Script
-// @version     1.2
+// @version     1.3
 // @author      hymbz
 // @description 布卡脚本——双页阅读
 // @namespace   BukaScript
@@ -13,6 +13,7 @@
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getResourceURL
+// @grant       GM_registerMenuCommand
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/vue
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
@@ -67,11 +68,5 @@ if (document.URL.split('/')[3] === 'view') {
 
     if (checkImgLoad() || confirm('可能还有图片正在加载，请确认所有图片均已加载完毕'))
       comicReadWindow.start();
-  });
-} else {
-  // 添加脚本设置窗口
-  appendDom(document.querySelector('div.head-nav > div'), '<a href="javascript:;" title="布卡漫画所有漫画" class="nav-btn" id="ScriptMenuMode">脚本设置</a>');
-  document.getElementById('ScriptMenuMode').addEventListener('click', function () {
-    ScriptMenu.show = true;
   });
 }

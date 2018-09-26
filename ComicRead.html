@@ -7,7 +7,7 @@
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 5H1v16c0 1.1.9 2 2 2h16v-2H3V5zm18-4H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 16H7V3h14v14zm-4-4h-4v-2h2c1.1 0 2-.89 2-2V7c0-1.11-.9-2-2-2h-4v2h4v2h-2c-1.1 0-2 .89-2 2v4h6v-2z"/></svg>
     </div>
 
-    <div flow="right" tooltip="页面填充" :switch="readSetting['页面填充']" @click="readSetting['页面填充']=!readSetting['页面填充'];updatedData()">
+    <div flow="right" tooltip="页面填充" :switch="fillInfluence['now']" @click="pageFill">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9 7H7v2h2V7zm0 4H7v2h2v-2zm0-8c-1.11 0-2 .9-2 2h2V3zm4 12h-2v2h2v-2zm6-12v2h2c0-1.1-.9-2-2-2zm-6 0h-2v2h2V3zM9 17v-2H7c0 1.1.89 2 2 2zm10-4h2v-2h-2v2zm0-4h2V7h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zM5 7H3v12c0 1.1.89 2 2 2h12v-2H5V7zm10-2h2V3h-2v2zm0 12h2v-2h-2v2z"/></svg>
     </div>
     <div flow="right" tooltip="点击翻页" :switch="readSetting['点击翻页']" @click="readSetting['点击翻页']=!readSetting['点击翻页']">
@@ -41,9 +41,9 @@
     </div>
 
     <div index="end">
-      <a v-if="prevChapter" :href="prevChapter">上一话</a>
+      <a title="上一话" v-if="prevChapter" :href="prevChapter">上一话</a>
       <a title="退出" href="javascript:;" @click="exitComicRead(true)">End</a>
-      <a v-if="nextChapter" :href="nextChapter">下一话</a>
+      <a title="下一话" v-if="nextChapter" :href="nextChapter">下一话</a>
     </div>
 
     <div id="magnifier" v-show="magnifier">
