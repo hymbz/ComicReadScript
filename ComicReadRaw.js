@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     1.3
+// @version     1.4
 // @author      hymbz
 // @description 阅读和设置
 // @require     https://cdn.jsdelivr.net/npm/vue
@@ -100,7 +100,7 @@ let comicReadWindow = new Vue({
               if (tempImgInfo[0].class === 'fill')
                 tempImgInfo = [];
               else
-                this.ComicImgInfo.push([tempImgInfo.shift()]);
+                this.ComicImgInfo.push([new fillPage(tempImgInfo[0].src), tempImgInfo.shift()]);
             }
             if (!this.fillInfluence.hasOwnProperty(i))
               this.fillInfluence[i] = false;
@@ -244,13 +244,14 @@ comicReadWindow.load = function (Info) {
   Object.assign(this, Info);
   comicReadWindow.fillInfluence[-1] = Info.readSetting['页面填充'];
 
+  if (!document.getElementById('comicRead')) {
+    GM_addStyle(`@@ComicRead.css@@`);
+    appendDom(document.getElementsByTagName('body')[0], `@@ComicRead.html@@`);
+    comicReadWindow.$mount('#comicRead');
+  }
+
   // 关闭记录滚动历史
   history.scrollRestoration = 'manual';
-
-  GM_addStyle(`@@ComicRead.css@@`);
-  appendDom(document.getElementsByTagName('body')[0], `@@ComicRead.html@@`);
-  comicReadWindow.$mount('#comicRead');
-
   window.onresize = comicReadWindow.updatedData;
   document.onkeyup = function (e) {
     if ([32, 37, 40].includes(e.keyCode))

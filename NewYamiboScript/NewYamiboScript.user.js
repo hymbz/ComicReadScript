@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      New Yamibo Script
-// @version     1.3
+// @version     1.31
 // @author      hymbz
 // @description 百合会新站脚本——双页阅读
 // @namespace   NewYamiboScript
@@ -15,6 +15,7 @@
 // @grant       GM_getResourceURL
 // @grant       GM_registerMenuCommand
 // @run-at      document-end
+// @connect     *
 // @require     https://cdn.jsdelivr.net/npm/vue
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js
@@ -54,7 +55,7 @@ ScriptMenu.load({
 });
 
 // 判断当前页是漫画内容
-if (document.URL.includes('view-chapter')) {
+if (document.URL.includes('view-chapter') && ScriptMenu.UserSetting['漫画阅读'].Enable) {
   let imgList = [];
   const id = RegExp('(?<=id=)\\d+').exec(document.URL)[0] - 0;
   const nowIndex = document.querySelector('ul.pagination > li:last-of-type > input').value - 0;
@@ -89,7 +90,7 @@ if (document.URL.includes('view-chapter')) {
                       return temp.firstChild;
                     }),
                     'readSetting': ScriptMenu.UserSetting['漫画阅读'],
-                    'EndExit': () => scrollTo(0, getTop(document.getElementById('new-comment-form')[0])),
+                    'EndExit': () => scrollTo(0, getTop(document.getElementById('w1'))),
                     'comicName': `${document.querySelector('ul.breadcrumb > li:nth-child(4) > a').innerHTML} ${document.getElementsByTagName('h3')[0].innerHTML}`,
                     'nextChapter': document.getElementById('btnNext') ? document.getElementById('btnNext').href : null,
                     'prevChapter': document.getElementById('btnPrev') ? document.getElementById('btnPrev').href : null

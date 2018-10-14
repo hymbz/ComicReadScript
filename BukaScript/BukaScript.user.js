@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Buka Script
-// @version     1.3
+// @version     1.31
 // @author      hymbz
 // @description 布卡脚本——双页阅读
 // @namespace   BukaScript
@@ -15,6 +15,7 @@
 // @grant       GM_getResourceURL
 // @grant       GM_registerMenuCommand
 // @run-at      document-end
+// @connect     *
 // @require     https://cdn.jsdelivr.net/npm/vue
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js
@@ -38,7 +39,7 @@ ScriptMenu.load({
   },
   'Version': GM_info.script.version
 });
-if (document.URL.split('/')[3] === 'view') {
+if (document.URL.split('/')[3] === 'view' && ScriptMenu.UserSetting['漫画阅读'].Enable) {
   let List = document.querySelectorAll('img[data-original]');
   let i = List.length;
   while (i--) {

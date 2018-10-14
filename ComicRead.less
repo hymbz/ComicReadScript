@@ -12,9 +12,15 @@
 
   padding-top: 1rem;
 
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+
   background-color: white;
   [index]{
     display: flex;
+    align-items: center;
     justify-content: center;
 
     width: 100vw;
@@ -32,6 +38,8 @@
       image-rendering: -webkit-optimize-contrast;
     }
     img.long{
+      position: absolute;
+
       width: 100%;
       height: auto;
     }
@@ -133,6 +141,7 @@
 
   transform: translate(-50%, -50%);
   div{
+    box-sizing: content-box;
     width: 12px;
     height: 12px;
     margin: 5px;

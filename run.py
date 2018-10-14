@@ -1,4 +1,7 @@
 #  -*- coding: utf-8 -*-
+
+"""用来把 css、html 文件压缩成一行后放进脚本里，并把处理后的脚本放进剪贴板"""
+
 import pyperclip
 import winsound
 import sys

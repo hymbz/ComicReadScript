@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Yamibo Script
-// @version     2.2
+// @version     2.3
 // @author      hymbz
 // @description 百合会脚本——双页阅读漫画、记录阅读历史、体验优化
 // @namespace   YamiboScript
@@ -15,6 +15,7 @@
 // @grant       GM_getResourceURL
 // @grant       GM_registerMenuCommand
 // @run-at      document-end
+// @connect     *
 // @require     https://cdn.jsdelivr.net/npm/vue
 // @require     https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // @require     https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js
@@ -60,6 +61,32 @@ if (ScriptMenu.UserSetting['体验优化']['固定导航条'])
 if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
   // 启用漫画阅读模式
   if (fid === 30 && ScriptMenu.UserSetting['漫画阅读'].Enable) {
+    // 通过标签确定上/下一话
+    if (document.querySelector('.ptg.mbm.mtn>a')) {
+      let findNext = function (pageNum) {
+        GM_xmlhttpRequest({
+          method: 'GET',
+          url: `https://bbs.yamibo.com/misc.php?mod=tag&id=${document.querySelector('.ptg.mbm.mtn>a').href.split('id=')[1]}&type=thread&page=${pageNum}`,
+          onload: function (data) {
+            let reg = /(?<=<th>\s<a href="thread-)\d+(?=-)/g;
+            let nowTid;
+            let lastTid;
+            while ((nowTid = reg.exec(data.responseText)) !== null) {
+              if (+nowTid[0] === tid) {
+                comicReadWindow.prevChapter = `thread-${lastTid}-1-1.html`;
+                comicReadWindow.nextChapter = (nowTid = reg.exec(data.responseText)) !== null ? `${window.location.origin}/${nowTid[0]}` : null;
+                break;
+              } else
+                lastTid = nowTid[0];
+            }
+            if (!comicReadWindow.prevChapter)
+              findNext(pageNum + 1);
+          }
+        });
+      };
+      findNext(1);
+    }
+
     let List = [...document.querySelectorAll('.t_fsz img')];
     let i = List.length;
     while (i--) {
