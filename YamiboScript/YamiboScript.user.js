@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Yamibo Script
-// @version     2.3
+// @version     2.4
 // @author      hymbz
 // @description 百合会脚本——双页阅读漫画、记录阅读历史、体验优化
 // @namespace   YamiboScript
@@ -68,16 +68,16 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
           method: 'GET',
           url: `https://bbs.yamibo.com/misc.php?mod=tag&id=${document.querySelector('.ptg.mbm.mtn>a').href.split('id=')[1]}&type=thread&page=${pageNum}`,
           onload: function (data) {
-            let reg = /(?<=<th>\s<a href="thread-)\d+(?=-)/g;
+            let reg = /<th>\s<a href="thread-(\d+)(?=-)/g;
             let nowTid;
             let lastTid;
             while ((nowTid = reg.exec(data.responseText)) !== null) {
-              if (+nowTid[0] === tid) {
+              if (+nowTid[1] === tid) {
                 comicReadWindow.prevChapter = `thread-${lastTid}-1-1.html`;
-                comicReadWindow.nextChapter = (nowTid = reg.exec(data.responseText)) !== null ? `${window.location.origin}/${nowTid[0]}` : null;
+                comicReadWindow.nextChapter = (nowTid = reg.exec(data.responseText)) !== null ? `${window.location.origin}/${nowTid[1]}` : null;
                 break;
               } else
-                lastTid = nowTid[0];
+                lastTid = nowTid[1];
             }
             if (!comicReadWindow.prevChapter)
               findNext(pageNum + 1);

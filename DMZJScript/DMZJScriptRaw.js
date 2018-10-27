@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      DMZJ Script
-// @version     1.5
+// @version     1.6
 // @author      hymbz
 // @description 动漫之家脚本——双页阅读、可看被封漫画、解除吐槽字数限制
 // @namespace   DMZJScript
@@ -47,7 +47,7 @@ ScriptMenu.load({
   'Version': GM_info.script.version
 });
 
-const type = /(?<=\/\/).+?\./.exec(document.URL)[0];
+const type = /\/\/(.+?\.)/.exec(document.URL)[1];
 if (type === 'manhua.') {
   if (document.title === '页面找不到') {
     let urlInfo = document.URL.split('/');
@@ -56,13 +56,11 @@ if (type === 'manhua.') {
       url: `https://manhua.dmzj.com/${urlInfo[3]}`,
       onload: function (xhr) {
         if (xhr.status === 200) {
-          self.location.href = `https://m.dmzj.com/view/${RegExp('(?<=g_current_id = ")\\d+').exec(xhr.responseText)[0]}/${urlInfo[4].split('.')[0]}.html`;
+          self.location.href = `https://m.dmzj.com/view/${RegExp('g_current_id = "(\\d+)').exec(xhr.responseText)[1]}/${urlInfo[4].split('.')[0]}.html`;
         }
       }
     });
   } else {
-    $(document).unbind();
-
     // 判断当前页是漫画页
     if (typeof g_chapter_name !== 'undefined') {
       if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
@@ -144,10 +142,8 @@ if (type === 'manhua.') {
               }
             }
           });
-        } else {
-          if (ScriptMenu.UserSetting['体验优化']['在新页面中打开链接'])
-            [...document.getElementsByTagName('a')].forEach(e => e.setAttribute('target', '_blank'));
-        }
+        } else if (ScriptMenu.UserSetting['体验优化']['在新页面中打开链接'])
+          [...document.querySelectorAll('a:not([href^="javascript:"])')].forEach(e => e.setAttribute('target', '_blank'));
       }
     }
   }

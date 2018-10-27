@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      New Yamibo Script
-// @version     1.31
+// @version     1.4
 // @author      hymbz
 // @description 百合会新站脚本——双页阅读
 // @namespace   NewYamiboScript
@@ -57,7 +57,7 @@ ScriptMenu.load({
 // 判断当前页是漫画内容
 if (document.URL.includes('view-chapter') && ScriptMenu.UserSetting['漫画阅读'].Enable) {
   let imgList = [];
-  const id = RegExp('(?<=id=)\\d+').exec(document.URL)[0] - 0;
+  const id = RegExp('id=(\\d+)').exec(document.URL)[1] - 0;
   const nowIndex = document.querySelector('ul.pagination > li:last-of-type > input').value - 0;
   const finalIndex = document.querySelector('section div:first-of-type div:last-of-type').innerHTML.trim().split('：')[1] - 0;
 
@@ -80,7 +80,7 @@ if (document.URL.includes('view-chapter') && ScriptMenu.UserSetting['漫画阅�
               if (xhr.status === 200) {
                 imgList.push({
                   'i': index,
-                  'src': RegExp('(?<=img-responsive.+=).+?"').exec(xhr.responseText)[0].slice(1, -1)
+                  'src': RegExp('img-responsive.+=(.+?")').exec(xhr.responseText)[1].slice(1, -1)
                 });
                 if (imgList.length === finalIndex) {
                   comicReadWindow.load({

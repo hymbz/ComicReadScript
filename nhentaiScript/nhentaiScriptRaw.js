@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      nhentai Script
-// @version     0.1
+// @version     0.2
 // @author      hymbz
 // @description nhentai脚本——双页阅读、彻底屏蔽漫画、自动翻页
 // @namespace   nhentaiScript
@@ -110,11 +110,12 @@ else if (document.getElementsByClassName('index-container').length) {
           url: `${apiUrl}page=${++pageNum}${window.location.pathname.includes('popular') ? '&sort=popular ' : ''}`,
           onload: function (xhr) {
             if (xhr.status === 200) {
-              let Info = JSON.parse(xhr.responseText);
+              const Info = JSON.parse(xhr.responseText);
               let comicDomHtml = '';
               for (let i = 0; i < Info.result.length; i++) {
                 const tempComicInfo = Info.result[i];
-                if (!ScriptMenu.UserSetting['体验优化']['彻底屏蔽漫画'] || (blacklist && blacklist.length && tempComicInfo.tags.every(e => !blacklist.includes(e.id))))
+                // 在 用户未登录 或 黑名单为空 或 未开启屏蔽 或 漫画标签都不在黑名单中 时添加
+                if (!(blacklist && blacklist.length && ScriptMenu.UserSetting['体验优化']['彻底屏蔽漫画'] && tempComicInfo.tags.every(e => blacklist.includes(e.id))))
                   comicDomHtml += `<div class="gallery" data-tags="${tempComicInfo.tags.map(e => e.id).join(' ')}"><a ${ScriptMenu.UserSetting['体验优化']['在新页面中打开链接'] ? 'target="_blank"' : ''} href="/g/${tempComicInfo.id}/" class="cover" style="padding:0 0 142.79999999999998% 0"><img is="lazyload-image" class="" width="${tempComicInfo.images.thumbnail.w}" height="${tempComicInfo.images.thumbnail.h}" src="https://t.nhentai.net/galleries/${tempComicInfo.media_id}/thumb.${fileType[tempComicInfo.images.thumbnail.t]}"><div class="caption">${tempComicInfo.title.english}</div></a></div>`;
               }
 
@@ -164,7 +165,7 @@ else if (document.getElementsByClassName('index-container').length) {
         url: document.querySelector('.index-container > div > a').href,
         onload: function (xhr) {
           if (xhr.status === 200) {
-            apiUrl = `https://nhentai.net/api/galleries/tagged?tag_id=${new RegExp(`(?<=tag-)\\d+?(?= ">${document.querySelector('#content span:nth-child(2)').innerHTML})`).exec(xhr.responseText)[0]}&`;
+            apiUrl = `https://nhentai.net/api/galleries/tagged?tag_id=${new RegExp(`tag-(\\d+?(?= ">${document.querySelector('#content span:nth-child(2)').innerHTML}))`).exec(xhr.responseText)[1]}&`;
             unsafeWindow.onscroll = load;
             appendDom(contentDom, '<hr>');
             load();
@@ -176,4 +177,4 @@ else if (document.getElementsByClassName('index-container').length) {
 }
 
 if (ScriptMenu.UserSetting['体验优化']['在新页面中打开链接'])
-  [...document.getElementsByTagName('a')].forEach(e => e.setAttribute('target', '_blank'));
+  [...document.querySelectorAll('a:not([href^="javascript:"])')].forEach(e => e.setAttribute('target', '_blank'));

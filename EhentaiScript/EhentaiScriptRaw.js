@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Ehentai Script
-// @version     0.1
+// @version     0.2
 // @author      hymbz
 // @description Ehentai脚本——双页阅读、nhentai 搜索
 // @namespace   EhentaiScript
@@ -54,7 +54,7 @@ if (typeof gid !== 'undefined') {
       let comicReadModeDom = document.getElementById('comicReadMode');
       if (!comicReadModeDom.innerHTML.includes('loading')) {
         let getImgUrl = html => html.split('id="img" src="')[1].split('"')[0];
-        let nextRe = new RegExp('(?<=id="next" .* href=").+?(?=")');
+        let nextRe = /id="next" .*? href="(.+?)(?=")/;
         const imgTotalNum = parseInt(document.querySelectorAll('#gdd tbody tr td.gdt2')[5].innerHTML);
         const comicName = document.getElementById('gj').innerHTML ? document.getElementById('gj').innerHTML : document.getElementById('gn').innerHTML;
 
@@ -86,7 +86,7 @@ if (typeof gid !== 'undefined') {
                     }
                   }
                 });
-                const nextUrl = nextRe.exec(xhr.responseText)[0];
+                const nextUrl = nextRe.exec(xhr.responseText)[1];
                 if (nextUrl !== xhr.finalUrl)
                   Loop(nextUrl, i + 1);
               } else

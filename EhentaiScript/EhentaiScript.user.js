@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      Ehentai Script
-// @version     0.1
+// @version     0.2
 // @author      hymbz
 // @description Ehentai脚本——双页阅读、nhentai 搜索
 // @namespace   EhentaiScript
@@ -22,6 +22,8 @@
 // @require     https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js
 // @require     https://greasyfork.org/scripts/371295-comicread/code/ComicRead.js
 // @supportURL  https://github.com/hymbz/ComicReadScript/issues
+// @updateURL   https://github.com/hymbz/ComicReadScript/raw/master/EhentaiScript/EhentaiScript.user.js
+// @downloadURL https://github.com/hymbz/ComicReadScript/raw/master/EhentaiScript/EhentaiScript.user.js
 // ==/UserScript==
 /* global unsafeWindow, GM_addStyle, GM_info, GM_xmlhttpRequest, appendDom, getTop, comicReadWindow, ScriptMenu, gid, selected_link, selected_tag */
 
@@ -52,7 +54,7 @@ if (typeof gid !== 'undefined') {
       let comicReadModeDom = document.getElementById('comicReadMode');
       if (!comicReadModeDom.innerHTML.includes('loading')) {
         let getImgUrl = html => html.split('id="img" src="')[1].split('"')[0];
-        let nextRe = new RegExp('(?<=id="next" .* href=").+?(?=")');
+        let nextRe = /id="next" .*? href="(.+?)(?=")/;
         const imgTotalNum = parseInt(document.querySelectorAll('#gdd tbody tr td.gdt2')[5].innerHTML);
         const comicName = document.getElementById('gj').innerHTML ? document.getElementById('gj').innerHTML : document.getElementById('gn').innerHTML;
 
@@ -84,7 +86,7 @@ if (typeof gid !== 'undefined') {
                     }
                   }
                 });
-                const nextUrl = nextRe.exec(xhr.responseText)[0];
+                const nextUrl = nextRe.exec(xhr.responseText)[1];
                 if (nextUrl !== xhr.finalUrl)
                   Loop(nextUrl, i + 1);
               } else
