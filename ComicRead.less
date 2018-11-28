@@ -47,7 +47,7 @@
       visibility: hidden;
     }
   }
-  [index='end']{
+  [index="end"]{
     font-weight: bold;
     line-height: 60px;
 
@@ -62,13 +62,13 @@
 
       color: var(--color1);
     }
-    a[title='退出']{
+    a[title="退出"]{
       font-size: 40px;
     }
-    a[title='上一话']{
+    a[title="上一话"]{
       left: 40vw;
     }
-    a[title='下一话']{
+    a[title="下一话"]{
       right: 40vw;
     }
   }
@@ -114,7 +114,7 @@
       fill: #171717;
     }
 
-    &[switch='true']{
+    &[switch="true"]{
       background-color: #171717;
       svg{
         fill: white;
@@ -209,7 +209,7 @@
         fill: white;
       }
 
-      &[switch='true']{
+      &[switch="true"]{
         background-color: white;
         svg{
           fill: #171717;
@@ -228,11 +228,11 @@
     box-shadow: 0 1em 2em -.5em rgba(255, 255, 255, .35);
   }
 
-  [tooltip][flow^='left']:hover::before{
+  [tooltip][flow^="left"]:hover::before{
     border-left-color: #CCC;
   }
 
-  [tooltip][flow^='right']:hover::before{
+  [tooltip][flow^="right"]:hover::before{
     border-right-color: #CCC;
   }
 }
@@ -263,7 +263,7 @@
 [tooltip]:hover::before{
   z-index: 1001; /* absurdity 1 */
 
-  content: '';
+  content: "";
 
   border: 5px solid transparent; /* opinion 4 */
 }
@@ -295,14 +295,14 @@
   box-shadow: 0 1em 2em -.5em rgba(0, 0, 0, .35);
 }
 
-/* don't show empty tooltips */
-[tooltip='']:hover::before,
-[tooltip='']:hover::after{
+/* don"t show empty tooltips */
+[tooltip=""]:hover::before,
+[tooltip=""]:hover::after{
   display: none !important;
 }
 
 /* FLOW: LEFT */
-[tooltip][flow^='left']:hover::before{
+[tooltip][flow^="left"]:hover::before{
   top: 50%;
   left: calc(~"0em - 5px");
 
@@ -311,7 +311,7 @@
   border-right-width: 0;
   border-left-color: #333;
 }
-[tooltip][flow^='left']:hover::after{
+[tooltip][flow^="left"]:hover::after{
   top: 50%;
   right: calc(~"100% + 5px");
 
@@ -319,7 +319,7 @@
 }
 
 /* FLOW: RIGHT */
-[tooltip][flow^='right']:hover::before{
+[tooltip][flow^="right"]:hover::before{
   top: 50%;
   right: calc(~"0em - 5px");
 
@@ -328,7 +328,7 @@
   border-right-color: #333;
   border-left-width: 0;
 }
-[tooltip][flow^='right']:hover::after{
+[tooltip][flow^="right"]:hover::after{
   top: 50%;
   left: calc(~"100% + 5px");
 

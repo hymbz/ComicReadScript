@@ -1,6 +1,6 @@
 #  -*- coding: utf-8 -*-
 
-"""用来把 css、html 文件压缩成一行后放进脚本里，并把处理后的脚本放进剪贴板"""
+"""简易的模板，把 RAW 结尾的文件中的用 @@ 包围起来的模板字符串转为对应内容"""
 
 import pyperclip
 import winsound
@@ -8,23 +8,36 @@ import sys
 import re
 import os
 
-for root, dirs, files in os.walk(sys.argv[1]):
+siteScript = {}
+
+for root, dirs, files in os.walk(sys.argv[1], topdown=False):
   for file in files:
-    if('Raw.js' in file):
-      print(os.path.join(root,file))
-      with open(os.path.join(root,file), 'r', encoding="utf-8") as f:
-        mainStr = f.read()
+    # 只遍历子目录和非 . 开头的文件夹
+    if(r'\.' not in root):
+      if('Raw.js' in file):
+        with open(os.path.join(root, file), 'r', encoding="utf-8") as f:
+          mainStr = f.read()
 
-      for fileName in re.findall(r"(?<=@@).+?(?=@@)", mainStr):
-        if fileName.split('.')[1] == "css":
-          with open(os.path.join(root,fileName), 'r', encoding="utf-8") as f:
-            mainStr = mainStr.replace(f"@@{fileName}@@",f.read())
-        elif fileName.split('.')[1] == "html":
-          with open(os.path.join(root,fileName), 'r', encoding="utf-8") as f:
-            mainStr = mainStr.replace(f"@@{fileName}@@",f.read().replace("  ","").replace("\n",""))
+        for fileName in re.findall(r"@@(.+?)@@", mainStr):
+          # css 直接替换
+          if fileName.split('.')[1] == "css":
+            with open(os.path.join(root, fileName), 'r', encoding="utf-8") as f:
+              mainStr = mainStr.replace(f"@@{fileName}@@", f.read())
+          # html 会将 ' 换成 ` ，以防止引号问题
+          elif fileName.split('.')[1] == "html":
+            with open(os.path.join(root, fileName), 'r', encoding="utf-8") as f:
+              mainStr = mainStr.replace(f"'@@{fileName}@@'", '`' + re.sub(r'  |\n','',f.read()) + '`')
+          # 引用外部脚本
+          elif fileName.split('.')[1] == "js":
+            with open(os.path.join(sys.argv[1], 'externalScripts', fileName), 'r', encoding="utf-8") as f:
+              mainStr = mainStr.replace(f"'@@{fileName}@@';", f.read())
+          # 模块格式为 '@@{fileName}@@';
+          else:
+            mainStr = mainStr.replace(f"'@@{fileName}@@';", f'\n\n\n{siteScript[fileName[:-1]]}\n\n')
 
-      with open(os.path.join(root,f'{file.split("Raw.js")[0]}.user.js'), 'w', encoding="utf-8") as f:
-        f.write(mainStr)
+        siteScript[file[:-6]] = mainStr
 
+with open('ComicRead.user.js', 'w', encoding="utf-8") as f:
+  f.write(mainStr)
 pyperclip.copy(mainStr)
 winsound.Beep(600, 600)

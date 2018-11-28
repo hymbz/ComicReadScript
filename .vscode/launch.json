@@ -14,7 +14,7 @@
             "cwd": "${workspaceFolder}",
             "env": {},
             "args":[
-                "${fileDirname}"
+                "${workspaceFolder}"
             ],
             "envFile": "${workspaceFolder}/.env",
             "debugOptions": [
