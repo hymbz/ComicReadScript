@@ -4,6 +4,7 @@
 
 # 目录
 
+- [安装](#安装)
 - [漫画阅读模式](#漫画阅读模式)
 - [脚本设置](#脚本设置)
 - [百合会](#百合会)
@@ -184,7 +185,7 @@ PC上，将鼠标移动至左侧边缘显示。
 
 ### 入口
 
-![](https://ws2.sinaimg.cn/large/6d4090c8gy1fxnx3fo7w6j20kw09cgmd.jpg)
+![](https://greasyfork.org/system/screenshots/screenshots/000/013/160/original/Snipaste_2018-11-28_17-12-03.png)
 
 在漫画详情页右侧边栏。开启功能后会多出一个「Load comic」按钮，点击后开始加载漫画，加载完毕后按钮变为「Read」，点击开始阅读。
 
@@ -192,13 +193,13 @@ PC上，将鼠标移动至左侧边缘显示。
 
 #### 漫画
 
-![](http://ws1.sinaimg.cn/large/6d4090c8gy1fxo7wwfq80j20kz09cjs5.jpg)
+![](https://greasyfork.org/system/screenshots/screenshots/000/013/161/original/Snipaste_2018-11-28_17-15-42.png)
 
 根据漫画标题匹配 nhentai 的本子，结果会以标签的形式显示在标签栏中，标签内容为 nhentai 上的漫画 ID ，鼠标悬停在标签上可以看到漫画标题。点击标签后，标签菜单有两个选项：「Jump to nhentai」—— 跳转至对应的 nhentai 网页、「Load comic」—— 直接在当前页加载 nhentai 的资源，加载完后可以直接用阅读模式阅读。相比 ehentai，nhentai 的资源加载更快，而且不会消耗配额。
 
 #### Tag
 
-![](http://wx1.sinaimg.cn/large/6d4090c8gy1fxo7xr20wuj20ku09c752.jpg)
+![](https://greasyfork.org/system/screenshots/screenshots/000/013/162/original/Snipaste_2018-11-28_17-17-16.png)
 
 将点击标签后显示的标签菜单里「Add New Tag」的按钮改为「Search nhentai」，点击跳转至 nhentai 相同标签的结果页。方便搜索那些在 ehentai 上被删的资源。
 
