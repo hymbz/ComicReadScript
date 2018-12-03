@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     1.1
+// @version     1.2
 // @author      hymbz
-// @description 为漫画站增加双页阅读模式及优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，解除吐槽的字数限制」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
+// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，解除吐槽的字数限制」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
 // @include     *
 // @connect     *
@@ -330,7 +330,7 @@ let loadScriptMenu = function (defaultUserSetting) {
     loadExternalScripts['Vue']();
 
   GM_addStyle('#ScriptMenu{position:fixed;z-index:9999999;top:10vh;left:30vw;flex-wrap:wrap;width:40vw;height:45vh;color:black;border-radius:10px;background-color:var(--color1)}#ScriptMenu .SMtitle{flex-basis:100%;height:3em;cursor:move;color:#FFF}#ScriptMenu .SMtitle p{font-size:1.2em;font-weight:bold;padding:.75em 1em}#ScriptMenu .SMtitle svg{position:absolute;top:12px;right:2%;width:18px;height:17px;cursor:pointer;border-radius:4px;background-color:darkgray;fill:white}#ScriptMenu .SMtitle svg:hover{background-color:#20BBE4}#ScriptMenu .SMtab{float:left;width:15%;min-width:80px;height:95%;margin:0;padding:1em 0;text-align:right;border:1px var(--color1);border-bottom-style:solid;border-left-style:solid;background-color:var(--color2)}#ScriptMenu .SMtab ul{margin:0;padding:0}#ScriptMenu .SMtab ul li{line-height:33px;margin:0 10px;list-style:none;cursor:pointer;border-bottom:1px solid var(--color4)}#ScriptMenu .SMtab ul li.a{margin:-1px 0 0;padding:0 10px 0 9px;border-top:1px solid var(--color4);border-bottom-style:solid;background:var(--color3)}#ScriptMenu .SMtab ul li:first-of-type{border-top:1px solid var(--color4)}#ScriptMenu .SMtab a{line-height:35px;cursor:pointer}#ScriptMenu .SMconifg{line-height:1.6em;overflow:auto;height:95%;padding:2em 1.5em 0;text-align:left;border:1px var(--color1);border-right-style:solid;border-bottom-style:solid;background-color:var(--color3)}#ScriptMenu .SMconifg button{cursor:pointer;vertical-align:middle;color:#FFF !important;border:none;border-radius:5px;background-color:var(--color1);background-image:none}#ScriptMenu .SMconifg>div{margin-bottom:2em;padding:13px;border:1px solid}#ScriptMenu .SMconifg>div p:first-child{width:max-content;margin-top:-23px;padding:0 4px;cursor:default;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;background-color:var(--color3);-webkit-touch-callout:none;-khtml-user-select:none}#ScriptMenu .SMconifg>div>div{display:inline-block;margin-right:2em}#ScriptMenu .SMconifg>div>div input{margin:.5em 0}#ScriptMenu .SMconifg>div.disabled{border-color:darkgray}#ScriptMenu .SMconifg>div.disabled p{color:darkgray}');
-  appendDom(document.getElementsByTagName('body')[0], `<div id="ScriptMenu" :style="{top:top+'px',left:left+'px'}" v-if="show"><div class="SMtitle" draggable="true" @touchstart="dragMoveStart" @touchmove="dragMove" @dragstart="dragMoveStart" @drag="dragMove"><p>脚本设置</p><svg title="关闭" @click="saveUserSetting" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div><div class="SMtab"><ul><li @click="showWindow = '功能设置'" :class="{a: showWindow == '功能设置'}">功能设置</li><li @click="showWindow = '其他'" :class="{a: showWindow == '其他'}">其他</li><li @click="showWindow = '关于'" :class="{a: showWindow == '关于'}">关于</li></ul></div><div class="SMconifg"><template v-if="showWindow == '功能设置'"><div v-for="(value, key) in UserSetting" v-if="key != 'Version'" :class="{disabled: !value.Enable}"><p @click="UserSetting[key].Enable = !UserSetting[key].Enable;">[[value.Enable?key:key+"(禁用)"]]</p><div v-for="(v, k) in value" v-if="value.Enable && k!=='Enable'"><template v-if="typeof v == 'boolean'"><input class="pc" type="checkbox" v-model="UserSetting[key][k]" checked="">[[k]]</template><template v-else>[[k]]：<input class="px" type="text" v-model.trim.lazy="UserSetting[key][k]"></template></div></div></template><template v-else-if="showWindow == '其他'"><button @click="ResetUserSetting"><strong>恢复默认设置</strong></button></template><template v-else-if="showWindow == '关于'"><p><strong>当前版本号：[[UserSetting.Version]]</strong><br><br><strong>Github地址——<a href="https://github.com/hymbz/YamiboScript" target="_blank">https://github.com/hymbz/YamiboScript</a></strong><br><strong>Greasy Fork地址——<a href="https://greasyfork.org/zh-CN/scripts?set=324713" target="_blank">https://greasyfork.org/zh-CN/scripts?set=324713</a></strong></strong></p></template></div></div>`);
+  appendDom(document.getElementsByTagName('body')[0], `<div id="ScriptMenu" :style="{top:top+'px',left:left+'px'}" v-if="show"><div class="SMtitle" draggable="true" @touchstart="dragMoveStart" @touchmove="dragMove" @dragstart="dragMoveStart" @drag="dragMove"><p>脚本设置</p><svg title="关闭" @click="saveUserSetting" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div><div class="SMtab"><ul><li @click="showWindow = '功能设置'" :class="{a: showWindow == '功能设置'}">功能设置</li><li @click="showWindow = '其他'" :class="{a: showWindow == '其他'}">其他</li><li @click="showWindow = '关于'" :class="{a: showWindow == '关于'}">关于</li></ul></div><div class="SMconifg"><template v-if="showWindow == '功能设置'"><div v-for="(value, key) in UserSetting" v-if="key != 'Version'" :class="{disabled: !value.Enable}"><p @click="UserSetting[key].Enable = !UserSetting[key].Enable;">[[value.Enable?key:key+"(禁用)"]]</p><div v-for="(v, k) in value" v-if="value.Enable && k!=='Enable'"><template v-if="typeof v == 'boolean'"><input class="pc" type="checkbox" v-model="UserSetting[key][k]" checked="">[[k]]</template><template v-else>[[k]]：<input class="px" type="text" v-model.trim.lazy="UserSetting[key][k]"></template></div></div></template><template v-else-if="showWindow == '其他'"><button @click="ResetUserSetting"><strong>恢复默认设置</strong></button></template><template v-else-if="showWindow == '关于'"><p><strong>当前版本号：[[UserSetting.Version]]</strong><br><br><strong>Github地址——<a href="https://github.com/hymbz/ComicReadScript" target="_blank">https://github.com/hymbz/ComicReadScript</a></strong><br><strong>Greasy Fork地址——<a href="https://greasyfork.org/zh-CN/scripts/374903-comicread" target="_blank">https://greasyfork.org/zh-CN/scripts/374903-comicread</a></strong></strong></p></template></div></div>`);
   ScriptMenu = new Vue({
     el: '#ScriptMenu',
     delimiters: ['[[', ']]'],
@@ -686,6 +686,7 @@ if (document.URL.includes('view-chapter') && ScriptMenu.UserSetting['漫画阅�
 
     break;
   }
+  case 'm.dmzj.com':
   case 'manhua.dmzj.com': {
     
 
@@ -712,8 +713,8 @@ loadScriptMenu({
   'Version': GM_info.script.version
 });
 
-switch (/\/\/(.+?\.)/.exec(document.URL)[1]) {
-  case 'manhua.': {
+switch (window.location.hostname) {
+  case 'manhua.dmzj.com': {
     if (document.title === '页面找不到') {
       let urlInfo = document.URL.split('/');
       GM_xmlhttpRequest({
@@ -802,7 +803,7 @@ switch (/\/\/(.+?\.)/.exec(document.URL)[1]) {
     }
     break;
   }
-  case 'm.': {
+  case 'm.dmzj.com': {
     if (ScriptMenu.UserSetting['体验优化']['阅读被封漫画'] && document.getElementsByTagName('body')[0].innerText === '漫画内容不存在') {
       GM_addStyle('img {display:none;}#comicRead{left: 0;position: absolute !important;}#comicRead img{visibility: visible;}');
       document.getElementsByTagName('body')[0].innerText = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';

@@ -20,8 +20,8 @@ loadScriptMenu({
   'Version': GM_info.script.version
 });
 
-switch (/\/\/(.+?\.)/.exec(document.URL)[1]) {
-  case 'manhua.': {
+switch (window.location.hostname) {
+  case 'manhua.dmzj.com': {
     if (document.title === '页面找不到') {
       let urlInfo = document.URL.split('/');
       GM_xmlhttpRequest({
@@ -110,7 +110,7 @@ switch (/\/\/(.+?\.)/.exec(document.URL)[1]) {
     }
     break;
   }
-  case 'm.': {
+  case 'm.dmzj.com': {
     if (ScriptMenu.UserSetting['体验优化']['阅读被封漫画'] && document.getElementsByTagName('body')[0].innerText === '漫画内容不存在') {
       GM_addStyle('img {display:none;}#comicRead{left: 0;position: absolute !important;}#comicRead img{visibility: visible;}');
       document.getElementsByTagName('body')[0].innerText = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
