@@ -29,37 +29,43 @@ const fileType = {
 if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Enable) {
   appendDom(document.getElementById('download').parentNode, '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Load comic</a>');
   let comicReadModeDom = document.getElementById('comicReadMode');
-  document.getElementById('comicReadMode').addEventListener('click', function () {
-    if (ComicReadWindow !== undefined)
-      ComicReadWindow.start();
-    else {
-      const imgTotalNum = gallery.num_pages;
-      let loadImgNum = 0,
-          imgList = [];
-      comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— 0/${imgTotalNum}`;
-      for (let i = 0; i < imgTotalNum; i++) {
-        GM_xmlhttpRequest({
-          method: 'GET',
-          url: `https://i.nhentai.net/galleries/${gallery.media_id}/${i + 1}.${fileType[gallery.images.pages[i].t]}`,
-          responseType: 'blob',
-          onload: function (xhr) {
-            if (xhr.status === 200) {
-              imgList[i] = document.createElement('img');
-              imgList[i].src = URL.createObjectURL(xhr.response);
-              if (++loadImgNum !== imgTotalNum)
-                comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— ${loadImgNum}/${imgTotalNum}`;
-              else {
-                loadComicReadWindow({
-                  'comicImgList': imgList,
-                  'readSetting': ScriptMenu.UserSetting['漫画阅读'],
-                  'EndExit': () => scrollTo(0, getTop(document.getElementById('comment-container'))),
-                  'comicName': gallery.title.hasOwnProperty('japanese') ? gallery.title['japanese'] : gallery.title['english']
-                });
-                comicReadModeDom.innerHTML = '<i class="fa fa-book"></i> Read';
+  comicReadModeDom.addEventListener('click', function () {
+    if (!comicReadModeDom.innerHTML.includes('loading')) {
+      if (ComicReadWindow !== undefined)
+        ComicReadWindow.start();
+      else {
+        const imgTotalNum = gallery.num_pages;
+        let loadImgNum = 0,
+            imgList = [],
+            blobList = [];
+        comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— 0/${imgTotalNum}`;
+        for (let i = 0; i < imgTotalNum; i++) {
+          GM_xmlhttpRequest({
+            method: 'GET',
+            url: `https://i.nhentai.net/galleries/${gallery.media_id}/${i + 1}.${fileType[gallery.images.pages[i].t]}`,
+            responseType: 'blob',
+            onload: function (xhr) {
+              if (xhr.status === 200) {
+                blobList[i] = [xhr.response];
+                blobList[i].push(fileType[gallery.images.pages[i].t]);
+                imgList[i] = document.createElement('img');
+                imgList[i].src = URL.createObjectURL(xhr.response);
+                if (++loadImgNum !== imgTotalNum)
+                  comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— ${loadImgNum}/${imgTotalNum}`;
+                else {
+                  loadComicReadWindow({
+                    'comicImgList': imgList,
+                    'readSetting': ScriptMenu.UserSetting['漫画阅读'],
+                    'EndExit': () => scrollTo(0, getTop(document.getElementById('comment-container'))),
+                    'comicName': gallery.title.hasOwnProperty('japanese') ? gallery.title['japanese'] : gallery.title['english'],
+                    'blobList': blobList
+                  });
+                  comicReadModeDom.innerHTML = '<i class="fa fa-book"></i> Read';
+                }
               }
             }
-          }
-        });
+          });
+        }
       }
     }
   });

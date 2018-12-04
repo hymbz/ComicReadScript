@@ -17,8 +17,11 @@ loadScriptMenu({
   'Version': GM_info.script.version
 });
 let imgList = {
-  'ehentai': []
-};
+      'ehentai': []
+    },
+    blobList = {
+      'ehentai': []
+    };
 
 // 判断当前页是否是漫画详情页
 if (typeof gid !== 'undefined') {
@@ -29,7 +32,7 @@ if (typeof gid !== 'undefined') {
       if (!comicReadModeDom.innerHTML.includes('loading')) {
         let getImgUrl = html => html.split('id="img" src="')[1].split('"')[0],
             nextRe = /id="next" .*? href="(.+?)(?=")/,
-            imgListLength = 0;
+            loadImgNum = 0;
         const imgTotalNum = parseInt(document.querySelectorAll('#gdd tbody tr td.gdt2')[5].innerHTML),
             comicName = document.getElementById('gj').innerHTML ? document.getElementById('gj').innerHTML : document.getElementById('gn').innerHTML;
 
@@ -46,16 +49,19 @@ if (typeof gid !== 'undefined') {
                   responseType: 'blob',
                   onload: function (xhr) {
                     if (xhr.status === 200) {
+                      blobList['ehentai'][i] = [xhr.response];
+                      blobList['ehentai'][i].push(xhr.finalUrl.split('.').pop());
                       imgList['ehentai'][i] = document.createElement('img');
                       imgList['ehentai'][i].src = URL.createObjectURL(xhr.response);
-                      if (++imgListLength !== imgTotalNum)
-                        comicReadModeDom.innerHTML = ` loading —— ${imgListLength}/${imgTotalNum}`;
+                      if (++loadImgNum !== imgTotalNum)
+                        comicReadModeDom.innerHTML = ` loading —— ${loadImgNum}/${imgTotalNum}`;
                       else {
                         loadComicReadWindow({
                           'comicImgList': imgList['ehentai'],
                           'readSetting': ScriptMenu.UserSetting['漫画阅读'],
                           'EndExit': () => scrollTo(0, getTop(document.getElementById('cdiv'))),
-                          'comicName': comicName
+                          'comicName': comicName,
+                          'blobList': blobList['ehentai']
                         });
                         comicReadModeDom.innerHTML = ' Read';
                       }
@@ -76,7 +82,8 @@ if (typeof gid !== 'undefined') {
             'comicImgList': imgList['ehentai'],
             'readSetting': ScriptMenu.UserSetting['漫画阅读'],
             'EndExit': () => scrollTo(0, getTop(document.getElementById('cdiv'))),
-            'comicName': comicName
+            'comicName': comicName,
+            'blobList': blobList['ehentai']
           });
           ComicReadWindow.PageNum = 0;
         } else {
@@ -123,7 +130,7 @@ if (typeof gid !== 'undefined') {
     if (a.includes('nhentai:')) {
       tagmenu_act_dom.innerHTML = `<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">"><a href="${b.href}" target="_blank"> Jump to nhentai</a>`;
       if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
-        tagmenu_act_dom.innerHTML += `<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">"><a href="#"> ${imgList[selected_tag]?'Read':'Load comic'}</a>`;
+        tagmenu_act_dom.innerHTML += `<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">"><a href="#"> ${imgList[selected_tag] ? 'Read' : 'Load comic'}</a>`;
         let comicReadModeDom = tagmenu_act_dom.querySelector('a[href="#"]');
 
         // 加载 nhentai 漫画
@@ -139,36 +146,41 @@ if (typeof gid !== 'undefined') {
                 'comicImgList': imgList[selected_tag],
                 'readSetting': ScriptMenu.UserSetting['漫画阅读'],
                 'EndExit': () => scrollTo(0, getTop(document.getElementById('cdiv'))),
-                'comicName': comicName
+                'comicName': comicName,
+                'blobList': blobList[selected_tag]
               });
               ComicReadWindow.PageNum = 0;
             } else {
               comicReadModeDom.innerHTML = ` loading —— 0/${imgTotalNum}`;
               // 用于转换获得图片文件扩展名的 dict
-              const dict = {
+              const fileType = {
                 'j': 'jpg',
                 'p': 'png'
               };
               let loadImgNum = 0;
+              blobList[selected_tag] = [];
               imgList[selected_tag] = [];
 
               for (let i = 0; i < imgTotalNum; i++) {
                 GM_xmlhttpRequest({
                   method: 'GET',
-                  url: `https://i.nhentai.net/galleries/${tempComicInfo.media_id}/${i + 1}.${dict[tempComicInfo.images.pages[i].t]}`,
+                  url: `https://i.nhentai.net/galleries/${tempComicInfo.media_id}/${i + 1}.${fileType[tempComicInfo.images.pages[i].t]}`,
                   responseType: 'blob',
                   onload: function (xhr) {
                     if (xhr.status === 200) {
+                      blobList[selected_tag][i] = [xhr.response];
+                      blobList[selected_tag][i].push(fileType[tempComicInfo.images.pages[i].t]);
                       imgList[selected_tag][i] = document.createElement('img');
                       imgList[selected_tag][i].src = URL.createObjectURL(xhr.response);
                       if (++loadImgNum !== imgTotalNum)
                         comicReadModeDom.innerHTML = ` loading —— ${loadImgNum}/${imgTotalNum}`;
                       else {
                         loadComicReadWindow({
-                          'comicImgList': imgList,
+                          'comicImgList': imgList[selected_tag],
                           'readSetting': ScriptMenu.UserSetting['漫画阅读'],
                           'EndExit': () => scrollTo(0, getTop(document.getElementById('comment-container'))),
-                          'comicName': comicName
+                          'comicName': comicName,
+                          'blobList': blobList[selected_tag]
                         });
                         comicReadModeDom.innerHTML = ' Read';
                       }
@@ -186,9 +198,9 @@ if (typeof gid !== 'undefined') {
     } else {
       let temp = '';
       if (b.className !== 'tup')
-        temp += ' <img src="https://ehgt.org/g/mr.gif" class="mr" alt="&gt;" /> <a href="#" onclick="tag_vote_up(); return false">' + (b.className === '' ? 'Vote Up' : 'Withdraw Vote') + '</a>';
+        temp += ` <img src="https://ehgt.org/g/mr.gif" class="mr" alt="&gt;" /> <a href="#" onclick="tag_vote_up(); return false">${b.className === '' ? 'Vote Up' : 'Withdraw Vote'}</a>`;
       if (b.className !== 'tdn')
-        temp += ' <img src="https://ehgt.org/g/mr.gif" class="mr" alt="&gt;" /> <a href="#" onclick="tag_vote_down(); return false">' + (b.className === '' ? 'Vote Down' : 'Withdraw Vote') + '</a>';
+        temp += ` <img src="https://ehgt.org/g/mr.gif" class="mr" alt="&gt;" /> <a href="#" onclick="tag_vote_down(); return false">${b.className === '' ? 'Vote Down' : 'Withdraw Vote'}</a>`;
       temp += '<img src="https://ehgt.org/g/mr.gif" class="mr" alt="&gt;" /> <a href="#" onclick="tag_show_galleries(); return false">Show Tagged Galleries</a><img src="https://ehgt.org/g/mr.gif" class="mr" alt="&gt;" /> <a href="#" onclick="tag_define(); return false">Show Tag Definition</a><img src="https://ehgt.org/g/mr.gif" class="mr" alt="&gt;" /> ';
 
       if (ScriptMenu.UserSetting['nhentai匹配']['Tag']) {

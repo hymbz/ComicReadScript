@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     1.2
+// @version     1.3
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，解除吐槽的字数限制」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -69,6 +69,7 @@ let ComicReadWindow,
  * @param {string} Info.comicName 漫画标题，用于下载漫画时命名用
  * @param {string} Info.nextChapter 下一话链接
  * @param {string} Info.prevChapter 上一话链接
+ * @param {string} Info.blobList blob格式的图片文件列表，下载用
  */
 let loadComicReadWindow = function (Info) {
   if (typeof Vue === 'undefined')
@@ -76,7 +77,7 @@ let loadComicReadWindow = function (Info) {
 
   if (ComicReadWindow === undefined) {
     GM_addStyle('@@ComicRead.css@@');
-    appendDom(document.getElementsByTagName('body')[0], '@@ComicRead.html@@');
+    appendDom(document.body, '@@ComicRead.html@@');
     ComicReadWindow = new Vue({
       el: '#comicRead',
       delimiters: ['[[', ']]'],
@@ -144,38 +145,51 @@ let loadComicReadWindow = function (Info) {
         },
         download: function () {
           // 下载漫画
-          loadExternalScripts['FileSaver']();
-          loadExternalScripts['JSZip']();
-          let zip = new JSZip();
-          let comicDownloadNum = 0;
-          let imgIndex = this.comicImgList.length;
-          let downDom = document.querySelector('[tooltip^="下载"]');
-          let downDomSvg = downDom.getElementsByTagName('path')[0];
+          if (typeof JSZip === 'undefined') {
+            loadExternalScripts['FileSaver']();
+            loadExternalScripts['JSZip']();
+          }
 
-          while (imgIndex--) {
-            let tempIndex = imgIndex + 1;
-            GM_xmlhttpRequest({
-              method: 'GET',
-              url: this.comicImgList[imgIndex].src,
-              headers: {
-                referer: RegExp('(.+?/){2}').exec(this.comicImgList[imgIndex].src)[0]
-              },
-              responseType: 'blob',
-              onload: function (xhr, index = tempIndex) {
-                if (xhr.status === 200) {
-                  zip.file(`${index}.${xhr.finalUrl.replace(/.+\./, '')}`, xhr.response);
-                  if (++comicDownloadNum === ComicReadWindow.comicImgList.length) {
-                    downDom.setAttribute('tooltip', '下载完成');
-                    downDomSvg.setAttribute('d', 'M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17 15.18 9l1.41 1.41L10 17z');
-                    zip.generateAsync({ type: 'blob' }).then((content) => {
-                      saveAs(content, `${ComicReadWindow.comicName}.zip`);
-                    });
-                  } else
-                    downDom.setAttribute('tooltip', `${comicDownloadNum}/${ComicReadWindow.comicImgList.length}`);
-                } else
-                  downDom.setAttribute('tooltip', '下载出错');
-              }
+          let zip = new JSZip(),
+              imgIndex = this.comicImgList.length;
+
+          if (this.blobList) {
+            const blobList = this.blobList;
+            while (imgIndex--)
+              zip.file(`${imgIndex}.${blobList[imgIndex][1]}`, blobList[imgIndex][0]);
+            zip.generateAsync({ type: 'blob' }).then((content) => {
+              saveAs(content, `${ComicReadWindow.comicName}.zip`);
             });
+          } else {
+            let comicDownloadNum = 0,
+                downDom = document.querySelector('[tooltip^="下载"]'),
+                downDomSvg = downDom.getElementsByTagName('path')[0];
+
+            while (imgIndex--) {
+              let tempIndex = imgIndex + 1;
+              GM_xmlhttpRequest({
+                method: 'GET',
+                url: this.comicImgList[imgIndex].src,
+                headers: {
+                  referer: RegExp('(.+?/){2}').exec(this.comicImgList[imgIndex].src)[0]
+                },
+                responseType: 'blob',
+                onload: function (xhr, index = tempIndex) {
+                  if (xhr.status === 200) {
+                    zip.file(`${index}.${xhr.finalUrl.replace(/.+\./, '')}`, xhr.response);
+                    if (++comicDownloadNum === ComicReadWindow.comicImgList.length) {
+                      downDom.setAttribute('tooltip', '下载完成');
+                      downDomSvg.setAttribute('d', 'M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17 15.18 9l1.41 1.41L10 17z');
+                      zip.generateAsync({ type: 'blob' }).then((content) => {
+                        saveAs(content, `${ComicReadWindow.comicName}.zip`);
+                      });
+                    } else
+                      downDom.setAttribute('tooltip', `${comicDownloadNum}/${ComicReadWindow.comicImgList.length}`);
+                  } else
+                    downDom.setAttribute('tooltip', '下载出错');
+                }
+              });
+            }
           }
         },
         scrollPage: function (event) {
@@ -198,16 +212,14 @@ let loadComicReadWindow = function (Info) {
             this.magnifier = this.PageNum !== 'end';
         },
         exitComicRead: function (end) {
-          // 退出，如果是从结尾的 End 退出的则跳至评论，否则跳至网页顶部
-          if (this.EndExit) {
-            document.body.style.overflow = 'auto';
-            this.show = false;
-            if (end) {
-              this.PageNum = 0;
-              this.EndExit();
-            } else
-              scrollTo(0, 0);
-          }
+          // 退出，如果是从结尾的 End 退出的执行 EndExit，否则跳至网页顶部
+          document.body.style.overflow = 'auto';
+          this.show = false;
+          if (end) {
+            this.PageNum = 0;
+            this.EndExit();
+          } else
+            scrollTo(0, 0);
         },
         MouseMoveControl: function (event) {
           // 处理鼠标的移动和点击事件
@@ -244,7 +256,7 @@ let loadComicReadWindow = function (Info) {
           // 根据 type 返回或修改当前页所在 fillInfluence 的值。type 指调用方式，直接调用函数返回，否则修改
           if (this.PageNum === 'end')
             return false;
-          if(this.ComicImgInfo.length === 0)
+          if (this.ComicImgInfo.length === 0)
             this.updatedData();
           let i = this.ComicImgInfo[this.PageNum][0].index;
           while (i-- && !this.fillInfluence.hasOwnProperty(i));
@@ -309,7 +321,7 @@ let loadScriptMenu = function (defaultUserSetting) {
     loadExternalScripts['Vue']();
 
   GM_addStyle('@@ScriptMenu.css@@');
-  appendDom(document.getElementsByTagName('body')[0], '@@ScriptMenu.html@@');
+  appendDom(document.body, '@@ScriptMenu.html@@');
   ScriptMenu = new Vue({
     el: '#ScriptMenu',
     delimiters: ['[[', ']]'],
@@ -360,7 +372,7 @@ let loadScriptMenu = function (defaultUserSetting) {
   ScriptMenu.UserSetting = GM_getValue('UserSetting') ? JSON.parse(GM_getValue('UserSetting')) : defaultUserSetting;
   // 检查脚本版本，如果版本发生变化，将旧版设置移至新版设置
   if (!ScriptMenu.UserSetting.Version || ScriptMenu.UserSetting.Version !== GM_info.script.version) {
-    ScriptMenu.UserSetting = { ...defaultUserSetting, ...ScriptMenu.UserSetting };
+    ScriptMenu.UserSetting = Object.assign(defaultUserSetting, ScriptMenu.UserSetting);
     ScriptMenu.UserSetting.Version = GM_info.script.version;
     GM_setValue('UserSetting', JSON.stringify(ScriptMenu.UserSetting));
     GM_notification('脚本更新完毕');
