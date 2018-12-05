@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     1.3
+// @version     1.4
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，解除吐槽的字数限制」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -411,7 +411,7 @@ let loadScriptMenu = function (defaultUserSetting) {
 };
 
 // 匹配站点
-switch (window.location.hostname) {
+switch (location.hostname) {
   case 'bbs.yamibo.com': {
     
 
@@ -459,7 +459,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
       if (List[i].src.includes('static/image'))
         List.splice(i, 1);
       else if (List[i].getAttribute('src').indexOf('http') !== 0)
-        List[i].setAttribute('src', `${window.location.protocol}//${window.location.host}/${List[i].getAttribute('src')}`);
+        List[i].setAttribute('src', `${location.protocol}//${location.host}/${List[i].getAttribute('src')}`);
     }
 
     let checkImgLoad = function () {
@@ -497,7 +497,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
                 while ((nowTid = reg.exec(data.responseText)) !== null) {
                   if (lastTid && +nowTid[1] === tid) {
                     ComicReadWindow.prevChapter = `thread-${lastTid}-1-1.html`;
-                    ComicReadWindow.nextChapter = (nowTid = reg.exec(data.responseText)) !== null ? `${window.location.origin}/${nowTid[1]}` : null;
+                    ComicReadWindow.nextChapter = (nowTid = reg.exec(data.responseText)) !== null ? `${location.origin}/${nowTid[1]}` : null;
                     break;
                   } else
                     lastTid = nowTid[1];
@@ -733,7 +733,7 @@ loadScriptMenu({
   'Version': GM_info.script.version
 });
 
-switch (window.location.hostname) {
+switch (location.hostname) {
   case 'manhua.dmzj.com': {
     if (document.title === '页面找不到') {
       let urlInfo = document.URL.split('/');
@@ -764,11 +764,11 @@ switch (window.location.hostname) {
             if (List[i].getAttribute('data-original'))
               List[i].setAttribute('src', List[i].getAttribute('data-original'));
 
-          let tempDom = document.querySelector('.btns a:last-of-type');
-          tempDom.innerHTML = '阅读模式';
-          tempDom.setAttribute('href', 'javascript:;');
-          tempDom.removeAttribute('target');
-          tempDom.addEventListener('click', function () {
+          let comicReadMode = document.querySelector('.btns a:last-of-type');
+          comicReadMode.innerHTML = '阅读模式';
+          comicReadMode.setAttribute('href', 'javascript:;');
+          comicReadMode.removeAttribute('target');
+          comicReadMode.addEventListener('click', function () {
             if (typeof ComicReadWindow === 'undefined') {
               loadComicReadWindow({
                 'comicImgList': List,
@@ -778,12 +778,21 @@ switch (window.location.hostname) {
                   scrollTo(0, getTop(document.getElementById('hd')));
                 },
                 'comicName': `${g_comic_name} ${g_chapter_name}`,
-                'nextChapter': document.getElementById('next_chapter') ? document.getElementById('next_chapter').href : null,
-                'prevChapter': document.getElementById('prev_chapter') ? document.getElementById('prev_chapter').href : null
+                'nextChapter': document.getElementById('next_chapter') ? `${document.getElementById('next_chapter').href}#comicMode` : null,
+                'prevChapter': document.getElementById('prev_chapter') ? `${document.getElementById('prev_chapter').href}#comicMode` : null
               });
             }
             ComicReadWindow.start();
           });
+          if (location.hash === '#comicMode') {
+            let checkLoad = function () {
+              if (document.readyState === 'complete')
+                comicReadMode.click();
+              else
+                setTimeout(checkLoad, 100);
+            };
+            checkLoad();
+          }
         }
         // 修改发表吐槽的函数，删去字数判断。只是删去了原函数的一个判断条件而已，所以将这段压缩了一下
         if (ScriptMenu.UserSetting['体验优化']['解除吐槽的字数限制'])
@@ -824,7 +833,7 @@ switch (window.location.hostname) {
     break;
   }
   case 'm.dmzj.com': {
-    if (ScriptMenu.UserSetting['体验优化']['阅读被封漫画'] && document.body.innerText === '漫画内容不存在') {
+    if (ScriptMenu.UserSetting['体验优化']['阅读被封漫画'] && typeof obj_id === 'undefined') {
       GM_addStyle('body{display:flex;margin:0;flex-direction:column;align-items:center}body.hide img{display:none}img{max-width:95%;margin:1em 0}#comicRead{order:9999}');
       if (ScriptMenu.UserSetting['漫画阅读']['夜间模式']) {
         document.body.style.backgroundColor = '#171717';
@@ -1216,7 +1225,7 @@ else if (document.getElementsByClassName('index-container').length) {
         loadLock = true;
         GM_xmlhttpRequest({
           method: 'GET',
-          url: `${apiUrl}page=${++pageNum}${window.location.pathname.includes('popular') ? '&sort=popular ' : ''}`,
+          url: `${apiUrl}page=${++pageNum}${location.pathname.includes('popular') ? '&sort=popular ' : ''}`,
           onload: function (xhr) {
             if (xhr.status === 200) {
               const Info = JSON.parse(xhr.responseText);
@@ -1264,7 +1273,7 @@ else if (document.getElementsByClassName('index-container').length) {
         n[i].parentNode.removeChild(n[i]);
     }
 
-    if (window.location.pathname === '/') {
+    if (location.pathname === '/') {
       apiUrl = 'https://nhentai.net/api/galleries/all?';
       unsafeWindow.onscroll = loadNewComic;
       appendDom(contentDom, '<hr>');

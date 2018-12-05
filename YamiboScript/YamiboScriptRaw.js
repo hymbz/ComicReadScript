@@ -41,7 +41,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
       if (List[i].src.includes('static/image'))
         List.splice(i, 1);
       else if (List[i].getAttribute('src').indexOf('http') !== 0)
-        List[i].setAttribute('src', `${window.location.protocol}//${window.location.host}/${List[i].getAttribute('src')}`);
+        List[i].setAttribute('src', `${location.protocol}//${location.host}/${List[i].getAttribute('src')}`);
     }
 
     let checkImgLoad = function () {
@@ -79,7 +79,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
                 while ((nowTid = reg.exec(data.responseText)) !== null) {
                   if (lastTid && +nowTid[1] === tid) {
                     ComicReadWindow.prevChapter = `thread-${lastTid}-1-1.html`;
-                    ComicReadWindow.nextChapter = (nowTid = reg.exec(data.responseText)) !== null ? `${window.location.origin}/${nowTid[1]}` : null;
+                    ComicReadWindow.nextChapter = (nowTid = reg.exec(data.responseText)) !== null ? `${location.origin}/${nowTid[1]}` : null;
                     break;
                   } else
                     lastTid = nowTid[1];

@@ -20,7 +20,7 @@ loadScriptMenu({
   'Version': GM_info.script.version
 });
 
-switch (window.location.hostname) {
+switch (location.hostname) {
   case 'manhua.dmzj.com': {
     if (document.title === '页面找不到') {
       let urlInfo = document.URL.split('/');
@@ -51,11 +51,11 @@ switch (window.location.hostname) {
             if (List[i].getAttribute('data-original'))
               List[i].setAttribute('src', List[i].getAttribute('data-original'));
 
-          let tempDom = document.querySelector('.btns a:last-of-type');
-          tempDom.innerHTML = '阅读模式';
-          tempDom.setAttribute('href', 'javascript:;');
-          tempDom.removeAttribute('target');
-          tempDom.addEventListener('click', function () {
+          let comicReadMode = document.querySelector('.btns a:last-of-type');
+          comicReadMode.innerHTML = '阅读模式';
+          comicReadMode.setAttribute('href', 'javascript:;');
+          comicReadMode.removeAttribute('target');
+          comicReadMode.addEventListener('click', function () {
             if (typeof ComicReadWindow === 'undefined') {
               loadComicReadWindow({
                 'comicImgList': List,
@@ -65,12 +65,21 @@ switch (window.location.hostname) {
                   scrollTo(0, getTop(document.getElementById('hd')));
                 },
                 'comicName': `${g_comic_name} ${g_chapter_name}`,
-                'nextChapter': document.getElementById('next_chapter') ? document.getElementById('next_chapter').href : null,
-                'prevChapter': document.getElementById('prev_chapter') ? document.getElementById('prev_chapter').href : null
+                'nextChapter': document.getElementById('next_chapter') ? `${document.getElementById('next_chapter').href}#comicMode` : null,
+                'prevChapter': document.getElementById('prev_chapter') ? `${document.getElementById('prev_chapter').href}#comicMode` : null
               });
             }
             ComicReadWindow.start();
           });
+          if (location.hash === '#comicMode') {
+            let checkLoad = function () {
+              if (document.readyState === 'complete')
+                comicReadMode.click();
+              else
+                setTimeout(checkLoad, 100);
+            };
+            checkLoad();
+          }
         }
         // 修改发表吐槽的函数，删去字数判断。只是删去了原函数的一个判断条件而已，所以将这段压缩了一下
         if (ScriptMenu.UserSetting['体验优化']['解除吐槽的字数限制'])
@@ -111,7 +120,7 @@ switch (window.location.hostname) {
     break;
   }
   case 'm.dmzj.com': {
-    if (ScriptMenu.UserSetting['体验优化']['阅读被封漫画'] && document.body.innerText === '漫画内容不存在') {
+    if (ScriptMenu.UserSetting['体验优化']['阅读被封漫画'] && typeof obj_id === 'undefined') {
       GM_addStyle('body{display:flex;margin:0;flex-direction:column;align-items:center}body.hide img{display:none}img{max-width:95%;margin:1em 0}#comicRead{order:9999}');
       if (ScriptMenu.UserSetting['漫画阅读']['夜间模式']) {
         document.body.style.backgroundColor = '#171717';

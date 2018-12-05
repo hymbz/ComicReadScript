@@ -86,7 +86,7 @@ else if (document.getElementsByClassName('index-container').length) {
         loadLock = true;
         GM_xmlhttpRequest({
           method: 'GET',
-          url: `${apiUrl}page=${++pageNum}${window.location.pathname.includes('popular') ? '&sort=popular ' : ''}`,
+          url: `${apiUrl}page=${++pageNum}${location.pathname.includes('popular') ? '&sort=popular ' : ''}`,
           onload: function (xhr) {
             if (xhr.status === 200) {
               const Info = JSON.parse(xhr.responseText);
@@ -134,7 +134,7 @@ else if (document.getElementsByClassName('index-container').length) {
         n[i].parentNode.removeChild(n[i]);
     }
 
-    if (window.location.pathname === '/') {
+    if (location.pathname === '/') {
       apiUrl = 'https://nhentai.net/api/galleries/all?';
       unsafeWindow.onscroll = loadNewComic;
       appendDom(contentDom, '<hr>');
