@@ -17,11 +17,8 @@ loadScriptMenu({
   'Version': GM_info.script.version
 });
 let imgList = {
-      'ehentai': []
-    },
-    blobList = {
-      'ehentai': []
-    };
+  'ehentai': []
+};
 
 // 判断当前页是否是漫画详情页
 if (typeof gid !== 'undefined') {
@@ -43,31 +40,21 @@ if (typeof gid !== 'undefined') {
             url: url,
             onload: function (xhr) {
               if (xhr.status === 200) {
-                GM_xmlhttpRequest({
-                  method: 'GET',
-                  url: getImgUrl(xhr.responseText), comicReadModeDom,
-                  responseType: 'blob',
-                  onload: function (xhr) {
-                    if (xhr.status === 200) {
-                      blobList['ehentai'][i] = [xhr.response];
-                      blobList['ehentai'][i].push(xhr.finalUrl.split('.').pop());
-                      imgList['ehentai'][i] = document.createElement('img');
-                      imgList['ehentai'][i].src = URL.createObjectURL(xhr.response);
-                      if (++loadImgNum !== imgTotalNum)
-                        comicReadModeDom.innerHTML = ` loading —— ${loadImgNum}/${imgTotalNum}`;
-                      else {
-                        loadComicReadWindow({
-                          'comicImgList': imgList['ehentai'],
-                          'readSetting': ScriptMenu.UserSetting['漫画阅读'],
-                          'EndExit': () => scrollTo(0, getTop(document.getElementById('cdiv'))),
-                          'comicName': comicName,
-                          'blobList': blobList['ehentai']
-                        });
-                        comicReadModeDom.innerHTML = ' Read';
-                      }
-                    }
-                  }
-                });
+                let img = document.createElement('img');
+                img.src = getImgUrl(xhr.responseText);
+                img.onload = () => {
+                  if (++loadImgNum === imgTotalNum) {
+                    loadComicReadWindow({
+                      'comicImgList': imgList['ehentai'],
+                      'readSetting': ScriptMenu.UserSetting['漫画阅读'],
+                      'EndExit': () => scrollTo(0, getTop(document.getElementById('cdiv'))),
+                      'comicName': comicName
+                    });
+                    comicReadModeDom.innerHTML = ' Read';
+                  } else
+                    comicReadModeDom.innerHTML = ` loading —— ${loadImgNum}/${imgTotalNum}`;
+                };
+                imgList['ehentai'][i] = img;
                 const nextUrl = nextRe.exec(xhr.responseText)[1];
                 if (nextUrl !== xhr.finalUrl)
                   Loop(nextUrl, i + 1);
@@ -82,8 +69,7 @@ if (typeof gid !== 'undefined') {
             'comicImgList': imgList['ehentai'],
             'readSetting': ScriptMenu.UserSetting['漫画阅读'],
             'EndExit': () => scrollTo(0, getTop(document.getElementById('cdiv'))),
-            'comicName': comicName,
-            'blobList': blobList['ehentai']
+            'comicName': comicName
           });
           ComicReadWindow.PageNum = 0;
         } else {
@@ -146,8 +132,7 @@ if (typeof gid !== 'undefined') {
                 'comicImgList': imgList[selected_tag],
                 'readSetting': ScriptMenu.UserSetting['漫画阅读'],
                 'EndExit': () => scrollTo(0, getTop(document.getElementById('cdiv'))),
-                'comicName': comicName,
-                'blobList': blobList[selected_tag]
+                'comicName': comicName
               });
               ComicReadWindow.PageNum = 0;
             } else {
@@ -158,36 +143,24 @@ if (typeof gid !== 'undefined') {
                 'p': 'png'
               };
               let loadImgNum = 0;
-              blobList[selected_tag] = [];
               imgList[selected_tag] = [];
 
               for (let i = 0; i < imgTotalNum; i++) {
-                GM_xmlhttpRequest({
-                  method: 'GET',
-                  url: `https://i.nhentai.net/galleries/${tempComicInfo.media_id}/${i + 1}.${fileType[tempComicInfo.images.pages[i].t]}`,
-                  responseType: 'blob',
-                  onload: function (xhr) {
-                    if (xhr.status === 200) {
-                      blobList[selected_tag][i] = [xhr.response];
-                      blobList[selected_tag][i].push(fileType[tempComicInfo.images.pages[i].t]);
-                      imgList[selected_tag][i] = document.createElement('img');
-                      imgList[selected_tag][i].src = URL.createObjectURL(xhr.response);
-                      if (++loadImgNum !== imgTotalNum)
-                        comicReadModeDom.innerHTML = ` loading —— ${loadImgNum}/${imgTotalNum}`;
-                      else {
-                        loadComicReadWindow({
-                          'comicImgList': imgList[selected_tag],
-                          'readSetting': ScriptMenu.UserSetting['漫画阅读'],
-                          'EndExit': () => scrollTo(0, getTop(document.getElementById('comment-container'))),
-                          'comicName': comicName,
-                          'blobList': blobList[selected_tag]
-                        });
-                        comicReadModeDom.innerHTML = ' Read';
-                      }
-                    } else
-                      throw `${xhr.status}:${xhr.url}`;
-                  }
-                });
+                let img = document.createElement('img');
+                img.src = `https://i.nhentai.net/galleries/${tempComicInfo.media_id}/${i + 1}.${fileType[tempComicInfo.images.pages[i].t]}`;
+                img.onload = () => {
+                  if (++loadImgNum === imgTotalNum) {
+                    loadComicReadWindow({
+                      'comicImgList': imgList[selected_tag],
+                      'readSetting': ScriptMenu.UserSetting['漫画阅读'],
+                      'EndExit': () => scrollTo(0, getTop(document.getElementById('cdiv'))),
+                      'comicName': comicName
+                    });
+                    comicReadModeDom.innerHTML = ' Read';
+                  } else
+                    comicReadModeDom.innerHTML = ` loading —— ${loadImgNum}/${imgTotalNum}`;
+                };
+                imgList[selected_tag][i] = img;
               }
             }
             if (ComicReadWindow !== undefined && ComicReadWindow.comicName === comicName)

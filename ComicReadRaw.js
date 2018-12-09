@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     1.4
+// @version     1.5
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，解除吐槽的字数限制」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -28,24 +28,20 @@
  * @param {*} event 指定的元素
  * @returns {int} 元素所在高度
  */
-let getTop = event => event.getBoundingClientRect().top + document.body.scrollTop + document.documentElement.scrollTop;
+let getTop = (event) => event.getBoundingClientRect().top + document.body.scrollTop + document.documentElement.scrollTop;
 
 /**
  * 添加元素
  * @param {object} node 被添加元素
  * @param {(object|string)} textnode 添加元素
  */
-let appendDom = function (node, textnode) {
-  if (typeof textnode === 'string') {
-    let temp = document.createElement('div');
-    temp.innerHTML = textnode;
-    let frag = document.createDocumentFragment();
-    while (temp.firstChild)
-      frag.appendChild(temp.firstChild);
-    node.appendChild(frag);
-  }
-  else
-    node.appendChild(textnode);
+let appendDom = (node, textnode) => {
+  let temp = document.createElement('div');
+  temp.innerHTML = textnode;
+  let frag = document.createDocumentFragment();
+  while (temp.firstChild)
+    frag.appendChild(temp.firstChild);
+  node.appendChild(frag);
 };
 
 /**
@@ -72,6 +68,9 @@ let ComicReadWindow,
  * @param {string} Info.blobList blob格式的图片文件列表，下载用
  */
 let loadComicReadWindow = function (Info) {
+  if(!Info.hasOwnProperty('comicImgList') || !Info.comicImgList.length)
+    throw 'comicImgList 为空';
+
   if (typeof Vue === 'undefined')
     loadExternalScripts['Vue']();
 
@@ -97,16 +96,15 @@ let loadComicReadWindow = function (Info) {
       methods: {
         updatedData: function () {
           // 处理图片
-          const twoPageRatio = window.innerWidth / 2 / window.innerHeight;
-          const onePageRatio = window.innerWidth / window.innerHeight;
-          this.ComicImgInfo = [];
+          const fillPage = (src) => ({
+                src: src,
+                index: '填充',
+                class: 'fill'
+              }),
+              twoPageRatio = window.innerWidth / 2 / window.innerHeight,
+              onePageRatio = window.innerWidth / window.innerHeight;
           let tempImgInfo = [];
-
-          function fillPage(src) {
-            this.src = src;
-            this.index = '填充';
-            this.class = 'fill';
-          }
+          this.ComicImgInfo = [];
 
           for (let i = 0; i < this.comicImgList.length; i++) {
             const imgRatio = this.comicImgList[i].width / this.comicImgList[i].height;
@@ -118,7 +116,7 @@ let loadComicReadWindow = function (Info) {
 
             if (this.readSetting['双页显示']) {
               if (this.fillInfluence[i - 1])
-                tempImgInfo.push(new fillPage(imgInfo.src));
+                tempImgInfo.push(fillPage(imgInfo.src));
               if (imgRatio < twoPageRatio) {
                 if (tempImgInfo.length)
                   this.ComicImgInfo.push([imgInfo, tempImgInfo.shift()]);
@@ -130,7 +128,7 @@ let loadComicReadWindow = function (Info) {
                   if (tempImgInfo[0].class === 'fill')
                     tempImgInfo = [];
                   else
-                    this.ComicImgInfo.push([new fillPage(tempImgInfo[0].src), tempImgInfo.shift()]);
+                    this.ComicImgInfo.push([fillPage(tempImgInfo[0].src), tempImgInfo.shift()]);
                 }
                 if (!this.fillInfluence.hasOwnProperty(i))
                   this.fillInfluence[i] = false;
@@ -141,7 +139,7 @@ let loadComicReadWindow = function (Info) {
           }
 
           if (tempImgInfo.length && tempImgInfo[0].class !== 'fill')
-            this.ComicImgInfo.push([new fillPage(tempImgInfo[0].src), tempImgInfo.shift()]);
+            this.ComicImgInfo.push([fillPage(tempImgInfo[0].src), tempImgInfo.shift()]);
         },
         download: function () {
           // 下载漫画
@@ -161,6 +159,7 @@ let loadComicReadWindow = function (Info) {
               saveAs(content, `${ComicReadWindow.comicName}.zip`);
             });
           } else {
+            const imgTotalNum = ComicReadWindow.comicImgList.length;
             let comicDownloadNum = 0,
                 downDom = document.querySelector('[tooltip^="下载"]'),
                 downDomSvg = downDom.getElementsByTagName('path')[0];
@@ -171,22 +170,21 @@ let loadComicReadWindow = function (Info) {
                 method: 'GET',
                 url: this.comicImgList[imgIndex].src,
                 headers: {
-                  referer: RegExp('(.+?/){2}').exec(this.comicImgList[imgIndex].src)[0]
+                  referer: new URL(this.comicImgList[imgIndex].src).origin
                 },
                 responseType: 'blob',
-                onload: function (xhr, index = tempIndex) {
+                onload: (xhr, index = tempIndex) => {
                   if (xhr.status === 200) {
                     zip.file(`${index}.${xhr.finalUrl.replace(/.+\./, '')}`, xhr.response);
-                    if (++comicDownloadNum === ComicReadWindow.comicImgList.length) {
+                    if (++comicDownloadNum === imgTotalNum) {
                       downDom.setAttribute('tooltip', '下载完成');
                       downDomSvg.setAttribute('d', 'M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17 15.18 9l1.41 1.41L10 17z');
                       zip.generateAsync({ type: 'blob' }).then((content) => {
                         saveAs(content, `${ComicReadWindow.comicName}.zip`);
                       });
                     } else
-                      downDom.setAttribute('tooltip', `${comicDownloadNum}/${ComicReadWindow.comicImgList.length}`);
-                  } else
-                    downDom.setAttribute('tooltip', '下载出错');
+                      downDom.setAttribute('tooltip', `${comicDownloadNum}/${imgTotalNum}`);
+                  }
                 }
               });
             }
@@ -285,7 +283,7 @@ let loadComicReadWindow = function (Info) {
   // 在浏览器窗口大小改变时刷新
   window.onresize = ComicReadWindow.updatedData;
   // 键盘翻页
-  document.onkeyup = function (e) {
+  document.onkeyup = (e) => {
     switch (e.keyCode) {
       case 32:
       case 37:
@@ -299,11 +297,11 @@ let loadComicReadWindow = function (Info) {
     }
   };
 
-  ComicReadWindow.start = function () {
+  ComicReadWindow.start = () => {
     document.body.style.overflow = 'hidden';
     ComicReadWindow.show = true;
     // 在所有图片加载完毕前，每隔一秒刷新一次
-    let updated = function () {
+    let updated = () => {
       ComicReadWindow.updatedData();
       if (document.readyState !== 'complete')
         setTimeout(updated, 1000);
@@ -375,7 +373,7 @@ let loadScriptMenu = function (defaultUserSetting) {
     ScriptMenu.UserSetting = Object.assign(defaultUserSetting, ScriptMenu.UserSetting);
     ScriptMenu.UserSetting.Version = GM_info.script.version;
     GM_setValue('UserSetting', JSON.stringify(ScriptMenu.UserSetting));
-    GM_notification('脚本更新完毕');
+    GM_notification(`ComicRead 更新至 ${GM_info.script.version}`);
   }
 
   GM_registerMenuCommand('漫画阅读脚本设置', () => { ScriptMenu.show = true; });
@@ -391,6 +389,7 @@ switch (location.hostname) {
     '@@NewYamiboScript.@@';
     break;
   }
+  case 'i.dmzj.com':
   case 'm.dmzj.com':
   case 'manhua.dmzj.com': {
     '@@DMZJScript.@@';
@@ -406,26 +405,30 @@ switch (location.hostname) {
     break;
   }
   default: {
-    GM_registerMenuCommand('进入简易漫画阅读模式', function () {
-      if (typeof Vue === 'undefined') {
-        const comicImgList = [...document.getElementsByTagName('img')].filter(e => e.height > 500 && e.width > 500);
-        if (comicImgList.length !== new Set(comicImgList).length || confirm('该网页可能使用了懒加载技术，确认所有图片均已加载完毕？')) {
-          loadComicReadWindow({
-            'comicImgList': comicImgList,
-            'readSetting': {
-              'Enable': true,
-              '双页显示': true,
-              '页面填充': true,
-              '点击翻页': false,
-              '阅读进度': false,
-              '夜间模式': false
-            },
-            'EndExit': () => { scrollTo(0, 0); },
-            'comicName': document.title
-          });
+    window.onload = () => {
+      GM_registerMenuCommand('进入简易漫画阅读模式', () => {
+        if (typeof Vue === 'undefined') {
+          const comicImgList = [...document.getElementsByTagName('img')].filter(e => e.height > 500 && e.width > 500);
+          if(comicImgList.length === 0)
+            alert('没有找到图片');
+          else if (comicImgList.length !== new Set(comicImgList).length || confirm('该网页可能使用了懒加载技术，确认所有图片均已加载完毕？')) {
+            loadComicReadWindow({
+              'comicImgList': comicImgList,
+              'readSetting': {
+                'Enable': true,
+                '双页显示': true,
+                '页面填充': true,
+                '点击翻页': false,
+                '阅读进度': false,
+                '夜间模式': false
+              },
+              'EndExit': () => { scrollTo(0, 0); },
+              'comicName': document.title
+            });
+          }
         }
-      }
-      ComicReadWindow.start();
-    });
+        ComicReadWindow.start();
+      });
+    };
   }
 }

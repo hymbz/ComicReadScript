@@ -1,4 +1,4 @@
-/* global fid, tid, appendDom, getTop, ComicReadWindow, ScriptMenu */
+/* global fid, tid */
 GM_addStyle(':root {--color1:#6E2B19;--color2:#FFEEBA;--color3:#FFF5D7;--color4:#DBC38C;} @@YamiboScript.css@@');
 loadScriptMenu({
   '漫画阅读': {
@@ -44,7 +44,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
         List[i].setAttribute('src', `${location.protocol}//${location.host}/${List[i].getAttribute('src')}`);
     }
 
-    let checkImgLoad = function () {
+    let checkImgLoad = () => {
       let i = ComicReadWindow.comicImgList.length,
           tempImgList = ComicReadWindow.comicImgList;
       while (i--) {
@@ -57,7 +57,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
     };
 
     appendDom(document.querySelector('div.pti > div.authi'), '<span class="pipe show">|</span><a id="comicReadMode" class="show" href="javascript:;">漫画阅读</a>');
-    document.getElementById('comicReadMode').addEventListener('click', function () {
+    document.getElementById('comicReadMode').addEventListener('click', () =>{
       if (ComicReadWindow === undefined) {
         loadComicReadWindow({
           'comicImgList': [...document.querySelectorAll('.t_fsz img')],
@@ -68,11 +68,11 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
 
         // 通过标签确定上/下一话
         if (document.querySelector('.ptg.mbm.mtn>a')) {
-          let findNext = function (pageNum) {
+          let findNext = (pageNum) => {
             GM_xmlhttpRequest({
               method: 'GET',
               url: `https://bbs.yamibo.com/misc.php?mod=tag&id=${document.querySelector('.ptg.mbm.mtn>a').href.split('id=')[1]}&type=thread&page=${pageNum}`,
-              onload: function (data) {
+              onload: (data) => {
                 let reg = /<th>\s<a href="thread-(\d+)(?=-)/g,
                     nowTid,
                     lastTid;
@@ -104,14 +104,14 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
     GM_xmlhttpRequest({
       method: 'GET',
       url: `https://bbs.yamibo.com/api/mobile/index.php?module=viewthread&tid=${tid}`,
-      onload: function (data) {
+      onload: (data) => {
         let json = JSON.parse(data.responseText);
         lastFloor = json.Variables.thread.allreplies;
       }
     });
 
     // 在关闭和切换标签页时重新储存数据
-    document.addEventListener('visibilitychange', function () {
+    document.addEventListener('visibilitychange', () => {
       if (!document.visible && document.body.style.overflow !== 'hidden') {
         let anchorList = [...document.querySelectorAll('[id^=pid]')],
             lTop = document.documentElement.scrollTop;
@@ -137,7 +137,7 @@ if (RegExp('forum(-\\d+){2}|mod=forumdisplay').test(document.URL)) {
     GM_addStyle(`:root {--lastReadTagColor: ${ScriptMenu.UserSetting['记录阅读历史']['上次阅读进度标签颜色']}!important;}`);
 
     // 添加上次阅读进度提示标签
-    let addLastReadTag = function () {
+    let addLastReadTag = () => {
       if (document.getElementById('autopbn').text === '下一页 »') {
         let List = document.getElementsByClassName('lastReadTag'),
             i = List.length;
@@ -164,7 +164,7 @@ if (RegExp('forum(-\\d+){2}|mod=forumdisplay').test(document.URL)) {
     addLastReadTag();
 
     // 切换回当前页时重新添加提示标签
-    document.addEventListener('visibilitychange', function () {
+    document.addEventListener('visibilitychange', () => {
       if (!document.hidden)
         addLastReadTag();
     });

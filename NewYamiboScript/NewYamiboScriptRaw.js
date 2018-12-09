@@ -3,10 +3,10 @@ document.getElementsByTagName('html')[0].style.overflowX = 'visible';
 let List = document.getElementsByClassName('dropdown'),
     i = List.length;
 while (i--) {
-  List[i].addEventListener('mouseenter', function (e) {
+  List[i].addEventListener('mouseenter', (e) => {
     e.currentTarget.className += ' open';
   });
-  List[i].addEventListener('mouseleave', function (e) {
+  List[i].addEventListener('mouseleave', (e) => {
     e.currentTarget.className = e.currentTarget.className.split(' open')[0];
   });
 }
@@ -33,9 +33,9 @@ if (document.URL.includes('view-chapter') && ScriptMenu.UserSetting['漫画阅�
 
   appendDom(document.querySelector('div.col-md-6.col-xs-12.pull-left'),
     '<button type="button" id="comicReadMode" class="btn btn-sm btn-yuri disabled"><i class="fa fa-book"></i> 漫画阅读</button>');
-  document.getElementById('comicReadMode').addEventListener('click', function () {
+  document.getElementById('comicReadMode').addEventListener('click', () => {
     if (document.getElementById('comicReadMode').className.includes('disabled')) {
-      let loadImg = function (i) {
+      let loadImg = (i) => {
         let index = i;
         if (index === nowIndex) {
           imgList.push({
@@ -46,7 +46,7 @@ if (document.URL.includes('view-chapter') && ScriptMenu.UserSetting['漫画阅�
           GM_xmlhttpRequest({
             method: 'GET',
             url: `https://www.yamibo.com/manga/view-chapter?id=${id}&page=${index}`,
-            onload: function (xhr) {
+            onload: (xhr) => {
               if (xhr.status === 200) {
                 imgList.push({
                   'i': index,

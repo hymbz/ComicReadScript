@@ -27,6 +27,7 @@
         "appendDom": false,
         "getTop": false,
         "loadComicReadWindow": false,
+        "loadExternalScripts": false,
         "loadScriptMenu": false
     },
     "extends": "eslint:recommended",
