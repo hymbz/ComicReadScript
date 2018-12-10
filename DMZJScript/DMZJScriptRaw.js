@@ -1,4 +1,4 @@
-/* global qiehuan, huPoint, g_comic_name, g_chapter_name, g_comic_id, g_comic_url, userId */
+/* global qiehuan, huPoint, g_comic_name, g_chapter_name, g_comic_id, g_comic_url, userId, ___json___ */
 GM_addStyle(':root {--color1: #05a7ca;--color2: #f8fcff;--color3: #ffffff;--color4: #aea5a5;}');
 
 loadScriptMenu({
@@ -14,13 +14,26 @@ loadScriptMenu({
     'Enable': true,
     '阅读被封漫画': true,
     '在新页面中打开链接': true,
-    '解除吐槽的字数限制': true
+    '解除吐槽的字数限制': true,
+    '优化网页右上角用户信息栏的加载': true
   },
   'Version': GM_info.script.version
 });
 
 switch (location.hostname) {
   case 'manhua.dmzj.com': {
+    window.addEventListener('load',()=>{
+      if (ScriptMenu.UserSetting['体验优化']['优化网页右上角用户信息栏的加载'] && ___json___.result !== true) {
+        GM_xmlhttpRequest({
+          method: 'GET',
+          url: 'https://user.dmzj.com/passport/message',
+          onload: function (xhr) {
+            eval(xhr.responseText.slice(4));
+            document.querySelector('script[src="https://user.dmzj.com/passport/message"]').onreadystatechange();
+          }
+        });
+      }
+    });
     if (document.title === '页面找不到') {
       let urlInfo = document.URL.split('/');
       GM_xmlhttpRequest({
@@ -71,7 +84,7 @@ switch (location.hostname) {
             ComicReadWindow.start();
           };
           if (location.hash === '#comicMode')
-            window.onload = comicReadMode.onclick;
+            window.addEventListener('load',comicReadMode.onclick);
         }
         // 修改发表吐槽的函数，删去字数判断。只是删去了原函数的一个判断条件而已，所以将这段压缩了一下
         if (ScriptMenu.UserSetting['体验优化']['解除吐槽的字数限制'])
