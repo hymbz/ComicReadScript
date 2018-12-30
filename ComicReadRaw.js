@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     1.6
+// @version     1.7
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，解除吐槽的字数限制」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -15,7 +15,6 @@
 // @grant       GM_getResourceText
 // @grant       GM_notification
 // @grant       GM_registerMenuCommand
-// @run-at      document-end
 // @resource    DMZJcss https://userstyles.org/styles/chrome/119945.json
 // @supportURL  https://github.com/hymbz/ComicReadScript/issues
 // @updateURL   https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
@@ -68,7 +67,7 @@ let ComicReadWindow,
  * @param {string} Info.blobList blob格式的图片文件列表，下载用
  */
 let loadComicReadWindow = function (Info) {
-  if(!Info.hasOwnProperty('comicImgList') || !Info.comicImgList.length)
+  if (!Info.hasOwnProperty('comicImgList') || !Info.comicImgList.length)
     throw 'comicImgList 为空';
 
   if (typeof Vue === 'undefined')
@@ -89,9 +88,7 @@ let loadComicReadWindow = function (Info) {
         lastTouchmove: {},
         nextChapter: null,
         prevChapter: null,
-        fillInfluence: {
-          'now': true
-        }
+        fillInfluence: {}
       },
       methods: {
         updatedData: function () {
@@ -299,22 +296,29 @@ let loadComicReadWindow = function (Info) {
 
   ComicReadWindow.start = () => {
     document.body.style.overflow = 'hidden';
-    ComicReadWindow.show = true;
     // 在所有图片加载完毕前，每隔一秒刷新一次
     let updated = () => {
       ComicReadWindow.updatedData();
-      if (document.readyState !== 'complete')
+
+      if (![...ComicReadWindow.comicImgList].every(e=>e.complete))
         setTimeout(updated, 1000);
+      else{
+        ComicReadWindow.fillInfluence = {};
+        ComicReadWindow.fillInfluence[-1] = Info.readSetting['页面填充'];
+        ComicReadWindow.fillInfluence['now'] = Info.readSetting['页面填充'];
+      }
     };
     updated();
+    ComicReadWindow.show = true;
   };
 };
 
 /**
  * 加载构建 ScriptMenu
  * @param {Object} defaultUserSetting 默认设置
+ * @param {string} websiteSettingName 用来获取指定网站的用户配置的唯一标识符
  */
-let loadScriptMenu = function (defaultUserSetting) {
+let loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
   if (typeof Vue === 'undefined')
     loadExternalScripts['Vue']();
 
@@ -355,29 +359,29 @@ let loadScriptMenu = function (defaultUserSetting) {
         }
       },
       saveUserSetting: function () {
-        GM_setValue('UserSetting', JSON.stringify(this.UserSetting));
+        GM_setValue(websiteSettingName, JSON.stringify(this.UserSetting));
         this.show = false;
       },
       ResetUserSetting: function () {
         this.UserSetting = this.defaultUserSetting;
-        GM_setValue('UserSetting', JSON.stringify(this.UserSetting));
+        GM_setValue(websiteSettingName, JSON.stringify(this.UserSetting));
         GM_notification('已恢复默认设置');
       }
     }
   });
 
   ScriptMenu.defaultUserSetting = defaultUserSetting;
-  if(GM_getValue('UserSetting'))
-    ScriptMenu.UserSetting = JSON.parse(GM_getValue('UserSetting'));
-  else{
-    ScriptMenu.UserSetting =  defaultUserSetting;
-    GM_setValue('UserSetting', JSON.stringify(defaultUserSetting));
+  if (GM_getValue(websiteSettingName))
+    ScriptMenu.UserSetting = JSON.parse(GM_getValue(websiteSettingName));
+  else {
+    ScriptMenu.UserSetting = defaultUserSetting;
+    GM_setValue(websiteSettingName, JSON.stringify(defaultUserSetting));
   }
   // 检查脚本版本，如果版本发生变化，将旧版设置移至新版设置
   if (!ScriptMenu.UserSetting.Version || ScriptMenu.UserSetting.Version !== GM_info.script.version) {
     ScriptMenu.UserSetting = Object.assign(defaultUserSetting, ScriptMenu.UserSetting);
     ScriptMenu.UserSetting.Version = GM_info.script.version;
-    GM_setValue('UserSetting', JSON.stringify(ScriptMenu.UserSetting));
+    GM_setValue(websiteSettingName, JSON.stringify(ScriptMenu.UserSetting));
     GM_notification(`ComicRead 更新至 ${GM_info.script.version}`);
   }
 
@@ -410,11 +414,11 @@ switch (location.hostname) {
     break;
   }
   default: {
-    window.onload = () => {
+    window.addEventListener('load', () => {
       GM_registerMenuCommand('进入简易漫画阅读模式', () => {
         if (typeof Vue === 'undefined') {
           const comicImgList = [...document.getElementsByTagName('img')].filter(e => e.height > 500 && e.width > 500);
-          if(comicImgList.length === 0)
+          if (comicImgList.length === 0)
             alert('没有找到图片');
           else if (comicImgList.length !== new Set(comicImgList).length || confirm('该网页可能使用了懒加载技术，确认所有图片均已加载完毕？')) {
             loadComicReadWindow({
@@ -434,6 +438,6 @@ switch (location.hostname) {
         }
         ComicReadWindow.start();
       });
-    };
+    });
   }
 }

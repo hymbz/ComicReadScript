@@ -1,7 +1,7 @@
 /* global qiehuan, huPoint, g_comic_name, g_chapter_name, g_comic_id, g_comic_url, userId, ___json___ */
 GM_addStyle(':root {--color1: #05a7ca;--color2: #f8fcff;--color3: #ffffff;--color4: #aea5a5;}');
 
-loadScriptMenu({
+loadScriptMenu('DMZJUserSetting', {
   '漫画阅读': {
     'Enable': true,
     '双页显示': true,
@@ -23,7 +23,7 @@ loadScriptMenu({
 switch (location.hostname) {
   case 'manhua.dmzj.com': {
     window.addEventListener('load',()=>{
-      if (ScriptMenu.UserSetting['体验优化']['优化网页右上角用户信息栏的加载'] && ___json___.result !== true) {
+      if (typeof ___json___ !== 'undefined' && ScriptMenu.UserSetting['体验优化']['优化网页右上角用户信息栏的加载'] && ___json___.result !== true) {
         GM_xmlhttpRequest({
           method: 'GET',
           url: 'https://user.dmzj.com/passport/message',

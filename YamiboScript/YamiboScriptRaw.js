@@ -1,6 +1,6 @@
 /* global fid, tid */
 GM_addStyle(':root {--color1:#6E2B19;--color2:#FFEEBA;--color3:#FFF5D7;--color4:#DBC38C;} @@YamiboScript.css@@');
-loadScriptMenu({
+loadScriptMenu('UserSetting', {
   '漫画阅读': {
     'Enable': true,
     '双页显示': true,
@@ -57,7 +57,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
     };
 
     appendDom(document.querySelector('div.pti > div.authi'), '<span class="pipe show">|</span><a id="comicReadMode" class="show" href="javascript:;">漫画阅读</a>');
-    document.getElementById('comicReadMode').addEventListener('click', () =>{
+    document.getElementById('comicReadMode').addEventListener('click', () => {
       if (ComicReadWindow === undefined) {
         loadComicReadWindow({
           'comicImgList': [...document.querySelectorAll('.t_fsz img')],
@@ -79,7 +79,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
                 while ((nowTid = reg.exec(data.responseText)) !== null) {
                   if (lastTid && +nowTid[1] === tid) {
                     ComicReadWindow.prevChapter = `thread-${lastTid}-1-1.html`;
-                    ComicReadWindow.nextChapter = (nowTid = reg.exec(data.responseText)) !== null ? `${location.origin}/${nowTid[1]}` : null;
+                    ComicReadWindow.nextChapter = (nowTid = reg.exec(data.responseText)) !== null ? `thread-${nowTid[1]}-1-1.html` : null;
                     break;
                   } else
                     lastTid = nowTid[1];
@@ -136,6 +136,10 @@ if (RegExp('forum(-\\d+){2}|mod=forumdisplay').test(document.URL)) {
   if (ScriptMenu.UserSetting['记录阅读历史'].Enable) {
     GM_addStyle(`:root {--lastReadTagColor: ${ScriptMenu.UserSetting['记录阅读历史']['上次阅读进度标签颜色']}!important;}`);
 
+    let custodyTime = 0;
+    if (ScriptMenu.UserSetting['记录阅读历史']['保留天数'] !== -1)
+      custodyTime = new Date().getTime() - ScriptMenu.UserSetting['记录阅读历史']['保留天数'] * 24 * 60 * 60 * 1000;
+
     // 添加上次阅读进度提示标签
     let addLastReadTag = () => {
       if (document.getElementById('autopbn').text === '下一页 »') {
@@ -149,13 +153,18 @@ if (RegExp('forum(-\\d+){2}|mod=forumdisplay').test(document.URL)) {
         while (i--) {
           let tid = List[i].id.split('_')[1];
           if (GM_getValue(tid)) {
-            let lastReadInfo = JSON.parse(GM_getValue(tid)),
-                lastReplies = List[i].querySelector('.num a').innerHTML - lastReadInfo.lastFloor;
-            appendDom(List[i].getElementsByTagName('th')[0], `
-            <a href="thread-${tid}-${lastReadInfo.page}-1.html#${lastReadInfo.lastAnchor}"
-             class="lastReadTag" onclick="atarget(this)">回第${lastReadInfo.page}页</a>
-            ${lastReplies ? `<div class="lastReadTag">+${lastReplies}</div>` : ''}
-          `);
+            let lastReadInfo = JSON.parse(GM_getValue(tid));
+            if (lastReadInfo.time < custodyTime) {
+              // 删除超过保留天数的阅读记录
+              GM_deleteValue(List[i]);
+            } else {
+              let lastReplies = List[i].querySelector('.num a').innerHTML - lastReadInfo.lastFloor;
+              appendDom(List[i].getElementsByTagName('th')[0], `
+                <a href="thread-${tid}-${lastReadInfo.page}-1.html#${lastReadInfo.lastAnchor}"
+                 class="lastReadTag" onclick="atarget(this)">回第${lastReadInfo.page}页</a>
+                ${lastReplies ? `<div class="lastReadTag">+${lastReplies}</div>` : ''}
+              `);
+            }
           }
         }
       } else
@@ -171,17 +180,6 @@ if (RegExp('forum(-\\d+){2}|mod=forumdisplay').test(document.URL)) {
 
     // 点击下一页后添加提示标签
     document.getElementById('autopbn').addEventListener('click', addLastReadTag);
-
-    // 删除超过指定天数的阅读记录
-    if (ScriptMenu.UserSetting['记录阅读历史']['保留天数'] !== -1) {
-      const timeNum = new Date().getTime() - ScriptMenu.UserSetting['记录阅读历史']['保留天数'] * 24 * 60 * 60 * 1000;
-      // 筛选出其记录的时间小于 timeNum 的 tid 的列表，逐一删除
-      let List = GM_listValues().slice(0, -1),
-          i = List.length;
-      while (i--)
-        if (GM_getValue(List[i]).split('"time":')[1] - 0 < timeNum)
-          GM_deleteValue(List[i]);
-    }
   }
 
   if (ScriptMenu.UserSetting['体验优化']['修正点击页数时的跳转判定']) {

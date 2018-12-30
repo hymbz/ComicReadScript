@@ -1,6 +1,6 @@
 /* global unsafeWindow, GM_addStyle, GM_info, GM_xmlhttpRequest, appendDom, getTop, ComicReadWindow, ScriptMenu, gallery, N */
 GM_addStyle(':root {--color1: #ed2553;--color2: #0d0d0d;--color3: #1f1f1f;--color4: #aea5a5;} #ScriptMenu{color: white !important;} @@NhentaiScript.css@@');
-loadScriptMenu({
+loadScriptMenu('NhentaiUserSetting', {
   '漫画阅读': {
     'Enable': true,
     '双页显示': true,
@@ -28,36 +28,35 @@ const fileType = {
 // 判断当前页是漫画详情页
 if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Enable) {
   appendDom(document.getElementById('download').parentNode, '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Load comic</a>');
-  let comicReadModeDom = document.getElementById('comicReadMode');
+  let comicReadModeDom = document.getElementById('comicReadMode'),
+      loadLock = false;
   comicReadModeDom.addEventListener('click', () => {
-    if (!comicReadModeDom.innerHTML.includes('loading')) {
-      if (ComicReadWindow !== undefined)
-        ComicReadWindow.start();
-      else {
-        const imgTotalNum = gallery.num_pages;
-        let loadImgNum = 0,
-            imgList = [];
-        comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— 0/${imgTotalNum}`;
+    if (ComicReadWindow === undefined) {
+      const imgTotalNum = gallery.num_pages;
+      let loadImgNum = 0,
+          imgList = [];
+      comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— 0/${imgTotalNum}`;
 
-        for (let i = 0; i < imgTotalNum; i++) {
-          let img = document.createElement('img');
-          img.src = `https://i.nhentai.net/galleries/${gallery.media_id}/${i + 1}.${fileType[gallery.images.pages[i].t]}`;
-          img.onload = () => {
-            if (++loadImgNum === imgTotalNum) {
-              loadComicReadWindow({
-                'comicImgList': imgList,
-                'readSetting': ScriptMenu.UserSetting['漫画阅读'],
-                'EndExit': () => scrollTo(0, getTop(document.getElementById('comment-container'))),
-                'comicName': gallery.title.hasOwnProperty('japanese') ? gallery.title['japanese'] : gallery.title['english']
-              });
-              comicReadModeDom.innerHTML = '<i class="fa fa-book"></i> Read';
-            } else
-              `<i class="fa fa-spinner"></i> loading —— ${loadImgNum}/${imgTotalNum}`;
-          };
-          imgList[i] = img;
-        }
+      for (let i = 0; i < imgTotalNum; i++) {
+        let img = document.createElement('img');
+        img.src = `https://i.nhentai.net/galleries/${gallery.media_id}/${i + 1}.${fileType[gallery.images.pages[i].t]}`;
+        img.onload = () => {
+          if (++loadImgNum === imgTotalNum)
+            comicReadModeDom.innerHTML = '<i class="fa fa-book"></i> Read';
+          else
+            comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— ${loadImgNum}/${imgTotalNum}`;
+        };
+        imgList[i] = img;
       }
-    }
+      loadLock = true;
+      loadComicReadWindow({
+        'comicImgList': imgList,
+        'readSetting': ScriptMenu.UserSetting['漫画阅读'],
+        'EndExit': () => scrollTo(0, getTop(document.getElementById('comment-container'))),
+        'comicName': gallery.title.hasOwnProperty('japanese') ? gallery.title['japanese'] : gallery.title['english']
+      });
+    } else if (!comicReadModeDom.innerHTML.includes('loading') || loadLock && confirm('图片未加载完毕，确认要直接进入阅读模式？'))
+      ComicReadWindow.start();
   });
 }
 
@@ -83,8 +82,8 @@ else if (document.getElementsByClassName('index-container').length) {
               let comicDomHtml = '';
               for (let i = 0; i < Info.result.length; i++) {
                 const tempComicInfo = Info.result[i];
-                // 在 用户未登录 或 黑名单为空 或 未开启屏蔽 或 漫画标签都不在黑名单中 时添加
-                if (!(blacklist && blacklist.length && ScriptMenu.UserSetting['体验优化']['彻底屏蔽漫画'] && tempComicInfo.tags.every(e => blacklist.includes(e.id))))
+                // 在 用户未登录 或 黑名单为空 或 未开启屏蔽 或 漫画标签都不在黑名单中 时才添加漫画结果
+                if (!(blacklist && blacklist.length && ScriptMenu.UserSetting['体验优化']['彻底屏蔽漫画'] && tempComicInfo.tags.some(e => blacklist.includes(e.id))))
                   comicDomHtml += `<div class="gallery" data-tags="${tempComicInfo.tags.map(e => e.id).join(' ')}"><a ${ScriptMenu.UserSetting['体验优化']['在新页面中打开链接'] ? 'target="_blank"' : ''} href="/g/${tempComicInfo.id}/" class="cover" style="padding:0 0 ${tempComicInfo.images.thumbnail.h / tempComicInfo.images.thumbnail.w * 100}% 0"><img is="lazyload-image" class="" width="${tempComicInfo.images.thumbnail.w}" height="${tempComicInfo.images.thumbnail.h}" src="https://t.nhentai.net/galleries/${tempComicInfo.media_id}/thumb.${fileType[tempComicInfo.images.thumbnail.t]}"><div class="caption">${tempComicInfo.title.english}</div></a></div>`;
               }
 
@@ -118,10 +117,9 @@ else if (document.getElementsByClassName('index-container').length) {
 
     if (ScriptMenu.UserSetting['体验优化']['彻底屏蔽漫画'] && blacklist && blacklist.length) {
       // 用匹配黑名单的 css 选择器选择被屏蔽漫画（这是 nhentai 自己用的方法
-      let n = document.querySelectorAll(blacklist.map(blacklist => N.format('.gallery[data-tags~="{0}"]', blacklist)).join(',')),
-          i = n.length;
-      while (i--)
-        n[i].parentNode.removeChild(n[i]);
+      document.querySelectorAll(blacklist.map(blacklist => N.format('.gallery[data-tags~="{0}"]', blacklist)).join(',')).forEach((e) => {
+        e.parentNode.removeChild(e);
+      });
     }
 
     if (location.pathname === '/') {

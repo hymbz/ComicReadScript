@@ -12,7 +12,7 @@ while (i--) {
 }
 
 GM_addStyle(':root {--color1:#551200;--color2:#FCF8E3;--color3:#F7F5F0;--color4:#BBB;}');
-loadScriptMenu({
+loadScriptMenu('NewYamiboUserSetting', {
   '漫画阅读': {
     'Enable': true,
     '双页显示': true,
