@@ -92,7 +92,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
           findNext(1);
         }
       }
-      if (checkImgLoad() || confirm('可能还有图片正在加载，请确认所有图片均已加载完毕'))
+      if (checkImgLoad() || confirm('图片未加载完毕，确认要直接进入阅读模式？'))
         ComicReadWindow.start();
     });
   }

@@ -15,7 +15,8 @@ loadScriptMenu('DMZJUserSetting', {
     '阅读被封漫画': true,
     '在新页面中打开链接': true,
     '解除吐槽的字数限制': true,
-    '优化网页右上角用户信息栏的加载': true
+    '优化网页右上角用户信息栏的加载': true,
+    '自动进入漫画阅读模式': true
   },
   'Version': GM_info.script.version
 });
@@ -35,7 +36,7 @@ switch (location.hostname) {
       }
     });
     if (document.title === '页面找不到') {
-      let [, comicName, g_current_id] = location.pathname.split('/')
+      let [, comicName, g_current_id] = location.pathname.split('/');
       GM_xmlhttpRequest({
         method: 'GET',
         url: `https://manhua.dmzj.com/${comicName}`,
@@ -58,7 +59,7 @@ switch (location.hostname) {
             qiehuan();
 
           let List = document.querySelectorAll('.inner_img img'),
-            i = List.length;
+              i = List.length;
           while (i--)
             if (List[i].getAttribute('data-original'))
               List[i].setAttribute('src', List[i].getAttribute('data-original'));
@@ -77,14 +78,14 @@ switch (location.hostname) {
                   scrollTo(0, getTop(document.getElementById('hd')));
                 },
                 'comicName': `${g_comic_name} ${g_chapter_name}`,
-                'nextChapter': document.getElementById('next_chapter') ? `${document.getElementById('next_chapter').href}#comicMode` : null,
-                'prevChapter': document.getElementById('prev_chapter') ? `${document.getElementById('prev_chapter').href}#comicMode` : null
+                'nextChapter': document.getElementById('next_chapter') ? `${document.getElementById('next_chapter').href}` : null,
+                'prevChapter': document.getElementById('prev_chapter') ? `${document.getElementById('prev_chapter').href}` : null
               });
             }
             ComicReadWindow.start();
           };
-          if (location.hash === '#comicMode')
-            window.addEventListener('load',comicReadMode.onclick);
+          if (ScriptMenu.UserSetting['体验优化']['自动进入漫画阅读模式'])
+            document.addEventListener('DOMContentLoaded', setTimeout(() => {comicReadMode.onclick();}, 0));
         }
         // 修改发表吐槽的函数，删去字数判断。只是删去了原函数的一个判断条件而已，所以将这段压缩了一下
         if (ScriptMenu.UserSetting['体验优化']['解除吐槽的字数限制'])
@@ -104,8 +105,8 @@ switch (location.hostname) {
               onload: (xhr) => {
                 if (xhr.status === 200) {
                   let temp = '',
-                    Info = JSON.parse(xhr.responseText),
-                    List = Info.chapters;
+                      Info = JSON.parse(xhr.responseText),
+                      List = Info.chapters;
                   for (let i = 0; i < List.length; i++) {
                     temp += `<div class="photo_part"><div class="h2_title2"><span class="h2_icon h2_icon22"></span><h2>${Info.title}：${List[i].title}</h2></div></div><div class="cartoon_online_border" style="border-top: 1px dashed #0187c5;"><ul>`;
                     let chaptersList = List[i].data;
@@ -128,11 +129,11 @@ switch (location.hostname) {
     if (ScriptMenu.UserSetting['体验优化']['阅读被封漫画']) {
       // 分别处理目录页和漫画页
       switch (location.pathname.split('/')[1]) {
-        case 'info':
+        case 'info': {
           if (typeof obj_id === 'undefined') {
             const comicId = parseInt(location.pathname.split('/')[2]);
             if (isNaN(comicId)) {
-              document.body.innerHTML = `请从 <a href="https://dmzj.nsapps.cn/">https://dmzj.nsapps.cn/</a> 搜索漫画进入`
+              document.body.innerHTML = '请从 <a href="https://dmzj.nsapps.cn/">https://dmzj.nsapps.cn/</a> 搜索漫画进入';
             } else {
               GM_xmlhttpRequest({
                 method: 'GET',
@@ -141,7 +142,7 @@ switch (location.hostname) {
                   if (xhr.status === 200) {
                     let temp = '';
                     const Info = JSON.parse(xhr.responseText),
-                      List = Info.chapters;
+                        List = Info.chapters;
                     for (let i = 0; i < List.length; i++) {
                       temp += `<h2>${Info.title}：${List[i].title}</h2>`;
                       const chaptersList = List[i].data;
@@ -157,7 +158,8 @@ switch (location.hostname) {
             }
           }
           break;
-        case 'view':
+        }
+        case 'view': {
           GM_addStyle('body{display:flex;margin:0;flex-direction:column;align-items:center}body.hide img{display:none}img{max-width:95%;margin:1em 0}#comicRead{order:9999}');
           if (ScriptMenu.UserSetting['漫画阅读']['夜间模式']) {
             document.body.style.backgroundColor = '#171717';
@@ -174,8 +176,8 @@ switch (location.hostname) {
             onload: (xhr) => {
               if (xhr.status === 200) {
                 let Info = JSON.parse(xhr.responseText),
-                  blobList = [],
-                  loadImgNum = 0;
+                    blobList = [],
+                    loadImgNum = 0;
                 const imgTotalNum = Info.picnum;
 
                 document.title = Info.title;
@@ -227,8 +229,8 @@ switch (location.hostname) {
               }
             }
           });
-
           break;
+        }
       }
     }
     break;
@@ -249,7 +251,7 @@ switch (location.hostname) {
       `);
 
       const importDom = document.getElementById('scriptImport'),
-        exportDom = document.getElementById('scriptExpor');
+          exportDom = document.getElementById('scriptExpor');
       let subscriptionData = '';
 
       /**
@@ -315,13 +317,13 @@ switch (location.hostname) {
             let reader = new FileReader();
             reader.onload = (event) => {
               const loadDom = document.createElement('span'),
-                // 从服务器上获得的已订阅漫画的 id 列表
-                serverSubscriptionList = serverSubscriptionData.map(e => e.id),
-                // 导入文件的订阅数据
-                subscriptionData = JSON.parse(event.target.result),
-                // 需要订阅的漫画数据
-                needSubscribeList = subscriptionData.filter(e => !serverSubscriptionList.includes(e.id)),
-                needSubscribeNum = needSubscribeList.length;
+                  // 从服务器上获得的已订阅漫画的 id 列表
+                  serverSubscriptionList = serverSubscriptionData.map(e => e.id),
+                  // 导入文件的订阅数据
+                  subscriptionData = JSON.parse(event.target.result),
+                  // 需要订阅的漫画数据
+                  needSubscribeList = subscriptionData.filter(e => !serverSubscriptionList.includes(e.id)),
+                  needSubscribeNum = needSubscribeList.length;
 
               if (needSubscribeNum) {
                 let subscribeIndex = needSubscribeNum - 1;

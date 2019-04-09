@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     1.8
+// @version     1.9
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，解除吐槽的字数限制」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -205,6 +205,7 @@ let loadComicReadWindow = function (Info) {
           }
           if (this.magnifier)
             this.magnifier = this.PageNum !== 'end';
+          this.fillInfluence['now'] = this.pageFill();
         },
         exitComicRead: function (end) {
           // 退出，如果是从结尾的 End 退出的执行 EndExit，否则跳至网页顶部
@@ -253,18 +254,20 @@ let loadComicReadWindow = function (Info) {
             return false;
           if (this.ComicImgInfo.length === 0)
             this.updatedData();
-          let i = this.ComicImgInfo[this.PageNum][0].index;
-          while (i-- && !this.fillInfluence.hasOwnProperty(i));
+          // 使用 filter 过滤是为了处理填充页在前的情况
+          let i = this.ComicImgInfo[this.PageNum].filter(e => !isNaN(e.index))[0].index;
+          while (!this.fillInfluence.hasOwnProperty(i) && i--);
           if (type) {
             this.fillInfluence[i] = !this.fillInfluence[i];
+            this.fillInfluence['now'] = this.fillInfluence[i];
+            if (this.ComicImgInfo[this.PageNum][0].class === 'fill')
+              this.PageNum--;
             this.updatedData();
-          }
-          else
+          } else
             return this.fillInfluence[i];
         }
       },
       updated: function () {
-        this.fillInfluence['now'] = this.pageFill();
         this.$nextTick(() => {
           scrollTo(0, getTop(document.querySelector(`#comicShow>[index='${this.PageNum}']`)));
         });
@@ -273,7 +276,6 @@ let loadComicReadWindow = function (Info) {
   }
 
   Object.assign(ComicReadWindow, Info);
-  ComicReadWindow.fillInfluence[-1] = Info.readSetting['页面填充'];
 
   // 关闭记录滚动历史
   history.scrollRestoration = 'manual';
@@ -298,15 +300,15 @@ let loadComicReadWindow = function (Info) {
     document.body.style.overflow = 'hidden';
     // 在所有图片加载完毕前，每隔一秒刷新一次
     let updated = () => {
-      ComicReadWindow.updatedData();
-
-      if (![...ComicReadWindow.comicImgList].every(e=>e.complete))
+      if (![...ComicReadWindow.comicImgList].every(e => e.complete))
         setTimeout(updated, 1000);
-      else{
+      else {
+        scrollTo(0, getTop(document.querySelector(`#comicShow>[index='${ComicReadWindow.PageNum}']`)));
         ComicReadWindow.fillInfluence = {};
         ComicReadWindow.fillInfluence[-1] = Info.readSetting['页面填充'];
         ComicReadWindow.fillInfluence['now'] = Info.readSetting['页面填充'];
       }
+      ComicReadWindow.updatedData();
     };
     updated();
     ComicReadWindow.show = true;
@@ -379,7 +381,16 @@ let loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
   }
   // 检查脚本版本，如果版本发生变化，将旧版设置移至新版设置
   if (!ScriptMenu.UserSetting.Version || ScriptMenu.UserSetting.Version !== GM_info.script.version) {
-    ScriptMenu.UserSetting = Object.assign(defaultUserSetting, ScriptMenu.UserSetting);
+    let move = (a, b) => {
+      Object.keys(b).forEach(e => {
+        if (typeof b[e] !== 'object')
+          a[e] = b[e];
+        else
+          move(a[e], b[e]);
+      });
+    };
+    move(defaultUserSetting, ScriptMenu.UserSetting);
+    ScriptMenu.UserSetting = defaultUserSetting;
     ScriptMenu.UserSetting.Version = GM_info.script.version;
     GM_setValue(websiteSettingName, JSON.stringify(ScriptMenu.UserSetting));
     GM_notification(`ComicRead 更新至 ${GM_info.script.version}`);
