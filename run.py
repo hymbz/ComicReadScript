@@ -30,10 +30,10 @@ for root, dirs, files in os.walk(sys.argv[1], topdown=False):
           # 引用外部脚本
           elif fileName.split('.')[1] == "js":
             with open(os.path.join(sys.argv[1], 'externalScripts', fileName), 'r', encoding="utf-8") as f:
-              mainStr = mainStr.replace(f"'@@{fileName}@@';", f.read())
+              mainStr = mainStr.replace(f"'@@{fileName}@@'", f.read())
           # 模块格式为 '@@{fileName}@@';
           else:
-            mainStr = mainStr.replace(f"'@@{fileName}@@';", f'\n\n\n{siteScript[fileName[:-1]]}\n\n')
+            mainStr = mainStr.replace(f"'@@{fileName}@@'", f'\n\n\n{siteScript[fileName[:-1]]}\n\n')
 
         siteScript[file[:-6]] = mainStr
 

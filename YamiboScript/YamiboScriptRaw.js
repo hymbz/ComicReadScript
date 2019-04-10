@@ -1,26 +1,27 @@
 /* global fid, tid */
 GM_addStyle(':root {--color1:#6E2B19;--color2:#FFEEBA;--color3:#FFF5D7;--color4:#DBC38C;} @@YamiboScript.css@@');
 loadScriptMenu('UserSetting', {
-  '漫画阅读': {
-    'Enable': true,
-    '双页显示': true,
-    '页面填充': true,
-    '点击翻页': false,
-    '阅读进度': true,
-    '夜间模式': false
+  漫画阅读: {
+    Enable: true,
+    双页显示: true,
+    页面填充: true,
+    点击翻页: false,
+    阅读进度: true,
+    夜间模式: false,
   },
-  '记录阅读历史': {
-    'Enable': true,
-    '上次阅读进度标签颜色': '#6e2b19',
-    '保留天数': -1
+  记录阅读历史: {
+    Enable: true,
+    上次阅读进度标签颜色: '#6e2b19',
+    保留天数: -1,
   },
-  '体验优化': {
-    'Enable': true,
-    '关闭快捷导航的跳转': true,
-    '修正点击页数时的跳转判定': true,
-    '固定导航条': true
+  体验优化: {
+    Enable: true,
+    关闭快捷导航的跳转: true,
+    修正点击页数时的跳转判定: true,
+    固定导航条: true,
+    自动进入漫画阅读模式: true,
   },
-  'Version': GM_info.script.version
+  Version: GM_info.script.version,
 });
 
 
@@ -33,8 +34,8 @@ if (ScriptMenu.UserSetting['体验优化']['固定导航条'])
 if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
   // 启用漫画阅读模式
   if (fid === 30 && ScriptMenu.UserSetting['漫画阅读'].Enable) {
-    let List = [...document.querySelectorAll('.t_fsz img')],
-        i = List.length;
+    const List = [...document.querySelectorAll('.t_fsz img')];
+    let i = List.length;
     while (i--) {
       if (List[i].getAttribute('file'))
         List[i].setAttribute('src', List[i].getAttribute('file'));
@@ -44,49 +45,61 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
         List[i].setAttribute('src', `${location.protocol}//${location.host}/${List[i].getAttribute('src')}`);
     }
 
-    let checkImgLoad = () => {
-      let i = ComicReadWindow.comicImgList.length,
-          tempImgList = ComicReadWindow.comicImgList;
+    const comicImgList = [...document.querySelectorAll('.t_fsz img')];
+
+    const checkImgLoad = (loop = false) => {
+      let i = comicImgList.length;
+      const tempImgList = comicImgList;
       while (i--) {
-        if (!tempImgList[i].complete)
+        if (!tempImgList[i].complete) {
+          if (loop) {
+            setTimeout(checkImgLoad, 300, true);
+            return;
+          }
           return false;
-        else if (tempImgList[i].height < 500 && tempImgList[i].width < 500)
-          ComicReadWindow.comicImgList.splice(i, 1);
+        } else if (tempImgList[i].height < 500 && tempImgList[i].width < 500)
+          comicImgList.splice(i, 1);
       }
-      return true;
+      if (loop)
+        document.getElementById('comicReadMode').click();
+      else
+        return true;
     };
+
+    if (ScriptMenu.UserSetting['体验优化']['自动进入漫画阅读模式'])
+      setTimeout(checkImgLoad, 0, true);
 
     appendDom(document.querySelector('div.pti > div.authi'), '<span class="pipe show">|</span><a id="comicReadMode" class="show" href="javascript:;">漫画阅读</a>');
     document.getElementById('comicReadMode').addEventListener('click', () => {
       if (ComicReadWindow === undefined) {
         loadComicReadWindow({
-          'comicImgList': [...document.querySelectorAll('.t_fsz img')],
-          'readSetting': ScriptMenu.UserSetting['漫画阅读'],
-          'EndExit': () => scrollTo(0, getTop(document.getElementsByClassName('psth').length ? document.getElementsByClassName('psth')[0] : [...document.querySelectorAll('.pcb>div:first-of-type')].find(e => e.clientHeight < 2000))),
-          'comicName': document.getElementById('thread_subject').innerHTML
+          comicImgList,
+          readSetting: ScriptMenu.UserSetting['漫画阅读'],
+          EndExit: () => scrollTo(0, getTop(document.getElementsByClassName('psth').length ? document.getElementsByClassName('psth')[0] : [...document.querySelectorAll('.pcb>div:first-of-type')].find(e => e.clientHeight < 2000))),
+          comicName: document.getElementById('thread_subject').innerHTML,
         });
 
         // 通过标签确定上/下一话
         if (document.querySelector('.ptg.mbm.mtn>a')) {
-          let findNext = (pageNum) => {
+          const findNext = (pageNum) => {
             GM_xmlhttpRequest({
               method: 'GET',
               url: `https://bbs.yamibo.com/misc.php?mod=tag&id=${document.querySelector('.ptg.mbm.mtn>a').href.split('id=')[1]}&type=thread&page=${pageNum}`,
               onload: (data) => {
-                let reg = /<th>\s<a href="thread-(\d+)(?=-)/g,
-                    nowTid,
-                    lastTid;
+                const reg = /<th>\s<a href="thread-(\d+)(?=-)/g;
+                let nowTid;
+                let lastTid;
                 while ((nowTid = reg.exec(data.responseText)) !== null) {
-                  if (lastTid && +nowTid[1] === tid) {
+                  if (lastTid && Number(nowTid[1]) === tid) {
                     ComicReadWindow.prevChapter = `thread-${lastTid}-1-1.html`;
-                    ComicReadWindow.nextChapter = (nowTid = reg.exec(data.responseText)) !== null ? `thread-${nowTid[1]}-1-1.html` : null;
+                    ComicReadWindow.nextChapter = (nowTid = reg.exec(data.responseText)) === null ? null : `thread-${nowTid[1]}-1-1.html`;
                     break;
                   } else
                     lastTid = nowTid[1];
                 }
                 if (!ComicReadWindow.prevChapter)
                   findNext(pageNum + 1);
-              }
+              },
             });
           };
           findNext(1);
@@ -105,24 +118,24 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
       method: 'GET',
       url: `https://bbs.yamibo.com/api/mobile/index.php?module=viewthread&tid=${tid}`,
       onload: (data) => {
-        let json = JSON.parse(data.responseText);
+        const json = JSON.parse(data.responseText);
         lastFloor = json.Variables.thread.allreplies;
-      }
+      },
     });
 
     // 在关闭和切换标签页时重新储存数据
     document.addEventListener('visibilitychange', () => {
       if (!document.visible && document.body.style.overflow !== 'hidden') {
-        let anchorList = [...document.querySelectorAll('[id^=pid]')],
-            lTop = document.documentElement.scrollTop;
-        while (getTop(anchorList[0]) < lTop)
+        const anchorList = [...document.querySelectorAll('[id^=pid]')];
+        const {scrollTop} = document.documentElement;
+        while (getTop(anchorList[0]) < scrollTop)
           anchorList.shift();
 
         GM_setValue(tid, JSON.stringify({
-          'page': document.querySelector('#pgt strong') ? document.querySelector('#pgt strong').innerHTML : '1',
-          'lastFloor': lastFloor,
-          'lastAnchor': anchorList[0].id,
-          'time': new Date().getTime()
+          page: document.querySelector('#pgt strong') ? document.querySelector('#pgt strong').innerHTML : '1',
+          lastFloor,
+          lastAnchor: anchorList[0].id,
+          time: new Date().getTime(),
         }));
       }
     });
@@ -138,27 +151,27 @@ if (RegExp('forum(-\\d+){2}|mod=forumdisplay').test(document.URL)) {
 
     let custodyTime = 0;
     if (ScriptMenu.UserSetting['记录阅读历史']['保留天数'] !== -1)
-      custodyTime = new Date().getTime() - ScriptMenu.UserSetting['记录阅读历史']['保留天数'] * 24 * 60 * 60 * 1000;
+      custodyTime = new Date().getTime() - (ScriptMenu.UserSetting['记录阅读历史']['保留天数'] * 24 * 60 * 60 * 1000);
 
     // 添加上次阅读进度提示标签
-    let addLastReadTag = () => {
+    const addLastReadTag = () => {
       if (document.getElementById('autopbn').text === '下一页 »') {
-        let List = document.getElementsByClassName('lastReadTag'),
-            i = List.length;
+        let List = document.getElementsByClassName('lastReadTag');
+        let i = List.length;
         while (i--)
           List[i].parentNode.removeChild(List[i]);
 
         List = document.querySelectorAll('tbody[id^=normalthread]');
         i = List.length;
         while (i--) {
-          let tid = List[i].id.split('_')[1];
+          const tid = List[i].id.split('_')[1];
           if (GM_getValue(tid)) {
-            let lastReadInfo = JSON.parse(GM_getValue(tid));
+            const lastReadInfo = JSON.parse(GM_getValue(tid));
             if (lastReadInfo.time < custodyTime) {
               // 删除超过保留天数的阅读记录
               GM_deleteValue(List[i]);
             } else {
-              let lastReplies = List[i].querySelector('.num a').innerHTML - lastReadInfo.lastFloor;
+              const lastReplies = List[i].querySelector('.num a').innerHTML - lastReadInfo.lastFloor;
               appendDom(List[i].getElementsByTagName('th')[0], `
                 <a href="thread-${tid}-${lastReadInfo.page}-1.html#${lastReadInfo.lastAnchor}"
                  class="lastReadTag" onclick="atarget(this)">回第${lastReadInfo.page}页</a>
@@ -183,8 +196,8 @@ if (RegExp('forum(-\\d+){2}|mod=forumdisplay').test(document.URL)) {
   }
 
   if (ScriptMenu.UserSetting['体验优化']['修正点击页数时的跳转判定']) {
-    let List = document.querySelectorAll('.tps>a'),
-        i = List.length;
+    const List = document.querySelectorAll('.tps>a');
+    let i = List.length;
     while (i--)
       List[i].setAttribute('onclick', 'atarget(this)');
   }

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     2.0
+// @version     2.1
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，解除吐槽的字数限制」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -27,17 +27,17 @@
  * @param {*} event 指定的元素
  * @returns {int} 元素所在高度
  */
-let getTop = (event) => event.getBoundingClientRect().top + document.body.scrollTop + document.documentElement.scrollTop;
+const getTop = (event) => event.getBoundingClientRect().top + document.body.scrollTop + document.documentElement.scrollTop;
 
 /**
  * 添加元素
  * @param {object} node 被添加元素
  * @param {(object|string)} textnode 添加元素
  */
-let appendDom = (node, textnode) => {
-  let temp = document.createElement('div');
+const appendDom = (node, textnode) => {
+  const temp = document.createElement('div');
   temp.innerHTML = textnode;
-  let frag = document.createDocumentFragment();
+  const frag = document.createDocumentFragment();
   while (temp.firstChild)
     frag.appendChild(temp.firstChild);
   node.appendChild(frag);
@@ -47,13 +47,13 @@ let appendDom = (node, textnode) => {
  * 加载外部脚本
  */
 const loadExternalScripts = {
-  'Vue': () => { '@@Vue.js@@'; },
-  'FileSaver': () => { '@@FileSaver.js@@'; },
-  'JSZip': () => { '@@JSZip.js@@'; }
+  Vue: () => { '@@Vue.js@@' },
+  FileSaver: () => { '@@FileSaver.js@@' },
+  JSZip: () => { '@@JSZip.js@@' },
 };
 
-let ComicReadWindow,
-    ScriptMenu;
+let ComicReadWindow;
+let ScriptMenu;
 
 /**
  * 加载构建 ComicReadWindow
@@ -66,12 +66,12 @@ let ComicReadWindow,
  * @param {string} Info.prevChapter 上一话链接
  * @param {string} Info.blobList blob格式的图片文件列表，下载用
  */
-let loadComicReadWindow = function (Info) {
+const loadComicReadWindow = function (Info) {
   if (!Info.hasOwnProperty('comicImgList') || !Info.comicImgList.length)
     throw 'comicImgList 为空';
 
   if (typeof Vue === 'undefined')
-    loadExternalScripts['Vue']();
+    loadExternalScripts.Vue();
 
   if (ComicReadWindow === undefined) {
     GM_addStyle('@@ComicRead.css@@');
@@ -88,27 +88,27 @@ let loadComicReadWindow = function (Info) {
         lastTouchmove: {},
         nextChapter: null,
         prevChapter: null,
-        fillInfluence: {}
+        fillInfluence: {},
       },
       methods: {
-        updatedData: function () {
+        updatedData () {
           // 处理图片
           const fillPage = (src) => ({
-                src: src,
-                index: '填充',
-                class: 'fill'
-              }),
-              twoPageRatio = window.innerWidth / 2 / window.innerHeight,
-              onePageRatio = window.innerWidth / window.innerHeight;
+            src,
+            index: '填充',
+            class: 'fill',
+          });
+          const twoPageRatio = window.innerWidth / 2 / window.innerHeight;
+          const onePageRatio = window.innerWidth / window.innerHeight;
           let tempImgInfo = [];
           this.ComicImgInfo = [];
 
           for (let i = 0; i < this.comicImgList.length; i++) {
             const imgRatio = this.comicImgList[i].width / this.comicImgList[i].height;
-            let imgInfo = {
-              'src': this.comicImgList[i].src,
-              'index': i,
-              'class': ''
+            const imgInfo = {
+              src: this.comicImgList[i].src,
+              index: i,
+              class: '',
             };
 
             if (this.readSetting['双页显示']) {
@@ -131,44 +131,42 @@ let loadComicReadWindow = function (Info) {
                   this.fillInfluence[i] = false;
               }
             }
-            imgInfo['class'] = imgRatio > onePageRatio ? 'long' : 'wide';
+            imgInfo.class = imgRatio > onePageRatio ? 'long' : 'wide';
             this.ComicImgInfo.push([imgInfo]);
           }
 
           if (tempImgInfo.length && tempImgInfo[0].class !== 'fill')
             this.ComicImgInfo.push([fillPage(tempImgInfo[0].src), tempImgInfo.shift()]);
         },
-        download: function () {
+        download () {
           // 下载漫画
           if (typeof JSZip === 'undefined') {
-            loadExternalScripts['FileSaver']();
-            loadExternalScripts['JSZip']();
+            loadExternalScripts.FileSaver();
+            loadExternalScripts.JSZip();
           }
 
-          let zip = new JSZip(),
-              imgIndex = this.comicImgList.length;
+          const zip = new JSZip();
+          let imgIndex = this.comicImgList.length;
 
           if (this.blobList) {
-            const blobList = this.blobList;
+            const {blobList} = this;
             while (imgIndex--)
               zip.file(`${imgIndex}.${blobList[imgIndex][1]}`, blobList[imgIndex][0]);
-            zip.generateAsync({ type: 'blob' }).then((content) => {
+            zip.generateAsync({type: 'blob'}).then((content) => {
               saveAs(content, `${ComicReadWindow.comicName}.zip`);
             });
           } else {
             const imgTotalNum = ComicReadWindow.comicImgList.length;
-            let comicDownloadNum = 0,
-                downDom = document.querySelector('[tooltip^="下载"]'),
-                downDomSvg = downDom.getElementsByTagName('path')[0];
+            let comicDownloadNum = 0;
+            const downDom = document.querySelector('[tooltip^="下载"]');
+            const downDomSvg = downDom.getElementsByTagName('path')[0];
 
             while (imgIndex--) {
-              let tempIndex = imgIndex + 1;
+              const tempIndex = imgIndex + 1;
               GM_xmlhttpRequest({
                 method: 'GET',
                 url: this.comicImgList[imgIndex].src,
-                headers: {
-                  referer: new URL(this.comicImgList[imgIndex].src).origin
-                },
+                headers: {referer: new URL(this.comicImgList[imgIndex].src).origin},
                 responseType: 'blob',
                 onload: (xhr, index = tempIndex) => {
                   if (xhr.status === 200) {
@@ -176,18 +174,18 @@ let loadComicReadWindow = function (Info) {
                     if (++comicDownloadNum === imgTotalNum) {
                       downDom.setAttribute('tooltip', '下载完成');
                       downDomSvg.setAttribute('d', 'M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17 15.18 9l1.41 1.41L10 17z');
-                      zip.generateAsync({ type: 'blob' }).then((content) => {
+                      zip.generateAsync({type: 'blob'}).then((content) => {
                         saveAs(content, `${ComicReadWindow.comicName}.zip`);
                       });
                     } else
                       downDom.setAttribute('tooltip', `${comicDownloadNum}/${imgTotalNum}`);
                   }
-                }
+                },
               });
             }
           }
         },
-        scrollPage: function (event) {
+        scrollPage (event) {
           if (typeof event === 'object' ? event.deltaY < 0 : event) {
             if (this.PageNum === 'end')
               this.PageNum = this.ComicImgInfo.length - 1;
@@ -205,9 +203,9 @@ let loadComicReadWindow = function (Info) {
           }
           if (this.magnifier)
             this.magnifier = this.PageNum !== 'end';
-          this.fillInfluence['now'] = this.pageFill();
+          this.fillInfluence.now = this.pageFill();
         },
-        exitComicRead: function (end) {
+        exitComicRead (end) {
           // 退出，如果是从结尾的 End 退出的执行 EndExit，否则跳至网页顶部
           document.body.style.overflow = 'auto';
           this.show = false;
@@ -217,18 +215,18 @@ let loadComicReadWindow = function (Info) {
           } else
             scrollTo(0, 0);
         },
-        MouseMoveControl: function (event) {
+        MouseMoveControl (event) {
           // 处理鼠标的移动和点击事件
           if (this.magnifier) {
-            let magnifier = document.getElementById('magnifier');
+            const magnifier = document.getElementById('magnifier');
             if (event.type === 'touchmove')
               event = event.changedTouches[0];
-            magnifier.style.top = `${event.clientY > window.innerHeight / 2 ? event.clientY - window.innerHeight * 0.5 : event.clientY + window.innerHeight * 0.1 + 5}px`;
-            magnifier.style.left = `${event.clientX > window.innerWidth / 2 ? event.clientX - window.innerWidth * 0.5 : event.clientX + window.innerWidth * 0.1 + 5}px`;
-            magnifier.firstChild.style.marginTop = `-${event.clientY * 2 - window.innerHeight * 0.2}px`;
-            magnifier.firstChild.style.marginLeft = `-${event.clientX * 2 - window.innerWidth * 0.2}px`;
-            document.getElementById('scope').style.top = `${event.clientY - window.innerHeight * 0.1}px`;
-            document.getElementById('scope').style.left = `${event.clientX - window.innerWidth * 0.1}px`;
+            magnifier.style.top = `${event.clientY > window.innerHeight / 2 ? event.clientY - (window.innerHeight * 0.5) : event.clientY + (window.innerHeight * 0.1) + 5}px`;
+            magnifier.style.left = `${event.clientX > window.innerWidth / 2 ? event.clientX - (window.innerWidth * 0.5) : event.clientX + (window.innerWidth * 0.1) + 5}px`;
+            magnifier.firstChild.style.marginTop = `-${(event.clientY * 2) - (window.innerHeight * 0.2)}px`;
+            magnifier.firstChild.style.marginLeft = `-${(event.clientX * 2) - (window.innerWidth * 0.2)}px`;
+            document.getElementById('scope').style.top = `${event.clientY - (window.innerHeight * 0.1)}px`;
+            document.getElementById('scope').style.left = `${event.clientX - (window.innerWidth * 0.1)}px`;
           } else if (event.type === 'mousemove') {
             if (event.clientX < 100)
               document.getElementById('sidebar').className = 'show';
@@ -239,7 +237,7 @@ let loadComicReadWindow = function (Info) {
             document.getElementById('sidebar').className = '';
           }
         },
-        TouchControl: function (event) {
+        TouchControl (event) {
           // 处理手势
           const x = this.lastTouchmove.touches[0].clientX - event.changedTouches[0].clientX;
           const y = this.lastTouchmove.touches[0].clientY - event.changedTouches[0].clientY;
@@ -248,7 +246,7 @@ let loadComicReadWindow = function (Info) {
           else
             document.getElementById('sidebar').className = x > 0 ? '' : 'show';
         },
-        pageFill: function (type) {
+        pageFill (type) {
           // 根据 type 返回或修改当前页所在 fillInfluence 的值。type 指调用方式，直接调用函数返回，否则修改
           if (this.PageNum === 'end')
             return false;
@@ -256,22 +254,23 @@ let loadComicReadWindow = function (Info) {
             this.updatedData();
           // 使用 filter 过滤是为了处理填充页在前的情况
           let i = this.ComicImgInfo[this.PageNum].filter(e => !isNaN(e.index))[0].index;
-          while (!this.fillInfluence.hasOwnProperty(i) && i--);
+          while (!this.fillInfluence.hasOwnProperty(i) && i--)
+            ;
           if (type) {
             this.fillInfluence[i] = !this.fillInfluence[i];
-            this.fillInfluence['now'] = this.fillInfluence[i];
+            this.fillInfluence.now = this.fillInfluence[i];
             if (this.ComicImgInfo[this.PageNum][0].class === 'fill')
               this.PageNum--;
             this.updatedData();
           } else
             return this.fillInfluence[i];
-        }
+        },
       },
-      updated: function () {
+      updated () {
         this.$nextTick(() => {
           scrollTo(0, getTop(document.querySelector(`#comicShow>[index='${this.PageNum}']`)));
         });
-      }
+      },
     });
   }
 
@@ -298,11 +297,12 @@ let loadComicReadWindow = function (Info) {
 
   ComicReadWindow.start = () => {
     document.body.style.overflow = 'hidden';
-    ComicReadWindow.fillInfluence = {};
-    ComicReadWindow.fillInfluence[-1] = Info.readSetting['页面填充'];
-    ComicReadWindow.fillInfluence['now'] = Info.readSetting['页面填充'];
+    ComicReadWindow.fillInfluence = {
+      '-1': Info.readSetting['页面填充'],
+      now: Info.readSetting['页面填充'],
+    };
     // 在所有图片加载完毕前，每隔一秒刷新一次
-    let updated = () => {
+    const updated = () => {
       if (![...ComicReadWindow.comicImgList].every(e => e.complete))
         setTimeout(updated, 1000);
       ComicReadWindow.updatedData();
@@ -314,12 +314,13 @@ let loadComicReadWindow = function (Info) {
 
 /**
  * 加载构建 ScriptMenu
- * @param {Object} defaultUserSetting 默认设置
  * @param {string} websiteSettingName 用来获取指定网站的用户配置的唯一标识符
+ * @param {Object} defaultUserSetting 默认设置
  */
-let loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
+// eslint-disable-next-line no-unused-vars
+const loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
   if (typeof Vue === 'undefined')
-    loadExternalScripts['Vue']();
+    loadExternalScripts.Vue();
 
   GM_addStyle('@@ScriptMenu.css@@');
   appendDom(document.body, '@@ScriptMenu.html@@');
@@ -331,11 +332,11 @@ let loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
       showWindow: '功能设置',
       top: '',
       left: '',
-      show: false
+      show: false,
     },
     methods: {
-      dragMoveStart: function (event) {
-        let temp = document.getElementById('ScriptMenu').getBoundingClientRect();
+      dragMoveStart (event) {
+        const temp = document.getElementById('ScriptMenu').getBoundingClientRect();
         this.top = temp.top;
         this.left = temp.left;
         if (event.type === 'touchstart') {
@@ -347,7 +348,7 @@ let loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
           this.offsetY = event.offsetY;
         }
       },
-      dragMove: function (event) {
+      dragMove (event) {
         event.preventDefault();
         if (event.type === 'touchmove')
           event = event.changedTouches[0];
@@ -357,16 +358,16 @@ let loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
           this.left = event.clientX - this.offsetX;
         }
       },
-      saveUserSetting: function () {
+      saveUserSetting () {
         GM_setValue(websiteSettingName, JSON.stringify(this.UserSetting));
         this.show = false;
       },
-      ResetUserSetting: function () {
+      ResetUserSetting () {
         this.UserSetting = this.defaultUserSetting;
         GM_setValue(websiteSettingName, JSON.stringify(this.UserSetting));
         GM_notification('已恢复默认设置');
-      }
-    }
+      },
+    },
   });
 
   ScriptMenu.defaultUserSetting = defaultUserSetting;
@@ -378,12 +379,12 @@ let loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
   }
   // 检查脚本版本，如果版本发生变化，将旧版设置移至新版设置
   if (!ScriptMenu.UserSetting.Version || ScriptMenu.UserSetting.Version !== GM_info.script.version) {
-    let move = (a, b) => {
+    const move = (a, b) => {
       Object.keys(b).forEach(e => {
-        if (typeof b[e] !== 'object')
-          a[e] = b[e];
-        else
+        if (typeof b[e] === 'object')
           move(a[e], b[e]);
+        else
+          a[e] = b[e];
       });
     };
     move(defaultUserSetting, ScriptMenu.UserSetting);
@@ -393,7 +394,7 @@ let loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
     GM_notification(`ComicRead 更新至 ${GM_info.script.version}`);
   }
 
-  GM_registerMenuCommand('漫画阅读脚本设置', () => { ScriptMenu.show = true; });
+  GM_registerMenuCommand('漫画阅读脚本设置', () => { ScriptMenu.show = true });
 };
 
 // 匹配站点
@@ -430,17 +431,17 @@ switch (location.hostname) {
             alert('没有找到图片');
           else if (comicImgList.length !== new Set(comicImgList).length || confirm('该网页可能使用了懒加载技术，确认所有图片均已加载完毕？')) {
             loadComicReadWindow({
-              'comicImgList': comicImgList,
-              'readSetting': {
-                'Enable': true,
-                '双页显示': true,
-                '页面填充': true,
-                '点击翻页': false,
-                '阅读进度': false,
-                '夜间模式': false
+              comicImgList,
+              readSetting: {
+                Enable: true,
+                双页显示: true,
+                页面填充: true,
+                点击翻页: false,
+                阅读进度: false,
+                夜间模式: false,
               },
-              'EndExit': () => { scrollTo(0, 0); },
-              'comicName': document.title
+              EndExit: () => { scrollTo(0, 0) },
+              comicName: document.title,
             });
           }
         }
