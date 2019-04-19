@@ -55,7 +55,7 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
         EndExit: () => scrollTo(0, getTop(document.getElementById('comment-container'))),
         comicName: gallery.title.hasOwnProperty('japanese') ? gallery.title.japanese : gallery.title.english,
       });
-    } else if (comicReadModeDom.innerHTML.includes('loading') && loadLock && confirm('图片未加载完毕，确认要直接进入阅读模式？'))
+    } else if (loadLock && (!comicReadModeDom.innerHTML.includes('loading') || confirm('图片未加载完毕，确认要直接进入阅读模式？')))
       ComicReadWindow.start();
   });
 } else if (document.getElementsByClassName('index-container').length) {

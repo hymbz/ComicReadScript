@@ -16,7 +16,7 @@ loadScriptMenu('EhentaiUserSetting', {
   },
   Version: GM_info.script.version,
 });
-const imgList = {ehentai: [1, 2]};
+const imgList = {ehentai: []};
 
 // 判断当前页是否是漫画详情页
 if (typeof gid !== 'undefined') {
@@ -59,7 +59,7 @@ if (typeof gid !== 'undefined') {
         };
         comicReadModeDom.innerHTML = ` loading —— 0/${imgTotalNum}`;
         Loop(`https://exhentai.org/s/${document.querySelector('#gd1 div').style.backgroundImage.split('/')[6].slice(0, 10)}/${gid}-1`, 0);
-      } else if (comicReadModeDom.innerHTML.includes('loading') && loadLock && confirm('图片未加载完毕，确认要直接进入阅读模式？')) {
+      } else if (loadLock && (!comicReadModeDom.innerHTML.includes('loading') || confirm('图片未加载完毕，确认要直接进入阅读模式？'))) {
         loadComicReadWindow({
           comicImgList: imgList.ehentai,
           readSetting: ScriptMenu.UserSetting['漫画阅读'],

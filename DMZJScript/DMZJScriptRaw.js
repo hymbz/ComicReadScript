@@ -241,6 +241,77 @@ switch (location.hostname) {
     break;
   }
   case 'i.dmzj.com': {
+
+    /**
+     * 获取用户数据
+     * @param {String} type 数据类型
+     * @param {Object} Dom 用于在其上显示进度的按钮
+     *
+     * @returns {Object} 用户数据
+     */
+    const getUserData = (type, Dom) => new Promise((resolve, reject) => {
+      try {
+        // 取得尾页页数
+        const pageNum = (() => {
+          const temp = document.querySelectorAll('#page_id a[href^="#"]');
+          return Number(temp[temp.length - 1].innerText);
+        })();
+        let loadPageNum = pageNum;
+        let returnHtml = '';
+        const tipsDom = document.createElement('span');
+        tipsDom.className = 'mess_num';
+        Dom.parentNode.appendChild(tipsDom);
+
+        for (let i = 0; i <= pageNum; i++) {
+          $.ajax({
+            url: `/ajax/my/${type}`,
+            type: 'POST',
+            data: {
+              page: i,
+              type_id: 1,
+              letter_id: 0,
+              read_id: 1,
+            },
+          }).done((data) => {
+            returnHtml += data;
+            loadPageNum -= 1;
+            tipsDom.innerText = `${pageNum - loadPageNum}/${pageNum}`;
+            if (!loadPageNum) {
+              const tempDom = document.createElement('div');
+              tempDom.innerHTML = returnHtml;
+
+              switch (type) {
+                case 'subscribe':
+                  resolve([...tempDom.getElementsByClassName('dy_content_li')].map(e => {
+                    const aList = e.getElementsByTagName('a');
+                    return {
+                      name: aList[1].innerText,
+                      url: aList[0].href,
+                      id: aList[aList.length - 1].getAttribute('value'),
+                    };
+                  }));
+                  break;
+                case 'record':
+                  resolve([...tempDom.getElementsByClassName('his_li')].map(e => {
+                    const aList = e.getElementsByTagName('a');
+                    return {
+                      name: aList[1].innerText,
+                      url: aList[0].href,
+                      id: aList[aList.length - 1].id.split('_')[1],
+                    };
+                  }));
+                  break;
+              }
+            }
+          });
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
+
+
+
     if (location.pathname.includes('subscribe') && document.querySelector('#yc1.optioned')) {
       GM_addStyle('.sub_center_con{position: relative;}#script{position: absolute;right: 0;top: 0;border-width: 1px;border-color: #e6e6e6;border-top-style: solid;border-left-style: solid;cursor: pointer;}#importDetails .account_btm_cont p{margin: 1em 0;}');
       appendDom(document.getElementsByClassName('sub_potion')[0], `
@@ -257,59 +328,9 @@ switch (location.hostname) {
 
       const importDom = document.getElementById('scriptImport');
       const exportDom = document.getElementById('scriptExpor');
-      let subscriptionData = '';
-
-      /**
-       * 获取订阅数据，之后执行函数 run
-       *
-       * @param {*} run 取得订阅数据后执行的函数
-       */
-      const getSubscriptionData = (run) => {
-        // 取得尾页页数
-        const pageNum = (() => {
-          const temp = document.querySelectorAll('#page_id a[href^="#"]');
-          return Number(temp[temp.length - 1].innerText);
-        })();
-        let loadPageNum = pageNum;
-        const loadDom = document.createElement('span');
-        loadDom.className = 'mess_num';
-        exportDom.parentNode.appendChild(loadDom);
-
-        for (let i = 0; i <= pageNum; i++) {
-          $.ajax({
-            url: '/ajax/my/subscribe',
-            type: 'POST',
-            data: {
-              page: i,
-              type_id: 1,
-              letter_id: 0,
-              read_id: 1,
-            },
-            success: (data) => {
-              subscriptionData += data;
-              if (--loadPageNum)
-                loadDom.innerText = loadPageNum;
-              else {
-                const tempDom = document.createElement('div');
-                tempDom.innerHTML = subscriptionData;
-                subscriptionData = [...tempDom.getElementsByClassName('dy_content_li')].map(e => {
-                  const aList = e.getElementsByTagName('a');
-                  return {
-                    name: aList[1].innerText,
-                    url: aList[0].href,
-                    id: aList[aList.length - 1].getAttribute('value'),
-                  };
-                });
-                loadDom.innerText = subscriptionData.length;
-                run(subscriptionData);
-              }
-            },
-          });
-        }
-      };
 
       exportDom.addEventListener('click', () => {
-        getSubscriptionData(subscriptionData => {
+        getUserData('subscribe', exportDom).then(subscriptionData => {
           if (typeof saveAs === 'undefined')
             loadExternalScripts.FileSaver();
           saveAs(new Blob([JSON.stringify(subscriptionData, null, 4)], {type: 'text/plain;charset=utf-8'}), '动漫之家订阅信息.json');
@@ -318,7 +339,7 @@ switch (location.hostname) {
 
       importDom.addEventListener('change', (e) => {
         if (e.target.files.length) {
-          getSubscriptionData(serverSubscriptionData => {
+          getUserData('subscribe', exportDom).then(serverSubscriptionData => {
             const reader = new FileReader();
             reader.onload = (event) => {
               const loadDom = document.createElement('span');
@@ -391,6 +412,21 @@ switch (location.hostname) {
             reader.readAsText(e.target.files[0]);
           });
         }
+      });
+    } else if (location.pathname.includes('record') && document.querySelector('#yc1.optioned')) {
+      GM_addStyle('.sub_center_con{position: relative;}#script{position: absolute;right: 0;top: 0;border-width: 1px;border-color: #e6e6e6;border-top-style: solid;border-left-style: solid;cursor: pointer;}#importDetails .account_btm_cont p{margin: 1em 0;}');
+      appendDom(document.getElementsByClassName('inter_con_h')[0], `
+        <a id="scriptExpor" class="del_all" style="margin: 0 1rem;" href="javascript:">导出</a>
+      `);
+
+      const exportDom = document.getElementById('scriptExpor');
+
+      exportDom.addEventListener('click', () => {
+        getUserData('record', exportDom).then(recordData => {
+          if (typeof saveAs === 'undefined')
+            loadExternalScripts.FileSaver();
+          saveAs(new Blob([JSON.stringify(recordData, null, 4)], {type: 'text/plain;charset=utf-8'}), '动漫之家云端历史记录.json');
+        });
       });
     }
     break;
