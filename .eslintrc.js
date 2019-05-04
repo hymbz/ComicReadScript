@@ -149,6 +149,7 @@ module.exports = {
     'quotes': [
       'warn',
       'single',
+      { "avoidEscape": true }
     ],
     // 使用分号结尾
     'semi': ["error", "always", { "omitLastInOneLineBlock": true}],

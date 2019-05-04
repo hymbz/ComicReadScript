@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     2.2
+// @version     2.3
 // @author      hymbz
-// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，解除吐槽的字数限制」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
+// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
 // @include     *
 // @connect     *

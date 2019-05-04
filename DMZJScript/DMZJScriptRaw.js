@@ -59,7 +59,7 @@ switch (location.hostname) {
 
             GM_xmlhttpRequest({
               method: 'GET',
-              url: `http://v3api.dmzj.com/comic/${g_comic_id}.json`,
+              url: `http://v3api.dmzj.com/comic/comic_${g_comic_id}.json`,
               onload: (xhr) => {
                 if (xhr.status === 200) {
                   let temp = '';
@@ -141,7 +141,7 @@ switch (location.hostname) {
             } else {
               GM_xmlhttpRequest({
                 method: 'GET',
-                url: `http://v3api.dmzj.com/comic/${comicId}.json`,
+                url: `http://v3api.dmzj.com/comic/comic_${comicId}.json`,
                 onload: (xhr) => {
                   if (xhr.status === 200) {
                     let temp = '';
