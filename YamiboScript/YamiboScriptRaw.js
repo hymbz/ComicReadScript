@@ -42,7 +42,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
      *
      */
     const procImg = () => {
-      const comicImgList = document.querySelectorAll('.t_fsz img');
+      const comicImgList = [...document.querySelectorAll('.t_fsz img')];
       let i = comicImgList.length;
       while (i--) {
         if (comicImgList[i].getAttribute('file'))
@@ -130,7 +130,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
     // 适配有目录的帖子
     if (hasMenu) {
       const adaptationMenu = () => {
-        document.querySelectorAll('#threadindex li').forEach(e => {
+        [...document.querySelectorAll('#threadindex li')].forEach(e => {
           e.addEventListener('click', () => {
             e.onclick = null;
             ajaxget(...e.getAttribute('onclick').match(/'.+?'/g).map(e => e.slice(1, -1)), '', 'block', setTimeout(() => {
