@@ -137,7 +137,7 @@ if (typeof gid !== 'undefined') {
               imgList[selected_tag][i] = img;
             }
             loadLock = true;
-          } else if (comicReadModeDom.innerHTML.includes('loading') && loadLock && confirm('图片未加载完毕，确认要直接进入阅读模式？')) {
+          } else if (loadLock && (!comicReadModeDom.innerHTML.includes('loading') || confirm('图片未加载完毕，确认要直接进入阅读模式？'))) {
             loadComicReadWindow({
               comicImgList: imgList[selected_tag],
               readSetting: ScriptMenu.UserSetting['漫画阅读'],
