@@ -43,6 +43,18 @@ const appendDom = (node, textnode) => {
   node.appendChild(frag);
 };
 
+const addPreZero=(num)=>{
+  if(num<10){
+   return '000'+num;
+  }else if(num<100){
+   return '00'+num;
+  }else if(num<1000){
+   return '0'+num;
+  }else{
+   return num;
+  }
+ }
+
 /**
  * 加载外部脚本
  */
@@ -180,7 +192,11 @@ const loadComicReadWindow = function (Info) {
           if (this.blobList) {
             const {blobList} = this;
             while (imgIndex--)
-              zip.file(`${imgIndex}.${blobList[imgIndex][1]}`, blobList[imgIndex][0]);
+            {
+              let indexfull=addPreZero(imgIndex);
+              zip.file(`${indexfull}.${blobList[imgIndex][1]}`, blobList[imgIndex][0]);
+            }
+              
             zip.generateAsync({type: 'blob'}).then((content) => {
               saveAs(content, `${ComicReadWindow.comicName}.zip`);
             });
@@ -199,7 +215,8 @@ const loadComicReadWindow = function (Info) {
                 responseType: 'blob',
                 onload: (xhr, index = tempIndex) => {
                   if (xhr.status === 200) {
-                    zip.file(`${index}.${xhr.finalUrl.replace(/.+\./, '')}`, xhr.response);
+                    let indexfull=addPreZero(index);
+                    zip.file(`${indexfull}.${xhr.finalUrl.replace(/.+\./, '')}`, xhr.response);
                     if (++comicDownloadNum === imgTotalNum) {
                       downDom.setAttribute('tooltip', '下载完成');
                       downDomSvg.setAttribute('d', 'M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17 15.18 9l1.41 1.41L10 17z');
