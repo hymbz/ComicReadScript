@@ -9,6 +9,7 @@ loadScriptMenu('DMZJUserSetting', {
     点击翻页: false,
     阅读进度: true,
     夜间模式: true,
+    卷轴模式: false,
   },
   体验优化: {
     Enable: true,
@@ -18,7 +19,6 @@ loadScriptMenu('DMZJUserSetting', {
     优化网页右上角用户信息栏的加载: true,
     自动进入漫画阅读模式: true,
   },
-  Version: GM_info.script.version,
 });
 
 switch (location.hostname) {

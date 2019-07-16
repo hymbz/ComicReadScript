@@ -20,12 +20,12 @@ loadScriptMenu('NewYamiboUserSetting', {
     点击翻页: false,
     阅读进度: true,
     夜间模式: false,
+    卷轴模式: false,
   },
   体验优化: {
     Enable: true,
     自动进入漫画阅读模式: true,
   },
-  Version: GM_info.script.version,
 });
 
 // 判断当前页是漫画内容

@@ -8,6 +8,7 @@ loadScriptMenu('UserSetting', {
     点击翻页: false,
     阅读进度: true,
     夜间模式: false,
+    卷轴模式: false,
   },
   记录阅读历史: {
     Enable: true,
@@ -21,7 +22,6 @@ loadScriptMenu('UserSetting', {
     固定导航条: true,
     自动进入漫画阅读模式: true,
   },
-  Version: GM_info.script.version,
 });
 
 

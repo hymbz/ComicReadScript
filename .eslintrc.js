@@ -118,8 +118,6 @@ module.exports = {
     'new-cap': ['error',{ "capIsNew": false }],
     // 禁止混合使用不同的操作符
     'no-mixed-operators': 'warn',
-    // 禁用否定表达式
-    'no-negated-condition': 'warn',
     // 禁用行尾空白
     'no-trailing-spaces': 'warn',
     // 禁止可以在有更简单的可替代的表达式时使用三元操作符

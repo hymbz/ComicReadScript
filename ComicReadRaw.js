@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     2.5
+// @version     2.6
 // @author      hymbz
-// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
+// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
 // @include     *
 // @connect     *
@@ -146,12 +146,13 @@ const loadComicReadWindow = function (Info) {
           }
 
           const zip = new JSZip();
+          const imgIndexLength = this.comicImgList.length.toString().length;
           let imgIndex = this.comicImgList.length;
 
           if (this.blobList) {
             const {blobList} = this;
             while (imgIndex--)
-              zip.file(`${imgIndex}.${blobList[imgIndex][1]}`, blobList[imgIndex][0]);
+              zip.file(`${imgIndex.toString().padStart(imgIndexLength, 0)}.${blobList[imgIndex][1]}`, blobList[imgIndex][0]);
             zip.generateAsync({type: 'blob'}).then((content) => {
               saveAs(content, `${ComicReadWindow.comicName}.zip`);
             });
@@ -170,7 +171,7 @@ const loadComicReadWindow = function (Info) {
                 responseType: 'blob',
                 onload: (xhr, index = tempIndex) => {
                   if (xhr.status === 200) {
-                    zip.file(`${index}.${xhr.finalUrl.replace(/.+\./, '')}`, xhr.response);
+                    zip.file(`${index.toString().padStart(imgIndexLength, 0)}.${xhr.finalUrl.replace(/.+\./, '')}`, xhr.response);
                     if (++comicDownloadNum === imgTotalNum) {
                       downDom.setAttribute('tooltip', '下载完成');
                       downDomSvg.setAttribute('d', 'M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17 15.18 9l1.41 1.41L10 17z');
@@ -207,8 +208,9 @@ const loadComicReadWindow = function (Info) {
         },
         exitComicRead (end) {
           // 退出，如果是从结尾的 End 退出的执行 EndExit，否则跳至网页顶部
-          document.body.style.overflow = 'auto';
+          document.documentElement.style.overflow = 'auto';
           this.show = false;
+          [...document.querySelectorAll('body>.hidden')].forEach(e => e.classList.remove('hidden'));
           if (end) {
             this.PageNum = 0;
             this.EndExit();
@@ -265,6 +267,15 @@ const loadComicReadWindow = function (Info) {
           } else
             return this.fillInfluence[i];
         },
+        switchScrollMode () {
+          // 切换卷轴模式
+          this.readSetting['卷轴模式'] = !this.readSetting['卷轴模式'];
+          document.documentElement.style.overflow = this.readSetting['卷轴模式'] ? 'hidden auto' : 'hidden';
+          if (this.readSetting['卷轴模式'])
+            [...document.querySelectorAll('body>:not(#comicRead)')].forEach(e => e.classList.add('hidden'));
+          scrollTo(0, 0);
+          this.$forceUpdate();
+        },
       },
       updated () {
         this.$nextTick(() => {
@@ -296,7 +307,12 @@ const loadComicReadWindow = function (Info) {
   };
 
   ComicReadWindow.start = () => {
-    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = ComicReadWindow.readSetting['卷轴模式'] ? 'hidden auto' : 'hidden';
+    if (ComicReadWindow.readSetting['卷轴模式']) {
+      [...document.querySelectorAll('body>:not(#comicRead)')].forEach(e => e.classList.add('hidden'));
+      scrollTo(0, 0);
+    }
+
     ComicReadWindow.fillInfluence = {
       '-1': Info.readSetting['页面填充'],
       now: Info.readSetting['页面填充'],
@@ -378,7 +394,7 @@ const loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
     GM_setValue(websiteSettingName, JSON.stringify(defaultUserSetting));
   }
   // 检查脚本版本，如果版本发生变化，将旧版设置移至新版设置
-  if (!ScriptMenu.UserSetting.Version || ScriptMenu.UserSetting.Version !== GM_info.script.version) {
+  if (GM_getValue('Version') !== GM_info.script.version) {
     const move = (a, b) => {
       Object.keys(b).forEach(e => {
         if (typeof b[e] === 'object')
@@ -389,7 +405,7 @@ const loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
     };
     move(defaultUserSetting, ScriptMenu.UserSetting);
     ScriptMenu.UserSetting = defaultUserSetting;
-    ScriptMenu.UserSetting.Version = GM_info.script.version;
+    GM_setValue('Version', GM_info.script.version);
     GM_setValue(websiteSettingName, JSON.stringify(ScriptMenu.UserSetting));
     GM_notification(`ComicRead 更新至 ${GM_info.script.version}`);
   }
@@ -422,11 +438,25 @@ switch (location.hostname) {
     '@@NhentaiScript.@@';
     break;
   }
+  case 'www.dm5.com':
+  case 'www.1kkk.com': {
+    '@@dm5Script.@@';
+    break;
+  }
+  case 'www.manhuagui.com':
+  case 'tw.manhuagui.com': {
+    '@@manhuaguiScript.@@';
+    break;
+  }
+  case 'www.manhuadb.com': {
+    '@@manhuadbScript.@@';
+    break;
+  }
   default: {
     window.addEventListener('load', () => {
       GM_registerMenuCommand('进入简易漫画阅读模式', () => {
         if (typeof Vue === 'undefined') {
-          const comicImgList = [...document.getElementsByTagName('img')].filter(e => e.height > 500 && e.width > 500);
+          const comicImgList = [...document.getElementsByTagName('img')].filter(e => e.naturalHeight > 500 && e.naturalWidth > 500);
           if (comicImgList.length === 0)
             alert('没有找到图片');
           else if (comicImgList.length !== new Set(comicImgList).length || confirm('该网页可能使用了懒加载技术，确认所有图片均已加载完毕？')) {
@@ -439,6 +469,7 @@ switch (location.hostname) {
                 点击翻页: false,
                 阅读进度: false,
                 夜间模式: false,
+                卷轴模式: false,
               },
               EndExit: () => { scrollTo(0, 0) },
               comicName: document.title,

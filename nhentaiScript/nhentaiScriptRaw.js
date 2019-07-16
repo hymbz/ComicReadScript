@@ -8,6 +8,7 @@ loadScriptMenu('NhentaiUserSetting', {
     点击翻页: false,
     阅读进度: true,
     夜间模式: true,
+    卷轴模式: false,
   },
   体验优化: {
     Enable: true,
@@ -15,7 +16,6 @@ loadScriptMenu('NhentaiUserSetting', {
     彻底屏蔽漫画: true,
     在新页面中打开链接: true,
   },
-  Version: GM_info.script.version,
 });
 
 

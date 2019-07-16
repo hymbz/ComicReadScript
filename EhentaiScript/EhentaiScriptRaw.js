@@ -8,13 +8,13 @@ loadScriptMenu('EhentaiUserSetting', {
     点击翻页: false,
     阅读进度: true,
     夜间模式: true,
+    卷轴模式: false,
   },
   nhentai匹配: {
     Enable: true,
     漫画: true,
     Tag: true,
   },
-  Version: GM_info.script.version,
 });
 const imgList = {ehentai: []};
 
