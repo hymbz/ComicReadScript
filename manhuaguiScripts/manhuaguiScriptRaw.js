@@ -28,17 +28,18 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
   const comicReadMode = document.getElementById('comicReadMode');
   comicReadMode.addEventListener('click', () => { ComicReadWindow.start() });
 
-  const getPicUrl = unsafeWindow.eval(unsafeWindow.eval(document.scripts[4].innerHTML.slice(26)).slice(0, -11)).getPicUrl;
+  const comicInfo = JSON.parse(eval(document.querySelector('body > script:nth-child(8)').innerHTML.slice(26)).slice(12, -12));
+  const imgs = comicInfo.files.map(file => `${pVars.manga.filePath}${file}?cid=${comicInfo.cid}${Object.entries(comicInfo.sl).map(attr => `&${attr[0]}=${attr[1]}`)}`);
 
   loadComicReadWindow({
     comicImgList: [...new Array(unsafeWindow.cInfo.len).keys()].map((e, i) => {
       const temp = document.createElement('div');
-      temp.innerHTML = `<img id="imgPic" class="img-responsive" src="${getPicUrl(i)}" alt="">`;
+      temp.innerHTML = `<img id="imgPic" class="img-responsive" src="${imgs[i]}" alt="">`;
       return temp.firstChild;
     }),
     readSetting: ScriptMenu.UserSetting['漫画阅读'],
     EndExit: () => scrollTo(0, 0),
-    comicName: document.title,
+    comicName: `${comicInfo.bname} ${comicInfo.cname}`,
     nextChapter: cInfo.nextId !== 0 ? `/comic/${cInfo.bid}/${cInfo.nextId}` : null,
     prevChapter: cInfo.prevId !== 0 ? `/comic/${cInfo.bid}/${cInfo.prevId}` : null,
   });

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     2.6
+// @version     2.7
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -326,11 +326,17 @@ const loadComicReadWindow = function (Info) {
       case 32:
       case 37:
       case 40:
-        ComicReadWindow.scrollPage(false);
+        if (ComicReadWindow.PageNum === 'end')
+          location.href = Info.nextChapter;
+        else
+          ComicReadWindow.scrollPage(false);
         break;
       case 38:
       case 39:
-        ComicReadWindow.scrollPage(true);
+        if (ComicReadWindow.PageNum === 0)
+          location.href = Info.prevChapter;
+        else
+          ComicReadWindow.scrollPage(true);
         break;
     }
   };
@@ -368,7 +374,7 @@ const loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
     loadExternalScripts.Vue();
 
   GM_addStyle('#ScriptMenu{position:fixed;z-index:9999999;top:10vh;left:30vw;flex-wrap:wrap;width:40vw;height:45vh;color:black;border-radius:10px;background-color:var(--color1)}#ScriptMenu .SMtitle{flex-basis:100%;height:3em;cursor:move;color:#FFF}#ScriptMenu .SMtitle p{font-size:1.2em;font-weight:bold;padding:.75em 1em}#ScriptMenu .SMtitle svg{position:absolute;top:12px;right:2%;width:18px;height:17px;cursor:pointer;border-radius:4px;background-color:darkgray;fill:white}#ScriptMenu .SMtitle svg:hover{background-color:#20BBE4}#ScriptMenu .SMtab{float:left;width:15%;min-width:80px;height:95%;margin:0;padding:1em 0;text-align:right;border:1px var(--color1);border-bottom-style:solid;border-left-style:solid;background-color:var(--color2)}#ScriptMenu .SMtab ul{margin:0;padding:0}#ScriptMenu .SMtab ul li{line-height:33px;margin:0 10px;list-style:none;cursor:pointer;border-bottom:1px solid var(--color4)}#ScriptMenu .SMtab ul li.a{margin:-1px 0 0;padding:0 10px 0 9px;border-top:1px solid var(--color4);border-bottom-style:solid;background:var(--color3)}#ScriptMenu .SMtab ul li:first-of-type{border-top:1px solid var(--color4)}#ScriptMenu .SMtab a{line-height:35px;cursor:pointer}#ScriptMenu .SMconifg{line-height:1.6em;overflow:auto;height:95%;padding:2em 1.5em 0;text-align:left;border:1px var(--color1);border-right-style:solid;border-bottom-style:solid;background-color:var(--color3)}#ScriptMenu .SMconifg button{cursor:pointer;vertical-align:middle;color:#FFF !important;border:none;border-radius:5px;background-color:var(--color1);background-image:none}#ScriptMenu .SMconifg>div{margin-bottom:2em;padding:13px;border:1px solid}#ScriptMenu .SMconifg>div p:first-child{width:max-content;margin-top:-23px;padding:0 4px;cursor:default;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;background-color:var(--color3);-webkit-touch-callout:none;-khtml-user-select:none}#ScriptMenu .SMconifg>div>div{display:inline-block;margin-right:2em}#ScriptMenu .SMconifg>div>div input{margin:.5em 0}#ScriptMenu .SMconifg>div.disabled{border-color:darkgray}#ScriptMenu .SMconifg>div.disabled p{color:darkgray}');
-  appendDom(document.body, `<div id="ScriptMenu" :style="{top:top+'px',left:left+'px'}" v-if="show"><div class="SMtitle" draggable="true" @touchstart="dragMoveStart" @touchmove="dragMove" @dragstart="dragMoveStart" @drag="dragMove"><p>脚本设置</p><svg title="关闭" @click="saveUserSetting" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div><div class="SMtab"><ul><li @click="showWindow = '功能设置'" :class="{a: showWindow == '功能设置'}">功能设置</li><li @click="showWindow = '其他'" :class="{a: showWindow == '其他'}">其他</li><li @click="showWindow = '关于'" :class="{a: showWindow == '关于'}">关于</li></ul></div><div class="SMconifg"><template v-if="showWindow == '功能设置'"><div v-for="(value, key) in UserSetting" v-if="key != 'Version'" :class="{disabled: !value.Enable}"><p @click="UserSetting[key].Enable = !UserSetting[key].Enable;">[[value.Enable?key:key+"(禁用)"]]</p><div v-for="(v, k) in value" v-if="value.Enable && k!=='Enable'"><template v-if="typeof v == 'boolean'"><input class="pc" type="checkbox" v-model="UserSetting[key][k]" checked="">[[k]]</template><template v-else>[[k]]：<input class="px" type="text" v-model.trim.lazy="UserSetting[key][k]"></template></div></div></template><template v-else-if="showWindow == '其他'"><button @click="ResetUserSetting"><strong>恢复默认设置</strong></button></template><template v-else-if="showWindow == '关于'"><p><strong>当前版本号：[[UserSetting.GM_info.script.version]]</strong><br><br><strong>Github地址——<a href="https://github.com/hymbz/ComicReadScript" target="_blank">https://github.com/hymbz/ComicReadScript</a></strong><br><strong>Greasy Fork地址——<a href="https://greasyfork.org/zh-CN/scripts/374903-comicread" target="_blank">https://greasyfork.org/zh-CN/scripts/374903-comicread</a></strong></strong></p></template></div></div>`);
+  appendDom(document.body, `<div id="ScriptMenu" :style="{top:top+'px',left:left+'px'}" v-if="show"><div class="SMtitle" draggable="true" @touchstart="dragMoveStart" @touchmove="dragMove" @dragstart="dragMoveStart" @drag="dragMove"><p>脚本设置</p><svg title="关闭" @click="saveUserSetting" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></div><div class="SMtab"><ul><li @click="showWindow = '功能设置'" :class="{a: showWindow == '功能设置'}">功能设置</li><li @click="showWindow = '其他'" :class="{a: showWindow == '其他'}">其他</li><li @click="showWindow = '关于'" :class="{a: showWindow == '关于'}">关于</li></ul></div><div class="SMconifg"><template v-if="showWindow == '功能设置'"><div v-for="(value, key) in UserSetting" v-if="key != 'Version'" :class="{disabled: !value.Enable}"><p @click="UserSetting[key].Enable = !UserSetting[key].Enable;">[[value.Enable?key:key+"(禁用)"]]</p><div v-for="(v, k) in value" v-if="value.Enable && k!=='Enable'"><template v-if="typeof v == 'boolean'"><input class="pc" type="checkbox" v-model="UserSetting[key][k]" checked="">[[k]]</template><template v-else>[[k]]：<input class="px" type="text" v-model.trim.lazy="UserSetting[key][k]"></template></div></div></template><template v-else-if="showWindow == '其他'"><button @click="ResetUserSetting"><strong>恢复默认设置</strong></button></template><template v-else-if="showWindow == '关于'"><p><strong>当前版本号：[[UserSetting.Version]]</strong><br><br><strong>Github地址——<a href="https://github.com/hymbz/ComicReadScript" target="_blank">https://github.com/hymbz/ComicReadScript</a></strong><br><strong>Greasy Fork地址——<a href="https://greasyfork.org/zh-CN/scripts/374903-comicread" target="_blank">https://greasyfork.org/zh-CN/scripts/374903-comicread</a></strong></strong></p></template></div></div>`);
   ScriptMenu = new Vue({
     el: '#ScriptMenu',
     delimiters: ['[[', ']]'],
@@ -1691,17 +1697,18 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
   const comicReadMode = document.getElementById('comicReadMode');
   comicReadMode.addEventListener('click', () => { ComicReadWindow.start() });
 
-  const getPicUrl = unsafeWindow.eval(unsafeWindow.eval(document.scripts[4].innerHTML.slice(26)).slice(0, -11)).getPicUrl;
+  const comicInfo = JSON.parse(eval(document.querySelector('body > script:nth-child(8)').innerHTML.slice(26)).slice(12, -12));
+  const imgs = comicInfo.files.map(file => `${pVars.manga.filePath}${file}?cid=${comicInfo.cid}${Object.entries(comicInfo.sl).map(attr => `&${attr[0]}=${attr[1]}`)}`);
 
   loadComicReadWindow({
     comicImgList: [...new Array(unsafeWindow.cInfo.len).keys()].map((e, i) => {
       const temp = document.createElement('div');
-      temp.innerHTML = `<img id="imgPic" class="img-responsive" src="${getPicUrl(i)}" alt="">`;
+      temp.innerHTML = `<img id="imgPic" class="img-responsive" src="${imgs[i]}" alt="">`;
       return temp.firstChild;
     }),
     readSetting: ScriptMenu.UserSetting['漫画阅读'],
     EndExit: () => scrollTo(0, 0),
-    comicName: document.title,
+    comicName: `${comicInfo.bname} ${comicInfo.cname}`,
     nextChapter: cInfo.nextId !== 0 ? `/comic/${cInfo.bid}/${cInfo.nextId}` : null,
     prevChapter: cInfo.prevId !== 0 ? `/comic/${cInfo.bid}/${cInfo.prevId}` : null,
   });
