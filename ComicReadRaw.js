@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     2.7
+// @version     2.8
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -98,8 +98,9 @@ const loadComicReadWindow = function (Info) {
             index: '填充',
             class: 'fill',
           });
-          const twoPageRatio = window.innerWidth / 2 / window.innerHeight;
-          const onePageRatio = window.innerWidth / window.innerHeight;
+          const pageRatio = window.innerWidth / 2 / window.innerHeight;
+          const bannerRatio = window.innerWidth / window.innerHeight;
+          const verticalRatio = window.innerWidth / 2 / 3 / window.innerHeight;
           let tempImgInfo = [];
           this.ComicImgInfo = [];
 
@@ -114,7 +115,9 @@ const loadComicReadWindow = function (Info) {
             if (this.readSetting['双页显示']) {
               if (this.fillInfluence[i - 1])
                 tempImgInfo.push(fillPage(imgInfo.src));
-              if (imgRatio < twoPageRatio) {
+              if (imgRatio <= pageRatio) {
+                if (imgRatio < verticalRatio)
+                  imgInfo.class = 'vertical';
                 if (tempImgInfo.length)
                   this.ComicImgInfo.push([imgInfo, tempImgInfo.shift()]);
                 else
@@ -131,12 +134,16 @@ const loadComicReadWindow = function (Info) {
                   this.fillInfluence[i] = false;
               }
             }
-            imgInfo.class = imgRatio > onePageRatio ? 'long' : 'wide';
+            imgInfo.class = imgRatio > bannerRatio ? 'long' : 'wide';
             this.ComicImgInfo.push([imgInfo]);
           }
 
           if (tempImgInfo.length && tempImgInfo[0].class !== 'fill')
             this.ComicImgInfo.push([fillPage(tempImgInfo[0].src), tempImgInfo.shift()]);
+
+          const isVerticalComic = () => this.ComicImgInfo.reduce((num, e) => num + e.filter(e => e.class === 'vertical').length, 0) > this.comicImgList.length * 0.6;
+          if (!this.readSetting['卷轴模式'] && isVerticalComic())
+            this.switchScrollMode();
         },
         download () {
           // 下载漫画
@@ -273,7 +280,6 @@ const loadComicReadWindow = function (Info) {
           document.documentElement.style.overflow = this.readSetting['卷轴模式'] ? 'hidden auto' : 'hidden';
           if (this.readSetting['卷轴模式'])
             [...document.querySelectorAll('body>:not(#comicRead)')].forEach(e => e.classList.add('hidden'));
-          scrollTo(0, 0);
           this.$forceUpdate();
         },
       },
@@ -293,21 +299,32 @@ const loadComicReadWindow = function (Info) {
   window.onresize = ComicReadWindow.updatedData;
   // 键盘翻页
   document.onkeyup = (e) => {
+    const turnPages = (next) => {
+      if (next) {
+        if (!ComicReadWindow.readSetting['卷轴模式']) {
+          if (ComicReadWindow.PageNum === 'end')
+            location.href = Info.nextChapter;
+          else
+            ComicReadWindow.scrollPage(false);
+        }
+      } else {
+        if (!ComicReadWindow.readSetting['卷轴模式']) {
+          if (ComicReadWindow.PageNum === 0)
+            location.href = Info.prevChapter;
+          else
+            ComicReadWindow.scrollPage(true);
+        }
+      }
+    };
     switch (e.keyCode) {
       case 32:
       case 37:
       case 40:
-        if (ComicReadWindow.PageNum === 'end')
-          location.href = Info.nextChapter;
-        else
-          ComicReadWindow.scrollPage(false);
+        turnPages(ComicReadWindow.readSetting['翻页键反转']);
         break;
       case 38:
       case 39:
-        if (ComicReadWindow.PageNum === 0)
-          location.href = Info.prevChapter;
-        else
-          ComicReadWindow.scrollPage(true);
+        turnPages(!ComicReadWindow.readSetting['翻页键反转']);
         break;
     }
   };
@@ -392,12 +409,23 @@ const loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
     },
   });
 
-  ScriptMenu.defaultUserSetting = defaultUserSetting;
+  ScriptMenu.defaultUserSetting = Object.assign({
+    漫画阅读: {
+      Enable: true,
+      双页显示: true,
+      页面填充: true,
+      点击翻页: false,
+      阅读进度: true,
+      夜间模式: false,
+      卷轴模式: false,
+      翻页键反转: false,
+    },
+  }, defaultUserSetting);
   if (GM_getValue(websiteSettingName))
     ScriptMenu.UserSetting = JSON.parse(GM_getValue(websiteSettingName));
   else {
-    ScriptMenu.UserSetting = defaultUserSetting;
-    GM_setValue(websiteSettingName, JSON.stringify(defaultUserSetting));
+    ScriptMenu.UserSetting = ScriptMenu.defaultUserSetting;
+    GM_setValue(websiteSettingName, JSON.stringify(ScriptMenu.defaultUserSetting));
   }
   // 检查脚本版本，如果版本发生变化，将旧版设置移至新版设置
   if (GM_getValue('Version') !== GM_info.script.version) {
@@ -409,8 +437,8 @@ const loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
           a[e] = b[e];
       });
     };
-    move(defaultUserSetting, ScriptMenu.UserSetting);
-    ScriptMenu.UserSetting = defaultUserSetting;
+    move(ScriptMenu.defaultUserSetting, ScriptMenu.UserSetting);
+    ScriptMenu.UserSetting = ScriptMenu.defaultUserSetting;
     GM_setValue('Version', GM_info.script.version);
     GM_setValue(websiteSettingName, JSON.stringify(ScriptMenu.UserSetting));
     GM_notification(`ComicRead 更新至 ${GM_info.script.version}`);
@@ -444,6 +472,7 @@ switch (location.hostname) {
     '@@NhentaiScript.@@';
     break;
   }
+  case 'tel.dm5.com':
   case 'www.dm5.com':
   case 'www.1kkk.com': {
     '@@dm5Script.@@';

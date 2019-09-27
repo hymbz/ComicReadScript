@@ -22,7 +22,7 @@ for root, dirs, files in os.walk(sys.argv[1], topdown=False):
           # css 直接替换
           if fileName.split('.')[1] == "css":
             with open(os.path.join(root, fileName), 'r', encoding="utf-8") as f:
-              mainStr = mainStr.replace(f"@@{fileName}@@", f.read())
+              mainStr = mainStr.replace(f"@@{fileName}@@", re.sub(r'\n','',f.read()))
           # html 会将 ' 换成 ` ，以防止引号问题
           elif fileName.split('.')[1] == "html":
             with open(os.path.join(root, fileName), 'r', encoding="utf-8") as f:

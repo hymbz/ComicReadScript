@@ -13,15 +13,6 @@ while (i--) {
 
 GM_addStyle(':root {--color1:#551200;--color2:#FCF8E3;--color3:#F7F5F0;--color4:#BBB;}');
 loadScriptMenu('NewYamiboUserSetting', {
-  漫画阅读: {
-    Enable: true,
-    双页显示: true,
-    页面填充: true,
-    点击翻页: false,
-    阅读进度: true,
-    夜间模式: false,
-    卷轴模式: false,
-  },
   体验优化: {
     Enable: true,
     自动进入漫画阅读模式: true,

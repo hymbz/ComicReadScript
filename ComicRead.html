@@ -73,9 +73,9 @@
   </div>
 
   <div v-else id="comicShow" class="scrollMode" @mousemove.capture="MouseMoveControl">
-    <template v-for="(Img,index) in comicImgList">
+    <div v-for="(Img,index) in comicImgList" :index="index">
       <img :src=Img.src :alt="index">
-    </template>
+    </div>
 
     <div index="end">
       <a title="上一话" v-if="prevChapter" :href="prevChapter">上一话</a>

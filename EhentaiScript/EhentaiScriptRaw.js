@@ -1,15 +1,6 @@
 /* global gid, selected_link, selected_tag */
 GM_addStyle(':root {--color1: #5C3C2C;--color2: #E3E0D1;--color3: #edebdf;--color4: #aea5a5;} body {padding: 0 !important}');
 loadScriptMenu('EhentaiUserSetting', {
-  漫画阅读: {
-    Enable: true,
-    双页显示: true,
-    页面填充: true,
-    点击翻页: false,
-    阅读进度: true,
-    夜间模式: true,
-    卷轴模式: false,
-  },
   nhentai匹配: {
     Enable: true,
     漫画: true,

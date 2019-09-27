@@ -18,7 +18,7 @@
           user-select: none;
 
   background-color: white;
-  [index]{
+  &:not(.scrollMode) [index]{
     display: flex;
     align-items: center;
     justify-content: center;
@@ -48,6 +48,8 @@
     }
   }
   [index="end"]{
+    display: flex;
+    justify-content: center;
     font-weight: bold;
     line-height: 60px;
 
@@ -71,6 +73,13 @@
     a[title="下一话"]{
       right: 40vw;
     }
+  }
+  &.scrollMode{
+    img{
+      max-width:95%;margin:2em auto;display:block
+    }
+
+    .fill{display:none}
   }
 }
 

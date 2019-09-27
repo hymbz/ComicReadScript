@@ -1,15 +1,6 @@
 /* global fid, tid, ajaxget */
 GM_addStyle(':root {--color1:#6E2B19;--color2:#FFEEBA;--color3:#FFF5D7;--color4:#DBC38C;} @@YamiboScript.css@@');
 loadScriptMenu('UserSetting', {
-  漫画阅读: {
-    Enable: true,
-    双页显示: true,
-    页面填充: true,
-    点击翻页: false,
-    阅读进度: true,
-    夜间模式: false,
-    卷轴模式: false,
-  },
   记录阅读历史: {
     Enable: true,
     上次阅读进度标签颜色: '#6e2b19',

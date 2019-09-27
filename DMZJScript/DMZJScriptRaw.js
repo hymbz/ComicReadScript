@@ -2,15 +2,6 @@
 GM_addStyle(':root {--color1: #05a7ca;--color2: #f8fcff;--color3: #ffffff;--color4: #aea5a5;}');
 
 loadScriptMenu('DMZJUserSetting', {
-  漫画阅读: {
-    Enable: true,
-    双页显示: true,
-    页面填充: true,
-    点击翻页: false,
-    阅读进度: true,
-    夜间模式: true,
-    卷轴模式: false,
-  },
   体验优化: {
     Enable: true,
     阅读被封漫画: true,

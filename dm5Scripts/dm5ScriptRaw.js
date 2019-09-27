@@ -1,22 +1,14 @@
-/* global DM5_CID, DM5_MID, DM5_VIEWSIGN_DT, DM5_VIEWSIGN, DM5_IMAGE_COUNT, DM5_CTITLE, d */
-GM_addStyle(':root {--color1: #FD113A;--color2: #f7f7f7;--color3: #fff;--color4: #aea5a5;} body {padding: 0 !important}');
+/* global DM5_CID, DM5_MID, DM5_VIEWSIGN_DT, DM5_VIEWSIGN, DM5_IMAGE_COUNT, DM5_CTITLE, DM5_PageType, d */
+GM_addStyle(':root {--color1: #FD113A;--color2: #f7f7f7;--color3: #fff;--color4: #aea5a5;}');
 loadScriptMenu('dm5UserSetting', {
-  漫画阅读: {
-    Enable: true,
-    双页显示: true,
-    页面填充: true,
-    点击翻页: false,
-    阅读进度: true,
-    夜间模式: false,
-    卷轴模式: false,
-  },
   体验优化: {
     Enable: true,
     自动进入漫画阅读模式: true,
   },
 });
 
-if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
+// 在漫画详情页 DM5_PageType 为 4，在漫画页则为 0
+if (!DM5_PageType && ScriptMenu.UserSetting['漫画阅读'].Enable) {
   appendDom(
     document.querySelector('.right-bar'),
     '<a id="comicReadMode" href="javascript:;">阅读模式(脚本)</a>'

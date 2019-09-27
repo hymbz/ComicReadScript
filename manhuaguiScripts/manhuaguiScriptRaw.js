@@ -2,15 +2,6 @@
 // TODO:调整颜色
 GM_addStyle(':root {--color1: #479fdd;--color2: #f0f0f0;--color3: #fff;--color4: #aea5a5;} body {padding: 0 !important}');
 loadScriptMenu('manhuaguiUserSetting', {
-  漫画阅读: {
-    Enable: true,
-    双页显示: true,
-    页面填充: true,
-    点击翻页: false,
-    阅读进度: true,
-    夜间模式: false,
-    卷轴模式: false,
-  },
   体验优化: {
     Enable: true,
     自动进入漫画阅读模式: true,

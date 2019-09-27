@@ -1,15 +1,6 @@
 /* global unsafeWindow, GM_addStyle, GM_info, GM_xmlhttpRequest, appendDom, getTop, ComicReadWindow, ScriptMenu, gallery, N */
 GM_addStyle(':root {--color1: #ed2553;--color2: #0d0d0d;--color3: #1f1f1f;--color4: #aea5a5;} #ScriptMenu{color: white !important;} @@NhentaiScript.css@@');
 loadScriptMenu('NhentaiUserSetting', {
-  漫画阅读: {
-    Enable: true,
-    双页显示: true,
-    页面填充: true,
-    点击翻页: false,
-    阅读进度: true,
-    夜间模式: true,
-    卷轴模式: false,
-  },
   体验优化: {
     Enable: true,
     自动翻页: true,
