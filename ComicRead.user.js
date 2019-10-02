@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     2.8
+// @version     2.9
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -329,16 +329,18 @@ const loadComicReadWindow = function (Info) {
   // 键盘翻页
   document.onkeyup = (e) => {
     const turnPages = (next) => {
+      if(!ComicReadWindow.show)
+        return;
       if (next) {
         if (!ComicReadWindow.readSetting['卷轴模式']) {
-          if (ComicReadWindow.PageNum === 'end')
+          if (Info.nextChapter && ComicReadWindow.PageNum === 'end')
             location.href = Info.nextChapter;
           else
             ComicReadWindow.scrollPage(false);
         }
       } else {
         if (!ComicReadWindow.readSetting['卷轴模式']) {
-          if (ComicReadWindow.PageNum === 0)
+          if (Info.prevChapter && ComicReadWindow.PageNum === 0)
             location.href = Info.prevChapter;
           else
             ComicReadWindow.scrollPage(true);
@@ -346,14 +348,32 @@ const loadComicReadWindow = function (Info) {
       }
     };
     switch (e.keyCode) {
-      case 32:
+      // 方向键左
       case 37:
-      case 40:
+      // 逗号
+      case 188:
         turnPages(ComicReadWindow.readSetting['翻页键反转']);
         break;
-      case 38:
+      // 方向键右
       case 39:
+      // 句号
+      case 190:
         turnPages(!ComicReadWindow.readSetting['翻页键反转']);
+        break;
+
+      // 空格
+      case 32:
+      // PageUp
+      case 33:
+      // 方向键上
+      case 38:
+        turnPages(false);
+        break;
+      // PageDown
+      case 34:
+      // 方向键下
+      case 40:
+        turnPages(true);
         break;
     }
   };
