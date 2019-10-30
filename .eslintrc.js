@@ -29,6 +29,7 @@ module.exports = {
     'loadComicReadWindow': false,
     'loadExternalScripts': false,
     'loadScriptMenu': false,
+    'createElement': false,
   },
   'extends': 'eslint:recommended',
   'parserOptions': {

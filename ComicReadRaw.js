@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     3.1
+// @version     3.2
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -509,30 +509,68 @@ switch (location.hostname) {
   }
   default: {
     window.addEventListener('load', () => {
-      GM_registerMenuCommand('进入简易漫画阅读模式', () => {
+      let lock = true;
+      const autoLoadList = GM_getValue('autoLoadList', []);
+      const autoLoad = autoLoadList.includes(location.hostname);
+      const start = () => {
+        const imgList = [...document.getElementsByTagName('img')]
+          .filter(e => e.naturalHeight > 500 && e.naturalWidth > 500)
+          .map(e => e.src);
         if (typeof Vue === 'undefined') {
-          const comicImgList = [...document.getElementsByTagName('img')].filter(e => e.naturalHeight > 500 && e.naturalWidth > 500);
-          if (comicImgList.length === 0)
-            alert('没有找到图片');
-          else if (comicImgList.length !== new Set(comicImgList).length || confirm('该网页可能使用了懒加载技术，确认所有图片均已加载完毕？')) {
-            loadComicReadWindow({
-              comicImgList,
-              readSetting: {
-                Enable: true,
-                双页显示: true,
-                页面填充: true,
-                点击翻页: false,
-                阅读进度: false,
-                夜间模式: false,
-                卷轴模式: false,
-              },
-              EndExit: () => { scrollTo(0, 0) },
-              comicName: document.title,
-            });
+          if (imgList.length === 0) {
+            if (!autoLoad)
+              alert('没有找到图片');
+            // 为了保证兼容，只能简单粗暴的不断检查网页的图片来更新数据
+            if (autoLoad && lock) {
+              setInterval(start, 2000);
+              lock = false;
+            }
+            return false;
           }
+
+          loadComicReadWindow({
+            comicImgList: [...new Set(imgList)].map((e) => {
+              const temp = document.createElement('div');
+              temp.innerHTML = `<img id="imgPic" class="img-responsive" src="${e}" alt="">`;
+              return temp.firstChild;
+            }),
+            readSetting: {
+              Enable: true,
+              双页显示: true,
+              页面填充: true,
+              点击翻页: false,
+              阅读进度: false,
+              夜间模式: false,
+              卷轴模式: false,
+            },
+            EndExit: () => { scrollTo(0, 0) },
+            comicName: document.title,
+          });
+          ComicReadWindow.start();
+        } else {
+          ComicReadWindow.comicImgList = [...new Set(imgList)].map((e) => {
+            const temp = document.createElement('div');
+            temp.innerHTML = `<img id="imgPic" class="img-responsive" src="${e}" alt="">`;
+            return temp.firstChild;
+          });
+          ComicReadWindow.updatedData();
         }
-        ComicReadWindow.start();
+        return true;
+      };
+
+      GM_registerMenuCommand('进入简易漫画阅读模式', () => {
+        if (start() && !autoLoad)
+          GM_registerMenuCommand('为此站点自动开启阅读模式', () => {
+            GM_setValue('autoLoadList', [...autoLoadList, location.hostname]);
+          });
       });
+      if (autoLoad) {
+        GM_registerMenuCommand('不再自动开启阅读模式', () => {
+          autoLoadList.splice(autoLoadList.indexOf(3), 1);
+          GM_setValue('autoLoadList', autoLoadList);
+        });
+        start();
+      }
     });
   }
 }

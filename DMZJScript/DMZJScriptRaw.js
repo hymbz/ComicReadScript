@@ -26,6 +26,7 @@ switch (location.hostname) {
         });
       }
     });
+
     if (document.title === '页面找不到') {
       const [, comicName, g_current_id] = location.pathname.split('/');
       GM_xmlhttpRequest({
@@ -34,6 +35,50 @@ switch (location.hostname) {
         onload: (xhr) => {
           if (xhr.status === 200) {
             self.location.href = `https://m.dmzj.com/view/${RegExp('g_current_id = "(\\d+)').exec(xhr.responseText)[1]}/${g_current_id.split('.')[0]}.html`;
+          }
+        },
+      });
+    } if (location.pathname.includes('/tags/')) {
+      // 判断进入作者页
+      GM_xmlhttpRequest({
+        method: 'GET',
+        url: document.querySelector('a.rss').href,
+        onload: (xhr) => {
+          if (xhr.status === 200) {
+            const raw = xhr.responseText;
+            // 页面上原有的漫画吧标题
+            const titleList = [...document.querySelectorAll('#hothit p.t')].map(e => e.innerText.replace('[完]', ''));
+            const data = raw
+              .split('item')
+              .filter((a, i) => i % 2)
+              .map(item => {
+                const title = /title><!\[CDATA\[(.+?)]]/.exec(item)[1];
+                const imgUrl = /<img src='(.+?)'/.exec(item)[1];
+                const newComicUrl = /manhua.dmzj.com\/(.+?)\?from=rssReader/.exec(item)[1];
+                const newComicTitle = /title='(.+?)'/.exec(item)[1];
+                const comicUrl = newComicUrl.split('/')[0];
+                return {
+                  title,
+                  comicUrl,
+                  imgUrl,
+                  newComicUrl,
+                  newComicTitle,
+                };
+              })
+              .filter(({title}) => !titleList.includes(title));
+            appendDom(document.getElementById('hothit'), data.map(({
+              title,
+              comicUrl,
+              imgUrl,
+              newComicUrl,
+              newComicTitle,
+            }) => `
+              <div class="pic">
+                <a href="/${comicUrl}/" target="_blank">
+                <img src="${imgUrl}" alt="${title}" title="" style="">
+                <p class="t">* ${title}</p></a>
+                <p class="d">最新：<a href="/${newComicUrl}" target="_blank">${newComicTitle}</a></p>
+              </div>`));
           }
         },
       });
