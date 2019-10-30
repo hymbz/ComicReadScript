@@ -270,29 +270,14 @@ switch (location.hostname) {
             if (!loadPageNum) {
               const tempDom = document.createElement('div');
               tempDom.innerHTML = returnHtml;
-
-              switch (type) {
-                case 'subscribe':
-                  resolve([...tempDom.getElementsByClassName('dy_content_li')].map(e => {
-                    const aList = e.getElementsByTagName('a');
-                    return {
-                      name: aList[1].innerText,
-                      url: aList[0].href,
-                      id: aList[aList.length - 1].getAttribute('value'),
-                    };
-                  }));
-                  break;
-                case 'record':
-                  resolve([...tempDom.getElementsByClassName('his_li')].map(e => {
-                    const aList = e.getElementsByTagName('a');
-                    return {
-                      name: aList[1].innerText,
-                      url: aList[0].href,
-                      id: aList[aList.length - 1].id.split('_')[1],
-                    };
-                  }));
-                  break;
-              }
+              resolve([...tempDom.getElementsByClassName('his_li')].map(e => {
+                const aList = e.getElementsByTagName('a');
+                return {
+                  name: aList[1].innerText,
+                  url: aList[0].href,
+                  id: aList[aList.length - 1].id.split('_')[1],
+                };
+              }));
             }
           });
         }
@@ -321,11 +306,17 @@ switch (location.hostname) {
       const exportDom = document.getElementById('scriptExpor');
 
       exportDom.addEventListener('click', () => {
-        getUserData('subscribe', exportDom).then(subscriptionData => {
-          if (typeof saveAs === 'undefined')
-            loadExternalScripts.FileSaver();
-          saveAs(new Blob([JSON.stringify(subscriptionData, null, 4)], {type: 'text/plain;charset=utf-8'}), '动漫之家订阅信息.json');
+        const subscriptionData = [...document.getElementsByClassName('dy_content_li')].map(e => {
+          const aList = e.getElementsByTagName('a');
+          return {
+            name: aList[1].innerText,
+            url: aList[0].href,
+            id: aList[aList.length - 1].getAttribute('value'),
+          };
         });
+        if (typeof saveAs === 'undefined')
+          loadExternalScripts.FileSaver();
+        saveAs(new Blob([JSON.stringify(subscriptionData, null, 4)], {type: 'text/plain;charset=utf-8'}), '动漫之家订阅信息.json');
       });
 
       importDom.addEventListener('change', (e) => {

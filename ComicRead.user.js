@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     3.0
+// @version     3.1
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -329,7 +329,7 @@ const loadComicReadWindow = function (Info) {
   // 键盘翻页
   document.onkeyup = (e) => {
     const turnPages = (next) => {
-      if(!ComicReadWindow.show)
+      if (!ComicReadWindow.show)
         return;
       if (next) {
         if (!ComicReadWindow.readSetting['卷轴模式']) {
@@ -1103,29 +1103,14 @@ switch (location.hostname) {
             if (!loadPageNum) {
               const tempDom = document.createElement('div');
               tempDom.innerHTML = returnHtml;
-
-              switch (type) {
-                case 'subscribe':
-                  resolve([...tempDom.getElementsByClassName('dy_content_li')].map(e => {
-                    const aList = e.getElementsByTagName('a');
-                    return {
-                      name: aList[1].innerText,
-                      url: aList[0].href,
-                      id: aList[aList.length - 1].getAttribute('value'),
-                    };
-                  }));
-                  break;
-                case 'record':
-                  resolve([...tempDom.getElementsByClassName('his_li')].map(e => {
-                    const aList = e.getElementsByTagName('a');
-                    return {
-                      name: aList[1].innerText,
-                      url: aList[0].href,
-                      id: aList[aList.length - 1].id.split('_')[1],
-                    };
-                  }));
-                  break;
-              }
+              resolve([...tempDom.getElementsByClassName('his_li')].map(e => {
+                const aList = e.getElementsByTagName('a');
+                return {
+                  name: aList[1].innerText,
+                  url: aList[0].href,
+                  id: aList[aList.length - 1].id.split('_')[1],
+                };
+              }));
             }
           });
         }
@@ -1154,11 +1139,17 @@ switch (location.hostname) {
       const exportDom = document.getElementById('scriptExpor');
 
       exportDom.addEventListener('click', () => {
-        getUserData('subscribe', exportDom).then(subscriptionData => {
-          if (typeof saveAs === 'undefined')
-            loadExternalScripts.FileSaver();
-          saveAs(new Blob([JSON.stringify(subscriptionData, null, 4)], {type: 'text/plain;charset=utf-8'}), '动漫之家订阅信息.json');
+        const subscriptionData = [...document.getElementsByClassName('dy_content_li')].map(e => {
+          const aList = e.getElementsByTagName('a');
+          return {
+            name: aList[1].innerText,
+            url: aList[0].href,
+            id: aList[aList.length - 1].getAttribute('value'),
+          };
         });
+        if (typeof saveAs === 'undefined')
+          loadExternalScripts.FileSaver();
+        saveAs(new Blob([JSON.stringify(subscriptionData, null, 4)], {type: 'text/plain;charset=utf-8'}), '动漫之家订阅信息.json');
       });
 
       importDom.addEventListener('change', (e) => {
