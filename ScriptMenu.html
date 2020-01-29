@@ -18,6 +18,11 @@
             <template v-if="typeof v == 'boolean'">
               <input class="pc" type="checkbox" v-model="UserSetting[key][k]" checked="">[[k]]
             </template>
+            <template v-else-if="k == '背景颜色'">
+              <span>自定义背景颜色 </span>
+              <input type="color" v-model="UserSetting['漫画阅读']['背景颜色']" />
+              <input v-model="UserSetting['漫画阅读']['背景颜色']" />
+            </template>
             <template v-else>
               [[k]]：<input class="px" type="text" v-model.trim.lazy="UserSetting[key][k]">
             </template>

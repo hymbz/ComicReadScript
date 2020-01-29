@@ -45,7 +45,9 @@
     </div>
   </div>
 
-  <div id="comicShow" v-if="ComicImgInfo.length && !readSetting['卷轴模式']" @dblclick="magnifier = !readSetting['点击翻页'] && !magnifier"
+  <div id="comicShow" v-if="ComicImgInfo.length && !readSetting['卷轴模式']"
+    :style="{backgroundColor:readSetting['背景颜色']}"
+    @dblclick="magnifier = !readSetting['点击翻页'] && !magnifier"
     @touchstart="lastTouchmove = $event;" @touchend="TouchControl" @touchmove="MouseMoveControl"
     @click="MouseMoveControl" @mousemove.capture="MouseMoveControl">
 

@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     3.2
+// @version     3.3
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -439,6 +439,7 @@ const loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
       夜间模式: false,
       卷轴模式: false,
       翻页键反转: false,
+      背景颜色: '',
     },
   }, defaultUserSetting);
   if (GM_getValue(websiteSettingName))
@@ -493,6 +494,7 @@ switch (location.hostname) {
     break;
   }
   case 'tel.dm5.com':
+  case 'en.dm5.com':
   case 'www.dm5.com':
   case 'www.1kkk.com': {
     '@@dm5Script.@@';
@@ -513,10 +515,12 @@ switch (location.hostname) {
       const autoLoadList = GM_getValue('autoLoadList', []);
       const autoLoad = autoLoadList.includes(location.hostname);
       const start = () => {
+        GM_addStyle(':root {--color1: #05a7ca;--color2: #f8fcff;--color3: #ffffff;--color4: #aea5a5;}');
+
         const imgList = [...document.getElementsByTagName('img')]
           .filter(e => e.naturalHeight > 500 && e.naturalWidth > 500)
           .map(e => e.src);
-        if (typeof Vue === 'undefined') {
+        if (ComicReadWindow === undefined) {
           if (imgList.length === 0) {
             if (!autoLoad)
               alert('没有找到图片');
@@ -534,15 +538,7 @@ switch (location.hostname) {
               temp.innerHTML = `<img id="imgPic" class="img-responsive" src="${e}" alt="">`;
               return temp.firstChild;
             }),
-            readSetting: {
-              Enable: true,
-              双页显示: true,
-              页面填充: true,
-              点击翻页: false,
-              阅读进度: false,
-              夜间模式: false,
-              卷轴模式: false,
-            },
+            readSetting: ScriptMenu.UserSetting['漫画阅读'],
             EndExit: () => { scrollTo(0, 0) },
             comicName: document.title,
           });
@@ -561,10 +557,12 @@ switch (location.hostname) {
       GM_registerMenuCommand('进入简易漫画阅读模式', () => {
         if (start() && !autoLoad)
           GM_registerMenuCommand('为此站点自动开启阅读模式', () => {
+            loadScriptMenu(location.hostname, {});
             GM_setValue('autoLoadList', [...autoLoadList, location.hostname]);
           });
       });
       if (autoLoad) {
+        loadScriptMenu(location.hostname, {});
         GM_registerMenuCommand('不再自动开启阅读模式', () => {
           autoLoadList.splice(autoLoadList.indexOf(3), 1);
           GM_setValue('autoLoadList', autoLoadList);
