@@ -56,9 +56,9 @@
     </div>
 
     <div index="end">
-      <a title="上一话" v-if="prevChapter" :href="prevChapter">上一话</a>
+      <a title="上一话" href="javascript:;" v-if="prevChapter" @click="changeChapter(false)">上一话</a>
       <a title="退出" href="javascript:;" @click="exitComicRead(true)">End</a>
-      <a title="下一话" v-if="nextChapter" :href="nextChapter">下一话</a>
+      <a title="下一话" href="javascript:;" v-if="nextChapter" @click="changeChapter(true)">下一话</a>
     </div>
 
     <div id="magnifier" v-show="magnifier">
@@ -74,7 +74,9 @@
     </div>
   </div>
 
-  <div v-else id="comicShow" class="scrollMode" @mousemove.capture="MouseMoveControl">
+  <div v-else id="comicShow" class="scrollMode"
+    :style="{backgroundColor:readSetting['背景颜色']}"
+    @mousemove.capture="MouseMoveControl">
     <div v-for="(Img,index) in comicImgList" :index="index">
       <img :src=Img.src :alt="index">
     </div>

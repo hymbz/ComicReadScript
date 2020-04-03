@@ -67,7 +67,7 @@ if (typeof gid !== 'undefined') {
   if (ScriptMenu.UserSetting['nhentai匹配']['漫画']) {
     GM_xmlhttpRequest({
       method: 'GET',
-      url: `https://nhentai.net/api/galleries/search?query=${document.getElementById('gn').innerHTML.replace(/ /g, '+')}`,
+      url: `https://nhentai.net/api/galleries/search?query=${encodeURIComponent(document.getElementById('gn').innerText)}`,
       onload (xhr) {
         if (xhr.status === 200) {
           nHentaiComicInfo = JSON.parse(xhr.responseText);
@@ -79,7 +79,7 @@ if (typeof gid !== 'undefined') {
             let i = nHentaiComicInfo.result.length;
             while (i--) {
               const tempComicInfo = nHentaiComicInfo.result[i];
-              temp += `<div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${tempComicInfo.title.hasOwnProperty('japanese') ? tempComicInfo.title.japanese : tempComicInfo.title.english}"><a href="https://nhentai.net/g/${tempComicInfo.id}/" index=${i} onclick="return toggle_tagmenu('nhentai:${tempComicInfo.id}',this)">${tempComicInfo.id}</a></a></div>`;
+              temp += `<div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${tempComicInfo.title.japanese ? tempComicInfo.title.japanese : tempComicInfo.title.english}"><a href="https://nhentai.net/g/${tempComicInfo.id}/" index=${i} onclick="return toggle_tagmenu('nhentai:${tempComicInfo.id}',this)">${tempComicInfo.id}</a></a></div>`;
             }
             newTagLine.innerHTML = `${temp}</td>`;
           } else

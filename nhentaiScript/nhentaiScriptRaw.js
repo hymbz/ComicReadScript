@@ -44,7 +44,7 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
         comicImgList: imgList,
         readSetting: ScriptMenu.UserSetting['漫画阅读'],
         EndExit: () => scrollTo(0, getTop(document.getElementById('comment-container'))),
-        comicName: gallery.title.hasOwnProperty('japanese') ? gallery.title.japanese : gallery.title.english,
+        comicName: gallery.title.japanese ? gallery.title.japanese : gallery.title.english,
       });
     } else if (loadLock && (!comicReadModeDom.innerHTML.includes('loading') || confirm('图片未加载完毕，确认要直接进入阅读模式？')))
       ComicReadWindow.start();

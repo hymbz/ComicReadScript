@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     3.3
+// @version     3.4
 // @author      hymbz
-// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
+// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
 // @include     *
 // @connect     *
@@ -32,7 +32,7 @@ const getTop = (event) => event.getBoundingClientRect().top + document.body.scro
 /**
  * 添加元素
  * @param {object} node 被添加元素
- * @param {(object|string)} textnode 添加元素
+ * @param {(string)} textnode 添加元素
  */
 const appendDom = (node, textnode) => {
   const temp = document.createElement('div');
@@ -89,6 +89,7 @@ const loadComicReadWindow = function (Info) {
         nextChapter: null,
         prevChapter: null,
         fillInfluence: {},
+        comicImgList: [],
       },
       methods: {
         updatedData () {
@@ -193,25 +194,37 @@ const loadComicReadWindow = function (Info) {
             }
           }
         },
-        scrollPage (event) {
+        scrollPage (event, changeChapter = false) {
           if (typeof event === 'object' ? event.deltaY < 0 : event) {
             if (this.PageNum === 'end')
               this.PageNum = this.ComicImgInfo.length - 1;
             else if (this.PageNum > 0)
               this.PageNum--;
-            else
-              return;
+            else {
+              if (changeChapter && this.nextChapter)
+                this.changeChapter(true);
+            }
           } else {
             if (this.PageNum === this.ComicImgInfo.length - 1)
               this.PageNum = 'end';
             else if (this.PageNum <= this.ComicImgInfo.length)
               this.PageNum++;
-            else
-              return;
+            else {
+              if (changeChapter && this.prevChapter)
+                this.changeChapter(false);
+            }
           }
           if (this.magnifier)
             this.magnifier = this.PageNum !== 'end';
           this.fillInfluence.now = this.pageFill();
+        },
+        changeChapter (next) {
+          // 跳转至上一话或下一话
+          const jumpChapter = next ? this.nextChapter : this.prevChapter;
+          if (jumpChapter instanceof Function)
+            jumpChapter();
+          else
+            location.href = jumpChapter;
         },
         exitComicRead (end) {
           // 退出，如果是从结尾的 End 退出的执行 EndExit，否则跳至网页顶部
@@ -299,44 +312,28 @@ const loadComicReadWindow = function (Info) {
   window.onresize = ComicReadWindow.updatedData;
   // 键盘翻页
   document.onkeyup = (e) => {
-    const turnPages = (next) => {
-      if (!ComicReadWindow.show)
-        return;
-      if (next) {
-        if (!ComicReadWindow.readSetting['卷轴模式']) {
-          if (Info.nextChapter && ComicReadWindow.PageNum === 'end')
-            location.href = Info.nextChapter;
-          else
-            ComicReadWindow.scrollPage(false);
-        }
-      } else {
-        if (!ComicReadWindow.readSetting['卷轴模式']) {
-          if (Info.prevChapter && ComicReadWindow.PageNum === 0)
-            location.href = Info.prevChapter;
-          else
-            ComicReadWindow.scrollPage(true);
-        }
-      }
-    };
+    if (!ComicReadWindow.show)
+      return;
+
     switch (e.keyCode) {
       // 方向键左
       case 37:
       // 逗号
       case 188:
-        turnPages(ComicReadWindow.readSetting['翻页键反转']);
+        ComicReadWindow.scrollPage(!ComicReadWindow.readSetting['翻页键反转'], true);
         break;
       // 方向键右
       case 39:
       // 句号
       case 190:
-        turnPages(!ComicReadWindow.readSetting['翻页键反转']);
+        ComicReadWindow.scrollPage(ComicReadWindow.readSetting['翻页键反转'], true);
         break;
 
       // PageUp
       case 33:
       // 方向键上
       case 38:
-        turnPages(false);
+        ComicReadWindow.scrollPage(true, true);
         break;
       // 空格
       case 32:
@@ -344,7 +341,7 @@ const loadComicReadWindow = function (Info) {
       case 34:
       // 方向键下
       case 40:
-        turnPages(true);
+        ComicReadWindow.scrollPage(false, true);
         break;
     }
   };
@@ -356,15 +353,16 @@ const loadComicReadWindow = function (Info) {
       scrollTo(0, 0);
     }
 
-    ComicReadWindow.fillInfluence = {
-      '-1': Info.readSetting['页面填充'],
-      now: Info.readSetting['页面填充'],
-    };
     // 在所有图片加载完毕前，每隔一秒刷新一次
     const updated = () => {
+      ComicReadWindow.fillInfluence = {
+        '-1': Info.readSetting['页面填充'],
+        now: Info.readSetting['页面填充'],
+      };
+      ComicReadWindow.updatedData();
+
       if (![...ComicReadWindow.comicImgList].every(e => e.complete))
         setTimeout(updated, 1000);
-      ComicReadWindow.updatedData();
     };
     updated();
     ComicReadWindow.show = true;
@@ -507,6 +505,11 @@ switch (location.hostname) {
   }
   case 'www.manhuadb.com': {
     '@@manhuadbScript.@@';
+    break;
+  }
+  case 'www.mangabz.com':
+  case 'mangabz.com': {
+    '@@mangabzScript.@@';
     break;
   }
   default: {

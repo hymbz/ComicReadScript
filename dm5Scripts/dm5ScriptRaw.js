@@ -11,22 +11,21 @@ loadScriptMenu('dm5UserSetting', {
 if (!DM5_PageType && ScriptMenu.UserSetting['漫画阅读'].Enable) {
   appendDom(
     document.querySelector('.right-bar'),
-    '<a id="comicReadMode" href="javascript:;">阅读模式(脚本)</a>'
+    '<a id="comicReadMode" href="javascript:;">脚本阅读模式</a>',
   );
 
   const comicReadMode = document.getElementById('comicReadMode');
   comicReadMode.addEventListener('click', () => { ComicReadWindow.start() });
 
   const key = $('#dm5_key').length > 0 ? $('#dm5_key').val() : '';
-  // eslint-disable-next-line
-  let imgList = [];
+  const imgList = [];
 
-  const loadImg = (index) => {
+  const addImgUrl = () => {
     $.ajax({
       url: 'chapterfun.ashx',
       data: {
         cid: DM5_CID,
-        page: index,
+        page: imgList.length + 1,
         key,
         language: 1,
         gtk: 6,
@@ -37,10 +36,7 @@ if (!DM5_PageType && ScriptMenu.UserSetting['漫画阅读'].Enable) {
       },
       type: 'GET',
       success (data) {
-        eval(data);
-        d.forEach(e => {
-          imgList[RegExp('/(\\d+?)_').exec(e)[1] - 1] = e;
-        });
+        imgList.push(...eval(data));
 
         if (imgList.length === DM5_IMAGE_COUNT) {
           loadComicReadWindow({
@@ -57,11 +53,13 @@ if (!DM5_PageType && ScriptMenu.UserSetting['漫画阅读'].Enable) {
           });
           if (ScriptMenu.UserSetting['体验优化']['自动进入漫画阅读模式'])
             ComicReadWindow.start();
-        } else
-          loadImg(imgList.length + 1);
+        } else {
+          comicReadMode.innerText = `漫画加载中 - ${imgList.length}/${DM5_IMAGE_COUNT}`;
+          addImgUrl();
+        }
       },
     });
   };
-  loadImg(1);
+  addImgUrl();
 }
 

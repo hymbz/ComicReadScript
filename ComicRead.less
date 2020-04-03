@@ -84,6 +84,7 @@
 }
 
 #sidebar{
+  display: block;
   position: fixed;
   z-index: 1;
   top: 50vh;
@@ -91,6 +92,10 @@
 
   transition: left .6s;
   transform: translate(0, -50%);
+
+  width: auto;
+  height: auto;
+  background-color: transparent;
 
   &.show{
     left: 0;
