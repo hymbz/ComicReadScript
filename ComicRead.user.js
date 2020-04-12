@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     3.4
+// @version     3.5
 // @author      hymbz
-// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz。针对支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
+// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、lhscan。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
 // @include     *
 // @connect     *
@@ -204,7 +204,7 @@ const loadComicReadWindow = function (Info) {
               GM_xmlhttpRequest({
                 method: 'GET',
                 url: this.comicImgList[imgIndex].src,
-                headers: {referer: new URL(this.comicImgList[imgIndex].src).origin},
+                headers: {referer: location.href},
                 responseType: 'blob',
                 onload: (xhr, index = tempIndex) => {
                   if (xhr.status === 200) {
@@ -1784,7 +1784,7 @@ if (!DM5_PageType && ScriptMenu.UserSetting['漫画阅读'].Enable) {
     
 
 
-/* global cInfo */
+/* global cInfo, pVars */
 // TODO:调整颜色
 GM_addStyle(':root {--color1: #479fdd;--color2: #f0f0f0;--color3: #fff;--color4: #aea5a5;} body {padding: 0 !important}');
 loadScriptMenu('manhuaguiUserSetting', {
@@ -1799,7 +1799,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
   tempDom.removeChild(tempDom.lastChild);
   appendDom(
     tempDom,
-    '<a href="javascript:;" id="comicReadMode" class="btn-red">阅读模式</a>'
+    '<a href="javascript:;" id="comicReadMode" class="btn-red">阅读模式</a>',
   );
 
   const comicReadMode = document.getElementById('comicReadMode');
@@ -1964,6 +1964,78 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && MANGABZ_CID) {
 ;
     break;
   }
+  case 'loveheaven.net': {
+    
+
+
+GM_addStyle(':root {--color1: #e40b21;--color2: #f7f7f7;--color3: #fff;--color4: #aea5a5;} body {padding: 0 !important}');
+loadScriptMenu('loveheavenUserSetting', {
+  体验优化: {
+    Enable: true,
+    自动进入漫画阅读模式: true,
+  },
+});
+
+if (ScriptMenu.UserSetting['漫画阅读'].Enable && document.querySelectorAll('img.chapter-img').length) {
+  appendDom(
+    document.querySelector('#navbar-main'),
+    '<ul class="nav navbar-nav navbar-right"><li><a id="comicReadMode" href="javascript:;">Load comic</a></li></ul>',
+  );
+  const comicReadMode = document.getElementById('comicReadMode');
+  comicReadMode.addEventListener('click', () => {
+    ComicReadWindow.start();
+  });
+
+  const imgSrcList = [...document.querySelectorAll('img.chapter-img')]
+    .map(e => e.getAttribute('data-src'));
+
+  const blobList = [];
+  let loadImgNum = 0;
+  const imgTotalNum = imgSrcList.length;
+
+  if (imgTotalNum) {
+    const loadImg = (index) => {
+      const i = index;
+      GM_xmlhttpRequest({
+        method: 'GET',
+        url: imgSrcList[i],
+        headers: {Referer: location.href},
+        responseType: 'blob',
+        onload: (xhr) => {
+          if (xhr.status === 200) {
+            blobList[i] = [xhr.response, xhr.finalUrl.split('.').pop()];
+            if (++loadImgNum === imgTotalNum) {
+              comicReadMode.innerText = 'Read';
+              loadComicReadWindow({
+                comicImgList: blobList.map(([blobData]) => {
+                  const temp = document.createElement('div');
+                  temp.innerHTML = `<img src="${URL.createObjectURL(blobData)}">`;
+                  return temp.firstChild;
+                }),
+                readSetting: ScriptMenu.UserSetting['漫画阅读'],
+                comicName: document.title,
+                blobList,
+              });
+              if (ScriptMenu.UserSetting['体验优化']['自动进入漫画阅读模式'])
+                ComicReadWindow.start();
+            } else
+              comicReadMode.innerText = `loading - ${loadImgNum}/${imgTotalNum}`;
+          } else
+            loadImg(i);
+        },
+      });
+    };
+    let i = imgTotalNum;
+    while (i--)
+      loadImg(i);
+  }
+
+}
+
+
+;
+    break;
+  }
   default: {
     window.addEventListener('load', () => {
       let lock = true;
@@ -1986,6 +2058,9 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && MANGABZ_CID) {
             }
             return false;
           }
+
+          if (!ScriptMenu)
+            loadScriptMenu(location.hostname, {});
 
           loadComicReadWindow({
             comicImgList: [...new Set(imgList)].map((e) => {

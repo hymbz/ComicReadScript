@@ -1,4 +1,4 @@
-/* global cInfo */
+/* global cInfo, pVars */
 // TODO:调整颜色
 GM_addStyle(':root {--color1: #479fdd;--color2: #f0f0f0;--color3: #fff;--color4: #aea5a5;} body {padding: 0 !important}');
 loadScriptMenu('manhuaguiUserSetting', {
@@ -13,7 +13,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
   tempDom.removeChild(tempDom.lastChild);
   appendDom(
     tempDom,
-    '<a href="javascript:;" id="comicReadMode" class="btn-red">阅读模式</a>'
+    '<a href="javascript:;" id="comicReadMode" class="btn-red">阅读模式</a>',
   );
 
   const comicReadMode = document.getElementById('comicReadMode');
