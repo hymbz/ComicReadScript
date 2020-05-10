@@ -23,7 +23,7 @@ if (typeof gid !== 'undefined') {
         let loadImgNum = 0;
 
         // 递归循环获取图源
-        const Loop = function (url, i) {
+        const Loop = function (url, i, next = true) {
           GM_xmlhttpRequest({
             method: 'GET',
             url,
@@ -37,12 +37,18 @@ if (typeof gid !== 'undefined') {
                   else
                     comicReadModeDom.innerHTML = ` loading —— ${loadImgNum}/${imgTotalNum}`;
                 };
+                img.onerror = () => {
+                  Loop(url, i, false);
+                };
                 imgList.ehentai[i] = img;
-                const nextUrl = nextRe.exec(xhr.responseText)[1];
-                if (nextUrl === xhr.finalUrl)
-                  loadLock = true;
-                else
-                  Loop(nextUrl, i + 1);
+
+                if (next) {
+                  const nextUrl = nextRe.exec(xhr.responseText)[1];
+                  if (nextUrl === xhr.finalUrl)
+                    loadLock = true;
+                  else
+                    Loop(nextUrl, i + 1);
+                }
               } else
                 throw `${xhr.status}:${url}`;
             },
@@ -112,6 +118,7 @@ if (typeof gid !== 'undefined') {
             const fileType = {
               j: 'jpg',
               p: 'png',
+              g: 'gif',
             };
             let loadImgNum = 0;
             imgList[selected_tag] = [];

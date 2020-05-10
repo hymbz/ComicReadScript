@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     3.5
+// @version     3.6
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、lhscan。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -230,8 +230,8 @@ const loadComicReadWindow = function (Info) {
             else if (this.PageNum > 0)
               this.PageNum--;
             else {
-              if (changeChapter && this.nextChapter)
-                this.changeChapter(true);
+              if (changeChapter && this.prevChapter)
+                this.changeChapter(false);
             }
           } else {
             if (this.PageNum === this.ComicImgInfo.length - 1)
@@ -239,8 +239,8 @@ const loadComicReadWindow = function (Info) {
             else if (this.PageNum <= this.ComicImgInfo.length)
               this.PageNum++;
             else {
-              if (changeChapter && this.prevChapter)
-                this.changeChapter(false);
+              if (changeChapter && this.nextChapter)
+                this.changeChapter(true);
             }
           }
           if (this.magnifier)
@@ -1413,7 +1413,7 @@ if (typeof gid !== 'undefined') {
         let loadImgNum = 0;
 
         // 递归循环获取图源
-        const Loop = function (url, i) {
+        const Loop = function (url, i, next = true) {
           GM_xmlhttpRequest({
             method: 'GET',
             url,
@@ -1427,12 +1427,18 @@ if (typeof gid !== 'undefined') {
                   else
                     comicReadModeDom.innerHTML = ` loading —— ${loadImgNum}/${imgTotalNum}`;
                 };
+                img.onerror = () => {
+                  Loop(url, i, false);
+                };
                 imgList.ehentai[i] = img;
-                const nextUrl = nextRe.exec(xhr.responseText)[1];
-                if (nextUrl === xhr.finalUrl)
-                  loadLock = true;
-                else
-                  Loop(nextUrl, i + 1);
+
+                if (next) {
+                  const nextUrl = nextRe.exec(xhr.responseText)[1];
+                  if (nextUrl === xhr.finalUrl)
+                    loadLock = true;
+                  else
+                    Loop(nextUrl, i + 1);
+                }
               } else
                 throw `${xhr.status}:${url}`;
             },
@@ -1502,6 +1508,7 @@ if (typeof gid !== 'undefined') {
             const fileType = {
               j: 'jpg',
               p: 'png',
+              g: 'gif',
             };
             let loadImgNum = 0;
             imgList[selected_tag] = [];
@@ -1575,6 +1582,15 @@ loadScriptMenu('NhentaiUserSetting', {
 const fileType = {
   j: 'jpg',
   p: 'png',
+  g: 'gif',
+};
+
+const buildImg = (src, onload, onerror) => {
+  const img = document.createElement('img');
+  img.src = src;
+  img.onload = onload;
+  img.onerror = onerror;
+  return img;
 };
 
 // 判断当前页是漫画详情页
@@ -1590,23 +1606,28 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
       comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— 0/${imgTotalNum}`;
 
       for (let i = 0; i < imgTotalNum; i++) {
-        const img = document.createElement('img');
-        img.src = `https://i.nhentai.net/galleries/${gallery.media_id}/${i + 1}.${fileType[gallery.images.pages[i].t]}`;
-        img.onload = () => {
-          if (++loadImgNum === imgTotalNum)
+        const src = `https://i.nhentai.net/galleries/${gallery.media_id}/${i + 1}.${fileType[gallery.images.pages[i].t]}`;
+        const onload = () => {
+          if (++loadImgNum === imgTotalNum) {
             comicReadModeDom.innerHTML = '<i class="fa fa-book"></i> Read';
-          else
+
+            loadLock = true;
+            loadComicReadWindow({
+              comicImgList: imgList,
+              readSetting: ScriptMenu.UserSetting['漫画阅读'],
+              EndExit: () => scrollTo(0, getTop(document.getElementById('comment-container'))),
+              comicName: gallery.title.japanese ? gallery.title.japanese : gallery.title.english,
+            });
+          } else
             comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— ${loadImgNum}/${imgTotalNum}`;
         };
-        imgList[i] = img;
+        const onerror = () => {
+          setTimeout(() => {
+            imgList[i] = buildImg(src, onload, onerror);
+          }, 0);
+        };
+        onerror();
       }
-      loadLock = true;
-      loadComicReadWindow({
-        comicImgList: imgList,
-        readSetting: ScriptMenu.UserSetting['漫画阅读'],
-        EndExit: () => scrollTo(0, getTop(document.getElementById('comment-container'))),
-        comicName: gallery.title.japanese ? gallery.title.japanese : gallery.title.english,
-      });
     } else if (loadLock && (!comicReadModeDom.innerHTML.includes('loading') || confirm('图片未加载完毕，确认要直接进入阅读模式？')))
       ComicReadWindow.start();
   });

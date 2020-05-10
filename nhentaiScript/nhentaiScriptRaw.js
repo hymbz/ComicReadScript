@@ -14,6 +14,15 @@ loadScriptMenu('NhentaiUserSetting', {
 const fileType = {
   j: 'jpg',
   p: 'png',
+  g: 'gif',
+};
+
+const buildImg = (src, onload, onerror) => {
+  const img = document.createElement('img');
+  img.src = src;
+  img.onload = onload;
+  img.onerror = onerror;
+  return img;
 };
 
 // 判断当前页是漫画详情页
@@ -29,23 +38,28 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
       comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— 0/${imgTotalNum}`;
 
       for (let i = 0; i < imgTotalNum; i++) {
-        const img = document.createElement('img');
-        img.src = `https://i.nhentai.net/galleries/${gallery.media_id}/${i + 1}.${fileType[gallery.images.pages[i].t]}`;
-        img.onload = () => {
-          if (++loadImgNum === imgTotalNum)
+        const src = `https://i.nhentai.net/galleries/${gallery.media_id}/${i + 1}.${fileType[gallery.images.pages[i].t]}`;
+        const onload = () => {
+          if (++loadImgNum === imgTotalNum) {
             comicReadModeDom.innerHTML = '<i class="fa fa-book"></i> Read';
-          else
+
+            loadLock = true;
+            loadComicReadWindow({
+              comicImgList: imgList,
+              readSetting: ScriptMenu.UserSetting['漫画阅读'],
+              EndExit: () => scrollTo(0, getTop(document.getElementById('comment-container'))),
+              comicName: gallery.title.japanese ? gallery.title.japanese : gallery.title.english,
+            });
+          } else
             comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— ${loadImgNum}/${imgTotalNum}`;
         };
-        imgList[i] = img;
+        const onerror = () => {
+          setTimeout(() => {
+            imgList[i] = buildImg(src, onload, onerror);
+          }, 0);
+        };
+        onerror();
       }
-      loadLock = true;
-      loadComicReadWindow({
-        comicImgList: imgList,
-        readSetting: ScriptMenu.UserSetting['漫画阅读'],
-        EndExit: () => scrollTo(0, getTop(document.getElementById('comment-container'))),
-        comicName: gallery.title.japanese ? gallery.title.japanese : gallery.title.english,
-      });
     } else if (loadLock && (!comicReadModeDom.innerHTML.includes('loading') || confirm('图片未加载完毕，确认要直接进入阅读模式？')))
       ComicReadWindow.start();
   });
