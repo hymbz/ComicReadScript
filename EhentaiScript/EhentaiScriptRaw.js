@@ -123,18 +123,30 @@ if (typeof gid !== 'undefined') {
             let loadImgNum = 0;
             imgList[selected_tag] = [];
 
-            for (let i = 0; i < imgTotalNum; i++) {
-              const img = document.createElement('img');
-              img.src = `https://i.nhentai.net/galleries/${tempComicInfo.media_id}/${i + 1}.${fileType[tempComicInfo.images.pages[i].t]}`;
-              img.onload = () => {
-                if (++loadImgNum === imgTotalNum)
-                  comicReadModeDom.innerHTML = ' Read';
-                else
-                  comicReadModeDom.innerHTML = ` loading —— ${loadImgNum}/${imgTotalNum}`;
-              };
-              imgList[selected_tag][i] = img;
-            }
-            loadLock = true;
+            const loadImg = (i) => {
+              GM_xmlhttpRequest({
+                method: 'GET',
+                url: `https://i.nhentai.net/galleries/${tempComicInfo.media_id}/${i + 1}.${fileType[tempComicInfo.images.pages[i].t]}`,
+                headers: {Referer: `https://nhentai.net/g/${tempComicInfo.media_id}/${i + 1}/`},
+                responseType: 'blob',
+                onload: (xhr) => {
+                  if (xhr.status === 200) {
+                    const temp = document.createElement('div');
+                    temp.innerHTML = `<img src="${URL.createObjectURL(xhr.response)}">`;
+                    imgList[selected_tag][i] = temp.firstChild;
+                    if (++loadImgNum === imgTotalNum) {
+                      loadLock = true;
+                      comicReadModeDom.innerHTML = ' Read';
+                    } else {
+                      loadImg(loadImgNum);
+                      comicReadModeDom.innerHTML = ` loading —— ${loadImgNum}/${imgTotalNum}`;
+                    }
+                  } loadImg(i);
+                },
+              });
+            };
+            loadImg(0);
+
           } else if (loadLock && (!comicReadModeDom.innerHTML.includes('loading') || confirm('图片未加载完毕，确认要直接进入阅读模式？'))) {
             loadComicReadWindow({
               comicImgList: imgList[selected_tag],
