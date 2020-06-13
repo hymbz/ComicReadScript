@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     3.7
+// @version     3.8
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、lhscan。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -1578,7 +1578,7 @@ if (typeof gid !== 'undefined') {
     
 
 
-/* global unsafeWindow, GM_addStyle, GM_info, GM_xmlhttpRequest, appendDom, getTop, ComicReadWindow, ScriptMenu, gallery, N */
+/* global unsafeWindow, GM_addStyle, GM_info, GM_xmlhttpRequest, appendDom, getTop, ComicReadWindow, ScriptMenu, gallery, n */
 GM_addStyle(':root {--color1: #ed2553;--color2: #0d0d0d;--color3: #1f1f1f;--color4: #aea5a5;} #ScriptMenu{color: white !important;} hr{bottom:0;box-sizing:border-box;margin:-1em auto 2em}hr:last-child{position:relative;animation:load .8s linear alternate infinite}hr:not(:last-child){display:none}@keyframes load{0%{width:100%}100%{width:0}}');
 loadScriptMenu('NhentaiUserSetting', {
   体验优化: {
@@ -1588,7 +1588,6 @@ loadScriptMenu('NhentaiUserSetting', {
     在新页面中打开链接: true,
   },
 });
-
 
 // 用于转换获得图片文件扩展名的 dict
 const fileType = {
@@ -1618,7 +1617,7 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
       comicReadModeDom.innerHTML = `<i class="fa fa-spinner"></i> loading —— 0/${imgTotalNum}`;
 
       for (let i = 0; i < imgTotalNum; i++) {
-        const src = `https://i.nhentai.net/galleries/${gallery.media_id}/${i + 1}.${fileType[gallery.images.pages[i].t]}`;
+        const src = `https://i.nhentai.net/galleries/${gallery.media_id}/${i + 1}.${gallery.images.pages[i].extension}`;
         const onload = () => {
           if (++loadImgNum === imgTotalNum) {
             comicReadModeDom.innerHTML = '<i class="fa fa-book"></i> Read';
@@ -1645,14 +1644,19 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
   });
 } else if (document.getElementsByClassName('index-container').length) {
   // 判断当前页是漫画浏览页
-  const blacklist = N.options.blacklisted_tags;
+  const blacklist = n.options.blacklisted_tags;
 
   if (ScriptMenu.UserSetting['体验优化']['自动翻页']) {
     let pageNum = document.querySelector('.page.current') ? Number(document.querySelector('.page.current').innerHTML) : false;
     let loadLock = !pageNum;
-    let apiUrl;
     const contentDom = document.getElementById('content');
+    const apiUrl = location.pathname === '/'
+      ? 'https://nhentai.net/api/galleries/all?'
+      : `https://nhentai.net/api/galleries/tagged?tag_id=${
+        document.querySelector('a.tag').classList[1].split('-')[1]
+      }&`;
 
+    // 加载下一页的漫画
     const loadNewComic = () => {
       if (!loadLock && contentDom.lastElementChild.getBoundingClientRect().top <= window.innerHeight) {
         loadLock = true;
@@ -1700,31 +1704,11 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
     };
 
     if (ScriptMenu.UserSetting['体验优化']['彻底屏蔽漫画'] && blacklist && blacklist.length) {
-      // 用匹配黑名单的 css 选择器选择被屏蔽漫画（这是 nhentai 自己用的方法
-      document.querySelectorAll(blacklist.map(blacklist => N.format('.gallery[data-tags~="{0}"]', blacklist)).join(',')).forEach((e) => {
-        e.parentNode.removeChild(e);
-      });
+      GM_addStyle('.blacklisted.gallery { display: none; }');
     }
 
-    if (location.pathname === '/') {
-      apiUrl = 'https://nhentai.net/api/galleries/all?';
-      unsafeWindow.onscroll = loadNewComic;
-      contentDom.appendChild(document.createElement('hr'));
-      loadNewComic();
-    } else if (!loadLock) {
-      GM_xmlhttpRequest({
-        method: 'GET',
-        url: document.querySelector('.index-container > div > a').href,
-        onload: (xhr) => {
-          if (xhr.status === 200) {
-            apiUrl = `https://nhentai.net/api/galleries/tagged?tag_id=${new RegExp(`tag-(\\d+?(?= ">${document.querySelector('#content span:nth-child(2)').innerHTML}))`).exec(xhr.responseText)[1]}&`;
-            unsafeWindow.onscroll = loadNewComic;
-            contentDom.appendChild(document.createElement('hr'));
-            loadNewComic();
-          }
-        },
-      });
-    }
+    unsafeWindow.onscroll = loadNewComic;
+    loadNewComic();
   }
 }
 
