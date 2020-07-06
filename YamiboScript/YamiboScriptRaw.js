@@ -24,7 +24,7 @@ if (ScriptMenu.UserSetting['体验优化']['固定导航条'])
 // 判断当前页是帖子
 if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
   // 启用漫画阅读模式
-  if (fid === 30 && ScriptMenu.UserSetting['漫画阅读'].Enable) {
+  if ((fid === 30 || fid === 37) && ScriptMenu.UserSetting['漫画阅读'].Enable) {
     // 有目录
     const hasMenu = Boolean(document.getElementById('threadindex'));
 
