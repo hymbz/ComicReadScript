@@ -128,6 +128,7 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
     }
 
     unsafeWindow.onscroll = loadNewComic;
+    contentDom.appendChild(document.createElement('hr'));
     loadNewComic();
   }
 }

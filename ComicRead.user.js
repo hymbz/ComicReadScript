@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     3.8
+// @version     3.9
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、lhscan。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -527,7 +527,7 @@ if (ScriptMenu.UserSetting['体验优化']['固定导航条'])
 // 判断当前页是帖子
 if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
   // 启用漫画阅读模式
-  if (fid === 30 && ScriptMenu.UserSetting['漫画阅读'].Enable) {
+  if ((fid === 30 || fid === 37) && ScriptMenu.UserSetting['漫画阅读'].Enable) {
     // 有目录
     const hasMenu = Boolean(document.getElementById('threadindex'));
 
@@ -1708,6 +1708,7 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
     }
 
     unsafeWindow.onscroll = loadNewComic;
+    contentDom.appendChild(document.createElement('hr'));
     loadNewComic();
   }
 }
@@ -2004,7 +2005,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && document.querySelectorAll('
   });
 
   const imgSrcList = [...document.querySelectorAll('img.chapter-img')]
-    .map(e => e.getAttribute('data-src'));
+    .map(e => e.getAttribute('src'));
 
   const blobList = [];
   let loadImgNum = 0;
@@ -2046,7 +2047,6 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && document.querySelectorAll('
     while (i--)
       loadImg(i);
   }
-
 }
 
 

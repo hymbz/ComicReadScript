@@ -28,6 +28,12 @@
 
 # 最近更新
 
+## 2020.7.18
+
+## 修复
+
+- lhscan 无法正常显示图片的 Bug
+
 ## 2020.6.13
 
 ## 修复
@@ -46,16 +52,6 @@
 
 - 上/下一话切换功能方向错误的 Bug
 - nhentai、ehentai 加载时出错后只能手动刷新重试的 Bug
-
-## 2020.4.12
-
-### 新增
-
-- 对 lhscan 的支持
-
-### 修复
-
-- 无法正常进入简易漫画阅读模式的 Bug
 
 [完整更新日志](https://github.com/hymbz/ComicReadScript/blob/master/UpdateLog.md)
 

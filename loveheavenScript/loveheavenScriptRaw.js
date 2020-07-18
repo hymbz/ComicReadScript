@@ -17,7 +17,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && document.querySelectorAll('
   });
 
   const imgSrcList = [...document.querySelectorAll('img.chapter-img')]
-    .map(e => e.getAttribute('data-src'));
+    .map(e => e.getAttribute('src'));
 
   const blobList = [];
   let loadImgNum = 0;
@@ -59,5 +59,4 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && document.querySelectorAll('
     while (i--)
       loadImg(i);
   }
-
 }
