@@ -16,6 +16,16 @@ const fileType = {
   g: 'gif',
 };
 
+const getApiUrl = (location) => {
+  if (location.pathname === '/')
+    return 'https://nhentai.net/api/galleries/all?';
+  else if (document.querySelector('a.tag'))
+    return `https://nhentai.net/api/galleries/tagged?tag_id=${document.querySelector('a.tag').classList[1].split('-')[1]}&`;
+  else if (location.pathname.includes('search'))
+    return `https://nhentai.net/api/galleries/search?query=${new URLSearchParams(location.search).get('q')}&`;
+  return '';
+};
+
 const buildImg = (src, onload, onerror) => {
   const img = document.createElement('img');
   img.src = src;
@@ -70,11 +80,7 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
     let pageNum = document.querySelector('.page.current') ? Number(document.querySelector('.page.current').innerHTML) : false;
     let loadLock = !pageNum;
     const contentDom = document.getElementById('content');
-    const apiUrl = location.pathname === '/'
-      ? 'https://nhentai.net/api/galleries/all?'
-      : `https://nhentai.net/api/galleries/tagged?tag_id=${
-        document.querySelector('a.tag').classList[1].split('-')[1]
-      }&`;
+    const apiUrl = getApiUrl(location);
 
     // 加载下一页的漫画
     const loadNewComic = () => {
@@ -128,7 +134,8 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
     }
 
     unsafeWindow.onscroll = loadNewComic;
-    contentDom.appendChild(document.createElement('hr'));
+    if (document.querySelector('section.pagination'))
+      contentDom.appendChild(document.createElement('hr'));
     loadNewComic();
   }
 }

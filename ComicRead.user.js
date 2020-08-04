@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     3.9
+// @version     4.0
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、lhscan。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -160,7 +160,7 @@ const loadComicReadWindow = function (Info) {
                   else
                     this.ComicImgInfo.push([fillPage(tempImgInfo[0].src), tempImgInfo.shift()]);
                 }
-                if (!this.fillInfluence.hasOwnProperty(i))
+                if (this.fillInfluence[i] === undefined)
                   this.fillInfluence[i] = false;
               }
             }
@@ -1596,6 +1596,16 @@ const fileType = {
   g: 'gif',
 };
 
+const getApiUrl = (location) => {
+  if (location.pathname === '/')
+    return 'https://nhentai.net/api/galleries/all?';
+  else if (document.querySelector('a.tag'))
+    return `https://nhentai.net/api/galleries/tagged?tag_id=${document.querySelector('a.tag').classList[1].split('-')[1]}&`;
+  else if (location.pathname.includes('search'))
+    return `https://nhentai.net/api/galleries/search?query=${new URLSearchParams(location.search).get('q')}&`;
+  return '';
+};
+
 const buildImg = (src, onload, onerror) => {
   const img = document.createElement('img');
   img.src = src;
@@ -1650,11 +1660,7 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
     let pageNum = document.querySelector('.page.current') ? Number(document.querySelector('.page.current').innerHTML) : false;
     let loadLock = !pageNum;
     const contentDom = document.getElementById('content');
-    const apiUrl = location.pathname === '/'
-      ? 'https://nhentai.net/api/galleries/all?'
-      : `https://nhentai.net/api/galleries/tagged?tag_id=${
-        document.querySelector('a.tag').classList[1].split('-')[1]
-      }&`;
+    const apiUrl = getApiUrl(location);
 
     // 加载下一页的漫画
     const loadNewComic = () => {
@@ -1708,7 +1714,8 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
     }
 
     unsafeWindow.onscroll = loadNewComic;
-    contentDom.appendChild(document.createElement('hr'));
+    if (document.querySelector('section.pagination'))
+      contentDom.appendChild(document.createElement('hr'));
     loadNewComic();
   }
 }

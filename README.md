@@ -28,6 +28,12 @@
 
 # 最近更新
 
+## 2020.8.5
+
+## 修复
+
+- nhentai 搜索页的自动翻页功能失效的 Bug
+
 ## 2020.7.18
 
 ## 修复
@@ -39,19 +45,6 @@
 ## 修复
 
 - nhentai 网站更新后导致的脚本失效问题
-
-## 2020.5.29
-
-## 修复
-
-- ehentai 上无法加载 nhentai 图源的 Bug
-
-## 2020.5.11
-
-## 修复
-
-- 上/下一话切换功能方向错误的 Bug
-- nhentai、ehentai 加载时出错后只能手动刷新重试的 Bug
 
 [完整更新日志](https://github.com/hymbz/ComicReadScript/blob/master/UpdateLog.md)
 
