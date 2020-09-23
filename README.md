@@ -28,6 +28,12 @@
 
 # 最近更新
 
+## 2020.9.24
+
+## 修复
+
+- 下载时未能正确处理图片 URL 参数的错误
+
 ## 2020.8.5
 
 ## 修复
@@ -39,12 +45,6 @@
 ## 修复
 
 - lhscan 无法正常显示图片的 Bug
-
-## 2020.6.13
-
-## 修复
-
-- nhentai 网站更新后导致的脚本失效问题
 
 [完整更新日志](https://github.com/hymbz/ComicReadScript/blob/master/UpdateLog.md)
 
