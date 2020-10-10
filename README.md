@@ -28,6 +28,12 @@
 
 # 最近更新
 
+## 2020.10.10
+
+## 修复
+
+- dmzj 重定向到新域名后导致的失效问题
+
 ## 2020.9.24
 
 ## 修复
@@ -39,14 +45,6 @@
 ## 修复
 
 - nhentai 搜索页的自动翻页功能失效的 Bug
-
-## 2020.7.18
-
-## 修复
-
-- lhscan 无法正常显示图片的 Bug
-
-[完整更新日志](https://github.com/hymbz/ComicReadScript/blob/master/UpdateLog.md)
 
 # 前置需求
 
@@ -163,7 +161,7 @@ PC上，将鼠标移动至左侧边缘显示。
 
 ### 导出导入漫画订阅/历史记录
 
-在「[我的订阅](https://i.dmzj.com/subscribe)」和「[浏览历史](https://i.dmzj.com/record)」页面添加了导出导入功能按钮。
+在「[我的订阅](https://i.dmzj1.com/subscribe)」和「[浏览历史](https://i.dmzj1.com/record)」页面添加了导出导入功能按钮。
 
 点击导出按钮可将记录以 Json 格式导出，导出数据为名字（name）、网页端网址（url）、漫画 id（id）。
 

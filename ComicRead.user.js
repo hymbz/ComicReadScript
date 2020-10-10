@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     4.1
+// @version     4.2
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、lhscan。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -824,9 +824,9 @@ if (document.URL.includes('view-chapter') && ScriptMenu.UserSetting['漫画阅�
 ;
     break;
   }
-  case 'i.dmzj.com':
-  case 'm.dmzj.com':
-  case 'manhua.dmzj.com': {
+  case 'i.dmzj1.com':
+  case 'm.dmzj1.com':
+  case 'manhua.dmzj1.com': {
     
 
 
@@ -845,15 +845,15 @@ loadScriptMenu('DMZJUserSetting', {
 });
 
 switch (location.hostname) {
-  case 'manhua.dmzj.com': {
+  case 'manhua.dmzj1.com': {
     window.addEventListener('load', () => {
       if (typeof ___json___ !== 'undefined' && ScriptMenu.UserSetting['体验优化']['优化网页右上角用户信息栏的加载'] && ___json___.result !== true) {
         GM_xmlhttpRequest({
           method: 'GET',
-          url: 'https://user.dmzj.com/passport/message',
+          url: 'https://user.dmzj1.com/passport/message',
           onload (xhr) {
             eval(xhr.responseText.slice(4));
-            document.querySelector('script[src="https://user.dmzj.com/passport/message"]').onreadystatechange();
+            document.querySelector('script[src="https://user.dmzj1.com/passport/message"]').onreadystatechange();
           },
         });
       }
@@ -863,10 +863,10 @@ switch (location.hostname) {
       const [, comicName, g_current_id] = location.pathname.split('/');
       GM_xmlhttpRequest({
         method: 'GET',
-        url: `https://manhua.dmzj.com/${comicName}`,
+        url: `https://manhua.dmzj1.com/${comicName}`,
         onload: (xhr) => {
           if (xhr.status === 200) {
-            self.location.href = `https://m.dmzj.com/view/${RegExp('g_current_id = "(\\d+)').exec(xhr.responseText)[1]}/${g_current_id.split('.')[0]}.html`;
+            self.location.href = `https://m.dmzj1.com/view/${RegExp('g_current_id = "(\\d+)').exec(xhr.responseText)[1]}/${g_current_id.split('.')[0]}.html`;
           }
         },
       });
@@ -886,7 +886,7 @@ switch (location.hostname) {
               .map(item => {
                 const title = /title><!\[CDATA\[(.+?)]]/.exec(item)[1];
                 const imgUrl = /<img src='(.+?)'/.exec(item)[1];
-                const newComicUrl = /manhua.dmzj.com\/(.+?)\?from=rssReader/.exec(item)[1];
+                const newComicUrl = /manhua.dmzj1.com\/(.+?)\?from=rssReader/.exec(item)[1];
                 const newComicTitle = /title='(.+?)'/.exec(item)[1];
                 const comicUrl = newComicUrl.split('/')[0];
                 return {
@@ -927,7 +927,7 @@ switch (location.hostname) {
 
             GM_xmlhttpRequest({
               method: 'GET',
-              url: `http://v3api.dmzj.com/comic/comic_${g_comic_id}.json`,
+              url: `http://v3api.dmzj1.com/comic/comic_${g_comic_id}.json`,
               onload: (xhr) => {
                 if (xhr.status === 200) {
                   let temp = '';
@@ -939,7 +939,7 @@ switch (location.hostname) {
                     {
                       let i = chaptersList.length;
                       while (i--)
-                        temp = `${temp}<li><a target="_blank" title="${chaptersList[i].chapter_title}" href="https://manhua.dmzj.com/${g_comic_url}${chaptersList[i].chapter_id}.shtml" ${chaptersList[i].updatetime === last_updatetime ? 'class="color_red"' : ''}>${chaptersList[i].chapter_title}</a></li>`;
+                        temp = `${temp}<li><a target="_blank" title="${chaptersList[i].chapter_title}" href="https://manhua.dmzj1.com/${g_comic_url}${chaptersList[i].chapter_id}.shtml" ${chaptersList[i].updatetime === last_updatetime ? 'class="color_red"' : ''}>${chaptersList[i].chapter_title}</a></li>`;
                     }
                     temp = `${temp}</ul><div class="clearfix"></div></div>`;
                   }
@@ -1003,7 +1003,7 @@ switch (location.hostname) {
     }
     break;
   }
-  case 'm.dmzj.com': {
+  case 'm.dmzj1.com': {
     if (ScriptMenu.UserSetting['体验优化']['阅读被封漫画']) {
       // 分别处理目录页和漫画页
       switch (location.pathname.split('/')[1]) {
@@ -1015,7 +1015,7 @@ switch (location.hostname) {
             } else {
               GM_xmlhttpRequest({
                 method: 'GET',
-                url: `http://v3api.dmzj.com/comic/comic_${comicId}.json`,
+                url: `http://v3api.dmzj1.com/comic/comic_${comicId}.json`,
                 onload: (xhr) => {
                   if (xhr.status === 200) {
                     try {
@@ -1028,7 +1028,7 @@ switch (location.hostname) {
                         {
                           let i = chaptersList.length;
                           while (i--)
-                            temp += `<a target="_blank" title="${chaptersList[i].chapter_title}" href="https://m.dmzj.com/view/${comicId}/${chaptersList[i].chapter_id}.html" ${chaptersList[i].updatetime === last_updatetime ? 'style="color:red"' : ''}>${chaptersList[i].chapter_title}</a>`;
+                            temp += `<a target="_blank" title="${chaptersList[i].chapter_title}" href="https://m.dmzj1.com/view/${comicId}/${chaptersList[i].chapter_id}.html" ${chaptersList[i].updatetime === last_updatetime ? 'style="color:red"' : ''}>${chaptersList[i].chapter_title}</a>`;
                         }
                       }
                       appendDom(document.body, temp);
@@ -1075,7 +1075,7 @@ switch (location.hostname) {
             document.body.appendChild(loadText);
             GM_xmlhttpRequest({
               method: 'GET',
-              url: `http://v3api.dmzj.com/chapter/${/\d+\/\d+/.exec(document.URL)[0]}.json`,
+              url: `http://v3api.dmzj1.com/chapter/${/\d+\/\d+/.exec(document.URL)[0]}.json`,
               onload: (xhr) => {
                 if (xhr.status === 200) {
                   let Info;
@@ -1092,7 +1092,7 @@ switch (location.hostname) {
                         GM_xmlhttpRequest({
                           method: 'GET',
                           url: Info.page_url[i],
-                          headers: {Referer: 'http://images.dmzj.com/'},
+                          headers: {Referer: 'http://images.dmzj1.com/'},
                           responseType: 'blob',
                           onload: (xhr) => {
                             if (xhr.status === 200) {
@@ -1135,7 +1135,7 @@ switch (location.hostname) {
                       GM_xmlhttpRequest({
                         method: 'GET',
                         responseType: 'blob',
-                        url: `https://imgzip.dmzj.com/s/${/\d+\/\d+/.exec(document.URL)[0]}.zip`,
+                        url: `https://imgzip.dmzj1.com/s/${/\d+\/\d+/.exec(document.URL)[0]}.zip`,
                         onload: (xhr) => {
                           if (xhr.status === 200) {
                             if (typeof JSZip === 'undefined') {
@@ -1195,7 +1195,7 @@ switch (location.hostname) {
     }
     break;
   }
-  case 'i.dmzj.com': {
+  case 'i.dmzj1.com': {
 
     /**
      * 获取用户数据
@@ -1305,7 +1305,7 @@ switch (location.hostname) {
 
                 const subscribe = () => {
                   $.ajax({
-                    url: 'https://interface.dmzj.com/api/subscribe/add',
+                    url: 'https://interface.dmzj1.com/api/subscribe/add',
                     type: 'get',
                     jsonp: 'callback',
                     data: {
