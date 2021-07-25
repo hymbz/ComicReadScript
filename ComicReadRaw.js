@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     4.3
+// @version     4.4
 // @author      hymbz
-// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、lhscan。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
+// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、copymanga。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
 // @include     *
 // @connect     *
@@ -16,6 +16,9 @@
 // @grant       GM_notification
 // @grant       GM_registerMenuCommand
 // @resource    DMZJcss https://userstyles.org/styles/chrome/119945.json
+// @resource    vue https://cdn.jsdelivr.net/npm/vue@2.6.14
+// @resource    FileSaver https://cdn.jsdelivr.net/npm/file-saver@2.0.0
+// @resource    JSZip https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js
 // @supportURL  https://github.com/hymbz/ComicReadScript/issues
 // @updateURL   https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
 // @downloadURL https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
@@ -33,23 +36,25 @@ const getTop = (event) => event.getBoundingClientRect().top + document.body.scro
  * 添加元素
  * @param {object} node 被添加元素
  * @param {(string)} textnode 添加元素
+ * @param {object | nulll} referenceNode 参考元素，添加元素将插在参考元素前
  */
-const appendDom = (node, textnode) => {
+const appendDom = (node, textnode, referenceNode=null) => {
   const temp = document.createElement('div');
   temp.innerHTML = textnode;
   const frag = document.createDocumentFragment();
   while (temp.firstChild)
     frag.appendChild(temp.firstChild);
-  node.appendChild(frag);
+  node.insertBefore(frag, referenceNode);
+  // node.appendChild(frag);
 };
 
 /**
  * 加载外部脚本
  */
 const loadExternalScripts = {
-  Vue: () => { '@@Vue.js@@' },
-  FileSaver: () => { '@@FileSaver.js@@' },
-  JSZip: () => { '@@JSZip.js@@' },
+  Vue: () => { eval(GM_getResourceText('vue')) },
+  FileSaver: () => { eval(GM_getResourceText('FileSaver')) },
+  JSZip: () => { eval(GM_getResourceText('JSZip')) },
 };
 
 let ComicReadWindow;
@@ -512,8 +517,11 @@ switch (location.hostname) {
     '@@mangabzScript.@@';
     break;
   }
-  case 'loveheaven.net': {
-    '@@loveheavenScript.@@';
+  case 'copymanga.com':
+  case 'copymanga.net':
+  case 'copymanga.org':
+  case 'www.copymanga.com':{
+    '@@copymangaScript.@@';
     break;
   }
   default: {

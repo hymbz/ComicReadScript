@@ -95,22 +95,22 @@ switch (location.hostname) {
 
             GM_xmlhttpRequest({
               method: 'GET',
-              url: `http://v3api.dmzj.com/comic/comic_${g_comic_id}.json`,
+              url: `https://api.dmzj.com/dynamic/comicinfo/${g_comic_id}.json`,
               onload: (xhr) => {
                 if (xhr.status === 200) {
                   let temp = '';
-                  const Info = JSON.parse(xhr.responseText);
-                  const {chapters, last_updatetime} = Info;
-                  for (let i = 0; i < chapters.length; i++) {
-                    temp = `${temp}<div class="photo_part"><div class="h2_title2"><span class="h2_icon h2_icon22"></span><h2>${Info.title}：${chapters[i].title}</h2></div></div><div class="cartoon_online_border" style="border-top: 1px dashed #0187c5;"><ul>`;
-                    const chaptersList = chapters[i].data;
+                  const Info = JSON.parse(xhr.responseText).data;
+                  const last_updatetime = Info.info.last_updatetime;
+                  //for (let i = 0; i < chapters.length; i++) {
+                    temp = `${temp}<div class="photo_part"><div class="h2_title2"><span class="h2_icon h2_icon22"></span><h2>${Info.info.title}</h2></div></div><div class="cartoon_online_border" style="border-top: 1px dashed #0187c5;"><ul>`;
+                    const chaptersList = Info.list;
                     {
                       let i = chaptersList.length;
                       while (i--)
-                        temp = `${temp}<li><a target="_blank" title="${chaptersList[i].chapter_title}" href="https://manhua.dmzj.com/${g_comic_url}${chaptersList[i].chapter_id}.shtml" ${chaptersList[i].updatetime === last_updatetime ? 'class="color_red"' : ''}>${chaptersList[i].chapter_title}</a></li>`;
+                        temp = `${temp}<li><a target="_blank" title="${chaptersList[i].chapter_name}" href="https://manhua.dmzj.com/${g_comic_url}${chaptersList[i].id}.shtml" ${chaptersList[i].updatetime === last_updatetime ? 'class="color_red"' : ''}>${chaptersList[i].chapter_name}</a></li>`;
                     }
                     temp = `${temp}</ul><div class="clearfix"></div></div>`;
-                  }
+                  //}
                   appendDom(document.getElementsByClassName('middleright_mr')[0], temp);
                 }
               },

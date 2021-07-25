@@ -12,7 +12,7 @@ const imgList = {ehentai: []};
 // 判断当前页是否是漫画详情页
 if (typeof gid !== 'undefined') {
   if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
-    appendDom(document.getElementById('gd5'), '<p class="g2 gsp"><img src="https://exhentai.org/img/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>');
+    appendDom(document.getElementById('gd5'), '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>');
     let loadLock = false;
     document.getElementById('comicReadMode').addEventListener('click', function () {
       const comicReadModeDom = document.getElementById('comicReadMode');
@@ -55,7 +55,7 @@ if (typeof gid !== 'undefined') {
           });
         };
         comicReadModeDom.innerHTML = ` loading —— 0/${imgTotalNum}`;
-        Loop(`https://exhentai.org/s/${document.querySelector('#gd1 div').style.backgroundImage.split('/')[6].slice(0, 10)}/${gid}-1`, 0);
+        Loop(document.querySelector('#gdt > div:nth-child(1) a').href, 0);
       } else if (loadLock && (!comicReadModeDom.innerHTML.includes('loading') || confirm('图片未加载完毕，确认要直接进入阅读模式？'))) {
         loadComicReadWindow({
           comicImgList: imgList.ehentai,

@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "stopOnEntry": false,
-            "pythonPath": "${command:python.interpreterPath}",
+            "python": "${command:python.interpreterPath}",
             "program": "${workspaceFolder}/run.py",
             "cwd": "${workspaceFolder}",
             "env": {},

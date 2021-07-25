@@ -1,4 +1,4 @@
-GM_addStyle(':root {--color1: #e40b21;--color2: #f7f7f7;--color3: #fff;--color4: #aea5a5;} body {padding: 0 !important}');
+GM_addStyle(':root {--color1: #e40b21;--color2: #f7f7f7;--color3: #fff;--color4: #aea5a5;scroll-behavior: auto !important;} body {padding: 0 !important}');
 loadScriptMenu('manhuadbUserSetting', {
   体验优化: {
     Enable: true,
