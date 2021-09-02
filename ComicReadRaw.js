@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     4.4
+// @version     4.5
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、copymanga。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -15,6 +15,7 @@
 // @grant       GM_getResourceText
 // @grant       GM_notification
 // @grant       GM_registerMenuCommand
+// @grant       GM_addElement
 // @resource    DMZJcss https://userstyles.org/styles/chrome/119945.json
 // @resource    vue https://cdn.jsdelivr.net/npm/vue@2.6.14
 // @resource    FileSaver https://cdn.jsdelivr.net/npm/file-saver@2.0.0
@@ -48,13 +49,17 @@ const appendDom = (node, textnode, referenceNode=null) => {
   // node.appendChild(frag);
 };
 
+const selfEval = (textContent)=>{
+  GM_addElement('script', {textContent});
+}
+
 /**
  * 加载外部脚本
  */
 const loadExternalScripts = {
-  Vue: () => { eval(GM_getResourceText('vue')) },
-  FileSaver: () => { eval(GM_getResourceText('FileSaver')) },
-  JSZip: () => { eval(GM_getResourceText('JSZip')) },
+  Vue: () => { selfEval(GM_getResourceText('vue')) },
+  FileSaver: () => { selfEval(GM_getResourceText('FileSaver')) },
+  JSZip: () => { selfEval(GM_getResourceText('JSZip')) },
 };
 
 let ComicReadWindow;
@@ -280,7 +285,9 @@ const loadComicReadWindow = function (Info) {
           if (this.ComicImgInfo.length === 0)
             this.updatedData();
           // 使用 filter 过滤是为了处理填充页在前的情况
+          // 找出当前显示页面的 index
           let i = this.ComicImgInfo[this.PageNum].filter(e => !isNaN(e.index))[0].index;
+          // 找到所属的 fillInfluence 值
           while (!this.fillInfluence.hasOwnProperty(i) && i--)
             ;
           if (type) {

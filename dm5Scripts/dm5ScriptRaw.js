@@ -7,8 +7,20 @@ loadScriptMenu('dm5UserSetting', {
   },
 });
 
-// 在漫画详情页 DM5_PageType 为 4，在漫画页则为 0
-if (!DM5_PageType && ScriptMenu.UserSetting['漫画阅读'].Enable) {
+const wait = (judge, work, delay, max, ...args) => {
+  if (!max) return;
+
+  try {
+    if (judge()) work(...args)
+    else throw new Error();
+  } catch (e) {
+    setTimeout(wait, delay, judge, work, delay, max - 1, ...args)
+  };
+}
+
+const judge = () => !DM5_PageType && ScriptMenu.UserSetting['漫画阅读'].Enable
+
+const work = () => {
   appendDom(
     document.querySelector('.right-bar'),
     '<a id="comicReadMode" href="javascript:;">脚本阅读模式</a>',
@@ -35,7 +47,7 @@ if (!DM5_PageType && ScriptMenu.UserSetting['漫画阅读'].Enable) {
         _sign: DM5_VIEWSIGN,
       },
       type: 'GET',
-      success (data) {
+      success(data) {
         imgList.push(...eval(data));
 
         if (imgList.length === DM5_IMAGE_COUNT) {
@@ -63,3 +75,4 @@ if (!DM5_PageType && ScriptMenu.UserSetting['漫画阅读'].Enable) {
   addImgUrl();
 }
 
+wait(judge, work, 100, 30)
