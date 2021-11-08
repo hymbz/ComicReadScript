@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     4.6
+// @version     4.7
 // @author      hymbz
-// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、copymanga。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
+// @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、copymanga、manhuacat。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
 // @include     *
 // @connect     *
@@ -1637,7 +1637,7 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
   });
 } else if (document.getElementsByClassName('index-container').length) {
   // 判断当前页是漫画浏览页
-  const blacklist = n.options.blacklisted_tags;
+  const blacklist = n?.options?.blacklisted_tags ?? _n_app?.options?.blacklisted_tags;
 
   if (ScriptMenu.UserSetting['体验优化']['自动翻页']) {
     let pageNum = document.querySelector('.page.current') ? Number(document.querySelector('.page.current').innerHTML) : false;
@@ -1846,6 +1846,50 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
     ComicReadWindow.start();
 }
 
+
+
+;
+    break;
+  }
+  case 'www.manhuacat.com': {
+    
+
+
+GM_addStyle(':root {--color1: #e40b21;--color2: #f7f7f7;--color3: #fff;--color4: #aea5a5;scroll-behavior: auto !important;} body {padding: 0 !important}');
+loadScriptMenu('manhuacatUserSetting', {
+  体验优化: {
+    Enable: true,
+    自动进入漫画阅读模式: true,
+  },
+});
+
+if (ScriptMenu.UserSetting['漫画阅读'].Enable && img_data_arr) {
+  appendDom(
+    document.querySelector('.container-fluid div.form-inline'),
+    '<a id="comicReadMode" class="btn btn-primary mb-1 mr-1" href="javascript:;">漫画加载中</a>',
+  );
+  const comicReadMode = document.getElementById('comicReadMode');
+  comicReadMode.addEventListener('click', () => {
+    ComicReadWindow.start();
+  });
+
+  loadComicReadWindow({
+    comicImgList: img_data_arr.map(data => {
+      const temp = document.createElement('div');
+      const src = cdnImage(img_pre + data, asset_domain, asset_key);
+      temp.innerHTML = `<img src="${src}">`;
+      return temp.firstChild;
+    }),
+    readSetting: ScriptMenu.UserSetting['漫画阅读'],
+    EndExit: () => scrollTo(0, 0),
+    comicName: document.title,
+    nextChapter: () => { goNumPage('next') },
+    prevChapter: () => { goNumPage('pre') },
+  });
+  if (ScriptMenu.UserSetting['体验优化']['自动进入漫画阅读模式'])
+    ComicReadWindow.start();
+  comicReadMode.innerText = '阅读模式';
+}
 
 
 ;
