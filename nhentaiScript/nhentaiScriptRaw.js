@@ -74,7 +74,8 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
   });
 } else if (document.getElementsByClassName('index-container').length) {
   // 判断当前页是漫画浏览页
-  const blacklist = n?.options?.blacklisted_tags ?? _n_app?.options?.blacklisted_tags;
+  const n_ = typeof n === 'undefined' ? null : n;
+  const blacklist = n_?.options?.blacklisted_tags ?? _n_app?.options?.blacklisted_tags;
 
   if (ScriptMenu.UserSetting['体验优化']['自动翻页']) {
     let pageNum = document.querySelector('.page.current') ? Number(document.querySelector('.page.current').innerHTML) : false;
