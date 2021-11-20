@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     4.7
+// @version     4.8
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、copymanga、manhuacat。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -310,7 +310,8 @@ const loadComicReadWindow = function (Info) {
       },
       updated () {
         this.$nextTick(() => {
-          scrollTo(0, getTop(document.querySelector(`#comicShow>[index='${this.PageNum}']`)));
+          if (!this.readSetting['卷轴模式'])
+            scrollTo(0, getTop(document.querySelector(`#comicShow>[index='${this.PageNum}']`)));
         });
       },
     });
@@ -1637,7 +1638,8 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
   });
 } else if (document.getElementsByClassName('index-container').length) {
   // 判断当前页是漫画浏览页
-  const blacklist = n?.options?.blacklisted_tags ?? _n_app?.options?.blacklisted_tags;
+  const n_ = typeof n === 'undefined' ? null : n;
+  const blacklist = n_?.options?.blacklisted_tags ?? _n_app?.options?.blacklisted_tags;
 
   if (ScriptMenu.UserSetting['体验优化']['自动翻页']) {
     let pageNum = document.querySelector('.page.current') ? Number(document.querySelector('.page.current').innerHTML) : false;
@@ -1851,7 +1853,8 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
 ;
     break;
   }
-  case 'www.manhuacat.com': {
+  case 'www.manhuacat.com':
+  case 'www.maofly.com': {
     
 
 
