@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     5.1
+// @version     5.2
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、copymanga、manhuacat。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -185,7 +185,6 @@ const loadComicReadWindow = function (Info) {
               GM_xmlhttpRequest({
                 method: 'GET',
                 url: this.comicImgList[imgIndex].src,
-                headers: {referer: location.href},
                 responseType: 'blob',
                 onload: (xhr, index = tempIndex) => {
                   if (xhr.status === 200) {
@@ -198,6 +197,8 @@ const loadComicReadWindow = function (Info) {
                       });
                     } else
                       downDom.setAttribute('tooltip', `${comicDownloadNum}/${imgTotalNum}`);
+                  } else {
+                    console.log(xhr.status, xhr);
                   }
                 },
               });

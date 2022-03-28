@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     5.1
+// @version     5.2
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、copymanga、manhuacat。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -185,7 +185,6 @@ const loadComicReadWindow = function (Info) {
               GM_xmlhttpRequest({
                 method: 'GET',
                 url: this.comicImgList[imgIndex].src,
-                headers: {referer: location.href},
                 responseType: 'blob',
                 onload: (xhr, index = tempIndex) => {
                   if (xhr.status === 200) {
@@ -198,6 +197,8 @@ const loadComicReadWindow = function (Info) {
                       });
                     } else
                       downDom.setAttribute('tooltip', `${comicDownloadNum}/${imgTotalNum}`);
+                  } else {
+                    console.log(xhr.status, xhr);
                   }
                 },
               });
@@ -482,7 +483,7 @@ const loadScriptMenu = function (websiteSettingName, defaultUserSetting) {
 // 匹配站点
 switch (location.hostname) {
   case 'bbs.yamibo.com': {
-    
+
 
 
 /* global fid, tid, ajaxget */
@@ -510,6 +511,10 @@ if (ScriptMenu.UserSetting['体验优化']['固定导航条'])
 
 // 判断当前页是帖子
 if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
+
+  // 修复微博图床的链接
+  [...document.querySelectorAll('img[file*="sinaimg.cn"]')].map(e=>e.setAttribute('referrerpolicy','no-referrer'))
+
   // 启用漫画阅读模式
   if ((fid === 30 || fid === 37) && ScriptMenu.UserSetting['漫画阅读'].Enable) {
     // 有目录
@@ -544,7 +549,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
         let i = comicImgList.length;
         const tempImgList = comicImgList;
         while (i--) {
-          if (!tempImgList[i].complete) {
+          if (!(tempImgList[i].height || tempImgList[i].width)) {
             if (loop) {
               setTimeout(checkImgLoad, 300, true);
               return;
@@ -721,7 +726,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
     break;
   }
   case 'www.yamibo.com': {
-    
+
 
 
 // $('body').unbind();
@@ -811,7 +816,7 @@ if (document.URL.includes('view-chapter') && ScriptMenu.UserSetting['漫画阅�
   case 'i.dmzj.com':
   case 'm.dmzj.com':
   case 'manhua.dmzj.com': {
-    
+
 
 
 /* global qiehuan, huPoint, g_comic_name, g_chapter_name, g_comic_id, g_comic_url, userId, ___json___ */
@@ -1369,7 +1374,7 @@ switch (location.hostname) {
   }
   case 'exhentai.org':
   case 'e-hentai.org': {
-    
+
 
 
 /* global gid, selected_link, selected_tag */
@@ -1559,7 +1564,7 @@ if (typeof gid !== 'undefined') {
     break;
   }
   case 'nhentai.net': {
-    
+
 
 
 /* global unsafeWindow, GM_addStyle, GM_info, GM_xmlhttpRequest, appendDom, getTop, ComicReadWindow, ScriptMenu, gallery, n */
@@ -1716,7 +1721,7 @@ if (ScriptMenu.UserSetting['体验优化']['在新页面中打开链接'])
   case 'en.dm5.com':
   case 'www.dm5.com':
   case 'www.1kkk.com': {
-    
+
 
 
 /* global DM5_CID, DM5_MID, DM5_VIEWSIGN_DT, DM5_VIEWSIGN, DM5_IMAGE_COUNT, DM5_CTITLE, DM5_PageType, d */
@@ -1805,7 +1810,7 @@ wait(judge, work, 100, 30)
   case 'www.manhuagui.com':
   case 'www.mhgui.com':
   case 'tw.manhuagui.com': {
-    
+
 
 
 /* global cInfo, pVars */
@@ -1855,7 +1860,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
   }
   case 'www.manhuacat.com':
   case 'www.maofly.com': {
-    
+
 
 
 GM_addStyle(':root {--color1: #e40b21;--color2: #f7f7f7;--color3: #fff;--color4: #aea5a5;scroll-behavior: auto !important;} body {padding: 0 !important}');
@@ -1899,7 +1904,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && img_data_arr) {
     break;
   }
   case 'www.manhuadb.com': {
-    
+
 
 
 GM_addStyle(':root {--color1: #e40b21;--color2: #f7f7f7;--color3: #fff;--color4: #aea5a5;scroll-behavior: auto !important;} body {padding: 0 !important}');
@@ -1943,7 +1948,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && unsafeWindow.img_data_arr) 
   }
   case 'www.mangabz.com':
   case 'mangabz.com': {
-    
+
 
 
 /* global MANGABZ_CURL, MANGABZ_CID, MANGABZ_MID, MANGABZ_VIEWSIGN_DT, MANGABZ_VIEWSIGN, MANGABZ_IMAGE_COUNT, MANGABZ_COOKIEDOMAIN  */
@@ -2041,7 +2046,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && MANGABZ_CID) {
   case 'www.copymanga.net':
   case 'www.copymanga.org':
   case 'www.copymanga.com':{
-    
+
 
 
 GM_addStyle(':root {--color1: #e40b21;--color2: #f7f7f7;--color3: #fff;--color4: #aea5a5;} body {padding: 0 !important}');

@@ -23,6 +23,10 @@ if (ScriptMenu.UserSetting['体验优化']['固定导航条'])
 
 // 判断当前页是帖子
 if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
+
+  // 修复微博图床的链接
+  [...document.querySelectorAll('img[file*="sinaimg.cn"]')].map(e=>e.setAttribute('referrerpolicy','no-referrer'))
+
   // 启用漫画阅读模式
   if ((fid === 30 || fid === 37) && ScriptMenu.UserSetting['漫画阅读'].Enable) {
     // 有目录
@@ -57,7 +61,7 @@ if (RegExp('thread(-\\d+){3}|mod=viewthread').test(document.URL)) {
         let i = comicImgList.length;
         const tempImgList = comicImgList;
         while (i--) {
-          if (!tempImgList[i].complete) {
+          if (!(tempImgList[i].height || tempImgList[i].width)) {
             if (loop) {
               setTimeout(checkImgLoad, 300, true);
               return;
