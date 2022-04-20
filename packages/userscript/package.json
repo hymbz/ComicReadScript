@@ -1,0 +1,40 @@
+{
+  "name": "@crs/userscript",
+  "private": "true",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "rollup --config",
+    "watch": "rollup --config --watch --environment NODE_ENV:development"
+  },
+  "author": "hymbz",
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "@babel/runtime": "^7.17.9",
+    "@crs/ui-component": "workspace:*",
+    "axios": "^0.26.1",
+    "axios-userscript-adapter": "^0.1.11",
+    "core-js": "^3.22.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.9",
+    "@babel/plugin-transform-runtime": "^7.17.0",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-react": "^7.16.7",
+    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-commonjs": "^21.1.0",
+    "@rollup/plugin-node-resolve": "^13.2.1",
+    "@rollup/plugin-replace": "^4.0.0",
+    "@types/react": "^18.0.5",
+    "@types/react-dom": "^18.0.1",
+    "babel": "^6.23.0",
+    "esbuild": "^0.14.36",
+    "rollup": "^2.70.2",
+    "rollup-plugin-esbuild": "^4.9.1",
+    "rollup-plugin-import-css": "^3.0.3",
+    "rollup-plugin-serve": "^1.1.0",
+    "rollup-plugin-userscript-metablock": "^0.3.1",
+    "utility-types": "^3.10.0"
+  }
+}

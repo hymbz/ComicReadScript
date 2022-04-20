@@ -1,0 +1,16 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "root"
+    },
+    {
+      "path": "packages/userscript",
+      "name": "userscript"
+    },
+    {
+      "path": "packages/ui-component",
+      "name": "ui-component"
+    },
+  ],
+}
