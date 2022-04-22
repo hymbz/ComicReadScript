@@ -6,7 +6,7 @@ unsafeWindow[selfLibName] = {
 };
 
 /**
- * 通过 Resource 导入外部模块，但是同步
+ * 通过 Resource 导入外部模块
  *
  * @param name \@resource 引用的资源名
  */
@@ -14,16 +14,20 @@ const selfImportSync = (name: string) => {
   const code = GM_getResourceText(name);
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
-  // 导入 cjs 模块，同时用 call 将模块创建的变量放到 selfLib 对象里，防止污染全局作用域和网站自身的模块产生冲突
+  // 通过提供 cjs 环境的变量来欺骗 umd 模块加载器
+  // 将模块导出变量放到 selfLib 对象里，防止污染全局作用域和网站自身的模块产生冲突
   return GM_addElement('script', {
     textContent: `
       window['${selfLibName}']['${name}'] = {};
       console.time('导入 ${name}');
-      (function (process, require, exports) { ${code} }).call(
+      (function (process, require, exports, module) {
+        ${code}
+      }).call(
         window['${selfLibName}'],
         window['${selfLibName}'].process,
         window['${selfLibName}'].require,
-        window['${selfLibName}']['${name}']
+        window['${selfLibName}']['${name}'],
+        '',
       );
       console.timeEnd('导入 ${name}');
     `,
@@ -38,7 +42,6 @@ const selfImportSync = (name: string) => {
 export const require = (name: string) => {
   return new Proxy({} as Record<string, unknown>, {
     get(_, prop) {
-      console.log('get', prop);
       if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
       return unsafeWindow[selfLibName][name][prop] as unknown;
     },

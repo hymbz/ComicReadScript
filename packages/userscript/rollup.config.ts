@@ -30,12 +30,10 @@ const meta = {
     'unsafeWindow',
   ],
   resource: {
-    react: 'https://unpkg.com/react@18/cjs/react.development.js',
-    'react-dom': 'https://unpkg.com/react-dom@18/cjs/react-dom.development.js',
+    react: 'https://unpkg.com/react@18/umd/react.development.js',
+    'react-dom': 'https://unpkg.com/react-dom@18/umd/react-dom.development.js',
     'react/jsx-runtime':
       'https://unpkg.com/react@18.0.0/cjs/react-jsx-runtime.production.min.js',
-    scheduler:
-      'https://unpkg.com/scheduler@0.21.0/cjs/scheduler.development.js',
   },
 
   name: pkg.name,
