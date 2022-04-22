@@ -18,4 +18,3 @@ export const axios = raxios.create({
 export const querySelector = <T extends HTMLElement = HTMLElement>(
   selector: string,
 ) => document.querySelector<T>(selector);
-

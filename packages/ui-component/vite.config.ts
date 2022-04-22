@@ -9,10 +9,7 @@ import * as path from 'path';
 
 export default defineConfig({
   plugins: [
-    react({
-      // TODO:之后再尝试改为新版
-      jsxRuntime: 'classic',
-    }),
+    react(),
 
     Unocss({
       presets: [presetWind()],
@@ -39,7 +36,7 @@ export default defineConfig({
         },
         entryFileNames: '[name].js',
       },
-      external: ['react'],
+      external: ['react', 'react/jsx-runtime'],
     },
   },
 });

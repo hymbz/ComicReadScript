@@ -1,3 +1,4 @@
+import fs from 'fs';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import esbuild from 'rollup-plugin-esbuild';
@@ -16,6 +17,8 @@ const meta = {
   connect: '*',
   noframes: true,
   grant: [
+    'GM_getResourceText',
+    'GM_addElement',
     'GM.xmlHttpRequest',
     'GM.getResourceText',
     'GM.addElement',
@@ -42,7 +45,7 @@ const buildConfig = (config, handleMeta = (e) => e) => ({
   plugins: [
     replace({
       DEV_PORT,
-      preventAssignment: true,
+      require: 'selfRequire',
     }),
     resolve({
       browser: true,
@@ -63,12 +66,12 @@ const buildConfig = (config, handleMeta = (e) => e) => ({
       file: '',
       override: handleMeta(meta),
     }),
-    serve({
-      contentBase: './dist',
-      port: DEV_PORT,
-    }),
+    // serve({
+    //   contentBase: './dist',
+    //   port: DEV_PORT,
+    // }),
   ],
-  external: ['react'],
+  external: ['react', 'react-dom'],
   inlineDynamicImports: true,
 
   ...config,
@@ -81,8 +84,17 @@ export default async () => {
       input: 'src/index.tsx',
       output: {
         file: 'dist/bundle.user.js',
-        // format: 'umd',
         sourcemap: isDevMode ? 'inline' : false,
+        format: 'cjs',
+        generatedCode: 'es2015',
+        exports: 'none',
+
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+        },
+
+        intro: fs.readFileSync('./src/helper/import.ts', 'utf-8'),
       },
     }),
     // dev.user.js

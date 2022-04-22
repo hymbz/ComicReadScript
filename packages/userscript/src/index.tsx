@@ -1,12 +1,16 @@
 import rButton from '@crs/ui-component/dist/Button';
+import ReactDOM from 'react-dom/client';
 
-import { getLib } from './helper/import';
+// import { creatLibProxy, selfLibName } from './helper/import';
 
-// import component from './component';
+// import { getLib } from './helper/import';
 
-const React = await getLib.React();
-const ReactDOM = await getLib.ReactDOM();
-const root = ReactDOM.createRoot(document.getElementById('ssr-top')!);
+(async () => {
+  // const React = await getLib.React();
+  // const ReactDOM = await getLib.ReactDOM();
 
-const Button = await rButton();
-root.render(<Button />);
+  const root = ReactDOM.createRoot(document.getElementById('search')!);
+
+  const Button = await rButton();
+  root.render(<Button />);
+})();

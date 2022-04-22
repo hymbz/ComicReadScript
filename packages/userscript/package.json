@@ -1,10 +1,11 @@
 {
   "name": "@crs/userscript",
+  "version": "0.0.1",
   "private": "true",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
+    "test": "esmo ./rollup.config.ts",
     "build": "rollup --config",
     "watch": "rollup --config --watch --environment NODE_ENV:development"
   },
@@ -15,13 +16,16 @@
     "@crs/ui-component": "workspace:*",
     "axios": "^0.26.1",
     "axios-userscript-adapter": "^0.1.11",
-    "core-js": "^3.22.0"
+    "core-js": "^3.22.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.17.9",
     "@babel/plugin-transform-runtime": "^7.17.0",
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-react": "^7.16.7",
+    "@babel/preset-typescript": "^7.16.7",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^21.1.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
@@ -33,6 +37,7 @@
     "rollup": "^2.70.2",
     "rollup-plugin-esbuild": "^4.9.1",
     "rollup-plugin-import-css": "^3.0.3",
+    "rollup-plugin-prettier": "^2.2.2",
     "rollup-plugin-serve": "^1.1.0",
     "rollup-plugin-userscript-metablock": "^0.3.1",
     "utility-types": "^3.10.0"

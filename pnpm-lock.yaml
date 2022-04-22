@@ -15,15 +15,8 @@ importers:
       eslint-plugin-prettier: ^4.0.0
       eslint-plugin-react: ^7.29.4
       eslint-plugin-react-hooks: ^4.4.0
-      lodash: ^4.17.21
       prettier: ^2.6.2
-      react: ^18.0.0
-      react-dom: ^18.0.0
       typescript: ^4.6.3
-    dependencies:
-      lodash: 4.17.21
-      react: 18.0.0
-      react-dom: 18.0.0_react@18.0.0
     devDependencies:
       '@typescript-eslint/eslint-plugin': 5.20.0_b9ac9b5656ce5dffade639fcf5e491bf
       '@typescript-eslint/parser': 5.20.0_eslint@8.13.0+typescript@4.6.3
@@ -42,7 +35,6 @@ importers:
   packages/ui-component:
     specifiers:
       '@ladle/react': ^0.12.1
-      '@types/node': ^17.0.25
       '@types/react': ^18.0.0
       '@types/react-dom': ^18.0.0
       '@typescript-eslint/eslint-plugin': ^5.20.0
@@ -69,7 +61,6 @@ importers:
       react-dom: 18.0.0_react@18.0.0
     devDependencies:
       '@ladle/react': 0.12.2_4ba69c7787dfd9a3579e23e97d93e7b4
-      '@types/node': 17.0.25
       '@types/react': 18.0.5
       '@types/react-dom': 18.0.1
       '@typescript-eslint/eslint-plugin': 5.20.0_b9ac9b5656ce5dffade639fcf5e491bf
@@ -96,6 +87,7 @@ importers:
       '@babel/plugin-transform-runtime': ^7.17.0
       '@babel/preset-env': ^7.16.11
       '@babel/preset-react': ^7.16.7
+      '@babel/preset-typescript': ^7.16.7
       '@babel/runtime': ^7.17.9
       '@crs/ui-component': workspace:*
       '@rollup/plugin-babel': ^5.3.1
@@ -109,9 +101,12 @@ importers:
       babel: ^6.23.0
       core-js: ^3.22.0
       esbuild: ^0.14.36
+      react: ^18.0.0
+      react-dom: ^18.0.0
       rollup: ^2.70.2
       rollup-plugin-esbuild: ^4.9.1
       rollup-plugin-import-css: ^3.0.3
+      rollup-plugin-prettier: ^2.2.2
       rollup-plugin-serve: ^1.1.0
       rollup-plugin-userscript-metablock: ^0.3.1
       utility-types: ^3.10.0
@@ -121,11 +116,14 @@ importers:
       axios: 0.26.1
       axios-userscript-adapter: 0.1.11_axios@0.26.1
       core-js: 3.22.1
+      react: 18.0.0
+      react-dom: 18.0.0_react@18.0.0
     devDependencies:
       '@babel/core': 7.17.9
       '@babel/plugin-transform-runtime': 7.17.0_@babel+core@7.17.9
       '@babel/preset-env': 7.16.11_@babel+core@7.17.9
       '@babel/preset-react': 7.16.7_@babel+core@7.17.9
+      '@babel/preset-typescript': 7.16.7_@babel+core@7.17.9
       '@rollup/plugin-babel': 5.3.1_@babel+core@7.17.9+rollup@2.70.2
       '@rollup/plugin-commonjs': 21.1.0_rollup@2.70.2
       '@rollup/plugin-node-resolve': 13.2.1_rollup@2.70.2
@@ -137,6 +135,7 @@ importers:
       rollup: 2.70.2
       rollup-plugin-esbuild: 4.9.1_esbuild@0.14.36+rollup@2.70.2
       rollup-plugin-import-css: 3.0.3_rollup@2.70.2
+      rollup-plugin-prettier: 2.2.2_prettier@2.6.2+rollup@2.70.2
       rollup-plugin-serve: 1.1.0
       rollup-plugin-userscript-metablock: 0.3.1
       utility-types: 3.10.0
@@ -1721,6 +1720,10 @@ packages:
     resolution: {integrity: sha512-wANk6fBrUwdpY4isjWrKTufkrXdu1D2YHCot2fD/DfWxF5sMrVSA+KN7ydckvaTCh0HiqX9IVl0L5/ZoXg5M7w==}
     dev: true
 
+  /@types/prettier/2.6.0:
+    resolution: {integrity: sha512-G/AdOadiZhnJp0jXCaBQU449W2h716OW/EoXeYkCytxKL06X1WCXB4DZpp8TpZ8eyIJVS1cw4lrlkkSYU21cDw==}
+    dev: true
+
   /@types/prop-types/15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
     dev: true
@@ -2533,6 +2536,11 @@ packages:
 
   /detect-node-es/1.1.0:
     resolution: {integrity: sha512-ypdmJU/TbBby2Dxibuv7ZLW3Bs1QEmM7nHjEANfohJLvE0XVujisn1qPJcZxg+qDucsr+bP6fLD1rPS3AhJ7EQ==}
+    dev: true
+
+  /diff/5.0.0:
+    resolution: {integrity: sha512-/VTCrvm5Z0JGty/BWHljh+BAiw3IK+2j87NGMu8Nwc/f48WoDAC395uomO9ZD117ZOBaHmkX1oyLvkVM/aIT3w==}
+    engines: {node: '>=0.3.1'}
     dev: true
 
   /dir-glob/3.0.1:
@@ -3836,13 +3844,25 @@ packages:
     resolution: {integrity: sha1-gteb/zCmfEAF/9XiUVMArZyk168=}
     dev: true
 
+  /lodash.hasin/4.5.2:
+    resolution: {integrity: sha1-+R41I3jSHvcJC552h8LKNcW01So=}
+    dev: true
+
+  /lodash.isempty/4.4.0:
+    resolution: {integrity: sha1-b4bL7di+TsmHvpqvM8loTbGzHn4=}
+    dev: true
+
+  /lodash.isnil/4.0.0:
+    resolution: {integrity: sha1-SeKM1VkBNFjIFMVHnTxmOiG/qmw=}
+    dev: true
+
   /lodash.merge/4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
     dev: true
 
-  /lodash/4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
-    dev: false
+  /lodash.omitby/4.6.0:
+    resolution: {integrity: sha1-XBX/R1StVVAWtTwEExHo8HkgR5E=}
+    dev: true
 
   /loose-envify/1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
@@ -3855,6 +3875,12 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       yallist: 4.0.0
+    dev: true
+
+  /magic-string/0.25.7:
+    resolution: {integrity: sha512-4CrMT5DOHTDk4HYDlzmwu4FVCcIYI8gauveasrdCu2IKIFOJ3f0v/8MDGJCDL9oD2ppz/Av1b0Nj345H9M+XIA==}
+    dependencies:
+      sourcemap-codec: 1.4.8
     dev: true
 
   /magic-string/0.25.9:
@@ -4514,6 +4540,24 @@ packages:
       rollup: ^2.x.x
     dependencies:
       '@rollup/pluginutils': 4.2.1
+      rollup: 2.70.2
+    dev: true
+
+  /rollup-plugin-prettier/2.2.2_prettier@2.6.2+rollup@2.70.2:
+    resolution: {integrity: sha512-dj5RhTuW8vTVrjxGsKy7rO/ywhKgo8Wihm776e/Po0ZYj/Yu4kr+B6vmnYmZ46Y1kslE1UGoXvBygwmlJ0ifrw==}
+    engines: {node: '>=6.0.0'}
+    peerDependencies:
+      prettier: ^1.0.0 || ^2.0.0
+      rollup: ^1.0.0 || ^2.0.0
+    dependencies:
+      '@types/prettier': 2.6.0
+      diff: 5.0.0
+      lodash.hasin: 4.5.2
+      lodash.isempty: 4.4.0
+      lodash.isnil: 4.0.0
+      lodash.omitby: 4.6.0
+      magic-string: 0.25.7
+      prettier: 2.6.2
       rollup: 2.70.2
     dev: true
 

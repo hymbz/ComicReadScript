@@ -422,7 +422,7 @@ declare function GM_listValues(): string[];
 // Resources
 
 /** Get the content of a predefined `@resource` tag at the script header */
-declare function GM_getResourceText(name: string): string;
+declare function GM_getResourceText(name: string): string | null;
 
 /**
  * Get the base64 encoded URI of a predefined `@resource` tag at the script
@@ -539,6 +539,11 @@ declare function GM_notification(
 declare function GM_setClipboard(
   data: string,
   info?: Tampermonkey.ContentType,
+): void;
+
+declare function GM_addElement(
+  tag_name: string,
+  attributes: { textContent: string },
 ): void;
 
 // GM.*
