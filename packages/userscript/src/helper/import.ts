@@ -22,8 +22,7 @@ const selfImportSync = (name: string) => {
       console.time('导入 ${name}');
       (function (process, require, exports, module) {
         ${code}
-      }).call(
-        window['${selfLibName}'],
+      })(
         window['${selfLibName}'].process,
         window['${selfLibName}'].require,
         window['${selfLibName}']['${name}'],
