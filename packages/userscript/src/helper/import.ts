@@ -2,6 +2,7 @@
 
 const selfLibName = 'selfLib';
 unsafeWindow[selfLibName] = {
+  // 有些 cjs 模块会检查这个，所以在这里声明下
   process: { env: { NODE_ENV: process.env.NODE_ENV } },
 };
 
