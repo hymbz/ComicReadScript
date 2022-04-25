@@ -6,8 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "esmo ./rollup.config.ts",
-    "build": "rollup --config",
-    "watch": "rollup --config --watch --environment NODE_ENV:development"
+    "build": "rollup --config --configPlugin rollup-plugin-esbuild",
+    "watch": "rollup --config --watch --environment NODE_ENV:development --configPlugin rollup-plugin-esbuild"
   },
   "author": "hymbz",
   "license": "AGPL-3.0-or-later",

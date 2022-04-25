@@ -20,7 +20,7 @@ const selfImportSync = (name: string) => {
   return GM_addElement('script', {
     textContent: `
       window['${selfLibName}']['${name}'] = {};
-      console.time('导入 ${name}');
+      ${isDevMode ? `console.time('导入 ${name}');` : ''}
       (function (process, require, exports, module) {
         ${code}
       })(
@@ -29,7 +29,7 @@ const selfImportSync = (name: string) => {
         window['${selfLibName}']['${name}'],
         '',
       );
-      console.timeEnd('导入 ${name}');
+      ${isDevMode ? `console.timeEnd('导入 ${name}');` : ''}
     `,
   });
 };

@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable import/no-extraneous-dependencies */
-import type { OutputChunk, OutputPlugin, RollupOptions } from 'rollup';
+import type { OutputPlugin, RollupOptions } from 'rollup';
 import { rollup } from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -17,7 +17,6 @@ import metablock from 'rollup-plugin-userscript-metablock';
 import pkg from './package.json';
 
 const meta = {
-  // include: '*://localhost*',
   include: '*',
   connect: '*',
   noframes: true,
@@ -44,8 +43,7 @@ const meta = {
   license: pkg.license,
 } as MetaValues;
 
-// const isDevMode = process.env.NODE_ENV === 'development';
-const isDevMode = true;
+const isDevMode = process.env.NODE_ENV === 'development';
 /** 开发服务器的端口 */
 const DEV_PORT = '2405';
 
@@ -57,6 +55,7 @@ const buildConfig = (
     replace({
       values: {
         DEV_PORT,
+        isDevMode: `${isDevMode}`,
         'process.env.NODE_ENV': isDevMode ? `'development'` : `'production'`,
       },
 
@@ -80,95 +79,84 @@ const buildConfig = (
     }),
 
     ...plugins,
-
-    // FIXME:改为 js 调用后，就不好用插件的形式来启用了
-    // serve({
-    //   contentBase: './dist',
-    //   port: DEV_PORT,
-    // }),
   ],
-  external: ['react', 'react-dom', 'react/jsx-runtime'],
+  external: Object.keys(meta.resource ?? {}),
 
   ...config,
 });
 
-//
-// 编译 dev.user.js
-//
+export default () => [
+  // 编译 bundle.user.js
+  buildConfig({
+    input: 'src/index.tsx',
+    output: {
+      file: 'dist/bundle.user.js',
+      sourcemap: isDevMode ? 'inline' : false,
+      format: 'commonjs',
+      generatedCode: 'es2015',
+      exports: 'none',
+      intro: async () => {
+        const importBundle = await rollup(
+          buildConfig({ input: 'src/helper/import.ts', treeshake: false }),
+        );
+        const {
+          output: [{ code: importCode }],
+        } = await importBundle.generate({});
+        await importBundle.close();
+        return importCode.replace(/^export.+;$/m, '');
+      },
+      plugins: [
+        metablock({ file: '', override: meta }),
+        !isDevMode &&
+          prettier({
+            singleQuote: true,
+            trailingComma: 'all',
+            parser: 'babel',
+          }),
+      ],
+    },
+  }),
 
-// const bundle = await rollup(
-//   buildConfig({
-//     input: 'src/dev.ts',
-//     // 忽略使用 eval 的警告
-//     onwarn(warning, warn) {
-//       if (warning.code !== 'EVAL') warn(warning);
-//     },
-//   }),
-// );
-// await bundle.write({
-//   file: 'dist/dev.user.js',
-//   plugins: [
-//     metablock({
-//       file: '',
-//       override: (({ grant = [], ...otherMeta }) => {
-//         return {
-//           ...otherMeta,
-
-//           // 添加 xmlHttpRequest 权限
-//           grant: [...new Set([...grant, 'GM.xmlHttpRequest'])],
-//           // 允许请求所有域
-//           connect: '*',
-//         };
-//       })(meta),
-//     }),
-//   ],
-// });
-// await bundle.close();
-
-//
-// 编译 bundle.user.js
-//
-
-const importBundle = await rollup(
-  buildConfig({ input: 'src/helper/import.ts', treeshake: false }),
-);
-const {
-  output: [{ code: importCode }],
-} = await importBundle.generate({});
-await importBundle.close();
-
-const mainBundle = await rollup(
+  // 编译 dev.user.js
   buildConfig(
-    { input: 'src/index.tsx' },
-    !isDevMode && prettier({ singleQuote: true, trailingComma: 'all' }),
+    {
+      input: 'src/dev.ts',
+      // 忽略使用 eval 的警告
+      onwarn(warning, warn) {
+        if (warning.code !== 'EVAL') warn(warning);
+      },
+      output: {
+        file: 'dist/dev.user.js',
+        plugins: [
+          metablock({
+            file: '',
+            override: (({ grant = [], ...otherMeta }) => ({
+              ...otherMeta,
+
+              // 添加 xmlHttpRequest 权限
+              grant: [...new Set([...grant, 'GM.xmlHttpRequest'])],
+              // 允许请求所有域
+              connect: '*',
+            }))(meta),
+          }),
+        ],
+      },
+    },
+    isDevMode &&
+      serve({
+        contentBase: './dist',
+        port: DEV_PORT,
+      }),
   ),
-);
-await mainBundle.write({
-  // globals: {
-  //   react: 'React',
-  //   'react-dom': 'ReactDOM',
-  // },
+];
 
-  file: 'dist/bundle.user.js',
-  sourcemap: isDevMode ? 'inline' : false,
-  format: 'commonjs',
-  generatedCode: 'es2015',
-  exports: 'none',
-  intro: importCode.replace(/^export.+;$/m, ''),
-  plugins: [
-    metablock({
-      file: '',
-      override: (({ grant = [], ...otherMeta }) => {
-        return {
-          ...otherMeta,
-
-          // 添加 xmlHttpRequest 权限
-          grant: [...new Set([...grant, 'GM.xmlHttpRequest'])],
-          // 允许请求所有域
-          connect: '*',
-        };
-      })(meta),
-    }),
-  ],
-});
-await mainBundle.close();
+// const watcher = watch({
+//   watch: {
+//     exclude: 'node_modules/**',
+//   },
+// });
+// watcher.on('event', async (event) => {
+//   if (event.code === 'BUNDLE_END' || event.code === 'ERROR') {
+//     await event.result?.close();
+//   }
+// });
