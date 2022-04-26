@@ -38,6 +38,8 @@ importers:
   packages/ui-component:
     specifiers:
       '@ladle/react': ^0.12.1
+      '@types/lodash': ^4.14.182
+      '@types/ramda': ^0.28.11
       '@types/react': ^18.0.0
       '@types/react-dom': ^18.0.0
       '@typescript-eslint/eslint-plugin': ^5.20.0
@@ -53,7 +55,10 @@ importers:
       eslint-plugin-prettier: ^4.0.0
       eslint-plugin-react: ^7.29.4
       eslint-plugin-react-hooks: ^4.4.0
+      immer: ^9.0.12
+      lodash: ^4.17.21
       prettier: ^2.6.2
+      ramda: ^0.28.0
       react: ^18.0.0
       react-dom: ^18.0.0
       typescript: ^4.6.3
@@ -61,11 +66,16 @@ importers:
       vite: ^2.9.5
       zustand: ^4.0.0-rc.0
     dependencies:
+      immer: 9.0.12
+      lodash: 4.17.21
+      ramda: 0.28.0
       react: 18.0.0
       react-dom: 18.0.0_react@18.0.0
-      zustand: 4.0.0-rc.0_react@18.0.0
+      zustand: 4.0.0-rc.0_immer@9.0.12+react@18.0.0
     devDependencies:
       '@ladle/react': 0.12.2_4ba69c7787dfd9a3579e23e97d93e7b4
+      '@types/lodash': 4.14.182
+      '@types/ramda': 0.28.11
       '@types/react': 18.0.5
       '@types/react-dom': 18.0.1
       '@typescript-eslint/eslint-plugin': 5.20.0_b9ac9b5656ce5dffade639fcf5e491bf
@@ -1723,6 +1733,10 @@ packages:
     resolution: {integrity: sha1-7ihweulOEdK4J7y+UnC86n8+ce4=}
     dev: true
 
+  /@types/lodash/4.14.182:
+    resolution: {integrity: sha512-/THyiqyQAP9AfARo4pF+aCGcyiQ94tX/Is2I7HofNRqoYLgN1PBoOWu2/zTA5zMxzP5EFutMtWtGAFRKUe961Q==}
+    dev: true
+
   /@types/minimist/1.2.2:
     resolution: {integrity: sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==}
     dev: false
@@ -1741,6 +1755,12 @@ packages:
 
   /@types/prop-types/15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
+    dev: true
+
+  /@types/ramda/0.28.11:
+    resolution: {integrity: sha512-FG40c+CduBSpGL6gh9M2Ybe+Rhkj/G6HeCnvufO1HbEcnY5fbFfL7EPuj1mXNcEKfxdZw6mRu4cy+GMHen79DQ==}
+    dependencies:
+      ts-toolbelt: 6.15.5
     dev: true
 
   /@types/react-dom/18.0.1:
@@ -3941,6 +3961,10 @@ packages:
     engines: {node: '>= 4'}
     dev: true
 
+  /immer/9.0.12:
+    resolution: {integrity: sha512-lk7UNmSbAukB5B6dh9fnh5D0bJTOFKxVg2cyJWTYrWRfhLrLMBquONcUs3aFq507hNoIZEDDh8lb8UtOizSMhA==}
+    dev: false
+
   /import-fresh/3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
     engines: {node: '>=6'}
@@ -4913,6 +4937,10 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /ramda/0.28.0:
+    resolution: {integrity: sha512-9QnLuG/kPVgWvMQ4aODhsBUFKOUmnbUnsSXACv+NCQZcHbeb+v8Lodp8OVxtRULN1/xOyYLLaL6npE6dMq5QTA==}
+    dev: false
+
   /range-parser/1.2.1:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
@@ -5637,6 +5665,10 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
+  /ts-toolbelt/6.15.5:
+    resolution: {integrity: sha512-FZIXf1ksVyLcfr7M317jbB67XFJhOO1YqdTcuGaq9q5jLUoTikukZ+98TPjKiP2jC5CgmYdWWYs0s2nLSU0/1A==}
+    dev: true
+
   /tsconfig-paths/3.14.1:
     resolution: {integrity: sha512-fxDhWnFSLt3VuTwtvJt5fpwxBHg5AdKWMsgcPOOIilyjymcYVZoCQF8fvFRezCNfblEXmi+PcM1eYHeOAgXCOQ==}
     dependencies:
@@ -5987,7 +6019,7 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  /zustand/4.0.0-rc.0_react@18.0.0:
+  /zustand/4.0.0-rc.0_immer@9.0.12+react@18.0.0:
     resolution: {integrity: sha512-jMimx6EIlLb/hwgnkVZ4Wd/UI73wXedUB6L/kcdIYbOYHcjIFRc7JEB8IXFZt+1rQq2qwuts7kN6kuHhFss47A==}
     engines: {node: '>=12.7.0'}
     peerDependencies:
@@ -5999,6 +6031,7 @@ packages:
       react:
         optional: true
     dependencies:
+      immer: 9.0.12
       react: 18.0.0
       use-sync-external-store: 1.0.0_react@18.0.0
     dev: false
