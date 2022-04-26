@@ -27,8 +27,8 @@ export default defineConfig({
     },
     rollupOptions: {
       input: {
-        Button: path.resolve(__dirname, 'src/component/Button/index.tsx'),
-        Manga: path.resolve(__dirname, 'src/component/Manga/index.tsx'),
+        Button: path.resolve(__dirname, 'src/containers/Button/index.tsx'),
+        Manga: path.resolve(__dirname, 'src/containers/Manga/index.tsx'),
       },
       output: {
         globals: {

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "serve": "vite",
+    "serve": "ladle serve --open none",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },

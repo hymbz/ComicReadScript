@@ -1,9 +1,12 @@
 import { useState, useRef } from 'react';
 
 export default () => {
-  console.log('import Manga');
+  console.log('import Button');
 
-  const Manga: React.FC = () => {
+  /**
+   * APP 测试
+   */
+  const Button: React.FC = () => {
     const [open, setOpen] = useState(false);
 
     const ref = useRef() as React.MutableRefObject<HTMLButtonElement>;
@@ -13,11 +16,11 @@ export default () => {
 
     return (
       <>
-        <div className="py-8">Manga</div>
-        <div>Manga</div>
+        <div className="py-8 px-8">Button</div>
+        <div>Button</div>
       </>
     );
   };
 
-  return Manga;
+  return Button;
 };
