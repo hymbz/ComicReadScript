@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "zustand": "^4.0.0-rc.0"
   },
   "devDependencies": {
     "@ladle/react": "^0.12.1",

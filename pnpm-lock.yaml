@@ -59,9 +59,11 @@ importers:
       typescript: ^4.6.3
       unocss: ^0.31.5
       vite: ^2.9.5
+      zustand: ^4.0.0-rc.0
     dependencies:
       react: 18.0.0
       react-dom: 18.0.0_react@18.0.0
+      zustand: 4.0.0-rc.0_react@18.0.0
     devDependencies:
       '@ladle/react': 0.12.2_4ba69c7787dfd9a3579e23e97d93e7b4
       '@types/react': 18.0.5
@@ -5820,6 +5822,14 @@ packages:
       tslib: 2.3.1
     dev: true
 
+  /use-sync-external-store/1.0.0_react@18.0.0:
+    resolution: {integrity: sha512-AFVsxg5GkFg8GDcxnl+Z0lMAz9rE8DGJCc28qnBuQF7lac57B5smLcT37aXpXIIPz75rW4g3eXHPjhHwdGskOw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0-rc
+    dependencies:
+      react: 18.0.0
+    dev: false
+
   /util-deprecate/1.0.2:
     resolution: {integrity: sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8=}
     dev: false
@@ -5976,3 +5986,19 @@ packages:
   /yocto-queue/0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  /zustand/4.0.0-rc.0_react@18.0.0:
+    resolution: {integrity: sha512-jMimx6EIlLb/hwgnkVZ4Wd/UI73wXedUB6L/kcdIYbOYHcjIFRc7JEB8IXFZt+1rQq2qwuts7kN6kuHhFss47A==}
+    engines: {node: '>=12.7.0'}
+    peerDependencies:
+      immer: '>=9.0'
+      react: '>=16.8'
+    peerDependenciesMeta:
+      immer:
+        optional: true
+      react:
+        optional: true
+    dependencies:
+      react: 18.0.0
+      use-sync-external-store: 1.0.0_react@18.0.0
+    dev: false
