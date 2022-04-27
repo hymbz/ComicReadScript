@@ -31,12 +31,9 @@ export default defineConfig({
         Manga: path.resolve(__dirname, 'src/containers/Manga/index.tsx'),
       },
       output: {
-        globals: {
-          react: 'react',
-        },
         entryFileNames: '[name].js',
       },
-      external: ['react', 'react/jsx-runtime'],
+      external: ['react', 'react/jsx-runtime', 'zustand', 'immer'],
     },
   },
 });

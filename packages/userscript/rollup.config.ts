@@ -21,11 +21,11 @@ const meta = {
   connect: '*',
   noframes: true,
   grant: [
-    'GM_getResourceText',
     'GM_addElement',
+    'GM_getResourceText',
     'GM.xmlHttpRequest',
     'GM.getResourceText',
-    'GM.addElement',
+    'GM.addStyle',
     'unsafeWindow',
   ],
   resource: {
@@ -33,6 +33,12 @@ const meta = {
     'react-dom': 'https://unpkg.com/react-dom@18/umd/react-dom.development.js',
     'react/jsx-runtime':
       'https://unpkg.com/react@18.0.0/cjs/react-jsx-runtime.production.min.js',
+    zustand: 'https://unpkg.com/zustand@4.0.0-rc.0/umd/index.development.js',
+    'zustand/vanilla':
+      'https://unpkg.com/zustand@4.0.0-rc.0/umd/vanilla.development.js',
+    'use-sync-external-store/shim/with-selector':
+      'https://unpkg.com/use-sync-external-store@1.0.0/cjs/use-sync-external-store-with-selector.development.js',
+    immer: 'https://unpkg.com/immer@9.0.12/dist/immer.umd.development.js',
   },
 
   name: pkg.name,
@@ -91,7 +97,7 @@ export default () => [
     input: 'src/index.tsx',
     output: {
       file: 'dist/bundle.user.js',
-      sourcemap: isDevMode ? 'inline' : false,
+      // sourcemap: isDevMode ? 'inline' : false,
       format: 'commonjs',
       generatedCode: 'es2015',
       exports: 'none',

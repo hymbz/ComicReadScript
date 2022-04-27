@@ -1,6 +1,6 @@
-// import component from '../../component2';
+import component from '.';
 
-// export default {
-//   title: 'Level / Sub level',
-// };
-// export const Button = component.Button();
+export default {
+  title: 'Base',
+};
+export const Base = component();
