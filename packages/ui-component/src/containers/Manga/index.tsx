@@ -1,3 +1,4 @@
+import shadowRoot from 'react-shadow';
 import { useStore } from './hooks/useStore';
 
 export default () => {
@@ -10,8 +11,11 @@ export default () => {
     const bears = useStore((state) => state.bears);
     const addBear = useStore((state) => state.addBear);
 
+    const css = `@unocss-placeholder`;
+
     return (
-      <>
+      <shadowRoot.div>
+        <style type="text/css">{css}</style>
         <div className="py-8 px-8">{bears}</div>
         <button
           type="button"
@@ -21,9 +25,9 @@ export default () => {
         >
           add
         </button>
-      </>
+      </shadowRoot.div>
     );
   };
 
-  return { Manga, css: `\n@unocss-placeholder` };
+  return Manga;
 };
