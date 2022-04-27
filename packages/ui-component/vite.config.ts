@@ -13,7 +13,7 @@ export default defineConfig({
 
     Unocss({
       presets: [presetWind()],
-      mode: 'dist-chunk',
+      mode: 'shadow-dom',
     }),
   ],
 

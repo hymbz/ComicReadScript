@@ -1,5 +1,3 @@
-import Button from './containers/Button';
+import Button from './containers/Manga';
 
-export default {
-  Button,
-};
+export default Button;

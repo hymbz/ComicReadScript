@@ -13,6 +13,7 @@
     "ramda": "^0.28.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
+    "react-shadow": "^19.0.3",
     "zustand": "^4.0.0-rc.0"
   },
   "devDependencies": {
