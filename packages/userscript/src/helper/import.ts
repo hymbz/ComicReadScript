@@ -43,7 +43,13 @@ export const require = (name: string) => {
   return new Proxy({} as Record<string, unknown>, {
     get(_, prop) {
       if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
-      return unsafeWindow[selfLibName][name][prop] as unknown;
+
+      const module: Record<string | symbol, unknown> =
+        unsafeWindow[selfLibName][name];
+
+      if (prop === 'default') return module[prop] ?? module;
+
+      return module[prop];
     },
   });
 };
