@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "serve": "ladle serve --open none",
+    "serve": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
@@ -17,7 +17,6 @@
     "zustand": "^4.0.0-rc.0"
   },
   "devDependencies": {
-    "@ladle/react": "^0.12.1",
     "@types/lodash": "^4.14.182",
     "@types/ramda": "^0.28.11",
     "@types/react": "^18.0.0",
