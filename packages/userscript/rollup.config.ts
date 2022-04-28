@@ -39,6 +39,8 @@ const meta = {
     'use-sync-external-store/shim/with-selector':
       'https://unpkg.com/use-sync-external-store@1.0.0/cjs/use-sync-external-store-with-selector.development.js',
     immer: 'https://unpkg.com/immer@9.0.12/dist/immer.umd.development.js',
+    'react-shadow': 'https://unpkg.com/react-shadow@19.0.3/react-shadow.js',
+    'prop-types': 'https://unpkg.com/prop-types@15.8.1/prop-types.min.js',
   },
 
   name: pkg.name,
