@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 
 export default () => {
   console.log('import Button');
@@ -7,12 +7,12 @@ export default () => {
    * APP 测试
    */
   const Button: React.FC = () => {
-    const [open, setOpen] = useState(false);
+    // const [open, setOpen] = useState(false);
 
-    const ref = useRef() as React.MutableRefObject<HTMLButtonElement>;
-    // const arrowRef = useRef() as React.MutableRefObject<HTMLDivElement>;
-    const [arrowRef, setArrowRef] =
-      useState<React.MutableRefObject<HTMLDivElement> | null>(null);
+    // const ref = useRef() as React.MutableRefObject<HTMLButtonElement>;
+    // // const arrowRef = useRef() as React.MutableRefObject<HTMLDivElement>;
+    // const [arrowRef, setArrowRef] =
+    //   useState<React.MutableRefObject<HTMLDivElement> | null>(null);
 
     return (
       <>

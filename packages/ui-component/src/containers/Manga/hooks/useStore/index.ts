@@ -1,3 +1,4 @@
+import type { WritableDraft } from 'immer/dist/internal';
 import type { StateCreator, StoreApi, UseBoundStore, State } from 'zustand';
 import create from 'zustand';
 import { immer } from 'zustand/middleware/immer';
@@ -20,7 +21,15 @@ interface BearSlice {
   bears: number;
   addBear: () => void;
 }
-const createBearSlice: SelfStateCreator<BearSlice> = (set) => ({
+const createBearSlice: SelfStateCreator<BearSlice> = (
+  set: (
+    nextStateOrUpdater:
+      | BearSlice
+      | Partial<BearSlice>
+      | ((state: WritableDraft<BearSlice>) => void),
+    shouldReplace?: boolean | undefined,
+  ) => void,
+) => ({
   bears: 0,
   addBear: () => set((state) => ({ bears: state.bears + 1 })),
 });
