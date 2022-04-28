@@ -27,7 +27,11 @@ const selfImportSync = (name: string) => {
         window['${selfLibName}'].process,
         window['${selfLibName}'].require,
         window['${selfLibName}']['${name}'],
-        '',
+        {
+          set exports(value) {
+            window['${selfLibName}']['${name}'] = value;
+          },
+        }
       );
       ${isDevMode ? `console.timeEnd('导入 ${name}');` : ''}
     `,
@@ -40,18 +44,24 @@ const selfImportSync = (name: string) => {
  * @param name 外部模块名
  */
 export const require = (name: string) => {
-  return new Proxy({} as Record<string, unknown>, {
-    get(_, prop) {
-      if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
+  return new Proxy(
+    {
+      // 为了能被 rollup 的 _interopDefaultLegacy 识别到，这里得定义下 default
+      default: null,
+    } as Record<string, unknown>,
+    {
+      get(_, prop) {
+        if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
 
-      const module: Record<string | symbol, unknown> =
-        unsafeWindow[selfLibName][name];
+        const module: Record<string | symbol, unknown> =
+          unsafeWindow[selfLibName][name];
 
-      if (prop === 'default') return module[prop] ?? module;
+        if (prop === 'default') return module[prop] ?? module;
 
-      return module[prop];
+        return module[prop];
+      },
     },
-  });
+  );
 };
 unsafeWindow[selfLibName].require = require;
 // 为了防止 TS 报错，只能 export 这个函数，之后会在 rollup 处理时删掉 export 语句
