@@ -1,3 +1,1 @@
-import Button from './containers/Manga';
-
-export default Button;
+export { buildManga } from './containers/Manga';

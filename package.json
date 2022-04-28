@@ -2,6 +2,7 @@
   "name": "comic-read-script",
   "version": "0.0.1",
   "scripts": {
+    "build":"pnpm --filter @crs/ui-component build && pnpm --filter @crs/userscript build ",
     "release": "standard-version"
   },
   "author": "hymbz",

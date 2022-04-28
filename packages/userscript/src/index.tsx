@@ -1,10 +1,10 @@
-import rButton from '@crs/ui-component/dist/Manga';
+import { buildManga } from '@crs/ui-component/dist/index';
 import ReactDOM from 'react-dom/client';
 
 (() => {
   const root = ReactDOM.createRoot(document.querySelector('.css-1ydg16i')!);
 
-  const Button = rButton();
+  const Manga = buildManga();
 
-  root.render(<Button />);
+  root.render(<Manga />);
 })();

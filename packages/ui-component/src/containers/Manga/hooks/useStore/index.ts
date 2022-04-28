@@ -1,8 +1,9 @@
-import type { WritableDraft } from 'immer/dist/internal';
 import type { StateCreator, StoreApi, UseBoundStore, State } from 'zustand';
 import create from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-// import { devtools, persist } from 'zustand/middleware';
+
+import type { BearSlice } from './BearSlice';
+import { createBearSlice } from './BearSlice';
 
 declare global {
   /** 对 StateCreator 进行包装 */
@@ -17,26 +18,14 @@ declare global {
   >;
 }
 
-interface BearSlice {
-  bears: number;
-  addBear: () => void;
-}
-const createBearSlice: SelfStateCreator<BearSlice> = (
-  set: (
-    nextStateOrUpdater:
-      | BearSlice
-      | Partial<BearSlice>
-      | ((state: WritableDraft<BearSlice>) => void),
-    shouldReplace?: boolean | undefined,
-  ) => void,
-) => ({
-  bears: 0,
-  addBear: () => set((state) => ({ bears: state.bears + 1 })),
-});
+export const buildStore = () => {
+  const store: SelfStateCreator<BearSlice> = (...a) => ({
+    ...createBearSlice(...a),
+  });
 
-const store: SelfStateCreator<BearSlice> = (...a) => ({
-  ...createBearSlice(...a),
-});
-export const useStore: UseBoundStore<StoreApi<BearSlice>> = create<BearSlice>()(
-  immer(store),
-);
+  const useStore: UseBoundStore<StoreApi<BearSlice>> = create<BearSlice>()(
+    immer(store),
+  );
+
+  return { useStore };
+};

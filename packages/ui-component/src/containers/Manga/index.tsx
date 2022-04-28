@@ -1,8 +1,10 @@
 import shadowRoot from 'react-shadow';
-import { useStore } from './hooks/useStore';
+import { buildStore } from './hooks/useStore';
 
-export default () => {
+export const buildManga = () => {
   console.log('import Manga');
+
+  const { useStore } = buildStore();
 
   /**
    * APP 测试

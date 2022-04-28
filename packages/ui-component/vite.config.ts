@@ -22,14 +22,14 @@ export default defineConfig(({ command }) => ({
   build: {
     target: 'esnext',
     lib: {
-      entry: path.resolve(__dirname, 'src/App.tsx'),
+      entry: path.resolve(__dirname, 'src/index.ts'),
       formats: ['es'],
     },
     rollupOptions: {
-      input: {
-        Button: path.resolve(__dirname, 'src/containers/Button/index.tsx'),
-        Manga: path.resolve(__dirname, 'src/containers/Manga/index.tsx'),
-      },
+      // input: {
+      //   Button: path.resolve(__dirname, 'src/containers/Button/index.tsx'),
+      //   Manga: path.resolve(__dirname, 'src/containers/Manga/index.tsx'),
+      // },
       output: {
         entryFileNames: '[name].js',
       },
