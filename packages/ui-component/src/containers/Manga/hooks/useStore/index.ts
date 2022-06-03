@@ -1,8 +1,9 @@
-import type { MutableRefObject } from 'react';
+import type { RefObject } from 'react';
 import type { StateCreator, State as ZState } from 'zustand';
 import create from 'zustand';
 
 import type { Draft } from 'immer';
+import { setAutoFreeze, enableMapSet } from 'immer';
 import { immer } from 'zustand/middleware/immer';
 import { devtools } from 'zustand/middleware';
 
@@ -20,6 +21,9 @@ import type { SwiperSlice } from './SwiperSlice';
 import { swiperSlice } from './SwiperSlice';
 
 export { default as shallow } from 'zustand/shallow';
+
+enableMapSet();
+setAutoFreeze(false);
 
 interface SliceState
   extends OptionSlice,
@@ -46,7 +50,7 @@ declare global {
   type SelfStateGet = Parameters<SelfStateCreator<SelfState>>[1];
 
   interface SelfState extends SliceState {
-    mainRef: MutableRefObject<HTMLDivElement>;
+    mainRef: RefObject<HTMLDivElement> | null;
 
     [key: string]: unknown;
   }
@@ -62,7 +66,7 @@ const store: SelfStateCreator<SelfState> = (...a) => ({
   ...imageSlice(...a),
   ...swiperSlice(...a),
 
-  mainRef: undefined as unknown as MutableRefObject<HTMLDivElement>,
+  mainRef: null,
 });
 
 // : UseBoundStore<StoreApi<SelfState>>

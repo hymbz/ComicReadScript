@@ -1,6 +1,6 @@
 import { castDraft } from 'immer';
 import { throttle } from 'lodash';
-import type { KeyboardEventHandler, MutableRefObject } from 'react';
+import type { KeyboardEventHandler } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useEffectOnce } from 'react-use';
@@ -42,7 +42,7 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
   const refInitDara = useRef(initData);
 
   // 初始化 swiper、panzoom
-  const mainRef = useRef() as MutableRefObject<HTMLDivElement>;
+  const mainRef = useRef<HTMLDivElement>(null);
   useEffectOnce(() => {
     useStore.setState((state) => {
       state.mainRef = castDraft(mainRef);
@@ -76,6 +76,8 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
   const [scrollLock, setScrollLock] = useState<number | null>(null);
   const handleScroll = useCallback(
     (event: React.WheelEvent<HTMLDivElement>) => {
+      if (swiper === undefined) return;
+
       if (!卷轴模式) {
         if (!swiper.allowTouchMove) {
           // 在放大模式下通过滚轮缩小至原尺寸后，不会立刻跳转至下一页
@@ -97,6 +99,8 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
   // 处理键盘操作
   const handleKeyUp: KeyboardEventHandler<HTMLDivElement> = useCallback(
     (e) => {
+      if (swiper === undefined) return;
+
       switch (e.key) {
         case 'PageUp':
         case 'ArrowUp':

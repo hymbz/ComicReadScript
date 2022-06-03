@@ -1,4 +1,3 @@
-import produce, { finishDraft } from 'immer';
 import type { PanZoom, PanZoomOptions } from 'panzoom';
 import createPanZoom from 'panzoom';
 import type { SwiperOptions } from 'swiper';
@@ -61,12 +60,14 @@ const panzoomOption: PanZoomOptions = {
 };
 
 export interface SwiperSlice {
-  swiper: Swiper;
-  panzoom: PanZoom;
+  swiper?: Swiper;
+  panzoom?: PanZoom;
 
   activeSlideIndex: number;
 
-  initSwiper: (swiperOption?: SwiperOptions) => [Swiper, PanZoom];
+  initSwiper: (
+    swiperOption?: SwiperOptions,
+  ) => [SwiperSlice['swiper'], SwiperSlice['panzoom']];
 
   [key: string]: unknown;
 }
@@ -81,12 +82,14 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
   initSwiper: (swiperOption?: SwiperOptions) => {
     const { mainRef, swiper: _swiper, panzoom: _panzoom } = get();
 
+    if (!mainRef?.current) return [undefined, undefined];
+
     // 销毁之前可能创建过的实例
     _swiper?.destroy();
     _panzoom?.dispose();
 
     // 初始化 swiper
-    const swiper = new Swiper(finishDraft(mainRef.current) as HTMLDivElement, {
+    const swiper = new Swiper(mainRef.current, {
       ...defaultSwiperOption,
       ...swiperOption,
     });
@@ -100,6 +103,8 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
 
     swiper.on('activeIndexChange', () => {
       set((state) => {
+        if (state.swiper === undefined) return;
+
         // 绑定 activeSlideIndex
         state.activeSlideIndex = state.swiper.activeIndex;
 
@@ -113,41 +118,39 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
         while (!state.fillEffect.has(nowFillIndex) && (nowFillIndex -= 1));
         state.nowFillIndex = nowFillIndex;
 
+        // TODO:等完成了工具栏的搬迁后再取消注释
         // 更新工具栏的 页面填充 按钮的打开状态
-        state.buttonMap.set(
-          '页面填充',
-          produce(state.buttonMap.get('页面填充')!, (draftButton: Button) => {
-            draftButton.enable = state.fillEffect.get(nowFillIndex)!;
-          }),
-        );
+        // state.buttonMap.set(
+        //   '页面填充',
+        //   produce(state.buttonMap.get('页面填充')!, (draftButton: Button) => {
+        //     draftButton.enable = state.fillEffect.get(nowFillIndex)!;
+        //   }),
+        // );
       });
     });
 
     // 初始化 panzoom
-    const panzoom = createPanZoom(
-      finishDraft(mainRef.current) as HTMLDivElement,
-      {
-        beforeWheel(e) {
-          const { scale } = panzoom.getTransform();
-          // 图片不处于放大状态时，必须按下 Alt 键才能通过滚轮缩放
-          if (e.altKey && scale === 1) return false;
-          // 图片处于放大状态时，可以直接通过滚轮缩放
-          if (scale !== 1) return false;
-          return true;
-        },
-        beforeMouseDown(e) {
-          // 按下 alt 键 或 处于放大状态 时才允许拖动
-          return !(e.altKey || panzoom.getTransform().scale !== 1);
-        },
-
-        onDoubleClick(e) {
-          e.stopPropagation();
-          return true;
-        },
-
-        ...panzoomOption,
+    const panzoom = createPanZoom(mainRef.current, {
+      beforeWheel(e) {
+        const { scale } = panzoom.getTransform();
+        // 图片不处于放大状态时，必须按下 Alt 键才能通过滚轮缩放
+        if (e.altKey && scale === 1) return false;
+        // 图片处于放大状态时，可以直接通过滚轮缩放
+        if (scale !== 1) return false;
+        return true;
       },
-    );
+      beforeMouseDown(e) {
+        // 按下 alt 键 或 处于放大状态 时才允许拖动
+        return !(e.altKey || panzoom.getTransform().scale !== 1);
+      },
+
+      onDoubleClick(e) {
+        e.stopPropagation();
+        return true;
+      },
+
+      ...panzoomOption,
+    });
 
     // 处于放大状态时禁止 swiper
     panzoom.on('transform', (e: PanZoom) => {

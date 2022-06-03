@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@mui/icons-material": "^5.8.2",
+    "@unocss/reset": "^0.37.2",
     "color": "^4.2.3",
     "immer": "^9.0.14",
     "lodash": "^4.17.21",
