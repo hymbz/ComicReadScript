@@ -11,8 +11,6 @@ interface MangaProps {
   initData?: InitData;
 }
 
-const css = `@unocss-placeholder`;
-
 const selector = ({ mainRef, styles, option }: SelfState) => ({
   mainRef,
   styles,
@@ -41,9 +39,7 @@ export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
   );
 
   return (
-    <shadowRoot.div>
-      <style type="text/css">{css}</style>
-
+    <div>
       <div
         id="manga-main"
         style={style}
@@ -63,6 +59,9 @@ export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
       >
         add
       </button> */}
-    </shadowRoot.div>
+
+      {/* eslint-disable-next-line react/jsx-curly-brace-presence */}
+      <style type="text/css">{`@unocss-placeholder;`}</style>
+    </div>
   );
 };

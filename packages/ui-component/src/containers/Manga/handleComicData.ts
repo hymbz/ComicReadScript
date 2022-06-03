@@ -20,7 +20,7 @@ export const handleComicData = ({
     const imgInfo = comicImgList[i];
 
     if (fillEffect.get(i - 1)) {
-      // FIXME:应该不会触发，一旦触发 imgCache 就会被覆盖
+      // FIXME:理论上应该是不会触发的，一旦触发 imgCache 就会被覆盖，但保险起见还是先写上
       if (imgCache) throw new Error('imgCache 被覆盖');
       imgCache = fillPage(imgInfo);
     }

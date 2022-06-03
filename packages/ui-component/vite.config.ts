@@ -18,6 +18,8 @@ export default defineConfig(({ command }) => ({
     Unocss({
       presets: [presetWind(), presetIcons()],
       mode: 'shadow-dom',
+      // TODO:希望之后能找到办法不用在这里这样手动写出来
+      safelist: 'invisible w-full h-auto'.split(' '),
     }),
   ],
 
