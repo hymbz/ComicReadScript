@@ -1,27 +1,3 @@
-/* eslint-disable no-param-reassign */
-
-declare global {
-  interface Img {
-    type: 'loading' | 'loaded' | 'error';
-    element: HTMLImageElement;
-    error?: ErrorEvent;
-  }
-
-  interface ComicImg {
-    type: 'long' | 'wide' | 'vertical' | 'fill' | 'error' | 'loading' | '';
-    index: number | '填充';
-    src: string;
-    imgData: Img;
-  }
-
-  // interface FillEffect {
-  //   [imgIndex: number]: boolean;
-  // }
-  type FillEffect = Map<number, boolean>;
-
-  type SlideData = Array<[ComicImg] | [ComicImg, ComicImg]>;
-}
-
 interface HandleComicDataProps {
   comicImgList: ComicImg[];
   fillEffect: FillEffect;

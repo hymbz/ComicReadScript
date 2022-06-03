@@ -1,11 +1,13 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
+import type { PluginOption } from 'vite';
 import { defineConfig } from 'vite';
 import ts from 'rollup-plugin-ts';
 import react from '@vitejs/plugin-react';
 // eslint-disable-next-line import/no-unresolved
 import Unocss from 'unocss/vite';
 import presetWind from '@unocss/preset-wind';
+import presetIcons from '@unocss/preset-icons';
 import * as path from 'path';
 
 export default defineConfig(({ command }) => ({
@@ -14,7 +16,7 @@ export default defineConfig(({ command }) => ({
   plugins: [
     react(),
     Unocss({
-      presets: [presetWind()],
+      presets: [presetWind(), presetIcons()],
       mode: 'shadow-dom',
     }),
   ],
