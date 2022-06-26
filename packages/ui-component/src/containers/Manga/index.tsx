@@ -1,7 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useMemo } from 'react';
-import shadowRoot from 'react-shadow';
-import { ImgFlow } from './components/ImgFlow';
+import { ImgFlow } from './components/ComicImgFlow';
 import type { InitData } from './hooks/useInit';
 import { useInit } from './hooks/useInit';
 import { shallow, useStore } from './hooks/useStore';
