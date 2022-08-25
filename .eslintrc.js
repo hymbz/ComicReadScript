@@ -3,7 +3,14 @@ const publicConfig = {
   plugins: ['prettier'],
   rules: {
     // 启用 prettier
-    'prettier/prettier': ['warn', { singleQuote: true, trailingComma: 'all' }],
+    'prettier/prettier': [
+      'warn',
+      {
+        singleQuote: true,
+        trailingComma: 'all',
+        plugins: [require('prettier-plugin-tailwindcss')],
+      },
+    ],
 
     // 允许在顶层外使用 require
     'global-require': 'off',

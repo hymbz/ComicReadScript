@@ -7,6 +7,24 @@ declare global {
     color: string;
     backgroundColor: string;
   }
+
+  interface CssVar {
+    /** 背景色 */
+    backgroundColor: string;
+
+    /** 侧边栏按钮的颜色 */
+    buttonColor: string;
+    /** 侧边栏按钮的背景颜色 */
+    buttonBgColor: string;
+    /** 侧边栏按钮的悬停背景颜色 */
+    buttonHoverBgColor: string;
+    /** 启用状态的侧边栏按钮的颜色 */
+    enableButtonColor: string;
+    /** 启用状态的侧边栏按钮的背景颜色 */
+    enableButtonBgColor: string;
+    /** 启用状态的侧边栏按钮的悬停背景颜色 */
+    enableButtonHoverBgColor: string;
+  }
 }
 
 export interface StylesSlice {
@@ -14,12 +32,40 @@ export interface StylesSlice {
     normal: StateStyles;
     invert: StateStyles;
   };
-  getHoverBgColor: (color: string) => string;
+
+  /** 全局 css 变量 */
+  cssVar: CssVar;
+
+  /** 是否显示侧边栏 */
+  showToolbar: boolean;
 
   [key: string]: unknown;
 }
 
+/** 深色模式的 css 变量 */
+const dark: CssVar = {
+  backgroundColor: '#000',
+  buttonColor: '#fff',
+  buttonBgColor: '#000',
+  buttonHoverBgColor: '#fff5',
+  enableButtonColor: '#000',
+  enableButtonBgColor: '#fff',
+  enableButtonHoverBgColor: '#fffd',
+};
+
+/** 浅色模式的 css 变量 */
+const light: CssVar = {
+  backgroundColor: '#fff',
+  buttonColor: '#000',
+  buttonBgColor: '#fff',
+  buttonHoverBgColor: '#000b',
+  enableButtonColor: '#fff',
+  enableButtonBgColor: '#000',
+  enableButtonHoverBgColor: '#fffb',
+};
+
 export const stylesSlice: SelfStateCreator<StylesSlice> = (set, get) => {
+  // TODO: 改为使用 css 变量进行控制
   const white: StateStyles = {
     color: '#FFFFFF',
     backgroundColor: '#000000',
@@ -49,24 +95,8 @@ export const stylesSlice: SelfStateCreator<StylesSlice> = (set, get) => {
         return darkMode ? black : white;
       },
     },
-    getHoverBgColor: (color: string) => {
-      const isBlackBG = color === white.color;
-      const isDark = get().option.darkMode;
+    cssVar: dark,
 
-      let lightness: number;
-
-      if (isBlackBG !== isDark) lightness = 50;
-      else if (isDark) lightness = 30;
-      else lightness = 90;
-
-      // 黑色背景：0
-      // 白底：50
-      // 黑底：30
-
-      // 白色背景：100
-      // 白底：90
-      // 黑底：50
-      return `hsl(0deg 0% ${lightness}%)`;
-    },
+    showToolbar: true,
   };
 };

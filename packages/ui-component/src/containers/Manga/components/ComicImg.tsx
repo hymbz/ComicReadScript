@@ -31,7 +31,10 @@ export const ComicImg: React.FC<ComicImgProps> = ({ src, index, type }) => {
       <img
         src={src}
         alt={`${index}`}
-        className={`${imgTypeToClass(type)} w-auto h-full align-middle`}
+        // className={`${imgTypeToClass(type)} h-full w-auto align-middle`}
+        // FIXME: 临时测试暂时修改
+        className={`${imgTypeToClass(type)} h-2em w-2em align-middle`}
+        style={{ backgroundImage: `url(${src})` }}
       />
       <style type="text/css">{`
         @unocss-placeholder;

@@ -1,1 +1,1 @@
-export { buildManga } from './containers/Manga';
+// export { buildManga } from './containers/Manga';

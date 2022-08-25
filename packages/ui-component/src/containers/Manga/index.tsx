@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react';
 import { useMemo } from 'react';
 import { ImgFlow } from './components/ComicImgFlow';
+import { Toolbar } from './components/Toolbar';
+import { CssVar } from './components/CssVar';
 import type { InitData } from './hooks/useInit';
 import { useInit } from './hooks/useInit';
 import { shallow, useStore } from './hooks/useStore';
@@ -10,12 +12,6 @@ interface MangaProps {
   initData?: InitData;
 }
 
-const selector = ({ mainRef, styles, option }: SelfState) => ({
-  mainRef,
-  styles,
-  option,
-});
-
 /**
  * APP 测试
  *
@@ -23,32 +19,22 @@ const selector = ({ mainRef, styles, option }: SelfState) => ({
  * @param props.initData 初始化配置
  */
 export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
-  const { mainRef, handleScroll, handleKeyUp } = useInit(imgUrlList, initData);
+  // const { styles, option } = useStore(selector, shallow);
 
-  const { styles, option } = useStore(selector, shallow);
+  // const style = useMemo<CSSProperties>(
+  //   () => ({
+  //     overflow: 'hidden',
+  //     userSelect: 'none',
 
-  const style = useMemo<CSSProperties>(
-    () => ({
-      overflow: 'hidden',
-      userSelect: 'none',
-
-      ...styles.normal,
-    }),
-    [styles.normal],
-  );
+  //     ...styles.normal,
+  //   }),
+  //   [styles.normal],
+  // );
 
   return (
-    <div>
-      <div
-        id="manga-main"
-        style={style}
-        onWheel={handleScroll}
-        tabIndex={-1}
-        onKeyUp={handleKeyUp}
-        role="presentation"
-      >
-        <ImgFlow ref={mainRef} />
-      </div>
+    <div className="h-full w-full overflow-hidden">
+      <Toolbar />
+      <ImgFlow imgUrlList={imgUrlList} initData={initData} />
 
       {/* <div className="i-twemoji-grinning-face-with-smiling-eyes hover:i-twemoji-face-with-tears-of-joy" />
       <button
@@ -60,7 +46,11 @@ export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
       </button> */}
 
       {/* eslint-disable-next-line react/jsx-curly-brace-presence */}
-      <style type="text/css">{`@unocss-placeholder;`}</style>
+
+      <CssVar />
+      <style type="text/css">{`
+        @unocss-placeholder;
+      `}</style>
     </div>
   );
 };

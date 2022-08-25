@@ -18,10 +18,10 @@ defaultSettingsList.set('滚动条', [
   {
     type: 'switch',
     name: '自动隐藏滚动条',
-    checked: (state) => state.option.scrollbar.自动隐藏,
+    checked: (state) => state.option.scrollbar.autoHidden,
     onChange: (checked, set) => {
       set((draftState) => {
-        draftState.option.scrollbar.自动隐藏 = checked;
+        draftState.option.scrollbar.autoHidden = checked;
       });
     },
   },

@@ -18,7 +18,7 @@ declare global {
     ariaLabel: string;
     /** 是否启用 */
     enable: boolean;
-    hiddenSelector: ((state: DraftSelfState) => boolean) | (() => undefined);
+    hiddenSelector: ((state: SelfState) => boolean) | (() => undefined);
     handleCLick: React.MouseEventHandler<HTMLElement>;
     handleClickAway: () => void;
     poper?: Poper;
@@ -30,7 +30,7 @@ declare global {
     key: string;
     icon: JSX.Element;
     enable: boolean | ((state: DraftSelfState) => boolean);
-    hidden?: (state: DraftSelfState) => boolean;
+    hidden?: (state: SelfState) => boolean;
     handleCLick: (
       set: SelfStateSet,
       get: SelfStateGet,
