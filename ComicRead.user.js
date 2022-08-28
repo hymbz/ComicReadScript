@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     5.2
+// @version     5.3
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、copymanga、manhuacat。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -357,6 +357,10 @@ const loadComicReadWindow = function (Info) {
       case 40:
         ComicReadWindow.scrollPage(false, true);
         break;
+
+      // M 键
+      case 77:
+        ComicReadWindow.pageFill(true);
     }
   };
 
@@ -1834,7 +1838,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
   const comicReadMode = document.getElementById('comicReadMode');
   comicReadMode.addEventListener('click', () => { ComicReadWindow.start() });
 
-  const comicInfo = JSON.parse(eval(document.querySelector('body > script:nth-child(8)').innerHTML.slice(26)).slice(12, -12));
+  const comicInfo = JSON.parse(eval(document.querySelectorAll('body > script')[1].innerHTML.slice(26)).slice(12, -12));
   const imgs = comicInfo.files.map(file => `${pVars.manga.filePath}${file}?cid=${comicInfo.cid}${Object.entries(comicInfo.sl).map(attr => `&${attr[0]}=${attr[1]}`)}`);
 
   loadComicReadWindow({
@@ -2038,6 +2042,8 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && MANGABZ_CID) {
 ;
     break;
   }
+  case 'www.copymanga.site':
+  case 'copymanga.site':
   case 'copymanga.info':
   case 'copymanga.com':
   case 'copymanga.net':
@@ -2075,7 +2081,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && window.location.href.includ
 
   GM_xmlhttpRequest({
     method: 'GET',
-    url: window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.com/api/v3'),
+    url: window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.site/api/v3'),
     headers: { Referer: location.href },
     responseType: 'blob',
     onload: (xhr) => {
