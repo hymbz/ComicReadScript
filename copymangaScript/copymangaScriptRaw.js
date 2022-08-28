@@ -24,7 +24,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && window.location.href.includ
 
   GM_xmlhttpRequest({
     method: 'GET',
-    url: window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.com/api/v3'),
+    url: window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.site/api/v3'),
     headers: { Referer: location.href },
     responseType: 'blob',
     onload: (xhr) => {
