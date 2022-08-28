@@ -19,7 +19,7 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable) {
   const comicReadMode = document.getElementById('comicReadMode');
   comicReadMode.addEventListener('click', () => { ComicReadWindow.start() });
 
-  const comicInfo = JSON.parse(eval(document.querySelector('body > script:nth-child(8)').innerHTML.slice(26)).slice(12, -12));
+  const comicInfo = JSON.parse(eval(document.querySelectorAll('body > script')[1].innerHTML.slice(26)).slice(12, -12));
   const imgs = comicInfo.files.map(file => `${pVars.manga.filePath}${file}?cid=${comicInfo.cid}${Object.entries(comicInfo.sl).map(attr => `&${attr[0]}=${attr[1]}`)}`);
 
   loadComicReadWindow({
