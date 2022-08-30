@@ -14,13 +14,33 @@ export default defineConfig(({ command }) => ({
   // 打包时禁用 esbuild
   esbuild: command === 'serve' ? undefined : false,
   plugins: [
-    react(),
+    react() as PluginOption,
     Unocss({
-      presets: [presetWind(), presetIcons()],
+      presets: [presetWind() as any, presetIcons() as any],
       mode: 'shadow-dom',
       // TODO: 希望之后能找到办法不用在这里这样手动写出来
       safelist: 'invisible w-full h-auto'.split(' '),
-    }),
+      rules: [
+        [
+          'arrow',
+          {
+            'background-color': 'transparent',
+            'border-style': 'solid',
+            'border-width': '.4em',
+            'border-color': 'transparent',
+            'border-right-width': '.5em',
+            'border-right-color': 'var(--buttonHoverBgColor)',
+          },
+        ],
+        [
+          'card-shadow',
+          {
+            'box-shadow':
+              'rgb(0 0 0 / 20%) 0px 2px 1px -1px, rgb(0 0 0 / 14%) 0px 1px 1px 0px, rgb(0 0 0 / 12%) 0px 1px 3px 0px',
+          },
+        ],
+      ],
+    }) as PluginOption,
   ],
 
   build: {

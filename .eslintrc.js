@@ -8,6 +8,7 @@ const publicConfig = {
       {
         singleQuote: true,
         trailingComma: 'all',
+        htmlWhitespaceSensitivity: 'strict',
         plugins: [require('prettier-plugin-tailwindcss')],
       },
     ],
@@ -159,6 +160,9 @@ module.exports = {
             ignorePropertyModificationsForRegex: ['^draft'],
           },
         ],
+
+        // 不强制要求为可选参数加上默认值
+        'react/require-default-props': 'off',
       },
     }),
     buildConfig({

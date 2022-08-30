@@ -9,8 +9,6 @@ import { devtools } from 'zustand/middleware';
 
 import type { OptionSlice } from './OptionSlice';
 import { optionSlice } from './OptionSlice';
-import type { SettingsSlice } from './SettingsSlice';
-import { settingsSlice } from './SettingsSlice';
 import type { StylesSlice } from './StylesSlice';
 import { stylesSlice } from './StylesSlice';
 import type { ToolbarSlice } from './ToolbarSlice';
@@ -29,7 +27,6 @@ interface SliceState
   extends OptionSlice,
     StylesSlice,
     ToolbarSlice,
-    SettingsSlice,
     ImageSLice,
     SwiperSlice {}
 
@@ -62,7 +59,6 @@ const store: SelfStateCreator<SelfState> = (...a) => ({
   ...optionSlice(...a),
   ...stylesSlice(...a),
   ...toolbarSlice(...a),
-  ...settingsSlice(...a),
   ...imageSlice(...a),
   ...swiperSlice(...a),
 
