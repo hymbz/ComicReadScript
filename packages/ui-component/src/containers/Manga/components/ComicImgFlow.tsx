@@ -1,8 +1,12 @@
+import clsx from 'clsx';
+
 import type { InitData } from '../hooks/useInit';
 import { useInit } from '../hooks/useInit';
 
 import { useStore, shallow } from '../hooks/useStore';
 import { ComicImg } from './ComicImg';
+
+import classes from '../index.module.css';
 
 interface ImgFlowProps {
   imgUrlList: string[];
@@ -20,6 +24,11 @@ const selector = ({
   mainRef,
 });
 
+/**
+ * 漫画图片流的容器
+ *
+ * @param param *
+ */
 export const ImgFlow: React.FC<ImgFlowProps> = ({ imgUrlList, initData }) => {
   const { mainRef, handleScroll, handleKeyUp } = useInit(imgUrlList, initData);
   const { slideData, option } = useStore(selector, shallow);
@@ -33,27 +42,19 @@ export const ImgFlow: React.FC<ImgFlowProps> = ({ imgUrlList, initData }) => {
       role="presentation"
       ref={mainRef}
       dir={option.dir}
-      className="manga-swiper-container text-[var(--primaryColor)] bg-[var(--backgroundColor)] h-full select-none"
+      className={clsx('manga-swiper-container', classes.mangaFlow)}
     >
       <div className="manga-swiper-wrapper">
         {slideData.map(([a, b]) => (
           <div
             key={`${a.index} ${b?.index}`}
-            className="manga-swiper-slide m-0 flex h-full items-center justify-center"
+            className={clsx('manga-swiper-slide', classes.mangaFlowPage)}
           >
             <ComicImg src={a.src} index={`${a.index}`} type={a.type} />
             {b && <ComicImg src={b.src} index={`${b.index}`} type={b.type} />}
           </div>
         ))}
       </div>
-
-      <style type="text/css">{`
-        .manga-swiper-slide > img {
-          image-rendering: -webkit-optimize-contrast;
-        };
-
-        @unocss-placeholder;
-      `}</style>
     </div>
   );
 };

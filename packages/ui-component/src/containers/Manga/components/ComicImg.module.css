@@ -1,0 +1,44 @@
+.img {
+  /* 临时测试暂时修改; */
+  width: 2em;
+  height: 2em;
+
+  /* height: 100%;
+  width: auto; */
+
+  vertical-align: middle;
+
+  /* TODO: 应该可以让缩放后的图片更清晰，但这个值 chrome 会报错 */
+  image-rendering: optimize-contrast;
+
+  /* 填充页 */
+  &.fill {
+    visibility: hidden;
+  }
+
+  /* 过宽的图片 */
+  &.long {
+    width: 100%;
+    height: auto;
+  }
+}
+
+.mangaFlow {
+  user-select: none;
+
+  height: 100%;
+
+  color: var(--primaryColor);
+
+  background-color: var(--backgroundColor);
+}
+
+/* 翻页模式下的每页的容器 */
+.mangaFlowPage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 100%;
+  margin: 0;
+}

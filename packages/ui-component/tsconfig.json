@@ -20,10 +20,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
+    "jsx": "react-jsx"
   },
   "include": [
     "src",
-    "vite.config.ts"
+    "vite.config.ts",
+    "rollup.config.ts"
   ]
 }

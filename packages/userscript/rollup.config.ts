@@ -5,11 +5,10 @@ import { rollup } from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
-import esbuild from 'rollup-plugin-esbuild';
 import serve from 'rollup-plugin-serve';
-import { babel } from '@rollup/plugin-babel';
-import css from 'rollup-plugin-import-css';
+import ts from 'rollup-plugin-ts';
 import prettier from 'rollup-plugin-prettier';
+import css from 'rollup-plugin-import-css';
 
 import type { MetaValues } from 'rollup-plugin-userscript-metablock';
 import metablock from 'rollup-plugin-userscript-metablock';
@@ -71,20 +70,8 @@ const buildConfig = (
     }),
     resolve({ browser: true }),
     commonjs(),
+    ts(),
     css(),
-    // TODO:本想用来加速的，但直接用 babel 好像速度也没差？等之后代码量上来后再测试测试
-    // esbuild({ target: 'esnext' }),
-    babel({
-      targets: ['last 5 Chrome versions', 'last 5 Firefox versions'],
-      babelHelpers: 'runtime',
-      extensions: ['.ts', '.tsx', '.js'],
-      presets: [
-        ['@babel/preset-env'],
-        ['@babel/preset-react', { runtime: 'automatic', development: false }],
-        ['@babel/preset-typescript'],
-      ],
-      plugins: ['@babel/plugin-transform-runtime'],
-    }),
 
     ...plugins,
   ],

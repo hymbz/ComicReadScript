@@ -4,6 +4,8 @@ import clsx from 'clsx';
 import { useHover } from '../hooks/useHover';
 import { useFocus } from '../hooks/useFocus';
 
+import classes from '../index.module.css';
+
 interface ToolbarButtonProps {
   /** 按钮描述文本 */
   buttonKey: string;
@@ -21,6 +23,11 @@ interface ToolbarButtonProps {
   ref?: MutableRefObject<HTMLButtonElement | null>;
 }
 
+/**
+ * 工具栏按钮
+ *
+ * @param param param
+ */
 export const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   children,
   buttonKey,
@@ -51,17 +58,15 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   );
 
   return (
-    <div className="flex relative items-center">
+    <div className={classes.toolbarButtonItem}>
       <button
         ref={buttonRef}
         aria-label={ariaLabel}
         type="button"
         className={clsx(
-          'w-1.5em h-1.5em text-1.5em ripple flex m-1 cursor-pointer items-center justify-center rounded-full border-none p-0 outline-none',
-          { hidden },
-          enable
-            ? 'text-[var(--enableButtonColor)] bg-[var(--enableButtonBgColor)] hover:bg-[var(--enableButtonHoverBgColor)] focus:bg-[var(--enableButtonHoverBgColor)]'
-            : 'text-[var(--buttonColor)] bg-[var(--buttonBgColor)] hover:bg-[var(--buttonHoverBgColor)] focus:bg-[var(--buttonHoverBgColor)]',
+          classes.toolbarButton,
+          { [classes.hidden]: hidden },
+          enable && classes.enable,
         )}
         onClick={handleClick}
         onMouseEnter={handlerMouseEnter}
@@ -73,25 +78,22 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = ({
       </button>
 
       <span
-        className="arrow bg-[var(--buttonHoverBgColor)] transition-opacity duration-150"
+        className={classes.toolbarButtonPopperArrow}
         style={opacityStyile}
       />
 
-      <div
-        className="ml-.3em h-0 transition-opacity duration-150"
-        style={opacityStyile}
-      >
+      <div className={classes.toolbarButtonPopper} style={opacityStyile}>
         {popper || (
-          <div className="text-.8em text-[var(--buttonColor)] bg-[var(--buttonHoverBgColor)] rounded-.3em p-.5em card-shadow -translate-y-1/2 whitespace-nowrap">
-            {' '}
-            {buttonKey}{' '}
+          <div
+            className={clsx(
+              classes.toolbarButtonPopperDefault,
+              classes.cardShadow,
+            )}
+          >
+            {buttonKey}
           </div>
         )}
       </div>
-
-      <style type="text/css">{`
-        @unocss-placeholder;
-      `}</style>
     </div>
   );
 };

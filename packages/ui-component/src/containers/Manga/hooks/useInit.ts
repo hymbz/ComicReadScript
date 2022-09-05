@@ -3,8 +3,6 @@ import { throttle } from 'lodash';
 import type { KeyboardEventHandler } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useEffectOnce } from 'react-use';
-
 import { shallow, useStore } from './useStore';
 
 const selector = ({
@@ -43,7 +41,7 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
 
   // 初始化 swiper、panzoom
   const mainRef = useRef<HTMLDivElement>(null);
-  useEffectOnce(() => {
+  useEffect(() => {
     useStore.setState((state) => {
       state.mainRef = castDraft(mainRef);
       if (refInitDara.current?.option)
@@ -65,7 +63,10 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
         windowResize(window.innerWidth, window.innerHeight);
       }, 100),
     );
-  });
+
+    // 仅执行一次
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 初始化图片相关
   useEffect(() => {

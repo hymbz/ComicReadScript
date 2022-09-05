@@ -1,22 +1,22 @@
+import classes from '../index.module.css';
+
 export interface SettingsItemProps {
   name: string;
 
-  children: JSX.Element[];
+  children: JSX.Element | JSX.Element[];
 }
 
+/**
+ * 设置菜单项
+ *
+ * @param param param
+ */
 export const SettingsItem: React.FC<SettingsItemProps> = ({
   name,
   children,
-}) => {
-  return (
-    <div className="flex mt-1em items-center justify-between">
-      <div className="text-.9em"> {name} </div>
-
-      {children}
-
-      <style type="text/css">{`
-        @unocss-placeholder;
-      `}</style>
-    </div>
-  );
-};
+}) => (
+  <div className={classes.SettingsItem}>
+    <div className={classes.SettingsItemName}> {name} </div>
+    {children}
+  </div>
+);

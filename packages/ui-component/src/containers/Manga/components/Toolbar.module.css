@@ -1,0 +1,106 @@
+.toolbar {
+  position: fixed;
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  width: 5vw;
+  height: 100%;
+}
+
+/* 工具栏面板 */
+.toolbarPanel {
+  display: flex;
+  flex-direction: column;
+
+  padding: 1em;
+  padding-left: 3em;
+
+  transition-duration: 100ms;
+}
+
+.toolbarButtonItem {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+}
+
+.toolbarButton {
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 1.5em;
+  height: 1.5em;
+  margin: 0.1em;
+  padding: 0;
+
+  font-size: 1.5em;
+  color: var(--buttonColor);
+
+  background-color: var(--buttonBgColor);
+  border-style: none;
+  border-radius: 9999px;
+  outline: none;
+
+  &:hover {
+    background-color: var(--buttonHoverBgColor);
+  }
+
+  &:focus {
+    background-color: var(--buttonHoverBgColor);
+  }
+
+  &.enable {
+    color: var(--enableButtonColor);
+
+    background-color: var(--enableButtonBgColor);
+
+    &:hover {
+      background-color: var(--enableButtonHoverBgColor);
+    }
+
+    &:focus {
+      background-color: var(--enableButtonHoverBgColor);
+    }
+  }
+}
+
+/* 工具栏按钮的悬浮框的箭头 */
+.toolbarButtonPopperArrow {
+  background-color: var(--buttonHoverBgColor);
+  background-color: transparent;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 0.4em;
+  border-right-color: var(--buttonHoverBgColor);
+  border-right-width: 0.5em;
+
+  transition: opacity 150ms;
+}
+
+.toolbarButtonPopper {
+  height: 0;
+  margin-left: 0.3em;
+
+  transition: opacity 150ms;
+}
+
+/* 默认悬浮框样式 */
+.toolbarButtonPopperDefault {
+  transform: translateY(-50%);
+
+  padding: 0.5em;
+
+  font-size: 0.8em;
+  color: var(--buttonColor);
+  white-space: nowrap;
+
+  background-color: var(--buttonHoverBgColor);
+  border-radius: 0.3em;
+}

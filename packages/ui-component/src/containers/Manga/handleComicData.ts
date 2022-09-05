@@ -9,6 +9,11 @@ const fillPage = (img: ComicImg): ComicImg => ({
   index: '填充',
 });
 
+/**
+ * 根据图片比例和填充页设置对漫画图片进行排列
+ *
+ * @param param param
+ */
 export const handleComicData = ({
   comicImgList,
   fillEffect,

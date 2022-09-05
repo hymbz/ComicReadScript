@@ -1,10 +1,11 @@
 import { throttle } from 'lodash';
-import type { ChangeEvent, ChangeEventHandler } from 'react';
+import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
 import { useStore } from './hooks/useStore';
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
 
+/** 默认菜单项 */
 export const defaultSettingsList: [string, React.FC][] = [
   [
     '滚动条',
@@ -111,12 +112,8 @@ export const defaultSettingsList: [string, React.FC][] = [
               type="color"
               value={backgroundColor}
               onChange={handelBgColor}
-              className="w-2em border-none"
+              style={{ width: '2em', marginRight: '.4em' }}
             />
-
-            <style type="text/css">{`
-              @unocss-placeholder;
-            `}</style>
           </SettingsItem>
         </>
       );

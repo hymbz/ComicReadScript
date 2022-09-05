@@ -4,12 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "shx rm -rf ./dist/* && rollup --config --configPlugin rollup-plugin-esbuild",
     "preview": "vite preview"
   },
   "dependencies": {
     "@floating-ui/react-dom": "^1.0.0",
-    "@unocss/reset": "^0.45.13",
     "clsx": "^1.2.1",
     "color": "^4.2.3",
     "immer": "^9.0.15",
@@ -19,7 +18,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
-    "react-shadow": "^19.0.3",
     "react-use": "^17.4.0",
     "swiper": "^8.3.2",
     "zustand": "^4.1.1"
@@ -32,13 +30,12 @@
     "@types/ramda": "^0.28.15",
     "@types/react": "^18.0.17",
     "@types/react-dom": "^18.0.6",
+    "@types/rollup-plugin-css-only": "^3.1.0",
     "@typescript-eslint/eslint-plugin": "^5.35.1",
     "@typescript-eslint/parser": "^5.35.1",
-    "@unocss/preset-attributify": "^0.45.13",
-    "@unocss/preset-icons": "^0.45.13",
-    "@unocss/preset-wind": "^0.45.13",
-    "@unocss/transformer-variant-group": "^0.45.13",
     "@vitejs/plugin-react": "^2.0.1",
+    "autoprefixer": "^10.4.8",
+    "cssnano": "^5.1.13",
     "eslint": "^8.23.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-prettier": "^8.5.0",
@@ -49,11 +46,15 @@
     "eslint-plugin-react": "^7.31.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "normalize.css": "^8.0.1",
+    "postcss-import": "^15.0.0",
+    "postcss-nesting": "^10.1.10",
     "prettier": "^2.7.1",
     "prettier-plugin-tailwindcss": "^0.1.13",
+    "rollup": "^2.70.2",
+    "rollup-plugin-esbuild": "^4.9.1",
+    "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-ts": "^3.0.2",
-    "typescript": "^4.8.2",
-    "unocss": "^0.45.13",
+    "tslib": "^2.4.0",
     "vite": "^3.0.9"
   }
 }

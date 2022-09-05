@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState, Fragment } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import {
   MdLooksOne,
   MdLooksTwo,
@@ -7,9 +7,10 @@ import {
   MdSettings,
 } from 'react-icons/md';
 import { useStore } from './hooks/useStore';
-import { defaultSettingsList } from './defaultSettingList';
 import { ToolbarButton } from './components/ToolbarButton';
+import { SettingPanel } from './components/SettingPanel';
 
+/** 工具栏的默认按钮列表 */
 export const defaultButtonList: [string, React.FC][] = [
   [
     '单页模式',
@@ -112,16 +113,7 @@ export const defaultButtonList: [string, React.FC][] = [
       );
     },
   ],
-  [
-    '分隔',
-    () => (
-      <div className="h-1em">
-        <style type="text/css">{`
-          @unocss-placeholder;
-        `}</style>
-      </div>
-    ),
-  ],
+  ['分隔', () => <div style={{ height: '1em' }} />],
   [
     '设置',
     () => {
@@ -131,32 +123,7 @@ export const defaultButtonList: [string, React.FC][] = [
         setShowPanel(!showPanel);
       }, [showPanel]);
 
-      const popper = useMemo(
-        () => (
-          <div className="text-[var(--buttonColor)] bg-[var(--buttonHoverBgColor)] rounded-.3em card-shadow -translate-y-2/3">
-            <div className="w-15em rounded-1 my-auto bg-[#353535] text-white">
-              {defaultSettingsList.map(([key, SettingItem], i) => (
-                <Fragment key={key}>
-                  {i ? <hr /> : undefined}
-                  <div className="p-.5em">
-                    <div className="text-.7em mb-1em text-gray-300">{key}</div>
-                    <SettingItem />
-                  </div>
-                </Fragment>
-              ))}
-
-              <style type="text/css">{`
-        @unocss-placeholder;
-      `}</style>
-            </div>
-
-            <style type="text/css">{`
-                @unocss-placeholder;
-              `}</style>
-          </div>
-        ),
-        [],
-      );
+      const popper = useMemo(() => <SettingPanel />, []);
 
       return (
         <ToolbarButton

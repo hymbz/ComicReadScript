@@ -1,26 +1,14 @@
-import { useRef, useState } from 'react';
+import classes from './index.module.css';
 
-export default () => {
-  console.log('import Button');
+const a = [1, 2];
+const b = [...a, 3];
 
-  /**
-   * APP 测试
-   */
-  const Button: React.FC = () => {
-    // const [open, setOpen] = useState(false);
-
-    // const ref = useRef() as React.MutableRefObject<HTMLButtonElement>;
-    // // const arrowRef = useRef() as React.MutableRefObject<HTMLDivElement>;
-    // const [arrowRef, setArrowRef] =
-    //   useState<React.MutableRefObject<HTMLDivElement> | null>(null);
-
-    return (
-      <>
-        <div className="py-8 px-8">Button</div>
-        <div>Button</div>
-      </>
-    );
-  };
-
-  return Button;
+/** 测试按钮 */
+export const Button: React.FC = () => {
+  return (
+    <>
+      <div className={classes.red}>Button</div>
+      <div>{b}</div>
+    </>
+  );
 };

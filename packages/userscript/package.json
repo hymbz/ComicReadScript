@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "esmo ./rollup.config.ts",
-    "build": "rollup --config --configPlugin rollup-plugin-esbuild",
+    "build": "shx rm -rf ./dist/* && rollup --config --configPlugin rollup-plugin-esbuild",
     "watch": "rollup --config --watch --environment NODE_ENV:development --configPlugin rollup-plugin-esbuild"
   },
   "author": "hymbz",
@@ -18,7 +18,8 @@
     "axios-userscript-adapter": "^0.1.11",
     "core-js": "^3.22.0",
     "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react-dom": "^18.0.0",
+    "react-shadow": "^19.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.17.9",
@@ -30,6 +31,7 @@
     "@rollup/plugin-commonjs": "^21.1.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
     "@rollup/plugin-replace": "^4.0.0",
+    "@types/node": "^18.7.14",
     "@types/react": "^18.0.5",
     "@types/react-dom": "^18.0.1",
     "babel": "^6.23.0",
@@ -39,6 +41,7 @@
     "rollup-plugin-import-css": "^3.0.3",
     "rollup-plugin-prettier": "^2.2.2",
     "rollup-plugin-serve": "^1.1.0",
+    "rollup-plugin-ts": "^3.0.2",
     "rollup-plugin-userscript-metablock": "^0.3.1",
     "utility-types": "^3.10.0"
   }

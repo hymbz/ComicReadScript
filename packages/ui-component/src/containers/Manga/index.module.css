@@ -1,0 +1,19 @@
+@import "./components/ComicImg.module.css";
+@import "./components/Setting.module.css";
+@import "./components/Toolbar.module.css";
+
+.hidden {
+  display: none;
+}
+
+.cardShadow {
+  box-shadow: rgb(0 0 0 / 20%) 0 2px 1px -1px, rgb(0 0 0 / 14%) 0 1px 1px 0,
+    rgb(0 0 0 / 12%) 0 1px 3px 0;
+}
+
+.root {
+  overflow: hidden;
+
+  width: 100%;
+  height: 100%;
+}

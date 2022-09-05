@@ -1,3 +1,7 @@
+/*
+ * 用于测试时显示组件
+ */
+
 import ReactDOM from 'react-dom/client';
 
 import { Manga } from '.';

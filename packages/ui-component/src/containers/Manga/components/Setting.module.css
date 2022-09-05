@@ -1,0 +1,70 @@
+/* 设置面板所在的悬浮框样式 */
+.SettingPanelPopper {
+  /* 向上移动三分之二 */
+  transform: translateY(-66.66%);
+
+  color: var(--buttonColor);
+
+  background-color: var(--buttonHoverBgColor);
+  border-radius: 0.3em;
+}
+
+.SettingPanel {
+  width: 15em;
+  margin: auto;
+
+  color: white;
+
+  background-color: #353535;
+}
+
+.SettingBlock {
+  padding: 0.5em;
+}
+
+.SettingBlockSubtitle {
+  margin-bottom: 1em;
+
+  font-size: 0.7em;
+  color: #d1d5db;
+}
+
+.SettingsItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: 1em;
+}
+
+.SettingsItemName {
+  font-size: 0.9em;
+}
+
+/* 开关式菜单项 */
+.SettingsItemSwitch {
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+
+  width: 2.3em;
+  height: 0.8em;
+  margin-right: 0.3em;
+  padding: 0;
+
+  background-color: #9b9b9b;
+  border: 0;
+  border-radius: 1em;
+}
+
+/* 开关里的圆形按钮 */
+.SettingsItemSwitchRound {
+  width: 1.15em;
+  height: 1.15em;
+
+  background: #fff;
+  border-radius: 100%;
+
+  transition: transform 100ms;
+}

@@ -13,4 +13,7 @@
       "name": "ui-component"
     },
   ],
+  "settings": {
+    "typescript.tsdk": "root\\node_modules\\typescript\\lib"
+  },
 }

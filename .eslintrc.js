@@ -63,7 +63,12 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  ignorePatterns: ['dist', 'node_modules'],
+  ignorePatterns: [
+    'dist',
+    'node_modules',
+    '!.stylelintrc.js',
+    '!.postcssrc.js',
+  ],
   overrides: [
     buildConfig({
       files: ['*.ts', '*.tsx'],

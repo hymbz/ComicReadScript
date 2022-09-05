@@ -26,9 +26,10 @@ const defaultSwiperOption: SwiperOptions = {
   // 默认禁用 swiper 的鼠标滚轮
   mousewheel: false,
   // 稍微减少一点自由模式下的滑动距离
-  // TODO:这个属性被删了，需要找到新的属性名
+  // TODO: 这个属性被删了，需要找到新的属性名
   // freeModeMomentumRatio: 0.7,
 
+  // TODO: 改为用 className
   // 修改默认的 className，防止可能的样式污染
   containerModifierClass: 'manga-swiper-container-',
   wrapperClass: 'manga-swiper-wrapper',
