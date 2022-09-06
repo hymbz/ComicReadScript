@@ -1,21 +1,21 @@
 /* 设置面板所在的悬浮框样式 */
 .SettingPanelPopper {
-  /* 向上移动三分之二 */
-  transform: translateY(-66.66%);
-
-  color: var(--buttonColor);
-
-  background-color: var(--buttonHoverBgColor);
-  border-radius: 0.3em;
+  height: 0;
+  padding: 0;
 }
 
 .SettingPanel {
+  /* 向上移动三分之二 */
+  transform: translateY(-66.66%);
+
   width: 15em;
   margin: auto;
 
-  color: white;
+  font-size: 1.2em;
+  color: var(--buttonColor);
 
   background-color: #353535;
+  border-radius: 0.3em;
 }
 
 .SettingBlock {

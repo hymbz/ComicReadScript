@@ -7,7 +7,13 @@ import classes from '../index.module.css';
 
 /** 菜单面板 */
 export const SettingPanel: React.FC = () => (
-  <div className={clsx(classes.SettingPanelPopper, classes.cardShadow)}>
+  <div
+    className={clsx(
+      classes.toolbarButtonPopper,
+      classes.SettingPanelPopper,
+      classes.cardShadow,
+    )}
+  >
     <div className={classes.SettingPanel}>
       {defaultSettingsList.map(([key, SettingItem], i) => (
         <Fragment key={key}>

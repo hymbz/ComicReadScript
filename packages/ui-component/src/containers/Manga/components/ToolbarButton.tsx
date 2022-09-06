@@ -77,23 +77,14 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = ({
         {children}
       </button>
 
-      <span
-        className={classes.toolbarButtonPopperArrow}
-        style={opacityStyile}
-      />
-
-      <div className={classes.toolbarButtonPopper} style={opacityStyile}>
-        {popper || (
-          <div
-            className={clsx(
-              classes.toolbarButtonPopperDefault,
-              classes.cardShadow,
-            )}
-          >
-            {buttonKey}
-          </div>
-        )}
-      </div>
+      {popper || (
+        <div
+          className={clsx(classes.toolbarButtonPopper, classes.cardShadow)}
+          style={opacityStyile}
+        >
+          {buttonKey}
+        </div>
+      )}
     </div>
   );
 };
