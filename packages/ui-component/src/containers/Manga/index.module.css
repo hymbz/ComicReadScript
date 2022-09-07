@@ -2,6 +2,7 @@
 @import "./components/Toolbar.module.css";
 @import "./components/Setting.module.css";
 @import "./components/Scrollbar.module.css";
+@import "./components/TouchArea.module.css";
 
 /* TODO: 删掉 */
 @import "../../../node_modules/swiper/swiper.min.css";

@@ -5,6 +5,7 @@ import type { InitData } from './hooks/useInit';
 
 import classes from './index.module.css';
 import { Scrollbar } from './components/Scrollbar';
+import { TouchArea } from './components/TouchArea';
 
 interface MangaProps {
   imgUrlList: string[];
@@ -24,6 +25,7 @@ export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
       <Toolbar />
       <ImgFlow imgUrlList={imgUrlList} initData={initData} />
       <Scrollbar />
+      <TouchArea />
     </div>
   );
 };
