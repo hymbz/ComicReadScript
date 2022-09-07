@@ -19,16 +19,23 @@ const selector = ({
 export const TouchArea: React.FC = () => {
   const { showTouchArea, swiper, handleScroll } = useStore(selector);
 
-  const handleClick = useMemo(() => {
-    return {
+  const handleClick = useMemo(
+    () => ({
       next: () => {
         swiper?.slideNext(0);
       },
       prev: () => {
         swiper?.slidePrev(0);
       },
-    };
-  }, [swiper]);
+      menu: () => {
+        useStore.setState((draftState) => {
+          draftState.showScrollbar = !draftState.showScrollbar;
+          draftState.showToolbar = !draftState.showToolbar;
+        });
+      },
+    }),
+    [swiper],
+  );
 
   // 在右键点击时隐藏自身，使右键菜单为图片的右键菜单
   const [penetrate, setPenetrate] =
@@ -55,7 +62,13 @@ export const TouchArea: React.FC = () => {
       >
         <h6>上 一 页</h6>
       </div>
-      <div className={clsx(classes.touchArea)} data-area="menu">
+      <div
+        className={clsx(classes.touchArea)}
+        onClick={handleClick.menu}
+        data-area="menu"
+        role="button"
+        tabIndex={-1}
+      >
         <h6>菜 单</h6>
       </div>
       <div

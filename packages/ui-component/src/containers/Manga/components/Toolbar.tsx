@@ -16,13 +16,9 @@ export const Toolbar: React.FC = () => {
       className={classes.toolbar}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={handleMouseEnter}
+      data-show={isHover || showToolbar}
     >
-      <div
-        className={classes.toolbarPanel}
-        style={{
-          marginLeft: isHover || showToolbar ? '-2.5em' : '-5.5em',
-        }}
-      >
+      <div className={classes.toolbarPanel}>
         {defaultButtonList.map(([key, ButtonItem]) => (
           <ButtonItem key={key} />
         ))}

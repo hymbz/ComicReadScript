@@ -11,19 +11,27 @@ const selector = ({
   option,
   slideData,
   activeSlideIndex,
+  showScrollbar,
   handleScroll,
 }: SelfState) => ({
   swiper,
   option,
   slideData,
   activeSlideIndex,
+  showScrollbar,
   handleScroll,
 });
 
 /** 滚动条 */
 export const Scrollbar: React.FC = () => {
-  const { swiper, option, slideData, activeSlideIndex, handleScroll } =
-    useStore(selector);
+  const {
+    swiper,
+    option,
+    slideData,
+    activeSlideIndex,
+    showScrollbar,
+    handleScroll,
+  } = useStore(selector);
 
   const [isHover, handleMouseEnter, handleMouseLeave] = useHover();
 
@@ -41,7 +49,7 @@ export const Scrollbar: React.FC = () => {
     <div
       id="manga-swiper-scrollbar"
       className={clsx('manga-swiper-scrollbar', classes.scrollbar, {
-        [classes.hidden]: !option.scrollbar.enable,
+        [classes.hidden]: !option.scrollbar.enable && !showScrollbar,
       })}
       role="scrollbar"
       aria-controls="mange-main"
@@ -55,7 +63,7 @@ export const Scrollbar: React.FC = () => {
         className={clsx(
           'manga-swiper-scrollbar-drag',
           classes.scrollbarDrag,
-          isHover || !option.scrollbar.autoHidden
+          isHover || !option.scrollbar.autoHidden || showScrollbar
             ? classes.opacity1
             : classes.opacity0,
         )}
@@ -63,7 +71,7 @@ export const Scrollbar: React.FC = () => {
         <div
           className={clsx(
             classes.scrollbarPoper,
-            isHover ? classes.opacity1 : classes.opacity0,
+            isHover || showScrollbar ? classes.opacity1 : classes.opacity0,
           )}
         >
           {tooltipText}

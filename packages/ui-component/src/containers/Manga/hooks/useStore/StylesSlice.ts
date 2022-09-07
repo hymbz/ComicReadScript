@@ -37,8 +37,10 @@ export interface StylesSlice {
   /** 全局 css 变量 */
   cssVar: CssVar;
 
-  /** 是否显示侧边栏 */
+  /** 是否强制显示侧边栏 */
   showToolbar: boolean;
+  /** 是否强制显示滚动条 */
+  showScrollbar: boolean;
 
   [key: string]: unknown;
 }
@@ -102,6 +104,7 @@ export const stylesSlice: SelfStateCreator<StylesSlice> = (set, get) => {
     },
     cssVar: dark,
 
-    showToolbar: true,
+    showToolbar: false,
+    showScrollbar: false,
   };
 };
