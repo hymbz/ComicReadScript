@@ -29,7 +29,6 @@ export type InitData = {
  *
  * @param imgUrlList 图片列表
  * @param initData 初始化选项
- * @returns *
  */
 export const useInit = (imgUrlList: string[], initData?: InitData) => {
   const { initImg, initSwiper, windowResize, swiper, 卷轴模式 } = useStore(
@@ -73,8 +72,8 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
     initImg(imgUrlList, refInitDara.current?.fillEffect);
   }, [imgUrlList, initImg]);
 
-  // 处理滚动操作
   const [scrollLock, setScrollLock] = useState<number | null>(null);
+  /** 处理滚动操作 */
   const handleScroll = useCallback(
     (event: React.WheelEvent<HTMLDivElement>) => {
       if (swiper === undefined) return;
@@ -97,7 +96,7 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
     [scrollLock, swiper, 卷轴模式],
   );
 
-  // 处理键盘操作
+  /** 处理键盘操作 */
   const handleKeyUp: KeyboardEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       if (swiper === undefined) return;
@@ -125,5 +124,12 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
     [swiper],
   );
 
-  return { mainRef, handleScroll, handleKeyUp };
+  useEffect(() => {
+    useStore.setState((state) => {
+      state.handleScroll = handleScroll;
+      state.handleKeyUp = handleKeyUp;
+    });
+  }, [handleKeyUp, handleScroll]);
+
+  return mainRef;
 };

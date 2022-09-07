@@ -1,0 +1,55 @@
+.scrollbar {
+  position: absolute;
+  z-index: 2;
+  top: 1%;
+  right: 3px;
+
+  width: 5px;
+  height: 98%;
+
+  /* 扩大触发范围 */
+  border-left: 10em solid transparent;
+}
+
+.scrollbarDrag {
+  display: flex;
+  align-items: center;
+
+  background-color: var(--buttonHoverBgColor);
+}
+
+.scrollbarPoper {
+  position: absolute;
+  right: 2em;
+
+  display: flex;
+  align-items: center;
+
+  width: fit-content;
+  padding: 0.2em 0.5em;
+
+  font-size: 0.8em;
+  color: white;
+  white-space: nowrap;
+
+  background-color: var(--buttonHoverBgColor);
+  border-radius: 0.3em;
+
+  transition: opacity 150ms;
+}
+
+/* 悬浮框箭头 */
+.scrollbarPoper::after {
+  content: "";
+
+  position: absolute;
+  left: 100%;
+
+  background-color: var(--buttonHoverBgColor);
+  background-color: transparent;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 0.4em;
+  border-left-color: var(--buttonHoverBgColor);
+  border-left-width: 0.5em;
+}

@@ -33,11 +33,13 @@ export const defaultSettingsList: [string, React.FC][] = [
             value={enable}
             onChange={handelEnable}
           />
-          <SettingsItemSwitch
-            name="自动隐藏滚动条"
-            value={autoHidden}
-            onChange={handelAutoHidden}
-          />
+          {enable ? (
+            <SettingsItemSwitch
+              name="自动隐藏滚动条"
+              value={autoHidden}
+              onChange={handelAutoHidden}
+            />
+          ) : undefined}
         </>
       );
     },

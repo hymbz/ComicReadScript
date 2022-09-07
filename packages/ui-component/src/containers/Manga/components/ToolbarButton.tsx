@@ -50,13 +50,6 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   const [isHover, handlerMouseEnter, handlerMouseLeave] = useHover();
   const [isFocus, handleFocus, handleBlur] = useFocus();
 
-  const opacityStyile = useMemo(
-    () => ({
-      opacity: showTip || isHover || isFocus ? 1 : 0,
-    }),
-    [isFocus, isHover, showTip],
-  );
-
   return (
     <div className={classes.toolbarButtonItem}>
       <button
@@ -79,8 +72,11 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = ({
 
       {popper || (
         <div
-          className={clsx(classes.toolbarButtonPopper, classes.cardShadow)}
-          style={opacityStyile}
+          className={clsx(
+            classes.toolbarButtonPopper,
+            classes.cardShadow,
+            isHover || showTip || isFocus ? classes.opacity1 : classes.opacity0,
+          )}
         >
           {buttonKey}
         </div>

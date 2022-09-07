@@ -1,9 +1,21 @@
 @import "./components/ComicImg.module.css";
-@import "./components/Setting.module.css";
 @import "./components/Toolbar.module.css";
+@import "./components/Setting.module.css";
+@import "./components/Scrollbar.module.css";
+
+/* TODO: 删掉 */
+@import "../../../node_modules/swiper/swiper.min.css";
 
 .hidden {
   display: none;
+}
+
+.opacity1 {
+  opacity: 1;
+}
+
+.opacity0 {
+  opacity: 0;
 }
 
 .cardShadow {

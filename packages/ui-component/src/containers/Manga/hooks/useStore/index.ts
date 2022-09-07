@@ -1,5 +1,5 @@
-import type { RefObject } from 'react';
-import type { StateCreator, State as ZState } from 'zustand';
+import type { KeyboardEventHandler, RefObject, WheelEventHandler } from 'react';
+import type { StateCreator } from 'zustand';
 import create from 'zustand';
 
 import type { Draft } from 'immer';
@@ -32,7 +32,7 @@ interface SliceState
 
 declare global {
   /** 对 StateCreator 进行包装 */
-  type SelfStateCreator<T extends ZState> = StateCreator<
+  type SelfStateCreator<T> = StateCreator<
     SelfState,
     [
       ['zustand/devtools', never],
@@ -48,6 +48,8 @@ declare global {
 
   interface SelfState extends SliceState {
     mainRef: RefObject<HTMLDivElement> | null;
+    handleScroll: WheelEventHandler;
+    handleKeyUp: KeyboardEventHandler;
 
     [key: string]: unknown;
   }
@@ -63,6 +65,8 @@ const store: SelfStateCreator<SelfState> = (...a) => ({
   ...swiperSlice(...a),
 
   mainRef: null,
+  handleScroll: () => {},
+  handleKeyUp: () => {},
 });
 
 // : UseBoundStore<StoreApi<SelfState>>

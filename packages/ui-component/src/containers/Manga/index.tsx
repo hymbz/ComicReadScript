@@ -4,6 +4,7 @@ import { CssVar } from './components/CssVar';
 import type { InitData } from './hooks/useInit';
 
 import classes from './index.module.css';
+import { Scrollbar } from './components/Scrollbar';
 
 interface MangaProps {
   imgUrlList: string[];
@@ -17,23 +18,12 @@ interface MangaProps {
  * @param props.initData 初始化配置
  */
 export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
-  // const { styles, option } = useStore(selector, shallow);
-
-  // const style = useMemo<CSSProperties>(
-  //   () => ({
-  //     overflow: 'hidden',
-  //     userSelect: 'none',
-
-  //     ...styles.normal,
-  //   }),
-  //   [styles.normal],
-  // );
-
   return (
     <div className={classes.root}>
+      <CssVar />
       <Toolbar />
       <ImgFlow imgUrlList={imgUrlList} initData={initData} />
-      <CssVar />
+      <Scrollbar />
     </div>
   );
 };

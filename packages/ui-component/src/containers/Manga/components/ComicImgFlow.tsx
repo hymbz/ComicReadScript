@@ -16,12 +16,14 @@ interface ImgFlowProps {
 const selector = ({
   //
   slideData,
-  mainRef,
   option,
+  handleScroll,
+  handleKeyUp,
 }: SelfState) => ({
   slideData,
   option,
-  mainRef,
+  handleScroll,
+  handleKeyUp,
 });
 
 /**
@@ -30,8 +32,11 @@ const selector = ({
  * @param param *
  */
 export const ImgFlow: React.FC<ImgFlowProps> = ({ imgUrlList, initData }) => {
-  const { mainRef, handleScroll, handleKeyUp } = useInit(imgUrlList, initData);
-  const { slideData, option } = useStore(selector, shallow);
+  const mainRef = useInit(imgUrlList, initData);
+  const { slideData, option, handleScroll, handleKeyUp } = useStore(
+    selector,
+    shallow,
+  );
 
   return (
     <div
