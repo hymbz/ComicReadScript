@@ -119,15 +119,6 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
         let nowFillIndex = state.activeImgIndex;
         while (!state.fillEffect.has(nowFillIndex) && (nowFillIndex -= 1));
         state.nowFillIndex = nowFillIndex;
-
-        // TODO:等完成了工具栏的搬迁后再取消注释
-        // 更新工具栏的 页面填充 按钮的打开状态
-        // state.buttonMap.set(
-        //   '页面填充',
-        //   produce(state.buttonMap.get('页面填充')!, (draftButton: Button) => {
-        //     draftButton.enable = state.fillEffect.get(nowFillIndex)!;
-        //   }),
-        // );
       });
     });
 
@@ -142,7 +133,7 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
         return true;
       },
       beforeMouseDown(e) {
-        // 按下 alt 键 或 处于放大状态 时才允许拖动
+        // 按下「alt 键」或「处于放大状态」时才允许拖动
         return !(e.altKey || panzoom.getTransform().scale !== 1);
       },
 

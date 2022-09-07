@@ -11,8 +11,6 @@ import type { OptionSlice } from './OptionSlice';
 import { optionSlice } from './OptionSlice';
 import type { StylesSlice } from './StylesSlice';
 import { stylesSlice } from './StylesSlice';
-import type { ToolbarSlice } from './ToolbarSlice';
-import { toolbarSlice } from './ToolbarSlice';
 import type { ImageSLice } from './ImageSlice';
 import { imageSlice } from './ImageSlice';
 import type { SwiperSlice } from './SwiperSlice';
@@ -26,7 +24,6 @@ setAutoFreeze(false);
 interface SliceState
   extends OptionSlice,
     StylesSlice,
-    ToolbarSlice,
     ImageSLice,
     SwiperSlice {}
 
@@ -60,7 +57,6 @@ declare global {
 const store: SelfStateCreator<SelfState> = (...a) => ({
   ...optionSlice(...a),
   ...stylesSlice(...a),
-  ...toolbarSlice(...a),
   ...imageSlice(...a),
   ...swiperSlice(...a),
 
