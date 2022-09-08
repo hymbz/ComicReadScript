@@ -42,3 +42,7 @@
   height: 100%;
   margin: 0;
 }
+
+.wrapper {
+  /* swiper 必须要有一个包装 slide 的容器，为了 className 的风格统一在这放个空选择器 */
+}

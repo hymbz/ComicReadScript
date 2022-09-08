@@ -1,3 +1,4 @@
+import { castDraft } from 'immer';
 import type { WritableDraft } from 'immer/dist/internal';
 import type { PanZoom, PanZoomOptions } from 'panzoom';
 import createPanZoom from 'panzoom';
@@ -21,24 +22,26 @@ const defaultSwiperOption: SwiperOptions = {
   direction: 'vertical',
   // 默认禁用 swiper 的鼠标滚轮
   mousewheel: false,
+  // 使用 ResizeObserver API 以提升性能
+  resizeObserver: true,
   // 稍微减少一点自由模式下的滑动距离
   freeMode: { momentumRatio: 0.7 },
 
+  // 设定滚动条
   scrollbar: {
     verticalClass: classes.scrollbar,
     draggable: true,
     dragClass: classes.scrollbarDrag,
   },
 
-  // TODO: 改为用 className
-  // 修改默认的 className，防止可能的样式污染
-  containerModifierClass: 'manga-swiper-container-',
-  wrapperClass: 'manga-swiper-wrapper',
-  slideClass: 'manga-swiper-slide',
-  slideActiveClass: 'manga-swiper-slide-active',
-  slideNextClass: 'manga-swiper-slide-next',
-  slidePrevClass: 'manga-swiper-slide-prev',
-  slideVisibleClass: 'manga-swiper-slide-visible',
+  wrapperClass: classes.wrapper,
+  slideClass: classes.mangaFlowPage,
+
+  // 没什么意义，就是把 swiper 默认的 className 改短点
+  containerModifierClass: '',
+  slideActiveClass: 'active',
+  slideNextClass: 'next',
+  slidePrevClass: 'prev',
 };
 
 /**
@@ -99,9 +102,7 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
     const swiper = new Swiper(mangaFlowDom, {
       ...defaultSwiperOption,
       ...swiperOption,
-    }) as WritableDraft<Swiper>;
-
-    (window as any).swiper = swiper;
+    });
 
     swiper.on('observerUpdate', () => {
       // scrollbar 不会跟着更新，要手动更新下
@@ -148,7 +149,7 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
       },
 
       ...panzoomOption,
-    }) as WritableDraft<PanZoom>;
+    });
 
     // 处于放大状态时禁止 swiper
     panzoom.on('transform', (e: PanZoom) => {
@@ -169,6 +170,6 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
         event.stopPropagation();
     });
 
-    return [swiper, panzoom];
+    return [castDraft(swiper), castDraft(panzoom)];
   },
 });

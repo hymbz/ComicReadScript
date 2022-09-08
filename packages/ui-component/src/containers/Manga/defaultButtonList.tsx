@@ -9,6 +9,7 @@ import {
 import { useStore } from './hooks/useStore';
 import { ToolbarButton } from './components/ToolbarButton';
 import { SettingPanel } from './components/SettingPanel';
+import classes from './index.module.css';
 
 /** 工具栏的默认按钮列表 */
 export const defaultButtonList: [string, React.FC][] = [
@@ -62,7 +63,9 @@ export const defaultButtonList: [string, React.FC][] = [
             // 启用自由模式
             freeMode: enable,
             // 使用自带的鼠标滚轮模块
-            mousewheel: enable ? { eventsTarget: '#manga-main' } : false,
+            mousewheel: enable
+              ? { eventsTarget: `.${classes.mangaFlow}` }
+              : false,
             // 设置重新初始化后的初始页面
             initialSlide: draftState.activeSlideIndex,
           });

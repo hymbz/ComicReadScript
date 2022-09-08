@@ -1,5 +1,3 @@
-import clsx from 'clsx';
-
 import type { InitData } from '../hooks/useInit';
 
 import { useStore, shallow } from '../hooks/useStore';
@@ -36,20 +34,16 @@ export const ImgFlow: React.FC<ImgFlowProps> = () => {
 
   return (
     <div
-      id="manga-main"
-      onWheel={handleScroll}
+      className={classes.mangaFlow}
       tabIndex={-1}
-      onKeyUp={handleKeyUp}
       role="presentation"
       dir={option.dir}
-      className={classes.mangaFlow}
+      onWheel={handleScroll}
+      onKeyUp={handleKeyUp}
     >
-      <div className="manga-swiper-wrapper">
+      <div className={classes.wrapper}>
         {slideData.map(([a, b]) => (
-          <div
-            key={`${a.index} ${b?.index}`}
-            className={clsx('manga-swiper-slide', classes.mangaFlowPage)}
-          >
+          <div key={`${a.index} ${b?.index}`} className={classes.mangaFlowPage}>
             <ComicImg src={a.src} index={`${a.index}`} type={a.type} />
             {b && <ComicImg src={b.src} index={`${b.index}`} type={b.type} />}
           </div>
