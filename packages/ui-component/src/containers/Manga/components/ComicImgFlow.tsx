@@ -1,7 +1,6 @@
 import clsx from 'clsx';
 
 import type { InitData } from '../hooks/useInit';
-import { useInit } from '../hooks/useInit';
 
 import { useStore, shallow } from '../hooks/useStore';
 import { ComicImg } from './ComicImg';
@@ -28,11 +27,8 @@ const selector = ({
 
 /**
  * 漫画图片流的容器
- *
- * @param param *
  */
-export const ImgFlow: React.FC<ImgFlowProps> = ({ imgUrlList, initData }) => {
-  const mainRef = useInit(imgUrlList, initData);
+export const ImgFlow: React.FC<ImgFlowProps> = () => {
   const { slideData, option, handleScroll, handleKeyUp } = useStore(
     selector,
     shallow,
@@ -45,9 +41,8 @@ export const ImgFlow: React.FC<ImgFlowProps> = ({ imgUrlList, initData }) => {
       tabIndex={-1}
       onKeyUp={handleKeyUp}
       role="presentation"
-      ref={mainRef}
       dir={option.dir}
-      className={clsx('manga-swiper-container', classes.mangaFlow)}
+      className={classes.mangaFlow}
     >
       <div className="manga-swiper-wrapper">
         {slideData.map(([a, b]) => (

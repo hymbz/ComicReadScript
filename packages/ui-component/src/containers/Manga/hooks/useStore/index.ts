@@ -44,7 +44,7 @@ declare global {
   type SelfStateGet = Parameters<SelfStateCreator<SelfState>>[1];
 
   interface SelfState extends SliceState {
-    mainRef: RefObject<HTMLDivElement> | null;
+    rootRef: RefObject<HTMLElement> | null;
     handleScroll: WheelEventHandler;
     handleKeyUp: KeyboardEventHandler;
 
@@ -60,7 +60,7 @@ const store: SelfStateCreator<SelfState> = (...a) => ({
   ...imageSlice(...a),
   ...swiperSlice(...a),
 
-  mainRef: null,
+  rootRef: null,
   handleScroll: () => {},
   handleKeyUp: () => {},
 });

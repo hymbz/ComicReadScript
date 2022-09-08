@@ -39,10 +39,10 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
   const refInitDara = useRef(initData);
 
   // 初始化 swiper、panzoom
-  const mainRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     useStore.setState((state) => {
-      state.mainRef = castDraft(mainRef);
+      state.rootRef = castDraft(rootRef);
       if (refInitDara.current?.option)
         Object.assign(state.option, refInitDara.current?.option);
     });
@@ -131,5 +131,5 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
     });
   }, [handleKeyUp, handleScroll]);
 
-  return mainRef;
+  return rootRef;
 };

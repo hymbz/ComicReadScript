@@ -1,11 +1,12 @@
+import type { InitData } from './hooks/useInit';
+import { useInit } from './hooks/useInit';
 import { ImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
 import { CssVar } from './components/CssVar';
-import type { InitData } from './hooks/useInit';
-
-import classes from './index.module.css';
 import { Scrollbar } from './components/Scrollbar';
 import { TouchArea } from './components/TouchArea';
+
+import classes from './index.module.css';
 
 interface MangaProps {
   imgUrlList: string[];
@@ -19,8 +20,10 @@ interface MangaProps {
  * @param props.initData 初始化配置
  */
 export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
+  const rootRef = useInit(imgUrlList, initData);
+
   return (
-    <div className={classes.root}>
+    <div className={classes.root} ref={rootRef}>
       <CssVar />
       <Toolbar />
       <ImgFlow imgUrlList={imgUrlList} initData={initData} />

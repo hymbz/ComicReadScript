@@ -47,8 +47,7 @@ export const Scrollbar: React.FC = () => {
 
   return (
     <div
-      id="manga-swiper-scrollbar"
-      className={clsx('manga-swiper-scrollbar', classes.scrollbar, {
+      className={clsx(classes.scrollbar, {
         [classes.hidden]: !option.scrollbar.enable && !showScrollbar,
       })}
       role="scrollbar"
@@ -61,7 +60,6 @@ export const Scrollbar: React.FC = () => {
     >
       <div
         className={clsx(
-          'manga-swiper-scrollbar-drag',
           classes.scrollbarDrag,
           isHover || !option.scrollbar.autoHidden || showScrollbar
             ? classes.opacity1

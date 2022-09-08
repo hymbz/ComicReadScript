@@ -3,16 +3,12 @@ import type { PanZoom, PanZoomOptions } from 'panzoom';
 import createPanZoom from 'panzoom';
 import type { SwiperOptions } from 'swiper';
 import Swiper, { Scrollbar, Mousewheel } from 'swiper';
+import type { ScrollbarOptions } from 'swiper/types/modules/scrollbar';
+import classes from '../../index.module.css';
 
 Swiper.use([Scrollbar, Mousewheel]);
 
-declare global {
-  //
-}
-
-/**
- * Swiper Option
- */
+/** Swiper Option */
 const defaultSwiperOption: SwiperOptions = {
   // 加载所有图片后才初始化
   preloadImages: false,
@@ -26,8 +22,13 @@ const defaultSwiperOption: SwiperOptions = {
   // 默认禁用 swiper 的鼠标滚轮
   mousewheel: false,
   // 稍微减少一点自由模式下的滑动距离
-  // TODO: 这个属性被删了，需要找到新的属性名
-  // freeModeMomentumRatio: 0.7,
+  freeMode: { momentumRatio: 0.7 },
+
+  scrollbar: {
+    verticalClass: classes.scrollbar,
+    draggable: true,
+    dragClass: classes.scrollbarDrag,
+  },
 
   // TODO: 改为用 className
   // 修改默认的 className，防止可能的样式污染
@@ -38,12 +39,6 @@ const defaultSwiperOption: SwiperOptions = {
   slideNextClass: 'manga-swiper-slide-next',
   slidePrevClass: 'manga-swiper-slide-prev',
   slideVisibleClass: 'manga-swiper-slide-visible',
-};
-
-defaultSwiperOption.scrollbar = {
-  el: '#manga-swiper-scrollbar',
-  draggable: true,
-  dragClass: 'manga-swiper-scrollbar-drag',
 };
 
 /**
@@ -82,16 +77,26 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
   activeSlideIndex: 0,
 
   initSwiper: (swiperOption?: SwiperOptions) => {
-    const { mainRef, swiper: _swiper, panzoom: _panzoom } = get();
+    const { rootRef, swiper: _swiper, panzoom: _panzoom } = get();
 
-    if (!mainRef?.current) return [undefined, undefined];
+    const mangaFlowDom = rootRef?.current?.querySelector<HTMLElement>(
+      `.${classes.mangaFlow}`,
+    );
+    const scrollbarDom = rootRef?.current?.querySelector<HTMLElement>(
+      `.${classes.scrollbar}`,
+    );
+    if (!mangaFlowDom || !scrollbarDom) {
+      console.warn('Dom 还未渲染');
+      return [undefined, undefined];
+    }
 
     // 销毁之前可能创建过的实例
     _swiper?.destroy();
     _panzoom?.dispose();
 
     // 初始化 swiper
-    const swiper = new Swiper(mainRef.current, {
+    (defaultSwiperOption.scrollbar as ScrollbarOptions).el = scrollbarDom;
+    const swiper = new Swiper(mangaFlowDom, {
       ...defaultSwiperOption,
       ...swiperOption,
     }) as WritableDraft<Swiper>;
@@ -123,7 +128,7 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
     });
 
     // 初始化 panzoom
-    const panzoom = createPanZoom(mainRef.current, {
+    const panzoom = createPanZoom(mangaFlowDom, {
       beforeWheel(e) {
         const { scale } = panzoom.getTransform();
         // 图片不处于放大状态时，必须按下 Alt 键才能通过滚轮缩放
