@@ -68,3 +68,14 @@
 
   transition: transform 100ms;
 }
+
+/* 关闭设置弹窗的遮罩 */
+.closeCover {
+  position: fixed;
+  z-index: -1;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+}

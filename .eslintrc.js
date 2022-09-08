@@ -168,6 +168,9 @@ module.exports = {
 
         // 不强制要求为可选参数加上默认值
         'react/require-default-props': 'off',
+
+        // 不强制要求可点击元素必须同时监听键盘操作
+        'jsx-a11y/click-events-have-key-events': 'off',
       },
     }),
     buildConfig({

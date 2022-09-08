@@ -11,8 +11,18 @@ import { ToolbarButton } from './components/ToolbarButton';
 import { SettingPanel } from './components/SettingPanel';
 import classes from './index.module.css';
 
+interface DefaultSettingsButtonProps {
+  /** 触发鼠标离开工具栏的事件 */
+  onMouseLeave: () => void;
+}
+
+// FIXME: ESlint 莫名把这列表当成了 jsdoc，等之后更新修复再删除这个注释
+// eslint-disable-next-line jsdoc/require-param
 /** 工具栏的默认按钮列表 */
-export const defaultButtonList: [string, React.FC][] = [
+export const defaultButtonList: [
+  string,
+  React.FC<DefaultSettingsButtonProps>,
+][] = [
   [
     '单页模式',
     () => {
@@ -119,14 +129,34 @@ export const defaultButtonList: [string, React.FC][] = [
   ['分隔', () => <div style={{ height: '1em' }} />],
   [
     '设置',
-    () => {
+    ({ onMouseLeave }) => {
       const [showPanel, setShowPanel] = useState(false);
 
       const handleClick = useCallback(() => {
+        useStore.setState((draftState) => {
+          draftState.showToolbar = !showPanel;
+        });
         setShowPanel(!showPanel);
       }, [showPanel]);
 
-      const popper = useMemo(() => <SettingPanel />, []);
+      const popper = useMemo(
+        () => (
+          <>
+            <SettingPanel />
+            <div
+              className={classes.closeCover}
+              onClick={() => {
+                handleClick();
+                onMouseLeave();
+              }}
+              role="button"
+              tabIndex={-1}
+              aria-label="关闭设置弹窗的遮罩"
+            />
+          </>
+        ),
+        [handleClick, onMouseLeave],
+      );
 
       return (
         <ToolbarButton

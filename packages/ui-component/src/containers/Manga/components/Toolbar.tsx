@@ -20,7 +20,7 @@ export const Toolbar: React.FC = () => {
     >
       <div className={classes.toolbarPanel}>
         {defaultButtonList.map(([key, ButtonItem]) => (
-          <ButtonItem key={key} />
+          <ButtonItem key={key} onMouseLeave={handleMouseLeave} />
         ))}
       </div>
     </div>
