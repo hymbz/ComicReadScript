@@ -42,8 +42,10 @@ export const ImgFlow: React.FC<ImgFlowProps> = () => {
       onKeyUp={handleKeyUp}
     >
       <div className={classes.wrapper}>
-        {slideData.map(([a, b]) => (
-          <div key={`${a.index} ${b?.index}`} className={classes.mangaFlowPage}>
+        {slideData.map(([a, b], i) => (
+          // 为了防止切换页面填充时 key 产生变化导致整个 dom 被重新创建，只能用 index 当 key
+          // eslint-disable-next-line react/no-array-index-key
+          <div key={i} className={classes.mangaFlowPage}>
             <ComicImg src={a.src} index={`${a.index}`} type={a.type} />
             {b && <ComicImg src={b.src} index={`${b.index}`} type={b.type} />}
           </div>
