@@ -9,11 +9,12 @@ const selector = ({
   initSwiper,
   swiper,
   option: { scrollMode },
-  img: { initImg, resizeObserver },
+  img: { initImg, resizeObserver, switchFillEffect },
 }: SelfState) => ({
   initImg,
   initSwiper,
   resizeObserver,
+  switchFillEffect,
   swiper,
   scrollMode,
 });
@@ -30,10 +31,14 @@ export type InitData = {
  * @param initData 初始化选项
  */
 export const useInit = (imgUrlList: string[], initData?: InitData) => {
-  const { initImg, initSwiper, swiper, scrollMode, resizeObserver } = useStore(
-    selector,
-    shallow,
-  );
+  const {
+    initImg,
+    initSwiper,
+    swiper,
+    scrollMode,
+    resizeObserver,
+    switchFillEffect,
+  } = useStore(selector, shallow);
 
   // 初始化 swiper、panzoom
   const rootRef = useRef<HTMLDivElement>(null);
@@ -95,6 +100,7 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
         case 'ArrowUp':
         case 'ArrowRight':
         case '.':
+        case 'w':
           swiper.slidePrev(0);
           break;
 
@@ -103,14 +109,20 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
         case 'ArrowDown':
         case 'ArrowLeft':
         case ',':
+        case 's':
           swiper.slideNext(0);
+          break;
+
+        case '/':
+        case 'm':
+          switchFillEffect();
           break;
 
         default:
           break;
       }
     },
-    [swiper],
+    [swiper, switchFillEffect],
   );
 
   useEffect(() => {

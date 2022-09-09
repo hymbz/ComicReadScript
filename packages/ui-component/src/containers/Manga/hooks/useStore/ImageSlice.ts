@@ -48,6 +48,9 @@ export interface ImageSLice {
 
     /** 监视 rootDom 的大小变化 */
     resizeObserver: ResizeObserver;
+
+    /** 切换页面填充 */
+    switchFillEffect: () => void;
   };
 }
 
@@ -163,6 +166,16 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
           });
         }),
       ),
+
+      switchFillEffect: () => {
+        set((state) => {
+          state.fillEffect.set(
+            state.nowFillIndex,
+            !state.fillEffect.get(state.nowFillIndex),
+          );
+          state.img.updateSlideData(state);
+        });
+      },
     },
   };
 };
