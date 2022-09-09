@@ -1,4 +1,4 @@
-import { castDraft } from 'immer';
+import type { WritableDraft } from 'immer/dist/internal';
 import type { KeyboardEventHandler } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -44,13 +44,13 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     useStore.setState((state) => {
-      state.rootRef = castDraft(rootRef);
+      state.rootRef = rootRef as WritableDraft<React.RefObject<HTMLElement>>;
       if (initData?.option) Object.assign(state.option, initData?.option);
     });
 
     const [_swiper, _panzoom] = initSwiper();
     useStore.setState((state) => {
-      state.swiper = castDraft(_swiper);
+      state.swiper = _swiper;
       state.panzoom = _panzoom;
     });
 

@@ -82,7 +82,7 @@ export const stylesSlice: SelfStateCreator<StylesSlice> = (set, get) => {
     backgroundColor: '#FFFFFF',
   };
   const custom = (): StateStyles => {
-    const bgcolor = get().option.自定义背景!;
+    const bgcolor = get().option.customBackground!;
     return {
       color: Color(bgcolor).isDark() ? white.color : black.color,
       backgroundColor: bgcolor,
@@ -92,13 +92,13 @@ export const stylesSlice: SelfStateCreator<StylesSlice> = (set, get) => {
   return {
     styles: {
       get normal() {
-        const { 自定义背景, darkMode } = get().option;
-        if (自定义背景) return custom();
+        const { customBackground, darkMode } = get().option;
+        if (customBackground) return custom();
         return darkMode ? white : black;
       },
       get invert() {
-        const { 自定义背景, darkMode } = get().option;
-        if (自定义背景) return custom();
+        const { customBackground, darkMode } = get().option;
+        if (customBackground) return custom();
         return darkMode ? black : white;
       },
     },

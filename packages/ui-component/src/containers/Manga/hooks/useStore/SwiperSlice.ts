@@ -1,4 +1,3 @@
-import { castDraft } from 'immer';
 import type { WritableDraft } from 'immer/dist/internal';
 import type { PanZoom, PanZoomOptions } from 'panzoom';
 import createPanZoom from 'panzoom';
@@ -164,6 +163,6 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
         event.stopPropagation();
     });
 
-    return [castDraft(swiper), castDraft(panzoom)];
+    return [swiper as WritableDraft<Swiper>, panzoom as WritableDraft<PanZoom>];
   },
 });

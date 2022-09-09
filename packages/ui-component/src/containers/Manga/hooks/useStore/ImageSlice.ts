@@ -1,5 +1,5 @@
 import type { Draft } from 'immer';
-import { castDraft } from 'immer';
+import type { WritableDraft } from 'immer/dist/internal';
 import { debounce, throttle } from 'lodash';
 import { handleComicData } from '../../handleComicData';
 
@@ -17,6 +17,7 @@ declare global {
     imgData: Img;
   }
 
+  /** 页面填充数据 */
   type FillEffect = Map<number, boolean>;
 
   type SlideData = Array<[ComicImg] | [ComicImg, ComicImg]>;
@@ -30,6 +31,7 @@ interface UpdateSlideData {
 export interface ImageSLice {
   imgList: ComicImg[];
   slideData: SlideData;
+  /** 页面填充数据 */
   fillEffect: FillEffect;
 
   activeImgIndex: number;
@@ -39,12 +41,15 @@ export interface ImageSLice {
     单页比例: number;
     横幅比例: number;
     条漫比例: number;
+
+    initImg: (imgUrlList: string[], initFillEffect?: FillEffect) => void;
+    updateSlideData: UpdateSlideData;
+
     handleImgLoaded: (index: number) => () => void;
     handleImgError: (index: number) => (e: ErrorEvent) => void;
 
+    /** 根据比例更新图片类型 */
     updateImgType: (draftImg: Draft<ComicImg>) => void;
-    initImg: (imgUrlList: string[], initFillEffect?: FillEffect) => void;
-    updateSlideData: UpdateSlideData;
 
     /** 监视 rootDom 的大小变化 */
     resizeObserver: ResizeObserver;
@@ -114,7 +119,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
               src: imgUrl,
               imgData: {
                 type: 'loading',
-                element: castDraft(img),
+                element: img as WritableDraft<HTMLImageElement>,
               },
             };
 
@@ -126,7 +131,6 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         });
       },
 
-      // 计算图片类型
       updateImgType: (draftImg: Draft<ComicImg>) => {
         const {
           img: { 单页比例, 横幅比例, 条漫比例 },

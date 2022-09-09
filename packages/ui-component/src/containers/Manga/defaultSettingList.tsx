@@ -47,10 +47,10 @@ export const defaultSettingsList: [string, React.FC][] = [
   [
     '点击翻页',
     () => {
-      const 点击翻页 = useStore((state) => state.option.点击翻页);
+      const clickPage = useStore((state) => state.option.clickPage);
       const handelClickPages = useCallback(() => {
         useStore.setState((draftState) => {
-          draftState.option.点击翻页 = !draftState.option.点击翻页;
+          draftState.option.clickPage = !draftState.option.clickPage;
         });
       }, []);
 
@@ -65,7 +65,7 @@ export const defaultSettingsList: [string, React.FC][] = [
         <>
           <SettingsItemSwitch
             name="启用点击翻页"
-            value={点击翻页}
+            value={clickPage}
             onChange={handelClickPages}
           />
           <SettingsItemSwitch
@@ -89,13 +89,13 @@ export const defaultSettingsList: [string, React.FC][] = [
 
       const backgroundColor = useStore(
         (state) =>
-          state.option.自定义背景 || state.styles.normal.backgroundColor,
+          state.option.customBackground || state.styles.normal.backgroundColor,
       );
       // eslint-disable-next-line react-hooks/exhaustive-deps
       const handelBgColor = useCallback(
         throttle((event: ChangeEvent<HTMLInputElement>) => {
           useStore.setState((draftState) => {
-            draftState.option.自定义背景 = event.target.value;
+            draftState.option.customBackground = event.target.value;
           });
         }, 100),
         [],
