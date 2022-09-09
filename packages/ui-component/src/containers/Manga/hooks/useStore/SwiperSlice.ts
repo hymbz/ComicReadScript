@@ -1,4 +1,4 @@
-import type { WritableDraft } from 'immer/dist/internal';
+import type { Draft } from 'immer/dist/internal';
 import type { PanZoom, PanZoomOptions } from 'panzoom';
 import createPanZoom from 'panzoom';
 import type { SwiperOptions } from 'swiper';
@@ -53,8 +53,8 @@ const panzoomOption: PanZoomOptions = {
 };
 
 export interface SwiperSlice {
-  swiper?: WritableDraft<Swiper>;
-  panzoom?: WritableDraft<PanZoom>;
+  swiper?: Draft<Swiper>;
+  panzoom?: Draft<PanZoom>;
 
   activeSlideIndex: number;
 
@@ -66,9 +66,9 @@ export interface SwiperSlice {
 }
 
 export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
-  swiper: undefined as unknown as WritableDraft<Swiper>,
+  swiper: undefined as unknown as Draft<Swiper>,
 
-  panzoom: undefined as unknown as WritableDraft<PanZoom>,
+  panzoom: undefined as unknown as Draft<PanZoom>,
 
   activeSlideIndex: 0,
 
@@ -163,6 +163,6 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
         event.stopPropagation();
     });
 
-    return [swiper as WritableDraft<Swiper>, panzoom as WritableDraft<PanZoom>];
+    return [swiper as Draft<Swiper>, panzoom as Draft<PanZoom>];
   },
 });

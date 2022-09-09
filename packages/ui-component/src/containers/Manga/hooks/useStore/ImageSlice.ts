@@ -1,5 +1,4 @@
 import type { Draft } from 'immer';
-import type { WritableDraft } from 'immer/dist/internal';
 import { debounce, throttle } from 'lodash';
 import { handleComicData } from '../../handleComicData';
 
@@ -10,22 +9,17 @@ declare global {
     error?: ErrorEvent;
   }
 
-  interface ComicImg {
+  type ComicImg = Draft<{
     type: 'long' | 'wide' | 'vertical' | 'fill' | 'error' | 'loading' | '';
     index: number | '填充';
     src: string;
     imgData: Img;
-  }
+  }>;
 
   /** 页面填充数据 */
   type FillEffect = Map<number, boolean>;
 
   type SlideData = Array<[ComicImg] | [ComicImg, ComicImg]>;
-}
-
-interface UpdateSlideData {
-  (state: DraftSelfState): void;
-  debounce: () => void;
 }
 
 export interface ImageSLice {
@@ -43,7 +37,10 @@ export interface ImageSLice {
     条漫比例: number;
 
     initImg: (imgUrlList: string[], initFillEffect?: FillEffect) => void;
-    updateSlideData: UpdateSlideData;
+    updateSlideData: {
+      (state: Draft<SelfState>): void;
+      debounce: () => void;
+    };
 
     handleImgLoaded: (index: number) => () => void;
     handleImgError: (index: number) => (e: ErrorEvent) => void;
@@ -60,14 +57,14 @@ export interface ImageSLice {
 }
 
 export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
-  const updateSlideData: UpdateSlideData = (state: DraftSelfState) => {
+  const updateSlideData = (state: Draft<SelfState>) => {
     if (state.option.onePageMode)
       state.slideData = state.imgList.map((img) => [img]);
     else
       state.slideData = handleComicData({
-        comicImgList: state.imgList as ComicImg[],
+        comicImgList: state.imgList,
         fillEffect: state.fillEffect,
-      }) as Draft<SlideData>;
+      });
   };
   updateSlideData.debounce = debounce(() => {
     set(updateSlideData);
@@ -89,7 +86,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
       updateSlideData,
 
       handleImgLoaded: (i: number) => () => {
-        set((state: DraftSelfState) => {
+        set((state) => {
           const draftImg = state.imgList[i];
           draftImg.imgData.type = 'loaded';
           state.img.updateImgType(draftImg);
@@ -119,7 +116,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
               src: imgUrl,
               imgData: {
                 type: 'loading',
-                element: img as WritableDraft<HTMLImageElement>,
+                element: img as Draft<HTMLImageElement>,
               },
             };
 

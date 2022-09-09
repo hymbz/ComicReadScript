@@ -2,10 +2,8 @@ import type { KeyboardEventHandler, RefObject, WheelEventHandler } from 'react';
 import type { StateCreator } from 'zustand';
 import create from 'zustand';
 
-import type { Draft } from 'immer';
 import { setAutoFreeze, enableMapSet } from 'immer';
 import { immer } from 'zustand/middleware/immer';
-import { devtools } from 'zustand/middleware';
 
 import type { OptionSlice } from './OptionSlice';
 import { optionSlice } from './OptionSlice';
@@ -32,16 +30,13 @@ declare global {
   type SelfStateCreator<T> = StateCreator<
     SelfState,
     [
-      ['zustand/devtools', never],
+      // 持久化 store 数据
       // ['zustand/persist', unknown],
       ['zustand/immer', never],
     ],
     [],
     T
   >;
-  // 提取出 set 和 get 函数的定义
-  type SelfStateSet = Parameters<SelfStateCreator<SelfState>>[0];
-  type SelfStateGet = Parameters<SelfStateCreator<SelfState>>[1];
 
   interface SelfState extends SliceState {
     rootRef: RefObject<HTMLElement> | null;
@@ -50,8 +45,6 @@ declare global {
 
     [key: string]: unknown;
   }
-
-  type DraftSelfState = Draft<SelfState>;
 }
 
 const store: SelfStateCreator<SelfState> = (...a) => ({
@@ -66,4 +59,4 @@ const store: SelfStateCreator<SelfState> = (...a) => ({
 });
 
 // : UseBoundStore<StoreApi<SelfState>>
-export const useStore = create<SelfState>()(devtools(immer(store)));
+export const useStore = create<SelfState>()(immer(store));

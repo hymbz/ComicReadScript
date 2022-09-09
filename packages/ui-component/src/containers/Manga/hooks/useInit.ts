@@ -1,4 +1,4 @@
-import type { WritableDraft } from 'immer/dist/internal';
+import type { Draft } from 'immer/dist/internal';
 import type { KeyboardEventHandler } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -44,7 +44,7 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     useStore.setState((state) => {
-      state.rootRef = rootRef as WritableDraft<React.RefObject<HTMLElement>>;
+      state.rootRef = rootRef as Draft<React.RefObject<HTMLElement>>;
       if (initData?.option) Object.assign(state.option, initData?.option);
     });
 
