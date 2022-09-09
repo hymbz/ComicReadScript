@@ -9,14 +9,14 @@ const selector = ({
   //
   initSwiper,
   swiper,
-  option: { 卷轴模式 },
+  option: { scrollMode },
   img: { initImg, windowResize },
 }: SelfState) => ({
   initImg,
   initSwiper,
   windowResize,
   swiper,
-  卷轴模式,
+  scrollMode,
 });
 
 export type InitData = {
@@ -31,7 +31,7 @@ export type InitData = {
  * @param initData 初始化选项
  */
 export const useInit = (imgUrlList: string[], initData?: InitData) => {
-  const { initImg, initSwiper, windowResize, swiper, 卷轴模式 } = useStore(
+  const { initImg, initSwiper, windowResize, swiper, scrollMode } = useStore(
     selector,
     shallow,
   );
@@ -78,7 +78,7 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
     (event: React.WheelEvent<HTMLDivElement>) => {
       if (swiper === undefined) return;
 
-      if (!卷轴模式) {
+      if (!scrollMode) {
         if (!swiper.allowTouchMove) {
           // 在放大模式下通过滚轮缩小至原尺寸后，不会立刻跳转至下一页
           if (scrollLock) clearTimeout(scrollLock);
@@ -93,7 +93,7 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
         }
       }
     },
-    [scrollLock, swiper, 卷轴模式],
+    [scrollLock, swiper, scrollMode],
   );
 
   /** 处理键盘操作 */

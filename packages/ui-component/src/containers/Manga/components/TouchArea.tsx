@@ -8,15 +8,17 @@ const selector = ({
   //
   showTouchArea,
   swiper,
+  option,
   handleScroll,
 }: SelfState) => ({
   showTouchArea,
   swiper,
+  option,
   handleScroll,
 });
 
 export const TouchArea: React.FC = () => {
-  const { showTouchArea, swiper, handleScroll } = useStore(selector);
+  const { showTouchArea, swiper, option, handleScroll } = useStore(selector);
 
   const handleClick = useMemo(
     () => ({
@@ -47,7 +49,10 @@ export const TouchArea: React.FC = () => {
   return (
     <div
       className={classes.touchAreaRoot}
-      style={{ pointerEvents: penetrate ? 'none' : 'auto' }}
+      style={{
+        // 开启卷轴模式时隐藏自身
+        pointerEvents: penetrate || option.scrollMode ? 'none' : 'auto',
+      }}
       onContextMenu={setPenetrate}
       onWheel={handleScroll}
       data-show={showTouchArea}

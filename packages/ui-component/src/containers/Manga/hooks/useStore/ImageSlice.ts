@@ -54,7 +54,7 @@ export interface ImageSLice {
 
 export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
   const updateSlideData: UpdateSlideData = (state: DraftSelfState) => {
-    if (state.option.单页模式)
+    if (state.option.onePageMode)
       state.slideData = state.imgList.map((img) => [img]);
     else
       state.slideData = handleComicData({
@@ -128,7 +128,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
       updateImgType: (draftImg: Draft<ComicImg>) => {
         const {
           img: { 单页比例, 横幅比例, 条漫比例 },
-          option: { 卷轴模式 },
+          option: { scrollMode },
         } = get();
 
         const {
@@ -148,7 +148,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
 
         if (newType !== type) draftImg.type = newType;
 
-        if (!卷轴模式) updateSlideData.debounce();
+        if (!scrollMode) updateSlideData.debounce();
       },
 
       // 在窗口大小改变时更新比例，并重新计算图片类型

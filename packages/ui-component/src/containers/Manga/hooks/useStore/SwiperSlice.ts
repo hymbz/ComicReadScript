@@ -15,17 +15,12 @@ const defaultSwiperOption: SwiperOptions = {
   preloadImages: false,
   // 自动 update
   observer: true,
-  // 在子元素外查找
-  uniqueNavElements: false,
-  virtual: true,
   // 垂直滚动
   direction: 'vertical',
   // 默认禁用 swiper 的鼠标滚轮
   mousewheel: false,
   // 使用 ResizeObserver API 以提升性能
   resizeObserver: true,
-  // 稍微减少一点自由模式下的滑动距离
-  freeMode: { momentumRatio: 0.7 },
 
   // 设定滚动条
   scrollbar: {
@@ -50,6 +45,8 @@ const defaultSwiperOption: SwiperOptions = {
 const panzoomOption: PanZoomOptions = {
   // 禁用键盘
   disableKeyboardInteraction: true,
+
+  // TODO: 增加双击缩放
   // 禁用双击缩放
   zoomDoubleClickSpeed: 1,
   // 边界限制

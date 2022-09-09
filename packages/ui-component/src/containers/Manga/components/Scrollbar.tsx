@@ -48,7 +48,7 @@ export const Scrollbar: React.FC = () => {
   return (
     <div
       className={clsx(classes.scrollbar, {
-        [classes.hidden]: !option.scrollbar.enable && !showScrollbar,
+        [classes.hidden]: !option.scrollbar.enabled && !showScrollbar,
       })}
       role="scrollbar"
       aria-controls="mange-main"

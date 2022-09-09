@@ -12,7 +12,7 @@ interface ToolbarButtonProps {
   /** 是否隐藏 */
   hidden?: boolean;
   /** 是否启用 */
-  enable?: boolean;
+  enabled?: boolean;
   /** 是否显示文字提示 */
   showTip?: boolean;
   /** 自定义悬浮显示内容 */
@@ -32,7 +32,7 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = ({
   children,
   buttonKey,
   hidden,
-  enable,
+  enabled,
   ref,
   showTip,
   popper,
@@ -59,7 +59,7 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = ({
         className={clsx(
           classes.toolbarButton,
           { [classes.hidden]: hidden },
-          enable && classes.enable,
+          enabled && classes.enabled,
         )}
         onClick={handleClick}
         onMouseEnter={handlerMouseEnter}

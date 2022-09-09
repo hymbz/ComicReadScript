@@ -10,11 +10,11 @@ export const defaultSettingsList: [string, React.FC][] = [
   [
     '滚动条',
     () => {
-      const enable = useStore((state) => state.option.scrollbar.enable);
+      const enabled = useStore((state) => state.option.scrollbar.enabled);
       const handelEnable = useCallback(() => {
         useStore.setState((draftState) => {
-          draftState.option.scrollbar.enable =
-            !draftState.option.scrollbar.enable;
+          draftState.option.scrollbar.enabled =
+            !draftState.option.scrollbar.enabled;
         });
       }, []);
 
@@ -30,10 +30,10 @@ export const defaultSettingsList: [string, React.FC][] = [
         <>
           <SettingsItemSwitch
             name="显示滚动条"
-            value={enable}
+            value={enabled}
             onChange={handelEnable}
           />
-          {enable ? (
+          {enabled ? (
             <SettingsItemSwitch
               name="自动隐藏滚动条"
               value={autoHidden}

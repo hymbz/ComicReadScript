@@ -26,18 +26,22 @@ export const defaultButtonList: [
   [
     '单页模式',
     () => {
-      const isOnePageMode = useStore((state) => state.option.单页模式);
+      const isOnePageMode = useStore((state) => state.option.onePageMode);
       const handleClick = useCallback(() => {
         let newSlideIndex: number;
 
         useStore.setState((draftState) => {
-          draftState.option.单页模式 = !draftState.option.单页模式;
+          // 在卷轴模式下切换单页模式时自动退出卷轴模式
+          if (draftState.option.scrollMode)
+            draftState.option.scrollMode = false;
+
+          draftState.option.onePageMode = !draftState.option.onePageMode;
 
           const { activeImgIndex } = draftState;
 
           draftState.img.updateSlideData(draftState);
 
-          newSlideIndex = draftState.option.单页模式
+          newSlideIndex = draftState.option.onePageMode
             ? activeImgIndex
             : draftState.slideData.findIndex((slide) =>
                 slide.some((img) => img.index === activeImgIndex),
@@ -63,32 +67,40 @@ export const defaultButtonList: [
   [
     '卷轴模式',
     () => {
-      const enable = useStore((state) => state.option.卷轴模式);
+      const enabled = useStore((state) => state.option.scrollMode);
 
       const handleClick = useCallback(() => {
         useStore.setState((draftState) => {
-          draftState.option.卷轴模式 = !draftState.option.卷轴模式;
+          draftState.option.scrollMode = !draftState.option.scrollMode;
+          draftState.option.onePageMode = draftState.option.scrollMode;
+
+          draftState.img.updateSlideData(draftState);
 
           const [swiper, panzoom] = draftState.initSwiper({
             // 启用自由模式
-            freeMode: enable,
+            freeMode: {
+              enabled: draftState.option.scrollMode,
+              sticky: false,
+              // 稍微减少一点自由模式下的滑动距离
+              momentumRatio: 0.7,
+            },
             // 使用自带的鼠标滚轮模块
-            mousewheel: enable
+            mousewheel: draftState.option.scrollMode
               ? { eventsTarget: `.${classes.mangaFlow}` }
               : false,
-            // 设置重新初始化后的初始页面
+            // 保持当前显示页面不变
             initialSlide: draftState.activeSlideIndex,
           });
 
           draftState.swiper = swiper;
           draftState.panzoom = panzoom;
         });
-      }, [enable]);
+      }, []);
 
       return (
         <ToolbarButton
           buttonKey="卷轴模式"
-          enable={enable}
+          enabled={enabled}
           onClick={handleClick}
         >
           <MdViewDay />
@@ -99,10 +111,10 @@ export const defaultButtonList: [
   [
     '页面填充',
     () => {
-      const enable = useStore(
+      const enabled = useStore(
         (state) => state.fillEffect.get(state.nowFillIndex)!,
       );
-      const isOnePageMode = useStore((state) => state.option.单页模式);
+      const isOnePageMode = useStore((state) => state.option.onePageMode);
 
       const handleClick = useCallback(() => {
         useStore.setState((draftState) => {
@@ -117,7 +129,7 @@ export const defaultButtonList: [
       return (
         <ToolbarButton
           buttonKey="页面填充"
-          enable={enable}
+          enabled={enabled}
           hidden={isOnePageMode}
           onClick={handleClick}
         >
@@ -161,7 +173,7 @@ export const defaultButtonList: [
       return (
         <ToolbarButton
           buttonKey="设置"
-          enable={showPanel}
+          enabled={showPanel}
           showTip={showPanel}
           onClick={handleClick}
           popper={showPanel && popper}

@@ -1,12 +1,16 @@
 declare global {
   interface Option {
     dir: 'ltr' | 'rtl';
+    /** 滚动条 */
     scrollbar: {
       enable: boolean;
+      /** 自动隐藏 */
       autoHidden: boolean;
     };
-    单页模式: boolean;
-    卷轴模式: boolean;
+    /** 单页模式 */
+    onePageMode: boolean;
+    /** 卷轴模式 */
+    scrollMode: boolean;
     点击翻页: boolean;
     自定义背景?: string;
 
@@ -31,8 +35,8 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
       enable: true,
       autoHidden: false,
     },
-    单页模式: false,
-    卷轴模式: false,
+    onePageMode: false,
+    scrollMode: false,
     点击翻页: false,
 
     自定义背景: undefined,

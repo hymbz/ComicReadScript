@@ -64,7 +64,7 @@
     background-color: var(--buttonHoverBgColor);
   }
 
-  &.enable {
+  &.enabled {
     color: var(--enableButtonColor);
 
     background-color: var(--enableButtonBgColor);
