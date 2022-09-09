@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
 import { useState, useMemo, useEffect } from 'react';
+import { useDoubleClick } from '../hooks/useDoubleClick';
 import { useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
@@ -20,23 +21,18 @@ const selector = ({
 export const TouchArea: React.FC = () => {
   const { showTouchArea, swiper, option, handleScroll } = useStore(selector);
 
-  const handleClick = useMemo(
-    () => ({
-      next: () => {
-        swiper?.slideNext(0);
-      },
-      prev: () => {
-        swiper?.slidePrev(0);
-      },
-      menu: () => {
-        useStore.setState((draftState) => {
-          draftState.showScrollbar = !draftState.showScrollbar;
-          draftState.showToolbar = !draftState.showToolbar;
-        });
-      },
-    }),
-    [swiper],
-  );
+  const handleClickNext = useDoubleClick(() => {
+    swiper?.slideNext(0);
+  });
+  const handleClickPrev = useDoubleClick(() => {
+    swiper?.slidePrev(0);
+  });
+  const handleClickMenu = useDoubleClick(() => {
+    useStore.setState((draftState) => {
+      draftState.showScrollbar = !draftState.showScrollbar;
+      draftState.showToolbar = !draftState.showToolbar;
+    });
+  });
 
   // 在右键点击时隐藏自身，使右键菜单为图片的右键菜单
   const [penetrate, setPenetrate] =
@@ -59,7 +55,7 @@ export const TouchArea: React.FC = () => {
     >
       <div
         className={clsx(classes.touchArea)}
-        onClick={handleClick.prev}
+        onClick={handleClickPrev}
         data-area="prev"
         role="button"
         tabIndex={-1}
@@ -68,7 +64,7 @@ export const TouchArea: React.FC = () => {
       </div>
       <div
         className={clsx(classes.touchArea)}
-        onClick={handleClick.menu}
+        onClick={handleClickMenu}
         data-area="menu"
         role="button"
         tabIndex={-1}
@@ -77,7 +73,7 @@ export const TouchArea: React.FC = () => {
       </div>
       <div
         className={clsx(classes.touchArea)}
-        onClick={handleClick.next}
+        onClick={handleClickNext}
         data-area="next"
         role="button"
         tabIndex={-1}

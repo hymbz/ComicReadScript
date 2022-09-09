@@ -46,9 +46,6 @@ const panzoomOption: PanZoomOptions = {
   // 禁用键盘
   disableKeyboardInteraction: true,
 
-  // TODO: 增加双击缩放
-  // 禁用双击缩放
-  zoomDoubleClickSpeed: 1,
   // 边界限制
   bounds: true,
   boundsPadding: 1,

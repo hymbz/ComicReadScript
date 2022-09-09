@@ -45,6 +45,7 @@ const imgUrlList = [
   'https://1767566263.rsc.cdn77.org/comic/shirenzhuangsharenshijian/8d3f1/a4663a90-8f73-11e9-a9ff-00163e0ca5bd.png!kb_w_read_large_webp',
   'https://1767566263.rsc.cdn77.org/comic/shirenzhuangsharenshijian/8d3f1/a4cb92be-8f73-11e9-83b7-00163e0ca5bd.png!kb_w_read_large_webp',
   'https://1767566263.rsc.cdn77.org/comic/shirenzhuangsharenshijian/8d3f1/a58daea8-8f73-11e9-a9ff-00163e0ca5bd.png!kb_w_read_large_webp',
+  'https://cube.elemecdn.com/6/94/4d3ea53c084bad6931a56d5158a48jpeg.jpeg',
 ];
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);
