@@ -1,5 +1,4 @@
 import { castDraft } from 'immer';
-import { throttle } from 'lodash';
 import type { KeyboardEventHandler } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -10,11 +9,11 @@ const selector = ({
   initSwiper,
   swiper,
   option: { scrollMode },
-  img: { initImg, windowResize },
+  img: { initImg, resizeObserver },
 }: SelfState) => ({
   initImg,
   initSwiper,
-  windowResize,
+  resizeObserver,
   swiper,
   scrollMode,
 });
@@ -31,20 +30,17 @@ export type InitData = {
  * @param initData 初始化选项
  */
 export const useInit = (imgUrlList: string[], initData?: InitData) => {
-  const { initImg, initSwiper, windowResize, swiper, scrollMode } = useStore(
+  const { initImg, initSwiper, swiper, scrollMode, resizeObserver } = useStore(
     selector,
     shallow,
   );
-
-  const refInitDara = useRef(initData);
 
   // 初始化 swiper、panzoom
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     useStore.setState((state) => {
       state.rootRef = castDraft(rootRef);
-      if (refInitDara.current?.option)
-        Object.assign(state.option, refInitDara.current?.option);
+      if (initData?.option) Object.assign(state.option, initData?.option);
     });
 
     const [_swiper, _panzoom] = initSwiper();
@@ -53,24 +49,17 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
       state.panzoom = _panzoom;
     });
 
-    windowResize(window.innerWidth, window.innerHeight);
-
-    // 在窗口大小发生改变时修改对应状态
-    window.addEventListener(
-      'resize',
-      throttle(() => {
-        windowResize(window.innerWidth, window.innerHeight);
-      }, 100),
-    );
-
-    // 仅执行一次
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // 绑定 resizeObserver
+    if (rootRef.current) {
+      resizeObserver.disconnect();
+      resizeObserver.observe(rootRef.current);
+    }
+  }, [initData?.option, initSwiper, resizeObserver]);
 
   // 初始化图片相关
   useEffect(() => {
-    initImg(imgUrlList, refInitDara.current?.fillEffect);
-  }, [imgUrlList, initImg]);
+    initImg(imgUrlList, initData?.fillEffect);
+  }, [imgUrlList, initData?.fillEffect, initImg]);
 
   const [scrollLock, setScrollLock] = useState<number | null>(null);
   /** 处理滚动操作 */

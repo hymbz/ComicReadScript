@@ -1,5 +1,5 @@
 import { clsx } from 'clsx';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useDoubleClick } from '../hooks/useDoubleClick';
 import { useStore } from '../hooks/useStore';
 

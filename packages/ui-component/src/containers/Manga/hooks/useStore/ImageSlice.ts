@@ -1,6 +1,6 @@
 import type { Draft } from 'immer';
 import { castDraft } from 'immer';
-import { debounce } from 'lodash';
+import { debounce, throttle } from 'lodash';
 import { handleComicData } from '../../handleComicData';
 
 declare global {
@@ -17,9 +17,6 @@ declare global {
     imgData: Img;
   }
 
-  // interface FillEffect {
-  //   [imgIndex: number]: boolean;
-  // }
   type FillEffect = Map<number, boolean>;
 
   type SlideData = Array<[ComicImg] | [ComicImg, ComicImg]>;
@@ -48,7 +45,9 @@ export interface ImageSLice {
     updateImgType: (draftImg: Draft<ComicImg>) => void;
     initImg: (imgUrlList: string[], initFillEffect?: FillEffect) => void;
     updateSlideData: UpdateSlideData;
-    windowResize: (width: number, height: number) => void;
+
+    /** 监视 rootDom 的大小变化 */
+    resizeObserver: ResizeObserver;
   };
 }
 
@@ -151,16 +150,19 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         if (!scrollMode) updateSlideData.debounce();
       },
 
-      // 在窗口大小改变时更新比例，并重新计算图片类型
-      windowResize: (width: number, height: number) => {
-        set((state) => {
-          state.img.单页比例 = width / 2 / height;
-          state.img.横幅比例 = width / height;
-          state.img.条漫比例 = width / 2 / 3 / height;
+      // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
+      resizeObserver: new ResizeObserver(
+        throttle(([entries]) => {
+          const { width, height } = entries.contentRect;
+          set((state) => {
+            state.img.单页比例 = width / 2 / height;
+            state.img.横幅比例 = width / height;
+            state.img.条漫比例 = width / 2 / 3 / height;
 
-          state.imgList.forEach(state.img.updateImgType);
-        });
-      },
+            state.imgList.forEach(state.img.updateImgType);
+          });
+        }),
+      ),
     },
   };
 };
