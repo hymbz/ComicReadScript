@@ -3,7 +3,7 @@ declare global {
     dir: 'ltr' | 'rtl';
     /** 滚动条 */
     scrollbar: {
-      enable: boolean;
+      enabled: boolean;
       /** 自动隐藏 */
       autoHidden: boolean;
     };
@@ -32,7 +32,7 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
   option: {
     dir: 'rtl',
     scrollbar: {
-      enable: true,
+      enabled: true,
       autoHidden: false,
     },
     onePageMode: false,

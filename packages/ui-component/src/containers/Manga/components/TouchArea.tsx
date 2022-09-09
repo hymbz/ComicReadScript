@@ -10,16 +10,14 @@ const selector = ({
   showTouchArea,
   swiper,
   option,
-  handleScroll,
 }: SelfState) => ({
   showTouchArea,
   swiper,
   option,
-  handleScroll,
 });
 
 export const TouchArea: React.FC = () => {
-  const { showTouchArea, swiper, option, handleScroll } = useStore(selector);
+  const { showTouchArea, swiper, option } = useStore(selector);
 
   const handleClickNext = useDoubleClick(() => {
     swiper?.slideNext(0);
@@ -50,7 +48,6 @@ export const TouchArea: React.FC = () => {
         pointerEvents: penetrate || option.scrollMode ? 'none' : 'auto',
       }}
       onContextMenu={setPenetrate}
-      onWheel={handleScroll}
       data-show={showTouchArea}
     >
       <div

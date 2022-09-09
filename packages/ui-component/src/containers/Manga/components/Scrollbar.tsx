@@ -12,26 +12,18 @@ const selector = ({
   slideData,
   activeSlideIndex,
   showScrollbar,
-  handleScroll,
 }: SelfState) => ({
   swiper,
   option,
   slideData,
   activeSlideIndex,
   showScrollbar,
-  handleScroll,
 });
 
 /** 滚动条 */
 export const Scrollbar: React.FC = () => {
-  const {
-    swiper,
-    option,
-    slideData,
-    activeSlideIndex,
-    showScrollbar,
-    handleScroll,
-  } = useStore(selector);
+  const { swiper, option, slideData, activeSlideIndex, showScrollbar } =
+    useStore(selector);
 
   const [isHover, handleMouseEnter, handleMouseLeave] = useHover();
 
@@ -56,7 +48,6 @@ export const Scrollbar: React.FC = () => {
       tabIndex={0}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={handleMouseEnter}
-      onWheel={handleScroll}
     >
       <div
         className={clsx(

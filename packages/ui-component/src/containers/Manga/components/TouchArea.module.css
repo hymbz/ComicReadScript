@@ -22,6 +22,8 @@
   justify-content: center;
 
   writing-mode: vertical-rl;
+
+  outline: none;
 }
 
 .touchArea[data-area="menu"] {

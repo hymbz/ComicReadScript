@@ -116,15 +116,7 @@ export const defaultButtonList: [
       );
       const isOnePageMode = useStore((state) => state.option.onePageMode);
 
-      const handleClick = useCallback(() => {
-        useStore.setState((draftState) => {
-          draftState.fillEffect.set(
-            draftState.nowFillIndex,
-            !draftState.fillEffect.get(draftState.nowFillIndex),
-          );
-          draftState.img.updateSlideData(draftState);
-        });
-      }, []);
+      const handleClick = useStore((state) => state.img.switchFillEffect);
 
       return (
         <ToolbarButton

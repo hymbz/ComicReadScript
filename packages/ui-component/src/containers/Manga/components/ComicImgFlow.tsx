@@ -14,33 +14,19 @@ const selector = ({
   //
   slideData,
   option,
-  handleScroll,
-  handleKeyUp,
 }: SelfState) => ({
   slideData,
   option,
-  handleScroll,
-  handleKeyUp,
 });
 
 /**
  * 漫画图片流的容器
  */
 export const ImgFlow: React.FC<ImgFlowProps> = () => {
-  const { slideData, option, handleScroll, handleKeyUp } = useStore(
-    selector,
-    shallow,
-  );
+  const { slideData, option } = useStore(selector, shallow);
 
   return (
-    <div
-      className={classes.mangaFlow}
-      tabIndex={-1}
-      role="presentation"
-      dir={option.dir}
-      onWheel={handleScroll}
-      onKeyUp={handleKeyUp}
-    >
+    <div className={classes.mangaFlow} dir={option.dir}>
       <div className={classes.wrapper}>
         {slideData.map(([a, b], i) => (
           // 为了防止切换页面填充时 key 产生变化导致整个 dom 被重新创建，只能用 index 当 key
