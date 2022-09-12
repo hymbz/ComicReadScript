@@ -51,7 +51,7 @@
     @touchstart="lastTouchmove = $event;" @touchend="TouchControl" @touchmove="MouseMoveControl"
     @click="MouseMoveControl" @mousemove.capture="MouseMoveControl">
 
-    <div v-for="(LineComicImg,pageNum) in ComicImgInfo" :index="pageNum">
+    <div v-for="(LineComicImg,pageNum) in ComicImgInfo" :index="pageNum" :style="{ flexDirection: readSetting['美漫模式'] ? 'row-reverse': '' }">
       <img v-for="Img in LineComicImg" :src=Img.src :class="Img.class" :alt="Img.index">
     </div>
 
