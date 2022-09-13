@@ -41,7 +41,7 @@
   font-size: 0.9em;
 }
 
-/* 开关式菜单项 */
+/* 开关式设置项 */
 .SettingsItemSwitch {
   cursor: pointer;
 
@@ -67,6 +67,24 @@
   border-radius: 100%;
 
   transition: transform 100ms;
+}
+
+/* 图标按钮式设置项 */
+.SettingsItemIconButton {
+  cursor: pointer;
+
+  position: absolute;
+  right: 0.7em;
+
+  height: 1em;
+  margin: 0;
+  padding: 0;
+
+  font-size: 1.7em;
+  color: var(--buttonColor);
+
+  background-color: transparent;
+  border: none;
 }
 
 /* 关闭设置弹窗的遮罩 */

@@ -1,12 +1,55 @@
 import { throttle } from 'lodash';
 import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
+import {
+  MdOutlineFormatTextdirectionRToL,
+  MdOutlineFormatTextdirectionLToR,
+} from 'react-icons/md';
 import { useStore } from './hooks/useStore';
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
 
+import classes from './index.module.css';
+
 /** 默认菜单项 */
 export const defaultSettingsList: [string, React.FC][] = [
+  [
+    '阅读',
+    () => {
+      const dir = useStore((state) => state.option.dir);
+      const handelEditDir = useCallback(() => {
+        useStore.setState((draftState) => {
+          draftState.option.dir =
+            draftState.option.dir === 'rtl' ? 'ltr' : 'rtl';
+        });
+      }, []);
+
+      return (
+        <>
+          <SettingsItem
+            name={dir === 'rtl' ? '从右到左（日漫）' : '从左到右（美漫）'}
+          >
+            <button
+              className={classes.SettingsItemIconButton}
+              type="button"
+              onClick={handelEditDir}
+            >
+              {dir === 'rtl' ? (
+                <MdOutlineFormatTextdirectionRToL />
+              ) : (
+                <MdOutlineFormatTextdirectionLToR />
+              )}
+            </button>
+          </SettingsItem>
+          {/* <SettingsItemSwitch
+            name="显示滚动条"
+            value={enabled}
+            onChange={handelEnable}
+          /> */}
+        </>
+      );
+    },
+  ],
   [
     '滚动条',
     () => {
