@@ -12,7 +12,11 @@ declare global {
     /** 卷轴模式 */
     scrollMode: boolean;
     /** 点击翻页 */
-    clickPage: boolean;
+    clickPage: {
+      enabled: boolean;
+      /** 左右反转点击区域 */
+      overturn: boolean;
+    };
     /** 自定义背景 */
     customBackground?: string;
     /** 禁止放大图片 */
@@ -25,6 +29,7 @@ declare global {
 export interface OptionSlice {
   option: Option;
 
+  /** 显示点击区域 */
   showTouchArea: boolean;
 }
 
@@ -37,7 +42,10 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
     },
     onePageMode: false,
     scrollMode: false,
-    clickPage: true,
+    clickPage: {
+      enabled: true,
+      overturn: false,
+    },
     disableZoom: false,
 
     customBackground: undefined,

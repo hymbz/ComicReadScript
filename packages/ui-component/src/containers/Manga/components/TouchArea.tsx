@@ -39,10 +39,10 @@ export const TouchArea: React.FC = () => {
   );
 
   const handleClickNext = useDoubleClick(() => {
-    if (option.clickPage) swiper?.slideNext(0);
+    if (option.clickPage.enabled) swiper?.slideNext(0);
   }, handleDoubleClickZoom);
   const handleClickPrev = useDoubleClick(() => {
-    if (option.clickPage) swiper?.slidePrev(0);
+    if (option.clickPage.enabled) swiper?.slidePrev(0);
   }, handleDoubleClickZoom);
   const handleClickMenu = useDoubleClick(() => {
     useStore.setState((draftState) => {
@@ -65,6 +65,11 @@ export const TouchArea: React.FC = () => {
       style={{
         // 开启卷轴模式时隐藏自身
         pointerEvents: penetrate || option.scrollMode ? 'none' : 'auto',
+        // 左右方向默认和漫画方向相同，如果开启了左右翻转则翻转
+        flexDirection:
+          (option.dir === 'rtl') === option.clickPage.overturn
+            ? 'row-reverse'
+            : undefined,
       }}
       onContextMenu={setPenetrate}
       data-show={showTouchArea}

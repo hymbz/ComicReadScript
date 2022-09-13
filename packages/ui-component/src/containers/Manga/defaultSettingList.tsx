@@ -83,17 +83,29 @@ export const defaultSettingsList: [string, React.FC][] = [
   [
     '点击翻页',
     () => {
-      const clickPage = useStore((state) => state.option.clickPage);
+      /** 是否启用点击翻页功能 */
+      const clickPage = useStore((state) => state.option.clickPage.enabled);
       const handelClickPages = useCallback(() => {
         useStore.setState((draftState) => {
-          draftState.option.clickPage = !draftState.option.clickPage;
+          draftState.option.clickPage.enabled =
+            !draftState.option.clickPage.enabled;
         });
       }, []);
 
+      /** 是否显示点击区域 */
       const showTouchArea = useStore((state) => state.showTouchArea);
       const handelShowTouchArea = useCallback(() => {
         useStore.setState((draftState) => {
           draftState.showTouchArea = !draftState.showTouchArea;
+        });
+      }, []);
+
+      /** 是否左右反转点击区域 */
+      const overturn = useStore((state) => state.option.clickPage.overturn);
+      const handelOverturn = useCallback(() => {
+        useStore.setState((draftState) => {
+          draftState.option.clickPage.overturn =
+            !draftState.option.clickPage.overturn;
         });
       }, []);
 
@@ -103,6 +115,11 @@ export const defaultSettingsList: [string, React.FC][] = [
             name="启用点击翻页"
             value={clickPage}
             onChange={handelClickPages}
+          />
+          <SettingsItemSwitch
+            name="左右反转点击区域"
+            value={overturn}
+            onChange={handelOverturn}
           />
           <SettingsItemSwitch
             name="显示点击区域提示"
