@@ -31,7 +31,13 @@ export const Scrollbar: React.FC = () => {
   const tooltipText = useMemo(() => {
     if (!slideData.length) return '';
 
-    const slideIndex = slideData[activeSlideIndex].map((slide) => slide.index);
+    const slideIndex = slideData[activeSlideIndex].map((slide) => {
+      let slideText = `${slide.index}`;
+      // 如果图片未加载完毕则在其 index 后增加显示当前状态
+      if (slide.imgData.type !== 'loaded')
+        slideText += ` (${slide.imgData.type})`;
+      return slideText;
+    });
     if (option.dir === 'rtl') slideIndex.reverse();
 
     return `${slideIndex.join(' | ')}`;
