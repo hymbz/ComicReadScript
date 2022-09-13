@@ -50,6 +50,7 @@
     "postcss-nesting": "^10.1.10",
     "prettier": "^2.7.1",
     "prettier-plugin-tailwindcss": "^0.1.13",
+    "react-router-dom": "^6.3.0",
     "rollup": "^2.79.0",
     "rollup-plugin-esbuild": "^4.10.1",
     "rollup-plugin-postcss": "^4.0.2",

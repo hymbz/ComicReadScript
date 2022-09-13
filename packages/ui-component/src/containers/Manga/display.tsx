@@ -1,8 +1,7 @@
+/* eslint-disable react/function-component-definition */
 /*
  * 用于测试时显示组件
  */
-
-import ReactDOM from 'react-dom/client';
 
 import { Manga } from '.';
 
@@ -48,5 +47,6 @@ const imgUrlList = [
   'https://cube.elemecdn.com/6/94/4d3ea53c084bad6931a56d5158a48jpeg.jpeg',
 ];
 
-const root = ReactDOM.createRoot(document.getElementById('root')!);
-root.render(<Manga imgUrlList={imgUrlList} />);
+export default function DisplayManga() {
+  return <Manga imgUrlList={imgUrlList} />;
+}

@@ -90,6 +90,7 @@ importers:
       react: ^18.2.0
       react-dom: ^18.2.0
       react-icons: ^4.4.0
+      react-router-dom: ^6.3.0
       react-use: ^17.4.0
       rollup: ^2.79.0
       rollup-plugin-esbuild: ^4.10.1
@@ -141,6 +142,7 @@ importers:
       postcss-nesting: 10.1.10
       prettier: 2.7.1
       prettier-plugin-tailwindcss: 0.1.13_prettier@2.7.1
+      react-router-dom: 6.3.0_biqbaboplfbrettd7655fr4n2y
       rollup: 2.79.0
       rollup-plugin-esbuild: 4.10.1_rollup@2.79.0
       rollup-plugin-postcss: 4.0.2
@@ -3929,7 +3931,7 @@ packages:
     dependencies:
       confusing-browser-globals: 1.0.11
       eslint: 8.23.0
-      eslint-plugin-import: 2.26.0_en2wbs6aggmxy4drejzsyh4gce
+      eslint-plugin-import: 2.26.0_iepzrjnvahcxaf6zc7cutko6om
       object.assign: 4.1.2
       object.entries: 1.1.5
       semver: 6.3.0
@@ -4712,6 +4714,12 @@ packages:
   /helpertypes/0.0.18:
     resolution: {integrity: sha512-XRhfbSEmR+poXUC5/8AbmYNJb2riOT6qPzjGJZr0S9YedHiaY+/tzPYzWMUclYMEdCYo/1l8PDYrQFCj02v97w==}
     engines: {node: '>=10.0.0'}
+    dev: true
+
+  /history/5.3.0:
+    resolution: {integrity: sha512-ZqaKwjjrAYUYfLG+htGaIIZ4nioX2L70ZUMIFysS3xvBsSG4x/n1V6TXV3N8ZYNuFGlDirFg32T7B6WOUPDYcQ==}
+    dependencies:
+      '@babel/runtime': 7.18.9
     dev: true
 
   /hosted-git-info/2.8.9:
@@ -6161,7 +6169,6 @@ packages:
       loose-envify: 1.4.0
       react: 18.2.0
       scheduler: 0.23.0
-    dev: false
 
   /react-icons/4.4.0_react@18.2.0:
     resolution: {integrity: sha512-fSbvHeVYo/B5/L4VhB7sBA1i2tS8MkT0Hb9t2H1AVPkwGfVHLJCqyr2Py9dKMxsyM63Eng1GkdZfbWj+Fmv8Rg==}
@@ -6178,6 +6185,27 @@ packages:
   /react-refresh/0.14.0:
     resolution: {integrity: sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /react-router-dom/6.3.0_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-uaJj7LKytRxZNQV8+RbzJWnJ8K2nPsOOEuX7aQstlMZKQT0164C+X2w6bnkqU3sjtLvpd5ojrezAyfZ1+0sStw==}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
+    dependencies:
+      history: 5.3.0
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+      react-router: 6.3.0_react@18.2.0
+    dev: true
+
+  /react-router/6.3.0_react@18.2.0:
+    resolution: {integrity: sha512-7Wh1DzVQ+tlFjkeo+ujvjSqSJmkt1+8JO+T5xklPlgrh70y7ogx75ODRW0ThWhY7S+6yEDks8TYrtQe/aoboBQ==}
+    peerDependencies:
+      react: '>=16.8'
+    dependencies:
+      history: 5.3.0
+      react: 18.2.0
     dev: true
 
   /react-shadow/19.0.3_ef5jwxihqo6n7gxfmzogljlgcm:
@@ -6273,7 +6301,6 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       loose-envify: 1.4.0
-    dev: false
 
   /read-cache/1.0.0:
     resolution: {integrity: sha512-Owdv/Ft7IjOgm/i0xvNDZ1LrRANRfew4b2prF3OWMQLxLfu3bS8FVhCsrSCMK4lR56Y9ya+AThoTpDCTxCmpRA==}
@@ -6724,7 +6751,6 @@ packages:
     resolution: {integrity: sha512-CtuThmgHNg7zIZWAXi3AsyIzA3n4xx7aNyjwC2VJldO2LMVDhFK+63xGqq6CsJH4rTAt6/M+N4GhZiDYPx9eUw==}
     dependencies:
       loose-envify: 1.4.0
-    dev: false
 
   /screenfull/5.2.0:
     resolution: {integrity: sha512-9BakfsO2aUQN2K9Fdbj87RJIEZ82Q9IGim7FqM5OsebfoFC6ZHXgDq/KvniuLTPdeM8wY2o6Dj3WQ7KeQCj3cA==}
