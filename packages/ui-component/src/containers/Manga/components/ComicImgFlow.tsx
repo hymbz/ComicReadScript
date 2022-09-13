@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import type { InitData } from '../hooks/useInit';
 
 import { useStore, shallow } from '../hooks/useStore';
@@ -26,7 +27,13 @@ export const ImgFlow: React.FC<ImgFlowProps> = () => {
   const { slideData, option } = useStore(selector, shallow);
 
   return (
-    <div className={classes.mangaFlow} dir={option.dir}>
+    <div
+      className={clsx(
+        classes.mangaFlow,
+        option.disableZoom && classes.disableZoom,
+      )}
+      dir={option.dir}
+    >
       <div className={classes.wrapper}>
         {slideData.map(([a, b], i) => (
           // 为了防止切换页面填充时 key 产生变化导致整个 dom 被重新创建，只能用 index 当 key

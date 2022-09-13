@@ -15,6 +15,8 @@ declare global {
     clickPage: boolean;
     /** 自定义背景 */
     customBackground?: string;
+    /** 禁止放大图片 */
+    disableZoom: boolean;
 
     darkMode: boolean;
   }
@@ -36,6 +38,7 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
     onePageMode: false,
     scrollMode: false,
     clickPage: true,
+    disableZoom: false,
 
     customBackground: undefined,
 

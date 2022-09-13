@@ -25,28 +25,21 @@ export const defaultSettingsList: [string, React.FC][] = [
       }, []);
 
       return (
-        <>
-          <SettingsItem
-            name={dir === 'rtl' ? '从右到左（日漫）' : '从左到右（美漫）'}
+        <SettingsItem
+          name={dir === 'rtl' ? '从右到左（日漫）' : '从左到右（美漫）'}
+        >
+          <button
+            className={classes.SettingsItemIconButton}
+            type="button"
+            onClick={handelEditDir}
           >
-            <button
-              className={classes.SettingsItemIconButton}
-              type="button"
-              onClick={handelEditDir}
-            >
-              {dir === 'rtl' ? (
-                <MdOutlineFormatTextdirectionRToL />
-              ) : (
-                <MdOutlineFormatTextdirectionLToR />
-              )}
-            </button>
-          </SettingsItem>
-          {/* <SettingsItemSwitch
-            name="显示滚动条"
-            value={enabled}
-            onChange={handelEnable}
-          /> */}
-        </>
+            {dir === 'rtl' ? (
+              <MdOutlineFormatTextdirectionRToL />
+            ) : (
+              <MdOutlineFormatTextdirectionLToR />
+            )}
+          </button>
+        </SettingsItem>
       );
     },
   ],
@@ -144,12 +137,25 @@ export const defaultSettingsList: [string, React.FC][] = [
         [],
       );
 
+      const disableZoom = useStore((state) => state.option.disableZoom);
+      const handelDisableZoom = useCallback(() => {
+        useStore.setState((draftState) => {
+          draftState.option.disableZoom = !draftState.option.disableZoom;
+        });
+      }, []);
+
       return (
         <>
           <SettingsItemSwitch
             name="启用夜间模式"
             value={darkMode}
             onChange={handelDarkMode}
+          />
+
+          <SettingsItemSwitch
+            name="禁止放大图片"
+            value={disableZoom}
+            onChange={handelDisableZoom}
           />
 
           <SettingsItem name="背景颜色">

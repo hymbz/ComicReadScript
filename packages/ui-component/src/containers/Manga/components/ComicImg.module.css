@@ -3,8 +3,8 @@
   width: 2em !important;
   height: 2em !important;
 
-  /* height: 100%;
-  width: auto; */
+  /* width: auto;
+  height: 100%; */
 
   vertical-align: middle;
 
@@ -31,6 +31,11 @@
   color: var(--primaryColor);
 
   background-color: var(--backgroundColor);
+
+  /* TODO: 测试这样是否能达到禁用图片放大的效果 */
+  &.disableZoom .img {
+    height: unset;
+  }
 }
 
 /* 翻页模式下的每页的容器 */
