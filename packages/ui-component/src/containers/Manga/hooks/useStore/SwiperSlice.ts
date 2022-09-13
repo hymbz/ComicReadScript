@@ -50,6 +50,8 @@ const panzoomOption: PanZoomOptions = {
   boundsPadding: 1,
   // 禁止缩小
   minZoom: 1,
+  // 禁用默认的双击缩放
+  zoomDoubleClickSpeed: 1,
 };
 
 export interface SwiperSlice {
@@ -134,11 +136,6 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
       beforeMouseDown(e) {
         // 按下「alt 键」或「处于放大状态」时才允许拖动
         return !(e.altKey || panzoom.getTransform().scale !== 1);
-      },
-
-      onDoubleClick(e) {
-        e.stopPropagation();
-        return true;
       },
 
       ...panzoomOption,

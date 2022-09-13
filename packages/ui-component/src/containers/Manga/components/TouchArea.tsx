@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
-import { useState, useEffect } from 'react';
+import type { MouseEventHandler } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDoubleClick } from '../hooks/useDoubleClick';
 import { useStore } from '../hooks/useStore';
 
@@ -9,28 +10,46 @@ const selector = ({
   //
   showTouchArea,
   swiper,
+  panzoom,
   option,
 }: SelfState) => ({
   showTouchArea,
   swiper,
+  panzoom,
   option,
 });
 
 export const TouchArea: React.FC = () => {
-  const { showTouchArea, swiper, option } = useStore(selector);
+  const { showTouchArea, swiper, option, panzoom } = useStore(selector);
+
+  /** 处理双击缩放 */
+  const handleDoubleClickZoom: MouseEventHandler = useCallback(
+    (e) => {
+      if (!panzoom) return;
+
+      const { scale } = panzoom.getTransform();
+
+      setTimeout(() => {
+        // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
+        if (scale > 4) panzoom.smoothZoomAbs(e.clientX, e.clientY, 1);
+        else panzoom.smoothZoomAbs(e.clientX, e.clientY, scale + 2);
+      });
+    },
+    [panzoom],
+  );
 
   const handleClickNext = useDoubleClick(() => {
-    swiper?.slideNext(0);
-  });
+    if (option.clickPage) swiper?.slideNext(0);
+  }, handleDoubleClickZoom);
   const handleClickPrev = useDoubleClick(() => {
-    swiper?.slidePrev(0);
-  });
+    if (option.clickPage) swiper?.slidePrev(0);
+  }, handleDoubleClickZoom);
   const handleClickMenu = useDoubleClick(() => {
     useStore.setState((draftState) => {
       draftState.showScrollbar = !draftState.showScrollbar;
       draftState.showToolbar = !draftState.showToolbar;
     });
-  });
+  }, handleDoubleClickZoom);
 
   // 在右键点击时隐藏自身，使右键菜单为图片的右键菜单
   const [penetrate, setPenetrate] =
@@ -52,12 +71,12 @@ export const TouchArea: React.FC = () => {
     >
       <div
         className={clsx(classes.touchArea)}
-        onClick={handleClickPrev}
-        data-area="prev"
+        onClick={handleClickNext}
+        data-area="next"
         role="button"
         tabIndex={-1}
       >
-        <h6>上 一 页</h6>
+        <h6>下 一 页</h6>
       </div>
       <div
         className={clsx(classes.touchArea)}
@@ -70,12 +89,12 @@ export const TouchArea: React.FC = () => {
       </div>
       <div
         className={clsx(classes.touchArea)}
-        onClick={handleClickNext}
-        data-area="next"
+        onClick={handleClickPrev}
+        data-area="prev"
         role="button"
         tabIndex={-1}
       >
-        <h6>下 一 页</h6>
+        <h6>上 一 页</h6>
       </div>
     </div>
   );

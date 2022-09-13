@@ -35,7 +35,7 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
     },
     onePageMode: false,
     scrollMode: false,
-    clickPage: false,
+    clickPage: true,
 
     customBackground: undefined,
 
