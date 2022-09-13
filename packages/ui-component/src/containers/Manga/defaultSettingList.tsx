@@ -5,6 +5,7 @@ import {
   MdOutlineFormatTextdirectionRToL,
   MdOutlineFormatTextdirectionLToR,
 } from 'react-icons/md';
+import clsx from 'clsx';
 import { useStore } from './hooks/useStore';
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
@@ -69,13 +70,12 @@ export const defaultSettingsList: [string, React.FC][] = [
             value={enabled}
             onChange={handelEnable}
           />
-          {enabled ? (
-            <SettingsItemSwitch
-              name="自动隐藏滚动条"
-              value={autoHidden}
-              onChange={handelAutoHidden}
-            />
-          ) : undefined}
+          <SettingsItemSwitch
+            name="自动隐藏滚动条"
+            value={autoHidden}
+            className={clsx(enabled && classes.hidden)}
+            onChange={handelAutoHidden}
+          />
         </>
       );
     },
@@ -119,11 +119,13 @@ export const defaultSettingsList: [string, React.FC][] = [
           <SettingsItemSwitch
             name="左右反转点击区域"
             value={overturn}
+            className={clsx(!clickPage && classes.hidden)}
             onChange={handelOverturn}
           />
           <SettingsItemSwitch
             name="显示点击区域提示"
             value={showTouchArea}
+            className={clsx(!clickPage && classes.hidden)}
             onChange={handelShowTouchArea}
           />
         </>

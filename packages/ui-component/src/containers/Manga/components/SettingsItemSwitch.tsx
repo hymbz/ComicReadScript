@@ -6,6 +6,7 @@ import classes from '../index.module.css';
 export interface SettingsItemSwitchProps {
   name: string;
   value: boolean;
+  className?: string;
   onChange: (val: boolean) => void;
 }
 
@@ -17,6 +18,7 @@ export interface SettingsItemSwitchProps {
 export const SettingsItemSwitch: React.FC<SettingsItemSwitchProps> = ({
   name,
   value,
+  className,
   onChange,
 }) => {
   const handleClick = useCallback(() => {
@@ -24,7 +26,7 @@ export const SettingsItemSwitch: React.FC<SettingsItemSwitchProps> = ({
   }, [onChange, value]);
 
   return (
-    <SettingsItem name={name}>
+    <SettingsItem name={name} className={className}>
       <button
         className={classes.SettingsItemSwitch}
         type="button"
