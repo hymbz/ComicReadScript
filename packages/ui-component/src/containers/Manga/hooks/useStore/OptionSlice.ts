@@ -21,8 +21,10 @@ declare global {
     customBackground?: string;
     /** 禁止放大图片 */
     disableZoom: boolean;
-
+    /** 黑暗模式 */
     darkMode: boolean;
+    /** 向后预加载图片数 */
+    preloadImgNum: number;
   }
 }
 
@@ -47,11 +49,10 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
       overturn: false,
     },
     disableZoom: false,
-
     customBackground: undefined,
-
     // 判断用户系统环境是否要求开启暗色模式
     darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+    preloadImgNum: 10,
   },
 
   showTouchArea: false,

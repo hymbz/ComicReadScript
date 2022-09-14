@@ -44,7 +44,7 @@ export const handleComicData = ({
         imgCache = null;
       }
 
-      if (fillEffect.get(i) === undefined && imgInfo.imgData.type !== 'loading')
+      if (fillEffect.get(i) === undefined && imgInfo.loadType !== 'loading')
         fillEffect.set(i, false);
 
       comicImgInfo.push([imgInfo]);

@@ -1,19 +1,17 @@
 import type { Draft } from 'immer';
 import { debounce, throttle } from 'lodash';
+import type { SyntheticEvent } from 'react';
 import { handleComicData } from '../../handleComicData';
 
 declare global {
-  interface Img {
-    type: 'loading' | 'loaded' | 'error';
-    element: HTMLImageElement;
-    error?: ErrorEvent;
-  }
-
   type ComicImg = Draft<{
-    type: 'long' | 'wide' | 'vertical' | 'fill' | 'error' | 'loading' | '';
+    loadType: 'loading' | 'loaded' | 'error' | 'wait';
+    type: 'long' | 'wide' | 'vertical' | 'fill' | '';
     index: number | '填充';
     src: string;
-    imgData: Img;
+    width?: number;
+    height?: number;
+    error?: SyntheticEvent<HTMLImageElement, Event>;
   }>;
 
   /** 页面填充数据 */
@@ -41,9 +39,6 @@ export interface ImageSLice {
       (state: Draft<SelfState>): void;
       debounce: () => void;
     };
-
-    handleImgLoaded: (index: number) => () => void;
-    handleImgError: (index: number) => (e: ErrorEvent) => void;
 
     /** 根据比例更新图片类型 */
     updateImgType: (draftImg: Draft<ComicImg>) => void;
@@ -85,45 +80,17 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
 
       updateSlideData,
 
-      handleImgLoaded: (i: number) => () => {
-        set((state) => {
-          const draftImg = state.imgList[i];
-          draftImg.imgData.type = 'loaded';
-          state.img.updateImgType(draftImg);
-        });
-      },
-      handleImgError: (i: number) => (e: ErrorEvent) => {
-        set((state) => {
-          const draftImg = state.imgList[i];
-          state.imgList[i].type = 'error';
-          draftImg.imgData.type = 'error';
-          draftImg.imgData.error = e;
-        });
-      },
-
       initImg: (imgUrlList: string[], initFillEffect?: FillEffect) => {
         set((state) => {
           if (initFillEffect) state.fillEffect = initFillEffect;
-          const {
-            img: { handleImgError, handleImgLoaded },
-          } = get();
 
           imgUrlList.forEach((imgUrl, index) => {
-            const img = new Image();
             state.imgList[index] = {
               type: '',
               index,
               src: imgUrl,
-              imgData: {
-                type: 'loading',
-                element: img as Draft<HTMLImageElement>,
-              },
+              loadType: 'wait',
             };
-
-            img.addEventListener('error', handleImgError(index));
-            img.addEventListener('load', handleImgLoaded(index));
-
-            img.src = imgUrl;
           });
         });
       },
@@ -133,23 +100,19 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
           img: { 单页比例, 横幅比例, 条漫比例 },
           option: { scrollMode },
         } = get();
+        const { width, height, type } = draftImg;
 
-        const {
-          imgData: {
-            element: { width, height },
-          },
-          type,
-        } = draftImg;
+        if (width && height) {
+          let newType: ComicImg['type'] = '';
+          const imgRatio = width / height;
+          if (imgRatio <= 单页比例) {
+            if (imgRatio < 条漫比例) newType = 'vertical';
+          } else {
+            newType = imgRatio > 横幅比例 ? 'long' : 'wide';
+          }
 
-        let newType: ComicImg['type'] = '';
-        const imgRatio = width / height;
-        if (imgRatio <= 单页比例) {
-          if (imgRatio < 条漫比例) newType = 'vertical';
-        } else {
-          newType = imgRatio > 横幅比例 ? 'long' : 'wide';
+          if (newType !== type) draftImg.type = newType;
         }
-
-        if (newType !== type) draftImg.type = newType;
 
         if (!scrollMode) updateSlideData.debounce();
       },

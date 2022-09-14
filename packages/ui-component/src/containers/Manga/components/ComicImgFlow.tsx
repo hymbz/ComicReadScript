@@ -23,7 +23,7 @@ const selector = ({
 /**
  * 漫画图片流的容器
  */
-export const ImgFlow: React.FC<ImgFlowProps> = () => {
+export const ComicImgFlow: React.FC<ImgFlowProps> = () => {
   const { slideData, option } = useStore(selector, shallow);
 
   return (
@@ -39,8 +39,8 @@ export const ImgFlow: React.FC<ImgFlowProps> = () => {
           // 为了防止切换页面填充时 key 产生变化导致整个 dom 被重新创建，只能用 index 当 key
           // eslint-disable-next-line react/no-array-index-key
           <div key={i} className={classes.mangaFlowPage}>
-            <ComicImg src={a.src} index={`${a.index}`} type={a.type} />
-            {b && <ComicImg src={b.src} index={`${b.index}`} type={b.type} />}
+            <ComicImg img={a} />
+            {b && <ComicImg img={b} />}
           </div>
         ))}
       </div>

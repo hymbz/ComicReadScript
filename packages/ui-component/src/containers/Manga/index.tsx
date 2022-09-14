@@ -1,6 +1,6 @@
 import type { InitData } from './hooks/useInit';
 import { useInit } from './hooks/useInit';
-import { ImgFlow } from './components/ComicImgFlow';
+import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
 import { CssVar } from './components/CssVar';
 import { Scrollbar } from './components/Scrollbar';
@@ -44,7 +44,7 @@ export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
     >
       <CssVar />
       <Toolbar />
-      <ImgFlow imgUrlList={imgUrlList} initData={initData} />
+      <ComicImgFlow imgUrlList={imgUrlList} initData={initData} />
       <Scrollbar />
       <TouchArea />
     </div>
