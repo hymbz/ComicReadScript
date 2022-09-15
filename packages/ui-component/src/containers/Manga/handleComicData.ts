@@ -6,7 +6,6 @@ interface HandleComicDataProps {
 const fillPage = (img: ComicImg): ComicImg => ({
   ...img,
   type: 'fill',
-  index: '填充',
 });
 
 /**

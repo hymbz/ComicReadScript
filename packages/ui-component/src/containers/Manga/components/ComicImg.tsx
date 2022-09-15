@@ -30,7 +30,7 @@ export const ComicImg: React.FC<ComicImgProps> = ({ img }) => {
 
   const handleImgLoaded = useCallback(() => {
     useStore.setState((state) => {
-      if (typeof img.index !== 'number' || !imgRef.current) return;
+      if (!imgRef.current) return;
 
       const draftImg = state.imgList[img.index];
       draftImg.loadType = 'loaded';
@@ -43,8 +43,6 @@ export const ComicImg: React.FC<ComicImgProps> = ({ img }) => {
   const handleImgError = useCallback(
     (e: SyntheticEvent<HTMLImageElement, Event>) => {
       useStore.setState((state) => {
-        if (typeof img.index !== 'number') return;
-
         const draftImg = state.imgList[img.index];
         draftImg.loadType = 'error';
         draftImg.error = e as Draft<SyntheticEvent<HTMLImageElement, Event>>;
@@ -58,7 +56,6 @@ export const ComicImg: React.FC<ComicImgProps> = ({ img }) => {
     () =>
       // 已加载完成的图片正常显示
       img.loadType === 'loaded' ||
-      img.index === '填充' ||
       (img.index > activeImgIndex - preloadImgNum / 2 &&
         img.index < activeImgIndex + preloadImgNum)
         ? img.src
@@ -68,12 +65,10 @@ export const ComicImg: React.FC<ComicImgProps> = ({ img }) => {
 
   // 更新图片状态
   useEffect(() => {
-    if (img.index !== '填充')
-      useStore.setState((state) => {
-        if (img.index === '填充') return;
-        if (state.imgList[img.index].loadType !== 'loaded')
-          state.imgList[img.index].loadType = src ? 'loading' : 'wait';
-      });
+    useStore.setState((state) => {
+      if (state.imgList[img.index].loadType !== 'loaded')
+        state.imgList[img.index].loadType = src ? 'loading' : 'wait';
+    });
   }, [img.index, src]);
 
   return (

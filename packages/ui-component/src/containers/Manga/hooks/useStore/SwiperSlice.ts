@@ -113,7 +113,7 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
 
         // 在每次 activeIndexChange 时计算 activeImgIndex
         state.activeImgIndex = state.slideData[state.activeSlideIndex].find(
-          (img) => img.index !== '填充',
+          (img) => img.type !== 'fill',
         )!.index as number;
 
         // 找到当前所属的 fillEffect

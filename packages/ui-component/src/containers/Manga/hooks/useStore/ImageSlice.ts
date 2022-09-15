@@ -7,7 +7,7 @@ declare global {
   type ComicImg = Draft<{
     loadType: 'loading' | 'loaded' | 'error' | 'wait';
     type: 'long' | 'wide' | 'vertical' | 'fill' | '';
-    index: number | '填充';
+    index: number;
     src: string;
     width?: number;
     height?: number;

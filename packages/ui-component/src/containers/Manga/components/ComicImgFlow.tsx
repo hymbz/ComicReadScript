@@ -11,11 +11,7 @@ interface ImgFlowProps {
   initData?: InitData;
 }
 
-const selector = ({
-  //
-  slideData,
-  option,
-}: SelfState) => ({
+const selector = ({ slideData, option }: SelfState) => ({
   slideData,
   option,
 });
