@@ -29,11 +29,7 @@ declare global {
   /** 对 StateCreator 进行包装 */
   type SelfStateCreator<T> = StateCreator<
     SelfState,
-    [
-      // 持久化 store 数据
-      // ['zustand/persist', unknown],
-      ['zustand/immer', never],
-    ],
+    [['zustand/immer', never]],
     [],
     T
   >;
@@ -58,5 +54,4 @@ const store: SelfStateCreator<SelfState> = (...a) => ({
   handleKeyUp: () => {},
 });
 
-// : UseBoundStore<StoreApi<SelfState>>
 export const useStore = create<SelfState>()(immer(store));
