@@ -1,12 +1,8 @@
 import { memo } from 'react';
-import { shallow, useStore } from '../hooks/useStore';
-
-const selector = ({ cssVar }: SelfState) => ({
-  cssVar,
-});
+import { useStore } from '../hooks/useStore';
 
 export const CssVar: React.FC = memo(() => {
-  const { cssVar } = useStore(selector, shallow);
+  const cssVar = useStore((state) => state.cssVar);
 
   return (
     <style type="text/css">{`

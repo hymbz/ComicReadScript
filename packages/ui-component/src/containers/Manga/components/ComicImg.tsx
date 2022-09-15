@@ -6,14 +6,6 @@ import { useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
 
-const selector = ({
-  activeImgIndex,
-  option: { preloadImgNum },
-}: SelfState) => ({
-  activeImgIndex,
-  preloadImgNum,
-});
-
 /**
  * 漫画图片
  *
@@ -21,8 +13,6 @@ const selector = ({
  */
 export const ComicImg: React.FC<ComicImg> = memo(
   ({ index, loadType, src, type }) => {
-    const { activeImgIndex, preloadImgNum } = useStore(selector);
-
     const imgRef = useRef<HTMLImageElement>(null);
 
     const handleImgLoaded = useCallback(() => {
@@ -49,6 +39,8 @@ export const ComicImg: React.FC<ComicImg> = memo(
     );
 
     // 页数发生变动时，预加载当前页前后指定数量的图片，并取消加载其他加载中的图片
+    const activeImgIndex = useStore((state) => state.activeImgIndex);
+    const preloadImgNum = useStore((state) => state.option.preloadImgNum);
     const imgSrc = useMemo(
       () =>
         // 已加载完成的图片正常显示

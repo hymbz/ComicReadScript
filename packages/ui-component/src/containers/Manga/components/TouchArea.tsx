@@ -2,25 +2,27 @@ import { clsx } from 'clsx';
 import type { MouseEventHandler } from 'react';
 import { memo, useState, useEffect, useCallback } from 'react';
 import { useDoubleClick } from '../hooks/useDoubleClick';
-import { useStore } from '../hooks/useStore';
+import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
 
 const selector = ({
-  //
   showTouchArea,
   swiper,
   panzoom,
-  option,
+  option: { clickPage, scrollMode, dir },
 }: SelfState) => ({
   showTouchArea,
   swiper,
   panzoom,
-  option,
+  clickPage,
+  scrollMode,
+  dir,
 });
 
 export const TouchArea: React.FC = memo(() => {
-  const { showTouchArea, swiper, option, panzoom } = useStore(selector);
+  const { showTouchArea, swiper, panzoom, clickPage, scrollMode, dir } =
+    useStore(selector, shallow);
 
   /** 处理双击缩放 */
   const handleDoubleClickZoom: MouseEventHandler = useCallback(
@@ -39,10 +41,10 @@ export const TouchArea: React.FC = memo(() => {
   );
 
   const handleClickNext = useDoubleClick(() => {
-    if (option.clickPage.enabled) swiper?.slideNext(0);
+    if (clickPage.enabled) swiper?.slideNext(0);
   }, handleDoubleClickZoom);
   const handleClickPrev = useDoubleClick(() => {
-    if (option.clickPage.enabled) swiper?.slidePrev(0);
+    if (clickPage.enabled) swiper?.slidePrev(0);
   }, handleDoubleClickZoom);
   const handleClickMenu = useDoubleClick(() => {
     useStore.setState((draftState) => {
@@ -64,12 +66,10 @@ export const TouchArea: React.FC = memo(() => {
       className={classes.touchAreaRoot}
       style={{
         // 开启卷轴模式时隐藏自身
-        pointerEvents: penetrate || option.scrollMode ? 'none' : 'auto',
+        pointerEvents: penetrate || scrollMode ? 'none' : 'auto',
         // 左右方向默认和漫画方向相同，如果开启了左右翻转则翻转
         flexDirection:
-          (option.dir === 'rtl') === option.clickPage.overturn
-            ? 'row-reverse'
-            : undefined,
+          (dir === 'rtl') === clickPage.overturn ? 'row-reverse' : undefined,
       }}
       onContextMenu={setPenetrate}
       data-show={showTouchArea}

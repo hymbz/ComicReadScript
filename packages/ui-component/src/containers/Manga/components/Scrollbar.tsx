@@ -1,29 +1,29 @@
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
 import { useHover } from '../hooks/useHover';
-import { useStore } from '../hooks/useStore';
+import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
 
 const selector = ({
-  //
   swiper,
-  option,
+  option: { dir, scrollbar },
   slideData,
   activeSlideIndex,
   showScrollbar,
 }: SelfState) => ({
   swiper,
-  option,
   slideData,
   activeSlideIndex,
   showScrollbar,
+  dir,
+  scrollbar,
 });
 
 /** 滚动条 */
 export const Scrollbar: React.FC = memo(() => {
-  const { swiper, option, slideData, activeSlideIndex, showScrollbar } =
-    useStore(selector);
+  const { swiper, slideData, activeSlideIndex, showScrollbar, dir, scrollbar } =
+    useStore(selector, shallow);
 
   const [isHover, handleMouseEnter, handleMouseLeave] = useHover();
 
@@ -37,15 +37,15 @@ export const Scrollbar: React.FC = memo(() => {
       if (slide.loadType !== 'loaded') slideText += ` (${slide.loadType})`;
       return slideText;
     });
-    if (option.dir === 'rtl') slideIndex.reverse();
+    if (dir === 'rtl') slideIndex.reverse();
 
     return `${slideIndex.join(' | ')}`;
-  }, [slideData, activeSlideIndex, option]);
+  }, [slideData, activeSlideIndex, dir]);
 
   return (
     <div
       className={clsx(classes.scrollbar, {
-        [classes.hidden]: !option.scrollbar.enabled && !showScrollbar,
+        [classes.hidden]: !scrollbar.enabled && !showScrollbar,
       })}
       role="scrollbar"
       aria-controls="mange-main"
@@ -57,7 +57,7 @@ export const Scrollbar: React.FC = memo(() => {
       <div
         className={clsx(
           classes.scrollbarDrag,
-          isHover || !option.scrollbar.autoHidden || showScrollbar
+          isHover || !scrollbar.autoHidden || showScrollbar
             ? classes.opacity1
             : classes.opacity0,
         )}

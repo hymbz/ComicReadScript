@@ -7,21 +7,12 @@ import { Scrollbar } from './components/Scrollbar';
 import { TouchArea } from './components/TouchArea';
 
 import classes from './index.module.css';
-import { shallow, useStore } from './hooks/useStore';
+import { useStore } from './hooks/useStore';
 
 interface MangaProps {
   imgUrlList: string[];
   initData?: InitData;
 }
-
-const selector = ({
-  //
-  handleScroll,
-  handleKeyUp,
-}: SelfState) => ({
-  handleScroll,
-  handleKeyUp,
-});
 
 /**
  * APP 测试
@@ -30,7 +21,8 @@ const selector = ({
  * @param props.initData 初始化配置
  */
 export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
-  const { handleScroll, handleKeyUp } = useStore(selector, shallow);
+  const handleScroll = useStore((state) => state.handleScroll);
+  const handleKeyUp = useStore((state) => state.handleKeyUp);
 
   const rootRef = useInit(imgUrlList, initData);
 

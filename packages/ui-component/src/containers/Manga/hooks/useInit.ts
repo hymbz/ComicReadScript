@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { shallow, useStore } from './useStore';
 
 const selector = ({
-  //
   initSwiper,
   swiper,
   option: { scrollMode },
