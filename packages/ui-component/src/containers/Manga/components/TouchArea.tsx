@@ -1,6 +1,6 @@
 import { clsx } from 'clsx';
 import type { MouseEventHandler } from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { memo, useState, useEffect, useCallback } from 'react';
 import { useDoubleClick } from '../hooks/useDoubleClick';
 import { useStore } from '../hooks/useStore';
 
@@ -19,7 +19,7 @@ const selector = ({
   option,
 });
 
-export const TouchArea: React.FC = () => {
+export const TouchArea: React.FC = memo(() => {
   const { showTouchArea, swiper, option, panzoom } = useStore(selector);
 
   /** 处理双击缩放 */
@@ -103,4 +103,4 @@ export const TouchArea: React.FC = () => {
       </div>
     </div>
   );
-};
+});

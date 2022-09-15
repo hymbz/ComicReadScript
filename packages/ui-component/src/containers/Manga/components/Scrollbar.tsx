@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { useHover } from '../hooks/useHover';
 import { useStore } from '../hooks/useStore';
 
@@ -21,7 +21,7 @@ const selector = ({
 });
 
 /** 滚动条 */
-export const Scrollbar: React.FC = () => {
+export const Scrollbar: React.FC = memo(() => {
   const { swiper, option, slideData, activeSlideIndex, showScrollbar } =
     useStore(selector);
 
@@ -73,4 +73,4 @@ export const Scrollbar: React.FC = () => {
       </div>
     </div>
   );
-};
+});

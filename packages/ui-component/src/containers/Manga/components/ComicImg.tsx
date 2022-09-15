@@ -1,14 +1,10 @@
 import clsx from 'clsx';
 import type { Draft } from 'immer';
 import type { SyntheticEvent } from 'react';
-import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { memo, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
-
-export interface ComicImgProps {
-  img: ComicImg;
-}
 
 const selector = ({
   activeImgIndex,
@@ -23,63 +19,65 @@ const selector = ({
  *
  * @param img 图片数据
  */
-export const ComicImg: React.FC<ComicImgProps> = ({ img }) => {
-  const { activeImgIndex, preloadImgNum } = useStore(selector);
+export const ComicImg: React.FC<ComicImg> = memo(
+  ({ index, loadType, src, type }) => {
+    const { activeImgIndex, preloadImgNum } = useStore(selector);
 
-  const imgRef = useRef<HTMLImageElement>(null);
+    const imgRef = useRef<HTMLImageElement>(null);
 
-  const handleImgLoaded = useCallback(() => {
-    useStore.setState((state) => {
-      if (!imgRef.current) return;
-
-      const draftImg = state.imgList[img.index];
-      draftImg.loadType = 'loaded';
-      draftImg.height = imgRef.current.naturalHeight;
-      draftImg.width = imgRef.current.naturalWidth;
-      state.img.updateImgType(draftImg);
-    });
-  }, [img.index]);
-
-  const handleImgError = useCallback(
-    (e: SyntheticEvent<HTMLImageElement, Event>) => {
+    const handleImgLoaded = useCallback(() => {
       useStore.setState((state) => {
-        const draftImg = state.imgList[img.index];
-        draftImg.loadType = 'error';
-        draftImg.error = e as Draft<SyntheticEvent<HTMLImageElement, Event>>;
+        if (!imgRef.current) return;
+
+        const draftImg = state.imgList[index];
+        draftImg.loadType = 'loaded';
+        draftImg.height = imgRef.current.naturalHeight;
+        draftImg.width = imgRef.current.naturalWidth;
+        state.img.updateImgType(draftImg);
       });
-    },
-    [img.index],
-  );
+    }, [index]);
 
-  // 页数发生变动时，预加载当前页前后指定数量的图片，并取消加载其他加载中的图片
-  const src = useMemo(
-    () =>
-      // 已加载完成的图片正常显示
-      img.loadType === 'loaded' ||
-      (img.index > activeImgIndex - preloadImgNum / 2 &&
-        img.index < activeImgIndex + preloadImgNum)
-        ? img.src
-        : '',
-    [activeImgIndex, img.index, img.loadType, img.src, preloadImgNum],
-  );
+    const handleImgError = useCallback(
+      (e: SyntheticEvent<HTMLImageElement, Event>) => {
+        useStore.setState((state) => {
+          const draftImg = state.imgList[index];
+          draftImg.loadType = 'error';
+          draftImg.error = e as Draft<SyntheticEvent<HTMLImageElement, Event>>;
+        });
+      },
+      [index],
+    );
 
-  // 更新图片状态
-  useEffect(() => {
-    useStore.setState((state) => {
-      if (state.imgList[img.index].loadType !== 'loaded')
-        state.imgList[img.index].loadType = src ? 'loading' : 'wait';
-    });
-  }, [img.index, src]);
+    // 页数发生变动时，预加载当前页前后指定数量的图片，并取消加载其他加载中的图片
+    const imgSrc = useMemo(
+      () =>
+        // 已加载完成的图片正常显示
+        loadType === 'loaded' ||
+        (index > activeImgIndex - preloadImgNum / 2 &&
+          index < activeImgIndex + preloadImgNum)
+          ? src
+          : '',
+      [activeImgIndex, index, loadType, src, preloadImgNum],
+    );
 
-  return (
-    <img
-      ref={imgRef}
-      src={src}
-      data-type={img.loadType}
-      alt={`${img.index}`}
-      className={clsx(classes.img, classes[img.type])}
-      onLoad={handleImgLoaded}
-      onError={handleImgError}
-    />
-  );
-};
+    // 更新图片状态
+    useEffect(() => {
+      useStore.setState((state) => {
+        if (state.imgList[index].loadType !== 'loaded')
+          state.imgList[index].loadType = src ? 'loading' : 'wait';
+      });
+    }, [index, src]);
+
+    return (
+      <img
+        ref={imgRef}
+        src={imgSrc}
+        data-type={loadType}
+        alt={`${index}`}
+        className={clsx(classes.img, classes[type])}
+        onLoad={handleImgLoaded}
+        onError={handleImgError}
+      />
+    );
+  },
+);

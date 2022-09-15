@@ -1,12 +1,12 @@
 import clsx from 'clsx';
-import { Fragment } from 'react';
+import { Fragment, memo } from 'react';
 
 import { defaultSettingsList } from '../defaultSettingList';
 
 import classes from '../index.module.css';
 
 /** 菜单面板 */
-export const SettingPanel: React.FC = () => (
+export const SettingPanel: React.FC = memo(() => (
   <div
     className={clsx(
       classes.toolbarButtonPopper,
@@ -26,4 +26,4 @@ export const SettingPanel: React.FC = () => (
       ))}
     </div>
   </div>
-);
+));
