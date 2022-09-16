@@ -56,9 +56,9 @@ export const ComicImg: React.FC<ComicImg> = memo(
     useEffect(() => {
       useStore.setState((state) => {
         if (state.imgList[index].loadType !== 'loaded')
-          state.imgList[index].loadType = src ? 'loading' : 'wait';
+          state.imgList[index].loadType = imgSrc ? 'loading' : 'wait';
       });
-    }, [index, src]);
+    }, [index, imgSrc]);
 
     return (
       <img
