@@ -29,6 +29,7 @@ export const ComicImg: React.FC<ComicImg> = memo(
 
     const handleImgError = useCallback(
       (e: SyntheticEvent<HTMLImageElement, Event>) => {
+        // 跳过因为 src 为空导致的错误
         if ((e.target as HTMLImageElement).getAttribute('src') === '') return;
         useStore.setState((state) => {
           const draftImg = state.imgList[index];
