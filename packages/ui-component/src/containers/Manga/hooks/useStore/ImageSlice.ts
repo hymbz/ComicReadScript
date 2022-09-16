@@ -52,6 +52,7 @@ export interface ImageSLice {
 }
 
 export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
+  // FIXME: 好像没必要用 state 参数？
   const updateSlideData = (state: Draft<SelfState>) => {
     if (state.option.onePageMode)
       state.slideData = state.imgList.map((img) => [img]);

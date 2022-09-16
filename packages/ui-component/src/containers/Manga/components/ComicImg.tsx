@@ -29,6 +29,7 @@ export const ComicImg: React.FC<ComicImg> = memo(
 
     const handleImgError = useCallback(
       (e: SyntheticEvent<HTMLImageElement, Event>) => {
+        if ((e.target as HTMLImageElement).getAttribute('src') === '') return;
         useStore.setState((state) => {
           const draftImg = state.imgList[index];
           draftImg.loadType = 'error';
@@ -43,8 +44,8 @@ export const ComicImg: React.FC<ComicImg> = memo(
     const preloadImgNum = useStore((state) => state.option.preloadImgNum);
     const imgSrc = useMemo(
       () =>
-        // 已加载完成的图片正常显示
         loadType === 'loaded' ||
+        loadType === 'loading' ||
         (index > activeImgIndex - preloadImgNum / 2 &&
           index < activeImgIndex + preloadImgNum)
           ? src
