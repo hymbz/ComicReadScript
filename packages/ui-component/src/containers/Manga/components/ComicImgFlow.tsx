@@ -39,8 +39,8 @@ export const ComicImgFlow: React.FC<ImgFlowProps> = memo(() => {
             key={i}
             className={classes.mangaFlowPage}
           >
-            <ComicImg {...a} />
-            {b && <ComicImg {...b} />}
+            <ComicImg index={a.index} type={a.type} src={a.src} />
+            {b && <ComicImg index={b.index} type={b.type} src={b.src} />}
           </div>
         ))}
       </div>

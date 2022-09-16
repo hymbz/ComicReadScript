@@ -39,7 +39,7 @@ export const defaultButtonList: [
 
           const { activeImgIndex } = draftState;
 
-          draftState.img.updateSlideData(draftState);
+          draftState.img.updateSlideData();
 
           newSlideIndex = draftState.option.onePageMode
             ? activeImgIndex
@@ -74,7 +74,7 @@ export const defaultButtonList: [
           draftState.option.scrollMode = !draftState.option.scrollMode;
           draftState.option.onePageMode = draftState.option.scrollMode;
 
-          draftState.img.updateSlideData(draftState);
+          draftState.img.updateSlideData();
 
           const [swiper, panzoom] = draftState.initSwiper({
             // 启用自由模式
