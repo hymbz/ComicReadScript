@@ -32,9 +32,9 @@
 
   background-color: var(--backgroundColor);
 
-  /* TODO: 测试这样是否能达到禁用图片放大的效果 */
   &.disableZoom .img {
     height: unset;
+    max-height: 100%;
   }
 }
 
