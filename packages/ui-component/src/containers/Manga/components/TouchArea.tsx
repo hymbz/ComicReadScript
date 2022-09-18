@@ -33,8 +33,8 @@ export const TouchArea: React.FC = memo(() => {
 
       setTimeout(() => {
         // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
-        if (scale > 4) panzoom.smoothZoomAbs(e.clientX, e.clientY, 1);
-        else panzoom.smoothZoomAbs(e.clientX, e.clientY, scale + 2);
+        if (scale > 2) panzoom.smoothZoomAbs(e.clientX, e.clientY, 1);
+        else panzoom.smoothZoomAbs(e.clientX, e.clientY, scale + 1);
       });
     },
     [panzoom],
