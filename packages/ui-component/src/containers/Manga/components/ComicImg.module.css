@@ -8,9 +8,6 @@
 
   vertical-align: middle;
 
-  /* TODO: 应该可以让缩放后的图片更清晰，但这个值 chrome 会报错 */
-  image-rendering: optimize-contrast;
-
   /* 填充页 */
   &.fill {
     visibility: hidden;
