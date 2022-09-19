@@ -1,7 +1,3 @@
-import Color from 'color';
-
-// TODO: Color 这个依赖可能可以删掉？
-
 declare global {
   interface StateStyles {
     color: string;
@@ -29,11 +25,6 @@ declare global {
 }
 
 export interface StylesSlice {
-  styles: {
-    normal: StateStyles;
-    invert: StateStyles;
-  };
-
   /** 全局 css 变量 */
   cssVar: CssVar;
 
@@ -71,40 +62,9 @@ const light: CssVar = {
   enableButtonHoverBgColor: '#fffb',
 };
 
-export const stylesSlice: SelfStateCreator<StylesSlice> = (set, get) => {
-  // TODO: 改为使用 css 变量进行控制
-  const white: StateStyles = {
-    color: '#FFFFFF',
-    backgroundColor: '#000000',
-  };
-  const black: StateStyles = {
-    color: '#000000',
-    backgroundColor: '#FFFFFF',
-  };
-  const custom = (): StateStyles => {
-    const bgcolor = get().option.customBackground!;
-    return {
-      color: Color(bgcolor).isDark() ? white.color : black.color,
-      backgroundColor: bgcolor,
-    };
-  };
+export const stylesSlice: SelfStateCreator<StylesSlice> = () => ({
+  cssVar: dark,
 
-  return {
-    styles: {
-      get normal() {
-        const { customBackground, darkMode } = get().option;
-        if (customBackground) return custom();
-        return darkMode ? white : black;
-      },
-      get invert() {
-        const { customBackground, darkMode } = get().option;
-        if (customBackground) return custom();
-        return darkMode ? black : white;
-      },
-    },
-    cssVar: dark,
-
-    showToolbar: false,
-    showScrollbar: false,
-  };
-};
+  showToolbar: false,
+  showScrollbar: false,
+});

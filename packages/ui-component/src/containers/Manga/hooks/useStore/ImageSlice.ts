@@ -1,5 +1,5 @@
 import type { Draft } from 'immer';
-import { debounce, throttle } from 'lodash';
+import { throttle, debounce } from 'throttle-debounce';
 import type { SyntheticEvent } from 'react';
 import { handleComicData } from '../../handleComicData';
 
@@ -61,7 +61,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
     横幅比例: 0,
     条漫比例: 0,
 
-    updateSlideData: debounce(() => {
+    updateSlideData: debounce(100, () => {
       set((state) => {
         if (state.option.onePageMode)
           state.slideData = state.imgList.map((img) => [img]);
@@ -78,7 +78,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
         if (!preloadImg) return;
         preloadImg.loadType = 'loading';
       });
-    }, 100),
+    }),
 
     initImg: (imgUrlList: string[], initFillEffect?: FillEffect) => {
       set((state) => {
@@ -119,7 +119,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
 
     // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
     resizeObserver: new ResizeObserver(
-      throttle(([entries]) => {
+      throttle(100, ([entries]) => {
         const { width, height } = entries.contentRect;
         set((state) => {
           state.img.单页比例 = width / 2 / height;

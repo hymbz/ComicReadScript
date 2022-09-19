@@ -22,7 +22,7 @@ const buildConfig = (config: RollupOptions): RollupOptions => ({
     dir: 'dist',
     generatedCode: 'es2015',
   },
-  external: [...Object.keys(meta.resource ?? {}), /node_modules/],
+  external: [...Object.keys(meta.resource ?? {})],
 
   ...config,
 });

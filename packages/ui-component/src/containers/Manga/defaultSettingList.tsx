@@ -1,4 +1,4 @@
-import { throttle } from 'lodash';
+import { throttle } from 'throttle-debounce';
 import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
 import {
@@ -141,18 +141,13 @@ export const defaultSettingsList: [string, React.FC][] = [
           draftState.option.darkMode = !draftState.option.darkMode;
         });
       }, []);
-
-      const backgroundColor = useStore(
-        (state) =>
-          state.option.customBackground || state.styles.normal.backgroundColor,
-      );
       // eslint-disable-next-line react-hooks/exhaustive-deps
       const handelBgColor = useCallback(
-        throttle((event: ChangeEvent<HTMLInputElement>) => {
+        throttle(100, (event: ChangeEvent<HTMLInputElement>) => {
           useStore.setState((draftState) => {
             draftState.option.customBackground = event.target.value;
           });
-        }, 100),
+        }),
         [],
       );
 
@@ -180,7 +175,8 @@ export const defaultSettingsList: [string, React.FC][] = [
           <SettingsItem name="背景颜色">
             <input
               type="color"
-              value={backgroundColor}
+              // TODO: 待实现
+              // value={backgroundColor}
               onChange={handelBgColor}
               style={{ width: '2em', marginRight: '.4em' }}
             />
