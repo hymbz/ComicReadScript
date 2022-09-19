@@ -33,27 +33,37 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
     const {
       swiper,
       img: { switchFillEffect },
-      // option: { dir },
+      option: { dir },
     } = get();
 
     if (swiper === undefined) return;
 
+    let i: -1 | 0 | 1 = 0;
+
     switch (e.key) {
       case 'PageUp':
       case 'ArrowUp':
-      case 'ArrowRight':
       case '.':
       case 'w':
-        swiper.slidePrev(0);
+        i = -1;
         break;
 
       case ' ':
       case 'PageDown':
       case 'ArrowDown':
-      case 'ArrowLeft':
       case ',':
       case 's':
-        swiper.slideNext(0);
+        i = 1;
+        break;
+
+      case 'ArrowRight':
+      case 'd':
+        i = dir === 'rtl' ? -1 : 1;
+        break;
+
+      case 'ArrowLeft':
+      case 'a':
+        i = dir === 'rtl' ? 1 : -1;
         break;
 
       case '/':
@@ -64,5 +74,8 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       default:
         break;
     }
+
+    if (i === 1) swiper.slideNext(0);
+    else if (i === -1) swiper.slidePrev(0);
   },
 });
