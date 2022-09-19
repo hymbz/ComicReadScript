@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": "true",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "esmo ./rollup.config.ts",
     "build": "shx rm -rf ./dist/* && rollup --config --configPlugin rollup-plugin-esbuild",

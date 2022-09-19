@@ -8,7 +8,6 @@
       "ESNext"
     ],
     "declaration": true,
-    "composite": true,
     "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": false,

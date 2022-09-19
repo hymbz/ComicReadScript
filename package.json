@@ -24,6 +24,7 @@
     "eslint-plugin-react": "^7.31.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "^2.7.1",
+    "rollup-plugin-userscript-metablock": "^0.3.1",
     "stylelint": "^14.11.0",
     "stylelint-config-clean-order": "^0.9.0",
     "stylelint-config-prettier": "^9.0.3",

@@ -1,0 +1,24 @@
+{
+  "include": "*",
+  "connect": "*",
+  "noframes": true,
+  "grant": [
+    "GM_addElement",
+    "GM_getResourceText",
+    "GM.xmlHttpRequest",
+    "GM.getResourceText",
+    "GM.addStyle",
+    "unsafeWindow"
+  ],
+  "resource": {
+    "react": "https://unpkg.com/react@18/umd/react.development.js",
+    "react-dom": "https://unpkg.com/react-dom@18/umd/react-dom.development.js",
+    "react/jsx-runtime": "https://unpkg.com/react@18.0.0/cjs/react-jsx-runtime.production.min.js",
+    "zustand": "https://unpkg.com/zustand@4.0.0-rc.0/umd/index.development.js",
+    "zustand/vanilla": "https://unpkg.com/zustand@4.0.0-rc.0/umd/vanilla.development.js",
+    "use-sync-external-store/shim/with-selector": "https://unpkg.com/use-sync-external-store@1.0.0/cjs/use-sync-external-store-with-selector.development.js",
+    "immer": "https://unpkg.com/immer@9.0.12/dist/immer.umd.development.js",
+    "react-shadow": "https://unpkg.com/react-shadow@19.0.3/react-shadow.js",
+    "prop-types": "https://unpkg.com/prop-types@15.8.1/prop-types.min.js"
+  }
+}
