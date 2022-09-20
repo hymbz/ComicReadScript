@@ -8,6 +8,9 @@
     "GM.xmlHttpRequest",
     "GM.getResourceText",
     "GM.addStyle",
+    "GM.getValue",
+    "GM.setValue",
+    "GM.registerMenuCommand",
     "unsafeWindow"
   ],
   "resource": {
@@ -20,7 +23,7 @@
     "immer": "https://unpkg.com/immer@9.0.12/dist/immer.umd.development.js",
     "react-shadow": "https://unpkg.com/react-shadow@19.0.3/react-shadow.js",
     "prop-types": "https://unpkg.com/prop-types@15.8.1/prop-types.min.js",
-    "panzoom": "https://unpkg.com/panzoom@9.4.3/index.js",
+    "panzoom": "https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js",
     "swiper": "https://unpkg.com/swiper@8.4.2/swiper-bundle.min.js"
   }
 }

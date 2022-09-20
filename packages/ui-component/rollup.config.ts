@@ -18,7 +18,6 @@ const buildConfig = (config: RollupOptions): RollupOptions => ({
     ts(),
   ],
   output: {
-    format: 'cjs',
     dir: 'dist',
     generatedCode: 'es2015',
   },

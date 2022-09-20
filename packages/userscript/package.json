@@ -5,8 +5,8 @@
   "description": "",
   "scripts": {
     "test": "esmo ./rollup.config.ts",
-    "build": "shx rm -rf ./dist/* && rollup --config --configPlugin rollup-plugin-esbuild",
-    "watch": "rollup --config --watch --environment NODE_ENV:development --configPlugin rollup-plugin-esbuild"
+    "build": "shx rm -rf ./dist/* && rollup --config --configPlugin rollup-plugin-ts",
+    "watch": "rollup --config --watch --environment NODE_ENV:development --configPlugin rollup-plugin-ts"
   },
   "author": "hymbz",
   "license": "AGPL-3.0-or-later",
