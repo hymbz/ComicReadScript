@@ -1,16 +1,10 @@
 import clsx from 'clsx';
 import { memo } from 'react';
-import type { InitData } from '../hooks/useInit';
 
 import { useStore, shallow } from '../hooks/useStore';
 import { ComicImg } from './ComicImg';
 
 import classes from '../index.module.css';
-
-interface ImgFlowProps {
-  imgUrlList: string[];
-  initData?: InitData;
-}
 
 const selector = ({ slideData, option: { disableZoom, dir } }: SelfState) => ({
   slideData,
@@ -21,7 +15,7 @@ const selector = ({ slideData, option: { disableZoom, dir } }: SelfState) => ({
 /**
  * 漫画图片流的容器
  */
-export const ComicImgFlow: React.FC<ImgFlowProps> = memo(() => {
+export const ComicImgFlow: React.FC = memo(() => {
   const { slideData, disableZoom, dir } = useStore(selector, shallow);
 
   return (

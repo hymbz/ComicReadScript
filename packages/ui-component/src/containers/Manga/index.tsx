@@ -1,4 +1,4 @@
-import type { InitData } from './hooks/useInit';
+import type { MangaProps } from './hooks/useInit';
 import { useInit } from './hooks/useInit';
 import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
@@ -8,11 +8,6 @@ import { TouchArea } from './components/TouchArea';
 
 import classes from './index.module.css';
 import { useStore } from './hooks/useStore';
-
-interface MangaProps {
-  imgUrlList: string[];
-  initData?: InitData;
-}
 
 /**
  * APP 测试
@@ -36,7 +31,7 @@ export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
     >
       <CssVar />
       <Toolbar />
-      <ComicImgFlow imgUrlList={imgUrlList} initData={initData} />
+      <ComicImgFlow />
       <Scrollbar />
       <TouchArea />
     </div>

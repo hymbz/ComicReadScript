@@ -8,10 +8,17 @@ const selector = ({ initSwiper, img: { resizeObserver } }: SelfState) => ({
   resizeObserver,
 });
 
-export type InitData = {
+export interface InitData {
   fillEffect?: FillEffect;
   option?: Partial<Option>;
-};
+}
+
+export interface MangaProps {
+  /** 图片url列表 */
+  imgUrlList: string[];
+  /** 初始化配置 */
+  initData?: InitData;
+}
 
 /**
  * 初始化
