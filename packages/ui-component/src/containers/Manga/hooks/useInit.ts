@@ -3,11 +3,7 @@ import { useEffect, useRef } from 'react';
 
 import { shallow, useStore } from './useStore';
 
-const selector = ({
-  initSwiper,
-  img: { initImg, resizeObserver },
-}: SelfState) => ({
-  initImg,
+const selector = ({ initSwiper, img: { resizeObserver } }: SelfState) => ({
   initSwiper,
   resizeObserver,
 });
@@ -24,7 +20,7 @@ export type InitData = {
  * @param initData 初始化选项
  */
 export const useInit = (imgUrlList: string[], initData?: InitData) => {
-  const { initImg, initSwiper, resizeObserver } = useStore(selector, shallow);
+  const { initSwiper, resizeObserver } = useStore(selector, shallow);
 
   // 初始化 swiper、panzoom
   const rootRef = useRef<HTMLDivElement>(null);
@@ -47,10 +43,21 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
     }
   }, [initData?.option, initSwiper, resizeObserver]);
 
-  // 初始化图片相关
+  // 初始化图片
   useEffect(() => {
-    initImg(imgUrlList, initData?.fillEffect);
-  }, [imgUrlList, initData?.fillEffect, initImg]);
+    useStore.setState((state) => {
+      if (initData?.fillEffect) state.fillEffect = initData?.fillEffect;
+
+      imgUrlList.forEach((imgUrl, index) => {
+        state.imgList[index] = {
+          type: '',
+          index,
+          src: imgUrl,
+          loadType: 'wait',
+        };
+      });
+    });
+  }, [imgUrlList, initData?.fillEffect]);
 
   return rootRef;
 };

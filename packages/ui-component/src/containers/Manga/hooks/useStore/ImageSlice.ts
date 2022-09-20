@@ -34,7 +34,6 @@ export interface ImageSLice {
     横幅比例: number;
     条漫比例: number;
 
-    initImg: (imgUrlList: string[], initFillEffect?: FillEffect) => void;
     updateSlideData: () => void;
 
     /** 根据比例更新图片类型 */
@@ -79,21 +78,6 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
         preloadImg.loadType = 'loading';
       });
     }),
-
-    initImg: (imgUrlList: string[], initFillEffect?: FillEffect) => {
-      set((state) => {
-        if (initFillEffect) state.fillEffect = initFillEffect;
-
-        imgUrlList.forEach((imgUrl, index) => {
-          state.imgList[index] = {
-            type: '',
-            index,
-            src: imgUrl,
-            loadType: 'wait',
-          };
-        });
-      });
-    },
 
     updateImgType: (draftImg: Draft<ComicImg>) => {
       const {
