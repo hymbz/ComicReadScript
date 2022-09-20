@@ -48,5 +48,8 @@ const imgUrlList = [
 ];
 
 export default function DisplayManga() {
+  // const editButtonList: MangaProps['editButtonList'] = (list) =>
+  //   list.slice(0, 1);
+
   return <Manga imgUrlList={imgUrlList} />;
 }

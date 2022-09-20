@@ -11,12 +11,13 @@ export const Toolbar: React.FC = () => {
   const showToolbar = useStore((state) => state.showToolbar);
   const [isHover, handleMouseEnter, handleMouseLeave] = useHover();
 
+  const editButtonList = useStore((state) => state.editButtonList);
   const buttonList = useMemo(
     () =>
-      defaultButtonList.map(([key, ButtonItem]) => (
+      editButtonList(defaultButtonList).map(([key, ButtonItem]) => (
         <ButtonItem key={key} onMouseLeave={handleMouseLeave} />
       )),
-    [handleMouseLeave],
+    [editButtonList, handleMouseLeave],
   );
 
   return (

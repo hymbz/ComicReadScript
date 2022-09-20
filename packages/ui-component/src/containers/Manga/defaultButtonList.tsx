@@ -16,13 +16,15 @@ interface DefaultSettingsButtonProps {
   onMouseLeave: () => void;
 }
 
+export type DefaultButtonList = [
+  string,
+  React.FC<DefaultSettingsButtonProps>,
+][];
+
 // FIXME: ESlint 莫名把这列表当成了 jsdoc，等之后更新修复再删除这个注释
 // eslint-disable-next-line jsdoc/require-param
 /** 工具栏的默认按钮列表 */
-export const defaultButtonList: [
-  string,
-  React.FC<DefaultSettingsButtonProps>,
-][] = [
+export const defaultButtonList: DefaultButtonList = [
   [
     '单页模式',
     () => {

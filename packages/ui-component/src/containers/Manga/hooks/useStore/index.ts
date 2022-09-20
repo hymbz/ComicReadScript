@@ -15,6 +15,8 @@ import type { SwiperSlice } from './SwiperSlice';
 import { swiperSlice } from './SwiperSlice';
 import type { OperateSlice } from './OperateSlice';
 import { operateSlice } from './OperateSlice';
+import type { OtherSlice } from './OtherSlice';
+import { otherSlice } from './OtherSlice';
 
 export { default as shallow } from 'zustand/shallow';
 
@@ -26,7 +28,8 @@ interface SliceState
     StylesSlice,
     ImageSLice,
     SwiperSlice,
-    OperateSlice {}
+    OperateSlice,
+    OtherSlice {}
 
 declare global {
   /** 对 StateCreator 进行包装 */
@@ -52,6 +55,7 @@ const store: SelfStateCreator<SelfState> = (...a) => ({
   ...imageSlice(...a),
   ...swiperSlice(...a),
   ...operateSlice(...a),
+  ...otherSlice(...a),
 
   rootRef: null,
 });

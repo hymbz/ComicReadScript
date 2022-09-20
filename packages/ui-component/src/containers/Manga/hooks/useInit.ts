@@ -1,5 +1,6 @@
 import type { Draft } from 'immer/dist/internal';
 import { useEffect, useRef } from 'react';
+import type { MangaProps } from '..';
 
 import { shallow, useStore } from './useStore';
 
@@ -13,20 +14,17 @@ export interface InitData {
   option?: Partial<Option>;
 }
 
-export interface MangaProps {
-  /** 图片url列表 */
-  imgUrlList: string[];
-  /** 初始化配置 */
-  initData?: InitData;
-}
-
 /**
  * 初始化
  *
- * @param imgUrlList 图片列表
- * @param initData 初始化选项
+ * @param props
  */
-export const useInit = (imgUrlList: string[], initData?: InitData) => {
+export const useInit = ({
+  imgUrlList,
+  initData,
+  editButtonList,
+  editSettingList,
+}: MangaProps) => {
   const { initSwiper, resizeObserver } = useStore(selector, shallow);
 
   // 初始化 swiper、panzoom
@@ -65,6 +63,20 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
       });
     });
   }, [imgUrlList, initData?.fillEffect]);
+
+  // 初始化 editButtonList 和 editSettingList
+  useEffect(() => {
+    if (editButtonList)
+      useStore.setState((state) => {
+        state.editButtonList = editButtonList;
+      });
+  }, [editButtonList]);
+  useEffect(() => {
+    if (editSettingList)
+      useStore.setState((state) => {
+        state.editSettingList = editSettingList;
+      });
+  }, [editSettingList]);
 
   return rootRef;
 };
