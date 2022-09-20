@@ -27,12 +27,12 @@ export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
   const rootRef = useInit(imgUrlList, initData);
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       className={classes.root}
       ref={rootRef}
       onWheel={handleScroll}
       onKeyUp={handleKeyUp}
+      role="presentation"
     >
       <CssVar />
       <Toolbar />
