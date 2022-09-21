@@ -11,8 +11,8 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
     const {
       swiper,
       option: { scrollMode },
+      pageTurn,
     } = get();
-
     if (swiper === undefined) return;
 
     if (!scrollMode) {
@@ -23,29 +23,27 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
           if (swiper.allowTouchMove) scrollLock = null;
         }, 500);
       } else if (!event.altKey && !scrollLock) {
-        if (event.deltaY > 0) swiper.slideNext(0);
-        else swiper.slidePrev(0);
+        if (event.deltaY > 0) pageTurn(true);
+        else pageTurn(false);
       }
     }
   },
 
   handleKeyUp: (e) => {
     const {
-      swiper,
+      pageTurn,
       img: { switchFillEffect },
       option: { dir },
     } = get();
 
-    if (swiper === undefined) return;
-
-    let i: -1 | 0 | 1 = 0;
+    let i: boolean | null = null;
 
     switch (e.key) {
       case 'PageUp':
       case 'ArrowUp':
       case '.':
       case 'w':
-        i = -1;
+        i = true;
         break;
 
       case ' ':
@@ -53,17 +51,17 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       case 'ArrowDown':
       case ',':
       case 's':
-        i = 1;
+        i = false;
         break;
 
       case 'ArrowRight':
       case 'd':
-        i = dir === 'rtl' ? -1 : 1;
+        i = dir !== 'rtl';
         break;
 
       case 'ArrowLeft':
       case 'a':
-        i = dir === 'rtl' ? 1 : -1;
+        i = dir === 'rtl';
         break;
 
       case '/':
@@ -75,7 +73,7 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
         break;
     }
 
-    if (i === 1) swiper.slideNext(0);
-    else if (i === -1) swiper.slidePrev(0);
+    if (i === null) return;
+    pageTurn(i);
   },
 });

@@ -5,6 +5,7 @@ import { useStore, shallow } from '../hooks/useStore';
 import { ComicImg } from './ComicImg';
 
 import classes from '../index.module.css';
+import { EndPage } from './EndPage';
 
 const selector = ({ slideData, option: { disableZoom, dir } }: SelfState) => ({
   slideData,
@@ -38,6 +39,7 @@ export const ComicImgFlow: React.FC = memo(() => {
           </div>
         ))}
       </div>
+      <EndPage />
     </div>
   );
 });

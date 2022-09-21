@@ -48,3 +48,29 @@
 .wrapper {
   /* swiper 必须要有一个包装 slide 的容器，为了 className 的风格统一在这放个空选择器 */
 }
+
+.endPage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateY(100%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  font-size: 3em;
+  color: white;
+
+  opacity: 0.7;
+  backdrop-filter: blur(1px);
+
+  transition: transform 200ms;
+
+  &[data-show="true"] {
+    transform: translateY(0);
+  }
+}

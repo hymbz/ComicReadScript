@@ -32,6 +32,8 @@ export interface StylesSlice {
   showToolbar: boolean;
   /** 是否强制显示滚动条 */
   showScrollbar: boolean;
+  /** 是否显示结束页 */
+  showEndPage: boolean;
 
   [key: string]: unknown;
 }
@@ -67,4 +69,5 @@ export const stylesSlice: SelfStateCreator<StylesSlice> = () => ({
 
   showToolbar: false,
   showScrollbar: false,
+  showEndPage: false,
 });
