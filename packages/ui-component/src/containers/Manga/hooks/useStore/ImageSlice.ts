@@ -14,11 +14,11 @@ declare global {
     error?: SyntheticEvent<HTMLImageElement, Event>;
   }>;
 
-  /** 页面填充数据 */
-  type FillEffect = Map<number, boolean>;
-
   type SlideData = Array<[ComicImg] | [ComicImg, ComicImg]>;
 }
+
+/** 页面填充数据 */
+export type FillEffect = Map<number, boolean>;
 
 export interface ImageSLice {
   imgList: ComicImg[];

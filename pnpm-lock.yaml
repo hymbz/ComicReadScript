@@ -183,6 +183,7 @@ importers:
       esbuild: ^0.14.36
       react: ^18.0.0
       react-dom: ^18.0.0
+      react-icons: ^4.4.0
       react-shadow: ^19.0.3
       rollup: ^2.70.2
       rollup-plugin-esbuild: ^4.9.1
@@ -200,6 +201,7 @@ importers:
       core-js: 3.24.1
       react: 18.1.0
       react-dom: 18.1.0_react@18.1.0
+      react-icons: 4.4.0_react@18.1.0
       react-shadow: 19.0.3_ef5jwxihqo6n7gxfmzogljlgcm
     devDependencies:
       '@babel/core': 7.18.2
@@ -6370,6 +6372,14 @@ packages:
       loose-envify: 1.4.0
       react: 18.2.0
       scheduler: 0.23.0
+
+  /react-icons/4.4.0_react@18.1.0:
+    resolution: {integrity: sha512-fSbvHeVYo/B5/L4VhB7sBA1i2tS8MkT0Hb9t2H1AVPkwGfVHLJCqyr2Py9dKMxsyM63Eng1GkdZfbWj+Fmv8Rg==}
+    peerDependencies:
+      react: '*'
+    dependencies:
+      react: 18.1.0
+    dev: false
 
   /react-icons/4.4.0_react@18.2.0:
     resolution: {integrity: sha512-fSbvHeVYo/B5/L4VhB7sBA1i2tS8MkT0Hb9t2H1AVPkwGfVHLJCqyr2Py9dKMxsyM63Eng1GkdZfbWj+Fmv8Rg==}

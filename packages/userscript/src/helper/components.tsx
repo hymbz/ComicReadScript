@@ -1,6 +1,8 @@
-import { Manga } from '@crs/ui-component/dist/Manga';
+import type { MangaProps } from '@crs/ui-component/dist/Manga';
+import { Manga, ToolbarButton } from '@crs/ui-component/dist/Manga';
 import MangaStyle from '@crs/ui-component/dist/Manga.css';
 import ReactDOM from 'react-dom/client';
+import { MdClose } from 'react-icons/md';
 import shadow from 'react-shadow';
 import { querySelector } from '.';
 
@@ -19,8 +21,21 @@ export const showComicReadWindow = (imgUrlList: string[]) => {
     document.body.appendChild(dom);
   }
 
-  const root = ReactDOM.createRoot(dom);
+  const editButtonList: MangaProps['editButtonList'] = (list) => [
+    ...list,
+    [
+      '退出',
+      () => {
+        return (
+          <ToolbarButton buttonKey="退出">
+            <MdClose />
+          </ToolbarButton>
+        );
+      },
+    ],
+  ];
 
+  const root = ReactDOM.createRoot(dom);
   root.render(
     <shadow.div
       style={{
@@ -32,7 +47,7 @@ export const showComicReadWindow = (imgUrlList: string[]) => {
         zIndex: 99999,
       }}
     >
-      <Manga imgUrlList={imgUrlList} />
+      <Manga imgUrlList={imgUrlList} editButtonList={editButtonList} />
       <style type="text/css">{MangaStyle}</style>
     </shadow.div>,
   );

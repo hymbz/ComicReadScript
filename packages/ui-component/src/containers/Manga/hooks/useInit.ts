@@ -3,6 +3,8 @@ import { useEffect, useRef } from 'react';
 import type { MangaProps } from '..';
 
 import { shallow, useStore } from './useStore';
+import type { FillEffect } from './useStore/ImageSlice';
+import type { Option } from './useStore/OptionSlice';
 
 const selector = ({ initSwiper, img: { resizeObserver } }: SelfState) => ({
   initSwiper,

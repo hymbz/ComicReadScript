@@ -8,6 +8,9 @@ import { TouchArea } from './components/TouchArea';
 
 import classes from './index.module.css';
 import { useStore } from './hooks/useStore';
+import type { OtherSlice } from './hooks/useStore/OtherSlice';
+
+export { ToolbarButton } from './components/ToolbarButton';
 
 export interface MangaProps {
   /** 图片url列表 */
@@ -15,9 +18,9 @@ export interface MangaProps {
   /** 初始化配置 */
   initData?: InitData;
   /** 修改默认侧边栏按钮列表 */
-  editButtonList?: SelfState['editButtonList'];
+  editButtonList?: OtherSlice['editButtonList'];
   /** 修改默认设置项列表 */
-  editSettingList?: SelfState['editSettingList'];
+  editSettingList?: OtherSlice['editSettingList'];
 }
 
 /**

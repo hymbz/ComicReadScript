@@ -18,6 +18,7 @@
     "core-js": "^3.22.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
+    "react-icons": "^4.4.0",
     "react-shadow": "^19.0.3"
   },
   "devDependencies": {

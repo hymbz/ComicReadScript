@@ -14,7 +14,7 @@ const buildConfig = (config: RollupOptions): RollupOptions => ({
     commonjs(),
     postcss({
       extract: true,
-    }),
+    }) as any,
     ts(),
   ],
   output: {
