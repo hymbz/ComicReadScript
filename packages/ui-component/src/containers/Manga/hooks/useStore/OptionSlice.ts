@@ -27,7 +27,11 @@ export interface Option {
   /** 在空闲时间自动加载其余图片 */
   autoLoadOtherImg: boolean;
   /** 点击结束页按钮时触发的回调 */
-  endFunc: () => void;
+  onEnd?: () => void;
+  /** 点击上一话按钮时触发的回调 */
+  onPrev?: () => void;
+  /** 点击下一话按钮时触发的回调 */
+  onNext?: () => void;
 }
 
 export interface OptionSlice {
@@ -51,12 +55,10 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
       overturn: false,
     },
     disableZoom: false,
-    customBackground: undefined,
     // 判断用户系统环境是否要求开启暗色模式
     darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
     preloadImgNum: 10,
     autoLoadOtherImg: true,
-    endFunc: () => {},
   },
 
   showTouchArea: false,

@@ -63,7 +63,6 @@
   width: 100%;
   height: 100%;
 
-  font-size: 3em;
   color: white;
 
   opacity: 0.7;
@@ -74,13 +73,25 @@
   & > button {
     cursor: pointer;
 
+    font-size: 1.2em;
     color: inherit;
 
     background-color: transparent;
     border: 0;
+
+    &[data-is-end] {
+      margin: 2em;
+
+      font-size: 3em;
+    }
   }
 
   &[data-show="true"] {
     transform: translateY(0);
   }
+}
+
+/* 根据漫画方向调换位置 */
+.mangaFlow[dir="ltr"] {
+  flex-direction: row-reverse;
 }

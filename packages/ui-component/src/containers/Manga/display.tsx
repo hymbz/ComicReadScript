@@ -53,7 +53,7 @@ export default function DisplayManga() {
   //   list.slice(0, 1);
 
   const option: MangaProps['option'] = {
-    endFunc: () => {
+    onEnd: () => {
       console.log('end func 点击');
     },
   };

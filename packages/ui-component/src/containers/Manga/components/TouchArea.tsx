@@ -67,6 +67,7 @@ export const TouchArea: React.FC = memo(() => {
       style={{
         // 开启卷轴模式时隐藏自身
         pointerEvents: penetrate || scrollMode ? 'none' : 'auto',
+        // TODO: 还需要考虑到 clickPage.enabled 为 false 的情况
         // 左右方向默认和漫画方向相同，如果开启了左右翻转则翻转
         flexDirection:
           (dir === 'rtl') === clickPage.overturn ? 'row-reverse' : undefined,
@@ -74,6 +75,7 @@ export const TouchArea: React.FC = memo(() => {
       onContextMenu={setPenetrate}
       data-show={showTouchArea}
     >
+      {/* TODO: 将上下位置调换，和 EndPage 保持一致 */}
       <div
         className={clsx(classes.touchArea)}
         onClick={handleClickNext}

@@ -8,6 +8,10 @@
   display: none;
 }
 
+.invisible {
+  visibility: hidden;
+}
+
 .opacity1 {
   opacity: 1;
 }
