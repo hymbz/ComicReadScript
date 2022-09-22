@@ -1,20 +1,12 @@
 import type { Draft } from 'immer/dist/internal';
 import { useEffect, useRef } from 'react';
-import type { MangaProps } from '..';
-
 import { shallow, useStore } from './useStore';
-import type { FillEffect } from './useStore/ImageSlice';
-import type { Option } from './useStore/OptionSlice';
+import type { MangaProps } from '..';
 
 const selector = ({ initSwiper, img: { resizeObserver } }: SelfState) => ({
   initSwiper,
   resizeObserver,
 });
-
-export interface InitData {
-  fillEffect?: FillEffect;
-  option?: Partial<Option>;
-}
 
 /**
  * 初始化

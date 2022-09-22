@@ -1,4 +1,3 @@
-import type { InitData } from './hooks/useInit';
 import { useInit } from './hooks/useInit';
 import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
@@ -9,6 +8,8 @@ import { TouchArea } from './components/TouchArea';
 import classes from './index.module.css';
 import { useStore } from './hooks/useStore';
 import type { OtherSlice } from './hooks/useStore/OtherSlice';
+import type { FillEffect } from './hooks/useStore/ImageSlice';
+import type { Option } from './hooks/useStore/OptionSlice';
 
 export { ToolbarButton } from './components/ToolbarButton';
 
@@ -16,7 +17,10 @@ export interface MangaProps {
   /** 图片url列表 */
   imgUrlList: string[];
   /** 初始化配置 */
-  initData?: InitData;
+  initData?: {
+    fillEffect?: FillEffect;
+    option?: Partial<Option>;
+  };
   /** 修改默认侧边栏按钮列表 */
   editButtonList?: OtherSlice['editButtonList'];
   /** 修改默认设置项列表 */
