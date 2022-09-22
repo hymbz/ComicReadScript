@@ -51,6 +51,7 @@
 
 .endPage {
   position: absolute;
+  z-index: 2;
   top: 0;
   left: 0;
   transform: translateY(100%);
@@ -68,7 +69,16 @@
   opacity: 0.7;
   backdrop-filter: blur(1px);
 
-  transition: transform 200ms;
+  transition: transform 500ms;
+
+  & > button {
+    cursor: pointer;
+
+    color: inherit;
+
+    background-color: transparent;
+    border: 0;
+  }
 
   &[data-show="true"] {
     transform: translateY(0);

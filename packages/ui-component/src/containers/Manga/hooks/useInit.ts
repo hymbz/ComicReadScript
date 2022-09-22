@@ -15,7 +15,8 @@ const selector = ({ initSwiper, img: { resizeObserver } }: SelfState) => ({
  */
 export const useInit = ({
   imgUrlList,
-  initData,
+  fillEffect,
+  option,
   editButtonList,
   editSettingList,
 }: MangaProps) => {
@@ -26,7 +27,7 @@ export const useInit = ({
   useEffect(() => {
     useStore.setState((state) => {
       state.rootRef = rootRef as Draft<React.RefObject<HTMLElement>>;
-      if (initData?.option) Object.assign(state.option, initData?.option);
+      if (option) Object.assign(state.option, option);
     });
 
     const [_swiper, _panzoom] = initSwiper();
@@ -40,12 +41,12 @@ export const useInit = ({
       resizeObserver.disconnect();
       resizeObserver.observe(rootRef.current);
     }
-  }, [initData?.option, initSwiper, resizeObserver]);
+  }, [option, initSwiper, resizeObserver]);
 
   // 初始化图片
   useEffect(() => {
     useStore.setState((state) => {
-      if (initData?.fillEffect) state.fillEffect = initData?.fillEffect;
+      if (fillEffect) state.fillEffect = fillEffect;
 
       imgUrlList.forEach((imgUrl, index) => {
         state.imgList[index] = {
@@ -56,7 +57,7 @@ export const useInit = ({
         };
       });
     });
-  }, [imgUrlList, initData?.fillEffect]);
+  }, [imgUrlList, fillEffect]);
 
   // 初始化 editButtonList 和 editSettingList
   useEffect(() => {

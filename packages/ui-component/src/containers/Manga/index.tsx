@@ -16,11 +16,10 @@ export { ToolbarButton } from './components/ToolbarButton';
 export interface MangaProps {
   /** 图片url列表 */
   imgUrlList: string[];
+  /** 页面填充数据 */
+  fillEffect?: FillEffect;
   /** 初始化配置 */
-  initData?: {
-    fillEffect?: FillEffect;
-    option?: Partial<Option>;
-  };
+  option?: Partial<Option>;
   /** 修改默认侧边栏按钮列表 */
   editButtonList?: OtherSlice['editButtonList'];
   /** 修改默认设置项列表 */

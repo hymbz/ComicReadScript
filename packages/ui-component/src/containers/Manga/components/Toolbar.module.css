@@ -1,6 +1,6 @@
 .toolbar {
   position: fixed;
-  z-index: 10;
+  z-index: 9;
 
   display: flex;
   align-items: center;

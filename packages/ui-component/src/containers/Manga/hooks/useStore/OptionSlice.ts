@@ -26,6 +26,8 @@ export interface Option {
   preloadImgNum: number;
   /** 在空闲时间自动加载其余图片 */
   autoLoadOtherImg: boolean;
+  /** 点击结束页按钮时触发的回调 */
+  endFunc: () => void;
 }
 
 export interface OptionSlice {
@@ -54,6 +56,7 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
     darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
     preloadImgNum: 10,
     autoLoadOtherImg: true,
+    endFunc: () => {},
   },
 
   showTouchArea: false,

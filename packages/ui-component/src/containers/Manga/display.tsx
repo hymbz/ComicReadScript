@@ -3,6 +3,7 @@
  * 用于测试时显示组件
  */
 
+import type { MangaProps } from '.';
 import { Manga } from '.';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -51,5 +52,11 @@ export default function DisplayManga() {
   // const editButtonList: MangaProps['editButtonList'] = (list) =>
   //   list.slice(0, 1);
 
-  return <Manga imgUrlList={imgUrlList} />;
+  const option: MangaProps['option'] = {
+    endFunc: () => {
+      console.log('end func 点击');
+    },
+  };
+
+  return <Manga imgUrlList={imgUrlList} option={option} />;
 }
