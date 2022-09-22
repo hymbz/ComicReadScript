@@ -66,7 +66,6 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = memo(
           <div
             className={clsx(
               classes.toolbarButtonPopper,
-              classes.cardShadow,
               isHover || showTip || isFocus
                 ? classes.opacity1
                 : classes.opacity0,

@@ -8,11 +8,7 @@ import classes from '../index.module.css';
 /** 菜单面板 */
 export const SettingPanel: React.FC = memo(() => (
   <div
-    className={clsx(
-      classes.toolbarButtonPopper,
-      classes.SettingPanelPopper,
-      classes.cardShadow,
-    )}
+    className={clsx(classes.toolbarButtonPopper, classes.SettingPanelPopper)}
   >
     <div className={classes.SettingPanel}>
       {defaultSettingsList.map(([key, SettingItem], i) => (

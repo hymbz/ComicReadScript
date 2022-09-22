@@ -12,10 +12,12 @@
   margin: auto;
 
   font-size: 1.2em;
-  color: var(--buttonColor);
+  color: var(--text);
 
-  background-color: #353535;
+  background-color: var(--page_bg);
   border-radius: 0.3em;
+  box-shadow: rgb(0 0 0 / 20%) 0 3px 1px -2px, rgb(0 0 0 / 14%) 0 2px 2px 0,
+    rgb(0 0 0 / 12%) 0 1px 5px 0;
 }
 
 .SettingBlock {
@@ -26,7 +28,7 @@
   margin-bottom: 1em;
 
   font-size: 0.7em;
-  color: #d1d5db;
+  color: var(--text_secondary);
 }
 
 .SettingsItem {
@@ -53,20 +55,34 @@
   margin-right: 0.3em;
   padding: 0;
 
-  background-color: #9b9b9b;
+  background-color: var(--switch_bg);
   border: 0;
   border-radius: 1em;
 }
 
 /* 开关里的圆形按钮 */
 .SettingsItemSwitchRound {
+  transform: translateX(-10%);
+
   width: 1.15em;
   height: 1.15em;
 
-  background: #fff;
+  background: var(--switch);
   border-radius: 100%;
+  box-shadow: 0 2px 1px -1px rgb(0 0 0 / 20%), 0 1px 1px 0 rgb(0 0 0 / 14%),
+    0 1px 3px 0 rgb(0 0 0 / 12%);
 
   transition: transform 100ms;
+}
+
+.SettingsItemSwitch[data-checked="true"] {
+  background: var(--secondary_bg);
+
+  & .SettingsItemSwitchRound {
+    transform: translateX(110%);
+
+    background: var(--secondary);
+  }
 }
 
 /* 图标按钮式设置项 */
@@ -81,7 +97,7 @@
   padding: 0;
 
   font-size: 1.7em;
-  color: var(--buttonColor);
+  color: var(--text);
 
   background-color: transparent;
   border: none;

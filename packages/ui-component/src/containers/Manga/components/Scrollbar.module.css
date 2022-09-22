@@ -15,7 +15,7 @@
   display: flex;
   align-items: center;
 
-  background-color: var(--buttonHoverBgColor);
+  background-color: var(--scrollbar_drag);
   border-radius: 1em;
 }
 
@@ -33,7 +33,7 @@
   color: white;
   white-space: nowrap;
 
-  background-color: var(--buttonHoverBgColor);
+  background-color: #303030;
   border-radius: 0.3em;
 
   transition: opacity 150ms;
@@ -46,11 +46,11 @@
   position: absolute;
   left: 100%;
 
-  background-color: var(--buttonHoverBgColor);
+  background-color: #303030;
   background-color: transparent;
   border-color: transparent;
   border-style: solid;
   border-width: 0.4em;
-  border-left-color: var(--buttonHoverBgColor);
+  border-left-color: #303030;
   border-left-width: 0.5em;
 }

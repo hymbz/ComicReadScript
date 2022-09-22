@@ -25,9 +25,7 @@
 
   height: 100%;
 
-  color: var(--primaryColor);
-
-  background-color: var(--backgroundColor);
+  background-color: var(--bg);
 
   &.disableZoom .img {
     height: unset;

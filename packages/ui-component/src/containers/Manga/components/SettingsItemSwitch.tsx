@@ -31,11 +31,9 @@ export const SettingsItemSwitch: React.FC<SettingsItemSwitchProps> = ({
         className={classes.SettingsItemSwitch}
         type="button"
         onClick={handleClick}
+        data-checked={value}
       >
-        <div
-          className={classes.SettingsItemSwitchRound}
-          style={{ transform: value ? 'translateX(110%)' : 'translateX(-10%)' }}
-        />
+        <div className={classes.SettingsItemSwitchRound} />
       </button>
     </SettingsItem>
   );

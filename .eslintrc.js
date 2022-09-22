@@ -171,6 +171,8 @@ module.exports = {
 
         // 不强制要求可点击元素必须同时监听键盘操作
         'jsx-a11y/click-events-have-key-events': 'off',
+        // 不要求 a11y
+        'jsx-a11y/no-static-element-interactions': 'off',
       },
     }),
     buildConfig({

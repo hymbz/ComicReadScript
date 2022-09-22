@@ -2,12 +2,13 @@ import type { InitData } from './hooks/useInit';
 import { useInit } from './hooks/useInit';
 import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
-import { CssVar } from './components/CssVar';
 import { Scrollbar } from './components/Scrollbar';
 import { TouchArea } from './components/TouchArea';
 
-import classes from './index.module.css';
 import { useStore } from './hooks/useStore';
+import { useCssVar } from './hooks/useCssVar';
+
+import classes from './index.module.css';
 
 interface MangaProps {
   imgUrlList: string[];
@@ -25,16 +26,16 @@ export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
   const handleKeyUp = useStore((state) => state.handleKeyUp);
 
   const rootRef = useInit(imgUrlList, initData);
+  const cssVar = useCssVar();
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       className={classes.root}
       ref={rootRef}
       onWheel={handleScroll}
       onKeyUp={handleKeyUp}
+      style={cssVar}
     >
-      <CssVar />
       <Toolbar />
       <ComicImgFlow imgUrlList={imgUrlList} initData={initData} />
       <Scrollbar />

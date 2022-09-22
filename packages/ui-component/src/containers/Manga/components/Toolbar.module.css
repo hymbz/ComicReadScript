@@ -49,32 +49,32 @@
   padding: 0;
 
   font-size: 1.5em;
-  color: var(--buttonColor);
+  color: var(--text);
 
-  background-color: var(--buttonBgColor);
+  background-color: transparent;
   border-style: none;
   border-radius: 9999px;
   outline: none;
 
   &:hover {
-    background-color: var(--buttonHoverBgColor);
+    background-color: var(--hover_bg_color);
   }
 
   &:focus {
-    background-color: var(--buttonHoverBgColor);
+    background-color: var(--hover_bg_color);
   }
 
   &.enabled {
-    color: var(--enableButtonColor);
+    color: var(--text_bg);
 
-    background-color: var(--enableButtonBgColor);
+    background-color: var(--text);
 
     &:hover {
-      background-color: var(--enableButtonHoverBgColor);
+      background-color: var(--hover_bg_color_enable);
     }
 
     &:focus {
-      background-color: var(--enableButtonHoverBgColor);
+      background-color: var(--hover_bg_color_enable);
     }
   }
 }
@@ -92,10 +92,10 @@
   padding: 0.4em 0.5em;
 
   font-size: 0.8em;
-  color: var(--buttonColor);
+  color: white;
   white-space: nowrap;
 
-  background-color: var(--buttonHoverBgColor);
+  background-color: #303030;
   border-radius: 0.3em;
 }
 
@@ -106,12 +106,11 @@
   position: absolute;
   right: calc(100% + 0.5em);
 
-  background-color: var(--buttonHoverBgColor);
   background-color: transparent;
   border-color: transparent;
   border-style: solid;
   border-width: 0.4em;
-  border-right-color: var(--buttonHoverBgColor);
+  border-right-color: var(--switch_bg);
   border-right-width: 0.5em;
 
   transition: opacity 150ms;
