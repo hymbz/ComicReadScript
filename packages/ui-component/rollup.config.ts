@@ -14,11 +14,10 @@ const buildConfig = (config: RollupOptions): RollupOptions => ({
     commonjs(),
     postcss({
       extract: true,
-    }),
+    }) as any,
     ts(),
   ],
   output: {
-    format: 'cjs',
     dir: 'dist',
     generatedCode: 'es2015',
   },

@@ -29,6 +29,10 @@ const publicConfig = {
     'jsdoc/check-param-names': ['warn', { checkDestructured: false }],
     // 允许不写返回值的描述
     'jsdoc/require-returns': 'off',
+    // 允许不写函数参数的描述
+    'jsdoc/require-param-description': 'off',
+    // 允许不写函数返回值的描述
+    'jsdoc/require-returns-description': 'off',
 
     // 允许使用下划线命名
     'no-underscore-dangle': 'off',

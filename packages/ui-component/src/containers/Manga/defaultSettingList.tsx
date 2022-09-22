@@ -12,8 +12,10 @@ import { SettingsItemSwitch } from './components/SettingsItemSwitch';
 
 import classes from './index.module.css';
 
+export type DefaultSettingList = [string, React.FC][];
+
 /** 默认菜单项 */
-export const defaultSettingsList: [string, React.FC][] = [
+export const defaultSettingList: DefaultSettingList = [
   [
     '阅读',
     () => {

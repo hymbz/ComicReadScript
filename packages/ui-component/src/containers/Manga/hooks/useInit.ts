@@ -1,37 +1,33 @@
 import type { Draft } from 'immer/dist/internal';
 import { useEffect, useRef } from 'react';
-
 import { shallow, useStore } from './useStore';
+import type { MangaProps } from '..';
 
-const selector = ({
-  initSwiper,
-  img: { initImg, resizeObserver },
-}: SelfState) => ({
-  initImg,
+const selector = ({ initSwiper, img: { resizeObserver } }: SelfState) => ({
   initSwiper,
   resizeObserver,
 });
 
-export type InitData = {
-  fillEffect?: FillEffect;
-  option?: Partial<Option>;
-};
-
 /**
  * 初始化
  *
- * @param imgUrlList 图片列表
- * @param initData 初始化选项
+ * @param props
  */
-export const useInit = (imgUrlList: string[], initData?: InitData) => {
-  const { initImg, initSwiper, resizeObserver } = useStore(selector, shallow);
+export const useInit = ({
+  imgUrlList,
+  fillEffect,
+  option,
+  editButtonList,
+  editSettingList,
+}: MangaProps) => {
+  const { initSwiper, resizeObserver } = useStore(selector, shallow);
 
   // 初始化 swiper、panzoom
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     useStore.setState((state) => {
       state.rootRef = rootRef as Draft<React.RefObject<HTMLElement>>;
-      if (initData?.option) Object.assign(state.option, initData?.option);
+      if (option) Object.assign(state.option, option);
     });
 
     const [_swiper, _panzoom] = initSwiper();
@@ -45,12 +41,37 @@ export const useInit = (imgUrlList: string[], initData?: InitData) => {
       resizeObserver.disconnect();
       resizeObserver.observe(rootRef.current);
     }
-  }, [initData?.option, initSwiper, resizeObserver]);
+  }, [option, initSwiper, resizeObserver]);
 
-  // 初始化图片相关
+  // 初始化图片
   useEffect(() => {
-    initImg(imgUrlList, initData?.fillEffect);
-  }, [imgUrlList, initData?.fillEffect, initImg]);
+    useStore.setState((state) => {
+      if (fillEffect) state.fillEffect = fillEffect;
+
+      imgUrlList.forEach((imgUrl, index) => {
+        state.imgList[index] = {
+          type: '',
+          index,
+          src: imgUrl,
+          loadType: 'wait',
+        };
+      });
+    });
+  }, [imgUrlList, fillEffect]);
+
+  // 初始化 editButtonList 和 editSettingList
+  useEffect(() => {
+    if (editButtonList)
+      useStore.setState((state) => {
+        state.editButtonList = editButtonList;
+      });
+  }, [editButtonList]);
+  useEffect(() => {
+    if (editSettingList)
+      useStore.setState((state) => {
+        state.editSettingList = editSettingList;
+      });
+  }, [editSettingList]);
 
   return rootRef;
 };

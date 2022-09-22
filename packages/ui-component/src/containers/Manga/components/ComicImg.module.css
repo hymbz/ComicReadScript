@@ -46,3 +46,50 @@
 .wrapper {
   /* swiper 必须要有一个包装 slide 的容器，为了 className 的风格统一在这放个空选择器 */
 }
+
+.endPage {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  transform: translateY(100%);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  color: white;
+
+  opacity: 0.7;
+  backdrop-filter: blur(1px);
+
+  transition: transform 500ms;
+
+  & > button {
+    cursor: pointer;
+
+    font-size: 1.2em;
+    color: inherit;
+
+    background-color: transparent;
+    border: 0;
+
+    &[data-is-end] {
+      margin: 2em;
+
+      font-size: 3em;
+    }
+  }
+
+  &[data-show="true"] {
+    transform: translateY(0);
+  }
+}
+
+/* 根据漫画方向调换位置 */
+.mangaFlow[dir="ltr"] {
+  flex-direction: row-reverse;
+}

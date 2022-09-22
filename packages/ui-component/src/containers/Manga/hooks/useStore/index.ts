@@ -7,14 +7,14 @@ import { immer } from 'zustand/middleware/immer';
 
 import type { OptionSlice } from './OptionSlice';
 import { optionSlice } from './OptionSlice';
-import type { StylesSlice } from './StylesSlice';
-import { stylesSlice } from './StylesSlice';
 import type { ImageSLice } from './ImageSlice';
 import { imageSlice } from './ImageSlice';
 import type { SwiperSlice } from './SwiperSlice';
 import { swiperSlice } from './SwiperSlice';
 import type { OperateSlice } from './OperateSlice';
 import { operateSlice } from './OperateSlice';
+import type { OtherSlice } from './OtherSlice';
+import { otherSlice } from './OtherSlice';
 
 export { default as shallow } from 'zustand/shallow';
 
@@ -23,10 +23,10 @@ setAutoFreeze(false);
 
 interface SliceState
   extends OptionSlice,
-    StylesSlice,
     ImageSLice,
     SwiperSlice,
-    OperateSlice {}
+    OperateSlice,
+    OtherSlice {}
 
 declare global {
   /** 对 StateCreator 进行包装 */
@@ -48,10 +48,10 @@ declare global {
 
 const store: SelfStateCreator<SelfState> = (...a) => ({
   ...optionSlice(...a),
-  ...stylesSlice(...a),
   ...imageSlice(...a),
   ...swiperSlice(...a),
   ...operateSlice(...a),
+  ...otherSlice(...a),
 
   rootRef: null,
 });

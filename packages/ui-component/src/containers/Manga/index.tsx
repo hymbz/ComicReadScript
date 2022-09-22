@@ -1,4 +1,3 @@
-import type { InitData } from './hooks/useInit';
 import { useInit } from './hooks/useInit';
 import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
@@ -10,22 +9,35 @@ import { useCssVar } from './hooks/useCssVar';
 
 import classes from './index.module.css';
 
-interface MangaProps {
+import type { OtherSlice } from './hooks/useStore/OtherSlice';
+import type { FillEffect } from './hooks/useStore/ImageSlice';
+import type { Option } from './hooks/useStore/OptionSlice';
+
+export { ToolbarButton } from './components/ToolbarButton';
+
+export interface MangaProps {
+  /** 图片url列表 */
   imgUrlList: string[];
-  initData?: InitData;
+  /** 页面填充数据 */
+  fillEffect?: FillEffect;
+  /** 初始化配置 */
+  option?: Partial<Option>;
+  /** 修改默认侧边栏按钮列表 */
+  editButtonList?: OtherSlice['editButtonList'];
+  /** 修改默认设置项列表 */
+  editSettingList?: OtherSlice['editSettingList'];
 }
 
 /**
  * APP 测试
  *
- * @param props.imgUrlList 图片url列表
- * @param props.initData 初始化配置
+ * @param props
  */
-export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
+export const Manga: React.FC<MangaProps> = (props) => {
   const handleScroll = useStore((state) => state.handleScroll);
   const handleKeyUp = useStore((state) => state.handleKeyUp);
 
-  const rootRef = useInit(imgUrlList, initData);
+  const rootRef = useInit(props);
   const cssVar = useCssVar();
 
   return (
@@ -35,9 +47,10 @@ export const Manga: React.FC<MangaProps> = ({ imgUrlList, initData }) => {
       onWheel={handleScroll}
       onKeyUp={handleKeyUp}
       style={cssVar}
+      role="presentation"
     >
       <Toolbar />
-      <ComicImgFlow imgUrlList={imgUrlList} initData={initData} />
+      <ComicImgFlow />
       <Scrollbar />
       <TouchArea />
     </div>

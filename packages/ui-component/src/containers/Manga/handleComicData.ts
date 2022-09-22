@@ -1,3 +1,5 @@
+import type { FillEffect } from './hooks/useStore/ImageSlice';
+
 interface HandleComicDataProps {
   comicImgList: ComicImg[];
   fillEffect: FillEffect;

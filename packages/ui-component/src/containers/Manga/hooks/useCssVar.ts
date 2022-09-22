@@ -27,20 +27,20 @@ interface CssVar {
 
 /** 深色模式的 css 变量 */
 const dark: CssVar = {
-  '--hover_bg_color': 'white2',
-  '--hover_bg_color_enable': 'whitea',
+  '--hover_bg_color': '#FFF2',
+  '--hover_bg_color_enable': '#FFFa',
 
-  '--switch': '#bdbdbd',
-  '--switch_bg': '#6e6e6e',
-  '--scrollbar_drag': 'white3',
+  '--switch': '#BDBDBD',
+  '--switch_bg': '#6E6E6E',
+  '--scrollbar_drag': '#FFF3',
 
   '--page_bg': '#303030',
 
-  '--secondary': '#7a909a',
+  '--secondary': '#7A909A',
   '--secondary_bg': '#556065',
 
   '--text': 'white',
-  '--text_secondary': 'whitec',
+  '--text_secondary': '#FFFC',
   '--text_bg': '#121212',
 };
 
@@ -50,20 +50,20 @@ const light: CssVar = {
   '--hover_bg_color_enable': '#0009',
 
   /* 开关按钮 */
-  '--switch': '#fafafa',
+  '--switch': '#FAFAFA',
   /* 开关滑轨 */
-  '--switch_bg': '#9c9c9c',
+  '--switch_bg': '#9C9C9C',
   /* 滚动条 */
   '--scrollbar_drag': '#0003',
 
   '--page_bg': 'white',
 
-  '--secondary': '#7a909a',
-  '--secondary_bg': '#bac5ca',
+  '--secondary': '#7A909A',
+  '--secondary_bg': '#BAC5CA',
 
   '--text': 'black',
   '--text_secondary': '#0008',
-  '--text_bg': '#fafafa',
+  '--text_bg': '#FAFAFA',
 };
 
 export const useCssVar = (): CSSProperties => {
