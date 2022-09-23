@@ -7,16 +7,16 @@ import classes from '../index.module.css';
 
 const selector = ({
   showEndPage,
-  option: { onEnd, onPrev, onNext },
+  option: { onExit, onPrev, onNext },
 }: SelfState) => ({
   showEndPage,
-  onEnd,
+  onExit,
   onPrev,
   onNext,
 });
 
 export const EndPage: React.FC = () => {
-  const { showEndPage, onEnd, onPrev, onNext } = useStore(selector, shallow);
+  const { showEndPage, onExit, onPrev, onNext } = useStore(selector, shallow);
 
   const handleClick = useCallback<MouseEventHandler>((e) => {
     e.stopPropagation();
@@ -42,7 +42,7 @@ export const EndPage: React.FC = () => {
       >
         上一话
       </button>
-      <button onClick={onEnd} type="button" data-is-end>
+      <button onClick={onExit} type="button" data-is-end>
         END
       </button>
       <button

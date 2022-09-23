@@ -27,7 +27,7 @@ export interface Option {
   /** 在空闲时间自动加载其余图片 */
   autoLoadOtherImg: boolean;
   /** 点击结束页按钮时触发的回调 */
-  onEnd?: () => void;
+  onExit?: () => void;
   /** 点击上一话按钮时触发的回调 */
   onPrev?: () => void;
   /** 点击下一话按钮时触发的回调 */
