@@ -7,6 +7,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 import serve from 'rollup-plugin-serve';
 import ts from 'rollup-plugin-ts';
+import esbuild from 'rollup-plugin-esbuild';
 import prettier from 'rollup-plugin-prettier';
 import css from 'rollup-plugin-import-css';
 
@@ -46,7 +47,7 @@ const buildConfig = (
     }),
     resolve({ browser: true }),
     commonjs(),
-    ts(),
+    isDevMode ? esbuild() : ts(),
     css(),
 
     ...plugins,

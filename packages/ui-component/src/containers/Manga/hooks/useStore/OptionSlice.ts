@@ -26,6 +26,8 @@ export interface Option {
   preloadImgNum: number;
   /** 在空闲时间自动加载其余图片 */
   autoLoadOtherImg: boolean;
+
+  // TODO: option 应该都能字符串化保存，所以函数不应该放这
   /** 点击结束页按钮时触发的回调 */
   onExit?: () => void;
   /** 点击上一话按钮时触发的回调 */

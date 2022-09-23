@@ -38,6 +38,9 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
 
     let i: boolean | null = null;
 
+    // TODO: home、end 快速跳至首页尾页
+    // TODO: esc 退出
+
     switch (e.key) {
       case 'PageUp':
       case 'ArrowUp':
