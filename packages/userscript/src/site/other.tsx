@@ -50,16 +50,9 @@ setTimeout(async () => {
       autoLoadList.splice(autoLoadList.indexOf(''), 1);
       await GM.setValue('autoLoadList', autoLoadList);
     });
-  } else {
-    await GM.registerMenuCommand('为此站点自动开启阅读模式', async () => {
-      await GM.setValue('autoLoadList', [
-        ...autoLoadList,
-        window.location.hostname,
-      ]);
-    });
   }
 
-  await GM.registerMenuCommand('进入简易漫画阅读模式', () => {
+  await GM.registerMenuCommand('进入简易漫画阅读模式', async () => {
     if (!running) running = !!setInterval(checkFindImg, 2000);
 
     if (checkFindImg()) {
@@ -67,5 +60,13 @@ setTimeout(async () => {
       // 成功进入阅读模式后不再自动进入
       if (waitAutoLoad) waitAutoLoad = false;
     }
+
+    if (!isAutoLoad)
+      await GM.registerMenuCommand('为此站点自动开启阅读模式', async () => {
+        await GM.setValue('autoLoadList', [
+          ...autoLoadList,
+          window.location.hostname,
+        ]);
+      });
   });
 });
