@@ -26,9 +26,9 @@ const buildConfig = (config: RollupOptions): RollupOptions => ({
   ...config,
 });
 
-const compsList = fs.readdirSync('src/containers');
-
 export default () =>
-  compsList.map((name) =>
-    buildConfig({ input: { [name]: `src/containers/${name}/index.tsx` } }),
-  );
+  fs
+    .readdirSync('src/containers')
+    .map((name) =>
+      buildConfig({ input: { [name]: `src/containers/${name}/index.tsx` } }),
+    );

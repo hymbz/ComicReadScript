@@ -37,6 +37,7 @@
     "babel": "^6.23.0",
     "esbuild": "^0.14.36",
     "rollup": "^2.70.2",
+    "rollup-plugin-delete": "^2.0.0",
     "rollup-plugin-esbuild": "^4.9.1",
     "rollup-plugin-import-css": "^3.0.3",
     "rollup-plugin-prettier": "^2.2.2",

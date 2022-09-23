@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable import/no-extraneous-dependencies */
+import fs from 'fs';
 import type { OutputPlugin, RollupOptions } from 'rollup';
 import { rollup } from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
@@ -10,6 +11,7 @@ import ts from 'rollup-plugin-ts';
 import esbuild from 'rollup-plugin-esbuild';
 import prettier from 'rollup-plugin-prettier';
 import css from 'rollup-plugin-import-css';
+import del from 'rollup-plugin-delete';
 
 import type { MetaValues } from 'rollup-plugin-userscript-metablock';
 import metablock from 'rollup-plugin-userscript-metablock';
@@ -57,38 +59,9 @@ const buildConfig = (
   ...config,
 });
 
-export default () => [
-  // 编译 bundle.user.js
-  buildConfig({
-    input: 'src/index.tsx',
-    output: {
-      file: 'dist/bundle.user.js',
-      // sourcemap: isDevMode ? 'inline' : false,
-      format: 'commonjs',
-      generatedCode: 'es2015',
-      exports: 'none',
-      intro: async () => {
-        const importBundle = await rollup(
-          buildConfig({ input: 'src/helper/import.ts', treeshake: false }),
-        );
-        const {
-          output: [{ code: importCode }],
-        } = await importBundle.generate({});
-        await importBundle.close();
-        return importCode.replace(/^export.+;$/m, '');
-      },
-      plugins: [
-        metablock({ file: '', override: meta }),
-        !isDevMode &&
-          prettier({
-            singleQuote: true,
-            trailingComma: 'all',
-            parser: 'babel',
-          }),
-      ],
-    },
-  }),
+const siteList = fs.readdirSync('src/site');
 
+export default () => [
   // 编译 dev.user.js
   buildConfig(
     {
@@ -119,7 +92,63 @@ export default () => [
         contentBase: './dist',
         port: DEV_PORT,
       }),
+    del({ targets: 'dist/*' }),
   ),
+
+  // 单独打包每个站点的代码
+  ...siteList.map((name) =>
+    buildConfig({
+      input: { [name]: `src/site/${name}` },
+      output: {
+        dir: 'dist',
+        // sourcemap: isDevMode ? 'inline' : false,
+        format: 'cjs',
+        generatedCode: 'es2015',
+        exports: 'none',
+      },
+    }),
+  ),
+
+  // 编译 bundle.user.js
+  {
+    input: 'src/index.tsx',
+    output: {
+      file: 'dist/bundle.user.js',
+      // sourcemap: isDevMode ? 'inline' : false,
+      format: 'cjs',
+      generatedCode: 'es2015',
+      exports: 'none',
+      intro: async () => {
+        const importBundle = await rollup(
+          buildConfig({ input: 'src/helper/import.ts', treeshake: false }),
+        );
+        const {
+          output: [{ code: importCode }],
+        } = await importBundle.generate({});
+        await importBundle.close();
+        return importCode.replace(/^export.+;$/m, '');
+      },
+      plugins: [
+        replace({
+          values: Object.fromEntries(
+            siteList.map((siteName) => [
+              `// ${siteName.split('.')[0]}`,
+              fs.readFileSync(`./dist/${siteName}.js`).toString(),
+            ]),
+          ),
+          delimiters: ['', ''],
+        }),
+        metablock({ file: '', override: meta }),
+        !isDevMode &&
+          prettier({
+            singleQuote: true,
+            trailingComma: 'all',
+            parser: 'babel',
+          }),
+      ],
+    },
+    treeshake: false,
+  },
 ];
 
 // const watcher = watch({

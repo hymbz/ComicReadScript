@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import raxios from 'axios';
-import type { AxiosAdapter } from 'axios';
-import axiosGmxhrAdapter from 'axios-userscript-adapter';
+// import raxios from 'axios';
+// import type { AxiosAdapter } from 'axios';
+// import axiosGmxhrAdapter from 'axios-userscript-adapter';
 
-export const axios = raxios.create({
-  adapter: axiosGmxhrAdapter as AxiosAdapter,
-  timeout: 10 * 1000,
-});
+// export const axios = raxios.create({
+//   adapter: axiosGmxhrAdapter as AxiosAdapter,
+//   timeout: 10 * 1000,
+// });
 
 /**
  * 对 document.querySelector 的封装
