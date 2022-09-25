@@ -1,5 +1,19 @@
-.red {
-  color: rgb(255 0 0 / 100%);
+.button {
+  cursor: pointer;
+
+  position: fixed;
+  right: 3em;
+  bottom: 3em;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 3em;
+  height: 3em;
+
+  background: white;
+  border-radius: 9999px;
 }
 
 .tset {
