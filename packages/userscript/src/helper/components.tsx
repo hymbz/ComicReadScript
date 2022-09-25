@@ -1,9 +1,12 @@
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { Manga, ToolbarButton } from '@crs/ui-component/dist/Manga';
 import MangaStyle from '@crs/ui-component/dist/Manga.css';
+import { FAB } from '@crs/ui-component/dist/FAB';
+import FABStyle from '@crs/ui-component/dist/FAB.css';
 import ReactDOM from 'react-dom/client';
 import { MdClose } from 'react-icons/md';
 import shadow from 'react-shadow';
+import type { MouseEventHandler } from 'react';
 import { querySelector } from '.';
 
 let comicReadWindowRoot: ReactDOM.Root | null = null;
@@ -67,4 +70,22 @@ export const showComicReadWindow = (imgUrlList: string[]) => {
   );
 
   document.body.style.overflow = 'hidden';
+};
+
+let FABRoot: ReactDOM.Root | null = null;
+export const showFAB = (onClick: MouseEventHandler) => {
+  let dom = querySelector('#readFAB');
+  if (!dom) {
+    dom = document.createElement('div');
+    dom.id = 'readFAB';
+    document.body.appendChild(dom);
+  }
+
+  if (!FABRoot) FABRoot = ReactDOM.createRoot(dom);
+  FABRoot.render(
+    <shadow.div>
+      <FAB onClick={onClick} />
+      <style type="text/css">{FABStyle}</style>
+    </shadow.div>,
+  );
 };

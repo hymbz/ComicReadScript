@@ -5,7 +5,7 @@ switch (window.location.hostname) {
   case 'i.dmzj.com':
   case 'm.dmzj.com':
   case 'manhua.dmzj.com': {
-    // '@@DMZJScript.@@';
+    // dmzj
     break;
   }
   default: {
