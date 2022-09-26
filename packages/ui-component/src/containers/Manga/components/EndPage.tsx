@@ -5,10 +5,7 @@ import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
 
-const selector = ({
-  showEndPage,
-  option: { onExit, onPrev, onNext },
-}: SelfState) => ({
+const selector = ({ showEndPage, onExit, onPrev, onNext }: SelfState) => ({
   showEndPage,
   onExit,
   onPrev,

@@ -3,6 +3,7 @@ import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
 import { Scrollbar } from './components/Scrollbar';
 import { TouchArea } from './components/TouchArea';
+import { EndPage } from './components/EndPage';
 
 import { useStore } from './hooks/useStore';
 import { useCssVar } from './hooks/useCssVar';
@@ -61,6 +62,7 @@ export const Manga: React.FC<MangaProps> = (props) => {
       <ComicImgFlow />
       <Scrollbar />
       <TouchArea />
+      <EndPage />
     </div>
   );
 };
