@@ -17,6 +17,9 @@ export const useInit = ({
   imgUrlList,
   fillEffect,
   option,
+  onExit,
+  onPrev,
+  onNext,
   editButtonList,
   editSettingList,
 }: MangaProps) => {
@@ -59,19 +62,16 @@ export const useInit = ({
     });
   }, [imgUrlList, fillEffect]);
 
-  // 初始化 editButtonList 和 editSettingList
   useEffect(() => {
-    if (editButtonList)
-      useStore.setState((state) => {
-        state.editButtonList = editButtonList;
-      });
-  }, [editButtonList]);
-  useEffect(() => {
-    if (editSettingList)
-      useStore.setState((state) => {
-        state.editSettingList = editSettingList;
-      });
-  }, [editSettingList]);
+    useStore.setState((state) => {
+      if (onExit) state.onExit = onExit;
+      if (onPrev) state.onPrev = onPrev;
+      if (onNext) state.onNext = onNext;
+
+      if (editButtonList) state.editButtonList = editButtonList;
+      if (editSettingList) state.editSettingList = editSettingList;
+    });
+  }, [editButtonList, editSettingList, onExit, onNext, onPrev]);
 
   return rootRef;
 };

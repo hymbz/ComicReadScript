@@ -52,11 +52,9 @@ export default function DisplayManga() {
   // const editButtonList: MangaProps['editButtonList'] = (list) =>
   //   list.slice(0, 1);
 
-  const option: MangaProps['option'] = {
-    onExit: () => {
-      console.log('end func 点击');
-    },
+  const onExit: MangaProps['onExit'] = () => {
+    console.log('end func 点击');
   };
 
-  return <Manga imgUrlList={imgUrlList} option={option} />;
+  return <Manga imgUrlList={imgUrlList} onExit={onExit} />;
 }

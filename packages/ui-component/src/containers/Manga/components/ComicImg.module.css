@@ -1,11 +1,11 @@
 .img {
   /* 临时测试暂时修改; */
 
-  /* width: 2em !important;
-  height: 2em !important; */
+  width: 2em !important;
+  height: 2em !important;
 
-  width: auto;
-  height: 100%;
+  /* width: auto;
+  height: 100%; */
 
   vertical-align: middle;
 

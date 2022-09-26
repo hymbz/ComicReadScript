@@ -22,6 +22,14 @@ export interface MangaProps {
   fillEffect?: FillEffect;
   /** 初始化配置 */
   option?: Partial<Option>;
+
+  /** 点击结束页按钮时触发的回调 */
+  onExit?: () => void;
+  /** 点击上一话按钮时触发的回调 */
+  onPrev?: () => void;
+  /** 点击下一话按钮时触发的回调 */
+  onNext?: () => void;
+
   /** 修改默认侧边栏按钮列表 */
   editButtonList?: OtherSlice['editButtonList'];
   /** 修改默认设置项列表 */
