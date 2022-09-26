@@ -34,12 +34,12 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       pageTurn,
       img: { switchFillEffect },
       option: { dir },
+      onExit,
+      swiper,
+      slideData,
     } = get();
 
     let i: boolean | null = null;
-
-    // TODO: home、end 快速跳至首页尾页
-    // TODO: esc 退出
 
     switch (e.key) {
       case 'PageUp':
@@ -70,6 +70,17 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       case '/':
       case 'm':
         switchFillEffect();
+        break;
+
+      case 'Home':
+        swiper?.slideTo(0, 0);
+        break;
+      case 'End':
+        swiper?.slideTo(slideData.length, 0);
+        break;
+
+      case 'Escape':
+        onExit?.();
         break;
 
       default:
