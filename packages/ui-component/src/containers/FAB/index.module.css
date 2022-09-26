@@ -3,7 +3,7 @@
 
   position: fixed;
   right: 3em;
-  bottom: 3em;
+  bottom: 2em;
 
   display: flex;
   align-items: center;
@@ -14,8 +14,10 @@
 
   background: white;
   border-radius: 9999px;
-}
 
-.tset {
-  color: wheat;
+  transition: transform 200ms;
+
+  &[data-show="false"] {
+    transform: translateY(5em);
+  }
 }

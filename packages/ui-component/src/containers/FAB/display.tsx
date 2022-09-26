@@ -2,11 +2,15 @@
 /*
  * 用于测试时显示组件
  */
-import { Button } from '.';
+import { Fab } from '.';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import 'normalize.css';
 
 export default function DisplayManga() {
-  return <Button />;
+  return (
+    <div style={{ height: '300vh' }}>
+      <Fab />
+    </div>
+  );
 }
