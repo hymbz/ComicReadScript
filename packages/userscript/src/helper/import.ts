@@ -64,4 +64,3 @@ export const require = (name: string) => {
   );
 };
 unsafeWindow[selfLibName].require = require;
-// 为了防止 TS 报错，只能 export 这个函数，之后会在 rollup 处理时删掉 export 语句

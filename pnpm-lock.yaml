@@ -195,6 +195,7 @@ importers:
       rollup-plugin-serve: ^1.1.0
       rollup-plugin-ts: ^3.0.2
       rollup-plugin-userscript-metablock: ^0.3.1
+      rollup-plugin-watch: ^1.0.1
       utility-types: ^3.10.0
     dependencies:
       '@babel/runtime': 7.19.0
@@ -229,6 +230,7 @@ importers:
       rollup-plugin-serve: 1.1.0
       rollup-plugin-ts: 3.0.2_6job2hgwlrnfkhxcz7a46nam2a
       rollup-plugin-userscript-metablock: 0.3.1
+      rollup-plugin-watch: 1.0.1_rollup@2.79.1
       utility-types: 3.10.0
 
 packages:
@@ -6389,6 +6391,15 @@ packages:
       valid-url: 1.0.9
     transitivePeerDependencies:
       - supports-color
+    dev: true
+
+  /rollup-plugin-watch/1.0.1_rollup@2.79.1:
+    resolution: {integrity: sha512-wYnbXjjDM3OpgSExSBi9tY1Rr9uiY+mayYkdr55KAmRWDvwPG+b6LL//yukC0wTIe+sjuWWsjkfn6B/tgQix2Q==}
+    peerDependencies:
+      rollup: ^2.x.x
+    dependencies:
+      '@rollup/pluginutils': 4.2.1
+      rollup: 2.79.1
     dev: true
 
   /rollup-pluginutils/2.8.2:

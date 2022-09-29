@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "command": "pnpm run test",
+      "command": "pnpm run watch",
       "name": "Run npm start",
       "request": "launch",
       "type": "node-terminal"

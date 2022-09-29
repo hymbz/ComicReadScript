@@ -1,8 +1,8 @@
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { Manga, ToolbarButton } from '@crs/ui-component/dist/Manga';
 import MangaStyle from '@crs/ui-component/dist/Manga.css';
-import { FAB } from '@crs/ui-component/dist/FAB';
-import FABStyle from '@crs/ui-component/dist/FAB.css';
+import { Fab } from '@crs/ui-component/dist/Fab';
+import FabStyle from '@crs/ui-component/dist/Fab.css';
 import ReactDOM from 'react-dom/client';
 import { MdClose } from 'react-icons/md';
 import shadow from 'react-shadow';
@@ -25,24 +25,20 @@ export const showComicReadWindow = (imgUrlList: string[]) => {
     document.body.appendChild(dom);
   }
 
-  const option: MangaProps['option'] = {
-    onExit() {
-      dom!.style.display = 'none';
-      document.body.style.overflow = 'unset';
-    },
+  const onExit = () => {
+    dom!.style.display = 'none';
+    document.body.style.overflow = 'unset';
   };
 
   const editButtonList: MangaProps['editButtonList'] = (list) => [
     ...list,
     [
       '退出',
-      () => {
-        return (
-          <ToolbarButton buttonKey="退出" onClick={option.onExit}>
-            <MdClose />
-          </ToolbarButton>
-        );
-      },
+      () => (
+        <ToolbarButton buttonKey="退出" onClick={onExit}>
+          <MdClose />
+        </ToolbarButton>
+      ),
     ],
   ];
 
@@ -60,11 +56,7 @@ export const showComicReadWindow = (imgUrlList: string[]) => {
         zIndex: 99999,
       }}
     >
-      <Manga
-        imgUrlList={imgUrlList}
-        option={option}
-        editButtonList={editButtonList}
-      />
+      <Manga imgUrlList={imgUrlList} editButtonList={editButtonList} />
       <style type="text/css">{MangaStyle}</style>
     </shadow.div>,
   );
@@ -72,20 +64,20 @@ export const showComicReadWindow = (imgUrlList: string[]) => {
   document.body.style.overflow = 'hidden';
 };
 
-let FABRoot: ReactDOM.Root | null = null;
-export const showFAB = (onClick: MouseEventHandler) => {
-  let dom = querySelector('#readFAB');
+let FabRoot: ReactDOM.Root | null = null;
+export const showFab = (onClick: MouseEventHandler) => {
+  let dom = querySelector('#readFab');
   if (!dom) {
     dom = document.createElement('div');
-    dom.id = 'readFAB';
+    dom.id = 'readFab';
     document.body.appendChild(dom);
   }
 
-  if (!FABRoot) FABRoot = ReactDOM.createRoot(dom);
-  FABRoot.render(
+  if (!FabRoot) FabRoot = ReactDOM.createRoot(dom);
+  FabRoot.render(
     <shadow.div>
-      <FAB onClick={onClick} />
-      <style type="text/css">{FABStyle}</style>
+      <Fab onClick={onClick} />
+      <style type="text/css">{FabStyle}</style>
     </shadow.div>,
   );
 };
