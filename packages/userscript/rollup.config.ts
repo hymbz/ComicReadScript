@@ -51,7 +51,7 @@ const buildConfig = (
     }),
     resolve({ browser: true }),
     commonjs(),
-    isDevMode ? esbuild() : ts(),
+    isDevMode ? esbuild({ target: 'esnext', charset: 'utf8' }) : ts(),
     css(),
 
     ...plugins,
@@ -117,6 +117,7 @@ export default async () => {
           generatedCode: 'es2015',
           exports: 'none',
           strict: false,
+          inlineDynamicImports: true,
           intro: importCode,
         },
         context: 'this',
