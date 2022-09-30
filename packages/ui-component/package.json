@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "shx rm -rf ./dist/* && rollup --config --configPlugin rollup-plugin-ts",
+    "watch": "rollup --watch --config --configPlugin rollup-plugin-ts",
     "preview": "vite preview"
   },
   "dependencies": {
