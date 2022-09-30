@@ -133,6 +133,7 @@ export default async () => {
         generatedCode: 'es2015',
         exports: 'none',
         plugins: [
+          // 根据注释将每个站点的代码放进来
           {
             name: 'injectSiteCode',
             renderChunk(code) {
@@ -143,6 +144,9 @@ export default async () => {
                   fs.readFileSync(`./dist/${fileName}.js`).toString(),
                 );
               });
+              // 在开发模式时计算下脚本的运行消耗时间
+              if (isDevMode)
+                newCode = `console.time('脚本运行消耗时间')\n${newCode}\nconsole.timeEnd('脚本运行消耗时间')`;
               return newCode;
             },
           } as Plugin,
