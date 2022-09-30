@@ -53,23 +53,27 @@ interface SelfModule {
  */
 export const require = (name: string) => {
   // rollup 打包后的代码里有时候会先把 default 单独抽出来之后再使用，所以也要把 default 改成动态加载
-  const selfDefault = new Proxy(
-    function selfLibProxy(...args: unknown[]): unknown {
+  const selfDefault = new Proxy(function selfLibProxy() {}, {
+    get(_, prop) {
+      if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
+      const module: SelfModule = unsafeWindow[selfLibName][name];
+      return module.default?.[prop] ?? module?.[prop];
+    },
+    apply(_, __, args) {
       if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
       const module = unsafeWindow[selfLibName][name];
-      // 作为构造函数调用时加上 new 命令
-      if (new.target !== undefined)
-        return new (module.default ?? module)(...args);
-      return (module.default ?? module)(...args);
+      const ModuleFunc =
+        typeof module.default === 'function' ? module.default : module;
+      return ModuleFunc(...args) as object;
     },
-    {
-      get(_, prop) {
-        if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
-        const module: SelfModule = unsafeWindow[selfLibName][name];
-        return (module.default ?? module)[prop];
-      },
+    construct(_, args) {
+      if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
+      const module = unsafeWindow[selfLibName][name];
+      const ModuleFunc =
+        typeof module.default === 'function' ? module.default : module;
+      return new ModuleFunc(...args) as object;
     },
-  );
+  });
 
   return new Proxy(
     { default: selfDefault },
