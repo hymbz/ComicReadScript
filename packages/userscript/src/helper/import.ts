@@ -38,26 +38,46 @@ const selfImportSync = (name: string) => {
   });
 };
 
+interface SelfModule {
+  default: {
+    (...args: unknown[]): unknown;
+    [key: string | symbol]: unknown;
+  };
+  [key: string | symbol]: unknown;
+}
+
 /**
  * 创建一个外部模块的 Proxy，等到读取对象属性时才加载模块
  *
  * @param name 外部模块名
  */
 export const require = (name: string) => {
-  return new Proxy(
-    {
-      // 为了能被 rollup 的 _interopDefaultLegacy 识别到，这里得定义下 default
-      default: null,
-    } as Record<string, unknown>,
+  // rollup 打包后的代码里有时候会先把 default 单独抽出来之后再使用，所以也要把 default 改成动态加载
+  const selfDefault = new Proxy(
+    function selfLibProxy(...args: unknown[]): unknown {
+      if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
+      const module = unsafeWindow[selfLibName][name];
+      // 作为构造函数调用时加上 new 命令
+      if (new.target !== undefined)
+        return new (module.default ?? module)(...args);
+      return (module.default ?? module)(...args);
+    },
     {
       get(_, prop) {
         if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
+        const module: SelfModule = unsafeWindow[selfLibName][name];
+        return (module.default ?? module)[prop];
+      },
+    },
+  );
 
-        const module: Record<string | symbol, unknown> =
-          unsafeWindow[selfLibName][name];
-
-        if (prop === 'default') return module[prop] ?? module;
-
+  return new Proxy(
+    { default: selfDefault },
+    {
+      get(_, prop) {
+        if (prop === 'default') return _.default;
+        if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
+        const module: SelfModule = unsafeWindow[selfLibName][name];
         return module[prop];
       },
     },
