@@ -10,6 +10,8 @@ setTimeout(async () => {
   let imgList: string[] = [];
   /** 是否在等待自动加载完毕后进入阅读模式 */
   let waitAutoLoad = isAutoLoad;
+  /** 是否正在后台不断检查图片 */
+  let running = 0;
 
   /**
    * 检查搜索页面上符合标准的图片
@@ -22,8 +24,11 @@ setTimeout(async () => {
       .map((e) => e.src);
 
     if (newImgList.length === 0) {
-      // eslint-disable-next-line no-alert
-      if (!isAutoLoad) alert('没有找到图片');
+      if (!isAutoLoad) {
+        clearInterval(running);
+        // eslint-disable-next-line no-alert
+        alert('没有找到图片');
+      }
       return false;
     }
 
@@ -38,12 +43,9 @@ setTimeout(async () => {
     return true;
   };
 
-  /** 是否正在后台不断检查图片 */
-  let running = false;
-
   if (isAutoLoad) {
     // 为了保证兼容，只能简单粗暴的不断检查网页的图片来更新数据
-    running = !!setInterval(checkFindImg, 2000);
+    running = window.setInterval(checkFindImg, 2000);
 
     await GM.registerMenuCommand('不再自动开启阅读模式', async () => {
       // debugger;
@@ -53,7 +55,7 @@ setTimeout(async () => {
   }
 
   await GM.registerMenuCommand('进入简易漫画阅读模式', async () => {
-    if (!running) running = !!setInterval(checkFindImg, 2000);
+    if (!running) running = window.setInterval(checkFindImg, 2000);
 
     if (checkFindImg()) {
       showComicReadWindow(imgList);
