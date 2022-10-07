@@ -5,7 +5,6 @@ TODO:
   先遍历 img 元素的所有属性，使用正则找出符合 url 格式的属性，选择长度最长的属性。
   另外还要只选择那些 src 为空的 img 元素。应该不会有懒加载会提前放一个小图片占位吧。
 - helper/components 要拆分为多个文件，不然打包时会将所有组件都打包进去，参见 other
-- 将图标切换到 @material-design-icons/svg
 
 ## 简介
 
