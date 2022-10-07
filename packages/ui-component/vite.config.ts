@@ -2,9 +2,24 @@
 
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
 
 export default defineConfig(() => ({
-  plugins: [react() as any],
+  plugins: [
+    svgr({
+      exportAsDefault: true,
+      svgrOptions: {
+        icon: true,
+        svgProps: {
+          stroke: 'currentColor',
+          fill: 'currentColor',
+          strokeWidth: '0',
+        },
+        namedExport: 'default',
+      },
+    }),
+    react(),
+  ],
 
   css: {
     modules: {

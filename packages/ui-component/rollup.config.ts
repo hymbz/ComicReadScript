@@ -6,10 +6,20 @@ import ts from 'rollup-plugin-ts';
 import postcss from 'rollup-plugin-postcss';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import svgr from '@svgr/rollup';
 import meta from '@crs/userscript/meta.json';
 
 const buildConfig = (config: RollupOptions): RollupOptions => ({
   plugins: [
+    svgr({
+      icon: true,
+      svgProps: {
+        stroke: 'currentColor',
+        fill: 'currentColor',
+        strokeWidth: '0',
+      },
+      namedExport: 'default',
+    }),
     nodeResolve(),
     commonjs(),
     postcss({

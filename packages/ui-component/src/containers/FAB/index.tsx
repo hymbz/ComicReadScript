@@ -1,6 +1,7 @@
+import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
+
 import type { MouseEventHandler } from 'react';
 import { useMemo, useRef, useState, useEffect } from 'react';
-import { MdMenuBook } from 'react-icons/md';
 import { throttle } from 'throttle-debounce';
 
 import classes from './index.module.css';

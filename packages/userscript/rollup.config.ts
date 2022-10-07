@@ -6,13 +6,15 @@ import { rollup } from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
-import serve from 'rollup-plugin-serve';
 import ts from 'rollup-plugin-ts';
 import esbuild from 'rollup-plugin-esbuild';
 import prettier from 'rollup-plugin-prettier';
 import css from 'rollup-plugin-import-css';
 import del from 'rollup-plugin-delete';
 import watchGlobs from 'rollup-plugin-watch';
+import svgr from '@svgr/rollup';
+import handler from 'serve-handler';
+import http from 'http';
 
 import type { MetaValues } from 'rollup-plugin-userscript-metablock';
 import metablock from 'rollup-plugin-userscript-metablock';
@@ -35,6 +37,15 @@ const isDevMode = process.env.NODE_ENV === 'development';
 const DEV_PORT = '2405';
 const siteFileList = fs.readdirSync('src/site');
 
+// 启动开发服务器
+if (isDevMode)
+  http
+    .createServer(
+      (request, response) =>
+        handler(request, response, { public: 'dist' }) as unknown,
+    )
+    .listen(DEV_PORT);
+
 const buildConfig = (
   config: RollupOptions,
   ...plugins: Array<OutputPlugin | false>
@@ -49,10 +60,22 @@ const buildConfig = (
 
       preventAssignment: true,
     }),
+
+    svgr({
+      icon: true,
+      svgProps: {
+        stroke: 'currentColor',
+        fill: 'currentColor',
+        strokeWidth: '0',
+      },
+      namedExport: 'default',
+    }),
+
     resolve({ browser: true }),
     commonjs(),
-    isDevMode ? esbuild({ target: 'esnext', charset: 'utf8' }) : ts(),
+    // image(),
     css(),
+    isDevMode ? esbuild({ target: 'esnext', charset: 'utf8' }) : ts(),
 
     ...plugins,
   ],
@@ -99,11 +122,6 @@ export default async () => {
           ],
         },
       },
-      isDevMode &&
-        serve({
-          contentBase: './dist',
-          port: DEV_PORT,
-        }),
       del({ targets: 'dist/*' }),
     ),
 

@@ -50,6 +50,7 @@ const publicConfig = {
     'import/prefer-default-export': 'off',
     // 允许使用 require
     'import/no-dynamic-require': 'off',
+    'import/no-unresolved': 'off',
   },
 };
 

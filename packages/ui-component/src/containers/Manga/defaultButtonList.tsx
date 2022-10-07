@@ -1,14 +1,14 @@
+import MdLooksOne from '@material-design-icons/svg/round/looks_one.svg';
+import MdLooksTwo from '@material-design-icons/svg/round/looks_two.svg';
+import MdViewDay from '@material-design-icons/svg/round/view_day.svg';
+import MdQueue from '@material-design-icons/svg/round/queue.svg';
+import MdSettings from '@material-design-icons/svg/round/settings.svg';
+
 import { useMemo, useCallback, useState } from 'react';
-import {
-  MdLooksOne,
-  MdLooksTwo,
-  MdViewDay,
-  MdQueue,
-  MdSettings,
-} from 'react-icons/md';
 import { useStore } from './hooks/useStore';
 import { ToolbarButton } from './components/ToolbarButton';
 import { SettingPanel } from './components/SettingPanel';
+
 import classes from './index.module.css';
 
 interface DefaultSettingsButtonProps {

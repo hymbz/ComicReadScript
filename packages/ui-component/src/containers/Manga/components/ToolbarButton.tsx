@@ -19,7 +19,7 @@ interface ToolbarButtonProps {
   popper?: JSX.Element | boolean;
 
   onClick?: MouseEventHandler<HTMLButtonElement>;
-  children: JSX.Element;
+  children: JSX.Element | JSX.Element[];
   ref?: MutableRefObject<HTMLButtonElement | null>;
 }
 

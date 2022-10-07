@@ -1,10 +1,9 @@
+import MdOutlineFormatTextdirectionLToR from '@material-design-icons/svg/round/format_textdirection_l_to_r.svg';
+import MdOutlineFormatTextdirectionRToL from '@material-design-icons/svg/round/format_textdirection_r_to_l.svg';
+
 import { throttle } from 'throttle-debounce';
 import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
-import {
-  MdOutlineFormatTextdirectionRToL,
-  MdOutlineFormatTextdirectionLToR,
-} from 'react-icons/md';
 import clsx from 'clsx';
 import { useStore } from './hooks/useStore';
 import { SettingsItem } from './components/SettingsItem';

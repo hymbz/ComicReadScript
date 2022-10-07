@@ -4,7 +4,7 @@ import MangaStyle from '@crs/ui-component/dist/Manga.css';
 import { Fab } from '@crs/ui-component/dist/Fab';
 import FabStyle from '@crs/ui-component/dist/Fab.css';
 import type ReactDOM from 'react-dom/client';
-import CloseSvg from '@material-design-icons/svg/filled/close.svg';
+import MdClose from '@material-design-icons/svg/round/close.svg';
 import shadow from 'react-shadow';
 import type { MouseEventHandler } from 'react';
 import { querySelector } from '.';
@@ -41,7 +41,7 @@ export const showComicReadWindow = (imgUrlList: string[]) => {
       '退出',
       () => (
         <ToolbarButton buttonKey="退出" onClick={onExit}>
-          <CloseSvg />
+          <MdClose />
         </ToolbarButton>
       ),
     ],
