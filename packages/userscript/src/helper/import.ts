@@ -52,9 +52,13 @@ interface SelfModule {
  * @param name 外部模块名
  */
 export const require = (name: string) => {
+  // 为了应对 rollup 打包时的工具函数 _interopNamespace，要给外部库加上 __esModule 标志
+  const __esModule = { value: true };
+
   // rollup 打包后的代码里有时候会先把 default 单独抽出来之后再使用，所以也要把 default 改成动态加载
   const selfDefault = new Proxy(function selfLibProxy() {}, {
     get(_, prop) {
+      if (prop === '__esModule') return __esModule;
       if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
       const module: SelfModule = unsafeWindow[selfLibName][name];
       return module.default?.[prop] ?? module?.[prop];
@@ -80,6 +84,7 @@ export const require = (name: string) => {
     {
       get(_, prop) {
         if (prop === 'default') return _.default;
+        if (prop === '__esModule') return __esModule;
         if (!unsafeWindow[selfLibName][name]) selfImportSync(name);
         const module: SelfModule = unsafeWindow[selfLibName][name];
         return module[prop];

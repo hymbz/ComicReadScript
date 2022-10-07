@@ -3,7 +3,8 @@ GM.xmlHttpRequest({
   url: `http://localhost:${DEV_PORT as any}/bundle.user.js?${Date.now()}`,
   timeout: 1000 * 5,
   onload(r) {
-    if (r.status !== 200) throw new Error(`${r.status} ${r.statusText}`);
+    if (r.status !== 200)
+      throw new Error(`${r.finalUrl}: ${r.status} ${r.statusText}`);
     // eslint-disable-next-line no-eval
     eval(`(async () => {${r.responseText}})();`);
   },
