@@ -73,7 +73,6 @@ const buildConfig = (
 
     resolve({ browser: true }),
     commonjs(),
-    // image(),
     css(),
     isDevMode ? esbuild({ target: 'esnext', charset: 'utf8' }) : ts(),
 

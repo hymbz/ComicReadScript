@@ -26,9 +26,12 @@ root.render(
             {Object.keys(modules).map((path) => {
               const name = path.split('/')[2];
               return (
-                <Link key={path} to={`/${name}`}>
-                  {name}
-                </Link>
+                <>
+                  <Link key={path} to={`/${name}`}>
+                    {name}
+                  </Link>
+                  <br />
+                </>
               );
             })}
           </nav>

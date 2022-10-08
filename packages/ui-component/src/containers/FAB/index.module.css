@@ -10,14 +10,25 @@
   justify-content: center;
 
   width: 3em;
+  width: 2.5em;
   height: 3em;
+  height: 2.5em;
 
-  background: white;
-  border-radius: 9999px;
+  font-size: 1.5em;
+  color: white;
+
+  background-color: #607d8b;
+  border-radius: 100%;
+  box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 6px 10px 0 rgb(0 0 0 / 14%),
+    0 1px 18px 0 rgb(0 0 0 / 12%);
 
   transition: transform 200ms;
 
   &[data-show="false"] {
     transform: translateY(5em);
+  }
+
+  &:hover {
+    background-color: #4d646f;
   }
 }
