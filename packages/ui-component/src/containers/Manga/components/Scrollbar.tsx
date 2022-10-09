@@ -1,6 +1,5 @@
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
-import { useHover } from '../hooks/useHover';
 import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
@@ -24,8 +23,6 @@ const selector = ({
 export const Scrollbar: React.FC = memo(() => {
   const { swiper, slideData, activeSlideIndex, showScrollbar, dir, scrollbar } =
     useStore(selector, shallow);
-
-  const [isHover, handleMouseEnter, handleMouseLeave] = useHover();
 
   /** 滚动条提示文本 */
   const tooltipText = useMemo(() => {
@@ -51,23 +48,12 @@ export const Scrollbar: React.FC = memo(() => {
       aria-controls="mange-main"
       aria-valuenow={swiper?.activeIndex || -1}
       tabIndex={0}
-      onMouseLeave={handleMouseLeave}
-      onMouseEnter={handleMouseEnter}
     >
       <div
-        className={clsx(
-          classes.scrollbarDrag,
-          isHover || !scrollbar.autoHidden || showScrollbar
-            ? classes.opacity1
-            : classes.opacity0,
-        )}
+        className={classes.scrollbarDrag}
+        data-show={!scrollbar.autoHidden || showScrollbar}
       >
-        <div
-          className={clsx(
-            classes.scrollbarPoper,
-            isHover || showScrollbar ? classes.opacity1 : classes.opacity0,
-          )}
-        >
+        <div className={classes.scrollbarPoper} data-show={showScrollbar}>
           {tooltipText}
         </div>
       </div>

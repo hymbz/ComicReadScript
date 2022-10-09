@@ -74,7 +74,7 @@ export const defaultSettingList: DefaultSettingList = [
           <SettingsItemSwitch
             name="自动隐藏滚动条"
             value={autoHidden}
-            className={clsx(enabled && classes.hidden)}
+            className={clsx(enabled || classes.hidden)}
             onChange={handelAutoHidden}
           />
         </>

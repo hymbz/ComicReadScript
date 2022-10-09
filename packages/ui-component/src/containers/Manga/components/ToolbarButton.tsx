@@ -1,8 +1,6 @@
 import type { MouseEventHandler, MutableRefObject } from 'react';
 import { memo, useRef, useMemo } from 'react';
 import clsx from 'clsx';
-import { useHover } from '../hooks/useHover';
-import { useFocus } from '../hooks/useFocus';
 
 import classes from '../index.module.css';
 
@@ -39,11 +37,8 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = memo(
 
     const ariaLabel = useMemo(() => `工具栏按钮-${buttonKey}`, [buttonKey]);
 
-    const [isHover, handlerMouseEnter, handlerMouseLeave] = useHover();
-    const [isFocus, handleFocus, handleBlur] = useFocus();
-
     return (
-      <div className={classes.toolbarButtonItem}>
+      <div className={classes.toolbarButtonItem} data-show={showTip}>
         <button
           ref={buttonRef}
           aria-label={ariaLabel}
@@ -54,26 +49,12 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = memo(
             enabled && classes.enabled,
           )}
           onClick={handleClick}
-          onMouseEnter={handlerMouseEnter}
-          onMouseLeave={handlerMouseLeave}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
         >
           {children}
         </button>
 
         {popper || (
-          <div
-            className={clsx(
-              classes.toolbarButtonPopper,
-              // TODO: 改为使用 css 实现，避免意外的 bug
-              isHover || showTip || isFocus
-                ? classes.opacity1
-                : classes.opacity0,
-            )}
-          >
-            {buttonKey}
-          </div>
+          <div className={classes.toolbarButtonPopper}>{buttonKey}</div>
         )}
       </div>
     );

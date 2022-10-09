@@ -95,6 +95,7 @@
   color: white;
   white-space: nowrap;
 
+  opacity: 0;
   background-color: #303030;
   border-radius: 0.3em;
 }
@@ -114,4 +115,11 @@
   border-right-width: 0.5em;
 
   transition: opacity 150ms;
+}
+
+/* 控制悬浮框的显示 */
+.toolbarButtonItem:hover .toolbarButtonPopper,
+.toolbarButtonItem:focus .toolbarButtonPopper,
+.toolbarButtonItem[data-show="true"] .toolbarButtonPopper {
+  opacity: 1;
 }
