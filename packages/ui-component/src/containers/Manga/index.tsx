@@ -14,8 +14,6 @@ import type { OtherSlice } from './hooks/useStore/OtherSlice';
 import type { FillEffect } from './hooks/useStore/ImageSlice';
 import type { Option } from './hooks/useStore/OptionSlice';
 
-export { ToolbarButton } from './components/ToolbarButton';
-
 export interface MangaProps {
   /** 图片url列表 */
   imgUrlList: string[];

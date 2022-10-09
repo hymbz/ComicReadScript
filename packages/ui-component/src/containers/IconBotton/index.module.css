@@ -1,0 +1,116 @@
+.iconButtonItem {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+}
+
+.iconButton {
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 1.5em;
+  height: 1.5em;
+  margin: 0.1em;
+  padding: 0;
+
+  font-size: 1.5em;
+  color: var(--text, white);
+
+  background-color: transparent;
+  border-style: none;
+  border-radius: 9999px;
+  outline: none;
+
+  &:hover {
+    background-color: var(--hover_bg_color, #fff2);
+  }
+
+  &:focus {
+    background-color: var(--hover_bg_color, #fff2);
+  }
+
+  &.enabled {
+    color: var(--text_bg, #121212);
+
+    background-color: var(--text, white);
+
+    &:hover {
+      background-color: var(--hover_bg_color_enable, #fffa);
+    }
+
+    &:focus {
+      background-color: var(--hover_bg_color_enable, #fffa);
+    }
+  }
+}
+
+/* 默认悬浮框样式 */
+.iconButtonPopper {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  display: flex;
+  align-items: center;
+
+  padding: 0.4em 0.5em;
+
+  font-size: 0.8em;
+  color: white;
+  white-space: nowrap;
+
+  opacity: 0;
+  background-color: #303030;
+  border-radius: 0.3em;
+
+  &[data-placement="right"] {
+    left: calc(100% + 1.5em);
+
+    &::before {
+      right: calc(100% + 0.5em);
+
+      border-right-color: var(--switch_bg, #6e6e6e);
+      border-right-width: 0.5em;
+    }
+  }
+
+  &[data-placement="left"] {
+    right: calc(100% + 1.5em);
+
+    &::before {
+      left: calc(100% + 0.5em);
+
+      border-left-color: var(--switch_bg, #6e6e6e);
+      border-left-width: 0.5em;
+    }
+  }
+}
+
+/* 工具栏按钮的悬浮框的箭头 */
+.iconButtonPopper::before {
+  content: "";
+
+  position: absolute;
+
+  background-color: transparent;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 0.4em;
+
+  transition: opacity 150ms;
+}
+
+/* 控制悬浮框的显示 */
+.iconButtonItem:hover .iconButtonPopper,
+.iconButtonItem:focus .iconButtonPopper,
+.iconButtonItem[data-show="true"] .iconButtonPopper {
+  opacity: 1;
+}
+
+.hidden {
+  display: none;
+}

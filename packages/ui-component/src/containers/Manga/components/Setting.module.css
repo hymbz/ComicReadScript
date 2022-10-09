@@ -1,7 +1,9 @@
 /* 设置面板所在的悬浮框样式 */
 .SettingPanelPopper {
-  height: 0;
-  padding: 0;
+  transform: none !important;
+
+  height: 0 !important;
+  padding: 0 !important;
 }
 
 .SettingPanel {

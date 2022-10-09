@@ -6,7 +6,7 @@ import MdSettings from '@material-design-icons/svg/round/settings.svg';
 
 import { useMemo, useCallback, useState } from 'react';
 import { useStore } from './hooks/useStore';
-import { ToolbarButton } from './components/ToolbarButton';
+import { IconBotton } from '../IconBotton';
 import { SettingPanel } from './components/SettingPanel';
 
 import classes from './index.module.css';
@@ -60,9 +60,9 @@ export const defaultButtonList: DefaultButtonList = [
       }, []);
 
       return (
-        <ToolbarButton buttonKey="单页模式" onClick={handleClick}>
+        <IconBotton tip="单页模式" onClick={handleClick}>
           {isOnePageMode ? <MdLooksOne /> : <MdLooksTwo />}
-        </ToolbarButton>
+        </IconBotton>
       );
     },
   ],
@@ -100,13 +100,9 @@ export const defaultButtonList: DefaultButtonList = [
       }, []);
 
       return (
-        <ToolbarButton
-          buttonKey="卷轴模式"
-          enabled={enabled}
-          onClick={handleClick}
-        >
+        <IconBotton tip="卷轴模式" enabled={enabled} onClick={handleClick}>
           <MdViewDay />
-        </ToolbarButton>
+        </IconBotton>
       );
     },
   ],
@@ -121,14 +117,14 @@ export const defaultButtonList: DefaultButtonList = [
       const handleClick = useStore((state) => state.img.switchFillEffect);
 
       return (
-        <ToolbarButton
-          buttonKey="页面填充"
+        <IconBotton
+          tip="页面填充"
           enabled={enabled}
           hidden={isOnePageMode}
           onClick={handleClick}
         >
           <MdQueue />
-        </ToolbarButton>
+        </IconBotton>
       );
     },
   ],
@@ -165,15 +161,16 @@ export const defaultButtonList: DefaultButtonList = [
       );
 
       return (
-        <ToolbarButton
-          buttonKey="设置"
+        <IconBotton
+          tip="设置"
           enabled={showPanel}
           showTip={showPanel}
           onClick={handleClick}
+          popperClassName={showPanel && classes.SettingPanelPopper}
           popper={showPanel && popper}
         >
           <MdSettings />
-        </ToolbarButton>
+        </IconBotton>
       );
     },
   ],

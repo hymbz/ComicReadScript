@@ -1,6 +1,8 @@
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
-import { Manga, ToolbarButton } from '@crs/ui-component/dist/Manga';
+import { Manga } from '@crs/ui-component/dist/Manga';
 import MangaStyle from '@crs/ui-component/dist/Manga.css';
+import { IconBotton } from '@crs/ui-component/dist/IconBotton';
+import IconBottonStyle from '@crs/ui-component/dist/IconBotton.css';
 import { Fab } from '@crs/ui-component/dist/Fab';
 import FabStyle from '@crs/ui-component/dist/Fab.css';
 import type ReactDOM from 'react-dom/client';
@@ -40,9 +42,9 @@ export const showComicReadWindow = (imgUrlList: string[]) => {
     [
       '退出',
       () => (
-        <ToolbarButton buttonKey="退出" onClick={onExit}>
+        <IconBotton tip="退出" onClick={onExit}>
           <MdClose />
-        </ToolbarButton>
+        </IconBotton>
       ),
     ],
   ];
@@ -62,6 +64,7 @@ export const showComicReadWindow = (imgUrlList: string[]) => {
       }}
     >
       <Manga imgUrlList={imgUrlList} editButtonList={editButtonList} />
+      <style type="text/css">{IconBottonStyle}</style>
       <style type="text/css">{MangaStyle}</style>
     </shadow.div>,
   );

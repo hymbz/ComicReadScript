@@ -8,7 +8,7 @@ import { Fab } from '.';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import 'normalize.css';
 
-export default function DisplayManga() {
+export default function Display() {
   const [progress, setProgress] = useState(0);
   const [tip, setTip] = useState('');
 
