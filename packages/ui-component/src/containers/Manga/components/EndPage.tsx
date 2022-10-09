@@ -36,16 +36,23 @@ export const EndPage: React.FC = () => {
         className={clsx(!onPrev && classes.invisible)}
         onClick={onPrev}
         type="button"
+        tabIndex={showEndPage ? 0 : -1}
       >
         上一话
       </button>
-      <button onClick={onExit} type="button" data-is-end>
+      <button
+        onClick={onExit}
+        type="button"
+        tabIndex={showEndPage ? 0 : -1}
+        data-is-end
+      >
         END
       </button>
       <button
         className={clsx(!onNext && classes.invisible)}
         onClick={onNext}
         type="button"
+        tabIndex={showEndPage ? 0 : -1}
       >
         下一话
       </button>
