@@ -10,21 +10,24 @@ import 'normalize.css';
 
 export default function DisplayManga() {
   const [progress, setProgress] = useState(0);
-
-  const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    setProgress(+e.target.value / 10);
-  };
+  const [tip, setTip] = useState('');
 
   return (
     <div style={{ height: '300vh' }}>
-      <input type="number" onChange={handleChange} />
-      <Fab progress={progress}>
-        {/* <div>
-          <p>288</p>
-          <hr />
-          <p>288</p>
-        </div> */}
-      </Fab>
+      <input
+        type="number"
+        onChange={(e) => {
+          setProgress(+e.target.value / 10);
+        }}
+      />
+      <input
+        type="text"
+        onChange={(e) => {
+          setTip(e.target.value);
+        }}
+      />
+
+      <Fab progress={progress} tip={tip} />
     </div>
   );
 }

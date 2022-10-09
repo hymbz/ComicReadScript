@@ -1,4 +1,4 @@
-.button {
+.fab {
   cursor: pointer;
 
   position: fixed;
@@ -9,12 +9,9 @@
   align-items: center;
   justify-content: center;
 
-  width: 3em;
-  width: 2.5em;
-  height: 3em;
-  height: 2.5em;
+  width: 3.6em;
+  height: 3.6em;
 
-  font-size: 1.5em;
   color: white;
 
   background-color: #607d8b;
@@ -23,6 +20,10 @@
     0 1px 18px 0 rgb(0 0 0 / 12%);
 
   transition: transform 200ms;
+
+  & > svg {
+    font-size: 1.5em;
+  }
 
   &[data-show="false"] {
     transform: translateY(5em);
@@ -58,4 +59,28 @@
   &:hover {
     color: #cfd8dc;
   }
+}
+
+/* 默认悬浮框样式 */
+.popper {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 1.5em);
+  transform: translateY(-50%);
+
+  display: none;
+  align-items: center;
+
+  padding: 0.4em 0.5em;
+
+  font-size: 0.8em;
+  color: white;
+  white-space: nowrap;
+
+  background-color: #303030;
+  border-radius: 0.3em;
+}
+
+.fab:hover .popper {
+  display: flex;
 }

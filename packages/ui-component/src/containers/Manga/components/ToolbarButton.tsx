@@ -66,6 +66,7 @@ export const ToolbarButton: React.FC<ToolbarButtonProps> = memo(
           <div
             className={clsx(
               classes.toolbarButtonPopper,
+              // TODO: 改为使用 css 实现，避免意外的 bug
               isHover || showTip || isFocus
                 ? classes.opacity1
                 : classes.opacity0,

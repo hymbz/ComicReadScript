@@ -1,7 +1,7 @@
 import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 
 import type { MouseEventHandler } from 'react';
-import { useMemo, useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { throttle } from 'throttle-debounce';
 
 import classes from './index.module.css';
@@ -10,6 +10,8 @@ import { Progress } from './Progress';
 export interface FabProps {
   /** 百分比进度值，小数 */
   progress?: number;
+  /** 提示文本 */
+  tip?: string;
 
   children?: JSX.Element | JSX.Element[];
   onClick?: MouseEventHandler<HTMLButtonElement>;
@@ -22,6 +24,7 @@ export interface FabProps {
  */
 export const Fab: React.FC<FabProps> = ({
   progress = 0,
+  tip,
   children,
   onClick,
 }) => {
@@ -42,13 +45,14 @@ export const Fab: React.FC<FabProps> = ({
 
   return (
     <button
-      className={classes.button}
+      className={classes.fab}
       type="button"
-      data-show={show}
+      data-show={progress || show}
       onClick={onClick}
     >
       {children ?? <MdMenuBook />}
       <Progress value={progress} />
+      {tip ? <div className={classes.popper}>{tip}</div> : null}
     </button>
   );
 };
