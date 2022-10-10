@@ -1,6 +1,6 @@
 import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 
-import type { MouseEventHandler } from 'react';
+import type { CSSProperties, MouseEventHandler } from 'react';
 import { useRef, useState, useEffect } from 'react';
 import { throttle } from 'throttle-debounce';
 
@@ -12,8 +12,11 @@ export interface FabProps {
   progress?: number;
   /** 提示文本 */
   tip?: string;
+  /** 快速拨号按钮 */
+  speedDial?: JSX.Element[];
 
   children?: JSX.Element | JSX.Element[];
+  style?: CSSProperties;
   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
@@ -25,7 +28,9 @@ export interface FabProps {
 export const Fab: React.FC<FabProps> = ({
   progress = 0,
   tip,
+  speedDial,
   children,
+  style,
   onClick,
 }) => {
   // 上次滚动位置
@@ -44,15 +49,37 @@ export const Fab: React.FC<FabProps> = ({
   }, []);
 
   return (
-    <button
-      className={classes.fab}
-      type="button"
-      data-show={progress || show}
-      onClick={onClick}
-    >
-      {children ?? <MdMenuBook />}
-      <Progress value={progress} />
-      {tip ? <div className={classes.popper}>{tip}</div> : null}
-    </button>
+    <div>
+      <div className={classes.fabRoot} style={style}>
+        <button
+          type="button"
+          className={classes.fab}
+          data-show={progress || show}
+          onClick={onClick}
+        >
+          {children ?? <MdMenuBook />}
+          <Progress value={progress} />
+          {tip ? <div className={classes.popper}>{tip}</div> : null}
+        </button>
+
+        <div className={classes.speedDial}>
+          {speedDial?.map((e, i) => (
+            <div
+              className={classes.speedDialItem}
+              style={
+                {
+                  '--show-delay': `${i * 30}ms`,
+                  '--hide-delay': `${(speedDial.length - 1 - i) * 50}ms`,
+                } as CSSProperties
+              }
+              key={e.props.tip || e.key}
+              data-i={i * 30}
+            >
+              {e}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };

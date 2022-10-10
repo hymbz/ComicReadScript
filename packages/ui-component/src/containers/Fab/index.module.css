@@ -1,9 +1,13 @@
-.fab {
-  cursor: pointer;
-
+.fabRoot {
   position: fixed;
   right: 3em;
   bottom: 2em;
+
+  font-size: 1.1em;
+}
+
+.fab {
+  cursor: pointer;
 
   display: flex;
   align-items: center;
@@ -83,4 +87,50 @@
 
 .fab:hover .popper {
   display: flex;
+}
+
+.speedDial {
+  pointer-events: none;
+
+  position: absolute;
+  z-index: -1;
+  bottom: 0;
+
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+
+  width: 100%;
+  padding-bottom: 120%;
+
+  font-size: 1.1em;
+}
+
+.speedDialItem {
+  transform: scale(0);
+
+  margin: 0.1em 0;
+
+  opacity: 0;
+
+  transition-delay: var(--hide-delay);
+  transition-duration: 230ms;
+  transition-property: transform, opacity;
+}
+
+/** 移到快捷拨号上时保持显示 */
+.speedDial:hover {
+  pointer-events: all;
+}
+
+.fabRoot:hover > .speedDial {
+  pointer-events: all;
+
+  & > .speedDialItem {
+    transform: unset;
+
+    opacity: unset;
+
+    transition-delay: var(--show-delay);
+  }
 }

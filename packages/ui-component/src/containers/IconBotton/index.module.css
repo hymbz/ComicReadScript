@@ -26,11 +26,11 @@
   outline: none;
 
   &:hover {
-    background-color: var(--hover_bg_color, #fff2);
+    background-color: var(--hover_bg_color, #fff3);
   }
 
   &:focus {
-    background-color: var(--hover_bg_color, #fff2);
+    background-color: var(--hover_bg_color, #fff3);
   }
 
   &.enabled {

@@ -65,12 +65,14 @@ export const IconBotton: React.FC<IconButtonProps> = memo(
           {children}
         </button>
 
-        <div
-          className={clsx(classes.iconButtonPopper, popperClassName)}
-          data-placement={placement}
-        >
-          {popper || tip}
-        </div>
+        {popper || tip ? (
+          <div
+            className={clsx(classes.iconButtonPopper, popperClassName)}
+            data-placement={placement}
+          >
+            {popper || tip}
+          </div>
+        ) : null}
       </div>
     );
   },

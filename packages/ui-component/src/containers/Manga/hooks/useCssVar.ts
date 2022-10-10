@@ -27,7 +27,7 @@ interface CssVar {
 
 /** 深色模式的 css 变量 */
 const dark: CssVar = {
-  '--hover_bg_color': '#FFF2',
+  '--hover_bg_color': '#FFF3',
   '--hover_bg_color_enable': '#FFFa',
 
   '--switch': '#BDBDBD',
