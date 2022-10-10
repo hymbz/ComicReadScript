@@ -1,4 +1,5 @@
-import { showFab, showComicReadWindow } from '../helper/components';
+import { showComicReadWindow } from '../components/ComicReadWindow';
+import { showFab } from '../components/Fab';
 
 showFab(() => {
   showComicReadWindow(

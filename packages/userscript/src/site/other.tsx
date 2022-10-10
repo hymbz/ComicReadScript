@@ -1,5 +1,5 @@
+import { showComicReadWindow } from '../components/ComicReadWindow';
 import { isEqualArray } from '../helper';
-import { showComicReadWindow } from '../helper/components';
 
 setTimeout(async () => {
   /** 开启了自动加载的网站列表 */
