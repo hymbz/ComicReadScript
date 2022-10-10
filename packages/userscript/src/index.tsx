@@ -8,6 +8,11 @@ switch (window.location.hostname) {
     // dmzj
     break;
   }
+  case 'www.mangabz.com':
+  case 'mangabz.com': {
+    // mangabz
+    break;
+  }
   default: {
     // other
   }
