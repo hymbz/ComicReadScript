@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "shx rm -rf ./dist/* && rollup --config --configPlugin rollup-plugin-ts",
+    "build": "rollup --config --configPlugin rollup-plugin-ts",
     "watch": "rollup --watch --config --configPlugin rollup-plugin-ts",
     "preview": "vite preview"
   },
@@ -61,7 +61,6 @@
     "rollup-plugin-esbuild": "^4.10.1",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-ts": "^3.0.2",
-    "shx": "^0.3.4",
     "tslib": "^2.4.0",
     "vite": "^3.1.2",
     "vite-plugin-svgr": "^2.2.1"

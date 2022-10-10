@@ -66,9 +66,15 @@ module.exports = new Proxy(selfModule, {
   ...config,
 });
 
-export default () =>
-  fs
+export default () => {
+  // 清空 dist 文件夹
+  fs.readdirSync('dist').forEach((fileName) => {
+    fs.unlinkSync(`dist/${fileName}`);
+  });
+
+  return fs
     .readdirSync('src/containers')
     .map((name) =>
       buildConfig({ input: { [name]: `src/containers/${name}/index.tsx` } }),
     );
+};
