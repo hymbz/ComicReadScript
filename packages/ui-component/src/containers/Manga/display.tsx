@@ -9,7 +9,7 @@ import { Manga } from '.';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import 'normalize.css';
 
-const imgUrlList = [
+const imgList = [
   'https://1767566263.rsc.cdn77.org/comic/shirenzhuangsharenshijian/8d3f1/9b9e9c18-8f73-11e9-a9ff-00163e0ca5bd.png!kb_w_read_large_webp',
   'https://1767566263.rsc.cdn77.org/comic/shirenzhuangsharenshijian/8d3f1/9c012fc2-8f73-11e9-b2a5-00163e0ca5bd.png!kb_w_read_large_webp',
   'https://1767566263.rsc.cdn77.org/comic/shirenzhuangsharenshijian/8d3f1/9c486356-8f73-11e9-b2a5-00163e0ca5bd.png!kb_w_read_large_webp',
@@ -56,5 +56,5 @@ export default function DisplayManga() {
     console.log('end func 点击');
   };
 
-  return <Manga imgUrlList={imgUrlList} onExit={onExit} />;
+  return <Manga imgList={imgList} onExit={onExit} />;
 }

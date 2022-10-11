@@ -16,18 +16,20 @@ import type { Option } from './hooks/useStore/OptionSlice';
 
 export interface MangaProps {
   /** 图片url列表 */
-  imgUrlList: string[];
+  imgList: string[];
   /** 页面填充数据 */
   fillEffect?: FillEffect;
   /** 初始化配置 */
   option?: Partial<Option>;
 
   /** 点击结束页按钮时触发的回调 */
-  onExit?: () => void;
+  onExit?: () => void | Promise<void>;
   /** 点击上一话按钮时触发的回调 */
-  onPrev?: () => void;
+  onPrev?: () => void | Promise<void>;
   /** 点击下一话按钮时触发的回调 */
-  onNext?: () => void;
+  onNext?: () => void | Promise<void>;
+  /** 配置发生变化时触发的回调 */
+  onOptionChange?: (option: Option, prevOption: Option) => void | Promise<void>;
 
   /** 修改默认侧边栏按钮列表 */
   editButtonList?: OtherSlice['editButtonList'];
@@ -41,19 +43,19 @@ export interface MangaProps {
  * @param props
  */
 export const Manga: React.FC<MangaProps> = (props) => {
-  const handleScroll = useStore((state) => state.handleScroll);
-  const handleKeyUp = useStore((state) => state.handleKeyUp);
-
   const rootRef = useInit(props);
   const cssVar = useCssVar();
+
+  const handleScroll = useStore((state) => state.handleScroll);
+  const handleKeyUp = useStore((state) => state.handleKeyUp);
 
   return (
     <div
       className={classes.root}
       ref={rootRef}
+      style={cssVar}
       onWheel={handleScroll}
       onKeyUp={handleKeyUp}
-      style={cssVar}
       role="presentation"
     >
       <Toolbar />

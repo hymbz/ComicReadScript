@@ -29,6 +29,7 @@ export const defaultButtonList: DefaultButtonList = [
     '单页模式',
     () => {
       const isOnePageMode = useStore((state) => state.option.onePageMode);
+      const swiper = useStore((state) => state.swiper);
       const handleClick = useCallback(() => {
         let newSlideIndex: number;
 
@@ -52,12 +53,11 @@ export const defaultButtonList: DefaultButtonList = [
         });
 
         setTimeout(() => {
-          const swiper = useStore((state) => state.swiper);
           if (!swiper) return;
           swiper.slideTo(newSlideIndex, 0);
           swiper.update();
         }, 0);
-      }, []);
+      }, [swiper]);
 
       return (
         <IconBotton tip="单页模式" onClick={handleClick}>

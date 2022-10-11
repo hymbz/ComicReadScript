@@ -4,6 +4,7 @@ import create from 'zustand';
 
 import { setAutoFreeze, enableMapSet } from 'immer';
 import { immer } from 'zustand/middleware/immer';
+import { subscribeWithSelector } from 'zustand/middleware';
 
 import type { OptionSlice } from './OptionSlice';
 import { optionSlice } from './OptionSlice';
@@ -32,7 +33,7 @@ declare global {
   /** 对 StateCreator 进行包装 */
   type SelfStateCreator<T> = StateCreator<
     SelfState,
-    [['zustand/immer', never]],
+    [['zustand/subscribeWithSelector', never], ['zustand/immer', never]],
     [],
     T
   >;
@@ -56,4 +57,6 @@ const store: SelfStateCreator<SelfState> = (...a) => ({
   rootRef: null,
 });
 
-export const useStore = create<SelfState>()(immer(store));
+export const useStore = create<SelfState>()(
+  subscribeWithSelector(immer(store)),
+);

@@ -1,15 +1,17 @@
-import { showComicReadWindow } from '../components/ComicReadWindow';
 import { useFab } from '../components/Fab';
+import { useManga } from '../components/Manga';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 (async () => {
-  const [showFab, setFab] = useFab({
+  const [showManga] = useManga();
+
+  const [showFab] = useFab({
     onClick: () => {
-      showComicReadWindow(
-        [...document.querySelectorAll('.inner_img img')].map(
-          (i) => i.getAttribute('data-original')!,
-        ),
-      );
+      showManga((draftProps) => {
+        draftProps.imgList = [
+          ...document.querySelectorAll('.inner_img img'),
+        ].map((i) => i.getAttribute('data-original')!);
+      });
     },
   });
 

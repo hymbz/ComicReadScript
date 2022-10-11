@@ -7,13 +7,13 @@ import shadow from 'react-shadow';
 import produce from 'immer';
 import { querySelector } from '../helper';
 
-type Recipe = (draftProps: FabProps) => void;
+export type FabRecipe = (draftProps: FabProps) => void;
 
 let FabRoot: ReactDOM.Root | null = null;
 export const useFab = (
   props?: FabProps,
-): [(recipe?: Recipe) => void, (recipe: Recipe) => void] => {
-  let fabProps = props;
+): [(recipe?: FabRecipe) => void, (recipe: FabRecipe) => void] => {
+  let fabProps = props ?? {};
 
   let dom = querySelector('#readFab');
   if (!dom) {
@@ -24,11 +24,11 @@ export const useFab = (
 
   if (!FabRoot) FabRoot = ReactDOM.createRoot(dom);
 
-  const set = (recipe: Recipe) => {
+  const set = (recipe: FabRecipe) => {
     fabProps = produce(fabProps, recipe);
   };
 
-  const show = (recipe?: Recipe) => {
+  const show = (recipe?: FabRecipe) => {
     if (recipe) set(recipe);
 
     FabRoot!.render(

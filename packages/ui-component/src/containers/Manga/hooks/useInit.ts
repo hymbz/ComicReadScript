@@ -14,12 +14,13 @@ const selector = ({ initSwiper, img: { resizeObserver } }: SelfState) => ({
  * @param props
  */
 export const useInit = ({
-  imgUrlList,
+  imgList,
   fillEffect,
   option,
   onExit,
   onPrev,
   onNext,
+  onOptionChange,
   editButtonList,
   editSettingList,
 }: MangaProps) => {
@@ -51,7 +52,7 @@ export const useInit = ({
     useStore.setState((state) => {
       if (fillEffect) state.fillEffect = fillEffect;
 
-      imgUrlList.forEach((imgUrl, index) => {
+      imgList.forEach((imgUrl, index) => {
         state.imgList[index] = {
           type: '',
           index,
@@ -60,7 +61,7 @@ export const useInit = ({
         };
       });
     });
-  }, [imgUrlList, fillEffect]);
+  }, [imgList, fillEffect]);
 
   useEffect(() => {
     useStore.setState((state) => {
@@ -72,6 +73,12 @@ export const useInit = ({
       if (editSettingList) state.editSettingList = editSettingList;
     });
   }, [editButtonList, editSettingList, onExit, onNext, onPrev]);
+
+  // 绑定配置发生改变时的回调
+  useEffect(() => {
+    if (onOptionChange)
+      useStore.subscribe((state) => state.option, onOptionChange);
+  }, [onOptionChange]);
 
   return rootRef;
 };

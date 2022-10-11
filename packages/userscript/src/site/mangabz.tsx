@@ -1,8 +1,9 @@
 import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
-import { showComicReadWindow } from '../components/ComicReadWindow';
+import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { useFab } from '../components/Fab';
+import { useManga } from '../components/Manga';
 import { useSiteValue } from '../helper';
 
 // 页面自带的变量
@@ -17,12 +18,11 @@ declare const MANGABZ_IMAGE_COUNT: number;
 
 (async () => {
   const [options, setOptions] = await useSiteValue('mangabz', {
-    // TODO: 完成 comicRead 的 options 修改回调
-    option: undefined,
+    option: undefined as MangaProps['option'] | undefined,
     autoLoad: false,
   });
 
-  const [showFab, setFab] = useFab({
+  const [showFab] = useFab({
     tip: '阅读模式',
     speedDial: [
       <IconBotton
@@ -34,6 +34,11 @@ declare const MANGABZ_IMAGE_COUNT: number;
         <AutoStories />
       </IconBotton>,
     ],
+  });
+
+  const [showManga] = useManga({
+    imgList: [],
+    onOptionChange: (option) => setOptions({ ...options, option }),
   });
 
   const getImgList = async (imgList: string[] = []): Promise<string[]> => {
@@ -84,9 +89,9 @@ declare const MANGABZ_IMAGE_COUNT: number;
     if (!imgList.length) imgList = await getImgList();
 
     // TODO: 显示后需要将 #comicRead dom 的 display 改为 none 再改回来才能正常显示
-    setTimeout(() => {
-      showComicReadWindow(imgList);
-    }, 1000 * 3);
+    showManga((draftProps) => {
+      draftProps.imgList = imgList;
+    });
   };
   showFab((draftProps) => {
     draftProps.onClick = loadAndShowComic;

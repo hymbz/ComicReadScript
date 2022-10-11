@@ -1,4 +1,5 @@
-import { showComicReadWindow } from '../components/ComicReadWindow';
+import type { MangaRecipe } from '../components/Manga';
+import { useManga } from '../components/Manga';
 import { isEqualArray } from '../helper';
 
 // TODO: 对保存网站的 option 进行保存
@@ -14,6 +15,8 @@ setTimeout(async () => {
   let waitAutoLoad = isAutoLoad;
   /** 是否正在后台不断检查图片 */
   let running = 0;
+  /** 进入阅读模式 */
+  let showManga: undefined | ((recipe?: MangaRecipe) => void);
 
   /**
    * 检查搜索页面上符合标准的图片
@@ -39,7 +42,11 @@ setTimeout(async () => {
 
     if (waitAutoLoad) {
       waitAutoLoad = false;
-      showComicReadWindow(imgList);
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      if (!showManga) [showManga] = useManga();
+      showManga((draftProps) => {
+        draftProps.imgList = imgList;
+      });
     }
 
     return true;
@@ -60,7 +67,11 @@ setTimeout(async () => {
     if (!running) running = window.setInterval(checkFindImg, 2000);
 
     if (checkFindImg()) {
-      showComicReadWindow(imgList);
+      if (!showManga) [showManga] = useManga();
+      showManga((draftProps) => {
+        draftProps.imgList = imgList;
+      });
+
       // 成功进入阅读模式后不再自动进入
       if (waitAutoLoad) waitAutoLoad = false;
     }
