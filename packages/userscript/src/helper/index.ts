@@ -46,19 +46,29 @@ export const insertDom = (
   node.insertBefore(frag, referenceNode);
 };
 
-export const useSiteValue = async <T extends Record<string, unknown>>(
-  /** 站点名 */
+/**
+ *
+ * @param name 站点名
+ * @param defaultValue 默认值
+ * @param onChange 发生变更时的回调
+ */
+export const useSiteOptions = async <T extends Record<string, unknown>>(
   name: string,
-  /** 默认值 */
   defaultValue: T,
-  /** 发生变更时的回调 */
-  onChange?: (value: T) => Promise<void>,
-): Promise<[T, (newValue: T) => Promise<void>]> => {
-  let value = Object.freeze(await GM.getValue(name, defaultValue));
-  const set = async (newValue: T) => {
-    value = Object.freeze(newValue);
-    await GM.setValue(name, value);
-    await onChange?.(value);
+  // TODO: 重构为数组
+  onChange?: (options: T) => Promise<void>,
+) => {
+  const rawValue = await GM.getValue<T | undefined>(name);
+  let options = rawValue ?? defaultValue;
+
+  return {
+    options,
+    setOptions: async (newValue: T) => {
+      options = newValue;
+      await GM.setValue(name, options);
+      await onChange?.(options);
+    },
+    /** 该站点是否有储存配置 */
+    isRecorded: rawValue !== undefined,
   };
-  return [value, set];
 };

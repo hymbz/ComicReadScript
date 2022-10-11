@@ -4,7 +4,7 @@ import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { useFab } from '../components/Fab';
 import { useManga } from '../components/Manga';
-import { useSiteValue } from '../helper';
+import { useSiteOptions } from '../helper';
 
 // 页面自带的变量
 declare const MANGABZ_CID: number;
@@ -17,7 +17,7 @@ declare const MANGABZ_CURL: string;
 declare const MANGABZ_IMAGE_COUNT: number;
 
 (async () => {
-  const [options, setOptions] = await useSiteValue('mangabz', {
+  const { options, setOptions } = await useSiteOptions('mangabz', {
     option: undefined as MangaProps['option'] | undefined,
     autoLoad: false,
   });

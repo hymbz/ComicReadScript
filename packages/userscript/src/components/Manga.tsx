@@ -20,7 +20,7 @@ let mangaRoot: ReactDOM.Root | null = null;
  */
 export const useManga = (
   props?: MangaProps,
-): [(recipe?: MangaRecipe) => void, (recipe: MangaRecipe) => void] => {
+): [(recipe?: MangaRecipe) => void, (recipe: MangaRecipe) => void, boolean] => {
   let mangaProps = props ?? { imgList: [] };
 
   let dom = querySelector('#comicRead');
@@ -30,7 +30,9 @@ export const useManga = (
     document.body.appendChild(dom);
   }
 
+  let enbale = false;
   const onExit = () => {
+    enbale = false;
     dom!.style.display = 'none';
     document.body.style.overflow = 'unset';
   };
@@ -77,8 +79,9 @@ export const useManga = (
       </shadow.div>,
     );
 
+    enbale = true;
     document.body.style.overflow = 'hidden';
   };
 
-  return [show, set];
+  return [show, set, enbale];
 };

@@ -382,12 +382,19 @@ declare let unsafeWindow: Window & { [key: string]: any };
 
 /**
  * Adds the given style to the document and returns the injected style element.
+ *
+ * @param css
  */
 declare function GM_addStyle(css: string): HTMLStyleElement;
 
 // Storage
 
-/** Sets the value of `name` to the storage */
+/**
+ * Sets the value of `name` to the storage
+ *
+ * @param name
+ * @param value
+ */
 declare function GM_setValue(name: string, value: any): void;
 
 /**
@@ -398,22 +405,36 @@ declare function GM_setValue(name: string, value: any): void;
  * different browser tabs to communicate with each other.
  *
  * @param name Name of the observed variable
+ * @param listener
  */
 declare function GM_addValueChangeListener(
   name: string,
   listener: Tampermonkey.ValueChangeListener,
 ): number;
 
-/** Removes a change listener by its ID */
+/**
+ * Removes a change listener by its ID
+ *
+ * @param listenerId
+ */
 declare function GM_removeValueChangeListener(listenerId: number): void;
 
-/** Gets the value of 'name' from storage */
+/**
+ * Gets the value of 'name' from storage
+ *
+ * @param name
+ * @param defaultValue
+ */
 declare function GM_getValue<TValue>(
   name: string,
   defaultValue?: TValue,
 ): TValue;
 
-/** Deletes 'name' from storage */
+/**
+ * Deletes 'name' from storage
+ *
+ * @param name
+ */
 declare function GM_deleteValue(name: string): void;
 
 /** Lists all names of the storage */
@@ -421,12 +442,18 @@ declare function GM_listValues(): string[];
 
 // Resources
 
-/** Get the content of a predefined `@resource` tag at the script header */
+/**
+ * Get the content of a predefined `@resource` tag at the script header
+ *
+ * @param name
+ */
 declare function GM_getResourceText(name: string): string | null;
 
 /**
  * Get the base64 encoded URI of a predefined `@resource` tag at the script
  * header
+ *
+ * @param name
  */
 declare function GM_getResourceURL(name: string): string;
 
@@ -435,6 +462,10 @@ declare function GM_getResourceURL(name: string): string;
 /**
  * Register a menu to be displayed at the Tampermonkey menu at pages where this
  * script runs and returns a menu command ID.
+ *
+ * @param name
+ * @param onClick
+ * @param accessKey
  */
 declare function GM_registerMenuCommand(
   name: string,
@@ -445,17 +476,27 @@ declare function GM_registerMenuCommand(
 /**
  *  Unregister a menu command that was previously registered by
  * `GM_registerMenuCommand` or `GM.registerMenuCommand` with the given menu command ID.
+ *
+ * @param menuCommandId
  */
 declare function GM_unregisterMenuCommand(menuCommandId: number): void;
 
 // Requests
 
-/** Makes an xmlHttpRequest */
+/**
+ * Makes an xmlHttpRequest
+ *
+ * @param details
+ */
 declare function GM_xmlhttpRequest<TContext = any>(
   details: Tampermonkey.Request<TContext>, // tslint:disable-line:no-unnecessary-generics
 ): Tampermonkey.AbortHandle<void>;
 
-/** Downloads a given URL to the local disk */
+/**
+ * Downloads a given URL to the local disk
+ *
+ * @param details
+ */
 declare function GM_download(
   details: Tampermonkey.DownloadRequest,
 ): Tampermonkey.AbortHandle<boolean>;
@@ -466,13 +507,25 @@ declare function GM_download(
 
 // Tabs
 
-/** Saves the tab object to reopen it after a page unload */
+/**
+ * Saves the tab object to reopen it after a page unload
+ *
+ * @param obj
+ */
 declare function GM_saveTab(obj: object): void;
 
-/** Gets a object that is persistent as long as this tab is open */
+/**
+ * Gets a object that is persistent as long as this tab is open
+ *
+ * @param callback
+ */
 declare function GM_getTab(callback: (obj: any) => void): void;
 
-/** Gets all tab objects as a hash to communicate with other script instances */
+/**
+ * Gets all tab objects as a hash to communicate with other script instances
+ *
+ * @param callback
+ */
 declare function GM_getTabs(
   callback: (tabsMap: { [tabId: number]: any }) => void,
 ): void;
@@ -481,26 +534,13 @@ declare function GM_getTabs(
 
 declare const GM_info: Tampermonkey.ScriptInfo;
 
-/** Log a message to the console */
+/**
+ * Log a message to the console
+ *
+ * @param {...any} message
+ */
 declare function GM_log(...message: any[]): void;
 
-/**
- * Opens a new tab with this url.
- * The options object can have the following properties:
- * - `active` decides whether the new tab should be focused,
- * - `insert` that inserts the new tab after the current one and
- * - `setParent` makes the browser re-focus the current tab on close.
- *
- * Otherwise the new tab is just appended.
- * If `options` is boolean (loadInBackground) it has the opposite meaning of
- * active and was added to achieve Greasemonkey 3.x compatibility.
- *
- * If neither active nor loadInBackground is given, then the tab will not be
- * focused.
- *
- * @returns Object with the function `close`, the listener `onclose` and a flag
- * called `closed`.
- */
 declare function GM_openInTab(
   url: string,
   options?: Tampermonkey.OpenTabOptions | boolean,
@@ -509,6 +549,7 @@ declare function GM_openInTab(
 /**
  * Shows a HTML5 Desktop notification and/or highlight the current tab.
  *
+ * @param details
  * @param ondone If specified used instead of `details.ondone`
  */
 declare function GM_notification(
@@ -521,6 +562,7 @@ declare function GM_notification(
  *
  * @param text Text of the notification
  * @param title Notification title. If not specified the script name is used
+ * @param image
  * @param onclick Called in case the user clicks the notification
  */
 declare function GM_notification(
@@ -535,6 +577,9 @@ declare function GM_notification(
  * The parameter 'info' can be an object like
  * `{ type: 'text', mimetype: 'text/plain'}` or just a string expressing the
  * type ("text" or "html").
+ *
+ * @param data
+ * @param info
  */
 declare function GM_setClipboard(
   data: string,
@@ -611,7 +656,7 @@ declare const GM: Readonly<{
    */
   registerMenuCommand(
     name: string,
-    onClick: () => void,
+    onClick: Promise<void> | (() => void),
     accessKey?: string,
   ): Promise<number>;
   /**

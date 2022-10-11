@@ -1,22 +1,67 @@
+import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
+
+import { IconBotton } from '@crs/ui-component/dist/IconBotton';
+import type { MangaProps } from '@crs/ui-component/dist/Manga';
+import { useFab } from '../components/Fab';
 import type { MangaRecipe } from '../components/Manga';
 import { useManga } from '../components/Manga';
-import { isEqualArray } from '../helper';
+import { isEqualArray, useSiteOptions } from '../helper';
 
 // TODO: 对保存网站的 option 进行保存
 
 setTimeout(async () => {
-  /** 开启了自动加载的网站列表 */
-  const autoLoadList = await GM.getValue<string[]>('autoLoadList', []);
-  /** 是否开启了自动加载 */
-  const isAutoLoad = autoLoadList.includes(window.location.hostname);
+  const { options, setOptions, isRecorded } = await useSiteOptions(
+    window.location.hostname,
+    {
+      option: undefined as MangaProps['option'] | undefined,
+      autoLoad: false,
+    },
+  );
+
   /** 图片列表 */
   let imgList: string[] = [];
   /** 是否在等待自动加载完毕后进入阅读模式 */
-  let waitAutoLoad = isAutoLoad;
+  const waitAutoLoad = options.autoLoad;
   /** 是否正在后台不断检查图片 */
   let running = 0;
-  /** 进入阅读模式 */
-  let showManga: undefined | ((recipe?: MangaRecipe) => void);
+
+  let showManga: (recipe?: MangaRecipe | undefined) => void | undefined;
+  let setManga: (recipe: MangaRecipe) => void | undefined;
+  /** 当前是否处于阅读模式 */
+  let isReadMode: boolean;
+
+  const initUseManga = () => {
+    if (showManga === undefined) {
+      [showManga, setManga, isReadMode] = useManga({
+        imgList,
+        onOptionChange: (option) => setOptions({ ...options, option }),
+      });
+    }
+  };
+
+  /** 显示 Fab */
+  const showFab = () => {
+    useFab({
+      tip: '阅读模式',
+      onClick: () => {
+        showManga();
+      },
+      speedDial: [
+        <IconBotton
+          tip="自动加载"
+          placement="left"
+          enabled={options.autoLoad}
+          onClick={() =>
+            setOptions({ ...options, autoLoad: !options.autoLoad })
+          }
+        >
+          <AutoStories />
+        </IconBotton>,
+      ],
+    })[0]();
+  };
+  // 如果网站有储存配置，就直接显示 Fab
+  if (isRecorded) showFab();
 
   /**
    * 检查搜索页面上符合标准的图片
@@ -29,7 +74,7 @@ setTimeout(async () => {
       .map((e) => e.src);
 
     if (newImgList.length === 0) {
-      if (!isAutoLoad) {
+      if (!options.autoLoad) {
         clearInterval(running);
         // eslint-disable-next-line no-alert
         alert('没有找到图片');
@@ -38,50 +83,40 @@ setTimeout(async () => {
     }
 
     // 在发现新图片后重新渲染
-    if (!isEqualArray(imgList, newImgList)) imgList = newImgList;
+    if (!isEqualArray(imgList, newImgList)) {
+      imgList = newImgList;
 
-    if (waitAutoLoad) {
-      waitAutoLoad = false;
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      if (!showManga) [showManga] = useManga();
-      showManga((draftProps) => {
-        draftProps.imgList = imgList;
-      });
+      if (isReadMode) {
+        showManga?.((draftProps) => {
+          draftProps.imgList = imgList;
+        });
+      } else {
+        setManga?.((draftProps) => {
+          draftProps.imgList = imgList;
+        });
+      }
     }
+
+    if (waitAutoLoad) showManga();
 
     return true;
   };
 
-  if (isAutoLoad) {
+  if (isRecorded) {
+    initUseManga();
     // 为了保证兼容，只能简单粗暴的不断检查网页的图片来更新数据
     running = window.setInterval(checkFindImg, 2000);
-
-    await GM.registerMenuCommand('不再自动开启阅读模式', async () => {
-      // debugger;
-      autoLoadList.splice(autoLoadList.indexOf(''), 1);
-      await GM.setValue('autoLoadList', autoLoadList);
-    });
   }
 
-  await GM.registerMenuCommand('进入简易漫画阅读模式', async () => {
+  await GM.registerMenuCommand('进入漫画阅读模式', async () => {
+    initUseManga();
+
     if (!running) running = window.setInterval(checkFindImg, 2000);
+    if (!checkFindImg()) return;
+    showManga();
 
-    if (checkFindImg()) {
-      if (!showManga) [showManga] = useManga();
-      showManga((draftProps) => {
-        draftProps.imgList = imgList;
-      });
-
-      // 成功进入阅读模式后不再自动进入
-      if (waitAutoLoad) waitAutoLoad = false;
-    }
-
-    if (!isAutoLoad)
-      await GM.registerMenuCommand('为此站点自动开启阅读模式', async () => {
-        await GM.setValue('autoLoadList', [
-          ...autoLoadList,
-          window.location.hostname,
-        ]);
-      });
+    // 自动启用自动加载功能
+    await setOptions({ ...options, autoLoad: true });
+    showFab();
   });
 });
