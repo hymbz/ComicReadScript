@@ -4,10 +4,17 @@ import FabStyle from '@crs/ui-component/dist/Fab.css';
 import IconBottonStyle from '@crs/ui-component/dist/IconBotton.css';
 import ReactDOM from 'react-dom/client';
 import shadow from 'react-shadow';
+import produce from 'immer';
 import { querySelector } from '../helper';
 
+type Recipe = (draftProps: FabProps) => void;
+
 let FabRoot: ReactDOM.Root | null = null;
-export const showFab = (props: FabProps) => {
+export const useFab = (
+  props?: FabProps,
+): [(recipe?: Recipe) => void, (recipe: Recipe) => void] => {
+  let fabProps = props;
+
   let dom = querySelector('#readFab');
   if (!dom) {
     dom = document.createElement('div');
@@ -16,23 +23,22 @@ export const showFab = (props: FabProps) => {
   }
 
   if (!FabRoot) FabRoot = ReactDOM.createRoot(dom);
-  FabRoot.render(
-    <shadow.div>
-      <Fab {...props} />
-      <style type="text/css">{IconBottonStyle}</style>
-      <style type="text/css">{FabStyle}</style>
-    </shadow.div>,
-  );
 
-  const update = (newProps: FabProps) => {
+  const set = (recipe: Recipe) => {
+    fabProps = produce(fabProps, recipe);
+  };
+
+  const show = (recipe?: Recipe) => {
+    if (recipe) set(recipe);
+
     FabRoot!.render(
       <shadow.div>
-        <Fab {...newProps} />
+        <Fab {...fabProps} />
         <style type="text/css">{IconBottonStyle}</style>
         <style type="text/css">{FabStyle}</style>
       </shadow.div>,
     );
   };
 
-  return update;
+  return [show, set];
 };

@@ -2,7 +2,7 @@ import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import { showComicReadWindow } from '../components/ComicReadWindow';
-import { showFab } from '../components/Fab';
+import { useFab } from '../components/Fab';
 import { useSiteValue } from '../helper';
 
 // 页面自带的变量
@@ -22,6 +22,20 @@ declare const MANGABZ_IMAGE_COUNT: number;
     autoLoad: false,
   });
 
+  const [showFab, setFab] = useFab({
+    tip: '阅读模式',
+    speedDial: [
+      <IconBotton
+        tip="自动加载"
+        placement="left"
+        enabled={options.autoLoad}
+        onClick={() => setOptions({ ...options, autoLoad: !options.autoLoad })}
+      >
+        <AutoStories />
+      </IconBotton>,
+    ],
+  });
+
   const getImgList = async (imgList: string[] = []): Promise<string[]> => {
     const urlParams = Object.entries({
       cid: MANGABZ_CID,
@@ -34,9 +48,6 @@ declare const MANGABZ_IMAGE_COUNT: number;
     })
       .map(([key, val]) => `${key}=${val}`)
       .join('&');
-
-    // FIXME: 完成 FAB 进度联调后删除
-    console.log(imgList.length);
 
     const res = await GM.xmlHttpRequest({
       method: 'GET',
@@ -53,10 +64,17 @@ declare const MANGABZ_IMAGE_COUNT: number;
     const newImgList = [...imgList, ...(eval(res.responseText) as string[])];
 
     if (imgList.length !== MANGABZ_IMAGE_COUNT) {
-      // TODO: 通过 fab 显示进度
-      // comicReadMode.innerText = `漫画加载中 - ${imgList.length}/${MANGABZ_IMAGE_COUNT}`;
+      showFab((draftProps) => {
+        draftProps.progress = imgList.length / MANGABZ_IMAGE_COUNT;
+        draftProps.tip = `加载中 - ${imgList.length}/${MANGABZ_IMAGE_COUNT}`;
+      });
       return getImgList(newImgList);
     }
+
+    showFab((draftProps) => {
+      draftProps.progress = 1;
+      draftProps.tip = '阅读模式';
+    });
 
     return newImgList;
   };
@@ -70,20 +88,8 @@ declare const MANGABZ_IMAGE_COUNT: number;
       showComicReadWindow(imgList);
     }, 1000 * 3);
   };
-
-  showFab({
-    tip: '进入阅读模式',
-    onClick: loadAndShowComic,
-    speedDial: [
-      <IconBotton
-        tip="自动加载"
-        placement="left"
-        enabled={options.autoLoad}
-        onClick={() => setOptions({ ...options, autoLoad: !options.autoLoad })}
-      >
-        <AutoStories />
-      </IconBotton>,
-    ],
+  showFab((draftProps) => {
+    draftProps.onClick = loadAndShowComic;
   });
 
   if (options.autoLoad) await loadAndShowComic();

@@ -187,6 +187,7 @@ importers:
       babel: ^6.23.0
       core-js: ^3.22.0
       esbuild: ^0.14.36
+      immer: ^9.0.15
       react: ^18.0.0
       react-dom: ^18.0.0
       react-icons: ^4.4.0
@@ -208,6 +209,7 @@ importers:
       axios: 0.26.1
       axios-userscript-adapter: 0.1.12_axios@0.26.1
       core-js: 3.25.2
+      immer: 9.0.15
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-icons: 4.4.0_react@18.2.0

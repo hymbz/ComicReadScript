@@ -1,12 +1,17 @@
 import { showComicReadWindow } from '../components/ComicReadWindow';
-import { showFab } from '../components/Fab';
+import { useFab } from '../components/Fab';
 
-showFab({
-  onClick: () => {
-    showComicReadWindow(
-      [...document.querySelectorAll('.inner_img img')].map(
-        (i) => i.getAttribute('data-original')!,
-      ),
-    );
-  },
-});
+// eslint-disable-next-line @typescript-eslint/require-await
+(async () => {
+  const [showFab, setFab] = useFab({
+    onClick: () => {
+      showComicReadWindow(
+        [...document.querySelectorAll('.inner_img img')].map(
+          (i) => i.getAttribute('data-original')!,
+        ),
+      );
+    },
+  });
+
+  showFab();
+})();
