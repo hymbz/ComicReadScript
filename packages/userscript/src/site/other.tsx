@@ -1,6 +1,8 @@
 import { showComicReadWindow } from '../components/ComicReadWindow';
 import { isEqualArray } from '../helper';
 
+// TODO: 对保存网站的 option 进行保存
+
 setTimeout(async () => {
   /** 开启了自动加载的网站列表 */
   const autoLoadList = await GM.getValue<string[]>('autoLoadList', []);

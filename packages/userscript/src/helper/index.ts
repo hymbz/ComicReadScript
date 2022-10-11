@@ -45,3 +45,20 @@ export const insertDom = (
   while (temp.firstChild) frag.appendChild(temp.firstChild);
   node.insertBefore(frag, referenceNode);
 };
+
+export const useSiteValue = async <T extends Record<string, unknown>>(
+  /** 站点名 */
+  name: string,
+  /** 默认值 */
+  defaultValue: T,
+  /** 发生变更时的回调 */
+  onChange?: (value: T) => Promise<void>,
+): Promise<[T, (newValue: T) => Promise<void>]> => {
+  let value = Object.freeze(await GM.getValue(name, defaultValue));
+  const set = async (newValue: T) => {
+    value = Object.freeze(newValue);
+    await GM.setValue(name, value);
+    await onChange?.(value);
+  };
+  return [value, set];
+};
