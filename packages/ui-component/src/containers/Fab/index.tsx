@@ -49,36 +49,34 @@ export const Fab: React.FC<FabProps> = ({
   }, []);
 
   return (
-    <div>
-      <div className={classes.fabRoot} style={style}>
-        <button
-          type="button"
-          className={classes.fab}
-          data-show={progress || show}
-          onClick={onClick}
-        >
-          {children ?? <MdMenuBook />}
-          <Progress value={progress} />
-          {tip ? <div className={classes.popper}>{tip}</div> : null}
-        </button>
+    <div className={classes.fabRoot} style={style}>
+      <button
+        type="button"
+        className={classes.fab}
+        data-show={progress || show}
+        onClick={onClick}
+      >
+        {children ?? <MdMenuBook />}
+        <Progress value={progress} />
+        {tip ? <div className={classes.popper}>{tip}</div> : null}
+      </button>
 
-        <div className={classes.speedDial}>
-          {speedDial?.map((e, i) => (
-            <div
-              className={classes.speedDialItem}
-              style={
-                {
-                  '--show-delay': `${i * 30}ms`,
-                  '--hide-delay': `${(speedDial.length - 1 - i) * 50}ms`,
-                } as CSSProperties
-              }
-              key={e.props.tip || e.key}
-              data-i={i * 30}
-            >
-              {e}
-            </div>
-          ))}
-        </div>
+      <div className={classes.speedDial}>
+        {speedDial?.map((e, i) => (
+          <div
+            className={classes.speedDialItem}
+            style={
+              {
+                '--show-delay': `${i * 30}ms`,
+                '--hide-delay': `${(speedDial.length - 1 - i) * 50}ms`,
+              } as CSSProperties
+            }
+            key={e.props.tip || e.key}
+            data-i={i * 30}
+          >
+            {e}
+          </div>
+        ))}
       </div>
     </div>
   );

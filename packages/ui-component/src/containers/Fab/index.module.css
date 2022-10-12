@@ -32,7 +32,7 @@
   }
 
   &[data-show="false"] {
-    transform: translateY(5em);
+    transform: scale(0);
   }
 
   &:hover {
