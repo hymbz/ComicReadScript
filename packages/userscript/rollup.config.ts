@@ -138,6 +138,11 @@ export default async () => {
           intro: importCode,
         },
         context: 'this',
+        onwarn(warning, warn) {
+          // 禁用使用 eval 的警告
+          if (warning.code === 'EVAL') return;
+          warn(warning);
+        },
       }),
     ),
 
