@@ -4,16 +4,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "rollup --config --configPlugin rollup-plugin-ts",
-    "watch": "rollup --watch --config --configPlugin rollup-plugin-ts",
+    "build": "rollup --config --configPlugin rollup-plugin-esbuild",
+    "watch": "rollup --watch --config --configPlugin rollup-plugin-esbuild",
     "preview": "vite preview"
   },
   "dependencies": {
     "@crs/userscript": "workspace:*",
-    "@floating-ui/react-dom": "^1.0.0",
     "@material-design-icons/svg": "^0.13.0",
     "clsx": "^1.2.1",
-    "color": "^4.2.3",
     "immer": "^9.0.15",
     "panzoom": "^9.4.3",
     "ramda": "^0.28.0",
@@ -25,17 +23,11 @@
     "zustand": "^4.1.1"
   },
   "devDependencies": {
-    "@iconify-json/mdi": "^1.1.33",
-    "@iconify/json": "^2.1.108",
     "@rollup/plugin-commonjs": "^22.0.2",
     "@rollup/plugin-node-resolve": "^14.1.0",
     "@svgr/rollup": "^6.4.0",
-    "@types/color": "^3.0.3",
-    "@types/lodash": "^4.14.185",
-    "@types/ramda": "^0.28.15",
     "@types/react": "^18.0.20",
     "@types/react-dom": "^18.0.6",
-    "@types/rollup-plugin-css-only": "^3.1.0",
     "@types/throttle-debounce": "^5.0.0",
     "@typescript-eslint/eslint-plugin": "^5.37.0",
     "@typescript-eslint/parser": "^5.37.0",

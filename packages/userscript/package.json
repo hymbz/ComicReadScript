@@ -23,12 +23,6 @@
     "react-shadow": "^19.0.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.17.9",
-    "@babel/plugin-transform-runtime": "^7.17.0",
-    "@babel/preset-env": "^7.16.11",
-    "@babel/preset-react": "^7.16.7",
-    "@babel/preset-typescript": "^7.16.7",
-    "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^21.1.0",
     "@rollup/plugin-node-resolve": "^13.2.1",
     "@rollup/plugin-replace": "^4.0.0",
@@ -36,7 +30,6 @@
     "@types/node": "^18.7.14",
     "@types/react": "^18.0.5",
     "@types/react-dom": "^18.0.1",
-    "babel": "^6.23.0",
     "esbuild": "^0.14.36",
     "rollup": "^2.70.2",
     "rollup-plugin-delete": "^2.0.0",

@@ -7,8 +7,6 @@ import type { MangaRecipe } from '../components/Manga';
 import { useManga } from '../components/Manga';
 import { isEqualArray, useSiteOptions } from '../helper';
 
-// TODO: 对保存网站的 option 进行保存
-
 setTimeout(async () => {
   const { options, setOptions, isRecorded } = await useSiteOptions(
     window.location.hostname,
@@ -95,9 +93,9 @@ setTimeout(async () => {
           draftProps.imgList = imgList;
         });
       }
-    }
 
-    if (waitAutoLoad) showManga();
+      if (waitAutoLoad) showManga();
+    }
 
     return true;
   };
