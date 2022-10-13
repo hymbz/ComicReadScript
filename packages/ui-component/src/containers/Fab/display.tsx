@@ -25,7 +25,7 @@ const speedDial = [
     </IconBotton>
   ),
   () => (
-    <IconBotton placement="left" tip="Filter3">
+    <IconBotton placement="left" tip="Filter3" enabled>
       <Filter3 />
     </IconBotton>
   ),

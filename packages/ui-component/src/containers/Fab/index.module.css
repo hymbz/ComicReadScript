@@ -5,6 +5,12 @@
   bottom: 2em;
 
   font-size: 1.1em;
+
+  transition: transform 200ms;
+
+  &[data-show="false"] {
+    transform: scale(0);
+  }
 }
 
 .fab {
@@ -26,14 +32,8 @@
   box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 6px 10px 0 rgb(0 0 0 / 14%),
     0 1px 18px 0 rgb(0 0 0 / 12%);
 
-  transition: transform 200ms;
-
   & > svg {
     font-size: 1.5em;
-  }
-
-  &[data-show="false"] {
-    transform: scale(0);
   }
 
   &:hover {
@@ -107,8 +107,6 @@
   padding-bottom: 120%;
 
   font-size: 1.1em;
-
-  opacity: 0;
 }
 
 .speedDialItem {
@@ -126,14 +124,10 @@
 /* 移到快捷拨号上时保持显示 */
 .speedDial:hover {
   pointer-events: all;
-
-  opacity: 1;
 }
 
 .fabRoot:hover > .speedDial {
   pointer-events: all;
-
-  opacity: 1;
 
   & > .speedDialItem {
     transform: unset;
@@ -155,5 +149,13 @@
   width: 100vw;
   height: 100vh;
 
-  background-color: #0003;
+  opacity: 0;
+  background-image: linear-gradient(to left top, #0009, #0003);
+
+  transition: opacity 200ms;
+}
+
+.fabRoot:hover .backdrop,
+.speedDial:hover .backdrop {
+  opacity: 1;
 }

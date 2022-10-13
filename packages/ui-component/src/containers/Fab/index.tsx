@@ -49,37 +49,34 @@ export const Fab: React.FC<FabProps> = ({
   }, []);
 
   return (
-    <div className={classes.fabRoot} style={style}>
-      <button
-        type="button"
-        className={classes.fab}
-        data-show={progress || show}
-        onClick={onClick}
-      >
+    <div className={classes.fabRoot} style={style} data-show={progress || show}>
+      <button type="button" className={classes.fab} onClick={onClick}>
         {children ?? <MdMenuBook />}
         <Progress value={progress} />
         {tip ? <div className={classes.popper}>{tip}</div> : null}
       </button>
 
-      <div className={classes.speedDial}>
-        <div className={classes.backdrop} />
-        {speedDial?.map((SpeedDialItem, i) => (
-          <div
-            className={classes.speedDialItem}
-            style={
-              {
-                '--show-delay': `${i * 30}ms`,
-                '--hide-delay': `${(speedDial.length - 1 - i) * 50}ms`,
-              } as CSSProperties
-            }
-            // eslint-disable-next-line react/no-array-index-key
-            key={i}
-            data-i={i * 30}
-          >
-            <SpeedDialItem />
-          </div>
-        ))}
-      </div>
+      {speedDial?.length ? (
+        <div className={classes.speedDial}>
+          <div className={classes.backdrop} />
+          {speedDial?.map((SpeedDialItem, i) => (
+            <div
+              className={classes.speedDialItem}
+              style={
+                {
+                  '--show-delay': `${i * 30}ms`,
+                  '--hide-delay': `${(speedDial.length - 1 - i) * 50}ms`,
+                } as CSSProperties
+              }
+              // eslint-disable-next-line react/no-array-index-key
+              key={i}
+              data-i={i * 30}
+            >
+              <SpeedDialItem />
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 };
