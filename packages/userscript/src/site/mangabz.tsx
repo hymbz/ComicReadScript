@@ -25,14 +25,18 @@ declare const MANGABZ_IMAGE_COUNT: number;
   const [showFab] = useFab({
     tip: '阅读模式',
     speedDial: [
-      <IconBotton
-        tip="自动加载"
-        placement="left"
-        enabled={options.autoLoad}
-        onClick={() => setOptions({ ...options, autoLoad: !options.autoLoad })}
-      >
-        <AutoStories />
-      </IconBotton>,
+      () => (
+        <IconBotton
+          tip="自动加载"
+          placement="left"
+          enabled={options.autoLoad}
+          onClick={() =>
+            setOptions({ ...options, autoLoad: !options.autoLoad })
+          }
+        >
+          <AutoStories />
+        </IconBotton>
+      ),
     ],
   });
 
@@ -99,3 +103,5 @@ declare const MANGABZ_IMAGE_COUNT: number;
 
   if (options.autoLoad) await loadAndShowComic();
 })();
+
+// TODO: 点击 Fab 加载完图片后要立刻进入阅读模式
