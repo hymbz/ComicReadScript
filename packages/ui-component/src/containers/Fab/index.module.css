@@ -1,5 +1,6 @@
 .fabRoot {
   position: fixed;
+  z-index: 999999999;
   right: 3em;
   bottom: 2em;
 
@@ -106,6 +107,8 @@
   padding-bottom: 120%;
 
   font-size: 1.1em;
+
+  opacity: 0;
 }
 
 .speedDialItem {
@@ -120,13 +123,17 @@
   transition-property: transform, opacity;
 }
 
-/** 移到快捷拨号上时保持显示 */
+/* 移到快捷拨号上时保持显示 */
 .speedDial:hover {
   pointer-events: all;
+
+  opacity: 1;
 }
 
 .fabRoot:hover > .speedDial {
   pointer-events: all;
+
+  opacity: 1;
 
   & > .speedDialItem {
     transform: unset;
@@ -135,4 +142,18 @@
 
     transition-delay: var(--show-delay);
   }
+}
+
+/* 背景蒙版 */
+.backdrop {
+  pointer-events: none;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  background-color: #0003;
 }

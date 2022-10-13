@@ -62,6 +62,7 @@ export const Fab: React.FC<FabProps> = ({
       </button>
 
       <div className={classes.speedDial}>
+        <div className={classes.backdrop} />
         {speedDial?.map((SpeedDialItem, i) => (
           <div
             className={classes.speedDialItem}

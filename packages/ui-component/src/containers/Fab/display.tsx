@@ -14,15 +14,21 @@ import 'normalize.css';
 import { IconBotton } from '../IconBotton';
 
 const speedDial = [
-  <IconBotton placement="left" tip="Filter1">
-    <Filter1 />
-  </IconBotton>,
-  <IconBotton placement="left" tip="Filter2">
-    <Filter2 />
-  </IconBotton>,
-  <IconBotton placement="left" tip="Filter3">
-    <Filter3 />
-  </IconBotton>,
+  () => (
+    <IconBotton placement="left" tip="Filter1">
+      <Filter1 />
+    </IconBotton>
+  ),
+  () => (
+    <IconBotton placement="left" tip="Filter2">
+      <Filter2 />
+    </IconBotton>
+  ),
+  () => (
+    <IconBotton placement="left" tip="Filter3">
+      <Filter3 />
+    </IconBotton>
+  ),
 ];
 
 export default function Display() {

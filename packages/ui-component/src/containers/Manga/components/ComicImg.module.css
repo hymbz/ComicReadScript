@@ -65,7 +65,7 @@
   color: white;
 
   background-color: #3339;
-  backdrop-filter: blur(1px);
+  backdrop-filter: blur(6px);
 
   transition: transform 500ms;
 
