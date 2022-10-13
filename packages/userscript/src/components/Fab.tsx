@@ -1,3 +1,7 @@
+import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
+import MdImageSearch from '@material-design-icons/svg/round/image_search.svg';
+import MdImportContacts from '@material-design-icons/svg/round/import_contacts.svg';
+
 import type { FabProps } from '@crs/ui-component/dist/Fab';
 import { Fab } from '@crs/ui-component/dist/Fab';
 import FabStyle from '@crs/ui-component/dist/Fab.css';
@@ -28,12 +32,26 @@ export const useFab = (
     fabProps = produce(fabProps, recipe);
   };
 
+  const FabIcon = () => {
+    switch (fabProps.progress) {
+      case 0:
+        return <MdImportContacts />;
+      case 1:
+      case undefined:
+        return <MdMenuBook />;
+      default:
+        return <MdImageSearch />;
+    }
+  };
+
   const show = (recipe?: FabRecipe) => {
     if (recipe) set(recipe);
 
     FabRoot!.render(
       <shadow.div>
-        <Fab {...fabProps} />
+        <Fab {...fabProps}>
+          <FabIcon />
+        </Fab>
         <style type="text/css">{IconBottonStyle}</style>
         <style type="text/css">{FabStyle}</style>
       </shadow.div>,

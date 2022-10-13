@@ -24,6 +24,7 @@ declare const MANGABZ_IMAGE_COUNT: number;
 
   const [showFab] = useFab({
     tip: '阅读模式',
+    progress: 0,
     speedDial: [
       () => (
         <IconBotton
