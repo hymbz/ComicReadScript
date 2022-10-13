@@ -13,7 +13,7 @@ export interface FabProps {
   /** 提示文本 */
   tip?: string;
   /** 快速拨号按钮 */
-  speedDial?: JSX.Element[];
+  speedDial?: React.FC[];
 
   children?: JSX.Element | JSX.Element[];
   style?: CSSProperties;
@@ -62,7 +62,7 @@ export const Fab: React.FC<FabProps> = ({
       </button>
 
       <div className={classes.speedDial}>
-        {speedDial?.map((e, i) => (
+        {speedDial?.map((SpeedDialItem, i) => (
           <div
             className={classes.speedDialItem}
             style={
@@ -71,10 +71,11 @@ export const Fab: React.FC<FabProps> = ({
                 '--hide-delay': `${(speedDial.length - 1 - i) * 50}ms`,
               } as CSSProperties
             }
-            key={e.props.tip || e.key}
+            // eslint-disable-next-line react/no-array-index-key
+            key={i}
             data-i={i * 30}
           >
-            {e}
+            <SpeedDialItem />
           </div>
         ))}
       </div>

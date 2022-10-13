@@ -8,13 +8,11 @@ import { useManga } from '../components/Manga';
 import { isEqualArray, useSiteOptions } from '../helper';
 
 setTimeout(async () => {
-  const { options, setOptions, isRecorded } = await useSiteOptions(
-    window.location.hostname,
-    {
+  const { options, setOptions, isRecorded, onOptionChange } =
+    await useSiteOptions(window.location.hostname, {
       option: undefined as MangaProps['option'] | undefined,
       autoLoad: false,
-    },
-  );
+    });
 
   /** 图片列表 */
   let imgList: string[] = [];
@@ -32,31 +30,35 @@ setTimeout(async () => {
     if (showManga === undefined) {
       [showManga, setManga, isReadMode] = useManga({
         imgList,
-        onOptionChange: (option) => setOptions({ ...options, option }),
+        onOptionChange: (option) => setOptions({ ...options, option }, false),
       });
     }
   };
 
   /** 显示 Fab */
   const showFab = () => {
-    useFab({
+    const [_showFab] = useFab({
       tip: '阅读模式',
       onClick: () => {
         showManga();
       },
       speedDial: [
-        <IconBotton
-          tip="自动加载"
-          placement="left"
-          enabled={options.autoLoad}
-          onClick={() =>
-            setOptions({ ...options, autoLoad: !options.autoLoad })
-          }
-        >
-          <AutoStories />
-        </IconBotton>,
+        () => (
+          <IconBotton
+            tip="自动加载"
+            placement="left"
+            enabled={options.autoLoad}
+            onClick={() =>
+              setOptions({ ...options, autoLoad: !options.autoLoad })
+            }
+          >
+            <AutoStories />
+          </IconBotton>
+        ),
       ],
-    })[0]();
+    });
+    onOptionChange(() => _showFab());
+    _showFab();
   };
   // 如果网站有储存配置，就直接显示 Fab
   if (isRecorded) showFab();
