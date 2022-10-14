@@ -4,7 +4,7 @@ import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { useFab } from '../components/Fab';
 import { useManga } from '../components/Manga';
-import { useSiteOptions } from '../helper';
+import { querySelector, useSiteOptions } from '../helper';
 
 // 页面自带的变量
 declare const MANGABZ_CID: number;
@@ -44,6 +44,12 @@ declare const MANGABZ_IMAGE_COUNT: number;
   const [showManga] = useManga({
     imgList: [],
     onOptionChange: (option) => setOptions({ ...options, option }),
+    onNext: querySelector(
+      'body > .container a[href^="/"]:last-child',
+    )?.click.bind(this),
+    onPrev: querySelector(
+      'body > .container a[href^="/"]:first-child',
+    )?.click.bind(this),
   });
 
   const getImgList = async (imgList: string[] = []): Promise<string[]> => {
