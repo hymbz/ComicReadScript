@@ -40,7 +40,10 @@ export const Fab: React.FC<FabProps> = ({
   useEffect(() => {
     window.addEventListener(
       'scroll',
-      throttle(200, () => {
+      throttle(200, (e: Event) => {
+        // 跳过非用户操作的滚动
+        if (e.isTrusted === false) return;
+        if (window.scrollY === lastY.current) return;
         setShow(window.scrollY - lastY.current < 0);
         lastY.current = window.scrollY;
       }),
