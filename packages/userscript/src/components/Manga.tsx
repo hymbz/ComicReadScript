@@ -23,17 +23,19 @@ export const useManga = (
 ): [(recipe?: MangaRecipe) => void, (recipe: MangaRecipe) => void, boolean] => {
   let mangaProps = props ?? { imgList: [] };
 
-  let dom = querySelector('#comicRead');
-  if (!dom) {
-    dom = document.createElement('div');
-    dom.id = 'comicRead';
-    document.body.appendChild(dom);
-  }
+  const dom =
+    querySelector('#comicRead') ??
+    (() => {
+      const _dom = document.createElement('div');
+      _dom.id = 'comicRead';
+      document.body.appendChild(_dom);
+      return _dom;
+    })();
 
   let enbale = false;
   const onExit = () => {
     enbale = false;
-    dom!.style.display = 'none';
+    dom.style.display = 'none';
     document.body.style.overflow = 'unset';
   };
 
@@ -48,8 +50,6 @@ export const useManga = (
       ),
     ],
   ];
-
-  dom.style.display = 'unset';
 
   if (!mangaRoot) mangaRoot = ReactDOM.createRoot(dom);
 
@@ -81,6 +81,7 @@ export const useManga = (
 
     enbale = true;
     document.body.style.overflow = 'hidden';
+    dom.style.display = 'unset';
   };
 
   return [show, set, enbale];
