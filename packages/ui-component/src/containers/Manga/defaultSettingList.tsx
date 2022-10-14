@@ -1,13 +1,13 @@
 import MdOutlineFormatTextdirectionLToR from '@material-design-icons/svg/round/format_textdirection_l_to_r.svg';
 import MdOutlineFormatTextdirectionRToL from '@material-design-icons/svg/round/format_textdirection_r_to_l.svg';
 
-import { throttle } from 'throttle-debounce';
 import type { ChangeEvent } from 'react';
 import { useCallback } from 'react';
 import clsx from 'clsx';
 import { useStore } from './hooks/useStore';
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
+import { needDarkMode } from '../../helper';
 
 import classes from './index.module.css';
 
@@ -137,6 +137,7 @@ export const defaultSettingList: DefaultSettingList = [
     '其他',
     () => {
       const darkMode = useStore((state) => state.option.darkMode);
+      const background = useStore((state) => state.option.customBackground);
       const handelDarkMode = useCallback(() => {
         useStore.setState((draftState) => {
           draftState.option.darkMode = !draftState.option.darkMode;
@@ -144,11 +145,17 @@ export const defaultSettingList: DefaultSettingList = [
       }, []);
       // eslint-disable-next-line react-hooks/exhaustive-deps
       const handelBgColor = useCallback(
-        throttle(100, (event: ChangeEvent<HTMLInputElement>) => {
+        (event: ChangeEvent<HTMLInputElement>) => {
           useStore.setState((draftState) => {
-            draftState.option.customBackground = event.target.value;
+            // 在拉到纯黑或纯白时改回初始值
+            draftState.option.customBackground =
+              event.target.value === '#000000' ||
+              event.target.value === '#ffffff'
+                ? undefined
+                : event.target.value;
+            draftState.option.darkMode = needDarkMode(event.target.value);
           });
-        }),
+        },
         [],
       );
 
@@ -176,8 +183,7 @@ export const defaultSettingList: DefaultSettingList = [
           <SettingsItem name="背景颜色">
             <input
               type="color"
-              // TODO: 待实现
-              // value={backgroundColor}
+              value={background ?? (darkMode ? 'black' : 'white')}
               onChange={handelBgColor}
               style={{ width: '2em', marginRight: '.4em' }}
             />

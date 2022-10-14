@@ -73,7 +73,7 @@ export const useCssVar = (): CSSProperties => {
   return useMemo(
     () =>
       ({
-        '--bg': bg ?? darkMode ? 'black' : 'white',
+        '--bg': bg ?? (darkMode ? 'black' : 'white'),
         ...(darkMode ? dark : light),
       } as CSSProperties),
     [bg, darkMode],
