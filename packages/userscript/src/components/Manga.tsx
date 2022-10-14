@@ -70,7 +70,7 @@ export const useManga = (
           width: '100vw',
           top: 0,
           left: 0,
-          zIndex: 99999,
+          zIndex: 999999999,
         }}
       >
         <Manga {...mangaProps} />

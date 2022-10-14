@@ -104,5 +104,3 @@ declare const MANGABZ_IMAGE_COUNT: number;
 
   if (options.autoLoad) await loadAndShowComic();
 })();
-
-// TODO: 点击 Fab 加载完图片后要立刻进入阅读模式

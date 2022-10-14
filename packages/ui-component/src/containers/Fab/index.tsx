@@ -5,7 +5,6 @@ import { useRef, useState, useEffect } from 'react';
 import { throttle } from 'throttle-debounce';
 
 import classes from './index.module.css';
-import { Progress } from './Progress';
 
 export interface FabProps {
   /** 百分比进度值，小数 */
@@ -52,10 +51,25 @@ export const Fab: React.FC<FabProps> = ({
     <div className={classes.fabRoot} style={style} data-show={progress || show}>
       <button type="button" className={classes.fab} onClick={onClick}>
         {children ?? <MdMenuBook />}
-        <Progress value={progress} />
+
+        {/* 环形进度条 */}
+        <span
+          className={classes.progress}
+          role="progressbar"
+          aria-valuenow={progress}
+        >
+          <svg
+            viewBox="22 22 44 44"
+            style={{ strokeDashoffset: `${(1 - progress) * 290}%` }}
+          >
+            <circle cx="44" cy="44" r="20.2" fill="none" strokeWidth="3.6" />
+          </svg>
+        </span>
+
         {tip ? <div className={classes.popper}>{tip}</div> : null}
       </button>
 
+      {/* 快捷操作栏 */}
       {speedDial?.length ? (
         <div className={classes.speedDial}>
           <div className={classes.backdrop} />
