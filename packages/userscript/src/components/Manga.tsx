@@ -37,7 +37,7 @@ export const useManga = (
     })();
 
   let enbale = false;
-  const onExit = () => {
+  mangaProps.onExit = () => {
     enbale = false;
     dom.style.display = 'none';
     document.body.style.overflow = 'unset';
@@ -48,7 +48,7 @@ export const useManga = (
     [
       '退出',
       () => (
-        <IconBotton tip="退出" onClick={onExit}>
+        <IconBotton tip="退出" onClick={mangaProps.onExit}>
           <MdClose />
         </IconBotton>
       ),
