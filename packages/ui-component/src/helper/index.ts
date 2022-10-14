@@ -19,6 +19,5 @@ export const needDarkMode = (hexColor: string) => {
   const g = parseInt(hexColor.substring(3, 5), 16);
   const b = parseInt(hexColor.substring(5, 7), 16);
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  console.log(yiq, yiq >= 128, r, g, b);
   return yiq < 128;
 };
