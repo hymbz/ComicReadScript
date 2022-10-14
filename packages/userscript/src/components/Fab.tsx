@@ -6,7 +6,7 @@ import type { FabProps } from '@crs/ui-component/dist/Fab';
 import { Fab } from '@crs/ui-component/dist/Fab';
 import FabStyle from '@crs/ui-component/dist/Fab.css';
 import IconBottonStyle from '@crs/ui-component/dist/IconBotton.css';
-import ReactDOM from 'react-dom/client';
+import type ReactDOM from 'react-dom/client';
 import shadow from 'react-shadow';
 import produce from 'immer';
 import { querySelector } from '../helper';
@@ -17,6 +17,10 @@ let FabRoot: ReactDOM.Root | null = null;
 export const useFab = (
   props?: FabProps,
 ): [(recipe?: FabRecipe) => void, (recipe: FabRecipe) => void] => {
+  // 需要改为动态导入以避免在支持站点外的页面上加载 React
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  const ReactDOM: typeof import('react-dom/client') = require('react-dom');
+
   let fabProps = props ?? {};
 
   let dom = querySelector('#readFab');

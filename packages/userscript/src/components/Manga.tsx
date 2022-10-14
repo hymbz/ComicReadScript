@@ -3,7 +3,7 @@ import MdClose from '@material-design-icons/svg/round/close.svg';
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { Manga } from '@crs/ui-component/dist/Manga';
-import ReactDOM from 'react-dom/client';
+import type ReactDOM from 'react-dom/client';
 import shadow from 'react-shadow';
 import MangaStyle from '@crs/ui-component/dist/Manga.css';
 import IconBottonStyle from '@crs/ui-component/dist/IconBotton.css';
@@ -21,6 +21,10 @@ let mangaRoot: ReactDOM.Root | null = null;
 export const useManga = (
   props?: MangaProps,
 ): [(recipe?: MangaRecipe) => void, (recipe: MangaRecipe) => void, boolean] => {
+  // 需要改为动态导入以避免在支持站点外的页面上加载 React
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  const ReactDOM: typeof import('react-dom/client') = require('react-dom');
+
   let mangaProps = props ?? { imgList: [] };
 
   const dom =
