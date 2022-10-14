@@ -41,6 +41,7 @@
   }
 }
 
+/* 环形进度条 */
 .progress {
   position: absolute;
   transform: rotate(-90deg);
@@ -65,6 +66,13 @@
 
   &:hover {
     color: #cfd8dc;
+  }
+
+  /* 在进度条满后自动隐藏 */
+  &[aria-valuenow="1"] {
+    opacity: 0;
+
+    transition: opacity 200ms 150ms;
   }
 }
 
@@ -92,6 +100,7 @@
   display: flex;
 }
 
+/* 快捷拨号 */
 .speedDial {
   pointer-events: none;
 
