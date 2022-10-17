@@ -97,7 +97,6 @@ declare const MANGABZ_IMAGE_COUNT: number;
     });
     if (!imgList.length) imgList = await getImgList();
 
-    // TODO: 显示后需要将 #comicRead dom 的 display 改为 none 再改回来才能正常显示
     showManga((draftProps) => {
       draftProps.imgList = imgList;
     });

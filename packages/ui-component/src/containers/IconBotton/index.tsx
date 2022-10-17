@@ -21,7 +21,7 @@ interface IconButtonProps {
   popperClassName?: string | boolean;
   children?: JSX.Element | JSX.Element[];
   ref?: MutableRefObject<HTMLButtonElement | null>;
-  onClick?: MouseEventHandler<HTMLButtonElement>;
+  onClick?: MouseEventHandler<HTMLButtonElement> | null;
 }
 
 /**

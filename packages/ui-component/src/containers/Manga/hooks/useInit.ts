@@ -39,13 +39,14 @@ export const useInit = ({
       state.swiper = _swiper;
       state.panzoom = _panzoom;
     });
+  }, [option, initSwiper]);
 
-    // 绑定 resizeObserver
-    if (rootRef.current) {
-      resizeObserver.disconnect();
-      resizeObserver.observe(rootRef.current);
-    }
-  }, [option, initSwiper, resizeObserver]);
+  // 绑定 resizeObserver
+  useEffect(() => {
+    if (!rootRef.current) return;
+    resizeObserver.disconnect();
+    resizeObserver.observe(rootRef.current);
+  }, [resizeObserver]);
 
   // 初始化图片
   useEffect(() => {
@@ -60,6 +61,8 @@ export const useInit = ({
           loadType: 'wait',
         };
       });
+
+      state.swiper?.updateSlides();
     });
   }, [imgList, fillEffect]);
 
