@@ -38,10 +38,9 @@ export const useFab = (
 
   const FabIcon = () => {
     switch (fabProps.progress) {
-      case 0:
+      case undefined:
         return <MdImportContacts />;
       case 1:
-      case undefined:
         return <MdMenuBook />;
       default:
         return <MdImageSearch />;

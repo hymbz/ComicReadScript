@@ -103,7 +103,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
 
     // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
     resizeObserver: new ResizeObserver(
-      throttle(100, ([entries]) => {
+      throttle<ResizeObserverCallback>(100, ([entries]) => {
         const { width, height } = entries.contentRect;
         set((state) => {
           state.img.单页比例 = width / 2 / height;

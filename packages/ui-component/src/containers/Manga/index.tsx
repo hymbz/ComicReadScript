@@ -23,11 +23,11 @@ export interface MangaProps {
   option?: Partial<Option>;
 
   /** 点击结束页按钮时触发的回调 */
-  onExit?: () => void | Promise<void>;
+  onExit?: (() => void | Promise<void>) | null;
   /** 点击上一话按钮时触发的回调 */
-  onPrev?: () => void | Promise<void>;
+  onPrev?: (() => void | Promise<void>) | null;
   /** 点击下一话按钮时触发的回调 */
-  onNext?: () => void | Promise<void>;
+  onNext?: (() => void | Promise<void>) | null;
   /** 配置发生变化时触发的回调 */
   onOptionChange?: (option: Option, prevOption: Option) => void | Promise<void>;
 

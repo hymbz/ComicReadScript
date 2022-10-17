@@ -4,7 +4,7 @@ import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { useFab } from '../components/Fab';
 import { useManga } from '../components/Manga';
-import { querySelector, useSiteOptions } from '../helper';
+import { querySelectorClick, useSiteOptions } from '../helper';
 
 // 页面自带的变量
 declare const MANGABZ_CID: number;
@@ -24,7 +24,6 @@ declare const MANGABZ_IMAGE_COUNT: number;
 
   const [showFab] = useFab({
     tip: '阅读模式',
-    progress: 0,
     speedDial: [
       () => (
         <IconBotton
@@ -44,12 +43,8 @@ declare const MANGABZ_IMAGE_COUNT: number;
   const [showManga] = useManga({
     imgList: [],
     onOptionChange: (option) => setOptions({ ...options, option }),
-    onNext: querySelector(
-      'body > .container a[href^="/"]:last-child',
-    )?.click.bind(this),
-    onPrev: querySelector(
-      'body > .container a[href^="/"]:first-child',
-    )?.click.bind(this),
+    onNext: querySelectorClick('body > .container a[href^="/"]:last-child'),
+    onPrev: querySelectorClick('body > .container a[href^="/"]:first-child'),
   });
 
   const getImgList = async (imgList: string[] = []): Promise<string[]> => {
@@ -97,6 +92,9 @@ declare const MANGABZ_IMAGE_COUNT: number;
 
   let imgList: string[] = [];
   const loadAndShowComic = async () => {
+    showFab((draftProps) => {
+      draftProps.progress = 0;
+    });
     if (!imgList.length) imgList = await getImgList();
 
     // TODO: 显示后需要将 #comicRead dom 的 display 改为 none 再改回来才能正常显示

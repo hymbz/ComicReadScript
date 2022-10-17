@@ -29,6 +29,20 @@ export const querySelectorAll = <T extends HTMLElement = HTMLElement>(
 ) => document.querySelectorAll<T>(selector);
 
 /**
+ * 返回 Dom 的点击函数，如果找不到 Dom 则返回 null
+ *
+ * @param selector
+ * @returns
+ */
+export const querySelectorClick = (selector: string) => {
+  const dom = querySelector(selector);
+  if (!dom) return null;
+  return () => {
+    dom.click();
+  };
+};
+
+/**
  * 判断两个列表值是否相同
  *
  * @param a
