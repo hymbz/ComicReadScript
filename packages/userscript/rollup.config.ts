@@ -139,32 +139,35 @@ export default [
     },
   }),
   // 生成自定义动态导入的代码
-  buildConfig({
-    input: 'src/helper/import.ts',
-    output: {
-      file: 'dist/import.js',
-      plugins: [
-        {
-          name: 'injectCode',
-          renderChunk(code) {
-            let newCode = code;
-            // 将 ts 变量声明替换为 dist 下的文件代码，并转为字符串型变量做好处理
-            newCode = newCode.replace(
-              /const (\w+)Code = ['"]{2};(?=\n)/g,
-              (_, name) =>
-                `const ${name}Code = \`\n${fs
-                  .readFileSync(`./dist/${name}.js`)
-                  .toString()
-                  .replaceAll('\\', '\\\\')
-                  .replaceAll('`', '\\`')
-                  .replaceAll('${', '\\${')}\`;\n`,
-            );
-            return newCode;
+  buildConfig(
+    {
+      input: 'src/helper/import.ts',
+      output: {
+        file: 'dist/import.js',
+        plugins: [
+          {
+            name: 'injectCode',
+            renderChunk(code) {
+              let newCode = code;
+              // 将 ts 变量声明替换为 dist 下的文件代码，并转为字符串型变量做好处理
+              newCode = newCode.replace(
+                /const (\w+)Code = ['"]{2};(?=\n)/g,
+                (_, name) =>
+                  `const ${name}Code = \`\n${fs
+                    .readFileSync(`./dist/${name}.js`)
+                    .toString()
+                    .replaceAll('\\', '\\\\')
+                    .replaceAll('`', '\\`')
+                    .replaceAll('${', '\\${')}\`;\n`,
+              );
+              return newCode;
+            },
           },
-        },
-      ],
+        ],
+      },
     },
-  }),
+    watchGlobs({ dir: 'dist', include: ['dist/components.js'] }),
+  ),
 
   // 编译 index.user.js
   {
@@ -201,7 +204,12 @@ export default [
         metablock({ file: '', override: meta }),
       ],
     },
-    plugins: [watchGlobs({ dir: 'dist', exclude: ['dist/index.user.js'] })],
+    plugins: [
+      watchGlobs({
+        dir: 'dist',
+        exclude: ['dist/index.user.js', 'dist/components.js'],
+      }),
+    ],
     treeshake: false,
   },
 ];
