@@ -20,7 +20,8 @@
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-icons": "^4.4.0",
-    "react-shadow": "^19.0.3"
+    "react-shadow": "^19.0.3",
+    "react-toastify": "^9.0.8"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.1.0",

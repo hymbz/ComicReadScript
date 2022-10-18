@@ -169,6 +169,7 @@ importers:
       react-dom: ^18.0.0
       react-icons: ^4.4.0
       react-shadow: ^19.0.3
+      react-toastify: ^9.0.8
       rollup: ^2.70.2
       rollup-plugin-delete: ^2.0.0
       rollup-plugin-esbuild: ^4.9.1
@@ -191,6 +192,7 @@ importers:
       react-dom: 18.2.0_react@18.2.0
       react-icons: 4.4.0_react@18.2.0
       react-shadow: 19.0.3_biqbaboplfbrettd7655fr4n2y
+      react-toastify: 9.0.8_biqbaboplfbrettd7655fr4n2y
     devDependencies:
       '@rollup/plugin-commonjs': 21.1.0_rollup@2.79.1
       '@rollup/plugin-node-resolve': 13.3.0_rollup@2.79.1
@@ -6069,6 +6071,17 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
       react-use: 15.3.8_biqbaboplfbrettd7655fr4n2y
+    dev: false
+
+  /react-toastify/9.0.8_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-EwM+teWt49HSHx+67qI08yLAW1zAsBxCXLCsUfxHYv1W7/R3ZLhrqKalh7j+kjgPna1h5LQMSMwns4tB4ww2yQ==}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+    dependencies:
+      clsx: 1.2.1
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
     dev: false
 
   /react-universal-interface/0.6.2_react@18.2.0+tslib@2.4.0:

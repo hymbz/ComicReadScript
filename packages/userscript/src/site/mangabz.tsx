@@ -5,6 +5,7 @@ import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { useFab } from '../components/Fab';
 import { useManga } from '../components/Manga';
 import { querySelectorClick, useSiteOptions } from '../helper';
+import { useToast } from '../components/Toast';
 
 // 页面自带的变量
 declare const MANGABZ_CID: number;
@@ -40,6 +41,8 @@ declare const MANGABZ_IMAGE_COUNT: number;
     ],
   });
 
+  const toast = useToast();
+
   const [showManga] = useManga({
     imgList: [],
     onOptionChange: (option) => setOptions({ ...options, option }),
@@ -67,6 +70,7 @@ declare const MANGABZ_IMAGE_COUNT: number;
 
     if (res.status !== 200 || !res.responseText) {
       console.error('漫画图片加载出错', res);
+      toast('漫画图片加载出错');
       throw new Error('漫画图片加载出错');
     }
 
