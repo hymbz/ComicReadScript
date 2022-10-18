@@ -1,6 +1,6 @@
 GM.xmlHttpRequest({
   method: 'GET',
-  url: `http://127.0.0.1:${DEV_PORT as any}/bundle.user.js?${Date.now()}`,
+  url: `http://127.0.0.1:${DEV_PORT as any}/index.user.js?${Date.now()}`,
   timeout: 1000 * 5,
   onload(r) {
     if (r.status !== 200)

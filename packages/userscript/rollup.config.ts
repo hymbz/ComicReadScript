@@ -10,10 +10,9 @@ import esbuild from 'rollup-plugin-esbuild';
 import prettier from 'rollup-plugin-prettier';
 import css from 'rollup-plugin-import-css';
 import del from 'rollup-plugin-delete';
+import serve from 'rollup-plugin-serve';
 import watchGlobs from 'rollup-plugin-watch';
 import svgr from '@svgr/rollup';
-import handler from 'serve-handler';
-import http from 'http';
 
 import type { MetaValues } from 'rollup-plugin-userscript-metablock';
 import metablock from 'rollup-plugin-userscript-metablock';
@@ -35,15 +34,6 @@ const isDevMode = process.env.NODE_ENV === 'development';
 /** 开发服务器的端口 */
 const DEV_PORT = '2405';
 const siteFileList = fs.readdirSync('src/site');
-
-// 启动开发服务器
-if (isDevMode)
-  http
-    .createServer(
-      (request, response) =>
-        handler(request, response, { public: 'dist' }) as unknown,
-    )
-    .listen(DEV_PORT);
 
 const buildConfig = (
   config: RollupOptions,
@@ -110,6 +100,12 @@ export default [
       },
     },
     del({ targets: 'dist/*' }),
+    isDevMode &&
+      serve({
+        contentBase: ['dist'],
+        port: DEV_PORT,
+        host: '127.0.0.1',
+      }),
   ),
 
   // 单独打包每个站点的代码
@@ -170,11 +166,11 @@ export default [
     },
   }),
 
-  // 编译 bundle.user.js
+  // 编译 index.user.js
   {
     input: 'src/index.tsx',
     output: {
-      file: 'dist/bundle.user.js',
+      file: 'dist/index.user.js',
       format: 'cjs',
       generatedCode: 'es2015',
       exports: 'none',
@@ -205,7 +201,7 @@ export default [
         metablock({ file: '', override: meta }),
       ],
     },
-    plugins: [watchGlobs({ dir: 'dist', exclude: ['dist/bundle.user.js'] })],
+    plugins: [watchGlobs({ dir: 'dist', exclude: ['dist/index.user.js'] })],
     treeshake: false,
   },
 ];
