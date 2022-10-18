@@ -3,6 +3,8 @@
 // import type { AxiosAdapter } from 'axios';
 // import axiosGmxhrAdapter from 'axios-userscript-adapter';
 
+import type { Root } from 'react-dom/client';
+
 // export const axios = raxios.create({
 //   adapter: axiosGmxhrAdapter as AxiosAdapter,
 //   timeout: 10 * 1000,
@@ -27,6 +29,29 @@ export const querySelector = <T extends HTMLElement = HTMLElement>(
 export const querySelectorAll = <T extends HTMLElement = HTMLElement>(
   selector: string,
 ) => document.querySelectorAll<T>(selector);
+
+/**
+ * 创建组件用的 ReactDOM Root
+ *
+ * @param name 组件名
+ * @returns ReactDOM Root
+ */
+export const useComponentsRoot = (name: string): [Root, HTMLElement] => {
+  // 需要使用动态导入以避免在支持站点外的页面上加载 React
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  const ReactDOM: typeof import('react-dom/client') = require('react-dom');
+
+  const dom =
+    document.getElementById(name) ??
+    (() => {
+      const _dom = document.createElement('div');
+      _dom.id = name;
+      document.body.appendChild(_dom);
+      return _dom;
+    })();
+
+  return [ReactDOM.createRoot(dom), dom];
+};
 
 /**
  * 返回 Dom 的点击函数，如果找不到 Dom 则返回 null

@@ -3,16 +3,14 @@ import MdClose from '@material-design-icons/svg/round/close.svg';
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { Manga } from '@crs/ui-component/dist/Manga';
-import type ReactDOM from 'react-dom/client';
 import shadow from 'react-shadow';
 import MangaStyle from '@crs/ui-component/dist/Manga.css';
 import IconBottonStyle from '@crs/ui-component/dist/IconBotton.css';
 import produce from 'immer';
-import { querySelector } from '../helper';
+import { useComponentsRoot } from '../helper';
 
 export type MangaRecipe = (draftProps: MangaProps) => void;
 
-let mangaRoot: ReactDOM.Root | null = null;
 /**
  * 显示漫画阅读窗口
  *
@@ -21,20 +19,9 @@ let mangaRoot: ReactDOM.Root | null = null;
 export const useManga = (
   props?: MangaProps,
 ): [(recipe?: MangaRecipe) => void, (recipe: MangaRecipe) => void, boolean] => {
-  // 需要改为动态导入以避免在支持站点外的页面上加载 React
-  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-  const ReactDOM: typeof import('react-dom/client') = require('react-dom');
+  const [root, dom] = useComponentsRoot('comicRead');
 
   let mangaProps = props ?? { imgList: [] };
-
-  const dom =
-    querySelector('#comicRead') ??
-    (() => {
-      const _dom = document.createElement('div');
-      _dom.id = 'comicRead';
-      document.body.appendChild(_dom);
-      return _dom;
-    })();
 
   let enbale = false;
   mangaProps.onExit = () => {
@@ -55,8 +42,6 @@ export const useManga = (
     ],
   ];
 
-  if (!mangaRoot) mangaRoot = ReactDOM.createRoot(dom);
-
   const set = (recipe: MangaRecipe) => {
     mangaProps = produce(mangaProps, recipe);
   };
@@ -66,7 +51,7 @@ export const useManga = (
 
     if (!mangaProps.imgList.length) throw new Error('imgList 为空');
 
-    mangaRoot!.render(
+    root.render(
       <shadow.div
         style={{
           position: 'fixed',
