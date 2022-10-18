@@ -31,6 +31,9 @@ const selfImportSync = (name: string) => {
           set exports(value) {
             window['${selfLibName}']['${name}'] = value;
           },
+          get exports() {
+            return window['${selfLibName}']['${name}'];
+          },
         }
       );
       ${isDevMode ? `console.timeEnd('导入 ${name}');` : ''}
