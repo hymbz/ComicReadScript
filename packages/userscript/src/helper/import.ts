@@ -1,4 +1,6 @@
-/** 放在脚本开头，用于动态加载外部模块 */
+// 为了尽量减少在无关页面浪费时间，components 下的代码都转成文本存放在变量中
+// 只在需要使用时再通过和其他外部库一样的方式进行加载
+const componentsCode = '';
 
 const selfLibName = 'selfLib';
 unsafeWindow[selfLibName] = {
@@ -12,7 +14,8 @@ unsafeWindow[selfLibName] = {
  * @param name \@resource 引用的资源名
  */
 const selfImportSync = (name: string) => {
-  const code = GM_getResourceText(name);
+  const code =
+    name === '../components' ? componentsCode : GM_getResourceText(name);
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
   // 通过提供 cjs 环境的变量来欺骗 umd 模块加载器

@@ -2,7 +2,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import fs from 'fs';
 import type { OutputPlugin, RollupOptions, Plugin } from 'rollup';
-import { rollup } from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
@@ -78,116 +77,135 @@ const buildConfig = (
 
     ...plugins,
   ],
-  external: Object.keys(meta.resource ?? {}),
+  // external: Object.keys(meta.resource ?? {}),
+  external: [...Object.keys(meta.resource ?? {}), '../components'],
 
   ...config,
 });
 
-export default async () => {
-  // 生成用于动态加载外部模块的 require 函数代码
-  const importBundle = await rollup(
-    buildConfig({ input: 'src/helper/import.ts', treeshake: false }),
-  );
-  let {
-    output: [{ code: importCode }],
-  } = await importBundle.generate({});
-  await importBundle.close();
-  // 因为直接定义 require 函数 ts 会报错，所以只能在代码里 export 函数再在这里删掉
-  importCode = importCode.replace(/^export.+;$/m, '');
-
-  return [
-    // 编译 dev.user.js
-    buildConfig(
-      {
-        input: 'src/dev.ts',
-        // 忽略使用 eval 的警告
-        onwarn(warning, warn) {
-          if (warning.code !== 'EVAL') warn(warning);
-        },
-        output: {
-          file: 'dist/dev.user.js',
-          plugins: [
-            metablock({
-              file: '',
-              override: (({ grant = [], ...otherMeta }) => ({
-                ...otherMeta,
-
-                // 添加 xmlHttpRequest 权限
-                grant: [...new Set([...grant, 'GM.xmlHttpRequest'])],
-                // 允许请求所有域
-                connect: '*',
-              }))(meta),
-            }),
-          ],
-        },
-      },
-      del({ targets: 'dist/*' }),
-    ),
-
-    // 单独打包每个站点的代码
-    ...siteFileList.map((fileName) =>
-      buildConfig({
-        input: { [fileName]: `src/site/${fileName}` },
-        output: {
-          dir: 'dist',
-          format: 'cjs',
-          generatedCode: 'es2015',
-          exports: 'none',
-          strict: false,
-          inlineDynamicImports: true,
-          intro: importCode,
-        },
-        context: 'this',
-        onwarn(warning, warn) {
-          // 禁用使用 eval 的警告
-          if (warning.code === 'EVAL') return;
-          warn(warning);
-        },
-      }),
-    ),
-
-    // 编译 bundle.user.js
+export default [
+  // 编译 dev.user.js
+  buildConfig(
     {
-      input: 'src/index.tsx',
+      input: 'src/dev.ts',
+      // 忽略使用 eval 的警告
+      onwarn(warning, warn) {
+        if (warning.code !== 'EVAL') warn(warning);
+      },
       output: {
-        file: 'dist/bundle.user.js',
+        file: 'dist/dev.user.js',
+        plugins: [
+          metablock({
+            file: '',
+            override: (({ grant = [], ...otherMeta }) => ({
+              ...otherMeta,
+
+              // 添加 xmlHttpRequest 权限
+              grant: [...new Set([...grant, 'GM.xmlHttpRequest'])],
+              // 允许请求所有域
+              connect: '*',
+            }))(meta),
+          }),
+        ],
+      },
+    },
+    del({ targets: 'dist/*' }),
+  ),
+
+  // 单独打包每个站点的代码
+  ...siteFileList.map((fileName) =>
+    buildConfig({
+      input: { [fileName.split('.')[0]]: `src/site/${fileName}` },
+      output: {
+        dir: 'dist',
         format: 'cjs',
         generatedCode: 'es2015',
         exports: 'none',
-        plugins: [
-          // 根据注释将每个站点的代码放进来
-          {
-            name: 'injectSiteCode',
-            renderChunk(code) {
-              let newCode = code;
-              siteFileList.forEach((fileName) => {
-                newCode = newCode.replace(
-                  `// ${fileName.split('.')[0]}`,
-                  fs.readFileSync(`./dist/${fileName}.js`).toString(),
-                );
-              });
-              // 在开发模式时计算下脚本的运行消耗时间
-              if (isDevMode)
-                newCode = `console.time('脚本运行消耗时间')\n${newCode}\nconsole.timeEnd('脚本运行消耗时间')`;
-              return newCode;
-            },
-          } as Plugin,
-          !isDevMode &&
-            prettier({
-              singleQuote: true,
-              trailingComma: 'all',
-              parser: 'babel',
-            }),
-          metablock({ file: '', override: meta }),
-        ],
+        strict: false,
+        inlineDynamicImports: true,
       },
-      plugins: [
-        watchGlobs({
-          dir: 'dist',
-          include: siteFileList.map((fileName) => `**/dist/${fileName}.js`),
-        }),
-      ],
-      treeshake: false,
+      context: 'this',
+      onwarn(warning, warn) {
+        // 禁用使用 eval 的警告
+        if (warning.code !== 'EVAL') warn(warning);
+      },
+    }),
+  ),
+
+  // 生成组件相关代码
+  buildConfig({
+    input: 'src/components/index.ts',
+    output: {
+      file: 'dist/components.js',
+      format: 'cjs',
+      generatedCode: 'es2015',
+      strict: false,
     },
-  ];
-};
+  }),
+  // 生成自定义动态导入的代码
+  buildConfig({
+    input: 'src/helper/import.ts',
+    output: {
+      file: 'dist/import.js',
+      plugins: [
+        {
+          name: 'injectCode',
+          renderChunk(code) {
+            let newCode = code;
+            // 将 ts 变量声明替换为 dist 下的文件代码，并转为字符串型变量做好处理
+            newCode = newCode.replace(
+              /const (\w+)Code = ['"]{2};(?=\n)/g,
+              (_, name) =>
+                `const ${name}Code = \`\n${fs
+                  .readFileSync(`./dist/${name}.js`)
+                  .toString()
+                  .replaceAll('\\', '\\\\')
+                  .replaceAll('`', '\\`')
+                  .replaceAll('${', '\\${')}\`;\n`,
+            );
+            return newCode;
+          },
+        },
+      ],
+    },
+  }),
+
+  // 编译 bundle.user.js
+  {
+    input: 'src/index.tsx',
+    output: {
+      file: 'dist/bundle.user.js',
+      format: 'cjs',
+      generatedCode: 'es2015',
+      exports: 'none',
+      plugins: [
+        {
+          name: 'injectSiteCode',
+          renderChunk(code) {
+            let newCode = code;
+            // 根据注释替换导入为 dist 下的文件代码
+            newCode = newCode.replace(
+              /(?<=\n)\s*\/\/ #(.+)(?=\n)/g,
+              (_, name) => fs.readFileSync(`./dist/${name}.js`)?.toString(),
+            );
+            // 删除 export 语句
+            newCode = newCode.replace(/\nexport.+};\n/g, '');
+            // 在开发模式时计算下脚本的运行消耗时间
+            if (isDevMode)
+              newCode = `console.time('脚本运行消耗时间')\n${newCode}\nconsole.timeEnd('脚本运行消耗时间')`;
+            return newCode;
+          },
+        } as Plugin,
+        !isDevMode &&
+          prettier({
+            singleQuote: true,
+            trailingComma: 'all',
+            parser: 'babel',
+          }),
+        metablock({ file: '', override: meta }),
+      ],
+    },
+    plugins: [watchGlobs({ dir: 'dist', exclude: ['dist/bundle.user.js'] })],
+    treeshake: false,
+  },
+];

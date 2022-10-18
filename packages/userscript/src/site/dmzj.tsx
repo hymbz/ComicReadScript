@@ -1,5 +1,4 @@
-import { useFab } from '../components/Fab';
-import { useManga } from '../components/Manga';
+import { useManga, useFab } from '../components';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 (async () => {

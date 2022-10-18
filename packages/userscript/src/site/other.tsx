@@ -2,9 +2,8 @@ import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
-import { useFab } from '../components/Fab';
+import { useManga, useFab } from '../components';
 import type { MangaRecipe } from '../components/Manga';
-import { useManga } from '../components/Manga';
 import { isEqualArray, useSiteOptions } from '../helper';
 
 setTimeout(async () => {

@@ -2,10 +2,8 @@ import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
-import { useFab } from '../components/Fab';
-import { useManga } from '../components/Manga';
+import { useManga, useFab, useToast } from '../components';
 import { querySelectorClick, useSiteOptions } from '../helper';
-import { useToast } from '../components/Toast';
 
 // 页面自带的变量
 declare const MANGABZ_CID: number;

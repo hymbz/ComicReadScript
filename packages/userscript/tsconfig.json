@@ -66,7 +66,8 @@
       "~/*": ["./packages/*"]
     },
 
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "newLine": "lf"
   },
   "include": [
     "src",
