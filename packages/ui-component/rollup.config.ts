@@ -7,7 +7,7 @@ import postcss from 'rollup-plugin-postcss';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import svgr from '@svgr/rollup';
-import meta from '@crs/userscript/meta.json';
+import resource from '@crs/userscript/resource.json';
 
 const buildConfig = (config: RollupOptions): RollupOptions => ({
   plugins: [
@@ -61,7 +61,7 @@ module.exports = new Proxy(selfModule, {
       } as Plugin,
     ],
   },
-  external: [...Object.keys(meta.resource ?? {})],
+  external: [...Object.keys(resource.prod ?? {})],
 
   ...config,
 });

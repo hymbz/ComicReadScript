@@ -12,6 +12,7 @@ export const useToast = () => {
     root.render(
       <shadow.div>
         <ToastContainer
+          autoClose={1000 * 3}
           style={
             {
               // 进度条颜色

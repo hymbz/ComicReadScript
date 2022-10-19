@@ -18,19 +18,35 @@ import type { MetaValues } from 'rollup-plugin-userscript-metablock';
 import metablock from 'rollup-plugin-userscript-metablock';
 
 import pkg from './package.json';
-import metaJson from './meta.json';
+import resource from './resource.json';
+
+const isDevMode = process.env.NODE_ENV === 'development';
 
 export const meta = {
-  ...metaJson,
   name: pkg.name,
   namespace: pkg.name,
   version: pkg.version,
   description: pkg.description,
   author: pkg.author,
   license: pkg.license,
+
+  include: '*',
+  connect: '*',
+  noframes: true,
+  grant: [
+    'GM_addElement',
+    'GM_getResourceText',
+    'GM.xmlHttpRequest',
+    'GM.getResourceText',
+    'GM.addStyle',
+    'GM.getValue',
+    'GM.setValue',
+    'GM.registerMenuCommand',
+    'unsafeWindow',
+  ],
+  resource: resource[isDevMode ? 'dev' : 'prod'],
 } as MetaValues;
 
-const isDevMode = process.env.NODE_ENV === 'development';
 /** 开发服务器的端口 */
 const DEV_PORT = '2405';
 const siteFileList = fs.readdirSync('src/site');
@@ -67,7 +83,6 @@ const buildConfig = (
 
     ...plugins,
   ],
-  // external: Object.keys(meta.resource ?? {}),
   external: [...Object.keys(meta.resource ?? {}), '../components'],
 
   ...config,
