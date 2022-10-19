@@ -19,6 +19,7 @@ declare const cInfo: { nextId: number; prevId: number };
 
   const [showFab] = useFab({
     tip: '阅读模式',
+    progress: 1,
     speedDial: [
       () => (
         <IconBotton

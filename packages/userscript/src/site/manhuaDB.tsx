@@ -26,6 +26,7 @@ declare const $: any;
 
   const [showFab] = useFab({
     tip: '阅读模式',
+    progress: 1,
     speedDial: [
       () => (
         <IconBotton
