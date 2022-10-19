@@ -2,7 +2,7 @@ import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
-import { useManga, useFab } from '../components';
+import { useToast, useManga, useFab } from '../components';
 import type { MangaRecipe } from '../components/Manga';
 import { isEqualArray, useSiteOptions } from '../helper';
 
@@ -22,16 +22,19 @@ setTimeout(async () => {
 
   let showManga: (recipe?: MangaRecipe | undefined) => void | undefined;
   let setManga: (recipe: MangaRecipe) => void | undefined;
+  let toast: ReturnType<typeof useToast> | undefined;
+
   /** 当前是否处于阅读模式 */
   let isReadMode: boolean;
 
-  const initUseManga = () => {
-    if (showManga === undefined) {
-      [showManga, setManga, isReadMode] = useManga({
-        imgList,
-        onOptionChange: (option) => setOptions({ ...options, option }, false),
-      });
-    }
+  const init = () => {
+    if (showManga !== undefined) return;
+
+    [showManga, setManga, isReadMode] = useManga({
+      imgList,
+      onOptionChange: (option) => setOptions({ ...options, option }, false),
+    });
+    toast = useToast();
   };
 
   /** 显示 Fab */
@@ -106,8 +109,7 @@ setTimeout(async () => {
     if (newImgList.length === 0) {
       if (!options.autoLoad) {
         clearInterval(running);
-        // eslint-disable-next-line no-alert
-        alert('没有找到图片');
+        toast?.('没有找到图片', { type: 'warning' });
       }
       return false;
     }
@@ -133,13 +135,13 @@ setTimeout(async () => {
   };
 
   if (isRecorded) {
-    initUseManga();
+    init();
     // 为了保证兼容，只能简单粗暴的不断检查网页的图片来更新数据
     running = window.setInterval(checkFindImg, 2000);
   }
 
   await GM.registerMenuCommand('进入漫画阅读模式', async () => {
-    initUseManga();
+    init();
 
     if (!running) running = window.setInterval(checkFindImg, 2000);
     if (!checkFindImg()) return;

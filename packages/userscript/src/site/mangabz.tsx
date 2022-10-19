@@ -71,7 +71,7 @@ declare const MANGABZ_IMAGE_COUNT: number;
 
     if (res.status !== 200 || !res.responseText) {
       console.error('漫画图片加载出错', res);
-      toast('漫画图片加载出错');
+      toast('漫画图片加载出错', { type: 'error' });
       throw new Error('漫画图片加载出错');
     }
 
