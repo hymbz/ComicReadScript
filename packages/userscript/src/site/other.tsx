@@ -2,6 +2,7 @@ import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
+import type { FabRecipe } from '../components';
 import { useToast, useManga, useFab } from '../components';
 import type { MangaRecipe } from '../components/Manga';
 import { isEqualArray, useSiteOptions } from '../helper';
@@ -20,9 +21,10 @@ setTimeout(async () => {
   /** 是否正在后台不断检查图片 */
   let running = 0;
 
-  let showManga: (recipe?: MangaRecipe | undefined) => void | undefined;
-  let setManga: (recipe: MangaRecipe) => void | undefined;
-  let toast: ReturnType<typeof useToast> | undefined;
+  let showManga: (recipe?: MangaRecipe | undefined) => void;
+  let setManga: (recipe: MangaRecipe) => void;
+  let showFab: ((recipe?: FabRecipe | undefined) => void) | undefined;
+  let toast: ReturnType<typeof useToast>;
 
   /** 当前是否处于阅读模式 */
   let isReadMode: boolean;
@@ -34,16 +36,10 @@ setTimeout(async () => {
       imgList,
       onOptionChange: (option) => setOptions({ ...options, option }, false),
     });
-    toast = useToast();
-  };
 
-  /** 显示 Fab */
-  const showFab = () => {
-    const [_showFab] = useFab({
+    [showFab] = useFab({
       tip: '阅读模式',
-      onClick: () => {
-        showManga();
-      },
+      onClick: () => showManga(),
       speedDial: [
         () => (
           <IconBotton
@@ -59,11 +55,17 @@ setTimeout(async () => {
         ),
       ],
     });
-    onOptionChange(() => _showFab());
-    _showFab();
+    onOptionChange(() => {
+      showFab?.();
+    });
+
+    toast = useToast();
   };
   // 如果网站有储存配置，就直接显示 Fab
-  if (isRecorded) showFab();
+  if (isRecorded) {
+    init();
+    showFab?.();
+  }
 
   /** 已经被触发过懒加载的图片 */
   const triggedImgList: Set<HTMLImageElement> = new Set();
@@ -129,6 +131,10 @@ setTimeout(async () => {
       }
 
       if (waitAutoLoad) showManga();
+
+      showFab?.((draftProps) => {
+        draftProps.progress = 1;
+      });
     }
 
     return true;
@@ -149,6 +155,6 @@ setTimeout(async () => {
 
     // 自动启用自动加载功能
     await setOptions({ ...options, autoLoad: true });
-    showFab();
+    showFab?.();
   });
 });
