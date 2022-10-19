@@ -40,7 +40,7 @@
     "rollup-plugin-serve": "^2.0.1",
     "rollup-plugin-ts": "^3.0.2",
     "rollup-plugin-userscript-metablock": "^0.3.1",
-    "rollup-plugin-watch": "^1.0.1",
+    "rollup-plugin-watch-assets": "^1.0.1",
     "utility-types": "^3.10.0"
   }
 }

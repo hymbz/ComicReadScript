@@ -11,7 +11,7 @@ import prettier from 'rollup-plugin-prettier';
 import css from 'rollup-plugin-import-css';
 import del from 'rollup-plugin-delete';
 import serve from 'rollup-plugin-serve';
-import watchGlobs from 'rollup-plugin-watch';
+import watchAssets from 'rollup-plugin-watch-assets';
 import svgr from '@svgr/rollup';
 
 import type { MetaValues } from 'rollup-plugin-userscript-metablock';
@@ -166,7 +166,7 @@ export default [
         ],
       },
     },
-    watchGlobs({ dir: 'dist', include: ['dist/components.js'] }),
+    watchAssets({ assets: ['dist/components.js'] }),
   ),
 
   // 编译 index.user.js
@@ -205,9 +205,8 @@ export default [
       ],
     },
     plugins: [
-      watchGlobs({
-        dir: 'dist',
-        exclude: ['dist/index.user.js', 'dist/components.js'],
+      watchAssets({
+        assets: ['dist/*', '!dist/index.user.js', '!dist/components.js'],
       }),
     ],
     treeshake: false,
