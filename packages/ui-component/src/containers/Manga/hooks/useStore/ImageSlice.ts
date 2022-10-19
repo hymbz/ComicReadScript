@@ -76,8 +76,6 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
         const preloadImg = state.imgList.find((img) => img.loadType === 'wait');
         if (!preloadImg) return;
         preloadImg.loadType = 'loading';
-
-        state.swiper?.updateSlides();
       });
     }),
 

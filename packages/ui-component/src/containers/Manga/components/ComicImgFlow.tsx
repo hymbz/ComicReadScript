@@ -1,6 +1,7 @@
 import clsx from 'clsx';
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 
+import { throttle } from 'throttle-debounce';
 import { useStore, shallow } from '../hooks/useStore';
 import { ComicImg } from './ComicImg';
 
@@ -12,11 +13,19 @@ const selector = ({ slideData, option: { disableZoom, dir } }: SelfState) => ({
   dir,
 });
 
+const updateSlides = throttle(100, () => {
+  useStore.setState((state) => {
+    state.swiper?.updateSlides();
+  });
+});
+
 /**
  * 漫画图片流的容器
  */
 export const ComicImgFlow: React.FC = memo(() => {
   const { slideData, disableZoom, dir } = useStore(selector, shallow);
+
+  useEffect(updateSlides, [slideData]);
 
   return (
     <div

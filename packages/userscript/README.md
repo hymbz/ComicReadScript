@@ -1,5 +1,3 @@
-TODO: 为 console.error 语句加上弹出框提示
-
 ## 简介
 
 <!-- 此处应有 gif 动图 -->
