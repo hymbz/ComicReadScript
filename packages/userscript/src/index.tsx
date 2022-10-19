@@ -27,6 +27,12 @@ switch (window.location.hostname) {
     break;
   }
 
+  case 'www.manhuacat.com':
+  case 'www.maofly.com': {
+    // #manhuacat
+    break;
+  }
+
   default: {
     // #other
   }
