@@ -61,8 +61,6 @@ export const useInit = ({
           loadType: 'wait',
         };
       });
-
-      state.swiper?.updateSlides();
     });
   }, [imgList, fillEffect]);
 
