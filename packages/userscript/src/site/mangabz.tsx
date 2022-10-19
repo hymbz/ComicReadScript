@@ -17,7 +17,7 @@ declare const MANGABZ_IMAGE_COUNT: number;
 
 (async () => {
   // 只在漫画页内运行
-  if (!MANGABZ_CID) return;
+  if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) return;
 
   const { options, setOptions } = await useSiteOptions('mangabz', {
     option: undefined as MangaProps['option'] | undefined,

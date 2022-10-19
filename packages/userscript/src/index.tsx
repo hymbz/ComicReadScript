@@ -8,9 +8,17 @@ switch (window.location.hostname) {
     // #dmzj
     break;
   }
+
   case 'www.mangabz.com':
   case 'mangabz.com': {
     // #mangabz
+    break;
+  }
+
+  case 'www.manhuagui.com':
+  case 'www.mhgui.com':
+  case 'tw.manhuagui.com': {
+    // #manhuagui
     break;
   }
   default: {
