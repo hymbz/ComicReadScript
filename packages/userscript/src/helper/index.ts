@@ -96,6 +96,16 @@ export const insertDom = (
 };
 
 /**
+ * 将对象转为 URLParams 类型的字符串
+ *
+ * @param data
+ */
+export const dataToParams = (data: Record<string, unknown>) =>
+  Object.entries(data)
+    .map(([key, val]) => `${key}=${val}`)
+    .join('&');
+
+/**
  *
  * @param name 站点名
  * @param defaultValue 默认值

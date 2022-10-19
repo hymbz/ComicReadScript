@@ -21,6 +21,12 @@ switch (window.location.hostname) {
     // #manhuagui
     break;
   }
+
+  case 'www.manhuadb.com': {
+    // #manhuaDB
+    break;
+  }
+
   default: {
     // #other
   }

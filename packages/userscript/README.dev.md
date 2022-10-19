@@ -12,3 +12,8 @@
 ### 使用 React 组件
 
 为了能实现动态导入，`src\component` 内的组件不能直接 `export`，需要导出一个返回函数组件的异步函数来 `() => Promise<React.FC<{}>>`。另外为了方便调用时命名（可以直接用 import 的组件名来声明变量），再在 `src\component\index.ts` 中重新声明一下。
+
+### 支持新站点时的参考
+
+能直接通过网页变量获取所有图片链接的站点参考 manhuagui
+需要通过调用 api 获取所有图片链接的站点参考 mangabz

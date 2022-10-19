@@ -3,7 +3,7 @@ import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { useManga, useFab, useToast } from '../components';
-import { querySelectorClick, useSiteOptions } from '../helper';
+import { dataToParams, querySelectorClick, useSiteOptions } from '../helper';
 
 // 页面自带的变量
 declare const MANGABZ_CID: number;
@@ -45,7 +45,7 @@ declare const MANGABZ_IMAGE_COUNT: number;
   const toast = useToast();
 
   const getImgList = async (imgList: string[] = []): Promise<string[]> => {
-    const urlParams = Object.entries({
+    const urlParams = dataToParams({
       cid: MANGABZ_CID,
       page: imgList.length + 1,
       key: '',
@@ -53,9 +53,7 @@ declare const MANGABZ_IMAGE_COUNT: number;
       _mid: MANGABZ_MID,
       _dt: MANGABZ_VIEWSIGN_DT.replace(' ', '+').replace(':', '%3A'),
       _sign: MANGABZ_VIEWSIGN,
-    })
-      .map(([key, val]) => `${key}=${val}`)
-      .join('&');
+    });
 
     const res = await GM.xmlHttpRequest({
       method: 'GET',
