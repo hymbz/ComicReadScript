@@ -1,9 +1,4 @@
 .fabRoot {
-  position: fixed;
-  z-index: 999999999;
-  right: 3em;
-  bottom: 2em;
-
   font-size: 1.1em;
 
   transition: transform 200ms;

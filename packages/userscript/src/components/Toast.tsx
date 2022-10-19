@@ -10,7 +10,7 @@ export const useToast = () => {
 
   return (text: string, options?: ToastOptions) => {
     root.render(
-      <shadow.div>
+      <shadow.div style={{ fontSize: 16 }}>
         <ToastContainer
           autoClose={1000 * 3}
           style={

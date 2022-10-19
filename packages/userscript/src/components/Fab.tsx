@@ -38,7 +38,15 @@ export const useFab = (
     if (recipe) set(recipe);
 
     root.render(
-      <shadow.div>
+      <shadow.div
+        style={{
+          fontSize: 16,
+          position: 'fixed',
+          right: '3em',
+          bottom: '2em',
+          zIndex: 999999999,
+        }}
+      >
         <Fab {...fabProps}>
           <FabIcon />
         </Fab>

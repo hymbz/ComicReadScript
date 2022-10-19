@@ -27,7 +27,7 @@ export const useManga = (
   mangaProps.onExit = () => {
     enbale = false;
     dom.style.display = 'none';
-    document.body.style.overflow = 'unset';
+    document.documentElement.style.overflow = 'unset';
   };
 
   mangaProps.editButtonList = (list) => [
@@ -54,6 +54,7 @@ export const useManga = (
     root.render(
       <shadow.div
         style={{
+          fontSize: 16,
           position: 'fixed',
           height: '100vh',
           width: '100vw',
@@ -69,7 +70,7 @@ export const useManga = (
     );
 
     enbale = true;
-    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
     dom.style.display = 'unset';
   };
 

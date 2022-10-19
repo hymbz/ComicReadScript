@@ -50,12 +50,21 @@ export default function Display() {
         }}
       />
 
-      <Fab
-        progress={progress}
-        tip={tip}
-        speedDial={speedDial}
-        onClick={alert}
-      />
+      <div
+        style={{
+          position: 'fixed',
+          zIndex: 999999999,
+          right: '3em',
+          bottom: '2em',
+        }}
+      >
+        <Fab
+          progress={progress}
+          tip={tip}
+          speedDial={speedDial}
+          onClick={alert}
+        />
+      </div>
     </div>
   );
 }
