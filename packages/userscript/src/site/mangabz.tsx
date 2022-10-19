@@ -17,7 +17,7 @@ declare const MANGABZ_IMAGE_COUNT: number;
 
 (async () => {
   // 只在漫画页内运行
-  if (!Reflect.has(window, 'MANGABZ_CID')) return;
+  if (!MANGABZ_CID) return;
 
   const { options, setOptions } = await useSiteOptions('mangabz', {
     option: undefined as MangaProps['option'] | undefined,
@@ -43,13 +43,6 @@ declare const MANGABZ_IMAGE_COUNT: number;
   });
 
   const toast = useToast();
-
-  const [showManga] = useManga({
-    imgList: [],
-    onOptionChange: (option) => setOptions({ ...options, option }),
-    onNext: querySelectorClick('body > .container a[href^="/"]:last-child'),
-    onPrev: querySelectorClick('body > .container a[href^="/"]:first-child'),
-  });
 
   const getImgList = async (imgList: string[] = []): Promise<string[]> => {
     const urlParams = Object.entries({
@@ -96,6 +89,13 @@ declare const MANGABZ_IMAGE_COUNT: number;
   };
 
   let imgList: string[] = [];
+  const [showManga] = useManga({
+    imgList,
+    onOptionChange: (option) => setOptions({ ...options, option }),
+    onNext: querySelectorClick('body > .container a[href^="/"]:last-child'),
+    onPrev: querySelectorClick('body > .container a[href^="/"]:first-child'),
+  });
+
   const loadAndShowComic = async () => {
     showFab((draftProps) => {
       draftProps.progress = 0;
