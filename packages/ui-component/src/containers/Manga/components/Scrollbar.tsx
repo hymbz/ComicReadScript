@@ -28,10 +28,10 @@ export const Scrollbar: React.FC = memo(() => {
     if (!slideData.length || activeIndex === undefined) return '';
 
     const slideIndex = slideData[activeIndex].map((slide) => {
-      let slideText = `${slide.index}`;
+      if (slide.type === 'fill') return '填充页';
+      if (slide.loadType === 'loaded') return `${slide.index}`;
       // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-      if (slide.loadType !== 'loaded') slideText += ` (${slide.loadType})`;
-      return slideText;
+      return `${slide.index} (${slide.loadType})`;
     });
     if (dir === 'rtl') slideIndex.reverse();
 
