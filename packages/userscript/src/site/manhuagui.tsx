@@ -1,7 +1,6 @@
 import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
-import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { useManga, useFab, useToast } from '../components';
 import { querySelectorClick, useSiteOptions } from '../helper';
 
@@ -12,10 +11,9 @@ declare const cInfo: { nextId: number; prevId: number };
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'cInfo')) return;
 
-  const { options, setOptions } = await useSiteOptions('manhuagui', {
-    option: undefined as MangaProps['option'] | undefined,
-    autoLoad: false,
-  });
+  const { options, setOptions, onOptionChange } = await useSiteOptions(
+    'manhuagui',
+  );
 
   const [showFab] = useFab({
     tip: '阅读模式',
@@ -35,6 +33,7 @@ declare const cInfo: { nextId: number; prevId: number };
       ),
     ],
   });
+  onOptionChange(() => showFab());
 
   const toast = useToast();
 

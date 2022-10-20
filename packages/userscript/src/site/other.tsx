@@ -1,7 +1,6 @@
 import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
-import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import type { FabRecipe } from '../components';
 import { useToast, useManga, useFab } from '../components';
 import type { MangaRecipe } from '../components/Manga';
@@ -9,10 +8,7 @@ import { isEqualArray, useSiteOptions } from '../helper';
 
 setTimeout(async () => {
   const { options, setOptions, isRecorded, onOptionChange } =
-    await useSiteOptions(window.location.hostname, {
-      option: undefined as MangaProps['option'] | undefined,
-      autoLoad: false,
-    });
+    await useSiteOptions(window.location.hostname, { autoLoad: false });
 
   /** 图片列表 */
   let imgList: string[] = [];
@@ -55,9 +51,7 @@ setTimeout(async () => {
         ),
       ],
     });
-    onOptionChange(() => {
-      showFab?.();
-    });
+    onOptionChange(() => showFab?.());
 
     toast = useToast();
   };

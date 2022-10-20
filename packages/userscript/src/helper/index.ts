@@ -3,6 +3,7 @@
 // import type { AxiosAdapter } from 'axios';
 // import axiosGmxhrAdapter from 'axios-userscript-adapter';
 
+import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import type { Root } from 'react-dom/client';
 
 // export const axios = raxios.create({
@@ -105,19 +106,32 @@ export const dataToParams = (data: Record<string, unknown>) =>
     .map(([key, val]) => `${key}=${val}`)
     .join('&');
 
+interface defaultOptions {
+  option: Partial<MangaProps['option']> | undefined;
+  autoLoad: boolean;
+  [key: string]: unknown;
+}
 /**
  *
  * @param name 站点名
  * @param defaultValue 默认值
  */
-export const useSiteOptions = async <T extends Record<string, unknown>>(
+export const useSiteOptions = async <T>(
   name: string,
-  defaultValue: T,
+  defaultValue = {} as T,
 ) => {
-  const rawValue = await GM.getValue<T | undefined>(name);
-  const options = rawValue ?? defaultValue;
+  type Options = T & defaultOptions;
 
-  const changeCallbackList: Array<(options: T) => void | Promise<void>> = [];
+  const rawValue = await GM.getValue<Options | undefined>(name);
+  const options =
+    rawValue ??
+    ({
+      option: undefined,
+      autoLoad: true,
+      ...defaultValue,
+    } as Options);
+
+  const changeCallbackList: ((options: Options) => void | Promise<void>)[] = [];
 
   return {
     options,
@@ -131,7 +145,7 @@ export const useSiteOptions = async <T extends Record<string, unknown>>(
      * @param newValue
      * @param trigger 是否触发变更事件
      */
-    setOptions: async (newValue: T, trigger = true) => {
+    setOptions: async (newValue: Options, trigger = true) => {
       Object.assign(options, newValue);
       await GM.setValue(name, options);
       if (trigger)
@@ -145,7 +159,7 @@ export const useSiteOptions = async <T extends Record<string, unknown>>(
      *
      * @param callback 回调
      */
-    onOptionChange: (callback: (options: T) => void | Promise<void>) => {
+    onOptionChange: (callback: (options: Options) => void | Promise<void>) => {
       changeCallbackList.push(callback);
     },
   };
