@@ -50,7 +50,7 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       case 'ArrowUp':
       case '.':
       case 'w':
-        i = true;
+        i = false;
         break;
 
       case ' ':
@@ -58,7 +58,7 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       case 'ArrowDown':
       case ',':
       case 's':
-        i = false;
+        i = true;
         break;
 
       case 'ArrowRight':
