@@ -7,7 +7,9 @@ export interface OperateSlice {
 
 let scrollLock: number | null = null;
 export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
-  handleScroll: (event) => {
+  handleScroll: (e) => {
+    e.stopPropagation();
+
     const {
       swiper,
       option: { scrollMode },
@@ -22,14 +24,16 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
         scrollLock = window.setTimeout(() => {
           if (swiper.allowTouchMove) scrollLock = null;
         }, 500);
-      } else if (!event.altKey && !scrollLock) {
-        if (event.deltaY > 0) pageTurn(true);
+      } else if (!e.altKey && !scrollLock) {
+        if (e.deltaY > 0) pageTurn(true);
         else pageTurn(false);
       }
     }
   },
 
   handleKeyUp: (e) => {
+    e.stopPropagation();
+
     const {
       pageTurn,
       img: { switchFillEffect },
