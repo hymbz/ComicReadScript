@@ -97,11 +97,6 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
       ...swiperOption,
     });
 
-    swiper.on('observerUpdate', () => {
-      // scrollbar 不会跟着更新，要手动更新下
-      swiper.scrollbar.updateSize();
-    });
-
     swiper.on('activeIndexChange', () => {
       set((state) => {
         if (state.swiper === undefined) return;

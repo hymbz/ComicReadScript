@@ -16,6 +16,7 @@ const selector = ({ slideData, option: { disableZoom, dir } }: SelfState) => ({
 const updateSlides = throttle(100, () => {
   useStore.setState((state) => {
     state.swiper?.updateSlides();
+    state.swiper?.scrollbar.updateSize();
   });
 });
 
