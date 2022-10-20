@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useInit } from './hooks/useInit';
 import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
@@ -49,6 +50,10 @@ export const Manga: React.FC<MangaProps> = (props) => {
   const handleScroll = useStore((state) => state.handleScroll);
   const handleKeyUp = useStore((state) => state.handleKeyUp);
 
+  useEffect(() => {
+    rootRef.current?.focus();
+  });
+
   return (
     <div
       className={classes.root}
@@ -57,6 +62,7 @@ export const Manga: React.FC<MangaProps> = (props) => {
       onWheel={handleScroll}
       onKeyUp={handleKeyUp}
       role="presentation"
+      tabIndex={-1}
     >
       <Toolbar />
       <ComicImgFlow />
