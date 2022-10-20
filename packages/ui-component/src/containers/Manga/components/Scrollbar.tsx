@@ -5,12 +5,10 @@ import { shallow, useStore } from '../hooks/useStore';
 import classes from '../index.module.css';
 
 const selector = ({
-  swiper,
   option: { dir, scrollbar },
   slideData,
   showScrollbar,
 }: SelfState) => ({
-  swiper,
   slideData,
   showScrollbar,
   dir,
@@ -19,16 +17,17 @@ const selector = ({
 
 /** 滚动条 */
 export const Scrollbar: React.FC = memo(() => {
-  const { swiper, slideData, showScrollbar, dir, scrollbar } = useStore(
+  const { slideData, showScrollbar, dir, scrollbar } = useStore(
     selector,
     shallow,
   );
+  const activeIndex = useStore((state) => state.swiper?.activeIndex);
 
   /** 滚动条提示文本 */
   const tooltipText = useMemo(() => {
-    if (!slideData.length) return '';
+    if (!slideData.length || activeIndex === undefined) return '';
 
-    const slideIndex = slideData[swiper?.activeIndex ?? 0].map((slide) => {
+    const slideIndex = slideData[activeIndex].map((slide) => {
       let slideText = `${slide.index}`;
       // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
       if (slide.loadType !== 'loaded') slideText += ` (${slide.loadType})`;
@@ -37,7 +36,7 @@ export const Scrollbar: React.FC = memo(() => {
     if (dir === 'rtl') slideIndex.reverse();
 
     return `${slideIndex.join(' | ')}`;
-  }, [slideData, swiper, dir]);
+  }, [slideData, activeIndex, dir]);
 
   return (
     <div
@@ -46,7 +45,7 @@ export const Scrollbar: React.FC = memo(() => {
       })}
       role="scrollbar"
       aria-controls="mange-main"
-      aria-valuenow={swiper?.activeIndex || -1}
+      aria-valuenow={activeIndex || -1}
       tabIndex={0}
     >
       <div
