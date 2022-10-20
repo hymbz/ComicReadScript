@@ -8,12 +8,10 @@ const selector = ({
   swiper,
   option: { dir, scrollbar },
   slideData,
-  activeSlideIndex,
   showScrollbar,
 }: SelfState) => ({
   swiper,
   slideData,
-  activeSlideIndex,
   showScrollbar,
   dir,
   scrollbar,
@@ -21,14 +19,16 @@ const selector = ({
 
 /** 滚动条 */
 export const Scrollbar: React.FC = memo(() => {
-  const { swiper, slideData, activeSlideIndex, showScrollbar, dir, scrollbar } =
-    useStore(selector, shallow);
+  const { swiper, slideData, showScrollbar, dir, scrollbar } = useStore(
+    selector,
+    shallow,
+  );
 
   /** 滚动条提示文本 */
   const tooltipText = useMemo(() => {
     if (!slideData.length) return '';
 
-    const slideIndex = slideData[activeSlideIndex].map((slide) => {
+    const slideIndex = slideData[swiper?.activeIndex ?? 0].map((slide) => {
       let slideText = `${slide.index}`;
       // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
       if (slide.loadType !== 'loaded') slideText += ` (${slide.loadType})`;
@@ -37,7 +37,7 @@ export const Scrollbar: React.FC = memo(() => {
     if (dir === 'rtl') slideIndex.reverse();
 
     return `${slideIndex.join(' | ')}`;
-  }, [slideData, activeSlideIndex, dir]);
+  }, [slideData, swiper, dir]);
 
   return (
     <div

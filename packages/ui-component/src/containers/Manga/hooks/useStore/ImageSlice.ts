@@ -34,7 +34,7 @@ export interface ImageSLice {
     横幅比例: number;
     条漫比例: number;
 
-    updateSlideData: () => void;
+    updateSlideData: (callback?: (state: Draft<SelfState>) => void) => void;
 
     /** 根据比例更新图片类型 */
     updateImgType: (draftImg: Draft<ComicImg>) => void;
@@ -60,24 +60,31 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
     横幅比例: 0,
     条漫比例: 0,
 
-    updateSlideData: debounce(100, () => {
-      set((state) => {
-        if (state.option.onePageMode)
-          state.slideData = state.imgList.map((img) => [img]);
-        else
-          state.slideData = handleComicData({
-            comicImgList: state.imgList,
-            fillEffect: state.fillEffect,
-          });
+    updateSlideData: debounce(
+      100,
+      (callback?: (state: Draft<SelfState>) => void) => {
+        set((state) => {
+          if (state.option.onePageMode)
+            state.slideData = state.imgList.map((img) => [img]);
+          else
+            state.slideData = handleComicData({
+              comicImgList: state.imgList,
+              fillEffect: state.fillEffect,
+            });
 
-        if (!state.option.autoLoadOtherImg) return;
-        // 确认没有图片在加载后，开始预加载图片
-        if (state.imgList.some((img) => img.loadType === 'loading')) return;
-        const preloadImg = state.imgList.find((img) => img.loadType === 'wait');
-        if (!preloadImg) return;
-        preloadImg.loadType = 'loading';
-      });
-    }),
+          callback?.(state);
+
+          // 确认没有图片在加载后，开始预加载图片
+          if (!state.option.autoLoadOtherImg) return;
+          if (state.imgList.some((img) => img.loadType === 'loading')) return;
+          const preloadImg = state.imgList.find(
+            (img) => img.loadType === 'wait',
+          );
+          if (!preloadImg) return;
+          preloadImg.loadType = 'loading';
+        });
+      },
+    ),
 
     updateImgType: (draftImg: Draft<ComicImg>) => {
       const {

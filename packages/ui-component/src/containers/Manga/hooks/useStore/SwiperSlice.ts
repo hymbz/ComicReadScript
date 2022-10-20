@@ -58,8 +58,6 @@ export interface SwiperSlice {
   swiper?: Draft<Swiper>;
   panzoom?: Draft<PanZoom>;
 
-  activeSlideIndex: number;
-
   initSwiper: (
     swiperOption?: SwiperOptions,
   ) => [SwiperSlice['swiper'], SwiperSlice['panzoom']];
@@ -73,8 +71,6 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
   swiper: undefined as unknown as Draft<Swiper>,
 
   panzoom: undefined as unknown as Draft<PanZoom>,
-
-  activeSlideIndex: 0,
 
   initSwiper: (swiperOption?: SwiperOptions) => {
     const { rootRef, swiper: _swiper, panzoom: _panzoom } = get();
@@ -110,11 +106,8 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
       set((state) => {
         if (state.swiper === undefined) return;
 
-        // 绑定 activeSlideIndex
-        state.activeSlideIndex = state.swiper.activeIndex;
-
         // 在每次 activeIndexChange 时计算 activeImgIndex
-        state.activeImgIndex = state.slideData[state.activeSlideIndex].find(
+        state.activeImgIndex = state.slideData[state.swiper.activeIndex].find(
           (img) => img.type !== 'fill',
         )!.index;
 
@@ -168,12 +161,12 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
   },
 
   pageTurn: (isNext) => {
-    const { swiper, activeSlideIndex, slideData, showEndPage } = get();
+    const { swiper, slideData, showEndPage } = get();
     if (swiper === undefined) return;
 
     // 在最后一页继续向后翻页时弹出结束页
     if (isNext) {
-      if (activeSlideIndex !== slideData.length - 1) swiper.slideNext(0);
+      if (swiper.activeIndex !== slideData.length - 1) swiper.slideNext(0);
       else {
         set((state) => {
           state.showEndPage = true;

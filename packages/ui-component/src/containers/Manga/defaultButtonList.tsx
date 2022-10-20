@@ -31,32 +31,22 @@ export const defaultButtonList: DefaultButtonList = [
       const isOnePageMode = useStore((state) => state.option.onePageMode);
       const swiper = useStore((state) => state.swiper);
       const handleClick = useCallback(() => {
-        let newSlideIndex: number;
-
         useStore.setState((draftState) => {
           // 在卷轴模式下切换单页模式时自动退出卷轴模式
           if (draftState.option.scrollMode)
             draftState.option.scrollMode = false;
-
           draftState.option.onePageMode = !draftState.option.onePageMode;
-
-          const { activeImgIndex } = draftState;
-
-          draftState.img.updateSlideData();
-
-          newSlideIndex = draftState.option.onePageMode
-            ? activeImgIndex
-            : draftState.slideData.findIndex((slide) =>
-                slide.some((img) => img.index === activeImgIndex),
-              );
-          draftState.activeSlideIndex = newSlideIndex;
+          draftState.img.updateSlideData((state) => {
+            const newSlideIndex = state.option.onePageMode
+              ? state.activeImgIndex
+              : state.slideData.findIndex((slide) =>
+                  slide.some((img) => img.index === state.activeImgIndex),
+                );
+            setTimeout(() => {
+              swiper?.slideTo(newSlideIndex, 0);
+            });
+          });
         });
-
-        setTimeout(() => {
-          if (!swiper) return;
-          swiper.slideTo(newSlideIndex, 0);
-          swiper.update();
-        }, 0);
       }, [swiper]);
 
       return (
@@ -91,7 +81,7 @@ export const defaultButtonList: DefaultButtonList = [
               ? { eventsTarget: `.${classes.mangaFlow}` }
               : false,
             // 保持当前显示页面不变
-            initialSlide: draftState.activeSlideIndex,
+            initialSlide: draftState.swiper?.activeIndex,
           });
 
           draftState.swiper = swiper;
