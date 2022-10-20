@@ -81,5 +81,11 @@ export const useInit = ({
       useStore.subscribe((state) => state.option, onOptionChange);
   }, [onOptionChange]);
 
+  // 页数发生变动时，预加载当前页前后指定数量的图片，并取消其他预加载的图片
+  const updateImgLoadType = useStore((state) => state.img.updateImgLoadType);
+  useEffect(() => {
+    useStore.subscribe((state) => state.activeImgIndex, updateImgLoadType);
+  }, [updateImgLoadType]);
+
   return rootRef;
 };

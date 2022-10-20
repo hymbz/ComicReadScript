@@ -44,6 +44,9 @@ export interface ImageSLice {
 
     /** 切换页面填充 */
     switchFillEffect: () => void;
+
+    /** 根据当前页数更新所有图片的加载状态 */
+    updateImgLoadType: () => void;
   };
 }
 
@@ -131,5 +134,28 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
         state.img.updateSlideData();
       });
     },
+
+    updateImgLoadType: debounce(200, () => {
+      set((state) => {
+        const {
+          activeImgIndex,
+          option: { preloadImgNum },
+        } = state;
+
+        const loadScope = [
+          activeImgIndex - preloadImgNum / 2,
+          activeImgIndex + preloadImgNum,
+        ];
+
+        // 页数发生变动时，预加载当前页前后指定数量的图片，并取消其他预加载的图片
+        state.imgList.forEach((_, i) => {
+          if (_.loadType === 'loaded') return;
+          console.log(1);
+          const img = state.imgList[i];
+          if (loadScope[0] < i && i < loadScope[1]) img.loadType = 'loading';
+          else if (img.loadType === 'loading') img.loadType = 'wait';
+        });
+      });
+    }),
   },
 });

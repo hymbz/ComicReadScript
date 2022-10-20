@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import type { Draft } from 'immer';
 import type { SyntheticEvent } from 'react';
-import { memo, useEffect, useRef, useCallback } from 'react';
+import { memo, useRef, useCallback } from 'react';
 import { useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
@@ -39,24 +39,6 @@ export const ComicImg: React.FC<Pick<ComicImg, 'index' | 'src' | 'type'>> =
       },
       [index],
     );
-
-    const activeImgIndex = useStore((state) => state.activeImgIndex);
-    const preloadImgNum = useStore((state) => state.option.preloadImgNum);
-    // 页数发生变动时，预加载当前页前后指定数量的图片，并取消其他预加载的图片
-    useEffect(() => {
-      useStore.setState((state) => {
-        // 跳过已加载完成的图片
-        if (state.imgList[index].loadType === 'loaded') return;
-
-        if (
-          index > activeImgIndex - preloadImgNum / 2 &&
-          index < activeImgIndex + preloadImgNum
-        )
-          state.imgList[index].loadType = 'loading';
-        else if (state.imgList[index].loadType === 'loading')
-          state.imgList[index].loadType = 'wait';
-      });
-    }, [index, activeImgIndex, preloadImgNum]);
 
     const loadType = useStore((state) => state.imgList[index].loadType);
 
