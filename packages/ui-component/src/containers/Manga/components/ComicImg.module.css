@@ -1,11 +1,11 @@
 .img {
   /* 临时测试暂时修改; */
 
-  width: 2em !important;
-  height: 2em !important;
+  /* width: 2em !important;
+  height: 2em !important; */
 
-  /* width: auto;
-  height: 100%; */
+  width: auto;
+  height: 100%;
 
   vertical-align: middle;
 
@@ -53,7 +53,6 @@
   z-index: 2;
   top: 0;
   left: 0;
-  transform: translateY(100%);
 
   display: flex;
   align-items: center;
@@ -64,10 +63,10 @@
 
   color: white;
 
+  opacity: 0;
   background-color: #3339;
-  backdrop-filter: blur(6px);
 
-  transition: transform 500ms;
+  transition: opacity 500ms;
 
   & > button {
     cursor: pointer;
@@ -86,7 +85,7 @@
   }
 
   &[data-show="true"] {
-    transform: translateY(0);
+    opacity: 1;
   }
 }
 
