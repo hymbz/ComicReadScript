@@ -161,7 +161,7 @@
    */
   background: black;
 
-  transition: opacity 200ms;
+  transition: opacity 500ms;
 }
 
 .fabRoot:hover .backdrop,
