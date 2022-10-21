@@ -49,6 +49,8 @@
 }
 
 .endPage {
+  pointer-events: none;
+
   position: absolute;
   z-index: 2;
   top: 0;
@@ -85,6 +87,8 @@
   }
 
   &[data-show="true"] {
+    pointer-events: all;
+
     opacity: 1;
   }
 }
