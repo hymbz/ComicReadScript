@@ -9,6 +9,20 @@ switch (window.location.hostname) {
     break;
   }
 
+  case 'copymanga.site':
+  case 'copymanga.info':
+  case 'copymanga.net':
+  case 'copymanga.org':
+  case 'copymanga.com':
+  case 'www.copymanga.site':
+  case 'www.copymanga.info':
+  case 'www.copymanga.net':
+  case 'www.copymanga.org':
+  case 'www.copymanga.com': {
+    // #copymanga
+    break;
+  }
+
   case 'tel.dm5.com':
   case 'en.dm5.com':
   case 'www.dm5.com':
