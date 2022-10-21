@@ -9,6 +9,15 @@ switch (window.location.hostname) {
     break;
   }
 
+  case 'tel.dm5.com':
+  case 'en.dm5.com':
+  case 'www.dm5.com':
+  case 'www.dm5.cn':
+  case 'www.1kkk.com': {
+    // #dm5
+    break;
+  }
+
   case 'www.mangabz.com':
   case 'mangabz.com': {
     // #mangabz
