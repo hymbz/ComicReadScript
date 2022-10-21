@@ -83,10 +83,12 @@ import { querySelectorClick, sleep, useSiteOptions } from '../helper';
   });
 
   const loadAndShowComic = async () => {
-    showFab((draftProps) => {
-      draftProps.progress = 0;
-    });
-    if (!imgList.length) imgList = await getImgList();
+    if (!imgList.length) {
+      showFab((draftProps) => {
+        draftProps.progress = 0;
+      });
+      imgList = await getImgList();
+    }
 
     showManga((draftProps) => {
       draftProps.imgList = imgList;
