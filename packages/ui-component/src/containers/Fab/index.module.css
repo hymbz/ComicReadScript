@@ -154,12 +154,17 @@
   height: 100vh;
 
   opacity: 0;
-  background-image: linear-gradient(to left top, #0009, #0003);
+
+  /*
+    TODO: 理想情况是使用从右下到左上的黑色透明渐变，但目前透明渐变会出现色阶，只能含泪放弃
+    background: linear-gradient(to left top, #0009, #0003);
+   */
+  background: black;
 
   transition: opacity 200ms;
 }
 
 .fabRoot:hover .backdrop,
 .speedDial:hover .backdrop {
-  opacity: 1;
+  opacity: 0.4;
 }
