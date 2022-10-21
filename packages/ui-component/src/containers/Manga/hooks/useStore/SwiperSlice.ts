@@ -5,6 +5,7 @@ import type { SwiperOptions } from 'swiper';
 import Swiper, { Scrollbar, Mousewheel } from 'swiper';
 import type { ScrollbarOptions } from 'swiper/types/modules/scrollbar';
 import classes from '../../index.module.css';
+import type { SelfStateCreator } from '.';
 
 Swiper.use([Scrollbar, Mousewheel]);
 

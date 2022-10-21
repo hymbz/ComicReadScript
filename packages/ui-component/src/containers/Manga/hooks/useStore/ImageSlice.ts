@@ -2,6 +2,7 @@ import type { Draft } from 'immer';
 import { throttle, debounce } from 'throttle-debounce';
 import type { SyntheticEvent } from 'react';
 import { handleComicData } from '../../handleComicData';
+import type { SelfState, SelfStateCreator } from '.';
 
 declare global {
   type ComicImg = Draft<{

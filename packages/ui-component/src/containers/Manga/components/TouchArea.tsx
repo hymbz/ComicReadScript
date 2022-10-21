@@ -2,6 +2,7 @@ import { clsx } from 'clsx';
 import type { MouseEventHandler } from 'react';
 import { memo, useState, useEffect, useCallback } from 'react';
 import { useDoubleClick } from '../hooks/useDoubleClick';
+import type { SelfState } from '../hooks/useStore';
 import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';

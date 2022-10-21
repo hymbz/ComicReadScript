@@ -1,5 +1,6 @@
 import type { DefaultButtonList } from '../../defaultButtonList';
 import type { DefaultSettingList } from '../../defaultSettingList';
+import type { SelfStateCreator } from '.';
 
 export interface OtherSlice {
   /** 是否强制显示侧边栏 */
@@ -10,7 +11,7 @@ export interface OtherSlice {
   showEndPage: boolean;
 
   /** 点击结束页按钮时触发的回调 */
-  onExit?: () => void;
+  onExit?: (isEnd?: boolean) => void;
   /** 点击上一话按钮时触发的回调 */
   onPrev?: () => void;
   /** 点击下一话按钮时触发的回调 */

@@ -24,23 +24,6 @@ export const useManga = (
   let mangaProps = props ?? { imgList: [] };
 
   let enbale = false;
-  mangaProps.onExit = () => {
-    enbale = false;
-    dom.style.visibility = 'hidden';
-    document.documentElement.style.overflow = 'unset';
-  };
-
-  mangaProps.editButtonList = (list) => [
-    ...list,
-    [
-      '退出',
-      () => (
-        <IconBotton tip="退出" onClick={mangaProps.onExit}>
-          <MdClose />
-        </IconBotton>
-      ),
-    ],
-  ];
 
   const set = (recipe: MangaRecipe) => {
     mangaProps = produce(mangaProps, recipe);
@@ -75,6 +58,27 @@ export const useManga = (
     dom.style.visibility = 'visible';
     document.documentElement.style.overflow = 'hidden';
   };
+
+  mangaProps.onExit = () => {
+    enbale = false;
+    dom.style.visibility = 'hidden';
+    document.documentElement.style.overflow = 'unset';
+  };
+
+  const handleEnd = () => {
+    mangaProps.onExit?.();
+  };
+  mangaProps.editButtonList = (list) => [
+    ...list,
+    [
+      '退出',
+      () => (
+        <IconBotton tip="退出" onClick={handleEnd}>
+          <MdClose />
+        </IconBotton>
+      ),
+    ],
+  ];
 
   return [show, set, enbale];
 };

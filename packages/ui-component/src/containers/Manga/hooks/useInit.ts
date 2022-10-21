@@ -1,5 +1,6 @@
 import type { Draft } from 'immer/dist/internal';
 import { useEffect, useRef } from 'react';
+import type { SelfState } from './useStore';
 import { shallow, useStore } from './useStore';
 import type { MangaProps } from '..';
 

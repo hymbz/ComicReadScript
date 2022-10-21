@@ -1,4 +1,5 @@
 import type { WheelEventHandler, KeyboardEventHandler } from 'react';
+import type { SelfStateCreator } from '.';
 
 export interface OperateSlice {
   handleScroll: WheelEventHandler;

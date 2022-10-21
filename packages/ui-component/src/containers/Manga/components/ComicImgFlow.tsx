@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { memo, useEffect } from 'react';
 
 import { throttle } from 'throttle-debounce';
+import type { SelfState } from '../hooks/useStore';
 import { useStore, shallow } from '../hooks/useStore';
 import { ComicImg } from './ComicImg';
 

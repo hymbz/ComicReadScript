@@ -11,7 +11,7 @@ import { useCssVar } from './hooks/useCssVar';
 
 import classes from './index.module.css';
 
-import type { OtherSlice } from './hooks/useStore/OtherSlice';
+import type { SelfState } from './hooks/useStore/index';
 import type { FillEffect } from './hooks/useStore/ImageSlice';
 import type { Option } from './hooks/useStore/OptionSlice';
 
@@ -24,18 +24,18 @@ export interface MangaProps {
   option?: Partial<Option>;
 
   /** 点击结束页按钮时触发的回调 */
-  onExit?: (() => void | Promise<void>) | null;
+  onExit?: SelfState['onExit'] | null;
   /** 点击上一话按钮时触发的回调 */
-  onPrev?: (() => void | Promise<void>) | null;
+  onPrev?: SelfState['onPrev'] | null;
   /** 点击下一话按钮时触发的回调 */
-  onNext?: (() => void | Promise<void>) | null;
+  onNext?: SelfState['onNext'] | null;
   /** 配置发生变化时触发的回调 */
   onOptionChange?: (option: Option, prevOption: Option) => void | Promise<void>;
 
   /** 修改默认侧边栏按钮列表 */
-  editButtonList?: OtherSlice['editButtonList'];
+  editButtonList?: SelfState['editButtonList'];
   /** 修改默认设置项列表 */
-  editSettingList?: OtherSlice['editSettingList'];
+  editSettingList?: SelfState['editSettingList'];
 }
 
 /**

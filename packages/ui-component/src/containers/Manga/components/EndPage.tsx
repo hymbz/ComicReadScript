@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import type { MouseEventHandler } from 'react';
 import { useCallback } from 'react';
+import type { SelfState } from '../hooks/useStore';
 import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
@@ -24,6 +25,10 @@ export const EndPage: React.FC = () => {
     });
   }, []);
 
+  const handleEnd = useCallback(() => {
+    onExit?.(true);
+  }, [onExit]);
+
   return (
     <div
       className={clsx(classes.endPage)}
@@ -41,7 +46,7 @@ export const EndPage: React.FC = () => {
         上一话
       </button>
       <button
-        onClick={onExit}
+        onClick={handleEnd}
         type="button"
         tabIndex={showEndPage ? 0 : -1}
         data-is-end

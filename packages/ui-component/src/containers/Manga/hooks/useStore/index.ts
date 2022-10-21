@@ -29,22 +29,20 @@ interface SliceState
     OperateSlice,
     OtherSlice {}
 
-declare global {
-  /** 对 StateCreator 进行包装 */
-  type SelfStateCreator<T> = StateCreator<
-    SelfState,
-    [['zustand/subscribeWithSelector', never], ['zustand/immer', never]],
-    [],
-    T
-  >;
+/** 对 StateCreator 进行包装 */
+export type SelfStateCreator<T> = StateCreator<
+  SelfState,
+  [['zustand/subscribeWithSelector', never], ['zustand/immer', never]],
+  [],
+  T
+>;
 
-  interface SelfState extends SliceState {
-    rootRef: RefObject<HTMLElement> | null;
-    handleScroll: WheelEventHandler;
-    handleKeyUp: KeyboardEventHandler;
+export interface SelfState extends SliceState {
+  rootRef: RefObject<HTMLElement> | null;
+  handleScroll: WheelEventHandler;
+  handleKeyUp: KeyboardEventHandler;
 
-    [key: string]: unknown;
-  }
+  [key: string]: unknown;
 }
 
 const store: SelfStateCreator<SelfState> = (...a) => ({

@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
+import type { SelfState } from '../hooks/useStore';
 import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';

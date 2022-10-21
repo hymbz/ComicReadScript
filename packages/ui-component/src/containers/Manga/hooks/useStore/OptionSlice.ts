@@ -1,3 +1,5 @@
+import type { SelfStateCreator } from '.';
+
 export interface Option {
   dir: 'ltr' | 'rtl';
   /** 滚动条 */
