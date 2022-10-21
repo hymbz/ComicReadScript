@@ -69,10 +69,10 @@ declare const MANGABZ_IMAGE_COUNT: number;
     // eslint-disable-next-line no-eval
     const newImgList = [...imgList, ...(eval(res.responseText) as string[])];
 
-    if (imgList.length !== MANGABZ_IMAGE_COUNT) {
+    if (newImgList.length !== MANGABZ_IMAGE_COUNT) {
       showFab((draftProps) => {
-        draftProps.progress = imgList.length / MANGABZ_IMAGE_COUNT;
-        draftProps.tip = `加载中 - ${imgList.length}/${MANGABZ_IMAGE_COUNT}`;
+        draftProps.progress = newImgList.length / MANGABZ_IMAGE_COUNT;
+        draftProps.tip = `加载中 - ${newImgList.length}/${MANGABZ_IMAGE_COUNT}`;
       });
       return getImgList(newImgList);
     }
