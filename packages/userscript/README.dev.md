@@ -1,4 +1,5 @@
 TODO: 为加载中、等待、错误的图片增加遮罩提示，加载中和等待使用同一样式
+TODO: 使用 visibility 属性替换那些 pointer-events: none; opacity: 0; 的 css
 
 ### dev
 

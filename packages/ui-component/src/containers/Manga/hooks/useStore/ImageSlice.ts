@@ -150,7 +150,6 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
         // 页数发生变动时，预加载当前页前后指定数量的图片，并取消其他预加载的图片
         state.imgList.forEach((_, i) => {
           if (_.loadType === 'loaded') return;
-          console.log(1);
           const img = state.imgList[i];
           if (loadScope[0] < i && i < loadScope[1]) img.loadType = 'loading';
           else if (img.loadType === 'loading') img.loadType = 'wait';

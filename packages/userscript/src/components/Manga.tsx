@@ -26,7 +26,7 @@ export const useManga = (
   let enbale = false;
   mangaProps.onExit = () => {
     enbale = false;
-    dom.style.display = 'none';
+    dom.style.visibility = 'hidden';
     document.documentElement.style.overflow = 'unset';
   };
 
@@ -51,27 +51,29 @@ export const useManga = (
 
     if (!mangaProps.imgList.length) throw new Error('imgList 为空');
 
-    root.render(
-      <shadow.div
-        style={{
-          fontSize: 16,
-          position: 'fixed',
-          height: '100vh',
-          width: '100vw',
-          top: 0,
-          left: 0,
-          zIndex: 999999999,
-        }}
-      >
-        <Manga {...mangaProps} />
-        <style type="text/css">{IconBottonStyle}</style>
-        <style type="text/css">{MangaStyle}</style>
-      </shadow.div>,
-    );
+    // 仅在初次运行时渲染节点
+    if (dom.style.display === '')
+      root.render(
+        <shadow.div
+          style={{
+            fontSize: 16,
+            position: 'fixed',
+            height: '100vh',
+            width: '100vw',
+            top: 0,
+            left: 0,
+            zIndex: 999999999,
+          }}
+        >
+          <Manga {...mangaProps} />
+          <style type="text/css">{IconBottonStyle}</style>
+          <style type="text/css">{MangaStyle}</style>
+        </shadow.div>,
+      );
 
     enbale = true;
+    dom.style.visibility = 'visible';
     document.documentElement.style.overflow = 'hidden';
-    dom.style.display = 'unset';
   };
 
   return [show, set, enbale];
