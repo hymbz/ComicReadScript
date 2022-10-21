@@ -1,8 +1,5 @@
-import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
-
-import { IconBotton } from '@crs/ui-component/dist/IconBotton';
-import { useManga, useFab, useToast } from '../components';
-import { querySelectorClick, useSiteOptions } from '../helper';
+import { querySelectorClick } from '../helper';
+import { useInit } from '../helper/useInit';
 
 declare const pVars: { manga: { filePath: string } };
 declare const cInfo: { nextId: number; prevId: number };
@@ -11,40 +8,18 @@ declare const cInfo: { nextId: number; prevId: number };
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'cInfo')) return;
 
-  const { options, setOptions, onOptionChange } = await useSiteOptions(
+  const { options, showFab, toast, showManga, setManga } = await useInit(
     'manhuagui',
   );
 
-  const [showFab] = useFab({
-    tip: '阅读模式',
-    progress: 1,
-    speedDial: [
-      () => (
-        <IconBotton
-          tip="自动加载"
-          placement="left"
-          enabled={options.autoLoad}
-          onClick={() =>
-            setOptions({ ...options, autoLoad: !options.autoLoad })
-          }
-        >
-          <AutoStories />
-        </IconBotton>
-      ),
-    ],
+  setManga((draftProps) => {
+    draftProps.onNext =
+      cInfo.nextId !== 0 ? querySelectorClick('a.nextC') : null;
+    draftProps.onPrev =
+      cInfo.prevId !== 0 ? querySelectorClick('a.prevC') : null;
   });
-  onOptionChange(() => showFab());
-
-  const toast = useToast();
 
   let imgList: string[] = [];
-  const [showManga] = useManga({
-    imgList,
-    onOptionChange: (option) => setOptions({ ...options, option }),
-    onNext: cInfo.nextId !== 0 ? querySelectorClick('a.nextC') : null,
-    onPrev: cInfo.prevId !== 0 ? querySelectorClick('a.prevC') : null,
-  });
-
   const showComic = () => {
     if (imgList.length === 0) {
       try {
@@ -62,16 +37,18 @@ declare const cInfo: { nextId: number; prevId: number };
           (file) => `${pVars.manga.filePath}${file}?${sl}`,
         );
         if (imgList.length === 0) throw new Error('获取漫画图片失败');
+        setManga((draftProps) => {
+          draftProps.imgList = imgList;
+        });
       } catch (e) {
         console.error(e);
         toast('获取漫画图片失败', { type: 'error' });
       }
     }
 
-    showManga((draftProps) => {
-      draftProps.imgList = imgList;
-    });
+    showManga();
   };
+
   showFab((draftProps) => {
     draftProps.onClick = showComic;
   });

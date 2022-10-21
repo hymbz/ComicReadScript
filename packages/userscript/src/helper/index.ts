@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import type { Root } from 'react-dom/client';
 
+// TODO: 之后统一使用 useInit 后就不要用到 useSiteOptions 了
 export * from './useSiteOptions';
 
 export const sleep = (ms: number) =>
