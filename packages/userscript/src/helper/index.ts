@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import type { Root } from 'react-dom/client';
+
+export * from './useSiteOptions';
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => {
@@ -101,62 +102,3 @@ export const dataToParams = (data: Record<string, unknown>) =>
   Object.entries(data)
     .map(([key, val]) => `${key}=${val}`)
     .join('&');
-
-interface defaultOptions {
-  option: Partial<MangaProps['option']> | undefined;
-  autoLoad: boolean;
-  [key: string]: unknown;
-}
-/**
- *
- * @param name 站点名
- * @param defaultValue 默认值
- */
-export const useSiteOptions = async <T>(
-  name: string,
-  defaultValue = {} as T,
-) => {
-  type Options = T & defaultOptions;
-
-  const rawValue = await GM.getValue<Options | undefined>(name);
-  const options =
-    rawValue ??
-    ({
-      option: undefined,
-      autoLoad: true,
-      ...defaultValue,
-    } as Options);
-
-  const changeCallbackList: ((options: Options) => void | Promise<void>)[] = [];
-
-  return {
-    options,
-
-    /** 该站点是否有储存配置 */
-    isRecorded: rawValue !== undefined,
-
-    /**
-     * 设置新 Option
-     *
-     * @param newValue
-     * @param trigger 是否触发变更事件
-     */
-    setOptions: async (newValue: Options, trigger = true) => {
-      Object.assign(options, newValue);
-      await GM.setValue(name, options);
-      if (trigger)
-        await Promise.all(
-          changeCallbackList.map((callback) => callback(options)),
-        );
-    },
-
-    /**
-     * 监听配置变更事件
-     *
-     * @param callback 回调
-     */
-    onOptionChange: (callback: (options: Options) => void | Promise<void>) => {
-      changeCallbackList.push(callback);
-    },
-  };
-};
