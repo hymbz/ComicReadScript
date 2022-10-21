@@ -1,15 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-// import raxios from 'axios';
-// import type { AxiosAdapter } from 'axios';
-// import axiosGmxhrAdapter from 'axios-userscript-adapter';
-
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import type { Root } from 'react-dom/client';
 
-// export const axios = raxios.create({
-//   adapter: axiosGmxhrAdapter as AxiosAdapter,
-//   timeout: 10 * 1000,
-// });
+export const sleep = (ms: number) =>
+  new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
 
 /**
  * 对 document.querySelector 的封装

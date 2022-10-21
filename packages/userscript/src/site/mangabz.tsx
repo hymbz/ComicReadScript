@@ -2,7 +2,12 @@ import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import { useManga, useFab, useToast } from '../components';
-import { dataToParams, querySelectorClick, useSiteOptions } from '../helper';
+import {
+  dataToParams,
+  querySelectorClick,
+  sleep,
+  useSiteOptions,
+} from '../helper';
 
 // 页面自带的变量
 declare const MANGABZ_CID: number;
@@ -43,7 +48,10 @@ declare const MANGABZ_IMAGE_COUNT: number;
 
   const toast = useToast();
 
-  const getImgList = async (imgList: string[] = []): Promise<string[]> => {
+  const getImgList = async (
+    imgList: string[] = [],
+    errorNum = 0,
+  ): Promise<string[]> => {
     const urlParams = dataToParams({
       cid: MANGABZ_CID,
       page: imgList.length + 1,
@@ -60,9 +68,11 @@ declare const MANGABZ_IMAGE_COUNT: number;
     });
 
     if (res.status !== 200 || !res.responseText) {
+      if (errorNum > 3) throw new Error('漫画图片加载出错');
       console.error('漫画图片加载出错', res);
       toast('漫画图片加载出错', { type: 'error' });
-      throw new Error('漫画图片加载出错');
+      await sleep(1000 * 3);
+      return getImgList(imgList, errorNum + 1);
     }
 
     // 返回的数据只能通过 eval 获得
