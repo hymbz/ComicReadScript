@@ -9,6 +9,12 @@ switch (window.location.hostname) {
     break;
   }
 
+  case 'exhentai.org':
+  case 'e-hentai.org': {
+    // #ehentai
+    break;
+  }
+
   case 'nhentai.net': {
     // #nhentai
     break;
