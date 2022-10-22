@@ -4,7 +4,8 @@ import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { FabRecipe } from '../components';
 import { useToast, useManga, useFab } from '../components';
 import type { MangaRecipe } from '../components/Manga';
-import { isEqualArray, useSiteOptions } from '../helper';
+import { useSiteOptions } from '../helper/useSiteOptions';
+import { isEqualArray } from '../helper';
 
 setTimeout(async () => {
   const { options, setOptions, isRecorded, onOptionChange } =
