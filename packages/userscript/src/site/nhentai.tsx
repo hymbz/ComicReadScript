@@ -3,11 +3,62 @@
 import { insertNode, querySelector, querySelectorAll, sleep } from '../helper';
 import { useInit } from '../helper/useInit';
 
+/** 用于转换获得图片文件扩展名 */
+const fileType = {
+  j: 'jpg',
+  p: 'png',
+  g: 'gif',
+};
+
+type Images = {
+  thumbnail: { h: number; w: number; t: keyof typeof fileType };
+  pages: { number: number; extension: string }[];
+};
+declare const gallery: { num_pages: number; media_id: string; images: Images };
+
 (async () => {
   const { options, showFab, toast, showManga, setManga } = await useInit(
     'nhentai',
     { 自动翻页: true, 彻底屏蔽漫画: true, 在新页面中打开链接: true },
   );
+
+  // 在漫画详情页
+  if (Reflect.has(unsafeWindow, 'gallery')) {
+    let imgList: string[] = [];
+
+    const showComic = () => {
+      if (imgList.length === 0) {
+        try {
+          imgList = gallery.images.pages.map(
+            ({ number, extension }) =>
+              `https://i.nhentai.net/galleries/${gallery.media_id}/${number}.${extension}`,
+          );
+          if (imgList.length === 0) throw new Error('获取漫画图片失败');
+          setManga({ imgList });
+        } catch (e) {
+          console.error(e);
+          toast('获取漫画图片失败', { type: 'error' });
+        }
+      }
+
+      showManga();
+    };
+
+    showFab({ onClick: showComic });
+
+    if (options.autoLoad) showComic();
+
+    // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
+    insertNode(
+      document.getElementById('download')!.parentNode as HTMLElement,
+      '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Load comic</a>',
+    );
+    document
+      .getElementById('comicReadMode')!
+      .addEventListener('click', showComic);
+
+    return;
+  }
 
   // 在漫画浏览页
   if (document.getElementsByClassName('gallery').length) {
@@ -50,13 +101,6 @@ import { useInit } from '../helper/useInit';
         return '';
       })();
 
-      /** 用于转换获得图片文件扩展名 */
-      const fileType = {
-        j: 'jpg',
-        p: 'png',
-        g: 'gif',
-      };
-
       let errorNum = 0;
       const loadNewComic = async (): Promise<void> => {
         if (
@@ -90,9 +134,7 @@ import { useInit } from '../helper/useInit';
             media_id: string;
             tags: { id: number }[];
             title: { english: string };
-            images: {
-              thumbnail: { h: number; w: number; t: keyof typeof fileType };
-            };
+            images: Images;
           }[];
         };
 
@@ -195,36 +237,4 @@ import { useInit } from '../helper/useInit';
       await loadNewComic();
     }
   }
-
-  // let imgList: string[] = [];
-  // const showComic = () => {
-  //   if (imgList.length === 0) {
-  //     try {
-  //       const comicInfo = JSON.parse(
-  //         // 只能通过 eval 获得数据
-  //         // eslint-disable-next-line no-eval
-  //         eval(
-  //           document.querySelectorAll('body > script')[1].innerHTML.slice(26),
-  //         ).slice(12, -12),
-  //       );
-  //       const sl = Object.entries(comicInfo.sl)
-  //         .map((attr) => `${attr[0]}=${attr[1]}`)
-  //         .join('&');
-  //       imgList = comicInfo.files.map(
-  //         (file) => `${pVars.manga.filePath}${file}?${sl}`,
-  //       );
-  //       if (imgList.length === 0) throw new Error('获取漫画图片失败');
-  //       setManga({ imgList });
-  //     } catch (e) {
-  //       console.error(e);
-  //       toast('获取漫画图片失败', { type: 'error' });
-  //     }
-  //   }
-
-  //   showManga();
-  // };
-
-  // showFab({ onClick: showComic });
-
-  // if (options.autoLoad) showComic();
 })();
