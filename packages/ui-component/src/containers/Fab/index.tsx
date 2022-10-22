@@ -13,6 +13,8 @@ export interface FabProps {
   tip?: string;
   /** 快速拨号按钮 */
   speedDial?: React.FC[];
+  /** 初始时是否显示 */
+  initShow?: boolean;
 
   children?: JSX.Element | JSX.Element[];
   style?: CSSProperties;
@@ -28,13 +30,14 @@ export const Fab: React.FC<FabProps> = ({
   progress = 0,
   tip,
   speedDial,
+  initShow = true,
   children,
   style,
   onClick,
 }) => {
   // 上次滚动位置
   const lastY = useRef(window.scrollY);
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(initShow);
 
   // 绑定滚动事件
   useEffect(() => {
@@ -51,7 +54,11 @@ export const Fab: React.FC<FabProps> = ({
   }, []);
 
   return (
-    <div className={classes.fabRoot} style={style} data-show={progress || show}>
+    <div
+      className={classes.fabRoot}
+      style={style}
+      data-show={progress === 0 || progress !== 1 || show}
+    >
       <button type="button" className={classes.fab} onClick={onClick}>
         {children ?? <MdMenuBook />}
 

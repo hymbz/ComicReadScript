@@ -44,7 +44,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       showManga();
     };
 
-    showFab({ onClick: showComic });
+    showFab({ onClick: showComic, initShow: false });
 
     if (options.autoLoad) showComic();
 
