@@ -3,18 +3,17 @@ import type { MangaProps } from '@crs/ui-component/dist/Manga';
 interface defaultOptions {
   option: Partial<MangaProps['option']> | undefined;
   autoLoad: boolean;
-  [key: string]: unknown;
 }
 
 /**
  * 对修改站点配置的相关方法的封装
  *
  * @param name 站点名
- * @param defaultValue 默认值
+ * @param defaultOptions 默认配置
  */
-export const useSiteOptions = async <T>(
+export const useSiteOptions = async <T extends Record<string, any>>(
   name: string,
-  defaultValue = {} as T,
+  defaultOptions = {} as T,
 ) => {
   type Options = T & defaultOptions;
 
@@ -24,7 +23,7 @@ export const useSiteOptions = async <T>(
     ({
       option: undefined,
       autoLoad: true,
-      ...defaultValue,
+      ...defaultOptions,
     } as Options);
 
   const changeCallbackList: ((options: Options) => void | Promise<void>)[] = [];

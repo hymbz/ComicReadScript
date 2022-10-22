@@ -1,16 +1,23 @@
 import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
-import { useSiteOptions } from '.';
 import { useFab, useManga, useToast } from '../components';
+import { useSiteOptions } from './useSiteOptions';
 
 /**
  * 对三个样式组件和 useSiteOptions 的默认值进行封装
  *
  * @param name 站点名
+ * @param defaultOptions 默认配置
  */
-export const useInit = async (name: string) => {
-  const { options, setOptions, onOptionChange } = await useSiteOptions(name);
+export const useInit = async <T extends Record<string, any>>(
+  name: string,
+  defaultOptions = {} as T,
+) => {
+  const { options, setOptions, onOptionChange } = await useSiteOptions(
+    name,
+    defaultOptions,
+  );
 
   const [showFab, setFab] = useFab({
     tip: '阅读模式',

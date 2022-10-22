@@ -9,6 +9,11 @@ switch (window.location.hostname) {
     break;
   }
 
+  case 'nhentai.net': {
+    // #nhentai
+    break;
+  }
+
   case 'copymanga.site':
   case 'copymanga.info':
   case 'copymanga.net':

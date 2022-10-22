@@ -27,6 +27,25 @@ export const querySelectorAll = <T extends HTMLElement = HTMLElement>(
 ) => document.querySelectorAll<T>(selector);
 
 /**
+ * 添加元素
+ *
+ * @param node 被添加元素
+ * @param textnode 添加元素
+ * @param referenceNode 参考元素，添加元素将插在参考元素前
+ */
+export const insertNode = (
+  node: HTMLElement,
+  textnode: string,
+  referenceNode: HTMLElement | null = null,
+) => {
+  const temp = document.createElement('div');
+  temp.innerHTML = textnode;
+  const frag = document.createDocumentFragment();
+  while (temp.firstChild) frag.appendChild(temp.firstChild);
+  node.insertBefore(frag, referenceNode);
+};
+
+/**
  * 创建组件用的 ReactDOM Root
  *
  * @param name 组件名
