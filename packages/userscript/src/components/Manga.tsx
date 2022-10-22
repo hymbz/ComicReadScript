@@ -9,7 +9,10 @@ import IconBottonStyle from '@crs/ui-component/dist/IconBotton.css';
 import produce from 'immer';
 import { useComponentsRoot } from '../helper';
 
-export type MangaRecipe = (draftProps: MangaProps) => void;
+// TODO: 感觉可以去掉使用 函数 修改的方式？
+export type MangaRecipe =
+  | ((draftProps: MangaProps) => void)
+  | Partial<MangaProps>;
 
 /**
  * 显示漫画阅读窗口
@@ -25,9 +28,9 @@ export const useManga = (
 
   let enbale = false;
 
-  // TODO: 增加支持对象形式的参数
   const set = (recipe: MangaRecipe) => {
-    mangaProps = produce(mangaProps, recipe);
+    if (typeof recipe === 'function') mangaProps = produce(mangaProps, recipe);
+    else Object.assign(mangaProps, recipe);
   };
 
   const show = (recipe?: MangaRecipe) => {

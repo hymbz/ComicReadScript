@@ -10,7 +10,7 @@ import shadow from 'react-shadow';
 import produce from 'immer';
 import { useComponentsRoot } from '../helper';
 
-export type FabRecipe = (draftProps: FabProps) => void;
+export type FabRecipe = ((draftProps: FabProps) => void) | Partial<FabProps>;
 
 export const useFab = (
   props?: FabProps,
@@ -20,7 +20,8 @@ export const useFab = (
   let fabProps = props ?? {};
 
   const set = (recipe: FabRecipe) => {
-    fabProps = produce(fabProps, recipe);
+    if (typeof recipe === 'function') fabProps = produce(fabProps, recipe);
+    else Object.assign(fabProps, recipe);
   };
 
   const FabIcon = () => {

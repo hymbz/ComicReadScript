@@ -11,11 +11,9 @@ declare const cInfo: { nextId: number; prevId: number };
   const { options, showFab, toast, showManga, setManga } = await useInit(
     'manhuagui',
   );
-  setManga((draftProps) => {
-    draftProps.onNext =
-      cInfo.nextId !== 0 ? querySelectorClick('a.nextC') : null;
-    draftProps.onPrev =
-      cInfo.prevId !== 0 ? querySelectorClick('a.prevC') : null;
+  setManga({
+    onNext: cInfo.nextId !== 0 ? querySelectorClick('a.nextC') : null,
+    onPrev: cInfo.prevId !== 0 ? querySelectorClick('a.prevC') : null,
   });
 
   let imgList: string[] = [];
@@ -36,9 +34,7 @@ declare const cInfo: { nextId: number; prevId: number };
           (file) => `${pVars.manga.filePath}${file}?${sl}`,
         );
         if (imgList.length === 0) throw new Error('获取漫画图片失败');
-        setManga((draftProps) => {
-          draftProps.imgList = imgList;
-        });
+        setManga({ imgList });
       } catch (e) {
         console.error(e);
         toast('获取漫画图片失败', { type: 'error' });
@@ -48,9 +44,7 @@ declare const cInfo: { nextId: number; prevId: number };
     showManga();
   };
 
-  showFab((draftProps) => {
-    draftProps.onClick = showComic;
-  });
+  showFab({ onClick: showComic });
 
   if (options.autoLoad) showComic();
 })();

@@ -115,20 +115,14 @@ setTimeout(async () => {
       imgList = newImgList;
 
       if (isReadMode) {
-        showManga?.((draftProps) => {
-          draftProps.imgList = imgList;
-        });
+        showManga?.({ imgList });
       } else {
-        setManga?.((draftProps) => {
-          draftProps.imgList = imgList;
-        });
+        setManga?.({ imgList });
       }
 
       if (waitAutoLoad) showManga();
 
-      showFab?.((draftProps) => {
-        draftProps.progress = 1;
-      });
+      showFab?.({ progress: 1 });
     }
 
     return true;

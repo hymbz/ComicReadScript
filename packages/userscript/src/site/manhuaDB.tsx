@@ -45,11 +45,9 @@ declare const $: any;
 
     return null;
   };
-  const onNext = await checkTurnPage('next');
-  const onPrev = await checkTurnPage('pre');
-  setManga((draftProps) => {
-    draftProps.onNext = onNext;
-    draftProps.onPrev = onPrev;
+  setManga({
+    onNext: await checkTurnPage('next'),
+    onPrev: await checkTurnPage('pre'),
   });
 
   let imgList: string[] = [];
@@ -60,9 +58,7 @@ declare const $: any;
           (data) => `${img_host}/${img_pre}/${data.img}`,
         );
         if (imgList.length === 0) throw new Error('获取漫画图片失败');
-        setManga((draftProps) => {
-          draftProps.imgList = imgList;
-        });
+        setManga({ imgList });
       } catch (e) {
         console.error(e);
         toast('获取漫画图片失败', { type: 'error' });
@@ -71,9 +67,7 @@ declare const $: any;
 
     showManga();
   };
-  showFab((draftProps) => {
-    draftProps.onClick = showComic;
-  });
+  showFab({ onClick: showComic });
 
   if (options.autoLoad) showComic();
 })();

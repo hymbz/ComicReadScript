@@ -19,13 +19,9 @@ declare const MANGABZ_IMAGE_COUNT: number;
     'mangabz',
   );
 
-  setManga((draftProps) => {
-    draftProps.onNext = querySelectorClick(
-      'body > .container a[href^="/"]:last-child',
-    );
-    draftProps.onPrev = querySelectorClick(
-      'body > .container a[href^="/"]:first-child',
-    );
+  setManga({
+    onNext: querySelectorClick('body > .container a[href^="/"]:last-child'),
+    onPrev: querySelectorClick('body > .container a[href^="/"]:first-child'),
   });
 
   const getImgList = async (
@@ -60,17 +56,14 @@ declare const MANGABZ_IMAGE_COUNT: number;
     const newImgList = [...imgList, ...(eval(res.responseText) as string[])];
 
     if (newImgList.length !== MANGABZ_IMAGE_COUNT) {
-      showFab((draftProps) => {
-        draftProps.progress = newImgList.length / MANGABZ_IMAGE_COUNT;
-        draftProps.tip = `加载中 - ${newImgList.length}/${MANGABZ_IMAGE_COUNT}`;
+      showFab({
+        progress: newImgList.length / MANGABZ_IMAGE_COUNT,
+        tip: `加载中 - ${newImgList.length}/${MANGABZ_IMAGE_COUNT}`,
       });
       return getImgList(newImgList);
     }
 
-    showFab((draftProps) => {
-      draftProps.progress = 1;
-      draftProps.tip = '阅读模式';
-    });
+    showFab({ progress: 1, tip: '阅读模式' });
 
     return newImgList;
   };
@@ -78,21 +71,15 @@ declare const MANGABZ_IMAGE_COUNT: number;
   let imgList: string[] = [];
   const loadAndShowComic = async () => {
     if (!imgList.length) {
-      showFab((draftProps) => {
-        draftProps.progress = 0;
-      });
+      showFab({ progress: 0 });
       imgList = await getImgList();
-      setManga((draftProps) => {
-        draftProps.imgList = imgList;
-      });
+      setManga({ imgList });
     }
 
     showManga();
   };
 
-  showFab((draftProps) => {
-    draftProps.onClick = loadAndShowComic;
-  });
+  showFab({ onClick: loadAndShowComic });
 
   if (options.autoLoad) await loadAndShowComic();
 })();

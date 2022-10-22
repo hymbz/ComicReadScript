@@ -10,13 +10,11 @@ import { useInit } from '../helper/useInit';
   const { options, showFab, toast, showManga, setManga } = await useInit(
     'copymanga',
   );
-  setManga((draftProps) => {
-    draftProps.onNext = querySelectorClick(
-      '.comicContent-next a:not(.prev-null)',
-    );
-    draftProps.onPrev = querySelectorClick(
+  setManga({
+    onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
+    onPrev: querySelectorClick(
       '.comicContent-prev:nth-child(3) a:not(.prev-null)',
-    );
+    ),
   });
 
   const getImgList = async (
@@ -47,10 +45,7 @@ import { useInit } from '../helper/useInit';
       },
     } = JSON.parse(res.responseText);
 
-    showFab((draftProps) => {
-      draftProps.progress = 1;
-      draftProps.tip = '阅读模式';
-    });
+    showFab({ progress: 1, tip: '阅读模式' });
 
     type ContentsType = { url: string }[];
     return (contents as ContentsType).map(({ url }) => url);
@@ -59,21 +54,15 @@ import { useInit } from '../helper/useInit';
   let imgList: string[] = [];
   const loadAndShowComic = async () => {
     if (!imgList.length) {
-      showFab((draftProps) => {
-        draftProps.progress = 0;
-      });
+      showFab({ progress: 0 });
       imgList = await getImgList();
-      setManga((draftProps) => {
-        draftProps.imgList = imgList;
-      });
+      setManga({ imgList });
     }
 
     showManga();
   };
 
-  showFab((draftProps) => {
-    draftProps.onClick = loadAndShowComic;
-  });
+  showFab({ onClick: loadAndShowComic });
 
   if (options.autoLoad) await loadAndShowComic();
 })();
