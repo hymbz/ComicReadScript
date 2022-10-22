@@ -513,6 +513,7 @@ switch (location.hostname) {
   case 'tel.dm5.com':
   case 'en.dm5.com':
   case 'www.dm5.com':
+  case 'www.dm5.cn':
   case 'www.1kkk.com': {
     '@@dm5Script.@@';
     break;
@@ -537,12 +538,12 @@ switch (location.hostname) {
     '@@mangabzScript.@@';
     break;
   }
-  case 'www.copymanga.site':
   case 'copymanga.site':
   case 'copymanga.info':
-  case 'copymanga.com':
   case 'copymanga.net':
   case 'copymanga.org':
+  case 'copymanga.com':
+  case 'www.copymanga.site':
   case 'www.copymanga.info':
   case 'www.copymanga.net':
   case 'www.copymanga.org':
