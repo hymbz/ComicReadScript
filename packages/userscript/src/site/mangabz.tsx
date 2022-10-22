@@ -1,13 +1,5 @@
-import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
-
-import { IconBotton } from '@crs/ui-component/dist/IconBotton';
-import { useManga, useFab, useToast } from '../components';
-import {
-  dataToParams,
-  querySelectorClick,
-  sleep,
-  useSiteOptions,
-} from '../helper';
+import { dataToParams, querySelectorClick, sleep } from '../helper';
+import { useInit } from '../helper/useInit';
 
 // 页面自带的变量
 declare const MANGABZ_CID: number;
@@ -23,30 +15,18 @@ declare const MANGABZ_IMAGE_COUNT: number;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) return;
 
-  const { options, setOptions, onOptionChange } = await useSiteOptions(
+  const { options, showFab, toast, showManga, setManga } = await useInit(
     'mangabz',
   );
 
-  const [showFab] = useFab({
-    tip: '阅读模式',
-    speedDial: [
-      () => (
-        <IconBotton
-          tip="自动加载"
-          placement="left"
-          enabled={options.autoLoad}
-          onClick={() =>
-            setOptions({ ...options, autoLoad: !options.autoLoad })
-          }
-        >
-          <AutoStories />
-        </IconBotton>
-      ),
-    ],
+  setManga((draftProps) => {
+    draftProps.onNext = querySelectorClick(
+      'body > .container a[href^="/"]:last-child',
+    );
+    draftProps.onPrev = querySelectorClick(
+      'body > .container a[href^="/"]:first-child',
+    );
   });
-  onOptionChange(() => showFab());
-
-  const toast = useToast();
 
   const getImgList = async (
     imgList: string[] = [],
@@ -96,25 +76,20 @@ declare const MANGABZ_IMAGE_COUNT: number;
   };
 
   let imgList: string[] = [];
-  const [showManga] = useManga({
-    imgList,
-    onOptionChange: (option) => setOptions({ ...options, option }),
-    onNext: querySelectorClick('body > .container a[href^="/"]:last-child'),
-    onPrev: querySelectorClick('body > .container a[href^="/"]:first-child'),
-  });
-
   const loadAndShowComic = async () => {
     if (!imgList.length) {
       showFab((draftProps) => {
         draftProps.progress = 0;
       });
       imgList = await getImgList();
+      setManga((draftProps) => {
+        draftProps.imgList = imgList;
+      });
     }
 
-    showManga((draftProps) => {
-      draftProps.imgList = imgList;
-    });
+    showManga();
   };
+
   showFab((draftProps) => {
     draftProps.onClick = loadAndShowComic;
   });

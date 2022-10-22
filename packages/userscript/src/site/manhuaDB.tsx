@@ -1,9 +1,6 @@
 /* eslint-disable camelcase */
-import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
-
-import { IconBotton } from '@crs/ui-component/dist/IconBotton';
-import { useManga, useFab, useToast } from '../components';
-import { dataToParams, querySelectorClick, useSiteOptions } from '../helper';
+import { dataToParams, querySelectorClick } from '../helper';
+import { useInit } from '../helper/useInit';
 
 declare const img_data_arr: { img: string }[];
 declare const img_host: string;
@@ -18,31 +15,9 @@ declare const $: any;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'img_data_arr')) return;
 
-  const { options, setOptions, onOptionChange } = await useSiteOptions(
+  const { options, showFab, toast, showManga, setManga } = await useInit(
     'manhuaDB',
   );
-
-  const [showFab] = useFab({
-    tip: '阅读模式',
-    progress: 1,
-    speedDial: [
-      () => (
-        <IconBotton
-          tip="自动加载"
-          placement="left"
-          enabled={options.autoLoad}
-          onClick={() =>
-            setOptions({ ...options, autoLoad: !options.autoLoad })
-          }
-        >
-          <AutoStories />
-        </IconBotton>
-      ),
-    ],
-  });
-  onOptionChange(() => showFab());
-
-  const toast = useToast();
 
   /**
    * 检查是否有上/下一页
@@ -70,15 +45,14 @@ declare const $: any;
 
     return null;
   };
-
-  let imgList: string[] = [];
-  const [showManga] = useManga({
-    imgList,
-    onOptionChange: (option) => setOptions({ ...options, option }),
-    onNext: await checkTurnPage('next'),
-    onPrev: await checkTurnPage('pre'),
+  const onNext = await checkTurnPage('next');
+  const onPrev = await checkTurnPage('pre');
+  setManga((draftProps) => {
+    draftProps.onNext = onNext;
+    draftProps.onPrev = onPrev;
   });
 
+  let imgList: string[] = [];
   const showComic = () => {
     if (imgList.length === 0) {
       try {
@@ -86,15 +60,16 @@ declare const $: any;
           (data) => `${img_host}/${img_pre}/${data.img}`,
         );
         if (imgList.length === 0) throw new Error('获取漫画图片失败');
+        setManga((draftProps) => {
+          draftProps.imgList = imgList;
+        });
       } catch (e) {
         console.error(e);
         toast('获取漫画图片失败', { type: 'error' });
       }
     }
 
-    showManga((draftProps) => {
-      draftProps.imgList = imgList;
-    });
+    showManga();
   };
   showFab((draftProps) => {
     draftProps.onClick = showComic;

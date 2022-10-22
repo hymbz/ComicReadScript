@@ -25,6 +25,7 @@ export const useManga = (
 
   let enbale = false;
 
+  // TODO: 增加支持对象形式的参数
   const set = (recipe: MangaRecipe) => {
     mangaProps = produce(mangaProps, recipe);
   };

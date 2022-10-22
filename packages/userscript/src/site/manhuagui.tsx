@@ -11,7 +11,6 @@ declare const cInfo: { nextId: number; prevId: number };
   const { options, showFab, toast, showManga, setManga } = await useInit(
     'manhuagui',
   );
-
   setManga((draftProps) => {
     draftProps.onNext =
       cInfo.nextId !== 0 ? querySelectorClick('a.nextC') : null;

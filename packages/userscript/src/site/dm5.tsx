@@ -1,9 +1,6 @@
 /* eslint-disable camelcase */
-import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
-
-import { IconBotton } from '@crs/ui-component/dist/IconBotton';
-import { useManga, useFab, useToast } from '../components';
-import { querySelectorClick, sleep, useSiteOptions } from '../helper';
+import { querySelectorClick, sleep } from '../helper';
+import { useInit } from '../helper/useInit';
 
 // 页面自带的变量
 declare const DM5_CID: number;
@@ -12,35 +9,17 @@ declare const DM5_VIEWSIGN_DT: string;
 declare const DM5_VIEWSIGN: string;
 /** 漫画页数 */
 declare const DM5_IMAGE_COUNT: number;
-declare const DM5_PageType: number;
 declare const $: any;
 
 (async () => {
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'DM5_CID')) return;
 
-  const { options, setOptions, onOptionChange } = await useSiteOptions('dm5');
-
-  const [showFab] = useFab({
-    tip: '阅读模式',
-    speedDial: [
-      () => (
-        <IconBotton
-          tip="自动加载"
-          placement="left"
-          enabled={options.autoLoad}
-          onClick={() =>
-            setOptions({ ...options, autoLoad: !options.autoLoad })
-          }
-        >
-          <AutoStories />
-        </IconBotton>
-      ),
-    ],
+  const { options, showFab, toast, showManga, setManga } = await useInit('dm5');
+  setManga((draftProps) => {
+    draftProps.onNext = querySelectorClick('.logo_2');
+    draftProps.onPrev = querySelectorClick('.logo_1');
   });
-  onOptionChange(() => showFab());
-
-  const toast = useToast();
 
   const getImgList = async (
     imgList: string[] = [],
@@ -91,25 +70,20 @@ declare const $: any;
   };
 
   let imgList: string[] = [];
-  const [showManga] = useManga({
-    imgList,
-    onOptionChange: (option) => setOptions({ ...options, option }),
-    onNext: querySelectorClick('.logo_2'),
-    onPrev: querySelectorClick('.logo_1'),
-  });
-
   const loadAndShowComic = async () => {
     if (!imgList.length) {
       showFab((draftProps) => {
         draftProps.progress = 0;
       });
       imgList = await getImgList();
+      setManga((draftProps) => {
+        draftProps.imgList = imgList;
+      });
     }
 
-    showManga((draftProps) => {
-      draftProps.imgList = imgList;
-    });
+    showManga();
   };
+
   showFab((draftProps) => {
     draftProps.onClick = loadAndShowComic;
   });
