@@ -12,28 +12,23 @@ import { useInit } from '../helper/useInit';
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'gid')) return;
 
-  const imgNum = parseInt(
+  const totalImgNum = parseInt(
     querySelector('#gdd > table > tbody > tr:nth-child(6) > td.gdt2')!
       .innerHTML,
     10,
   );
+  let loadedImgNum = 0;
 
   /**
-   * 从漫画单页源代码中提取图片地址
+   * 从图片页获取图片的地址
    *
-   * @param html
+   * @param url
+   * @param errorNum
    */
-  const getImgUrl = (html: string) =>
-    html.split('id="img" src="')[1].split('"')[0];
-  /** 从漫画单页源代码中提取下一页地址的正则 */
-  const getNextImgRe = /id="next" .*? href="(.+?)(?=")/;
-
-  // TODO: 目前单线程的速度还是慢，可以试着直接从详情页获取每页图片的地址，然后直接 getImgUrl 获取
-  const getImgList = async (
+  const getImgFromImgPage = async (
     url: string,
-    imgList: string[] = [],
     errorNum = 0,
-  ): Promise<string[]> => {
+  ): Promise<string> => {
     const res = await GM.xmlHttpRequest({ method: 'GET', url });
 
     if (res.status !== 200 || !res.responseText) {
@@ -41,25 +36,46 @@ import { useInit } from '../helper/useInit';
       console.error('漫画图片加载出错', res);
       toast('漫画图片加载出错', { type: 'error' });
       await sleep(1000 * 3);
-      return getImgList(url, imgList, errorNum + 1);
+      return getImgFromImgPage(url, errorNum + 1);
     }
 
-    // 返回的数据只能通过 eval 获得
-    // eslint-disable-next-line no-eval
-    const newImgList = [...imgList, getImgUrl(res.responseText)];
+    loadedImgNum += 1;
+    showFab({
+      progress: loadedImgNum / totalImgNum,
+      tip: `加载中 - ${loadedImgNum}/${totalImgNum}`,
+    });
 
-    if (newImgList.length !== imgNum) {
-      showFab({
-        progress: newImgList.length / imgNum,
-        tip: `加载中 - ${newImgList.length}/${imgNum}`,
-      });
-      const nextUrl = getNextImgRe.exec(res.responseText)![1];
-      return getImgList(nextUrl, newImgList);
+    return res.responseText.split('id="img" src="')[1].split('"')[0];
+  };
+
+  /** 从详情页获取图片页的地址的正则 */
+  const getImgFromDetailsPageRe =
+    /(?<=<div class="gdtl" style="height:320px"><a href=").+?(?=">)/gm;
+  const getImgFromDetailsPage = async (
+    pageNum = 0,
+    errorNum = 0,
+  ): Promise<string[]> => {
+    const res = await GM.xmlHttpRequest({
+      method: 'GET',
+      url: `${window.location.origin}${window.location.pathname}${
+        pageNum ? `?p=${pageNum}` : ''
+      }`,
+    });
+
+    if (res.status !== 200 || !res.responseText) {
+      if (errorNum > 3) throw new Error('漫画图片加载出错');
+      console.error('漫画图片加载出错', res);
+      toast('漫画图片加载出错', { type: 'error' });
+      await sleep(1000 * 3);
+      return getImgFromDetailsPage(pageNum, errorNum + 1);
     }
 
-    showFab({ progress: 1, tip: '阅读模式' });
+    // 从详情页获取图片页的地址
+    const imgPageList = res.responseText.match(
+      getImgFromDetailsPageRe,
+    ) as string[];
 
-    return newImgList;
+    return Promise.all(imgPageList.map(getImgFromImgPage));
   };
 
   const imgList = { ehentai: [] as string[], nhentai: [] as string[] };
@@ -67,9 +83,15 @@ import { useInit } from '../helper/useInit';
   const findAndShowComic = async () => {
     if (imgList.ehentai.length === 0) {
       try {
-        imgList.ehentai = await getImgList(
-          querySelector<HTMLAnchorElement>('#gdt > div:nth-child(1) a')!.href,
-        );
+        showFab({ progress: 0 });
+        const totalPageNum = +querySelector('td:nth-last-child(2)')!.innerText;
+        imgList.ehentai = (
+          await Promise.all(
+            [...Array(totalPageNum).keys()].map((pageNum) =>
+              getImgFromDetailsPage(pageNum),
+            ),
+          )
+        ).flat();
         if (imgList.ehentai.length === 0) throw new Error('获取漫画图片失败');
         setManga({ imgList: imgList.ehentai });
       } catch (e) {

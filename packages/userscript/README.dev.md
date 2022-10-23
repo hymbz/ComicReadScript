@@ -2,6 +2,9 @@ TODO: 为加载中、等待、错误的图片增加遮罩提示，加载中和�
 TODO: 使用 visibility 属性替换那些 pointer-events: none; opacity: 0; 的 css
 TODO: 补全所有站点的 EndExit 回调
 TODO: nhentai 的图片加载比较慢，需要给滚动条加个图片加载进度条，最好能精确到每个页面的图片
+TODO: 在加载过程中再次点击 Fab 会再次启动加载过程，需要加个锁定
+TODO: xmlHttpRequest 出错处理可以包装一下。出错文本应该能通过参数修改
+TODO: xmlHttpRequest 出错时应该再重试三次都不行时才提示
 
 ### dev
 
