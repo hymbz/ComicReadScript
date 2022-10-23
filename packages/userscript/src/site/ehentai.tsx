@@ -81,7 +81,7 @@ import { useInit } from '../helper/useInit';
     showManga();
   };
 
-  showFab({ onClick: findAndShowComic });
+  showFab({ progress: undefined, onClick: findAndShowComic });
 
   if (options.autoLoad) await findAndShowComic();
 })();
