@@ -56,7 +56,7 @@ import { useInit } from '../helper/useInit';
   };
 
   const showComic = createShowComic(async () => {
-    const totalPageNum = +querySelector('td:nth-last-child(2)')!.innerText;
+    const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!.innerText;
     return (
       await Promise.all(
         [...Array(totalPageNum).keys()].map((pageNum) =>
