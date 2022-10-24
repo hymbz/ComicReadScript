@@ -7,9 +7,8 @@ import { useInit } from '../helper/useInit';
   // 只在漫画页内运行
   if (!window.location.href.includes('/chapter/')) return;
 
-  const { options, showFab, toast, showManga, setManga } = await useInit(
-    'copymanga',
-  );
+  const { options, showFab, toast, showManga, setManga, request } =
+    await useInit('copymanga');
   setManga({
     onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
     onPrev: querySelectorClick(
@@ -17,27 +16,15 @@ import { useInit } from '../helper/useInit';
     ),
   });
 
-  const getImgList = async (
-    imgList: string[] = [],
-    errorNum = 0,
-  ): Promise<string[]> => {
-    const res = await GM.xmlHttpRequest({
-      method: 'GET',
-      url: window.location.href.replace(
+  const getImgList = async (): Promise<string[]> => {
+    const res = await request(
+      'GET',
+      window.location.href.replace(
         /.*?(?=\/comic\/)/,
         'https://api.copymanga.site/api/v3',
       ),
-      headers: { Referer: window.location.href },
-      responseType: 'blob',
-    });
-
-    if (res.status !== 200 || !res.responseText) {
-      if (errorNum > 3) throw new Error('漫画图片加载出错');
-      console.error('漫画图片加载出错', res);
-      toast('漫画图片加载出错', { type: 'error' });
-      await sleep(1000 * 3);
-      return getImgList(imgList, errorNum + 1);
-    }
+      { headers: { Referer: window.location.href }, responseType: 'blob' },
+    );
 
     const {
       results: {

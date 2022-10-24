@@ -3,6 +3,7 @@ import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import { useFab, useManga, useToast } from '../components';
 import { useSiteOptions } from './useSiteOptions';
+import { sleep } from '.';
 
 /**
  * 对三个样式组件和 useSiteOptions 的默认值进行封装
@@ -47,6 +48,31 @@ export const useInit = async <T extends Record<string, any>>(
 
   const toast = useToast();
 
+  type RequestOptions = Partial<Tampermonkey.Request<any>> & {
+    errorText?: string;
+  };
+  const request = async (
+    method: 'GET' | 'POST',
+    url: string,
+    details?: RequestOptions,
+    errorNum = 0,
+  ): Promise<Tampermonkey.Response<any>> => {
+    const res = await GM.xmlHttpRequest({ method, url, ...details });
+
+    if (res.status !== 200 || !res.responseText) {
+      const errorText = details?.errorText ?? '漫画图片加载出错';
+      if (errorNum > 3) {
+        toast(errorText, { type: 'error' });
+        throw new Error(errorText);
+      }
+      console.error(errorText, res);
+      await sleep(1000 * 3);
+      return request(method, url, details, errorNum + 1);
+    }
+
+    return res;
+  };
+
   return {
     options,
     setOptions,
@@ -56,5 +82,7 @@ export const useInit = async <T extends Record<string, any>>(
     showManga,
     setManga,
     toast,
+
+    request,
   };
 };

@@ -1,13 +1,15 @@
 /* eslint-disable camelcase */
 
-import { querySelector, sleep } from '../helper';
+import { querySelector } from '../helper';
 import { useInit } from '../helper/useInit';
 
 (async () => {
-  const { options, showFab, toast, showManga, setManga } = await useInit(
-    'nhentai',
-    { 自动翻页: true, 彻底屏蔽漫画: true, 在新页面中打开链接: true },
-  );
+  const { options, showFab, toast, showManga, setManga, request } =
+    await useInit('nhentai', {
+      自动翻页: true,
+      彻底屏蔽漫画: true,
+      在新页面中打开链接: true,
+    });
 
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'gid')) return;
@@ -23,21 +25,9 @@ import { useInit } from '../helper/useInit';
    * 从图片页获取图片的地址
    *
    * @param url
-   * @param errorNum
    */
-  const getImgFromImgPage = async (
-    url: string,
-    errorNum = 0,
-  ): Promise<string> => {
-    const res = await GM.xmlHttpRequest({ method: 'GET', url });
-
-    if (res.status !== 200 || !res.responseText) {
-      if (errorNum > 3) throw new Error('漫画图片加载出错');
-      console.error('漫画图片加载出错', res);
-      toast('漫画图片加载出错', { type: 'error' });
-      await sleep(1000 * 3);
-      return getImgFromImgPage(url, errorNum + 1);
-    }
+  const getImgFromImgPage = async (url: string): Promise<string> => {
+    const res = await request('GET', url);
 
     loadedImgNum += 1;
     showFab({
@@ -51,24 +41,13 @@ import { useInit } from '../helper/useInit';
   /** 从详情页获取图片页的地址的正则 */
   const getImgFromDetailsPageRe =
     /(?<=<div class="gdtl" style="height:320px"><a href=").+?(?=">)/gm;
-  const getImgFromDetailsPage = async (
-    pageNum = 0,
-    errorNum = 0,
-  ): Promise<string[]> => {
-    const res = await GM.xmlHttpRequest({
-      method: 'GET',
-      url: `${window.location.origin}${window.location.pathname}${
+  const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
+    const res = await request(
+      'GET',
+      `${window.location.origin}${window.location.pathname}${
         pageNum ? `?p=${pageNum}` : ''
       }`,
-    });
-
-    if (res.status !== 200 || !res.responseText) {
-      if (errorNum > 3) throw new Error('漫画图片加载出错');
-      console.error('漫画图片加载出错', res);
-      toast('漫画图片加载出错', { type: 'error' });
-      await sleep(1000 * 3);
-      return getImgFromDetailsPage(pageNum, errorNum + 1);
-    }
+    );
 
     // 从详情页获取图片页的地址
     const imgPageList = res.responseText.match(
