@@ -15,7 +15,7 @@ declare const $: any;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'cdnImage')) return;
 
-  const { options, showFab, toast, showManga, setManga } = await useInit(
+  const { options, showFab, setManga, createShowComic } = await useInit(
     'manhuacat',
   );
 
@@ -42,24 +42,10 @@ declare const $: any;
     onPrev: await checkTurnPage('pre'),
   });
 
-  let imgList: string[] = [];
-  const showComic = () => {
-    if (imgList.length === 0) {
-      try {
-        imgList = img_data_arr.map((img) =>
-          cdnImage(img_pre + img, asset_domain, asset_key),
-        );
-        if (imgList.length === 0) throw new Error('获取漫画图片失败');
-        setManga({ imgList });
-      } catch (e: any) {
-        console.error(e);
-        toast(e?.message, { type: 'error' });
-      }
-    }
-
-    showManga();
-  };
+  const showComic = createShowComic(() =>
+    img_data_arr.map((img) => cdnImage(img_pre + img, asset_domain, asset_key)),
+  );
   showFab({ onClick: showComic });
 
-  if (options.autoLoad) showComic();
+  if (options.autoLoad) await showComic();
 })();

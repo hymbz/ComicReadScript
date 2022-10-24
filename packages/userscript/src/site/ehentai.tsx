@@ -4,12 +4,10 @@ import { querySelector } from '../helper';
 import { useInit } from '../helper/useInit';
 
 (async () => {
-  const { options, showFab, toast, showManga, setManga, request } =
-    await useInit('nhentai', {
-      自动翻页: true,
-      彻底屏蔽漫画: true,
-      在新页面中打开链接: true,
-    });
+  const { options, showFab, request, createShowComic } = await useInit(
+    'nhentai',
+    { 自动翻页: true, 彻底屏蔽漫画: true, 在新页面中打开链接: true },
+  );
 
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'gid')) return;
@@ -57,32 +55,18 @@ import { useInit } from '../helper/useInit';
     return Promise.all(imgPageList.map(getImgFromImgPage));
   };
 
-  const imgList = { ehentai: [] as string[], nhentai: [] as string[] };
+  const showComic = createShowComic(async () => {
+    const totalPageNum = +querySelector('td:nth-last-child(2)')!.innerText;
+    return (
+      await Promise.all(
+        [...Array(totalPageNum).keys()].map((pageNum) =>
+          getImgFromDetailsPage(pageNum),
+        ),
+      )
+    ).flat();
+  });
 
-  const findAndShowComic = async () => {
-    if (imgList.ehentai.length === 0) {
-      try {
-        showFab({ progress: 0 });
-        const totalPageNum = +querySelector('td:nth-last-child(2)')!.innerText;
-        imgList.ehentai = (
-          await Promise.all(
-            [...Array(totalPageNum).keys()].map((pageNum) =>
-              getImgFromDetailsPage(pageNum),
-            ),
-          )
-        ).flat();
-        if (imgList.ehentai.length === 0) throw new Error('获取漫画图片失败');
-        setManga({ imgList: imgList.ehentai });
-      } catch (e: any) {
-        console.error(e);
-        toast(e?.message, { type: 'error' });
-      }
-    }
+  showFab({ progress: undefined, onClick: showComic });
 
-    showManga();
-  };
-
-  showFab({ progress: undefined, onClick: findAndShowComic });
-
-  if (options.autoLoad) await findAndShowComic();
+  if (options.autoLoad) await showComic();
 })();

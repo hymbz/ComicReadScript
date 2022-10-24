@@ -15,7 +15,9 @@ declare const $: any;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'DM5_CID')) return;
 
-  const { options, showFab, toast, showManga, setManga } = await useInit('dm5');
+  const { options, showFab, toast, setManga, createShowComic } = await useInit(
+    'dm5',
+  );
   setManga({
     onNext: querySelectorClick('.logo_2'),
     onPrev: querySelectorClick('.logo_1'),
@@ -66,24 +68,9 @@ declare const $: any;
     }
   };
 
-  let imgList: string[] = [];
-  const loadAndShowComic = async () => {
-    if (!imgList.length) {
-      try {
-        showFab({ progress: 0 });
-        imgList = await getImgList();
-        if (imgList.length === 0) throw new Error('获取漫画图片失败');
-        setManga({ imgList });
-      } catch (e: any) {
-        console.error(e);
-        toast(e?.message, { type: 'error' });
-      }
-    }
+  const showComic = createShowComic(getImgList);
 
-    showManga();
-  };
+  showFab({ onClick: showComic });
 
-  showFab({ onClick: loadAndShowComic });
-
-  if (options.autoLoad) await loadAndShowComic();
+  if (options.autoLoad) await showComic();
 })();

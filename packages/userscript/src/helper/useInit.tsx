@@ -84,5 +84,38 @@ export const useInit = async <T extends Record<string, any>>(
     toast,
 
     request,
+
+    /**
+     * 创建一个加载图片列表并进入阅读模式的函数
+     *
+     * @param getImgList 返回图片列表的函数
+     * @param errorText 错误提示
+     */
+    createShowComic: (
+      getImgList: () => Promise<string[]> | string[],
+      errorText = '获取漫画图片失败',
+    ) => {
+      let loading = false;
+      let imgList: string[] = [];
+      return async () => {
+        if (loading) return;
+        if (!imgList.length) {
+          loading = true;
+          try {
+            showFab({ progress: 0 });
+            imgList = await getImgList();
+            if (imgList.length === 0) throw new Error(errorText);
+            setManga({ imgList });
+          } catch (e) {
+            console.error(e);
+            toast(errorText, { type: 'error' });
+          } finally {
+            loading = false;
+          }
+        }
+
+        showManga();
+      };
+    },
   };
 };

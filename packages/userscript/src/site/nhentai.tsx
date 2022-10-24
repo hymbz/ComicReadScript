@@ -17,36 +17,26 @@ type Images = {
 declare const gallery: { num_pages: number; media_id: string; images: Images };
 
 (async () => {
-  const { options, showFab, toast, showManga, setManga } = await useInit(
+  const { options, showFab, toast, createShowComic } = await useInit(
     'nhentai',
-    { 自动翻页: true, 彻底屏蔽漫画: true, 在新页面中打开链接: true },
+    {
+      自动翻页: true,
+      彻底屏蔽漫画: true,
+      在新页面中打开链接: true,
+    },
   );
 
   // 在漫画详情页
   if (Reflect.has(unsafeWindow, 'gallery')) {
-    let imgList: string[] = [];
-
-    const showComic = () => {
-      if (imgList.length === 0) {
-        try {
-          imgList = gallery.images.pages.map(
-            ({ number, extension }) =>
-              `https://i.nhentai.net/galleries/${gallery.media_id}/${number}.${extension}`,
-          );
-          if (imgList.length === 0) throw new Error('获取漫画图片失败');
-          setManga({ imgList });
-        } catch (e: any) {
-          console.error(e);
-          toast(e?.message, { type: 'error' });
-        }
-      }
-
-      showManga();
-    };
-
+    const showComic = createShowComic(() =>
+      gallery.images.pages.map(
+        ({ number, extension }) =>
+          `https://i.nhentai.net/galleries/${gallery.media_id}/${number}.${extension}`,
+      ),
+    );
     showFab({ onClick: showComic, initShow: false });
 
-    if (options.autoLoad) showComic();
+    if (options.autoLoad) await showComic();
 
     // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
     insertNode(

@@ -8,7 +8,7 @@ declare const cInfo: { nextId: number; prevId: number };
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'cInfo')) return;
 
-  const { options, showFab, toast, showManga, setManga } = await useInit(
+  const { options, showFab, setManga, createShowComic } = await useInit(
     'manhuagui',
   );
   setManga({
@@ -16,35 +16,22 @@ declare const cInfo: { nextId: number; prevId: number };
     onPrev: cInfo.prevId !== 0 ? querySelectorClick('a.prevC') : null,
   });
 
-  let imgList: string[] = [];
-  const showComic = () => {
-    if (imgList.length === 0) {
-      try {
-        const comicInfo = JSON.parse(
-          // 只能通过 eval 获得数据
-          // eslint-disable-next-line no-eval
-          eval(
-            document.querySelectorAll('body > script')[1].innerHTML.slice(26),
-          ).slice(12, -12),
-        );
-        const sl = Object.entries(comicInfo.sl)
-          .map((attr) => `${attr[0]}=${attr[1]}`)
-          .join('&');
-        imgList = comicInfo.files.map(
-          (file) => `${pVars.manga.filePath}${file}?${sl}`,
-        );
-        if (imgList.length === 0) throw new Error('获取漫画图片失败');
-        setManga({ imgList });
-      } catch (e: any) {
-        console.error(e);
-        toast(e?.message, { type: 'error' });
-      }
-    }
-
-    showManga();
-  };
-
+  const showComic = createShowComic(() => {
+    const comicInfo = JSON.parse(
+      // 只能通过 eval 获得数据
+      // eslint-disable-next-line no-eval
+      eval(
+        document.querySelectorAll('body > script')[1].innerHTML.slice(26),
+      ).slice(12, -12),
+    );
+    const sl = Object.entries(comicInfo.sl)
+      .map((attr) => `${attr[0]}=${attr[1]}`)
+      .join('&');
+    return (comicInfo.files as string[]).map(
+      (file) => `${pVars.manga.filePath}${file}?${sl}`,
+    );
+  });
   showFab({ onClick: showComic });
 
-  if (options.autoLoad) showComic();
+  if (options.autoLoad) await showComic();
 })();
