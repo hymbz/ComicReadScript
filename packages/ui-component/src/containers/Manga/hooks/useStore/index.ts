@@ -1,4 +1,4 @@
-import type { KeyboardEventHandler, RefObject, WheelEventHandler } from 'react';
+import type { RefObject } from 'react';
 import type { StateCreator } from 'zustand';
 import create from 'zustand';
 
@@ -10,8 +10,8 @@ import type { OptionSlice } from './OptionSlice';
 import { optionSlice } from './OptionSlice';
 import type { ImageSLice } from './ImageSlice';
 import { imageSlice } from './ImageSlice';
-import type { SwiperSlice } from './SwiperSlice';
-import { swiperSlice } from './SwiperSlice';
+import type { ExternalLibSlice } from './ExternalLibSlice';
+import { externalLibSlice } from './ExternalLibSlice';
 import type { OperateSlice } from './OperateSlice';
 import { operateSlice } from './OperateSlice';
 import type { OtherSlice } from './OtherSlice';
@@ -25,7 +25,7 @@ setAutoFreeze(false);
 interface SliceState
   extends OptionSlice,
     ImageSLice,
-    SwiperSlice,
+    ExternalLibSlice,
     OperateSlice,
     OtherSlice {}
 
@@ -39,16 +39,12 @@ export type SelfStateCreator<T> = StateCreator<
 
 export interface SelfState extends SliceState {
   rootRef: RefObject<HTMLElement> | null;
-  handleScroll: WheelEventHandler;
-  handleKeyUp: KeyboardEventHandler;
-
-  [key: string]: unknown;
 }
 
 const store: SelfStateCreator<SelfState> = (...a) => ({
   ...optionSlice(...a),
   ...imageSlice(...a),
-  ...swiperSlice(...a),
+  ...externalLibSlice(...a),
   ...operateSlice(...a),
   ...otherSlice(...a),
 

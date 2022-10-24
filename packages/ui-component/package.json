@@ -18,7 +18,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-use": "^17.4.0",
-    "swiper": "^8.4.2",
     "throttle-debounce": "^5.0.0",
     "zustand": "^4.1.1"
   },

@@ -29,7 +29,6 @@ export const defaultButtonList: DefaultButtonList = [
     '单页模式',
     () => {
       const isOnePageMode = useStore((state) => state.option.onePageMode);
-      const swiper = useStore((state) => state.swiper);
       const handleClick = useCallback(() => {
         useStore.setState((draftState) => {
           // 在卷轴模式下切换单页模式时自动退出卷轴模式
@@ -37,17 +36,14 @@ export const defaultButtonList: DefaultButtonList = [
             draftState.option.scrollMode = false;
           draftState.option.onePageMode = !draftState.option.onePageMode;
           draftState.img.updateSlideData((state) => {
-            const newSlideIndex = state.option.onePageMode
+            state.activeSlideIndex = state.option.onePageMode
               ? state.activeImgIndex
               : state.slideData.findIndex((slide) =>
                   slide.some((img) => img.index === state.activeImgIndex),
                 );
-            setTimeout(() => {
-              swiper?.slideTo(newSlideIndex, 0);
-            });
           });
         });
-      }, [swiper]);
+      }, []);
 
       return (
         <IconBotton tip="单页模式" onClick={handleClick}>
@@ -65,27 +61,9 @@ export const defaultButtonList: DefaultButtonList = [
         useStore.setState((draftState) => {
           draftState.option.scrollMode = !draftState.option.scrollMode;
           draftState.option.onePageMode = draftState.option.scrollMode;
-
           draftState.img.updateSlideData();
-
-          const [swiper, panzoom] = draftState.initSwiper({
-            // 启用自由模式
-            freeMode: {
-              enabled: draftState.option.scrollMode,
-              sticky: false,
-              // 稍微减少一点自由模式下的滑动距离
-              momentumRatio: 0.7,
-            },
-            // 使用自带的鼠标滚轮模块
-            mousewheel: draftState.option.scrollMode
-              ? { eventsTarget: `.${classes.mangaFlow}` }
-              : false,
-            // 保持当前显示页面不变
-            initialSlide: draftState.swiper?.activeIndex,
-          });
-
-          draftState.swiper = swiper;
-          draftState.panzoom = panzoom;
+          // 保持当前显示页面不变
+          draftState.activeSlideIndex = draftState.activeImgIndex;
         });
       }, []);
 

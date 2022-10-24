@@ -11,26 +11,25 @@ const selector = ({
   option: { dir, scrollbar },
   slideData,
   showScrollbar,
+  activeSlideIndex,
 }: SelfState) => ({
   slideData,
   showScrollbar,
   dir,
   scrollbar,
+  activeSlideIndex,
 });
 
 /** 滚动条 */
 export const Scrollbar: React.FC = memo(() => {
-  const { slideData, showScrollbar, dir, scrollbar } = useStore(
-    selector,
-    shallow,
-  );
-  const activeIndex = useStore((state) => state.swiper?.activeIndex);
+  const { slideData, showScrollbar, dir, scrollbar, activeSlideIndex } =
+    useStore(selector, shallow);
 
   /** 滚动条提示文本 */
   const tooltipText = useMemo(() => {
-    if (!slideData.length || activeIndex === undefined) return '';
+    if (!slideData.length || activeSlideIndex === undefined) return '';
 
-    const slideIndex = slideData[activeIndex].map((slide) => {
+    const slideIndex = slideData[activeSlideIndex].map((slide) => {
       if (slide.type === 'fill') return '填充页';
       if (slide.loadType === 'loaded') return `${slide.index}`;
       // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
@@ -39,7 +38,7 @@ export const Scrollbar: React.FC = memo(() => {
     if (dir === 'rtl') slideIndex.reverse();
 
     return `${slideIndex.join(' | ')}`;
-  }, [slideData, activeIndex, dir]);
+  }, [slideData, activeSlideIndex, dir]);
 
   const style = useMemo(
     () =>
@@ -71,14 +70,14 @@ export const Scrollbar: React.FC = memo(() => {
       })}
       role="scrollbar"
       aria-controls="mange-main"
-      aria-valuenow={activeIndex || -1}
+      aria-valuenow={activeSlideIndex || -1}
       tabIndex={0}
       style={style}
     >
       <div
         className={classes.scrollbarDrag}
         data-show={!scrollbar.autoHidden || showScrollbar}
-        style={{ transform: `translateY(${activeIndex}00%)` }}
+        style={{ transform: `translateY(${activeSlideIndex}00%)` }}
       >
         <div className={classes.scrollbarPoper} data-show={showScrollbar}>
           {tooltipText}

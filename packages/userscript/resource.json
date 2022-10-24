@@ -10,7 +10,6 @@
     "react-shadow": "https://unpkg.com/react-shadow@19.0.3/react-shadow.js",
     "prop-types": "https://unpkg.com/prop-types@15.8.1/prop-types.min.js",
     "panzoom": "https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js",
-    "swiper": "https://unpkg.com/swiper@8.4.2/swiper-bundle.min.js",
     "react-toastify": "https://unpkg.com/react-toastify@9.0.8/dist/react-toastify.js",
     "clsx": "https://unpkg.com/clsx@1.2.1/dist/clsx.js"
   },
@@ -25,7 +24,6 @@
     "react-shadow": "https://unpkg.com/react-shadow@19.0.3/react-shadow.js",
     "prop-types": "https://unpkg.com/prop-types@15.8.1/prop-types.min.js",
     "panzoom": "https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js",
-    "swiper": "https://unpkg.com/swiper@8.4.2/swiper-bundle.min.js",
     "react-toastify": "https://unpkg.com/react-toastify@9.0.8/dist/react-toastify.js",
     "clsx": "https://unpkg.com/clsx@1.2.1/dist/clsx.js"
   }

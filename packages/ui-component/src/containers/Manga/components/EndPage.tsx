@@ -28,7 +28,7 @@ export const EndPage: React.FC = () => {
   const handleEnd = useCallback(() => {
     onExit?.(true);
     useStore.setState((state) => {
-      state.swiper?.slideTo(0, 0);
+      state.activeSlideIndex = 0;
       state.showEndPage = false;
     });
   }, [onExit]);

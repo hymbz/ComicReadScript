@@ -2,34 +2,31 @@ import type { WheelEventHandler, KeyboardEventHandler } from 'react';
 import type { SelfStateCreator } from '.';
 
 export interface OperateSlice {
+  /** 锁定滚轮滚动 */
+  scrollLock: boolean;
+
   handleScroll: WheelEventHandler;
   handleKeyUp: KeyboardEventHandler;
 }
 
-let scrollLock: number | null = null;
 export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
+  scrollLock: false,
+
   handleScroll: (e) => {
     e.stopPropagation();
 
+    if (e.altKey) return;
+
     const {
-      swiper,
       option: { scrollMode },
       pageTurn,
+      scrollLock,
     } = get();
-    if (swiper === undefined) return;
 
-    if (!scrollMode) {
-      if (!swiper.allowTouchMove) {
-        // 在放大模式下通过滚轮缩小至原尺寸后，不会立刻跳转至下一页
-        if (scrollLock) clearTimeout(scrollLock);
-        scrollLock = window.setTimeout(() => {
-          if (swiper.allowTouchMove) scrollLock = null;
-        }, 500);
-      } else if (!e.altKey && !scrollLock) {
-        if (e.deltaY > 0) pageTurn(true);
-        else pageTurn(false);
-      }
-    }
+    if (scrollLock || scrollMode) return;
+
+    if (e.deltaY > 0) pageTurn('next');
+    else pageTurn('prev');
   },
 
   handleKeyUp: (e) => {
@@ -40,18 +37,17 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       img: { switchFillEffect },
       option: { dir },
       onExit,
-      swiper,
       slideData,
     } = get();
 
-    let i: boolean | null = null;
+    let nextPage: boolean | null = null;
 
     switch (e.key) {
       case 'PageUp':
       case 'ArrowUp':
       case '.':
       case 'w':
-        i = false;
+        nextPage = false;
         break;
 
       case ' ':
@@ -59,17 +55,17 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       case 'ArrowDown':
       case ',':
       case 's':
-        i = true;
+        nextPage = true;
         break;
 
       case 'ArrowRight':
       case 'd':
-        i = dir !== 'rtl';
+        nextPage = dir !== 'rtl';
         break;
 
       case 'ArrowLeft':
       case 'a':
-        i = dir === 'rtl';
+        nextPage = dir === 'rtl';
         break;
 
       case '/':
@@ -78,10 +74,14 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
         break;
 
       case 'Home':
-        swiper?.slideTo(0, 0);
+        set((state) => {
+          state.activeSlideIndex = 0;
+        });
         break;
       case 'End':
-        swiper?.slideTo(slideData.length, 0);
+        set((state) => {
+          state.activeSlideIndex = slideData.length;
+        });
         break;
 
       case 'Escape':
@@ -92,7 +92,7 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
         break;
     }
 
-    if (i === null) return;
-    pageTurn(i);
+    if (nextPage === null) return;
+    pageTurn(nextPage ? 'next' : 'prev');
   },
 });

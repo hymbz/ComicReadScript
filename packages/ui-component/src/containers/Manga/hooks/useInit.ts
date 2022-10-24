@@ -1,13 +1,7 @@
 import type { Draft } from 'immer/dist/internal';
 import { useEffect, useRef } from 'react';
-import type { SelfState } from './useStore';
-import { shallow, useStore } from './useStore';
+import { useStore } from './useStore';
 import type { MangaProps } from '..';
-
-const selector = ({ initSwiper, img: { resizeObserver } }: SelfState) => ({
-  initSwiper,
-  resizeObserver,
-});
 
 /**
  * 初始化
@@ -25,29 +19,39 @@ export const useInit = ({
   editButtonList,
   editSettingList,
 }: MangaProps) => {
-  const { initSwiper, resizeObserver } = useStore(selector, shallow);
-
-  // 初始化 swiper、panzoom
-  const rootRef = useRef<HTMLDivElement>(null);
+  // 初始化配置
   useEffect(() => {
+    if (!option) return;
+    useStore.setState((state) => {
+      Object.assign(state.option, option);
+    });
+  }, [option]);
+
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // 绑定 rootRef
     useStore.setState((state) => {
       state.rootRef = rootRef as Draft<React.RefObject<HTMLElement>>;
-      if (option) Object.assign(state.option, option);
     });
-
-    const [_swiper, _panzoom] = initSwiper();
+    // 初始化 panzoom
     useStore.setState((state) => {
-      state.swiper = _swiper;
-      state.panzoom = _panzoom;
+      state.initPanzoom();
     });
-  }, [option, initSwiper]);
+  }, []);
 
   // 绑定 resizeObserver
   useEffect(() => {
-    if (!rootRef.current) return;
-    resizeObserver.disconnect();
-    resizeObserver.observe(rootRef.current);
-  }, [resizeObserver]);
+    useStore.setState((state) => {
+      state.img.resizeObserver.disconnect();
+      state.img.resizeObserver.observe(rootRef.current!);
+    });
+    return () => {
+      useStore.setState((state) => {
+        state.img.resizeObserver.disconnect();
+      });
+    };
+  }, []);
 
   // 初始化图片
   useEffect(() => {
@@ -78,15 +82,32 @@ export const useInit = ({
 
   // 绑定配置发生改变时的回调
   useEffect(() => {
-    if (onOptionChange)
-      useStore.subscribe((state) => state.option, onOptionChange);
+    if (!onOptionChange) return;
+    useStore.subscribe((state) => state.option, onOptionChange);
   }, [onOptionChange]);
 
-  // 页数发生变动时，预加载当前页前后指定数量的图片，并取消其他预加载的图片
-  const updateImgLoadType = useStore((state) => state.img.updateImgLoadType);
+  // 页数发生变动时
   useEffect(() => {
-    useStore.subscribe((state) => state.activeImgIndex, updateImgLoadType);
-  }, [updateImgLoadType]);
+    useStore.subscribe(
+      (state) => state.activeSlideIndex,
+      () => {
+        useStore.setState((state) => {
+          // 重新计算 activeImgIndex
+          state.activeImgIndex = state.slideData[state.activeSlideIndex].find(
+            (img) => img.type !== 'fill',
+          )!.index;
+
+          // 找到当前所属的 fillEffect
+          let nowFillIndex = state.activeImgIndex;
+          while (!state.fillEffect.has(nowFillIndex) && (nowFillIndex -= 1));
+          state.nowFillIndex = nowFillIndex;
+
+          state.img.updateImgLoadType();
+          if (state.showEndPage) state.showEndPage = false;
+        });
+      },
+    );
+  }, []);
 
   return rootRef;
 };

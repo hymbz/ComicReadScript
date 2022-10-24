@@ -1,7 +1,9 @@
 TODO: 为加载中、等待、错误的图片增加遮罩提示，加载中和等待使用同一样式。鼠标移上去时不显示遮罩
 TODO: 使用 visibility 属性替换那些 pointer-events: none; opacity: 0; 的 css
 TODO: 补全所有站点的 EndExit 回调
-TODO: nhentai 的图片加载比较慢，需要给滚动条加个图片加载进度条，最好能精确到每个页面的图片
+TODO: 增加 imglist 为空时的提示
+TODO: 实现卷轴模式
+TODO: 实现滚动条的点击跳转
 
 ### dev
 

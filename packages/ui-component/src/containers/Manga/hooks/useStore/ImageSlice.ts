@@ -28,6 +28,7 @@ export interface ImageSLice {
   fillEffect: FillEffect;
 
   activeImgIndex: number;
+  activeSlideIndex: number;
   nowFillIndex: number;
 
   img: {
@@ -49,6 +50,9 @@ export interface ImageSLice {
     /** 根据当前页数更新所有图片的加载状态 */
     updateImgLoadType: () => void;
   };
+
+  /** 翻页 */
+  pageTurn: (dir: 'next' | 'prev') => void;
 }
 
 export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
@@ -57,6 +61,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
   slideData: [],
 
   activeImgIndex: 0,
+  activeSlideIndex: 0,
   nowFillIndex: -1,
 
   img: {
@@ -157,5 +162,31 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => ({
         });
       });
     }),
+  },
+
+  pageTurn: (dir) => {
+    const { slideData, showEndPage, activeSlideIndex } = get();
+    if (dir === 'next') {
+      set((state) => {
+        // 在最后一页继续向后翻页时弹出结束页
+        if (activeSlideIndex === slideData.length - 1) state.showEndPage = true;
+        else state.activeSlideIndex += 1;
+      });
+      return;
+    }
+
+    // 向前翻页时如果当前正在显示结束页，则关闭结束页但不翻页
+    if (showEndPage) {
+      set((state) => {
+        state.showEndPage = false;
+      });
+      return;
+    }
+
+    if (activeSlideIndex > 0) {
+      set((state) => {
+        state.activeSlideIndex -= 1;
+      });
+    }
   },
 });
