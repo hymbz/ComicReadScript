@@ -10,7 +10,10 @@ export interface ExternalLibSlice {
   initPanzoom: () => void;
 }
 
-export const externalLibSlice: SelfStateCreator<ExternalLibSlice> = (set, get) => ({
+export const externalLibSlice: SelfStateCreator<ExternalLibSlice> = (
+  set,
+  get,
+) => ({
   panzoom: undefined as unknown as Draft<PanZoom>,
 
   initPanzoom: (): void => {
@@ -53,7 +56,7 @@ export const externalLibSlice: SelfStateCreator<ExternalLibSlice> = (set, get) =
         },
       });
 
-      panzoom.on('transform', (e: PanZoom) => {
+      panzoom.on('transform', () => {
         if (panzoom.getTransform().scale === 1) {
           const { scrollLock } = get();
           // 防止在放大模式下通过滚轮缩小至原尺寸后立刻跳转至下一页
