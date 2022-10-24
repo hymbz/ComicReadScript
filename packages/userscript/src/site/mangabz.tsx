@@ -15,15 +15,8 @@ declare const MANGABZ_IMAGE_COUNT: number;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) return;
 
-  const {
-    options,
-    showFab,
-    showManga,
-    setManga,
-    toast,
-    request,
-    createShowComic,
-  } = await useInit('mangabz');
+  const { options, showFab, setManga, request, createShowComic } =
+    await useInit('mangabz');
 
   setManga({
     onNext: querySelectorClick('body > .container a[href^="/"]:last-child'),
