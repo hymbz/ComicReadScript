@@ -69,9 +69,15 @@ declare const $: any;
   let imgList: string[] = [];
   const loadAndShowComic = async () => {
     if (!imgList.length) {
-      showFab({ progress: 0 });
-      imgList = await getImgList();
-      setManga({ imgList });
+      try {
+        showFab({ progress: 0 });
+        imgList = await getImgList();
+        if (imgList.length === 0) throw new Error('获取漫画图片失败');
+        setManga({ imgList });
+      } catch (e: any) {
+        console.error(e);
+        toast(e?.message, { type: 'error' });
+      }
     }
 
     showManga();

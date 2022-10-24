@@ -15,9 +15,8 @@ declare const MANGABZ_IMAGE_COUNT: number;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) return;
 
-  const { options, showFab, showManga, setManga, request } = await useInit(
-    'mangabz',
-  );
+  const { options, showFab, showManga, setManga, toast, request } =
+    await useInit('mangabz');
 
   setManga({
     onNext: querySelectorClick('body > .container a[href^="/"]:last-child'),
@@ -60,9 +59,15 @@ declare const MANGABZ_IMAGE_COUNT: number;
   let imgList: string[] = [];
   const loadAndShowComic = async () => {
     if (!imgList.length) {
-      showFab({ progress: 0 });
-      imgList = await getImgList();
-      setManga({ imgList });
+      try {
+        showFab({ progress: 0 });
+        imgList = await getImgList();
+        if (imgList.length === 0) throw new Error('获取漫画图片失败');
+        setManga({ imgList });
+      } catch (e: any) {
+        console.error(e);
+        toast(e?.message, { type: 'error' });
+      }
     }
 
     showManga();

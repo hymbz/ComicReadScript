@@ -35,9 +35,9 @@ declare const cInfo: { nextId: number; prevId: number };
         );
         if (imgList.length === 0) throw new Error('获取漫画图片失败');
         setManga({ imgList });
-      } catch (e) {
+      } catch (e: any) {
         console.error(e);
-        toast('获取漫画图片失败', { type: 'error' });
+        toast(e?.message, { type: 'error' });
       }
     }
 
