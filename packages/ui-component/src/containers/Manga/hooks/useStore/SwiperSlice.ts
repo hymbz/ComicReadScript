@@ -3,7 +3,6 @@ import type { PanZoom, PanZoomOptions } from 'panzoom';
 import createPanZoom from 'panzoom';
 import type { SwiperOptions } from 'swiper';
 import Swiper, { Scrollbar, Mousewheel } from 'swiper';
-import type { ScrollbarOptions } from 'swiper/types/modules/scrollbar';
 import classes from '../../index.module.css';
 import type { SelfStateCreator } from '.';
 
@@ -21,13 +20,6 @@ const defaultSwiperOption: SwiperOptions = {
   mousewheel: false,
   // 使用 ResizeObserver API 以提升性能
   resizeObserver: true,
-
-  // 设定滚动条
-  scrollbar: {
-    verticalClass: classes.scrollbar,
-    draggable: true,
-    dragClass: classes.scrollbarDrag,
-  },
 
   wrapperClass: classes.wrapper,
   slideClass: classes.mangaFlowPage,
@@ -92,7 +84,6 @@ export const swiperSlice: SelfStateCreator<SwiperSlice> = (set, get) => ({
     _panzoom?.dispose();
 
     // 初始化 swiper
-    (defaultSwiperOption.scrollbar as ScrollbarOptions).el = scrollbarDom;
     const swiper = new Swiper(mangaFlowDom, {
       ...defaultSwiperOption,
       ...swiperOption,

@@ -4,6 +4,9 @@
   top: 1%;
   right: 3px;
 
+  display: flex;
+  flex-direction: column;
+
   width: 5px;
   height: 98%;
 
@@ -12,12 +15,47 @@
 }
 
 .scrollbarDrag {
+  position: absolute;
+  z-index: 1;
+
   display: flex;
   align-items: center;
+
+  width: 100%;
+  height: var(--slideHeight);
 
   opacity: 0;
   background-color: var(--scrollbar_drag);
   border-radius: 1em;
+}
+
+.scrollbarSlide {
+  transform: scaleY(1);
+  transform-origin: bottom;
+
+  flex-grow: 1;
+
+  height: var(--slideHeight);
+
+  /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
+  transition: transform 1000ms, background-color 0ms 1000ms;
+
+  &[data-type="loaded"] {
+    transform: scaleY(0);
+  }
+
+  &[data-type="loading"] {
+    background-color: var(--secondary);
+  }
+
+  &[data-type="wait"] {
+    opacity: 0.5;
+    background-color: var(--secondary);
+  }
+
+  &[data-type="error"] {
+    background-color: #f005;
+  }
 }
 
 .scrollbarPoper {

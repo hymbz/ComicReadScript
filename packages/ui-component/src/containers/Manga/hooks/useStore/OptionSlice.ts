@@ -7,6 +7,8 @@ export interface Option {
     enabled: boolean;
     /** 自动隐藏 */
     autoHidden: boolean;
+    /** 显示图片加载状态 */
+    showProgress: boolean;
   };
   /** 单页模式 */
   onePageMode: boolean;
@@ -43,6 +45,7 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
     scrollbar: {
       enabled: true,
       autoHidden: false,
+      showProgress: false,
     },
     onePageMode: false,
     scrollMode: false,

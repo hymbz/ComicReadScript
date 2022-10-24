@@ -32,7 +32,7 @@ const dark: CssVar = {
 
   '--switch': '#BDBDBD',
   '--switch_bg': '#6E6E6E',
-  '--scrollbar_drag': '#FFF3',
+  '--scrollbar_drag': '#FFF6',
 
   '--page_bg': '#303030',
 
@@ -54,7 +54,7 @@ const light: CssVar = {
   /* 开关滑轨 */
   '--switch_bg': '#9C9C9C',
   /* 滚动条 */
-  '--scrollbar_drag': '#0003',
+  '--scrollbar_drag': '#0006',
 
   '--page_bg': 'white',
 

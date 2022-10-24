@@ -19,7 +19,7 @@ export const defaultSettingList: DefaultSettingList = [
     '阅读',
     () => {
       const dir = useStore((state) => state.option.dir);
-      const handelEditDir = useCallback(() => {
+      const handleEditDir = useCallback(() => {
         useStore.setState((draftState) => {
           draftState.option.dir =
             draftState.option.dir === 'rtl' ? 'ltr' : 'rtl';
@@ -33,7 +33,7 @@ export const defaultSettingList: DefaultSettingList = [
           <button
             className={classes.SettingsItemIconButton}
             type="button"
-            onClick={handelEditDir}
+            onClick={handleEditDir}
           >
             {dir === 'rtl' ? (
               <MdOutlineFormatTextdirectionRToL />
@@ -49,7 +49,7 @@ export const defaultSettingList: DefaultSettingList = [
     '滚动条',
     () => {
       const enabled = useStore((state) => state.option.scrollbar.enabled);
-      const handelEnable = useCallback(() => {
+      const handleEnable = useCallback(() => {
         useStore.setState((draftState) => {
           draftState.option.scrollbar.enabled =
             !draftState.option.scrollbar.enabled;
@@ -57,10 +57,20 @@ export const defaultSettingList: DefaultSettingList = [
       }, []);
 
       const autoHidden = useStore((state) => state.option.scrollbar.autoHidden);
-      const handelAutoHidden = useCallback(() => {
+      const handleAutoHidden = useCallback(() => {
         useStore.setState((draftState) => {
           draftState.option.scrollbar.autoHidden =
             !draftState.option.scrollbar.autoHidden;
+        });
+      }, []);
+
+      const showProgress = useStore(
+        (state) => state.option.scrollbar.showProgress,
+      );
+      const handleShowProgress = useCallback(() => {
+        useStore.setState((draftState) => {
+          draftState.option.scrollbar.showProgress =
+            !draftState.option.scrollbar.showProgress;
         });
       }, []);
 
@@ -69,13 +79,19 @@ export const defaultSettingList: DefaultSettingList = [
           <SettingsItemSwitch
             name="显示滚动条"
             value={enabled}
-            onChange={handelEnable}
+            onChange={handleEnable}
           />
           <SettingsItemSwitch
             name="自动隐藏滚动条"
             value={autoHidden}
             className={clsx(enabled || classes.hidden)}
-            onChange={handelAutoHidden}
+            onChange={handleAutoHidden}
+          />
+          <SettingsItemSwitch
+            name="显示图片加载状态"
+            value={showProgress}
+            className={clsx(enabled || classes.hidden)}
+            onChange={handleShowProgress}
           />
         </>
       );
@@ -86,7 +102,7 @@ export const defaultSettingList: DefaultSettingList = [
     () => {
       /** 是否启用点击翻页功能 */
       const clickPage = useStore((state) => state.option.clickPage.enabled);
-      const handelClickPages = useCallback(() => {
+      const handleClickPages = useCallback(() => {
         useStore.setState((draftState) => {
           draftState.option.clickPage.enabled =
             !draftState.option.clickPage.enabled;
@@ -95,7 +111,7 @@ export const defaultSettingList: DefaultSettingList = [
 
       /** 是否显示点击区域 */
       const showTouchArea = useStore((state) => state.showTouchArea);
-      const handelShowTouchArea = useCallback(() => {
+      const handleShowTouchArea = useCallback(() => {
         useStore.setState((draftState) => {
           draftState.showTouchArea = !draftState.showTouchArea;
         });
@@ -103,7 +119,7 @@ export const defaultSettingList: DefaultSettingList = [
 
       /** 是否左右反转点击区域 */
       const overturn = useStore((state) => state.option.clickPage.overturn);
-      const handelOverturn = useCallback(() => {
+      const handleOverturn = useCallback(() => {
         useStore.setState((draftState) => {
           draftState.option.clickPage.overturn =
             !draftState.option.clickPage.overturn;
@@ -115,19 +131,19 @@ export const defaultSettingList: DefaultSettingList = [
           <SettingsItemSwitch
             name="启用点击翻页"
             value={clickPage}
-            onChange={handelClickPages}
+            onChange={handleClickPages}
           />
           <SettingsItemSwitch
             name="左右反转点击区域"
             value={overturn}
             className={clsx(!clickPage && classes.hidden)}
-            onChange={handelOverturn}
+            onChange={handleOverturn}
           />
           <SettingsItemSwitch
             name="显示点击区域提示"
             value={showTouchArea}
             className={clsx(!clickPage && classes.hidden)}
-            onChange={handelShowTouchArea}
+            onChange={handleShowTouchArea}
           />
         </>
       );
@@ -138,13 +154,13 @@ export const defaultSettingList: DefaultSettingList = [
     () => {
       const darkMode = useStore((state) => state.option.darkMode);
       const background = useStore((state) => state.option.customBackground);
-      const handelDarkMode = useCallback(() => {
+      const handleDarkMode = useCallback(() => {
         useStore.setState((draftState) => {
           draftState.option.darkMode = !draftState.option.darkMode;
         });
       }, []);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      const handelBgColor = useCallback(
+      const handleBgColor = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
           useStore.setState((draftState) => {
             // 在拉到纯黑或纯白时改回初始值
@@ -160,7 +176,7 @@ export const defaultSettingList: DefaultSettingList = [
       );
 
       const disableZoom = useStore((state) => state.option.disableZoom);
-      const handelDisableZoom = useCallback(() => {
+      const handleDisableZoom = useCallback(() => {
         useStore.setState((draftState) => {
           draftState.option.disableZoom = !draftState.option.disableZoom;
         });
@@ -171,20 +187,20 @@ export const defaultSettingList: DefaultSettingList = [
           <SettingsItemSwitch
             name="启用夜间模式"
             value={darkMode}
-            onChange={handelDarkMode}
+            onChange={handleDarkMode}
           />
 
           <SettingsItemSwitch
             name="禁止放大图片"
             value={disableZoom}
-            onChange={handelDisableZoom}
+            onChange={handleDisableZoom}
           />
 
           <SettingsItem name="背景颜色">
             <input
               type="color"
               value={background ?? (darkMode ? 'black' : 'white')}
-              onChange={handelBgColor}
+              onChange={handleBgColor}
               style={{ width: '2em', marginRight: '.4em' }}
             />
           </SettingsItem>
