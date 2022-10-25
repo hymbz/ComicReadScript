@@ -1,6 +1,6 @@
 import clsx from 'clsx';
-import type { CSSProperties } from 'react';
-import { useEffect, useState, memo, useMemo } from 'react';
+import type { CSSProperties, WheelEventHandler } from 'react';
+import { useCallback, useEffect, useState, memo, useMemo } from 'react';
 import type { SelfState } from '../hooks/useStore';
 import { shallow, useStore } from '../hooks/useStore';
 
@@ -41,7 +41,7 @@ export const Scrollbar: React.FC = memo(() => {
   /** 滚动条提示文本 */
   const tooltipText = useMemo(() => {
     if (scrollMode || !slideData.length || activeSlideIndex === undefined)
-      return '';
+      return null;
 
     const slideIndex = slideData[activeSlideIndex].map((slide) => {
       if (slide.type === 'fill') return '填充页';
@@ -83,7 +83,7 @@ export const Scrollbar: React.FC = memo(() => {
   const contentHeight = mangaFlowRef.current?.scrollHeight;
   // 滚动条高度
   const dragHeight = useMemo(() => {
-    // 因为需要在图片加载完成后重新计算高度，所以把 slideData 放进来防止 eslint 报错
+    // 因为需要在图片加载完成后重新计算高度，所以需要依赖 slideData，为防止 eslint 报错引用一下
     // eslint-disable-next-line no-constant-condition
     if (false) console.log(slideData);
 
@@ -118,16 +118,28 @@ export const Scrollbar: React.FC = memo(() => {
     return () => controller.abort();
   }, [contentHeight, mangaFlowRef, scrollMode]);
 
+  // 使在滚动条上的滚轮可以触发滚动
+  const handleWheel = useCallback<WheelEventHandler>(
+    (e) => {
+      mangaFlowRef.current?.scrollBy({
+        left: 0,
+        top: e.nativeEvent.deltaY,
+        behavior: 'smooth',
+      });
+    },
+    [mangaFlowRef],
+  );
+
   return (
     <div
       className={clsx(classes.scrollbar, {
         [classes.hidden]: !scrollbar.enabled && !showScrollbar,
       })}
       role="scrollbar"
-      aria-controls="mange-main"
+      aria-controls={classes.mangaFlow}
       aria-valuenow={activeSlideIndex || -1}
-      tabIndex={0}
       style={style}
+      onWheel={handleWheel}
     >
       <div
         className={classes.scrollbarDrag}
@@ -140,7 +152,13 @@ export const Scrollbar: React.FC = memo(() => {
           height: dragHeight,
         }}
       >
-        <div className={classes.scrollbarPoper} data-show={showScrollbar}>
+        <div
+          className={clsx(
+            classes.scrollbarPoper,
+            !tooltipText && classes.hidden,
+          )}
+          data-show={showScrollbar}
+        >
           {tooltipText}
         </div>
       </div>

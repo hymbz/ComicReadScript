@@ -2,9 +2,7 @@ TODO: 为加载中、等待、错误的图片增加遮罩提示，加载中和�
 TODO: 使用 visibility 属性替换那些 pointer-events: none; opacity: 0; 的 css
 TODO: 补全所有站点的 EndExit 回调
 TODO: 增加 imglist 为空时的提示
-TODO: 实现卷轴模式
 TODO: 实现滚动条的点击跳转
-TODO: 卷轴模式下在滚动条上滚动时要能反应到页面上
 TODO: 实现卷轴模式下的结束页显示
 
 ### dev

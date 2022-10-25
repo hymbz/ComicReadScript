@@ -58,6 +58,7 @@ export const ComicImgFlow: React.FC = () => {
   return (
     <div
       ref={mangaFlowRef}
+      id={classes.mangaFlow}
       className={clsx(
         classes.mangaFlow,
         (disableZoom || scrollMode) && classes.disableZoom,
