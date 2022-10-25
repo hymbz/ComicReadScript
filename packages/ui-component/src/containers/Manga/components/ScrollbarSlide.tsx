@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo } from 'react';
 import classes from '../index.module.css';
 
 export interface ScrollbarSlideProps {
@@ -6,14 +6,10 @@ export interface ScrollbarSlideProps {
   key: string;
 }
 
-export const ScrollbarSlide: React.FC<ScrollbarSlideProps> = ({ img }) =>
-  useMemo(
-    () => (
-      <div
-        className={classes.scrollbarSlide}
-        data-index={img.index}
-        data-type={img.loadType}
-      />
-    ),
-    [img],
-  );
+export const ScrollbarSlide: React.FC<ScrollbarSlideProps> = memo(({ img }) => (
+  <div
+    className={classes.scrollbarSlide}
+    data-index={img.index}
+    data-type={img.loadType}
+  />
+));

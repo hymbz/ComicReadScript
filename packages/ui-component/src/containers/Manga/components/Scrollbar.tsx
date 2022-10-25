@@ -1,5 +1,9 @@
 import clsx from 'clsx';
-import type { CSSProperties, WheelEventHandler } from 'react';
+import type {
+  CSSProperties,
+  MouseEventHandler,
+  WheelEventHandler,
+} from 'react';
 import { useCallback, useEffect, useState, memo, useMemo } from 'react';
 import type { SelfState } from '../hooks/useStore';
 import { shallow, useStore } from '../hooks/useStore';
@@ -88,7 +92,7 @@ export const Scrollbar: React.FC = memo(() => {
     if (false) console.log(slideData);
 
     if (!scrollMode || !windowHeight || !contentHeight) return undefined;
-    return `${(windowHeight / contentHeight) * 100}%`;
+    return windowHeight / contentHeight;
   }, [slideData, windowHeight, contentHeight, scrollMode]);
 
   // 滚动条所处高度
@@ -105,7 +109,7 @@ export const Scrollbar: React.FC = memo(() => {
         () => {
           if (!mangaFlowRef.current || !contentHeight) setDragTop(0);
           else {
-            setDragTop((mangaFlowRef.current.scrollTop / contentHeight) * 100);
+            setDragTop(mangaFlowRef.current.scrollTop / contentHeight);
           }
         },
         {
@@ -130,6 +134,41 @@ export const Scrollbar: React.FC = memo(() => {
     [mangaFlowRef],
   );
 
+  const handleCLick = useCallback<MouseEventHandler>(
+    (e) => {
+      e.stopPropagation();
+      if (!mangaFlowRef.current) return;
+
+      /** 点击位置在滚动条上的位置比率 */
+      let top = e.nativeEvent.offsetY / (e.target as HTMLElement).offsetHeight;
+
+      if (scrollMode) {
+        if (!windowHeight) return;
+        // 跳过点在滚动条位置上的情况
+        if (top >= dragTop && top <= dragTop + dragHeight!) return;
+        // 如果点击位置在滚动条下面，则应该是将屏幕底部滚动到点击位置
+        if (top > dragTop + dragHeight!) top -= dragHeight!;
+        if (mangaFlowRef.current.scrollTop !== top)
+          mangaFlowRef.current.scrollTo({
+            top: top * windowHeight,
+            left: 0,
+            behavior: 'smooth',
+          });
+      } else {
+        useStore.setState((state) => {
+          const clickImgIndex = Math.floor(top * slideList.length);
+          const newSlideIndex = state.slideData.findIndex((slide) =>
+            slide.some(
+              (img) => img.index === slideList[clickImgIndex].props.img.index,
+            ),
+          );
+          if (newSlideIndex !== -1) state.activeSlideIndex = newSlideIndex;
+        });
+      }
+    },
+    [dragHeight, dragTop, mangaFlowRef, scrollMode, slideList, windowHeight],
+  );
+
   return (
     <div
       className={clsx(classes.scrollbar, {
@@ -139,7 +178,9 @@ export const Scrollbar: React.FC = memo(() => {
       aria-controls={classes.mangaFlow}
       aria-valuenow={activeSlideIndex || -1}
       style={style}
+      tabIndex={-1}
       onWheel={handleWheel}
+      onMouseDown={handleCLick}
     >
       <div
         className={classes.scrollbarDrag}
@@ -148,8 +189,8 @@ export const Scrollbar: React.FC = memo(() => {
           transform: scrollMode
             ? undefined
             : `translateY(${activeSlideIndex}00%)`,
-          top: `${dragTop}%`,
-          height: dragHeight,
+          top: `${dragTop * 100}%`,
+          height: dragHeight && `${dragHeight * 100}%`,
         }}
       >
         <div
