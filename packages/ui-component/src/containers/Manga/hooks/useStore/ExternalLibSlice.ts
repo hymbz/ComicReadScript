@@ -1,7 +1,6 @@
 import type { Draft } from 'immer/dist/internal';
 import type { PanZoom } from 'panzoom';
 import createPanZoom from 'panzoom';
-import classes from '../../index.module.css';
 import type { SelfStateCreator } from '.';
 
 export interface ExternalLibSlice {
@@ -17,23 +16,13 @@ export const externalLibSlice: SelfStateCreator<ExternalLibSlice> = (
   panzoom: undefined as unknown as Draft<PanZoom>,
 
   initPanzoom: (): void => {
-    const { rootRef } = get();
-
-    const mangaFlowDom = rootRef?.current?.querySelector<HTMLElement>(
-      `.${classes.mangaFlow}`,
-    );
-    if (!mangaFlowDom) {
-      console.error('Dom 未渲染');
-      return;
-    }
+    const { mangaFlowRef } = get();
 
     set((state) => {
       // 销毁之前可能创建过的实例
       state.panzoom?.dispose();
 
-      const panzoom = createPanZoom(mangaFlowDom, {
-        // 禁用键盘
-        disableKeyboardInteraction: true,
+      const panzoom = createPanZoom(mangaFlowRef.current!, {
         // 边界限制
         bounds: true,
         boundsPadding: 1,
@@ -41,6 +30,9 @@ export const externalLibSlice: SelfStateCreator<ExternalLibSlice> = (
         minZoom: 1,
         // 禁用默认的双击缩放
         zoomDoubleClickSpeed: 1,
+
+        // 忽略键盘事件
+        filterKey: () => true,
 
         beforeWheel(e) {
           const { scale } = panzoom.getTransform();

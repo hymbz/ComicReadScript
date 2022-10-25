@@ -38,7 +38,8 @@ export type SelfStateCreator<T> = StateCreator<
 >;
 
 export interface SelfState extends SliceState {
-  rootRef: RefObject<HTMLElement> | null;
+  rootRef: RefObject<HTMLElement>;
+  mangaFlowRef: RefObject<HTMLElement>;
 }
 
 const store: SelfStateCreator<SelfState> = (...a) => ({
@@ -48,7 +49,8 @@ const store: SelfStateCreator<SelfState> = (...a) => ({
   ...operateSlice(...a),
   ...otherSlice(...a),
 
-  rootRef: null,
+  rootRef: { current: null },
+  mangaFlowRef: { current: null },
 });
 
 export const useStore = create<SelfState>()(

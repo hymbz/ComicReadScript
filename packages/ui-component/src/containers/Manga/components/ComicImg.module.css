@@ -32,6 +32,32 @@
     height: unset;
     max-height: 100%;
   }
+
+  &.scrollMode {
+    /* 隐藏滚动条但不影响滚动 */
+    scrollbar-width: none;
+
+    position: absolute;
+
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    width: 100%;
+    height: unset;
+    max-height: 100%;
+
+    /* 隐藏滚动条但不影响滚动 */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    & .img {
+      max-width: 100%;
+      height: auto;
+    }
+  }
 }
 
 /* 翻页模式下的每页的容器 */

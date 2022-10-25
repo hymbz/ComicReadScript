@@ -13,32 +13,31 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
   scrollLock: false,
 
   handleScroll: (e) => {
-    e.stopPropagation();
-
-    if (e.altKey) return;
-
     const {
       option: { scrollMode },
       pageTurn,
       scrollLock,
     } = get();
+    if (scrollMode) return;
 
-    if (scrollLock || scrollMode) return;
+    e.stopPropagation();
+
+    if (e.altKey || scrollLock || scrollMode) return;
 
     if (e.deltaY > 0) pageTurn('next');
     else pageTurn('prev');
   },
 
   handleKeyUp: (e) => {
-    e.stopPropagation();
-
     const {
       pageTurn,
       img: { switchFillEffect },
-      option: { dir },
+      option: { dir, scrollMode },
       onExit,
       slideData,
     } = get();
+    if (scrollMode) return;
+    e.stopPropagation();
 
     let nextPage: boolean | null = null;
 

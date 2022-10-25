@@ -56,5 +56,14 @@ export default function DisplayManga() {
     console.log('end func 点击');
   };
 
-  return <Manga imgList={imgList} onExit={onExit} />;
+  const option: MangaProps['option'] = {
+    scrollMode: true,
+    scrollbar: {
+      enabled: true,
+      autoHidden: false,
+      showProgress: true,
+    },
+  };
+
+  return <Manga imgList={imgList} onExit={onExit} option={option} />;
 }

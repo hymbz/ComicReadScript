@@ -1,4 +1,4 @@
-import type { Draft } from 'immer/dist/internal';
+import type { Draft } from 'immer';
 import { useEffect, useRef } from 'react';
 import { useStore } from './useStore';
 import type { MangaProps } from '..';

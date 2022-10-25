@@ -31,22 +31,19 @@ export const defaultButtonList: DefaultButtonList = [
       const isOnePageMode = useStore((state) => state.option.onePageMode);
       const handleClick = useCallback(() => {
         useStore.setState((draftState) => {
-          // 在卷轴模式下切换单页模式时自动退出卷轴模式
-          if (draftState.option.scrollMode)
-            draftState.option.scrollMode = false;
           draftState.option.onePageMode = !draftState.option.onePageMode;
-          draftState.img.updateSlideData((state) => {
-            state.activeSlideIndex = state.option.onePageMode
-              ? state.activeImgIndex
-              : state.slideData.findIndex((slide) =>
-                  slide.some((img) => img.index === state.activeImgIndex),
-                );
-          });
+          draftState.img.updateSlideData.sync();
+          draftState.activeSlideIndex = draftState.option.onePageMode
+            ? draftState.activeImgIndex
+            : draftState.slideData.findIndex((slide) =>
+                slide.some((img) => img.index === draftState.activeImgIndex),
+              );
         });
       }, []);
 
+      const isScrollMode = useStore((state) => state.option.scrollMode);
       return (
-        <IconBotton tip="单页模式" onClick={handleClick}>
+        <IconBotton tip="单页模式" onClick={handleClick} hidden={isScrollMode}>
           {isOnePageMode ? <MdLooksOne /> : <MdLooksTwo />}
         </IconBotton>
       );
@@ -61,8 +58,7 @@ export const defaultButtonList: DefaultButtonList = [
         useStore.setState((draftState) => {
           draftState.option.scrollMode = !draftState.option.scrollMode;
           draftState.option.onePageMode = draftState.option.scrollMode;
-          draftState.img.updateSlideData();
-          // 保持当前显示页面不变
+          draftState.img.updateSlideData.sync();
           draftState.activeSlideIndex = draftState.activeImgIndex;
         });
       }, []);
