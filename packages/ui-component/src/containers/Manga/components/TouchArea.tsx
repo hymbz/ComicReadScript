@@ -54,7 +54,7 @@ export const TouchArea: React.FC = memo(() => {
     });
   }, handleDoubleClickZoom);
 
-  // 在右键点击时隐藏自身，使右键菜单为图片的右键菜单
+  // 在右键点击时使自身可穿透，使右键菜单为图片的右键菜单
   const [penetrate, setPenetrate] =
     useState<React.MouseEvent<HTMLDivElement> | null>(null);
   // 之后再立刻恢复回来

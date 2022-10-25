@@ -12,9 +12,12 @@
 
   /* 扩大触发范围 */
   border-left: 10em solid transparent;
+  outline: none;
 }
 
 .scrollbarDrag {
+  pointer-events: none;
+
   position: absolute;
   z-index: 1;
 
@@ -27,6 +30,8 @@
   opacity: 0;
   background-color: var(--scrollbar_drag);
   border-radius: 1em;
+
+  transition: transform 150ms;
 }
 
 .scrollbarSlide {

@@ -45,7 +45,7 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
     scrollbar: {
       enabled: true,
       autoHidden: false,
-      showProgress: false,
+      showProgress: true,
     },
     onePageMode: false,
     scrollMode: false,
