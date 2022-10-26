@@ -71,6 +71,8 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
           fillEffect: state.fillEffect,
         });
 
+      state.scrollbar.updateScrollbarDrag(state);
+
       // 确认没有图片在加载后，开始预加载图片
       if (!state.option.autoLoadOtherImg) return;
       if (state.imgList.some((img) => img.loadType === 'loading')) return;
@@ -129,6 +131,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
             state.img.条漫比例 = width / 2 / 3 / height;
 
             state.imgList.forEach(state.img.updateImgType);
+            state.scrollbar.updateScrollbarDrag(state);
           });
         }),
       ),

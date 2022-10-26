@@ -14,6 +14,8 @@ import type { ExternalLibSlice } from './ExternalLibSlice';
 import { externalLibSlice } from './ExternalLibSlice';
 import type { OperateSlice } from './OperateSlice';
 import { operateSlice } from './OperateSlice';
+import type { ScrollbarSlice } from './ScrollbarSlice';
+import { scrollbarSlice } from './ScrollbarSlice';
 import type { OtherSlice } from './OtherSlice';
 import { otherSlice } from './OtherSlice';
 
@@ -27,6 +29,7 @@ interface SliceState
     ImageSLice,
     ExternalLibSlice,
     OperateSlice,
+    ScrollbarSlice,
     OtherSlice {}
 
 /** 对 StateCreator 进行包装 */
@@ -47,6 +50,7 @@ const store: SelfStateCreator<SelfState> = (...a) => ({
   ...imageSlice(...a),
   ...externalLibSlice(...a),
   ...operateSlice(...a),
+  ...scrollbarSlice(...a),
   ...otherSlice(...a),
 
   rootRef: { current: null },

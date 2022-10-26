@@ -13,6 +13,7 @@ const selector = ({
   activeSlideIndex,
   imgList,
   option: { scrollMode, disableZoom, dir },
+  scrollbar: { watchMangaFlowScroll },
 }: SelfState) => ({
   slideData,
   activeSlideIndex,
@@ -20,14 +21,22 @@ const selector = ({
   scrollMode,
   disableZoom,
   dir,
+  watchMangaFlowScroll,
 });
 
 /**
  * 漫画图片流的容器
  */
 export const ComicImgFlow: React.FC = () => {
-  const { slideData, activeSlideIndex, imgList, scrollMode, disableZoom, dir } =
-    useStore(selector, shallow);
+  const {
+    slideData,
+    activeSlideIndex,
+    imgList,
+    scrollMode,
+    disableZoom,
+    dir,
+    watchMangaFlowScroll,
+  } = useStore(selector, shallow);
 
   const slideList = useMemo(
     () =>
@@ -65,6 +74,7 @@ export const ComicImgFlow: React.FC = () => {
         scrollMode && classes.scrollMode,
       )}
       dir={dir}
+      onScroll={watchMangaFlowScroll}
     >
       {scrollMode ? (
         imgList.map((img) => (
