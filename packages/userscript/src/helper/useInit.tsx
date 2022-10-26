@@ -109,6 +109,7 @@ export const useInit = async <T extends Record<string, any>>(
           } catch (e) {
             console.error(e);
             toast(errorText, { type: 'error' });
+            showFab({ progress: undefined });
           } finally {
             loading = false;
           }
