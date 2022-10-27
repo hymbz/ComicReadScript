@@ -90,9 +90,8 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
           mangaFlowRef,
           slideData,
           option: { scrollMode },
-          scrollbar: { dragHeight, dragTop },
+          scrollbar: { dragHeight },
         } = get();
-        if (type === 'start') startTop = dragTop;
 
         if (!mangaFlowRef.current) return;
 
@@ -118,6 +117,7 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
             if (top < 0) top = 0;
             else if (top > 1) top = 1;
 
+            startTop = top;
             mangaFlowRef.current.scrollTo({
               top: top * contentHeight,
               behavior: 'smooth',
