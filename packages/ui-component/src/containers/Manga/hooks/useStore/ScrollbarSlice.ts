@@ -70,16 +70,11 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
       const windowHeight = rootRef.current?.offsetHeight;
       if (!windowHeight) return;
 
-      // TODO: 启用平滑滚动会导致卡顿，不启用又和原生滚动效果不同，只能再用回转发事件
-      // 之前猜测可能是 panzoom 导致的转发事件被拒绝
-      // 这次就加回 wrapper 专门套一层 div 给 panzoom吧
-
       /** 滚动条高度 */
       const scrollbarHeight = (e.target as HTMLElement).offsetHeight;
+      // 使用 scrollBy 会导致和原生滚动效果不同，少了平滑滚动，但初次之外找不到其他办法了
       mangaFlowRef.current?.scrollBy({
-        left: 0,
         top: (e.nativeEvent.deltaY / scrollbarHeight) * windowHeight,
-        behavior: 'auto',
       });
     },
 
@@ -115,8 +110,6 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
             const dy = (y - iy) / scrollbarHeight;
             mangaFlowRef.current.scrollTo({
               top: (startTop + dy) * contentHeight,
-              left: 0,
-              behavior: 'auto',
             });
           } else {
             // 确保滚动条的中心会在点击位置
@@ -127,7 +120,6 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
 
             mangaFlowRef.current.scrollTo({
               top: top * contentHeight,
-              left: 0,
               behavior: 'smooth',
             });
           }
