@@ -1,5 +1,5 @@
 import type { Draft } from 'immer';
-import type { WheelEventHandler } from 'react';
+import type { UIEventHandler, WheelEventHandler } from 'react';
 import type { SelfState, SelfStateCreator } from '.';
 import type { UseDragOption } from '../useDrag';
 
@@ -14,7 +14,7 @@ export interface ScrollbarSlice {
     /** 更新滚动条滑块的高度和所处高度 */
     updateScrollbarDrag: (state: Draft<SelfState>) => void;
     /** 监视漫画页的滚动事件 */
-    watchMangaFlowScroll: () => void;
+    watchMangaFlowScroll: UIEventHandler;
 
     handleWheel: WheelEventHandler;
 
@@ -63,6 +63,9 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
         );
 
         state.scrollbar.updateScrollbarDrag(state);
+
+        state.showEndPage =
+          state.scrollbar.dragHeight + state.scrollbar.dragTop === 1;
       });
     },
 
