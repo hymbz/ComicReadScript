@@ -48,9 +48,9 @@ export const TouchArea: React.FC = memo(() => {
     if (clickPage.enabled) pageTurn('prev');
   }, handleDoubleClickZoom);
   const handleClickMenu = useDoubleClick(() => {
-    useStore.setState((draftState) => {
-      draftState.showScrollbar = !draftState.showScrollbar;
-      draftState.showToolbar = !draftState.showToolbar;
+    useStore.setState((state) => {
+      state.showScrollbar = !state.showScrollbar;
+      state.showToolbar = !state.showToolbar;
     });
   }, handleDoubleClickZoom);
 
