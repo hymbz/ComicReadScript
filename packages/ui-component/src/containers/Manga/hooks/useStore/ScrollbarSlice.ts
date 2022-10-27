@@ -1,13 +1,14 @@
 import type { Draft } from 'immer';
-import type { MouseEventHandler } from 'react';
+import type { WheelEventHandler } from 'react';
 import type { SelfState, SelfStateCreator } from '.';
+import type { UseDragOption } from '../useDrag';
 
 export interface ScrollbarSlice {
   /** 滚动条 */
   scrollbar: {
-    /** 滚动条高度 */
+    /** 滚动条高度比率 */
     dragHeight: number;
-    /** 滚动条所处高度 */
+    /** 滚动条所处高度比率 */
     dragTop: number;
 
     /** 更新滚动条滑块的高度和所处高度 */
@@ -15,9 +16,14 @@ export interface ScrollbarSlice {
     /** 监视漫画页的滚动事件 */
     watchMangaFlowScroll: () => void;
 
-    handleCLick: MouseEventHandler;
+    handleWheel: WheelEventHandler;
+
+    dragOption: UseDragOption;
   };
 }
+
+/** 开始拖拽时的 dragTop 值 */
+let startTop = 0;
 
 export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
   scrollbar: {
@@ -56,49 +62,83 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
       });
     },
 
-    handleCLick: (e) => {
-      e.stopPropagation();
+    // 使在滚动条上的滚轮可以触发滚动
+    handleWheel: (e) => {
+      const { mangaFlowRef, rootRef } = get();
 
-      const {
-        activeSlideIndex,
-        mangaFlowRef,
-        rootRef,
-        slideData,
-        option: { scrollMode },
-        scrollbar: { dragHeight, dragTop },
-      } = get();
+      /** 能显示出漫画的高度 */
+      const windowHeight = rootRef.current?.offsetHeight;
+      if (!windowHeight) return;
 
-      if (!mangaFlowRef.current) return;
+      // TODO: 启用平滑滚动会导致卡顿，不启用又和原生滚动效果不同，只能再用回转发事件
+      // 之前猜测可能是 panzoom 导致的转发事件被拒绝
+      // 这次就加回 wrapper 专门套一层 div 给 panzoom吧
 
-      /** 点击位置在滚动条上的位置比率 */
-      let top = e.nativeEvent.offsetY / (e.target as HTMLElement).offsetHeight;
+      /** 滚动条高度 */
+      const scrollbarHeight = (e.target as HTMLElement).offsetHeight;
+      mangaFlowRef.current?.scrollBy({
+        left: 0,
+        top: (e.nativeEvent.deltaY / scrollbarHeight) * windowHeight,
+        behavior: 'auto',
+      });
+    },
 
-      if (scrollMode) {
-        /** 能显示出漫画的高度 */
-        const windowHeight = rootRef.current?.offsetHeight;
-        if (!windowHeight) return;
+    dragOption: {
+      handleDrag: ({ type, xy: [, y], initial: [, iy] }, e) => {
+        // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
+        if (type === 'end') return;
+        // 跳过没必要处理的情况
+        if (type === 'dragging' && y === iy) return;
 
-        // 跳过点在滚动条位置上的情况
-        if (top >= dragTop && top <= dragTop + dragHeight) return;
-        // 确保滚动条的中心会在点击位置
-        top -= dragHeight / 2;
-        // 处理靠近边缘的情况
-        if (top < 0) top = 0;
-        else if (top > 1) top = 1;
+        const {
+          activeSlideIndex,
+          mangaFlowRef,
+          slideData,
+          option: { scrollMode },
+          scrollbar: { dragHeight, dragTop },
+        } = get();
+        if (type === 'start') startTop = dragTop;
 
-        if (mangaFlowRef.current.scrollTop !== top)
-          mangaFlowRef.current.scrollTo({
-            top: top * windowHeight,
-            left: 0,
-            behavior: 'smooth',
-          });
-      } else {
-        const newSlideIndex = Math.floor(top * slideData.length);
-        if (newSlideIndex !== activeSlideIndex)
-          set((state) => {
-            state.activeSlideIndex = newSlideIndex;
-          });
-      }
+        if (!mangaFlowRef.current) return;
+
+        /** 滚动条高度 */
+        const scrollbarHeight = (e.target as HTMLElement).offsetHeight;
+        /** 点击位置在滚动条上的位置比率 */
+        let top = y / scrollbarHeight;
+
+        if (scrollMode) {
+          /** 漫画的总高度 */
+          const contentHeight = mangaFlowRef.current.scrollHeight;
+
+          if (type === 'dragging') {
+            /** 在滚动条上的移动比率 */
+            const dy = (y - iy) / scrollbarHeight;
+            mangaFlowRef.current.scrollTo({
+              top: (startTop + dy) * contentHeight,
+              left: 0,
+              behavior: 'auto',
+            });
+          } else {
+            // 确保滚动条的中心会在点击位置
+            top -= dragHeight / 2;
+            // 处理靠近边缘的情况
+            if (top < 0) top = 0;
+            else if (top > 1) top = 1;
+
+            mangaFlowRef.current.scrollTo({
+              top: top * contentHeight,
+              left: 0,
+              behavior: 'smooth',
+            });
+          }
+        } else {
+          const newSlideIndex = Math.floor(top * slideData.length);
+          if (newSlideIndex !== activeSlideIndex)
+            set((state) => {
+              state.activeSlideIndex = newSlideIndex;
+            });
+        }
+      },
     },
   },
 });

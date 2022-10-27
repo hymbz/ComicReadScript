@@ -1,4 +1,7 @@
 .scrollbar {
+  touch-action: none;
+  user-select: none;
+
   position: absolute;
   z-index: 9;
   top: 1%;

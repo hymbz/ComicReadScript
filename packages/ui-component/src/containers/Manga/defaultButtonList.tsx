@@ -59,7 +59,8 @@ export const defaultButtonList: DefaultButtonList = [
           draftState.option.scrollMode = !draftState.option.scrollMode;
           draftState.option.onePageMode = draftState.option.scrollMode;
           draftState.img.updateSlideData.sync();
-          draftState.activeSlideIndex = draftState.activeImgIndex;
+          // TODO:
+          // draftState.activeSlideIndex = draftState.activeImgIndex;
         });
       }, []);
 

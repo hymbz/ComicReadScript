@@ -1,6 +1,7 @@
 import clsx from 'clsx';
-import type { CSSProperties, WheelEventHandler } from 'react';
-import { useCallback, memo, useMemo } from 'react';
+import type { CSSProperties } from 'react';
+import { useRef, memo, useMemo } from 'react';
+import { useDrag } from '../hooks/useDrag';
 import type { SelfState } from '../hooks/useStore';
 import { shallow, useStore } from '../hooks/useStore';
 
@@ -12,8 +13,7 @@ const selector = ({
   slideData,
   showScrollbar,
   activeSlideIndex,
-  mangaFlowRef,
-  scrollbar: { dragHeight, dragTop, handleCLick },
+  scrollbar: { dragHeight, dragTop, handleWheel, dragOption },
 }: SelfState) => ({
   slideData,
   showScrollbar,
@@ -21,10 +21,10 @@ const selector = ({
   scrollbar,
   scrollMode,
   activeSlideIndex,
-  mangaFlowRef,
   dragHeight,
   dragTop,
-  handleCLick,
+  handleWheel,
+  dragOption,
 });
 
 /** 滚动条 */
@@ -36,10 +36,10 @@ export const Scrollbar: React.FC = memo(() => {
     scrollbar,
     scrollMode,
     activeSlideIndex,
-    mangaFlowRef,
     dragHeight,
     dragTop,
-    handleCLick,
+    handleWheel,
+    dragOption,
   } = useStore(selector, shallow);
 
   /** 滚动条提示文本 */
@@ -80,20 +80,12 @@ export const Scrollbar: React.FC = memo(() => {
     [scrollbar.showProgress, slideData],
   );
 
-  // 使在滚动条上的滚轮可以触发滚动
-  const handleWheel = useCallback<WheelEventHandler>(
-    (e) => {
-      mangaFlowRef.current?.scrollBy({
-        left: 0,
-        top: e.nativeEvent.deltaY,
-        behavior: 'smooth',
-      });
-    },
-    [mangaFlowRef],
-  );
+  const ref = useRef<HTMLDivElement>(null);
+  useDrag(ref, dragOption);
 
   return (
     <div
+      ref={ref}
       className={clsx(classes.scrollbar, {
         [classes.hidden]: !scrollbar.enabled && !showScrollbar,
       })}
@@ -103,7 +95,6 @@ export const Scrollbar: React.FC = memo(() => {
       style={style}
       tabIndex={-1}
       onWheel={handleWheel}
-      onMouseDown={handleCLick}
     >
       <div
         className={classes.scrollbarDrag}
