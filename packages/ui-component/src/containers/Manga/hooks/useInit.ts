@@ -93,9 +93,10 @@ export const useInit = ({
       () => {
         useStore.setState((state) => {
           // 重新计算 activeImgIndex
-          state.activeImgIndex = state.slideData[state.activeSlideIndex].find(
-            (img) => img.type !== 'fill',
-          )!.index;
+          state.activeImgIndex =
+            state.slideData[state.activeSlideIndex].find(
+              (img) => img.type !== 'fill',
+            )?.index ?? 0;
 
           // 找到当前所属的 fillEffect
           let nowFillIndex = state.activeImgIndex;

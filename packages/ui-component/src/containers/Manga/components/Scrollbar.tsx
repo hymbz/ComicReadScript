@@ -44,8 +44,7 @@ export const Scrollbar: React.FC = memo(() => {
 
   /** 滚动条提示文本 */
   const tooltipText = useMemo(() => {
-    if (scrollMode || !slideData.length || activeSlideIndex === undefined)
-      return null;
+    if (!slideData.length) return null;
 
     const slideIndex = slideData[activeSlideIndex].map((slide) => {
       if (slide.type === 'fill') return '填充页';
@@ -56,7 +55,7 @@ export const Scrollbar: React.FC = memo(() => {
     if (dir === 'rtl') slideIndex.reverse();
 
     return `${slideIndex.join(' | ')}`;
-  }, [scrollMode, slideData, activeSlideIndex, dir]);
+  }, [slideData, activeSlideIndex, dir]);
 
   const style = useMemo(
     () =>

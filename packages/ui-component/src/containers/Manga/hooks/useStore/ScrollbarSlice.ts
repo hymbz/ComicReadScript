@@ -58,6 +58,10 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
             ? 0
             : mangaFlowDom.scrollTop / contentHeight;
 
+        state.activeSlideIndex = Math.floor(
+          state.scrollbar.dragTop * state.slideData.length,
+        );
+
         state.scrollbar.updateScrollbarDrag(state);
       });
     },
