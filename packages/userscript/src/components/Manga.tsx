@@ -36,8 +36,6 @@ export const useManga = (
   const show = (recipe?: MangaRecipe) => {
     if (recipe) set(recipe);
 
-    if (!mangaProps.imgList.length) throw new Error('imgList 为空');
-
     // 仅在初次运行时渲染节点
     if (dom.style.display === '')
       root.render(

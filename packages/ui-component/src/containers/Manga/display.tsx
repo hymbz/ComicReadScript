@@ -57,7 +57,7 @@ export default function DisplayManga() {
   };
 
   const option: MangaProps['option'] = {
-    scrollMode: true,
+    // scrollMode: true,
     scrollbar: {
       enabled: true,
       autoHidden: false,

@@ -58,14 +58,12 @@ export const useInit = ({
     useStore.setState((state) => {
       if (fillEffect) state.fillEffect = fillEffect;
 
-      imgList.forEach((imgUrl, index) => {
-        state.imgList[index] = {
-          type: '',
-          index,
-          src: imgUrl,
-          loadType: 'wait',
-        };
-      });
+      state.imgList = imgList.map((imgUrl, index) => ({
+        index,
+        type: '',
+        src: imgUrl,
+        loadType: 'wait',
+      }));
     });
   }, [imgList, fillEffect]);
 

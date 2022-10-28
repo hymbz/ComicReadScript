@@ -24,7 +24,13 @@
 .mangaFlow {
   user-select: none;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   height: 100%;
+
+  color: var(--text);
 
   background-color: var(--bg);
 
