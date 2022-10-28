@@ -51,6 +51,7 @@ export const ComicImg: React.FC<Pick<ComicImg, 'index' | 'src' | 'type'>> =
         className={clsx(classes.img, classes[type])}
         onLoad={handleImgLoaded}
         onError={handleImgError}
+        decoding="sync"
       />
     );
   });
