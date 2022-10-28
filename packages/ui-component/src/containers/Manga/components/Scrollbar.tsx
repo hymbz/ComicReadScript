@@ -4,6 +4,7 @@ import { useRef, memo, useMemo } from 'react';
 import { useDrag } from '../hooks/useDrag';
 import type { SelfState } from '../hooks/useStore';
 import { shallow, useStore } from '../hooks/useStore';
+import { loadTypeMap } from '../hooks/useStore/ImageSlice';
 
 import classes from '../index.module.css';
 import { ScrollbarSlide } from './ScrollbarSlide';
@@ -26,13 +27,6 @@ const selector = ({
   handleWheel,
   dragOption,
 });
-
-const loadTypeMap: Record<ComicImg['loadType'], string> = {
-  error: '出错',
-  loading: '加载中',
-  wait: '等待加载',
-  loaded: '',
-};
 
 /**
  * 从 slide 中提取图片的 index，并在后面加上加载状态

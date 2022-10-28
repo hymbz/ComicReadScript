@@ -19,6 +19,14 @@ declare global {
   type SlideData = Array<Slide>;
 }
 
+/** 加载状态的中文描述 */
+export const loadTypeMap: Record<ComicImg['loadType'], string> = {
+  error: '出错',
+  loading: '加载中',
+  wait: '等待加载',
+  loaded: '',
+};
+
 /** 页面填充数据 */
 export type FillEffect = Map<number, boolean>;
 
