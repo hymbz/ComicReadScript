@@ -15,7 +15,8 @@ declare global {
     error?: SyntheticEvent<HTMLImageElement, Event>;
   }>;
 
-  type SlideData = Array<[ComicImg] | [ComicImg, ComicImg]>;
+  type Slide = [ComicImg] | [ComicImg, ComicImg];
+  type SlideData = Array<Slide>;
 }
 
 /** 页面填充数据 */

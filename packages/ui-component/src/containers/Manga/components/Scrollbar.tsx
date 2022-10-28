@@ -27,6 +27,26 @@ const selector = ({
   dragOption,
 });
 
+const loadTypeMap: Record<ComicImg['loadType'], string> = {
+  error: '出错',
+  loading: '加载中',
+  wait: '等待加载',
+  loaded: '',
+};
+
+/**
+ * 从 slide 中提取图片的 index，并在后面加上加载状态
+ *
+ * @param slide
+ */
+const extractSlideIndex = (slide: Slide) =>
+  slide.map((img) => {
+    if (img.type === 'fill') return '填充页';
+    if (img.loadType === 'loaded') return `${img.index}`;
+    // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
+    return `${img.index} (${loadTypeMap[img.loadType]})`;
+  }) as [string] | [string, string];
+
 /** 滚动条 */
 export const Scrollbar: React.FC = memo(() => {
   const {
@@ -43,19 +63,24 @@ export const Scrollbar: React.FC = memo(() => {
   } = useStore(selector, shallow);
 
   /** 滚动条提示文本 */
-  const tooltipText = useMemo(() => {
-    if (!slideData.length) return null;
+  const tipText = useMemo(() => {
+    if (!slideData.length) return '';
 
-    const slideIndex = slideData[activeSlideIndex].map((slide) => {
-      if (slide.type === 'fill') return '填充页';
-      if (slide.loadType === 'loaded') return `${slide.index}`;
-      // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-      return `${slide.index} (${slide.loadType})`;
-    });
+    if (scrollMode) {
+      const slideIndex = slideData
+        .slice(
+          Math.floor(dragTop * slideData.length),
+          Math.floor((dragTop + dragHeight) * slideData.length),
+        )
+        .map(extractSlideIndex)
+        .flat();
+      return slideIndex.join('\n');
+    }
+
+    const slideIndex = extractSlideIndex(slideData[activeSlideIndex]);
     if (dir === 'rtl') slideIndex.reverse();
-
-    return `${slideIndex.join(' | ')}`;
-  }, [slideData, activeSlideIndex, dir]);
+    return slideIndex.join(' | ');
+  }, [slideData, scrollMode, activeSlideIndex, dir, dragTop, dragHeight]);
 
   const style = useMemo(
     () =>
@@ -107,13 +132,10 @@ export const Scrollbar: React.FC = memo(() => {
         }}
       >
         <div
-          className={clsx(
-            classes.scrollbarPoper,
-            !tooltipText && classes.hidden,
-          )}
+          className={clsx(classes.scrollbarPoper, !tipText && classes.hidden)}
           data-show={showScrollbar}
         >
-          {tooltipText}
+          {tipText}
         </div>
       </div>
 
