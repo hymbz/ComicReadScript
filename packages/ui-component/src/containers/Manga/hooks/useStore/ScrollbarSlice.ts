@@ -105,7 +105,8 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
         /** 滚动条高度 */
         const scrollbarHeight = (e.target as HTMLElement).offsetHeight;
         /** 点击位置在滚动条上的位置比率 */
-        let top = y / scrollbarHeight;
+        const clickTop = y / scrollbarHeight;
+        let top = clickTop;
 
         if (scrollMode) {
           /** 漫画的总高度 */
@@ -114,16 +115,14 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
           if (type === 'dragging') {
             /** 在滚动条上的移动比率 */
             const dy = (y - iy) / scrollbarHeight;
-            mangaFlowRef.current.scrollTo({
-              top: (startTop + dy) * contentHeight,
-            });
+            top = startTop + dy;
+            // 处理超出范围的情况
+            if (top < 0) top = 0;
+            else if (top > 1) top = 1;
+            mangaFlowRef.current.scrollTo({ top: top * contentHeight });
           } else {
             // 确保滚动条的中心会在点击位置
             top -= dragHeight / 2;
-            // 处理靠近边缘的情况
-            if (top < 0) top = 0;
-            else if (top > 1) top = 1;
-
             startTop = top;
             mangaFlowRef.current.scrollTo({
               top: top * contentHeight,
@@ -131,7 +130,13 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
             });
           }
         } else {
-          const newSlideIndex = Math.floor(top * slideData.length);
+          let newSlideIndex = Math.floor(top * slideData.length);
+          // 处理超出范围的情况
+          if (newSlideIndex < 0) newSlideIndex = 0;
+          else if (newSlideIndex >= slideData.length)
+            newSlideIndex = slideData.length - 1;
+
+          console.log(newSlideIndex);
           if (newSlideIndex !== activeSlideIndex)
             set((state) => {
               state.activeSlideIndex = newSlideIndex;
