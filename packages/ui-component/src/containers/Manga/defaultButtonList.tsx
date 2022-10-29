@@ -30,13 +30,13 @@ export const defaultButtonList: DefaultButtonList = [
     () => {
       const isOnePageMode = useStore((state) => state.option.onePageMode);
       const handleClick = useCallback(() => {
-        useStore.setState((draftState) => {
-          draftState.option.onePageMode = !draftState.option.onePageMode;
-          draftState.img.updateSlideData.sync();
-          draftState.activeSlideIndex = draftState.option.onePageMode
-            ? draftState.activeImgIndex
-            : draftState.slideData.findIndex((slide) =>
-                slide.some((img) => img.index === draftState.activeImgIndex),
+        useStore.setState((state) => {
+          state.option.onePageMode = !state.option.onePageMode;
+          state.img.updateSlideData.sync();
+          state.activeSlideIndex = state.option.onePageMode
+            ? state.activeImgIndex
+            : state.slideData.findIndex((slide) =>
+                slide.some((img) => img.index === state.activeImgIndex),
               );
         });
       }, []);
@@ -55,11 +55,15 @@ export const defaultButtonList: DefaultButtonList = [
       const enabled = useStore((state) => state.option.scrollMode);
 
       const handleClick = useCallback(() => {
-        useStore.setState((draftState) => {
-          draftState.option.scrollMode = !draftState.option.scrollMode;
-          draftState.option.onePageMode = draftState.option.scrollMode;
-          draftState.img.updateSlideData.sync();
-          draftState.activeSlideIndex = draftState.activeImgIndex;
+        useStore.setState((state) => {
+          state.option.scrollMode = !state.option.scrollMode;
+          state.option.onePageMode = state.option.scrollMode;
+          state.img.updateSlideData.sync();
+          state.activeSlideIndex = state.option.scrollMode
+            ? state.activeImgIndex
+            : state.slideData.findIndex((slide) =>
+                slide.some((img) => img.index === state.activeImgIndex),
+              );
         });
       }, []);
 
@@ -99,8 +103,8 @@ export const defaultButtonList: DefaultButtonList = [
       const [showPanel, setShowPanel] = useState(false);
 
       const handleClick = useCallback(() => {
-        useStore.setState((draftState) => {
-          draftState.showToolbar = !showPanel;
+        useStore.setState((state) => {
+          state.showToolbar = !showPanel;
         });
         setShowPanel(!showPanel);
       }, [showPanel]);

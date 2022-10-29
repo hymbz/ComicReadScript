@@ -64,6 +64,30 @@ export const ComicImgFlow: React.FC = () => {
     });
   }, []);
 
+  const body = useMemo(() => {
+    if (imgList.length === 0)
+      return <div style={{ fontSize: '3em' }}>NULL</div>;
+
+    if (scrollMode)
+      return imgList.map((img) => (
+        <ComicImg
+          key={img.index}
+          index={img.index}
+          type={img.type}
+          src={img.src}
+        />
+      ));
+
+    return (
+      <div
+        className={classes.wrapper}
+        style={{ transform: `translateY(-${activeSlideIndex}00%)` }}
+      >
+        {slideList}
+      </div>
+    );
+  }, [activeSlideIndex, imgList, scrollMode, slideList]);
+
   return (
     <div
       ref={mangaFlowRef}
@@ -76,23 +100,7 @@ export const ComicImgFlow: React.FC = () => {
       dir={dir}
       onScroll={watchMangaFlowScroll}
     >
-      {scrollMode ? (
-        imgList.map((img) => (
-          <ComicImg
-            key={img.index}
-            index={img.index}
-            type={img.type}
-            src={img.src}
-          />
-        ))
-      ) : (
-        <div
-          className={classes.wrapper}
-          style={{ transform: `translateY(-${activeSlideIndex}00%)` }}
-        >
-          {slideList}
-        </div>
-      )}
+      {body}
     </div>
   );
 };

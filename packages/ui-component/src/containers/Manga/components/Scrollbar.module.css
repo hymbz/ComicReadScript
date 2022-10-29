@@ -1,4 +1,7 @@
 .scrollbar {
+  touch-action: none;
+  user-select: none;
+
   position: absolute;
   z-index: 9;
   top: 1%;
@@ -81,8 +84,10 @@
   padding: 0.2em 0.5em;
 
   font-size: 0.8em;
+  line-height: 1.5em;
   color: white;
-  white-space: nowrap;
+  text-align: center;
+  white-space: pre;
 
   opacity: 0;
   background-color: #303030;

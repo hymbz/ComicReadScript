@@ -1,9 +1,6 @@
 TODO: 为加载中、等待、错误的图片增加遮罩提示，加载中和等待使用同一样式。鼠标移上去时不显示遮罩
-TODO: 使用 visibility 属性替换那些 pointer-events: none; opacity: 0; 的 css
 TODO: 补全所有站点的 EndExit 回调
-TODO: 增加 imglist 为空时的提示
-TODO: 实现滚动条的拖拽
-TODO: 实现卷轴模式下的结束页显示
+TODO: 低速3G模式下，动态调节当前加载图片的机制好像有问题
 
 ### dev
 

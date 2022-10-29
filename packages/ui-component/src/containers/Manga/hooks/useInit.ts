@@ -58,14 +58,12 @@ export const useInit = ({
     useStore.setState((state) => {
       if (fillEffect) state.fillEffect = fillEffect;
 
-      imgList.forEach((imgUrl, index) => {
-        state.imgList[index] = {
-          type: '',
-          index,
-          src: imgUrl,
-          loadType: 'wait',
-        };
-      });
+      state.imgList = imgList.map((imgUrl, index) => ({
+        index,
+        type: '',
+        src: imgUrl,
+        loadType: 'wait',
+      }));
     });
   }, [imgList, fillEffect]);
 
@@ -93,9 +91,10 @@ export const useInit = ({
       () => {
         useStore.setState((state) => {
           // 重新计算 activeImgIndex
-          state.activeImgIndex = state.slideData[state.activeSlideIndex].find(
-            (img) => img.type !== 'fill',
-          )!.index;
+          state.activeImgIndex =
+            state.slideData[state.activeSlideIndex].find(
+              (img) => img.type !== 'fill',
+            )?.index ?? 0;
 
           // 找到当前所属的 fillEffect
           let nowFillIndex = state.activeImgIndex;

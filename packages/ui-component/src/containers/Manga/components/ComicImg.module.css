@@ -1,13 +1,20 @@
 .img {
+  position: relative;
+
   /* 临时测试暂时修改; */
 
-  width: 2em !important;
-  height: 2em !important;
+  /* width: 7em !important;
+  height: 7em !important; */
 
-  /* width: auto;
-  height: 100%; */
+  width: auto;
+  height: 100%;
 
   vertical-align: middle;
+
+  & > img {
+    width: 100%;
+    height: 100%;
+  }
 
   /* 填充页 */
   &.fill {
@@ -24,7 +31,13 @@
 .mangaFlow {
   user-select: none;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   height: 100%;
+
+  color: var(--text);
 
   background-color: var(--bg);
 
@@ -123,4 +136,23 @@
 /* 根据漫画方向调换位置 */
 .mangaFlow[dir="ltr"] {
   flex-direction: row-reverse;
+}
+
+/* 图片未加载完成时显示的遮罩 */
+.mask {
+  position: absolute;
+  top: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  font-size: 1.5em;
+  color: white;
+
+  background-color: #7a909a80;
+  backdrop-filter: blur(12px);
 }
