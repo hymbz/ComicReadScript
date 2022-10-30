@@ -38,7 +38,7 @@ import { useInit } from '../helper/useInit';
 
   /** 从详情页获取图片页的地址的正则 */
   const getImgFromDetailsPageRe =
-    /(?<=<div class="gdtl" style="height:320px"><a href=").+?(?=">)/gm;
+    /(?<=<div class="gdtl" style="height:\d+?px"><a href=").+?(?=">)/gm;
   const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
     const res = await request(
       'GET',
@@ -51,6 +51,7 @@ import { useInit } from '../helper/useInit';
     const imgPageList = res.responseText.match(
       getImgFromDetailsPageRe,
     ) as string[];
+    if (imgPageList === null) throw new Error('从详情页获取图片页的地址时出错');
 
     return Promise.all(imgPageList.map(getImgFromImgPage));
   };

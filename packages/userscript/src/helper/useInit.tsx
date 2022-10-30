@@ -106,9 +106,9 @@ export const useInit = async <T extends Record<string, any>>(
             imgList = await getImgList();
             if (imgList.length === 0) throw new Error(errorText);
             setManga({ imgList });
-          } catch (e) {
+          } catch (e: any) {
             console.error(e);
-            toast(errorText, { type: 'error' });
+            toast(e.message, { type: 'error' });
             showFab({ progress: undefined });
           } finally {
             loading = false;
