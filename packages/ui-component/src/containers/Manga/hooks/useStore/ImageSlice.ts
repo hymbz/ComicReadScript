@@ -2,7 +2,7 @@ import type { Draft } from 'immer';
 import { throttle, debounce } from 'throttle-debounce';
 import type { SyntheticEvent } from 'react';
 import { handleComicData } from '../../handleComicData';
-import type { SelfStateCreator } from '.';
+import type { SelfState, SelfStateCreator } from '.';
 
 declare global {
   type ComicImg = Draft<{
@@ -69,6 +69,34 @@ export interface ImageSLice {
   pageTurn: (dir: 'next' | 'prev') => void;
 }
 
+/**
+ * 预加载指定图片，并取消其他预加载的图片
+ *
+ * @param state
+ * @param start
+ * @param end
+ * @param loadNum 加载数量
+ * @returns 返回指定范围内的图片在执行前是否还有未加载完的
+ */
+const loadImg = (
+  state: SelfState,
+  start: number,
+  end?: number,
+  loadNum = NaN,
+) => {
+  let editNum = 0;
+  const endIndex = end ?? start;
+  for (let i = start; i <= endIndex; i += 1) {
+    const img = state.imgList[i];
+    if (img.loadType !== 'loaded') {
+      img.loadType = 'loading';
+      editNum += 1;
+    }
+    if (editNum >= loadNum) break;
+  }
+  return editNum > 0;
+};
+
 export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
   const _updateSlideData = () => {
     set((state) => {
@@ -79,7 +107,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
           comicImgList: state.imgList,
           fillEffect: state.fillEffect,
         });
-      state.scrollbar.updateScrollbarDrag(state);
+      state.scrollbar.updateDrag(state);
       state.img.updateImgLoadType();
     });
   };
@@ -133,7 +161,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
             state.img.条漫比例 = width / 2 / 3 / height;
 
             state.imgList.forEach(state.img.updateImgType);
-            state.scrollbar.updateScrollbarDrag(state);
+            state.scrollbar.updateDrag(state);
           });
         }),
       ),
@@ -158,43 +186,32 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
             option: { preloadImgNum },
           } = state;
 
-          /** 加载范围 */
-          let loadScope: [number, number];
-
-          // 如果当前显示页还没有加载完，则优先加载
-          const activeSlide = slideData[activeSlideIndex];
-          if (activeSlide.some((img) => img.loadType !== 'loaded')) {
-            loadScope = [
-              activeSlide[0].index,
-              activeSlide[1]?.index ?? activeSlide[0].index,
-            ];
-            // 之后优先加载后几页
-          } else if (
-            imgList
-              .slice(activeImgIndex, activeImgIndex + preloadImgNum + 1)
-              .some((img) => img.loadType !== 'loaded')
-          )
-            loadScope = [activeImgIndex, activeImgIndex + preloadImgNum];
-          // 最后加载前几页
-          else loadScope = [activeImgIndex - preloadImgNum / 2, activeImgIndex];
-
-          // 预加载指定图片，并取消其他预加载的图片
-          state.imgList.forEach((_, i) => {
-            if (_.loadType === 'loaded') return;
-            const img = state.imgList[i];
-            if (loadScope[0] <= i && i <= loadScope[1])
-              img.loadType = 'loading';
-            else if (img.loadType === 'loading') img.loadType = 'wait';
+          // 先将所有加载中的图片状态改为暂停
+          state.imgList.forEach(({ loadType }, i) => {
+            if (loadType === 'loading') state.imgList[i].loadType = 'wait';
           });
 
+          const activeSlide = slideData[activeSlideIndex];
+          if (
+            // 如果当前显示页还没有加载完，则优先加载
+            loadImg(state, activeSlide[0].index, activeSlide[1]?.index) ||
+            // 之后加载后几页
+            loadImg(state, activeImgIndex, activeImgIndex + preloadImgNum) ||
+            // 最后加载前两页
+            (activeImgIndex >= 2 &&
+              loadImg(state, activeImgIndex - 2, activeImgIndex))
+          )
+            return;
+
           // 确认没有图片在加载后，在空闲时间自动加载其余图片
-          if (!state.option.autoLoadOtherImg) return;
-          if (state.imgList.some((img) => img.loadType === 'loading')) return;
-          const preloadImg = state.imgList.find(
-            (img) => img.loadType === 'wait',
-          );
-          if (!preloadImg) return;
-          preloadImg.loadType = 'loading';
+          if (
+            !state.option.autoLoadOtherImg &&
+            state.imgList.some((img) => img.loadType === 'loading')
+          )
+            return;
+          // 优先加载当前页后面的图片
+          if (loadImg(state, activeImgIndex, imgList.length - 1, 1)) return;
+          loadImg(state, 0, imgList.length - 1, 1);
         });
       }),
     },
