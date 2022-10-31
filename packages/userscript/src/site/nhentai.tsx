@@ -41,7 +41,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
     // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
     insertNode(
       document.getElementById('download')!.parentNode as HTMLElement,
-      '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Load comic</a>',
+      '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Read</a>',
     );
     document
       .getElementById('comicReadMode')!
