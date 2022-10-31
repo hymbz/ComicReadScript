@@ -4,21 +4,19 @@ import { useRef, memo, useMemo } from 'react';
 import { useDrag } from '../hooks/useDrag';
 import type { SelfState } from '../hooks/useStore';
 import { shallow, useStore } from '../hooks/useStore';
-import { loadTypeMap } from '../hooks/useStore/ImageSlice';
 
 import classes from '../index.module.css';
 import { ScrollbarSlide } from './ScrollbarSlide';
 
 const selector = ({
-  option: { dir, scrollbar, scrollMode },
+  option: { scrollbar, scrollMode },
   slideData,
   showScrollbar,
   activeSlideIndex,
-  scrollbar: { dragHeight, dragTop, handleWheel, dragOption },
+  scrollbar: { dragHeight, dragTop, handleWheel, dragOption, tipText },
 }: SelfState) => ({
   slideData,
   showScrollbar,
-  dir,
   scrollbar,
   scrollMode,
   activeSlideIndex,
@@ -26,27 +24,14 @@ const selector = ({
   dragTop,
   handleWheel,
   dragOption,
+  tipText,
 });
-
-/**
- * 从 slide 中提取图片的 index，并在后面加上加载状态
- *
- * @param slide
- */
-const extractSlideIndex = (slide: Slide) =>
-  slide.map((img) => {
-    if (img.type === 'fill') return '填充页';
-    if (img.loadType === 'loaded') return `${img.index}`;
-    // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-    return `${img.index} (${loadTypeMap[img.loadType]})`;
-  }) as [string] | [string, string];
 
 /** 滚动条 */
 export const Scrollbar: React.FC = memo(() => {
   const {
     slideData,
     showScrollbar,
-    dir,
     scrollbar,
     scrollMode,
     activeSlideIndex,
@@ -54,27 +39,8 @@ export const Scrollbar: React.FC = memo(() => {
     dragTop,
     handleWheel,
     dragOption,
+    tipText,
   } = useStore(selector, shallow);
-
-  /** 滚动条提示文本 */
-  const tipText = useMemo(() => {
-    if (!slideData.length) return '';
-
-    if (scrollMode) {
-      const slideIndex = slideData
-        .slice(
-          Math.floor(dragTop * slideData.length),
-          Math.floor((dragTop + dragHeight) * slideData.length),
-        )
-        .map(extractSlideIndex)
-        .flat();
-      return slideIndex.join('\n');
-    }
-
-    const slideIndex = extractSlideIndex(slideData[activeSlideIndex]);
-    if (dir === 'rtl') slideIndex.reverse();
-    return slideIndex.join(' | ');
-  }, [slideData, scrollMode, activeSlideIndex, dir, dragTop, dragHeight]);
 
   const style = useMemo(
     () =>

@@ -94,7 +94,9 @@ const loadImg = (
     }
     if (editNum >= loadNum) break;
   }
-  return editNum > 0;
+  const edited = editNum > 0;
+  if (edited) state.scrollbar.updateTipText(state);
+  return edited;
 };
 
 export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {

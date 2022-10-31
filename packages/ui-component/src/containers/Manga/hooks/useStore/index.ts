@@ -15,7 +15,7 @@ import { externalLibSlice } from './ExternalLibSlice';
 import type { OperateSlice } from './OperateSlice';
 import { operateSlice } from './OperateSlice';
 import type { ScrollbarSlice } from './ScrollbarSlice';
-import { scrollbarSlice } from './ScrollbarSlice';
+import { scrollbarSlice, scrollbarCallback } from './ScrollbarSlice';
 import type { OtherSlice } from './OtherSlice';
 import { otherSlice } from './OtherSlice';
 
@@ -60,3 +60,8 @@ const store: SelfStateCreator<SelfState> = (...a) => ({
 export const useStore = create<SelfState>()(
   subscribeWithSelector(immer(store)),
 );
+
+/** 回调函数 */
+export type Subscribe = (store: typeof useStore) => void;
+
+scrollbarCallback(useStore);

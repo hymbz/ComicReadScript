@@ -84,6 +84,7 @@ export const useInit = ({
     useStore.subscribe((state) => state.option, onOptionChange);
   }, [onOptionChange]);
 
+  // TODO:移到 imgSlice 中
   // 页数发生变动时
   useEffect(() => {
     useStore.subscribe(
