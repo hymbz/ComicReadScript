@@ -3,11 +3,11 @@
 
   /* 临时测试暂时修改; */
 
-  /* width: 7em !important;
-  height: 7em !important; */
+  width: 7em !important;
+  height: 7em !important;
 
-  width: auto;
-  height: 100%;
+  /* width: auto;
+  height: 100%; */
 
   vertical-align: middle;
 

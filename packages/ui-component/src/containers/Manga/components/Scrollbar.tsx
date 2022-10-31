@@ -87,11 +87,10 @@ export const Scrollbar: React.FC = memo(() => {
   const slideList = useMemo(
     () =>
       scrollbar.showProgress
-        ? slideData.map(([a, b], i) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <div key={i}>
-              <ScrollbarSlide img={a} />
-              {b ? <ScrollbarSlide img={b} /> : null}
+        ? slideData.map(([a, b]) => (
+            <div key={`${a.index}${b?.index}`}>
+              <ScrollbarSlide index={a.index} />
+              {b ? <ScrollbarSlide index={b.index} /> : null}
             </div>
           ))
         : [],
