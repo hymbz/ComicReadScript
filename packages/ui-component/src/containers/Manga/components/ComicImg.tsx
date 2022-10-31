@@ -52,7 +52,6 @@ export const ComicImg: React.FC<Pick<ComicImg, 'index' | 'src' | 'type'>> =
           alt={`${index}`}
           onLoad={handleImgLoaded}
           onError={handleImgError}
-          decoding="sync"
         />
         {loadType !== 'loaded' ? (
           <div className={classes.mask}>{loadTypeMap[loadType]}</div>

@@ -79,15 +79,8 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
           comicImgList: state.imgList,
           fillEffect: state.fillEffect,
         });
-
       state.scrollbar.updateScrollbarDrag(state);
-
-      // 确认没有图片在加载后，开始预加载图片
-      if (!state.option.autoLoadOtherImg) return;
-      if (state.imgList.some((img) => img.loadType === 'loading')) return;
-      const preloadImg = state.imgList.find((img) => img.loadType === 'wait');
-      if (!preloadImg) return;
-      preloadImg.loadType = 'loading';
+      state.img.updateImgLoadType();
     });
   };
 
@@ -158,22 +151,50 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
       updateImgLoadType: debounce(200, () => {
         set((state) => {
           const {
+            slideData,
+            imgList,
+            activeSlideIndex,
             activeImgIndex,
             option: { preloadImgNum },
           } = state;
 
-          const loadScope = [
-            activeImgIndex - preloadImgNum / 2,
-            activeImgIndex + preloadImgNum,
-          ];
+          /** 加载范围 */
+          let loadScope: [number, number];
 
-          // 页数发生变动时，预加载当前页前后指定数量的图片，并取消其他预加载的图片
+          // 如果当前显示页还没有加载完，则优先加载
+          const activeSlide = slideData[activeSlideIndex];
+          if (activeSlide.some((img) => img.loadType !== 'loaded')) {
+            loadScope = [
+              activeSlide[0].index,
+              activeSlide[1]?.index ?? activeSlide[0].index,
+            ];
+            // 之后优先加载后几页
+          } else if (
+            imgList
+              .slice(activeImgIndex, activeImgIndex + preloadImgNum + 1)
+              .some((img) => img.loadType !== 'loaded')
+          )
+            loadScope = [activeImgIndex, activeImgIndex + preloadImgNum];
+          // 最后加载前几页
+          else loadScope = [activeImgIndex - preloadImgNum / 2, activeImgIndex];
+
+          // 预加载指定图片，并取消其他预加载的图片
           state.imgList.forEach((_, i) => {
             if (_.loadType === 'loaded') return;
             const img = state.imgList[i];
-            if (loadScope[0] < i && i < loadScope[1]) img.loadType = 'loading';
+            if (loadScope[0] <= i && i <= loadScope[1])
+              img.loadType = 'loading';
             else if (img.loadType === 'loading') img.loadType = 'wait';
           });
+
+          // 确认没有图片在加载后，在空闲时间自动加载其余图片
+          if (!state.option.autoLoadOtherImg) return;
+          if (state.imgList.some((img) => img.loadType === 'loading')) return;
+          const preloadImg = state.imgList.find(
+            (img) => img.loadType === 'wait',
+          );
+          if (!preloadImg) return;
+          preloadImg.loadType = 'loading';
         });
       }),
     },
