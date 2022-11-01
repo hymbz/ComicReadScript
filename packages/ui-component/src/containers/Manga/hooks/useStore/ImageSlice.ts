@@ -79,7 +79,7 @@ export interface ImageSLice {
  * @returns 返回指定范围内的图片在执行前是否还有未加载完的
  */
 const loadImg = (
-  state: SelfState,
+  state: Draft<SelfState>,
   startIndex: number,
   endIndex = startIndex,
   loadNum = NaN,

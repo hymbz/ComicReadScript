@@ -38,7 +38,7 @@ let startTop = 0;
  * @param state
  * @param pageIndex
  */
-const getPageIndexText = (state: SelfState, pageIndex: number) => {
+const getPageIndexText = (state: Draft<SelfState>, pageIndex: number) => {
   const pageIndexText = state.pageList[pageIndex].map((index) => {
     if (index === -1) return '填充页';
     const img = state.imgList[index];
