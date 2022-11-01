@@ -38,7 +38,15 @@ export const ComicImgFlow: React.FC = () => {
     watchMangaFlowScroll,
   } = useStore(selector, shallow);
 
-  const slideList = useMemo(
+  const mangaFlowRef = useRef<HTMLDivElement>(null);
+  // 绑定 mangaFlowRef
+  useEffect(() => {
+    useStore.setState((state) => {
+      state.mangaFlowRef = mangaFlowRef as Draft<React.RefObject<HTMLElement>>;
+    });
+  }, []);
+
+  const pageEleList = useMemo(
     () =>
       slideData.map(([a, b], i) => (
         <div
@@ -56,37 +64,21 @@ export const ComicImgFlow: React.FC = () => {
     [slideData],
   );
 
-  const mangaFlowRef = useRef<HTMLDivElement>(null);
-  // 绑定 mangaFlowRef
-  useEffect(() => {
-    useStore.setState((state) => {
-      state.mangaFlowRef = mangaFlowRef as Draft<React.RefObject<HTMLElement>>;
-    });
-  }, []);
-
   const body = useMemo(() => {
     if (imgList.length === 0)
       return <div style={{ fontSize: '3em' }}>NULL</div>;
 
-    if (scrollMode)
-      return imgList.map((img) => (
-        <ComicImg
-          key={img.index}
-          index={img.index}
-          type={img.type}
-          src={img.src}
-        />
-      ));
+    if (scrollMode) return pageEleList;
 
     return (
       <div
         className={classes.wrapper}
         style={{ transform: `translateY(-${activeSlideIndex}00%)` }}
       >
-        {slideList}
+        {pageEleList}
       </div>
     );
-  }, [activeSlideIndex, imgList, scrollMode, slideList]);
+  }, [activeSlideIndex, imgList, scrollMode, pageEleList]);
 
   return (
     <div
