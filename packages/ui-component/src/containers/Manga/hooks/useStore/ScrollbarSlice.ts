@@ -184,7 +184,6 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
           else if (newPageIndex >= pageList.length)
             newPageIndex = pageList.length - 1;
 
-          console.log(newPageIndex);
           if (newPageIndex !== activePageIndex)
             set((state) => {
               state.activePageIndex = newPageIndex;

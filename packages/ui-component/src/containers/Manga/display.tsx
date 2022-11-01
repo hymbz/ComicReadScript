@@ -63,6 +63,10 @@ export default function DisplayManga() {
       autoHidden: false,
       showProgress: true,
     },
+    clickPage: {
+      enabled: false,
+      overturn: false,
+    },
   };
 
   return <Manga imgList={imgList} onExit={onExit} option={option} />;

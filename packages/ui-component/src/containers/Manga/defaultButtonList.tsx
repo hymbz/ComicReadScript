@@ -59,12 +59,7 @@ export const defaultButtonList: DefaultButtonList = [
           state.option.scrollMode = !state.option.scrollMode;
           state.option.onePageMode = state.option.scrollMode;
           state.img.updatePageData.sync(state);
-          // TODO:
-          state.activePageIndex = state.option.scrollMode
-            ? state.activeImgIndex
-            : state.pageList.findIndex((page) =>
-                page.includes(state.activeImgIndex),
-              );
+          state.activePageIndex = 0;
         });
       }, []);
 

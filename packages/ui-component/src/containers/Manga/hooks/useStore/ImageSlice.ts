@@ -35,6 +35,7 @@ export interface ImageSLice {
   /** 页面填充数据 */
   fillEffect: FillEffect;
 
+  /** 在 activePageIndex 更改时自动更改，不需要赋值 */
   activeImgIndex: number;
   activePageIndex: number;
   nowFillIndex: number;
