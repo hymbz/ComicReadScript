@@ -4,7 +4,6 @@ import type { Draft } from 'immer';
 import type { SyntheticEvent } from 'react';
 import { memo, useRef, useCallback } from 'react';
 import { useStore } from '../hooks/useStore';
-import { loadTypeMap } from '../hooks/useStore/ImageSlice';
 
 import classes from '../index.module.css';
 
@@ -52,24 +51,20 @@ export const ComicImg: React.FC<ComicImgProps> = memo(
     const img = useStore((state) => state.imgList[index]);
 
     return (
-      <div
+      <img
         className={clsx(
           classes.img,
           classes[img.type],
           classes[img.loadType],
           className,
         )}
-      >
-        <img
-          ref={imgRef}
-          src={img.loadType === 'wait' ? '' : img.src}
-          data-type={img.loadType}
-          alt={`${index}`}
-          onLoad={handleImgLoaded}
-          onError={handleImgError}
-        />
-        <div className={classes.mask}>{loadTypeMap[img.loadType]}</div>
-      </div>
+        ref={imgRef}
+        src={img.loadType === 'wait' ? '' : img.src}
+        data-type={img.loadType}
+        alt={`${index}`}
+        onLoad={handleImgLoaded}
+        onError={handleImgError}
+      />
     );
   },
 );
