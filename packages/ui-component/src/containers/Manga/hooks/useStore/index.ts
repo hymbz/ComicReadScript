@@ -9,7 +9,7 @@ import { subscribeWithSelector } from 'zustand/middleware';
 import type { OptionSlice } from './OptionSlice';
 import { optionSlice } from './OptionSlice';
 import type { ImageSLice } from './ImageSlice';
-import { imageSlice } from './ImageSlice';
+import { imageSlice, imageCallback } from './ImageSlice';
 import type { ExternalLibSlice } from './ExternalLibSlice';
 import { externalLibSlice } from './ExternalLibSlice';
 import type { OperateSlice } from './OperateSlice';
@@ -65,3 +65,4 @@ export const useStore = create<SelfState>()(
 export type Subscribe = (store: typeof useStore) => void;
 
 scrollbarCallback(useStore);
+imageCallback(useStore);
