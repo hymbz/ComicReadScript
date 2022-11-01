@@ -2,7 +2,7 @@ import type { Draft } from 'immer';
 import { throttle, debounce } from 'throttle-debounce';
 import type { SyntheticEvent } from 'react';
 import { handleComicData } from '../../handleComicData';
-import type { SelfState, SelfStateCreator } from '.';
+import type { SelfState, SelfStateCreator, Subscribe } from '.';
 
 declare global {
   type ComicImg = Draft<{
@@ -240,4 +240,26 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
       }
     },
   };
+};
+
+export const imageCallback: Subscribe = (useStore) => {
+  // 页数发生变动时
+  useStore.subscribe(
+    (state) => state.activePageIndex,
+    () => {
+      useStore.setState((state) => {
+        // 重新计算 activeImgIndex
+        state.activeImgIndex =
+          state.pageList[state.activePageIndex].find((i) => i !== -1) ?? 0;
+
+        // 找到当前所属的 fillEffect
+        let nowFillIndex = state.activeImgIndex;
+        while (!state.fillEffect.has(nowFillIndex) && (nowFillIndex -= 1));
+        state.nowFillIndex = nowFillIndex;
+
+        state.img.updateImgLoadType();
+        if (state.showEndPage) state.showEndPage = false;
+      });
+    },
+  );
 };

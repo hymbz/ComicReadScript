@@ -84,28 +84,5 @@ export const useInit = ({
     useStore.subscribe((state) => state.option, onOptionChange);
   }, [onOptionChange]);
 
-  // TODO:移到 imgSlice 中
-  // 页数发生变动时
-  useEffect(() => {
-    useStore.subscribe(
-      (state) => state.activePageIndex,
-      () => {
-        useStore.setState((state) => {
-          // 重新计算 activeImgIndex
-          state.activeImgIndex =
-            state.pageList[state.activePageIndex].find((i) => i !== -1) ?? 0;
-
-          // 找到当前所属的 fillEffect
-          let nowFillIndex = state.activeImgIndex;
-          while (!state.fillEffect.has(nowFillIndex) && (nowFillIndex -= 1));
-          state.nowFillIndex = nowFillIndex;
-
-          state.img.updateImgLoadType();
-          if (state.showEndPage) state.showEndPage = false;
-        });
-      },
-    );
-  }, []);
-
   return rootRef;
 };
