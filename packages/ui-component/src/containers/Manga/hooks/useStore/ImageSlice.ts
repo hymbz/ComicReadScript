@@ -62,7 +62,7 @@ export interface ImageSLice {
     switchFillEffect: () => void;
 
     /** 根据当前页数更新所有图片的加载状态 */
-    updateImgLoadType: () => void;
+    updateImgLoadType: (state: Draft<SelfState>) => void;
   };
 
   /** 翻页 */
@@ -113,7 +113,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         fillEffect: state.fillEffect,
       });
     state.scrollbar.updateDrag(state);
-    state.img.updateImgLoadType();
+    state.img.updateImgLoadType(state);
   };
 
   return {
@@ -181,36 +181,34 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         });
       },
 
-      updateImgLoadType: debounce(100, () => {
-        set((state) => {
-          const { imgList, activePageIndex } = state;
+      updateImgLoadType: debounce(100, (state: Draft<SelfState>) => {
+        const { imgList, activePageIndex } = state;
 
-          // 先将所有加载中的图片状态改为暂停
-          imgList.forEach(({ loadType }, i) => {
-            if (loadType === 'loading') imgList[i].loadType = 'wait';
-          });
-
-          if (
-            // 如果当前显示页还没有加载完，则优先加载
-            loadImg(state, activePageIndex, activePageIndex + 1) ||
-            // 之后加载后俩页
-            loadImg(state, activePageIndex + 1, activePageIndex + 3) ||
-            // 最后加载前一页
-            (activePageIndex >= 1 &&
-              loadImg(state, activePageIndex - 1, activePageIndex))
-          )
-            return;
-
-          // 确认没有图片在加载后，在空闲时间自动加载其余图片
-          if (
-            !state.option.autoLoadOtherImg &&
-            imgList.some((img) => img.loadType === 'loading')
-          )
-            return;
-          // 优先加载当前页后面的图片
-          if (loadImg(state, activePageIndex + 1, imgList.length, 1)) return;
-          loadImg(state, 0, imgList.length, 1);
+        // 先将所有加载中的图片状态改为暂停
+        imgList.forEach(({ loadType }, i) => {
+          if (loadType === 'loading') imgList[i].loadType = 'wait';
         });
+
+        if (
+          // 如果当前显示页还没有加载完，则优先加载
+          loadImg(state, activePageIndex, activePageIndex + 1) ||
+          // 之后加载后俩页
+          loadImg(state, activePageIndex + 1, activePageIndex + 3) ||
+          // 最后加载前一页
+          (activePageIndex >= 1 &&
+            loadImg(state, activePageIndex - 1, activePageIndex))
+        )
+          return;
+
+        // 确认没有图片在加载后，在空闲时间自动加载其余图片
+        if (
+          !state.option.autoLoadOtherImg &&
+          imgList.some((img) => img.loadType === 'loading')
+        )
+          return;
+        // 优先加载当前页后面的图片
+        if (loadImg(state, activePageIndex + 1, imgList.length, 1)) return;
+        loadImg(state, 0, imgList.length, 1);
       }),
     },
 
@@ -257,7 +255,7 @@ export const imageCallback: Subscribe = (useStore) => {
         while (!state.fillEffect.has(nowFillIndex) && (nowFillIndex -= 1));
         state.nowFillIndex = nowFillIndex;
 
-        state.img.updateImgLoadType();
+        state.img.updateImgLoadType(state);
         if (state.showEndPage) state.showEndPage = false;
       });
     },

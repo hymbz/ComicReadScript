@@ -80,8 +80,8 @@ export const useInit = ({
 
   // 绑定配置发生改变时的回调
   useEffect(() => {
-    if (!onOptionChange) return;
-    useStore.subscribe((state) => state.option, onOptionChange);
+    if (!onOptionChange) return undefined;
+    return useStore.subscribe((state) => state.option, onOptionChange);
   }, [onOptionChange]);
 
   return rootRef;
