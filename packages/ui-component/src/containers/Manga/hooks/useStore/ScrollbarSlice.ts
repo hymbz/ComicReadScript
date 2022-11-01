@@ -33,21 +33,21 @@ export interface ScrollbarSlice {
 let startTop = 0;
 
 /**
- * 获取指定 slide 中的图片 index，并在后面加上加载状态
+ * 获取指定 page 中的图片 index，并在后面加上加载状态
  *
  * @param state
- * @param slideIndex
+ * @param pageIndex
  */
-const getSlideIndexText = (state: SelfState, slideIndex: number) => {
-  const slideIndexText = state.slideData[slideIndex].map(({ index, type }) => {
+const getPageIndexText = (state: SelfState, pageIndex: number) => {
+  const pageIndexText = state.pageList[pageIndex].map(({ index, type }) => {
     const img = state.imgList[index];
     if (type === 'fill') return '填充页';
     if (img.loadType === 'loaded') return `${img.index}`;
     // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
     return `${img.index} (${loadTypeMap[img.loadType]})`;
   }) as [string] | [string, string];
-  if (state.option.dir === 'rtl') slideIndexText.reverse();
-  return slideIndexText;
+  if (state.option.dir === 'rtl') pageIndexText.reverse();
+  return pageIndexText;
 };
 
 export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
@@ -58,23 +58,23 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
 
     updateTipText: (state) => {
       state.scrollbar.tipText = (() => {
-        if (!state.slideData.length) return '';
+        if (!state.pageList.length) return '';
 
         if (!state.option.scrollMode)
-          return getSlideIndexText(state, state.activeSlideIndex).join(' | ');
+          return getPageIndexText(state, state.activePageIndex).join(' | ');
 
         const {
-          slideData,
+          pageList,
           scrollbar: { dragHeight, dragTop },
         } = state;
-        const slideIndex = slideData
+        const pageIndex = pageList
           .slice(
-            Math.floor(dragTop * slideData.length),
-            Math.floor((dragTop + dragHeight) * slideData.length),
+            Math.floor(dragTop * pageList.length),
+            Math.floor((dragTop + dragHeight) * pageList.length),
           )
           .flat()
-          .map(({ index }) => getSlideIndexText(state, index));
-        return slideIndex.join('\n');
+          .map(({ index }) => getPageIndexText(state, index));
+        return pageIndex.join('\n');
       })();
     },
 
@@ -106,8 +106,8 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
             ? 0
             : mangaFlowDom.scrollTop / contentHeight;
 
-        state.activeSlideIndex = Math.floor(
-          state.scrollbar.dragTop * state.slideData.length,
+        state.activePageIndex = Math.floor(
+          state.scrollbar.dragTop * state.pageList.length,
         );
 
         state.scrollbar.updateDrag(state);
@@ -141,9 +141,9 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
         if (type === 'dragging' && y === iy) return;
 
         const {
-          activeSlideIndex,
+          activePageIndex,
           mangaFlowRef,
-          slideData,
+          pageList,
           option: { scrollMode },
           scrollbar: { dragHeight },
         } = get();
@@ -178,16 +178,16 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
             });
           }
         } else {
-          let newSlideIndex = Math.floor(top * slideData.length);
+          let newPageIndex = Math.floor(top * pageList.length);
           // 处理超出范围的情况
-          if (newSlideIndex < 0) newSlideIndex = 0;
-          else if (newSlideIndex >= slideData.length)
-            newSlideIndex = slideData.length - 1;
+          if (newPageIndex < 0) newPageIndex = 0;
+          else if (newPageIndex >= pageList.length)
+            newPageIndex = pageList.length - 1;
 
-          console.log(newSlideIndex);
-          if (newSlideIndex !== activeSlideIndex)
+          console.log(newPageIndex);
+          if (newPageIndex !== activePageIndex)
             set((state) => {
-              state.activeSlideIndex = newSlideIndex;
+              state.activePageIndex = newPageIndex;
             });
         }
       },
@@ -199,11 +199,11 @@ export const scrollbarCallback: Subscribe = (useStore) => {
   // 更新滚动条提示文本
   useStore.subscribe(
     ({
-      activeSlideIndex,
-      slideData,
+      activePageIndex,
+      pageList,
       scrollbar: { dragHeight, dragTop },
       option: { scrollMode, dir },
-    }) => [activeSlideIndex, slideData, dragHeight, dragTop, scrollMode, dir],
+    }) => [activePageIndex, pageList, dragHeight, dragTop, scrollMode, dir],
     () => {
       useStore.setState((state) => {
         state.scrollbar.updateTipText(state);

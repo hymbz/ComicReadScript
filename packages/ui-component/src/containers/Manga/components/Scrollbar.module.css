@@ -36,7 +36,7 @@
   display: flex;
 
   width: 100%;
-  height: var(--slideHeight);
+  height: var(--pageHeight);
 
   opacity: 0;
   background-color: var(--scrollbar_drag);
@@ -45,13 +45,13 @@
   transition: transform 150ms;
 }
 
-.scrollbarSlide {
+.scrollbarPage {
   transform: scaleY(1);
   transform-origin: bottom;
 
   flex-grow: 1;
 
-  height: var(--slideHeight);
+  height: var(--pageHeight);
   /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
   transition: transform 1000ms, background-color 0ms 1000ms;
 

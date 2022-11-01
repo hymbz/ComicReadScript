@@ -88,12 +88,12 @@ export const useInit = ({
   // 页数发生变动时
   useEffect(() => {
     useStore.subscribe(
-      (state) => state.activeSlideIndex,
+      (state) => state.activePageIndex,
       () => {
         useStore.setState((state) => {
           // 重新计算 activeImgIndex
           state.activeImgIndex =
-            state.slideData[state.activeSlideIndex].find(
+            state.pageList[state.activePageIndex].find(
               (img) => img.type !== 'fill',
             )?.index ?? 0;
 

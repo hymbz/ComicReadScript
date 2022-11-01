@@ -15,8 +15,8 @@ declare global {
     error?: SyntheticEvent<HTMLImageElement, Event>;
   }>;
 
-  type Slide = [ComicImg] | [ComicImg, ComicImg];
-  type SlideData = Array<Slide>;
+  type Page = [ComicImg] | [ComicImg, ComicImg];
+  type PageList = Page[];
 }
 
 /** 加载状态的中文描述 */
@@ -32,12 +32,12 @@ export type FillEffect = Map<number, boolean>;
 
 export interface ImageSLice {
   imgList: ComicImg[];
-  slideData: SlideData;
+  pageList: Page[];
   /** 页面填充数据 */
   fillEffect: FillEffect;
 
   activeImgIndex: number;
-  activeSlideIndex: number;
+  activePageIndex: number;
   nowFillIndex: number;
 
   img: {
@@ -45,10 +45,10 @@ export interface ImageSLice {
     横幅比例: number;
     条漫比例: number;
 
-    /** 重新计算 SlideData，有防抖 */
-    updateSlideData: {
+    /** 重新计算 PageData，有防抖 */
+    updatePageData: {
       (): void;
-      /** 重新计算 SlideData，无防抖同步版 */
+      /** 重新计算 PageData，无防抖同步版 */
       sync: () => void;
     };
 
@@ -73,8 +73,8 @@ export interface ImageSLice {
  * 预加载指定页数的图片，并取消其他预加载的图片
  *
  * @param state
- * @param startIndex 起始 slide index
- * @param endIndex 结束 slide index
+ * @param startIndex 起始 page index
+ * @param endIndex 结束 page index
  * @param loadNum 加载图片的数量
  * @returns 返回指定范围内的图片在执行前是否还有未加载完的
  */
@@ -85,7 +85,7 @@ const loadImg = (
   loadNum = NaN,
 ) => {
   let editNum = 0;
-  state.slideData
+  state.pageList
     .slice(startIndex, endIndex)
     .flat()
     .some(({ index }) => {
@@ -103,12 +103,12 @@ const loadImg = (
 };
 
 export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
-  const _updateSlideData = () => {
+  const _updatePageData = () => {
     set((state) => {
       if (state.option.onePageMode || state.option.scrollMode)
-        state.slideData = state.imgList.map((img) => [img]);
+        state.pageList = state.imgList.map((img) => [img]);
       else
-        state.slideData = handleComicData({
+        state.pageList = handleComicData({
           comicImgList: state.imgList,
           fillEffect: state.fillEffect,
         });
@@ -120,10 +120,10 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
   return {
     imgList: [],
     fillEffect: new Map([[-1, true]]),
-    slideData: [],
+    pageList: [],
 
     activeImgIndex: 0,
-    activeSlideIndex: 0,
+    activePageIndex: 0,
     nowFillIndex: -1,
 
     img: {
@@ -131,13 +131,13 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
       横幅比例: 0,
       条漫比例: 0,
 
-      updateSlideData: Object.assign(debounce(100, _updateSlideData), {
-        sync: _updateSlideData,
+      updatePageData: Object.assign(debounce(100, _updatePageData), {
+        sync: _updatePageData,
       }),
 
       updateImgType: (draftImg: Draft<ComicImg>) => {
         const {
-          img: { 单页比例, 横幅比例, 条漫比例, updateSlideData },
+          img: { 单页比例, 横幅比例, 条漫比例, updatePageData },
         } = get();
         const { width, height, type } = draftImg;
 
@@ -153,7 +153,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
           if (newType !== type) draftImg.type = newType;
         }
 
-        updateSlideData();
+        updatePageData();
       },
 
       // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
@@ -177,13 +177,13 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
             state.nowFillIndex,
             !state.fillEffect.get(state.nowFillIndex),
           );
-          state.img.updateSlideData();
+          state.img.updatePageData();
         });
       },
 
       updateImgLoadType: debounce(100, () => {
         set((state) => {
-          const { imgList, activeSlideIndex } = state;
+          const { imgList, activePageIndex } = state;
 
           // 先将所有加载中的图片状态改为暂停
           imgList.forEach(({ loadType }, i) => {
@@ -192,12 +192,12 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
 
           if (
             // 如果当前显示页还没有加载完，则优先加载
-            loadImg(state, activeSlideIndex, activeSlideIndex + 1) ||
+            loadImg(state, activePageIndex, activePageIndex + 1) ||
             // 之后加载后俩页
-            loadImg(state, activeSlideIndex + 1, activeSlideIndex + 3) ||
+            loadImg(state, activePageIndex + 1, activePageIndex + 3) ||
             // 最后加载前一页
-            (activeSlideIndex >= 1 &&
-              loadImg(state, activeSlideIndex - 1, activeSlideIndex))
+            (activePageIndex >= 1 &&
+              loadImg(state, activePageIndex - 1, activePageIndex))
           )
             return;
 
@@ -208,20 +208,19 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
           )
             return;
           // 优先加载当前页后面的图片
-          if (loadImg(state, activeSlideIndex + 1, imgList.length, 1)) return;
+          if (loadImg(state, activePageIndex + 1, imgList.length, 1)) return;
           loadImg(state, 0, imgList.length, 1);
         });
       }),
     },
 
     pageTurn: (dir) => {
-      const { slideData, showEndPage, activeSlideIndex } = get();
+      const { pageList, showEndPage, activePageIndex } = get();
       if (dir === 'next') {
         set((state) => {
           // 在最后一页继续向后翻页时弹出结束页
-          if (activeSlideIndex === slideData.length - 1)
-            state.showEndPage = true;
-          else state.activeSlideIndex += 1;
+          if (activePageIndex === pageList.length - 1) state.showEndPage = true;
+          else state.activePageIndex += 1;
         });
         return;
       }
@@ -234,9 +233,9 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         return;
       }
 
-      if (activeSlideIndex > 0) {
+      if (activePageIndex > 0) {
         set((state) => {
-          state.activeSlideIndex -= 1;
+          state.activePageIndex -= 1;
         });
       }
     },

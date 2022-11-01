@@ -35,7 +35,7 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       img: { switchFillEffect },
       option: { dir, scrollMode },
       onExit,
-      slideData,
+      pageList,
       showEndPage,
     } = get();
     if (scrollMode && !showEndPage) return;
@@ -76,12 +76,12 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
 
       case 'Home':
         set((state) => {
-          state.activeSlideIndex = 0;
+          state.activePageIndex = 0;
         });
         break;
       case 'End':
         set((state) => {
-          state.activeSlideIndex = slideData.length;
+          state.activePageIndex = pageList.length;
         });
         break;
 

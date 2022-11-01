@@ -9,14 +9,14 @@ import { ComicImg } from './ComicImg';
 import classes from '../index.module.css';
 
 const selector = ({
-  slideData,
-  activeSlideIndex,
+  pageList,
+  activePageIndex,
   imgList,
   option: { scrollMode, disableZoom, dir },
   scrollbar: { watchMangaFlowScroll },
 }: SelfState) => ({
-  slideData,
-  activeSlideIndex,
+  pageList,
+  activePageIndex,
   imgList,
   scrollMode,
   disableZoom,
@@ -29,8 +29,8 @@ const selector = ({
  */
 export const ComicImgFlow: React.FC = () => {
   const {
-    slideData,
-    activeSlideIndex,
+    pageList,
+    activePageIndex,
     imgList,
     scrollMode,
     disableZoom,
@@ -48,7 +48,7 @@ export const ComicImgFlow: React.FC = () => {
 
   const pageEleList = useMemo(
     () =>
-      slideData.map(([a, b], i) => (
+      pageList.map(([a, b], i) => (
         <div
           // 为了防止切换页面填充时 key 产生变化导致整个 dom 被重新创建出现图片闪烁现象
           // 只能用 index 当 key，这样在切换时会复用之前的 dom，只会修改 img 的 src
@@ -61,7 +61,7 @@ export const ComicImgFlow: React.FC = () => {
           {b && <ComicImg index={b.index} type={b.type} src={b.src} />}
         </div>
       )),
-    [slideData],
+    [pageList],
   );
 
   const body = useMemo(() => {
@@ -73,12 +73,12 @@ export const ComicImgFlow: React.FC = () => {
     return (
       <div
         className={classes.wrapper}
-        style={{ transform: `translateY(-${activeSlideIndex}00%)` }}
+        style={{ transform: `translateY(-${activePageIndex}00%)` }}
       >
         {pageEleList}
       </div>
     );
-  }, [activeSlideIndex, imgList, scrollMode, pageEleList]);
+  }, [activePageIndex, imgList, scrollMode, pageEleList]);
 
   return (
     <div

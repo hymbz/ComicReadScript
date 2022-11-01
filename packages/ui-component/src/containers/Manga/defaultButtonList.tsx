@@ -32,11 +32,11 @@ export const defaultButtonList: DefaultButtonList = [
       const handleClick = useCallback(() => {
         useStore.setState((state) => {
           state.option.onePageMode = !state.option.onePageMode;
-          state.img.updateSlideData.sync();
-          state.activeSlideIndex = state.option.onePageMode
+          state.img.updatePageData.sync();
+          state.activePageIndex = state.option.onePageMode
             ? state.activeImgIndex
-            : state.slideData.findIndex((slide) =>
-                slide.some((img) => img.index === state.activeImgIndex),
+            : state.pageList.findIndex((page) =>
+                page.some((img) => img.index === state.activeImgIndex),
               );
         });
       }, []);
@@ -58,11 +58,11 @@ export const defaultButtonList: DefaultButtonList = [
         useStore.setState((state) => {
           state.option.scrollMode = !state.option.scrollMode;
           state.option.onePageMode = state.option.scrollMode;
-          state.img.updateSlideData.sync();
-          state.activeSlideIndex = state.option.scrollMode
+          state.img.updatePageData.sync();
+          state.activePageIndex = state.option.scrollMode
             ? state.activeImgIndex
-            : state.slideData.findIndex((slide) =>
-                slide.some((img) => img.index === state.activeImgIndex),
+            : state.pageList.findIndex((page) =>
+                page.some((img) => img.index === state.activeImgIndex),
               );
         });
       }, []);

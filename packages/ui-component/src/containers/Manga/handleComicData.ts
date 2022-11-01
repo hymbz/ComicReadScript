@@ -18,8 +18,8 @@ const fillPage = (img: ComicImg): ComicImg => ({
 export const handleComicData = ({
   comicImgList,
   fillEffect,
-}: HandleComicDataProps): SlideData => {
-  const comicImgInfo: SlideData = [];
+}: HandleComicDataProps): PageList => {
+  const comicImgInfo: PageList = [];
   let imgCache: ComicImg | null = null;
 
   for (let i = 0; i < comicImgList.length; i += 1) {

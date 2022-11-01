@@ -6,20 +6,20 @@ import type { SelfState } from '../hooks/useStore';
 import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
-import { ScrollbarSlide } from './ScrollbarSlide';
+import { ScrollbarPage } from './ScrollbarPage';
 
 const selector = ({
   option: { scrollbar, scrollMode },
-  slideData,
+  pageList,
   showScrollbar,
-  activeSlideIndex,
+  activePageIndex,
   scrollbar: { dragHeight, dragTop, handleWheel, dragOption, tipText },
 }: SelfState) => ({
-  slideData,
+  pageList,
   showScrollbar,
   scrollbar,
   scrollMode,
-  activeSlideIndex,
+  activePageIndex,
   dragHeight,
   dragTop,
   handleWheel,
@@ -30,11 +30,11 @@ const selector = ({
 /** 滚动条 */
 export const Scrollbar: React.FC = memo(() => {
   const {
-    slideData,
+    pageList,
     showScrollbar,
     scrollbar,
     scrollMode,
-    activeSlideIndex,
+    activePageIndex,
     dragHeight,
     dragTop,
     handleWheel,
@@ -45,22 +45,22 @@ export const Scrollbar: React.FC = memo(() => {
   const style = useMemo(
     () =>
       ({
-        '--slideHeight': `${(1 / slideData.length) * 100}%`,
+        '--pageHeight': `${(1 / pageList.length) * 100}%`,
       } as CSSProperties),
-    [slideData.length],
+    [pageList.length],
   );
 
-  const slideList = useMemo(
+  const pageEleList = useMemo(
     () =>
       scrollbar.showProgress
-        ? slideData.map(([a, b]) => (
+        ? pageList.map(([a, b]) => (
             <div key={`${a.index}${b?.index}`}>
-              <ScrollbarSlide index={a.index} />
-              {b ? <ScrollbarSlide index={b.index} /> : null}
+              <ScrollbarPage index={a.index} />
+              {b ? <ScrollbarPage index={b.index} /> : null}
             </div>
           ))
         : [],
-    [scrollbar.showProgress, slideData],
+    [scrollbar.showProgress, pageList],
   );
 
   const ref = useRef<HTMLDivElement>(null);
@@ -74,7 +74,7 @@ export const Scrollbar: React.FC = memo(() => {
       })}
       role="scrollbar"
       aria-controls={classes.mangaFlow}
-      aria-valuenow={activeSlideIndex || -1}
+      aria-valuenow={activePageIndex || -1}
       style={style}
       tabIndex={-1}
       onWheel={handleWheel}
@@ -85,7 +85,7 @@ export const Scrollbar: React.FC = memo(() => {
         style={{
           transform: scrollMode
             ? undefined
-            : `translateY(${activeSlideIndex}00%)`,
+            : `translateY(${activePageIndex}00%)`,
           top: `${dragTop * 100}%`,
           height: dragHeight ? `${dragHeight * 100}%` : undefined,
         }}
@@ -98,7 +98,7 @@ export const Scrollbar: React.FC = memo(() => {
         </div>
       </div>
 
-      {slideList}
+      {pageEleList}
     </div>
   );
 });
