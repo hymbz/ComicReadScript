@@ -52,7 +52,14 @@ export const ComicImg: React.FC<ComicImgProps> = memo(
     const img = useStore((state) => state.imgList[index]);
 
     return (
-      <div className={clsx(classes.img, classes[img.type], className)}>
+      <div
+        className={clsx(
+          classes.img,
+          classes[img.type],
+          classes[img.loadType],
+          className,
+        )}
+      >
         <img
           ref={imgRef}
           src={img.loadType === 'wait' ? '' : img.src}
@@ -61,9 +68,7 @@ export const ComicImg: React.FC<ComicImgProps> = memo(
           onLoad={handleImgLoaded}
           onError={handleImgError}
         />
-        {img.loadType !== 'loaded' ? (
-          <div className={classes.mask}>{loadTypeMap[img.loadType]}</div>
-        ) : null}
+        <div className={classes.mask}>{loadTypeMap[img.loadType]}</div>
       </div>
     );
   },
