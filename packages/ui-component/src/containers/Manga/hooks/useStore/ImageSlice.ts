@@ -7,7 +7,7 @@ import type { SelfState, SelfStateCreator } from '.';
 declare global {
   type ComicImg = Draft<{
     loadType: 'loading' | 'loaded' | 'error' | 'wait';
-    type: 'long' | 'wide' | 'vertical' | 'fill' | '';
+    type: 'long' | 'wide' | 'vertical' | '';
     index: number;
     src: string;
     width?: number;
@@ -15,8 +15,7 @@ declare global {
     error?: SyntheticEvent<HTMLImageElement, Event>;
   }>;
 
-  type Page = [ComicImg] | [ComicImg, ComicImg];
-  type PageList = Page[];
+  type PageList = Array<[number] | [number, number]>;
 }
 
 /** 加载状态的中文描述 */
@@ -32,7 +31,7 @@ export type FillEffect = Map<number, boolean>;
 
 export interface ImageSLice {
   imgList: ComicImg[];
-  pageList: Page[];
+  pageList: PageList;
   /** 页面填充数据 */
   fillEffect: FillEffect;
 
@@ -49,7 +48,7 @@ export interface ImageSLice {
     updatePageData: {
       (): void;
       /** 重新计算 PageData，无防抖同步版 */
-      sync: () => void;
+      sync: (state: Draft<SelfState>) => void;
     };
 
     /** 根据比例更新图片类型 */
@@ -88,7 +87,8 @@ const loadImg = (
   state.pageList
     .slice(startIndex, endIndex)
     .flat()
-    .some(({ index }) => {
+    .some((index) => {
+      if (index === -1) return false;
       const img = state.imgList[index];
       if (img.loadType !== 'loaded') {
         img.loadType = 'loading';
@@ -103,18 +103,16 @@ const loadImg = (
 };
 
 export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
-  const _updatePageData = () => {
-    set((state) => {
-      if (state.option.onePageMode || state.option.scrollMode)
-        state.pageList = state.imgList.map((img) => [img]);
-      else
-        state.pageList = handleComicData({
-          comicImgList: state.imgList,
-          fillEffect: state.fillEffect,
-        });
-      state.scrollbar.updateDrag(state);
-      state.img.updateImgLoadType();
-    });
+  const _updatePageData = (state: Draft<SelfState>) => {
+    if (state.option.onePageMode || state.option.scrollMode)
+      state.pageList = state.imgList.map((img) => [img.index]);
+    else
+      state.pageList = handleComicData({
+        comicImgList: state.imgList,
+        fillEffect: state.fillEffect,
+      });
+    state.scrollbar.updateDrag(state);
+    state.img.updateImgLoadType();
   };
 
   return {
@@ -131,9 +129,10 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
       横幅比例: 0,
       条漫比例: 0,
 
-      updatePageData: Object.assign(debounce(100, _updatePageData), {
-        sync: _updatePageData,
-      }),
+      updatePageData: Object.assign(
+        debounce(100, () => set(_updatePageData)),
+        { sync: _updatePageData },
+      ),
 
       updateImgType: (draftImg: Draft<ComicImg>) => {
         const {
@@ -153,7 +152,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
           if (newType !== type) draftImg.type = newType;
         }
 
-        updatePageData();
+        set(updatePageData);
       },
 
       // 在 rootDom 的大小改变时更新比例，并重新计算图片类型

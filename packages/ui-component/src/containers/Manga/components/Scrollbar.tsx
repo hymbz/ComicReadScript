@@ -54,9 +54,9 @@ export const Scrollbar: React.FC = memo(() => {
     () =>
       scrollbar.showProgress
         ? pageList.map(([a, b]) => (
-            <div key={`${a.index}${b?.index}`}>
-              <ScrollbarPage index={a.index} />
-              {b ? <ScrollbarPage index={b.index} /> : null}
+            <div key={`${a}${b}`}>
+              <ScrollbarPage index={a !== -1 ? a : b!} />
+              {b ? <ScrollbarPage index={b !== -1 ? b : a} /> : null}
             </div>
           ))
         : [],

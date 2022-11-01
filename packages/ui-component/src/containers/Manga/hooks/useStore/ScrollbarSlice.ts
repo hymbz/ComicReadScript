@@ -39,9 +39,9 @@ let startTop = 0;
  * @param pageIndex
  */
 const getPageIndexText = (state: SelfState, pageIndex: number) => {
-  const pageIndexText = state.pageList[pageIndex].map(({ index, type }) => {
+  const pageIndexText = state.pageList[pageIndex].map((index) => {
+    if (index === -1) return '填充页';
     const img = state.imgList[index];
-    if (type === 'fill') return '填充页';
     if (img.loadType === 'loaded') return `${img.index}`;
     // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
     return `${img.index} (${loadTypeMap[img.loadType]})`;
@@ -73,7 +73,7 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
             Math.floor((dragTop + dragHeight) * pageList.length),
           )
           .flat()
-          .map(({ index }) => getPageIndexText(state, index));
+          .map((index) => getPageIndexText(state, index));
         return pageIndex.join('\n');
       })();
     },

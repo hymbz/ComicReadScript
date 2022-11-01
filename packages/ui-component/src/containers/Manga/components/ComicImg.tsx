@@ -1,3 +1,4 @@
+import type { ClassValue } from 'clsx';
 import clsx from 'clsx';
 import type { Draft } from 'immer';
 import type { SyntheticEvent } from 'react';
@@ -7,16 +8,22 @@ import { loadTypeMap } from '../hooks/useStore/ImageSlice';
 
 import classes from '../index.module.css';
 
+export interface ComicImgProps {
+  index: number;
+  className?: ClassValue;
+}
+
 /**
  * 漫画图片
  *
  * @param img 图片数据
  */
-export const ComicImg: React.FC<Pick<ComicImg, 'index' | 'src' | 'type'>> =
-  memo(({ index, src, type }) => {
+export const ComicImg: React.FC<ComicImgProps> = memo(
+  ({ index, className }) => {
     const imgRef = useRef<HTMLImageElement>(null);
 
     const handleImgLoaded = useCallback(() => {
+      if (index === -1) return;
       useStore.setState((state) => {
         if (!imgRef.current) return;
 
@@ -30,6 +37,7 @@ export const ComicImg: React.FC<Pick<ComicImg, 'index' | 'src' | 'type'>> =
 
     const handleImgError = useCallback(
       (e: SyntheticEvent<HTMLImageElement, Event>) => {
+        if (index === -1) return;
         // 跳过因为 src 为空导致的错误
         if ((e.target as HTMLImageElement).getAttribute('src') === '') return;
         useStore.setState((state) => {
@@ -41,21 +49,22 @@ export const ComicImg: React.FC<Pick<ComicImg, 'index' | 'src' | 'type'>> =
       [index],
     );
 
-    const loadType = useStore((state) => state.imgList[index].loadType);
+    const img = useStore((state) => state.imgList[index]);
 
     return (
-      <div className={clsx(classes.img, classes[type])}>
+      <div className={clsx(classes.img, classes[img.type], className)}>
         <img
           ref={imgRef}
-          src={loadType === 'wait' ? '' : src}
-          data-type={loadType}
+          src={img.loadType === 'wait' ? '' : img.src}
+          data-type={img.loadType}
           alt={`${index}`}
           onLoad={handleImgLoaded}
           onError={handleImgError}
         />
-        {loadType !== 'loaded' ? (
-          <div className={classes.mask}>{loadTypeMap[loadType]}</div>
+        {img.loadType !== 'loaded' ? (
+          <div className={classes.mask}>{loadTypeMap[img.loadType]}</div>
         ) : null}
       </div>
     );
-  });
+  },
+);

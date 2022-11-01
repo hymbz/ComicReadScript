@@ -17,7 +17,7 @@ export const SettingPanel: React.FC = memo(() => {
     <div className={classes.SettingPanel}>
       {settingList.map(([key, SettingItem], i) => (
         <Fragment key={key}>
-          {i ? <hr /> : undefined}
+          {i ? <hr /> : null}
           <div className={classes.SettingBlock}>
             <div className={classes.SettingBlockSubtitle}>{key}</div>
             <SettingItem />

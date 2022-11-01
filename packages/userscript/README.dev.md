@@ -1,7 +1,7 @@
 TODO: 为加载中、等待、错误的图片增加遮罩提示，加载中和等待使用同一样式。鼠标移上去时不显示遮罩
+TODO: 为加载中的图片添加固定宽高
 TODO: 补全所有站点的 EndExit 回调
 TODO: 将一些 update 函数移到 slice 的回调中订阅运行
-TODO: splidData 的图片数据和 imgList 的没有关联，应该把 splidData 的一些属性删掉，要用是从 imgList 获取
 
 ### dev
 

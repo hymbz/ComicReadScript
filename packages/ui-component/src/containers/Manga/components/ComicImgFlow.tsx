@@ -57,8 +57,16 @@ export const ComicImgFlow: React.FC = () => {
           key={i}
           className={classes.mangaFlowPage}
         >
-          <ComicImg index={a.index} type={a.type} src={a.src} />
-          {b && <ComicImg index={b.index} type={b.type} src={b.src} />}
+          <ComicImg
+            index={a === -1 ? b! : a}
+            className={a === -1 && classes.fill}
+          />
+          {b !== undefined ? (
+            <ComicImg
+              index={b === -1 ? a : b}
+              className={b === -1 && classes.fill}
+            />
+          ) : null}
         </div>
       )),
     [pageList],

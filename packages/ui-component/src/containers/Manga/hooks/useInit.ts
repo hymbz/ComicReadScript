@@ -93,9 +93,7 @@ export const useInit = ({
         useStore.setState((state) => {
           // 重新计算 activeImgIndex
           state.activeImgIndex =
-            state.pageList[state.activePageIndex].find(
-              (img) => img.type !== 'fill',
-            )?.index ?? 0;
+            state.pageList[state.activePageIndex].find((i) => i !== -1) ?? 0;
 
           // 找到当前所属的 fillEffect
           let nowFillIndex = state.activeImgIndex;
