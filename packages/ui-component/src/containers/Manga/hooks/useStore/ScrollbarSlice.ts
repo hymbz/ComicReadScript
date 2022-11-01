@@ -15,8 +15,6 @@ export interface ScrollbarSlice {
     /** 滚动条所处高度比率 */
     dragTop: number;
 
-    /** 从 slide 中提取图片的 index，并在后面加上加载状态 */
-    extractSlideIndex: (slide: Slide) => [string] | [string, string];
     /** 更新滚动条提示文本 */
     updateTipText: (state: Draft<SelfState>) => void;
 
@@ -34,42 +32,48 @@ export interface ScrollbarSlice {
 /** 开始拖拽时的 dragTop 值 */
 let startTop = 0;
 
+/**
+ * 获取指定 slide 中的图片 index，并在后面加上加载状态
+ *
+ * @param state
+ * @param slideIndex
+ */
+const getSlideIndexText = (state: SelfState, slideIndex: number) => {
+  const slideIndexText = state.slideData[slideIndex].map(({ index, type }) => {
+    const img = state.imgList[index];
+    if (type === 'fill') return '填充页';
+    if (img.loadType === 'loaded') return `${img.index}`;
+    // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
+    return `${img.index} (${loadTypeMap[img.loadType]})`;
+  }) as [string] | [string, string];
+  if (state.option.dir === 'rtl') slideIndexText.reverse();
+  return slideIndexText;
+};
+
 export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
   scrollbar: {
     tipText: '',
     dragHeight: 0,
     dragTop: 0,
 
-    extractSlideIndex: (slide) =>
-      slide.map(({ index, type }) => {
-        const img = get().imgList[index];
-        if (type === 'fill') return '填充页';
-        if (img.loadType === 'loaded') return `${img.index}`;
-        // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-        return `${img.index} (${loadTypeMap[img.loadType]})`;
-      }) as [string] | [string, string],
-
     updateTipText: (state) => {
       state.scrollbar.tipText = (() => {
         if (!state.slideData.length) return '';
+
+        if (!state.option.scrollMode)
+          return getSlideIndexText(state, state.activeSlideIndex).join(' | ');
+
         const {
           slideData,
-          activeSlideIndex,
-          option: { scrollMode, dir },
-          scrollbar: { dragHeight, dragTop, extractSlideIndex },
+          scrollbar: { dragHeight, dragTop },
         } = state;
-        if (!scrollMode) {
-          const slideIndex = extractSlideIndex(slideData[activeSlideIndex]);
-          if (dir === 'rtl') slideIndex.reverse();
-          return slideIndex.join(' | ');
-        }
         const slideIndex = slideData
           .slice(
             Math.floor(dragTop * slideData.length),
             Math.floor((dragTop + dragHeight) * slideData.length),
           )
-          .map(extractSlideIndex)
-          .flat();
+          .flat()
+          .map(({ index }) => getSlideIndexText(state, index));
         return slideIndex.join('\n');
       })();
     },
@@ -195,10 +199,11 @@ export const scrollbarCallback: Subscribe = (useStore) => {
   // 更新滚动条提示文本
   useStore.subscribe(
     ({
+      activeSlideIndex,
       slideData,
       scrollbar: { dragHeight, dragTop },
       option: { scrollMode, dir },
-    }) => [slideData, dragHeight, dragTop, scrollMode, dir],
+    }) => [activeSlideIndex, slideData, dragHeight, dragTop, scrollMode, dir],
     () => {
       useStore.setState((state) => {
         state.scrollbar.updateTipText(state);

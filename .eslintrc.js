@@ -38,6 +38,8 @@ const publicConfig = {
     'no-underscore-dangle': 'off',
     // 允许 console
     'no-console': 'off',
+    // 允许 continue
+    'no-continue': 'off',
 
     // 允许 any 类型的分配
     'no-unsafe-assignment': 'off',

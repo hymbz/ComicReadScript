@@ -21,8 +21,8 @@ declare global {
 
 /** 加载状态的中文描述 */
 export const loadTypeMap: Record<ComicImg['loadType'], string> = {
-  error: '出错',
-  loading: '加载中',
+  error: '加载出错',
+  loading: '正在加载',
   wait: '等待加载',
   loaded: '',
 };
@@ -70,30 +70,33 @@ export interface ImageSLice {
 }
 
 /**
- * 预加载指定图片，并取消其他预加载的图片
+ * 预加载指定页数的图片，并取消其他预加载的图片
  *
  * @param state
- * @param start
- * @param end
- * @param loadNum 加载数量
+ * @param startIndex 起始 slide index
+ * @param endIndex 结束 slide index
+ * @param loadNum 加载图片的数量
  * @returns 返回指定范围内的图片在执行前是否还有未加载完的
  */
 const loadImg = (
   state: SelfState,
-  start: number,
-  end?: number,
+  startIndex: number,
+  endIndex = startIndex,
   loadNum = NaN,
 ) => {
   let editNum = 0;
-  const endIndex = end ?? start;
-  for (let i = start; i <= endIndex; i += 1) {
-    const img = state.imgList[i];
-    if (img.loadType !== 'loaded') {
-      img.loadType = 'loading';
-      editNum += 1;
-    }
-    if (editNum >= loadNum) break;
-  }
+  state.slideData
+    .slice(startIndex, endIndex)
+    .flat()
+    .some(({ index }) => {
+      const img = state.imgList[index];
+      if (img.loadType !== 'loaded') {
+        img.loadType = 'loading';
+        editNum += 1;
+      }
+      return editNum >= loadNum;
+    });
+
   const edited = editNum > 0;
   if (edited) state.scrollbar.updateTipText(state);
   return edited;
@@ -178,42 +181,35 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         });
       },
 
-      updateImgLoadType: debounce(200, () => {
+      updateImgLoadType: debounce(100, () => {
         set((state) => {
-          const {
-            slideData,
-            imgList,
-            activeSlideIndex,
-            activeImgIndex,
-            option: { preloadImgNum },
-          } = state;
+          const { imgList, activeSlideIndex } = state;
 
           // 先将所有加载中的图片状态改为暂停
-          state.imgList.forEach(({ loadType }, i) => {
-            if (loadType === 'loading') state.imgList[i].loadType = 'wait';
+          imgList.forEach(({ loadType }, i) => {
+            if (loadType === 'loading') imgList[i].loadType = 'wait';
           });
 
-          const activeSlide = slideData[activeSlideIndex];
           if (
             // 如果当前显示页还没有加载完，则优先加载
-            loadImg(state, activeSlide[0].index, activeSlide[1]?.index) ||
-            // 之后加载后几页
-            loadImg(state, activeImgIndex, activeImgIndex + preloadImgNum) ||
-            // 最后加载前两页
-            (activeImgIndex >= 2 &&
-              loadImg(state, activeImgIndex - 2, activeImgIndex))
+            loadImg(state, activeSlideIndex, activeSlideIndex + 1) ||
+            // 之后加载后俩页
+            loadImg(state, activeSlideIndex + 1, activeSlideIndex + 3) ||
+            // 最后加载前一页
+            (activeSlideIndex >= 1 &&
+              loadImg(state, activeSlideIndex - 1, activeSlideIndex))
           )
             return;
 
           // 确认没有图片在加载后，在空闲时间自动加载其余图片
           if (
             !state.option.autoLoadOtherImg &&
-            state.imgList.some((img) => img.loadType === 'loading')
+            imgList.some((img) => img.loadType === 'loading')
           )
             return;
           // 优先加载当前页后面的图片
-          if (loadImg(state, activeImgIndex, imgList.length - 1, 1)) return;
-          loadImg(state, 0, imgList.length - 1, 1);
+          if (loadImg(state, activeSlideIndex + 1, imgList.length, 1)) return;
+          loadImg(state, 0, imgList.length, 1);
         });
       }),
     },
