@@ -31,6 +31,8 @@ export interface MangaProps {
   onNext?: SelfState['onNext'] | null;
   /** 配置发生变化时触发的回调 */
   onOptionChange?: (option: Option, prevOption: Option) => void | Promise<void>;
+  /** 图片加载状态发生变化时触发的回调 */
+  onLoading?: (loadNum: number, totalNum: number) => void | Promise<void>;
 
   /** 修改默认侧边栏按钮列表 */
   editButtonList?: SelfState['editButtonList'];

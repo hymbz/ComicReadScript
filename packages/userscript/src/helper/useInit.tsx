@@ -22,7 +22,6 @@ export const useInit = async <T extends Record<string, any>>(
 
   const [showFab, setFab] = useFab({
     tip: '阅读模式',
-    progress: 1,
     speedDial: [
       () => <div style={{ height: '1em' }} />,
       () => (
@@ -95,17 +94,37 @@ export const useInit = async <T extends Record<string, any>>(
       getImgList: () => Promise<string[]> | string[],
       errorText = '获取漫画图片失败',
     ) => {
-      let loading = false;
       let imgList: string[] = [];
+
+      let progress = 1;
+      const onLoading = (loadNum: number) => {
+        progress = 1 + loadNum / imgList.length;
+        if (progress !== 2) {
+          showFab({
+            progress,
+            tip: `图片加载中 - ${loadNum}/${imgList.length}`,
+          });
+        } else {
+          showFab({ progress, tip: '阅读模式' });
+          showManga();
+        }
+      };
+
+      let loading = false;
       return async () => {
-        if (loading) return;
+        if (loading) {
+          toast('加载图片中，请稍候', { autoClose: 1500 });
+          return;
+        }
+
         if (!imgList.length) {
           loading = true;
           try {
             showFab({ progress: 0 });
             imgList = await getImgList();
             if (imgList.length === 0) throw new Error(errorText);
-            setManga({ imgList });
+            showFab({ progress: 1, tip: '阅读模式' });
+            showManga({ imgList, onLoading }, true);
           } catch (e: any) {
             console.error(e);
             toast(e.message, { type: 'error' });
@@ -113,9 +132,9 @@ export const useInit = async <T extends Record<string, any>>(
           } finally {
             loading = false;
           }
+        } else {
+          showManga();
         }
-
-        showManga();
       };
     },
   };

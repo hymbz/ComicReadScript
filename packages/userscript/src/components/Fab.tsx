@@ -1,6 +1,7 @@
 import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 import MdImageSearch from '@material-design-icons/svg/round/image_search.svg';
 import MdImportContacts from '@material-design-icons/svg/round/import_contacts.svg';
+import MdCloudDownload from '@material-design-icons/svg/round/cloud_download.svg';
 
 import type { FabProps } from '@crs/ui-component/dist/Fab';
 import { Fab } from '@crs/ui-component/dist/Fab';
@@ -29,9 +30,10 @@ export const useFab = (
       case undefined:
         return <MdImportContacts />;
       case 1:
+      case 2:
         return <MdMenuBook />;
       default:
-        return <MdImageSearch />;
+        return fabProps.progress > 1 ? <MdCloudDownload /> : <MdImageSearch />;
     }
   };
 

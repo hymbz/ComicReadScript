@@ -51,18 +51,16 @@ declare const $: any;
       if (newImgList.length !== DM5_IMAGE_COUNT) {
         showFab({
           progress: newImgList.length / DM5_IMAGE_COUNT,
-          tip: `加载中 - ${newImgList.length}/${DM5_IMAGE_COUNT}`,
+          tip: `加载图片中 - ${newImgList.length}/${DM5_IMAGE_COUNT}`,
         });
         return getImgList(newImgList);
       }
 
-      showFab({ progress: 1, tip: '阅读模式' });
-
       return newImgList;
     } catch (error) {
-      if (errorNum > 3) throw new Error('漫画图片加载出错');
-      console.error('漫画图片加载出错');
-      toast('漫画图片加载出错', { type: 'error' });
+      if (errorNum > 3) throw new Error('加载图片时出错');
+      console.error('加载图片时出错');
+      toast('加载图片时出错', { type: 'error' });
       await sleep(1000 * 3);
       return getImgList(imgList, errorNum + 1);
     }

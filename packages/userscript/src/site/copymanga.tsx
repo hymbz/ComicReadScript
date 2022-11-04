@@ -32,8 +32,6 @@ import { useInit } from '../helper/useInit';
       },
     } = JSON.parse(res.responseText);
 
-    showFab({ progress: 1, tip: '阅读模式' });
-
     type ContentsType = { url: string }[];
     return (contents as ContentsType).map(({ url }) => url);
   });

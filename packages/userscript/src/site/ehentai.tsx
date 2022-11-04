@@ -30,7 +30,7 @@ import { useInit } from '../helper/useInit';
     loadedImgNum += 1;
     showFab({
       progress: loadedImgNum / totalImgNum,
-      tip: `加载中 - ${loadedImgNum}/${totalImgNum}`,
+      tip: `加载图片中 - ${loadedImgNum}/${totalImgNum}`,
     });
 
     return res.responseText.split('id="img" src="')[1].split('"')[0];

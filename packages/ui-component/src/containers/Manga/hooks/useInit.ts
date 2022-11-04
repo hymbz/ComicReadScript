@@ -16,6 +16,7 @@ export const useInit = ({
   onPrev,
   onNext,
   onOptionChange,
+  onLoading,
   editButtonList,
   editSettingList,
 }: MangaProps) => {
@@ -83,6 +84,19 @@ export const useInit = ({
     if (!onOptionChange) return undefined;
     return useStore.subscribe((state) => state.option, onOptionChange);
   }, [onOptionChange]);
+
+  // 绑定图片加载状态发生变化时触发的回调
+  useEffect(() => {
+    if (!onLoading) return undefined;
+    return useStore.subscribe(
+      (state) => state.imgList,
+      (list) =>
+        onLoading(
+          list.filter((img) => img.loadType === 'loaded').length,
+          list.length,
+        ),
+    );
+  }, [onLoading]);
 
   return rootRef;
 };

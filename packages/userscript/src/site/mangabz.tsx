@@ -46,12 +46,10 @@ declare const MANGABZ_IMAGE_COUNT: number;
     if (newImgList.length !== MANGABZ_IMAGE_COUNT) {
       showFab({
         progress: newImgList.length / MANGABZ_IMAGE_COUNT,
-        tip: `加载中 - ${newImgList.length}/${MANGABZ_IMAGE_COUNT}`,
+        tip: `加载图片中 - ${newImgList.length}/${MANGABZ_IMAGE_COUNT}`,
       });
       return getImgList(newImgList);
     }
-
-    showFab({ progress: 1, tip: '阅读模式' });
 
     return newImgList;
   };

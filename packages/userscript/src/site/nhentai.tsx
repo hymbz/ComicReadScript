@@ -38,6 +38,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
     if (options.autoLoad) await showComic();
 
+    // TODO: 适配新逻辑
     // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
     insertNode(
       document.getElementById('download')!.parentNode as HTMLElement,
