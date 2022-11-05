@@ -83,7 +83,7 @@ import { useInit } from '../helper/useInit';
 
     const res = await request(
       'GET',
-      `https://nhentai.net/api/gallerises/search?query=${encodeURIComponent(
+      `https://nhentai.net/api/galleries/search?query=${encodeURIComponent(
         titleDom.innerText,
       )}`,
       { errorText: 'nhentai 漫画匹配失败。可能是 nhentai 登录状态失效？' },
