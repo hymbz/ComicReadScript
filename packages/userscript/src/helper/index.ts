@@ -119,3 +119,32 @@ export const dataToParams = (data: Record<string, unknown>) =>
   Object.entries(data)
     .map(([key, val]) => `${key}=${val}`)
     .join('&');
+
+/**
+ * 根据图片地址下载下来转为 blob 格式
+ *
+ * @param url
+ * @param details
+ * @param errorNum
+ */
+export const imgToBlob = async (
+  url: string,
+  details?: Partial<Tampermonkey.Request<any>>,
+  errorNum = 0,
+): Promise<string> => {
+  const res = await GM.xmlHttpRequest({
+    method: 'GET',
+    url,
+    responseType: 'blob',
+    ...details,
+  });
+
+  if (res.status !== 200) {
+    const errorTest = `${url} 转为 blob 格式时出错：[${res.status}]${res.statusText}`;
+    if (errorNum >= 3) throw new Error(errorTest);
+    console.warn(errorTest);
+    await sleep(1000);
+    return imgToBlob(url, details, errorNum + 1);
+  }
+  return URL.createObjectURL(res.response);
+};
