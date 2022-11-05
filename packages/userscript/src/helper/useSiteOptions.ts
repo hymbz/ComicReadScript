@@ -18,13 +18,14 @@ export const useSiteOptions = async <T extends Record<string, any>>(
   type Options = T & defaultOptions;
 
   const rawValue = await GM.getValue<Options | undefined>(name);
-  const options =
-    rawValue ??
-    ({
+  const options = Object.assign(
+    {
       option: undefined,
       autoLoad: true,
       ...defaultOptions,
-    } as Options);
+    } as Options,
+    rawValue,
+  );
 
   const changeCallbackList: ((options: Options) => void | Promise<void>)[] = [];
 
