@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-import { imgToBlob, querySelector } from '../helper';
+import { imgToBlob, insertNode, querySelector } from '../helper';
 import { useInit } from '../helper/useInit';
 
 declare const selected_tag: string;
@@ -12,6 +12,13 @@ declare const selected_link: HTMLElement;
 
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'gid')) return;
+
+  // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
+  insertNode(
+    document.getElementById('gd5')!,
+    '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>',
+  );
+  const comicReadModeDom = document.getElementById('comicReadMode')!;
 
   const totalImgNum = parseInt(
     querySelector('#gdd > table > tbody > tr:nth-child(6) > td.gdt2')!
@@ -33,6 +40,7 @@ declare const selected_link: HTMLElement;
       progress: loadedImgNum / totalImgNum,
       tip: `加载图片中 - ${loadedImgNum}/${totalImgNum}`,
     });
+    comicReadModeDom.innerHTML = ` loading image - ${loadedImgNum}/${totalImgNum}`;
 
     return res.responseText.split('id="img" src="')[1].split('"')[0];
   };
@@ -57,18 +65,27 @@ declare const selected_link: HTMLElement;
     return Promise.all(imgPageList.map(getImgFromImgPage));
   };
 
-  const showComic = createShowComic(async () => {
-    const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!.innerText;
-    return (
-      await Promise.all(
-        [...Array(totalPageNum).keys()].map((pageNum) =>
-          getImgFromDetailsPage(pageNum),
-        ),
-      )
-    ).flat();
-  });
-
-  showFab({ progress: undefined, onClick: showComic });
+  const showComic = createShowComic(
+    async () => {
+      const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!
+        .innerText;
+      return (
+        await Promise.all(
+          [...Array(totalPageNum).keys()].map((pageNum) =>
+            getImgFromDetailsPage(pageNum),
+          ),
+        )
+      ).flat();
+    },
+    (loadNum, totalNum) => {
+      comicReadModeDom.innerHTML =
+        loadNum !== totalNum
+          ? ` image loading - ${loadNum}/${totalNum}`
+          : ' Read';
+    },
+  );
+  showFab({ progress: undefined, onClick: showComic, initShow: false });
+  comicReadModeDom.addEventListener('click', showComic);
 
   if (options.autoLoad) await showComic();
 
@@ -140,17 +157,18 @@ declare const selected_link: HTMLElement;
         tagmenu_act_dom.innerHTML += `<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">"><a href="#"> ${
           nhentaiImgList[selected_tag] ? 'Read' : 'Load comic'
         }</a>`;
-        const comicReadModeDom = tagmenu_act_dom.querySelector('a[href="#"]')!;
+        const nhentaiComicReadModeDom =
+          tagmenu_act_dom.querySelector('a[href="#"]')!;
 
         // 加载 nhentai 漫画
-        comicReadModeDom.addEventListener('click', async (e) => {
+        nhentaiComicReadModeDom.addEventListener('click', async (e) => {
           e.preventDefault();
           const comicInfo =
             nHentaiComicInfo.result[+selected_link.getAttribute('index')!];
           let loadNum = 0;
 
           if (!nhentaiImgList[selected_tag]) {
-            comicReadModeDom.innerHTML = ` loading —— ${loadNum}/${comicInfo.num_pages}`;
+            nhentaiComicReadModeDom.innerHTML = ` loading - ${loadNum}/${comicInfo.num_pages}`;
             // 用于转换获得图片文件扩展名的 dict
             const fileType = {
               j: 'jpg',
@@ -170,11 +188,11 @@ declare const selected_link: HTMLElement;
                 }/${i + 1}.${fileType[t]}`;
                 const blobUrl = await imgToBlob(url, details);
                 loadNum += 1;
-                comicReadModeDom.innerHTML = ` loading —— ${loadNum}/${comicInfo.num_pages}`;
+                nhentaiComicReadModeDom.innerHTML = ` loading - ${loadNum}/${comicInfo.num_pages}`;
                 return blobUrl;
               }),
             );
-            comicReadModeDom.innerHTML = ' Read';
+            nhentaiComicReadModeDom.innerHTML = ' Read';
           }
           showManga({ imgList: nhentaiImgList[selected_tag] });
         });
