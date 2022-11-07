@@ -124,7 +124,7 @@ export const useInit = async <T extends Record<string, any>>(
                     });
                   } else {
                     showFab({ progress, tip: '阅读模式', show: undefined });
-                    showManga();
+                    if (options.autoLoad) showManga();
                   }
                   onLoading(loadNum, imgList.length);
                 },

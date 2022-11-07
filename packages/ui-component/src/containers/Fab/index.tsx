@@ -56,6 +56,11 @@ export const Fab: React.FC<FabProps> = ({
     );
   }, []);
 
+  // 将 forceShow 的变化同步到 show 上
+  useEffect(() => {
+    if (forceShow) setShow(forceShow);
+  }, [forceShow]);
+
   return (
     <div
       className={classes.fabRoot}
