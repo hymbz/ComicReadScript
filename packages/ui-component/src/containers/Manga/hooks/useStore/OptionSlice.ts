@@ -27,7 +27,7 @@ export interface Option {
   /** 黑暗模式 */
   darkMode: boolean;
   /** 在空闲时间自动加载其余图片 */
-  autoLoadOtherImg: boolean;
+  autoLoadOtherImg: number;
 }
 
 export interface OptionSlice {
@@ -54,7 +54,7 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
     disableZoom: false,
     // 判断用户系统环境是否要求开启暗色模式
     darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
-    autoLoadOtherImg: true,
+    autoLoadOtherImg: 5,
   },
 
   showTouchArea: false,

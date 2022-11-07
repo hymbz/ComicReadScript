@@ -208,8 +208,16 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
           )
             return;
           // 优先加载当前页后面的图片
-          if (loadImg(state, activePageIndex + 1, imgList.length, 1)) return;
-          loadImg(state, 0, imgList.length, 1);
+          if (
+            loadImg(
+              state,
+              activePageIndex + 1,
+              imgList.length,
+              state.option.autoLoadOtherImg,
+            )
+          )
+            return;
+          loadImg(state, 0, imgList.length, state.option.autoLoadOtherImg);
         });
       }),
     },
