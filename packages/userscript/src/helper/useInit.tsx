@@ -56,20 +56,20 @@ export const useInit = async <T extends Record<string, any>>(
     details?: RequestOptions,
     errorNum = 0,
   ): Promise<Tampermonkey.Response<any>> => {
-    const res = await GM.xmlHttpRequest({ method, url, ...details });
-
-    if (res.status !== 200 || !res.responseText) {
-      const errorText = details?.errorText ?? '漫画图片加载出错';
+    const errorText = details?.errorText ?? '漫画图片加载出错';
+    try {
+      const res = await GM.xmlHttpRequest({ method, url, ...details });
+      if (res.status !== 200 || !res.responseText) throw new Error(errorText);
+      return res;
+    } catch (error) {
       if (errorNum > 3) {
         toast(errorText, { type: 'error' });
         throw new Error(errorText);
       }
-      console.error(errorText, res);
+      console.error(errorText, error);
       await sleep(1000 * 3);
       return request(method, url, details, errorNum + 1);
     }
-
-    return res;
   };
 
   return {
