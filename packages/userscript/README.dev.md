@@ -1,6 +1,7 @@
 TODO: 补全所有站点的 EndExit 回调
 TODO: 禁止缩放功能还需要测试不同类型的图片
 TODO: 增加更新提示
+TODO: nhentai 错误网站提示跳转
 
 ### dev
 

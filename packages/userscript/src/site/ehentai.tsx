@@ -39,7 +39,7 @@ declare const selected_link: HTMLElement;
 
   /** 从详情页获取图片页的地址的正则 */
   const getImgFromDetailsPageRe =
-    /(?<=<div class="gdtl" style="height:\d+?px"><a href=").+?(?=">)/gm;
+    /(?<=<a href=").{20,50}(?="><img alt="\d+")/gm;
   const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
     const res = await request(
       'GET',
