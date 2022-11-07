@@ -2,6 +2,7 @@ TODO: 补全所有站点的 EndExit 回调
 TODO: 禁止缩放功能还需要测试不同类型的图片
 TODO: 增加更新提示
 TODO: nhentai 错误网站提示跳转
+TODO: 将 manga 的后台加载功能改为 number 类型，方便在后台快速加载
 TODO: 现在在图片加载完成后直接进入阅读模式过于粗暴，应该再判断一下
 
 ### dev

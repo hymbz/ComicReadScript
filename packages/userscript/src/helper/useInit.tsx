@@ -108,7 +108,7 @@ export const useInit = async <T extends Record<string, any>>(
         if (!imgList.length) {
           loading = true;
           try {
-            showFab({ progress: 0 });
+            showFab({ progress: 0, show: true });
             imgList = await getImgList();
             if (imgList.length === 0) throw new Error('获取漫画图片失败');
             showFab({ progress: 1, tip: '阅读模式' });
@@ -123,7 +123,7 @@ export const useInit = async <T extends Record<string, any>>(
                       tip: `图片加载中 - ${loadNum}/${imgList.length}`,
                     });
                   } else {
-                    showFab({ progress, tip: '阅读模式' });
+                    showFab({ progress, tip: '阅读模式', show: undefined });
                     showManga();
                   }
                   onLoading(loadNum, imgList.length);

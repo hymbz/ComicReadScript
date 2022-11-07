@@ -28,9 +28,11 @@ export const useFab = (
   const FabIcon = () => {
     switch (fabProps.progress) {
       case undefined:
+        // 没有内容的书
         return <MdImportContacts />;
       case 1:
       case 2:
+        // 有内容的书
         return <MdMenuBook />;
       default:
         return fabProps.progress > 1 ? <MdCloudDownload /> : <MdImageSearch />;

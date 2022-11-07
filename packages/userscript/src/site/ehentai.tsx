@@ -84,7 +84,7 @@ declare const selected_link: HTMLElement;
           : ' Read';
     },
   );
-  showFab({ progress: undefined, onClick: showComic, initShow: false });
+  showFab({ onClick: showComic, initShow: options.autoLoad });
   comicReadModeDom.addEventListener('click', showComic);
 
   if (options.autoLoad) await showComic();

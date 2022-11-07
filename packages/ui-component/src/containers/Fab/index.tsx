@@ -13,6 +13,8 @@ export interface FabProps {
   tip?: string;
   /** 快速拨号按钮 */
   speedDial?: React.FC[];
+  /** 是否显示。为空时将会根据滚动自动显隐 */
+  show?: boolean;
   /** 初始时是否显示 */
   initShow?: boolean;
 
@@ -30,6 +32,7 @@ export const Fab: React.FC<FabProps> = ({
   progress = 0,
   tip,
   speedDial,
+  show: forceShow,
   initShow = true,
   children,
   style,
@@ -57,7 +60,7 @@ export const Fab: React.FC<FabProps> = ({
     <div
       className={classes.fabRoot}
       style={style}
-      data-show={progress === 0 || progress !== 1 || show}
+      data-show={forceShow ?? show}
     >
       <button type="button" className={classes.fab} onClick={onClick}>
         {children ?? <MdMenuBook />}
