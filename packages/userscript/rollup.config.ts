@@ -128,7 +128,7 @@ export default [
     buildConfig({
       input: { [fileName.split('.')[0]]: `src/site/${fileName}` },
       output: {
-        dir: 'dist',
+        dir: 'dist/cache',
         format: 'cjs',
         generatedCode: 'es2015',
         exports: 'none',
@@ -147,7 +147,7 @@ export default [
   buildConfig({
     input: 'src/components/index.ts',
     output: {
-      file: 'dist/components.js',
+      file: 'dist/cache/components.js',
       format: 'cjs',
       generatedCode: 'es2015',
       strict: false,
@@ -158,18 +158,18 @@ export default [
     {
       input: 'src/helper/import.ts',
       output: {
-        file: 'dist/import.js',
+        file: 'dist/cache/import.js',
         plugins: [
           {
             name: 'injectCode',
             renderChunk(code) {
               let newCode = code;
-              // 将 ts 变量声明替换为 dist 下的文件代码，并转为字符串型变量做好处理
+              // 将 ts 变量声明替换为 dist/cache 下的文件代码，并转为字符串型变量做好处理
               newCode = newCode.replace(
                 /const (\w+)Code = ['"]{2};(?=\n)/g,
                 (_, name) =>
                   `const ${name}Code = \`\n${fs
-                    .readFileSync(`./dist/${name}.js`)
+                    .readFileSync(`./dist/cache/${name}.js`)
                     .toString()
                     .replaceAll('\\', '\\\\')
                     .replaceAll('`', '\\`')
@@ -181,7 +181,7 @@ export default [
         ],
       },
     },
-    watchAssets({ assets: ['dist/components.js'] }),
+    watchAssets({ assets: ['dist/cache/components.js'] }),
   ),
 
   // 编译 index.user.js
@@ -197,10 +197,11 @@ export default [
           name: 'injectSiteCode',
           renderChunk(code) {
             let newCode = code;
-            // 根据注释替换导入为 dist 下的文件代码
+            // 根据注释替换导入为 dist/cache 下的文件代码
             newCode = newCode.replace(
               /(?<=\n)\s*\/\/ #(.+)(?=\n)/g,
-              (_, name) => fs.readFileSync(`./dist/${name}.js`)?.toString(),
+              (_, name) =>
+                fs.readFileSync(`./dist/cache/${name}.js`)?.toString(),
             );
             // 删除 export 语句
             newCode = newCode.replace(/\nexport.+};\n/g, '');
@@ -221,7 +222,11 @@ export default [
     },
     plugins: [
       watchAssets({
-        assets: ['dist/*', '!dist/index.user.js', '!dist/components.js'],
+        assets: [
+          'dist/**/*',
+          '!dist/index.user.js',
+          '!dist/cache/components.js',
+        ],
       }),
     ],
     treeshake: false,
