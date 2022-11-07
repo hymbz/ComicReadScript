@@ -28,25 +28,29 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
   // 在漫画详情页
   if (Reflect.has(unsafeWindow, 'gallery')) {
-    const showComic = createShowComic(() =>
-      gallery.images.pages.map(
-        ({ number, extension }) =>
-          `https://i.nhentai.net/galleries/${gallery.media_id}/${number}.${extension}`,
-      ),
-    );
-    showFab({ onClick: showComic, initShow: false });
-
-    if (options.autoLoad) await showComic();
-
-    // TODO: 适配新逻辑
     // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
     insertNode(
       document.getElementById('download')!.parentNode as HTMLElement,
       '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Read</a>',
     );
-    document
-      .getElementById('comicReadMode')!
-      .addEventListener('click', showComic);
+    const comicReadModeDom = document.getElementById('comicReadMode')!;
+    const showComic = createShowComic(
+      () =>
+        gallery.images.pages.map(
+          ({ number, extension }) =>
+            `https://i.nhentai.net/galleries/${gallery.media_id}/${number}.${extension}`,
+        ),
+      (loadNum, totalNum) => {
+        comicReadModeDom.innerHTML =
+          loadNum !== totalNum
+            ? `<i class="fa fa-spinner"></i> loading —— ${loadNum}/${totalNum}`
+            : '<i class="fa fa-book"></i> Read';
+      },
+    );
+    comicReadModeDom.addEventListener('click', showComic);
+    showFab({ onClick: showComic, initShow: false });
+
+    if (options.autoLoad) await showComic();
 
     return;
   }

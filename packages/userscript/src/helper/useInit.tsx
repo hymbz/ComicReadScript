@@ -88,27 +88,15 @@ export const useInit = async <T extends Record<string, any>>(
      * 创建一个加载图片列表并进入阅读模式的函数
      *
      * @param getImgList 返回图片列表的函数
-     * @param errorText 错误提示
+     * @param onLoading 图片加载状态发生变化时触发的回调
      */
     createShowComic: (
       getImgList: () => Promise<string[]> | string[],
-      errorText = '获取漫画图片失败',
+      onLoading: (loadNum: number, totalNum: number) => void = () => {},
     ) => {
       let imgList: string[] = [];
 
       let progress = 1;
-      const onLoading = (loadNum: number) => {
-        progress = 1 + loadNum / imgList.length;
-        if (progress !== 2) {
-          showFab({
-            progress,
-            tip: `图片加载中 - ${loadNum}/${imgList.length}`,
-          });
-        } else {
-          showFab({ progress, tip: '阅读模式' });
-          showManga();
-        }
-      };
 
       let loading = false;
       return async () => {
@@ -122,9 +110,27 @@ export const useInit = async <T extends Record<string, any>>(
           try {
             showFab({ progress: 0 });
             imgList = await getImgList();
-            if (imgList.length === 0) throw new Error(errorText);
+            if (imgList.length === 0) throw new Error('获取漫画图片失败');
             showFab({ progress: 1, tip: '阅读模式' });
-            showManga({ imgList, onLoading }, true);
+            showManga(
+              {
+                imgList,
+                onLoading: (loadNum: number) => {
+                  progress = 1 + loadNum / imgList.length;
+                  if (progress !== 2) {
+                    showFab({
+                      progress,
+                      tip: `图片加载中 - ${loadNum}/${imgList.length}`,
+                    });
+                  } else {
+                    showFab({ progress, tip: '阅读模式' });
+                    showManga();
+                  }
+                  onLoading(loadNum, imgList.length);
+                },
+              },
+              true,
+            );
           } catch (e: any) {
             console.error(e);
             toast(e.message, { type: 'error' });
