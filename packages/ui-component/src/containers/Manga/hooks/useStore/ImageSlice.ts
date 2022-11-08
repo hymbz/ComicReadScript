@@ -161,9 +161,9 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         throttle<ResizeObserverCallback>(100, ([entries]) => {
           const { width, height } = entries.contentRect;
           set((state) => {
-            state.img.单页比例 = width / 2 / height;
+            state.img.单页比例 = Math.min(width / 2 / height, 1);
             state.img.横幅比例 = width / height;
-            state.img.条漫比例 = width / 2 / 3 / height;
+            state.img.条漫比例 = state.img.单页比例 / 2;
 
             state.imgList.forEach(state.img.updateImgType);
             state.scrollbar.updateDrag(state);
