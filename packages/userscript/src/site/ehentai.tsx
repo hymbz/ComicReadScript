@@ -93,9 +93,7 @@ declare const selected_link: HTMLElement;
     const titleDom = document.getElementById('gn');
     const taglistDom = querySelector('#taglist tbody');
     if (!titleDom || !taglistDom) {
-      toast('页面结构发生改变，匹配 nhentai 漫画功能无法正常生效', {
-        type: 'error',
-      });
+      toast.error('页面结构发生改变，匹配 nhentai 漫画功能无法正常生效');
       return;
     }
 

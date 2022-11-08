@@ -60,7 +60,7 @@ declare const $: any;
     } catch (error) {
       if (errorNum > 3) throw new Error('加载图片时出错');
       console.error('加载图片时出错');
-      toast('加载图片时出错', { type: 'error' });
+      toast.error('加载图片时出错');
       await sleep(1000 * 3);
       return getImgList(imgList, errorNum + 1);
     }

@@ -78,7 +78,7 @@ export const useInit = async <T extends Record<string, any>>(
       return res;
     } catch (error) {
       if (errorNum > 3) {
-        toast(errorText, { type: 'error' });
+        toast.error(errorText);
         throw new Error(errorText);
       }
       console.error(errorText, error);
@@ -148,7 +148,7 @@ export const useInit = async <T extends Record<string, any>>(
             );
           } catch (e: any) {
             console.error(e);
-            toast(e.message, { type: 'error' });
+            toast.error(e.message);
             showFab({ progress: undefined });
           } finally {
             loading = false;

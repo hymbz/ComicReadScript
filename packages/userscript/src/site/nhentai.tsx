@@ -64,7 +64,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
     const blacklist: string[] = (unsafeWindow?._n_app ?? unsafeWindow?.n)
       ?.options?.blacklisted_tags;
-    if (blacklist === undefined) toast('标签黑名单获取失败', { type: 'error' });
+    if (blacklist === undefined) toast.error('标签黑名单获取失败');
     // blacklist === null 时是未登录
 
     if (options.彻底屏蔽漫画 && blacklist?.length)
@@ -117,7 +117,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
           if (errorNum > 3) throw new Error('漫画加载出错');
           errorNum += 1;
           console.error('漫画加载出错', res);
-          toast('漫画加载出错', { type: 'error' });
+          toast.error('漫画加载出错');
           await sleep(1000 * 3);
           return loadNewComic();
         }

@@ -8,7 +8,7 @@ import { useComponentsRoot } from '../helper';
 export const useToast = () => {
   const [root] = useComponentsRoot('toast');
 
-  return (text: ToastContent, options?: ToastOptions) => {
+  const toastFunc = (text: ToastContent, options?: ToastOptions) => {
     root.render(
       <shadow.div style={{ fontSize: 16 }}>
         <ToastContainer
@@ -30,4 +30,15 @@ export const useToast = () => {
 
     toast(text, { ...options });
   };
+
+  toastFunc.info = (text: ToastContent, options?: ToastOptions) =>
+    toastFunc(text, { ...options, type: 'info' });
+  toastFunc.error = (text: ToastContent, options?: ToastOptions) =>
+    toastFunc(text, { ...options, type: 'error' });
+  toastFunc.warn = (text: ToastContent, options?: ToastOptions) =>
+    toastFunc(text, { ...options, type: 'warning' });
+  toastFunc.success = (text: ToastContent, options?: ToastOptions) =>
+    toastFunc(text, { ...options, type: 'success' });
+
+  return toastFunc;
 };
