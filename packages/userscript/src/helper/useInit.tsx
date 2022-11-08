@@ -47,20 +47,6 @@ export const useInit = async <T extends Record<string, any>>(
 
   const toast = useToast();
 
-  // 检查脚本的版本变化，自动提示用户
-  const version = await GM.getValue<string>('Version');
-  if (version && version !== GM.info.script.version) {
-    GM_setValue('Version', GM.info.script.version);
-    toast(() => (
-      <div>
-        ComicRead 已更新到 v{GM.info.script.version}
-        <br />
-        {/* FIXME: 修改链接为对应版本的发布页 */}
-        <a href="https://juejin.cn/">更新内容</a>
-      </div>
-    ));
-  }
-
   // 对 GM.xmlHttpRequest 进行包装
   type RequestOptions = Partial<Tampermonkey.Request<any>> & {
     errorText?: string;
@@ -86,6 +72,49 @@ export const useInit = async <T extends Record<string, any>>(
       return request(method, url, details, errorNum + 1);
     }
   };
+
+  // 检查脚本的版本变化，提示用户
+  const version = await GM.getValue<string>('Version');
+  if (version && version !== GM.info.script.version) {
+    // FIXME: 实现通过 jsdelivr 获取指定版本的更新内容
+    //     const changelog = `
+    // ## 新增
+
+    // - 通过 M 键切换页面填充
+
+    // ## 修复
+
+    // - 增加拷贝漫画的支持域名
+    // - 修复漫画柜失效问题
+    // `;
+    (async () => {
+      const res = await GM.xmlHttpRequest({
+        method: 'GET',
+        url: `https://cdn.jsdelivr.net/gh/hymbz/ComicReadScriptTest@${GM.info.script.version}/file`,
+      });
+      if (!res.responseText) return;
+      toast(() => (
+        <div>
+          <h2>ComicReadScrip 已更新到 {GM.info.script.version}</h2>
+          <div className="md">
+            {res.responseText.match(/##.+?\n|(-.+?\n)+/g)!.map((mdText) => {
+              if (mdText[0] === '#') return <h2>{mdText.split('##')}</h2>;
+              if (mdText[0] === '-')
+                return (
+                  <ul>
+                    {mdText.match(/(?<=- ).+/g)!.map((item) => (
+                      <li>{item}</li>
+                    ))}
+                  </ul>
+                );
+              return null;
+            })}
+          </div>
+        </div>
+      ));
+      GM_setValue('Version', GM.info.script.version);
+    })();
+  }
 
   return {
     options,

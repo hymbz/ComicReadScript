@@ -24,6 +24,21 @@ export const useToast = () => {
         />
         <style type="text/css">
           {ToastStyle.replace(':root', '.Toastify')}
+          {`
+          h2 {
+            font-size: 1.1em;
+            margin: 0;
+            margin-bottom: 1em;
+          }
+          .md {
+            text-align: left;
+          }
+          .md ul, .md h2 {
+            margin:0;
+            margin-bottom: .5em;
+            font-size: 1em;
+          }
+          `}
         </style>
       </shadow.div>,
     );
