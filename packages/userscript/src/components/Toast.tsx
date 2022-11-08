@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import shadow from 'react-shadow';
-import type { ToastOptions } from 'react-toastify';
+import type { ToastContent, ToastOptions } from 'react-toastify';
 import { ToastContainer, toast } from 'react-toastify';
 import ToastStyle from 'react-toastify/dist/ReactToastify.min.css';
 import { useComponentsRoot } from '../helper';
@@ -8,7 +8,7 @@ import { useComponentsRoot } from '../helper';
 export const useToast = () => {
   const [root] = useComponentsRoot('toast');
 
-  return (text: string, options?: ToastOptions) => {
+  return (text: ToastContent, options?: ToastOptions) => {
     root.render(
       <shadow.div style={{ fontSize: 16 }}>
         <ToastContainer

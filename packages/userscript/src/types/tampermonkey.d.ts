@@ -610,7 +610,7 @@ declare const GM: Readonly<{
   setValue(name: string, value: any): Promise<void>;
 
   /** Gets the value of 'name' from storage */
-  getValue<TValue>(name: string, defaultValue?: TValue): Promise<TValue>;
+  getValue<T>(name: string, defaultValue?: T): Promise<T | undefined>;
 
   /** Deletes 'name' from storage */
   deleteValue(name: string): Promise<void>;

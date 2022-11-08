@@ -17,7 +17,7 @@ export const useSiteOptions = async <T extends Record<string, any>>(
 ) => {
   type Options = T & defaultOptions;
 
-  const rawValue = await GM.getValue<Options | undefined>(name);
+  const rawValue = await GM.getValue<Options>(name);
   const options = Object.assign(
     {
       option: undefined,

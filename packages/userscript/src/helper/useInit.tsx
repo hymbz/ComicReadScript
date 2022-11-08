@@ -47,6 +47,21 @@ export const useInit = async <T extends Record<string, any>>(
 
   const toast = useToast();
 
+  // 检查脚本的版本变化，自动提示用户
+  const version = await GM.getValue<string>('Version');
+  if (version && version !== GM.info.script.version) {
+    GM_setValue('Version', GM.info.script.version);
+    toast(() => (
+      <div>
+        ComicRead 已更新到 v{GM.info.script.version}
+        <br />
+        {/* FIXME: 修改链接为对应版本的发布页 */}
+        <a href="https://juejin.cn/">更新内容</a>
+      </div>
+    ));
+  }
+
+  // 对 GM.xmlHttpRequest 进行包装
   type RequestOptions = Partial<Tampermonkey.Request<any>> & {
     errorText?: string;
   };
