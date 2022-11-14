@@ -1,8 +1,6 @@
 import { querySelectorClick } from '../helper';
 import { useInit } from '../helper/useInit';
 
-// 页面自带的变量
-
 (async () => {
   // 只在漫画页内运行
   if (!window.location.href.includes('/chapter/')) return;
