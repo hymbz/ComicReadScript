@@ -1,7 +1,6 @@
 TODO: 补全所有站点的 EndExit 回调
 TODO: 禁止缩放功能还需要测试不同类型的图片
 TODO: 为 Fab 增加点击特效
-TODO: 迁移至 valtio
 TODO: 考虑增加个缓存功能？虽然目前感觉也就 ehentai 上的收藏漫画有缓存的必要
 
 ### dev
