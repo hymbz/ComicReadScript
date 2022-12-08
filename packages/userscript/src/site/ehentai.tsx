@@ -8,10 +8,30 @@ declare const selected_link: HTMLElement;
 
 (async () => {
   const { options, showFab, showManga, request, createShowComic, toast } =
-    await useInit('nhentai', { 匹配nhentai: true });
+    await useInit('nhentai', { 匹配nhentai: true, 快捷键翻页: true });
 
-  // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'gid')) return;
+  // 不是漫画页的话
+  if (!Reflect.has(unsafeWindow, 'gid')) {
+    if (options.快捷键翻页) {
+      window.document.addEventListener('keyup', (e) => {
+        switch (e.key) {
+          case 'ArrowRight':
+          case 'd':
+            querySelector('#dnext')?.click();
+            break;
+
+          case 'ArrowLeft':
+          case 'a':
+            querySelector('#dprev')?.click();
+            break;
+
+          default:
+            break;
+        }
+      });
+    }
+    return;
+  }
 
   // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
   insertNode(
@@ -88,6 +108,25 @@ declare const selected_link: HTMLElement;
   comicReadModeDom.addEventListener('click', showComic);
 
   if (options.autoLoad) await showComic();
+
+  if (options.快捷键翻页) {
+    window.document.addEventListener('keyup', (e) => {
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'd':
+          querySelector('.ptt td:last-child:not(.ptdd)')?.click();
+          break;
+
+        case 'ArrowLeft':
+        case 'a':
+          querySelector('.ptt td:first-child:not(.ptdd)')?.click();
+          break;
+
+        default:
+          break;
+      }
+    });
+  }
 
   if (options.匹配nhentai) {
     const titleDom = document.getElementById('gn');
