@@ -10,7 +10,6 @@ declare const obj_id: string;
     {
       在新页面中打开链接: true,
       解除吐槽的字数限制: true,
-      优化网页右上角用户信息栏的加载: true,
       自动进入漫画阅读模式: true,
     },
   );
@@ -88,11 +87,6 @@ declare const obj_id: string;
         GM_addStyle(
           'body{display:flex;margin:0;flex-direction:column;align-items:center}body.hide img{display:none}img{max-width:95%;margin:1em 0}#comicRead{order:9999}',
         );
-        // TODO:夜间模式
-        // if (ScriptMenu.UserSetting['漫画阅读']['夜间模式']) {
-        //   document.body.style.backgroundColor = '#171717';
-        //   document.body.style.color = '#fff';
-        // }
         document.body.removeChild(document.body.childNodes[0]);
         document.body.className = 'hide';
         const loadText = document.createElement('p');
