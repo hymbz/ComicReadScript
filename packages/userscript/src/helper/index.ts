@@ -24,7 +24,7 @@ export const querySelector = <T extends HTMLElement = HTMLElement>(
  */
 export const querySelectorAll = <T extends HTMLElement = HTMLElement>(
   selector: string,
-) => document.querySelectorAll<T>(selector);
+) => [...document.querySelectorAll<T>(selector)];
 
 /**
  * 添加元素
@@ -34,7 +34,7 @@ export const querySelectorAll = <T extends HTMLElement = HTMLElement>(
  * @param referenceNode 参考元素，添加元素将插在参考元素前
  */
 export const insertNode = (
-  node: HTMLElement,
+  node: HTMLElement | DocumentFragment,
   textnode: string,
   referenceNode: HTMLElement | null = null,
 ) => {
@@ -92,25 +92,6 @@ export const isEqualArray = <T>(a: T[], b: T[]): boolean =>
   a.length === b.length && !!a.filter((t) => !b.includes(t));
 
 /**
- * 添加元素
- *
- * @param textnode 添加元素
- * @param node 被添加元素
- * @param referenceNode 参考元素，添加元素将插在参考元素前
- */
-export const insertDom = (
-  textnode: string,
-  node: HTMLElement = document.body,
-  referenceNode: HTMLElement | null = null,
-) => {
-  const temp = document.createElement('div');
-  temp.innerHTML = textnode;
-  const frag = document.createDocumentFragment();
-  while (temp.firstChild) frag.appendChild(temp.firstChild);
-  node.insertBefore(frag, referenceNode);
-};
-
-/**
  * 将对象转为 URLParams 类型的字符串
  *
  * @param data
@@ -147,4 +128,16 @@ export const imgToBlob = async (
     return imgToBlob(url, details, errorNum + 1);
   }
   return URL.createObjectURL(res.response);
+};
+
+/** 将 blob 数据作为文件保存至本地 */
+export const saveAs = (blob: Blob, name = 'download') => {
+  const a = document.createElementNS(
+    'http://www.w3.org/1999/xhtml',
+    'a',
+  ) as HTMLAnchorElement;
+  a.download = name;
+  a.rel = 'noopener';
+  a.href = URL.createObjectURL(blob);
+  setTimeout(() => a.dispatchEvent(new MouseEvent('click')));
 };

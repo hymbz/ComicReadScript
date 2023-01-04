@@ -24,8 +24,6 @@ const publicConfig = {
     'jsdoc/require-returns-type': 'off',
     // 允许使用其他的 jsdoc 标签，以便使用 typescript-json-schema
     'jsdoc/check-tag-names': 'off',
-    // 禁用将对象参数解构为多行
-    'jsdoc/require-param': ['warn', { checkDestructured: false }],
     'jsdoc/check-param-names': ['warn', { checkDestructured: false }],
     // 允许不写返回值的描述
     'jsdoc/require-returns': 'off',
@@ -33,6 +31,8 @@ const publicConfig = {
     'jsdoc/require-param-description': 'off',
     // 允许不写函数返回值的描述
     'jsdoc/require-returns-description': 'off',
+    // 允许有参数不被写明
+    'jsdoc/require-param': 'off',
 
     // 允许使用下划线命名
     'no-underscore-dangle': 'off',
@@ -109,6 +109,11 @@ module.exports = {
           'warn',
           { varsIgnorePattern: 'React' },
         ],
+
+        // 允许 switch 中不使用 default
+        'default-case': 'off',
+        // 允许自增自减
+        'no-plusplus': 'off',
 
         // 自动将直接 import 的类型改为用 import type 导入
         '@typescript-eslint/consistent-type-imports': ['warn', {}],

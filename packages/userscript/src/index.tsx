@@ -2,10 +2,16 @@
 
 // 匹配站点
 switch (window.location.hostname) {
-  case 'i.dmzj.com':
-  case 'm.dmzj.com':
   case 'manhua.dmzj.com': {
     // #dmzj
+    break;
+  }
+  case 'm.dmzj.com': {
+    // #dmzj_phone
+    break;
+  }
+  case 'i.dmzj.com': {
+    // #dmzj_user_info
     break;
   }
 
