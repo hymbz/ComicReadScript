@@ -93,7 +93,7 @@ declare namespace Tampermonkey {
     timeout?: number | undefined;
     /** Property which will be added to the response object */
     context?: TContext | undefined;
-    responseType?: 'arraybuffer' | 'blob' | 'json' | undefined;
+    responseType?: 'stream' | 'arraybuffer' | 'blob' | 'json' | undefined;
     /** MIME type for the request */
     overrideMimeType?: string | undefined;
     /** Don't send cookies with the requests (please see the fetch notes) */
