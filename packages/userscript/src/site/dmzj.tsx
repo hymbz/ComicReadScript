@@ -211,10 +211,11 @@ declare const zcClick: any;
     onPrev: querySelectorClick('#prev_chapter'),
   });
 
-  const showComic = createShowComic(() =>
-    querySelectorAll('.inner_img img').map(
-      (e) => e.getAttribute('data-original')!,
-    ),
+  const showComic = createShowComic(
+    () =>
+      querySelectorAll('.inner_img img')
+        .map((e) => e.getAttribute('data-original'))
+        .filter((src) => src) as string[],
   );
   showFab({ onClick: () => showComic(false) });
 
