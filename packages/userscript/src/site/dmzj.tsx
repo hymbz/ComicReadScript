@@ -1,6 +1,11 @@
 /* eslint-disable camelcase */
 import { useToast } from '../components';
-import { insertNode, querySelector, querySelectorAll } from '../helper';
+import {
+  insertNode,
+  querySelector,
+  querySelectorAll,
+  querySelectorClick,
+} from '../helper';
 import { useInit } from '../helper/useInit';
 
 declare const g_comic_url: string;
@@ -94,20 +99,6 @@ declare const zcClick: any;
   // 跳过漫画目录、漫画页外的其他页面
   if (!Reflect.has(unsafeWindow, 'g_comic_name')) return;
 
-  const { options, showFab, setManga, createShowComic, toast } = await useInit(
-    'dmzj',
-    {
-      在新页面中打开链接: true,
-      解除吐槽的字数限制: true,
-      自动进入漫画阅读模式: true,
-    },
-  );
-
-  if (options.在新页面中打开链接)
-    querySelectorAll('a:not([href^="javascript:"])').forEach((e) =>
-      e.setAttribute('target', '_blank'),
-    );
-
   if (!Reflect.has(unsafeWindow, 'g_chapter_name')) {
     // 判断当前页是漫画详情页
 
@@ -123,6 +114,7 @@ declare const zcClick: any;
 
       if (res.status !== 200 || !res.responseText) {
         console.error('漫画加载出错', res);
+        const toast = useToast();
         toast.error('漫画加载出错');
         return;
       }
@@ -170,53 +162,62 @@ declare const zcClick: any;
   }
 
   // 处理当前页是漫画页的情况
-  // TODO: 进入阅读模式
-  // await GM.addStyle(
-  //   `${
-  //     JSON.parse(GM_getResourceText('DMZJcss')).sections[0].code
-  //   }@@DMZJScriptRaw.css@@`,
-  // );
-  // if (!ScriptMenu.UserSetting['漫画阅读']['夜间模式'])
-  //   document.body.className = 'day';
-  // // 切换至上下翻页阅读
-  // if ($.cookie('display_mode') === '0') qiehuan();
-  // const List = document.querySelectorAll('.inner_img img');
-  // let i = List.length;
-  // while (i--)
-  //   if (List[i].getAttribute('data-original'))
-  //     List[i].setAttribute(
-  //       'src',
-  //       List[i].getAttribute('data-original'),
-  //     );
-  // const comicReadMode = document.querySelector('.btns a:last-of-type');
-  // comicReadMode.innerHTML = '阅读模式';
-  // comicReadMode.setAttribute('href', 'javascript:;');
-  // comicReadMode.removeAttribute('target');
-  // comicReadMode.onclick = () => {
-  //   if (typeof ComicReadWindow === 'undefined') {
-  //     loadComicReadWindow({
-  //       comicImgList: List,
-  //       readSetting: ScriptMenu.UserSetting['漫画阅读'],
-  //       EndExit: () => {
-  //         huPoint();
-  //         scrollTo(0, getTop(document.getElementById('hd')));
-  //       },
-  //       comicName: `${g_comic_name} ${g_chapter_name}`,
-  //       nextChapter: document.getElementById('next_chapter')
-  //         ? `${document.getElementById('next_chapter').href}`
-  //         : null,
-  //       prevChapter: document.getElementById('prev_chapter')
-  //         ? `${document.getElementById('prev_chapter').href}`
-  //         : null,
-  //     });
-  //   }
-  //   ComicReadWindow.start();
-  // };
-  // if (options['自动进入漫画阅读模式'])
-  //   document.addEventListener(
-  //     'DOMContentLoaded',
-  //     setTimeout(comicReadMode.onclick, 0),
-  //   );
+  const { options, showFab, setManga, createShowComic, onOptionChange } =
+    await useInit('dmzj', {
+      解除吐槽的字数限制: true,
+      自动进入漫画阅读模式: true,
+    });
+
+  // 切换至上下翻页阅读
+  if ($.cookie('display_mode') === '0') unsafeWindow.qiehuan();
+
+  // 根据漫画模式下的夜间模式切换样式
+  if (options.option?.darkMode === false) {
+    document.body.classList.add('day');
+  }
+
+  onOptionChange((option) => {
+    // 监听漫画模式下的夜间模式切换，进行实时切换
+    if (option.option?.darkMode) document.body.classList.remove('day');
+    else document.body.classList.add('day');
+  });
+
+  // 添加自定义样式修改
+  await GM.addStyle(`
+    ${JSON.parse(await GM.getResourceText('dmzj_style')).sections[0].code}
+
+    /* 修复和 dmzj_style 的冲突 */
+    .mainNav {
+      display: none !important
+    }
+
+    /* 增加日间模式的样式 */
+    body.day {
+      background-color: white !important
+    }
+    body.day .header-box {
+      background-color: #DDD !important;
+      box-shadow: 0 1px 2px white
+    }
+    body.day .comic_gd_fb .gd_input {
+      color: #666;
+      background: white
+    }
+  `);
+
+  setManga({
+    onNext: querySelectorClick('#next_chapter'),
+    onPrev: querySelectorClick('#prev_chapter'),
+  });
+
+  const showComic = createShowComic(() =>
+    querySelectorAll('.inner_img img').map(
+      (e) => e.getAttribute('data-original')!,
+    ),
+  );
+  showFab({ onClick: () => showComic(false) });
+
+  if (options.autoLoad) await showComic(false);
 
   // 修改发表吐槽的函数，删去字数判断。只是删去了原函数的一个判断条件而已，所以将这段压缩了一下
   if (options['解除吐槽的字数限制']) {

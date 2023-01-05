@@ -42,6 +42,7 @@ export const useInit = async <T extends Record<string, any>>(
 
   const [showManga, setManga] = useManga({
     imgList: [],
+    option: options.option,
     onOptionChange: (option) => setOptions({ ...options, option }),
   });
 
@@ -143,7 +144,13 @@ export const useInit = async <T extends Record<string, any>>(
       let progress = 1;
 
       let loading = false;
-      return async () => {
+
+      /**
+       * 进入阅读模式
+       *
+       * @param waitLoad 等待图片全部加载完成后再自动进入阅读模式
+       */
+      const showComic = async (waitLoad = true) => {
         if (loading) {
           toast('加载图片中，请稍候', { autoClose: 1500 });
           return;
@@ -173,7 +180,7 @@ export const useInit = async <T extends Record<string, any>>(
                   onLoading(loadNum, imgList.length);
                 },
               },
-              true,
+              waitLoad,
             );
           } catch (e: any) {
             console.error(e);
@@ -186,6 +193,7 @@ export const useInit = async <T extends Record<string, any>>(
           showManga();
         }
       };
+      return showComic;
     },
   };
 };

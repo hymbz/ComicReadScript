@@ -105,7 +105,7 @@ declare const selected_link: HTMLElement;
     },
   );
   showFab({ onClick: showComic, initShow: options.autoLoad });
-  comicReadModeDom.addEventListener('click', showComic);
+  comicReadModeDom.addEventListener('click', () => showComic());
 
   if (options.autoLoad) await showComic();
 

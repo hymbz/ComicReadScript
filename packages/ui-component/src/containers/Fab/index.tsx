@@ -1,7 +1,7 @@
 import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 
-import type { CSSProperties, MouseEventHandler } from 'react';
-import { useRef, useState, useEffect } from 'react';
+import type { CSSProperties } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import { throttle } from 'throttle-debounce';
 
 import classes from './index.module.css';
@@ -20,7 +20,7 @@ export interface FabProps {
 
   children?: JSX.Element | JSX.Element[];
   style?: CSSProperties;
-  onClick?: MouseEventHandler<HTMLButtonElement>;
+  onClick?: () => void;
 }
 
 /**
@@ -61,13 +61,17 @@ export const Fab: React.FC<FabProps> = ({
     if (forceShow) setShow(forceShow);
   }, [forceShow]);
 
+  const handleClick = useCallback(() => {
+    onClick?.();
+  }, [onClick]);
+
   return (
     <div
       className={classes.fabRoot}
       style={style}
       data-show={forceShow ?? show}
     >
-      <button type="button" className={classes.fab} onClick={onClick}>
+      <button type="button" className={classes.fab} onClick={handleClick}>
         {children ?? <MdMenuBook />}
 
         {/* 环形进度条 */}

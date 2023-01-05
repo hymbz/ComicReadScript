@@ -52,6 +52,8 @@
 
 ### 动漫之家
 
+出于个人喜好使用了 [pgain2004](https://userstyles.org/users/301332) 的 [动漫之家暗色调漫画阅读页(布局精简)](https://userstyles.org/styles/119945/theme) css 样式修改
+
 <!-- TODO -->
 
 
