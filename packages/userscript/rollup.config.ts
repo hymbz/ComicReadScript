@@ -36,6 +36,7 @@ export const meta = {
   grant: [
     'GM_addElement',
     'GM_getResourceText',
+    'GM_xmlhttpRequest',
     'GM.xmlHttpRequest',
     'GM.getResourceText',
     'GM.addStyle',

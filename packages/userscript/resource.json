@@ -11,7 +11,9 @@
     "prop-types": "https://unpkg.com/prop-types@15.8.1/prop-types.min.js",
     "panzoom": "https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js",
     "react-toastify": "https://unpkg.com/react-toastify@9.0.8/dist/react-toastify.js",
-    "clsx": "https://unpkg.com/clsx@1.2.1/dist/clsx.js"
+    "clsx": "https://unpkg.com/clsx@1.2.1/dist/clsx.js",
+    "fflate": "https://unpkg.com/fflate@0.7.4/umd/index.js",
+    "dmzj_style": "https://userstyles.org/styles/chrome/119945.json"
   },
   "prod": {
     "react": "https://unpkg.com/react@18.2.0/umd/react.production.min.js",
@@ -25,6 +27,8 @@
     "prop-types": "https://unpkg.com/prop-types@15.8.1/prop-types.min.js",
     "panzoom": "https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js",
     "react-toastify": "https://unpkg.com/react-toastify@9.0.8/dist/react-toastify.js",
-    "clsx": "https://unpkg.com/clsx@1.2.1/dist/clsx.js"
+    "clsx": "https://unpkg.com/clsx@1.2.1/dist/clsx.js",
+    "fflate": "https://unpkg.com/fflate@0.7.4/umd/index.js",
+    "dmzj_style": "https://userstyles.org/styles/chrome/119945.json"
   }
 }

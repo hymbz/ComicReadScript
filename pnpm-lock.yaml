@@ -162,6 +162,7 @@ importers:
       axios-userscript-adapter: ^0.1.11
       core-js: ^3.22.0
       esbuild: ^0.14.36
+      fflate: ^0.7.4
       immer: ^9.0.15
       react: ^18.0.0
       react-dom: ^18.0.0
@@ -185,6 +186,7 @@ importers:
       axios: 0.26.1
       axios-userscript-adapter: 0.1.12_axios@0.26.1
       core-js: 3.25.5
+      fflate: 0.7.4
       immer: 9.0.15
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
@@ -4216,6 +4218,10 @@ packages:
     dependencies:
       reusify: 1.0.4
     dev: true
+
+  /fflate/0.7.4:
+    resolution: {integrity: sha512-5u2V/CDW15QM1XbbgS+0DfPxVB+jUKhWEKuuFuHncbk3tEEqzmoXL+2KyOFuKGqOnmdIy0/davWF1CkuwtibCw==}
+    dev: false
 
   /figures/3.2.0:
     resolution: {integrity: sha512-yaduQFRKLXYOGgEn6AZau90j3ggSOyiqXU0F9JZfeXYhNa+Jk4X+s45A2zg5jns87GAFa34BBm2kXw4XpNcbdg==}

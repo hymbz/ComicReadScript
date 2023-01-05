@@ -107,6 +107,7 @@ declare const zcClick: any;
       document.querySelector('.cartoon_online_border')!.innerHTML =
         '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
 
+      // XXX: 使用旧 api 只能获取到主版本的章节，其他版本的章节无法取得，改用 v4api 应该就能拿到了
       const res = await GM.xmlHttpRequest({
         method: 'GET',
         url: `https://api.dmzj.com/dynamic/comicinfo/${g_comic_id}.json`,
