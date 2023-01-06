@@ -16,62 +16,64 @@ declare const obj_id: string;
   // 分别处理目录页和漫画页
   switch (window.location.pathname.split('/')[1]) {
     case 'info': {
-      // 判断是否是隐藏漫画，是的话就手动构建目录
-      if (typeof obj_id === 'undefined') {
-        const comicId = parseInt(window.location.pathname.split('/')[2], 10);
-        if (Number.isNaN(comicId)) {
-          document.body.innerHTML =
-            // FIXME: 已失效，改成 https://dark-dmzj.hloli.net/
-            '请从 <a href="https://dmzj.nsapps.cn/">https://dmzj.nsapps.cn/</a> 搜索漫画进入';
-          return;
-        }
+      // 跳过正常漫画
+      if (Reflect.has(unsafeWindow, 'obj_id')) return;
 
-        // XXX: 使用旧 api 只能获取到主版本的章节，其他版本的章节无法取得，改用 v4api 应该就能拿到了
-        const res = await GM.xmlHttpRequest({
-          method: 'GET',
-          url: `http://api.dmzj.com/dynamic/comicinfo/${comicId}.json`,
-        });
-
-        if (res.status !== 200) {
-          console.error('获取漫画数据失败', res);
-          toast.error('获取漫画数据失败');
-          return;
-        }
-
-        const {
-          info: { last_updatetime },
-          list: chaptersList,
-        } = JSON.parse(res.responseText).data as {
-          info: {
-            last_updatetime: string;
-            title: string;
-          };
-          list: Array<{
-            id: string;
-            chapter_name: string;
-            updatetime: string;
-          }>;
-        };
-
-        let temp = '';
-        let i = chaptersList.length;
-        while (i--)
-          temp += `<a target="_blank" title="${
-            chaptersList[i].chapter_name
-          }" href="https://m.dmzj.com/view/${comicId}/${
-            chaptersList[i].id
-          }.html" ${
-            chaptersList[i].updatetime === last_updatetime
-              ? 'style="color:red"'
-              : ''
-          }>${chaptersList[i].chapter_name}</a>`;
-        insertNode(document.body, temp);
-
-        document.body.removeChild(document.body.childNodes[0]);
-        await GM.addStyle(
-          'body{padding:0 20vw;} a{margin:0 1em;line-height:2em;white-space:nowrap;display:inline-block;min-width:4em;}',
-        );
+      const comicId = parseInt(window.location.pathname.split('/')[2], 10);
+      if (Number.isNaN(comicId)) {
+        document.body.innerHTML =
+          // FIXME: 已失效，改成 https://dark-dmzj.hloli.net/
+          '请从 <a href="https://dmzj.nsapps.cn/">https://dmzj.nsapps.cn/</a> 搜索漫画进入';
+        return;
       }
+
+      // XXX: 使用旧 api 只能获取到主版本的章节，其他版本的章节无法取得，改用 v4api 应该就能拿到了
+      const res = await GM.xmlHttpRequest({
+        method: 'GET',
+        url: `http://api.dmzj.com/dynamic/comicinfo/${comicId}.json`,
+      });
+
+      if (res.status !== 200) {
+        console.error('获取漫画数据失败', res);
+        toast.error('获取漫画数据失败');
+        return;
+      }
+
+      const {
+        info: { last_updatetime, title },
+        list: chaptersList,
+      } = JSON.parse(res.responseText).data as {
+        info: {
+          last_updatetime: string;
+          title: string;
+        };
+        list: Array<{
+          id: string;
+          chapter_name: string;
+          updatetime: string;
+        }>;
+      };
+
+      document.title = title;
+
+      let temp = `<h1 style="text-align:center">${title}</h1>`;
+      let i = chaptersList.length;
+      while (i--)
+        temp += `<a target="_blank" title="${
+          chaptersList[i].chapter_name
+        }" href="https://m.dmzj.com/view/${comicId}/${
+          chaptersList[i].id
+        }.html" ${
+          chaptersList[i].updatetime === last_updatetime
+            ? 'style="color:red"'
+            : ''
+        }>${chaptersList[i].chapter_name}</a>`;
+      insertNode(document.body, temp);
+
+      document.body.removeChild(document.body.childNodes[0]);
+      await GM.addStyle(
+        'body{padding:0 20vw;} a{margin:0 1em;line-height:2em;white-space:nowrap;display:inline-block;min-width:4em;}',
+      );
       break;
     }
     case 'view': {
@@ -111,6 +113,7 @@ declare const obj_id: string;
         tipDom.innerText = res.responseText;
         return;
       }
+      tipDom.innerText = `加载完成，即将进入阅读模式`;
 
       const { folder, page_url } = JSON.parse(res.responseText) as {
         folder: string;
@@ -118,10 +121,8 @@ declare const obj_id: string;
       };
       document.title = folder.split('/').at(-2) ?? folder;
 
-      // TODO: 这里进入阅读模式后应该禁止退出，防止返回空白页面
-      // setManga({
-      //   onExit
-      // })
+      // 进入阅读模式后禁止退出，防止返回空白页面
+      setManga({ onExit: undefined, editButtonList: (list) => list });
 
       const showComic = createShowComic(async () => {
         if (page_url.length) return page_url;
@@ -145,10 +146,10 @@ declare const obj_id: string;
           return [];
         }
 
-        const decompressed = fflate.unzipSync(
-          new Uint8Array(await (zipRes.response as Blob).arrayBuffer()),
-        );
-        console.log(decompressed);
+        // const decompressed = fflate.unzipSync(
+        //   new Uint8Array(await (zipRes.response as Blob).arrayBuffer()),
+        // );
+        // console.log(decompressed);
 
         return [];
       });
