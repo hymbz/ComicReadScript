@@ -1,6 +1,15 @@
 /* eslint-disable camelcase */
-import { insertNode, querySelectorAll, querySelectorClick } from '../helper';
+import {
+  insertNode,
+  querySelector,
+  querySelectorAll,
+  querySelectorClick,
+} from '../helper';
 import { useInit } from '../helper/useInit';
+
+// 接口参考
+// https://github.com/xiaoyaocz/flutter_dmzj/blob/ecbe73eb435624022ae5a77156c5d3e0c06809cc/lib/requests/api.dart
+// https://github.com/erinacio/tachiyomi-extensions/blob/548be91cccb8f248342e2e7762c2c3d4b2d02036/src/zh/dmzj/src/eu/kanade/tachiyomi/extension/zh/dmzj/Dmzj.kt
 
 (async () => {
   const { showFab, setManga, createShowComic, toast } = await useInit('dmzj', {
@@ -16,9 +25,51 @@ import { useInit } from '../helper/useInit';
 
       const comicId = parseInt(window.location.pathname.split('/')[2], 10);
       if (Number.isNaN(comicId)) {
-        document.body.innerHTML =
-          // FIXME: 已失效，改成 https://dark-dmzj.hloli.net/
-          '请从 <a href="https://dmzj.nsapps.cn/">https://dmzj.nsapps.cn/</a> 搜索漫画进入';
+        document.body.removeChild(document.body.childNodes[0]);
+        insertNode(
+          document.body,
+          `
+          请手动输入漫画名进行搜索 <br />
+          <input type="search"> <button>搜索</button> <br />
+          <div id="list" />
+        `,
+        );
+
+        querySelector('button')!.addEventListener('click', async () => {
+          const comicName = querySelector<HTMLInputElement>('input')?.value;
+          if (!comicName) return;
+
+          const res = await GM.xmlHttpRequest({
+            method: 'GET',
+            url: `https://s.acg.dmzj.com/comicsum/search.php?s=${comicName}`,
+          });
+
+          if (res.status !== 200) {
+            console.error('搜索漫画时出错', res);
+            toast.error('搜索漫画时出错');
+            return;
+          }
+
+          const comicList = JSON.parse(
+            res.responseText.slice(20, -1),
+          ) as Array<{
+            id: number;
+            comic_name: string;
+            comic_author: string;
+            comic_url: string;
+          }>;
+
+          querySelector('#list')!.innerHTML = comicList
+            .map(
+              ({ id, comic_name, comic_author, comic_url }) => `
+                <b>《${comic_name}》<b/>——${comic_author}
+                <a href="${comic_url}">Web端</a>
+                <a href="https://m.dmzj.com/info/${id}.html">移动端</a>
+              `,
+            )
+            .join('<br />');
+        });
+
         return;
       }
 
