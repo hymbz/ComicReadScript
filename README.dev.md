@@ -5,6 +5,7 @@ TODO: 考虑增加个缓存功能？虽然目前感觉也就 ehentai 上的收�
 TODO: 将 jsdoc 中带有星号的参数删掉
 TODO: 使用动态图标 https://icon-sets.iconify.design/line-md/downloading-loop/
 TODO: 出现结束页后继续滚动或按方向键将自动跳转至下一话
+TODO: 一些网站可以直接进入阅读模式不用等加载的，比如 eh、nh，需要再评估一遍
 
 ### dev
 
