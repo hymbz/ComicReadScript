@@ -4,6 +4,7 @@ TODO: 为 Fab 增加点击特效
 TODO: 考虑增加个缓存功能？虽然目前感觉也就 ehentai 上的收藏漫画有缓存的必要
 TODO: 将 jsdoc 中带有星号的参数删掉
 TODO: 使用动态图标 https://icon-sets.iconify.design/line-md/downloading-loop/
+TODO: 出现结束页后继续滚动或按方向键将自动跳转至下一话
 
 ### dev
 
