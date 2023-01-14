@@ -1,11 +1,6 @@
-import fflate from 'fflate';
-import { useToast } from '../components';
-
+/* eslint-disable camelcase */
 import { insertNode, querySelectorAll, querySelectorClick } from '../helper';
 import { useInit } from '../helper/useInit';
-
-/* eslint-disable camelcase */
-declare const obj_id: string;
 
 (async () => {
   const { showFab, setManga, createShowComic, toast } = await useInit('dmzj', {
@@ -124,33 +119,10 @@ declare const obj_id: string;
       // 进入阅读模式后禁止退出，防止返回空白页面
       setManga({ onExit: undefined, editButtonList: (list) => list });
 
-      const showComic = createShowComic(async () => {
+      const showComic = createShowComic(() => {
         if (page_url.length) return page_url;
 
-        tipDom.innerText =
-          '正常接口未返回具体图片数据，开始通过下载接口获取数据';
-
-        // TODO: 通过下载接口获取数据
-
-        const zipRes = await GM.xmlHttpRequest({
-          method: 'GET',
-          responseType: 'blob',
-          url: `https://imgzip.dmzj.com/s/${
-            /\d+\/\d+/.exec(document.URL)![0]
-          }.zip`,
-        });
-        debugger;
-
-        if (zipRes.status !== 200) {
-          tipDom.innerText = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion">Greasy Fork</a> 进行反馈`;
-          return [];
-        }
-
-        // const decompressed = fflate.unzipSync(
-        //   new Uint8Array(await (zipRes.response as Blob).arrayBuffer()),
-        // );
-        // console.log(decompressed);
-
+        tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion">Greasy Fork</a> 进行反馈`;
         return [];
       });
       showFab({ onClick: () => showComic(false) });
