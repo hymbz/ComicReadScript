@@ -164,10 +164,7 @@ declare const zcClick: any;
 
   // 处理当前页是漫画页的情况
   const { options, showFab, setManga, createShowComic, onOptionChange } =
-    await useInit('dmzj', {
-      解除吐槽的字数限制: true,
-      自动进入漫画阅读模式: true,
-    });
+    await useInit('dmzj', { 解除吐槽的字数限制: true });
 
   // 切换至上下翻页阅读
   if ($.cookie('display_mode') === '0') unsafeWindow.qiehuan();

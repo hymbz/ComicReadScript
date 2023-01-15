@@ -2,6 +2,15 @@
 
 // 匹配站点
 switch (window.location.hostname) {
+  case 'bbs.yamibo.com': {
+    // #yamibo
+    break;
+  }
+  case 'www.yamibo.com': {
+    // '@@NewYamiboScript.@@';
+    break;
+  }
+
   case 'manhua.dmzj.com': {
     // #dmzj
     break;
