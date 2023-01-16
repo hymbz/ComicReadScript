@@ -4,17 +4,16 @@ import { useInit } from '../helper/useInit';
 declare const fid: number;
 
 (async () => {
-  const { options, showFab, setManga, showManga, createShowComic } =
-    await useInit('yamibo', {
-      记录阅读历史: {
-        Enable: true,
-        上次阅读进度标签颜色: '#6e2b19',
-        保留天数: -1,
-      },
-      关闭快捷导航按钮的跳转: true,
-      修正点击页数时的跳转判定: true,
-      固定导航条: true,
-    });
+  const { options, showFab, setManga, showManga } = await useInit('yamibo', {
+    记录阅读历史: {
+      Enable: true,
+      上次阅读进度标签颜色: '#6e2b19',
+      保留天数: -1,
+    },
+    关闭快捷导航按钮的跳转: true,
+    修正点击页数时的跳转判定: true,
+    固定导航条: true,
+  });
 
   if (options.关闭快捷导航按钮的跳转)
     // eslint-disable-next-line no-script-url
@@ -33,14 +32,7 @@ declare const fid: number;
     if (fid === 30 || fid === 37) {
       let imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
 
-      const isValidImg = (img: HTMLImageElement) =>
-        !img.src.includes('static/image') &&
-        img.naturalHeight &&
-        img.naturalWidth &&
-        img.naturalHeight > 500 &&
-        img.naturalWidth > 500;
-
-      const updateImgList = () => {
+      const getImgList = () => {
         let i = imgList.length;
         while (i--) {
           const img = imgList[i];
@@ -48,56 +40,53 @@ declare const fid: number;
           const file = img.getAttribute('file');
           if (file && img.src !== file) img.setAttribute('src', file);
 
+          // 测试例子：https://bbs.yamibo.com/thread-502399-1-1.html
+          // TODO: 需要找个正经的例子
+          // XXX: 目前调用 updateImgList 会导致闪烁，虽然实际使用中应该很少出现，但还是优化下好
+
           // 删掉表情和小图
-          // TODO: 待测试删除小图的功能，找不到例子了
-          if (img.complete) {
-            if (!isValidImg(img)) {
-              imgList.splice(i, 1);
-              imgList = [...imgList];
-            }
-          } else {
-            const index = i;
-            // eslint-disable-next-line no-loop-func
-            img.addEventListener('load', () => {
-              if (!isValidImg(img)) {
-                imgList.splice(index, 1);
-                imgList = [...imgList];
-                setManga({ imgList: imgList.map((image) => image.src) });
-              }
-            });
-          }
+          if (
+            img.src.includes('static/image') ||
+            (img.complete &&
+              img.naturalHeight &&
+              img.naturalWidth &&
+              img.naturalHeight > 500 &&
+              img.naturalWidth > 500)
+          )
+            imgList.splice(i, 1);
         }
         return imgList.map((img) => img.src);
       };
 
-      const showComic = createShowComic(updateImgList);
+      setManga({
+        // 在图片加载完成后再检查一遍有没有小图，有就删掉
+        onLoading: (img) => {
+          // 跳过符合标准的
+          if (img.height && img.width && img.height > 500 && img.width > 500)
+            return;
 
-      showFab({ onClick: showComic });
+          const delImgIndex = imgList.findIndex(
+            (image) => image.src === img.src,
+          );
+          if (delImgIndex !== -1) imgList.splice(delImgIndex, 1);
 
-      if (options.autoLoad) await showComic();
+          showManga({ imgList: imgList.map((image) => image.src) });
+        },
+      });
+
+      const showComic = () => showManga({ imgList: getImgList() }, false);
+      if (options.autoLoad) showComic();
+
+      showFab({ progress: 1, tip: '阅读模式', onClick: showComic });
 
       // 如果帖子内有设置目录
       if (querySelector('#threadindex')) {
-        querySelectorAll('#threadindex li').forEach((e) => {
-          e.addEventListener('click', () => {
-            imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
-            if (options.autoLoad) showManga({ imgList: updateImgList() });
-            else setManga({ imgList: updateImgList() });
-            // if (options.autoLoad) await showComic();
-            // eslint-disable-next-line no-param-reassign
-            // e.onclick = null;
-            // ajaxget(
-            //   ...e
-            //     .getAttribute('onclick')
-            //     .match(/'.+?'/g)
-            //     .map((e) => e.slice(1, -1)),
-            //   '',
-            //   'block',
-            //   setTimeout(() => {
-            //     adaptationMenu();
-            //     procImg();
-            //   }, 1000),
-            // );
+        querySelectorAll('#threadindex li').forEach((dom) => {
+          dom.addEventListener('click', () => {
+            setTimeout(() => {
+              imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
+              showManga({ imgList: getImgList() }, !options.autoLoad);
+            }, 1000);
           });
         });
       }
@@ -105,5 +94,5 @@ declare const fid: number;
 
     return;
   }
-  debugger;
+  console.log();
 })();
