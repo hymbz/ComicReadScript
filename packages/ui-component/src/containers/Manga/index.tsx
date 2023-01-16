@@ -32,7 +32,7 @@ export interface MangaProps {
   /** 配置发生变化时触发的回调 */
   onOptionChange?: (option: Option, prevOption: Option) => void | Promise<void>;
   /** 图片加载状态发生变化时触发的回调 */
-  onLoading?: (loadNum: number, totalNum: number) => void | Promise<void>;
+  onLoading?: (img: ComicImg, imgList: ComicImg[]) => void | Promise<void>;
 
   /** 修改默认侧边栏按钮列表 */
   editButtonList?: SelfState['editButtonList'];
@@ -41,9 +41,7 @@ export interface MangaProps {
 }
 
 /**
- * APP 测试
- *
- * @param props
+ * 漫画组件
  */
 export const Manga: React.FC<MangaProps> = (props) => {
   const rootRef = useInit(props);

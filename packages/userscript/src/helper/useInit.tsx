@@ -137,7 +137,11 @@ export const useInit = async <T extends Record<string, any>>(
      */
     createShowComic: (
       getImgList: () => Promise<string[]> | string[],
-      onLoading: (loadNum: number, totalNum: number) => void = () => {},
+      onLoading: (
+        loadNum: number,
+        totalNum: number,
+        img: ComicImg,
+      ) => void = () => {},
     ) => {
       let imgList: string[] = [];
 
@@ -166,7 +170,13 @@ export const useInit = async <T extends Record<string, any>>(
             showManga(
               {
                 imgList,
-                onLoading: (loadNum: number) => {
+                onLoading: (img, list) => {
+                  const loadNum = list.filter(
+                    (image) => image.loadType === 'loaded',
+                  ).length;
+
+                  onLoading(loadNum, imgList.length, img);
+
                   progress = 1 + loadNum / imgList.length;
                   if (progress !== 2) {
                     showFab({
@@ -175,9 +185,8 @@ export const useInit = async <T extends Record<string, any>>(
                     });
                   } else {
                     showFab({ progress, tip: '阅读模式', show: undefined });
-                    if (options.autoLoad) showManga();
+                    if (options.autoLoad) showManga(undefined, false);
                   }
-                  onLoading(loadNum, imgList.length);
                 },
               },
               waitLoad,
@@ -190,9 +199,10 @@ export const useInit = async <T extends Record<string, any>>(
             loading = false;
           }
         } else {
-          showManga();
+          showManga(undefined, false);
         }
       };
+
       return showComic;
     },
   };

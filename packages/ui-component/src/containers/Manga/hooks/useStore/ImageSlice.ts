@@ -3,6 +3,7 @@ import { throttle, debounce } from 'throttle-debounce';
 import type { SyntheticEvent } from 'react';
 import { handleComicData } from '../../handleComicData';
 import type { SelfState, SelfStateCreator, Subscribe } from '.';
+import type { MangaProps } from '../..';
 
 declare global {
   type ComicImg = Draft<{
@@ -39,6 +40,8 @@ export interface ImageSLice {
   activeImgIndex: number;
   activePageIndex: number;
   nowFillIndex: number;
+
+  onLoading: MangaProps['onLoading'] | undefined;
 
   img: {
     单页比例: number;
@@ -124,6 +127,8 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
     activeImgIndex: 0,
     activePageIndex: 0,
     nowFillIndex: -1,
+
+    onLoading: undefined,
 
     img: {
       单页比例: 0,
