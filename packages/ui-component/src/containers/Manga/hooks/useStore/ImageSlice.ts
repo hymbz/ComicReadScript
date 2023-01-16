@@ -270,4 +270,14 @@ export const imageCallback: Subscribe = (useStore) => {
       });
     },
   );
+
+  // imgList 发生变化时重新计算 pageList
+  useStore.subscribe(
+    (state) => state.imgList,
+    () => {
+      useStore.setState((state) => {
+        state.img.updatePageData.sync(state);
+      });
+    },
+  );
 };
