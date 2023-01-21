@@ -137,9 +137,9 @@ import { useInit } from '../helper/useInit';
               .map((e) => e.getAttribute('data-original'))
               .filter((src) => src) as string[],
         );
-        showFab({ onClick: () => showComic(false) });
+        showFab({ onClick: () => showComic() });
 
-        await showComic(false);
+        await showComic();
         return;
       }
 
@@ -176,9 +176,9 @@ import { useInit } from '../helper/useInit';
         tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion">Greasy Fork</a> 进行反馈`;
         return [];
       });
-      showFab({ onClick: () => showComic(false) });
+      showFab({ onClick: () => showComic() });
 
-      await showComic(false);
+      await showComic();
       break;
     }
   }
