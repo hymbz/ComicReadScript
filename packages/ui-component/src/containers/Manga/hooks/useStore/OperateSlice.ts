@@ -81,7 +81,7 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
         break;
       case 'End':
         set((state) => {
-          state.activePageIndex = pageList.length;
+          state.activePageIndex = pageList.length - 1;
         });
         break;
 
