@@ -43,7 +43,7 @@ export const useManga = (
     else Object.assign(mangaProps, recipe);
   };
 
-  const show = (recipe?: MangaRecipe, hide = false) => {
+  const show = (recipe?: MangaRecipe, hide = !enbale) => {
     if (recipe) set(recipe);
 
     root.render(
@@ -65,7 +65,7 @@ export const useManga = (
     );
 
     if (hide) {
-      mangaProps.onExit!();
+      mangaProps.onExit?.();
     } else {
       enbale = true;
       dom.style.visibility = 'visible';

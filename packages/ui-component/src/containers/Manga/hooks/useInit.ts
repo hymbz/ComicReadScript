@@ -1,5 +1,6 @@
 import type { Draft } from 'immer';
 import { useEffect, useRef } from 'react';
+import { debounce } from 'throttle-debounce';
 import { useStore } from './useStore';
 import type { MangaProps } from '..';
 
@@ -31,12 +32,10 @@ export const useInit = ({
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // 绑定 rootRef
     useStore.setState((state) => {
+      // 绑定 rootRef
       state.rootRef = rootRef as Draft<React.RefObject<HTMLElement>>;
-    });
-    // 初始化 panzoom
-    useStore.setState((state) => {
+      // 初始化 panzoom
       state.initPanzoom();
     });
   }, []);
@@ -87,15 +86,10 @@ export const useInit = ({
 
   // 绑定图片加载状态发生变化时触发的回调
   useEffect(() => {
-    if (!onLoading) return undefined;
-    return useStore.subscribe(
-      (state) => state.imgList,
-      (list) =>
-        onLoading(
-          list.filter((img) => img.loadType === 'loaded').length,
-          list.length,
-        ),
-    );
+    if (!onLoading) return;
+    useStore.setState((state) => {
+      state.onLoading = debounce(100, onLoading);
+    });
   }, [onLoading]);
 
   return rootRef;
