@@ -48,7 +48,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       },
     );
     showFab({ onClick: showComic, initShow: options.autoLoad });
-    comicReadModeDom.addEventListener('click', showComic);
+    comicReadModeDom.addEventListener('click', () => showComic());
 
     if (options.autoLoad) await showComic();
 
