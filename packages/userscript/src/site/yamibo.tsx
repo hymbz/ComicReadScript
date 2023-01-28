@@ -1,4 +1,4 @@
-import { querySelector, querySelectorAll } from '../helper';
+import { insertNode, querySelector, querySelectorAll } from '../helper';
 import { useInit } from '../helper/useInit';
 
 declare const fid: number;
@@ -32,7 +32,7 @@ declare const fid: number;
     if (fid === 30 || fid === 37) {
       let imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
 
-      const getImgList = () => {
+      const updateImgList = () => {
         let i = imgList.length;
         while (i--) {
           const img = imgList[i];
@@ -50,8 +50,8 @@ declare const fid: number;
             (img.complete &&
               img.naturalHeight &&
               img.naturalWidth &&
-              img.naturalHeight > 500 &&
-              img.naturalWidth > 500)
+              img.naturalHeight < 500 &&
+              img.naturalWidth < 500)
           )
             imgList.splice(i, 1);
         }
@@ -74,10 +74,23 @@ declare const fid: number;
         },
       });
 
-      const showComic = () => showManga({ imgList: getImgList() }, false);
+      updateImgList();
+      const showComic = () => {
+        if (imgList.length)
+          showManga({ imgList: imgList.map((img) => img.src) }, false);
+      };
       if (options.autoLoad) showComic();
 
       showFab({ progress: 1, tip: '阅读模式', onClick: showComic });
+
+      // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
+      insertNode(
+        querySelector('div.pti > div.authi')!,
+        '<span class="pipe show">|</span><a id="comicReadMode" class="show" href="javascript:;">漫画阅读</a>',
+      );
+      document
+        .getElementById('comicReadMode')
+        ?.addEventListener('click', showComic);
 
       // 如果帖子内有设置目录
       if (querySelector('#threadindex')) {
@@ -85,7 +98,7 @@ declare const fid: number;
           dom.addEventListener('click', () => {
             setTimeout(() => {
               imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
-              showManga({ imgList: getImgList() }, !options.autoLoad);
+              showManga({ imgList: updateImgList() }, !options.autoLoad);
             }, 1000);
           });
         });
