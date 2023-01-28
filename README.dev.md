@@ -7,6 +7,7 @@ TODO: 使用动态图标 https://icon-sets.iconify.design/line-md/downloading-lo
 TODO: 出现结束页后继续滚动或按方向键将自动跳转至下一话
 TODO: 看看能不能只在支持触屏的设备上开启点击翻页
 TODO: 当页面为白色时，会看不清侧边栏按钮，需要增加边框或背景
+TODO: 从更旧的版本更新上来时，删除掉旧的配置
 
 ### dev
 

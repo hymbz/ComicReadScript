@@ -7,7 +7,7 @@ switch (window.location.hostname) {
     break;
   }
   case 'www.yamibo.com': {
-    // '@@NewYamiboScript.@@';
+    // #newYamibo
     break;
   }
 
