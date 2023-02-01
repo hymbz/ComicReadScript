@@ -31,7 +31,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
     // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
     insertNode(
       document.getElementById('download')!.parentNode as HTMLElement,
-      '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Read</a>',
+      '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Load comic</a>',
     );
     const comicReadModeDom = document.getElementById('comicReadMode')!;
     const showComic = createShowComic(
@@ -48,7 +48,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       },
     );
     showFab({ onClick: showComic, initShow: options.autoLoad });
-    comicReadModeDom.addEventListener('click', showComic);
+    comicReadModeDom.addEventListener('click', () => showComic());
 
     if (options.autoLoad) await showComic();
 

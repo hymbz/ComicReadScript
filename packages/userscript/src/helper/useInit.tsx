@@ -154,7 +154,7 @@ export const useInit = async <T extends Record<string, any>>(
        *
        * @param waitLoad 等待图片全部加载完成后再自动进入阅读模式
        */
-      const showComic = async (waitLoad = true) => {
+      const showComic = async (waitLoad = false) => {
         if (loading) {
           toast('加载图片中，请稍候', { autoClose: 1500 });
           return;

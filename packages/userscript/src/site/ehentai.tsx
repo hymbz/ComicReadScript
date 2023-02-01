@@ -33,7 +33,7 @@ declare const selected_link: HTMLElement;
     return;
   }
 
-  // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
+  // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
   insertNode(
     document.getElementById('gd5')!,
     '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>',
