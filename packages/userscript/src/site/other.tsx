@@ -18,7 +18,7 @@ setTimeout(async () => {
   /** 是否正在后台不断检查图片 */
   let running = 0;
 
-  let showManga: (recipe?: MangaRecipe | undefined) => void;
+  let showManga: (recipe?: MangaRecipe, hide?: boolean) => void;
   let setManga: (recipe: MangaRecipe) => void;
   let showFab: ((recipe?: FabRecipe | undefined) => void) | undefined;
   let toast: ReturnType<typeof useToast>;
@@ -36,7 +36,7 @@ setTimeout(async () => {
 
     [showFab] = useFab({
       tip: '阅读模式',
-      onClick: () => showManga(),
+      onClick: () => showManga(undefined, false),
       speedDial: [
         () => (
           <IconBotton
