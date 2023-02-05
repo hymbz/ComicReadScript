@@ -1,6 +1,6 @@
 import type { Draft } from 'immer';
 import { useEffect, useRef } from 'react';
-import { debounce } from 'throttle-debounce';
+import { debounce, throttle } from 'throttle-debounce';
 import { useStore } from './useStore';
 import type { MangaProps } from '..';
 
@@ -40,17 +40,29 @@ export const useInit = ({
     });
   }, []);
 
-  // 绑定 resizeObserver
   useEffect(() => {
+    // 初始化页面比例
     useStore.setState((state) => {
-      state.img.resizeObserver.disconnect();
-      state.img.resizeObserver.observe(rootRef.current!);
+      state.img.updatePageRatio(
+        state,
+        rootRef.current!.scrollWidth,
+        rootRef.current!.scrollHeight,
+      );
     });
-    return () => {
-      useStore.setState((state) => {
-        state.img.resizeObserver.disconnect();
-      });
-    };
+
+    // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
+    const resizeObserver = new ResizeObserver(
+      throttle<ResizeObserverCallback>(100, ([entries]) => {
+        const { width, height } = entries.contentRect;
+        useStore.setState((state) => {
+          state.img.updatePageRatio(state, width, height);
+        });
+      }),
+    );
+    resizeObserver.disconnect();
+    resizeObserver.observe(rootRef.current!);
+
+    return () => resizeObserver.disconnect();
   }, []);
 
   // 初始化图片

@@ -50,6 +50,7 @@ export const ComicImgFlow: React.FC = () => {
     () =>
       pageList.map(([a, b], i) => (
         <div
+          // TODO: 还是闪烁更好吧，延迟可能会持续好几秒，导致显示异常，闪烁起码能知道有变动
           // 为了防止切换页面填充时 key 产生变化导致整个 dom 被重新创建出现图片闪烁现象
           // 只能用 index 当 key，这样在切换时会复用之前的 dom，只会修改 img 的 src
           // 虽然这样可能会出现图片切换延迟，但总比闪烁要好

@@ -1,5 +1,5 @@
 import type { Draft } from 'immer';
-import { throttle, debounce } from 'throttle-debounce';
+import { debounce } from 'throttle-debounce';
 import type { SyntheticEvent } from 'react';
 import { handleComicData } from '../../handleComicData';
 import type { SelfState, SelfStateCreator, Subscribe } from '.';
@@ -58,8 +58,12 @@ export interface ImageSLice {
     /** 根据比例更新图片类型 */
     updateImgType: (draftImg: Draft<ComicImg>) => void;
 
-    /** 监视 rootDom 的大小变化 */
-    resizeObserver: ResizeObserver;
+    /** 更新页面比例 */
+    updatePageRatio: (
+      state: Draft<SelfState>,
+      width: number,
+      height: number,
+    ) => void;
 
     /** 切换页面填充 */
     switchFillEffect: () => void;
@@ -108,6 +112,7 @@ const loadImg = (
 
 export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
   const _updatePageData = (state: Draft<SelfState>) => {
+    // TODO: 这里需要保证在 imgList 发生变动的情况下，pageList 里未改动到的元素保持不变
     if (state.option.onePageMode || state.option.scrollMode)
       state.pageList = state.imgList.map((img) => [img.index]);
     else
@@ -161,20 +166,18 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         set(updatePageData);
       },
 
-      // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
-      resizeObserver: new ResizeObserver(
-        throttle<ResizeObserverCallback>(100, ([entries]) => {
-          const { width, height } = entries.contentRect;
-          set((state) => {
-            state.img.单页比例 = Math.min(width / 2 / height, 1);
-            state.img.横幅比例 = width / height;
-            state.img.条漫比例 = state.img.单页比例 / 2;
+      updatePageRatio: (
+        state: Draft<SelfState>,
+        width: number,
+        height: number,
+      ) => {
+        state.img.单页比例 = Math.min(width / 2 / height, 1);
+        state.img.横幅比例 = width / height;
+        state.img.条漫比例 = state.img.单页比例 / 2;
 
-            state.imgList.forEach(state.img.updateImgType);
-            state.scrollbar.updateDrag(state);
-          });
-        }),
-      ),
+        state.imgList.forEach(state.img.updateImgType);
+        state.scrollbar.updateDrag(state);
+      },
 
       switchFillEffect: () => {
         set((state) => {
