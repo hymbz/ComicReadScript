@@ -65,17 +65,56 @@ export const useInit = ({
     return () => resizeObserver.disconnect();
   }, []);
 
-  // 初始化图片
+  // 处理 imgList fillEffect 参数的初始化和修改
   useEffect(() => {
     useStore.setState((state) => {
       if (fillEffect) state.fillEffect = fillEffect;
 
-      state.imgList = imgList.map((imgUrl, index) => ({
-        index,
-        type: '',
-        src: imgUrl,
-        loadType: 'wait',
-      }));
+      // 处理初始化
+      if (!state.imgList.length) {
+        state.imgList = imgList.map((imgUrl, index) => ({
+          index,
+          type: '',
+          src: imgUrl,
+          loadType: 'wait',
+        }));
+        state.img.updatePageData.sync(state);
+        return;
+      }
+
+      /** 修改前的当前显示图片 */
+      const oldActiveImg = state.pageList[state.activePageIndex].map(
+        (i) => state.imgList?.[i]?.src,
+      );
+
+      state.imgList = imgList.map(
+        (imgUrl, index) =>
+          state.imgList.find((img) => img.src === imgUrl) ?? {
+            index,
+            type: '',
+            src: imgUrl,
+            loadType: 'wait',
+          },
+      );
+      state.img.updatePageData.sync(state);
+
+      // 尽量使当前显示的图片在修改后依然不变
+      oldActiveImg.some((imgUrl) => {
+        // 跳过填充页和已被删除的图片
+        if (!imgUrl || imgList.includes(imgUrl)) return false;
+
+        const newPageIndex = state.pageList.findIndex((page) =>
+          page.some((index) => state.imgList?.[index]?.src === imgUrl),
+        );
+        if (newPageIndex === -1) return false;
+
+        state.activePageIndex = newPageIndex;
+        return true;
+      });
+
+      // 如果已经翻到了最后一页，且最后一页的图片都被删掉了，那就保持在末页显示
+      if (state.activePageIndex > state.pageList.length - 1)
+        state.activePageIndex = state.pageList.length - 1;
     });
   }, [imgList, fillEffect]);
 
