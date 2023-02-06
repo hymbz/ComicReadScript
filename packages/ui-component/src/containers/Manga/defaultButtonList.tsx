@@ -26,7 +26,7 @@ export type DefaultButtonList = [
 /** 工具栏的默认按钮列表 */
 export const defaultButtonList: DefaultButtonList = [
   [
-    '单页模式',
+    '单双页模式',
     () => {
       const isOnePageMode = useStore((state) => state.option.onePageMode);
       const handleClick = useCallback(() => {
@@ -42,8 +42,13 @@ export const defaultButtonList: DefaultButtonList = [
       }, []);
 
       const isScrollMode = useStore((state) => state.option.scrollMode);
+
       return (
-        <IconBotton tip="单页模式" onClick={handleClick} hidden={isScrollMode}>
+        <IconBotton
+          tip={isOnePageMode ? '单页模式' : '双页模式'}
+          onClick={handleClick}
+          hidden={isScrollMode}
+        >
           {isOnePageMode ? <MdLooksOne /> : <MdLooksTwo />}
         </IconBotton>
       );
