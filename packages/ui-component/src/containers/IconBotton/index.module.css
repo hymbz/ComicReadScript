@@ -20,7 +20,7 @@
   font-size: 1.5em;
   color: var(--text, white);
 
-  background-color: transparent;
+  background-color: var(--text_bg, #121212);
   border-style: none;
   border-radius: 9999px;
   outline: none;
