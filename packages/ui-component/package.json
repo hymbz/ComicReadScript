@@ -6,6 +6,7 @@
     "dev": "vite",
     "build": "rollup --config --configPlugin rollup-plugin-esbuild",
     "watch": "rollup --watch --config --configPlugin rollup-plugin-esbuild",
+    "test": "vitest",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -54,6 +55,7 @@
     "rollup-plugin-ts": "^3.0.2",
     "tslib": "^2.4.0",
     "vite": "^3.1.2",
-    "vite-plugin-svgr": "^2.2.1"
+    "vite-plugin-svgr": "^2.2.1",
+    "vitest": "^0.28.4"
   }
 }
