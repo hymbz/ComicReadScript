@@ -1,9 +1,8 @@
 import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
-import type { FabRecipe } from '../components';
+import type { FabRecipe, SelfMangaProps } from '../components';
 import { useToast, useManga, useFab } from '../components';
-import type { MangaRecipe } from '../components/Manga';
 import { useSiteOptions } from '../helper/useSiteOptions';
 import { isEqualArray } from '../helper';
 
@@ -18,25 +17,21 @@ setTimeout(async () => {
   /** 是否正在后台不断检查图片 */
   let running = 0;
 
-  let showManga: (recipe?: MangaRecipe, hide?: boolean) => void;
-  let setManga: (recipe: MangaRecipe) => void;
+  let setManga: (recipe: Partial<SelfMangaProps>) => void;
   let showFab: ((recipe?: FabRecipe | undefined) => void) | undefined;
   let toast: ReturnType<typeof useToast>;
 
-  /** 当前是否处于阅读模式 */
-  let isReadMode: boolean;
-
   const init = () => {
-    if (showManga !== undefined) return;
+    if (setManga !== undefined) return;
 
-    [showManga, setManga, isReadMode] = useManga({
+    setManga = useManga({
       imgList,
       onOptionChange: (option) => setOptions({ ...options, option }, false),
     });
 
     [showFab] = useFab({
       tip: '阅读模式',
-      onClick: () => showManga(undefined, false),
+      onClick: () => setManga({ show: true }),
       speedDial: [
         () => (
           <IconBotton
@@ -114,15 +109,7 @@ setTimeout(async () => {
     // 在发现新图片后重新渲染
     if (!isEqualArray(imgList, newImgList)) {
       imgList = newImgList;
-
-      if (isReadMode) {
-        showManga?.({ imgList });
-      } else {
-        setManga?.({ imgList });
-      }
-
-      if (waitAutoLoad) showManga();
-
+      setManga({ imgList, show: waitAutoLoad });
       showFab?.({ progress: 1 });
     }
 
@@ -140,7 +127,7 @@ setTimeout(async () => {
 
     if (!running) running = window.setInterval(checkFindImg, 2000);
     if (!checkFindImg()) return;
-    showManga();
+    setManga({ show: true });
 
     // 自动启用自动加载功能
     await setOptions({ ...options, autoLoad: true });

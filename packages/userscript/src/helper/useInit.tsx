@@ -40,7 +40,7 @@ export const useInit = async <T extends Record<string, any>>(
   });
   onOptionChange(() => showFab());
 
-  const [showManga, setManga] = useManga({
+  const setManga = useManga({
     imgList: [],
     option: options.option,
     onOptionChange: (option) => setOptions({ ...options, option }),
@@ -123,7 +123,6 @@ export const useInit = async <T extends Record<string, any>>(
     onOptionChange,
     showFab,
     setFab,
-    showManga,
     setManga,
     toast,
 
@@ -167,30 +166,28 @@ export const useInit = async <T extends Record<string, any>>(
             imgList = await getImgList();
             if (imgList.length === 0) throw new Error('获取漫画图片失败');
             showFab({ progress: 1, tip: '阅读模式' });
-            showManga(
-              {
-                imgList,
-                onLoading: (img, list) => {
-                  const loadNum = list.filter(
-                    (image) => image.loadType === 'loaded',
-                  ).length;
+            setManga({
+              imgList,
+              show: !waitLoad,
+              onLoading: (img, list) => {
+                const loadNum = list.filter(
+                  (image) => image.loadType === 'loaded',
+                ).length;
 
-                  onLoading(loadNum, imgList.length, img);
+                onLoading(loadNum, imgList.length, img);
 
-                  progress = 1 + loadNum / imgList.length;
-                  if (progress !== 2) {
-                    showFab({
-                      progress,
-                      tip: `图片加载中 - ${loadNum}/${imgList.length}`,
-                    });
-                  } else {
-                    showFab({ progress, tip: '阅读模式', show: undefined });
-                    if (options.autoLoad) showManga(undefined, false);
-                  }
-                },
+                progress = 1 + loadNum / imgList.length;
+                if (progress !== 2) {
+                  showFab({
+                    progress,
+                    tip: `图片加载中 - ${loadNum}/${imgList.length}`,
+                  });
+                } else {
+                  showFab({ progress, tip: '阅读模式', show: undefined });
+                  if (options.autoLoad) setManga({ show: true });
+                }
               },
-              waitLoad,
-            );
+            });
           } catch (e: any) {
             console.error(e);
             toast.error(e.message);
@@ -199,7 +196,7 @@ export const useInit = async <T extends Record<string, any>>(
             loading = false;
           }
         } else {
-          showManga(undefined, false);
+          setManga({ show: true });
         }
       };
 

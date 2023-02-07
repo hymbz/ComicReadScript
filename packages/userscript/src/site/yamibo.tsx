@@ -4,7 +4,7 @@ import { useInit } from '../helper/useInit';
 declare const fid: number;
 
 (async () => {
-  const { options, showFab, setManga, showManga } = await useInit('yamibo', {
+  const { options, showFab, setManga } = await useInit('yamibo', {
     记录阅读历史: {
       Enable: true,
       上次阅读进度标签颜色: '#6e2b19',
@@ -70,14 +70,14 @@ declare const fid: number;
           );
           if (delImgIndex !== -1) imgList.splice(delImgIndex, 1);
 
-          showManga({ imgList: imgList.map((image) => image.src) });
+          setManga({ imgList: imgList.map((image) => image.src) });
         },
       });
 
       updateImgList();
       const showComic = () => {
         if (imgList.length)
-          showManga({ imgList: imgList.map((img) => img.src) }, false);
+          setManga({ imgList: imgList.map((img) => img.src), show: true });
       };
       if (options.autoLoad) showComic();
 
@@ -98,7 +98,10 @@ declare const fid: number;
           dom.addEventListener('click', () => {
             setTimeout(() => {
               imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
-              showManga({ imgList: updateImgList() }, !options.autoLoad);
+              setManga({
+                imgList: updateImgList(),
+                show: options.autoLoad ?? undefined,
+              });
             }, 1000);
           });
         });

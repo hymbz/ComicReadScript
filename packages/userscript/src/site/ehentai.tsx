@@ -7,7 +7,7 @@ declare const selected_tag: string;
 declare const selected_link: HTMLElement;
 
 (async () => {
-  const { options, showFab, showManga, request, createShowComic, toast } =
+  const { options, showFab, setManga, request, createShowComic, toast } =
     await useInit('nhentai', { 匹配nhentai: true, 快捷键翻页: true });
 
   // 不是漫画页的话
@@ -225,7 +225,7 @@ declare const selected_link: HTMLElement;
             );
             nhentaiComicReadModeDom.innerHTML = ' Read';
           }
-          showManga({ imgList: nhentaiImgList[selected_tag] });
+          setManga({ imgList: nhentaiImgList[selected_tag], show: true });
         });
       } else {
         const mr =

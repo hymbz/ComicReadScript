@@ -9,42 +9,31 @@ import IconBottonStyle from '@crs/ui-component/dist/IconBotton.css';
 import produce from 'immer';
 import { useComponentsRoot } from '../helper';
 
-// TODO: 感觉可以去掉使用 函数 修改的方式？
-export type MangaRecipe =
-  | ((draftProps: MangaProps) => void)
-  | Partial<MangaProps>;
+export type SelfMangaProps = MangaProps & { show: boolean };
 
 /**
  * 显示漫画阅读窗口
  *
  * @param props
  */
-export const useManga = (
-  props?: MangaProps,
-): [
-  (recipe?: MangaRecipe, hide?: boolean) => void,
-  (recipe: MangaRecipe) => void,
-  boolean,
-] => {
+export const useManga = (props?: Partial<SelfMangaProps>) => {
   const [root, dom] = useComponentsRoot('comicRead');
 
-  let mangaProps = props ?? { imgList: [] };
-
-  let enbale = false;
+  let mangaProps = { imgList: [], show: false, ...props } as SelfMangaProps;
 
   mangaProps.onExit = () => {
-    enbale = false;
+    mangaProps.show = false;
     dom.style.visibility = 'hidden';
     document.documentElement.style.overflow = 'unset';
   };
 
-  const set = (recipe: MangaRecipe) => {
-    if (typeof recipe === 'function') mangaProps = produce(mangaProps, recipe);
-    else Object.assign(mangaProps, recipe);
-  };
-
-  const show = (recipe?: MangaRecipe, hide = !enbale) => {
-    if (recipe) set(recipe);
+  const set = (recipe: Partial<SelfMangaProps>) => {
+    const oldEnable = mangaProps.show;
+    if (recipe) {
+      if (typeof recipe === 'function')
+        mangaProps = produce(mangaProps, recipe);
+      else Object.assign(mangaProps, recipe);
+    }
 
     root.render(
       <shadow.div
@@ -64,12 +53,14 @@ export const useManga = (
       </shadow.div>,
     );
 
-    if (hide) {
-      mangaProps.onExit?.();
-    } else {
-      enbale = true;
+    // 如果没有修改 show 参数则直接跳过
+    if (oldEnable === mangaProps.show) return;
+
+    if (mangaProps.show) {
       dom.style.visibility = 'visible';
       document.documentElement.style.overflow = 'hidden';
+    } else {
+      mangaProps.onExit?.();
     }
   };
 
@@ -88,5 +79,5 @@ export const useManga = (
     ],
   ];
 
-  return [show, set, enbale];
+  return set;
 };
