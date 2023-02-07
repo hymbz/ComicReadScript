@@ -66,8 +66,8 @@
   }
 }
 
-/* 翻页模式下的每页的容器 */
-.mangaFlowPage {
+/* 翻页模式下的每张图的容器 */
+.mangaFlowItem {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,6 +77,11 @@
 }
 
 .wrapper {
+  display: grid;
+  grid-auto-rows: 100%;
+  grid-template-columns: min-content min-content;
+  justify-content: center;
+
   width: 100%;
   height: 100%;
 }

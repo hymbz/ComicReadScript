@@ -57,21 +57,25 @@ export const ComicImg: React.FC<ComicImgProps> = memo(
 
     const img = useStore((state) => state.imgList[index]);
 
+    if (index === -1 || !img) return null;
+
     return (
-      <img
-        className={clsx(
-          classes.img,
-          classes[img.type],
-          classes[img.loadType],
-          className,
-        )}
-        ref={imgRef}
-        src={img.loadType === 'wait' ? '' : img.src}
-        data-type={img.loadType}
-        alt={`${index}`}
-        onLoad={handleImgLoaded}
-        onError={handleImgError}
-      />
+      <div className={classes.mangaFlowItem} style={{ gridArea: `_${index}` }}>
+        <img
+          className={clsx(
+            classes.img,
+            classes[img.type],
+            classes[img.loadType],
+            className,
+          )}
+          ref={imgRef}
+          src={img.loadType === 'wait' ? '' : img.src}
+          data-type={img.loadType}
+          alt={`${index}`}
+          onLoad={handleImgLoaded}
+          onError={handleImgError}
+        />
+      </div>
     );
   },
 );

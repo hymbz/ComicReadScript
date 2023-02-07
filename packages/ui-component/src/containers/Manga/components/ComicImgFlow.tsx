@@ -46,48 +46,40 @@ export const ComicImgFlow: React.FC = () => {
     });
   }, []);
 
-  const pageEleList = useMemo(
+  const imgEleList = useMemo(
+    () => imgList.map(({ index }) => <ComicImg key={index} index={index} />),
+    [imgList],
+  );
+
+  const gridAreas = useMemo(
     () =>
-      pageList.map(([a, b], i) => (
-        <div
-          // TODO: 还是闪烁更好吧，延迟可能会持续好几秒，导致显示异常，闪烁起码能知道有变动
-          // 为了防止切换页面填充时 key 产生变化导致整个 dom 被重新创建出现图片闪烁现象
-          // 只能用 index 当 key，这样在切换时会复用之前的 dom，只会修改 img 的 src
-          // 虽然这样可能会出现图片切换延迟，但总比闪烁要好
-          // eslint-disable-next-line react/no-array-index-key
-          key={i}
-          className={classes.mangaFlowPage}
-        >
-          <ComicImg
-            index={a === -1 ? b! : a}
-            className={a === -1 && classes.fill}
-          />
-          {b !== undefined ? (
-            <ComicImg
-              index={b === -1 ? a : b}
-              className={b === -1 && classes.fill}
-            />
-          ) : null}
-        </div>
-      )),
+      pageList
+        .map(
+          (page) =>
+            `"${page.map((i) => (i !== -1 ? `_${i}` : '.')).join(' ')}"`,
+        )
+        .join('\n'),
     [pageList],
   );
 
   const body = useMemo(() => {
-    if (imgList.length === 0)
+    if (imgEleList.length === 0)
       return <div style={{ fontSize: '3em' }}>NULL</div>;
 
-    if (scrollMode) return pageEleList;
+    if (scrollMode) return imgEleList;
 
     return (
       <div
         className={classes.wrapper}
-        style={{ transform: `translateY(-${activePageIndex}00%)` }}
+        style={{
+          transform: `translateY(-${activePageIndex}00%)`,
+          gridTemplateAreas: gridAreas,
+        }}
       >
-        {pageEleList}
+        {imgEleList}
       </div>
     );
-  }, [activePageIndex, imgList, scrollMode, pageEleList]);
+  }, [imgEleList, scrollMode, activePageIndex, gridAreas]);
 
   return (
     <div
