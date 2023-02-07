@@ -88,9 +88,6 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       case 'Escape':
         onExit?.();
         break;
-
-      default:
-        break;
     }
 
     if (nextPage === null) return;

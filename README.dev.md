@@ -6,8 +6,7 @@ TODO: 将 jsdoc 中带有星号的参数删掉
 TODO: 出现结束页后继续滚动或按方向键将自动跳转至下一话
 TODO: 看看能不能只在支持触屏的设备上开启点击翻页
 TODO: 从更旧的版本更新上来时，删除掉旧的配置
-TODO: 监听页面快捷键时，应该跳过那些来自输入框的事件
-TODO:将 showManga 功能合并到 setManga 中，并将是否显示组件改为通过 props 的 show 控制，简化逻辑
+TODO: 将 showManga 功能合并到 setManga 中，并将是否显示组件改为通过 props 的 show 控制，简化逻辑
 TODO: 删掉 pageEleList 这个中间层，防止在切换填充页时修改 img 元素导致图片失效
 
 ### dev

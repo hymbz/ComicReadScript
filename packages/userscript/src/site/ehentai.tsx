@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-import { imgToBlob, insertNode, querySelector } from '../helper';
+import { imgToBlob, insertNode, linstenKeyup, querySelector } from '../helper';
 import { useInit } from '../helper/useInit';
 
 declare const selected_tag: string;
@@ -13,7 +13,7 @@ declare const selected_link: HTMLElement;
   // 不是漫画页的话
   if (!Reflect.has(unsafeWindow, 'gid')) {
     if (options.快捷键翻页) {
-      window.document.addEventListener('keyup', (e) => {
+      linstenKeyup((e) => {
         switch (e.key) {
           case 'ArrowRight':
           case 'd':
@@ -23,9 +23,6 @@ declare const selected_link: HTMLElement;
           case 'ArrowLeft':
           case 'a':
             querySelector('#dprev')?.click();
-            break;
-
-          default:
             break;
         }
       });
@@ -110,7 +107,7 @@ declare const selected_link: HTMLElement;
   if (options.autoLoad) await showComic();
 
   if (options.快捷键翻页) {
-    window.document.addEventListener('keyup', (e) => {
+    linstenKeyup((e) => {
       switch (e.key) {
         case 'ArrowRight':
         case 'd':
@@ -120,9 +117,6 @@ declare const selected_link: HTMLElement;
         case 'ArrowLeft':
         case 'a':
           querySelector('.ptt td:first-child:not(.ptdd)')?.click();
-          break;
-
-        default:
           break;
       }
     });

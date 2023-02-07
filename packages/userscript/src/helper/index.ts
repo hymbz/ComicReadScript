@@ -141,3 +141,15 @@ export const saveAs = (blob: Blob, name = 'download') => {
   a.href = URL.createObjectURL(blob);
   setTimeout(() => a.dispatchEvent(new MouseEvent('click')));
 };
+
+/** 监听键盘事件 */
+export const linstenKeyup = (handler: (e: KeyboardEvent) => unknown) =>
+  window.addEventListener('keyup', (e) => {
+    // 跳过输入框的键盘事件
+    switch ((e.target as HTMLElement).tagName) {
+      case 'INPUT':
+      case 'TEXTAREA':
+        return;
+    }
+    handler(e);
+  });
