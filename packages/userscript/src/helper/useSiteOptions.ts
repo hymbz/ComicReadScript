@@ -38,7 +38,7 @@ export const useSiteOptions = async <T extends Record<string, any>>(
     /**
      * 设置新 Option
      *
-     * @param newValue
+     * @param newValue newValue
      * @param trigger 是否触发变更事件
      */
     setOptions: async (newValue: Options, trigger = true) => {
@@ -52,8 +52,6 @@ export const useSiteOptions = async <T extends Record<string, any>>(
 
     /**
      * 监听配置变更事件
-     *
-     * @param callback 回调
      */
     onOptionChange: (callback: (options: Options) => void | Promise<void>) => {
       changeCallbackList.push(callback);

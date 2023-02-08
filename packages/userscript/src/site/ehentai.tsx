@@ -46,8 +46,6 @@ declare const selected_link: HTMLElement;
 
   /**
    * 从图片页获取图片的地址
-   *
-   * @param url
    */
   const getImgFromImgPage = async (url: string): Promise<string> => {
     const res = await request('GET', url);

@@ -25,8 +25,6 @@ export interface FabProps {
 
 /**
  * Fab 按钮
- *
- * @param props
  */
 export const Fab: React.FC<FabProps> = ({
   progress = 0,

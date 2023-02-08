@@ -12,8 +12,6 @@ export interface SettingsItemSwitchProps {
 
 /**
  * 开关式菜单项
- *
- * @param param param
  */
 export const SettingsItemSwitch: React.FC<SettingsItemSwitchProps> = ({
   name,

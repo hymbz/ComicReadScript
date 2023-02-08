@@ -9,8 +9,6 @@ export const sleep = (ms: number) =>
 /**
  * 对 document.querySelector 的封装
  * 将默认返回类型改为 HTMLElement
- *
- * @param selector
  */
 export const querySelector = <T extends HTMLElement = HTMLElement>(
   selector: string,
@@ -19,8 +17,6 @@ export const querySelector = <T extends HTMLElement = HTMLElement>(
 /**
  * 对 document.querySelector 的封装
  * 将默认返回类型改为 HTMLElement
- *
- * @param selector
  */
 export const querySelectorAll = <T extends HTMLElement = HTMLElement>(
   selector: string,
@@ -47,20 +43,17 @@ export const insertNode = (
 
 /**
  * 创建组件用的 ReactDOM Root
- *
- * @param name 组件名
- * @returns ReactDOM Root
  */
-export const useComponentsRoot = (name: string): [Root, HTMLElement] => {
+export const useComponentsRoot = (id: string): [Root, HTMLElement] => {
   // 需要使用动态导入以避免在支持站点外的页面上加载 React
   // eslint-disable-next-line @typescript-eslint/consistent-type-imports
   const ReactDOM: typeof import('react-dom/client') = require('react-dom');
 
   const dom =
-    document.getElementById(name) ??
+    document.getElementById(id) ??
     (() => {
       const _dom = document.createElement('div');
-      _dom.id = name;
+      _dom.id = id;
       document.body.appendChild(_dom);
       return _dom;
     })();
@@ -70,9 +63,6 @@ export const useComponentsRoot = (name: string): [Root, HTMLElement] => {
 
 /**
  * 返回 Dom 的点击函数，如果找不到 Dom 则返回 null
- *
- * @param selector
- * @returns
  */
 export const querySelectorClick = (selector: string) => {
   const dom = querySelector(selector);
@@ -84,17 +74,12 @@ export const querySelectorClick = (selector: string) => {
 
 /**
  * 判断两个列表值是否相同
- *
- * @param a
- * @param b
  */
 export const isEqualArray = <T>(a: T[], b: T[]): boolean =>
   a.length === b.length && !!a.filter((t) => !b.includes(t));
 
 /**
  * 将对象转为 URLParams 类型的字符串
- *
- * @param data
  */
 export const dataToParams = (data: Record<string, unknown>) =>
   Object.entries(data)
@@ -103,10 +88,6 @@ export const dataToParams = (data: Record<string, unknown>) =>
 
 /**
  * 根据图片地址下载下来转为 blob 格式
- *
- * @param url
- * @param details
- * @param errorNum
  */
 export const imgToBlob = async (
   url: string,

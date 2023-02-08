@@ -13,8 +13,6 @@ export type SelfMangaProps = MangaProps & { show: boolean };
 
 /**
  * 显示漫画阅读窗口
- *
- * @param props
  */
 export const useManga = (props?: Partial<SelfMangaProps>) => {
   const [root, dom] = useComponentsRoot('comicRead');

@@ -7,8 +7,6 @@ interface HandleComicDataProps {
 
 /**
  * 根据图片比例和填充页设置对漫画图片进行排列
- *
- * @param param param
  */
 export const handleComicData = ({
   comicImgList,

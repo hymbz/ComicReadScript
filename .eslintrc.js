@@ -25,12 +25,8 @@ const publicConfig = {
     // 允许使用其他的 jsdoc 标签，以便使用 typescript-json-schema
     'jsdoc/check-tag-names': 'off',
     'jsdoc/check-param-names': ['warn', { checkDestructured: false }],
-    // 允许不写返回值的描述
+    // 允许不写返回值
     'jsdoc/require-returns': 'off',
-    // 允许不写函数参数的描述
-    'jsdoc/require-param-description': 'off',
-    // 允许不写函数返回值的描述
-    'jsdoc/require-returns-description': 'off',
     // 允许有参数不被写明
     'jsdoc/require-param': 'off',
 

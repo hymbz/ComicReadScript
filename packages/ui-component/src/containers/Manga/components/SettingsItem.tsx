@@ -10,8 +10,6 @@ export interface SettingsItemProps {
 
 /**
  * 设置菜单项
- *
- * @param param param
  */
 export const SettingsItem: React.FC<SettingsItemProps> = ({
   name,

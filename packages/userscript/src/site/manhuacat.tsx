@@ -21,8 +21,6 @@ declare const $: any;
 
   /**
    * 检查是否有上/下一页
-   *
-   * @param type
    */
   const checkTurnPage = async (type: 'pre' | 'next') => {
     const res = await $.ajax({

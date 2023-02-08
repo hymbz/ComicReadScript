@@ -34,9 +34,6 @@ let startTop = 0;
 
 /**
  * 获取指定 page 中的图片 index，并在后面加上加载状态
- *
- * @param state
- * @param pageIndex
  */
 const getPageIndexText = (state: Draft<SelfState>, pageIndex: number) => {
   const pageIndexText = state.pageList[pageIndex].map((index) => {

@@ -6,8 +6,6 @@ import type { MangaProps } from '..';
 
 /**
  * 初始化
- *
- * @param props
  */
 export const useInit = ({
   imgList,

@@ -79,7 +79,7 @@ export interface ImageSLice {
 /**
  * 预加载指定页数的图片，并取消其他预加载的图片
  *
- * @param state
+ * @param state state
  * @param startIndex 起始 page index
  * @param endIndex 结束 page index
  * @param loadNum 加载图片的数量
