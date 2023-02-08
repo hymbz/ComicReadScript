@@ -79,7 +79,6 @@
 .wrapper {
   display: grid;
   grid-auto-rows: 100%;
-  grid-template-columns: min-content min-content;
   justify-content: center;
 
   width: 100%;
