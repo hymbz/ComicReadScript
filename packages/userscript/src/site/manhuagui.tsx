@@ -8,7 +8,7 @@ declare const cInfo: { nextId: number; prevId: number };
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'cInfo')) return;
 
-  const { options, showFab, setManga, createShowComic } = await useInit(
+  const { options, setFab, setManga, createShowComic } = await useInit(
     'manhuagui',
   );
   setManga({
@@ -31,7 +31,7 @@ declare const cInfo: { nextId: number; prevId: number };
       (file) => `${pVars.manga.filePath}${file}?${sl}`,
     );
   });
-  showFab({ onClick: showComic });
+  setFab({ onClick: showComic });
 
   if (options.autoLoad) await showComic();
 })();

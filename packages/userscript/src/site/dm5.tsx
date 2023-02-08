@@ -15,7 +15,7 @@ declare const $: any;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'DM5_CID')) return;
 
-  const { options, showFab, toast, setManga, createShowComic } = await useInit(
+  const { options, setFab, toast, setManga, createShowComic } = await useInit(
     'dm5',
   );
   setManga({
@@ -49,7 +49,7 @@ declare const $: any;
       const newImgList = [...imgList, ...(eval(res) as string[])];
 
       if (newImgList.length !== DM5_IMAGE_COUNT) {
-        showFab({
+        setFab({
           progress: newImgList.length / DM5_IMAGE_COUNT,
           tip: `加载图片中 - ${newImgList.length}/${DM5_IMAGE_COUNT}`,
         });
@@ -68,7 +68,7 @@ declare const $: any;
 
   const showComic = createShowComic(getImgList);
 
-  showFab({ onClick: showComic });
+  setFab({ onClick: showComic });
 
   if (options.autoLoad) await showComic();
 })();

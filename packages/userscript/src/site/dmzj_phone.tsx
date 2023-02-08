@@ -12,7 +12,7 @@ import { useInit } from '../helper/useInit';
 // https://github.com/erinacio/tachiyomi-extensions/blob/548be91cccb8f248342e2e7762c2c3d4b2d02036/src/zh/dmzj/src/eu/kanade/tachiyomi/extension/zh/dmzj/Dmzj.kt
 
 (async () => {
-  const { showFab, setManga, createShowComic, toast } = await useInit('dmzj', {
+  const { setFab, setManga, createShowComic, toast } = await useInit('dmzj', {
     解除吐槽的字数限制: true,
     自动进入漫画阅读模式: true,
   });
@@ -137,7 +137,7 @@ import { useInit } from '../helper/useInit';
               .map((e) => e.getAttribute('data-original'))
               .filter((src) => src) as string[],
         );
-        showFab({ onClick: () => showComic() });
+        setFab({ onClick: () => showComic() });
 
         await showComic();
         return;
@@ -176,7 +176,7 @@ import { useInit } from '../helper/useInit';
         tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion">Greasy Fork</a> 进行反馈`;
         return [];
       });
-      showFab({ onClick: () => showComic() });
+      setFab({ onClick: () => showComic() });
 
       await showComic();
       break;

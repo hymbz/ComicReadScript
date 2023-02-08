@@ -18,7 +18,7 @@ setTimeout(async () => {
   let running = 0;
 
   let setManga: (recipe: Partial<SelfMangaProps>) => void;
-  let showFab: ((recipe?: FabRecipe | undefined) => void) | undefined;
+  let setFab: ((recipe?: FabRecipe | undefined) => void) | undefined;
   let toast: ReturnType<typeof useToast>;
 
   const init = () => {
@@ -29,7 +29,7 @@ setTimeout(async () => {
       onOptionChange: (option) => setOptions({ ...options, option }, false),
     });
 
-    [showFab] = useFab({
+    setFab = useFab({
       tip: '阅读模式',
       onClick: () => setManga({ show: true }),
       speedDial: [
@@ -47,14 +47,14 @@ setTimeout(async () => {
         ),
       ],
     });
-    onOptionChange(() => showFab?.());
+    onOptionChange(() => setFab?.());
 
     toast = useToast();
   };
   // 如果网站有储存配置，就直接显示 Fab
   if (isRecorded) {
     init();
-    showFab?.();
+    setFab?.();
   }
 
   /** 已经被触发过懒加载的图片 */
@@ -110,7 +110,7 @@ setTimeout(async () => {
     if (!isEqualArray(imgList, newImgList)) {
       imgList = newImgList;
       setManga({ imgList, show: waitAutoLoad });
-      showFab?.({ progress: 1 });
+      setFab?.({ progress: 1 });
     }
 
     return true;
@@ -131,6 +131,6 @@ setTimeout(async () => {
 
     // 自动启用自动加载功能
     await setOptions({ ...options, autoLoad: true });
-    showFab?.();
+    setFab?.();
   });
 });

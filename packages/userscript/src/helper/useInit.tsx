@@ -20,7 +20,7 @@ export const useInit = async <T extends Record<string, any>>(
     defaultOptions,
   );
 
-  const [showFab, setFab] = useFab({
+  const setFab = useFab({
     tip: '阅读模式',
     speedDial: [
       () => <div style={{ height: '1em' }} />,
@@ -38,7 +38,7 @@ export const useInit = async <T extends Record<string, any>>(
       ),
     ],
   });
-  onOptionChange(() => showFab());
+  onOptionChange(() => setFab());
 
   const setManga = useManga({
     imgList: [],
@@ -121,7 +121,6 @@ export const useInit = async <T extends Record<string, any>>(
     options,
     setOptions,
     onOptionChange,
-    showFab,
     setFab,
     setManga,
     toast,
@@ -162,10 +161,10 @@ export const useInit = async <T extends Record<string, any>>(
         if (!imgList.length) {
           loading = true;
           try {
-            showFab({ progress: 0, show: true });
+            setFab({ progress: 0, show: true });
             imgList = await getImgList();
             if (imgList.length === 0) throw new Error('获取漫画图片失败');
-            showFab({ progress: 1, tip: '阅读模式' });
+            setFab({ progress: 1, tip: '阅读模式' });
             setManga({
               imgList,
               show: !waitLoad,
@@ -178,12 +177,12 @@ export const useInit = async <T extends Record<string, any>>(
 
                 progress = 1 + loadNum / imgList.length;
                 if (progress !== 2) {
-                  showFab({
+                  setFab({
                     progress,
                     tip: `图片加载中 - ${loadNum}/${imgList.length}`,
                   });
                 } else {
-                  showFab({ progress, tip: '阅读模式', show: undefined });
+                  setFab({ progress, tip: '阅读模式', show: undefined });
                   if (options.autoLoad) setManga({ show: true });
                 }
               },
@@ -191,7 +190,7 @@ export const useInit = async <T extends Record<string, any>>(
           } catch (e: any) {
             console.error(e);
             toast.error(e.message);
-            showFab({ progress: undefined });
+            setFab({ progress: undefined });
           } finally {
             loading = false;
           }

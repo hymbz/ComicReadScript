@@ -4,7 +4,7 @@ import { useInit } from '../helper/useInit';
 declare const fid: number;
 
 (async () => {
-  const { options, showFab, setManga } = await useInit('yamibo', {
+  const { options, setFab, setManga } = await useInit('yamibo', {
     记录阅读历史: {
       Enable: true,
       上次阅读进度标签颜色: '#6e2b19',
@@ -81,7 +81,7 @@ declare const fid: number;
       };
       if (options.autoLoad) showComic();
 
-      showFab({ progress: 1, tip: '阅读模式', onClick: showComic });
+      setFab({ progress: 1, tip: '阅读模式', onClick: showComic });
 
       // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
       insertNode(

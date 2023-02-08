@@ -15,7 +15,7 @@ declare const $: any;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'cdnImage')) return;
 
-  const { options, showFab, setManga, createShowComic } = await useInit(
+  const { options, setFab, setManga, createShowComic } = await useInit(
     'manhuacat',
   );
 
@@ -45,7 +45,7 @@ declare const $: any;
   const showComic = createShowComic(() =>
     img_data_arr.map((img) => cdnImage(img_pre + img, asset_domain, asset_key)),
   );
-  showFab({ onClick: showComic });
+  setFab({ onClick: showComic });
 
   if (options.autoLoad) await showComic();
 })();

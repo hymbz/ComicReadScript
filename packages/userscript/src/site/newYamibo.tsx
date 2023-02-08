@@ -5,7 +5,7 @@ import { useInit } from '../helper/useInit';
   // 只在漫画页内运行
   if (!document.URL.includes('view-chapter')) return;
 
-  const { options, showFab, toast, setManga, createShowComic } = await useInit(
+  const { options, setFab, toast, setManga, createShowComic } = await useInit(
     'newYamibo',
   );
 
@@ -42,11 +42,11 @@ import { useInit } from '../helper/useInit';
     );
 
     if (imgList.length === totalNum) {
-      showFab({ progress: 1, tip: '阅读模式' });
+      setFab({ progress: 1, tip: '阅读模式' });
       return imgList;
     }
 
-    showFab({
+    setFab({
       progress: imgList.length / totalNum,
       tip: `加载图片中 - ${imgList.length}/${totalNum}`,
     });
@@ -55,7 +55,7 @@ import { useInit } from '../helper/useInit';
   };
 
   const showComic = createShowComic(getImgList);
-  showFab({ onClick: showComic });
+  setFab({ onClick: showComic });
 
   if (options.autoLoad) await showComic();
 })();

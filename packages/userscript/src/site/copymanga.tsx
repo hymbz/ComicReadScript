@@ -5,8 +5,9 @@ import { useInit } from '../helper/useInit';
   // 只在漫画页内运行
   if (!window.location.href.includes('/chapter/')) return;
 
-  const { options, showFab, setManga, request, createShowComic } =
-    await useInit('copymanga');
+  const { options, setFab, setManga, request, createShowComic } = await useInit(
+    'copymanga',
+  );
   setManga({
     onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
     onPrev: querySelectorClick(
@@ -34,7 +35,7 @@ import { useInit } from '../helper/useInit';
     return (contents as ContentsType).map(({ url }) => url);
   });
 
-  showFab({ onClick: showComic });
+  setFab({ onClick: showComic });
 
   if (options.autoLoad) await showComic();
 })();

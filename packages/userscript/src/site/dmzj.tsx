@@ -163,7 +163,7 @@ declare const zcClick: any;
   }
 
   // 处理当前页是漫画页的情况
-  const { options, showFab, setManga, createShowComic, onOptionChange } =
+  const { options, setFab, setManga, createShowComic, onOptionChange } =
     await useInit('dmzj', { 解除吐槽的字数限制: true });
 
   // 切换至上下翻页阅读
@@ -214,7 +214,7 @@ declare const zcClick: any;
         .map((e) => e.getAttribute('data-original'))
         .filter((src) => src) as string[],
   );
-  showFab({ onClick: () => showComic() });
+  setFab({ onClick: () => showComic() });
 
   if (options.autoLoad) await showComic();
 

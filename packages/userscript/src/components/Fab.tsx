@@ -13,17 +13,10 @@ import { useComponentsRoot } from '../helper';
 
 export type FabRecipe = ((draftProps: FabProps) => void) | Partial<FabProps>;
 
-export const useFab = (
-  props?: FabProps,
-): [(recipe?: FabRecipe) => void, (recipe: FabRecipe) => void] => {
+export const useFab = (props?: FabProps) => {
   const [root] = useComponentsRoot('fab');
 
   let fabProps = props ?? {};
-
-  const set = (recipe: FabRecipe) => {
-    if (typeof recipe === 'function') fabProps = produce(fabProps, recipe);
-    else Object.assign(fabProps, recipe);
-  };
 
   const FabIcon = () => {
     switch (fabProps.progress) {
@@ -39,8 +32,11 @@ export const useFab = (
     }
   };
 
-  const show = (recipe?: FabRecipe) => {
-    if (recipe) set(recipe);
+  const set = (recipe?: FabRecipe) => {
+    if (recipe) {
+      if (typeof recipe === 'function') fabProps = produce(fabProps, recipe);
+      else Object.assign(fabProps, recipe);
+    }
 
     root.render(
       <shadow.div
@@ -61,5 +57,5 @@ export const useFab = (
     );
   };
 
-  return [show, set];
+  return set;
 };

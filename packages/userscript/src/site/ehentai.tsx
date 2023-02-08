@@ -7,7 +7,7 @@ declare const selected_tag: string;
 declare const selected_link: HTMLElement;
 
 (async () => {
-  const { options, showFab, setManga, request, createShowComic, toast } =
+  const { options, setFab, setManga, request, createShowComic, toast } =
     await useInit('nhentai', { 匹配nhentai: true, 快捷键翻页: true });
 
   // 不是漫画页的话
@@ -53,7 +53,7 @@ declare const selected_link: HTMLElement;
     const res = await request('GET', url);
 
     loadedImgNum += 1;
-    showFab({
+    setFab({
       progress: loadedImgNum / totalImgNum,
       tip: `加载图片中 - ${loadedImgNum}/${totalImgNum}`,
     });
@@ -101,7 +101,7 @@ declare const selected_link: HTMLElement;
           : ' Read';
     },
   );
-  showFab({ onClick: showComic, initShow: options.autoLoad });
+  setFab({ onClick: showComic, initShow: options.autoLoad });
   comicReadModeDom.addEventListener('click', () => showComic());
 
   if (options.autoLoad) await showComic();

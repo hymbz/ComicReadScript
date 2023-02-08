@@ -17,14 +17,11 @@ type Images = {
 declare const gallery: { num_pages: number; media_id: string; images: Images };
 
 (async () => {
-  const { options, showFab, toast, createShowComic } = await useInit(
-    'nhentai',
-    {
-      自动翻页: true,
-      彻底屏蔽漫画: true,
-      在新页面中打开链接: true,
-    },
-  );
+  const { options, setFab, toast, createShowComic } = await useInit('nhentai', {
+    自动翻页: true,
+    彻底屏蔽漫画: true,
+    在新页面中打开链接: true,
+  });
 
   // 在漫画详情页
   if (Reflect.has(unsafeWindow, 'gallery')) {
@@ -47,7 +44,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
             : '<i class="fa fa-book"></i> Read';
       },
     );
-    showFab({ onClick: showComic, initShow: options.autoLoad });
+    setFab({ onClick: showComic, initShow: options.autoLoad });
     comicReadModeDom.addEventListener('click', () => showComic());
 
     if (options.autoLoad) await showComic();

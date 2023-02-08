@@ -15,7 +15,7 @@ declare const $: any;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'img_data_arr')) return;
 
-  const { options, showFab, setManga, createShowComic } = await useInit(
+  const { options, setFab, setManga, createShowComic } = await useInit(
     'manhuaDB',
   );
 
@@ -53,7 +53,7 @@ declare const $: any;
   const showComic = createShowComic(() =>
     img_data_arr.map((data) => `${img_host}/${img_pre}/${data.img}`),
   );
-  showFab({ onClick: showComic });
+  setFab({ onClick: showComic });
 
   if (options.autoLoad) await showComic();
 })();
