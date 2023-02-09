@@ -1,0 +1,4 @@
+{
+  "vitest.enable": true,
+  "vitest.commandLine": "pnpm run test",
+}

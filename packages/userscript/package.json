@@ -5,7 +5,8 @@
   "description": "",
   "scripts": {
     "dev": "rollup --config --watch --environment NODE_ENV:development --configPlugin rollup-plugin-esbuild",
-    "build": "rollup --config --configPlugin rollup-plugin-esbuild"
+    "build": "rollup --config --configPlugin rollup-plugin-esbuild",
+    "test": "vitest"
   },
   "author": "hymbz",
   "license": "AGPL-3.0-or-later",

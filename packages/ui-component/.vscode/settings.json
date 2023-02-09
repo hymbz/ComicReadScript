@@ -1,4 +1,0 @@
-{
-  "vitest.enable": true,
-  "vitest.commandLine": "pp test",
-}
