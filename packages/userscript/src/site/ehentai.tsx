@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-import { imgToBlob, insertNode, linstenKeyup, querySelector } from '../helper';
+import { download, insertNode, linstenKeyup, querySelector } from '../helper';
 import { useInit } from '../helper/useInit';
 
 declare const selected_tag: string;
@@ -215,7 +215,9 @@ declare const selected_link: HTMLElement;
                 const url = `https://i.nhentai.net/galleries/${
                   comicInfo.media_id
                 }/${i + 1}.${fileType[t]}`;
-                const blobUrl = await imgToBlob(url, details);
+                const blobUrl = URL.createObjectURL(
+                  await download(url, details),
+                );
                 loadNum += 1;
                 nhentaiComicReadModeDom.innerHTML = ` loading - ${loadNum}/${comicInfo.num_pages}`;
                 return blobUrl;

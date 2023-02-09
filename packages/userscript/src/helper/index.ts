@@ -87,13 +87,13 @@ export const dataToParams = (data: Record<string, unknown>) =>
     .join('&');
 
 /**
- * 根据图片地址下载下来转为 blob 格式
+ * 根据 url 下载为 blob 格式数据
  */
-export const imgToBlob = async (
+export const download = async (
   url: string,
   details?: Partial<Tampermonkey.Request<any>>,
   errorNum = 0,
-): Promise<string> => {
+): Promise<Blob> => {
   const res = await GM.xmlHttpRequest({
     method: 'GET',
     url,
@@ -102,13 +102,13 @@ export const imgToBlob = async (
   });
 
   if (res.status !== 200) {
-    const errorTest = `${url} 转为 blob 格式时出错：[${res.status}]${res.statusText}`;
+    const errorTest = `${url} 下载图片时出错：[${res.status}]${res.statusText}`;
     if (errorNum >= 3) throw new Error(errorTest);
     console.warn(errorTest);
     await sleep(1000);
-    return imgToBlob(url, details, errorNum + 1);
+    return download(url, details, errorNum + 1);
   }
-  return URL.createObjectURL(res.response);
+  return res.response;
 };
 
 /** 将 blob 数据作为文件保存至本地 */
