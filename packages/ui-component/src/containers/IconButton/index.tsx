@@ -29,7 +29,7 @@ interface IconButtonProps {
  *
  * @param param param
  */
-export const IconBotton: React.FC<IconButtonProps> = memo(
+export const IconButton: React.FC<IconButtonProps> = memo(
   ({
     children,
     tip,

@@ -3,7 +3,7 @@
  * 用于测试时显示组件
  */
 import MdQueue from '@material-design-icons/svg/round/queue.svg';
-import { IconBotton } from '.';
+import { IconButton } from '.';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import 'normalize.css';
@@ -20,9 +20,9 @@ export default function Display() {
         justifyContent: 'center',
       }}
     >
-      <IconBotton tip="test" placement="left">
+      <IconButton tip="test" placement="left">
         <MdQueue />
-      </IconBotton>
+      </IconButton>
     </div>
   );
 }

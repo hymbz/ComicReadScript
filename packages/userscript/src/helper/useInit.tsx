@@ -1,6 +1,6 @@
 import MdAutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
-import { IconBotton } from '@crs/ui-component/dist/IconBotton';
+import { IconButton } from '@crs/ui-component/dist/IconButton';
 import { useFab, useManga, useToast } from '../components';
 import { useSiteOptions } from './useSiteOptions';
 import { sleep } from '.';
@@ -26,7 +26,7 @@ export const useInit = async <T extends Record<string, any>>(
     speedDial: [
       () => <div style={{ height: '1em' }} />,
       () => (
-        <IconBotton
+        <IconButton
           tip="自动加载"
           placement="left"
           enabled={options.autoLoad}
@@ -35,7 +35,7 @@ export const useInit = async <T extends Record<string, any>>(
           }
         >
           <MdAutoStories />
-        </IconBotton>
+        </IconButton>
       ),
     ],
   });

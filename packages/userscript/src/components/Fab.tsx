@@ -6,7 +6,7 @@ import MdCloudDownload from '@material-design-icons/svg/round/cloud_download.svg
 import type { FabProps } from '@crs/ui-component/dist/Fab';
 import { Fab } from '@crs/ui-component/dist/Fab';
 import FabStyle from '@crs/ui-component/dist/Fab.css';
-import IconBottonStyle from '@crs/ui-component/dist/IconBotton.css';
+import IconBottonStyle from '@crs/ui-component/dist/IconButton.css';
 import shadow from 'react-shadow';
 import produce from 'immer';
 import { useComponentsRoot } from '../helper';

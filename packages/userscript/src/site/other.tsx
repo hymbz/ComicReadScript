@@ -1,6 +1,6 @@
 import MdAutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
-import { IconBotton } from '@crs/ui-component/dist/IconBotton';
+import { IconButton } from '@crs/ui-component/dist/IconButton';
 import { useToast, useManga, useFab } from '../components';
 import { useSiteOptions } from '../helper/useSiteOptions';
 import { isEqualArray } from '../helper';
@@ -35,7 +35,7 @@ setTimeout(async () => {
       onClick: () => setManga({ show: true }),
       speedDial: [
         () => (
-          <IconBotton
+          <IconButton
             tip="自动加载"
             placement="left"
             enabled={options.autoLoad}
@@ -44,7 +44,7 @@ setTimeout(async () => {
             }
           >
             <MdAutoStories />
-          </IconBotton>
+          </IconButton>
         ),
       ],
     });

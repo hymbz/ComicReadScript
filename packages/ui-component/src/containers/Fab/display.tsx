@@ -11,23 +11,23 @@ import { Fab } from '.';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import 'normalize.css';
-import { IconBotton } from '../IconBotton';
+import { IconButton } from '../IconButton';
 
 const speedDial = [
   () => (
-    <IconBotton placement="left" tip="Filter1">
+    <IconButton placement="left" tip="Filter1">
       <Filter1 />
-    </IconBotton>
+    </IconButton>
   ),
   () => (
-    <IconBotton placement="left" tip="Filter2">
+    <IconButton placement="left" tip="Filter2">
       <Filter2 />
-    </IconBotton>
+    </IconButton>
   ),
   () => (
-    <IconBotton placement="left" tip="Filter3" enabled>
+    <IconButton placement="left" tip="Filter3" enabled>
       <Filter3 />
-    </IconBotton>
+    </IconButton>
   ),
 ];
 

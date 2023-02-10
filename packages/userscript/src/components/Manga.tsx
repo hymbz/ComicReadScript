@@ -2,7 +2,7 @@ import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { Manga } from '@crs/ui-component/dist/Manga';
 import shadow from 'react-shadow';
 import MangaStyle from '@crs/ui-component/dist/Manga.css';
-import IconBottonStyle from '@crs/ui-component/dist/IconBotton.css';
+import IconBottonStyle from '@crs/ui-component/dist/IconButton.css';
 import { useComponentsRoot } from '../helper';
 
 export type SelfMangaProps = MangaProps & { show: boolean };

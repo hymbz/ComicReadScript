@@ -1,7 +1,7 @@
 import MdFileDownload from '@material-design-icons/svg/round/file_download.svg';
 import MdClose from '@material-design-icons/svg/round/close.svg';
 
-import { IconBotton } from '@crs/ui-component/dist/IconBotton';
+import { IconButton } from '@crs/ui-component/dist/IconButton';
 import { buttonListDivider } from '@crs/ui-component/dist/Manga';
 
 import { useState, useCallback } from 'react';
@@ -49,9 +49,9 @@ export const setToolbarButton = (draftProps: SelfMangaProps) => {
     }, []);
 
     return (
-      <IconBotton tip={tip} onClick={handleDownload}>
+      <IconButton tip={tip} onClick={handleDownload}>
         <MdFileDownload />
-      </IconBotton>
+      </IconButton>
     );
   };
 
@@ -67,9 +67,9 @@ export const setToolbarButton = (draftProps: SelfMangaProps) => {
       [
         '退出',
         () => (
-          <IconBotton tip="退出" onClick={handleEnd}>
+          <IconButton tip="退出" onClick={handleEnd}>
             <MdClose />
-          </IconBotton>
+          </IconButton>
         ),
       ],
     ];

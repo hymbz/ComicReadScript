@@ -6,7 +6,7 @@ import MdSettings from '@material-design-icons/svg/round/settings.svg';
 
 import { useMemo, useCallback, useState } from 'react';
 import { useStore } from './hooks/useStore';
-import { IconBotton } from '../IconBotton';
+import { IconButton } from '../IconButton';
 import { SettingPanel } from './components/SettingPanel';
 
 import classes from './index.module.css';
@@ -50,13 +50,13 @@ export const defaultButtonList: ToolbarButtonList = [
       const isScrollMode = useStore((state) => state.option.scrollMode);
 
       return (
-        <IconBotton
+        <IconButton
           tip={isOnePageMode ? '单页模式' : '双页模式'}
           onClick={handleClick}
           hidden={isScrollMode}
         >
           {isOnePageMode ? <MdLooksOne /> : <MdLooksTwo />}
-        </IconBotton>
+        </IconButton>
       );
     },
   ],
@@ -75,9 +75,9 @@ export const defaultButtonList: ToolbarButtonList = [
       }, []);
 
       return (
-        <IconBotton tip="卷轴模式" enabled={enabled} onClick={handleClick}>
+        <IconButton tip="卷轴模式" enabled={enabled} onClick={handleClick}>
           <MdViewDay />
-        </IconBotton>
+        </IconButton>
       );
     },
   ],
@@ -92,14 +92,14 @@ export const defaultButtonList: ToolbarButtonList = [
       const handleClick = useStore((state) => state.img.switchFillEffect);
 
       return (
-        <IconBotton
+        <IconButton
           tip="页面填充"
           enabled={enabled}
           hidden={isOnePageMode}
           onClick={handleClick}
         >
           <MdQueue />
-        </IconBotton>
+        </IconButton>
       );
     },
   ],
@@ -136,7 +136,7 @@ export const defaultButtonList: ToolbarButtonList = [
       );
 
       return (
-        <IconBotton
+        <IconButton
           tip="设置"
           enabled={showPanel}
           showTip={showPanel}
@@ -145,7 +145,7 @@ export const defaultButtonList: ToolbarButtonList = [
           popper={showPanel && popper}
         >
           <MdSettings />
-        </IconBotton>
+        </IconButton>
       );
     },
   ],
