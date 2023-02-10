@@ -44,10 +44,10 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
             : '<i class="fa fa-book"></i> Read';
       },
     );
-    setFab({ onClick: showComic, initShow: options.autoLoad });
+    setFab({ onClick: showComic, initShow: options.autoShow });
     comicReadModeDom.addEventListener('click', () => showComic());
 
-    if (options.autoLoad) await showComic();
+    if (options.autoShow) await showComic();
 
     return;
   }

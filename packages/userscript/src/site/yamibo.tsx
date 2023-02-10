@@ -79,7 +79,7 @@ declare const fid: number;
         if (imgList.length)
           setManga({ imgList: imgList.map((img) => img.src), show: true });
       };
-      if (options.autoLoad) showComic();
+      if (options.autoShow) showComic();
 
       setFab({ progress: 1, tip: '阅读模式', onClick: showComic });
 
@@ -100,7 +100,7 @@ declare const fid: number;
               imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
               setManga({
                 imgList: updateImgList(),
-                show: options.autoLoad ?? undefined,
+                show: options.autoShow ?? undefined,
               });
             }, 1000);
           });

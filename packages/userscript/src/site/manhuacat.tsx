@@ -45,5 +45,5 @@ declare const $: any;
   );
   setFab({ onClick: showComic });
 
-  if (options.autoLoad) await showComic();
+  if (options.autoShow) await showComic();
 })();

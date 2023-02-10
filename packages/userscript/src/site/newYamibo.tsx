@@ -57,5 +57,5 @@ import { useInit } from '../helper/useInit';
   const showComic = createShowComic(getImgList);
   setFab({ onClick: showComic });
 
-  if (options.autoLoad) await showComic();
+  if (options.autoShow) await showComic();
 })();

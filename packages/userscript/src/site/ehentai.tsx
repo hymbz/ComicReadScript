@@ -99,10 +99,10 @@ declare const selected_link: HTMLElement;
           : ' Read';
     },
   );
-  setFab({ onClick: showComic, initShow: options.autoLoad });
+  setFab({ onClick: showComic, initShow: options.autoShow });
   comicReadModeDom.addEventListener('click', () => showComic());
 
-  if (options.autoLoad) await showComic();
+  if (options.autoShow) await showComic();
 
   if (options.快捷键翻页) {
     linstenKeyup((e) => {

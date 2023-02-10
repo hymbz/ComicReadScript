@@ -24,14 +24,13 @@ export const useInit = async <T extends Record<string, any>>(
   const setFab = useFab({
     tip: '阅读模式',
     speedDial: [
-      () => <div style={{ height: '1em' }} />,
       () => (
         <IconButton
-          tip="自动加载"
+          tip="自动进入阅读模式"
           placement="left"
-          enabled={options.autoLoad}
+          enabled={options.autoShow}
           onClick={() =>
-            setOptions({ ...options, autoLoad: !options.autoLoad })
+            setOptions({ ...options, autoShow: !options.autoShow })
           }
         >
           <MdAutoStories />
@@ -187,7 +186,7 @@ export const useInit = async <T extends Record<string, any>>(
                   });
                 } else {
                   setFab({ progress, tip: '阅读模式', show: undefined });
-                  if (options.autoLoad) setManga({ show: true });
+                  if (options.autoShow) setManga({ show: true });
                 }
               };
 

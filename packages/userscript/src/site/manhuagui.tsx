@@ -33,5 +33,5 @@ declare const cInfo: { nextId: number; prevId: number };
   });
   setFab({ onClick: showComic });
 
-  if (options.autoLoad) await showComic();
+  if (options.autoShow) await showComic();
 })();

@@ -8,12 +8,12 @@ import { setToolbarButton } from '../helper/setToolbarButton';
 
 setTimeout(async () => {
   const { options, setOptions, isRecorded, onOptionChange } =
-    await useSiteOptions(window.location.hostname, { autoLoad: false });
+    await useSiteOptions(window.location.hostname, { autoShow: false });
 
   /** 图片列表 */
   let imgList: string[] = [];
   /** 是否在等待自动加载完毕后进入阅读模式 */
-  const waitAutoLoad = options.autoLoad;
+  const waitAutoLoad = options.autoShow;
   /** 是否正在后台不断检查图片 */
   let running = 0;
 
@@ -36,11 +36,11 @@ setTimeout(async () => {
       speedDial: [
         () => (
           <IconButton
-            tip="自动加载"
+            tip="自动进入阅读模式"
             placement="left"
-            enabled={options.autoLoad}
+            enabled={options.autoShow}
             onClick={() =>
-              setOptions({ ...options, autoLoad: !options.autoLoad })
+              setOptions({ ...options, autoShow: !options.autoShow })
             }
           >
             <MdAutoStories />
@@ -96,7 +96,7 @@ setTimeout(async () => {
       .map((e) => e.src);
 
     if (newImgList.length === 0) {
-      if (!options.autoLoad) {
+      if (!options.autoShow) {
         clearInterval(running);
         toast?.('没有找到图片', { type: 'warning' });
       }
@@ -121,7 +121,7 @@ setTimeout(async () => {
     setManga({ show: true });
 
     // 自动启用自动加载功能
-    await setOptions({ ...options, autoLoad: true });
+    await setOptions({ ...options, autoShow: true });
   });
 
   if (isRecorded) {

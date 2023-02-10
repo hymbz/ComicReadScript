@@ -216,7 +216,7 @@ declare const zcClick: any;
   );
   setFab({ onClick: () => showComic() });
 
-  if (options.autoLoad) await showComic();
+  if (options.autoShow) await showComic();
 
   // 修改发表吐槽的函数，删去字数判断。只是删去了原函数的一个判断条件而已，所以将这段压缩了一下
   if (options['解除吐槽的字数限制']) {

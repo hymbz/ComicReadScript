@@ -2,7 +2,7 @@ import type { MangaProps } from '@crs/ui-component/dist/Manga';
 
 interface defaultOptions {
   option: Partial<MangaProps['option']> | undefined;
-  autoLoad: boolean;
+  autoShow: boolean;
 }
 
 /**
@@ -21,7 +21,7 @@ export const useSiteOptions = async <T extends Record<string, any>>(
   const options = Object.assign(
     {
       option: undefined,
-      autoLoad: true,
+      autoShow: true,
       ...defaultOptions,
     } as Options,
     rawValue,
