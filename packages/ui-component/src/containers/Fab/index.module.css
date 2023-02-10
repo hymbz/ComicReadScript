@@ -6,6 +6,15 @@
   &[data-show="false"] {
     transform: scale(0);
   }
+
+  &[data-trans="true"] {
+    opacity: 0.8;
+
+    &:hover,
+    &:focus {
+      opacity: 1;
+    }
+  }
 }
 
 .fab {

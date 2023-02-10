@@ -17,6 +17,8 @@ export interface FabProps {
   show?: boolean;
   /** 初始时是否显示 */
   initShow?: boolean;
+  /** 是否自动半透明化 */
+  autoTrans?: boolean;
 
   children?: JSX.Element | JSX.Element[];
   style?: CSSProperties;
@@ -32,6 +34,7 @@ export const Fab: React.FC<FabProps> = ({
   speedDial,
   show: forceShow,
   initShow = true,
+  autoTrans = false,
   children,
   style,
   onClick,
@@ -68,6 +71,7 @@ export const Fab: React.FC<FabProps> = ({
       className={classes.fabRoot}
       style={style}
       data-show={forceShow ?? show}
+      data-trans={autoTrans}
     >
       <button type="button" className={classes.fab} onClick={handleClick}>
         {children ?? <MdMenuBook />}
