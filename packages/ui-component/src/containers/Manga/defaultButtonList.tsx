@@ -16,15 +16,21 @@ interface DefaultSettingsButtonProps {
   onMouseLeave: () => void;
 }
 
-export type DefaultButtonList = [
+export type ToolbarButtonList = [
   string,
   React.FC<DefaultSettingsButtonProps>,
 ][];
 
+/** 工具栏按钮分隔栏 */
+export const buttonListDivider: [string, React.FC] = [
+  '',
+  () => <div style={{ height: '1em' }} />,
+];
+
 // FIXME: ESlint 莫名把这列表当成了 jsdoc，等之后更新修复再删除这个注释
 // eslint-disable-next-line jsdoc/require-param
 /** 工具栏的默认按钮列表 */
-export const defaultButtonList: DefaultButtonList = [
+export const defaultButtonList: ToolbarButtonList = [
   [
     '单双页模式',
     () => {
@@ -97,7 +103,7 @@ export const defaultButtonList: DefaultButtonList = [
       );
     },
   ],
-  ['分隔', () => <div style={{ height: '1em' }} />],
+  buttonListDivider,
   [
     '设置',
     ({ onMouseLeave }) => {

@@ -1,12 +1,8 @@
-import MdClose from '@material-design-icons/svg/round/close.svg';
-
-import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
 import { Manga } from '@crs/ui-component/dist/Manga';
 import shadow from 'react-shadow';
 import MangaStyle from '@crs/ui-component/dist/Manga.css';
 import IconBottonStyle from '@crs/ui-component/dist/IconBotton.css';
-import produce from 'immer';
 import { useComponentsRoot } from '../helper';
 
 export type SelfMangaProps = MangaProps & { show: boolean };
@@ -14,24 +10,25 @@ export type SelfMangaProps = MangaProps & { show: boolean };
 /**
  * 显示漫画阅读窗口
  */
-export const useManga = (props?: Partial<SelfMangaProps>) => {
+export const useManga = (initProps?: Partial<SelfMangaProps>) => {
   const [root, dom] = useComponentsRoot('comicRead');
 
-  let mangaProps = { imgList: [], show: false, ...props } as SelfMangaProps;
+  const props = { imgList: [], show: false, ...initProps } as SelfMangaProps;
 
-  mangaProps.onExit = () => {
-    mangaProps.show = false;
-    dom.style.visibility = 'hidden';
-    document.documentElement.style.overflow = 'unset';
-  };
-
-  const set = (recipe: Partial<SelfMangaProps>) => {
-    const oldEnable = mangaProps.show;
+  const set = (
+    recipe:
+      | Partial<SelfMangaProps>
+      | ((props: SelfMangaProps) => Partial<SelfMangaProps>),
+    render = true,
+  ) => {
     if (recipe) {
-      if (typeof recipe === 'function')
-        mangaProps = produce(mangaProps, recipe);
-      else Object.assign(mangaProps, recipe);
+      Object.assign(
+        props,
+        typeof recipe === 'function' ? recipe(props) : recipe,
+      );
     }
+
+    if (!render) return;
 
     root.render(
       <shadow.div
@@ -45,37 +42,24 @@ export const useManga = (props?: Partial<SelfMangaProps>) => {
           zIndex: 999999999,
         }}
       >
-        <Manga {...mangaProps} />
+        <Manga {...props} />
         <style type="text/css">{IconBottonStyle}</style>
         <style type="text/css">{MangaStyle}</style>
       </shadow.div>,
     );
 
-    // 如果没有修改 show 参数则直接跳过
-    if (oldEnable === mangaProps.show) return;
-
-    if (mangaProps.show) {
+    if (props.imgList.length && props.show) {
       dom.style.visibility = 'visible';
       document.documentElement.style.overflow = 'hidden';
     } else {
-      mangaProps.onExit?.();
+      dom.style.visibility = 'hidden';
+      document.documentElement.style.overflow = 'unset';
     }
   };
 
-  const handleEnd = () => {
-    mangaProps.onExit!();
+  props.onExit = () => {
+    set({ show: false });
   };
-  mangaProps.editButtonList = (list) => [
-    ...list,
-    [
-      '退出',
-      () => (
-        <IconBotton tip="退出" onClick={handleEnd}>
-          <MdClose />
-        </IconBotton>
-      ),
-    ],
-  ];
 
-  return set;
+  return [set, props] as [typeof set, SelfMangaProps];
 };

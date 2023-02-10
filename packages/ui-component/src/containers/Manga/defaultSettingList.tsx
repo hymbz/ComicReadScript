@@ -11,10 +11,10 @@ import { needDarkMode } from '../../helper';
 
 import classes from './index.module.css';
 
-export type DefaultSettingList = [string, React.FC][];
+export type SettingList = [string, React.FC][];
 
 /** 默认菜单项 */
-export const defaultSettingList: DefaultSettingList = [
+export const defaultSettingList: SettingList = [
   [
     '阅读',
     () => {

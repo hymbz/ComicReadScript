@@ -1,9 +1,10 @@
-import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
+import MdAutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
 import { useFab, useManga, useToast } from '../components';
 import { useSiteOptions } from './useSiteOptions';
 import { sleep } from '.';
+import { setToolbarButton } from './setToolbarButton';
 
 /**
  * 对三个样式组件和 useSiteOptions 的默认值进行封装
@@ -33,14 +34,14 @@ export const useInit = async <T extends Record<string, any>>(
             setOptions({ ...options, autoLoad: !options.autoLoad })
           }
         >
-          <AutoStories />
+          <MdAutoStories />
         </IconBotton>
       ),
     ],
   });
   onOptionChange(() => setFab());
 
-  const setManga = useManga({
+  const [setManga, mangaProps] = useManga({
     imgList: [],
     option: options.option,
     onOptionChange: (option) => setOptions({ ...options, option }),
@@ -141,10 +142,7 @@ export const useInit = async <T extends Record<string, any>>(
         img: ComicImg,
       ) => void = () => {},
     ) => {
-      let imgList: string[] = [];
-
-      let progress = 1;
-
+      /** 是否正在加载图片中 */
       let loading = false;
 
       /**
@@ -158,34 +156,42 @@ export const useInit = async <T extends Record<string, any>>(
           return;
         }
 
+        const { imgList } = mangaProps;
+
         if (!imgList.length) {
           loading = true;
           try {
             setFab({ progress: 0, show: true });
-            imgList = await getImgList();
-            if (imgList.length === 0) throw new Error('获取漫画图片失败');
+            const initImgList = await getImgList();
+            if (initImgList.length === 0) throw new Error('获取漫画图片失败');
             setFab({ progress: 1, tip: '阅读模式' });
-            setManga({
-              imgList,
-              show: !waitLoad,
-              onLoading: (img, list) => {
+            setManga((draftProps) => {
+              draftProps.imgList = initImgList;
+              draftProps.show = !waitLoad;
+              setToolbarButton(draftProps);
+
+              // 监听图片加载状态，将进度显示到 Fab 上
+              draftProps.onLoading = (img, list) => {
                 const loadNum = list.filter(
                   (image) => image.loadType === 'loaded',
                 ).length;
 
-                onLoading(loadNum, imgList.length, img);
+                onLoading(loadNum, list.length, img);
 
-                progress = 1 + loadNum / imgList.length;
+                /** 图片加载进度 */
+                const progress = 1 + loadNum / list.length;
                 if (progress !== 2) {
                   setFab({
                     progress,
-                    tip: `图片加载中 - ${loadNum}/${imgList.length}`,
+                    tip: `图片加载中 - ${loadNum}/${list.length}`,
                   });
                 } else {
                   setFab({ progress, tip: '阅读模式', show: undefined });
                   if (options.autoLoad) setManga({ show: true });
                 }
-              },
+              };
+
+              return draftProps;
             });
           } catch (e: any) {
             console.error(e);

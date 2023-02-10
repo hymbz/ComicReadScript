@@ -14,8 +14,8 @@ export const Toolbar: React.FC = () => {
   const editButtonList = useStore((state) => state.editButtonList);
   const buttonList = useMemo(
     () =>
-      editButtonList(defaultButtonList).map(([key, ButtonItem]) => (
-        <ButtonItem key={key} onMouseLeave={handleMouseLeave} />
+      editButtonList(defaultButtonList).map(([key, ButtonItem], i) => (
+        <ButtonItem key={key || i} onMouseLeave={handleMouseLeave} />
       )),
     [editButtonList, handleMouseLeave],
   );

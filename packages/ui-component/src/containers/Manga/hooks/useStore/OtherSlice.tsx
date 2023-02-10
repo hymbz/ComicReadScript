@@ -1,5 +1,5 @@
-import type { DefaultButtonList } from '../../defaultButtonList';
-import type { DefaultSettingList } from '../../defaultSettingList';
+import type { ToolbarButtonList } from '../../defaultButtonList';
+import type { SettingList } from '../../defaultSettingList';
 import type { SelfStateCreator } from '.';
 
 export interface OtherSlice {
@@ -17,8 +17,8 @@ export interface OtherSlice {
   /** 点击下一话按钮时触发的回调 */
   onNext?: () => void;
 
-  editButtonList: (list: DefaultButtonList) => DefaultButtonList;
-  editSettingList: (list: DefaultSettingList) => DefaultSettingList;
+  editButtonList: (list: ToolbarButtonList) => ToolbarButtonList;
+  editSettingList: (list: SettingList) => SettingList;
 }
 
 export const otherSlice: SelfStateCreator<OtherSlice> = () => ({
@@ -26,6 +26,6 @@ export const otherSlice: SelfStateCreator<OtherSlice> = () => ({
   showScrollbar: false,
   showEndPage: false,
 
-  editButtonList: (list: DefaultButtonList) => list,
-  editSettingList: (list: DefaultSettingList) => list,
+  editButtonList: (list: ToolbarButtonList) => list,
+  editSettingList: (list: SettingList) => list,
 });

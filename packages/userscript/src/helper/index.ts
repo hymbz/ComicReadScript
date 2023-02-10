@@ -73,7 +73,7 @@ export const querySelectorClick = (selector: string) => {
 };
 
 /**
- * 判断两个列表值是否相同
+ * 判断两个列表中包含的值是否相同
  */
 export const isEqualArray = <T>(a: T[], b: T[]): boolean =>
   a.length === b.length && !!a.filter((t) => !b.includes(t));
@@ -89,11 +89,11 @@ export const dataToParams = (data: Record<string, unknown>) =>
 /**
  * 根据 url 下载为 blob 格式数据
  */
-export const download = async (
+export const download = async <T = Blob>(
   url: string,
   details?: Partial<Tampermonkey.Request<any>>,
   errorNum = 0,
-): Promise<Blob> => {
+): Promise<T> => {
   const res = await GM.xmlHttpRequest({
     method: 'GET',
     url,

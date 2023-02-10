@@ -15,6 +15,8 @@ import type { SelfState } from './hooks/useStore/index';
 import type { FillEffect } from './hooks/useStore/ImageSlice';
 import type { Option } from './hooks/useStore/OptionSlice';
 
+export { buttonListDivider } from './defaultButtonList';
+
 export interface MangaProps {
   /** 图片url列表 */
   imgList: string[];

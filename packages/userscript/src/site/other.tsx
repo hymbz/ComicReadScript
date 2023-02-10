@@ -1,10 +1,10 @@
-import AutoStories from '@material-design-icons/svg/round/auto_stories.svg';
+import MdAutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 
 import { IconBotton } from '@crs/ui-component/dist/IconBotton';
-import type { FabRecipe, SelfMangaProps } from '../components';
 import { useToast, useManga, useFab } from '../components';
 import { useSiteOptions } from '../helper/useSiteOptions';
 import { isEqualArray } from '../helper';
+import { setToolbarButton } from '../helper/setToolbarButton';
 
 setTimeout(async () => {
   const { options, setOptions, isRecorded, onOptionChange } =
@@ -17,17 +17,18 @@ setTimeout(async () => {
   /** 是否正在后台不断检查图片 */
   let running = 0;
 
-  let setManga: (recipe: Partial<SelfMangaProps>) => void;
-  let setFab: ((recipe?: FabRecipe | undefined) => void) | undefined;
+  let setManga: ReturnType<typeof useManga>[0];
+  let setFab: ReturnType<typeof useFab>;
   let toast: ReturnType<typeof useToast>;
 
   const init = () => {
     if (setManga !== undefined) return;
 
-    setManga = useManga({
+    [setManga] = useManga({
       imgList,
       onOptionChange: (option) => setOptions({ ...options, option }, false),
     });
+    setManga(setToolbarButton, false);
 
     setFab = useFab({
       tip: '阅读模式',
@@ -42,20 +43,16 @@ setTimeout(async () => {
               setOptions({ ...options, autoLoad: !options.autoLoad })
             }
           >
-            <AutoStories />
+            <MdAutoStories />
           </IconBotton>
         ),
       ],
     });
-    onOptionChange(() => setFab?.());
+    onOptionChange(() => setFab!());
+    setFab!();
 
     toast = useToast();
   };
-  // 如果网站有储存配置，就直接显示 Fab
-  if (isRecorded) {
-    init();
-    setFab?.();
-  }
 
   /** 已经被触发过懒加载的图片 */
   const triggedImgList: Set<HTMLImageElement> = new Set();
@@ -116,12 +113,6 @@ setTimeout(async () => {
     return true;
   };
 
-  if (isRecorded) {
-    init();
-    // 为了保证兼容，只能简单粗暴的不断检查网页的图片来更新数据
-    running = window.setInterval(checkFindImg, 2000);
-  }
-
   await GM.registerMenuCommand('进入漫画阅读模式', async () => {
     init();
 
@@ -131,6 +122,15 @@ setTimeout(async () => {
 
     // 自动启用自动加载功能
     await setOptions({ ...options, autoLoad: true });
-    setFab?.();
   });
+
+  if (isRecorded) {
+    init();
+    // 为了保证兼容，只能简单粗暴的不断检查网页的图片来更新数据
+    running = window.setInterval(checkFindImg, 2000);
+
+    await GM.registerMenuCommand('停止在此站点自动运行脚本', async () => {
+      await GM.deleteValue(window.location.hostname);
+    });
+  }
 });

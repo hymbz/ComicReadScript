@@ -13,13 +13,13 @@ import { useComponentsRoot } from '../helper';
 
 export type FabRecipe = ((draftProps: FabProps) => void) | Partial<FabProps>;
 
-export const useFab = (props?: FabProps) => {
+export const useFab = (initProps?: FabProps) => {
   const [root] = useComponentsRoot('fab');
 
-  let fabProps = props ?? {};
+  let props = initProps ?? {};
 
   const FabIcon = () => {
-    switch (fabProps.progress) {
+    switch (props.progress) {
       case undefined:
         // 没有内容的书
         return <MdImportContacts />;
@@ -28,14 +28,14 @@ export const useFab = (props?: FabProps) => {
         // 有内容的书
         return <MdMenuBook />;
       default:
-        return fabProps.progress > 1 ? <MdCloudDownload /> : <MdImageSearch />;
+        return props.progress > 1 ? <MdCloudDownload /> : <MdImageSearch />;
     }
   };
 
   const set = (recipe?: FabRecipe) => {
     if (recipe) {
-      if (typeof recipe === 'function') fabProps = produce(fabProps, recipe);
-      else Object.assign(fabProps, recipe);
+      if (typeof recipe === 'function') props = produce(props, recipe);
+      else Object.assign(props, recipe);
     }
 
     root.render(
@@ -48,7 +48,7 @@ export const useFab = (props?: FabProps) => {
           zIndex: 999999999,
         }}
       >
-        <Fab {...fabProps}>
+        <Fab {...props}>
           <FabIcon />
         </Fab>
         <style type="text/css">{IconBottonStyle}</style>
