@@ -39,9 +39,9 @@ const getPageIndexText = (state: Draft<SelfState>, pageIndex: number) => {
   const pageIndexText = state.pageList[pageIndex].map((index) => {
     if (index === -1) return '填充页';
     const img = state.imgList[index];
-    if (img.loadType === 'loaded') return `${img.index}`;
+    if (img.loadType === 'loaded') return `${index}`;
     // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-    return `${img.index} (${loadTypeMap[img.loadType]})`;
+    return `${index} (${loadTypeMap[img.loadType]})`;
   }) as [string] | [string, string];
   if (state.option.dir === 'rtl') pageIndexText.reverse();
   return pageIndexText;

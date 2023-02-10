@@ -9,7 +9,6 @@ declare global {
   type ComicImg = Draft<{
     loadType: 'loading' | 'loaded' | 'error' | 'wait';
     type: 'long' | 'wide' | 'vertical' | '';
-    index: number;
     src: string;
     width?: number;
     height?: number;
@@ -112,9 +111,8 @@ const loadImg = (
 
 export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
   const _updatePageData = (state: Draft<SelfState>) => {
-    // TODO: 这里需要保证在 imgList 发生变动的情况下，pageList 里未改动到的元素保持不变
     if (state.option.onePageMode || state.option.scrollMode)
-      state.pageList = state.imgList.map((img) => [img.index]);
+      state.pageList = state.imgList.map((_, i) => [i]);
     else
       state.pageList = handleComicData({
         comicImgList: state.imgList,

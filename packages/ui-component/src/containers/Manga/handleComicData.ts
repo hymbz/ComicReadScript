@@ -27,10 +27,10 @@ export const handleComicData = ({
 
     if (img.type !== 'long' && img.type !== 'wide') {
       if (imgCache !== null) {
-        pageList.push([imgCache, img.index]);
+        pageList.push([imgCache, i]);
         imgCache = null;
       } else {
-        imgCache = img.index;
+        imgCache = i;
       }
     } else {
       if (imgCache !== null) {
@@ -41,7 +41,7 @@ export const handleComicData = ({
       if (fillEffect.get(i) === undefined && img.loadType !== 'loading')
         fillEffect.set(i, false);
 
-      pageList.push([img.index]);
+      pageList.push([i]);
     }
   }
 

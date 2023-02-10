@@ -47,7 +47,8 @@ export const ComicImgFlow: React.FC = () => {
   }, []);
 
   const imgEleList = useMemo(
-    () => imgList.map(({ index }) => <ComicImg key={index} index={index} />),
+    // eslint-disable-next-line react/no-array-index-key
+    () => imgList.map((_, i) => <ComicImg key={i} index={i} />),
     [imgList],
   );
 

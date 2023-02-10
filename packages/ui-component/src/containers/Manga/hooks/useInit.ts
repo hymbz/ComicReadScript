@@ -70,8 +70,7 @@ export const useInit = ({
 
       // 处理初始化
       if (!state.imgList.length) {
-        state.imgList = imgList.map((imgUrl, index) => ({
-          index,
+        state.imgList = imgList.map((imgUrl) => ({
           type: '',
           src: imgUrl,
           loadType: 'wait',
@@ -86,9 +85,8 @@ export const useInit = ({
       );
 
       state.imgList = imgList.map(
-        (imgUrl, index) =>
+        (imgUrl) =>
           state.imgList.find((img) => img.src === imgUrl) ?? {
-            index,
             type: '',
             src: imgUrl,
             loadType: 'wait',
