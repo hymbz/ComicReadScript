@@ -9,9 +9,8 @@ const mock = (
 ) => ({
   pageList: handleComicData({
     comicImgList: imgTypeList.map(
-      (type, index): ComicImg => ({
+      (type): ComicImg => ({
         type,
-        index,
         loadType: 'loaded',
         src: '',
       }),
