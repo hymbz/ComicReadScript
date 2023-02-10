@@ -41,10 +41,10 @@ export const useFab = (initProps?: FabProps) => {
     root.render(
       <shadow.div
         style={{
-          fontSize: 16,
+          fontSize: ' clamp(12px, calc(1.5vw), 16px)',
           position: 'fixed',
-          right: '3em',
-          bottom: '2em',
+          right: '3vw',
+          bottom: '6vh',
           zIndex: 999999999,
         }}
       >
