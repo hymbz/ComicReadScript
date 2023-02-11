@@ -4,7 +4,7 @@ import type { Draft } from 'immer';
 import { current } from 'immer';
 import type { SyntheticEvent } from 'react';
 import { memo, useRef, useCallback } from 'react';
-import { useStore } from '../hooks/useStore';
+import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
 
@@ -55,12 +55,31 @@ export const ComicImg: React.FC<ComicImgProps> = memo(
       [index],
     );
 
+    const { show, fill } = useStore((state) => {
+      // 卷轴模式下全部显示
+      if (state.option.scrollMode) return { show: true };
+
+      const activePage = state.pageList[state.activePageIndex];
+      if (!activePage.includes(index)) return { show: false };
+      return {
+        show: true,
+        fill: ((): undefined | 'left' | 'right' => {
+          const i = activePage.indexOf(-1);
+          if (i === -1) return undefined;
+          return !!i === (state.option.dir === 'rtl') ? 'left' : 'right';
+        })(),
+      };
+    }, shallow);
+
     const img = useStore((state) => state.imgList[index]);
 
-    if (index === -1 || !img) return null;
-
     return (
-      <div className={classes.mangaFlowItem} style={{ gridArea: `_${index}` }}>
+      <div
+        className={classes.comicImg}
+        data-type={img.type}
+        data-fill={fill}
+        style={{ display: show ? undefined : 'none' }}
+      >
         <img
           className={clsx(
             classes.img,

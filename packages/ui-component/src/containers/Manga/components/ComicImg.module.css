@@ -1,19 +1,20 @@
+/* 测试时隐藏 touchArea */
+
+/* .touchAreaRoot {
+  display: none !important;
+} */
+
 .img {
-  /* max-width: 100%;
-  max-height: 100%; */
+  width: 100%;
+  height: 100%;
 
   /* 临时测试暂时修改; */
 
-  width: 7em !important;
-  height: 7em !important;
+  /* width: 7em !important;
+  height: 7em !important; */
 
   object-fit: contain;
   background-color: var(--hover_bg_color);
-
-  /* 填充页 */
-  &.fill {
-    visibility: hidden;
-  }
 
   /* 隐藏因为 src 为空而出现图片加载错误的图 */
   &.wait,
@@ -43,16 +44,9 @@
     /* 隐藏滚动条但不影响滚动 */
     scrollbar-width: none;
 
-    position: absolute;
-
     overflow: auto;
-    display: flex;
     flex-direction: column;
-    align-items: center;
-
-    width: 100%;
-    height: unset;
-    max-height: 100%;
+    justify-content: flex-start;
 
     /* 隐藏滚动条但不影响滚动 */
     &::-webkit-scrollbar {
@@ -64,25 +58,29 @@
       height: auto;
     }
   }
+
+  /* 根据漫画方向调换位置 */
+  &[dir="ltr"] {
+    flex-direction: row;
+  }
 }
 
-/* 翻页模式下的每张图的容器 */
-.mangaFlowItem {
+/* 每张图的容器 */
+.comicImg {
   display: flex;
   align-items: center;
   justify-content: center;
 
   height: 100%;
   margin: 0;
-}
 
-.wrapper {
-  display: grid;
-  grid-auto-rows: 100%;
-  justify-content: center;
+  &[data-fill="left"] {
+    transform: translate(50%);
+  }
 
-  width: 100%;
-  height: 100%;
+  &[data-fill="right"] {
+    transform: translate(-50%);
+  }
 }
 
 .endPage {
@@ -128,9 +126,4 @@
 
     opacity: 1;
   }
-}
-
-/* 根据漫画方向调换位置 */
-.mangaFlow[dir="ltr"] {
-  flex-direction: row-reverse;
 }

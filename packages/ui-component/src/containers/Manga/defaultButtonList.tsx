@@ -70,7 +70,7 @@ export const defaultButtonList: ToolbarButtonList = [
           state.option.scrollMode = !state.option.scrollMode;
           state.option.onePageMode = state.option.scrollMode;
           state.img.updatePageData.sync(state);
-          state.activePageIndex = 0;
+          setTimeout(state.scrollbar.handleMangaFlowScroll);
         });
       }, []);
 

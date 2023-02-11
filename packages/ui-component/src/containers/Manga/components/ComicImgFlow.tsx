@@ -9,34 +9,25 @@ import { ComicImg } from './ComicImg';
 import classes from '../index.module.css';
 
 const selector = ({
-  pageList,
   activePageIndex,
   imgList,
   option: { scrollMode, disableZoom, dir },
-  scrollbar: { watchMangaFlowScroll },
+  scrollbar: { handleMangaFlowScroll },
 }: SelfState) => ({
-  pageList,
   activePageIndex,
   imgList,
   scrollMode,
   disableZoom,
   dir,
-  watchMangaFlowScroll,
+  handleMangaFlowScroll,
 });
 
 /**
  * 漫画图片流的容器
  */
 export const ComicImgFlow: React.FC = () => {
-  const {
-    pageList,
-    activePageIndex,
-    imgList,
-    scrollMode,
-    disableZoom,
-    dir,
-    watchMangaFlowScroll,
-  } = useStore(selector, shallow);
+  const { imgList, scrollMode, disableZoom, dir, handleMangaFlowScroll } =
+    useStore(selector, shallow);
 
   const mangaFlowRef = useRef<HTMLDivElement>(null);
   // 绑定 mangaFlowRef
@@ -52,36 +43,6 @@ export const ComicImgFlow: React.FC = () => {
     [imgList],
   );
 
-  const gridAreas = useMemo(
-    () =>
-      pageList
-        .map(
-          (page) =>
-            `"${page.map((i) => (i !== -1 ? `_${i}` : '.')).join(' ')}"`,
-        )
-        .join('\n'),
-    [pageList],
-  );
-
-  const body = useMemo(() => {
-    if (imgEleList.length === 0)
-      return <div style={{ fontSize: '3em' }}>NULL</div>;
-
-    if (scrollMode) return imgEleList;
-
-    return (
-      <div
-        className={classes.wrapper}
-        style={{
-          transform: `translateY(-${activePageIndex}00%)`,
-          gridTemplateAreas: gridAreas,
-        }}
-      >
-        {imgEleList}
-      </div>
-    );
-  }, [imgEleList, scrollMode, activePageIndex, gridAreas]);
-
   return (
     <div
       ref={mangaFlowRef}
@@ -92,9 +53,9 @@ export const ComicImgFlow: React.FC = () => {
         scrollMode && classes.scrollMode,
       )}
       dir={dir}
-      onScroll={watchMangaFlowScroll}
+      onScroll={handleMangaFlowScroll}
     >
-      {body}
+      {imgEleList}
     </div>
   );
 };
