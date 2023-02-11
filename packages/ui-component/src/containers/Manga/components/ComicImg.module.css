@@ -4,22 +4,36 @@
   display: none !important;
 } */
 
+/* .img,
+.touchAreaRoot {
+  width: 7em !important;
+  height: 7em !important;
+} */
+
 .img {
-  width: 100%;
+  display: none;
+
+  max-width: 100%;
   height: 100%;
 
-  /* 临时测试暂时修改; */
-
-  /* width: 7em !important;
-  height: 7em !important; */
-
   object-fit: contain;
-  background-color: var(--hover_bg_color);
 
-  /* 隐藏因为 src 为空而出现图片加载错误的图 */
-  &.wait,
-  &.error {
+  &[data-show] {
+    display: unset;
+  }
+
+  /* 隐藏因为 src 为空而出现的图片加载错误的图 */
+  &[data-load-type="error"],
+  &[data-load-type="wait"] {
     visibility: hidden;
+  }
+
+  &[data-fill="left"] {
+    transform: translate(50%);
+  }
+
+  &[data-fill="right"] {
+    transform: translate(-50%);
   }
 }
 
@@ -37,6 +51,9 @@
   background-color: var(--bg);
 
   &.disableZoom .img {
+    height: unset;
+    max-height: 100%;
+
     object-fit: scale-down;
   }
 
@@ -62,24 +79,6 @@
   /* 根据漫画方向调换位置 */
   &[dir="ltr"] {
     flex-direction: row;
-  }
-}
-
-/* 每张图的容器 */
-.comicImg {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  height: 100%;
-  margin: 0;
-
-  &[data-fill="left"] {
-    transform: translate(50%);
-  }
-
-  &[data-fill="right"] {
-    transform: translate(-50%);
   }
 }
 
