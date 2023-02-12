@@ -11,7 +11,7 @@ import { useInit } from '../helper/useInit';
   setManga({
     onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
     onPrev: querySelectorClick(
-      '.comicContent-prev:nth-child(3) a:not(.prev-null)',
+      '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
     ),
   });
 
