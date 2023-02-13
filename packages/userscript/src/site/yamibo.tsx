@@ -15,11 +15,16 @@ declare const fid: number;
     固定导航条: true,
   });
 
+  await GM.addStyle(
+    `#fab { --fab: #6E2B19; --fab_hover: #A15640; };
+    ${
+      options.固定导航条 ? '.header-stackup { position: fixed !important};' : ''
+    }`,
+  );
+
   if (options.关闭快捷导航按钮的跳转)
     // eslint-disable-next-line no-script-url
     querySelector('#qmenu a')?.setAttribute('href', 'javascript:;');
-  if (options.固定导航条)
-    await GM.addStyle('.header-stackup { position: fixed !important }');
 
   // 判断当前页是帖子
   if (/thread(-\d+){3}|mod=viewthread/.test(document.URL)) {

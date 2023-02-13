@@ -30,7 +30,7 @@
   font-size: 1em;
   color: white;
 
-  background-color: #607d8b;
+  background-color: var(--fab, #607d8b);
   border: none;
   border-radius: 100%;
   box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 6px 10px 0 rgb(0 0 0 / 14%),
@@ -41,7 +41,7 @@
   }
 
   &:hover {
-    background-color: #78909c;
+    background-color: var(--fab_hover, #78909c);
   }
 }
 

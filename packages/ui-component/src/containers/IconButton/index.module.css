@@ -25,11 +25,8 @@
   border-radius: 9999px;
   outline: none;
 
+  &:focus,
   &:hover {
-    background-color: var(--hover_bg_color, #fff3);
-  }
-
-  &:focus {
     background-color: var(--hover_bg_color, #fff3);
   }
 
@@ -38,11 +35,8 @@
 
     background-color: var(--text, white);
 
+    &:focus,
     &:hover {
-      background-color: var(--hover_bg_color_enable, #fffa);
-    }
-
-    &:focus {
       background-color: var(--hover_bg_color_enable, #fffa);
     }
   }
