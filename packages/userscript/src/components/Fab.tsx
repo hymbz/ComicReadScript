@@ -8,7 +8,6 @@ import { Fab } from '@crs/ui-component/dist/Fab';
 import FabStyle from '@crs/ui-component/dist/Fab.css';
 import IconBottonStyle from '@crs/ui-component/dist/IconButton.css';
 import shadow from 'react-shadow';
-import produce from 'immer';
 import { useComponentsRoot } from '../helper';
 
 export type FabRecipe = ((draftProps: FabProps) => void) | Partial<FabProps>;
@@ -16,7 +15,7 @@ export type FabRecipe = ((draftProps: FabProps) => void) | Partial<FabProps>;
 export const useFab = (initProps?: FabProps) => {
   const [root] = useComponentsRoot('fab');
 
-  let props = initProps ?? {};
+  const props = initProps ?? {};
 
   const FabIcon = () => {
     switch (props.progress) {
@@ -34,8 +33,10 @@ export const useFab = (initProps?: FabProps) => {
 
   const set = (recipe?: FabRecipe) => {
     if (recipe) {
-      if (typeof recipe === 'function') props = produce(props, recipe);
-      else Object.assign(props, recipe);
+      Object.assign(
+        props,
+        typeof recipe === 'function' ? recipe(props) : recipe,
+      );
     }
 
     root.render(

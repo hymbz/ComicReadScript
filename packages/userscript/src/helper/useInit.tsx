@@ -3,8 +3,8 @@ import MdAutoStories from '@material-design-icons/svg/round/auto_stories.svg';
 import { IconButton } from '@crs/ui-component/dist/IconButton';
 import { useFab, useManga, useToast } from '../components';
 import { useSiteOptions } from './useSiteOptions';
-import { sleep } from '.';
 import { setToolbarButton } from './setToolbarButton';
+import { sleep } from '.';
 
 /**
  * 对三个样式组件和 useSiteOptions 的默认值进行封装
@@ -117,6 +117,21 @@ export const useInit = async <T extends Record<string, any>>(
     })();
   }
 
+  let menuId: number;
+  const updateHideFabMenu = async () => {
+    await GM.unregisterMenuCommand(menuId);
+    menuId = await GM.registerMenuCommand(
+      `${options.hiddenFAB ? '显示' : '隐藏'}阅读模式按钮`,
+      async () => {
+        await setOptions({ ...options, hiddenFAB: !options.hiddenFAB });
+        setFab((draftProps) => {
+          draftProps.show = !options.hiddenFAB && undefined;
+        });
+        await updateHideFabMenu();
+      },
+    );
+  };
+
   return {
     options,
     setOptions,
@@ -163,7 +178,11 @@ export const useInit = async <T extends Record<string, any>>(
             setFab({ progress: 0, show: true });
             const initImgList = await getImgList();
             if (initImgList.length === 0) throw new Error('获取漫画图片失败');
-            setFab({ progress: 1, tip: '阅读模式' });
+            setFab({
+              progress: 1,
+              tip: '阅读模式',
+              show: !options.hiddenFAB && undefined,
+            });
             setManga((draftProps) => {
               draftProps.imgList = initImgList;
               draftProps.show = !waitLoad;
@@ -203,6 +222,11 @@ export const useInit = async <T extends Record<string, any>>(
           setManga({ show: true });
         }
       };
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      GM.registerMenuCommand('进入漫画阅读模式', showComic);
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      updateHideFabMenu();
 
       return showComic;
     },

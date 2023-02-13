@@ -2,7 +2,11 @@ import type { MangaProps } from '@crs/ui-component/dist/Manga';
 
 interface defaultOptions {
   option: Partial<MangaProps['option']> | undefined;
+
+  /** 自动进入阅读模式 */
   autoShow: boolean;
+  /** 隐藏 FAB */
+  hiddenFAB: boolean;
 }
 
 /**
@@ -22,6 +26,7 @@ export const useSiteOptions = async <T extends Record<string, any>>(
     {
       option: undefined,
       autoShow: true,
+      hiddenFAB: false,
       ...defaultOptions,
     } as Options,
     rawValue,
