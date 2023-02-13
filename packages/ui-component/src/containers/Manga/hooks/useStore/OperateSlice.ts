@@ -13,15 +13,23 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
   scrollLock: false,
 
   handleScroll: (e) => {
+    e.stopPropagation();
     const {
       option: { scrollMode },
       pageTurn,
       scrollLock,
       endPageType,
     } = get();
-    if (scrollMode && !endPageType) return;
-
-    e.stopPropagation();
+    if (scrollMode && !endPageType) {
+      set((state) => {
+        if (state.scrollbar.dragTop === 0 && e.deltaY <= 0) {
+          state.endPageType = 'start';
+        } else if (state.scrollbar.dragHeight + state.scrollbar.dragTop === 1) {
+          state.endPageType = 'end';
+        }
+      });
+      return;
+    }
 
     if (e.altKey || scrollLock) return;
 
@@ -30,6 +38,8 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
   },
 
   handleKeyUp: (e) => {
+    e.stopPropagation();
+
     const {
       pageTurn,
       img: { switchFillEffect },
@@ -39,7 +49,6 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       endPageType,
     } = get();
     if (scrollMode && !endPageType) return;
-    e.stopPropagation();
 
     let nextPage: boolean | null = null;
 

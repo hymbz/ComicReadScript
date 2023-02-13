@@ -46,6 +46,12 @@ export const externalLibSlice: SelfStateCreator<ExternalLibSlice> = (
           // 按下「alt 键」或「处于放大状态」时才允许拖动
           return !(e.altKey || panzoom.getTransform().scale !== 1);
         },
+
+        onTouch() {
+          // 未进行缩放时不捕捉 touch 事件
+          const { scale } = panzoom.getTransform();
+          return scale !== 1;
+        },
       });
 
       panzoom.on('transform', () => {
@@ -66,16 +72,6 @@ export const externalLibSlice: SelfStateCreator<ExternalLibSlice> = (
             });
         }
       });
-
-      // // TODO: 防止移动端上的滑动页面操作被 panzoom 捕捉处理
-      // swiper.on('touchStart', (_, event) => {
-      //   if (
-      //     'touches' in event &&
-      //     event.touches.length === 1 &&
-      //     panzoom.getTransform().scale === 1
-      //   )
-      //     event.stopPropagation();
-      // });
 
       state.panzoom = panzoom;
     });
