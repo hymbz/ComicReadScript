@@ -51,7 +51,6 @@ export const Fab: React.FC<FabProps> = ({
         // 跳过非用户操作的滚动
         if (e.isTrusted === false) return;
         if (window.pageYOffset === lastY.current) return;
-        // debugger;
         setShow(
           // 滚动到底部时显示
           window.pageYOffset + window.innerHeight >=

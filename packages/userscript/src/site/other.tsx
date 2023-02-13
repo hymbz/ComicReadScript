@@ -12,8 +12,6 @@ setTimeout(async () => {
 
   /** 图片列表 */
   let imgList: string[] = [];
-  /** 是否在等待自动加载完毕后进入阅读模式 */
-  const waitAutoLoad = options.autoShow;
   /** 是否正在后台不断检查图片 */
   let running = 0;
 
@@ -26,6 +24,7 @@ setTimeout(async () => {
 
     [setManga] = useManga({
       imgList,
+      show: options.autoShow,
       onOptionChange: (option) => setOptions({ ...options, option }, false),
     });
     setManga(setToolbarButton, false);
@@ -106,8 +105,8 @@ setTimeout(async () => {
     // 在发现新图片后重新渲染
     if (!isEqualArray(imgList, newImgList)) {
       imgList = newImgList;
-      setManga({ imgList, show: waitAutoLoad });
-      setFab?.({ progress: 1 });
+      setManga({ imgList });
+      setFab({ progress: 1 });
     }
 
     return true;

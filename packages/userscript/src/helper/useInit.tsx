@@ -161,10 +161,8 @@ export const useInit = async <T extends Record<string, any>>(
 
       /**
        * 进入阅读模式
-       *
-       * @param waitLoad 等待图片全部加载完成后再自动进入阅读模式
        */
-      const showComic = async (waitLoad = false) => {
+      const showComic = async () => {
         if (loading) {
           toast('加载图片中，请稍候', { autoClose: 1500 });
           return;
@@ -185,7 +183,7 @@ export const useInit = async <T extends Record<string, any>>(
             });
             setManga((draftProps) => {
               draftProps.imgList = initImgList;
-              draftProps.show = !waitLoad;
+              draftProps.show = options.autoShow;
               setToolbarButton(draftProps);
 
               // 监听图片加载状态，将进度显示到 Fab 上
@@ -204,8 +202,8 @@ export const useInit = async <T extends Record<string, any>>(
                     tip: `图片加载中 - ${loadNum}/${list.length}`,
                   });
                 } else {
+                  // 图片全部加载完成后恢复 Fab 状态
                   setFab({ progress, tip: '阅读模式', show: undefined });
-                  if (options.autoShow) setManga({ show: true });
                 }
               };
 
