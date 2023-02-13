@@ -147,18 +147,15 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         const {
           img: { 单页比例, 横幅比例, 条漫比例, updatePageData },
         } = get();
-        const { width, height, type } = draftImg;
+        const { width, height } = draftImg;
 
         if (width && height) {
-          let newType: ComicImg['type'] = '';
           const imgRatio = width / height;
           if (imgRatio <= 单页比例) {
-            if (imgRatio < 条漫比例) newType = 'vertical';
+            if (imgRatio < 条漫比例) draftImg.type = 'vertical';
           } else {
-            newType = imgRatio > 横幅比例 ? 'long' : 'wide';
+            draftImg.type = imgRatio > 横幅比例 ? 'long' : 'wide';
           }
-
-          if (newType !== type) draftImg.type = newType;
         }
 
         set(updatePageData);

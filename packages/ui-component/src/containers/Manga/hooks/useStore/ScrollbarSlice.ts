@@ -21,7 +21,7 @@ export interface ScrollbarSlice {
     /** 更新滚动条滑块的高度和所处高度 */
     updateDrag: (state: Draft<SelfState>) => void;
     /** 监视漫画页的滚动事件 */
-    watchMangaFlowScroll: UIEventHandler;
+    handleMangaFlowScroll: UIEventHandler;
 
     handleWheel: WheelEventHandler;
 
@@ -90,7 +90,7 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
         !windowHeight || !contentHeight ? 0 : windowHeight / contentHeight;
     },
 
-    watchMangaFlowScroll: () => {
+    handleMangaFlowScroll: () => {
       set((state) => {
         if (!state.option.scrollMode) return;
 

@@ -103,6 +103,7 @@ declare const zcClick: any;
     // 判断当前页是漫画详情页
 
     // 判断漫画被禁
+    // 测试例子：https://manhua.dmzj.com/yanquan/
     if (querySelector('.cartoon_online_border > img')) {
       document.querySelector('.cartoon_online_border')!.innerHTML =
         '正在加载中，请坐和放宽，若长时间无反应请刷新页面';

@@ -22,6 +22,7 @@ const defaultStata = (): UseDragState => ({
   initial: [0, 0],
   startTime: 0,
 });
+
 export const useDrag = (ref: RefObject<HTMLElement>, option: UseDragOption) => {
   const { current: state } = useRef<UseDragState>(defaultStata());
 
