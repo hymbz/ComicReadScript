@@ -7,8 +7,8 @@ export interface OtherSlice {
   showToolbar: boolean;
   /** 是否强制显示滚动条 */
   showScrollbar: boolean;
-  /** 是否显示结束页 */
-  showEndPage: boolean;
+  /** 结束页状态 */
+  endPageType: undefined | 'start' | 'end';
 
   /** 点击结束页按钮时触发的回调 */
   onExit?: (isEnd?: boolean) => void;
@@ -24,7 +24,7 @@ export interface OtherSlice {
 export const otherSlice: SelfStateCreator<OtherSlice> = () => ({
   showToolbar: false,
   showScrollbar: false,
-  showEndPage: false,
+  endPageType: undefined,
 
   editButtonList: (list: ToolbarButtonList) => list,
   editSettingList: (list: SettingList) => list,

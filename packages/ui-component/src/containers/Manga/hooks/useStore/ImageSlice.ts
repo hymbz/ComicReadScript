@@ -226,29 +226,39 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
     },
 
     pageTurn: (dir) => {
-      const { pageList, showEndPage, activePageIndex } = get();
-      if (dir === 'next') {
-        set((state) => {
-          // 在最后一页继续向后翻页时弹出结束页
-          if (activePageIndex === pageList.length - 1) state.showEndPage = true;
-          else state.activePageIndex += 1;
-        });
-        return;
-      }
+      const { pageList, endPageType, activePageIndex } = get();
+      set((state) => {
+        if (dir === 'prev') {
+          switch (endPageType) {
+            case 'start':
+              state.onPrev?.();
+              return;
+            case 'end':
+              state.endPageType = undefined;
+              return;
 
-      // 向前翻页时如果当前正在显示结束页，则关闭结束页但不翻页
-      if (showEndPage) {
-        set((state) => {
-          state.showEndPage = false;
-        });
-        return;
-      }
+            default:
+              // 弹出卷首结束页
+              if (activePageIndex === 0) state.endPageType = 'start';
+              else state.activePageIndex -= 1;
+          }
+        } else {
+          switch (endPageType) {
+            case 'end':
+              state.onNext?.();
+              return;
+            case 'start':
+              state.endPageType = undefined;
+              return;
 
-      if (activePageIndex > 0) {
-        set((state) => {
-          state.activePageIndex -= 1;
-        });
-      }
+            default:
+              // 弹出卷尾结束页
+              if (activePageIndex === pageList.length - 1)
+                state.endPageType = 'end';
+              else state.activePageIndex += 1;
+          }
+        }
+      });
     },
   };
 };
@@ -269,7 +279,7 @@ export const imageCallback: Subscribe = (useStore) => {
         state.nowFillIndex = nowFillIndex;
 
         state.img.updateImgLoadType();
-        if (state.showEndPage) state.showEndPage = false;
+        if (state.endPageType) state.endPageType = undefined;
       });
     },
   );

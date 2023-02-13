@@ -109,8 +109,9 @@ export const scrollbarSlice: SelfStateCreator<ScrollbarSlice> = (set, get) => ({
 
         state.scrollbar.updateDrag(state);
 
-        state.showEndPage =
-          state.scrollbar.dragHeight + state.scrollbar.dragTop === 1;
+        // TODO: 实现滚动模式下的结束页显示
+        // state.showEndPage =
+        //   state.scrollbar.dragHeight + state.scrollbar.dragTop === 1;
       });
     },
 

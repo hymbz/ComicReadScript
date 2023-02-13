@@ -17,9 +17,9 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       option: { scrollMode },
       pageTurn,
       scrollLock,
-      showEndPage,
+      endPageType,
     } = get();
-    if (scrollMode && !showEndPage) return;
+    if (scrollMode && !endPageType) return;
 
     e.stopPropagation();
 
@@ -36,9 +36,9 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
       option: { dir, scrollMode },
       onExit,
       pageList,
-      showEndPage,
+      endPageType,
     } = get();
-    if (scrollMode && !showEndPage) return;
+    if (scrollMode && !endPageType) return;
     e.stopPropagation();
 
     let nextPage: boolean | null = null;

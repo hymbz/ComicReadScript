@@ -118,11 +118,29 @@
 
       font-size: 3em;
     }
+
+    &:focus-visible {
+      outline: none;
+    }
   }
 
-  &[data-show="true"] {
+  & > .tip {
+    position: absolute;
+
+    margin: auto;
+  }
+
+  &[data-show] {
     pointer-events: all;
 
     opacity: 1;
+  }
+
+  &[data-show="start"] > .tip {
+    top: 10%;
+  }
+
+  &[data-show="end"] > .tip {
+    bottom: 10%;
   }
 }
