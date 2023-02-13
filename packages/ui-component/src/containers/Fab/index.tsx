@@ -40,7 +40,7 @@ export const Fab: React.FC<FabProps> = ({
   onClick,
 }) => {
   // 上次滚动位置
-  const lastY = useRef(window.scrollY);
+  const lastY = useRef(window.pageYOffset);
   const [show, setShow] = useState(initShow);
 
   // 绑定滚动事件
@@ -50,9 +50,16 @@ export const Fab: React.FC<FabProps> = ({
       throttle(200, (e: Event) => {
         // 跳过非用户操作的滚动
         if (e.isTrusted === false) return;
-        if (window.scrollY === lastY.current) return;
-        setShow(window.scrollY - lastY.current < 0);
-        lastY.current = window.scrollY;
+        if (window.pageYOffset === lastY.current) return;
+        // debugger;
+        setShow(
+          // 滚动到底部时显示
+          window.pageYOffset + window.innerHeight >=
+            document.body.scrollHeight ||
+            // 向上滚动时显示，反之隐藏
+            window.pageYOffset - lastY.current < 0,
+        );
+        lastY.current = window.pageYOffset;
       }),
     );
   }, []);
