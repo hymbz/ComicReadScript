@@ -136,11 +136,11 @@
     opacity: 1;
   }
 
-  &[data-show="start"] > .tip {
-    top: 10%;
+  &[data-type="start"] > .tip {
+    transform: translateY(-40vh);
   }
 
-  &[data-show="end"] > .tip {
-    bottom: 10%;
+  &[data-type="end"] > .tip {
+    transform: translateY(40vh);
   }
 }

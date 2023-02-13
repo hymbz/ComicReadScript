@@ -1,5 +1,5 @@
 import type { MouseEventHandler } from 'react';
-import { useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { SelfState } from '../hooks/useStore';
 import { shallow, useStore } from '../hooks/useStore';
 
@@ -10,6 +10,8 @@ const selector = ({ onExit, onPrev, onNext }: SelfState) => ({
   onPrev,
   onNext,
 });
+
+let delayTypeTimer = 0;
 
 export const EndPage: React.FC = () => {
   const { onExit, onPrev, onNext } = useStore(selector, shallow);
@@ -33,8 +35,20 @@ export const EndPage: React.FC = () => {
 
   const type = useStore((state) => state.endPageType);
 
+  // state.endPageType 变量的延时版本，在隐藏的动画效果结束之后才会真正改变
+  // 防止在动画效果结束前 tip 就消失或改变了位置
+  const [delayType, setDelayType] = useState<'start' | 'end' | undefined>();
+  useEffect(() => {
+    if (type) {
+      window.clearTimeout(delayTypeTimer);
+      setDelayType(type);
+    } else {
+      delayTypeTimer = window.setTimeout(() => setDelayType(type), 500);
+    }
+  }, [type]);
+
   const tip = useMemo(() => {
-    switch (type) {
+    switch (delayType) {
       case 'start':
         return `已到开头${
           onPrev ? '，继续翻页将跳至上一话' : '，无法继续翻页'
@@ -46,12 +60,13 @@ export const EndPage: React.FC = () => {
       default:
         return '';
     }
-  }, [onNext, onPrev, type]);
+  }, [onNext, onPrev, delayType]);
 
   return (
     <div
       className={classes.endPage}
       data-show={type}
+      data-type={delayType}
       onClick={handleClick}
       role="button"
       tabIndex={-1}
