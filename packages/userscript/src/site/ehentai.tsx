@@ -1,6 +1,12 @@
 /* eslint-disable camelcase */
 
-import { download, insertNode, linstenKeyup, querySelector } from '../helper';
+import {
+  download,
+  insertNode,
+  linstenKeyup,
+  querySelector,
+  scrollIntoView,
+} from '../helper';
 import { useInit } from '../helper/useInit';
 
 declare const selected_tag: string;
@@ -29,6 +35,13 @@ declare const selected_link: HTMLElement;
     }
     return;
   }
+
+  setManga({
+    onExit: (isEnd) => {
+      setManga({ show: false });
+      if (isEnd) scrollIntoView('#cdiv');
+    },
+  });
 
   // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
   insertNode(

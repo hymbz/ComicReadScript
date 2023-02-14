@@ -134,3 +134,8 @@ export const linstenKeyup = (handler: (e: KeyboardEvent) => unknown) =>
     }
     handler(e);
   });
+
+/** 滚动页面到指定元素的所在位置 */
+export const scrollIntoView = (selector: string) => {
+  querySelector(selector)?.scrollIntoView({ behavior: 'smooth' });
+};

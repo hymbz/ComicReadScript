@@ -1,6 +1,12 @@
 /* eslint-disable camelcase */
 
-import { insertNode, querySelector, querySelectorAll, sleep } from '../helper';
+import {
+  insertNode,
+  querySelector,
+  querySelectorAll,
+  scrollIntoView,
+  sleep,
+} from '../helper';
 import { useInit } from '../helper/useInit';
 
 /** 用于转换获得图片文件扩展名 */
@@ -17,14 +23,24 @@ type Images = {
 declare const gallery: { num_pages: number; media_id: string; images: Images };
 
 (async () => {
-  const { options, setFab, toast, createShowComic } = await useInit('nhentai', {
-    自动翻页: true,
-    彻底屏蔽漫画: true,
-    在新页面中打开链接: true,
-  });
+  const { options, setFab, setManga, toast, createShowComic } = await useInit(
+    'nhentai',
+    {
+      自动翻页: true,
+      彻底屏蔽漫画: true,
+      在新页面中打开链接: true,
+    },
+  );
 
   // 在漫画详情页
   if (Reflect.has(unsafeWindow, 'gallery')) {
+    setManga({
+      onExit: (isEnd) => {
+        setManga({ show: false });
+        if (isEnd) scrollIntoView('#comment-container');
+      },
+    });
+
     // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
     insertNode(
       document.getElementById('download')!.parentNode as HTMLElement,

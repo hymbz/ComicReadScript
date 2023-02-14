@@ -5,6 +5,7 @@ import {
   querySelector,
   querySelectorAll,
   querySelectorClick,
+  scrollIntoView,
 } from '../helper';
 import { useInit } from '../helper/useInit';
 
@@ -207,6 +208,13 @@ declare const zcClick: any;
   setManga({
     onNext: querySelectorClick('#next_chapter'),
     onPrev: querySelectorClick('#prev_chapter'),
+    onExit: (isEnd) => {
+      setManga({ show: false });
+      if (isEnd) {
+        unsafeWindow.huPoint();
+        scrollIntoView('#hd');
+      }
+    },
   });
 
   const showComic = createShowComic(

@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { querySelectorClick, sleep } from '../helper';
+import { querySelectorClick, scrollIntoView, sleep } from '../helper';
 import { useInit } from '../helper/useInit';
 
 // 页面自带的变量
@@ -21,6 +21,10 @@ declare const $: any;
   setManga({
     onNext: querySelectorClick('.logo_2'),
     onPrev: querySelectorClick('.logo_1'),
+    onExit: (isEnd) => {
+      setManga({ show: false });
+      if (isEnd) scrollIntoView('.top');
+    },
   });
 
   const getImgList = async (

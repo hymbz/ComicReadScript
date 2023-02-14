@@ -231,7 +231,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         if (dir === 'prev') {
           switch (endPageType) {
             case 'start':
-              state.onPrev?.();
+              if (!state.scrollLock) state.onPrev?.();
               return;
             case 'end':
               state.endPageType = undefined;
@@ -239,13 +239,22 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
 
             default:
               // 弹出卷首结束页
-              if (activePageIndex === 0) state.endPageType = 'start';
-              else state.activePageIndex -= 1;
+              if (activePageIndex === 0) {
+                state.endPageType = 'start';
+                state.scrollLock = true;
+                window.setTimeout(() => {
+                  set((draftState) => {
+                    draftState.scrollLock = false;
+                  });
+                }, 500);
+                return;
+              }
+              if (!state.option.scrollMode) state.activePageIndex -= 1;
           }
         } else {
           switch (endPageType) {
             case 'end':
-              state.onNext?.();
+              if (!state.scrollLock) state.onNext?.();
               return;
             case 'start':
               state.endPageType = undefined;
@@ -253,9 +262,17 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
 
             default:
               // 弹出卷尾结束页
-              if (activePageIndex === pageList.length - 1)
+              if (activePageIndex === pageList.length - 1) {
                 state.endPageType = 'end';
-              else state.activePageIndex += 1;
+                state.scrollLock = true;
+                window.setTimeout(() => {
+                  set((draftState) => {
+                    draftState.scrollLock = false;
+                  });
+                }, 500);
+                return;
+              }
+              if (!state.option.scrollMode) state.activePageIndex += 1;
           }
         }
       });
