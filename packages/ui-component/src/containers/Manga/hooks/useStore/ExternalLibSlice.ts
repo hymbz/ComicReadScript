@@ -59,7 +59,7 @@ export const externalLibSlice: SelfStateCreator<ExternalLibSlice> = (
           const { scrollLock } = get();
           // 防止在放大模式下通过滚轮缩小至原尺寸后立刻跳转至下一页
           if (scrollLock)
-            setTimeout(() => {
+            window.setTimeout(() => {
               set((draftState) => {
                 draftState.scrollLock = false;
               });
