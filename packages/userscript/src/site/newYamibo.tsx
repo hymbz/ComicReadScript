@@ -1,4 +1,4 @@
-import { querySelector, querySelectorClick } from '../helper';
+import { querySelector, querySelectorClick, scrollIntoView } from '../helper';
 import { useInit } from '../helper/useInit';
 
 (async () => {
@@ -12,6 +12,10 @@ import { useInit } from '../helper/useInit';
   setManga({
     onNext: querySelectorClick('#btnNext'),
     onPrev: querySelectorClick('#btnPrev'),
+    onExit: (isEnd) => {
+      setManga({ show: false });
+      if (isEnd) scrollIntoView('#w1');
+    },
   });
 
   const id = new URLSearchParams(window.location.search).get('id');

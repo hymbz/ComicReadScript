@@ -1,4 +1,9 @@
-import { insertNode, querySelector, querySelectorAll } from '../helper';
+import {
+  insertNode,
+  querySelector,
+  querySelectorAll,
+  scrollIntoView,
+} from '../helper';
 import { useInit } from '../helper/useInit';
 
 declare const fid: number;
@@ -76,6 +81,11 @@ declare const fid: number;
           if (delImgIndex !== -1) imgList.splice(delImgIndex, 1);
 
           setManga({ imgList: imgList.map((image) => image.src) });
+        },
+        onExit: (isEnd) => {
+          setManga({ show: false });
+          if (isEnd)
+            scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
         },
       });
 
