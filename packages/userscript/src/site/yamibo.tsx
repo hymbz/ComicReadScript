@@ -51,8 +51,6 @@ declare const fid: number;
           if (file && img.src !== file) img.setAttribute('src', file);
 
           // 测试例子：https://bbs.yamibo.com/thread-502399-1-1.html
-          // TODO: 需要找个正经的例子
-          // XXX: 目前调用 updateImgList 会导致闪烁，虽然实际使用中应该很少出现，但还是优化下好
 
           // 删掉表情和小图
           if (

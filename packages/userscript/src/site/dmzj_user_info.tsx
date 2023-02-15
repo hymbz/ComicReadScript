@@ -194,8 +194,7 @@ const getUserData = (
                     querySelector(
                       '#importDetails .account_close',
                     )?.addEventListener('click', (clickEvent) => {
-                      // TODO:补充 clickEvent 类型
-                      document.body.removeChild(clickEvent.path[3]);
+                      document.body.removeChild((clickEvent as any).path[3]);
                     });
                   }
                 },

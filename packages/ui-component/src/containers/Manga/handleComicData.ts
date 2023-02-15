@@ -19,8 +19,6 @@ export const handleComicData = ({
     const img = comicImgList[i];
 
     if (fillEffect.get(i - 1)) {
-      // FIXME: 按理来说应该是不会触发的，一般也确实不会触发，一旦触发 imgCache 就会被覆盖
-      // 但确实有过在不知怎么操作后触发了的情况，所以在找到稳定复现的方法并解决前姑且先留着报错
       if (imgCache !== null) throw new Error('imgCache 被覆盖');
       imgCache = -1;
     }
