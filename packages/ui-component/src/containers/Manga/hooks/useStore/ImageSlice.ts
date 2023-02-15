@@ -240,6 +240,9 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
             default:
               // 弹出卷首结束页
               if (activePageIndex === 0) {
+                // 没有 onPrev 时不弹出
+                if (!state.onPrev) return;
+
                 state.endPageType = 'start';
                 state.scrollLock = true;
                 window.setTimeout(() => {
