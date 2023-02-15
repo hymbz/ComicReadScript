@@ -72,7 +72,7 @@ export interface ImageSLice {
   };
 
   /** 翻页 */
-  pageTurn: (dir: 'next' | 'prev') => void;
+  turnPage: (dir: 'next' | 'prev') => void;
 }
 
 /**
@@ -225,7 +225,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
       }),
     },
 
-    pageTurn: (dir) => {
+    turnPage: (dir) => {
       const { pageList, endPageType, activePageIndex } = get();
       set((state) => {
         if (dir === 'prev') {
@@ -257,7 +257,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         } else {
           switch (endPageType) {
             case 'end':
-              if (!state.scrollLock) (state.onNext ?? state.onExit)?.();
+              if (!state.scrollLock) (state.onNext ?? state.onExit)?.(true);
               return;
             case 'start':
               state.endPageType = undefined;

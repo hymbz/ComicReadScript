@@ -5,17 +5,17 @@ import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
 
-const selector = ({ onExit, onPrev, onNext, pageTurn }: SelfState) => ({
+const selector = ({ onExit, onPrev, onNext, turnPage }: SelfState) => ({
   onExit,
   onPrev,
   onNext,
-  pageTurn,
+  turnPage,
 });
 
 let delayTypeTimer = 0;
 
 export const EndPage: React.FC = () => {
-  const { onExit, onPrev, onNext, pageTurn } = useStore(selector, shallow);
+  const { onExit, onPrev, onNext, turnPage } = useStore(selector, shallow);
 
   const handleClick = useCallback<MouseEventHandler>((e) => {
     e.stopPropagation();
@@ -42,7 +42,7 @@ export const EndPage: React.FC = () => {
       (e) => {
         e.preventDefault();
         e.stopPropagation();
-        pageTurn(e.deltaY > 0 ? 'next' : 'prev');
+        turnPage(e.deltaY > 0 ? 'next' : 'prev');
       },
       {
         passive: false,
@@ -52,7 +52,7 @@ export const EndPage: React.FC = () => {
     return () => {
       controller.abort();
     };
-  }, [pageTurn]);
+  }, [turnPage]);
 
   const type = useStore((state) => state.endPageType);
 

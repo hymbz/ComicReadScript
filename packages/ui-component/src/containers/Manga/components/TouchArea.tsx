@@ -10,19 +10,19 @@ import classes from '../index.module.css';
 const selector = ({
   showTouchArea,
   panzoom,
-  pageTurn,
+  turnPage,
   option: { clickPage, scrollMode, dir },
 }: SelfState) => ({
   showTouchArea,
   panzoom,
-  pageTurn,
+  turnPage,
   clickPage,
   scrollMode,
   dir,
 });
 
 export const TouchArea: React.FC = memo(() => {
-  const { showTouchArea, panzoom, pageTurn, clickPage, scrollMode, dir } =
+  const { showTouchArea, panzoom, turnPage, clickPage, scrollMode, dir } =
     useStore(selector, shallow);
 
   /** 处理双击缩放 */
@@ -42,10 +42,10 @@ export const TouchArea: React.FC = memo(() => {
   );
 
   const handleClickNext = useDoubleClick(() => {
-    if (clickPage.enabled) pageTurn('next');
+    if (clickPage.enabled) turnPage('next');
   }, handleDoubleClickZoom);
   const handleClickPrev = useDoubleClick(() => {
-    if (clickPage.enabled) pageTurn('prev');
+    if (clickPage.enabled) turnPage('prev');
   }, handleDoubleClickZoom);
   const handleClickMenu = useDoubleClick(() => {
     useStore.setState((state) => {

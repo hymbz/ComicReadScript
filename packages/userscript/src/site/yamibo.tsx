@@ -34,10 +34,8 @@ interface History {
       options.固定导航条 ? '.header-stackup { position: fixed !important};' : ''
     }
 
-    :root {
-      --lastReadTagColor: ${
-        options.记录阅读进度.上次阅读进度标签颜色
-      } !important;
+    * {
+      --lastReadTagColor: ${options.记录阅读进度.上次阅读进度标签颜色};
     }
 
     .historyTag {
@@ -54,10 +52,9 @@ interface History {
 
       color: var(--lastReadTagColor);
       border-radius: 6px 0 0 6px;
-
-      &:last-child {
-        border-radius: 6px;
-      }
+    }
+    a.historyTag:last-child {
+      border-radius: 6px;
     }
 
     div.historyTag {
@@ -157,9 +154,15 @@ interface History {
           setManga({ imgList: imgList.map((image) => image.src) });
         },
         onExit: (isEnd) => {
-          setManga({ show: false });
-          if (isEnd)
+          if (isEnd) {
             scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
+            // 因为好像有懒加载的缘故，直接移到指定位置后会加载出新的楼层导致位置偏移
+            // 所以移动两次并且在第二次延时移动后再隐藏漫画界面
+            setTimeout(() => {
+              scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
+              setManga({ show: false });
+            });
+          } else setManga({ show: false });
         },
       });
 
