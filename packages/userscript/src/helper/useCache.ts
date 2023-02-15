@@ -46,7 +46,7 @@ export const useCache = <Schema extends Record<string, unknown>>(
     /** 根据主键直接获取数据 */
     get: <K extends keyof Schema & string>(storeName: K, query: IDBValidKey) =>
       useStore(storeName, 'readonly', (store) =>
-        promisifyRequest<Schema[K]>(store.get(query)),
+        promisifyRequest<Schema[K] | undefined>(store.get(query)),
       ),
 
     /** 查找符合条件的数据 */
