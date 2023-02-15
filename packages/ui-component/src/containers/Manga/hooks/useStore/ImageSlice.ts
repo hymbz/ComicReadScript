@@ -254,7 +254,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         } else {
           switch (endPageType) {
             case 'end':
-              if (!state.scrollLock) state.onNext?.();
+              if (!state.scrollLock) (state.onNext ?? state.onExit)?.();
               return;
             case 'start':
               state.endPageType = undefined;

@@ -71,17 +71,15 @@ export const EndPage: React.FC = () => {
   const tip = useMemo(() => {
     switch (delayType) {
       case 'start':
-        return `已到开头${
-          onPrev ? '，继续翻页将跳至上一话' : '，无法继续翻页'
-        }`;
+        if (onPrev) return '已到开头，继续翻页将跳至上一话';
+        break;
       case 'end':
-        return `已到结尾${
-          onNext ? '，继续翻页将跳至下一话' : '，无法继续翻页'
-        }`;
-      default:
-        return '';
+        if (onNext) return '已到结尾，继续翻页将跳至下一话';
+        if (onExit) return '已到结尾，继续翻页将退出';
+        break;
     }
-  }, [onNext, onPrev, delayType]);
+    return '';
+  }, [onNext, onPrev, onExit, delayType]);
 
   return (
     <div
