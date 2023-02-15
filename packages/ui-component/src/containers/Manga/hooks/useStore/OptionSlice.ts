@@ -48,7 +48,7 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
     onePageMode: false,
     scrollMode: false,
     clickPage: {
-      enabled: true,
+      enabled: 'ontouchstart' in document.documentElement,
       overturn: false,
     },
     disableZoom: false,
