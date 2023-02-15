@@ -1,20 +1,21 @@
 import type { MouseEventHandler } from 'react';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import type { SelfState } from '../hooks/useStore';
 import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
 
-const selector = ({ onExit, onPrev, onNext }: SelfState) => ({
+const selector = ({ onExit, onPrev, onNext, pageTurn }: SelfState) => ({
   onExit,
   onPrev,
   onNext,
+  pageTurn,
 });
 
 let delayTypeTimer = 0;
 
 export const EndPage: React.FC = () => {
-  const { onExit, onPrev, onNext } = useStore(selector, shallow);
+  const { onExit, onPrev, onNext, pageTurn } = useStore(selector, shallow);
 
   const handleClick = useCallback<MouseEventHandler>((e) => {
     e.stopPropagation();
@@ -32,6 +33,26 @@ export const EndPage: React.FC = () => {
       state.endPageType = undefined;
     });
   }, [onExit]);
+
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const controller = new AbortController();
+    ref.current?.addEventListener(
+      'wheel',
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        pageTurn(e.deltaY > 0 ? 'next' : 'prev');
+      },
+      {
+        passive: false,
+        signal: controller.signal,
+      },
+    );
+    return () => {
+      controller.abort();
+    };
+  }, [pageTurn]);
 
   const type = useStore((state) => state.endPageType);
 
@@ -64,6 +85,7 @@ export const EndPage: React.FC = () => {
 
   return (
     <div
+      ref={ref}
       className={classes.endPage}
       data-show={type}
       data-type={delayType}
