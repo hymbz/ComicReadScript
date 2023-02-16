@@ -17,16 +17,19 @@ interface History {
 }
 
 (async () => {
-  const { options, setFab, setManga, request } = await useInit('yamibo', {
-    记录阅读进度: {
-      enable: true,
-      上次阅读进度标签颜色: '#6e2b19',
-      保留天数: -1,
+  const { options, setFab, setManga, request, createShowComic } = await useInit(
+    'yamibo',
+    {
+      记录阅读进度: {
+        enable: true,
+        上次阅读进度标签颜色: '#6e2b19',
+        保留天数: -1,
+      },
+      关闭快捷导航按钮的跳转: true,
+      修正点击页数时的跳转判定: true,
+      固定导航条: true,
     },
-    关闭快捷导航按钮的跳转: true,
-    修正点击页数时的跳转判定: true,
-    固定导航条: true,
-  });
+  );
 
   await GM.addStyle(
     `#fab { --fab: #6E2B19; --fab_hover: #A15640; };
@@ -167,11 +170,8 @@ interface History {
       });
 
       updateImgList();
-      const showComic = () => {
-        if (imgList.length)
-          setManga({ imgList: imgList.map((img) => img.src), show: true });
-      };
-      if (options.autoShow) showComic();
+      const showComic = createShowComic(() => imgList.map((img) => img.src));
+      if (options.autoShow) await showComic();
 
       setFab({ progress: 1, tip: '阅读模式', onClick: showComic });
 
