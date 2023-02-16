@@ -1,6 +1,6 @@
 import type { MangaProps } from '@crs/ui-component/dist/Manga';
 
-interface defaultOptions {
+export interface DefaultOptions {
   option: Partial<MangaProps['option']> | undefined;
 
   /** 自动进入阅读模式 */
@@ -19,7 +19,7 @@ export const useSiteOptions = async <T extends Record<string, any>>(
   name: string,
   defaultOptions = {} as T,
 ) => {
-  type Options = T & defaultOptions;
+  type Options = T & DefaultOptions;
 
   const rawValue = await GM.getValue<Options>(name);
   const options = Object.assign(

@@ -1,10 +1,8 @@
-import MdAutoStories from '@material-design-icons/svg/round/auto_stories.svg';
-
-import { IconButton } from '@crs/ui-component/dist/IconButton';
 import { useToast, useManga, useFab } from '../components';
 import { useSiteOptions } from '../helper/useSiteOptions';
 import { isEqualArray } from '../helper';
 import { setToolbarButton } from '../helper/setToolbarButton';
+import { defaultSpeedDial } from '../helper/defaultSpeedDial';
 
 setTimeout(async () => {
   const { options, setOptions, isRecorded, onOptionChange } =
@@ -32,20 +30,7 @@ setTimeout(async () => {
     setFab = useFab({
       tip: '阅读模式',
       onClick: () => setManga({ show: true }),
-      speedDial: [
-        () => (
-          <IconButton
-            tip="自动进入阅读模式"
-            placement="left"
-            enabled={options.autoShow}
-            onClick={() =>
-              setOptions({ ...options, autoShow: !options.autoShow })
-            }
-          >
-            <MdAutoStories />
-          </IconButton>
-        ),
-      ],
+      speedDial: defaultSpeedDial(options, setOptions),
     });
     onOptionChange(() => setFab!());
     setFab!();
