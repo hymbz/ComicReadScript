@@ -97,6 +97,7 @@ export const operateSlice: SelfStateCreator<OperateSlice> = (set, get) => ({
 
       case '/':
       case 'm':
+      case 'z':
         switchFillEffect();
         break;
 
