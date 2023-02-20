@@ -8,6 +8,7 @@ import { Fab } from '@crs/ui-component/dist/Fab';
 import FabStyle from '@crs/ui-component/dist/Fab.css';
 import IconBottonStyle from '@crs/ui-component/dist/IconButton.css';
 import shadow from 'react-shadow';
+import type { CSSProperties } from 'react';
 import { useComponentsRoot } from '../helper';
 
 export type FabRecipe = ((draftProps: FabProps) => void) | Partial<FabProps>;
@@ -41,13 +42,16 @@ export const useFab = (initProps?: FabProps) => {
 
     root.render(
       <shadow.div
-        style={{
-          fontSize: ' clamp(12px, calc(1.5vw), 16px)',
-          position: 'fixed',
-          right: '3vw',
-          bottom: '6vh',
-          zIndex: 999999999,
-        }}
+        style={
+          {
+            fontSize: ' clamp(12px, calc(1.5vw), 16px)',
+            position: 'fixed',
+            right: '3vw',
+            bottom: '6vh',
+            zIndex: 999999999,
+            '--text_bg': 'transparent',
+          } as CSSProperties
+        }
       >
         <Fab {...props}>
           <FabIcon />

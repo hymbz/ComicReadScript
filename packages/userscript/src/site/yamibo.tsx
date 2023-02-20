@@ -20,11 +20,7 @@ interface History {
   const { options, setFab, setManga, request, createShowComic } = await useInit(
     'yamibo',
     {
-      记录阅读进度: {
-        enable: true,
-        上次阅读进度标签颜色: '#6e2b19',
-        保留天数: -1,
-      },
+      记录阅读进度: true,
       关闭快捷导航按钮的跳转: true,
       修正点击页数时的跳转判定: true,
       固定导航条: true,
@@ -37,9 +33,7 @@ interface History {
       options.固定导航条 ? '.header-stackup { position: fixed !important};' : ''
     }
 
-    * {
-      --lastReadTagColor: ${options.记录阅读进度.上次阅读进度标签颜色};
-    }
+    :root { --lastReadTagColor: #6e2b19; }
 
     .historyTag {
       white-space: nowrap;
@@ -200,7 +194,7 @@ interface History {
       }
     }
 
-    if (options.记录阅读进度.enable) {
+    if (options.记录阅读进度) {
       const { tid } = unsafeWindow;
       const res = await request(
         'GET',
@@ -287,7 +281,7 @@ interface History {
       while (i--) List[i].setAttribute('onclick', 'atarget(this)');
     }
 
-    if (options.记录阅读进度.enable) {
+    if (options.记录阅读进度) {
       const cache = useCache<{ history: History }>((db: IDBDatabase) => {
         db.createObjectStore('history', { keyPath: 'tid' });
       });

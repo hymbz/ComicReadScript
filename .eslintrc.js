@@ -157,7 +157,10 @@ module.exports = {
         ],
         'react/function-component-definition': [
           'warn',
-          { namedComponents: 'arrow-function' },
+          {
+            namedComponents: 'arrow-function',
+            unnamedComponents: 'arrow-function',
+          },
         ],
         // 有 TS 不需要这个
         'react/prop-types': 'off',
