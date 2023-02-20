@@ -7,8 +7,9 @@ import { buttonListDivider } from '@crs/ui-component/dist/Manga';
 import { useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import fflate from 'fflate';
-import type { SelfMangaProps } from '../components';
-import { download, saveAs } from '.';
+import type { SelfMangaProps } from '../components/Manga';
+// eslint-disable-next-line import/no-cycle
+import { download, saveAs } from './utils';
 
 /** 为工具栏加上下载和退出按钮 */
 export const setToolbarButton = (draftProps: SelfMangaProps) => {

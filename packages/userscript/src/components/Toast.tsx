@@ -3,7 +3,7 @@ import shadow from 'react-shadow';
 import type { ToastContent, ToastOptions } from 'react-toastify';
 import { ToastContainer, toast } from 'react-toastify';
 import ToastStyle from 'react-toastify/dist/ReactToastify.min.css';
-import { useComponentsRoot } from '../helper';
+import { useComponentsRoot } from '../helper/utils';
 
 export const useToast = () => {
   const [root] = useComponentsRoot('toast');

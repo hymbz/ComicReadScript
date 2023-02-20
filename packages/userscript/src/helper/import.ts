@@ -1,11 +1,12 @@
-// 为了尽量减少在无关页面浪费时间，components 下的代码都转成文本存放在变量中
+// 为了尽量减少在无关页面浪费时间，将 components、helper 下的代码都转成文本存放在变量中
 // 只在需要使用时再通过和其他外部库一样的方式进行加载
-const componentsCode = '';
+const helperCode = '';
 
 const selfLibName = 'selfLib';
 unsafeWindow[selfLibName] = {
   // 有些 cjs 模块会检查这个，所以在这里声明下
   process: { env: { NODE_ENV: process.env.NODE_ENV } },
+  GM,
 };
 
 /**
@@ -14,8 +15,7 @@ unsafeWindow[selfLibName] = {
  * @param name \@resource 引用的资源名
  */
 const selfImportSync = (name: string) => {
-  const code =
-    name === '../components' ? componentsCode : GM_getResourceText(name);
+  const code = name === '../helper' ? helperCode : GM_getResourceText(name);
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
   // 通过提供 cjs 环境的变量来欺骗 umd 模块加载器
@@ -24,7 +24,7 @@ const selfImportSync = (name: string) => {
     textContent: `
       window['${selfLibName}']['${name}'] = {};
       ${isDevMode ? `console.time('导入 ${name}');` : ''}
-      (function (process, require, exports, module) {
+      (function (process, require, exports, module, GM) {
         ${code}
       })(
         window['${selfLibName}'].process,
@@ -37,7 +37,8 @@ const selfImportSync = (name: string) => {
           get exports() {
             return window['${selfLibName}']['${name}'];
           },
-        }
+        },
+        window['${selfLibName}'].GM,
       );
       ${isDevMode ? `console.timeEnd('导入 ${name}');` : ''}
     `,

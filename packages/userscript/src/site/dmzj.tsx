@@ -1,13 +1,11 @@
 /* eslint-disable camelcase */
-import { useToast } from '../components';
 import {
-  insertNode,
-  querySelector,
-  querySelectorAll,
+  useToast,
   querySelectorClick,
   scrollIntoView,
+  useInit,
 } from '../helper';
-import { useInit } from '../helper/useInit';
+import { insertNode, querySelector, querySelectorAll } from '../helper/utils';
 
 declare const g_comic_url: string;
 declare const g_comic_id: string;

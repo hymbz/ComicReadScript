@@ -1,5 +1,4 @@
-import { querySelectorClick } from '../helper';
-import { useInit } from '../helper/useInit';
+import { querySelectorClick, useInit } from '../helper';
 
 declare const pVars: { manga: { filePath: string } };
 declare const cInfo: { nextId: number; prevId: number };

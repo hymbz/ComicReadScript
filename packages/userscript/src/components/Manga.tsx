@@ -3,7 +3,7 @@ import { Manga } from '@crs/ui-component/dist/Manga';
 import shadow from 'react-shadow';
 import MangaStyle from '@crs/ui-component/dist/Manga.css';
 import IconBottonStyle from '@crs/ui-component/dist/IconButton.css';
-import { useComponentsRoot } from '../helper';
+import { useComponentsRoot } from '../helper/utils';
 
 export type SelfMangaProps = MangaProps & { show: boolean };
 

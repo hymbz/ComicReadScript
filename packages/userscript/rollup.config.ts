@@ -86,7 +86,11 @@ const buildConfig = (
 
     ...plugins,
   ],
-  external: [...Object.keys(meta.resource ?? {}), '../components'],
+  external: [
+    ...Object.keys(meta.resource ?? {}),
+    '../helper',
+    /@crs\/ui-component/,
+  ],
 
   ...config,
 });
@@ -146,16 +150,17 @@ export default [
     }),
   ),
 
-  // 生成组件相关代码
   buildConfig({
-    input: 'src/components/index.ts',
+    input: 'src/helper/index.ts',
     output: {
-      file: 'dist/cache/components.js',
+      file: 'dist/cache/helper.js',
       format: 'cjs',
       generatedCode: 'es2015',
       strict: false,
     },
+    external: [...Object.keys(meta.resource ?? {})],
   }),
+
   // 生成自定义动态导入的代码
   buildConfig(
     {
@@ -184,7 +189,7 @@ export default [
         ],
       },
     },
-    watchAssets({ assets: ['dist/cache/components.js'] }),
+    watchAssets({ assets: ['dist/cache/helper.js.js'] }),
   ),
 
   // 编译 index.user.js
@@ -210,7 +215,7 @@ export default [
             newCode = newCode.replace(/\nexport.+};\n/g, '');
             // 在开发模式时计算下脚本的运行消耗时间
             if (isDevMode)
-              newCode = `console.time('脚本运行消耗时间')\n${newCode}\nconsole.timeEnd('脚本运行消耗时间')`;
+              newCode = `console.time('脚本启动消耗时间')\n${newCode}\nconsole.timeEnd('脚本启动消耗时间')`;
             return newCode;
           },
         } as Plugin,
@@ -225,11 +230,7 @@ export default [
     },
     plugins: [
       watchAssets({
-        assets: [
-          'dist/**/*',
-          '!dist/index.user.js',
-          '!dist/cache/components.js',
-        ],
+        assets: ['dist/**/*', '!dist/index.user.js'],
       }),
     ],
     treeshake: false,

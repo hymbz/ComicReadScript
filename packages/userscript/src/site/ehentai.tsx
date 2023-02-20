@@ -6,8 +6,8 @@ import {
   linstenKeyup,
   querySelector,
   scrollIntoView,
+  useInit,
 } from '../helper';
-import { useInit } from '../helper/useInit';
 
 declare const selected_tag: string;
 declare const selected_link: HTMLElement;

@@ -3,9 +3,9 @@ import {
   querySelector,
   querySelectorAll,
   scrollIntoView,
+  useCache,
+  useInit,
 } from '../helper';
-import { useCache } from '../helper/useCache';
-import { useInit } from '../helper/useInit';
 
 declare const fid: number;
 

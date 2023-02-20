@@ -1,5 +1,9 @@
-import { querySelector, querySelectorClick, scrollIntoView } from '../helper';
-import { useInit } from '../helper/useInit';
+import {
+  querySelector,
+  querySelectorClick,
+  scrollIntoView,
+  useInit,
+} from '../helper';
 
 (async () => {
   // 只在漫画页内运行

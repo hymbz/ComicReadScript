@@ -1,8 +1,12 @@
-import { useToast, useManga, useFab } from '../components';
+import {
+  useManga,
+  useFab,
+  useToast,
+  setToolbarButton,
+  defaultSpeedDial,
+} from '../helper';
+import { isEqualArray } from '../helper/utils';
 import { useSiteOptions } from '../helper/useSiteOptions';
-import { isEqualArray } from '../helper';
-import { setToolbarButton } from '../helper/setToolbarButton';
-import { defaultSpeedDial } from '../helper/defaultSpeedDial';
 
 setTimeout(async () => {
   const { options, setOptions, isRecorded, onOptionChange } =

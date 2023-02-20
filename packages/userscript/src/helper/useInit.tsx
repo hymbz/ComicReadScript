@@ -1,7 +1,10 @@
-import { useFab, useManga, useToast } from '../components';
+/* eslint-disable import/no-cycle */
+import { useManga } from '../components/Manga';
+import { useFab } from '../components/Fab';
+import { useToast } from '../components/Toast';
 import { useSiteOptions } from './useSiteOptions';
 import { setToolbarButton } from './setToolbarButton';
-import { sleep } from '.';
+import { sleep } from './utils';
 import { defaultSpeedDial } from './defaultSpeedDial';
 
 /**

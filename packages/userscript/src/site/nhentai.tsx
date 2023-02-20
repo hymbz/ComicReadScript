@@ -6,8 +6,8 @@ import {
   querySelectorAll,
   scrollIntoView,
   sleep,
+  useInit,
 } from '../helper';
-import { useInit } from '../helper/useInit';
 
 /** 用于转换获得图片文件扩展名 */
 const fileType = {

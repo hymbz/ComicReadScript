@@ -4,8 +4,8 @@ import {
   querySelector,
   querySelectorAll,
   querySelectorClick,
+  useInit,
 } from '../helper';
-import { useInit } from '../helper/useInit';
 
 // 接口参考
 // https://github.com/xiaoyaocz/flutter_dmzj/blob/ecbe73eb435624022ae5a77156c5d3e0c06809cc/lib/requests/api.dart

@@ -1,5 +1,4 @@
-import { querySelectorClick } from '../helper';
-import { useInit } from '../helper/useInit';
+import { querySelectorClick, useInit } from '../helper';
 
 (async () => {
   // 只在漫画页内运行

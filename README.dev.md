@@ -1,6 +1,4 @@
 TODO: 为漫画模式的进出增加个渐隐特效
-TODO: 为设置项增加 开/关 的提示
-TODO: 百合会没有使用 createShowComic ，导致缺少了相关功能，需要用上
 TODO: nhentai 匹配失败改为在页面上提示，不弹框
 TODO: 长漫画滚动时滚动条会出现闪烁跳跃的情况
 TODO: 默认配置内有些选项时需要在每次运行时通过 js 进行运算得出的，不能直接从缓存中提取
@@ -18,6 +16,8 @@ TODO: 退出时需要回到第一页
 `src\helper\import.ts`
 创建一个自定义的 require 函数放在脚本开头，再让 rollup 导出 cjs 模块规范的代码，就能直接在脚本里使用 cjs、umd 模块了。
 不过因为有些 cjs 会使用 node 环境特有的变量、在模块里再 require() 其他模块（这种情况下也需要将其依赖模块在 @resource 中声明），所以尽量还是选择 umd 的代码。
+
+另外为了尽量减少在无关页面浪费时间，components、helper 下的代码会被打包视为外部库 `'../helper'` 来使用，如果只需要其中一段代码则通过 `helper/XXX` 来导入即可。
 
 ### 使用 React 组件
 

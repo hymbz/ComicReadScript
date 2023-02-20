@@ -9,7 +9,7 @@ import FabStyle from '@crs/ui-component/dist/Fab.css';
 import IconBottonStyle from '@crs/ui-component/dist/IconButton.css';
 import shadow from 'react-shadow';
 import type { CSSProperties } from 'react';
-import { useComponentsRoot } from '../helper';
+import { useComponentsRoot } from '../helper/utils';
 
 export type FabRecipe = ((draftProps: FabProps) => void) | Partial<FabProps>;
 

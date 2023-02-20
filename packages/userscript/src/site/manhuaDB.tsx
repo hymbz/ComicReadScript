@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
-import { dataToParams, querySelectorClick } from '../helper';
-import { useInit } from '../helper/useInit';
+import { dataToParams, querySelectorClick, useInit } from '../helper';
 
 declare const img_data_arr: { img: string }[];
 declare const img_host: string;

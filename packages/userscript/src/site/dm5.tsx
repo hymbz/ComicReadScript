@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
-import { querySelectorClick, scrollIntoView, sleep } from '../helper';
-import { useInit } from '../helper/useInit';
+import { querySelectorClick, scrollIntoView, sleep, useInit } from '../helper';
 
 // 页面自带的变量
 declare const DM5_CID: number;

@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { useInit } from '../helper/useInit';
+import { useInit } from '../helper';
 
 declare const img_data_arr: string[];
 declare const img_pre: string;
