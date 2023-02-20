@@ -52,7 +52,7 @@ export const useManga = (initProps?: Partial<SelfMangaProps>) => {
       </shadow.div>,
     );
 
-    if (props.imgList.length && props.show) {
+    if (props.imgList.length > 1 && props.show) {
       dom.style.visibility = 'visible';
       document.documentElement.style.overflow = 'hidden';
     } else {
