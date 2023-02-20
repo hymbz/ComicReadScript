@@ -13,6 +13,15 @@ import { useComponentsRoot } from '../helper/utils';
 
 export type FabRecipe = ((draftProps: FabProps) => void) | Partial<FabProps>;
 
+const style = {
+  fontSize: ' clamp(12px, calc(1.5vw), 16px)',
+  position: 'fixed',
+  right: '3vw',
+  bottom: '6vh',
+  zIndex: 999999999,
+  '--text_bg': 'transparent',
+} as CSSProperties;
+
 export const useFab = (initProps?: FabProps) => {
   const [root] = useComponentsRoot('fab');
 
@@ -41,18 +50,7 @@ export const useFab = (initProps?: FabProps) => {
     }
 
     root.render(
-      <shadow.div
-        style={
-          {
-            fontSize: ' clamp(12px, calc(1.5vw), 16px)',
-            position: 'fixed',
-            right: '3vw',
-            bottom: '6vh',
-            zIndex: 999999999,
-            '--text_bg': 'transparent',
-          } as CSSProperties
-        }
-      >
+      <shadow.div style={style}>
         <Fab {...props}>
           <FabIcon />
         </Fab>
