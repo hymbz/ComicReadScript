@@ -257,7 +257,8 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         } else {
           switch (endPageType) {
             case 'end':
-              if (!state.scrollLock) (state.onNext ?? state.onExit)?.(true);
+              if (state.scrollLock) return;
+              (state.onNext ?? state.onExit)?.(true);
               state.activePageIndex = 0;
               state.endPageType = undefined;
               return;
@@ -274,7 +275,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
                   set((draftState) => {
                     draftState.scrollLock = false;
                   });
-                }, 500);
+                }, 200);
                 return;
               }
               if (!state.option.scrollMode) state.activePageIndex += 1;
