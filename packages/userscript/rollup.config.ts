@@ -150,16 +150,19 @@ export default [
     }),
   ),
 
-  buildConfig({
-    input: 'src/helper/index.ts',
-    output: {
-      file: 'dist/cache/helper.js',
-      format: 'cjs',
-      generatedCode: 'es2015',
-      strict: false,
+  buildConfig(
+    {
+      input: 'src/helper/index.ts',
+      output: {
+        file: 'dist/cache/helper.js',
+        format: 'cjs',
+        generatedCode: 'es2015',
+        strict: false,
+      },
+      external: [...Object.keys(meta.resource ?? {})],
     },
-    external: [...Object.keys(meta.resource ?? {})],
-  }),
+    watchAssets({ assets: ['../ui-component/dist/*'] }),
+  ),
 
   // 生成自定义动态导入的代码
   buildConfig(
@@ -189,7 +192,7 @@ export default [
         ],
       },
     },
-    watchAssets({ assets: ['dist/cache/helper.js.js'] }),
+    watchAssets({ assets: ['dist/cache/helper.js'] }),
   ),
 
   // 编译 index.user.js

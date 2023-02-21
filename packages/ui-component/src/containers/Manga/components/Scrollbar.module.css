@@ -23,26 +23,28 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    justify-content: center;
   }
 }
 
 .scrollbarDrag {
-  pointer-events: none;
-
   position: absolute;
   z-index: 1;
 
-  display: flex;
+  justify-content: center;
 
   width: 100%;
-  height: var(--pageHeight);
 
   opacity: 0;
   background-color: var(--scrollbar_drag);
   border-radius: 1em;
 
-  transition: transform 150ms;
+  /**
+   * 使用 transform 来移动的化因为涉及到百分比的四舍五入，
+   * 会在长漫画的滚动结束后出现明显的抖动，
+   * 所以这里只能用 top 来控制
+   */
+  /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
+  transition: top 150ms;
 }
 
 .scrollbarPage {
@@ -51,7 +53,6 @@
 
   flex-grow: 1;
 
-  height: var(--pageHeight);
   /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
   transition: transform 1000ms, background-color 0ms 1000ms;
 

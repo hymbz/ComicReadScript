@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import type { CSSProperties } from 'react';
 import { useRef, memo, useMemo } from 'react';
 import { useDrag } from '../hooks/useDrag';
 import type { SelfState } from '../hooks/useStore';
@@ -42,14 +41,6 @@ export const Scrollbar: React.FC = memo(() => {
     tipText,
   } = useStore(selector, shallow);
 
-  const style = useMemo(
-    () =>
-      ({
-        '--pageHeight': `${(1 / pageList.length) * 100}%`,
-      } as CSSProperties),
-    [pageList.length],
-  );
-
   const pageEleList = useMemo(
     () =>
       scrollbar.showProgress
@@ -75,7 +66,6 @@ export const Scrollbar: React.FC = memo(() => {
       role="scrollbar"
       aria-controls={classes.mangaFlow}
       aria-valuenow={activePageIndex || -1}
-      style={style}
       tabIndex={-1}
       onWheel={handleWheel}
     >
@@ -83,11 +73,12 @@ export const Scrollbar: React.FC = memo(() => {
         className={classes.scrollbarDrag}
         data-show={!scrollbar.autoHidden || showScrollbar}
         style={{
-          transform: scrollMode
-            ? undefined
-            : `translateY(${activePageIndex}00%)`,
-          top: `${dragTop * 100}%`,
-          height: dragHeight ? `${dragHeight * 100}%` : undefined,
+          top: scrollMode
+            ? `${dragTop * 100}%`
+            : `${(1 / pageList.length) * 100 * activePageIndex}%`,
+          height: dragHeight
+            ? `${dragHeight * 100}%`
+            : `${(1 / pageList.length) * 100}%`,
         }}
       >
         <div
