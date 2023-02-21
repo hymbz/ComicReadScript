@@ -141,13 +141,29 @@ declare const selected_link: HTMLElement;
       return;
     }
 
-    const res = await request(
-      'GET',
-      `https://nhentai.net/api/galleries/search?query=${encodeURI(
-        titleDom.innerText,
-      )}`,
-      { errorText: 'nhentai 漫画匹配失败。可能是 nhentai 登录状态失效？' },
-    );
+    let res: Tampermonkey.Response<any> | undefined;
+    try {
+      res = await GM.xmlHttpRequest({
+        method: 'GET',
+        url: `https://nhentai.net/api/galleries/search?query=${encodeURI(
+          titleDom.innerText,
+        )}`,
+      });
+    } catch (e) {
+      console.error('nhentai 漫画出错', e);
+    }
+
+    const newTagLine = document.createElement('tr');
+
+    if (!res) {
+      newTagLine.innerHTML = `
+      <td class="tc">nhentai:</td>
+      <td class="tc" style="text-align: left;">
+        匹配失败，请确认 nhentai 登录状态
+      </td>`;
+      taglistDom.appendChild(newTagLine);
+      return;
+    }
 
     const nHentaiComicInfo = JSON.parse(res.responseText) as {
       result: Array<{
@@ -160,7 +176,6 @@ declare const selected_link: HTMLElement;
     };
 
     // 构建新标签行
-    const newTagLine = document.createElement('tr');
     if (nHentaiComicInfo.result.length) {
       let temp = '<td class="tc">nhentai:</td><td>';
       let i = nHentaiComicInfo.result.length;
