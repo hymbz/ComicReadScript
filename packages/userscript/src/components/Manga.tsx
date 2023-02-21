@@ -29,13 +29,15 @@ export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
 
       opacity: 1;
 
-      transition: opacity 300ms;
+      transition: opacity 300ms, transform 100ms;
     }
 
     #comicRead.hidden > div {
-      pointer-events: none;
+      transform: scale(0);
 
       opacity: 0;
+
+      transition: opacity 300ms, transform 0s 300ms;
     }
   `);
 
