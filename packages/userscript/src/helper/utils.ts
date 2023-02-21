@@ -2,6 +2,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import type { Root } from 'react-dom/client';
 
+export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
+  T extends (...args: any) => Promise<infer R> ? R : any;
+
 export const sleep = (ms: number) =>
   new Promise((resolve) => {
     window.setTimeout(resolve, ms);

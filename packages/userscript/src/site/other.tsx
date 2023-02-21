@@ -5,6 +5,7 @@ import {
   setToolbarButton,
   defaultSpeedDial,
 } from '../helper';
+import type { AsyncReturnType } from '../helper/utils';
 import { isEqualArray } from '../helper/utils';
 import { useSiteOptions } from '../helper/useSiteOptions';
 
@@ -17,21 +18,21 @@ setTimeout(async () => {
   /** 是否正在后台不断检查图片 */
   let running = 0;
 
-  let setManga: ReturnType<typeof useManga>[0];
-  let setFab: ReturnType<typeof useFab>;
+  let setManga: AsyncReturnType<typeof useManga>[0];
+  let setFab: AsyncReturnType<typeof useFab>;
   let toast: ReturnType<typeof useToast>;
 
-  const init = () => {
+  const init = async () => {
     if (setManga !== undefined) return;
 
-    [setManga] = useManga({
+    [setManga] = await useManga({
       imgList,
       show: options.autoShow,
       onOptionChange: (option) => setOptions({ ...options, option }, false),
     });
     setManga(setToolbarButton, false);
 
-    setFab = useFab({
+    setFab = await useFab({
       tip: '阅读模式',
       onClick: () => setManga({ show: true }),
       speedDial: defaultSpeedDial(options, setOptions),
@@ -102,7 +103,7 @@ setTimeout(async () => {
   };
 
   await GM.registerMenuCommand('进入漫画阅读模式', async () => {
-    init();
+    await init();
 
     if (!running) running = window.setInterval(checkFindImg, 2000);
     if (!checkFindImg()) return;
@@ -113,7 +114,7 @@ setTimeout(async () => {
   });
 
   if (isRecorded) {
-    init();
+    await init();
     // 为了保证兼容，只能简单粗暴的不断检查网页的图片来更新数据
     running = window.setInterval(checkFindImg, 2000);
 

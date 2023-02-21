@@ -3,7 +3,6 @@ import { Manga } from '@crs/ui-component/dist/Manga';
 import shadow from 'react-shadow';
 import MangaStyle from '@crs/ui-component/dist/Manga.css';
 import IconBottonStyle from '@crs/ui-component/dist/IconButton.css';
-import type { CSSProperties } from 'react';
 import { useComponentsRoot } from '../helper/utils';
 
 export type SelfMangaProps = MangaProps & {
@@ -11,21 +10,34 @@ export type SelfMangaProps = MangaProps & {
   handleExit: MangaProps['onExit'];
 };
 
-const style: CSSProperties = {
-  fontSize: 16,
-  position: 'fixed',
-  height: '100vh',
-  width: '100vw',
-  top: 0,
-  left: 0,
-  zIndex: 999999999,
-};
-
 /**
  * 显示漫画阅读窗口
  */
-export const useManga = (initProps?: Partial<SelfMangaProps>) => {
+export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
   const [root, dom] = useComponentsRoot('comicRead');
+  await GM.addStyle(`
+    #comicRead > div {
+      position: fixed;
+      z-index: 999999999;
+      top: 0;
+      left: 0;
+
+      width: 100vw;
+      height: 100vh;
+
+      font-size: 16px;
+
+      opacity: 1;
+
+      transition: opacity 300ms;
+    }
+
+    #comicRead.hidden > div {
+      pointer-events: none;
+
+      opacity: 0;
+    }
+  `);
 
   const props = { imgList: [], show: false, ...initProps } as SelfMangaProps;
 
@@ -45,7 +57,7 @@ export const useManga = (initProps?: Partial<SelfMangaProps>) => {
     if (!render) return;
 
     root.render(
-      <shadow.div style={style}>
+      <shadow.div>
         <Manga {...props} />
         <style type="text/css">{IconBottonStyle}</style>
         <style type="text/css">{MangaStyle}</style>
@@ -53,10 +65,10 @@ export const useManga = (initProps?: Partial<SelfMangaProps>) => {
     );
 
     if (props.imgList.length > 1 && props.show) {
-      dom.style.visibility = 'visible';
+      dom.className = '';
       document.documentElement.style.overflow = 'hidden';
     } else {
-      dom.style.visibility = 'hidden';
+      dom.className = 'hidden';
       document.documentElement.style.overflow = 'unset';
     }
   };

@@ -22,13 +22,13 @@ export const useInit = async <T extends Record<string, any>>(
     defaultOptions,
   );
 
-  const setFab = useFab({
+  const setFab = await useFab({
     tip: '阅读模式',
     speedDial: defaultSpeedDial(options, setOptions),
   });
   onOptionChange(() => setFab());
 
-  const [setManga, mangaProps] = useManga({
+  const [setManga, mangaProps] = await useManga({
     imgList: [],
     option: options.option,
     onOptionChange: (option) => setOptions({ ...options, option }),
