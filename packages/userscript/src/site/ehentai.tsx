@@ -38,8 +38,8 @@ declare const selected_link: HTMLElement;
 
   setManga({
     onExit: (isEnd) => {
-      setManga({ show: false });
       if (isEnd) scrollIntoView('#cdiv');
+      setManga({ show: false });
     },
   });
 

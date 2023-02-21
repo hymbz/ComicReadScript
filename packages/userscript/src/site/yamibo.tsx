@@ -104,9 +104,9 @@ interface History {
   // 判断当前页是帖子
   if (/thread(-\d+){3}|mod=viewthread/.test(document.URL)) {
     // 修复微博图床的链接
-    [...document.querySelectorAll('img[file*="sinaimg.cn"]')].map((e) =>
-      e.setAttribute('referrerpolicy', 'no-referrer'),
-    );
+    querySelectorAll('img[file*="sinaimg.cn"]').forEach((e) => {
+      e.setAttribute('referrerpolicy', 'no-referrer');
+    });
 
     // 限定板块启用
     if (fid === 30 || fid === 37) {
@@ -118,7 +118,10 @@ interface History {
           const img = imgList[i];
 
           const file = img.getAttribute('file');
-          if (file && img.src !== file) img.setAttribute('src', file);
+          if (file && img.src !== file) {
+            img.setAttribute('src', file);
+            img.setAttribute('lazyloaded', 'true');
+          }
 
           // 测试例子：https://bbs.yamibo.com/thread-502399-1-1.html
 
@@ -136,6 +139,7 @@ interface History {
         return imgList.map((img) => img.src);
       };
 
+      // TODO:通过标签确定上/下一话
       setManga({
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
         onLoading: (img) => {
@@ -151,15 +155,10 @@ interface History {
           setManga({ imgList: imgList.map((image) => image.src) });
         },
         onExit: (isEnd) => {
-          if (isEnd) {
+          if (isEnd)
             scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
-            // 因为好像有懒加载的缘故，直接移到指定位置后会加载出新的楼层导致位置偏移
-            // 所以移动两次并且在第二次延时移动后再隐藏漫画界面
-            setTimeout(() => {
-              scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
-              setManga({ show: false });
-            });
-          } else setManga({ show: false });
+
+          setManga({ show: false });
         },
       });
 

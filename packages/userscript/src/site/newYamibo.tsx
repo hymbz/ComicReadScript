@@ -17,8 +17,8 @@ import {
     onNext: querySelectorClick('#btnNext'),
     onPrev: querySelectorClick('#btnPrev'),
     onExit: (isEnd) => {
-      setManga({ show: false });
       if (isEnd) scrollIntoView('#w1');
+      setManga({ show: false });
     },
   });
 

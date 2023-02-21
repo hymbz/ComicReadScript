@@ -21,8 +21,8 @@ declare const $: any;
     onNext: querySelectorClick('.logo_2'),
     onPrev: querySelectorClick('.logo_1'),
     onExit: (isEnd) => {
-      setManga({ show: false });
       if (isEnd) scrollIntoView('.top');
+      setManga({ show: false });
     },
   });
 

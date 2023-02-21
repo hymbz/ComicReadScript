@@ -207,11 +207,11 @@ declare const zcClick: any;
     onNext: querySelectorClick('#next_chapter'),
     onPrev: querySelectorClick('#prev_chapter'),
     onExit: (isEnd) => {
-      setManga({ show: false });
       if (isEnd) {
         unsafeWindow.huPoint();
         scrollIntoView('#hd');
       }
+      setManga({ show: false });
     },
   });
 
