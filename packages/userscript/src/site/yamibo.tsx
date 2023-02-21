@@ -108,8 +108,12 @@ interface History {
       e.setAttribute('referrerpolicy', 'no-referrer');
     });
 
-    // 限定板块启用
-    if (fid === 30 || fid === 37) {
+    if (
+      // 限定板块启用
+      (fid === 30 || fid === 37) &&
+      // 只在第一页生效
+      !querySelector('.pg > .prev')
+    ) {
       let imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
 
       const updateImgList = () => {
