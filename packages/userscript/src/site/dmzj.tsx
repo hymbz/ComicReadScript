@@ -163,8 +163,9 @@ declare const zcClick: any;
   }
 
   // 处理当前页是漫画页的情况
-  const { options, setFab, setManga, createShowComic, onOptionChange } =
-    await useInit('dmzj', { 解除吐槽的字数限制: true });
+  const { options, setManga, init, onOptionChange } = await useInit('dmzj', {
+    解除吐槽的字数限制: true,
+  });
 
   // 切换至上下翻页阅读
   if ($.cookie('display_mode') === '0') unsafeWindow.qiehuan();
@@ -215,15 +216,12 @@ declare const zcClick: any;
     },
   });
 
-  const showComic = createShowComic(
+  init(
     () =>
       querySelectorAll('.inner_img img')
         .map((e) => e.getAttribute('data-original'))
         .filter((src) => src) as string[],
   );
-  setFab({ onClick: () => showComic() });
-
-  if (options.autoShow) await showComic();
 
   // 修改发表吐槽的函数，删去字数判断。只是删去了原函数的一个判断条件而已，所以将这段压缩了一下
   if (options['解除吐槽的字数限制']) {

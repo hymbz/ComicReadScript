@@ -14,12 +14,10 @@ declare const $: any;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'img_data_arr')) return;
 
-  const { options, setFab, setManga, createShowComic } = await useInit(
-    'manhuaDB',
-  );
+  const { setManga, init } = await useInit('manhuaDB');
 
   /**
-   * 检查是否有上/下一页
+   * 检查是否有上/下一话
    */
   const checkTurnPage = async (type: 'pre' | 'next') => {
     const res = await $.ajax({
@@ -47,10 +45,5 @@ declare const $: any;
     onPrev: await checkTurnPage('pre'),
   });
 
-  const showComic = createShowComic(() =>
-    img_data_arr.map((data) => `${img_host}/${img_pre}/${data.img}`),
-  );
-  setFab({ onClick: showComic });
-
-  if (options.autoShow) await showComic();
+  init(() => img_data_arr.map((data) => `${img_host}/${img_pre}/${data.img}`));
 })();

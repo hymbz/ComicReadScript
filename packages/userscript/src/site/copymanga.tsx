@@ -4,9 +4,7 @@ import { querySelectorClick, useInit } from '../helper';
   // 只在漫画页内运行
   if (!window.location.href.includes('/chapter/')) return;
 
-  const { options, setFab, setManga, request, createShowComic } = await useInit(
-    'copymanga',
-  );
+  const { setManga, request, init } = await useInit('copymanga');
   setManga({
     onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
     onPrev: querySelectorClick(
@@ -14,7 +12,7 @@ import { querySelectorClick, useInit } from '../helper';
     ),
   });
 
-  const showComic = createShowComic(async () => {
+  init(async () => {
     const res = await request(
       'GET',
       window.location.href.replace(
@@ -33,8 +31,4 @@ import { querySelectorClick, useInit } from '../helper';
     type ContentsType = { url: string }[];
     return (contents as ContentsType).map(({ url }) => url);
   });
-
-  setFab({ onClick: showComic });
-
-  if (options.autoShow) await showComic();
 })();

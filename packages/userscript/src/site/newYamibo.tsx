@@ -9,9 +9,7 @@ import {
   // 只在漫画页内运行
   if (!document.URL.includes('view-chapter')) return;
 
-  const { options, setFab, toast, setManga, createShowComic } = await useInit(
-    'newYamibo',
-  );
+  const { setFab, toast, setManga, init } = await useInit('newYamibo');
 
   setManga({
     onNext: querySelectorClick('#btnNext'),
@@ -62,8 +60,5 @@ import {
     return getImgList(i + 1, imgList);
   };
 
-  const showComic = createShowComic(getImgList);
-  setFab({ onClick: showComic });
-
-  if (options.autoShow) await showComic();
+  init(getImgList);
 })();

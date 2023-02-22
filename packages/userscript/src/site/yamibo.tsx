@@ -17,15 +17,12 @@ interface History {
 }
 
 (async () => {
-  const { options, setFab, setManga, request, createShowComic } = await useInit(
-    'yamibo',
-    {
-      记录阅读进度: true,
-      关闭快捷导航按钮的跳转: true,
-      修正点击页数时的跳转判定: true,
-      固定导航条: true,
-    },
-  );
+  const { options, setFab, setManga, request, init } = await useInit('yamibo', {
+    记录阅读进度: true,
+    关闭快捷导航按钮的跳转: true,
+    修正点击页数时的跳转判定: true,
+    固定导航条: true,
+  });
 
   await GM.addStyle(
     `#fab { --fab: #6E2B19; --fab_hover: #A15640; };
@@ -166,10 +163,9 @@ interface History {
       });
 
       updateImgList();
-      const showComic = createShowComic(() => imgList.map((img) => img.src));
-      if (options.autoShow) await showComic();
+      const showComic = init(() => imgList.map((img) => img.src));
 
-      setFab({ progress: 1, tip: '阅读模式', onClick: showComic });
+      setFab({ progress: 1, tip: '阅读模式' });
 
       // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
       insertNode(

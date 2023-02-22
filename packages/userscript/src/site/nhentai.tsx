@@ -23,14 +23,11 @@ type Images = {
 declare const gallery: { num_pages: number; media_id: string; images: Images };
 
 (async () => {
-  const { options, setFab, setManga, toast, createShowComic } = await useInit(
-    'nhentai',
-    {
-      自动翻页: true,
-      彻底屏蔽漫画: true,
-      在新页面中打开链接: true,
-    },
-  );
+  const { options, setFab, setManga, toast, init } = await useInit('nhentai', {
+    自动翻页: true,
+    彻底屏蔽漫画: true,
+    在新页面中打开链接: true,
+  });
 
   // 在漫画详情页
   if (Reflect.has(unsafeWindow, 'gallery')) {
@@ -47,7 +44,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Load comic</a>',
     );
     const comicReadModeDom = document.getElementById('comicReadMode')!;
-    const showComic = createShowComic(
+    const showComic = init(
       () =>
         gallery.images.pages.map(
           ({ number, extension }) =>
@@ -60,10 +57,8 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
             : '<i class="fa fa-book"></i> Read';
       },
     );
-    setFab({ onClick: showComic, initShow: options.autoShow });
-    comicReadModeDom.addEventListener('click', () => showComic());
-
-    if (options.autoShow) await showComic();
+    setFab({ initShow: options.autoShow });
+    comicReadModeDom.addEventListener('click', showComic);
 
     return;
   }

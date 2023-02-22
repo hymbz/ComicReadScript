@@ -14,9 +14,7 @@ declare const $: any;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'DM5_CID')) return;
 
-  const { options, setFab, toast, setManga, createShowComic } = await useInit(
-    'dm5',
-  );
+  const { setFab, toast, setManga, init } = await useInit('dm5');
   setManga({
     onNext: querySelectorClick('.logo_2'),
     onPrev: querySelectorClick('.logo_1'),
@@ -69,9 +67,5 @@ declare const $: any;
     }
   };
 
-  const showComic = createShowComic(getImgList);
-
-  setFab({ onClick: showComic });
-
-  if (options.autoShow) await showComic();
+  init(getImgList);
 })();

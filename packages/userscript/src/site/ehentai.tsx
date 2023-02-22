@@ -13,8 +13,10 @@ declare const selected_tag: string;
 declare const selected_link: HTMLElement;
 
 (async () => {
-  const { options, setFab, setManga, request, createShowComic, toast } =
-    await useInit('nhentai', { 匹配nhentai: true, 快捷键翻页: true });
+  const { options, setFab, setManga, request, init, toast } = await useInit(
+    'nhentai',
+    { 匹配nhentai: true, 快捷键翻页: true },
+  );
 
   // 不是漫画页的话
   if (!Reflect.has(unsafeWindow, 'gid')) {
@@ -93,7 +95,7 @@ declare const selected_link: HTMLElement;
     return Promise.all(imgPageList.map(getImgFromImgPage));
   };
 
-  const showComic = createShowComic(
+  const showComic = init(
     async () => {
       const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!
         .innerText;
@@ -112,10 +114,8 @@ declare const selected_link: HTMLElement;
           : ' Read';
     },
   );
-  setFab({ onClick: showComic, initShow: options.autoShow });
-  comicReadModeDom.addEventListener('click', () => showComic());
-
-  if (options.autoShow) await showComic();
+  setFab({ initShow: options.autoShow });
+  comicReadModeDom.addEventListener('click', showComic);
 
   if (options.快捷键翻页) {
     linstenKeyup((e) => {

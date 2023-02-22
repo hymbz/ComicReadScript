@@ -106,6 +106,7 @@ export const useInit = async <T extends Record<string, any>>(
   }
 
   let menuId: number;
+  /** 更新显示/隐藏阅读模式按钮的菜单项 */
   const updateHideFabMenu = async () => {
     await GM.unregisterMenuCommand(menuId);
     menuId = await GM.registerMenuCommand(
@@ -131,12 +132,13 @@ export const useInit = async <T extends Record<string, any>>(
     request,
 
     /**
-     * 创建一个加载图片列表并进入阅读模式的函数
+     * 完成所有支持站点的初始化
      *
      * @param getImgList 返回图片列表的函数
      * @param onLoading 图片加载状态发生变化时触发的回调
+     * @returns 自动加载图片并进入阅读模式的函数
      */
-    createShowComic: (
+    init: (
       getImgList: () => Promise<string[]> | string[],
       onLoading: (
         loadNum: number,
@@ -147,10 +149,8 @@ export const useInit = async <T extends Record<string, any>>(
       /** 是否正在加载图片中 */
       let loading = false;
 
-      /**
-       * 进入阅读模式
-       */
-      const showComic = async () => {
+      /** 进入阅读模式 */
+      const showComic = async (show: boolean = options.autoShow) => {
         if (loading) {
           toast('加载图片中，请稍候', { autoClose: 1500 });
           return;
@@ -171,7 +171,7 @@ export const useInit = async <T extends Record<string, any>>(
             });
             setManga((draftProps) => {
               draftProps.imgList = initImgList;
-              draftProps.show = options.autoShow;
+              draftProps.show = show;
               setToolbarButton(draftProps);
 
               // 监听图片加载状态，将进度显示到 Fab 上
@@ -209,12 +209,16 @@ export const useInit = async <T extends Record<string, any>>(
         }
       };
 
+      setFab({ onClick: () => showComic(true) });
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      GM.registerMenuCommand('进入漫画阅读模式', showComic);
+      if (options.autoShow) showComic();
+
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      GM.registerMenuCommand('进入漫画阅读模式', () => showComic(true));
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       updateHideFabMenu();
 
-      return showComic;
+      return () => showComic(true);
     },
   };
 };

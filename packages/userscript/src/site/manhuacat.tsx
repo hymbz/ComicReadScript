@@ -15,9 +15,7 @@ declare const $: any;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'cdnImage')) return;
 
-  const { options, setFab, setManga, createShowComic } = await useInit(
-    'manhuacat',
-  );
+  const { setManga, init } = await useInit('manhuacat');
 
   /**
    * 检查是否有上/下一页
@@ -40,10 +38,7 @@ declare const $: any;
     onPrev: await checkTurnPage('pre'),
   });
 
-  const showComic = createShowComic(() =>
+  init(() =>
     img_data_arr.map((img) => cdnImage(img_pre + img, asset_domain, asset_key)),
   );
-  setFab({ onClick: showComic });
-
-  if (options.autoShow) await showComic();
 })();

@@ -7,15 +7,13 @@ declare const cInfo: { nextId: number; prevId: number };
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'cInfo')) return;
 
-  const { options, setFab, setManga, createShowComic } = await useInit(
-    'manhuagui',
-  );
+  const { setManga, init } = await useInit('manhuagui');
   setManga({
     onNext: cInfo.nextId !== 0 ? querySelectorClick('a.nextC') : null,
     onPrev: cInfo.prevId !== 0 ? querySelectorClick('a.prevC') : null,
   });
 
-  const showComic = createShowComic(() => {
+  init(() => {
     const comicInfo = JSON.parse(
       // 只能通过 eval 获得数据
       // eslint-disable-next-line no-eval
@@ -30,7 +28,4 @@ declare const cInfo: { nextId: number; prevId: number };
       (file) => `${pVars.manga.filePath}${file}?${sl}`,
     );
   });
-  setFab({ onClick: showComic });
-
-  if (options.autoShow) await showComic();
 })();
