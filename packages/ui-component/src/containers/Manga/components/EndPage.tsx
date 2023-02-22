@@ -5,17 +5,27 @@ import { shallow, useStore } from '../hooks/useStore';
 
 import classes from '../index.module.css';
 
-const selector = ({ onExit, onPrev, onNext, turnPage }: SelfState) => ({
+const selector = ({
   onExit,
   onPrev,
   onNext,
   turnPage,
+  endPageType,
+  option: { flipToNext },
+}: SelfState) => ({
+  onExit,
+  onPrev,
+  onNext,
+  turnPage,
+  endPageType,
+  flipToNext,
 });
 
 let delayTypeTimer = 0;
 
 export const EndPage: React.FC = () => {
-  const { onExit, onPrev, onNext, turnPage } = useStore(selector, shallow);
+  const { onExit, onPrev, onNext, turnPage, endPageType, flipToNext } =
+    useStore(selector, shallow);
 
   const handleClick = useCallback<MouseEventHandler>((e) => {
     e.stopPropagation();
@@ -27,12 +37,12 @@ export const EndPage: React.FC = () => {
   }, []);
 
   const handleEnd = useCallback(() => {
-    onExit?.(true);
     useStore.setState((state) => {
+      state.onExit?.(true);
       state.activePageIndex = 0;
       state.endPageType = undefined;
     });
-  }, [onExit]);
+  }, []);
 
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -54,38 +64,36 @@ export const EndPage: React.FC = () => {
     };
   }, [turnPage]);
 
-  const type = useStore((state) => state.endPageType);
-
   // state.endPageType 变量的延时版本，在隐藏的动画效果结束之后才会真正改变
   // 防止在动画效果结束前 tip 就消失或改变了位置
   const [delayType, setDelayType] = useState<'start' | 'end' | undefined>();
   useEffect(() => {
-    if (type) {
+    if (endPageType) {
       window.clearTimeout(delayTypeTimer);
-      setDelayType(type);
+      setDelayType(endPageType);
     } else {
-      delayTypeTimer = window.setTimeout(() => setDelayType(type), 500);
+      delayTypeTimer = window.setTimeout(() => setDelayType(endPageType), 500);
     }
-  }, [type]);
+  }, [endPageType]);
 
   const tip = useMemo(() => {
     switch (delayType) {
       case 'start':
-        if (onPrev) return '已到开头，继续翻页将跳至上一话';
+        if (onPrev && flipToNext) return '已到开头，继续翻页将跳至上一话';
         break;
       case 'end':
-        if (onNext) return '已到结尾，继续翻页将跳至下一话';
+        if (onNext && flipToNext) return '已到结尾，继续翻页将跳至下一话';
         if (onExit) return '已到结尾，继续翻页将退出';
         break;
     }
     return '';
-  }, [onNext, onPrev, onExit, delayType]);
+  }, [onNext, onPrev, onExit, delayType, flipToNext]);
 
   return (
     <div
       ref={ref}
       className={classes.endPage}
-      data-show={type}
+      data-show={endPageType}
       data-type={delayType}
       onClick={handleClick}
       role="button"
@@ -96,14 +104,14 @@ export const EndPage: React.FC = () => {
         className={onPrev ? undefined : classes.invisible}
         onClick={onPrev}
         type="button"
-        tabIndex={type ? 0 : -1}
+        tabIndex={endPageType ? 0 : -1}
       >
         上一话
       </button>
       <button
         onClick={handleEnd}
         type="button"
-        tabIndex={type ? 0 : -1}
+        tabIndex={endPageType ? 0 : -1}
         data-is-end
       >
         退出
@@ -112,7 +120,7 @@ export const EndPage: React.FC = () => {
         className={onNext ? undefined : classes.invisible}
         onClick={onNext}
         type="button"
-        tabIndex={type ? 0 : -1}
+        tabIndex={endPageType ? 0 : -1}
       >
         下一话
       </button>

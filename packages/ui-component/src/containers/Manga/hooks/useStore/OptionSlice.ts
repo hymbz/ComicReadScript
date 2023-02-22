@@ -28,6 +28,8 @@ export interface Option {
   darkMode: boolean;
   /** 在空闲时间自动加载其余图片 */
   autoLoadOtherImg: number;
+  /** 滚动到底后继续滚动会跳至下一话 */
+  flipToNext: boolean;
 }
 
 export interface OptionSlice {
@@ -55,6 +57,7 @@ export const optionSlice: SelfStateCreator<OptionSlice> = () => ({
     // 判断用户系统环境是否要求开启暗色模式
     darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
     autoLoadOtherImg: 5,
+    flipToNext: true,
   },
 
   showTouchArea: false,

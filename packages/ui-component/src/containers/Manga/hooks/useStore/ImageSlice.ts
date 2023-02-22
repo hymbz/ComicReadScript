@@ -231,7 +231,8 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
         if (dir === 'prev') {
           switch (endPageType) {
             case 'start':
-              if (!state.scrollLock) state.onPrev?.();
+              if (!state.scrollLock && state.option.flipToNext)
+                state.onPrev?.();
               return;
             case 'end':
               state.endPageType = undefined;
@@ -241,7 +242,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
               // 弹出卷首结束页
               if (activePageIndex === 0) {
                 // 没有 onPrev 时不弹出
-                if (!state.onPrev) return;
+                if (!state.onPrev || !state.option.flipToNext) return;
 
                 state.endPageType = 'start';
                 state.scrollLock = true;
@@ -258,7 +259,7 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
           switch (endPageType) {
             case 'end':
               if (state.scrollLock) return;
-              if (state.onNext) {
+              if (state.onNext && state.option.flipToNext) {
                 state.onNext();
                 return;
               }

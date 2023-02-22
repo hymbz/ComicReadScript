@@ -16,7 +16,7 @@ export type SettingList = [string, React.FC][];
 /** 默认菜单项 */
 export const defaultSettingList: SettingList = [
   [
-    '阅读',
+    '阅读方向',
     () => {
       const dir = useStore((state) => state.option.dir);
       const handleEditDir = useCallback(() => {
@@ -178,8 +178,21 @@ export const defaultSettingList: SettingList = [
         });
       }, []);
 
+      const flipToNext = useStore((state) => state.option.flipToNext);
+      const handleFlipToNext = useCallback(() => {
+        useStore.setState((state) => {
+          state.option.flipToNext = !state.option.flipToNext;
+        });
+      }, []);
+
       return (
         <>
+          <SettingsItemSwitch
+            name="翻页至上/下一话"
+            value={flipToNext}
+            onChange={handleFlipToNext}
+          />
+
           <SettingsItemSwitch
             name="启用夜间模式"
             value={darkMode}
