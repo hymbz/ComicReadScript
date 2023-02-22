@@ -143,7 +143,6 @@ interface History {
         return imgList.map((img) => img.src);
       };
 
-      // TODO:通过标签确定上/下一话
       setManga({
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
         onLoading: (img) => {
@@ -194,6 +193,49 @@ interface History {
             }, 1000);
           });
         });
+      }
+
+      const tagDom = querySelector<HTMLAnchorElement>('.ptg.mbm.mtn > a');
+      // 通过标签确定上/下一话
+      if (tagDom) {
+        const tagId = tagDom.href.split('id=')[1];
+        const reg = /(?<=<th>\s<a href="thread-)\d+(?=-)/g;
+        let threadList: number[] = [];
+
+        // 先获取包含当前帖后一话在内的同一标签下的帖子id列表，再根据结果设定上/下一话
+        const setPrevNext = async (pageNum = 1): Promise<void> => {
+          const res = await GM.xmlHttpRequest({
+            method: 'GET',
+            url: `https://bbs.yamibo.com/misc.php?mod=tag&id=${tagId}&type=thread&page=${pageNum}`,
+          });
+
+          const newList = [...res.responseText.matchAll(reg)].map(
+            ([tid]) => +tid,
+          );
+          threadList = threadList.concat(newList);
+
+          const index = threadList.findIndex((tid) => tid === unsafeWindow.tid);
+          if (newList.length && (index === -1 || !threadList[index + 1]))
+            return setPrevNext(pageNum + 1);
+
+          return setManga({
+            onPrev: threadList[index - 1]
+              ? () => {
+                  window.location.assign(
+                    `thread-${threadList[index - 1]}-1-1.html`,
+                  );
+                }
+              : undefined,
+            onNext: threadList[index + 1]
+              ? () => {
+                  window.location.assign(
+                    `thread-${threadList[index + 1]}-1-1.html`,
+                  );
+                }
+              : undefined,
+          });
+        };
+        setTimeout(setPrevNext);
       }
     }
 
