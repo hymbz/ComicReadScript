@@ -167,13 +167,13 @@ module.exports = {
         // 允许使用对象解构来传输 props
         'react/jsx-props-no-spreading': 'off',
 
-        // 为了使用 immer，允许为命名为 state 和 draft开头 的函数参数赋值
+        // 为了使用 immer，允许为 命名为state、draft开头、Ele结尾 的函数参数赋值
         'no-param-reassign': [
           'error',
           {
             props: true,
             ignorePropertyModificationsFor: ['state'],
-            ignorePropertyModificationsForRegex: ['^draft'],
+            ignorePropertyModificationsForRegex: ['^draft', 'Ele$'],
           },
         ],
 

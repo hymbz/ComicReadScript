@@ -83,6 +83,15 @@ switch (window.location.hostname) {
     break;
   }
 
+  case 'jmcomic.me':
+  case 'jmcomic1.me':
+  case '18comic.org':
+  case '18comic.cc':
+  case '18comic.vip': {
+    // #jm
+    break;
+  }
+
   default: {
     // #other
   }
