@@ -97,20 +97,22 @@ export const download = async <T = Blob>(
   url: string,
   details?: Partial<Tampermonkey.Request<any>>,
   errorNum = 0,
+  maxErrorNum = 3,
 ): Promise<T> => {
   const res = await GM.xmlHttpRequest({
     method: 'GET',
     url,
     responseType: 'blob',
+    headers: { Referer: window.location.href },
     ...details,
   });
 
   if (res.status !== 200) {
     const errorTest = `${url} 下载图片时出错：[${res.status}]${res.statusText}`;
-    if (errorNum >= 3) throw new Error(errorTest);
+    if (errorNum >= maxErrorNum) throw new Error(errorTest);
     console.warn(errorTest);
     await sleep(1000);
-    return download(url, details, errorNum + 1);
+    return download(url, details, errorNum + 1, maxErrorNum);
   }
   return res.response;
 };
@@ -142,4 +144,43 @@ export const linstenKeyup = (handler: (e: KeyboardEvent) => unknown) =>
 /** 滚动页面到指定元素的所在位置 */
 export const scrollIntoView = (selector: string) => {
   querySelector(selector)?.scrollIntoView();
+};
+
+/**
+ * 限制 Promise 并发
+ *
+ * @param limit 限制数
+ * @param fnList 返回 Promise 的函数
+ * @param callBack 成功执行一个 Promise 后调用，主要用于显示进度
+ * @returns 所有 Promise 的返回值
+ */
+export const plimit = async <T>(
+  limit: number,
+  fnList: Array<() => Promise<T>>,
+  callBack?: (resList: T[]) => void,
+) => {
+  const totalNum = fnList.length;
+  const resList: T[] = [];
+  const execPool = new Set<Promise<void>>();
+  const taskList = fnList.map((fn, i) => {
+    let p: Promise<void>;
+    return () => {
+      p = (async () => {
+        resList[i] = await fn();
+        execPool.delete(p);
+        callBack?.(resList);
+      })();
+      execPool.add(p);
+    };
+  });
+
+  while (resList.length !== totalNum) {
+    while (taskList.length && execPool.size < limit) {
+      taskList.shift()!();
+    }
+    // eslint-disable-next-line no-await-in-loop
+    await Promise.race(execPool);
+  }
+
+  return resList;
 };

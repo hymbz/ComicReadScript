@@ -30,7 +30,6 @@ export const setToolbarButton = (draftProps: SelfMangaProps) => {
         try {
           // eslint-disable-next-line no-await-in-loop
           const data = await download<ArrayBuffer>(imgList[i], {
-            headers: { Referer: window.location.href },
             responseType: 'arraybuffer',
           });
           fileData[fileName] = new Uint8Array(data);

@@ -39,6 +39,7 @@ export const ComicImg: React.FC<{ index: number }> = memo(({ index }) => {
         const img = state.imgList[index];
         img.loadType = 'error';
         img.error = e as Draft<SyntheticEvent<HTMLImageElement, Event>>;
+        console.error('图片加载失败', e);
 
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         state.onLoading?.(current(img), current(state.imgList));

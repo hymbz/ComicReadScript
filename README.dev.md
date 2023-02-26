@@ -1,5 +1,6 @@
 TODO: 百合会自动签到。应该只要获取签到链接 get 一下就好，参考 s1 脚本
 TODO: 参考 https://www.cnblogs.com/coco1s/p/13253423.html 看能不能实现斜向黑色半透明渐变
+TODO: 增加自定义快捷键设置
 
 ### dev
 

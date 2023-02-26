@@ -190,7 +190,8 @@ export const imageSlice: SelfStateCreator<ImageSLice> = (set, get) => {
 
           // 先将所有加载中的图片状态改为暂停
           imgList.forEach(({ loadType }, i) => {
-            if (loadType === 'loading') imgList[i].loadType = 'wait';
+            if (loadType === 'loading' || loadType === 'error')
+              imgList[i].loadType = 'wait';
           });
 
           if (
