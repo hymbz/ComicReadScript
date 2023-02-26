@@ -16,6 +16,10 @@ interface History {
   lastAnchor: string;
 }
 
+/** 签到按钮的选择器 */
+const checkInDomSelectors =
+  '.header-tool > li > a[href^="plugin.php?id=study_daily_attendance"]';
+
 (async () => {
   const { options, setFab, setManga, request, init } = await useInit('yamibo', {
     记录阅读进度: true,
@@ -66,7 +70,12 @@ interface History {
       color: RGB(255, 246, 215);
     }
 
-    // TODO: 看下有没有不需要的 css
+    /* 隐藏签到按钮 */
+    ${checkInDomSelectors} {
+      display: none;
+    }
+
+    /* TODO: 看下有没有不需要的 css */
 
     .tl th a:visited,
     .tl td.fn a:visited {
@@ -93,6 +102,11 @@ interface History {
     }
     `,
   );
+
+  // 自动签到
+  const checkInDom = querySelector<HTMLAreaElement>(checkInDomSelectors);
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  if (checkInDom) fetch(checkInDom.href);
 
   if (options.关闭快捷导航按钮的跳转)
     // eslint-disable-next-line no-script-url
