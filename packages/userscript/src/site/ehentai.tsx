@@ -60,10 +60,12 @@ declare const selected_link: HTMLElement;
   let loadedImgNum = 0;
 
   /**
-   * 从图片页获取图片的地址
+   * 从图片页获取图片地址
    */
   const getImgFromImgPage = async (url: string): Promise<string> => {
-    const res = await request('GET', url);
+    const res = await request('GET', url, {
+      errorText: '从图片页获取图片地址失败',
+    });
 
     loadedImgNum += 1;
     setFab({
@@ -84,6 +86,9 @@ declare const selected_link: HTMLElement;
       `${window.location.origin}${window.location.pathname}${
         pageNum ? `?p=${pageNum}` : ''
       }`,
+      {
+        errorText: '从详情页获取图片页地址失败',
+      },
     );
 
     // 从详情页获取图片页的地址
