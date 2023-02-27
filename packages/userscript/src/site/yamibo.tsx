@@ -30,16 +30,15 @@ const checkInDomSelectors =
 
   await GM.addStyle(
     `#fab { --fab: #6E2B19; --fab_hover: #A15640; };
-    ${
-      options.固定导航条 ? '.header-stackup { position: fixed !important};' : ''
-    }
 
-    :root { --lastReadTagColor: #6e2b19; }
+    ${
+      options.固定导航条 ? '.header-stackup { position: fixed !important }' : ''
+    }
 
     .historyTag {
       white-space: nowrap;
 
-      border: 2px solid var(--lastReadTagColor);
+      border: 2px solid #6e2b19;
     }
 
     a.historyTag {
@@ -48,11 +47,11 @@ const checkInDomSelectors =
       margin-left: 1em;
       padding: 1px 4px;
 
-      color: var(--lastReadTagColor);
-      border-radius: 6px 0 0 6px;
+      color: #6e2b19;
+      border-radius: 4px 0 0 4px;
     }
     a.historyTag:last-child {
-      border-radius: 6px;
+      border-radius: 4px;
     }
 
     div.historyTag {
@@ -62,8 +61,8 @@ const checkInDomSelectors =
       padding: 1px;
 
       color: RGB(255, 237, 187);
-      border-radius: 0 6px 6px 0;
-      background-color: var(--lastReadTagColor);
+      border-radius: 0 4px 4px 0;
+      background-color: #6e2b19;
     }
 
     #threadlisttableid tbody:nth-child(2n) div.historyTag {
@@ -75,30 +74,9 @@ const checkInDomSelectors =
       display: none;
     }
 
-    /* TODO: 看下有没有不需要的 css */
-
-    .tl th a:visited,
-    .tl td.fn a:visited {
-      color: #6E2B19;
-    }
-
+    /* 将「回复/查看」列加宽一点 */
     .tl .num {
       width: 80px !important;
-    }
-
-    .tc {
-      display: flex;
-      justify-content: center;
-
-      margin: 0;
-    }
-
-    #fp-nav ul li .fp-tooltip {
-      color: black;
-    }
-
-    .header-tool.y {
-      width: auto !important;
     }
     `,
   );
