@@ -7,10 +7,18 @@
 }
 
 .SettingPanel {
-  /* 向上移动三分之二 */
-  transform: translateY(-66.66%);
+  /* 隐藏滚动条但不影响滚动 */
+  scrollbar-width: none;
+
+  position: fixed;
+  top: 0;
+  bottom: 0;
+
+  overflow: auto;
 
   width: 15em;
+  height: fit-content;
+  max-height: 95vh;
   margin: auto;
 
   font-size: 1.2em;
@@ -20,6 +28,11 @@
   border-radius: 0.3em;
   box-shadow: rgb(0 0 0 / 20%) 0 3px 1px -2px, rgb(0 0 0 / 14%) 0 2px 2px 0,
     rgb(0 0 0 / 12%) 0 1px 5px 0;
+
+  /* 隐藏滚动条但不影响滚动 */
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .SettingBlock {

@@ -1,4 +1,5 @@
-import { Fragment, memo, useMemo } from 'react';
+import type { UIEventHandler } from 'react';
+import { Fragment, memo, useCallback, useMemo } from 'react';
 import { useStore } from '../hooks/useStore';
 
 import { defaultSettingList } from '../defaultSettingList';
@@ -13,8 +14,16 @@ export const SettingPanel: React.FC = memo(() => {
     [editSettingList],
   );
 
+  const handleScroll = useCallback<UIEventHandler>((e) => {
+    e.stopPropagation();
+  }, []);
+
   return (
-    <div className={classes.SettingPanel}>
+    <div
+      className={classes.SettingPanel}
+      onScroll={handleScroll}
+      onWheel={handleScroll}
+    >
       {settingList.map(([key, SettingItem], i) => (
         <Fragment key={key}>
           {i ? <hr /> : null}
