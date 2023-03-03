@@ -30,3 +30,7 @@
 
   outline: 0;
 }
+
+a {
+  color: var(--text_secondary);
+}

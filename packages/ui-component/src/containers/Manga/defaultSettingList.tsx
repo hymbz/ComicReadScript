@@ -217,4 +217,27 @@ export const defaultSettingList: SettingList = [
       );
     },
   ],
+  [
+    '关于',
+    () => (
+      <>
+        <SettingsItem name="版本号">
+          <a href="https://github.com/hymbz/ComicReadScript">0.0.1</a>
+        </SettingsItem>
+        <SettingsItem name="反馈">
+          <div>
+            <a
+              href="https://github.com/hymbz/ComicReadScript/issues"
+              style={{ marginRight: '.5em' }}
+            >
+              Github
+            </a>
+            <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback">
+              Greasy Fork
+            </a>
+          </div>
+        </SettingsItem>
+      </>
+    ),
+  ],
 ];

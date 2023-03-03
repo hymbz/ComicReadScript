@@ -1,6 +1,7 @@
 TODO: 参考 https://www.cnblogs.com/coco1s/p/13253423.html 看能不能实现斜向黑色半透明渐变
 TODO: 增加自定义快捷键设置
 TODO: 为百合会增加设置面板，以便能关闭功能
+TODO: 卷轴模式下宽度限定为80%宽度
 
 ### dev
 
