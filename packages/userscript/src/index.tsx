@@ -19,7 +19,7 @@ switch (window.location.hostname) {
     // #dmzj_phone
     break;
   }
-  // 懒得整理导入导出的代码了，应该也没人用了吧，等有人需要的时候再说吧
+  // 懒得整理导入导出的代码了，应该也没人用了吧，等有人需要的时候再说
   // case 'i.dmzj.com': {
   //   // dmzj_user_info
   //   break;

@@ -26,8 +26,6 @@ const defaultStata = (): UseDragState => ({
 export const useDrag = (ref: RefObject<HTMLElement>, option: UseDragOption) => {
   const { current: state } = useRef<UseDragState>(defaultStata());
 
-  // TODO: 完成触摸事件的适配
-
   useEffect(() => {
     const { handleDrag } = option;
 
@@ -50,6 +48,7 @@ export const useDrag = (ref: RefObject<HTMLElement>, option: UseDragOption) => {
         { capture: false, passive: true, signal: controller.signal },
       );
 
+      // TODO: 完成触摸事件的适配
       // ref.current.addEventListener(
       //   'touchstart',
       //   (e) => {

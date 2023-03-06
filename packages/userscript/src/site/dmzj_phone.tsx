@@ -14,7 +14,6 @@ import {
 (async () => {
   const { setManga, init, toast } = await useInit('dmzj', {
     解除吐槽的字数限制: true,
-    自动进入漫画阅读模式: true,
   });
 
   // 分别处理目录页和漫画页

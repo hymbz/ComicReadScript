@@ -1,5 +1,10 @@
 import { querySelectorAll, insertNode, querySelector, saveAs } from '../helper';
 
+/**
+ * 懒得整理导入导出的代码了，应该也没人用了吧，等有人需要的时候再说
+ * 这里就先将代码搬过来放着，不能正常运行的话就重写
+ */
+
 declare const $: any;
 declare const userId: string;
 

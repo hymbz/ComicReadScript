@@ -161,11 +161,6 @@
   height: 100vh;
 
   opacity: 0;
-
-  /*
-    TODO: 理想情况是使用从右下到左上的黑色透明渐变，但目前透明渐变会出现色阶，只能含泪放弃
-    background: linear-gradient(to left top, #0009, #0003);
-   */
   background: black;
 
   transition: opacity 500ms;
