@@ -1,3 +1,5 @@
+import MdSettings from '@material-design-icons/svg/round/settings.svg';
+
 import {
   insertNode,
   querySelector,
@@ -364,5 +366,16 @@ const checkInDomSelectors =
       // 点击下一页后更新提示
       querySelector('#autopbn')!.addEventListener('click', updateHistoryTag);
     }
+
+    // 在其他板块增加菜单项，以便用于调整其他功能的开关
+    await GM.registerMenuCommand('显示设置菜单', () =>
+      setFab({
+        show: true,
+        focus: true,
+        tip: '设置',
+        children: <MdSettings />,
+        onBackdropClick: () => setFab({ show: false, focus: false }),
+      }),
+    );
   }
 })();

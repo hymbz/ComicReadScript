@@ -16,7 +16,9 @@ import { IconButton } from '../IconButton';
 export default function Display() {
   const [progress, setProgress] = useState(0);
   const [tip, setTip] = useState('提示文本');
-  const [autoTrans, setAutoTrans] = useState(true);
+  const [autoTrans, setAutoTrans] = useState(false);
+  const [focus, setFocus] = useState(true);
+  const [show, setShow] = useState(true);
 
   const speedDial = [
     () => (
@@ -30,7 +32,12 @@ export default function Display() {
       </IconButton>
     ),
     () => (
-      <IconButton placement="left" tip="Filter2">
+      <IconButton
+        placement="left"
+        tip="切换聚焦状态"
+        enabled={focus}
+        onClick={() => setFocus((v) => !v)}
+      >
         <Filter2 />
       </IconButton>
     ),
@@ -56,6 +63,14 @@ export default function Display() {
           setTip(e.target.value);
         }}
       />
+      <button
+        type="button"
+        onClick={() => {
+          setShow(!show);
+        }}
+      >
+        切换是否显示
+      </button>
 
       <div
         style={{
@@ -66,10 +81,12 @@ export default function Display() {
         }}
       >
         <Fab
+          show={show}
           progress={progress}
           tip={tip}
           speedDial={speedDial}
           autoTrans={autoTrans}
+          focus={focus}
           onClick={alert}
         />
       </div>

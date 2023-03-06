@@ -15,14 +15,17 @@ export interface FabProps {
   speedDial?: React.FC[];
   /** 是否显示。为空时将会根据滚动自动显隐 */
   show?: boolean;
-  /** 初始时是否显示 */
+  /** 初始状态是否显示 */
   initShow?: boolean;
   /** 是否自动半透明化 */
   autoTrans?: boolean;
+  /** 是否保持聚焦状态 */
+  focus?: boolean;
 
   children?: JSX.Element | JSX.Element[];
   style?: CSSProperties;
   onClick?: () => void;
+  onBackdropClick?: () => void;
 }
 
 /**
@@ -35,9 +38,11 @@ export const Fab: React.FC<FabProps> = ({
   show: forceShow,
   initShow = true,
   autoTrans = false,
+  focus,
   children,
   style,
   onClick,
+  onBackdropClick,
 }) => {
   // 上次滚动位置
   const lastY = useRef(window.pageYOffset);
@@ -72,12 +77,17 @@ export const Fab: React.FC<FabProps> = ({
     onClick?.();
   }, [onClick]);
 
+  const handleBackdropClick = useCallback(() => {
+    onBackdropClick?.();
+  }, [onBackdropClick]);
+
   return (
     <div
       className={classes.fabRoot}
       style={style}
       data-show={forceShow ?? show}
       data-trans={autoTrans}
+      data-focus={focus}
     >
       <button type="button" className={classes.fab} onClick={handleClick}>
         {children ?? <MdMenuBook />}
@@ -102,7 +112,7 @@ export const Fab: React.FC<FabProps> = ({
       {/* 快捷操作栏 */}
       {speedDial?.length ? (
         <div className={classes.speedDial}>
-          <div className={classes.backdrop} />
+          <div className={classes.backdrop} onClick={handleBackdropClick} />
           {speedDial?.map((SpeedDialItem, i) => (
             <div
               className={classes.speedDialItem}

@@ -100,7 +100,7 @@
   border-radius: 0.3em;
 }
 
-.fab:hover .popper {
+:is(.fab:hover, .fabRoot[data-focus="true"]) .popper {
   display: flex;
 }
 
@@ -139,7 +139,7 @@
   pointer-events: all;
 }
 
-.fabRoot:hover > .speedDial {
+:is(.fabRoot:hover, .fabRoot[data-focus="true"]) > .speedDial {
   pointer-events: all;
 
   & > .speedDialItem {
@@ -153,8 +153,6 @@
 
 /* 背景蒙版 */
 .backdrop {
-  pointer-events: none;
-
   position: fixed;
   top: 0;
   left: 0;
@@ -173,7 +171,6 @@
   transition: opacity 500ms;
 }
 
-.fabRoot:hover .backdrop,
-.speedDial:hover .backdrop {
+:is(.fabRoot:hover, .fabRoot[data-focus="true"], .speedDial:hover) .backdrop {
   opacity: 0.4;
 }

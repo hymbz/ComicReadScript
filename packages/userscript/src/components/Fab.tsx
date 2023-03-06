@@ -10,8 +10,6 @@ import IconBottonStyle from '@crs/ui-component/dist/IconButton.css';
 import shadow from 'react-shadow';
 import { useComponentsRoot } from '../helper/utils';
 
-export type FabRecipe = ((draftProps: FabProps) => void) | Partial<FabProps>;
-
 export const useFab = async (initProps?: FabProps) => {
   const [root] = useComponentsRoot('fab');
   await GM.addStyle(`
@@ -27,7 +25,7 @@ export const useFab = async (initProps?: FabProps) => {
     }
   `);
 
-  const props = initProps ?? {};
+  const props = { ...initProps };
 
   const FabIcon = () => {
     switch (props.progress) {
@@ -43,7 +41,9 @@ export const useFab = async (initProps?: FabProps) => {
     }
   };
 
-  const set = (recipe?: FabRecipe) => {
+  const set = (
+    recipe?: ((draftProps: FabProps) => void) | Partial<FabProps>,
+  ) => {
     if (recipe) {
       Object.assign(
         props,
@@ -53,9 +53,7 @@ export const useFab = async (initProps?: FabProps) => {
 
     root.render(
       <shadow.div>
-        <Fab {...props}>
-          <FabIcon />
-        </Fab>
+        <Fab {...props}>{props.children ?? <FabIcon />}</Fab>
         <style type="text/css">{IconBottonStyle}</style>
         <style type="text/css">{FabStyle}</style>
       </shadow.div>,
