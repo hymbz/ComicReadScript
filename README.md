@@ -88,7 +88,7 @@
 
 ### 动漫之家
 
-出于个人喜好使用了 [pgain2004](https://userstyles.org/users/301332) 的 [动漫之家暗色调漫画阅读页(布局精简)](https://userstyles.org/styles/119945/theme) css 样式进行了美化，在此表示感谢。不喜欢暗色调的话也可以调成白色的，漫画页的色调和阅读模式中夜间模式的相关联。
+出于个人喜好使用了 [pgain2004](https://userstyles.org/users/301332) 的 [动漫之家暗色调漫画阅读页(布局精简)](https://userstyles.org/styles/119945/theme) css 样式进行了美化。不喜欢暗色调的话也可以调成白色的，漫画页的色调和阅读模式中夜间模式的相关联。
 
 ### ehentai
 
