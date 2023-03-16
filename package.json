@@ -1,18 +1,19 @@
 {
   "name": "comic-read-script",
-  "version": "0.0.1",
-  "scripts": {
-    "build": "pnpm --filter @crs/ui-component build && pnpm --filter @crs/userscript build ",
-    "release": "standard-version",
-    "test": "vitest"
-  },
+  "version": "0.0.0",
+  "description": "",
   "author": "hymbz",
   "license": "AGPL-3.0-or-later",
   "private": "true",
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "release": "node scripts/release.mjs",
+    "test": "vitest"
+  },
   "devDependencies": {
+    "@release-it/conventional-changelog": "^5.1.1",
     "@typescript-eslint/eslint-plugin": "^5.36.0",
     "@typescript-eslint/parser": "^5.36.0",
     "eslint": "^8.23.0",
@@ -26,7 +27,9 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "fake-indexeddb": "^4.0.1",
     "prettier": "^2.7.1",
+    "release-it": "^15.8.0",
     "rollup-plugin-userscript-metablock": "^0.3.1",
+    "shelljs": "^0.8.5",
     "stylelint": "^14.11.0",
     "stylelint-config-clean-order": "^0.9.0",
     "stylelint-config-prettier": "^9.0.3",
@@ -37,8 +40,5 @@
     "stylelint-prettier": "^2.0.0",
     "typescript": "^4.8.2",
     "vitest": "^0.28.4"
-  },
-  "dependencies": {
-    "standard-version": "^9.5.0"
   }
 }

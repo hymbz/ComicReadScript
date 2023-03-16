@@ -1,5 +1,3 @@
-/* eslint-disable import/no-cycle */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import type { Root } from 'react-dom/client';
 
 export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
@@ -45,9 +43,7 @@ export const insertNode = (
   node.insertBefore(frag, referenceNode);
 };
 
-/**
- * 创建组件用的 ReactDOM Root
- */
+/** 创建组件用的 ReactDOM Root */
 export const useComponentsRoot = (id: string): [Root, HTMLElement] => {
   // 需要使用动态导入以避免在支持站点外的页面上加载 React
   // eslint-disable-next-line @typescript-eslint/consistent-type-imports
@@ -65,9 +61,7 @@ export const useComponentsRoot = (id: string): [Root, HTMLElement] => {
   return [ReactDOM.createRoot(dom), dom];
 };
 
-/**
- * 返回 Dom 的点击函数，如果找不到 Dom 则返回 null
- */
+/** 返回 Dom 的点击函数，如果找不到 Dom 则返回 null */
 export const querySelectorClick = (selector: string) => {
   const dom = querySelector(selector);
   if (!dom) return null;
@@ -76,23 +70,17 @@ export const querySelectorClick = (selector: string) => {
   };
 };
 
-/**
- * 判断两个列表中包含的值是否相同
- */
+/** 判断两个列表中包含的值是否相同 */
 export const isEqualArray = <T>(a: T[], b: T[]): boolean =>
   a.length === b.length && !!a.filter((t) => !b.includes(t));
 
-/**
- * 将对象转为 URLParams 类型的字符串
- */
+/** 将对象转为 URLParams 类型的字符串 */
 export const dataToParams = (data: Record<string, unknown>) =>
   Object.entries(data)
     .map(([key, val]) => `${key}=${val}`)
     .join('&');
 
-/**
- * 根据 url 下载为 blob 格式数据
- */
+/** 根据 url 下载为 blob 格式数据 */
 export const download = async <T = Blob>(
   url: string,
   details?: Partial<Tampermonkey.Request<any>>,
@@ -114,7 +102,7 @@ export const download = async <T = Blob>(
     await sleep(1000);
     return download(url, details, errorNum + 1, maxErrorNum);
   }
-  return res.response;
+  return res.response as T;
 };
 
 /** 将 blob 数据作为文件保存至本地 */

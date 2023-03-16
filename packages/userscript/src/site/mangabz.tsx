@@ -42,6 +42,7 @@ declare const MANGABZ_IMAGE_COUNT: number;
     const newImgList = [...imgList, ...(eval(res.responseText) as string[])];
 
     if (newImgList.length !== MANGABZ_IMAGE_COUNT) {
+      // 在 Fab 按钮上通过进度条和提示文本显示当前进度
       setFab({
         progress: newImgList.length / MANGABZ_IMAGE_COUNT,
         tip: `加载图片中 - ${newImgList.length}/${MANGABZ_IMAGE_COUNT}`,

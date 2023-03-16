@@ -52,7 +52,6 @@ const publicConfig = {
   },
 };
 
-// eslint-disable-next-line jsdoc/require-param
 /** 与公用规则合并 */
 const buildConfig = ({ plugins = [], rules = {}, ...otherConfig }) => ({
   ...otherConfig,
@@ -71,6 +70,7 @@ module.exports = {
     'node_modules',
     '!.stylelintrc.js',
     '!.postcssrc.js',
+    'ComicRead.user.js',
   ],
   overrides: [
     buildConfig({
@@ -187,7 +187,8 @@ module.exports = {
       },
     }),
     buildConfig({
-      files: ['*.js'],
+      files: ['*.*js'],
+      parser: '@typescript-eslint/parser',
       extends: ['eslint:recommended', 'airbnb', 'plugin:prettier/recommended'],
       rules: {
         // 禁止提醒使用了 dev 的包
