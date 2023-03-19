@@ -29,6 +29,7 @@ const checkInDomSelectors =
     关闭快捷导航按钮的跳转: true,
     修正点击页数时的跳转判定: true,
     固定导航条: true,
+    自动签到: true,
   });
 
   await GM.addStyle(
@@ -85,9 +86,11 @@ const checkInDomSelectors =
   );
 
   // 自动签到
-  const checkInDom = querySelector<HTMLAreaElement>(checkInDomSelectors);
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  if (checkInDom) fetch(checkInDom.href);
+  if (options.自动签到) {
+    const checkInDom = querySelector<HTMLAreaElement>(checkInDomSelectors);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    if (checkInDom) fetch(checkInDom.href);
+  }
 
   if (options.关闭快捷导航按钮的跳转)
     // eslint-disable-next-line no-script-url
