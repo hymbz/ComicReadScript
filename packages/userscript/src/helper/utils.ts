@@ -1,4 +1,6 @@
 import type { Root } from 'react-dom/client';
+// eslint-disable-next-line import/no-cycle
+import { useToast } from '../components/Toast';
 
 export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
   T extends (...args: any) => Promise<infer R> ? R : any;
@@ -80,31 +82,6 @@ export const dataToParams = (data: Record<string, unknown>) =>
     .map(([key, val]) => `${key}=${val}`)
     .join('&');
 
-/** 根据 url 下载为 blob 格式数据 */
-export const download = async <T = Blob>(
-  url: string,
-  details?: Partial<Tampermonkey.Request<any>>,
-  errorNum = 0,
-  maxErrorNum = 3,
-): Promise<T> => {
-  const res = await GM.xmlHttpRequest({
-    method: 'GET',
-    url,
-    responseType: 'blob',
-    headers: { Referer: window.location.href },
-    ...details,
-  });
-
-  if (res.status !== 200) {
-    const errorTest = `${url} 下载图片时出错：[${res.status}]${res.statusText}`;
-    if (errorNum >= maxErrorNum) throw new Error(errorTest);
-    console.warn(errorTest);
-    await sleep(1000);
-    return download(url, details, errorNum + 1, maxErrorNum);
-  }
-  return res.response as T;
-};
-
 /** 将 blob 数据作为文件保存至本地 */
 export const saveAs = (blob: Blob, name = 'download') => {
   const a = document.createElementNS(
@@ -171,4 +148,46 @@ export const plimit = async <T>(
   }
 
   return resList;
+};
+
+// 将 xmlHttpRequest 包装为 Promise
+const xmlHttpRequest = (
+  details: Tampermonkey.Request<any>,
+): Promise<Tampermonkey.Response<any>> =>
+  new Promise((resolve, reject) => {
+    GM_xmlhttpRequest({
+      ...details,
+      onload: resolve,
+      onerror: reject,
+      ontimeout: reject,
+    });
+  });
+
+/** 发起请求 */
+export const request = async <T = any>(
+  url: string,
+  details?: Partial<Tampermonkey.Request<any>> & {
+    errorText?: string;
+  },
+  errorNum = 0,
+): Promise<Tampermonkey.Response<T>> => {
+  const errorText = details?.errorText ?? '漫画加载出错';
+  try {
+    const res = await xmlHttpRequest({
+      method: 'GET',
+      url,
+      headers: { Referer: window.location.href },
+      ...details,
+    });
+    if (res.status !== 200) throw new Error(errorText);
+    return res;
+  } catch (error) {
+    if (errorNum > 3) {
+      if (errorText) useToast().error(errorText);
+      throw new Error(errorText);
+    }
+    console.error(errorText, error);
+    await sleep(1000);
+    return request(url, details, errorNum + 1);
+  }
 };

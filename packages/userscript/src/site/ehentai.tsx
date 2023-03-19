@@ -1,11 +1,9 @@
-/* eslint-disable camelcase */
-
 import {
-  download,
   insertNode,
   linstenKeyup,
   querySelector,
   scrollIntoView,
+  request,
   useInit,
 } from '../helper';
 
@@ -13,10 +11,10 @@ declare const selected_tag: string;
 declare const selected_link: HTMLElement;
 
 (async () => {
-  const { options, setFab, setManga, request, init, toast } = await useInit(
-    'nhentai',
-    { 匹配nhentai: true, 快捷键翻页: true },
-  );
+  const { options, setFab, setManga, init, toast } = await useInit('nhentai', {
+    匹配nhentai: true,
+    快捷键翻页: true,
+  });
 
   // 不是漫画页的话
   if (!Reflect.has(unsafeWindow, 'gid')) {
@@ -63,7 +61,7 @@ declare const selected_link: HTMLElement;
    * 从图片页获取图片地址
    */
   const getImgFromImgPage = async (url: string): Promise<string> => {
-    const res = await request('GET', url, {
+    const res = await request(url, {
       errorText: '从图片页获取图片地址失败',
     });
 
@@ -82,7 +80,6 @@ declare const selected_link: HTMLElement;
     /(?<=<a href=").{20,50}(?="><img alt="\d+")/gm;
   const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
     const res = await request(
-      'GET',
       `${window.location.origin}${window.location.pathname}${
         pageNum ? `?p=${pageNum}` : ''
       }`,
@@ -146,21 +143,17 @@ declare const selected_link: HTMLElement;
       return;
     }
 
-    let res: Tampermonkey.Response<any> | undefined;
-    try {
-      res = await GM.xmlHttpRequest({
-        method: 'GET',
-        url: `https://nhentai.net/api/galleries/search?query=${encodeURI(
-          titleDom.innerText,
-        )}`,
-      });
-    } catch (e) {
-      console.error('nhentai 漫画出错', e);
-    }
-
     const newTagLine = document.createElement('tr');
 
-    if (!res) {
+    let res: Tampermonkey.Response<any>;
+    try {
+      res = await request(
+        `https://nhentai.net/api/galleries/search?query=${encodeURI(
+          titleDom.innerText,
+        )}`,
+        { errorText: 'nhentai 漫画出错' },
+      );
+    } catch (_) {
       newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
@@ -238,19 +231,20 @@ declare const selected_link: HTMLElement;
               g: 'gif',
             };
 
-            const details = {
-              headers: {
-                Referer: `https://nhentai.net/g/${comicInfo.media_id}`,
-              },
-            };
             nhentaiImgList[selected_tag] = await Promise.all(
               comicInfo.images.pages.map(async ({ t }, i) => {
-                const url = `https://i.nhentai.net/galleries/${
-                  comicInfo.media_id
-                }/${i + 1}.${fileType[t]}`;
-                const blobUrl = URL.createObjectURL(
-                  await download(url, details),
+                const imgRes = await request<Blob>(
+                  `https://i.nhentai.net/galleries/${comicInfo.media_id}/${
+                    i + 1
+                  }.${fileType[t]}`,
+                  {
+                    headers: {
+                      Referer: `https://nhentai.net/g/${comicInfo.media_id}`,
+                    },
+                    responseType: 'blob',
+                  },
                 );
+                const blobUrl = URL.createObjectURL(imgRes.response);
                 loadNum += 1;
                 nhentaiComicReadModeDom.innerHTML = ` loading - ${loadNum}/${comicInfo.num_pages}`;
                 return blobUrl;

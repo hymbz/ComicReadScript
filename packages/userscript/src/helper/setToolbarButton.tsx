@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import fflate from 'fflate';
 import type { SelfMangaProps } from '../components/Manga';
 // eslint-disable-next-line import/no-cycle
-import { download, saveAs } from './utils';
+import { request, saveAs } from './utils';
 
 /** 为工具栏加上下载和退出按钮 */
 export const setToolbarButton = (draftProps: SelfMangaProps) => {
@@ -29,10 +29,10 @@ export const setToolbarButton = (draftProps: SelfMangaProps) => {
         const fileName = `${index}.${fileExt}`;
         try {
           // eslint-disable-next-line no-await-in-loop
-          const data = await download<ArrayBuffer>(imgList[i], {
+          const res = await request<ArrayBuffer>(imgList[i], {
             responseType: 'arraybuffer',
           });
-          fileData[fileName] = new Uint8Array(data);
+          fileData[fileName] = new Uint8Array(res.response);
         } catch (error) {
           toast.error(`${fileName} 下载失败`);
           fileData[`${index} - 下载失败.${fileExt}`] = new Uint8Array();

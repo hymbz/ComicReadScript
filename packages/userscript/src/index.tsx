@@ -16,11 +16,13 @@ switch (window.location.hostname) {
     // #dmzj
     break;
   }
+  case 'm.idmzj.com':
   case 'm.dmzj.com': {
     // #dmzj_phone
     break;
   }
-  case 'www.idmzj.com': {
+  case 'www.idmzj.com':
+  case 'www.dmzj.com': {
     // #dmzj_www
     break;
   }

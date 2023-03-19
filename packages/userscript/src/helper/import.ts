@@ -5,7 +5,9 @@ const helperCode = '';
 unsafeWindow.crsLib = {
   // 有些 cjs 模块会检查这个，所以在这里声明下
   process: { env: { NODE_ENV: process.env.NODE_ENV } },
+  // 把 GM 相关函数放进去以便其中使用
   GM,
+  GM_xmlhttpRequest,
 };
 
 /**
@@ -23,7 +25,7 @@ const selfImportSync = (name: string) => {
     textContent: `
       window.crsLib['${name}'] = {};
       ${isDevMode ? `console.time('导入 ${name}');` : ''}
-      (function (process, require, exports, module, GM) {
+      (function (process, require, exports, module, GM, GM_xmlhttpRequest) {
         ${code}
       })(
         window.crsLib.process,
@@ -38,6 +40,7 @@ const selfImportSync = (name: string) => {
           },
         },
         window.crsLib.GM,
+        window.crsLib.GM_xmlhttpRequest,
       );
       ${isDevMode ? `console.timeEnd('导入 ${name}');` : ''}
     `,

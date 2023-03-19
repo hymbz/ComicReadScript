@@ -1,4 +1,4 @@
-import { dataToParams, querySelectorClick, useInit } from '../helper';
+import { dataToParams, querySelectorClick, request, useInit } from '../helper';
 
 // 页面自带的变量
 declare const MANGABZ_CID: number;
@@ -14,7 +14,7 @@ declare const MANGABZ_IMAGE_COUNT: number;
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) return;
 
-  const { setFab, setManga, request, init } = await useInit('mangabz');
+  const { setFab, setManga, init } = await useInit('mangabz');
 
   setManga({
     onNext: querySelectorClick('body > .container a[href^="/"]:last-child'),
@@ -33,7 +33,6 @@ declare const MANGABZ_IMAGE_COUNT: number;
     });
 
     const res = await request(
-      'GET',
       `http://${MANGABZ_COOKIEDOMAIN}${MANGABZ_CURL}chapterimage.ashx?${urlParams}`,
     );
 

@@ -1,6 +1,7 @@
 import {
   querySelector,
   querySelectorClick,
+  request,
   scrollIntoView,
   useInit,
 } from '../helper';
@@ -9,7 +10,7 @@ import {
   // 只在漫画页内运行
   if (!document.URL.includes('view-chapter')) return;
 
-  const { setFab, toast, setManga, init } = await useInit('newYamibo');
+  const { setFab, setManga, init } = await useInit('newYamibo');
 
   setManga({
     onNext: querySelectorClick('#btnNext'),
@@ -30,16 +31,9 @@ import {
     i = 1,
     imgList: string[] = [],
   ): Promise<string[]> => {
-    const res = await GM.xmlHttpRequest({
-      method: 'GET',
-      url: `https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`,
-    });
-
-    if (res.status !== 200 || !res.responseText) {
-      console.error('漫画加载出错', res);
-      toast.error('漫画加载出错');
-      return [];
-    }
+    const res = await request(
+      `https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`,
+    );
 
     imgList.push(
       /<img id="imgPic".+="(.+?)".+>/

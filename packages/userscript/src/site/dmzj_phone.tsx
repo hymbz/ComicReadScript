@@ -1,9 +1,9 @@
-/* eslint-disable camelcase */
 import {
   insertNode,
   querySelector,
   querySelectorAll,
   querySelectorClick,
+  request,
   useInit,
 } from '../helper';
 
@@ -12,7 +12,7 @@ import {
 // https://github.com/erinacio/tachiyomi-extensions/blob/548be91cccb8f248342e2e7762c2c3d4b2d02036/src/zh/dmzj/src/eu/kanade/tachiyomi/extension/zh/dmzj/Dmzj.kt
 
 (async () => {
-  const { setManga, init, toast } = await useInit('dmzj', {
+  const { setManga, init } = await useInit('dmzj', {
     解除吐槽的字数限制: true,
   });
 
@@ -38,16 +38,10 @@ import {
           const comicName = querySelector<HTMLInputElement>('input')?.value;
           if (!comicName) return;
 
-          const res = await GM.xmlHttpRequest({
-            method: 'GET',
-            url: `https://s.acg.dmzj.com/comicsum/search.php?s=${comicName}`,
-          });
-
-          if (res.status !== 200) {
-            console.error('搜索漫画时出错', res);
-            toast.error('搜索漫画时出错');
-            return;
-          }
+          const res = await request(
+            `https://s.acg.dmzj.com/comicsum/search.php?s=${comicName}`,
+            { errorText: '搜索漫画时出错' },
+          );
 
           const comicList = JSON.parse(
             res.responseText.slice(20, -1),
@@ -73,16 +67,10 @@ import {
       }
 
       // XXX: 使用旧 api 只能获取到主版本的章节，其他版本的章节无法取得，改用 v4api 应该就能拿到了
-      const res = await GM.xmlHttpRequest({
-        method: 'GET',
-        url: `http://api.dmzj.com/dynamic/comicinfo/${comicId}.json`,
-      });
-
-      if (res.status !== 200) {
-        console.error('获取漫画数据失败', res);
-        toast.error('获取漫画数据失败');
-        return;
-      }
+      const res = await request(
+        `http://api.dmzj.com/dynamic/comicinfo/${comicId}.json`,
+        { errorText: '获取漫画数据失败' },
+      );
 
       const {
         info: { last_updatetime, title },
@@ -145,17 +133,20 @@ import {
       tipDom.innerText = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
       document.body.appendChild(tipDom);
 
-      const res = await GM.xmlHttpRequest({
-        method: 'GET',
-        url: `https://m.dmzj.com/chapinfo/${
-          /\d+\/\d+/.exec(document.URL)![0]
-        }.html`,
-      });
+      let res: Tampermonkey.Response<any>;
 
-      if (res.status !== 200) {
-        tipDom.innerText = res.responseText;
-        return;
+      try {
+        res = await request(
+          `https://m.dmzj.com/chapinfo/${
+            /\d+\/\d+/.exec(document.URL)![0]
+          }.html`,
+          { errorText: '获取漫画数据失败' },
+        );
+      } catch (error) {
+        tipDom.innerText = (error as Error).message;
+        throw error;
       }
+
       tipDom.innerText = `加载完成，即将进入阅读模式`;
 
       const { folder, page_url } = JSON.parse(res.responseText) as {

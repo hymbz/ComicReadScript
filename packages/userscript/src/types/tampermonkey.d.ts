@@ -1,5 +1,4 @@
 /* eslint-disable jsdoc/require-param-description */
-/* eslint-disable camelcase */
 // Type definitions for non-npm package Tampermonkey 4.x
 // Project: https://tampermonkey.net
 // Definitions by: Steven Wang <https://github.com/silverwzw>

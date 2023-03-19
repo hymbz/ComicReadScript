@@ -13,6 +13,9 @@ const publicConfig = {
       },
     ],
 
+    // 允许使用非驼峰变量，因为有些站点自带的变量的就是非驼峰的
+    camelcase: 'off',
+
     // 允许在顶层外使用 require
     'global-require': 'off',
     // eslint-plugin-jsdoc 还无法识别出 TS 定义的接口

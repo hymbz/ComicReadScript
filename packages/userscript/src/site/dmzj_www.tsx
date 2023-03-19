@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { querySelectorClick, useInit } from '../helper';
 
 declare const picArry: string[];

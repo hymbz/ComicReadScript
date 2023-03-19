@@ -38,7 +38,6 @@ export const meta = {
     'GM_addElement',
     'GM_getResourceText',
     'GM_xmlhttpRequest',
-    'GM.xmlHttpRequest',
     'GM.getResourceText',
     'GM.addStyle',
     'GM.getValue',
@@ -78,7 +77,7 @@ const buildConfig = (
         strokeWidth: '0',
       },
       namedExport: 'default',
-    }) as Plugin,
+    }),
 
     resolve({ browser: true }),
     commonjs(),
@@ -114,7 +113,7 @@ export default [
               ...otherMeta,
 
               // 添加 xmlHttpRequest 权限
-              grant: [...new Set([...grant, 'GM.xmlHttpRequest'])],
+              grant: [...new Set([...grant, 'GM_xmlhttpRequest'])],
               // 允许请求所有域
               connect: '*',
             }))(meta),
@@ -122,13 +121,13 @@ export default [
         ],
       },
     },
-    del({ targets: 'dist/*' }) as Plugin,
+    del({ targets: 'dist/*' }),
     isDevMode &&
-      (serve({
+      serve({
         contentBase: ['dist'],
         port: DEV_PORT,
         host: '127.0.0.1',
-      }) as Plugin),
+      }),
   ),
 
   // 单独打包每个站点的代码

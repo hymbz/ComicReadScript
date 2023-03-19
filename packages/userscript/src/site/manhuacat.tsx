@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { useInit } from '../helper';
 
 declare const img_data_arr: string[];

@@ -1,11 +1,10 @@
-/* eslint-disable camelcase */
+import { querySelectorClick, scrollIntoView, useInit } from '../helper';
 import {
-  useToast,
-  querySelectorClick,
-  scrollIntoView,
-  useInit,
-} from '../helper';
-import { insertNode, querySelector, querySelectorAll } from '../helper/utils';
+  insertNode,
+  querySelector,
+  querySelectorAll,
+  request,
+} from '../helper/utils';
 
 declare const g_comic_url: string;
 declare const g_comic_id: string;
@@ -28,10 +27,7 @@ declare const zcClick: any;
   if (document.title === '页面找不到') {
     // 测试例子：https://manhua.dmzj.com/yanquan/48713.shtml
     const [, comicName, _chapter_id] = window.location.pathname.split(/[./]/);
-    const res = await GM.xmlHttpRequest({
-      method: 'GET',
-      url: `https://manhua.dmzj.com/${comicName}`,
-    });
+    const res = await request(`https://manhua.dmzj.com/${comicName}`);
 
     const _comic_id = /g_comic_id = "(\d+)/.exec(res.responseText)?.[1];
     if (!_comic_id) {
@@ -47,16 +43,9 @@ declare const zcClick: any;
 
   // 通过 rss 链接，在作者作品页里添加上隐藏漫画的链接
   if (window.location.pathname.includes('/tags/')) {
-    const res = await GM.xmlHttpRequest({
-      method: 'GET',
-      url: querySelector<HTMLAreaElement>('a.rss')!.href,
+    const res = await request(querySelector<HTMLAreaElement>('a.rss')!.href, {
+      errorText: '获取作者作品失败',
     });
-    if (res.status !== 200) {
-      console.error('获取作者作品失败', res);
-      const toast = useToast();
-      toast.error('获取作者作品失败');
-      return;
-    }
 
     // 页面上原有的漫画标题
     const titleList = querySelectorAll('#hothit p.t').map((e) =>
@@ -108,17 +97,12 @@ declare const zcClick: any;
         '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
 
       // XXX: 使用旧 api 只能获取到主版本的章节，其他版本的章节无法取得，改用 v4api 应该就能拿到了
-      const res = await GM.xmlHttpRequest({
-        method: 'GET',
-        url: `https://api.dmzj.com/dynamic/comicinfo/${g_comic_id}.json`,
-      });
-
-      if (res.status !== 200 || !res.responseText) {
-        console.error('漫画加载出错', res);
-        const toast = useToast();
-        toast.error('漫画加载出错');
-        return;
-      }
+      const res = await request(
+        `https://api.dmzj.com/dynamic/comicinfo/${g_comic_id}.json`,
+        {
+          errorText: '漫画加载出错',
+        },
+      );
 
       // 删掉原有的章节 dom
       querySelectorAll('.odd_anim_title ~ div').forEach((e) =>

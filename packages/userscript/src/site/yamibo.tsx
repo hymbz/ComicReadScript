@@ -6,6 +6,7 @@ import {
   querySelectorAll,
   scrollIntoView,
   useCache,
+  request,
   useInit,
 } from '../helper';
 
@@ -23,7 +24,7 @@ const checkInDomSelectors =
   '.header-tool > li > a[href^="plugin.php?id=study_daily_attendance"]';
 
 (async () => {
-  const { options, setFab, setManga, request, init } = await useInit('yamibo', {
+  const { options, setFab, setManga, init } = await useInit('yamibo', {
     记录阅读进度: true,
     关闭快捷导航按钮的跳转: true,
     修正点击页数时的跳转判定: true,
@@ -194,10 +195,9 @@ const checkInDomSelectors =
 
         // 先获取包含当前帖后一话在内的同一标签下的帖子id列表，再根据结果设定上/下一话
         const setPrevNext = async (pageNum = 1): Promise<void> => {
-          const res = await GM.xmlHttpRequest({
-            method: 'GET',
-            url: `https://bbs.yamibo.com/misc.php?mod=tag&id=${tagId}&type=thread&page=${pageNum}`,
-          });
+          const res = await request(
+            `https://bbs.yamibo.com/misc.php?mod=tag&id=${tagId}&type=thread&page=${pageNum}`,
+          );
 
           const newList = [...res.responseText.matchAll(reg)].map(
             ([tid]) => +tid,
@@ -232,7 +232,6 @@ const checkInDomSelectors =
     if (options.记录阅读进度) {
       const { tid } = unsafeWindow;
       const res = await request(
-        'GET',
         `https://bbs.yamibo.com/api/mobile/index.php?module=viewthread&tid=${tid}`,
         { errorText: '获取帖子回复数时出错' },
       );

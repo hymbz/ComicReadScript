@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { querySelectorClick, scrollIntoView, sleep, useInit } from '../helper';
 
 // 页面自带的变量

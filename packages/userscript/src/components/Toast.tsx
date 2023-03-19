@@ -3,12 +3,24 @@ import shadow from 'react-shadow';
 import type { ToastContent, ToastOptions } from 'react-toastify';
 import { ToastContainer, toast } from 'react-toastify';
 import ToastStyle from 'react-toastify/dist/ReactToastify.min.css';
+// eslint-disable-next-line import/no-cycle
 import { useComponentsRoot } from '../helper/utils';
 
+type ToastFunc = (text: ToastContent, options?: ToastOptions) => void;
+
+let selfToast: ToastFunc & {
+  info: ToastFunc;
+  error: ToastFunc;
+  warn: ToastFunc;
+  success: ToastFunc;
+};
+
 export const useToast = () => {
+  if (selfToast) return selfToast;
+
   const [root] = useComponentsRoot('toast');
 
-  const toastFunc = (text: ToastContent, options?: ToastOptions) => {
+  const _selfToast = (text: ToastContent, options?: ToastOptions) => {
     root.render(
       <shadow.div style={{ fontSize: 16 }}>
         <ToastContainer
@@ -46,14 +58,16 @@ export const useToast = () => {
     toast(text, { ...options });
   };
 
-  toastFunc.info = (text: ToastContent, options?: ToastOptions) =>
-    toastFunc(text, { ...options, type: 'info' });
-  toastFunc.error = (text: ToastContent, options?: ToastOptions) =>
-    toastFunc(text, { ...options, type: 'error' });
-  toastFunc.warn = (text: ToastContent, options?: ToastOptions) =>
-    toastFunc(text, { ...options, type: 'warning' });
-  toastFunc.success = (text: ToastContent, options?: ToastOptions) =>
-    toastFunc(text, { ...options, type: 'success' });
+  _selfToast.info = (text: ToastContent, options?: ToastOptions) =>
+    _selfToast(text, { ...options, type: 'info' });
+  _selfToast.error = (text: ToastContent, options?: ToastOptions) =>
+    _selfToast(text, { ...options, type: 'error' });
+  _selfToast.warn = (text: ToastContent, options?: ToastOptions) =>
+    _selfToast(text, { ...options, type: 'warning' });
+  _selfToast.success = (text: ToastContent, options?: ToastOptions) =>
+    _selfToast(text, { ...options, type: 'success' });
 
-  return toastFunc;
+  selfToast = _selfToast;
+
+  return selfToast;
 };

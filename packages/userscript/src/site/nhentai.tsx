@@ -1,11 +1,9 @@
-/* eslint-disable camelcase */
-
 import {
   insertNode,
   querySelector,
   querySelectorAll,
+  request,
   scrollIntoView,
-  sleep,
   useInit,
 } from '../helper';
 
@@ -104,7 +102,6 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
         return '';
       })();
 
-      let errorNum = 0;
       const loadNewComic = async (): Promise<void> => {
         if (
           loadLock ||
@@ -114,21 +111,12 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
           return undefined;
 
         loadLock = true;
-        const res = await GM.xmlHttpRequest({
-          method: 'GET',
-          url: `${apiUrl}page=${pageNum}${
+        const res = await request(
+          `${apiUrl}page=${pageNum}${
             window.location.pathname.includes('popular') ? '&sort=popular ' : ''
           }`,
-        });
-
-        if (res.status !== 200 || !res.responseText) {
-          if (errorNum > 3) throw new Error('漫画加载出错');
-          errorNum += 1;
-          console.error('漫画加载出错', res);
-          toast.error('漫画加载出错');
-          await sleep(1000 * 3);
-          return loadNewComic();
-        }
+          { errorText: '下一页漫画信息加载出错' },
+        );
 
         const { result, num_pages } = JSON.parse(res.responseText) as {
           num_pages: number;

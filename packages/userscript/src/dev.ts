@@ -1,4 +1,4 @@
-GM.xmlHttpRequest({
+GM_xmlhttpRequest({
   method: 'GET',
   url: `http://127.0.0.1:${DEV_PORT as any}/index.user.js?${Date.now()}`,
   timeout: 1000 * 5,
@@ -12,6 +12,4 @@ GM.xmlHttpRequest({
     if (e.status === 0) throw new Error('dev server not running');
     throw new Error(String(e));
   },
-}).catch((error) => {
-  console.error(GM.info.script.name, error);
 });

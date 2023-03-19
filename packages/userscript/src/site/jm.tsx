@@ -1,4 +1,4 @@
-import { download, plimit, querySelectorAll, sleep, useInit } from '../helper';
+import { request, plimit, querySelectorAll, sleep, useInit } from '../helper';
 
 (async () => {
   // 只在漫画页内运行
@@ -28,9 +28,10 @@ import { download, plimit, querySelectorAll, sleep, useInit } from '../helper';
   }
 
   const getImgUrl = async (imgEle: HTMLImageElement) => {
-    imgEle.src = URL.createObjectURL(
-      await download(imgEle.getAttribute('data-original')!),
-    );
+    const res = await request<Blob>(imgEle.getAttribute('data-original')!, {
+      responseType: 'blob',
+    });
+    imgEle.src = URL.createObjectURL(res.response);
     await new Promise((resolve, reject) => {
       imgEle.onload = resolve;
       imgEle.onerror = reject;
