@@ -68,7 +68,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
         e.setAttribute('target', '_blank'),
       );
 
-    const blacklist: string[] = (unsafeWindow?._n_app ?? unsafeWindow?.n)
+    const blacklist: number[] = (unsafeWindow?._n_app ?? unsafeWindow?.n)
       ?.options?.blacklisted_tags;
     if (blacklist === undefined) toast.error('标签黑名单获取失败');
     // blacklist === null 时是未登录
@@ -83,7 +83,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
         hr:not(:last-child) { display: none; }
         @keyframes load { 0% { width: 100%; } 100% { width: 0; } }
       `);
-      const pageNum = Number(querySelector('.page.current')?.innerHTML ?? '');
+      let pageNum = Number(querySelector('.page.current')?.innerHTML ?? '');
       if (Number.isNaN(pageNum)) return;
 
       let loadLock = !pageNum;
@@ -111,6 +111,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
           return undefined;
 
         loadLock = true;
+        pageNum += 1;
         const res = await request(
           `${apiUrl}page=${pageNum}${
             window.location.pathname.includes('popular') ? '&sort=popular ' : ''
@@ -130,42 +131,32 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
         };
 
         let comicDomHtml = '';
-        for (let i = 0; i < result.length; i += 1) {
-          const tempComicInfo = result[i];
-          // 在 用户未登录 或 黑名单为空 或 未开启屏蔽 或 漫画标签都不在黑名单中 时才添加漫画结果
-          if (
-            !(
-              blacklist?.length &&
-              options['彻底屏蔽漫画'] &&
-              tempComicInfo.tags.some((e) => blacklist.includes(`${e.id}`))
+
+        // 在 用户已登录 且 有设置标签黑名单 且 开启了彻底屏蔽功能时，才对结果进行筛选
+        (options.彻底屏蔽漫画 && blacklist?.length
+          ? result.filter(({ tags }) =>
+              tags.every((tag) => !blacklist.includes(tag.id)),
             )
-          )
-            comicDomHtml += `<div class="gallery" data-tags="${tempComicInfo.tags
-              .map((e) => e.id)
-              .join(' ')}"><a ${
-              options['在新页面中打开链接'] ? 'target="_blank"' : ''
-            } href="/g/${tempComicInfo.id}/" class="cover" style="padding:0 0 ${
-              (tempComicInfo.images.thumbnail.h /
-                tempComicInfo.images.thumbnail.w) *
-              100
-            }% 0"><img is="lazyload-image" class="" width="${
-              tempComicInfo.images.thumbnail.w
-            }" height="${
-              tempComicInfo.images.thumbnail.h
-            }" src="https://t.nhentai.net/galleries/${
-              tempComicInfo.media_id
-            }/thumb.${
-              fileType[tempComicInfo.images.thumbnail.t]
-            }"><div class="caption">${
-              tempComicInfo.title.english
-            }</div></a></div>`;
-        }
+          : result
+        ).forEach((comic) => {
+          comicDomHtml += `<div class="gallery" data-tags="${comic.tags
+            .map((e) => e.id)
+            .join(' ')}"><a ${
+            options.在新页面中打开链接 ? 'target="_blank"' : ''
+          } href="/g/${comic.id}/" class="cover" style="padding:0 0 ${
+            (comic.images.thumbnail.h / comic.images.thumbnail.w) * 100
+          }% 0"><img is="lazyload-image" class="" width="${
+            comic.images.thumbnail.w
+          }" height="${
+            comic.images.thumbnail.h
+          }" src="https://t.nhentai.net/galleries/${comic.media_id}/thumb.${
+            fileType[comic.images.thumbnail.t]
+          }"><div class="caption">${comic.title.english}</div></a></div>`;
+        });
 
         // 构建页数按钮
         if (comicDomHtml) {
-          const target = options['在新页面中打开链接']
-            ? 'target="_blank" '
-            : '';
+          const target = options.在新页面中打开链接 ? 'target="_blank" ' : '';
           const pageNumDom: string[] = [];
           for (let i = pageNum - 5; i <= pageNum + 5; i += 1) {
             if (i > 0 && i <= num_pages)
