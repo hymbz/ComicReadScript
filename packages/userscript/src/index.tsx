@@ -11,6 +11,7 @@ switch (window.location.hostname) {
     break;
   }
 
+  case 'manhua.idmzj.com':
   case 'manhua.dmzj.com': {
     // #dmzj
     break;
