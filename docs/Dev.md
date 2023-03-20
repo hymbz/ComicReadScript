@@ -12,7 +12,7 @@
 - `/packages/ui-component`: 脚本用到的UI组件，通过 vite 进行测试
 - `/packages/userscript`: 脚本的主体代码
 
-在用 vscode 打开项目后，应该点击 `ComicReadScript.code-workspace` 文件打开工作区进行开发
+在用 vscode 打开项目后，应该通过 `ComicReadScript.code-workspace` 文件打开工作区进行开发
 
 ## 调试
 
