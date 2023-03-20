@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name      comic-read-script
 // @namespace comic-read-script
-// @version   0.1.0
+// @version   0.2.0
 // @author    hymbz
 // @license   AGPL-3.0-or-later
 // @include   *
@@ -24,7 +24,6 @@
 // @grant     GM_addElement
 // @grant     GM_getResourceText
 // @grant     GM_xmlhttpRequest
-// @grant     GM.xmlHttpRequest
 // @grant     GM.getResourceText
 // @grant     GM.addStyle
 // @grant     GM.getValue
@@ -41,14 +40,14 @@ const helperCode = `
 Object.defineProperties(exports, { __esModule: { value: true }, [Symbol.toStringTag]: { value: 'Module' } });
 
 const require$$0 = require('react/jsx-runtime');
+const shadow = require('react-shadow');
+const reactToastify = require('react-toastify');
 const React = require('react');
 const require$$2 = require('clsx');
 const require$$2$1 = require('zustand');
 const require$$3 = require('immer');
 const require$$4 = require('panzoom');
-const reactToastify = require('react-toastify');
 const fflate = require('fflate');
-const shadow = require('react-shadow');
 
 const _interopDefaultLegacy = e => e && typeof e === 'object' && 'default' in e ? e : { default: e };
 
@@ -71,6 +70,7 @@ function _interopNamespace(e) {
 }
 
 const require$$0__default = /*#__PURE__*/_interopDefaultLegacy(require$$0);
+const shadow__default = /*#__PURE__*/_interopDefaultLegacy(shadow);
 const React__namespace = /*#__PURE__*/_interopNamespace(React);
 const React__default = /*#__PURE__*/_interopDefaultLegacy(React);
 const require$$2__default = /*#__PURE__*/_interopDefaultLegacy(require$$2);
@@ -78,8 +78,46 @@ const require$$2__default$1 = /*#__PURE__*/_interopDefaultLegacy(require$$2$1);
 const require$$3__default = /*#__PURE__*/_interopDefaultLegacy(require$$3);
 const require$$4__default = /*#__PURE__*/_interopDefaultLegacy(require$$4);
 const fflate__default = /*#__PURE__*/_interopDefaultLegacy(fflate);
-const shadow__default = /*#__PURE__*/_interopDefaultLegacy(shadow);
 
+const ToastStyle = ":root{--toastify-color-light:#fff;--toastify-color-dark:#121212;--toastify-color-info:#3498db;--toastify-color-success:#07bc0c;--toastify-color-warning:#f1c40f;--toastify-color-error:#e74c3c;--toastify-color-transparent:hsla(0,0%,100%,.7);--toastify-icon-color-info:var(--toastify-color-info);--toastify-icon-color-success:var(--toastify-color-success);--toastify-icon-color-warning:var(--toastify-color-warning);--toastify-icon-color-error:var(--toastify-color-error);--toastify-toast-width:320px;--toastify-toast-background:#fff;--toastify-toast-min-height:64px;--toastify-toast-max-height:800px;--toastify-font-family:sans-serif;--toastify-z-index:9999;--toastify-text-color-light:#757575;--toastify-text-color-dark:#fff;--toastify-text-color-info:#fff;--toastify-text-color-success:#fff;--toastify-text-color-warning:#fff;--toastify-text-color-error:#fff;--toastify-spinner-color:#616161;--toastify-spinner-color-empty-area:#e0e0e0;--toastify-color-progress-light:linear-gradient(90deg,#4cd964,#5ac8fa,#007aff,#34aadc,#5856d6,#ff2d55);--toastify-color-progress-dark:#bb86fc;--toastify-color-progress-info:var(--toastify-color-info);--toastify-color-progress-success:var(--toastify-color-success);--toastify-color-progress-warning:var(--toastify-color-warning);--toastify-color-progress-error:var(--toastify-color-error)}.Toastify__toast-container{z-index:var(--toastify-z-index);-webkit-transform:translateZ(var(--toastify-z-index));position:fixed;padding:4px;width:var(--toastify-toast-width);box-sizing:border-box;color:#fff}.Toastify__toast-container--top-left{top:1em;left:1em}.Toastify__toast-container--top-center{top:1em;left:50%;transform:translateX(-50%)}.Toastify__toast-container--top-right{top:1em;right:1em}.Toastify__toast-container--bottom-left{bottom:1em;left:1em}.Toastify__toast-container--bottom-center{bottom:1em;left:50%;transform:translateX(-50%)}.Toastify__toast-container--bottom-right{bottom:1em;right:1em}@media only screen and (max-width:480px){.Toastify__toast-container{width:100vw;padding:0;left:0;margin:0}.Toastify__toast-container--top-center,.Toastify__toast-container--top-left,.Toastify__toast-container--top-right{top:0;transform:translateX(0)}.Toastify__toast-container--bottom-center,.Toastify__toast-container--bottom-left,.Toastify__toast-container--bottom-right{bottom:0;transform:translateX(0)}.Toastify__toast-container--rtl{right:0;left:auto}}.Toastify__toast{position:relative;min-height:var(--toastify-toast-min-height);box-sizing:border-box;margin-bottom:1rem;padding:8px;border-radius:4px;box-shadow:0 1px 10px 0 rgba(0,0,0,.1),0 2px 15px 0 rgba(0,0,0,.05);display:-ms-flexbox;display:flex;-ms-flex-pack:justify;justify-content:space-between;max-height:var(--toastify-toast-max-height);overflow:hidden;font-family:var(--toastify-font-family);cursor:pointer;direction:ltr;z-index:0}.Toastify__toast--rtl{direction:rtl}.Toastify__toast-body{margin:auto 0;-ms-flex:1 1 auto;flex:1 1 auto;padding:6px;display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center}.Toastify__toast-body>div:last-child{-ms-flex:1;flex:1}.Toastify__toast-icon{-webkit-margin-end:10px;margin-inline-end:10px;width:20px;-ms-flex-negative:0;flex-shrink:0;display:-ms-flexbox;display:flex}.Toastify--animate{animation-fill-mode:both;animation-duration:.7s}.Toastify--animate-icon{animation-fill-mode:both;animation-duration:.3s}@media only screen and (max-width:480px){.Toastify__toast{margin-bottom:0;border-radius:0}}.Toastify__toast-theme--dark{background:var(--toastify-color-dark);color:var(--toastify-text-color-dark)}.Toastify__toast-theme--colored.Toastify__toast--default,.Toastify__toast-theme--light{background:var(--toastify-color-light);color:var(--toastify-text-color-light)}.Toastify__toast-theme--colored.Toastify__toast--info{color:var(--toastify-text-color-info);background:var(--toastify-color-info)}.Toastify__toast-theme--colored.Toastify__toast--success{color:var(--toastify-text-color-success);background:var(--toastify-color-success)}.Toastify__toast-theme--colored.Toastify__toast--warning{color:var(--toastify-text-color-warning);background:var(--toastify-color-warning)}.Toastify__toast-theme--colored.Toastify__toast--error{color:var(--toastify-text-color-error);background:var(--toastify-color-error)}.Toastify__progress-bar-theme--light{background:var(--toastify-color-progress-light)}.Toastify__progress-bar-theme--dark{background:var(--toastify-color-progress-dark)}.Toastify__progress-bar--info{background:var(--toastify-color-progress-info)}.Toastify__progress-bar--success{background:var(--toastify-color-progress-success)}.Toastify__progress-bar--warning{background:var(--toastify-color-progress-warning)}.Toastify__progress-bar--error{background:var(--toastify-color-progress-error)}.Toastify__progress-bar-theme--colored.Toastify__progress-bar--error,.Toastify__progress-bar-theme--colored.Toastify__progress-bar--info,.Toastify__progress-bar-theme--colored.Toastify__progress-bar--success,.Toastify__progress-bar-theme--colored.Toastify__progress-bar--warning{background:var(--toastify-color-transparent)}.Toastify__close-button{color:#fff;background:transparent;outline:none;border:none;padding:0;cursor:pointer;opacity:.7;transition:.3s ease;-ms-flex-item-align:start;align-self:flex-start}.Toastify__close-button--light{color:#000;opacity:.3}.Toastify__close-button>svg{fill:currentColor;height:16px;width:14px}.Toastify__close-button:focus,.Toastify__close-button:hover{opacity:1}@keyframes Toastify__trackProgress{0%{transform:scaleX(1)}to{transform:scaleX(0)}}.Toastify__progress-bar{position:absolute;bottom:0;left:0;width:100%;height:5px;z-index:var(--toastify-z-index);opacity:.7;transform-origin:left}.Toastify__progress-bar--animated{animation:Toastify__trackProgress linear 1 forwards}.Toastify__progress-bar--controlled{transition:transform .2s}.Toastify__progress-bar--rtl{right:0;left:auto;transform-origin:right}.Toastify__spinner{width:20px;height:20px;box-sizing:border-box;border:2px solid;border-radius:100%;border-color:var(--toastify-spinner-color-empty-area);border-right-color:var(--toastify-spinner-color);animation:Toastify__spin .65s linear infinite}@keyframes Toastify__bounceInRight{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0)}60%{opacity:1;transform:translate3d(-25px,0,0)}75%{transform:translate3d(10px,0,0)}90%{transform:translate3d(-5px,0,0)}to{transform:none}}@keyframes Toastify__bounceOutRight{20%{opacity:1;transform:translate3d(-20px,0,0)}to{opacity:0;transform:translate3d(2000px,0,0)}}@keyframes Toastify__bounceInLeft{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(-3000px,0,0)}60%{opacity:1;transform:translate3d(25px,0,0)}75%{transform:translate3d(-10px,0,0)}90%{transform:translate3d(5px,0,0)}to{transform:none}}@keyframes Toastify__bounceOutLeft{20%{opacity:1;transform:translate3d(20px,0,0)}to{opacity:0;transform:translate3d(-2000px,0,0)}}@keyframes Toastify__bounceInUp{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(0,3000px,0)}60%{opacity:1;transform:translate3d(0,-20px,0)}75%{transform:translate3d(0,10px,0)}90%{transform:translate3d(0,-5px,0)}to{transform:translateZ(0)}}@keyframes Toastify__bounceOutUp{20%{transform:translate3d(0,-10px,0)}40%,45%{opacity:1;transform:translate3d(0,20px,0)}to{opacity:0;transform:translate3d(0,-2000px,0)}}@keyframes Toastify__bounceInDown{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(0,-3000px,0)}60%{opacity:1;transform:translate3d(0,25px,0)}75%{transform:translate3d(0,-10px,0)}90%{transform:translate3d(0,5px,0)}to{transform:none}}@keyframes Toastify__bounceOutDown{20%{transform:translate3d(0,10px,0)}40%,45%{opacity:1;transform:translate3d(0,-20px,0)}to{opacity:0;transform:translate3d(0,2000px,0)}}.Toastify__bounce-enter--bottom-left,.Toastify__bounce-enter--top-left{animation-name:Toastify__bounceInLeft}.Toastify__bounce-enter--bottom-right,.Toastify__bounce-enter--top-right{animation-name:Toastify__bounceInRight}.Toastify__bounce-enter--top-center{animation-name:Toastify__bounceInDown}.Toastify__bounce-enter--bottom-center{animation-name:Toastify__bounceInUp}.Toastify__bounce-exit--bottom-left,.Toastify__bounce-exit--top-left{animation-name:Toastify__bounceOutLeft}.Toastify__bounce-exit--bottom-right,.Toastify__bounce-exit--top-right{animation-name:Toastify__bounceOutRight}.Toastify__bounce-exit--top-center{animation-name:Toastify__bounceOutUp}.Toastify__bounce-exit--bottom-center{animation-name:Toastify__bounceOutDown}@keyframes Toastify__zoomIn{0%{opacity:0;transform:scale3d(.3,.3,.3)}50%{opacity:1}}@keyframes Toastify__zoomOut{0%{opacity:1}50%{opacity:0;transform:scale3d(.3,.3,.3)}to{opacity:0}}.Toastify__zoom-enter{animation-name:Toastify__zoomIn}.Toastify__zoom-exit{animation-name:Toastify__zoomOut}@keyframes Toastify__flipIn{0%{transform:perspective(400px) rotateX(90deg);animation-timing-function:ease-in;opacity:0}40%{transform:perspective(400px) rotateX(-20deg);animation-timing-function:ease-in}60%{transform:perspective(400px) rotateX(10deg);opacity:1}80%{transform:perspective(400px) rotateX(-5deg)}to{transform:perspective(400px)}}@keyframes Toastify__flipOut{0%{transform:perspective(400px)}30%{transform:perspective(400px) rotateX(-20deg);opacity:1}to{transform:perspective(400px) rotateX(90deg);opacity:0}}.Toastify__flip-enter{animation-name:Toastify__flipIn}.Toastify__flip-exit{animation-name:Toastify__flipOut}@keyframes Toastify__slideInRight{0%{transform:translate3d(110%,0,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideInLeft{0%{transform:translate3d(-110%,0,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideInUp{0%{transform:translate3d(0,110%,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideInDown{0%{transform:translate3d(0,-110%,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideOutRight{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(110%,0,0)}}@keyframes Toastify__slideOutLeft{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(-110%,0,0)}}@keyframes Toastify__slideOutDown{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(0,500px,0)}}@keyframes Toastify__slideOutUp{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(0,-500px,0)}}.Toastify__slide-enter--bottom-left,.Toastify__slide-enter--top-left{animation-name:Toastify__slideInLeft}.Toastify__slide-enter--bottom-right,.Toastify__slide-enter--top-right{animation-name:Toastify__slideInRight}.Toastify__slide-enter--top-center{animation-name:Toastify__slideInDown}.Toastify__slide-enter--bottom-center{animation-name:Toastify__slideInUp}.Toastify__slide-exit--bottom-left,.Toastify__slide-exit--top-left{animation-name:Toastify__slideOutLeft}.Toastify__slide-exit--bottom-right,.Toastify__slide-exit--top-right{animation-name:Toastify__slideOutRight}.Toastify__slide-exit--top-center{animation-name:Toastify__slideOutUp}.Toastify__slide-exit--bottom-center{animation-name:Toastify__slideOutDown}@keyframes Toastify__spin{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}";
+
+let selfToast;
+const useToast = () => {
+    if (selfToast)
+        return selfToast;
+    const [root] = useComponentsRoot('toast');
+    const _selfToast = (text, options) => {
+        root.render(require$$0.jsxs(shadow__default.default.div, { style: { fontSize: 16 }, children: [require$$0.jsx(reactToastify.ToastContainer, { autoClose: 1000 * 3, style: {
+                        // 进度条颜色
+                        '--toastify-color-progress-light': '#7A909A',
+                        // 背景色
+                        '--toastify-color-light': 'white',
+                    } }), require$$0.jsxs("style", { type: "text/css", children: [ToastStyle.replace(':root', '.Toastify'), \`
+            h2 {
+              font-size: 1.1em;
+              margin: 0;
+              margin-bottom: 1em;
+            }
+            .md {
+              text-align: left;
+            }
+            .md ul, .md h2 {
+              margin:0;
+              margin-bottom: .5em;
+              font-size: 1em;
+            }
+          \`] })] }));
+        reactToastify.toast(text, { ...options });
+    };
+    _selfToast.info = (text, options) => _selfToast(text, { ...options, type: 'info' });
+    _selfToast.error = (text, options) => _selfToast(text, { ...options, type: 'error' });
+    _selfToast.warn = (text, options) => _selfToast(text, { ...options, type: 'warning' });
+    _selfToast.success = (text, options) => _selfToast(text, { ...options, type: 'success' });
+    selfToast = _selfToast;
+    return selfToast;
+};
+
+// eslint-disable-next-line import/no-cycle
 const sleep = (ms) => new Promise((resolve) => {
     window.setTimeout(resolve, ms);
 });
@@ -137,25 +175,6 @@ const isEqualArray = (a, b) => a.length === b.length && !!a.filter((t) => !b.inc
 const dataToParams = (data) => Object.entries(data)
     .map(([key, val]) => \`\${key}=\${val}\`)
     .join('&');
-/** 根据 url 下载为 blob 格式数据 */
-const download = async (url, details, errorNum = 0, maxErrorNum = 3) => {
-    const res = await GM.xmlHttpRequest({
-        method: 'GET',
-        url,
-        responseType: 'blob',
-        headers: { Referer: window.location.href },
-        ...details,
-    });
-    if (res.status !== 200) {
-        const errorTest = \`\${url} 下载图片时出错：[\${res.status}]\${res.statusText}\`;
-        if (errorNum >= maxErrorNum)
-            throw new Error(errorTest);
-        console.warn(errorTest);
-        await sleep(1000);
-        return download(url, details, errorNum + 1, maxErrorNum);
-    }
-    return res.response;
-};
 /** 将 blob 数据作为文件保存至本地 */
 const saveAs = (blob, name = 'download') => {
     const a = document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
@@ -209,6 +228,40 @@ const plimit = async (limit, fnList, callBack) => {
         await Promise.race(execPool);
     }
     return resList;
+};
+// 将 xmlHttpRequest 包装为 Promise
+const xmlHttpRequest = (details) => new Promise((resolve, reject) => {
+    GM_xmlhttpRequest({
+        ...details,
+        onload: resolve,
+        onerror: reject,
+        ontimeout: reject,
+    });
+});
+/** 发起请求 */
+const request = async (url, details, errorNum = 0) => {
+    const errorText = details?.errorText ?? '漫画加载出错';
+    try {
+        const res = await xmlHttpRequest({
+            method: 'GET',
+            url,
+            headers: { Referer: window.location.href },
+            ...details,
+        });
+        if (res.status !== 200)
+            throw new Error(errorText);
+        return res;
+    }
+    catch (error) {
+        if (errorNum > 3) {
+            if (errorText)
+                useToast().error(errorText);
+            throw new Error(errorText);
+        }
+        console.error(errorText, error);
+        await sleep(1000);
+        return request(url, details, errorNum + 1);
+    }
 };
 
 var _path$9;
@@ -1996,10 +2049,10 @@ const setToolbarButton = (draftProps) => {
                 const fileName = \`\${index}.\${fileExt}\`;
                 try {
                     // eslint-disable-next-line no-await-in-loop
-                    const data = await download(imgList[i], {
+                    const res = await request(imgList[i], {
                         responseType: 'arraybuffer',
                     });
-                    fileData[fileName] = new Uint8Array(data);
+                    fileData[fileName] = new Uint8Array(res.response);
                 }
                 catch (error) {
                     reactToastify.toast.error(\`\${fileName} 下载失败\`);
@@ -2552,40 +2605,6 @@ const useFab = async (initProps) => {
     return set;
 };
 
-const ToastStyle = ":root{--toastify-color-light:#fff;--toastify-color-dark:#121212;--toastify-color-info:#3498db;--toastify-color-success:#07bc0c;--toastify-color-warning:#f1c40f;--toastify-color-error:#e74c3c;--toastify-color-transparent:hsla(0,0%,100%,.7);--toastify-icon-color-info:var(--toastify-color-info);--toastify-icon-color-success:var(--toastify-color-success);--toastify-icon-color-warning:var(--toastify-color-warning);--toastify-icon-color-error:var(--toastify-color-error);--toastify-toast-width:320px;--toastify-toast-background:#fff;--toastify-toast-min-height:64px;--toastify-toast-max-height:800px;--toastify-font-family:sans-serif;--toastify-z-index:9999;--toastify-text-color-light:#757575;--toastify-text-color-dark:#fff;--toastify-text-color-info:#fff;--toastify-text-color-success:#fff;--toastify-text-color-warning:#fff;--toastify-text-color-error:#fff;--toastify-spinner-color:#616161;--toastify-spinner-color-empty-area:#e0e0e0;--toastify-color-progress-light:linear-gradient(90deg,#4cd964,#5ac8fa,#007aff,#34aadc,#5856d6,#ff2d55);--toastify-color-progress-dark:#bb86fc;--toastify-color-progress-info:var(--toastify-color-info);--toastify-color-progress-success:var(--toastify-color-success);--toastify-color-progress-warning:var(--toastify-color-warning);--toastify-color-progress-error:var(--toastify-color-error)}.Toastify__toast-container{z-index:var(--toastify-z-index);-webkit-transform:translateZ(var(--toastify-z-index));position:fixed;padding:4px;width:var(--toastify-toast-width);box-sizing:border-box;color:#fff}.Toastify__toast-container--top-left{top:1em;left:1em}.Toastify__toast-container--top-center{top:1em;left:50%;transform:translateX(-50%)}.Toastify__toast-container--top-right{top:1em;right:1em}.Toastify__toast-container--bottom-left{bottom:1em;left:1em}.Toastify__toast-container--bottom-center{bottom:1em;left:50%;transform:translateX(-50%)}.Toastify__toast-container--bottom-right{bottom:1em;right:1em}@media only screen and (max-width:480px){.Toastify__toast-container{width:100vw;padding:0;left:0;margin:0}.Toastify__toast-container--top-center,.Toastify__toast-container--top-left,.Toastify__toast-container--top-right{top:0;transform:translateX(0)}.Toastify__toast-container--bottom-center,.Toastify__toast-container--bottom-left,.Toastify__toast-container--bottom-right{bottom:0;transform:translateX(0)}.Toastify__toast-container--rtl{right:0;left:auto}}.Toastify__toast{position:relative;min-height:var(--toastify-toast-min-height);box-sizing:border-box;margin-bottom:1rem;padding:8px;border-radius:4px;box-shadow:0 1px 10px 0 rgba(0,0,0,.1),0 2px 15px 0 rgba(0,0,0,.05);display:-ms-flexbox;display:flex;-ms-flex-pack:justify;justify-content:space-between;max-height:var(--toastify-toast-max-height);overflow:hidden;font-family:var(--toastify-font-family);cursor:pointer;direction:ltr;z-index:0}.Toastify__toast--rtl{direction:rtl}.Toastify__toast-body{margin:auto 0;-ms-flex:1 1 auto;flex:1 1 auto;padding:6px;display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center}.Toastify__toast-body>div:last-child{-ms-flex:1;flex:1}.Toastify__toast-icon{-webkit-margin-end:10px;margin-inline-end:10px;width:20px;-ms-flex-negative:0;flex-shrink:0;display:-ms-flexbox;display:flex}.Toastify--animate{animation-fill-mode:both;animation-duration:.7s}.Toastify--animate-icon{animation-fill-mode:both;animation-duration:.3s}@media only screen and (max-width:480px){.Toastify__toast{margin-bottom:0;border-radius:0}}.Toastify__toast-theme--dark{background:var(--toastify-color-dark);color:var(--toastify-text-color-dark)}.Toastify__toast-theme--colored.Toastify__toast--default,.Toastify__toast-theme--light{background:var(--toastify-color-light);color:var(--toastify-text-color-light)}.Toastify__toast-theme--colored.Toastify__toast--info{color:var(--toastify-text-color-info);background:var(--toastify-color-info)}.Toastify__toast-theme--colored.Toastify__toast--success{color:var(--toastify-text-color-success);background:var(--toastify-color-success)}.Toastify__toast-theme--colored.Toastify__toast--warning{color:var(--toastify-text-color-warning);background:var(--toastify-color-warning)}.Toastify__toast-theme--colored.Toastify__toast--error{color:var(--toastify-text-color-error);background:var(--toastify-color-error)}.Toastify__progress-bar-theme--light{background:var(--toastify-color-progress-light)}.Toastify__progress-bar-theme--dark{background:var(--toastify-color-progress-dark)}.Toastify__progress-bar--info{background:var(--toastify-color-progress-info)}.Toastify__progress-bar--success{background:var(--toastify-color-progress-success)}.Toastify__progress-bar--warning{background:var(--toastify-color-progress-warning)}.Toastify__progress-bar--error{background:var(--toastify-color-progress-error)}.Toastify__progress-bar-theme--colored.Toastify__progress-bar--error,.Toastify__progress-bar-theme--colored.Toastify__progress-bar--info,.Toastify__progress-bar-theme--colored.Toastify__progress-bar--success,.Toastify__progress-bar-theme--colored.Toastify__progress-bar--warning{background:var(--toastify-color-transparent)}.Toastify__close-button{color:#fff;background:transparent;outline:none;border:none;padding:0;cursor:pointer;opacity:.7;transition:.3s ease;-ms-flex-item-align:start;align-self:flex-start}.Toastify__close-button--light{color:#000;opacity:.3}.Toastify__close-button>svg{fill:currentColor;height:16px;width:14px}.Toastify__close-button:focus,.Toastify__close-button:hover{opacity:1}@keyframes Toastify__trackProgress{0%{transform:scaleX(1)}to{transform:scaleX(0)}}.Toastify__progress-bar{position:absolute;bottom:0;left:0;width:100%;height:5px;z-index:var(--toastify-z-index);opacity:.7;transform-origin:left}.Toastify__progress-bar--animated{animation:Toastify__trackProgress linear 1 forwards}.Toastify__progress-bar--controlled{transition:transform .2s}.Toastify__progress-bar--rtl{right:0;left:auto;transform-origin:right}.Toastify__spinner{width:20px;height:20px;box-sizing:border-box;border:2px solid;border-radius:100%;border-color:var(--toastify-spinner-color-empty-area);border-right-color:var(--toastify-spinner-color);animation:Toastify__spin .65s linear infinite}@keyframes Toastify__bounceInRight{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0)}60%{opacity:1;transform:translate3d(-25px,0,0)}75%{transform:translate3d(10px,0,0)}90%{transform:translate3d(-5px,0,0)}to{transform:none}}@keyframes Toastify__bounceOutRight{20%{opacity:1;transform:translate3d(-20px,0,0)}to{opacity:0;transform:translate3d(2000px,0,0)}}@keyframes Toastify__bounceInLeft{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(-3000px,0,0)}60%{opacity:1;transform:translate3d(25px,0,0)}75%{transform:translate3d(-10px,0,0)}90%{transform:translate3d(5px,0,0)}to{transform:none}}@keyframes Toastify__bounceOutLeft{20%{opacity:1;transform:translate3d(20px,0,0)}to{opacity:0;transform:translate3d(-2000px,0,0)}}@keyframes Toastify__bounceInUp{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(0,3000px,0)}60%{opacity:1;transform:translate3d(0,-20px,0)}75%{transform:translate3d(0,10px,0)}90%{transform:translate3d(0,-5px,0)}to{transform:translateZ(0)}}@keyframes Toastify__bounceOutUp{20%{transform:translate3d(0,-10px,0)}40%,45%{opacity:1;transform:translate3d(0,20px,0)}to{opacity:0;transform:translate3d(0,-2000px,0)}}@keyframes Toastify__bounceInDown{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(0,-3000px,0)}60%{opacity:1;transform:translate3d(0,25px,0)}75%{transform:translate3d(0,-10px,0)}90%{transform:translate3d(0,5px,0)}to{transform:none}}@keyframes Toastify__bounceOutDown{20%{transform:translate3d(0,10px,0)}40%,45%{opacity:1;transform:translate3d(0,-20px,0)}to{opacity:0;transform:translate3d(0,2000px,0)}}.Toastify__bounce-enter--bottom-left,.Toastify__bounce-enter--top-left{animation-name:Toastify__bounceInLeft}.Toastify__bounce-enter--bottom-right,.Toastify__bounce-enter--top-right{animation-name:Toastify__bounceInRight}.Toastify__bounce-enter--top-center{animation-name:Toastify__bounceInDown}.Toastify__bounce-enter--bottom-center{animation-name:Toastify__bounceInUp}.Toastify__bounce-exit--bottom-left,.Toastify__bounce-exit--top-left{animation-name:Toastify__bounceOutLeft}.Toastify__bounce-exit--bottom-right,.Toastify__bounce-exit--top-right{animation-name:Toastify__bounceOutRight}.Toastify__bounce-exit--top-center{animation-name:Toastify__bounceOutUp}.Toastify__bounce-exit--bottom-center{animation-name:Toastify__bounceOutDown}@keyframes Toastify__zoomIn{0%{opacity:0;transform:scale3d(.3,.3,.3)}50%{opacity:1}}@keyframes Toastify__zoomOut{0%{opacity:1}50%{opacity:0;transform:scale3d(.3,.3,.3)}to{opacity:0}}.Toastify__zoom-enter{animation-name:Toastify__zoomIn}.Toastify__zoom-exit{animation-name:Toastify__zoomOut}@keyframes Toastify__flipIn{0%{transform:perspective(400px) rotateX(90deg);animation-timing-function:ease-in;opacity:0}40%{transform:perspective(400px) rotateX(-20deg);animation-timing-function:ease-in}60%{transform:perspective(400px) rotateX(10deg);opacity:1}80%{transform:perspective(400px) rotateX(-5deg)}to{transform:perspective(400px)}}@keyframes Toastify__flipOut{0%{transform:perspective(400px)}30%{transform:perspective(400px) rotateX(-20deg);opacity:1}to{transform:perspective(400px) rotateX(90deg);opacity:0}}.Toastify__flip-enter{animation-name:Toastify__flipIn}.Toastify__flip-exit{animation-name:Toastify__flipOut}@keyframes Toastify__slideInRight{0%{transform:translate3d(110%,0,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideInLeft{0%{transform:translate3d(-110%,0,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideInUp{0%{transform:translate3d(0,110%,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideInDown{0%{transform:translate3d(0,-110%,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideOutRight{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(110%,0,0)}}@keyframes Toastify__slideOutLeft{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(-110%,0,0)}}@keyframes Toastify__slideOutDown{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(0,500px,0)}}@keyframes Toastify__slideOutUp{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(0,-500px,0)}}.Toastify__slide-enter--bottom-left,.Toastify__slide-enter--top-left{animation-name:Toastify__slideInLeft}.Toastify__slide-enter--bottom-right,.Toastify__slide-enter--top-right{animation-name:Toastify__slideInRight}.Toastify__slide-enter--top-center{animation-name:Toastify__slideInDown}.Toastify__slide-enter--bottom-center{animation-name:Toastify__slideInUp}.Toastify__slide-exit--bottom-left,.Toastify__slide-exit--top-left{animation-name:Toastify__slideOutLeft}.Toastify__slide-exit--bottom-right,.Toastify__slide-exit--top-right{animation-name:Toastify__slideOutRight}.Toastify__slide-exit--top-center{animation-name:Toastify__slideOutUp}.Toastify__slide-exit--bottom-center{animation-name:Toastify__slideOutDown}@keyframes Toastify__spin{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}";
-
-const useToast = () => {
-    const [root] = useComponentsRoot('toast');
-    const toastFunc = (text, options) => {
-        root.render(require$$0.jsxs(shadow__default.default.div, { style: { fontSize: 16 }, children: [require$$0.jsx(reactToastify.ToastContainer, { autoClose: 1000 * 3, style: {
-                        // 进度条颜色
-                        '--toastify-color-progress-light': '#7A909A',
-                        // 背景色
-                        '--toastify-color-light': 'white',
-                    } }), require$$0.jsxs("style", { type: "text/css", children: [ToastStyle.replace(':root', '.Toastify'), \`
-            h2 {
-              font-size: 1.1em;
-              margin: 0;
-              margin-bottom: 1em;
-            }
-            .md {
-              text-align: left;
-            }
-            .md ul, .md h2 {
-              margin:0;
-              margin-bottom: .5em;
-              font-size: 1em;
-            }
-          \`] })] }));
-        reactToastify.toast(text, { ...options });
-    };
-    toastFunc.info = (text, options) => toastFunc(text, { ...options, type: 'info' });
-    toastFunc.error = (text, options) => toastFunc(text, { ...options, type: 'error' });
-    toastFunc.warn = (text, options) => toastFunc(text, { ...options, type: 'warning' });
-    toastFunc.success = (text, options) => toastFunc(text, { ...options, type: 'success' });
-    return toastFunc;
-};
-
 /**
  * 对修改站点配置的相关方法的封装
  *
@@ -2626,6 +2645,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     };
 };
 
+/* eslint-disable import/no-cycle */
 /**
  * 对三个样式组件和 useSiteOptions 的默认值进行封装
  *
@@ -2645,24 +2665,6 @@ const useInit = async (name, defaultOptions = {}) => {
         onOptionChange: (option) => setOptions({ ...options, option }),
     });
     const toast = useToast();
-    const request = async (method, url, details, errorNum = 0) => {
-        const errorText = details?.errorText ?? '漫画图片加载出错';
-        try {
-            const res = await GM.xmlHttpRequest({ method, url, ...details });
-            if (res.status !== 200 || !res.responseText)
-                throw new Error(errorText);
-            return res;
-        }
-        catch (error) {
-            if (errorNum > 3) {
-                toast.error(errorText);
-                throw new Error(errorText);
-            }
-            console.error(errorText, error);
-            await sleep(1000 * 3);
-            return request(method, url, details, errorNum + 1);
-        }
-    };
     // 检查脚本的版本变化，提示用户
     const version = await GM.getValue('Version');
     if (version && version !== GM.info.script.version) {
@@ -2675,20 +2677,30 @@ const useInit = async (name, defaultOptions = {}) => {
         // - 修复漫画柜失效问题
         // \`;
         (async () => {
-            const res = await GM.xmlHttpRequest({
-                method: 'GET',
-                url: \`https://cdn.jsdelivr.net/gh/hymbz/ComicReadScriptTest@\${GM.info.script.version}/file\`,
-            });
-            if (!res.responseText)
-                return;
-            toast(() => (require$$0.jsxs("div", { children: [require$$0.jsxs("h2", { children: ["ComicReadScrip \\u5DF2\\u66F4\\u65B0\\u5230 ", GM.info.script.version] }), require$$0.jsx("div", { className: "md", children: res.responseText.match(/##.+?\\n|(-.+?\\n)+/g).map((mdText) => {
-                            if (mdText[0] === '#')
-                                return require$$0.jsx("h2", { children: mdText.split('##') });
-                            if (mdText[0] === '-')
-                                return (require$$0.jsx("ul", { children: mdText.match(/(?<=- ).+/g).map((item) => (require$$0.jsx("li", { children: item }))) }));
-                            return null;
-                        }) })] })));
-            GM_setValue('Version', GM.info.script.version);
+            // const res = await request(
+            //   \`https://cdn.jsdelivr.net/gh/hymbz/ComicReadScriptTest@\${GM.info.script.version}/file\`,
+            //   { errorText: '' },
+            // );
+            // toast(() => (
+            //   <div>
+            //     <h2>ComicReadScrip 已更新到 {GM.info.script.version}</h2>
+            //     <div className="md">
+            //       {res.responseText.match(/##.+?\\n|(-.+?\\n)+/g)!.map((mdText) => {
+            //         if (mdText[0] === '#') return <h2>{mdText.split('##')}</h2>;
+            //         if (mdText[0] === '-')
+            //           return (
+            //             <ul>
+            //               {mdText.match(/(?<=- ).+/g)!.map((item) => (
+            //                 <li>{item}</li>
+            //               ))}
+            //             </ul>
+            //           );
+            //         return null;
+            //       })}
+            //     </div>
+            //   </div>
+            // ));
+            // GM_setValue('Version', GM.info.script.version);
         })();
     }
     let menuId;
@@ -2710,7 +2722,6 @@ const useInit = async (name, defaultOptions = {}) => {
         setFab,
         setManga,
         toast,
-        request,
         /**
          * 完成所有支持站点的初始化
          *
@@ -2792,7 +2803,6 @@ const useInit = async (name, defaultOptions = {}) => {
 
 exports.dataToParams = dataToParams;
 exports.defaultSpeedDial = defaultSpeedDial;
-exports.download = download;
 exports.insertNode = insertNode;
 exports.isEqualArray = isEqualArray;
 exports.linstenKeyup = linstenKeyup;
@@ -2801,6 +2811,7 @@ exports.promisifyRequest = promisifyRequest;
 exports.querySelector = querySelector;
 exports.querySelectorAll = querySelectorAll;
 exports.querySelectorClick = querySelectorClick;
+exports.request = request;
 exports.saveAs = saveAs;
 exports.scrollIntoView = scrollIntoView;
 exports.setToolbarButton = setToolbarButton;
@@ -2817,7 +2828,9 @@ exports.useToast = useToast;
 unsafeWindow.crsLib = {
   // 有些 cjs 模块会检查这个，所以在这里声明下
   process: { env: { NODE_ENV: 'production' } },
+  // 把 GM 相关函数放进去以便其中使用
   GM,
+  GM_xmlhttpRequest,
 };
 /**
  * 通过 Resource 导入外部模块
@@ -2833,7 +2846,7 @@ const selfImportSync = (name) => {
     textContent: `
       window.crsLib['${name}'] = {};
       ${''}
-      (function (process, require, exports, module, GM) {
+      (function (process, require, exports, module, GM, GM_xmlhttpRequest) {
         ${code}
       })(
         window.crsLib.process,
@@ -2848,6 +2861,7 @@ const selfImportSync = (name) => {
           },
         },
         window.crsLib.GM,
+        window.crsLib.GM_xmlhttpRequest,
       );
       ${''}
     `,
@@ -2977,13 +2991,14 @@ switch (window.location.hostname) {
     const checkInDomSelectors =
       '.header-tool > li > a[href^="plugin.php?id=study_daily_attendance"]';
     (async () => {
-      const { options, setFab, setManga, request, init } = await helper.useInit(
+      const { options, setFab, setManga, init } = await helper.useInit(
         'yamibo',
         {
           记录阅读进度: true,
           关闭快捷导航按钮的跳转: true,
           修正点击页数时的跳转判定: true,
           固定导航条: true,
+          自动签到: true,
         },
       );
       await GM.addStyle(`#fab { --fab: #6E2B19; --fab_hover: #A15640; };
@@ -3037,9 +3052,11 @@ switch (window.location.hostname) {
     }
     `);
       // 自动签到
-      const checkInDom = helper.querySelector(checkInDomSelectors);
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      if (checkInDom) fetch(checkInDom.href);
+      if (options.自动签到) {
+        const checkInDom = helper.querySelector(checkInDomSelectors);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        if (checkInDom) fetch(checkInDom.href);
+      }
       if (options.关闭快捷导航按钮的跳转)
         // eslint-disable-next-line no-script-url
         helper.querySelector('#qmenu a')?.setAttribute('href', 'javascript:;');
@@ -3137,10 +3154,9 @@ switch (window.location.hostname) {
             let threadList = [];
             // 先获取包含当前帖后一话在内的同一标签下的帖子id列表，再根据结果设定上/下一话
             const setPrevNext = async (pageNum = 1) => {
-              const res = await GM.xmlHttpRequest({
-                method: 'GET',
-                url: `https://bbs.yamibo.com/misc.php?mod=tag&id=${tagId}&type=thread&page=${pageNum}`,
-              });
+              const res = await helper.request(
+                `https://bbs.yamibo.com/misc.php?mod=tag&id=${tagId}&type=thread&page=${pageNum}`,
+              );
               const newList = [...res.responseText.matchAll(reg)].map(
                 ([tid]) => +tid,
               );
@@ -3172,8 +3188,7 @@ switch (window.location.hostname) {
         }
         if (options.记录阅读进度) {
           const { tid } = unsafeWindow;
-          const res = await request(
-            'GET',
+          const res = await helper.request(
             `https://bbs.yamibo.com/api/mobile/index.php?module=viewthread&tid=${tid}`,
             { errorText: '获取帖子回复数时出错' },
           );
@@ -3317,9 +3332,7 @@ switch (window.location.hostname) {
     (async () => {
       // 只在漫画页内运行
       if (!document.URL.includes('view-chapter')) return;
-      const { setFab, toast, setManga, init } = await helper.useInit(
-        'newYamibo',
-      );
+      const { setFab, setManga, init } = await helper.useInit('newYamibo');
       setManga({
         onNext: helper.querySelectorClick('#btnNext'),
         onPrev: helper.querySelectorClick('#btnPrev'),
@@ -3334,15 +3347,9 @@ switch (window.location.hostname) {
         .querySelector('section div:first-of-type div:last-of-type')
         .innerHTML.split('：')[1];
       const getImgList = async (i = 1, imgList = []) => {
-        const res = await GM.xmlHttpRequest({
-          method: 'GET',
-          url: `https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`,
-        });
-        if (res.status !== 200 || !res.responseText) {
-          console.error('漫画加载出错', res);
-          toast.error('漫画加载出错');
-          return [];
-        }
+        const res = await helper.request(
+          `https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`,
+        );
         imgList.push(
           /<img id="imgPic".+="(.+?)".+>/
             .exec(res.responseText)[1]
@@ -3364,9 +3371,82 @@ switch (window.location.hostname) {
     break;
   }
 
+  case 'manhua.idmzj.com':
   case 'manhua.dmzj.com': {
     const helper = require('../helper');
+    const jsxRuntime = require('react/jsx-runtime');
+    const shadow = require('react-shadow');
+    const reactToastify = require('react-toastify');
 
+    const _interopDefaultLegacy = (e) =>
+      e && typeof e === 'object' && 'default' in e ? e : { default: e };
+
+    const shadow__default = /*#__PURE__*/ _interopDefaultLegacy(shadow);
+
+    const ToastStyle =
+      ':root{--toastify-color-light:#fff;--toastify-color-dark:#121212;--toastify-color-info:#3498db;--toastify-color-success:#07bc0c;--toastify-color-warning:#f1c40f;--toastify-color-error:#e74c3c;--toastify-color-transparent:hsla(0,0%,100%,.7);--toastify-icon-color-info:var(--toastify-color-info);--toastify-icon-color-success:var(--toastify-color-success);--toastify-icon-color-warning:var(--toastify-color-warning);--toastify-icon-color-error:var(--toastify-color-error);--toastify-toast-width:320px;--toastify-toast-background:#fff;--toastify-toast-min-height:64px;--toastify-toast-max-height:800px;--toastify-font-family:sans-serif;--toastify-z-index:9999;--toastify-text-color-light:#757575;--toastify-text-color-dark:#fff;--toastify-text-color-info:#fff;--toastify-text-color-success:#fff;--toastify-text-color-warning:#fff;--toastify-text-color-error:#fff;--toastify-spinner-color:#616161;--toastify-spinner-color-empty-area:#e0e0e0;--toastify-color-progress-light:linear-gradient(90deg,#4cd964,#5ac8fa,#007aff,#34aadc,#5856d6,#ff2d55);--toastify-color-progress-dark:#bb86fc;--toastify-color-progress-info:var(--toastify-color-info);--toastify-color-progress-success:var(--toastify-color-success);--toastify-color-progress-warning:var(--toastify-color-warning);--toastify-color-progress-error:var(--toastify-color-error)}.Toastify__toast-container{z-index:var(--toastify-z-index);-webkit-transform:translateZ(var(--toastify-z-index));position:fixed;padding:4px;width:var(--toastify-toast-width);box-sizing:border-box;color:#fff}.Toastify__toast-container--top-left{top:1em;left:1em}.Toastify__toast-container--top-center{top:1em;left:50%;transform:translateX(-50%)}.Toastify__toast-container--top-right{top:1em;right:1em}.Toastify__toast-container--bottom-left{bottom:1em;left:1em}.Toastify__toast-container--bottom-center{bottom:1em;left:50%;transform:translateX(-50%)}.Toastify__toast-container--bottom-right{bottom:1em;right:1em}@media only screen and (max-width:480px){.Toastify__toast-container{width:100vw;padding:0;left:0;margin:0}.Toastify__toast-container--top-center,.Toastify__toast-container--top-left,.Toastify__toast-container--top-right{top:0;transform:translateX(0)}.Toastify__toast-container--bottom-center,.Toastify__toast-container--bottom-left,.Toastify__toast-container--bottom-right{bottom:0;transform:translateX(0)}.Toastify__toast-container--rtl{right:0;left:auto}}.Toastify__toast{position:relative;min-height:var(--toastify-toast-min-height);box-sizing:border-box;margin-bottom:1rem;padding:8px;border-radius:4px;box-shadow:0 1px 10px 0 rgba(0,0,0,.1),0 2px 15px 0 rgba(0,0,0,.05);display:-ms-flexbox;display:flex;-ms-flex-pack:justify;justify-content:space-between;max-height:var(--toastify-toast-max-height);overflow:hidden;font-family:var(--toastify-font-family);cursor:pointer;direction:ltr;z-index:0}.Toastify__toast--rtl{direction:rtl}.Toastify__toast-body{margin:auto 0;-ms-flex:1 1 auto;flex:1 1 auto;padding:6px;display:-ms-flexbox;display:flex;-ms-flex-align:center;align-items:center}.Toastify__toast-body>div:last-child{-ms-flex:1;flex:1}.Toastify__toast-icon{-webkit-margin-end:10px;margin-inline-end:10px;width:20px;-ms-flex-negative:0;flex-shrink:0;display:-ms-flexbox;display:flex}.Toastify--animate{animation-fill-mode:both;animation-duration:.7s}.Toastify--animate-icon{animation-fill-mode:both;animation-duration:.3s}@media only screen and (max-width:480px){.Toastify__toast{margin-bottom:0;border-radius:0}}.Toastify__toast-theme--dark{background:var(--toastify-color-dark);color:var(--toastify-text-color-dark)}.Toastify__toast-theme--colored.Toastify__toast--default,.Toastify__toast-theme--light{background:var(--toastify-color-light);color:var(--toastify-text-color-light)}.Toastify__toast-theme--colored.Toastify__toast--info{color:var(--toastify-text-color-info);background:var(--toastify-color-info)}.Toastify__toast-theme--colored.Toastify__toast--success{color:var(--toastify-text-color-success);background:var(--toastify-color-success)}.Toastify__toast-theme--colored.Toastify__toast--warning{color:var(--toastify-text-color-warning);background:var(--toastify-color-warning)}.Toastify__toast-theme--colored.Toastify__toast--error{color:var(--toastify-text-color-error);background:var(--toastify-color-error)}.Toastify__progress-bar-theme--light{background:var(--toastify-color-progress-light)}.Toastify__progress-bar-theme--dark{background:var(--toastify-color-progress-dark)}.Toastify__progress-bar--info{background:var(--toastify-color-progress-info)}.Toastify__progress-bar--success{background:var(--toastify-color-progress-success)}.Toastify__progress-bar--warning{background:var(--toastify-color-progress-warning)}.Toastify__progress-bar--error{background:var(--toastify-color-progress-error)}.Toastify__progress-bar-theme--colored.Toastify__progress-bar--error,.Toastify__progress-bar-theme--colored.Toastify__progress-bar--info,.Toastify__progress-bar-theme--colored.Toastify__progress-bar--success,.Toastify__progress-bar-theme--colored.Toastify__progress-bar--warning{background:var(--toastify-color-transparent)}.Toastify__close-button{color:#fff;background:transparent;outline:none;border:none;padding:0;cursor:pointer;opacity:.7;transition:.3s ease;-ms-flex-item-align:start;align-self:flex-start}.Toastify__close-button--light{color:#000;opacity:.3}.Toastify__close-button>svg{fill:currentColor;height:16px;width:14px}.Toastify__close-button:focus,.Toastify__close-button:hover{opacity:1}@keyframes Toastify__trackProgress{0%{transform:scaleX(1)}to{transform:scaleX(0)}}.Toastify__progress-bar{position:absolute;bottom:0;left:0;width:100%;height:5px;z-index:var(--toastify-z-index);opacity:.7;transform-origin:left}.Toastify__progress-bar--animated{animation:Toastify__trackProgress linear 1 forwards}.Toastify__progress-bar--controlled{transition:transform .2s}.Toastify__progress-bar--rtl{right:0;left:auto;transform-origin:right}.Toastify__spinner{width:20px;height:20px;box-sizing:border-box;border:2px solid;border-radius:100%;border-color:var(--toastify-spinner-color-empty-area);border-right-color:var(--toastify-spinner-color);animation:Toastify__spin .65s linear infinite}@keyframes Toastify__bounceInRight{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0)}60%{opacity:1;transform:translate3d(-25px,0,0)}75%{transform:translate3d(10px,0,0)}90%{transform:translate3d(-5px,0,0)}to{transform:none}}@keyframes Toastify__bounceOutRight{20%{opacity:1;transform:translate3d(-20px,0,0)}to{opacity:0;transform:translate3d(2000px,0,0)}}@keyframes Toastify__bounceInLeft{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(-3000px,0,0)}60%{opacity:1;transform:translate3d(25px,0,0)}75%{transform:translate3d(-10px,0,0)}90%{transform:translate3d(5px,0,0)}to{transform:none}}@keyframes Toastify__bounceOutLeft{20%{opacity:1;transform:translate3d(20px,0,0)}to{opacity:0;transform:translate3d(-2000px,0,0)}}@keyframes Toastify__bounceInUp{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(0,3000px,0)}60%{opacity:1;transform:translate3d(0,-20px,0)}75%{transform:translate3d(0,10px,0)}90%{transform:translate3d(0,-5px,0)}to{transform:translateZ(0)}}@keyframes Toastify__bounceOutUp{20%{transform:translate3d(0,-10px,0)}40%,45%{opacity:1;transform:translate3d(0,20px,0)}to{opacity:0;transform:translate3d(0,-2000px,0)}}@keyframes Toastify__bounceInDown{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(0,-3000px,0)}60%{opacity:1;transform:translate3d(0,25px,0)}75%{transform:translate3d(0,-10px,0)}90%{transform:translate3d(0,5px,0)}to{transform:none}}@keyframes Toastify__bounceOutDown{20%{transform:translate3d(0,10px,0)}40%,45%{opacity:1;transform:translate3d(0,-20px,0)}to{opacity:0;transform:translate3d(0,2000px,0)}}.Toastify__bounce-enter--bottom-left,.Toastify__bounce-enter--top-left{animation-name:Toastify__bounceInLeft}.Toastify__bounce-enter--bottom-right,.Toastify__bounce-enter--top-right{animation-name:Toastify__bounceInRight}.Toastify__bounce-enter--top-center{animation-name:Toastify__bounceInDown}.Toastify__bounce-enter--bottom-center{animation-name:Toastify__bounceInUp}.Toastify__bounce-exit--bottom-left,.Toastify__bounce-exit--top-left{animation-name:Toastify__bounceOutLeft}.Toastify__bounce-exit--bottom-right,.Toastify__bounce-exit--top-right{animation-name:Toastify__bounceOutRight}.Toastify__bounce-exit--top-center{animation-name:Toastify__bounceOutUp}.Toastify__bounce-exit--bottom-center{animation-name:Toastify__bounceOutDown}@keyframes Toastify__zoomIn{0%{opacity:0;transform:scale3d(.3,.3,.3)}50%{opacity:1}}@keyframes Toastify__zoomOut{0%{opacity:1}50%{opacity:0;transform:scale3d(.3,.3,.3)}to{opacity:0}}.Toastify__zoom-enter{animation-name:Toastify__zoomIn}.Toastify__zoom-exit{animation-name:Toastify__zoomOut}@keyframes Toastify__flipIn{0%{transform:perspective(400px) rotateX(90deg);animation-timing-function:ease-in;opacity:0}40%{transform:perspective(400px) rotateX(-20deg);animation-timing-function:ease-in}60%{transform:perspective(400px) rotateX(10deg);opacity:1}80%{transform:perspective(400px) rotateX(-5deg)}to{transform:perspective(400px)}}@keyframes Toastify__flipOut{0%{transform:perspective(400px)}30%{transform:perspective(400px) rotateX(-20deg);opacity:1}to{transform:perspective(400px) rotateX(90deg);opacity:0}}.Toastify__flip-enter{animation-name:Toastify__flipIn}.Toastify__flip-exit{animation-name:Toastify__flipOut}@keyframes Toastify__slideInRight{0%{transform:translate3d(110%,0,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideInLeft{0%{transform:translate3d(-110%,0,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideInUp{0%{transform:translate3d(0,110%,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideInDown{0%{transform:translate3d(0,-110%,0);visibility:visible}to{transform:translateZ(0)}}@keyframes Toastify__slideOutRight{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(110%,0,0)}}@keyframes Toastify__slideOutLeft{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(-110%,0,0)}}@keyframes Toastify__slideOutDown{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(0,500px,0)}}@keyframes Toastify__slideOutUp{0%{transform:translateZ(0)}to{visibility:hidden;transform:translate3d(0,-500px,0)}}.Toastify__slide-enter--bottom-left,.Toastify__slide-enter--top-left{animation-name:Toastify__slideInLeft}.Toastify__slide-enter--bottom-right,.Toastify__slide-enter--top-right{animation-name:Toastify__slideInRight}.Toastify__slide-enter--top-center{animation-name:Toastify__slideInDown}.Toastify__slide-enter--bottom-center{animation-name:Toastify__slideInUp}.Toastify__slide-exit--bottom-left,.Toastify__slide-exit--top-left{animation-name:Toastify__slideOutLeft}.Toastify__slide-exit--bottom-right,.Toastify__slide-exit--top-right{animation-name:Toastify__slideOutRight}.Toastify__slide-exit--top-center{animation-name:Toastify__slideOutUp}.Toastify__slide-exit--bottom-center{animation-name:Toastify__slideOutDown}@keyframes Toastify__spin{0%{transform:rotate(0deg)}to{transform:rotate(1turn)}}';
+
+    let selfToast;
+    const useToast = () => {
+      if (selfToast) return selfToast;
+      const [root] = useComponentsRoot('toast');
+      const _selfToast = (text, options) => {
+        root.render(
+          jsxRuntime.jsxs(shadow__default.default.div, {
+            style: { fontSize: 16 },
+            children: [
+              jsxRuntime.jsx(reactToastify.ToastContainer, {
+                autoClose: 1000 * 3,
+                style: {
+                  // 进度条颜色
+                  '--toastify-color-progress-light': '#7A909A',
+                  // 背景色
+                  '--toastify-color-light': 'white',
+                },
+              }),
+              jsxRuntime.jsxs('style', {
+                type: 'text/css',
+                children: [
+                  ToastStyle.replace(':root', '.Toastify'),
+                  `
+            h2 {
+              font-size: 1.1em;
+              margin: 0;
+              margin-bottom: 1em;
+            }
+            .md {
+              text-align: left;
+            }
+            .md ul, .md h2 {
+              margin:0;
+              margin-bottom: .5em;
+              font-size: 1em;
+            }
+          `,
+                ],
+              }),
+            ],
+          }),
+        );
+        reactToastify.toast(text, { ...options });
+      };
+      _selfToast.info = (text, options) =>
+        _selfToast(text, { ...options, type: 'info' });
+      _selfToast.error = (text, options) =>
+        _selfToast(text, { ...options, type: 'error' });
+      _selfToast.warn = (text, options) =>
+        _selfToast(text, { ...options, type: 'warning' });
+      _selfToast.success = (text, options) =>
+        _selfToast(text, { ...options, type: 'success' });
+      selfToast = _selfToast;
+      return selfToast;
+    };
+
+    // eslint-disable-next-line import/no-cycle
+    const sleep = (ms) =>
+      new Promise((resolve) => {
+        window.setTimeout(resolve, ms);
+      });
     /**
      * 对 document.querySelector 的封装
      * 将默认返回类型改为 HTMLElement
@@ -3393,8 +3473,54 @@ switch (window.location.hostname) {
       while (temp.firstChild) frag.appendChild(temp.firstChild);
       node.insertBefore(frag, referenceNode);
     };
+    /** 创建组件用的 ReactDOM Root */
+    const useComponentsRoot = (id) => {
+      // 需要使用动态导入以避免在支持站点外的页面上加载 React
+      // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+      const ReactDOM = require('react-dom');
+      const dom =
+        document.getElementById(id) ??
+        (() => {
+          const _dom = document.createElement('div');
+          _dom.id = id;
+          document.body.appendChild(_dom);
+          return _dom;
+        })();
+      return [ReactDOM.createRoot(dom), dom];
+    };
+    // 将 xmlHttpRequest 包装为 Promise
+    const xmlHttpRequest = (details) =>
+      new Promise((resolve, reject) => {
+        GM_xmlhttpRequest({
+          ...details,
+          onload: resolve,
+          onerror: reject,
+          ontimeout: reject,
+        });
+      });
+    /** 发起请求 */
+    const request = async (url, details, errorNum = 0) => {
+      const errorText = details?.errorText ?? '漫画加载出错';
+      try {
+        const res = await xmlHttpRequest({
+          method: 'GET',
+          url,
+          headers: { Referer: window.location.href },
+          ...details,
+        });
+        if (res.status !== 200) throw new Error(errorText);
+        return res;
+      } catch (error) {
+        if (errorNum > 3) {
+          if (errorText) useToast().error(errorText);
+          throw new Error(errorText);
+        }
+        console.error(errorText, error);
+        await sleep(1000);
+        return request(url, details, errorNum + 1);
+      }
+    };
 
-    /* eslint-disable camelcase */
     (async () => {
       // 某些隐藏漫画虽然被删掉了 PC 端页面，但其实手机版的网页依然还在
       // 所以当跳转至某部漫画的 PC 端页面被提示「页面找不到」时，就先跳转至手机版的页面去
@@ -3402,10 +3528,7 @@ switch (window.location.hostname) {
         // 测试例子：https://manhua.dmzj.com/yanquan/48713.shtml
         const [, comicName, _chapter_id] =
           window.location.pathname.split(/[./]/);
-        const res = await GM.xmlHttpRequest({
-          method: 'GET',
-          url: `https://manhua.dmzj.com/${comicName}`,
-        });
+        const res = await request(`https://manhua.dmzj.com/${comicName}`);
         const _comic_id = /g_comic_id = "(\d+)/.exec(res.responseText)?.[1];
         if (!_comic_id) {
           console.error('无法跳转至手机版页面', res);
@@ -3418,16 +3541,9 @@ switch (window.location.hostname) {
       }
       // 通过 rss 链接，在作者作品页里添加上隐藏漫画的链接
       if (window.location.pathname.includes('/tags/')) {
-        const res = await GM.xmlHttpRequest({
-          method: 'GET',
-          url: querySelector('a.rss').href,
+        const res = await request(querySelector('a.rss').href, {
+          errorText: '获取作者作品失败',
         });
-        if (res.status !== 200) {
-          console.error('获取作者作品失败', res);
-          const toast = helper.useToast();
-          toast.error('获取作者作品失败');
-          return;
-        }
         // 页面上原有的漫画标题
         const titleList = querySelectorAll('#hothit p.t').map((e) =>
           e.innerText.replace('[完]', ''),
@@ -3474,16 +3590,12 @@ switch (window.location.hostname) {
           document.querySelector('.cartoon_online_border').innerHTML =
             '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
           // XXX: 使用旧 api 只能获取到主版本的章节，其他版本的章节无法取得，改用 v4api 应该就能拿到了
-          const res = await GM.xmlHttpRequest({
-            method: 'GET',
-            url: `https://api.dmzj.com/dynamic/comicinfo/${g_comic_id}.json`,
-          });
-          if (res.status !== 200 || !res.responseText) {
-            console.error('漫画加载出错', res);
-            const toast = helper.useToast();
-            toast.error('漫画加载出错');
-            return;
-          }
+          const res = await request(
+            `https://api.dmzj.com/dynamic/comicinfo/${g_comic_id}.json`,
+            {
+              errorText: '漫画加载出错',
+            },
+          );
           // 删掉原有的章节 dom
           querySelectorAll('.odd_anim_title ~ div').forEach((e) =>
             e.parentNode?.removeChild(e),
@@ -3570,7 +3682,7 @@ switch (window.location.hostname) {
           .filter((src) => src),
       );
       // 修改发表吐槽的函数，删去字数判断。只是删去了原函数的一个判断条件而已，所以将这段压缩了一下
-      if (options['解除吐槽的字数限制']) {
+      if (options.解除吐槽的字数限制) {
         const intervalID = setInterval(() => {
           if (!unsafeWindow.addpoint) return;
           clearInterval(intervalID);
@@ -3652,15 +3764,15 @@ switch (window.location.hostname) {
 
     break;
   }
+  case 'm.idmzj.com':
   case 'm.dmzj.com': {
     const helper = require('../helper');
 
-    /* eslint-disable camelcase */
     // 接口参考
     // https://github.com/xiaoyaocz/flutter_dmzj/blob/ecbe73eb435624022ae5a77156c5d3e0c06809cc/lib/requests/api.dart
     // https://github.com/erinacio/tachiyomi-extensions/blob/548be91cccb8f248342e2e7762c2c3d4b2d02036/src/zh/dmzj/src/eu/kanade/tachiyomi/extension/zh/dmzj/Dmzj.kt
     (async () => {
-      const { setManga, init, toast } = await helper.useInit('dmzj', {
+      const { setManga, init } = await helper.useInit('dmzj', {
         解除吐槽的字数限制: true,
       });
       // 分别处理目录页和漫画页
@@ -3684,15 +3796,10 @@ switch (window.location.hostname) {
               .addEventListener('click', async () => {
                 const comicName = helper.querySelector('input')?.value;
                 if (!comicName) return;
-                const res = await GM.xmlHttpRequest({
-                  method: 'GET',
-                  url: `https://s.acg.dmzj.com/comicsum/search.php?s=${comicName}`,
-                });
-                if (res.status !== 200) {
-                  console.error('搜索漫画时出错', res);
-                  toast.error('搜索漫画时出错');
-                  return;
-                }
+                const res = await helper.request(
+                  `https://s.acg.dmzj.com/comicsum/search.php?s=${comicName}`,
+                  { errorText: '搜索漫画时出错' },
+                );
                 const comicList = JSON.parse(res.responseText.slice(20, -1));
                 helper.querySelector('#list').innerHTML = comicList
                   .map(
@@ -3707,15 +3814,10 @@ switch (window.location.hostname) {
             return;
           }
           // XXX: 使用旧 api 只能获取到主版本的章节，其他版本的章节无法取得，改用 v4api 应该就能拿到了
-          const res = await GM.xmlHttpRequest({
-            method: 'GET',
-            url: `http://api.dmzj.com/dynamic/comicinfo/${comicId}.json`,
-          });
-          if (res.status !== 200) {
-            console.error('获取漫画数据失败', res);
-            toast.error('获取漫画数据失败');
-            return;
-          }
+          const res = await helper.request(
+            `http://api.dmzj.com/dynamic/comicinfo/${comicId}.json`,
+            { errorText: '获取漫画数据失败' },
+          );
           const {
             info: { last_updatetime, title },
             list: chaptersList,
@@ -3761,15 +3863,17 @@ switch (window.location.hostname) {
           const tipDom = document.createElement('p');
           tipDom.innerText = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
           document.body.appendChild(tipDom);
-          const res = await GM.xmlHttpRequest({
-            method: 'GET',
-            url: `https://m.dmzj.com/chapinfo/${
-              /\d+\/\d+/.exec(document.URL)[0]
-            }.html`,
-          });
-          if (res.status !== 200) {
-            tipDom.innerText = res.responseText;
-            return;
+          let res;
+          try {
+            res = await helper.request(
+              `https://m.dmzj.com/chapinfo/${
+                /\d+\/\d+/.exec(document.URL)[0]
+              }.html`,
+              { errorText: '获取漫画数据失败' },
+            );
+          } catch (error) {
+            tipDom.innerText = error.message;
+            throw error;
           }
           tipDom.innerText = `加载完成，即将进入阅读模式`;
           const { folder, page_url } = JSON.parse(res.responseText);
@@ -3789,6 +3893,23 @@ switch (window.location.hostname) {
 
     break;
   }
+  case 'www.idmzj.com':
+  case 'www.dmzj.com': {
+    const helper = require('../helper');
+
+    (async () => {
+      // 只在漫画页内运行
+      if (!Reflect.has(unsafeWindow, 'g_comic_id')) return;
+      const { setManga, init } = await helper.useInit('dmzj');
+      setManga({
+        onNext: helper.querySelectorClick('.next > a'),
+        onPrev: helper.querySelectorClick('.pre > a'),
+      });
+      init(() => picArry.map((url) => `${img_prefix}${url}`));
+    })();
+
+    break;
+  }
   // 懒得整理导入导出的代码了，应该也没人用了吧，等有人需要的时候再说
   // case 'i.dmzj.com': {
   //   // dmzj_user_info
@@ -3799,13 +3920,14 @@ switch (window.location.hostname) {
   case 'e-hentai.org': {
     const helper = require('../helper');
 
-    /* eslint-disable camelcase */
     (async () => {
-      const { options, setFab, setManga, request, init, toast } =
-        await helper.useInit('nhentai', {
+      const { options, setFab, setManga, init, toast } = await helper.useInit(
+        'nhentai',
+        {
           匹配nhentai: true,
           快捷键翻页: true,
-        });
+        },
+      );
       // 不是漫画页的话
       if (!Reflect.has(unsafeWindow, 'gid')) {
         if (options.快捷键翻页) {
@@ -3846,7 +3968,7 @@ switch (window.location.hostname) {
        * 从图片页获取图片地址
        */
       const getImgFromImgPage = async (url) => {
-        const res = await request('GET', url, {
+        const res = await helper.request(url, {
           errorText: '从图片页获取图片地址失败',
         });
         loadedImgNum += 1;
@@ -3861,8 +3983,7 @@ switch (window.location.hostname) {
       const getImgFromDetailsPageRe =
         /(?<=<a href=").{20,50}(?="><img alt="\d+")/gm;
       const getImgFromDetailsPage = async (pageNum = 0) => {
-        const res = await request(
-          'GET',
+        const res = await helper.request(
           `${window.location.origin}${window.location.pathname}${
             pageNum ? `?p=${pageNum}` : ''
           }`,
@@ -3919,19 +4040,16 @@ switch (window.location.hostname) {
           toast.error('页面结构发生改变，匹配 nhentai 漫画功能无法正常生效');
           return;
         }
+        const newTagLine = document.createElement('tr');
         let res;
         try {
-          res = await GM.xmlHttpRequest({
-            method: 'GET',
-            url: `https://nhentai.net/api/galleries/search?query=${encodeURI(
+          res = await helper.request(
+            `https://nhentai.net/api/galleries/search?query=${encodeURI(
               titleDom.innerText,
             )}`,
-          });
-        } catch (e) {
-          console.error('nhentai 漫画出错', e);
-        }
-        const newTagLine = document.createElement('tr');
-        if (!res) {
+            { errorText: 'nhentai 漫画出错' },
+          );
+        } catch (_) {
           newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
@@ -3993,19 +4111,20 @@ switch (window.location.hostname) {
                   p: 'png',
                   g: 'gif',
                 };
-                const details = {
-                  headers: {
-                    Referer: `https://nhentai.net/g/${comicInfo.media_id}`,
-                  },
-                };
                 nhentaiImgList[selected_tag] = await Promise.all(
                   comicInfo.images.pages.map(async ({ t }, i) => {
-                    const url = `https://i.nhentai.net/galleries/${
-                      comicInfo.media_id
-                    }/${i + 1}.${fileType[t]}`;
-                    const blobUrl = URL.createObjectURL(
-                      await helper.download(url, details),
+                    const imgRes = await helper.request(
+                      `https://i.nhentai.net/galleries/${comicInfo.media_id}/${
+                        i + 1
+                      }.${fileType[t]}`,
+                      {
+                        headers: {
+                          Referer: `https://nhentai.net/g/${comicInfo.media_id}`,
+                        },
+                        responseType: 'blob',
+                      },
                     );
+                    const blobUrl = URL.createObjectURL(imgRes.response);
                     loadNum += 1;
                     nhentaiComicReadModeDom.innerHTML = ` loading - ${loadNum}/${comicInfo.num_pages}`;
                     return blobUrl;
@@ -4055,7 +4174,6 @@ switch (window.location.hostname) {
   case 'nhentai.net': {
     const helper = require('../helper');
 
-    /* eslint-disable camelcase */
     /** 用于转换获得图片文件扩展名 */
     const fileType = {
       j: 'jpg',
@@ -4121,7 +4239,7 @@ switch (window.location.hostname) {
         hr:not(:last-child) { display: none; }
         @keyframes load { 0% { width: 100%; } 100% { width: 0; } }
       `);
-          const pageNum = Number(
+          let pageNum = Number(
             helper.querySelector('.page.current')?.innerHTML ?? '',
           );
           if (Number.isNaN(pageNum)) return;
@@ -4140,7 +4258,6 @@ switch (window.location.hostname) {
               ).get('q')}&`;
             return '';
           })();
-          let errorNum = 0;
           const loadNewComic = async () => {
             if (
               loadLock ||
@@ -4149,59 +4266,41 @@ switch (window.location.hostname) {
             )
               return undefined;
             loadLock = true;
-            const res = await GM.xmlHttpRequest({
-              method: 'GET',
-              url: `${apiUrl}page=${pageNum}${
+            pageNum += 1;
+            const res = await helper.request(
+              `${apiUrl}page=${pageNum}${
                 window.location.pathname.includes('popular')
                   ? '&sort=popular '
                   : ''
               }`,
-            });
-            if (res.status !== 200 || !res.responseText) {
-              if (errorNum > 3) throw new Error('漫画加载出错');
-              errorNum += 1;
-              console.error('漫画加载出错', res);
-              toast.error('漫画加载出错');
-              await helper.sleep(1000 * 3);
-              return loadNewComic();
-            }
+              { errorText: '下一页漫画信息加载出错' },
+            );
             const { result, num_pages } = JSON.parse(res.responseText);
             let comicDomHtml = '';
-            for (let i = 0; i < result.length; i += 1) {
-              const tempComicInfo = result[i];
-              // 在 用户未登录 或 黑名单为空 或 未开启屏蔽 或 漫画标签都不在黑名单中 时才添加漫画结果
-              if (
-                !(
-                  blacklist?.length &&
-                  options['彻底屏蔽漫画'] &&
-                  tempComicInfo.tags.some((e) => blacklist.includes(`${e.id}`))
+            // 在 用户已登录 且 有设置标签黑名单 且 开启了彻底屏蔽功能时，才对结果进行筛选
+            (options.彻底屏蔽漫画 && blacklist?.length
+              ? result.filter(({ tags }) =>
+                  tags.every((tag) => !blacklist.includes(tag.id)),
                 )
-              )
-                comicDomHtml += `<div class="gallery" data-tags="${tempComicInfo.tags
-                  .map((e) => e.id)
-                  .join(' ')}"><a ${
-                  options['在新页面中打开链接'] ? 'target="_blank"' : ''
-                } href="/g/${
-                  tempComicInfo.id
-                }/" class="cover" style="padding:0 0 ${
-                  (tempComicInfo.images.thumbnail.h /
-                    tempComicInfo.images.thumbnail.w) *
-                  100
-                }% 0"><img is="lazyload-image" class="" width="${
-                  tempComicInfo.images.thumbnail.w
-                }" height="${
-                  tempComicInfo.images.thumbnail.h
-                }" src="https://t.nhentai.net/galleries/${
-                  tempComicInfo.media_id
-                }/thumb.${
-                  fileType[tempComicInfo.images.thumbnail.t]
-                }"><div class="caption">${
-                  tempComicInfo.title.english
-                }</div></a></div>`;
-            }
+              : result
+            ).forEach((comic) => {
+              comicDomHtml += `<div class="gallery" data-tags="${comic.tags
+                .map((e) => e.id)
+                .join(' ')}"><a ${
+                options.在新页面中打开链接 ? 'target="_blank"' : ''
+              } href="/g/${comic.id}/" class="cover" style="padding:0 0 ${
+                (comic.images.thumbnail.h / comic.images.thumbnail.w) * 100
+              }% 0"><img is="lazyload-image" class="" width="${
+                comic.images.thumbnail.w
+              }" height="${
+                comic.images.thumbnail.h
+              }" src="https://t.nhentai.net/galleries/${comic.media_id}/thumb.${
+                fileType[comic.images.thumbnail.t]
+              }"><div class="caption">${comic.title.english}</div></a></div>`;
+            });
             // 构建页数按钮
             if (comicDomHtml) {
-              const target = options['在新页面中打开链接']
+              const target = options.在新页面中打开链接
                 ? 'target="_blank" '
                 : '';
               const pageNumDom = [];
@@ -4279,7 +4378,7 @@ switch (window.location.hostname) {
     (async () => {
       // 只在漫画页内运行
       if (!window.location.href.includes('/chapter/')) return;
-      const { setManga, request, init } = await helper.useInit('copymanga');
+      const { setManga, init } = await helper.useInit('copymanga');
       setManga({
         onNext: helper.querySelectorClick(
           '.comicContent-next a:not(.prev-null)',
@@ -4289,13 +4388,11 @@ switch (window.location.hostname) {
         ),
       });
       init(async () => {
-        const res = await request(
-          'GET',
+        const res = await helper.request(
           window.location.href.replace(
             /.*?(?=\/comic\/)/,
             'https://api.copymanga.site/api/v3',
           ),
-          { headers: { Referer: window.location.href }, responseType: 'blob' },
         );
         const {
           results: {
@@ -4316,7 +4413,6 @@ switch (window.location.hostname) {
   case 'www.1kkk.com': {
     const helper = require('../helper');
 
-    /* eslint-disable camelcase */
     (async () => {
       // 只在漫画页内运行
       if (!Reflect.has(unsafeWindow, 'DM5_CID')) return;
@@ -4378,9 +4474,7 @@ switch (window.location.hostname) {
     (async () => {
       // 只在漫画页内运行
       if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) return;
-      const { setFab, setManga, request, init } = await helper.useInit(
-        'mangabz',
-      );
+      const { setFab, setManga, init } = await helper.useInit('mangabz');
       setManga({
         onNext: helper.querySelectorClick(
           'body > .container a[href^="/"]:last-child',
@@ -4399,8 +4493,7 @@ switch (window.location.hostname) {
           _dt: MANGABZ_VIEWSIGN_DT.replace(' ', '+').replace(':', '%3A'),
           _sign: MANGABZ_VIEWSIGN,
         });
-        const res = await request(
-          'GET',
+        const res = await helper.request(
           `http://${MANGABZ_COOKIEDOMAIN}${MANGABZ_CURL}chapterimage.ashx?${urlParams}`,
         );
         // 返回的数据只能通过 eval 获得
@@ -4460,7 +4553,6 @@ switch (window.location.hostname) {
   case 'www.manhuadb.com': {
     const helper = require('../helper');
 
-    /* eslint-disable camelcase */
     (async () => {
       // 只在漫画页内运行
       if (!Reflect.has(unsafeWindow, 'img_data_arr')) return;
@@ -4503,7 +4595,6 @@ switch (window.location.hostname) {
   case 'www.maofly.com': {
     const helper = require('../helper');
 
-    /* eslint-disable camelcase */
     (async () => {
       // 只在漫画页内运行
       if (!Reflect.has(unsafeWindow, 'cdnImage')) return;
@@ -4566,9 +4657,10 @@ switch (window.location.hostname) {
         return;
       }
       const getImgUrl = async (imgEle) => {
-        imgEle.src = URL.createObjectURL(
-          await helper.download(imgEle.getAttribute('data-original')),
-        );
+        const res = await helper.request(imgEle.getAttribute('data-original'), {
+          responseType: 'blob',
+        });
+        imgEle.src = URL.createObjectURL(res.response);
         await new Promise((resolve, reject) => {
           imgEle.onload = resolve;
           imgEle.onerror = reject;
@@ -4599,10 +4691,6 @@ switch (window.location.hostname) {
 
   default: {
     const helper = require('../helper');
-
-    /** 判断两个列表中包含的值是否相同 */
-    const isEqualArray = (a, b) =>
-      a.length === b.length && !!a.filter((t) => !b.includes(t));
 
     /**
      * 对修改站点配置的相关方法的封装
@@ -4721,7 +4809,7 @@ switch (window.location.hostname) {
           return false;
         }
         // 在发现新图片后重新渲染
-        if (!isEqualArray(imgList, newImgList)) {
+        if (!helper.isEqualArray(imgList, newImgList)) {
           imgList = newImgList;
           setManga({ imgList });
           setFab({ progress: 1 });
