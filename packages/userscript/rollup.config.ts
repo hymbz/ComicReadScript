@@ -31,9 +31,24 @@ export const meta = {
   author: pkg.author,
   license: pkg.license,
 
-  include: '*',
-  connect: '*',
   noframes: true,
+  match: '*://*/*',
+  connect: [
+    'cdn.jsdelivr.net',
+    'yamibo.com',
+    'dmzj.com',
+    'idmzj.com',
+    'exhentai.org',
+    'e-hentai.org',
+    'nhentai.net',
+    'mangabz.com',
+    'copymanga.site',
+    'copymanga.info',
+    'copymanga.net',
+    'copymanga.org',
+    'copymanga.com',
+    '*',
+  ],
   grant: [
     'GM_addElement',
     'GM_getResourceText',
@@ -48,6 +63,11 @@ export const meta = {
     'unsafeWindow',
   ],
   resource: resource[isDevMode ? 'dev' : 'prod'],
+  supportURL: 'https://github.com/hymbz/ComicReadScript/issues',
+  updateURL:
+    'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
+  downloadURL:
+    'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
 } as MetaValues;
 
 /** 开发服务器的端口 */
