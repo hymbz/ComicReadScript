@@ -153,6 +153,8 @@
 
 /* 背景蒙版 */
 .backdrop {
+  pointer-events: none;
+
   position: fixed;
   top: 0;
   left: 0;
@@ -168,4 +170,8 @@
 
 :is(.fabRoot:hover, .fabRoot[data-focus="true"], .speedDial:hover) .backdrop {
   opacity: 0.4;
+}
+
+.fabRoot[data-focus="true"] .backdrop {
+  pointer-events: unset;
 }
