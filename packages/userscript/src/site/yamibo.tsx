@@ -96,6 +96,17 @@ const checkInDomSelectors =
     // eslint-disable-next-line no-script-url
     querySelector('#qmenu a')?.setAttribute('href', 'javascript:;');
 
+  // 增加菜单项，以便在其他板块用于调整其他功能的开关
+  await GM.registerMenuCommand('显示设置菜单', () =>
+    setFab({
+      show: true,
+      focus: true,
+      tip: '设置',
+      children: <MdSettings />,
+      onBackdropClick: () => setFab({ show: false, focus: false }),
+    }),
+  );
+
   // 判断当前页是帖子
   if (/thread(-\d+){3}|mod=viewthread/.test(document.URL)) {
     // 修复微博图床的链接
@@ -368,16 +379,5 @@ const checkInDomSelectors =
       // 点击下一页后更新提示
       querySelector('#autopbn')!.addEventListener('click', updateHistoryTag);
     }
-
-    // 在其他板块增加菜单项，以便用于调整其他功能的开关
-    await GM.registerMenuCommand('显示设置菜单', () =>
-      setFab({
-        show: true,
-        focus: true,
-        tip: '设置',
-        children: <MdSettings />,
-        onBackdropClick: () => setFab({ show: false, focus: false }),
-      }),
-    );
   }
 })();
