@@ -151,7 +151,7 @@ declare const selected_link: HTMLElement;
         `https://nhentai.net/api/galleries/search?query=${encodeURI(
           titleDom.innerText,
         )}`,
-        { errorText: 'nhentai 漫画出错' },
+        { errorText: '' },
       );
     } catch (_) {
       newTagLine.innerHTML = `
