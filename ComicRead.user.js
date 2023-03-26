@@ -1,37 +1,53 @@
 // ==UserScript==
-// @name      comic-read-script
-// @namespace comic-read-script
-// @version   0.2.0
-// @author    hymbz
-// @license   AGPL-3.0-or-later
-// @include   *
-// @connect   *
+// @name        comic-read-script
+// @namespace   comic-read-script
+// @version     0.2.1
+// @author      hymbz
+// @license     AGPL-3.0-or-later
 // @noframes
-// @resource  react https://unpkg.com/react@18.2.0/umd/react.production.min.js
-// @resource  react-dom https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js
-// @resource  react/jsx-runtime https://unpkg.com/react@18.2.0/cjs/react-jsx-runtime.production.min.js
-// @resource  zustand https://unpkg.com/zustand@4.1.1/umd/index.production.js
-// @resource  zustand/vanilla https://unpkg.com/zustand@4.1.1/umd/vanilla.production.js
-// @resource  use-sync-external-store/shim/with-selector https://unpkg.com/use-sync-external-store@1.0.0/cjs/use-sync-external-store-with-selector.production.min.js
-// @resource  immer https://unpkg.com/immer@9.0.15/dist/immer.umd.production.min.js
-// @resource  react-shadow https://unpkg.com/react-shadow@19.0.3/react-shadow.js
-// @resource  prop-types https://unpkg.com/prop-types@15.8.1/prop-types.min.js
-// @resource  panzoom https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js
-// @resource  react-toastify https://unpkg.com/react-toastify@9.0.8/dist/react-toastify.js
-// @resource  clsx https://unpkg.com/clsx@1.2.1/dist/clsx.js
-// @resource  fflate https://unpkg.com/fflate@0.7.4/umd/index.js
-// @resource  dmzj_style https://userstyles.org/styles/chrome/119945.json
-// @grant     GM_addElement
-// @grant     GM_getResourceText
-// @grant     GM_xmlhttpRequest
-// @grant     GM.getResourceText
-// @grant     GM.addStyle
-// @grant     GM.getValue
-// @grant     GM.setValue
-// @grant     GM.deleteValue
-// @grant     GM.registerMenuCommand
-// @grant     GM.unregisterMenuCommand
-// @grant     unsafeWindow
+// @match       *://*/*
+// @connect     cdn.jsdelivr.net
+// @connect     yamibo.com
+// @connect     dmzj.com
+// @connect     idmzj.com
+// @connect     exhentai.org
+// @connect     e-hentai.org
+// @connect     nhentai.net
+// @connect     mangabz.com
+// @connect     copymanga.site
+// @connect     copymanga.info
+// @connect     copymanga.net
+// @connect     copymanga.org
+// @connect     copymanga.com
+// @connect     *
+// @resource    react https://unpkg.com/react@18.2.0/umd/react.production.min.js
+// @resource    react-dom https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js
+// @resource    react/jsx-runtime https://unpkg.com/react@18.2.0/cjs/react-jsx-runtime.production.min.js
+// @resource    zustand https://unpkg.com/zustand@4.1.1/umd/index.production.js
+// @resource    zustand/vanilla https://unpkg.com/zustand@4.1.1/umd/vanilla.production.js
+// @resource    use-sync-external-store/shim/with-selector https://unpkg.com/use-sync-external-store@1.0.0/cjs/use-sync-external-store-with-selector.production.min.js
+// @resource    immer https://unpkg.com/immer@9.0.15/dist/immer.umd.production.min.js
+// @resource    react-shadow https://unpkg.com/react-shadow@19.0.3/react-shadow.js
+// @resource    prop-types https://unpkg.com/prop-types@15.8.1/prop-types.min.js
+// @resource    panzoom https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js
+// @resource    react-toastify https://unpkg.com/react-toastify@9.0.8/dist/react-toastify.js
+// @resource    clsx https://unpkg.com/clsx@1.2.1/dist/clsx.js
+// @resource    fflate https://unpkg.com/fflate@0.7.4/umd/index.js
+// @resource    dmzj_style https://userstyles.org/styles/chrome/119945.json
+// @supportURL  https://github.com/hymbz/ComicReadScript/issues
+// @updateURL   https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
+// @downloadURL https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
+// @grant       GM_addElement
+// @grant       GM_getResourceText
+// @grant       GM_xmlhttpRequest
+// @grant       GM.getResourceText
+// @grant       GM.addStyle
+// @grant       GM.getValue
+// @grant       GM.setValue
+// @grant       GM.deleteValue
+// @grant       GM.registerMenuCommand
+// @grant       GM.unregisterMenuCommand
+// @grant       unsafeWindow
 // ==/UserScript==
 'use strict';
 // 为了尽量减少在无关页面浪费时间，将 components、helper 下的代码都转成文本存放在变量中
@@ -2566,7 +2582,7 @@ var Fab = {exports: {}};
     });
 }(Fab, Fab.exports));
 
-const FabStyle = ".index-module_fabRoot__AUYw8{font-size:1.1em;transition:transform .2s}.index-module_fabRoot__AUYw8[data-show=false]{transform:scale(0)}.index-module_fabRoot__AUYw8[data-trans=true]{opacity:.8}.index-module_fabRoot__AUYw8[data-trans=true]:focus,.index-module_fabRoot__AUYw8[data-trans=true]:hover{opacity:1}.index-module_fab__Uuak2{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;width:3.6em}.index-module_fab__Uuak2>svg{font-size:1.5em}.index-module_fab__Uuak2:hover{background-color:var(--fab_hover,#78909c)}.index-module_progress__ffT7T{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index-module_progress__ffT7T>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index-module_progress__ffT7T:hover{color:#cfd8dc}.index-module_progress__ffT7T[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index-module_popper__K0axO{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index-module_fab__Uuak2:hover,.index-module_fabRoot__AUYw8[data-focus=true]) .index-module_popper__K0axO{display:flex}.index-module_speedDial__RP62p{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index-module_speedDialItem__8j9Tj{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index-module_speedDial__RP62p:hover,:is(.index-module_fabRoot__AUYw8:hover,.index-module_fabRoot__AUYw8[data-focus=true])>.index-module_speedDial__RP62p{pointer-events:all}:is(.index-module_fabRoot__AUYw8:hover,.index-module_fabRoot__AUYw8[data-focus=true])>.index-module_speedDial__RP62p>.index-module_speedDialItem__8j9Tj{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index-module_backdrop__IcRxK{background:#000;height:100vh;left:0;opacity:0;position:fixed;top:0;transition:opacity .5s;width:100vw}:is(.index-module_fabRoot__AUYw8:hover,.index-module_fabRoot__AUYw8[data-focus=true],.index-module_speedDial__RP62p:hover) .index-module_backdrop__IcRxK{opacity:.4}";
+const FabStyle = ".index-module_fabRoot__AUYw8{font-size:1.1em;transition:transform .2s}.index-module_fabRoot__AUYw8[data-show=false]{transform:scale(0)}.index-module_fabRoot__AUYw8[data-trans=true]{opacity:.8}.index-module_fabRoot__AUYw8[data-trans=true]:focus,.index-module_fabRoot__AUYw8[data-trans=true]:hover{opacity:1}.index-module_fab__Uuak2{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;width:3.6em}.index-module_fab__Uuak2>svg{font-size:1.5em}.index-module_fab__Uuak2:hover{background-color:var(--fab_hover,#78909c)}.index-module_progress__ffT7T{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index-module_progress__ffT7T>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index-module_progress__ffT7T:hover{color:#cfd8dc}.index-module_progress__ffT7T[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index-module_popper__K0axO{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index-module_fab__Uuak2:hover,.index-module_fabRoot__AUYw8[data-focus=true]) .index-module_popper__K0axO{display:flex}.index-module_speedDial__RP62p{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index-module_speedDialItem__8j9Tj{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index-module_speedDial__RP62p:hover,:is(.index-module_fabRoot__AUYw8:hover,.index-module_fabRoot__AUYw8[data-focus=true])>.index-module_speedDial__RP62p{pointer-events:all}:is(.index-module_fabRoot__AUYw8:hover,.index-module_fabRoot__AUYw8[data-focus=true])>.index-module_speedDial__RP62p>.index-module_speedDialItem__8j9Tj{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index-module_backdrop__IcRxK{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}:is(.index-module_fabRoot__AUYw8:hover,.index-module_fabRoot__AUYw8[data-focus=true],.index-module_speedDial__RP62p:hover) .index-module_backdrop__IcRxK{opacity:.4}.index-module_fabRoot__AUYw8[data-focus=true] .index-module_backdrop__IcRxK{pointer-events:unset}";
 
 const useFab = async (initProps) => {
     const [root] = useComponentsRoot('fab');
@@ -3060,6 +3076,16 @@ switch (window.location.hostname) {
       if (options.关闭快捷导航按钮的跳转)
         // eslint-disable-next-line no-script-url
         helper.querySelector('#qmenu a')?.setAttribute('href', 'javascript:;');
+      // 增加菜单项，以便在其他板块用于调整其他功能的开关
+      await GM.registerMenuCommand('显示设置菜单', () =>
+        setFab({
+          show: true,
+          focus: true,
+          tip: '设置',
+          children: jsxRuntime.jsx(SvgSettings, {}),
+          onBackdropClick: () => setFab({ show: false, focus: false }),
+        }),
+      );
       // 判断当前页是帖子
       if (/thread(-\d+){3}|mod=viewthread/.test(document.URL)) {
         // 修复微博图床的链接
@@ -3311,16 +3337,6 @@ switch (window.location.hostname) {
             .querySelector('#autopbn')
             .addEventListener('click', updateHistoryTag);
         }
-        // 在其他板块增加菜单项，以便用于调整其他功能的开关
-        await GM.registerMenuCommand('显示设置菜单', () =>
-          setFab({
-            show: true,
-            focus: true,
-            tip: '设置',
-            children: jsxRuntime.jsx(SvgSettings, {}),
-            onBackdropClick: () => setFab({ show: false, focus: false }),
-          }),
-        );
       }
     })();
 
@@ -4047,7 +4063,7 @@ switch (window.location.hostname) {
             `https://nhentai.net/api/galleries/search?query=${encodeURI(
               titleDom.innerText,
             )}`,
-            { errorText: 'nhentai 漫画出错' },
+            { errorText: '' },
           );
         } catch (_) {
           newTagLine.innerHTML = `

@@ -1,13 +1,11 @@
-## [0.2.0](https://github.com/hymbz/ComicReadScriptTest/compare/v0.1.0...v0.2.0) (2023-03-20)
-
-
-### Features
-
-* :sparkles: 为百合会的自动签到功能加上设置开关 ([90f915a](https://github.com/hymbz/ComicReadScriptTest/commit/90f915a42ac9f2bd5e0207a6f2960b2e7f90c3f1))
-* :sparkles: 支持动漫之家的国漫 ([bba3e0a](https://github.com/hymbz/ComicReadScriptTest/commit/bba3e0a7e7578735e2e4ed492d4e90aec0ad9988))
-* :sparkles: 重构 xmlHttpRequest 相关函数以支持暴力猴 ([f04a521](https://github.com/hymbz/ComicReadScriptTest/commit/f04a5216eaf012f5cf23c9ee6b43134e557d6441))
+### [0.2.1](https://github.com/hymbz/ComicReadScriptTest/compare/v0.2.0...v0.2.1) (2023-03-26)
 
 
 ### Bug Fixes
 
-* :bug: 修复 nhentai 彻底屏蔽漫画功能异常的 bug ([0e3affa](https://github.com/hymbz/ComicReadScriptTest/commit/0e3affaf4f1f1fc6a3fba62d55b8f65c7e3c0843))
+* :bug: 修复 FAB 背景不能正常消失的 bug ([dfb4c15](https://github.com/hymbz/ComicReadScriptTest/commit/dfb4c150148c2279ab52be693674571841b5d7ec))
+
+
+### Performance Improvements
+
+* :zap: 声明所有已知的 [@connect](https://github.com/connect) 以避免对话框 ([d838199](https://github.com/hymbz/ComicReadScriptTest/commit/d838199f33725692f40c0d8b42a0a834e3acc09b))
