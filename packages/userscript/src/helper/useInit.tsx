@@ -123,7 +123,10 @@ export const useInit = async <T extends Record<string, any>>(
       /** 进入阅读模式 */
       const showComic = async (show: boolean = options.autoShow) => {
         if (loading) {
-          toast('加载图片中，请稍候', { autoClose: 1500 });
+          toast('加载图片中，请稍候', {
+            autoClose: 1500,
+            toastId: '加载图片中，请稍候',
+          });
           return;
         }
 
