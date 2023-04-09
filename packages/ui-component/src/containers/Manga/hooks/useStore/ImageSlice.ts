@@ -306,7 +306,9 @@ export const imageCallback: Subscribe = (useStore) => {
 
         // 找到当前所属的 fillEffect
         let nowFillIndex = state.activeImgIndex;
-        while (!state.fillEffect.has(nowFillIndex) && (nowFillIndex -= 1));
+        while (!state.fillEffect.has(nowFillIndex)) {
+          nowFillIndex -= 1;
+        }
         state.nowFillIndex = nowFillIndex;
 
         state.img.updateImgLoadType();
