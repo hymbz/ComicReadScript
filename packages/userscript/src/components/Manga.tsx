@@ -66,7 +66,7 @@ export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
       </shadow.div>,
     );
 
-    if (props.imgList.length > 1 && props.show) {
+    if (props.imgList.length && props.show) {
       dom.className = '';
       document.documentElement.style.overflow = 'hidden';
     } else {

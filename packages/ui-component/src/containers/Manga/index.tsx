@@ -42,6 +42,9 @@ export interface MangaProps {
   editSettingList?: SelfState['editSettingList'];
 }
 
+const stopPropagation = (e: React.KeyboardEvent<Element>) =>
+  e.stopPropagation();
+
 /**
  * 漫画组件
  */
@@ -63,6 +66,7 @@ export const Manga: React.FC<MangaProps> = (props) => {
       style={cssVar}
       onWheel={handleScroll}
       onKeyUp={handleKeyUp}
+      onKeyDown={stopPropagation}
       role="presentation"
       tabIndex={-1}
     >
