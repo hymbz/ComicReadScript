@@ -34,7 +34,7 @@ export const useInit = ({
       // 绑定 rootRef
       state.rootRef = rootRef as Draft<React.RefObject<HTMLElement>>;
       // 初始化 panzoom
-      state.initPanzoom();
+      state.initPanzoom(state);
     });
   }, []);
 

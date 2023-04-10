@@ -12,6 +12,7 @@ const selector = ({
   panzoom,
   turnPage,
   option: { clickPage, scrollMode, dir },
+  isZoomed,
 }: SelfState) => ({
   showTouchArea,
   panzoom,
@@ -19,16 +20,27 @@ const selector = ({
   clickPage,
   scrollMode,
   dir,
+  isZoomed,
 });
 
 export const TouchArea: React.FC = memo(() => {
-  const { showTouchArea, panzoom, turnPage, clickPage, scrollMode, dir } =
-    useStore(selector, shallow);
+  const {
+    showTouchArea,
+    panzoom,
+    turnPage,
+    clickPage,
+    scrollMode,
+    dir,
+    isZoomed,
+  } = useStore(selector, shallow);
 
   /** 处理双击缩放 */
   const handleDoubleClickZoom: MouseEventHandler = useCallback(
     (e) => {
-      if (!panzoom) return;
+      if (!panzoom) {
+        console.warn('panzoom 未加载');
+        return;
+      }
 
       const { scale } = panzoom.getTransform();
 
@@ -49,6 +61,8 @@ export const TouchArea: React.FC = memo(() => {
   }, handleDoubleClickZoom);
   const handleClickMenu = useDoubleClick(() => {
     useStore.setState((state) => {
+      // 处于放大模式时跳过不处理
+      if (state.isZoomed) return;
       state.showScrollbar = !state.showScrollbar;
       state.showToolbar = !state.showToolbar;
     });
@@ -73,6 +87,7 @@ export const TouchArea: React.FC = memo(() => {
           (dir === 'rtl') === (clickPage.enabled && clickPage.overturn)
             ? undefined
             : 'row-reverse',
+        cursor: isZoomed ? 'move' : undefined,
       }}
       onContextMenu={setPenetrate}
       data-show={showTouchArea}

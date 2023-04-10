@@ -3,6 +3,7 @@ import MdLooksTwo from '@material-design-icons/svg/round/looks_two.svg';
 import MdViewDay from '@material-design-icons/svg/round/view_day.svg';
 import MdQueue from '@material-design-icons/svg/round/queue.svg';
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
+import MdSearch from '@material-design-icons/svg/round/search.svg';
 
 import { useMemo, useCallback, useState } from 'react';
 import { useStore } from './hooks/useStore';
@@ -102,6 +103,24 @@ export const defaultButtonList: ToolbarButtonList = [
     },
   ],
   buttonListDivider,
+  [
+    '放大模式',
+    () => {
+      const enabled = useStore((state) => state.isZoomed);
+
+      const handleClick = useCallback(() => {
+        useStore.setState((state) => {
+          state.panzoom?.zoomTo(0, 0, 1.2);
+        });
+      }, []);
+
+      return (
+        <IconButton tip="放大模式" enabled={enabled} onClick={handleClick}>
+          <MdSearch />
+        </IconButton>
+      );
+    },
+  ],
   [
     '设置',
     ({ onMouseLeave }) => {
