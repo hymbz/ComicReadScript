@@ -12,6 +12,9 @@
       "path": "packages/ui-component",
       "name": "ui-component"
     },
+    {
+      "path": "packages/solid-ui"
+    }
   ],
   "settings": {
     "typescript.tsdk": "root\\node_modules\\typescript\\lib",
