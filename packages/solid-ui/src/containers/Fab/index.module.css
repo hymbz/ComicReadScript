@@ -1,0 +1,177 @@
+.fabRoot {
+  font-size: 1.1em;
+
+  transition: transform 200ms;
+
+  &[data-show="false"] {
+    transform: scale(0);
+  }
+
+  &[data-trans="true"] {
+    opacity: 0.8;
+
+    &:hover,
+    &:focus {
+      opacity: 1;
+    }
+  }
+}
+
+.fab {
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 3.6em;
+  height: 3.6em;
+
+  font-size: 1em;
+  color: white;
+
+  background-color: var(--fab, #607d8b);
+  border: none;
+  border-radius: 100%;
+  box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 6px 10px 0 rgb(0 0 0 / 14%),
+    0 1px 18px 0 rgb(0 0 0 / 12%);
+
+  & > svg {
+    font-size: 1.5em;
+  }
+
+  &:hover {
+    background-color: var(--fab_hover, #78909c);
+  }
+}
+
+/* 环形进度条 */
+.progress {
+  position: absolute;
+  transform: rotate(-90deg);
+
+  display: inline-block;
+
+  width: 100%;
+  height: 100%;
+
+  color: #b0bec5;
+
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+
+  & > svg {
+    stroke: currentcolor;
+    stroke-dasharray: 290%;
+    stroke-dashoffset: 100%;
+    stroke-linecap: round;
+
+    transition: stroke-dashoffset 300ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+  }
+
+  &:hover {
+    color: #cfd8dc;
+  }
+
+  /* 在进度条满后自动隐藏 */
+  &[aria-valuenow="1"] {
+    opacity: 0;
+
+    transition: opacity 200ms 150ms;
+  }
+}
+
+/* 默认悬浮框样式 */
+.popper {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 1.5em);
+  transform: translateY(-50%);
+
+  display: none;
+  align-items: center;
+
+  padding: 0.4em 0.5em;
+
+  font-size: 0.8em;
+  color: white;
+  white-space: nowrap;
+
+  background-color: #303030;
+  border-radius: 0.3em;
+}
+
+:is(.fab:hover, .fabRoot[data-focus="true"]) .popper {
+  display: flex;
+}
+
+/* 快捷拨号 */
+.speedDial {
+  pointer-events: none;
+
+  position: absolute;
+  z-index: -1;
+  bottom: 0;
+
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+
+  width: 100%;
+  padding-bottom: 120%;
+
+  font-size: 1.1em;
+}
+
+.speedDialItem {
+  transform: scale(0);
+
+  margin: 0.1em 0;
+
+  opacity: 0;
+
+  transition-delay: var(--hide-delay);
+  transition-duration: 230ms;
+  transition-property: transform, opacity;
+}
+
+/* 移到快捷拨号上时保持显示 */
+.speedDial:hover {
+  pointer-events: all;
+}
+
+:is(.fabRoot:hover, .fabRoot[data-focus="true"]) > .speedDial {
+  pointer-events: all;
+
+  & > .speedDialItem {
+    transform: unset;
+
+    opacity: unset;
+
+    transition-delay: var(--show-delay);
+  }
+}
+
+/* 背景蒙版 */
+.backdrop {
+  pointer-events: none;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100vw;
+  height: 100vh;
+
+  opacity: 0;
+  background: black;
+
+  transition: opacity 500ms;
+}
+
+:is(.fabRoot:hover, .fabRoot[data-focus="true"], .speedDial:hover) .backdrop {
+  opacity: 0.4;
+}
+
+.fabRoot[data-focus="true"] .backdrop {
+  pointer-events: unset;
+}
