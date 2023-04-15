@@ -101,13 +101,20 @@ declare const selected_link: HTMLElement;
     async () => {
       const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!
         .innerText;
-      return (
-        await Promise.all(
-          [...Array(totalPageNum).keys()].map((pageNum) =>
-            getImgFromDetailsPage(pageNum),
-          ),
-        )
-      ).flat();
+
+      const taskList = [...Array(totalPageNum).keys()];
+      const resList: string[][] = [];
+
+      const work = async (): Promise<void> => {
+        const pageNum = taskList.pop();
+        if (pageNum === undefined) return undefined;
+        resList[pageNum] = await getImgFromDetailsPage(pageNum);
+        return work();
+      };
+
+      // 双线程抓图
+      await Promise.all([work(), work()]);
+      return resList.flat();
     },
     (loadNum, totalNum) => {
       comicReadModeDom.innerHTML =
