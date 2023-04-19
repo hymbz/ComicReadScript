@@ -74,8 +74,7 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
   });
 } else if (document.getElementsByClassName('index-container').length) {
   // 判断当前页是漫画浏览页
-  const n_ = typeof n === 'undefined' ? null : n;
-  const blacklist = n_?.options?.blacklisted_tags ?? _n_app?.options?.blacklisted_tags;
+  const blacklist = n?.options?.blacklisted_tags ?? _n_app?.options?.blacklisted_tags;
 
   if (ScriptMenu.UserSetting['体验优化']['自动翻页']) {
     let pageNum = document.querySelector('.page.current') ? Number(document.querySelector('.page.current').innerHTML) : false;
@@ -130,15 +129,15 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
       }
     };
 
-    if (ScriptMenu.UserSetting['体验优化']['彻底屏蔽漫画'] && blacklist && blacklist.length) {
-      GM_addStyle('.blacklisted.gallery { display: none; }');
-    }
-
     unsafeWindow.onscroll = loadNewComic;
     if (document.querySelector('section.pagination'))
       contentDom.appendChild(document.createElement('hr'));
     loadNewComic();
   }
+}
+
+if (ScriptMenu.UserSetting['体验优化']['彻底屏蔽漫画'] && blacklist && blacklist.length) {
+  GM_addStyle('.blacklisted.gallery { display: none; }');
 }
 
 if (ScriptMenu.UserSetting['体验优化']['在新页面中打开链接'])

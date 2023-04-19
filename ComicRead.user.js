@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name      ComicRead
-// @version     5.4
+// @version     5.5
 // @author      hymbz
 // @description 为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、dm5、manhuagui、manhuadb、mangabz、copymanga、manhuacat。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @namespace   ComicRead
@@ -492,7 +492,7 @@ switch (location.hostname) {
 
 
 /* global fid, tid, ajaxget */
-GM_addStyle(':root {--color1:#6E2B19;--color2:#FFEEBA;--color3:#FFF5D7;--color4:#DBC38C;} .lastReadTag{white-space:nowrap;border:2px solid var(--lastReadTagColor)}a.lastReadTag{font-weight:bold;margin-left:1em;padding:1px 4px;color:var(--lastReadTagColor);border-radius:6px 0 0 6px}a.lastReadTag:last-child{border-radius:6px}div.lastReadTag{display:initial;margin-left:-0.4em;padding:1px;color:#ffedbb;border-radius:0 6px 6px 0;background-color:var(--lastReadTagColor)}#threadlisttableid tbody:nth-child(2n) div.lastReadTag{color:#fff6d7}.tl th a:visited,.tl td.fn a:visited{color:#6E2B19}.tl .num{width:80px !important}.tc{display:flex;justify-content:center;margin:0}#fp-nav ul li .fp-tooltip{color:black}.header-tool.y{width:auto !important}');
+GM_addStyle(':root {--color1:#6E2B19;--color2:#FFEEBA;--color3:#FFF5D7;--color4:#DBC38C;} .lastReadTag{white-space:nowrap;border:2px solid var(--lastReadTagColor)}a.lastReadTag{font-weight:bold;margin-left:1em;padding:1px 4px;color:var(--lastReadTagColor);border-radius:6px 0 0 6px}a.lastReadTag:last-child{border-radius:6px}div.lastReadTag{display:initial;margin-left:-0.4em;padding:1px;color:#ffedbb;border-radius:0 6px 6px 0;background-color:var(--lastReadTagColor)}#threadlisttableid tbody:nth-child(2n) div.lastReadTag{color:#fff6d7}.tl th a:visited,.tl td.fn a:visited{color:#6E2B19}.tl .num{width:80px !important}.tc{display:flex;justify-content:center;margin:0}#fp-nav ul li .fp-tooltip{color:black}');
 loadScriptMenu('UserSetting', {
   记录阅读历史: {
     Enable: true,
@@ -507,7 +507,6 @@ loadScriptMenu('UserSetting', {
     自动进入漫画阅读模式: true,
   },
 });
-
 
 if (ScriptMenu.UserSetting['体验优化']['关闭快捷导航的跳转'])
   document.querySelector('#qmenu a').setAttribute('href', 'javascript:;');
@@ -1648,8 +1647,7 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
   });
 } else if (document.getElementsByClassName('index-container').length) {
   // 判断当前页是漫画浏览页
-  const n_ = typeof n === 'undefined' ? null : n;
-  const blacklist = n_?.options?.blacklisted_tags ?? _n_app?.options?.blacklisted_tags;
+  const blacklist = n?.options?.blacklisted_tags ?? _n_app?.options?.blacklisted_tags;
 
   if (ScriptMenu.UserSetting['体验优化']['自动翻页']) {
     let pageNum = document.querySelector('.page.current') ? Number(document.querySelector('.page.current').innerHTML) : false;
@@ -1704,15 +1702,15 @@ if (typeof gallery !== 'undefined' && ScriptMenu.UserSetting['漫画阅读'].Ena
       }
     };
 
-    if (ScriptMenu.UserSetting['体验优化']['彻底屏蔽漫画'] && blacklist && blacklist.length) {
-      GM_addStyle('.blacklisted.gallery { display: none; }');
-    }
-
     unsafeWindow.onscroll = loadNewComic;
     if (document.querySelector('section.pagination'))
       contentDom.appendChild(document.createElement('hr'));
     loadNewComic();
   }
+}
+
+if (ScriptMenu.UserSetting['体验优化']['彻底屏蔽漫画'] && blacklist && blacklist.length) {
+  GM_addStyle('.blacklisted.gallery { display: none; }');
 }
 
 if (ScriptMenu.UserSetting['体验优化']['在新页面中打开链接'])
@@ -1725,6 +1723,7 @@ if (ScriptMenu.UserSetting['体验优化']['在新页面中打开链接'])
   case 'tel.dm5.com':
   case 'en.dm5.com':
   case 'www.dm5.com':
+  case 'www.dm5.cn':
   case 'www.1kkk.com': {
 
 
@@ -2043,12 +2042,12 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && MANGABZ_CID) {
 ;
     break;
   }
-  case 'www.copymanga.site':
   case 'copymanga.site':
   case 'copymanga.info':
-  case 'copymanga.com':
   case 'copymanga.net':
   case 'copymanga.org':
+  case 'copymanga.com':
+  case 'www.copymanga.site':
   case 'www.copymanga.info':
   case 'www.copymanga.net':
   case 'www.copymanga.org':
@@ -2084,7 +2083,6 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && window.location.href.includ
     method: 'GET',
     url: window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.site/api/v3'),
     headers: { Referer: location.href },
-    responseType: 'blob',
     onload: (xhr) => {
       if (xhr.status === 200) {
         const { results: { chapter: { contents } } } = JSON.parse(xhr.responseText);

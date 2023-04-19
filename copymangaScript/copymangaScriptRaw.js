@@ -26,7 +26,6 @@ if (ScriptMenu.UserSetting['漫画阅读'].Enable && window.location.href.includ
     method: 'GET',
     url: window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.site/api/v3'),
     headers: { Referer: location.href },
-    responseType: 'blob',
     onload: (xhr) => {
       if (xhr.status === 200) {
         const { results: { chapter: { contents } } } = JSON.parse(xhr.responseText);

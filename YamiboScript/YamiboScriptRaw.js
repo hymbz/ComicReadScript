@@ -15,7 +15,6 @@ loadScriptMenu('UserSetting', {
   },
 });
 
-
 if (ScriptMenu.UserSetting['体验优化']['关闭快捷导航的跳转'])
   document.querySelector('#qmenu a').setAttribute('href', 'javascript:;');
 if (ScriptMenu.UserSetting['体验优化']['固定导航条'])
