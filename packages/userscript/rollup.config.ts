@@ -2,7 +2,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import fs from 'fs';
 import type { OutputPlugin, RollupOptions, Plugin } from 'rollup';
-import resolve from '@rollup/plugin-node-resolve';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 import ts from 'rollup-plugin-ts';
@@ -12,14 +12,14 @@ import css from 'rollup-plugin-import-css';
 import del from 'rollup-plugin-delete';
 import serve from 'rollup-plugin-serve';
 import watchAssets from 'rollup-plugin-watch-assets';
-import svgr from '@svgr/rollup';
+import { babel } from '@rollup/plugin-babel';
 
 import type { MetaValues } from 'rollup-plugin-userscript-metablock';
 import metablock from 'rollup-plugin-userscript-metablock';
 
 // eslint-disable-next-line import/no-relative-packages
-import pkg from '../../package.json';
-import resource from './resource.json';
+import pkg from '../../package.json' assert { type: 'json' };
+import resource from './resource.json' assert { type: 'json' };
 
 const isDevMode = process.env.NODE_ENV === 'development';
 
@@ -89,27 +89,33 @@ const buildConfig = (
       preventAssignment: true,
     }),
 
-    svgr({
-      icon: true,
-      svgProps: {
-        stroke: 'currentColor',
-        fill: 'currentColor',
-        strokeWidth: '0',
-      },
-      namedExport: 'default',
-    }),
-
-    resolve({ browser: true }),
+    nodeResolve({ browser: true, extensions: ['.js', '.ts', '.tsx'] }),
     commonjs(),
     css(),
-    isDevMode ? esbuild({ target: 'esnext', charset: 'utf8' }) : ts(),
+
+    // isDevMode ? esbuild({ target: 'esnext', charset: 'utf8' }) : ts(),
+    // ts({
+    //   transpiler: 'babel',
+    //   babelConfig: {
+    //     presets: ['solid'],
+    //     plugins: ['inline-react-svg'],
+    //   },
+    //   transpileOnly: true,
+    // }),
+    babel({
+      babelHelpers: 'runtime',
+      extensions: ['.ts', '.tsx'],
+      exclude: ['node_modules/**'],
+      presets: ['@babel/preset-env', '@babel/preset-typescript', 'solid'],
+      plugins: ['@babel/plugin-transform-runtime', 'inline-react-svg'],
+    }),
 
     ...plugins,
   ],
   external: [
     ...Object.keys(meta.resource ?? {}),
-    '../helper',
-    /@crs\/ui-component/,
+    /\/helper$/,
+    // /@crs\/ui-component.*(?<!css)$/,
   ],
 
   ...config,
@@ -178,10 +184,17 @@ export default [
         format: 'cjs',
         generatedCode: 'es2015',
         strict: false,
+        plugins: [
+          {
+            name: 'injectCode',
+            // 删掉 inline-react-svg 插入的 react 依赖
+            renderChunk: (code) => code.replace(`require('react');\n`, ''),
+          },
+        ],
       },
       external: [...Object.keys(meta.resource ?? {})],
     },
-    watchAssets({ assets: ['../ui-component/dist/*'] }),
+    // watchAssets({ assets: ['../ui-component/dist/*'] }),
   ),
 
   // 生成自定义动态导入的代码
@@ -212,7 +225,7 @@ export default [
         ],
       },
     },
-    watchAssets({ assets: ['dist/cache/helper.js'] }),
+    // watchAssets({ assets: ['dist/cache/helper.js'] }),
   ),
 
   // 编译 index.user.js
@@ -251,11 +264,11 @@ export default [
         metablock({ file: '', override: meta }),
       ],
     },
-    plugins: [
-      watchAssets({
-        assets: ['dist/**/*', '!dist/index.user.js'],
-      }),
-    ],
+    // plugins: [
+    //   watchAssets({
+    //     assets: ['dist/**/*', '!dist/index.user.js'],
+    //   }),
+    // ],
     treeshake: false,
   },
 ];

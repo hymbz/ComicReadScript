@@ -1,8 +1,8 @@
-import type { MangaProps } from '@crs/ui-component/dist/Manga';
-import { Manga } from '@crs/ui-component/dist/Manga';
-import shadow from 'react-shadow';
-import MangaStyle from '@crs/ui-component/dist/Manga.css';
-import IconBottonStyle from '@crs/ui-component/dist/IconButton.css';
+/* eslint-disable import/no-relative-packages */
+import type { MangaProps } from '@crs/ui-component/src';
+import { Manga } from '@crs/ui-component/src';
+import MangaStyle from '../../../ui-component/dist/Manga.css';
+import IconBottonStyle from '../../../ui-component/dist/IconButton.css';
 import { useComponentsRoot } from '../helper/utils';
 
 export type SelfMangaProps = MangaProps & {
@@ -14,7 +14,7 @@ export type SelfMangaProps = MangaProps & {
  * 显示漫画阅读窗口
  */
 export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
-  const [root, dom] = useComponentsRoot('comicRead');
+  const [render, dom] = useComponentsRoot('comicRead');
   await GM.addStyle(`
     #comicRead > div {
       position: fixed;
@@ -47,7 +47,7 @@ export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
     recipe:
       | Partial<SelfMangaProps>
       | ((props: SelfMangaProps) => Partial<SelfMangaProps>),
-    render = true,
+    onlyEdit = true,
   ) => {
     if (recipe) {
       Object.assign(
@@ -56,15 +56,15 @@ export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
       );
     }
 
-    if (!render) return;
+    if (onlyEdit) return;
 
-    root.render(
-      <shadow.div>
+    render(() => (
+      <>
         <Manga {...props} />
         <style type="text/css">{IconBottonStyle}</style>
         <style type="text/css">{MangaStyle}</style>
-      </shadow.div>,
-    );
+      </>
+    ));
 
     if (props.imgList.length && props.show) {
       dom.className = '';

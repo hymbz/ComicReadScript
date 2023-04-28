@@ -1,3 +1,0 @@
-rules:
-  # 不提醒 hooks 使用方式错误
-  react-hooks/rules-of-hooks: off

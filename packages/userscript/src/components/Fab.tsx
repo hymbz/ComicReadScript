@@ -1,19 +1,20 @@
+/* eslint-disable import/no-relative-packages */
 import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 import MdImageSearch from '@material-design-icons/svg/round/image_search.svg';
 import MdImportContacts from '@material-design-icons/svg/round/import_contacts.svg';
 import MdCloudDownload from '@material-design-icons/svg/round/cloud_download.svg';
 
-import type { FabProps } from '@crs/ui-component/dist/Fab';
+import type { FabProps } from '@crs/ui-component/src';
 import { Fab } from '@crs/ui-component/dist/Fab';
 import FabStyle from '@crs/ui-component/dist/Fab.css';
 import IconBottonStyle from '@crs/ui-component/dist/IconButton.css';
-import shadow from 'react-shadow';
+import { render } from 'solid-js/web';
 import { useComponentsRoot } from '../helper/utils';
 
 export const useFab = async (initProps?: FabProps) => {
-  const [root] = useComponentsRoot('fab');
+  const [, dom] = useComponentsRoot('fab');
   await GM.addStyle(`
-    #fab > div {
+    #fab {
       --text_bg: transparent;
 
       position: fixed;
@@ -31,13 +32,13 @@ export const useFab = async (initProps?: FabProps) => {
     switch (props.progress) {
       case undefined:
         // 没有内容的书
-        return <MdImportContacts />;
+        return MdImportContacts;
       case 1:
       case 2:
         // 有内容的书
-        return <MdMenuBook />;
+        return MdMenuBook;
       default:
-        return props.progress > 1 ? <MdCloudDownload /> : <MdImageSearch />;
+        return props.progress > 1 ? MdCloudDownload : MdImageSearch;
     }
   };
 
@@ -51,12 +52,15 @@ export const useFab = async (initProps?: FabProps) => {
       );
     }
 
-    root.render(
-      <shadow.div>
-        <Fab {...props}>{props.children ?? <FabIcon />}</Fab>
-        <style type="text/css">{IconBottonStyle}</style>
-        <style type="text/css">{FabStyle}</style>
-      </shadow.div>,
+    render(
+      () => (
+        <>
+          <Fab {...props}>{props.children ?? <FabIcon />}</Fab>
+          <style type="text/css">{IconBottonStyle}</style>
+          <style type="text/css">{FabStyle}</style>
+        </>
+      ),
+      dom,
     );
   };
 

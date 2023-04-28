@@ -1,29 +1,38 @@
 /* eslint-disable import/no-extraneous-dependencies */
-
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import svgr from 'vite-plugin-svgr';
+import solid from 'vite-plugin-solid';
+import SolidSvg from 'vite-plugin-solid-svg';
 
-export default defineConfig(() => ({
+/** 开发服务器的端口 */
+export const DEV_PORT = 2405;
+
+export default defineConfig({
+  server: {
+    host: true,
+    port: DEV_PORT,
+    cors: false,
+  },
   plugins: [
-    svgr({
-      exportAsDefault: true,
-      svgrOptions: {
-        icon: true,
-        svgProps: {
-          stroke: 'currentColor',
-          fill: 'currentColor',
-          strokeWidth: '0',
+    SolidSvg({
+      svgo: {
+        enabled: true,
+        svgoConfig: {
+          plugins: [
+            'preset-default',
+            {
+              name: 'addAttributesToSVGElement',
+              params: {
+                attribute: {
+                  stroke: 'currentColor',
+                  fill: 'currentColor',
+                  'stroke-width': '0',
+                },
+              },
+            },
+          ],
         },
-        namedExport: 'default',
       },
     }),
-    react(),
+    solid(),
   ],
-
-  css: {
-    modules: {
-      generateScopedName: '[local]_[hash:base64:5]',
-    },
-  },
-}));
+});

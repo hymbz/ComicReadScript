@@ -4,8 +4,9 @@ import MdAutoFixOff from '@material-design-icons/svg/round/auto_fix_off.svg';
 import MdAutoFlashOn from '@material-design-icons/svg/round/flash_on.svg';
 import MdAutoFlashOff from '@material-design-icons/svg/round/flash_off.svg';
 
-import { IconButton } from '@crs/ui-component/dist/IconButton';
-import type { FC } from 'react';
+import type { Component, JSX } from 'solid-js';
+
+import { IconButton } from '@crs/ui-component/src';
 import type { DefaultOptions } from './useSiteOptions';
 
 export const defaultSpeedDial = <T extends Record<string, any>>(
@@ -15,21 +16,24 @@ export const defaultSpeedDial = <T extends Record<string, any>>(
     trigger?: boolean,
   ) => Promise<void>,
 ) => {
-  const DefaultButton: FC<{
+  const DefaultButton: Component<{
     optionName: string;
     showName?: string;
-    children?: JSX.Element | JSX.Element[];
-  }> = ({ optionName, showName, children }) => {
+    children?: JSX.Element;
+  }> = (props) => {
     return (
       <IconButton
-        tip={showName ?? optionName}
+        tip={props.showName ?? props.optionName}
         placement="left"
         onClick={() =>
-          setOptions({ ...options, [optionName]: !options[optionName] })
+          setOptions({
+            ...options,
+            [props.optionName]: !options[props.optionName],
+          })
         }
       >
-        {children ??
-          (options[optionName] ? <MdAutoFixHigh /> : <MdAutoFixOff />)}
+        {props.children ??
+          (options[props.optionName] ? <MdAutoFixHigh /> : <MdAutoFixOff />)}
       </IconButton>
     );
   };

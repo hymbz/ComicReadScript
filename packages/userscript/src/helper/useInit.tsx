@@ -124,8 +124,8 @@ export const useInit = async <T extends Record<string, any>>(
       const showComic = async (show: boolean = options.autoShow) => {
         if (loading) {
           toast('加载图片中，请稍候', {
-            autoClose: 1500,
-            toastId: '加载图片中，请稍候',
+            unmountDelay: 1500,
+            id: '加载图片中，请稍候',
           });
           return;
         }

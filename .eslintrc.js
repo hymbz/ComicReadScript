@@ -51,6 +51,8 @@ const publicConfig = {
     'import/prefer-default-export': 'off',
     // 允许使用 require
     'import/no-dynamic-require': 'off',
+    // 判断引用循环时跳过动态导入
+    'import/no-cycle': ['warn', { allowUnsafeDynamicCyclicDependency: true }],
     'import/no-unresolved': 'off',
   },
 };
@@ -83,15 +85,13 @@ module.exports = {
         tsconfigRootDir: __dirname,
         project: ['./packages/*/tsconfig.json'],
       },
-      plugins: ['@typescript-eslint', 'jsdoc'],
+      plugins: ['@typescript-eslint', 'jsdoc', 'solid'],
       extends: [
-        'airbnb',
-        'airbnb/hooks',
+        'airbnb-base',
+        'eslint:recommended',
+        'plugin:solid/recommended',
         'plugin:jsdoc/recommended',
         'plugin:import/typescript',
-        // 'plugin:react/recommended',
-        'plugin:react/jsx-runtime',
-        // 'plugin:react-hooks/recommended',
         'plugin:@typescript-eslint/eslint-recommended',
         'plugin:@typescript-eslint/recommended',
         'plugin:@typescript-eslint/recommended-requiring-type-checking',
@@ -100,14 +100,11 @@ module.exports = {
       rules: {
         // 使用 TS 的规则
         'no-use-before-define': 'off',
-        '@typescript-eslint/no-use-before-define': ['error'],
+        '@typescript-eslint/no-use-before-define': 'error',
         'no-shadow': 'off',
-        '@typescript-eslint/no-shadow': ['error'],
+        '@typescript-eslint/no-shadow': 'error',
         'no-unused-vars': 'off',
-        '@typescript-eslint/no-unused-vars': [
-          'warn',
-          { varsIgnorePattern: 'React' },
-        ],
+        '@typescript-eslint/no-unused-vars': 'warn',
 
         // 允许 switch 中不使用 default
         'default-case': 'off',
@@ -149,27 +146,6 @@ module.exports = {
         // 允许分配 any 类型变量
         '@typescript-eslint/no-unsafe-assignment': 'off',
 
-        //
-        // React 适配
-        //
-
-        // 使此规则支持 TS
-        'react/jsx-filename-extension': [
-          'warn',
-          { extensions: ['.tsx', '.jsx'] },
-        ],
-        'react/function-component-definition': [
-          'warn',
-          {
-            namedComponents: 'arrow-function',
-            unnamedComponents: 'arrow-function',
-          },
-        ],
-        // 有 TS 不需要这个
-        'react/prop-types': 'off',
-        // 允许使用对象解构来传输 props
-        'react/jsx-props-no-spreading': 'off',
-
         // 为了使用 immer，允许为 命名为state、draft开头、Ele结尾 的函数参数赋值
         'no-param-reassign': [
           'error',
@@ -179,20 +155,16 @@ module.exports = {
             ignorePropertyModificationsForRegex: ['^draft', 'Ele$'],
           },
         ],
-
-        // 不强制要求为可选参数加上默认值
-        'react/require-default-props': 'off',
-
-        // 不强制要求可点击元素必须同时监听键盘操作
-        'jsx-a11y/click-events-have-key-events': 'off',
-        // 不要求 a11y
-        'jsx-a11y/no-static-element-interactions': 'off',
       },
     }),
     buildConfig({
       files: ['*.*js'],
       parser: '@typescript-eslint/parser',
-      extends: ['eslint:recommended', 'airbnb', 'plugin:prettier/recommended'],
+      extends: [
+        'eslint:recommended',
+        'airbnb-base',
+        'plugin:prettier/recommended',
+      ],
       rules: {
         // 禁止提醒使用了 dev 的包
         'import/no-extraneous-dependencies': 'off',

@@ -1,6 +1,5 @@
-import type { Root } from 'react-dom/client';
-// eslint-disable-next-line import/no-cycle
-import { useToast } from '../components/Toast';
+import type { JSX } from 'solid-js';
+import { render } from 'solid-js/web';
 
 export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
   T extends (...args: any) => Promise<infer R> ? R : any;
@@ -45,22 +44,13 @@ export const insertNode = (
   node.insertBefore(frag, referenceNode);
 };
 
-/** 创建组件用的 ReactDOM Root */
-export const useComponentsRoot = (id: string): [Root, HTMLElement] => {
-  // 需要使用动态导入以避免在支持站点外的页面上加载 React
-  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-  const ReactDOM: typeof import('react-dom/client') = require('react-dom');
-
-  const dom =
-    document.getElementById(id) ??
-    (() => {
-      const _dom = document.createElement('div');
-      _dom.id = id;
-      document.body.appendChild(_dom);
-      return _dom;
-    })();
-
-  return [ReactDOM.createRoot(dom), dom];
+/** 创建组件要挂载到的 element */
+export const useComponentsRoot = (id: string) => {
+  const dom = document.createElement('div');
+  dom.id = id;
+  document.body.appendChild(dom);
+  const shadowDom = dom.attachShadow({ mode: 'open' });
+  return [(code: () => JSX.Element) => render(code, dom), shadowDom] as const;
 };
 
 /** 返回 Dom 的点击函数，如果找不到 Dom 则返回 null */
@@ -183,11 +173,29 @@ export const request = async <T = any>(
     return res;
   } catch (error) {
     if (errorNum > 3) {
-      if (errorText) useToast().error(errorText);
+      if (errorText) {
+        // eslint-disable-next-line import/no-cycle
+        const { useToast } = await import('../components/Toast');
+        useToast().error(errorText);
+      }
       throw new Error(errorText);
     }
     console.error(errorText, error);
     await sleep(1000);
     return request(url, details, errorNum + 1);
   }
+};
+
+/**
+ * 判断使用参数颜色作为默认值时是否需要切换为黑暗模式
+ *
+ * @param hexColor 十六进制颜色。例如 #112233
+ */
+export const needDarkMode = (hexColor: string) => {
+  // 来自 https://24ways.org/2010/calculating-color-contrast
+  const r = parseInt(hexColor.substring(1, 3), 16);
+  const g = parseInt(hexColor.substring(3, 5), 16);
+  const b = parseInt(hexColor.substring(5, 7), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq < 128;
 };

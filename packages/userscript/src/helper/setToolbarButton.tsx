@@ -4,9 +4,9 @@ import MdClose from '@material-design-icons/svg/round/close.svg';
 import { IconButton } from '@crs/ui-component/dist/IconButton';
 import { buttonListDivider } from '@crs/ui-component/dist/Manga';
 
-import { useState, useCallback } from 'react';
-import { toast } from 'react-toastify';
+import { createSignal } from 'solid-js';
 import fflate from 'fflate';
+import toast from 'solid-toast';
 import type { SelfMangaProps } from '../components/Manga';
 // eslint-disable-next-line import/no-cycle
 import { request, saveAs } from './utils';
@@ -15,8 +15,8 @@ import { request, saveAs } from './utils';
 export const setToolbarButton = (draftProps: SelfMangaProps) => {
   /** 下载按钮 */
   const DownloadButton = () => {
-    const [tip, setTip] = useState('下载');
-    const handleDownload = useCallback(async () => {
+    const [tip, setTip] = createSignal('下载');
+    const handleDownload = async () => {
       const { imgList } = draftProps;
 
       const fileData: fflate.Zippable = {};
@@ -46,10 +46,10 @@ export const setToolbarButton = (draftProps: SelfMangaProps) => {
       });
       saveAs(new Blob([zipped]), `${document.title}.zip`);
       setTip('下载完成');
-    }, []);
+    };
 
     return (
-      <IconButton tip={tip} onClick={handleDownload}>
+      <IconButton tip={tip()} onClick={handleDownload}>
         <MdFileDownload />
       </IconButton>
     );
@@ -59,19 +59,16 @@ export const setToolbarButton = (draftProps: SelfMangaProps) => {
 
   draftProps.editButtonList = (list) => {
     // 在设置按钮上方放置下载按钮
-    list.splice(-1, 0, ['下载', DownloadButton]);
+    list.splice(-1, 0, DownloadButton);
     return [
       ...list,
       // 再在最下面添加分隔栏和退出按钮
       buttonListDivider,
-      [
-        '退出',
-        () => (
-          <IconButton tip="退出" onClick={handleEnd}>
-            <MdClose />
-          </IconButton>
-        ),
-      ],
+      () => (
+        <IconButton tip="退出" onClick={handleEnd}>
+          <MdClose />
+        </IconButton>
+      ),
     ];
   };
 

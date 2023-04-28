@@ -3,55 +3,61 @@
  * 用于测试时显示组件
  */
 
-import { lazy, Suspense } from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
+import { For, Suspense, lazy } from 'solid-js';
+import { render } from 'solid-js/web';
+import { Routes, Route, A, Router } from '@solidjs/router';
 
-const modules = import.meta.glob('./containers/**/display.tsx');
+// eslint-disable-next-line import/no-extraneous-dependencies
+import 'normalize.css';
 
-const root = ReactDOM.createRoot(document.getElementById('root')!);
-root.render(
-  <BrowserRouter>
-    <Routes>
-      <Route
-        path="/"
-        element={
-          // 首页列表
-          <nav
-            style={{
-              borderBottom: 'solid 1px',
-              paddingBottom: '1rem',
-            }}
-          >
-            {Object.keys(modules).map((path) => {
-              const name = path.split('/')[2];
-              return (
-                <>
-                  <Link key={path} to={`/${name}`}>
-                    {name}
-                  </Link>
-                  <br />
-                </>
-              );
-            })}
-          </nav>
-        }
-      />
+const modules = import.meta.glob('./**/display.tsx');
 
-      {Object.entries(modules).map(([path, Fc]) => {
-        const Component = lazy(Fc as any);
-        return (
-          <Route
-            key={path}
-            path={path.split('/')[2]}
-            element={
-              <Suspense fallback={null}>
-                <Component />
-              </Suspense>
-            }
-          />
-        );
-      })}
-    </Routes>
-  </BrowserRouter>,
+const root = document.getElementById('root');
+render(
+  () => (
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            // 首页列表
+            <nav
+              style={{
+                'border-bottom': 'solid 1px',
+                'padding-bottom': '1rem',
+              }}
+            >
+              <For each={Object.keys(modules)}>
+                {(path) => {
+                  const name = path.split('/').at(-2);
+                  return (
+                    <>
+                      <A href={`/${name}`}>{name}</A>
+                      <br />
+                    </>
+                  );
+                }}
+              </For>
+            </nav>
+          }
+        />
+        <For each={Object.entries(modules)}>
+          {([path, Fc]) => {
+            const Component = lazy(Fc as any);
+            return (
+              <Route
+                path={path.split('/').at(-2)!}
+                element={
+                  <Suspense fallback={null}>
+                    <Component />
+                  </Suspense>
+                }
+              />
+            );
+          }}
+        </For>
+      </Routes>
+    </Router>
+  ),
+  root!,
 );
