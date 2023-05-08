@@ -12,7 +12,7 @@ export const OtherState = {
   endPageType: undefined as undefined | 'start' | 'end',
 
   /** 点击结束页按钮时触发的回调 */
-  onExit: undefined as ((isEnd?: boolean) => void) | undefined,
+  onExit: undefined as ((isEnd?: boolean) => void) | undefined | null,
   /** 点击上一话按钮时触发的回调 */
   onPrev: undefined as (() => void) | undefined,
   /** 点击下一话按钮时触发的回调 */

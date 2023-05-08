@@ -19,7 +19,10 @@ export const handleScroll = (e: WheelEvent) => {
           state.scrollLock = false;
         });
       }, 500);
-    } else if (store.scrollbar.dragHeight + store.scrollbar.dragTop === 1) {
+    } else if (
+      store.scrollbar.dragHeight + store.scrollbar.dragTop >= 1 &&
+      e.deltaY > 0
+    ) {
       setState((state) => {
         state.endPageType = 'end';
         state.scrollLock = true;
