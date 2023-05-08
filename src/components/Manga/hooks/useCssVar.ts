@@ -72,6 +72,7 @@ export const cssVar = createRoot(() => {
     '--bg':
       store.option.customBackground ??
       (store.option.darkMode ? 'black' : 'white'),
+    '--img_max_width': `${store.imgMaxWidth}px`,
     ...(store.option.darkMode ? dark : light),
   }));
   return _cssVar;

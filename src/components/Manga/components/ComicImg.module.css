@@ -58,7 +58,7 @@
     justify-content: flex-start;
 
     & .img {
-      max-width: 30%;
+      max-width: var(--img_max_width);
       height: auto;
       max-height: unset;
     }

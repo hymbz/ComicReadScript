@@ -33,6 +33,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
       const { width, height } = entries.contentRect;
       setState((state) => {
         updatePageRatio(state, width, height);
+        state.imgMaxWidth = height * 0.5;
       });
     }),
   );
