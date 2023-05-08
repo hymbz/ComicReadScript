@@ -95,10 +95,10 @@ export const meta = {
   ],
   resource: resource[isDevMode ? 'dev' : 'prod'],
   supportURL: 'https://github.com/hymbz/ComicReadScript/issues',
-  updateURL:
-    'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
-  downloadURL:
-    'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
+  // updateURL:
+  //   'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
+  // downloadURL:
+  //   'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
 } as Record<string, boolean | string | string[] | Record<string, string>>;
 
 /** 脚本头部注释 */

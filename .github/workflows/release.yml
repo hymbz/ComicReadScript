@@ -20,4 +20,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           body_path: docs/LatestChange.md
           files: |
-            index.user.js
+            ComicRead.user.js
+            main.js

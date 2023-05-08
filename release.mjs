@@ -39,16 +39,18 @@ const exec = (...commands) => {
   shell.echo(changelog).to('docs/LatestChange.md');
 
   // 打包代码
-  exec(
-    'pnpm --filter @crs/ui-component build',
-    'pnpm --filter @crs/userscript build',
-  );
+  exec('pnpm build');
 
   // 将打包出来的脚本文件复制到根目录上
   shell.cp(
     '-f',
-    path.join(__dirname, '../packages/userscript/dist/index.user.js'),
-    path.join(__dirname, '../ComicRead.user.js'),
+    path.join(__dirname, './dist/index.js'),
+    path.join(__dirname, './ComicRead.user.js'),
+  );
+  shell.cp(
+    '-f',
+    path.join(__dirname, './dist/cache/main.js'),
+    path.join(__dirname, './main.js'),
   );
 
   // 提交上传更改

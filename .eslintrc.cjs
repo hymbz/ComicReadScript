@@ -75,6 +75,7 @@ module.exports = {
     '!.stylelintrc.js',
     '!.postcssrc.js',
     'ComicRead.user.js',
+    'main.js',
   ],
   overrides: [
     buildConfig({
