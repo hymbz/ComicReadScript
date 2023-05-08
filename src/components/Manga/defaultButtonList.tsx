@@ -69,8 +69,8 @@ export const defaultButtonList: ToolbarButtonList = [
           draftOption.onePageMode = draftOption.scrollMode;
         });
         updatePageData(state);
-        handleMangaFlowScroll();
       });
+      setTimeout(handleMangaFlowScroll);
     };
 
     return (
