@@ -25,7 +25,7 @@ export interface Option {
   /** 黑暗模式 */
   darkMode: boolean;
   /** 在空闲时间自动加载其余图片 */
-  autoLoadOtherImg: number;
+  autoLoadOtherImg: boolean;
   /** 滚动到底后继续滚动会跳至下一话 */
   flipToNext: boolean;
 }
@@ -47,7 +47,7 @@ export const OptionState = {
     disableZoom: false,
     // 判断用户系统环境是否要求开启暗色模式
     darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
-    autoLoadOtherImg: 5,
+    autoLoadOtherImg: true,
     flipToNext: true,
   } as Option,
 

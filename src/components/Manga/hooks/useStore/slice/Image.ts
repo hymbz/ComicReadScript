@@ -17,8 +17,8 @@ import { updateDrag, updateTipText } from './Scrollbar';
 const loadImg = (
   state: State,
   startIndex: number,
-  endIndex = startIndex,
-  loadNum = NaN,
+  endIndex = startIndex + 1,
+  loadNum = Infinity,
 ) => {
   let editNum = 0;
   state.pageList
@@ -49,34 +49,21 @@ const updateImgLoadType = debounce(100, (state: State) => {
       imgList[i].loadType = 'wait';
   });
 
-  if (
+  return (
     // 优先加载当前显示页
-    loadImg(state, activePageIndex, activePageIndex + 1) ||
+    loadImg(state, activePageIndex) ||
     // 其次加载后俩页
     loadImg(state, activePageIndex + 1, activePageIndex + 3) ||
     // 其次加载前一页
-    (activePageIndex >= 1 &&
-      loadImg(state, activePageIndex - 1, activePageIndex))
-  )
-    return;
-
-  // 确认没有图片在加载后，在空闲时间自动加载其余图片
-  if (
-    !state.option.autoLoadOtherImg &&
-    imgList.some((img) => img.loadType === 'loading')
-  )
-    return;
-  // 优先加载当前页后面的图片
-  if (
-    loadImg(
-      state,
-      activePageIndex + 1,
-      imgList.length,
-      state.option.autoLoadOtherImg,
-    )
-  )
-    return;
-  loadImg(state, 0, imgList.length, state.option.autoLoadOtherImg);
+    (activePageIndex >= 1 && loadImg(state, activePageIndex - 1)) ||
+    // 确认没有图片在加载后，在空闲时间自动加载其余图片
+    !state.option.autoLoadOtherImg ||
+    imgList.some((img) => img.loadType === 'loading') ||
+    // 加载当前页后面的图片
+    loadImg(state, activePageIndex + 1, imgList.length, 5) ||
+    // 加载剩余未加载页面
+    loadImg(state, 0, imgList.length, 5)
+  );
 });
 
 /** 重新计算 PageData */
