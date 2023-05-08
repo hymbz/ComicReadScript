@@ -112,6 +112,7 @@ export const plimit = async <T>(
   fnList: Array<() => Promise<T>>,
   callBack?: (resList: T[]) => void,
 ) => {
+  let doneNum = 0;
   const totalNum = fnList.length;
   const resList: T[] = [];
   const execPool = new Set<Promise<void>>();
@@ -120,6 +121,7 @@ export const plimit = async <T>(
     return () => {
       p = (async () => {
         resList[i] = await fn();
+        doneNum += 1;
         execPool.delete(p);
         callBack?.(resList);
       })();
@@ -127,7 +129,7 @@ export const plimit = async <T>(
     };
   });
 
-  while (resList.length !== totalNum) {
+  while (doneNum !== totalNum) {
     while (taskList.length && execPool.size < limit) {
       taskList.shift()!();
     }
