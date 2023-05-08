@@ -6,6 +6,7 @@ import {
   request,
   useInit,
   toast,
+  plimit,
 } from '../main';
 
 declare const selected_tag: string;
@@ -51,27 +52,11 @@ declare const selected_link: HTMLElement;
   );
   const comicReadModeDom = document.getElementById('comicReadMode')!;
 
-  const totalImgNum = parseInt(
-    querySelector('#gdd > table > tbody > tr:nth-child(6) > td.gdt2')!
-      .innerHTML,
-    10,
-  );
-  let loadedImgNum = 0;
-
-  /**
-   * 从图片页获取图片地址
-   */
+  /** 从图片页获取图片地址 */
   const getImgFromImgPage = async (url: string): Promise<string> => {
     const res = await request(url, {
       errorText: '从图片页获取图片地址失败',
     });
-
-    loadedImgNum += 1;
-    setFab({
-      progress: loadedImgNum / totalImgNum,
-      tip: `加载图片中 - ${loadedImgNum}/${totalImgNum}`,
-    });
-    comicReadModeDom.innerHTML = ` loading image - ${loadedImgNum}/${totalImgNum}`;
 
     return res.responseText.split('id="img" src="')[1].split('"')[0];
   };
@@ -79,14 +64,14 @@ declare const selected_link: HTMLElement;
   /** 从详情页获取图片页的地址的正则 */
   const getImgFromDetailsPageRe =
     /(?<=<a href=").{20,50}(?="><img alt="\d+")/gm;
+
+  /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
     const res = await request(
       `${window.location.origin}${window.location.pathname}${
         pageNum ? `?p=${pageNum}` : ''
       }`,
-      {
-        errorText: '从详情页获取图片页地址失败',
-      },
+      { errorText: '从详情页获取图片页地址失败' },
     );
 
     // 从详情页获取图片页的地址
@@ -95,35 +80,37 @@ declare const selected_link: HTMLElement;
     ) as string[];
     if (imgPageList === null) throw new Error('从详情页获取图片页的地址时出错');
 
-    return Promise.all(imgPageList.map(getImgFromImgPage));
+    return imgPageList;
   };
 
-  const showComic = init(
-    async () => {
-      const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!
-        .innerText;
+  const showComic = init(async () => {
+    const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!.innerText;
 
-      const taskList = [...Array(totalPageNum).keys()];
-      const resList: string[][] = [];
+    comicReadModeDom.innerHTML = ` loading`;
 
-      const work = async (): Promise<void> => {
-        const pageNum = taskList.pop();
-        if (pageNum === undefined) return undefined;
-        resList[pageNum] = await getImgFromDetailsPage(pageNum);
-        return work();
-      };
+    // 从详情页获取所有图片页的 url
+    const imgPageUrlList = await plimit(
+      [...Array(totalPageNum).keys()].map(
+        (pageNum) => () => getImgFromDetailsPage(pageNum),
+      ),
+      (doneNum, totalNum) => {
+        setFab({ tip: `获取图片页中 - ${doneNum}/${totalNum}` });
+      },
+    );
 
-      // 双线程抓图
-      await Promise.all([work(), work()]);
-      return resList.flat();
-    },
-    (loadNum, totalNum) => {
-      comicReadModeDom.innerHTML =
-        loadNum !== totalNum
-          ? ` image loading - ${loadNum}/${totalNum}`
-          : ' Read';
-    },
-  );
+    return plimit(
+      imgPageUrlList
+        .flat()
+        .map((imgPageUrl) => () => getImgFromImgPage(imgPageUrl)),
+      (doneNum, totalNum) => {
+        setFab({
+          progress: doneNum / totalNum,
+          tip: `加载图片中 - ${doneNum}/${totalNum}`,
+        });
+        comicReadModeDom.innerHTML = ` loading - ${doneNum}/${totalNum}`;
+      },
+    );
+  });
   setFab({ initialShow: options.autoShow });
   comicReadModeDom.addEventListener('click', showComic);
 

@@ -57,12 +57,11 @@ import {
 
   init(() =>
     plimit<string>(
-      10,
-      imgEleList.map((img) => async () => getImgUrl(img)),
-      (resList) => {
+      imgEleList.map((img) => () => getImgUrl(img)),
+      (doneNum, totalNum) => {
         setFab({
-          progress: resList.length / imgEleList.length,
-          tip: `加载图片中 - ${resList.length}/${imgEleList.length}`,
+          progress: doneNum / totalNum,
+          tip: `加载图片中 - ${doneNum}/${totalNum}`,
         });
       },
     ),

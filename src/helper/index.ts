@@ -102,15 +102,17 @@ export const scrollIntoView = (selector: string) =>
 
 /**
  * 限制 Promise 并发
- * @param limit 限制数
- * @param fnList 返回 Promise 的函数
+ * @param fnList 任务函数列表
  * @param callBack 成功执行一个 Promise 后调用，主要用于显示进度
+ * @param limit 限制数
  * @returns 所有 Promise 的返回值
  */
 export const plimit = async <T>(
-  limit: number,
   fnList: Array<() => Promise<T>>,
-  callBack?: (resList: T[]) => void,
+  callBack = undefined as
+    | ((doneNum: number, totalNum: number, resList: T[]) => void)
+    | undefined,
+  limit = 10,
 ) => {
   let doneNum = 0;
   const totalNum = fnList.length;
@@ -123,7 +125,7 @@ export const plimit = async <T>(
         resList[i] = await fn();
         doneNum += 1;
         execPool.delete(p);
-        callBack?.(resList);
+        callBack?.(doneNum, totalNum, resList);
       })();
       execPool.add(p);
     };
