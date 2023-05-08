@@ -1,0 +1,126 @@
+/* 设置面板所在的悬浮框样式 */
+.SettingPanelPopper {
+  transform: none !important;
+  height: 0 !important;
+  padding: 0 !important;
+}
+
+.SettingPanel {
+  /* 隐藏滚动条但不影响滚动 */
+  scrollbar-width: none;
+
+  position: fixed;
+  top: 0;
+  bottom: 0;
+
+  overflow: auto;
+
+  width: 15em;
+  height: fit-content;
+  max-height: 95vh;
+  margin: auto;
+
+  font-size: 1.2em;
+  color: var(--text);
+
+  background-color: var(--page_bg);
+  border-radius: 0.3em;
+  box-shadow: rgb(0 0 0 / 20%) 0 3px 1px -2px, rgb(0 0 0 / 14%) 0 2px 2px 0,
+    rgb(0 0 0 / 12%) 0 1px 5px 0;
+
+  /* 隐藏滚动条但不影响滚动 */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.SettingBlock {
+  padding: 0.5em;
+}
+
+.SettingBlockSubtitle {
+  margin-bottom: -0.3em;
+  font-size: 0.7em;
+  color: var(--text_secondary);
+}
+
+.SettingsItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1em;
+}
+
+.SettingsItemName {
+  font-size: 0.9em;
+}
+
+/* 开关式设置项 */
+.SettingsItemSwitch {
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+
+  width: 2.3em;
+  height: 0.8em;
+  margin-right: 0.3em;
+  padding: 0;
+
+  background-color: var(--switch_bg);
+  border: 0;
+  border-radius: 1em;
+}
+
+/* 开关里的圆形按钮 */
+.SettingsItemSwitchRound {
+  transform: translateX(-10%);
+
+  width: 1.15em;
+  height: 1.15em;
+
+  background: var(--switch);
+  border-radius: 100%;
+  box-shadow: 0 2px 1px -1px rgb(0 0 0 / 20%), 0 1px 1px 0 rgb(0 0 0 / 14%),
+    0 1px 3px 0 rgb(0 0 0 / 12%);
+
+  transition: transform 100ms;
+}
+
+.SettingsItemSwitch[data-checked="true"] {
+  background: var(--secondary_bg);
+
+  & .SettingsItemSwitchRound {
+    transform: translateX(110%);
+    background: var(--secondary);
+  }
+}
+
+/* 图标按钮式设置项 */
+.SettingsItemIconButton {
+  cursor: pointer;
+
+  position: absolute;
+  right: 0.7em;
+
+  height: 1em;
+  margin: 0;
+  padding: 0;
+
+  font-size: 1.7em;
+  color: var(--text);
+
+  background-color: transparent;
+  border: none;
+}
+
+/* 关闭设置弹窗的遮罩 */
+.closeCover {
+  position: fixed;
+  z-index: -1;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 100%;
+}

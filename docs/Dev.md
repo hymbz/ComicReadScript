@@ -1,11 +1,14 @@
 ## TODO
 
-- 百合会更新后自动签到失效了
 - 长图自动开启卷轴模式 https://bbs.yamibo.com/thread-534775-1-1.html
-- 页数加一
 - 测试平板上的使用
 - 卷轴模式下滚动到底要能触发结束页
 - 放大后侧边栏按钮悬浮背景色变为半透明会导致看不清图标
+- 检查控制台警告
+- 300 自动签到功能在菜单切换时没有实时刷新
+- 为图片增加背景，以便用户知道当前图片正在加载
+- 百合会退出时有点卡
+- 填充页位置调整 https://bbs.yamibo.com/thread-535108-1-1.html
 
 ## 项目结构
 
@@ -20,7 +23,6 @@
 ## 调试
 
 ```bash
-cd packages/userscript
 pnpm dev
 ```
 
@@ -52,6 +54,8 @@ Object.fromEntries(
 3. 如果有上下一话的按钮，就通过 `setManga` 修改 onNext、onPrev 两个参数。注意如果按钮存在但无法点击的话，应该传递空值或直接不传
 4. 向 `init` 函数传一个返回所有图片链接的函数
 
+---
+
 ## 动态导入外部库
 
 `src\helper\import.ts`
@@ -59,3 +63,11 @@ Object.fromEntries(
 不过因为有些 cjs 会使用 node 环境特有的变量、在模块里再 require() 其他模块（这种情况下也需要将其依赖模块在 @resource 中声明），所以尽量还是选择 umd 的代码。
 
 另外为了尽量减少在无关页面浪费时间，components、helper 下的代码会被打包视为外部库 `'../helper'` 来使用，如果只需要其中一段代码则通过 `helper/XXX` 来导入即可。
+
+## pnpm dev
+
+这个命令总共会做三件事
+
+1. 打包代码到 dist
+2. 创建 dist 的文件服务器，用于在浏览器获取最新的脚本代码
+3. 使用 vite 加载 src\components\display.tsx 以便单独测试组件

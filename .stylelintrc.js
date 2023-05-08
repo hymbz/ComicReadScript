@@ -21,5 +21,7 @@ module.exports = {
 
     // 防止使用低性能的动画和过度属性
     'plugin/no-low-performance-animation-properties': true,
+
+    'import-notation': 'string',
   },
 };
