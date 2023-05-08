@@ -6,6 +6,9 @@ import { store, setState } from '..';
 import { handleComicData } from '../../../handleComicData';
 import { updateDrag, updateTipText } from './Scrollbar';
 
+/** 是否需要自动判断开启卷轴模式 */
+let autoScrollMode = true;
+
 /**
  * 预加载指定页数的图片，并取消其他预加载的图片
  * @param state state
@@ -97,6 +100,16 @@ export const updateImgType = (state: State, draftImg: ComicImg) => {
     else draftImg.type = '';
   } else {
     draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
+  }
+
+  // 当超过3张图的类型为长图时，自动开启卷轴模式
+  if (
+    !state.option.scrollMode &&
+    autoScrollMode &&
+    state.imgList.filter((img) => img.type === 'vertical').length > 3
+  ) {
+    state.option.scrollMode = true;
+    autoScrollMode = false;
   }
 
   if (type === draftImg.type) {
