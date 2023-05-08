@@ -21,21 +21,22 @@ export const ComicImgFlow: Component = () => {
   });
 
   return (
-    <div
-      ref={mangaFlowRef!}
-      id={classes.mangaFlow}
-      class={classes.mangaFlow}
-      classList={{
-        [classes.disableZoom]:
-          store.option.disableZoom || store.option.scrollMode,
-        [classes.scrollMode]: store.option.scrollMode,
-      }}
-      dir={store.option.dir}
-      onScroll={handleMangaFlowScroll}
-    >
-      <Index each={store.imgList}>
-        {(img, i) => <ComicImg img={img()} index={i} />}
-      </Index>
+    <div class={classes.mangaFlowBox} onScroll={handleMangaFlowScroll}>
+      <div
+        id={classes.mangaFlow}
+        ref={mangaFlowRef!}
+        class={classes.mangaFlow}
+        classList={{
+          [classes.disableZoom]:
+            store.option.disableZoom || store.option.scrollMode,
+          [classes.scrollMode]: store.option.scrollMode,
+        }}
+        dir={store.option.dir}
+      >
+        <Index each={store.imgList}>
+          {(img, i) => <ComicImg img={img()} index={i} />}
+        </Index>
+      </div>
     </div>
   );
 };

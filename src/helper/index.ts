@@ -53,10 +53,10 @@ export const mountComponents = (id: string, fc: () => JSX.Element) => {
   return dom;
 };
 
-/** 返回 Dom 的点击函数，如果找不到 Dom 则返回 null */
+/** 返回 Dom 的点击函数 */
 export const querySelectorClick = (selector: string) => {
   const dom = querySelector(selector);
-  if (!dom) return null;
+  if (!dom) return undefined;
   return () => {
     dom.click();
   };

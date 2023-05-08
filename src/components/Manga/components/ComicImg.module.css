@@ -23,6 +23,18 @@
   }
 }
 
+.mangaFlowBox {
+  /* 隐藏滚动条但不影响滚动 */
+  scrollbar-width: none;
+  overflow: auto;
+  height: 100%;
+
+  /* 隐藏滚动条但不影响滚动 */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 .mangaFlow {
   user-select: none;
 
@@ -34,8 +46,6 @@
 
   color: var(--text);
 
-  background-color: var(--bg);
-
   &.disableZoom .img {
     height: unset;
     max-height: 100%;
@@ -43,19 +53,12 @@
   }
 
   &.scrollMode {
-    /* 隐藏滚动条但不影响滚动 */
-    scrollbar-width: none;
-    overflow: auto;
+    overflow: visible;
     flex-direction: column;
     justify-content: flex-start;
 
-    /* 隐藏滚动条但不影响滚动 */
-    &::-webkit-scrollbar {
-      display: none;
-    }
-
     & .img {
-      max-width: 100%;
+      max-width: 40em;
       height: auto;
       max-height: unset;
     }

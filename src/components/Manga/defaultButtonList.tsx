@@ -100,7 +100,11 @@ export const defaultButtonList: ToolbarButtonList = [
   // 放大模式
   () => {
     const handleClick = () => {
-      store.panzoom?.zoomTo(0, 0, 1.2);
+      if (!store.panzoom) return;
+      const { scale } = store.panzoom.getTransform();
+
+      if (scale === 1) store.panzoom.zoomTo(0, 0, 1.2);
+      else store.panzoom.zoomAbs(0, 0, 1);
     };
 
     return (

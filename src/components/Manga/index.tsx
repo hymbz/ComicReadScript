@@ -32,11 +32,11 @@ export interface MangaProps {
   option?: Partial<Option>;
 
   /** 点击结束页按钮时触发的回调 */
-  onExit?: State['onExit'] | null;
+  onExit?: State['onExit'];
   /** 点击上一话按钮时触发的回调 */
-  onPrev?: State['onPrev'] | null;
+  onPrev?: State['onPrev'];
   /** 点击下一话按钮时触发的回调 */
-  onNext?: State['onNext'] | null;
+  onNext?: State['onNext'];
   /** 配置发生变化时触发的回调 */
   onOptionChange?: (option: Option, prevOption: Option) => void | Promise<void>;
   /** 图片加载状态发生变化时触发的回调 */

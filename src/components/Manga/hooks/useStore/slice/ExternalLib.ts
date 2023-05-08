@@ -1,6 +1,7 @@
 import { throttle } from 'throttle-debounce';
 import createPanZoom from 'panzoom';
 import type { State } from '..';
+import { store } from '..';
 
 export const initPanzoom = (state: State) => {
   // 销毁之前可能创建过的实例
@@ -19,12 +20,16 @@ export const initPanzoom = (state: State) => {
     filterKey: () => true,
 
     beforeWheel(e) {
-      const { scale } = panzoom.getTransform();
-      // 图片不处于放大状态时，必须按下 Alt 键才能通过滚轮缩放
-      if (e.altKey && scale === 1) return false;
-      // 图片处于放大状态时，可以直接通过滚轮缩放
-      if (scale !== 1) return false;
-      return true;
+      // 卷轴模式下可以保持缩放状态滚动
+      if (!store.option.scrollMode) {
+        const { scale } = panzoom.getTransform();
+
+        // 图片处于缩放状态时，可以直接通过滚轮缩放
+        if (scale !== 1) return false;
+      }
+
+      // 只在按下 Alt 键才能通过滚轮缩放
+      return !e.altKey;
     },
     beforeMouseDown(e) {
       // 按下「alt 键」或「处于放大状态」时才允许拖动

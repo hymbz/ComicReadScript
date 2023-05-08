@@ -156,7 +156,7 @@ import {
       document.title = folder.split('/').at(-2) ?? folder;
 
       // 进入阅读模式后禁止退出，防止返回空白页面
-      setManga({ onExit: undefined, editButtonList: (list) => list });
+      setManga({ onExit: () => {}, editButtonList: (list) => list });
 
       const showComic = init(() => {
         if (page_url.length) return page_url;

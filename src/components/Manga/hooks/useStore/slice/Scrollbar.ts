@@ -64,13 +64,15 @@ export const handleMangaFlowScroll = () => {
   if (!store.option.scrollMode) return;
 
   setState((state) => {
+    const mangaFlowEle = state.mangaFlowRef?.parentNode as HTMLElement;
+
     /** 漫画的总高度 */
-    const contentHeight = state.mangaFlowRef?.scrollHeight;
+    const contentHeight = mangaFlowEle?.scrollHeight;
 
     state.scrollbar.dragTop =
-      !state.mangaFlowRef || !contentHeight
+      !mangaFlowEle || !contentHeight
         ? 0
-        : state.mangaFlowRef.scrollTop / contentHeight;
+        : mangaFlowEle.scrollTop / contentHeight;
     state.activePageIndex = Math.floor(
       state.scrollbar.dragTop * state.pageList.length,
     );
@@ -111,8 +113,10 @@ export const dragOption: UseDragOption = {
     let top = clickTop;
 
     if (store.option.scrollMode) {
+      const mangaFlowEle = store.mangaFlowRef.parentNode as HTMLElement;
+
       /** 漫画的总高度 */
-      const contentHeight = store.mangaFlowRef.scrollHeight;
+      const contentHeight = mangaFlowEle.scrollHeight;
 
       if (type === 'dragging') {
         /** 在滚动条上的移动比率 */
@@ -121,12 +125,12 @@ export const dragOption: UseDragOption = {
         // 处理超出范围的情况
         if (top < 0) top = 0;
         else if (top > 1) top = 1;
-        store.mangaFlowRef.scrollTo({ top: top * contentHeight });
+        mangaFlowEle.scrollTo({ top: top * contentHeight });
       } else {
         // 确保滚动条的中心会在点击位置
         top -= store.scrollbar.dragHeight / 2;
         startTop = top;
-        store.mangaFlowRef.scrollTo({
+        mangaFlowEle.scrollTo({
           top: top * contentHeight,
           behavior: 'smooth',
         });
