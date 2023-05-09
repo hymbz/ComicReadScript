@@ -78,11 +78,7 @@ export const updatePageData = (state: State) => {
   } = state;
 
   if (onePageMode || scrollMode) state.pageList = imgList.map((_, i) => [i]);
-  else
-    state.pageList = handleComicData({
-      imgList,
-      fillEffect,
-    });
+  else state.pageList = handleComicData(imgList, fillEffect);
   updateDrag(state);
   updateImgLoadType(state);
 };

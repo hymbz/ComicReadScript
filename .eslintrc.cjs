@@ -151,7 +151,7 @@ module.exports = {
           'error',
           {
             props: true,
-            ignorePropertyModificationsFor: ['state'],
+            ignorePropertyModificationsFor: ['state', 'fillEffect'],
             ignorePropertyModificationsForRegex: ['^draft', 'Ele$'],
           },
         ],

@@ -1,20 +1,15 @@
 import type { FillEffect } from './hooks/useStore/ImageState';
 
-interface HandleComicDataProps {
-  imgList: ComicImg[];
-  fillEffect: FillEffect;
-}
-
 // 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
 // 2. 因为大部分用户都不会在意正确页序，所以应该尽量少加填充页
 
 /**
  * 根据图片比例和填充页设置对漫画图片进行排列
  */
-export const handleComicData = ({
-  imgList,
-  fillEffect,
-}: HandleComicDataProps): PageList => {
+export const handleComicData = (
+  imgList: ComicImg[],
+  fillEffect: FillEffect,
+): PageList => {
   const pageList: PageList = [];
   let imgCache: number | null = null;
 
@@ -35,6 +30,12 @@ export const handleComicData = ({
       }
     } else {
       if (imgCache !== null) {
+        // 默认会开启首页填充，但如果在开头和中间出现了跨页，就应该关掉
+        if (fillEffect['-1'] && i < imgList.length - 2) {
+          fillEffect['-1'] = false;
+          return handleComicData(imgList, fillEffect);
+        }
+
         if (imgCache !== -1) {
           // 跨页在倒数两张的话大概率时汉化组加的图，应该将填充页放在后面
           if (i >= imgList.length - 2) pageList.push([imgCache, -1]);
@@ -45,7 +46,6 @@ export const handleComicData = ({
       }
 
       if (fillEffect[i] === undefined && img.loadType !== 'loading')
-        // eslint-disable-next-line no-param-reassign
         fillEffect[i] = false;
 
       pageList.push([i]);
