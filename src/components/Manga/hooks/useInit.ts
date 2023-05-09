@@ -22,8 +22,6 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
         ...state.option,
         ...props.option,
       };
-      // 在页数过多时关闭空闲加载
-      if (props.imgList.length > 50) state.option.autoLoadOtherImg = false;
     });
   });
 

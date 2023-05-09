@@ -59,9 +59,8 @@ const updateImgLoadType = debounce(100, (state: State) => {
     loadImg(state, activePageIndex + 1, activePageIndex + 3) ||
     // 其次加载前一页
     (activePageIndex >= 1 && loadImg(state, activePageIndex - 1)) ||
-    // 确认没有图片在加载后，在空闲时间自动加载其余图片
-    !state.option.autoLoadOtherImg ||
-    imgList.some((img) => img.loadType === 'loading') ||
+    // 在页数不多时，继续加载其余图片
+    imgList.length > 50 ||
     // 加载当前页后面的图片
     loadImg(state, activePageIndex + 1, imgList.length, 5) ||
     // 加载剩余未加载页面
