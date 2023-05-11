@@ -21,11 +21,14 @@ const loadImg = (
   state: State,
   startIndex: number,
   endIndex = startIndex + 1,
-  loadNum = Infinity,
+  loadNum = 1,
 ) => {
   let editNum = 0;
   state.pageList
-    .slice(startIndex, endIndex)
+    .slice(
+      Math.max(startIndex, 0),
+      Math.max(Math.min(endIndex, state.pageList.length)),
+    )
     .flat()
     .some((index) => {
       if (index === -1) return false;
@@ -54,13 +57,15 @@ const updateImgLoadType = debounce(100, (state: State) => {
 
   return (
     // 优先加载当前显示页
-    loadImg(state, activePageIndex) ||
-    // 其次加载后俩页
-    loadImg(state, activePageIndex + 1, activePageIndex + 3) ||
-    // 其次加载前一页
-    (activePageIndex >= 1 && loadImg(state, activePageIndex - 1)) ||
+    loadImg(state, activePageIndex, 2) ||
+    // 再加载后俩页
+    loadImg(state, activePageIndex + 1, activePageIndex + 2) ||
+    // 再加载后十页
+    loadImg(state, activePageIndex + 1, activePageIndex + 10) ||
+    // 再加载前十页
+    loadImg(state, activePageIndex - 10, activePageIndex - 1) ||
     // 在页数不多时，继续加载其余图片
-    imgList.length > 50 ||
+    imgList.length > 60 ||
     // 加载当前页后面的图片
     loadImg(state, activePageIndex + 1, imgList.length, 5) ||
     // 加载剩余未加载页面

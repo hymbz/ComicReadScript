@@ -8,10 +8,9 @@ import { updatePageData, updatePageRatio } from './useStore/slice';
 
 /** 初始化 */
 export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
+  // 绑定 rootRef
   setState((state) => {
-    // 绑定 rootRef
     state.rootRef = rootRef;
-    // 初始化 panzoom
   });
 
   // 初始化配置
