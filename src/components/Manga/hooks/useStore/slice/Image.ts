@@ -27,7 +27,7 @@ const loadImg = (
   state.pageList
     .slice(
       Math.max(startIndex, 0),
-      Math.max(Math.min(endIndex, state.pageList.length)),
+      Math.max(Math.min(endIndex, state.pageList.length), 0),
     )
     .flat()
     .some((index) => {
@@ -57,7 +57,7 @@ const updateImgLoadType = debounce(100, (state: State) => {
 
   return (
     // 优先加载当前显示页
-    loadImg(state, activePageIndex, 2) ||
+    loadImg(state, activePageIndex, activePageIndex + 1, 2) ||
     // 再加载后俩页
     loadImg(state, activePageIndex + 1, activePageIndex + 2) ||
     // 再加载后十页
