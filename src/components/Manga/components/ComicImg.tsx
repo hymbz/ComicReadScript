@@ -20,7 +20,7 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
     if (store.option.scrollMode) return { show: '' };
 
     const activePage = store.pageList[store.activePageIndex];
-    if (!activePage.includes(props.index)) return { show: undefined };
+    if (!activePage?.includes(props.index)) return { show: undefined };
     return {
       show: '',
       fill: ((): undefined | 'left' | 'right' => {

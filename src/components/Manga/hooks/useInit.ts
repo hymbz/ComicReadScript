@@ -73,6 +73,11 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
       );
       updatePageData(state);
 
+      if (state.pageList.length === 0) {
+        state.activePageIndex = 0;
+        return;
+      }
+
       // 尽量使当前显示的图片在修改后依然不变
       oldActiveImg.some((imgUrl) => {
         // 跳过填充页和已被删除的图片
@@ -87,7 +92,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
         return true;
       });
 
-      // 如果已经翻到了最后一页，且最后一页的图片都被删掉了，那就保持在末页显示
+      // 如果已经翻到了最后一页，且最后一页的图片被删掉了，那就保持在末页显示
       if (state.activePageIndex > state.pageList.length - 1)
         state.activePageIndex = state.pageList.length - 1;
     });

@@ -37,7 +37,7 @@ declare const $: any;
         `a[title="${type === 'next' ? '下集' : '上集'}"]`,
       );
 
-    return null;
+    return undefined;
   };
   setManga({
     onNext: await checkTurnPage('next'),

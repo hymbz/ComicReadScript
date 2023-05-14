@@ -43,6 +43,11 @@ switch (window.location.hostname) {
     break;
   }
 
+  case 'terra-historicus.hypergryph.com': {
+    inject('terraHistoricus');
+    break;
+  }
+
   case 'copymanga.site':
   case 'copymanga.info':
   case 'copymanga.net':

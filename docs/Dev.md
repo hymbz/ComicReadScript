@@ -12,16 +12,6 @@
 2. 缩小并移动位置后没法使用代码将图片直接恢复原样，主要是位置没法返回原位
 所以目前先将图片的宽度设得稍小，方便缩放放大阅读，之后看看其他库能不能解决以上两点问题
 
-## 项目结构
-
-为了能单独分隔出UI组件和不同站点的脚本逻辑的代码，项目通过 pnpm 的 workspace 功能分为了三个部分
-
-- `/`: 根目录存放两个项目通用的各种配置文件以及各种杂项
-- `/packages/ui-component`: 脚本用到的UI组件，通过 vite 进行测试
-- `/packages/userscript`: 脚本的主体代码
-
-在用 vscode 打开项目后，应该通过 `ComicReadScript.code-workspace` 文件打开工作区进行开发
-
 ## 调试
 
 ```bash
@@ -47,7 +37,7 @@ Object.fromEntries(
 )
 ```
 
-手动检视一遍看能不能通过变量直接获取所有图片的链接，如果可以就参考 [manhuagui.ts](/packages/userscript/src/site/manhuagui.tsx) 的代码，否则参考 [mangabz.ts](/packages/userscript/src/site/mangabz.tsx) 的代码
+手动检视一遍看能不能通过变量直接获取所有图片的链接，如果可以就参考 [manhuagui.ts](../src/site/manhuagui.tsx) 的代码，否则参考 [mangabz.ts](../src/site/mangabz.tsx) 的代码
 
 一般的代码逻辑流程是这样的
 

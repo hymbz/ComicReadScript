@@ -138,6 +138,7 @@ export const updatePageRatio = (
 export const handleImgLoaded = (i: number, e: HTMLImageElement) => {
   setState((state) => {
     const img = state.imgList[i];
+    if (!img) return;
     img.loadType = 'loaded';
     img.height = e.naturalHeight;
     img.width = e.naturalWidth;
@@ -166,7 +167,10 @@ export const turnPage = (state: State, dir: 'next' | 'prev') => {
   if (dir === 'prev') {
     switch (state.endPageType) {
       case 'start':
-        if (!state.scrollLock && state.option.flipToNext) state.onPrev?.();
+        if (!state.scrollLock && state.option.flipToNext) {
+          state.onPrev?.();
+          state.endPageType = undefined;
+        }
         return;
       case 'end':
         state.endPageType = undefined;
@@ -193,6 +197,8 @@ export const turnPage = (state: State, dir: 'next' | 'prev') => {
         if (state.scrollLock) return;
         if (state.onNext && state.option.flipToNext) {
           state.onNext();
+          state.activePageIndex = 0;
+          state.endPageType = undefined;
           return;
         }
         if (state.onExit) {

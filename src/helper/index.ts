@@ -57,9 +57,7 @@ export const mountComponents = (id: string, fc: () => JSX.Element) => {
 export const querySelectorClick = (selector: string) => {
   const dom = querySelector(selector);
   if (!dom) return undefined;
-  return () => {
-    dom.click();
-  };
+  return () => dom.click();
 };
 
 /** 判断两个列表中包含的值是否相同 */
@@ -198,4 +196,14 @@ export const needDarkMode = (hexColor: string) => {
   const b = parseInt(hexColor.substring(5, 7), 16);
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
   return yiq < 128;
+};
+
+/** 轮询等到指定的 dom 出现后调用指定函数 */
+export const wait = (selector: string, handle: (dom: HTMLElement) => void) => {
+  const id = window.setInterval(() => {
+    const dom = querySelector(selector);
+    if (!dom) return;
+    handle(dom);
+    window.clearInterval(id);
+  }, 100);
 };

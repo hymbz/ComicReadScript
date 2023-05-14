@@ -9,7 +9,9 @@ import { loadTypeMap } from '../ImageState';
  * 获取指定 page 中的图片 index，并在后面加上加载状态
  */
 const getPageIndexText = (state: State, pageIndex: number) => {
-  const pageIndexText = state.pageList[pageIndex].map((index) => {
+  const page = state.pageList[pageIndex];
+  if (!page) return ['null'];
+  const pageIndexText = page.map((index) => {
     if (index === -1) return '填充页';
     const img = state.imgList[index];
     if (img.loadType === 'loaded') return `${index + 1}`;

@@ -9,8 +9,8 @@ declare const cInfo: { nextId: number; prevId: number };
 
   const { setManga, init } = await useInit('manhuagui');
   setManga({
-    onNext: cInfo.nextId !== 0 ? querySelectorClick('a.nextC') : null,
-    onPrev: cInfo.prevId !== 0 ? querySelectorClick('a.prevC') : null,
+    onNext: cInfo.nextId !== 0 ? querySelectorClick('a.nextC') : undefined,
+    onPrev: cInfo.prevId !== 0 ? querySelectorClick('a.prevC') : undefined,
   });
 
   init(() => {
