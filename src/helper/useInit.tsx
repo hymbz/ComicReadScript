@@ -5,7 +5,7 @@ import { useSiteOptions } from './useSiteOptions';
 import { useSpeedDial } from './useSpeedDial';
 
 /**
- * 对三个样式组件和 useSiteOptions 的默认值进行封装
+ * 对所有支持站点页面的初始化操作的封装
  * @param name 站点名
  * @param defaultOptions 默认配置
  */

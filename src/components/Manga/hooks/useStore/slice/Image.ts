@@ -21,7 +21,7 @@ const loadImg = (
   state: State,
   startIndex: number,
   endIndex = startIndex + 1,
-  loadNum = 1,
+  loadNum = 2,
 ) => {
   let editNum = 0;
   state.pageList
@@ -46,7 +46,7 @@ const loadImg = (
 };
 
 /** 根据当前页数更新所有图片的加载状态 */
-const updateImgLoadType = debounce(100, (state: State) => {
+export const updateImgLoadType = debounce(100, (state: State) => {
   const { imgList, activePageIndex } = state;
 
   // 先将所有加载中的图片状态改为暂停
@@ -57,15 +57,13 @@ const updateImgLoadType = debounce(100, (state: State) => {
 
   return (
     // 优先加载当前显示页
-    loadImg(state, activePageIndex, activePageIndex + 1, 2) ||
-    // 再加载后俩页
-    loadImg(state, activePageIndex + 1, activePageIndex + 2) ||
+    loadImg(state, activePageIndex, activePageIndex + 1) ||
     // 再加载后十页
-    loadImg(state, activePageIndex + 1, activePageIndex + 10) ||
+    loadImg(state, activePageIndex + 1, activePageIndex + 20) ||
     // 再加载前十页
     loadImg(state, activePageIndex - 10, activePageIndex - 1) ||
-    // 在页数不多时，继续加载其余图片
-    imgList.length > 60 ||
+    // 默认在页数不多时，继续加载其余图片
+    (!state.option.alwaysLoadAllImg && imgList.length > 60) ||
     // 加载当前页后面的图片
     loadImg(state, activePageIndex + 1, imgList.length, 5) ||
     // 加载剩余未加载页面

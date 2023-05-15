@@ -26,6 +26,8 @@ export interface Option {
   darkMode: boolean;
   /** 滚动到底后继续滚动会跳至下一话 */
   flipToNext: boolean;
+  /** 始终加载所有图片 */
+  alwaysLoadAllImg: boolean;
 }
 
 export const OptionState = {
@@ -46,6 +48,7 @@ export const OptionState = {
     // 判断用户系统环境是否要求开启暗色模式
     darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
     flipToNext: true,
+    alwaysLoadAllImg: false,
   } as Option,
 
   /** 显示点击区域 */
