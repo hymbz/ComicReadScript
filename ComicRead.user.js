@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicReadTest
 // @namespace    ComicReadTest
-// @version      0.4.0
+// @version      0.4.1
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、dm5、manhuagui、manhuadb、mangabz、copymanga、manhuacat。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -32,12 +32,12 @@
 // @grant        GM.registerMenuCommand
 // @grant        GM.unregisterMenuCommand
 // @grant        unsafeWindow
-// @resource     solid-js https://unpkg.com/solid-js@1.7.3/dist/dev.cjs
-// @resource     solid-js/store https://unpkg.com/solid-js@1.7.3/store/dist/dev.cjs
-// @resource     solid-js/web https://unpkg.com/solid-js@1.7.3/web/dist/dev.cjs
-// @resource     panzoom undefined
-// @resource     fflate undefined
-// @resource     dmzj_style undefined
+// @resource     solid-js https://unpkg.com/solid-js@1.7.3/dist/solid.cjs
+// @resource     solid-js/store https://unpkg.com/solid-js@1.7.3/store/dist/store.cjs
+// @resource     solid-js/web https://unpkg.com/solid-js@1.7.3/web/dist/web.cjs
+// @resource     panzoom https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js
+// @resource     fflate https://unpkg.com/fflate@0.7.4/umd/index.js
+// @resource     dmzj_style https://userstyles.org/styles/chrome/119945.json
 // @supportURL   https://github.com/hymbz/ComicReadScript/issues
 // ==/UserScript==
 
