@@ -48,7 +48,7 @@ const resourceList: Record<string, [string, string] | [string]> = {
 };
 const resource = {
   prod: Object.fromEntries(
-    Object.entries(resourceList).map(([k, v]) => [k, v.at(1)]),
+    Object.entries(resourceList).map(([k, v]) => [k, v.at(0)]),
   ),
   dev: Object.fromEntries(
     Object.entries(resourceList).map(([k, v]) => [k, v.at(-1)]),
