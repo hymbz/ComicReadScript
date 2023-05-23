@@ -71,7 +71,7 @@ export const cssVar = createRoot(() => {
   const _cssVar = createMemo<JSX.CSSProperties>(() => ({
     '--bg':
       store.option.customBackground ??
-      (store.option.darkMode ? 'black' : 'white'),
+      (store.option.darkMode ? '#000000' : '#ffffff'),
     '--img_max_width': `${store.imgMaxWidth}px`,
     ...(store.option.darkMode ? dark : light),
   }));

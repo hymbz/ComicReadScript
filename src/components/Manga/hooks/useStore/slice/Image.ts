@@ -195,7 +195,6 @@ export const turnPage = (state: State, dir: 'next' | 'prev') => {
         if (state.scrollLock) return;
         if (state.onNext && state.option.flipToNext) {
           state.onNext();
-          state.activePageIndex = 0;
           state.endPageType = undefined;
           return;
         }

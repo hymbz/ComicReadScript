@@ -166,7 +166,7 @@ export const defaultSettingList: SettingList = [
             style={{ width: '2em', 'margin-right': '.4em' }}
             value={
               store.option.customBackground ??
-              (store.option.darkMode ? 'black' : 'white')
+              (store.option.darkMode ? '#000000' : '#ffffff')
             }
             onChange={(e) => {
               setOption((draftOption) => {

@@ -29,7 +29,10 @@ import { querySelectorClick, useInit, request, plimit } from '../main';
 
   // 点击指定 dom 的同时重新获取图片列表
   const turnPage = (selector: string) => async () => {
-    querySelectorClick(selector)!();
+    const turnPageFunc = querySelectorClick(selector);
+    if (!turnPageFunc) return;
+
+    turnPageFunc();
     setManga({ imgList: [] });
     setManga({ imgList: await getImgList(), show: true });
   };

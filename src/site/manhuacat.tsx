@@ -30,7 +30,7 @@ declare const $: any;
 
     if (res.code === '0000') return () => goNumPage(type);
 
-    return null;
+    return undefined;
   };
   setManga({
     onNext: await checkTurnPage('next'),

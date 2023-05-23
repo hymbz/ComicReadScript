@@ -46,11 +46,11 @@ export const useSiteOptions = async <T extends Record<string, any>>(
      */
     setOptions: async (newValue: Options, trigger = true) => {
       Object.assign(options, newValue);
-      await GM.setValue(name, options);
       if (trigger)
         await Promise.all(
           changeCallbackList.map((callback) => callback(options)),
         );
+      return GM.setValue(name, options);
     },
 
     /**
