@@ -48,9 +48,10 @@ export const TouchArea: Component = () => {
     <div
       class={classes.touchAreaRoot}
       style={{
-        // 开启卷轴模式时隐藏自身
         'pointer-events':
-          penetrate() || store.option.scrollMode ? 'none' : 'auto',
+          penetrate() || store.option.scrollMode || store.isZoomed
+            ? 'none'
+            : 'auto',
         // 左右方向默认和漫画方向相同，如果开启了左右翻转则翻转
         'flex-direction':
           (store.option.dir === 'rtl') ===

@@ -14,11 +14,15 @@
 .toolbarPanel {
   transform: translateX(-100%);
 
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 
-  padding: 1em;
-  padding-left: 0.5em;
+  padding: 0.5em;
+
+  backdrop-filter: blur(3px);
+  border-top-right-radius: 1em;
+  border-bottom-right-radius: 1em;
 
   transition: transform 200ms;
 }

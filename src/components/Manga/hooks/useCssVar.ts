@@ -50,11 +50,8 @@ const light: CssVar = {
   '--hover_bg_color': '#0001',
   '--hover_bg_color_enable': '#0009',
 
-  /* 开关按钮 */
   '--switch': '#FAFAFA',
-  /* 开关滑轨 */
   '--switch_bg': '#9C9C9C',
-  /* 滚动条 */
   '--scrollbar_drag': '#0006',
 
   '--page_bg': 'white',
