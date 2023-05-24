@@ -20,7 +20,7 @@ export const handleWheel = (e: WheelEvent) => {
         });
       }, 500);
     } else if (
-      store.scrollbar.dragHeight + store.scrollbar.dragTop >= 1 &&
+      store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.99999 &&
       e.deltaY > 0
     ) {
       setState((state) => {

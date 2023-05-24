@@ -35,8 +35,10 @@ export const ComicImgFlow: Component = () => {
   return (
     <div
       class={classes.mangaFlowBox}
-      onScroll={handleMangaFlowScroll}
       style={{ overflow: store.option.scrollMode ? 'auto' : 'hidden' }}
+      ref={(e) =>
+        e.addEventListener('scroll', handleMangaFlowScroll, { passive: true })
+      }
     >
       <div
         id={classes.mangaFlow}
