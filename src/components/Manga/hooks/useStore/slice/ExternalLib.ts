@@ -22,13 +22,9 @@ export const initPanzoom = (state: State) => {
 
     beforeWheel(e) {
       const { scale } = panzoom.getTransform();
-      // 在卷轴模式、不处于缩放状态且没按下 alt 键时，滚轮操作不进行缩放
-      if (
-        store.option.scrollMode ||
-        (!e.altKey && scale === 1) ||
-        (store.scrollLock && scale === 1)
-      )
-        return true;
+
+      // 在不处于缩放状态或卷轴模式，且没有按下 alt 时不进行缩放
+      if (!e.altKey && (scale === 1 || store.option.scrollMode)) return true;
 
       return false;
     },

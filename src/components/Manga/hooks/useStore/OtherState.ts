@@ -1,7 +1,13 @@
+import type { PanZoom } from 'panzoom';
+
 import type { ToolbarButtonList } from '../../defaultButtonList';
 import type { SettingList } from '../../defaultSettingList';
 
 export const OtherState = {
+  panzoom: undefined as PanZoom | undefined,
+  /** 当前是否处于放大模式 */
+  isZoomed: false,
+
   /** 是否强制显示侧边栏 */
   showToolbar: false,
   /** 是否强制显示滚动条 */

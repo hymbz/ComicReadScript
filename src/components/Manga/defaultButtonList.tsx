@@ -36,53 +36,48 @@ export const buttonListDivider: Component = () => (
 /** 工具栏的默认按钮列表 */
 export const defaultButtonList: ToolbarButtonList = [
   // 单双页模式
-  () => {
-    const isOnePageMode = store.option.onePageMode;
-    const handleClick = () => {
-      setState((state) => {
-        setOption((draftOption) => {
-          draftOption.onePageMode = !draftOption.onePageMode;
+  () => (
+    <IconButton
+      tip={store.option.onePageMode ? '单页模式' : '双页模式'}
+      hidden={store.option.scrollMode}
+      onClick={() => {
+        setState((state) => {
+          setOption((draftOption) => {
+            draftOption.onePageMode = !draftOption.onePageMode;
+          });
+          updatePageData(state);
+          state.activePageIndex = state.option.onePageMode
+            ? activeImgIndex()
+            : state.pageList.findIndex((page) =>
+                page.includes(activeImgIndex()),
+              );
         });
-        updatePageData(state);
-        state.activePageIndex = state.option.onePageMode
-          ? activeImgIndex()
-          : state.pageList.findIndex((page) => page.includes(activeImgIndex()));
-      });
-    };
-
-    return (
-      <IconButton
-        tip={isOnePageMode ? '单页模式' : '双页模式'}
-        onClick={handleClick}
-        hidden={store.option.scrollMode}
-      >
-        {isOnePageMode ? <MdLooksOne /> : <MdLooksTwo />}
-      </IconButton>
-    );
-  },
+      }}
+    >
+      {store.option.onePageMode ? <MdLooksOne /> : <MdLooksTwo />}
+    </IconButton>
+  ),
   // 卷轴模式
-  () => {
-    const handleClick = () => {
-      setState((state) => {
-        setOption((draftOption) => {
-          draftOption.scrollMode = !draftOption.scrollMode;
-          draftOption.onePageMode = draftOption.scrollMode;
+  () => (
+    <IconButton
+      tip="卷轴模式"
+      enabled={store.option.scrollMode}
+      onClick={() => {
+        store.panzoom?.smoothZoomAbs(0, 0, 1);
+        setState((state) => {
+          state.activePageIndex = 0;
+          setOption((draftOption) => {
+            draftOption.scrollMode = !draftOption.scrollMode;
+            draftOption.onePageMode = draftOption.scrollMode;
+          });
+          updatePageData(state);
         });
-        updatePageData(state);
-      });
-      setTimeout(handleMangaFlowScroll);
-    };
-
-    return (
-      <IconButton
-        tip="卷轴模式"
-        enabled={store.option.scrollMode}
-        onClick={handleClick}
-      >
-        <MdViewDay />
-      </IconButton>
-    );
-  },
+        setTimeout(handleMangaFlowScroll);
+      }}
+    >
+      <MdViewDay />
+    </IconButton>
+  ),
   // 页面填充
   () => (
     <IconButton
@@ -96,21 +91,21 @@ export const defaultButtonList: ToolbarButtonList = [
   ),
   buttonListDivider,
   // 放大模式
-  () => {
-    const handleClick = () => {
-      if (!store.panzoom) return;
-      const { scale } = store.panzoom.getTransform();
+  () => (
+    <IconButton
+      tip="放大模式"
+      enabled={store.isZoomed}
+      onClick={() => {
+        if (!store.panzoom) return;
+        const { scale } = store.panzoom.getTransform();
 
-      if (scale === 1) store.panzoom.zoomTo(0, 0, 1.2);
-      else store.panzoom.zoomAbs(0, 0, 1);
-    };
-
-    return (
-      <IconButton tip="放大模式" enabled={store.isZoomed} onClick={handleClick}>
-        <MdSearch />
-      </IconButton>
-    );
-  },
+        if (scale === 1) store.panzoom.smoothZoom(0, 0, 1.2);
+        else store.panzoom.smoothZoomAbs(0, 0, 1);
+      }}
+    >
+      <MdSearch />
+    </IconButton>
+  ),
   // 设置
   (props) => {
     const [showPanel, setShowPanel] = createSignal(false);

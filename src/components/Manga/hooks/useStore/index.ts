@@ -2,16 +2,12 @@ import { createStore, produce } from 'solid-js/store';
 
 import { imgState } from './ImageState';
 import { ScrollbarState } from './ScrollbarState';
-import { OperateState } from './OperateState';
-import { ExternalLibState } from './ExternalLibState';
 import { OptionState } from './OptionState';
 import { OtherState } from './OtherState';
 
 const [_state, _setState] = createStore({
   ...imgState,
   ...ScrollbarState,
-  ...OperateState,
-  ...ExternalLibState,
   ...OptionState,
   ...OtherState,
 
