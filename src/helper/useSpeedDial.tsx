@@ -55,7 +55,7 @@ export const useSpeedDial = <T extends Record<string, any>>(
           return () => <DefaultButton optionName={optionName} />;
       }
     })
-    .filter(Boolean) as Array<() => JSX.Element>;
+    .filter(Boolean) as Component[];
 
   return list;
 };

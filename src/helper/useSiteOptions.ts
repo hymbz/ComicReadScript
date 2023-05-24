@@ -1,3 +1,4 @@
+import { createMutable } from 'solid-js/store';
 import type { MangaProps } from '../components/Manga';
 
 export interface DefaultOptions {
@@ -21,15 +22,13 @@ export const useSiteOptions = async <T extends Record<string, any>>(
   type Options = T & DefaultOptions;
 
   const rawValue = await GM.getValue<Options>(name);
-  const options = Object.assign(
-    {
-      option: undefined,
-      autoShow: true,
-      hiddenFAB: false,
-      ...defaultOptions,
-    } as Options,
-    rawValue,
-  );
+  const options = createMutable<Options>({
+    option: undefined,
+    autoShow: true,
+    hiddenFAB: false,
+    ...defaultOptions,
+    ...rawValue,
+  });
 
   const changeCallbackList: ((options: Options) => void | Promise<void>)[] = [];
 
