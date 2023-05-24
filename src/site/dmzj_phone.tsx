@@ -12,7 +12,7 @@ import {
 // https://github.com/erinacio/tachiyomi-extensions/blob/548be91cccb8f248342e2e7762c2c3d4b2d02036/src/zh/dmzj/src/eu/kanade/tachiyomi/extension/zh/dmzj/Dmzj.kt
 
 (async () => {
-  const { setManga, init } = await useInit('dmzj', {
+  const { options, setManga, init } = await useInit('dmzj', {
     解除吐槽的字数限制: true,
   });
 
@@ -124,7 +124,7 @@ import {
               .map((e) => e.getAttribute('data-original'))
               .filter((src) => src) as string[],
         );
-        await showComic();
+        if (!options.autoShow) await showComic();
         return;
       }
 
@@ -164,7 +164,7 @@ import {
         tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion">Greasy Fork</a> 进行反馈`;
         return [];
       });
-      await showComic();
+      if (!options.autoShow) await showComic();
       break;
     }
   }
