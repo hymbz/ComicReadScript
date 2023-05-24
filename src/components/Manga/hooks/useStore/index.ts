@@ -17,6 +17,9 @@ const [_state, _setState] = createStore({
 
   rootRef: undefined as HTMLElement | undefined,
   mangaFlowRef: undefined as HTMLElement | undefined,
+  prevAreaRef: undefined as HTMLElement | undefined,
+  nextAreaRef: undefined as HTMLElement | undefined,
+  menuAreaRef: undefined as HTMLElement | undefined,
 });
 export type State = typeof _state;
 

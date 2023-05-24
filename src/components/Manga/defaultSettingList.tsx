@@ -58,7 +58,7 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="自动隐藏滚动条"
           value={store.option.scrollbar.autoHidden}
-          classList={{ [classes.hidden]: store.option.scrollbar.enabled }}
+          classList={{ [classes.hidden]: !store.option.scrollbar.enabled }}
           onChange={() => {
             setOption((draftOption) => {
               draftOption.scrollbar.autoHidden =
@@ -69,7 +69,7 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="显示图片加载状态"
           value={store.option.scrollbar.showProgress}
-          classList={{ [classes.hidden]: store.option.scrollbar.enabled }}
+          classList={{ [classes.hidden]: !store.option.scrollbar.enabled }}
           onChange={() => {
             setOption((draftOption) => {
               draftOption.scrollbar.showProgress =
@@ -96,7 +96,7 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="左右反转点击区域"
           value={store.option.clickPage.overturn}
-          classList={{ [classes.hidden]: store.option.clickPage.enabled }}
+          classList={{ [classes.hidden]: !store.option.clickPage.enabled }}
           onChange={() => {
             setOption((draftOption) => {
               draftOption.clickPage.overturn = !draftOption.clickPage.overturn;
@@ -106,7 +106,7 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="显示点击区域提示"
           value={store.showTouchArea}
-          classList={{ [classes.hidden]: store.option.clickPage.enabled }}
+          classList={{ [classes.hidden]: !store.option.clickPage.enabled }}
           onChange={() => {
             setState((state) => {
               state.showTouchArea = !state.showTouchArea;

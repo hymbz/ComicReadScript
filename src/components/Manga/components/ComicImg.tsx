@@ -1,8 +1,8 @@
 import type { Component } from 'solid-js';
 import { createMemo } from 'solid-js';
 
-import { store } from '../hooks/useStore';
-import { handleImgError, handleImgLoaded } from '../hooks/useStore/slice';
+import { setState, store } from '../hooks/useStore';
+import { updateImgType } from '../hooks/useStore/slice';
 
 import classes from '../index.module.css';
 
@@ -10,6 +10,35 @@ export interface ComicImgProps {
   index: number;
   img: ComicImg;
 }
+
+/** 图片加载完毕的回调 */
+const handleImgLoaded = (i: number, e: HTMLImageElement) => {
+  setState((state) => {
+    const img = state.imgList[i];
+    if (!img) return;
+    img.loadType = 'loaded';
+    img.height = e.naturalHeight;
+    img.width = e.naturalWidth;
+    updateImgType(state, img);
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    state.onLoading?.(img, state.imgList);
+  });
+};
+
+/** 图片加载出错的回调 */
+const handleImgError = (i: number, e: HTMLImageElement) => {
+  // 跳过因为 src 为空导致的错误
+  if (e.getAttribute('src') === '') return;
+  setState((state) => {
+    const img = state.imgList[i];
+    img.loadType = 'error';
+    console.error('图片加载失败', e);
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    state.onLoading?.(img, state.imgList);
+  });
+};
 
 /** 漫画图片 */
 export const ComicImg: Component<ComicImgProps> = (props) => {

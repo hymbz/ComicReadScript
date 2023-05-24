@@ -84,18 +84,16 @@ export const defaultButtonList: ToolbarButtonList = [
     );
   },
   // 页面填充
-  () => {
-    return (
-      <IconButton
-        tip="页面填充"
-        enabled={store.fillEffect[nowFillIndex()]}
-        hidden={store.option.onePageMode}
-        onClick={switchFillEffect}
-      >
-        <MdQueue />
-      </IconButton>
-    );
-  },
+  () => (
+    <IconButton
+      tip="页面填充"
+      enabled={store.fillEffect[nowFillIndex()]}
+      hidden={store.option.onePageMode}
+      onClick={switchFillEffect}
+    >
+      <MdQueue />
+    </IconButton>
+  ),
   buttonListDivider,
   // 放大模式
   () => {

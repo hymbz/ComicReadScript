@@ -1,7 +1,8 @@
 import { throttle } from 'throttle-debounce';
 import createPanZoom from 'panzoom';
 import type { State } from '..';
-import { store } from '..';
+import { setState, store } from '..';
+import { sleep } from '../../../../../helper';
 
 export const initPanzoom = (state: State) => {
   // 销毁之前可能创建过的实例
@@ -20,16 +21,16 @@ export const initPanzoom = (state: State) => {
     filterKey: () => true,
 
     beforeWheel(e) {
-      // 卷轴模式下可以保持缩放状态滚动
-      if (!store.option.scrollMode) {
-        const { scale } = panzoom.getTransform();
+      const { scale } = panzoom.getTransform();
+      // 在卷轴模式、不处于缩放状态且没按下 alt 键时，滚轮操作不进行缩放
+      if (
+        store.option.scrollMode ||
+        (!e.altKey && scale === 1) ||
+        (store.scrollLock && scale === 1)
+      )
+        return true;
 
-        // 图片处于缩放状态时，可以直接通过滚轮缩放
-        if (scale !== 1) return false;
-      }
-
-      // 只在按下 Alt 键才能通过滚轮缩放
-      return !e.altKey;
+      return false;
     },
     beforeMouseDown(e) {
       // 按下「alt 键」或「处于放大状态」时才允许拖动
@@ -37,27 +38,25 @@ export const initPanzoom = (state: State) => {
     },
     onTouch() {
       // 未进行缩放时不捕捉 touch 事件
-      return state.isZoomed;
+      return store.isZoomed;
     },
-  });
-
-  panzoom.on('transform', () => {
-    if (!state.isZoomed) {
-      // 防止在放大模式下通过滚轮缩小至原尺寸后立刻跳转至下一页
-      if (state.scrollLock) {
-        window.setTimeout(() => {
-          state.scrollLock = false;
-        }, 500);
-      }
-    } else if (!state.scrollLock) {
-      state.scrollLock = true;
-    }
   });
 
   panzoom.on(
     'zoom',
     throttle(200, () => {
-      state.isZoomed = panzoom.getTransform().scale !== 1;
+      setState((draftState) => {
+        if (!draftState.scrollLock) draftState.scrollLock = true;
+        draftState.isZoomed = panzoom.getTransform().scale !== 1;
+      });
+
+      setState(async (draftState) => {
+        if (!draftState.isZoomed && draftState.scrollLock) {
+          // 防止在放大模式下通过滚轮缩小至原尺寸后立刻跳转至下一页，所以加一个延时
+          await sleep(200);
+          draftState.scrollLock = false;
+        }
+      });
     }),
   );
 

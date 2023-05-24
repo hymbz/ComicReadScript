@@ -20,6 +20,7 @@ export const Toolbar: Component = () => {
       data-show={isHover() || store.showToolbar}
     >
       <div class={classes.toolbarPanel}>
+        <div class={classes.toolbarBg} />
         <For each={store.editButtonList(defaultButtonList)}>
           {(ButtonItem) => <ButtonItem onMouseLeave={handleMouseLeave} />}
         </For>

@@ -1,3 +1,4 @@
+import type { State } from '..';
 import { setState } from '..';
 import type { Option } from '../OptionState';
 
@@ -8,3 +9,12 @@ export const setOption = (fn: (option: Option) => void) => {
     state.option = { ...state.option };
   });
 };
+
+/** 创建用于将 ref 绑定到对应 state 上的工具函数 */
+export const bindRef =
+  (name: keyof State, fn?: (state: State) => void) => (e: HTMLDivElement) => {
+    setState((state) => {
+      Reflect.set(state, name, e);
+      fn?.(state);
+    });
+  };

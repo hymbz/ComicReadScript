@@ -132,34 +132,6 @@ export const updatePageRatio = (
   state.imgList.forEach((img) => updateImgType(state, img));
 };
 
-/** 图片加载完毕的回调 */
-export const handleImgLoaded = (i: number, e: HTMLImageElement) => {
-  setState((state) => {
-    const img = state.imgList[i];
-    if (!img) return;
-    img.loadType = 'loaded';
-    img.height = e.naturalHeight;
-    img.width = e.naturalWidth;
-    updateImgType(state, img);
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    state.onLoading?.(img, state.imgList);
-  });
-};
-
-export const handleImgError = (i: number, e: HTMLImageElement) => {
-  // 跳过因为 src 为空导致的错误
-  if (e.getAttribute('src') === '') return;
-  setState((state) => {
-    const img = state.imgList[i];
-    img.loadType = 'error';
-    console.error('图片加载失败', e);
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    state.onLoading?.(img, state.imgList);
-  });
-};
-
 /** 翻页 */
 export const turnPage = (state: State, dir: 'next' | 'prev') => {
   if (dir === 'prev') {

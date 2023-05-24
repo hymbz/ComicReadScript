@@ -1,7 +1,7 @@
 import type { Component } from 'solid-js';
-import { createMemo, Show, For } from 'solid-js';
+import { createSignal, createMemo, Show, For } from 'solid-js';
+import { debounce } from 'throttle-debounce';
 import { store } from '../hooks/useStore';
-import { handleWheel } from '../hooks/useStore/slice';
 import { useDrag } from '../hooks/useDrag';
 
 import classes from '../index.module.css';
@@ -31,14 +31,25 @@ export const Scrollbar: Component = () => {
       : `${(1 / store.pageList.length) * 100 * store.activePageIndex}%`,
   );
 
+  // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
+  const [penetrate, setPenetrate] = createSignal(false);
+  const resetPenetrate = debounce(200, () => setPenetrate(false));
+  const handleWheel = () => {
+    setPenetrate(true);
+    resetPenetrate();
+  };
+
+  /** 是否强制显示滚动条 */
+  const showScrollbar = createMemo(() => store.showScrollbar || !!penetrate());
+
   return (
     <div
       ref={(e) => useDrag(e)}
       class={classes.scrollbar}
       classList={{
-        [classes.hidden]:
-          !store.option.scrollbar.enabled && !store.showScrollbar,
+        [classes.hidden]: !store.option.scrollbar.enabled && !showScrollbar(),
       }}
+      style={{ 'pointer-events': penetrate() ? 'none' : 'auto' }}
       role="scrollbar"
       aria-controls={classes.mangaFlow}
       aria-valuenow={store.activePageIndex || -1}
@@ -47,7 +58,7 @@ export const Scrollbar: Component = () => {
     >
       <div
         class={classes.scrollbarDrag}
-        data-show={!store.option.scrollbar.autoHidden || store.showScrollbar}
+        data-show={!store.option.scrollbar.autoHidden || showScrollbar()}
         style={{
           height: height(),
           /**
@@ -62,7 +73,7 @@ export const Scrollbar: Component = () => {
         <div
           class={classes.scrollbarPoper}
           classList={{ [classes.hidden]: !store.scrollbar.tipText }}
-          data-show={store.showScrollbar}
+          data-show={showScrollbar()}
         >
           {store.scrollbar.tipText}
         </div>

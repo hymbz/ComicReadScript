@@ -29,7 +29,6 @@
 .mangaFlowBox {
   /* 隐藏滚动条但不影响滚动 */
   scrollbar-width: none;
-  overflow: auto;
   height: 100%;
 
   /* 隐藏滚动条但不影响滚动 */

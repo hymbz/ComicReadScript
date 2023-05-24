@@ -18,31 +18,9 @@ const getPageIndexText = (state: State, pageIndex: number) => {
     // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
     return `${index + 1} (${loadTypeMap[img.loadType]})`;
   }) as [string] | [string, string];
-  if (state.option.dir === 'rtl') pageIndexText.reverse();
+  if (state.option.dir === 'rtl')
+    pageIndexText.reverse() as [string] | [string, string];
   return pageIndexText;
-};
-
-/** 更新滚动条提示文本 */
-export const updateTipText = (state: State) => {
-  state.scrollbar.tipText = (() => {
-    if (!state.pageList.length) return '';
-
-    if (!state.option.scrollMode)
-      return getPageIndexText(state, state.activePageIndex).join(' | ');
-
-    const {
-      pageList,
-      scrollbar: { dragHeight, dragTop },
-    } = state;
-    const pageIndex = pageList
-      .slice(
-        Math.floor(dragTop * pageList.length),
-        Math.floor((dragTop + dragHeight) * pageList.length),
-      )
-      .flat()
-      .map((index) => getPageIndexText(state, index));
-    return pageIndex.join('\n');
-  })();
 };
 
 /** 更新滚动条滑块的高度和所处高度 */
@@ -61,6 +39,9 @@ export const updateDrag = (state: State) => {
     !windowHeight || !contentHeight ? 0 : windowHeight / contentHeight;
 };
 
+/** 卷轴模式下当前显示图片的列表 */
+const activeImageIndexList: number[] = [];
+
 /** 监视漫画页的滚动事件 */
 export const handleMangaFlowScroll = () => {
   if (!store.option.scrollMode) return;
@@ -68,33 +49,50 @@ export const handleMangaFlowScroll = () => {
   setState((state) => {
     const mangaFlowEle = state.mangaFlowRef?.parentNode as HTMLElement;
 
+    const { scrollTop } = mangaFlowEle;
     /** 漫画的总高度 */
     const contentHeight = mangaFlowEle?.scrollHeight;
 
     state.scrollbar.dragTop =
-      !mangaFlowEle || !contentHeight
-        ? 0
-        : mangaFlowEle.scrollTop / contentHeight;
-    state.activePageIndex = Math.floor(
-      state.scrollbar.dragTop * state.pageList.length,
-    );
-  });
+      !mangaFlowEle || !contentHeight ? 0 : scrollTop / contentHeight;
 
-  setState(updateDrag);
+    const imgEleList = state.mangaFlowRef!
+      .childNodes as NodeListOf<HTMLImageElement>;
+    const scrollBottom = scrollTop + state.rootRef!.offsetHeight;
+
+    activeImageIndexList.length = 0;
+
+    // 通过一个一个检查图片元素所在高度来判断图片是否被显示
+    for (let i = 0; i < imgEleList.length; i += 1) {
+      const element = imgEleList[i];
+      const top = element.offsetTop;
+      const bottom = element.offsetTop + element.offsetHeight;
+      if (
+        (top > scrollTop && top < scrollBottom) ||
+        (bottom < scrollBottom && bottom > scrollTop)
+      )
+        activeImageIndexList.push(+element.alt);
+      else if (activeImageIndexList.length) break;
+    }
+
+    state.activePageIndex = activeImageIndexList.at(0) ?? 0;
+
+    updateDrag(state);
+  });
 };
 
-/** 使在滚动条上的滚轮可以触发滚动 */
-export const handleWheel = (e: WheelEvent) => {
-  /** 能显示出漫画的高度 */
-  const windowHeight = store.rootRef?.offsetHeight;
-  if (!windowHeight) return;
+/** 更新滚动条提示文本 */
+export const updateTipText = (state: State) => {
+  state.scrollbar.tipText = (() => {
+    if (!state.pageList.length || !state.mangaFlowRef) return '';
 
-  /** 滚动条高度 */
-  const scrollbarHeight = (e.target as HTMLElement).offsetHeight;
-  // 使用 scrollBy 会导致和原生滚动效果不同，少了平滑滚动，但初次之外找不到其他办法了
-  store.mangaFlowRef?.scrollBy({
-    top: (e.deltaY / scrollbarHeight) * windowHeight,
-  });
+    if (!state.option.scrollMode)
+      return getPageIndexText(state, state.activePageIndex).join(' | ');
+
+    return activeImageIndexList
+      .map((index) => getPageIndexText(state, index))
+      .join('\n');
+  })();
 };
 
 /** 开始拖拽时的 dragTop 值 */

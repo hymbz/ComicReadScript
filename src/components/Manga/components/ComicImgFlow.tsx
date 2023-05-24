@@ -1,30 +1,46 @@
 import type { Component } from 'solid-js';
-import { Index, onMount } from 'solid-js';
+import { Index } from 'solid-js';
 
 import { ComicImg } from './ComicImg';
-import { setState, store } from '../hooks/useStore';
-import { handleMangaFlowScroll, initPanzoom } from '../hooks/useStore/slice';
+import { store } from '../hooks/useStore';
+import {
+  bindRef,
+  handleMangaFlowScroll,
+  initPanzoom,
+} from '../hooks/useStore/slice';
 
 import classes from '../index.module.css';
+import { handlePageClick } from './TouchArea';
+import { useDoubleClick } from '../hooks/useDoubleClick';
 
 /**
  * 漫画图片流的容器
  */
 export const ComicImgFlow: Component = () => {
-  let mangaFlowRef: HTMLDivElement;
-  // 绑定 mangaFlowRef
-  onMount(() => {
-    setState((state) => {
-      state.mangaFlowRef = mangaFlowRef;
-      initPanzoom(state);
+  const handleClick = (e: MouseEvent) => handlePageClick(e);
+
+  /** 处理双击缩放 */
+  const handleDoubleClickZoom = (e: MouseEvent) => {
+    setTimeout(() => {
+      if (!store.panzoom) return;
+
+      const { scale } = store.panzoom.getTransform();
+
+      // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
+      if (scale >= 2) store.panzoom?.smoothZoomAbs(e.clientX, e.clientY, 1);
+      else store.panzoom?.smoothZoomAbs(e.clientX, e.clientY, scale + 1);
     });
-  });
+  };
 
   return (
-    <div class={classes.mangaFlowBox} onScroll={handleMangaFlowScroll}>
+    <div
+      class={classes.mangaFlowBox}
+      onScroll={handleMangaFlowScroll}
+      style={{ overflow: store.option.scrollMode ? 'auto' : 'hidden' }}
+    >
       <div
         id={classes.mangaFlow}
-        ref={mangaFlowRef!}
+        ref={bindRef('mangaFlowRef', initPanzoom)}
         class={classes.mangaFlow}
         classList={{
           [classes.disableZoom]:
@@ -32,6 +48,7 @@ export const ComicImgFlow: Component = () => {
           [classes.scrollMode]: store.option.scrollMode,
         }}
         dir={store.option.dir}
+        onClick={useDoubleClick(handleClick, handleDoubleClickZoom)}
       >
         <Index each={store.imgList}>
           {(img, i) => <ComicImg img={img()} index={i} />}

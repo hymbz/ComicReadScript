@@ -1,7 +1,7 @@
 import { switchFillEffect, turnPage } from './Image';
 import { setState, store } from '..';
 
-export const handleScroll = (e: WheelEvent) => {
+export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
 
   if (e.altKey || (!store.endPageType && store.scrollLock)) return;

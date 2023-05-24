@@ -3,7 +3,7 @@ import type { JSX, Component } from 'solid-js';
 import 'solid-js';
 
 declare global {
-  type EventHandler<T = HTMLElement> = JSX.CustomEventHandlersCamelCase<T>;
+  type EventHandler<T = HTMLElement> = JSX.DOMAttributes<T>;
 
   type ClassList = {
     [k: string]: boolean | undefined;
