@@ -64,6 +64,12 @@
       max-width: var(--img_max_width);
       height: auto;
       max-height: unset;
+
+      /* 让未显示的图片提前占下位 */
+      &[data-load-type="wait"] {
+        flex-basis: var(--img_placeholder_height, 100vh);
+        flex-shrink: 0;
+      }
     }
   }
 

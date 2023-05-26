@@ -5,13 +5,14 @@ import {
   sleep,
   toast,
   useInit,
+  querySelectorClick,
 } from '../main';
 
 (async () => {
   // 只在漫画页内运行
   if (!window.location.pathname.includes('/photo/')) return;
 
-  const { init, setFab } = await useInit('jm');
+  const { init, setManga, setFab } = await useInit('jm');
 
   while (!unsafeWindow?.onImageLoaded) {
     if (document.readyState === 'complete') {
@@ -21,6 +22,11 @@ import {
     // eslint-disable-next-line no-await-in-loop
     await sleep(100);
   }
+
+  setManga({
+    onPrev: querySelectorClick('.menu-bolock-ul a:has(.fa-angle-double-left)'),
+    onNext: querySelectorClick('.menu-bolock-ul a:has(.fa-angle-double-right)'),
+  });
 
   const imgEleList = querySelectorAll<HTMLImageElement>('.scramble-page > img');
 

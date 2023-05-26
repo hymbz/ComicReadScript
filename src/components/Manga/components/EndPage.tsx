@@ -17,8 +17,6 @@ let delayTypeTimer = 0;
 export const EndPage: Component = () => {
   const handleClick = (e: MouseEvent) => {
     e.stopPropagation();
-    if ((e.target as Element).nodeName === 'BUTTON') return;
-
     setState((state) => {
       state.endPageType = undefined;
     });
@@ -93,7 +91,7 @@ export const EndPage: Component = () => {
       <p class={classes.tip}>{tip()}</p>
       <button
         class={store.onPrev ? undefined : classes.invisible}
-        onClick={store.onPrev}
+        onClick={() => store.onPrev?.()}
         type="button"
         tabIndex={store.endPageType ? 0 : -1}
       >
@@ -109,7 +107,7 @@ export const EndPage: Component = () => {
       </button>
       <button
         class={store.onNext ? undefined : classes.invisible}
-        onClick={store.onNext}
+        onClick={() => store.onNext?.()}
         type="button"
         tabIndex={store.endPageType ? 0 : -1}
       >

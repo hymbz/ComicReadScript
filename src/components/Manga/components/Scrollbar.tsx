@@ -5,15 +5,7 @@ import { store } from '../hooks/useStore';
 import { useDrag } from '../hooks/useDrag';
 
 import classes from '../index.module.css';
-
-/** 滚动条上用于显示对应图片加载情况的元素 */
-const ScrollbarPage: Component<{ index: number }> = (props) => (
-  <div
-    class={classes.scrollbarPage}
-    data-index={props.index}
-    data-type={store.imgList[props.index].loadType}
-  />
-);
+import { ScrollbarPage } from './ScrollbarPage';
 
 /** 滚动条 */
 export const Scrollbar: Component = () => {
@@ -81,12 +73,7 @@ export const Scrollbar: Component = () => {
 
       <Show when={store.option.scrollbar.showProgress}>
         <For each={store.pageList}>
-          {([a, b]) => (
-            <div>
-              <ScrollbarPage index={a !== -1 ? a : b!} />
-              {b ? <ScrollbarPage index={b !== -1 ? b : a} /> : null}
-            </div>
-          )}
+          {([a, b]) => <ScrollbarPage a={a} b={b} />}
         </For>
       </Show>
     </div>

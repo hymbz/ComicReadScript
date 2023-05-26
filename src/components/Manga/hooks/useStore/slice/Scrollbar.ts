@@ -5,6 +5,15 @@ import { setState, store } from '..';
 import type { UseDragOption } from '../../useDrag';
 import { loadTypeMap } from '../ImageState';
 
+/** 漫画流的容器 */
+export const mangaFlowEle = () => store.mangaFlowRef?.parentNode as HTMLElement;
+
+/** 漫画流的总高度 */
+export const contentHeight = () => mangaFlowEle().scrollHeight;
+
+/** 能显示出漫画的高度 */
+export const windowHeight = () => store.rootRef?.offsetHeight ?? 0;
+
 /**
  * 获取指定 page 中的图片 index，并在后面加上加载状态
  */
@@ -30,13 +39,8 @@ export const updateDrag = (state: State) => {
     state.scrollbar.dragTop = 0;
     return;
   }
-
-  /** 能显示出漫画的高度 */
-  const windowHeight = state.rootRef!.offsetHeight;
-  /** 漫画的总高度 */
-  const contentHeight = state.mangaFlowRef!.scrollHeight;
   state.scrollbar.dragHeight =
-    !windowHeight || !contentHeight ? 0 : windowHeight / contentHeight;
+    windowHeight() / (contentHeight() || windowHeight());
 };
 
 /** 卷轴模式下当前显示图片的列表 */
@@ -47,14 +51,10 @@ export const handleMangaFlowScroll = () => {
   if (!store.option.scrollMode) return;
 
   setState((state) => {
-    const mangaFlowEle = state.mangaFlowRef?.parentNode as HTMLElement;
-
-    const { scrollTop } = mangaFlowEle;
-    /** 漫画的总高度 */
-    const contentHeight = mangaFlowEle?.scrollHeight;
+    const { scrollTop } = mangaFlowEle();
 
     state.scrollbar.dragTop =
-      !mangaFlowEle || !contentHeight ? 0 : scrollTop / contentHeight;
+      !mangaFlowEle || !contentHeight() ? 0 : scrollTop / contentHeight();
 
     const imgEleList = state.mangaFlowRef!
       .childNodes as NodeListOf<HTMLImageElement>;
@@ -113,11 +113,6 @@ export const dragOption: UseDragOption = {
     let top = clickTop;
 
     if (store.option.scrollMode) {
-      const mangaFlowEle = store.mangaFlowRef.parentNode as HTMLElement;
-
-      /** 漫画的总高度 */
-      const contentHeight = mangaFlowEle.scrollHeight;
-
       if (type === 'dragging') {
         /** 在滚动条上的移动比率 */
         const dy = (y - iy) / scrollbarHeight;
@@ -125,13 +120,13 @@ export const dragOption: UseDragOption = {
         // 处理超出范围的情况
         if (top < 0) top = 0;
         else if (top > 1) top = 1;
-        mangaFlowEle.scrollTo({ top: top * contentHeight });
+        mangaFlowEle().scrollTo({ top: top * contentHeight() });
       } else {
         // 确保滚动条的中心会在点击位置
         top -= store.scrollbar.dragHeight / 2;
         startTop = top;
-        mangaFlowEle.scrollTo({
-          top: top * contentHeight,
+        mangaFlowEle().scrollTo({
+          top: top * contentHeight(),
           behavior: 'smooth',
         });
       }
