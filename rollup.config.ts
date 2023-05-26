@@ -71,19 +71,20 @@ export const meta = {
     'idmzj.com',
     'exhentai.org',
     'e-hentai.org',
+    'hath.network',
     'nhentai.net',
+    'hypergryph.com',
     'mangabz.com',
     'copymanga.site',
-    'copymanga.info',
-    'copymanga.net',
-    'copymanga.org',
-    'copymanga.com',
+    'self',
     '*',
   ],
   grant: [
     'GM_addElement',
     'GM_getResourceText',
     'GM_xmlhttpRequest',
+    'GM.addValueChangeListener',
+    'GM.removeValueChangeListener',
     'GM.getResourceText',
     'GM.addStyle',
     'GM.getValue',
@@ -122,7 +123,7 @@ const metaHeader = (() => {
       }
     })
     .join('\n');
-  return ['// ==UserScript==', metaStr, '// ==/UserScript=='].join('\n');
+  return `// ==UserScript==\n${metaStr}\n// ==/UserScript==\n\n`;
 })();
 
 export const buildOptions = (
@@ -174,8 +175,6 @@ export const buildOptions = (
       strict: false,
       generatedCode: 'es2015',
       extend: true,
-      // 为脚本加上油猴的注释
-      intro: isUserScript ? metaHeader : undefined,
       plugins: [
         {
           name: 'selfPlugin',
@@ -224,6 +223,9 @@ export const buildOptions = (
                   .replaceAll('require$1', 'require');
                 break;
             }
+
+            // 为脚本加上油猴的注释
+            if (isUserScript) newCode = metaHeader + newCode;
 
             return newCode;
           },

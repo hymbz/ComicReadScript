@@ -1,11 +1,16 @@
 declare const isDevMode: boolean;
 
+const GMRe = /^GM/;
+const gmApiList = Object.keys(window).filter((name) => GMRe.test(name));
+const gmApiMap = Object.fromEntries(
+  gmApiList.map((name) => [name, window[name]]),
+);
+
 unsafeWindow.crsLib = {
   // 有些 cjs 模块会检查这个，所以在这里声明下
   process: { env: { NODE_ENV: process.env.NODE_ENV } },
-  // 把 GM 相关函数放进去以便其中使用
-  GM_xmlhttpRequest,
-  GM,
+  // 把 GM API 放进去以便使用
+  ...gmApiMap,
 };
 
 /**
@@ -18,11 +23,11 @@ const selfImportSync = (name: string) => {
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
   // 将模块导出变量放到 crsLib 对象里，防止污染全局作用域和网站自身的模块产生冲突
-  return GM_addElement('script', {
+  GM_addElement('script', {
     textContent: `
       window.crsLib['${name}'] = {};
       ${isDevMode ? `console.time('导入 ${name}');` : ''}
-      (function (process, require, exports, module, GM, GM_xmlhttpRequest) {
+      (function (process, require, exports, module, ${gmApiList.join(', ')}) {
         ${code}
       })(
         window.crsLib.process,
@@ -36,8 +41,7 @@ const selfImportSync = (name: string) => {
             return window.crsLib['${name}'];
           },
         },
-        window.crsLib.GM,
-        window.crsLib.GM_xmlhttpRequest,
+        ${gmApiList.map((apiName) => `window.crsLib.${apiName}`).join(', ')}
       );
       ${isDevMode ? `console.timeEnd('导入 ${name}');` : ''}
     `,

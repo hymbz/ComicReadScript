@@ -10,7 +10,7 @@ import { Dynamic } from 'solid-js/web';
 import type { FabProps } from '../Fab';
 import { Fab, FabStyle } from '../Fab';
 import { IconButtonStyle } from '../IconButton';
-import { mountComponents } from '../../helper';
+import { mountComponents } from './helper';
 
 let mounted = false;
 

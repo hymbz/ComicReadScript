@@ -8,7 +8,8 @@ import { createStore, produce } from 'solid-js/store';
 import { IconButton, IconButtonStyle } from '../IconButton';
 import type { MangaProps } from '../Manga';
 import { buttonListDivider, MangaStyle, Manga } from '../Manga';
-import { mountComponents, request, saveAs } from '../../helper';
+import { request, saveAs } from '../../helper';
+import { mountComponents } from './helper';
 import { toast } from './Toast';
 
 export type SelfMangaProps = MangaProps & {
@@ -111,7 +112,7 @@ export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
       });
       saveAs(new Blob([zipped]), `${document.title}.zip`);
       setTip('下载完成');
-      toast('下载完成');
+      toast.success('下载完成');
     };
 
     return (

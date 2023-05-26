@@ -1,8 +1,10 @@
+import { For } from 'solid-js';
 import { useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
 import { toast } from '../components/useComponents/Toast';
 import { useSiteOptions } from './useSiteOptions';
 import { useSpeedDial } from './useSpeedDial';
+import { request } from '.';
 
 /**
  * 对所有支持站点页面的初始化操作的封装
@@ -32,43 +34,56 @@ export const useInit = async <T extends Record<string, any>>(
   // 检查脚本的版本变化，提示用户
   const version = await GM.getValue<string>('Version');
   if (version && version !== GM.info.script.version) {
-    // FIXME: 实现通过 jsdelivr 获取指定版本的更新内容
-    //     const changelog = `
-    // ## 新增
-
-    // - 通过 M 键切换页面填充
-
-    // ## 修复
-
-    // - 增加拷贝漫画的支持域名
-    // - 修复漫画柜失效问题
-    // `;
     (async () => {
-      // const res = await request(
-      //   `https://cdn.jsdelivr.net/gh/hymbz/ComicReadScriptTest@${GM.info.script.version}/file`,
-      //   { errorText: '' },
-      // );
-      // toast(() => (
-      //   <div>
-      //     <h2>ComicReadScrip 已更新到 {GM.info.script.version}</h2>
-      //     <div className="md">
-      //       {res.responseText.match(/##.+?\n|(-.+?\n)+/g)!.map((mdText) => {
-      //         if (mdText[0] === '#') return <h2>{mdText.split('##')}</h2>;
-      //         if (mdText[0] === '-')
-      //           return (
-      //             <ul>
-      //               {mdText.match(/(?<=- ).+/g)!.map((item) => (
-      //                 <li>{item}</li>
-      //               ))}
-      //             </ul>
-      //           );
-      //         return null;
-      //       })}
-      //     </div>
-      //   </div>
-      // ));
-      // GM_setValue('Version', GM.info.script.version);
+      const res = await request(
+        `https://cdn.jsdelivr.net/gh/hymbz/ComicReadScriptTest@${GM.info.script.version}/docs/LatestChange.md`,
+        { errorText: '' },
+      );
+      toast(
+        () => (
+          <>
+            <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
+            <div class="md">
+              <For each={res.responseText.match(/^### [^[].+?$|^\* .+?$/gm)}>
+                {(mdText) => {
+                  switch (mdText[0]) {
+                    case '#':
+                      return <h3>{mdText.replace('### ', '')}</h3>;
+                    case '*':
+                      return (
+                        <ul>
+                          <For each={mdText.match(/(?<=:.+?: ).+?(?= \()/)}>
+                            {(item) => <li>{item}</li>}
+                          </For>
+                        </ul>
+                      );
+                    default:
+                      return null;
+                  }
+                }}
+              </For>
+            </div>
+          </>
+        ),
+        {
+          id: 'Version Tip',
+          duration: Infinity,
+          // 手动点击关掉通知后才不会再次弹出
+          onDismiss: () => GM.setValue('Version', GM.info.script.version),
+        },
+      );
     })();
+
+    // 监听储存的版本数据的变动，如果和当前版本一致就关掉弹窗
+    // 防止在更新版本后一次性打开多个页面，不得不一个一个关过去
+    const listenerId = await GM.addValueChangeListener(
+      'Version',
+      async (_, __, newVersion) => {
+        if (newVersion !== GM.info.script.version) return;
+        toast.dismiss('Version Tip');
+        await GM.removeValueChangeListener(listenerId);
+      },
+    );
   }
 
   let menuId: number;
@@ -115,7 +130,7 @@ export const useInit = async <T extends Record<string, any>>(
       const showComic = async (show: boolean = options.autoShow) => {
         if (loading) {
           toast.warn('加载图片中，请稍候', {
-            unmountDelay: 1500,
+            duration: 1500,
             id: '加载图片中，请稍候',
           });
           return;

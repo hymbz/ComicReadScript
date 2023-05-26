@@ -15,7 +15,7 @@ import {
 
   while (!unsafeWindow?.onImageLoaded) {
     if (document.readyState === 'complete') {
-      toast.error('无法获取图片', { duration: 60000 });
+      toast.error('无法获取图片', { duration: Infinity });
       return;
     }
     // eslint-disable-next-line no-await-in-loop

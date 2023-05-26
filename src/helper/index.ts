@@ -1,5 +1,4 @@
-import type { JSX } from 'solid-js';
-import { render } from 'solid-js/web';
+import { toast } from '../components/useComponents/Toast';
 
 export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
   T extends (...args: any) => Promise<infer R> ? R : any;
@@ -41,16 +40,6 @@ export const insertNode = (
   const frag = document.createDocumentFragment();
   while (temp.firstChild) frag.appendChild(temp.firstChild);
   node.insertBefore(frag, referenceNode);
-};
-
-/** 挂载 solid-js 组件 */
-export const mountComponents = (id: string, fc: () => JSX.Element) => {
-  const dom = document.createElement('div');
-  dom.id = id;
-  document.body.appendChild(dom);
-  const shadowDom = dom.attachShadow({ mode: 'open' });
-  render(fc, shadowDom);
-  return dom;
 };
 
 /** 返回 Dom 的点击函数 */
@@ -158,6 +147,7 @@ export const request = async <T = any>(
   url: string,
   details?: Partial<Tampermonkey.Request<any>> & {
     errorText?: string;
+    noTip?: true;
   },
   errorNum = 0,
 ): Promise<Tampermonkey.Response<T>> => {
@@ -172,11 +162,8 @@ export const request = async <T = any>(
     if (res.status !== 200) throw new Error(errorText);
     return res;
   } catch (error) {
-    if (errorNum > 3) {
-      if (errorText) {
-        const { useToast } = require('../main');
-        useToast().error(errorText);
-      }
+    if (errorNum >= 3) {
+      if (errorText && !details?.noTip) toast.error(errorText);
       throw new Error(errorText);
     }
     console.error(errorText, error);
