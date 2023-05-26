@@ -88,7 +88,7 @@ interface History {
       try {
         const res = await fetch(`plugin.php?id=zqlj_sign&sign=${sign}`);
         const body = await res.text();
-        if (!/签到成功|打过卡/.test(body)) throw new Error('自动签到失败');
+        if (!/成功！|打过卡/.test(body)) throw new Error('自动签到失败');
         toast.success('自动签到成功');
         localStorage.setItem('signDate', todayString);
       } catch (e) {
