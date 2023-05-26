@@ -149,14 +149,37 @@ import {
 
       tipDom.innerText = `加载完成，即将进入阅读模式`;
 
-      const { folder, page_url } = JSON.parse(res.responseText) as {
+      const {
+        folder,
+        chapter_name,
+        next_chap_id,
+        prev_chap_id,
+        comic_id,
+        page_url,
+      } = JSON.parse(res.responseText) as {
         folder: string;
+        chapter_name: string;
+        next_chap_id: number;
+        prev_chap_id: number;
+        comic_id: number;
         page_url: string[];
       };
-      document.title = folder.split('/').at(-2) ?? folder;
+      document.title = `${chapter_name} ${folder.split('/').at(1)}` ?? folder;
 
       // 进入阅读模式后禁止退出，防止返回空白页面
-      setManga({ onExit: () => {}, editButtonList: (list) => list });
+      setManga({
+        onExit: () => {},
+        onNext: next_chap_id
+          ? () => {
+              window.location.href = `https://m.dmzj.com/view/${comic_id}/${next_chap_id}.html`;
+            }
+          : undefined,
+        onPrev: prev_chap_id
+          ? () => {
+              window.location.href = `https://m.dmzj.com/view/${comic_id}/${prev_chap_id}.html`;
+            }
+          : undefined,
+      });
 
       const showComic = init(() => {
         if (page_url.length) return page_url;
