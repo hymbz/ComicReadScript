@@ -13,12 +13,18 @@ unsafeWindow.crsLib = {
   ...gmApiMap,
 };
 
+const getCode = (name: string) => {
+  if (name === '../main') return inject('main');
+  if (name.includes('./')) return GM_getResourceText(name.split('/').at(-1)!);
+  return GM_getResourceText(name);
+};
+
 /**
  * 通过 Resource 导入外部模块
  * @param name \@resource 引用的资源名
  */
 const selfImportSync = (name: string) => {
-  const code = name === '../main' ? inject('main') : GM_getResourceText(name);
+  const code = getCode(name);
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器

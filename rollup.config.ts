@@ -44,6 +44,9 @@ const resourceList: Record<string, [string, string] | [string]> = {
   ],
   panzoom: ['https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js'],
   fflate: ['https://unpkg.com/fflate@0.7.4/umd/index.js'],
+  dmzjDecrypt: [
+    'https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1195841',
+  ],
   dmzj_style: ['https://userstyles.org/styles/chrome/119945.json'],
 };
 const resource = {
@@ -135,7 +138,11 @@ export const buildOptions = (
 
   return {
     treeshake: false,
-    external: [...Object.keys(meta.resource ?? {}), '../main'],
+    external: [
+      ...Object.keys(meta.resource ?? {}),
+      '../main',
+      '../helper/dmzjDecrypt',
+    ],
     input: resolve(__dirname, 'src', fileName),
     // 忽略使用 eval 的警告
     onwarn(warning, warn) {
@@ -271,6 +278,13 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
 })();
 
 export default [
+  // // 打包 dmzjDecrypt 时用的配置
+  // (() => {
+  //   const options = buildOptions('helper/dmzjDecrypt');
+  //   options.output = { ...options.output, name: 'dmzjDecrypt', format: 'umd' };
+  //   return options;
+  // })(),
+
   buildOptions('dev'),
   buildOptions('main'),
 
