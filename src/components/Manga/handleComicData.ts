@@ -3,6 +3,8 @@ import type { FillEffect } from './hooks/useStore/ImageState';
 // 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
 // 2. 因为大部分用户都不会在意正确页序，所以应该尽量少加填充页
 
+let autoCloseFill = true;
+
 /**
  * 根据图片比例和填充页设置对漫画图片进行排列
  */
@@ -31,7 +33,10 @@ export const handleComicData = (
     } else {
       if (imgCache !== null) {
         // 默认会开启首页填充，但如果在开头和中间出现了跨页，就应该关掉
-        if (fillEffect['-1'] && i < imgList.length - 2) {
+        // 不考虑结尾是防止被结尾汉化组图误导
+        if (autoCloseFill && fillEffect['-1'] && i < imgList.length - 2) {
+          // 只在首次排列时会自动关闭
+          autoCloseFill = false;
           fillEffect['-1'] = false;
           return handleComicData(imgList, fillEffect);
         }
