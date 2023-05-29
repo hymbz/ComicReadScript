@@ -13,8 +13,8 @@ import { SettingPanel } from './components/SettingPanel';
 
 import classes from './index.module.css';
 import {
-  activeImgIndex,
   handleMangaFlowScroll,
+  jumpBackPage,
   nowFillIndex,
   setOption,
   switchFillEffect,
@@ -42,15 +42,12 @@ export const defaultButtonList: ToolbarButtonList = [
       hidden={store.option.scrollMode}
       onClick={() => {
         setState((state) => {
+          const jump = jumpBackPage(state);
           setOption((draftOption) => {
             draftOption.onePageMode = !draftOption.onePageMode;
           });
           updatePageData(state);
-          state.activePageIndex = state.option.onePageMode
-            ? activeImgIndex()
-            : state.pageList.findIndex((page) =>
-                page.includes(activeImgIndex()),
-              );
+          jump();
         });
       }}
     >

@@ -229,10 +229,22 @@ export const { activeImgIndex, nowFillIndex } = createRoot(() => {
   };
 });
 
+/** 在图片排列改变后自动跳转回原先显示图片所在的页数 */
+export const jumpBackPage = (state: State) => {
+  const lastActiveImgIndex = activeImgIndex();
+  return () => {
+    state.activePageIndex = state.pageList.findIndex((page) =>
+      page.includes(lastActiveImgIndex),
+    );
+  };
+};
+
 /** 切换页面填充 */
 export const switchFillEffect = () => {
   setState((state) => {
+    const jump = jumpBackPage(state);
     state.fillEffect[nowFillIndex()] = !state.fillEffect[nowFillIndex()];
     updatePageData(state);
+    jump();
   });
 };
