@@ -52,11 +52,13 @@ switch (window.location.hostname) {
   case 'copymanga.info':
   case 'copymanga.net':
   case 'copymanga.org':
+  case 'copymanga.tv':
   case 'copymanga.com':
   case 'www.copymanga.site':
   case 'www.copymanga.info':
   case 'www.copymanga.net':
   case 'www.copymanga.org':
+  case 'www.copymanga.tv':
   case 'www.copymanga.com': {
     inject('copymanga');
     break;

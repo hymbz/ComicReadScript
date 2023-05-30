@@ -100,9 +100,9 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
 
   createEffect(() => {
     setState((state) => {
-      if (props.onExit) state.onExit = props.onExit;
-      if (props.onPrev) state.onPrev = props.onPrev;
-      if (props.onNext) state.onNext = props.onNext;
+      state.onExit = props.onExit;
+      state.onPrev = props.onPrev;
+      state.onNext = props.onNext;
 
       if (props.editButtonList) state.editButtonList = props.editButtonList;
       if (props.editSettingList) state.editSettingList = props.editSettingList;

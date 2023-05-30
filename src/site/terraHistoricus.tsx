@@ -1,4 +1,4 @@
-import { querySelectorClick, useInit, request, plimit } from '../main';
+import { querySelectorClick, useInit, request, plimit, wait } from '../main';
 
 (async () => {
   // 只在漫画页内运行
@@ -27,22 +27,31 @@ import { querySelectorClick, useInit, request, plimit } from '../main';
     );
   };
 
-  // 点击指定 dom 的同时重新获取图片列表
-  const turnPage = (selector: string) => async () => {
-    const turnPageFunc = querySelectorClick(selector);
-    if (!turnPageFunc) return;
+  init(getImgList);
 
-    turnPageFunc();
-    setManga({ imgList: [] });
-    setManga({ imgList: await getImgList(), show: true });
+  const setTurnPage = () => {
+    const creatTrunPageFn = (selector: string) => {
+      const fn = querySelectorClick(selector);
+      if (!fn) return null;
+
+      return async () => {
+        fn();
+        setManga({ imgList: [] });
+        setManga({
+          imgList: await getImgList(),
+          show: true,
+        });
+        setTurnPage();
+      };
+    };
+
+    setManga({
+      onPrev: creatTrunPageFn('footer .HG_GAME_JS_BRIDGE__prev a'),
+      onNext: creatTrunPageFn(
+        'footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a',
+      ),
+    });
   };
 
-  setManga({
-    onPrev: turnPage('footer .HG_GAME_JS_BRIDGE__prev a'),
-    onNext: turnPage(
-      'footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a',
-    ),
-  });
-
-  init(getImgList);
+  wait('footer .HG_GAME_JS_BRIDGE__wrapper', setTurnPage);
 })();

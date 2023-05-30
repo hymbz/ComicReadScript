@@ -22,9 +22,9 @@ export const OtherState = {
   /** 点击结束页按钮时触发的回调 */
   onExit: undefined as ((isEnd?: boolean) => void) | undefined | null,
   /** 点击上一话按钮时触发的回调 */
-  onPrev: undefined as (() => void) | undefined,
+  onPrev: undefined as (() => void | Promise<void>) | undefined | null,
   /** 点击下一话按钮时触发的回调 */
-  onNext: undefined as (() => void) | undefined,
+  onNext: undefined as (() => void | Promise<void>) | undefined | null,
   /** 图片加载状态发生变化时触发的回调 */
   onLoading: undefined as
     | ((img: ComicImg, imgList: ComicImg[]) => void | Promise<void>)

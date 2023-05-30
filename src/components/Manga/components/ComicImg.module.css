@@ -14,6 +14,7 @@
   /* 隐藏因为 src 为空而出现的图片加载错误的图 */
   &[data-load-type="error"],
   &[data-load-type="wait"] {
+    max-width: 50%;
     visibility: hidden;
   }
 

@@ -42,7 +42,7 @@ export const handleComicData = (
         }
 
         if (imgCache !== -1) {
-          // 跨页在倒数两张的话大概率时汉化组加的图，应该将填充页放在后面
+          // 跨页在倒数两张的话大概率是汉化组加的图，应该将填充页放在后面
           if (i >= imgList.length - 2) pageList.push([imgCache, -1]);
           // 正常进度中出现的跨页应该代表页序的「正确答案」，导致了缺页的话就说明在这之前缺少填充页
           else pageList.push([-1, imgCache]);
