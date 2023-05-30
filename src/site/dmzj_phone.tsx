@@ -1,3 +1,4 @@
+import dmzjDecrypt from '../helper/dmzjDecrypt';
 import {
   insertNode,
   querySelector,
@@ -6,10 +7,6 @@ import {
   request,
   useInit,
 } from '../main';
-
-// 接口参考
-// https://github.com/xiaoyaocz/flutter_dmzj/blob/ecbe73eb435624022ae5a77156c5d3e0c06809cc/lib/requests/api.dart
-// https://github.com/erinacio/tachiyomi-extensions/blob/548be91cccb8f248342e2e7762c2c3d4b2d02036/src/zh/dmzj/src/eu/kanade/tachiyomi/extension/zh/dmzj/Dmzj.kt
 
 (async () => {
   const { options, setManga, init } = await useInit('dmzj', {
@@ -66,46 +63,61 @@ import {
         return;
       }
 
-      // XXX: 使用旧 api 只能获取到主版本的章节，其他版本的章节无法取得，改用 v4api 应该就能拿到了
       const res = await request(
-        `http://api.dmzj.com/dynamic/comicinfo/${comicId}.json`,
+        `https://v4api.idmzj.com/comic/detail/${comicId}?uid=2665531&disable_level=1`,
         { errorText: '获取漫画数据失败' },
       );
 
       const {
-        info: { last_updatetime, title },
-        list: chaptersList,
-      } = JSON.parse(res.responseText).data as {
-        info: {
-          last_updatetime: string;
-          title: string;
-        };
-        list: Array<{
-          id: string;
-          chapter_name: string;
-          updatetime: string;
-        }>;
-      };
+        comicInfo: { last_updatetime, title, chapters },
+      } = dmzjDecrypt(res.responseText);
 
       document.title = title;
+      insertNode(document.body, `<h1>${title}</h1>`);
 
-      let temp = `<h1 style="text-align:center">${title}</h1>`;
-      let i = chaptersList.length;
-      while (i--)
-        temp += `<a target="_blank" title="${
-          chaptersList[i].chapter_name
-        }" href="https://m.dmzj.com/view/${comicId}/${
-          chaptersList[i].id
-        }.html" ${
-          chaptersList[i].updatetime === last_updatetime
-            ? 'style="color:red"'
-            : ''
-        }>${chaptersList[i].chapter_name}</a>`;
-      insertNode(document.body, temp);
+      Object.values(chapters).forEach((chapter) => {
+        // 手动构建添加章节 dom
+        let temp = `<h2>${chapter.title}</h2>`;
+        let i = chapter.data.length;
+        while (i--)
+          temp += `<a target="_blank" title="${
+            chapter.data[i].chapter_title
+          }" href="https://m.dmzj.com/view/${comicId}/${
+            chapter.data[i].chapter_id
+          }.html" ${
+            chapter.data[i].updatetime === last_updatetime
+              ? 'style="color:red"'
+              : ''
+          }>${chapter.data[i].chapter_title}</a>`;
+        insertNode(document.body, temp);
+      });
 
       document.body.removeChild(document.body.childNodes[0]);
       await GM.addStyle(
-        'body{padding:0 20vw;} a{margin:0 1em;line-height:2em;white-space:nowrap;display:inline-block;min-width:4em;}',
+        `
+          h1 {
+            margin: 0 -20vw;
+          }
+
+          h1,
+          h2 {
+            text-align: center;
+          }
+
+          body {
+            padding: 0 20vw;
+          }
+
+          a {
+            display: inline-block;
+
+            min-width: 4em;
+            margin: 0 1em;
+
+            line-height: 2em;
+            white-space: nowrap;
+          }
+        `,
       );
       break;
     }

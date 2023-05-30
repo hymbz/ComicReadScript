@@ -5,6 +5,7 @@ import {
   querySelectorAll,
   request,
 } from '../helper';
+import dmzjDecrypt from '../helper/dmzjDecrypt';
 
 declare const g_comic_url: string;
 declare const g_comic_id: string;
@@ -96,52 +97,52 @@ declare const zcClick: any;
       document.querySelector('.cartoon_online_border')!.innerHTML =
         '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
 
-      // XXX: 使用旧 api 只能获取到主版本的章节，其他版本的章节无法取得，改用 v4api 应该就能拿到了
       const res = await request(
-        `https://api.dmzj.com/dynamic/comicinfo/${g_comic_id}.json`,
-        {
-          errorText: '漫画加载出错',
-        },
+        `https://v4api.idmzj.com/comic/detail/${g_comic_id}?uid=2665531&disable_level=1`,
       );
+
+      const {
+        comicInfo: { last_updatetime, chapters, title },
+      } = dmzjDecrypt(res.responseText);
 
       // 删掉原有的章节 dom
       querySelectorAll('.odd_anim_title ~ div').forEach((e) =>
         e.parentNode?.removeChild(e),
       );
 
-      const {
-        info: { last_updatetime, title },
-        list: chaptersList,
-      } = JSON.parse(res.responseText).data as {
-        info: {
-          last_updatetime: string;
-          title: string;
-        };
-        list: Array<{
-          id: string;
-          chapter_name: string;
-          updatetime: string;
-        }>;
-      };
-
-      // 手动构建添加章节 dom
-      let temp = `<div class="photo_part"><div class="h2_title2"><span class="h2_icon h2_icon22"></span><h2>${title}</h2></div></div><div class="cartoon_online_border" style="border-top: 1px dashed #0187c5;"><ul>`;
-      let i = chaptersList.length;
-      while (i--) {
-        temp += `<li><a target="_blank" title="${
-          chaptersList[i].chapter_name
-        }" href="https://manhua.dmzj.com/${g_comic_url}${
-          chaptersList[i].id
-        }.shtml" ${
-          chaptersList[i].updatetime === last_updatetime
-            ? 'class="color_red"'
-            : ''
-        }>${chaptersList[i].chapter_name}</a></li>`;
-      }
-      insertNode(
-        querySelector('.middleright_mr')!,
-        `${temp}</ul><div class="clearfix"></div></div>`,
-      );
+      Object.values(chapters).forEach((chapter) => {
+        chapter.data.sort((a, b) => a.chapter_order - b.chapter_order);
+        // 手动构建添加章节 dom
+        let temp = `
+        <div class="photo_part">
+          <div class="h2_title2">
+            <span class="h2_icon h2_icon22"></span>
+            <h2>${title} ${
+          chapter.title === '连载'
+            ? '在线漫画全集'
+            : `漫画其它版本：${chapter.title}`
+        }</h2>
+          </div>
+        </div>
+        <div class="cartoon_online_border" style="border-top: 1px dashed #0187c5;">
+        <ul>`;
+        let i = chapter.data.length;
+        while (i--) {
+          temp += `<li><a target="_blank" title="${
+            chapter.data[i].chapter_title
+          }" href="https://manhua.dmzj.com/${g_comic_url}${
+            chapter.data[i].chapter_id
+          }.shtml" ${
+            chapter.data[i].updatetime === last_updatetime
+              ? 'class="color_red"'
+              : ''
+          }>${chapter.data[i].chapter_title}</a></li>`;
+        }
+        insertNode(
+          querySelector('.middleright_mr')!,
+          `${temp}</ul><div class="clearfix"></div></div>`,
+        );
+      });
     }
     return;
   }
