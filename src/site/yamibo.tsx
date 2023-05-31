@@ -375,7 +375,6 @@ interface History {
           }),
         );
       };
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       updateHistoryTag();
 
       // 切换回当前页时更新提示

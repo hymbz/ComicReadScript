@@ -21,7 +21,6 @@ const handleImgLoaded = (i: number, e: HTMLImageElement) => {
     img.width = e.naturalWidth;
     updateImgType(state, img);
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     state.onLoading?.(img, state.imgList);
   });
 };
@@ -35,7 +34,6 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
     img.loadType = 'error';
     console.error('图片加载失败', e);
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     state.onLoading?.(img, state.imgList);
   });
 };

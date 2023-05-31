@@ -120,11 +120,8 @@ module.exports = {
         '@typescript-eslint/explicit-function-return-type': 'off',
         // 允许使用未注释的空函数
         '@typescript-eslint/no-empty-function': 'off',
-        // 允许匿名的异步立即执行函数
-        '@typescript-eslint/no-floating-promises': [
-          'warn',
-          { ignoreIIFE: true },
-        ],
+        // 允许直接执行异步函数
+        '@typescript-eslint/no-floating-promises': 'off',
         // 允许不显式写出导出函数的返回类型
         '@typescript-eslint/explicit-module-boundary-types': 'off',
         // 禁止提醒非空断言

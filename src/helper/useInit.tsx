@@ -189,12 +189,9 @@ export const useInit = async <T extends Record<string, any>>(
       };
 
       setFab({ onClick: () => showComic(true) });
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       if (options.autoShow) showComic();
 
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       GM.registerMenuCommand('进入漫画阅读模式', () => showComic(true));
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       updateHideFabMenu();
 
       return () => showComic(true);
