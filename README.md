@@ -66,6 +66,7 @@
 - 漫画DB(manhuadb)
 - 拷贝漫画(copymanga)
 - 漫画猫(manhuacat)
+- 绅士漫画(wnacg)
 - mangabz
 
 ### 百合会

@@ -106,6 +106,11 @@ switch (window.location.hostname) {
     break;
   }
 
+  case 'www.wnacg.com': {
+    inject('wnacg');
+    break;
+  }
+
   default: {
     inject('other');
   }
