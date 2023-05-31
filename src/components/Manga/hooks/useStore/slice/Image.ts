@@ -3,7 +3,7 @@ import { createEffect, createMemo, createRoot, on } from 'solid-js';
 
 import type { State } from '..';
 import { store, setState } from '..';
-import { handleComicData } from '../../../handleComicData';
+import { findFillIndex, handleComicData } from '../../../handleComicData';
 import { updateDrag, updateTipText } from './Scrollbar';
 
 /** 是否需要自动判断开启卷轴模式 */
@@ -199,13 +199,9 @@ export const { activeImgIndex, nowFillIndex } = createRoot(() => {
   const activeImgIndexMemo = createMemo(
     () => store.pageList[store.activePageIndex]?.find((i) => i !== -1) ?? 0,
   );
-  const nowFillIndexMemo = createMemo(() => {
-    let __nowFillIndex = activeImgIndexMemo();
-    while (!Reflect.has(store.fillEffect, __nowFillIndex)) {
-      __nowFillIndex -= 1;
-    }
-    return __nowFillIndex;
-  });
+  const nowFillIndexMemo = createMemo(() =>
+    findFillIndex(activeImgIndexMemo(), store.fillEffect),
+  );
 
   // 页数发生变动时
   createEffect(

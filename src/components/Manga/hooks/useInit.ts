@@ -5,6 +5,7 @@ import { unwrap } from 'solid-js/store';
 import type { MangaProps } from '..';
 import { store, setState } from './useStore';
 import { updatePageData, updatePageRatio } from './useStore/slice';
+import { autoCloseFill } from '../handleComicData';
 
 /** 初始化 */
 export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
@@ -71,6 +72,8 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
             loadType: 'wait',
           },
       );
+      state.fillEffect = { '-1': true };
+      autoCloseFill.clear();
       updatePageData(state);
 
       if (state.pageList.length === 0) {

@@ -3,11 +3,17 @@ import type { FillEffect } from './hooks/useStore/ImageState';
 // 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
 // 2. 因为大部分用户都不会在意正确页序，所以应该尽量少加填充页
 
-let autoCloseFill = true;
+/** 记录自动修改过页面填充的图片流 */
+export const autoCloseFill = new Set<number>();
 
-/**
- * 根据图片比例和填充页设置对漫画图片进行排列
- */
+/** 找到指定页面所处的图片流 */
+export const findFillIndex = (pageIndex: number, fillEffect: FillEffect) => {
+  let nowFillIndex = pageIndex;
+  while (!Reflect.has(fillEffect, nowFillIndex)) nowFillIndex -= 1;
+  return nowFillIndex;
+};
+
+/** 根据图片比例和填充页设置对漫画图片进行排列 */
 export const handleComicData = (
   imgList: ComicImg[],
   fillEffect: FillEffect,
@@ -32,21 +38,19 @@ export const handleComicData = (
       }
     } else {
       if (imgCache !== null) {
-        // 默认会开启首页填充，但如果在开头和中间出现了跨页，就应该关掉
-        // 不考虑结尾是防止被结尾汉化组图误导
-        if (autoCloseFill && fillEffect['-1'] && i < imgList.length - 2) {
-          // 只在首次排列时会自动关闭
-          autoCloseFill = false;
-          fillEffect['-1'] = false;
+        const nowFillIndex = findFillIndex(i, fillEffect);
+
+        // 在除结尾外的位置出现了跨页图的话，那张跨页图大概率是页序的「正确答案」
+        // 如果这张跨页导致了缺页就说明在这之前的页面填充有误，应该调整之前的填充设置
+        // 排除结尾是防止被结尾汉化组图误导
+        // 自动调整毕竟有可能误判，所以每个跨页都应该只调整一次，不能重复修改
+        if (!autoCloseFill.has(i) && i < imgList.length - 2) {
+          autoCloseFill.add(i);
+          fillEffect[nowFillIndex] = !fillEffect[nowFillIndex];
           return handleComicData(imgList, fillEffect);
         }
 
-        if (imgCache !== -1) {
-          // 跨页在倒数两张的话大概率是汉化组加的图，应该将填充页放在后面
-          if (i >= imgList.length - 2) pageList.push([imgCache, -1]);
-          // 正常进度中出现的跨页应该代表页序的「正确答案」，导致了缺页的话就说明在这之前缺少填充页
-          else pageList.push([-1, imgCache]);
-        }
+        if (imgCache !== -1) pageList.push([imgCache, -1]);
         imgCache = null;
       }
 
