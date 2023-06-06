@@ -30,8 +30,8 @@
 
   background-color: var(--bg);
   outline: 0;
-}
 
-a {
-  color: var(--text_secondary);
+  a {
+    color: var(--text_secondary);
+  }
 }

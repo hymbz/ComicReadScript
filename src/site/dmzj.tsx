@@ -5,7 +5,7 @@ import {
   querySelectorAll,
   request,
 } from '../helper';
-import dmzjDecrypt from '../helper/dmzjDecrypt';
+import { getComicDetail } from '../helper/dmzjApi';
 
 declare const g_comic_url: string;
 declare const g_comic_id: string;
@@ -94,16 +94,11 @@ declare const zcClick: any;
     // 判断漫画被禁
     // 测试例子：https://manhua.dmzj.com/yanquan/
     if (querySelector('.cartoon_online_border > img')) {
-      document.querySelector('.cartoon_online_border')!.innerHTML =
-        '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
+      querySelector('.cartoon_online_border')!.innerHTML = '获取漫画数据中';
 
-      const res = await request(
-        `https://v4api.idmzj.com/comic/detail/${g_comic_id}?uid=2665531&disable_level=1`,
+      const { title, last_updatetime, chapters } = await getComicDetail(
+        g_comic_id,
       );
-
-      const {
-        comicInfo: { last_updatetime, chapters, title },
-      } = dmzjDecrypt(res.responseText);
 
       // 删掉原有的章节 dom
       querySelectorAll('.odd_anim_title ~ div').forEach((e) =>
@@ -111,32 +106,31 @@ declare const zcClick: any;
       );
 
       Object.values(chapters).forEach((chapter) => {
-        chapter.data.sort((a, b) => a.chapter_order - b.chapter_order);
         // 手动构建添加章节 dom
         let temp = `
         <div class="photo_part">
           <div class="h2_title2">
             <span class="h2_icon h2_icon22"></span>
             <h2>${title} ${
-          chapter.title === '连载'
+          chapter.name === '连载'
             ? '在线漫画全集'
-            : `漫画其它版本：${chapter.title}`
+            : `漫画其它版本：${chapter.name}`
         }</h2>
           </div>
         </div>
         <div class="cartoon_online_border" style="border-top: 1px dashed #0187c5;">
         <ul>`;
-        let i = chapter.data.length;
+        let i = chapter.list.length;
         while (i--) {
           temp += `<li><a target="_blank" title="${
-            chapter.data[i].chapter_title
+            chapter.list[i].title
           }" href="https://manhua.dmzj.com/${g_comic_url}${
-            chapter.data[i].chapter_id
+            chapter.list[i].id
           }.shtml" ${
-            chapter.data[i].updatetime === last_updatetime
+            chapter.list[i].updatetime === last_updatetime
               ? 'class="color_red"'
               : ''
-          }>${chapter.data[i].chapter_title}</a></li>`;
+          }>${chapter.list[i].title}</a></li>`;
         }
         insertNode(
           querySelector('.middleright_mr')!,

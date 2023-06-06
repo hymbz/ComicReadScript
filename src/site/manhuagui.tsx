@@ -1,4 +1,4 @@
-import { querySelectorClick, useInit } from '../main';
+import { querySelectorAll, querySelectorClick, useInit } from '../main';
 
 declare const pVars: { manga: { filePath: string } };
 declare const cInfo: { nextId: number; prevId: number };
@@ -17,9 +17,10 @@ declare const cInfo: { nextId: number; prevId: number };
     const comicInfo = JSON.parse(
       // 只能通过 eval 获得数据
       // eslint-disable-next-line no-eval
-      eval(
-        document.querySelectorAll('body > script')[1].innerHTML.slice(26),
-      ).slice(12, -12),
+      eval(querySelectorAll('body > script')[1].innerHTML.slice(26)).slice(
+        12,
+        -12,
+      ),
     );
     const sl = Object.entries(comicInfo.sl)
       .map((attr) => `${attr[0]}=${attr[1]}`)

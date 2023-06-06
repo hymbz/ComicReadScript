@@ -263,7 +263,7 @@ interface History {
 
       /** 当前所在页数 */
       const currentPageNum = parseInt(
-        document.querySelector('#pgt strong')?.innerHTML ?? '1',
+        querySelector('#pgt strong')?.innerHTML ?? '1',
         10,
       );
 
@@ -328,7 +328,7 @@ interface History {
   // 判断当前页是板块
   if (/forum(-\d+){2}|mod=forumdisplay/.test(document.URL)) {
     if (options.修正点击页数时的跳转判定) {
-      const List = document.querySelectorAll('.tps>a');
+      const List = querySelectorAll('.tps>a');
       let i = List.length;
       while (i--) List[i].setAttribute('onclick', 'atarget(this)');
     }

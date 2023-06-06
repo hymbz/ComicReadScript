@@ -60,7 +60,7 @@ export const ToastItem: Component<Toast> = (props) => {
     if (!props.update) return;
 
     resetToastUpdate(props.id);
-    scheduleRef.getAnimations().forEach((animation) => {
+    scheduleRef?.getAnimations().forEach((animation) => {
       animation.cancel();
       animation.play();
     });

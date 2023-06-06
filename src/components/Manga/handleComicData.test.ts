@@ -38,10 +38,10 @@ it('跨页在中间', () => {
   expect(fillEffect).toStrictEqual({ '-1': false, 2: false });
 });
 it('跨页在中间，且会导致缺页', () => {
-  const { pageList, fillEffect } = mock(['', 'wide', '']);
+  const { pageList, fillEffect } = mock(['', '', '', 'wide', '', '', '']);
   // 正常进度中出现的跨页应该代表页序的「正确答案」，导致了缺页的话就说明在这之前缺少填充页
-  expect(pageList).toStrictEqual([[-1, 0], [1], [2, -1]]);
-  expect(fillEffect).toStrictEqual({ '-1': true, 1: false });
+  expect(pageList).toStrictEqual([[-1, 0], [1, 2], [3], [4, 5], [6, -1]]);
+  expect(fillEffect).toStrictEqual({ '-1': true, 3: false });
 });
 
 it('跨页在结尾', () => {

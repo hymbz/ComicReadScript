@@ -4,23 +4,22 @@ import { creatId, setState, store } from './helper';
 export const toast = (msg: Message, options?: Partial<Toast>) => {
   if (!msg) return;
 
-  const newToast: Toast = {
-    id: (typeof msg === 'string' ? msg : options?.id) ?? creatId(),
-    type: typeof msg === 'string' ? 'info' : 'custom',
-    duration: 3000,
-    msg,
-    ...options,
-  };
-  const { id } = newToast;
+  const id = options?.id ?? (typeof msg === 'string' ? msg : creatId());
 
   setState((state) => {
     if (Reflect.has(state.map, id)) {
-      Object.assign(state.map[id], newToast, { update: true });
+      Object.assign(state.map[id], { msg, ...options, update: true });
       return;
     }
 
-    state.list.push(newToast.id);
-    state.map[id] = newToast;
+    state.map[id] = {
+      id,
+      type: 'info',
+      duration: 3000,
+      msg,
+      ...options,
+    };
+    state.list.push(id);
   });
 };
 

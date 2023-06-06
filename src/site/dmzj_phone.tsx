@@ -1,3 +1,5 @@
+import type { ChapterInfo } from '../helper/dmzjApi';
+import { getChapterInfo } from '../helper/dmzjApi';
 import dmzjDecrypt from '../helper/dmzjDecrypt';
 import {
   insertNode,
@@ -5,6 +7,7 @@ import {
   querySelectorAll,
   querySelectorClick,
   request,
+  toast,
   useInit,
 } from '../main';
 
@@ -145,16 +148,15 @@ import {
       tipDom.innerText = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
       document.body.appendChild(tipDom);
 
-      let res: Tampermonkey.Response<any>;
+      let data: ChapterInfo | undefined;
 
       try {
-        res = await request(
-          `https://m.dmzj.com/chapinfo/${
-            /\d+\/\d+/.exec(document.URL)![0]
-          }.html`,
-          { errorText: '获取漫画数据失败' },
-        );
+        const [, comicId, chapterId] = /(\d+)\/(\d+)/.exec(
+          window.location.pathname,
+        )!;
+        data = await getChapterInfo(comicId, chapterId);
       } catch (error) {
+        toast.error('获取漫画数据失败', { duration: Infinity });
         tipDom.innerText = (error as Error).message;
         throw error;
       }
@@ -168,18 +170,12 @@ import {
         prev_chap_id,
         comic_id,
         page_url,
-      } = JSON.parse(res.responseText) as {
-        folder: string;
-        chapter_name: string;
-        next_chap_id: number;
-        prev_chap_id: number;
-        comic_id: number;
-        page_url: string[];
-      };
+      } = data;
+
       document.title = `${chapter_name} ${folder.split('/').at(1)}` ?? folder;
 
-      // 进入阅读模式后禁止退出，防止返回空白页面
       setManga({
+        // 进入阅读模式后禁止退出，防止返回空白页面
         onExit: () => {},
         onNext: next_chap_id
           ? () => {

@@ -43,6 +43,8 @@ const publicConfig = {
     'no-unsafe-assignment': 'off',
     // 允许在 while 的条件语句里使用括号来赋值
     'no-cond-assign': ['off', '"except-parens"'],
+    // 允许空 catch 子句
+    'no-empty': ['error', { allowEmptyCatch: true }],
 
     // 不检查导入模块的扩展名
     'import/extensions': 'off',

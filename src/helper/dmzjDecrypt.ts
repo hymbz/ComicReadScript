@@ -200,10 +200,12 @@ const ComicDetailInfoProto = {
     },
   },
 };
+
 export interface ComicDetailInfo {
   comicInfo: {
     title: string;
     last_updatetime: number;
+    last_update_chapter_id: number;
     chapters: {
       title: string;
       data: {

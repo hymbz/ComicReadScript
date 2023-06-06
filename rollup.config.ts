@@ -141,7 +141,7 @@ export const buildOptions = (
     external: [
       ...Object.keys(meta.resource ?? {}),
       '../main',
-      '../helper/dmzjDecrypt',
+      /.+\/dmzjDecrypt/,
     ],
     input: resolve(__dirname, 'src', fileName),
     // 忽略使用 eval 的警告
