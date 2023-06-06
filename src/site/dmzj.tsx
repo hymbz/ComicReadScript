@@ -1,3 +1,5 @@
+import { For } from 'solid-js';
+import { render } from 'solid-js/web';
 import { querySelectorClick, scrollIntoView, useInit } from '../main';
 import {
   insertNode,
@@ -5,7 +7,7 @@ import {
   querySelectorAll,
   request,
 } from '../helper';
-import { getComicDetail } from '../helper/dmzjApi';
+import { useComicDetail } from '../helper/dmzjApi';
 
 declare const g_comic_url: string;
 declare const g_comic_id: string;
@@ -96,47 +98,59 @@ declare const zcClick: any;
     if (querySelector('.cartoon_online_border > img')) {
       querySelector('.cartoon_online_border')!.innerHTML = '获取漫画数据中';
 
-      const { title, last_updatetime, chapters } = await getComicDetail(
-        g_comic_id,
-      );
-
       // 删掉原有的章节 dom
       querySelectorAll('.odd_anim_title ~ div').forEach((e) =>
         e.parentNode?.removeChild(e),
       );
 
-      Object.values(chapters).forEach((chapter) => {
-        // 手动构建添加章节 dom
-        let temp = `
-        <div class="photo_part">
-          <div class="h2_title2">
-            <span class="h2_icon h2_icon22"></span>
-            <h2>${title} ${
-          chapter.name === '连载'
-            ? '在线漫画全集'
-            : `漫画其它版本：${chapter.name}`
-        }</h2>
-          </div>
-        </div>
-        <div class="cartoon_online_border" style="border-top: 1px dashed #0187c5;">
-        <ul>`;
-        let i = chapter.list.length;
-        while (i--) {
-          temp += `<li><a target="_blank" title="${
-            chapter.list[i].title
-          }" href="https://manhua.dmzj.com/${g_comic_url}${
-            chapter.list[i].id
-          }.shtml" ${
-            chapter.list[i].updatetime === last_updatetime
-              ? 'class="color_red"'
-              : ''
-          }>${chapter.list[i].title}</a></li>`;
-        }
-        insertNode(
-          querySelector('.middleright_mr')!,
-          `${temp}</ul><div class="clearfix"></div></div>`,
+      render(() => {
+        const comicDetail = useComicDetail(g_comic_id);
+
+        return (
+          <For each={comicDetail.chapters}>
+            {({ name, list }) => (
+              <>
+                <div class="photo_part">
+                  <div class="h2_title2">
+                    <span class="h2_icon h2_icon22" />
+                    <h2>
+                      {comicDetail.title}{' '}
+                      {name === '连载'
+                        ? '在线漫画全集'
+                        : `漫画其它版本：${name}`}
+                    </h2>
+                  </div>
+                </div>
+                <div
+                  class="cartoon_online_border"
+                  style={{ 'border-top': '1px dashed #0187c5' }}
+                >
+                  <ul>
+                    <For each={list}>
+                      {({ title, id, updatetime }) => (
+                        <li>
+                          <a
+                            target="_blank"
+                            title={title}
+                            href={`https://manhua.dmzj.com/${g_comic_url}${id}.shtml`}
+                            classList={{
+                              color_red:
+                                updatetime === comicDetail.last_updatetime,
+                            }}
+                          >
+                            {title}
+                          </a>
+                        </li>
+                      )}
+                    </For>
+                  </ul>
+                  <div class="clearfix" />
+                </div>
+              </>
+            )}
+          </For>
         );
-      });
+      }, querySelector('.middleright_mr')!);
     }
     return;
   }

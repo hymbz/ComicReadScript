@@ -1,3 +1,6 @@
+import { createMutable } from 'solid-js/store';
+import { onMount } from 'solid-js';
+
 import { request } from '.';
 import { toast } from '../main';
 import dmzjDecrypt from './dmzjDecrypt';
@@ -108,10 +111,15 @@ const getComicDetail_v4Api = async (comicId: string): Promise<ComicDetail> => {
 
 const getComicDetail_traversal = async (
   comicId: string,
-  chapterId: Text,
-): Promise<Pick<ComicDetail, 'chapters'>> => {
-  const list: chapterData[] = [];
-  let nextId: Text | undefined = chapterId;
+  draftData: Partial<ComicDetail>,
+) => {
+  let nextId = draftData.last_update_chapter_id;
+  if (!nextId) {
+    console.warn('last_update_chapter_id 为空，无法通过遍历获取章节');
+    return;
+  }
+
+  draftData.chapters![0] = { name: '连载', list: [] };
 
   toast.warn('正在通过遍历获取所有章节，耗时可能较长', {
     id: 'traversalTip',
@@ -125,12 +133,11 @@ const getComicDetail_traversal = async (
         comicId,
         nextId,
       );
-      list.push({ id: nextId, title: chapter_name, updatetime });
-
-      toast.warn(
-        `正在遍历获取所有章节，耗时可能较长，已获取 ${list.length} 个章节`,
-        { id: 'traversalTip' },
-      );
+      draftData.chapters![0].list.push({
+        id: nextId,
+        title: chapter_name,
+        updatetime,
+      });
       nextId = prev_chap_id;
     } catch (_) {
       nextId = undefined;
@@ -138,29 +145,30 @@ const getComicDetail_traversal = async (
   }
 
   toast.dismiss('traversalTip');
-
-  return { chapters: [{ name: '连载', list }] };
 };
 
-/** 根据漫画 id 获取章节等数据 */
-export const getComicDetail = async (comicId: string): Promise<ComicDetail> => {
-  const data = {} as ComicDetail;
+/** 返回可变 store 类型的漫画数据 */
+export const useComicDetail = (comicId: string) => {
+  const data = createMutable<Partial<ComicDetail>>({});
+
   const apiFn = [
     getComicDetail_v4Api,
     getComicDetail_base,
-    () =>
-      data.last_update_chapter_id &&
-      getComicDetail_traversal(comicId, data.last_update_chapter_id),
+    getComicDetail_traversal,
   ];
 
-  for (let i = 0; i < apiFn.length; i++) {
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      Object.assign(data, await apiFn[i](comicId));
-      if (data.chapters.some((chapter) => chapter.list.length)) return data;
-    } catch (_) {}
-  }
+  onMount(async () => {
+    for (let i = 0; i < apiFn.length; i++) {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        Object.assign(data, await apiFn[i](comicId, data));
+        if (data.chapters?.some((chapter) => chapter.list.length)) return;
+      } catch (_) {}
+    }
 
-  toast.error('漫画数据获取失败', { duration: Infinity });
-  throw new Error('漫画数据获取失败');
+    toast.error('漫画数据获取失败', { duration: Infinity });
+    console.error('漫画数据获取失败');
+  });
+
+  return data;
 };
