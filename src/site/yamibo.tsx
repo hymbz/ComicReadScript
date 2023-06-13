@@ -192,15 +192,23 @@ interface History {
 
       // 如果帖子内有设置目录
       if (querySelector('#threadindex')) {
+        let id: number;
         querySelectorAll('#threadindex li').forEach((dom) => {
           dom.addEventListener('click', () => {
-            setTimeout(() => {
+            if (id) return;
+            id = window.setInterval(() => {
               imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
+              if (!imgList.length || !updateImgList().length) {
+                setFab({ progress: undefined });
+                return;
+              }
               setManga({
                 imgList: updateImgList(),
                 show: options.autoShow ?? undefined,
               });
-            }, 1000);
+              setFab({ progress: 1 });
+              window.clearInterval(id);
+            }, 100);
           });
         });
       }

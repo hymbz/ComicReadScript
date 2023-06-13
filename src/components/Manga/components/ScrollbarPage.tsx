@@ -20,7 +20,7 @@ export const ScrollbarPage: Component<{ a: number; b?: number }> = (props) => {
   const flexBasis = createMemo(() => {
     if (!store.option.scrollMode) return undefined;
     return `${
-      ((store.imgList[props.a].height || windowHeight()) / contentHeight()) *
+      ((store.imgList[props.a]?.height || windowHeight()) / contentHeight()) *
       100
     }%`;
   });

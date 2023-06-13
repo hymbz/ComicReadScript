@@ -31,6 +31,7 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
   if (e.getAttribute('src') === '') return;
   setState((state) => {
     const img = state.imgList[i];
+    if (!img) return;
     img.loadType = 'error';
     console.error('图片加载失败', e);
 
