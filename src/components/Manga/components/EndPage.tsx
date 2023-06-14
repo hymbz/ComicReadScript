@@ -8,26 +8,20 @@ import {
 } from 'solid-js';
 
 import { setState, store } from '../hooks/useStore';
-import { turnPage } from '../hooks/useStore/slice';
+import { bindRef, turnPage } from '../hooks/useStore/slice';
 
 import classes from '../index.module.css';
 
 let delayTypeTimer = 0;
 
 export const EndPage: Component = () => {
-  const handleClick = (e: MouseEvent) => {
+  const handleClick: EventHandler['onClick'] = (e) => {
     e.stopPropagation();
-    setState((state) => {
-      state.endPageType = undefined;
-    });
+    if (e.target?.nodeName !== 'BUTTON')
+      setState((state) => {
+        state.endPageType = undefined;
+      });
   };
-
-  const handleEnd = () =>
-    setState((state) => {
-      state.onExit?.(true);
-      state.activePageIndex = 0;
-      state.endPageType = undefined;
-    });
 
   let ref: HTMLDivElement;
 
@@ -90,26 +84,29 @@ export const EndPage: Component = () => {
     >
       <p class={classes.tip}>{tip()}</p>
       <button
-        class={store.onPrev ? undefined : classes.invisible}
-        onClick={() => store.onPrev?.()}
+        ref={bindRef('prevRef')}
         type="button"
+        classList={{ [classes.invisible]: !store.onPrev }}
         tabIndex={store.endPageType ? 0 : -1}
+        onClick={() => store.onPrev?.()}
       >
         上一话
       </button>
       <button
-        onClick={handleEnd}
+        ref={bindRef('exitRef')}
         type="button"
-        tabIndex={store.endPageType ? 0 : -1}
         data-is-end
+        tabIndex={store.endPageType ? 0 : -1}
+        onClick={() => store.onExit?.(!!store.activePageIndex)}
       >
         退出
       </button>
       <button
-        class={store.onNext ? undefined : classes.invisible}
-        onClick={() => store.onNext?.()}
+        ref={bindRef('nextRef')}
         type="button"
+        classList={{ [classes.invisible]: !store.onNext }}
         tabIndex={store.endPageType ? 0 : -1}
+        onClick={() => store.onNext?.()}
       >
         下一话
       </button>

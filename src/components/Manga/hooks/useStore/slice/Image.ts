@@ -137,10 +137,7 @@ export const turnPage = (state: State, dir: 'next' | 'prev') => {
   if (dir === 'prev') {
     switch (state.endPageType) {
       case 'start':
-        if (!state.scrollLock && state.option.flipToNext) {
-          state.onPrev?.();
-          state.endPageType = undefined;
-        }
+        if (!state.scrollLock && state.option.flipToNext) state.onPrev?.();
         return;
       case 'end':
         state.endPageType = undefined;
@@ -167,14 +164,9 @@ export const turnPage = (state: State, dir: 'next' | 'prev') => {
         if (state.scrollLock) return;
         if (state.onNext && state.option.flipToNext) {
           state.onNext();
-          state.endPageType = undefined;
           return;
         }
-        if (state.onExit) {
-          state.onExit(true);
-          state.activePageIndex = 0;
-          state.endPageType = undefined;
-        }
+        state.onExit?.(true);
         return;
       case 'start':
         state.endPageType = undefined;

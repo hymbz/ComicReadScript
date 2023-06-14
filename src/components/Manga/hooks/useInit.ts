@@ -6,6 +6,7 @@ import type { MangaProps } from '..';
 import { store, setState } from './useStore';
 import { updatePageData, updatePageRatio } from './useStore/slice';
 import { autoCloseFill } from '../handleComicData';
+import { playAnimation } from '../helper';
 
 /** 初始化 */
 export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
@@ -59,6 +60,8 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
         return;
       }
 
+      state.endPageType = undefined;
+
       /** 修改前的当前显示图片 */
       const oldActiveImg = state.pageList[state.activePageIndex].map(
         (i) => state.imgList?.[i]?.src,
@@ -103,9 +106,26 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
 
   createEffect(() => {
     setState((state) => {
-      state.onExit = props.onExit;
-      state.onPrev = props.onPrev;
-      state.onNext = props.onNext;
+      state.onExit = props.onExit
+        ? (isEnd?: boolean | Event) => {
+            playAnimation(store.exitRef);
+            props.onExit?.(!!isEnd);
+            state.activePageIndex = 0;
+            state.endPageType = undefined;
+          }
+        : undefined;
+      state.onPrev = props.onPrev
+        ? () => {
+            playAnimation(store.prevRef);
+            props.onPrev?.();
+          }
+        : undefined;
+      state.onNext = props.onNext
+        ? () => {
+            playAnimation(store.nextRef);
+            props.onNext?.();
+          }
+        : undefined;
 
       if (props.editButtonList) state.editButtonList = props.editButtonList;
       if (props.editSettingList) state.editSettingList = props.editSettingList;

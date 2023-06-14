@@ -31,7 +31,7 @@
   background-color: var(--bg);
   outline: 0;
 
-  a {
+  & a {
     color: var(--text_secondary);
   }
 }

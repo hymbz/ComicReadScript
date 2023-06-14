@@ -12,7 +12,11 @@ export const setOption = (fn: (option: Option) => void) => {
 
 /** 创建用于将 ref 绑定到对应 state 上的工具函数 */
 export const bindRef =
-  (name: keyof State, fn?: (state: State) => void) => (e: HTMLDivElement) => {
+  <T extends HTMLElement = HTMLElement>(
+    name: keyof State,
+    fn?: (state: State) => void,
+  ) =>
+  (e: T) => {
     setState((state) => {
       Reflect.set(state, name, e);
       fn?.(state);

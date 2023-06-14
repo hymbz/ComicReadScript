@@ -189,17 +189,23 @@ export const defaultSettingList: SettingList = [
     () => (
       <>
         <SettingsItem name="版本号">
-          <a href="https://github.com/hymbz/ComicReadScript">0.0.1</a>
+          <a href="https://github.com/hymbz/ComicReadScript" target="_blank">
+            0.0.1
+          </a>
         </SettingsItem>
         <SettingsItem name="反馈">
           <div>
             <a
               href="https://github.com/hymbz/ComicReadScript/issues"
+              target="_blank"
               style={{ 'margin-right': '.5em' }}
             >
               Github
             </a>
-            <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback">
+            <a
+              href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback"
+              target="_blank"
+            >
               Greasy Fork
             </a>
           </div>

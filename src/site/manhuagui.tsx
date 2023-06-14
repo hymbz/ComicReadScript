@@ -7,6 +7,9 @@ declare const cInfo: { nextId: number; prevId: number };
   // 只在漫画页内运行
   if (!Reflect.has(unsafeWindow, 'cInfo')) return;
 
+  // 让切换章节的提示可以显示在漫画页上
+  await GM.addStyle(`#smh-msg-box { z-index: 9999999999 !important }`);
+
   const { setManga, init } = await useInit('manhuagui');
   setManga({
     onNext: cInfo.nextId !== 0 ? querySelectorClick('a.nextC') : undefined,

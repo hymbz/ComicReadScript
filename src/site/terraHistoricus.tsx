@@ -32,7 +32,7 @@ import { querySelectorClick, useInit, request, plimit, wait } from '../main';
   const setTurnPage = () => {
     const creatTrunPageFn = (selector: string) => {
       const fn = querySelectorClick(selector);
-      if (!fn) return null;
+      if (!fn) return undefined;
 
       return async () => {
         fn();

@@ -20,11 +20,11 @@ export const OtherState = {
   imgMaxWidth: 0,
 
   /** 点击结束页按钮时触发的回调 */
-  onExit: undefined as ((isEnd?: boolean) => void) | undefined | null,
+  onExit: undefined as ((isEnd?: boolean) => void) | undefined,
   /** 点击上一话按钮时触发的回调 */
-  onPrev: undefined as (() => void | Promise<void>) | undefined | null,
+  onPrev: undefined as (() => void | Promise<void>) | undefined,
   /** 点击下一话按钮时触发的回调 */
-  onNext: undefined as (() => void | Promise<void>) | undefined | null,
+  onNext: undefined as (() => void | Promise<void>) | undefined,
   /** 图片加载状态发生变化时触发的回调 */
   onLoading: undefined as
     | ((img: ComicImg, imgList: ComicImg[]) => void | Promise<void>)
@@ -32,4 +32,8 @@ export const OtherState = {
 
   editButtonList: (list: ToolbarButtonList) => list,
   editSettingList: (list: SettingList) => list,
+
+  prevRef: undefined as HTMLButtonElement | undefined,
+  nextRef: undefined as HTMLButtonElement | undefined,
+  exitRef: undefined as HTMLButtonElement | undefined,
 };
