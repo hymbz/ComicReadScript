@@ -41,7 +41,7 @@ export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
       transition: opacity 300ms, transform 0s 300ms;
     }
 
-    #comicRead.show {
+    #comicRead[show] {
       transform: scale(1);
       opacity: 1;
       transition: opacity 300ms, transform 100ms;
@@ -70,10 +70,10 @@ export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
     setProps(typeof recipe === 'function' ? produce(recipe) : recipe);
 
     if (props.imgList.length && props.show) {
-      dom.className = 'show';
+      dom.setAttribute('show', '');
       document.documentElement.style.overflow = 'hidden';
     } else {
-      dom.className = '';
+      dom.removeAttribute('show');
       document.documentElement.style.overflow = 'unset';
     }
   };

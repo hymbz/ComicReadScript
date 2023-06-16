@@ -1,17 +1,41 @@
-import { querySelectorClick, useInit } from '../main';
+import { getChapterInfo } from '../helper/dmzjApi';
+import { querySelector, toast, useInit, wait } from '../main';
 
-declare const picArry: string[];
-declare const img_prefix: string;
+const chapterIdRe = /(?<=\/)\d+(?=\.html)/;
+
+const turnPage = (chapterId?: number) => {
+  if (!chapterId) return undefined;
+
+  return () => {
+    window.open(
+      window.location.href.replace(/(?<=\/)\d+(?=\.html)/, `${chapterId}`),
+      '_self',
+    );
+  };
+};
 
 (async () => {
+  await wait('.head_wz');
   // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'g_comic_id')) return;
+  const comicId = querySelector('.head_wz [id]')?.id;
+  const chapterId = window.location.pathname.match(chapterIdRe)?.[0];
+
+  if (!comicId || !chapterId) return;
 
   const { setManga, init } = await useInit('dmzj');
-  setManga({
-    onNext: querySelectorClick('.next > a'),
-    onPrev: querySelectorClick('.pre > a'),
-  });
 
-  init(() => picArry.map((url) => `${img_prefix}${url}`));
+  try {
+    const { next_chap_id, prev_chap_id, page_url } = await getChapterInfo(
+      comicId,
+      chapterId,
+    );
+    init(() => page_url);
+
+    setManga({
+      onNext: turnPage(next_chap_id),
+      onPrev: turnPage(prev_chap_id),
+    });
+  } catch (_) {
+    toast.error('获取漫画数据失败', { duration: Infinity });
+  }
 })();
