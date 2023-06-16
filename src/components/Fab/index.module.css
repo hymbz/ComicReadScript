@@ -3,7 +3,11 @@
   transition: transform 200ms;
 
   &[data-show="false"] {
-    transform: scale(0);
+    pointer-events: none;
+
+    & > button {
+      transform: scale(0);
+    }
   }
 
   &[data-trans="true"] {
@@ -137,7 +141,8 @@
   pointer-events: all;
 }
 
-:is(.fabRoot:hover, .fabRoot[data-focus="true"]) > .speedDial {
+:is(.fabRoot:hover:not([data-show="false"]), .fabRoot[data-focus="true"])
+  > .speedDial {
   pointer-events: all;
 
   & > .speedDialItem {
@@ -164,10 +169,15 @@
   transition: opacity 500ms;
 }
 
-:is(.fabRoot:hover, .fabRoot[data-focus="true"], .speedDial:hover) .backdrop {
-  opacity: 0.4;
-}
-
 .fabRoot[data-focus="true"] .backdrop {
   pointer-events: unset;
+}
+
+:is(
+    .fabRoot:hover:not([data-show="false"]),
+    .fabRoot[data-focus="true"],
+    .speedDial:hover
+  )
+  .backdrop {
+  opacity: 0.4;
 }

@@ -6,6 +6,7 @@ import {
   createEffect,
   createSignal,
   mergeProps,
+  Show,
 } from 'solid-js';
 import { throttle } from 'throttle-debounce';
 
@@ -46,21 +47,21 @@ export const Fab: Component<FabProps> = (_props) => {
   );
 
   // 上次滚动位置
-  let lastY = window.pageYOffset;
+  let lastY = window.scrollY;
   const [show, setShow] = createSignal(props.initialShow);
 
   // 绑定滚动事件
   const handleScroll = throttle(200, (e: Event) => {
     // 跳过非用户操作的滚动
     if (e.isTrusted === false) return;
-    if (window.pageYOffset === lastY) return;
+    if (window.scrollY === lastY) return;
     setShow(
       // 滚动到底部时显示
-      window.pageYOffset + window.innerHeight >= document.body.scrollHeight ||
+      window.scrollY + window.innerHeight >= document.body.scrollHeight ||
         // 向上滚动时显示，反之隐藏
-        window.pageYOffset - lastY < 0,
+        window.scrollY - lastY < 0,
     );
-    lastY = window.pageYOffset;
+    lastY = window.scrollY;
   });
   onMount(() => window.addEventListener('scroll', handleScroll));
   onCleanup(() => window.removeEventListener('scroll', handleScroll));
@@ -70,14 +71,6 @@ export const Fab: Component<FabProps> = (_props) => {
     if (props.show) setShow(props.show);
   });
 
-  const handleClick = () => {
-    props.onClick?.();
-  };
-
-  const handleBackdropClick = () => {
-    props.onBackdropClick?.();
-  };
-
   return (
     <div
       class={classes.fabRoot}
@@ -86,7 +79,11 @@ export const Fab: Component<FabProps> = (_props) => {
       data-trans={props.autoTrans}
       data-focus={props.focus}
     >
-      <button type="button" class={classes.fab} onClick={handleClick}>
+      <button
+        type="button"
+        class={classes.fab}
+        onClick={() => props.onClick?.()}
+      >
         {props.children ?? <MdMenuBook />}
 
         {/* 环形进度条 */}
@@ -107,9 +104,12 @@ export const Fab: Component<FabProps> = (_props) => {
       </button>
 
       {/* 快捷操作栏 */}
-      {props.speedDial?.length ? (
+      <Show when={props.speedDial?.length}>
         <div class={classes.speedDial}>
-          <div class={classes.backdrop} onClick={handleBackdropClick} />
+          <div
+            class={classes.backdrop}
+            onClick={() => props.onBackdropClick?.()}
+          />
           <For each={props.speedDial}>
             {(SpeedDialItem, i) => (
               <div
@@ -129,7 +129,7 @@ export const Fab: Component<FabProps> = (_props) => {
             )}
           </For>
         </div>
-      ) : null}
+      </Show>
     </div>
   );
 };
