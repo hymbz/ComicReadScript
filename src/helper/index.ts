@@ -185,12 +185,13 @@ export const needDarkMode = (hexColor: string) => {
   return yiq < 128;
 };
 
-/** 轮询等到指定的 dom 出现后调用指定函数 */
-export const wait = (selector: string, handle: (dom: HTMLElement) => void) => {
-  const id = window.setInterval(() => {
-    const dom = querySelector(selector);
-    if (!dom) return;
-    handle(dom);
-    window.clearInterval(id);
-  }, 100);
-};
+/** 等到指定的 dom 出现 */
+export const wait = (selector: string) =>
+  new Promise<void>((resolve) => {
+    const id = window.setInterval(() => {
+      const dom = querySelector(selector);
+      if (!dom) return;
+      window.clearInterval(id);
+      resolve();
+    }, 100);
+  });

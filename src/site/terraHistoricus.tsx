@@ -27,31 +27,42 @@ import { querySelectorClick, useInit, request, plimit, wait } from '../main';
     );
   };
 
-  init(getImgList);
+  let running = false;
 
-  const setTurnPage = () => {
-    const creatTrunPageFn = (selector: string) => {
-      const fn = querySelectorClick(selector);
-      if (!fn) return undefined;
+  const handleUrlChange = async () => {
+    running = true;
+    await wait('footer .HG_GAME_JS_BRIDGE__wrapper');
 
-      return async () => {
-        fn();
-        setManga({ imgList: [] });
-        setManga({
-          imgList: await getImgList(),
-          show: true,
-        });
-        setTurnPage();
-      };
-    };
-
+    // 先将 imgList 清空以便 activePageIndex 归零
+    setManga({ imgList: [] });
+    init(getImgList);
     setManga({
-      onPrev: creatTrunPageFn('footer .HG_GAME_JS_BRIDGE__prev a'),
-      onNext: creatTrunPageFn(
+      onPrev: querySelectorClick('footer .HG_GAME_JS_BRIDGE__prev a'),
+      onNext: querySelectorClick(
         'footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a',
       ),
     });
+    running = false;
   };
 
-  wait('footer .HG_GAME_JS_BRIDGE__wrapper', setTurnPage);
+  let lastUrl = window.location.href;
+
+  ['click', 'popstate'].forEach((eventName) => {
+    window.addEventListener(eventName, () =>
+      setTimeout(() => {
+        if (running || window.location.href === lastUrl) return;
+        lastUrl = window.location.href;
+
+        if (!lastUrl.includes('episode')) {
+          setFab({ show: false });
+          setManga({ show: false });
+          return;
+        }
+
+        handleUrlChange();
+      }, 100),
+    );
+  });
+
+  handleUrlChange();
 })();
