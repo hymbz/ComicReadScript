@@ -21,4 +21,3 @@ jobs:
           body_path: docs/LatestChange.md
           files: |
             ComicRead.user.js
-            main.js
