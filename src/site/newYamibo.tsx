@@ -1,4 +1,5 @@
 import {
+  plimit,
   querySelector,
   querySelectorClick,
   request,
@@ -8,9 +9,9 @@ import {
 
 (async () => {
   // 只在漫画页内运行
-  if (!document.URL.includes('view-chapter')) return;
+  if (!window.location.pathname.includes('/manga/view-chapter')) return;
 
-  const { setFab, setManga, init } = await useInit('newYamibo');
+  const { setManga, init } = await useInit('newYamibo');
 
   setManga({
     onNext: querySelectorClick('#btnNext'),
@@ -23,36 +24,26 @@ import {
 
   const id = new URLSearchParams(window.location.search).get('id');
   /** 总页数 */
-  const totalNum = +querySelector(
+  const totalPageNum = +querySelector(
     'section div:first-of-type div:last-of-type',
   )!.innerHTML.split('：')[1];
 
-  const getImgList = async (
-    i = 1,
-    imgList: string[] = [],
-  ): Promise<string[]> => {
+  /** 获取指定页数的图片 url */
+  const getImg = async (i = 1) => {
     const res = await request(
       `https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`,
     );
 
-    imgList.push(
-      /<img id="imgPic".+="(.+?)".+>/
-        .exec(res.responseText)![1]
-        .replaceAll('&amp;', '&'),
-    );
-
-    if (imgList.length === totalNum) {
-      setFab({ progress: 1, tip: '阅读模式' });
-      return imgList;
-    }
-
-    setFab({
-      progress: imgList.length / totalNum,
-      tip: `加载图片中 - ${imgList.length}/${totalNum}`,
-    });
-
-    return getImgList(i + 1, imgList);
+    return res.responseText
+      .match(/(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/)![0]
+      .replaceAll('&amp;', '&');
   };
 
-  init(getImgList);
+  init(() =>
+    plimit(
+      Object.keys([...new Array(totalPageNum)]).map(
+        (i) => () => getImg(+i + 1),
+      ),
+    ),
+  );
 })();
