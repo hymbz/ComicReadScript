@@ -1,5 +1,6 @@
 import { createEffect, createRoot, on } from 'solid-js';
 
+import { throttle } from 'throttle-debounce';
 import type { State } from '..';
 import { setState, store } from '..';
 import type { UseDragOption } from '../../useDrag';
@@ -14,9 +15,18 @@ export const contentHeight = () => mangaFlowEle().scrollHeight;
 /** 能显示出漫画的高度 */
 export const windowHeight = () => store.rootRef?.offsetHeight ?? 0;
 
-/**
- * 获取指定 page 中的图片 index，并在后面加上加载状态
- */
+/** 更新滚动条滑块的高度和所处高度 */
+export const updateDrag = (state: State) => {
+  if (!state.option.scrollMode) {
+    state.scrollbar.dragHeight = 0;
+    state.scrollbar.dragTop = 0;
+    return;
+  }
+  state.scrollbar.dragHeight =
+    windowHeight() / (contentHeight() || windowHeight());
+};
+
+/** 获取指定 page 中的图片 index，并在后面加上加载状态 */
 const getPageIndexText = (state: State, pageIndex: number) => {
   const page = state.pageList[pageIndex];
   if (!page) return ['null'];
@@ -32,67 +42,55 @@ const getPageIndexText = (state: State, pageIndex: number) => {
   return pageIndexText;
 };
 
-/** 更新滚动条滑块的高度和所处高度 */
-export const updateDrag = (state: State) => {
-  if (!state.option.scrollMode) {
-    state.scrollbar.dragHeight = 0;
-    state.scrollbar.dragTop = 0;
-    return;
+const getTipText = (state: State) => {
+  if (!state.pageList.length || !state.mangaFlowRef) return '';
+
+  if (!state.option.scrollMode)
+    return getPageIndexText(state, state.activePageIndex).join(' | ');
+
+  /** 当前显示图片的列表 */
+  const activeImageIndexList: number[] = [];
+
+  const { scrollTop } = mangaFlowEle();
+  const imgEleList = store.mangaFlowRef!
+    .childNodes as NodeListOf<HTMLImageElement>;
+  const scrollBottom = scrollTop + store.rootRef!.offsetHeight;
+
+  // 通过一个一个检查图片元素所在高度来判断图片是否被显示
+  for (let i = 0; i < imgEleList.length; i += 1) {
+    const element = imgEleList[i];
+    // 当图片的顶部位置在视窗口的底部位置时中断循环
+    if (element.offsetTop > scrollBottom) break;
+    // 当图片的底部位置还未达到视窗口的顶部位置时，跳到下一个图片
+    if (element.offsetTop + element.offsetHeight < scrollTop) continue;
+    activeImageIndexList.push(+element.alt);
   }
-  state.scrollbar.dragHeight =
-    windowHeight() / (contentHeight() || windowHeight());
+  state.activePageIndex = activeImageIndexList.at(0) ?? 0;
+
+  return activeImageIndexList
+    .map((index) => getPageIndexText(state, index))
+    .join('\n');
 };
 
-/** 卷轴模式下当前显示图片的列表 */
-const activeImageIndexList: number[] = [];
+/** 更新滚动条提示文本 */
+export const updateTipText = throttle(100, () => {
+  setState((state) => {
+    state.scrollbar.tipText = getTipText(state);
+  });
+});
 
 /** 监视漫画页的滚动事件 */
 export const handleMangaFlowScroll = () => {
   if (!store.option.scrollMode) return;
 
   setState((state) => {
-    const { scrollTop } = mangaFlowEle();
-
     state.scrollbar.dragTop =
-      !mangaFlowEle || !contentHeight() ? 0 : scrollTop / contentHeight();
-
-    const imgEleList = state.mangaFlowRef!
-      .childNodes as NodeListOf<HTMLImageElement>;
-    const scrollBottom = scrollTop + state.rootRef!.offsetHeight;
-
-    activeImageIndexList.length = 0;
-
-    // 通过一个一个检查图片元素所在高度来判断图片是否被显示
-    for (let i = 0; i < imgEleList.length; i += 1) {
-      const element = imgEleList[i];
-      const top = element.offsetTop;
-      const bottom = element.offsetTop + element.offsetHeight;
-      if (
-        (top > scrollTop && top < scrollBottom) ||
-        (bottom < scrollBottom && bottom > scrollTop)
-      )
-        activeImageIndexList.push(+element.alt);
-      else if (activeImageIndexList.length) break;
-    }
-
-    state.activePageIndex = activeImageIndexList.at(0) ?? 0;
-
+      !mangaFlowEle || !contentHeight()
+        ? 0
+        : mangaFlowEle().scrollTop / contentHeight();
     updateDrag(state);
   });
-};
-
-/** 更新滚动条提示文本 */
-export const updateTipText = (state: State) => {
-  state.scrollbar.tipText = (() => {
-    if (!state.pageList.length || !state.mangaFlowRef) return '';
-
-    if (!state.option.scrollMode)
-      return getPageIndexText(state, state.activePageIndex).join(' | ');
-
-    return activeImageIndexList
-      .map((index) => getPageIndexText(state, index))
-      .join('\n');
-  })();
+  updateTipText();
 };
 
 /** 开始拖拽时的 dragTop 值 */
@@ -158,9 +156,7 @@ createRoot(() => {
         () => store.option.scrollMode,
         () => store.option.dir,
       ],
-      () => {
-        setState(updateTipText);
-      },
+      updateTipText,
     ),
   );
 });

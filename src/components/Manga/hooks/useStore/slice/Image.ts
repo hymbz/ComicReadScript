@@ -41,7 +41,7 @@ const loadImg = (
     });
 
   const edited = editNum > 0;
-  if (edited) updateTipText(state);
+  if (edited) updateTipText();
   return edited;
 };
 
