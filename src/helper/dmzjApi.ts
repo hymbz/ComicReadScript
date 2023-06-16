@@ -1,8 +1,7 @@
 import { createMutable } from 'solid-js/store';
 import { onMount } from 'solid-js';
 
-import { request } from '.';
-import { toast } from '../main';
+import { toast, request } from '../main';
 import dmzjDecrypt from './dmzjDecrypt';
 
 type Text = number | string;

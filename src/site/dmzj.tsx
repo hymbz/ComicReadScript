@@ -1,12 +1,14 @@
 import { For } from 'solid-js';
 import { render } from 'solid-js/web';
-import { querySelectorClick, scrollIntoView, useInit } from '../main';
 import {
   insertNode,
   querySelector,
   querySelectorAll,
   request,
-} from '../helper';
+  querySelectorClick,
+  scrollIntoView,
+  useInit,
+} from '../main';
 import { useComicDetail } from '../helper/dmzjApi';
 
 declare const g_comic_url: string;

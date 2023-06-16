@@ -12,8 +12,8 @@
 
 ## 安装
 
-1. 在浏览器上装好 [Tampermonkey](https://tampermonkey.net/)、[Violentmonkey](https://violentmonkey.github.io/) 之类的油猴扩展
-2. 通过 GreasyFork 安装脚本：[GreasyFork 链接](https://greasyfork.org/zh-CN/scripts/374903-comicread)
+1. 首先需要在浏览器上装好 [Tampermonkey](https://tampermonkey.net/)、[Violentmonkey](https://violentmonkey.github.io/) 之类的油猴扩展
+2. 之后通过 GreasyFork 安装脚本：[GreasyFork 链接](https://sleazyfork.org/zh-CN/scripts/374903-comicread)
 
 ## 阅读模式操作
 

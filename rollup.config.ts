@@ -47,6 +47,9 @@ const resourceList: Record<string, [string, string] | [string]> = {
   dmzjDecrypt: [
     'https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1195841',
   ],
+  main: [
+    'https://greasyfork.org/scripts/468800-comicread-main/code/ComicRead_main.js?version=1206029',
+  ],
   dmzj_style: ['https://userstyles.org/styles/chrome/119945.json'],
 };
 const resource = {
@@ -137,10 +140,10 @@ export const buildOptions = (
   const isUserScript = ['dev', 'index'].includes(fileName);
 
   return {
-    treeshake: false,
+    treeshake: true,
     external: [
       ...Object.keys(meta.resource ?? {}),
-      '../main',
+      /.+\/main/,
       /.+\/dmzjDecrypt/,
     ],
     input: resolve(__dirname, 'src', fileName),
@@ -215,7 +218,6 @@ export const buildOptions = (
                 break;
               case 'helper/import':
                 // 开发时将 main 代码直接引入，正式打包则要改成通过 GM_getResourceText 获取代码
-                // TODO: 正式打包时要替换成通过 GM_getResourceText 获取代码
                 newCode = code
                   .replace(
                     /inject\('main'\)/,

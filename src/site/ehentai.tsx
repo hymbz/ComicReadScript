@@ -1,3 +1,5 @@
+import MdSettings from '@material-design-icons/svg/round/settings.svg';
+
 import {
   insertNode,
   linstenKeyup,
@@ -20,6 +22,16 @@ declare const selected_link: HTMLElement;
 
   // 不是漫画页的话
   if (!Reflect.has(unsafeWindow, 'gid')) {
+    await GM.registerMenuCommand('显示设置菜单', () =>
+      setFab({
+        show: true,
+        focus: true,
+        tip: '设置',
+        children: <MdSettings />,
+        onBackdropClick: () => setFab({ show: false, focus: false }),
+      }),
+    );
+
     if (options.快捷键翻页) {
       linstenKeyup((e) => {
         switch (e.key) {
@@ -107,7 +119,8 @@ declare const selected_link: HTMLElement;
           progress: doneNum / totalNum,
           tip: `加载图片中 - ${doneNum}/${totalNum}`,
         });
-        comicReadModeDom.innerHTML = ` loading - ${doneNum}/${totalNum}`;
+        comicReadModeDom.innerHTML =
+          doneNum !== totalNum ? ` loading - ${doneNum}/${totalNum}` : ` Read`;
       },
     );
   });

@@ -14,7 +14,7 @@ unsafeWindow.crsLib = {
 };
 
 const getCode = (name: string) => {
-  if (name === '../main') return inject('main');
+  if (isDevMode && name === '../main') return inject('main');
   if (name.includes('./')) return GM_getResourceText(name.split('/').at(-1)!);
   return GM_getResourceText(name);
 };
