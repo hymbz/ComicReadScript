@@ -72,6 +72,7 @@ export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
     if (props.imgList.length && props.show) {
       dom.setAttribute('show', '');
       document.documentElement.style.overflow = 'hidden';
+      (dom.shadowRoot!.firstElementChild as HTMLElement).focus();
     } else {
       dom.removeAttribute('show');
       document.documentElement.style.overflow = 'unset';

@@ -1,9 +1,6 @@
 import { querySelectorClick, useInit, request, plimit, wait } from 'main';
 
 (async () => {
-  // 只在漫画页内运行
-  if (!window.location.pathname.includes('episode')) return;
-
   const { setManga, setFab, init } = await useInit('terraHistoricus');
 
   const apiUrl = () =>
@@ -17,7 +14,8 @@ import { querySelectorClick, useInit, request, plimit, wait } from 'main';
   const getImgList = async () => {
     const res = await request(apiUrl());
     const pageList = JSON.parse(res.response).data.pageInfos as unknown[];
-    if (pageList.length === 0) throw new Error('获取图片列表时出错');
+    if (pageList.length === 0 && window.location.pathname.includes('episode'))
+      throw new Error('获取图片列表时出错');
 
     return plimit<string>(
       [...Array(pageList.length).keys()].map(getImgUrl),
