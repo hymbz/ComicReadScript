@@ -1,6 +1,3 @@
-import type { ChapterInfo } from '../helper/dmzjApi';
-import { getChapterInfo } from '../helper/dmzjApi';
-import dmzjDecrypt from '../helper/dmzjDecrypt';
 import {
   insertNode,
   querySelector,
@@ -9,7 +6,10 @@ import {
   request,
   toast,
   useInit,
-} from '../main';
+} from 'main';
+import dmzjDecrypt from 'dmzjDecrypt';
+import type { ChapterInfo } from '../helper/dmzjApi';
+import { getChapterInfo } from '../helper/dmzjApi';
 
 (async () => {
   const { options, setManga, init } = await useInit('dmzj', {

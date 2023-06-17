@@ -1,22 +1,18 @@
 declare const isDevMode: boolean;
 
-const GMRe = /^GM/;
-const gmApiList = Object.keys(window).filter((name) => GMRe.test(name));
-const gmApiMap = Object.fromEntries(
-  gmApiList.map((name) => [name, window[name]]),
-);
+const gmApi = {
+  GM,
+  GM_addElement,
+  GM_getResourceText,
+  GM_xmlhttpRequest,
+  unsafeWindow,
+};
+const gmApiList = Object.keys(gmApi);
 
 unsafeWindow.crsLib = {
   // 有些 cjs 模块会检查这个，所以在这里声明下
   process: { env: { NODE_ENV: process.env.NODE_ENV } },
-  // 把 GM API 放进去以便使用
-  ...gmApiMap,
-};
-
-const getCode = (name: string) => {
-  if (name === '../main') return inject('main');
-  if (name.includes('./')) return GM_getResourceText(name.split('/').at(-1)!);
-  return GM_getResourceText(name);
+  ...gmApi,
 };
 
 /**
@@ -24,13 +20,12 @@ const getCode = (name: string) => {
  * @param name \@resource 引用的资源名
  */
 const selfImportSync = (name: string) => {
-  const code = getCode(name);
+  const code = name !== 'main' ? GM_getResourceText(name) : inject('main');
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
   // 将模块导出变量放到 crsLib 对象里，防止污染全局作用域和网站自身的模块产生冲突
-  GM_addElement('script', {
-    textContent: `
+  const runCode = `
       window.crsLib['${name}'] = {};
       ${isDevMode ? `console.time('导入 ${name}');` : ''}
       (function (process, require, exports, module, ${gmApiList.join(', ')}) {
@@ -50,8 +45,10 @@ const selfImportSync = (name: string) => {
         ${gmApiList.map((apiName) => `window.crsLib.${apiName}`).join(', ')}
       );
       ${isDevMode ? `console.timeEnd('导入 ${name}');` : ''}
-    `,
-  });
+    `;
+
+  // 因为在一些网站比如推特会触发CSP，所以不能使用 eval 来执行
+  GM_addElement('script', { textContent: runCode });
 };
 
 interface SelfModule {

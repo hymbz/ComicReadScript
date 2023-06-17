@@ -6,7 +6,7 @@ import {
   scrollIntoView,
   toast,
   useInit,
-} from '../main';
+} from 'main';
 
 /** 用于转换获得图片文件扩展名 */
 const fileType = {

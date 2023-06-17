@@ -8,7 +8,7 @@ import {
   querySelectorClick,
   scrollIntoView,
   useInit,
-} from '../main';
+} from 'main';
 import { useComicDetail } from '../helper/dmzjApi';
 
 declare const g_comic_url: string;

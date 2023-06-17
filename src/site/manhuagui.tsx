@@ -1,4 +1,4 @@
-import { querySelectorAll, querySelectorClick, useInit } from '../main';
+import { querySelectorAll, querySelectorClick, useInit } from 'main';
 
 declare const pVars: { manga: { filePath: string } };
 declare const cInfo: { nextId: number; prevId: number };

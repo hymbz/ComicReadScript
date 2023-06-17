@@ -1,4 +1,4 @@
-import { querySelectorAll, insertNode, querySelector, saveAs } from '../main';
+import { querySelectorAll, insertNode, querySelector, saveAs } from 'main';
 
 /**
  * 懒得整理导入导出的代码了，应该也没人用了吧，等有人需要的时候再说

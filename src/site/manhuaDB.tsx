@@ -1,4 +1,4 @@
-import { dataToParams, querySelectorClick, useInit } from '../main';
+import { dataToParams, querySelectorClick, useInit } from 'main';
 
 declare const img_data_arr: { img: string }[];
 declare const img_host: string;

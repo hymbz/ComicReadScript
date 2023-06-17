@@ -1,4 +1,4 @@
-import { useManga, useFab, useSpeedDial, isEqualArray, toast } from '../main';
+import { useManga, useFab, useSpeedDial, isEqualArray, toast } from 'main';
 import type { AsyncReturnType } from '../helper';
 import { useSiteOptions } from '../helper/useSiteOptions';
 

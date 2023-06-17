@@ -4,7 +4,7 @@ import {
   sleep,
   toast,
   useInit,
-} from '../main';
+} from 'main';
 
 // 页面自带的变量
 declare const DM5_CID: number;

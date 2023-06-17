@@ -1,4 +1,4 @@
-import { dataToParams, querySelectorClick, request, useInit } from '../main';
+import { dataToParams, querySelectorClick, request, useInit } from 'main';
 
 // 页面自带的变量
 declare const MANGABZ_CID: number;

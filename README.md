@@ -1,14 +1,21 @@
 <!-- markdown to Discuz: https://hyrious.me/lexas/marked-discuz.html -->
 
-## 简介
-
 ![示例](/docs/images/页面填充示例.webp)
+
+<p align="center">
+  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread"><img src="https://img.shields.io/greasyfork/v/374903"></a>
+  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread"><img src="https://img.shields.io/greasyfork/dt/374903"></a>
+  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread/feedback"><img src="https://img.shields.io/greasyfork/rating-count/374903"></a>
+  <a href="https://github.com/hymbz/ComicReadScript/issues"><img src="https://img.shields.io/github/issues/hymbz/ComicReadScript"></a>
+</p>
+
+## 简介
 
 为在线漫画站增加双页阅读模式以优化阅读体验
 
-脚本默认开启了自动加载，会在打开页面时就自动加载图片并进入阅读模式，可在设置中关闭自动加载。脚本会在支持站点右下角弹出一个悬浮按钮，直接点击可以进入阅读模式，也可以通过其上的快捷按钮开启/关闭站点的增强功能。
+脚本默认开启了自动加载，会在打开页面时就自动加载图片并进入阅读模式，可在设置中关闭自动加载。也会在支持网页右下角弹出进入阅读模式的悬浮按钮，以便在退出后重新进入。部分站点还添加了优化体验的增强功能，可以通过悬浮按钮上的快捷按钮开启/关闭。
 
-对于支持站点以外的网站，如果能够在一个页面内显示所有漫画页图片一屏到底的话，也可以使用「[简易漫画阅读模式](#简易漫画阅读模式)」直接阅读，否则的话欢迎「[反馈](issues)」申请支持。
+对于支持站点以外的网站，如果能够在一个页面内显示所有漫画页图片一屏到底的话，也可以使用「[简易漫画阅读模式](#简易漫画阅读模式)」直接阅读，否则的话欢迎「[反馈](issues)」申请增加支持。
 
 ## 安装
 

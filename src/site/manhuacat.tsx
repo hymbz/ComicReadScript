@@ -1,4 +1,4 @@
-import { useInit } from '../main';
+import { useInit } from 'main';
 
 declare const img_data_arr: string[];
 declare const img_pre: string;

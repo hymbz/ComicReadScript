@@ -9,7 +9,7 @@ import {
   useInit,
   toast,
   plimit,
-} from '../main';
+} from 'main';
 
 declare const selected_tag: string;
 declare const selected_link: HTMLElement;

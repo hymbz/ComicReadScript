@@ -6,7 +6,7 @@ import {
   toast,
   useInit,
   querySelectorClick,
-} from '../main';
+} from 'main';
 
 (async () => {
   // 只在漫画页内运行

@@ -1,5 +1,5 @@
+import { querySelector, toast, useInit, wait } from 'main';
 import { getChapterInfo } from '../helper/dmzjApi';
-import { querySelector, toast, useInit, wait } from '../main';
 
 const chapterIdRe = /(?<=\/)\d+(?=\.html)/;
 

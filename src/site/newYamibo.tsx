@@ -5,7 +5,7 @@ import {
   request,
   scrollIntoView,
   useInit,
-} from '../main';
+} from 'main';
 
 (async () => {
   // 只在漫画页内运行

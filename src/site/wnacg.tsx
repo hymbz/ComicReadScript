@@ -1,4 +1,4 @@
-import { useInit } from '../main';
+import { useInit } from 'main';
 
 declare const imglist: { url: string; caption: string }[];
 

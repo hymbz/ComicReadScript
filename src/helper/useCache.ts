@@ -5,7 +5,7 @@ export type UseStore = <T>(
   callback: (store: IDBObjectStore) => T | PromiseLike<T>,
 ) => Promise<T>;
 
-export const promisifyRequest = <T>(
+const promisifyRequest = <T>(
   request: IDBRequest<T> | IDBTransaction,
 ): Promise<T> =>
   new Promise<T>((resolve, reject) => {

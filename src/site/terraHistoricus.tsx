@@ -1,4 +1,4 @@
-import { querySelectorClick, useInit, request, plimit, wait } from '../main';
+import { querySelectorClick, useInit, request, plimit, wait } from 'main';
 
 (async () => {
   // 只在漫画页内运行

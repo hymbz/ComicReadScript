@@ -9,7 +9,7 @@ import {
   request,
   useInit,
   toast,
-} from '../main';
+} from 'main';
 
 interface History {
   tid: string;

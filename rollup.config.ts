@@ -103,7 +103,7 @@ export const meta = {
   //   'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
   // downloadURL:
   //   'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
-} as Record<string, boolean | string | string[] | Record<string, string>>;
+};
 
 /** 脚本头部注释 */
 const metaHeader = (() => {
@@ -138,11 +138,7 @@ export const buildOptions = (
 
   return {
     treeshake: true,
-    external: [
-      ...Object.keys(meta.resource ?? {}),
-      /.+\/main/,
-      /.+\/dmzjDecrypt/,
-    ],
+    external: [...Object.keys(meta.resource ?? {}), 'main', 'dmzjDecrypt'],
     input: resolve(__dirname, 'src', fileName),
     // 忽略使用 eval 的警告
     onwarn(warning, warn) {
@@ -192,42 +188,45 @@ export const buildOptions = (
           renderChunk(code) {
             let newCode = code;
             // 将 inject 函数调用替换为 dist 文件夹下的指定文件内容
-            newCode = newCode.replace(/[ ]*inject\('(.+)'\);/g, (_, name) =>
-              fs
-                .readFileSync(resolve(__dirname, 'dist/cache/', `${name}.js`))
-                ?.toString(),
+            newCode = newCode.replaceAll(
+              /[ ]*inject[(<]'(.+)'\);/g,
+              (_, name) => {
+                switch (name) {
+                  case 'main':
+                    return `\`\n${fs
+                      .readFileSync('./dist/cache/main.js')
+                      .toString()
+                      .replaceAll('\\', '\\\\')
+                      .replaceAll('`', '\\`')
+                      .replaceAll('${', '\\${')}\``;
+
+                  default:
+                    return fs
+                      .readFileSync(
+                        resolve(__dirname, 'dist/cache/', `${name}.js`),
+                      )
+                      ?.toString()
+                      .replaceAll('require$1', 'require');
+                }
+              },
             );
 
             // 删除 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" }); 语句
             newCode = newCode.replace(/Object\.defineProperty.+?\n\n/, '');
             // 删除 exports.require 语句
             newCode = newCode.replace(/\n\nexports\.require.+;/, '');
+            // 删除单独的 require 语句和注释
+            newCode = newCode.replaceAll(
+              /\nrequire.+;|\n\/\*\*.+?\*\/\n(?=\n)|\n\/\/ .+?\n(?=\n)/g,
+              '',
+            );
 
-            switch (fileName) {
-              case 'index':
-                // 在开发模式时计算下脚本的运行消耗时间
-                if (isDevMode)
-                  newCode = [
-                    `console.time('脚本启动消耗时间')`,
-                    newCode,
-                    `console.timeEnd('脚本启动消耗时间')`,
-                  ].join('\n');
-                break;
-              case 'helper/import':
-                // 开发时将 main 代码直接引入，正式打包则要改成通过 GM_getResourceText 获取代码
-                newCode = code
-                  .replace(
-                    /inject\('main'\)/,
-                    () =>
-                      `\`\n${fs
-                        .readFileSync('./dist/cache/main.js')
-                        .toString()
-                        .replaceAll('\\', '\\\\')
-                        .replaceAll('`', '\\`')
-                        .replaceAll('${', '\\${')}\``,
-                  )
-                  .replaceAll('require$1', 'require');
-                break;
+            if (isDevMode && fileName === 'index') {
+              newCode = [
+                `console.time('脚本启动消耗时间')`,
+                newCode,
+                `console.timeEnd('脚本启动消耗时间')`,
+              ].join('\n');
             }
 
             // 为脚本加上油猴的注释
