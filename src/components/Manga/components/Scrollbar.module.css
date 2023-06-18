@@ -1,0 +1,116 @@
+.scrollbar {
+  touch-action: none;
+  user-select: none;
+
+  position: absolute;
+  z-index: 9;
+  top: 1%;
+  right: 3px;
+
+  display: flex;
+  flex-direction: column;
+
+  width: 5px;
+  height: 98%;
+
+  /* 扩大触发范围 */
+  border-left: 10em solid transparent;
+  outline: none;
+
+  & > div {
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+}
+
+.scrollbarDrag {
+  position: absolute;
+  z-index: 1;
+
+  justify-content: center;
+
+  width: 100%;
+
+  opacity: 0;
+  background-color: var(--scrollbar_drag);
+  border-radius: 1em;
+}
+
+.scrollbarPage {
+  transform-origin: bottom;
+  transform: scaleY(1);
+  flex-grow: 1;
+
+  /* stylelint-disable-next-line plugin/no-low-performance-animation-properties */
+  transition: transform 1000ms, background-color 0ms 1000ms;
+
+  &[data-type="loaded"] {
+    transform: scaleY(0);
+  }
+
+  &[data-type="loading"] {
+    background-color: var(--secondary);
+  }
+
+  &[data-type="wait"] {
+    opacity: 0.5;
+    background-color: var(--secondary);
+  }
+
+  &[data-type="error"] {
+    background-color: #f005;
+  }
+}
+
+.scrollbarPoper {
+  position: absolute;
+  right: 2em;
+
+  display: flex;
+  align-items: center;
+
+  width: fit-content;
+  padding: 0.2em 0.5em;
+
+  font-size: 0.8em;
+  line-height: 1.5em;
+  color: white;
+  text-align: center;
+  white-space: pre;
+
+  opacity: 0;
+  background-color: #303030;
+  border-radius: 0.3em;
+
+  transition: opacity 150ms;
+}
+
+/* 悬浮框箭头 */
+.scrollbarPoper::after {
+  content: "";
+
+  position: absolute;
+  left: 100%;
+
+  background-color: #303030;
+  background-color: transparent;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 0.4em;
+  border-left-color: #303030;
+  border-left-width: 0.5em;
+}
+
+/* 控制滚动条的显示 */
+.scrollbarDrag[data-show="true"],
+.scrollbar:hover .scrollbarDrag {
+  opacity: 1;
+}
+
+/* 控制滚动条悬浮提示的显示 */
+.scrollbarPoper[data-show="true"],
+.scrollbar:hover .scrollbarPoper {
+  opacity: 1;
+}

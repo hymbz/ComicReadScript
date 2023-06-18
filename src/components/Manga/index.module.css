@@ -1,0 +1,37 @@
+@import "./components/ComicImg.module.css";
+@import "./components/Toolbar.module.css";
+@import "./components/Setting.module.css";
+@import "./components/Scrollbar.module.css";
+@import "./components/TouchArea.module.css";
+
+.hidden {
+  display: none;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+.opacity1 {
+  opacity: 1;
+}
+
+.opacity0 {
+  opacity: 0;
+}
+
+.root {
+  position: relative;
+
+  overflow: hidden;
+
+  width: 100%;
+  height: 100%;
+
+  background-color: var(--bg);
+  outline: 0;
+
+  & a {
+    color: var(--text_secondary);
+  }
+}

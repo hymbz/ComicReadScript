@@ -1,0 +1,8 @@
+{
+  "vitest.enable": true,
+  "vitest.commandLine": "pnpm run test",
+  "todo-tree.filtering.excludeGlobs": [
+    "**/node_modules/*/**",
+    "**/*.js"
+  ],
+}

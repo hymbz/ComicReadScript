@@ -1,0 +1,181 @@
+.img {
+  display: none;
+
+  max-width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+  background-color: var(--hover_bg_color, #fff3);
+
+  &[data-show] {
+    display: unset;
+  }
+
+  /* 隐藏因为 src 为空而出现的图片加载错误的图 */
+  &[data-load-type="error"],
+  &[data-load-type="wait"] {
+    max-width: 50%;
+    visibility: hidden;
+  }
+
+  &[data-fill="left"] {
+    transform: translate(50%);
+  }
+
+  &[data-fill="right"] {
+    transform: translate(-50%);
+  }
+}
+
+.mangaFlowBox {
+  /* 隐藏滚动条但不影响滚动 */
+  scrollbar-width: none;
+  height: 100%;
+  outline: none;
+
+  /* 隐藏滚动条但不影响滚动 */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.mangaFlow {
+  user-select: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 100%;
+
+  color: var(--text);
+
+  &.disableZoom .img {
+    height: unset;
+    max-height: 100%;
+    object-fit: scale-down;
+  }
+
+  &.scrollMode {
+    overflow: visible;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    & .img {
+      max-width: var(--img_max_width);
+      height: auto;
+      max-height: unset;
+
+      /* 让未显示的图片提前占下位 */
+      &[data-load-type="wait"] {
+        flex-basis: var(--img_placeholder_height, 100vh);
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  /* 根据漫画方向调换位置 */
+  &[dir="ltr"] {
+    flex-direction: row;
+  }
+}
+
+.endPage {
+  pointer-events: none;
+
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  left: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  color: white;
+
+  opacity: 0;
+  background-color: #3339;
+
+  transition: opacity 500ms;
+
+  & > button {
+    cursor: pointer;
+
+    transform-origin: center;
+
+    font-size: 1.2em;
+    color: inherit;
+
+    background-color: transparent;
+    border: 0;
+
+    animation: jello 0.3s forwards;
+
+    &[data-is-end] {
+      margin: 2em;
+      font-size: 3em;
+    }
+
+    &:focus-visible {
+      outline: none;
+    }
+  }
+
+  & > .tip {
+    position: absolute;
+    margin: auto;
+  }
+
+  &[data-show] {
+    pointer-events: all;
+    opacity: 1;
+  }
+
+  &[data-type="start"] > .tip {
+    transform: translateY(-40vh);
+  }
+
+  &[data-type="end"] > .tip {
+    transform: translateY(40vh);
+  }
+}
+
+@keyframes jello {
+  0%,
+  11.1%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  22.2% {
+    transform: skewX(-12.5deg) skewY(-12.5deg);
+  }
+
+  33.3% {
+    transform: skewX(6.25deg) skewY(6.25deg);
+  }
+
+  44.4% {
+    transform: skewX(-3.125deg) skewY(-3.125deg);
+  }
+
+  55.5% {
+    transform: skewX(1.5625deg) skewY(1.5625deg);
+  }
+
+  66.6% {
+    transform: skewX(-0.7812deg) skewY(-0.7812deg);
+  }
+
+  77.7% {
+    transform: skewX(0.3906deg) skewY(0.3906deg);
+  }
+
+  88.8% {
+    transform: skewX(-0.1953deg) skewY(-0.1953deg);
+  }
+}

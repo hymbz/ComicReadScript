@@ -1,0 +1,46 @@
+.toolbar {
+  position: fixed;
+  z-index: 9;
+  top: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  width: 5vw;
+  height: 100%;
+}
+
+/* 工具栏面板 */
+.toolbarPanel {
+  position: relative;
+  transform: translateX(-100%);
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 0.5em;
+
+  transition: transform 200ms;
+}
+
+.toolbar[data-show="true"] {
+  & .toolbarPanel {
+    transform: none;
+  }
+}
+
+.toolbarBg {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background-color: var(--page_bg);
+  filter: opacity(0.3);
+  backdrop-filter: blur(3px);
+  border-top-right-radius: 1em;
+  border-bottom-right-radius: 1em;
+}
