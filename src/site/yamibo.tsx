@@ -21,7 +21,7 @@ interface History {
 (async () => {
   const { options, setFab, setManga, init } = await useInit('yamibo', {
     记录阅读进度: true,
-    关闭快捷导航按钮的跳转: true,
+    关闭快捷导航的跳转: true,
     修正点击页数时的跳转判定: true,
     固定导航条: true,
     自动签到: true,
@@ -97,7 +97,7 @@ interface History {
       }
     })();
 
-  if (options.关闭快捷导航按钮的跳转)
+  if (options.关闭快捷导航的跳转)
     // eslint-disable-next-line no-script-url
     querySelector('#qmenu a')?.setAttribute('href', 'javascript:;');
 

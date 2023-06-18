@@ -62,7 +62,7 @@ export const updateImgLoadType = debounce(100, (state: State) => {
     loadImg(state, activePageIndex + 1, activePageIndex + 20) ||
     // 再加载前十页
     loadImg(state, activePageIndex - 10, activePageIndex - 1) ||
-    // 默认在页数不多时，继续加载其余图片
+    // 根据设置决定是否要继续加载其余图片
     (!state.option.alwaysLoadAllImg && imgList.length > 60) ||
     // 加载当前页后面的图片
     loadImg(state, activePageIndex + 1, imgList.length, 5) ||
