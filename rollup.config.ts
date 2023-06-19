@@ -3,6 +3,7 @@ import fs from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import shell from 'shelljs';
+// import terser from '@rollup/plugin-terser';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import { babel } from '@rollup/plugin-babel';
@@ -45,7 +46,7 @@ const resourceList: Record<string, [string, string] | [string]> = {
   panzoom: ['https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js'],
   fflate: ['https://unpkg.com/fflate@0.7.4/umd/index.js'],
   dmzjDecrypt: [
-    'https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1195841',
+    'https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199',
   ],
   dmzj_style: ['https://userstyles.org/styles/chrome/119945.json'],
 };
@@ -99,10 +100,10 @@ export const meta = {
   ],
   resource: resource[isDevMode ? 'dev' : 'prod'],
   supportURL: 'https://github.com/hymbz/ComicReadScript/issues',
-  // updateURL:
-  //   'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
-  // downloadURL:
-  //   'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
+  updateURL:
+    'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
+  downloadURL:
+    'https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js',
 };
 
 /** 脚本头部注释 */
@@ -278,7 +279,15 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
 export default [
   // // 打包 dmzjDecrypt 时用的配置
   // (() => {
-  //   const options = buildOptions('helper/dmzjDecrypt');
+  //   const options = buildOptions(
+  //     'helper/dmzjDecrypt',
+  //     undefined,
+  //     terser({
+  //       keep_classnames: true,
+  //       keep_fnames: true,
+  //       format: { beautify: true, ecma: 2015 },
+  //     }),
+  //   );
   //   options.output = { ...options.output, name: 'dmzjDecrypt', format: 'umd' };
   //   return options;
   // })(),

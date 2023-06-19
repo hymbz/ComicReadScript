@@ -32,6 +32,7 @@
     "@rollup/plugin-commonjs": "^24.1.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-terser": "^0.4.3",
     "@solidjs/router": "^0.8.2",
     "@types/shelljs": "^0.8.12",
     "@types/throttle-debounce": "^5.0.0",
