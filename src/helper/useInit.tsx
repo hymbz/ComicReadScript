@@ -36,7 +36,7 @@ export const useInit = async <T extends Record<string, any>>(
   if (version && version !== GM.info.script.version) {
     (async () => {
       const res = await request(
-        `https://cdn.jsdelivr.net/gh/hymbz/ComicReadScriptTest@${GM.info.script.version}/docs/LatestChange.md`,
+        `https://cdn.jsdelivr.net/gh/hymbz/ComicReadScript@${GM.info.script.version}/docs/LatestChange.md`,
         { errorText: '' },
       );
       toast(
@@ -67,6 +67,7 @@ export const useInit = async <T extends Record<string, any>>(
         ),
         {
           id: 'Version Tip',
+          type: 'custom',
           duration: Infinity,
           // 手动点击关掉通知后才不会再次弹出
           onDismiss: () => GM.setValue('Version', GM.info.script.version),
