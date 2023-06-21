@@ -118,7 +118,10 @@ export const dragOption: UseDragOption = {
         // 处理超出范围的情况
         if (top < 0) top = 0;
         else if (top > 1) top = 1;
-        mangaFlowEle().scrollTo({ top: top * contentHeight() });
+        mangaFlowEle().scrollTo({
+          top: top * contentHeight(),
+          behavior: 'instant',
+        });
       } else {
         // 确保滚动条的中心会在点击位置
         top -= store.scrollbar.dragHeight / 2;

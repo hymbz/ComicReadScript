@@ -9,3 +9,6 @@ export const playAnimation = (e?: HTMLElement) =>
     animation.cancel();
     animation.play();
   });
+
+export const clamp = (max: number, val: number, min: number) =>
+  Math.max(Math.min(max, val), min);

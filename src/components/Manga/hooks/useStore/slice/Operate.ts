@@ -1,13 +1,26 @@
 import { switchFillEffect, turnPage } from './Image';
 import { setState, store } from '..';
+import {
+  contentHeight,
+  handleMangaFlowScroll,
+  mangaFlowEle,
+} from './Scrollbar';
+import { clamp } from '../../../helper';
 
 export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
 
-  if (e.altKey || (!store.endPageType && store.scrollLock)) return;
+  if (
+    (e.altKey && !store.option.scrollMode) ||
+    (!store.endPageType && store.scrollLock)
+  )
+    return;
+
+  const isWheelDown = e.deltaY > 0;
 
   if (store.option.scrollMode && !store.endPageType) {
-    if (store.scrollbar.dragTop === 0 && e.deltaY <= 0) {
+    // 实现在卷轴模式滚动到头尾后继续滚动时弹出结束页
+    if (store.scrollbar.dragTop === 0 && !isWheelDown) {
       window.setTimeout(() => {
         setState((state) => {
           state.endPageType = 'start';
@@ -21,7 +34,7 @@ export const handleWheel = (e: WheelEvent) => {
       }, 500);
     } else if (
       store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 &&
-      e.deltaY > 0
+      isWheelDown
     ) {
       setState((state) => {
         state.endPageType = 'end';
@@ -33,13 +46,31 @@ export const handleWheel = (e: WheelEvent) => {
         });
       }, 500);
     }
+
+    // 实现卷轴模式下的缩放
+    if (e.altKey) {
+      e.preventDefault();
+      setState((state) => {
+        const zoomScale = (isWheelDown ? -1 : 1) * 0.1;
+        state.scrollModeImgScale = clamp(
+          5,
+          state.scrollModeImgScale + zoomScale,
+          0.2,
+        );
+      });
+      // 在调整图片缩放后使当前滚动进度保持不变
+      setState((state) => {
+        mangaFlowEle().scrollTo({
+          top: contentHeight() * state.scrollbar.dragTop,
+        });
+      });
+      handleMangaFlowScroll();
+    }
+
     return;
   }
 
-  setState((state) => {
-    if (e.deltaY > 0) turnPage(state, 'next');
-    else turnPage(state, 'prev');
-  });
+  setState((state) => turnPage(state, isWheelDown ? 'next' : 'prev'));
 };
 
 export const handleKeyUp = (e: KeyboardEvent) => {

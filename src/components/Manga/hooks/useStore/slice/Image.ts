@@ -5,6 +5,7 @@ import type { State } from '..';
 import { store, setState } from '..';
 import { findFillIndex, handleComicData } from '../../../handleComicData';
 import { updateDrag, updateTipText } from './Scrollbar';
+import { clamp } from '../../../helper';
 
 /** 是否需要自动判断开启卷轴模式 */
 let autoScrollMode = true;
@@ -25,10 +26,7 @@ const loadImg = (
 ) => {
   let editNum = 0;
   state.pageList
-    .slice(
-      Math.max(startIndex, 0),
-      Math.max(Math.min(endIndex, state.pageList.length), 0),
-    )
+    .slice(Math.max(startIndex, 0), clamp(endIndex, state.pageList.length, 0))
     .flat()
     .some((index) => {
       if (index === -1) return false;

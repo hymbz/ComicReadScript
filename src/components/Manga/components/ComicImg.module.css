@@ -62,9 +62,10 @@
     justify-content: flex-start;
 
     & .img {
-      max-width: var(--img_max_width);
+      width: calc(var(--scrollModeImgScale) * var(--scrollModeImgWidth));
       height: auto;
       max-height: unset;
+      object-fit: contain;
 
       /* 让未显示的图片提前占下位 */
       &[data-load-type="wait"] {

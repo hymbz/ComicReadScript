@@ -16,26 +16,25 @@ export const initPanzoom = (state: State) => {
     minZoom: 1,
     // 禁用默认的双击缩放
     zoomDoubleClickSpeed: 1,
+    // 禁止处理手指捏合动作，交给浏览器去缩放
+    pinchSpeed: 0,
 
     // 忽略键盘事件
     filterKey: () => true,
+    // 不处理 touch 事件
+    onTouch: () => false,
 
-    beforeWheel(e) {
-      const { scale } = panzoom.getTransform();
-
-      // 在不处于缩放状态或卷轴模式，且没有按下 alt 时不进行缩放
-      if (!e.altKey && (scale === 1 || store.option.scrollMode)) return true;
-
-      return false;
-    },
-    beforeMouseDown(e) {
-      // 按下「alt 键」或「处于放大状态」时才允许拖动
-      return !(e.altKey || panzoom.getTransform().scale !== 1);
-    },
-    onTouch() {
-      // 未进行缩放时不捕捉 touch 事件
-      return store.isZoomed;
-    },
+    // 在 处于卷轴模式 或 不处于缩放状态且没有按下 alt 时，不进行缩放
+    beforeWheel: (e) =>
+      store.option.scrollMode ||
+      (!e.altKey && panzoom.getTransform().scale === 1),
+    // 不处于卷轴模式或按下「alt 键」或「处于放大状态」时才允许拖动
+    beforeMouseDown: (e) =>
+      !(
+        !store.option.scrollMode ||
+        e.altKey ||
+        panzoom.getTransform().scale !== 1
+      ),
   });
 
   panzoom.on(
