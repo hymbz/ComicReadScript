@@ -11,7 +11,9 @@
   height: 100%;
 
   font-size: 3em;
-  color: transparent;
+  color: white;
+
+  visibility: hidden;
 }
 
 .touchArea {
@@ -31,9 +33,7 @@
 
 /* 显示点击区域时 */
 .touchAreaRoot[data-show="true"] {
-  & .touchArea {
-    color: white;
-  }
+  visibility: visible;
 
   & .touchArea[data-area="prev"] {
     background-color: #95e1d3e6;
