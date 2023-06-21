@@ -4,7 +4,6 @@ import { useFab } from '../components/useComponents/Fab';
 import { toast } from '../components/useComponents/Toast';
 import { useSiteOptions } from './useSiteOptions';
 import { useSpeedDial } from './useSpeedDial';
-import { request } from '.';
 
 /**
  * 对所有支持站点页面的初始化操作的封装
@@ -34,46 +33,41 @@ export const useInit = async <T extends Record<string, any>>(
   // 检查脚本的版本变化，提示用户
   const version = await GM.getValue<string>('Version');
   if (version && version !== GM.info.script.version) {
-    (async () => {
-      const res = await request(
-        `https://cdn.jsdelivr.net/gh/hymbz/ComicReadScript@${GM.info.script.version}/docs/LatestChange.md`,
-        { errorText: '' },
-      );
-      toast(
-        () => (
-          <>
-            <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
-            <div class="md">
-              <For each={res.responseText.match(/^### [^[].+?$|^\* .+?$/gm)}>
-                {(mdText) => {
-                  switch (mdText[0]) {
-                    case '#':
-                      return <h3>{mdText.replace('### ', '')}</h3>;
-                    case '*':
-                      return (
-                        <ul>
-                          <For each={mdText.match(/(?<=:.+?: ).+?(?= \()/)}>
-                            {(item) => <li>{item}</li>}
-                          </For>
-                        </ul>
-                      );
-                    default:
-                      return null;
-                  }
-                }}
-              </For>
-            </div>
-          </>
-        ),
-        {
-          id: 'Version Tip',
-          type: 'custom',
-          duration: Infinity,
-          // 手动点击关掉通知后才不会再次弹出
-          onDismiss: () => GM.setValue('Version', GM.info.script.version),
-        },
-      );
-    })();
+    const latestChange = inject('LatestChange');
+    toast(
+      () => (
+        <>
+          <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
+          <div>
+            <For each={latestChange.match(/^### [^[].+?$|^\* .+?$/gm)}>
+              {(mdText) => {
+                switch (mdText[0]) {
+                  case '#':
+                    return <h3>{mdText.replace('### ', '')}</h3>;
+                  case '*':
+                    return (
+                      <ul>
+                        <For each={mdText.match(/(?<=:.+?: ).+?(?= \()/)}>
+                          {(item) => <li>{item}</li>}
+                        </For>
+                      </ul>
+                    );
+                  default:
+                    return null;
+                }
+              }}
+            </For>
+          </div>
+        </>
+      ),
+      {
+        id: 'Version Tip',
+        type: 'custom',
+        duration: Infinity,
+        // 手动点击关掉通知后才不会再次弹出
+        onDismiss: () => GM.setValue('Version', GM.info.script.version),
+      },
+    );
 
     // 监听储存的版本数据的变动，如果和当前版本一致就关掉弹窗
     // 防止在更新版本后一次性打开多个页面，不得不一个一个关过去

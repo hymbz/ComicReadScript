@@ -195,18 +195,21 @@ export const buildOptions = (
                 switch (name) {
                   case 'main':
                     return `\`\n${fs
-                      .readFileSync('./dist/cache/main.js')
+                      .readFileSync(resolve(__dirname, 'dist/cache/main.js'))
                       .toString()
                       .replaceAll('\\', '\\\\')
                       .replaceAll('`', '\\`')
                       .replaceAll('${', '\\${')}\``;
 
+                  case 'LatestChange':
+                    return `\`\n${fs
+                      .readFileSync(resolve(__dirname, `docs/LatestChange.md`))
+                      .toString()}\`;`;
+
                   default:
                     return fs
-                      .readFileSync(
-                        resolve(__dirname, 'dist/cache/', `${name}.js`),
-                      )
-                      ?.toString()
+                      .readFileSync(resolve(__dirname, `dist/cache/${name}.js`))
+                      .toString()
                       .replaceAll('require$1', 'require');
                 }
               },

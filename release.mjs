@@ -18,6 +18,17 @@ const exec = (...commands) => {
 (async () => {
   if (process.argv.slice(2).includes('push')) {
     const { version } = packageJSON;
+
+    // 打包代码
+    exec('pnpm build');
+
+    // 将打包出来的脚本文件复制到根目录上
+    shell.cp(
+      '-f',
+      path.join(__dirname, './dist/index.js'),
+      path.join(__dirname, './ComicRead.user.js'),
+    );
+
     // 提交上传更改
     exec(
       'git add .',
@@ -50,14 +61,4 @@ const exec = (...commands) => {
 
   // 将最新的更改日志写入 LatestChange.md
   shell.echo(changelog).to('docs/LatestChange.md');
-
-  // 打包代码
-  exec('pnpm build');
-
-  // 将打包出来的脚本文件复制到根目录上
-  shell.cp(
-    '-f',
-    path.join(__dirname, './dist/index.js'),
-    path.join(__dirname, './ComicRead.user.js'),
-  );
 })();
