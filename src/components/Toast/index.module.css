@@ -51,11 +51,17 @@
   height: 0.2em;
 
   background-color: var(--theme);
+}
 
+.item[data-schedule] .schedule {
+  transition: transform 100ms;
+}
+
+.item:not([data-schedule]) .schedule {
   animation: schedule linear 1 forwards;
 }
 
-:is(.item:hover, .root[data-paused]) .schedule {
+:is(.item:hover, .item[data-schedule], .root[data-paused]) .schedule {
   animation-play-state: paused;
 }
 

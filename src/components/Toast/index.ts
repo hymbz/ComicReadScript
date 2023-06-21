@@ -12,6 +12,7 @@ export interface Toast {
   duration: number;
   type: 'info' | 'success' | 'warn' | 'error' | 'custom';
   msg: Message;
+  schedule?: number;
   onDismiss?: (t: Toast) => void;
   exit?: true;
   update?: true;

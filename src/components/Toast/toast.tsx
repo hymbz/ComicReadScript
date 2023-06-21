@@ -25,9 +25,14 @@ export const toast = (msg: Message, options?: Partial<Toast>) => {
 
 toast.dismiss = (id: string) => {
   if (!Reflect.has(store.map, id)) return;
-
   setState((state) => {
     state.map[id].exit = true;
+  });
+};
+toast.set = (id: string, options: Partial<Toast>) => {
+  if (!Reflect.has(store.map, id)) return;
+  setState((state) => {
+    Object.assign(state.map[id], options);
   });
 };
 

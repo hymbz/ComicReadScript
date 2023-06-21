@@ -4,7 +4,7 @@ import MdError from '@material-design-icons/svg/round/error.svg';
 import MdInfo from '@material-design-icons/svg/round/info.svg';
 
 import type { Component } from 'solid-js';
-import { createEffect, Show } from 'solid-js';
+import { createEffect, createMemo, Show } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 import { setState } from './helper';
 
@@ -44,8 +44,14 @@ const resetToastUpdate = (id: string) =>
   });
 
 export const ToastItem: Component<Toast> = (props) => {
-  const dismiss = (e: Event) => {
+  /** 是否要显示进度 */
+  const showSchedule = createMemo(() =>
+    props.duration === Infinity && props.schedule ? true : undefined,
+  );
+
+  const dismiss = (e: AnimationEvent | MouseEvent) => {
     e.stopPropagation();
+    if (showSchedule() && 'animationName' in e) return;
     toast.dismiss(props.id);
   };
 
@@ -70,6 +76,7 @@ export const ToastItem: Component<Toast> = (props) => {
     <div
       class={classes.item}
       style={{ '--theme': colorMap[props.type] }}
+      data-schedule={showSchedule()}
       data-exit={props.exit}
       onClick={dismiss}
       onAnimationEnd={handleAnimationEnd}
@@ -78,11 +85,14 @@ export const ToastItem: Component<Toast> = (props) => {
       <div class={classes.msg}>
         {typeof props.msg === 'string' ? props.msg : <props.msg />}
       </div>
-      <Show when={props.duration !== Infinity}>
+      <Show when={props.duration !== Infinity || props.schedule !== undefined}>
         <div
           ref={scheduleRef!}
           class={classes.schedule}
-          style={{ 'animation-duration': `${props.duration}ms` }}
+          style={{
+            'animation-duration': `${props.duration}ms`,
+            transform: showSchedule() ? `scaleX(${props.schedule})` : undefined,
+          }}
           onAnimationEnd={dismiss}
         />
       </Show>
