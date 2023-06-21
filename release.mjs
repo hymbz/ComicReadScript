@@ -2,6 +2,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import shell from 'shelljs';
 import release from 'release-it';
+import packageJSON from './package.json' assert { type: 'json' };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -15,11 +16,23 @@ const exec = (...commands) => {
 };
 
 (async () => {
+  if (process.argv.slice(2).includes('push')) {
+    const { version } = packageJSON;
+    // 提交上传更改
+    exec(
+      'git add .',
+      `git commit -m "chore: :bookmark: Release ${version}"`,
+      `git tag --annotate v${version} --message="Release ${version}"`,
+      'git push --follow-tags',
+    );
+    return;
+  }
+
   // 测试
   exec('pnpm test run');
 
   // 使用 release-it 更新版本，并获得更新日志
-  const { changelog, version } = await release({
+  const { changelog } = await release({
     ci: true,
     git: {
       requireCommits: true,
@@ -46,13 +59,5 @@ const exec = (...commands) => {
     '-f',
     path.join(__dirname, './dist/index.js'),
     path.join(__dirname, './ComicRead.user.js'),
-  );
-
-  // 提交上传更改
-  exec(
-    'git add .',
-    `git commit -m "chore: :bookmark: Release ${version}"`,
-    `git tag --annotate v${version} --message="Release ${version}"`,
-    'git push --follow-tags',
   );
 })();

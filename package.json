@@ -9,6 +9,7 @@
     "dev": "rollup --config --watch --environment NODE_ENV:development --configPlugin rollup-plugin-ts",
     "build": "rollup --config --configPlugin rollup-plugin-ts",
     "release": "node release.mjs",
+    "release:push": "node release.mjs push",
     "test": "vitest"
   },
   "dependencies": {
