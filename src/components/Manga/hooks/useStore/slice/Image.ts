@@ -144,6 +144,7 @@ export const turnPage = (state: State, dir: 'next' | 'prev') => {
       default:
         // 弹出卷首结束页
         if (state.activePageIndex === 0) {
+          if (!state.onExit) return;
           // 没有 onPrev 时不弹出
           if (!state.onPrev || !state.option.flipToNext) return;
 
@@ -173,6 +174,7 @@ export const turnPage = (state: State, dir: 'next' | 'prev') => {
       default:
         // 弹出卷尾结束页
         if (state.activePageIndex === state.pageList.length - 1) {
+          if (!state.onExit) return;
           state.endPageType = 'end';
           state.scrollLock = true;
           window.setTimeout(() => {

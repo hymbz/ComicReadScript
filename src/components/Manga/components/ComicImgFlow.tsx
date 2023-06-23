@@ -54,7 +54,7 @@ export const ComicImgFlow: Component = () => {
         dir={store.option.dir}
         onClick={useDoubleClick(handleClick, handleDoubleClickZoom)}
       >
-        <Index each={store.imgList}>
+        <Index each={store.imgList} fallback={<h1>NULL</h1>}>
           {(img, i) => <ComicImg img={img()} index={i} />}
         </Index>
       </div>

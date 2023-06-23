@@ -73,6 +73,8 @@ module.exports = {
   },
   ignorePatterns: [
     'dist',
+    'dev-dist',
+    'public',
     'node_modules',
     '!.stylelintrc.js',
     '!.postcssrc.js',

@@ -24,4 +24,11 @@ declare global {
     const fc: Component;
     export default fc;
   }
+
+  declare module '*.md' {
+    const md: {
+      html: string;
+    };
+    export default md;
+  }
 }

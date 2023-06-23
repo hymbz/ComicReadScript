@@ -12,7 +12,6 @@ export const Toaster: Component = () => {
 
   onMount(() => {
     const handleVisibilityChange = () => {
-      console.log(document.visibilityState);
       setVisible(document.visibilityState === 'visible');
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);

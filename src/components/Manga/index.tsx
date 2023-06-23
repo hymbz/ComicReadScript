@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { enableScheduling, onMount } from 'solid-js';
+import { createEffect, enableScheduling, onMount } from 'solid-js';
 
 import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
@@ -24,12 +24,17 @@ export const MangaStyle = style;
 enableScheduling();
 
 export interface MangaProps {
+  class?: string;
+  classList?: ClassList;
+
   /** 图片url列表 */
   imgList: string[];
   /** 页面填充数据 */
   fillEffect?: FillEffect;
   /** 初始化配置 */
   option?: Partial<Option>;
+  /** 是否显示 */
+  show?: boolean;
 
   /** 点击结束页按钮时触发的回调 */
   onExit?: State['onExit'];
@@ -59,9 +64,18 @@ export const Manga: Component<MangaProps> = (props) => {
     rootRef.focus();
   });
 
+  createEffect(() => {
+    if (props.show) rootRef.focus();
+  });
+
   return (
     <div
       class={classes.root}
+      classList={{
+        [classes.hidden]: !props.show ?? false,
+        [props.class ?? '']: !!props.class,
+        ...props.classList,
+      }}
       ref={rootRef!}
       style={cssVar()}
       onWheel={handleWheel}

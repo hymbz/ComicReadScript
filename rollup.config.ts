@@ -15,7 +15,7 @@ import { watchExternal } from 'rollup-plugin-watch-external';
 
 import type { Plugin, RollupOptions } from 'rollup';
 import { createServer } from 'vite';
-import { solidSvg } from './rollup-solid-svg';
+import { solidSvg } from './src/rollup-solid-svg';
 
 import pkg from './package.json' assert { type: 'json' };
 
@@ -251,6 +251,7 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
   if (!isDevMode) return;
   // 创建一个 dist 文件夹的文件服务器，用于在浏览器获取最新的脚本代码
   const server = await createServer({
+    root: resolve(__dirname, 'src'),
     publicDir: resolve(__dirname, 'dist'),
     server: {
       host: true,

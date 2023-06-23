@@ -1,0 +1,115 @@
+body {
+  --text-bright: #607d8b;
+  --text-main: #607d8b;
+  --focus: #607d8b;
+
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+
+  text-align: center;
+
+  & > div {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  margin: 0;
+
+  & + button {
+    margin-left: 1em;
+  }
+}
+
+.root {
+  user-select: none;
+
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 2em;
+}
+
+.main {
+  /* 隐藏滚动条但不影响滚动 */
+  scrollbar-width: none;
+
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 100%;
+
+  border-radius: 1em;
+  outline: 4px dashed #607d8b;
+
+  /* 隐藏滚动条但不影响滚动 */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &[data-drag="true"] {
+    pointer-events: none;
+    outline: 4px solid #607d8b;
+  }
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  max-width: 50em;
+  max-height: 100%;
+}
+
+.manga {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100vw;
+  height: 100vh;
+}
+
+.installTip {
+  margin-top: 1em;
+  margin-bottom: -5em;
+  text-align: left;
+  opacity: 0.5;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  & a {
+    cursor: pointer;
+    margin-left: 1em;
+    color: inherit;
+  }
+}
+
+/* 只在浏览器上显示安装提示 */
+@media not (display-mode: browser) {
+  .installTip {
+    display: none;
+  }
+}
+
+.hide {
+  display: none;
+}

@@ -8,7 +8,8 @@ import { createStore, produce } from 'solid-js/store';
 import { IconButton, IconButtonStyle } from '../IconButton';
 import type { MangaProps } from '../Manga';
 import { buttonListDivider, MangaStyle, Manga } from '../Manga';
-import { request, saveAs } from '../../helper';
+import { request } from '../../helper/request';
+import { saveAs } from '../../helper';
 import { mountComponents } from './helper';
 import { toast } from './Toast';
 
