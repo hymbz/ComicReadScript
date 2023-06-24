@@ -166,7 +166,11 @@ declare const selected_link: HTMLElement;
       newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
-        匹配失败，请确认 nhentai 登录状态
+        匹配失败，请尝试重新登陆
+        <a href='https://nhentai.net/' target="_blank" >
+          <u>nhentai</u>
+        </a>
+        后刷新
       </td>`;
       taglistDom.appendChild(newTagLine);
       return;
