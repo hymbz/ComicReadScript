@@ -210,17 +210,22 @@ declare const selected_link: HTMLElement;
 
     // 重写 _refresh_tagmenu_act 函数，加入脚本的功能
     const nhentaiImgList: Record<string, string[]> = {};
+    const raw_refresh_tagmenu_act = unsafeWindow._refresh_tagmenu_act;
     unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(
       a: any,
       b: any,
     ) {
-      const tagmenu_act_dom = document.getElementById('tagmenu_act')!;
       if (a.includes('nhentai:')) {
-        tagmenu_act_dom.innerHTML = `<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">"><a href="${b.href}" target="_blank"> Jump to nhentai</a>`;
+        const tagmenu_act_dom = document.getElementById('tagmenu_act')!;
 
-        tagmenu_act_dom.innerHTML += `<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">"><a href="#"> ${
-          nhentaiImgList[selected_tag] ? 'Read' : 'Load comic'
-        }</a>`;
+        tagmenu_act_dom.innerHTML = [
+          '',
+          `<a href="${b.href}" target="_blank"> Jump to nhentai</a>`,
+          `<a href="#"> ${
+            nhentaiImgList[selected_tag] ? 'Read' : 'Load comic'
+          }</a>`,
+        ].join('<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">">');
+
         const nhentaiComicReadModeDom =
           tagmenu_act_dom.querySelector('a[href="#"]')!;
 
@@ -263,34 +268,9 @@ declare const selected_link: HTMLElement;
           }
           setManga({ imgList: nhentaiImgList[selected_tag], show: true });
         });
-      } else {
-        const mr =
-          '<img src="https://ehgt.org/g/mr.gif" class="mr" alt="&gt;" />';
-        let temp = '';
-        if (b.className !== 'tup')
-          temp += ` ${mr} <a href="#" onclick="tag_vote_up(); return false">${
-            b.className === '' ? 'Vote Up' : 'Withdraw Vote'
-          }</a>`;
-        if (b.className !== 'tdn')
-          temp += ` ${mr} <a href="#" onclick="tag_vote_down(); return false">${
-            b.className === '' ? 'Vote Down' : 'Withdraw Vote'
-          }</a>`;
-        // 删掉原有的 Show Tagged Galleries 按钮空出位置
-        temp += `${mr} <a href="#" onclick="tag_define(); return false">Show Tag Definition</a>${mr} <a href="#" onclick="toggle_tagmenu(undefined, undefined); return false">Add New Tag</a> ${mr} `;
-
-        const tag = selected_link.id.slice(3).split(':');
-        if (tag.length === 1) {
-          temp += `<a href="https://nhentai.net/tag/${tag[0].replace(
-            /_/g,
-            '-',
-          )}" target="_blank">Jump to nhentai</a>`;
-        } else {
-          temp += `<a href="https://nhentai.net/${
-            tag[0] === 'female' ? 'tag' : tag[0]
-          }/${tag[1].replace(/_/g, '-')}" target="_blank">Jump to nhentai</a>`;
-        }
-        tagmenu_act_dom.innerHTML = temp;
       }
+      // 非 nhentai 标签列的用原函数去处理
+      else raw_refresh_tagmenu_act(a, b) as unknown;
     };
   }
 })();
