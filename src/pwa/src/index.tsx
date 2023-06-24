@@ -61,6 +61,15 @@ const editButtonList: MangaProps['editButtonList'] = (list) => [
   ),
 ];
 
+const getSaveOption = (): MangaProps['option'] => {
+  const saveJson = localStorage.getItem('option');
+  if (!saveJson) return undefined;
+  return JSON.parse(saveJson) as MangaProps['option'];
+};
+
+const handleOptionChange: MangaProps['onOptionChange'] = (option) =>
+  localStorage.setItem('option', JSON.stringify(option));
+
 export const Root: Component = () => (
   <div ref={(e) => handleDrag(e)} class={classes.root}>
     <div class={classes.main} data-drag={store.dragging}>
@@ -113,7 +122,8 @@ export const Root: Component = () => (
       class={classes.manga}
       show={store.show}
       imgList={store.imgList.map(({ url }) => url)}
-      option={{ alwaysLoadAllImg: true }}
+      option={{ alwaysLoadAllImg: true, ...getSaveOption() }}
+      onOptionChange={handleOptionChange}
       editButtonList={editButtonList}
       onExit={handleExit}
     />
