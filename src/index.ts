@@ -111,6 +111,13 @@ switch (window.location.hostname) {
     break;
   }
 
+  case 'nicomanga.com':
+  case 'weloma.art':
+  case 'welovemanga.one': {
+    inject('welovemanga');
+    break;
+  }
+
   default: {
     inject('other');
   }
