@@ -43,7 +43,7 @@ export interface MangaProps {
   /** 点击下一话按钮时触发的回调 */
   onNext?: State['onNext'];
   /** 配置发生变化时触发的回调 */
-  onOptionChange?: (option: Option, prevOption: Option) => void | Promise<void>;
+  onOptionChange?: (option: Partial<Option>) => void | Promise<void>;
   /** 图片加载状态发生变化时触发的回调 */
   onLoading?: (img: ComicImg, imgList: ComicImg[]) => void | Promise<void>;
 

@@ -1,7 +1,8 @@
-import { createStore, produce } from 'solid-js/store';
-
 import { createEffect, createRoot, on } from 'solid-js';
+
+import { useStore } from '../../helper/useStore';
 import { toast } from '../../components/Toast';
+
 import { unzip } from './unzip';
 import { isSupportFile } from './helper';
 
@@ -9,7 +10,7 @@ export interface ImgFile {
   name: string;
   url: string;
 }
-const [_state, _setState] = createStore({
+export const { store, setState, _state } = useStore({
   /** 图片文件数据列表 */
   imgList: [] as ImgFile[],
   /** 是否显示漫画 */
@@ -23,11 +24,6 @@ const [_state, _setState] = createStore({
     (localStorage.getItem('InstallTip') as '' | 'init' | 'TD') ?? 'init',
 });
 export type State = typeof _state;
-
-export const setState = (fn: (state: State) => void) => _setState(produce(fn));
-
-// eslint-disable-next-line solid/reactivity
-export const store: Readonly<State> = _state;
 
 /** 自动从句柄中找出并处理为图片数据 */
 const getImgData = async (fileHandle: FileSystemHandle): Promise<ImgFile[]> => {

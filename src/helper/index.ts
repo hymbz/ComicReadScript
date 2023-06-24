@@ -150,3 +150,21 @@ export const wait = (selector: string) =>
       resolve();
     }, 100);
   });
+
+/**
+ * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
+ *
+ * 不会修改参数对象，返回的是新对象
+ */
+export const difference = <T extends object>(a: T, b: T): Partial<T> => {
+  const res = {};
+  const keys = Object.keys(a);
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    if (typeof a[key] === 'object') {
+      const _res = difference(a[key], b[key]);
+      if (Object.keys(_res).length) res[key] = _res;
+    } else if (a[key] !== b[key]) res[key] = a[key];
+  }
+  return res;
+};

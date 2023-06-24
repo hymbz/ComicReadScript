@@ -32,28 +32,24 @@ export interface Option {
   scrollModeImgScale: number;
 }
 
-export const OptionState = {
-  option: {
-    dir: 'rtl',
-    scrollbar: {
-      enabled: true,
-      autoHidden: false,
-      showProgress: true,
-    },
-    onePageMode: false,
-    scrollMode: false,
-    clickPage: {
-      enabled: 'ontouchstart' in document.documentElement,
-      overturn: false,
-    },
-    disableZoom: false,
-    // 判断用户系统环境是否要求开启暗色模式
-    darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
-    flipToNext: true,
-    alwaysLoadAllImg: false,
-    scrollModeImgScale: 1,
-  } as Option,
-
-  /** 显示点击区域 */
-  showTouchArea: false,
+export const defaultOption: Option = {
+  dir: 'rtl',
+  scrollbar: {
+    enabled: true,
+    autoHidden: false,
+    showProgress: true,
+  },
+  onePageMode: false,
+  scrollMode: false,
+  clickPage: {
+    enabled: 'ontouchstart' in document.documentElement,
+    overturn: false,
+  },
+  disableZoom: false,
+  darkMode: false,
+  flipToNext: true,
+  alwaysLoadAllImg: false,
+  scrollModeImgScale: 1,
 };
+
+export const OptionState = { option: defaultOption };

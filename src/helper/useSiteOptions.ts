@@ -1,7 +1,9 @@
 import { createMutable } from 'solid-js/store';
 import type { MangaProps } from '../components/Manga';
+import { difference } from '.';
+import { defaultOption } from '../components/Manga/hooks/useStore/OptionState';
 
-export interface DefaultOptions {
+export interface SiteOptions {
   option: Partial<MangaProps['option']> | undefined;
 
   /** 自动进入阅读模式 */
@@ -19,14 +21,18 @@ export const useSiteOptions = async <T extends Record<string, any>>(
   name: string,
   defaultOptions = {} as T,
 ) => {
-  type Options = T & DefaultOptions;
+  type Options = T & SiteOptions;
 
-  const rawValue = await GM.getValue<Options>(name);
-  const options = createMutable<Options>({
-    option: undefined,
+  const _defaultOptions: Options = {
     autoShow: true,
     hiddenFAB: false,
     ...defaultOptions,
+    option: { ...defaultOption, ...defaultOptions?.option },
+  };
+
+  const rawValue = await GM.getValue<Options>(name);
+  const options = createMutable<Options>({
+    ..._defaultOptions,
     ...rawValue,
   });
 
@@ -49,7 +55,9 @@ export const useSiteOptions = async <T extends Record<string, any>>(
         await Promise.all(
           changeCallbackList.map((callback) => callback(options)),
         );
-      return GM.setValue(name, options);
+
+      // 只保存和默认设置不同的部分
+      return GM.setValue(name, difference(options, _defaultOptions));
     },
 
     /**

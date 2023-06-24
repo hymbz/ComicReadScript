@@ -5,15 +5,12 @@ import MdAutoFlashOff from '@material-design-icons/svg/round/flash_off.svg';
 
 import type { Component, JSX } from 'solid-js';
 
-import type { DefaultOptions } from './useSiteOptions';
+import type { SiteOptions } from './useSiteOptions';
 import { IconButton } from '../components/IconButton';
 
 export const useSpeedDial = <T extends Record<string, any>>(
-  options: T & DefaultOptions,
-  setOptions: (
-    newValue: T & DefaultOptions,
-    trigger?: boolean,
-  ) => Promise<void>,
+  options: T & SiteOptions,
+  setOptions: (newValue: T & SiteOptions, trigger?: boolean) => Promise<void>,
 ) => {
   const DefaultButton: Component<{
     optionName: string;

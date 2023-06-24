@@ -14,6 +14,8 @@ export const OtherState = {
   showScrollbar: false,
   /** 是否显示结束页 */
   showEndPage: false,
+  /** 是否显示点击区域 */
+  showTouchArea: false,
   /** 结束页状态。showEndPage 更改时自动计算 */
   endPageType: undefined as undefined | 'start' | 'end',
 

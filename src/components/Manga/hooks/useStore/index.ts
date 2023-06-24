@@ -1,11 +1,10 @@
-import { createStore, produce } from 'solid-js/store';
-
+import { useStore } from '../../../../helper/useStore';
 import { imgState } from './ImageState';
 import { ScrollbarState } from './ScrollbarState';
 import { OptionState } from './OptionState';
 import { OtherState } from './OtherState';
 
-const [_state, _setState] = createStore({
+export const { store, setState, _state } = useStore({
   ...imgState,
   ...ScrollbarState,
   ...OptionState,
@@ -17,9 +16,5 @@ const [_state, _setState] = createStore({
   nextAreaRef: undefined as HTMLElement | undefined,
   menuAreaRef: undefined as HTMLElement | undefined,
 });
+
 export type State = typeof _state;
-
-export const setState = (fn: (state: State) => void) => _setState(produce(fn));
-
-// eslint-disable-next-line solid/reactivity
-export const store: Readonly<State> = _state;

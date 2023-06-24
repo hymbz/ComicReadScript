@@ -1,12 +1,13 @@
 import { debounce, throttle } from 'throttle-debounce';
 import { createEffect, on, onCleanup } from 'solid-js';
 
-import { unwrap } from 'solid-js/store';
 import type { MangaProps } from '..';
 import { store, setState } from './useStore';
 import { updatePageData, updatePageRatio } from './useStore/slice';
+import { defaultOption } from './useStore/OptionState';
 import { autoCloseFill } from '../handleComicData';
 import { playAnimation } from '../helper';
+import { difference } from '../../../helper';
 
 /** 初始化 */
 export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
@@ -137,9 +138,9 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
   createEffect(
     on(
       () => store.option,
-      async (option, prevOption) => {
+      async (option) => {
         if (!props.onOptionChange) return;
-        await props.onOptionChange(unwrap(option), unwrap(prevOption)!);
+        await props.onOptionChange(difference(option, defaultOption));
       },
       { defer: true },
     ),
