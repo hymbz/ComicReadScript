@@ -59,9 +59,11 @@ const resource = {
   ),
 };
 
+const scriptName = `${pkg.name}${isDevMode ? 'Test' : ''}`;
+
 export const meta = {
-  name: pkg.name,
-  namespace: pkg.name,
+  name: scriptName,
+  namespace: scriptName,
   version: pkg.version,
   description: pkg.description,
   author: pkg.author,

@@ -18,6 +18,7 @@ declare const selected_link: HTMLElement;
   const { options, setFab, setManga, init } = await useInit('ehentai', {
     匹配nhentai: true,
     快捷键翻页: true,
+    autoShow: false,
   });
 
   // 不是漫画页的话
