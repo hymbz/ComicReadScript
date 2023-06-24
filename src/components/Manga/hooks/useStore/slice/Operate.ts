@@ -11,6 +11,7 @@ export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
 
   if (
+    e.ctrlKey ||
     (e.altKey && !store.option.scrollMode) ||
     (!store.endPageType && store.scrollLock)
   )

@@ -63,8 +63,10 @@
 
     & .img {
       width: calc(var(--scrollModeImgScale) * var(--width));
+      max-width: unset;
       height: auto;
       max-height: unset;
+
       object-fit: contain;
 
       /* 让未显示的图片提前占下位 */
