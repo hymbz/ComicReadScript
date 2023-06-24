@@ -63,6 +63,9 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
     <img
       ref={imgRef!}
       class={classes.img}
+      style={{
+        '--width': props.img.width ? `${props.img.width}px` : undefined,
+      }}
       src={props.img.loadType === 'wait' ? '' : props.img.src}
       alt={`${props.index}`}
       data-show={type().show}

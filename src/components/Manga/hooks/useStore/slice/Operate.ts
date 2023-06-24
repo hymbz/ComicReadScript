@@ -1,4 +1,4 @@
-import { switchFillEffect, turnPage } from './Image';
+import { setScrollModeImgScale, switchFillEffect, turnPage } from './Image';
 import { setState, store } from '..';
 import {
   contentHeight,
@@ -50,14 +50,10 @@ export const handleWheel = (e: WheelEvent) => {
     // 实现卷轴模式下的缩放
     if (e.altKey) {
       e.preventDefault();
-      setState((state) => {
-        const zoomScale = (isWheelDown ? -1 : 1) * 0.1;
-        state.scrollModeImgScale = clamp(
-          5,
-          state.scrollModeImgScale + zoomScale,
-          0.2,
-        );
-      });
+      const zoomScale = (isWheelDown ? -1 : 1) * 0.1;
+      setScrollModeImgScale(
+        clamp(5, store.option.scrollModeImgScale + zoomScale, 0.2),
+      );
       // 在调整图片缩放后使当前滚动进度保持不变
       setState((state) => {
         mangaFlowEle().scrollTo({

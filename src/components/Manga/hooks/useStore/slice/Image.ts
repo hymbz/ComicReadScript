@@ -4,7 +4,13 @@ import { createEffect, createMemo, createRoot, on } from 'solid-js';
 import type { State } from '..';
 import { store, setState } from '..';
 import { findFillIndex, handleComicData } from '../../../handleComicData';
-import { updateDrag, updateTipText } from './Scrollbar';
+import {
+  contentHeight,
+  handleMangaFlowScroll,
+  mangaFlowEle,
+  updateDrag,
+  updateTipText,
+} from './Scrollbar';
 import { clamp } from '../../../helper';
 
 /** 是否需要自动判断开启卷轴模式 */
@@ -185,6 +191,19 @@ export const turnPage = (state: State, dir: 'next' | 'prev') => {
         if (!state.option.scrollMode) state.activePageIndex += 1;
     }
   }
+};
+
+export const setScrollModeImgScale = (newScale: number) => {
+  setState((state) => {
+    state.option.scrollModeImgScale = newScale;
+  });
+  // 在调整图片缩放后使当前滚动进度保持不变
+  setState((state) => {
+    mangaFlowEle().scrollTo({
+      top: contentHeight() * state.scrollbar.dragTop,
+    });
+  });
+  handleMangaFlowScroll();
 };
 
 export const { activeImgIndex, nowFillIndex } = createRoot(() => {

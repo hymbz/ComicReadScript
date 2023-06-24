@@ -13,17 +13,12 @@ import { saveAs } from '../../helper';
 import { mountComponents } from './helper';
 import { toast } from './Toast';
 
-export type SelfMangaProps = MangaProps & {
-  show: boolean;
-  handleExit: MangaProps['onExit'];
-};
-
 let dom: HTMLDivElement;
 
 /**
  * 显示漫画阅读窗口
  */
-export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
+export const useManga = async (initProps?: Partial<MangaProps>) => {
   await GM.addStyle(`
     #comicRead {
       position: fixed;
@@ -53,10 +48,10 @@ export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
     imgList: [],
     show: false,
     ...initProps,
-  } as SelfMangaProps);
+  } as MangaProps);
 
   const set = (
-    recipe: ((draftProps: SelfMangaProps) => void) | Partial<SelfMangaProps>,
+    recipe: ((draftProps: MangaProps) => void) | Partial<MangaProps>,
   ) => {
     if (!dom) {
       dom = mountComponents('comicRead', () => (
@@ -73,7 +68,6 @@ export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
     if (props.imgList.length && props.show) {
       dom.setAttribute('show', '');
       document.documentElement.style.overflow = 'hidden';
-      (dom.shadowRoot!.firstElementChild as HTMLElement).focus();
     } else {
       dom.removeAttribute('show');
       document.documentElement.style.overflow = 'unset';
@@ -142,5 +136,5 @@ export const useManga = async (initProps?: Partial<SelfMangaProps>) => {
     },
   });
 
-  return [set, props] as [typeof set, SelfMangaProps];
+  return [set, props] as [typeof set, MangaProps];
 };

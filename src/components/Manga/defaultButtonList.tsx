@@ -17,6 +17,7 @@ import {
   jumpBackPage,
   nowFillIndex,
   setOption,
+  setScrollModeImgScale,
   switchFillEffect,
   updatePageData,
 } from './hooks/useStore/slice';
@@ -91,8 +92,20 @@ export const defaultButtonList: ToolbarButtonList = [
   () => (
     <IconButton
       tip="放大模式"
-      enabled={store.isZoomed}
+      enabled={
+        store.isZoomed ||
+        (store.option.scrollMode && store.option.scrollModeImgScale !== 1)
+      }
       onClick={() => {
+        if (store.option.scrollMode) {
+          setScrollModeImgScale(
+            store.option.scrollModeImgScale < 2
+              ? store.option.scrollModeImgScale + 0.2
+              : 1,
+          );
+          return;
+        }
+
         if (!store.panzoom) return;
         const { scale } = store.panzoom.getTransform();
 

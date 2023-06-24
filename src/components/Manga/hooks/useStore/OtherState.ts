@@ -16,10 +16,6 @@ export const OtherState = {
   showEndPage: false,
   /** 结束页状态。showEndPage 更改时自动计算 */
   endPageType: undefined as undefined | 'start' | 'end',
-  /** 卷轴模式下图片的最大宽度 */
-  scrollModeImgWidth: 0,
-  /** 卷轴模式下图片的缩放比例 */
-  scrollModeImgScale: 1,
 
   /** 点击结束页按钮时触发的回调 */
   onExit: undefined as ((isEnd?: boolean) => void) | undefined,

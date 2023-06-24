@@ -62,7 +62,7 @@
     justify-content: flex-start;
 
     & .img {
-      width: calc(var(--scrollModeImgScale) * var(--scrollModeImgWidth));
+      width: calc(var(--scrollModeImgScale) * var(--width));
       height: auto;
       max-height: unset;
       object-fit: contain;
