@@ -28,6 +28,8 @@ export interface Option {
   flipToNext: boolean;
   /** 始终加载所有图片 */
   alwaysLoadAllImg: boolean;
+  /** 卷轴模式下图片的缩放比例 */
+  scrollModeImgScale: number;
 }
 
 export const OptionState = {
@@ -49,6 +51,7 @@ export const OptionState = {
     darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
     flipToNext: true,
     alwaysLoadAllImg: false,
+    scrollModeImgScale: 1,
   } as Option,
 
   /** 显示点击区域 */
