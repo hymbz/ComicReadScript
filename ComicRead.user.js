@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.0.1
-// @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、动漫之家——「看被封漫画，导出导入漫画订阅/历史记录」、ehentai——「匹配 nhentai 漫画、Tag」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、dm5、manhuagui、manhuadb、mangabz、copymanga、manhuacat。部分支持站点以外的网站，也可以使用简易阅读模式来双页阅读漫画。
+// @version      6.1.0
+// @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、漫画猫(manhuacat)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
 // @noframes
@@ -69,292 +69,12 @@ unsafeWindow.crsLib = {
  */
 const selfImportSync = name => {
   const code = name !== 'main' ? GM_getResourceText(name) :`
+const helper = require('helper');
 const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const store$2 = require('solid-js/store');
 const fflate = require('fflate');
 const createPanZoom = require('panzoom');
-
-/** 挂载 solid-js 组件 */
-const mountComponents = (id, fc) => {
-  const dom = document.createElement('div');
-  dom.id = id;
-  document.body.appendChild(dom);
-  const shadowDom = dom.attachShadow({
-    mode: 'open'
-  });
-  web.render(fc, shadowDom);
-  return dom;
-};
-
-var e=[],t=[];function n(n,r){if(n&&"undefined"!=typeof document){var a,s=!0===r.prepend?"prepend":"append",d=!0===r.singleTag,i="string"==typeof r.container?document.querySelector(r.container):document.getElementsByTagName("head")[0];if(d){var u=e.indexOf(i);-1===u&&(u=e.push(i)-1,t[u]={}),a=t[u]&&t[u][s]?t[u][s]:t[u][s]=c();}else a=c();65279===n.charCodeAt(0)&&(n=n.substring(1)),a.styleSheet?a.styleSheet.cssText+=n:a.appendChild(document.createTextNode(n));}function c(){var e=document.createElement("style");if(e.setAttribute("type","text/css"),r.attributes)for(var t=Object.keys(r.attributes),n=0;n<t.length;n++)e.setAttribute(t[n],r.attributes[t[n]]);var a="prepend"===s?"afterbegin":"beforeend";return i.insertAdjacentElement(a,e),e}}
-
-var css$3 = ".index_module_root__0c2b751d{bottom:0;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:9999999999}.index_module_item__0c2b751d{align-items:center;animation:index_module_bounceInRight__0c2b751d .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative}.index_module_item__0c2b751d>svg{color:var(--theme);margin-right:.5em}.index_module_item__0c2b751d[data-exit]{animation:index_module_bounceOutRight__0c2b751d .5s 1}.index_module_schedule__0c2b751d{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__0c2b751d[data-schedule] .index_module_schedule__0c2b751d{transition:transform .1s}.index_module_item__0c2b751d:not([data-schedule]) .index_module_schedule__0c2b751d{animation:index_module_schedule__0c2b751d linear 1 forwards}:is(.index_module_item__0c2b751d:hover,.index_module_item__0c2b751d[data-schedule],.index_module_root__0c2b751d[data-paused]) .index_module_schedule__0c2b751d{animation-play-state:paused}.index_module_msg__0c2b751d h2,.index_module_msg__0c2b751d h3{margin:0 0 .7em}.index_module_msg__0c2b751d ul{margin:0;text-align:left}@keyframes index_module_schedule__0c2b751d{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__0c2b751d{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__0c2b751d{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__0c2b751d","item":"index_module_item__0c2b751d","bounceInRight":"index_module_bounceInRight__0c2b751d","bounceOutRight":"index_module_bounceOutRight__0c2b751d","schedule":"index_module_schedule__0c2b751d","msg":"index_module_msg__0c2b751d"};
-n(css$3,{});
-
-const [_state$1, _setState$1] = store$2.createStore({
-  list: [],
-  map: {}
-});
-const setState$1 = fn => _setState$1(store$2.produce(fn));
-
-// eslint-disable-next-line solid/reactivity
-const store$1 = _state$1;
-const creatId = () => {
-  let id = \`\${Date.now()}\`;
-  while (Reflect.has(store$1.map, id)) {
-    id += '_';
-  }
-  return id;
-};
-
-const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
-const MdCheckCircle = ((props = {}) => (() => {
-  const _el$ = _tmpl$$G();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
-const MdWarning = ((props = {}) => (() => {
-  const _el$ = _tmpl$$F();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
-const MdError = ((props = {}) => (() => {
-  const _el$ = _tmpl$$E();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$D = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
-const MdInfo = ((props = {}) => (() => {
-  const _el$ = _tmpl$$D();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const toast$1 = (msg, options) => {
-  if (!msg) return;
-  const id = options?.id ?? (typeof msg === 'string' ? msg : creatId());
-  setState$1(state => {
-    if (Reflect.has(state.map, id)) {
-      Object.assign(state.map[id], {
-        msg,
-        ...options,
-        update: true
-      });
-      return;
-    }
-    state.map[id] = {
-      id,
-      type: 'info',
-      duration: 3000,
-      msg,
-      ...options
-    };
-    state.list.push(id);
-  });
-};
-toast$1.dismiss = id => {
-  if (!Reflect.has(store$1.map, id)) return;
-  setState$1(state => {
-    state.map[id].exit = true;
-  });
-};
-toast$1.set = (id, options) => {
-  if (!Reflect.has(store$1.map, id)) return;
-  setState$1(state => {
-    Object.assign(state.map[id], options);
-  });
-};
-toast$1.success = (msg, options) => toast$1(msg, {
-  ...options,
-  type: 'success'
-});
-toast$1.warn = (msg, options) => toast$1(msg, {
-  ...options,
-  type: 'warn'
-});
-toast$1.error = (msg, options) => toast$1(msg, {
-  ...options,
-  type: 'error'
-});
-
-const _tmpl$$C = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$6 = /*#__PURE__*/web.template(\`<div><div>\`);
-const iconMap = {
-  info: MdInfo,
-  success: MdCheckCircle,
-  warn: MdWarning,
-  error: MdError
-};
-const colorMap = {
-  info: '#3a97d7',
-  success: '#23bb35',
-  warn: '#f0c53e',
-  error: '#e45042',
-  custom: '#1f2936'
-};
-
-/** 删除 toast */
-const dismissToast = id => setState$1(state => {
-  state.map[id].onDismiss?.({
-    ...state.map[id]
-  });
-  const i = state.list.findIndex(t => t === id);
-  if (i !== -1) state.list.splice(i, 1);
-  Reflect.deleteProperty(state.map, id);
-});
-
-/** 重置 toast 的 update 属性 */
-const resetToastUpdate = id => setState$1(state => {
-  Reflect.deleteProperty(state.map[id], 'update');
-});
-const ToastItem = props => {
-  /** 是否要显示进度 */
-  const showSchedule = solidJs.createMemo(() => props.duration === Infinity && props.schedule ? true : undefined);
-  const dismiss = e => {
-    e.stopPropagation();
-    if (showSchedule() && 'animationName' in e) return;
-    toast$1.dismiss(props.id);
-  };
-
-  // 在退出动画结束后才真的删除
-  const handleAnimationEnd = () => {
-    if (!props.exit) return;
-    dismissToast(props.id);
-  };
-  let scheduleRef;
-  solidJs.createEffect(() => {
-    if (!props.update) return;
-    resetToastUpdate(props.id);
-    scheduleRef?.getAnimations().forEach(animation => {
-      animation.cancel();
-      animation.play();
-    });
-  });
-  return (() => {
-    const _el$ = _tmpl$2$6(),
-      _el$2 = _el$.firstChild;
-    _el$.addEventListener("animationend", handleAnimationEnd);
-    _el$.$$click = dismiss;
-    web.insert(_el$, web.createComponent(web.Dynamic, {
-      get component() {
-        return iconMap[props.type];
-      }
-    }), _el$2);
-    web.insert(_el$2, (() => {
-      const _c$ = web.memo(() => typeof props.msg === 'string');
-      return () => _c$() ? props.msg : web.createComponent(props.msg, {});
-    })());
-    web.insert(_el$, web.createComponent(solidJs.Show, {
-      get when() {
-        return props.duration !== Infinity || props.schedule !== undefined;
-      },
-      get children() {
-        const _el$3 = _tmpl$$C();
-        _el$3.addEventListener("animationend", dismiss);
-        const _ref$ = scheduleRef;
-        typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
-        web.effect(_p$ => {
-          const _v$ = modules_c21c94f2$3.schedule,
-            _v$2 = \`\${props.duration}ms\`,
-            _v$3 = showSchedule() ? \`scaleX(\${props.schedule})\` : undefined;
-          _v$ !== _p$._v$ && web.className(_el$3, _p$._v$ = _v$);
-          _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$3.style.setProperty("animation-duration", _v$2) : _el$3.style.removeProperty("animation-duration"));
-          _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$3.style.setProperty("transform", _v$3) : _el$3.style.removeProperty("transform"));
-          return _p$;
-        }, {
-          _v$: undefined,
-          _v$2: undefined,
-          _v$3: undefined
-        });
-        return _el$3;
-      }
-    }), null);
-    web.effect(_p$ => {
-      const _v$4 = modules_c21c94f2$3.item,
-        _v$5 = colorMap[props.type],
-        _v$6 = showSchedule(),
-        _v$7 = props.exit,
-        _v$8 = modules_c21c94f2$3.msg;
-      _v$4 !== _p$._v$4 && web.className(_el$, _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && ((_p$._v$5 = _v$5) != null ? _el$.style.setProperty("--theme", _v$5) : _el$.style.removeProperty("--theme"));
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-schedule", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-exit", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.className(_el$2, _p$._v$8 = _v$8);
-      return _p$;
-    }, {
-      _v$4: undefined,
-      _v$5: undefined,
-      _v$6: undefined,
-      _v$7: undefined,
-      _v$8: undefined
-    });
-    return _el$;
-  })();
-};
-web.delegateEvents(["click"]);
-
-const _tmpl$$B = /*#__PURE__*/web.template(\`<div>\`);
-const Toaster = () => {
-  const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
-  solidJs.onMount(() => {
-    const handleVisibilityChange = () => {
-      console.log(document.visibilityState);
-      setVisible(document.visibilityState === 'visible');
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    solidJs.onCleanup(() => document.removeEventListener('visibilitychange', handleVisibilityChange));
-  });
-  return (() => {
-    const _el$ = _tmpl$$B();
-    web.insert(_el$, web.createComponent(solidJs.For, {
-      get each() {
-        return store$1.list;
-      },
-      children: id => web.createComponent(ToastItem, web.mergeProps(() => store$1.map[id]))
-    }));
-    web.effect(_p$ => {
-      const _v$ = modules_c21c94f2$3.root,
-        _v$2 = visible() ? undefined : '';
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-paused", _p$._v$2 = _v$2);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined
-    });
-    return _el$;
-  })();
-};
-
-const ToastStyle = css$3;
-
-const _tmpl$$A = /*#__PURE__*/web.template(\`<style type="text/css">\`);
-let dom$1;
-const init = () => {
-  if (!dom$1) dom$1 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
-    const _el$ = _tmpl$$A();
-    web.insert(_el$, ToastStyle);
-    return _el$;
-  })()]);
-};
-const toast = new Proxy(toast$1, {
-  get(target, propKey) {
-    init();
-    return target[propKey];
-  },
-  apply(target, propKey, args) {
-    init();
-    const fn = propKey ? target[propKey] : target;
-    return fn(...args);
-  }
-});
 
 const sleep = ms => new Promise(resolve => {
   window.setTimeout(resolve, ms);
@@ -456,6 +176,327 @@ const plimit = async (fnList, callBack = undefined, limit = 10) => {
   return resList;
 };
 
+/**
+ * 判断使用参数颜色作为默认值时是否需要切换为黑暗模式
+ * @param hexColor 十六进制颜色。例如 #112233
+ */
+const needDarkMode = hexColor => {
+  // by: https://24ways.org/2010/calculating-color-contrast
+  const r = parseInt(hexColor.substring(1, 3), 16);
+  const g = parseInt(hexColor.substring(3, 5), 16);
+  const b = parseInt(hexColor.substring(5, 7), 16);
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq < 128;
+};
+
+/** 等到指定的 dom 出现 */
+const wait = selector => new Promise(resolve => {
+  const id = window.setInterval(() => {
+    const dom = querySelector(selector);
+    if (!dom) return;
+    window.clearInterval(id);
+    resolve();
+  }, 100);
+});
+
+/**
+ * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
+ *
+ * 不会修改参数对象，返回的是新对象
+ */
+const difference = (a, b) => {
+  const res = {};
+  const keys = Object.keys(a);
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    if (typeof a[key] === 'object') {
+      const _res = difference(a[key], b[key]);
+      if (Object.keys(_res).length) res[key] = _res;
+    } else if (a[key] !== b[key]) res[key] = a[key];
+  }
+  return res;
+};
+
+/** 挂载 solid-js 组件 */
+const mountComponents = (id, fc) => {
+  const dom = document.createElement('div');
+  dom.id = id;
+  document.body.appendChild(dom);
+  const shadowDom = dom.attachShadow({
+    mode: 'open'
+  });
+  web.render(fc, shadowDom);
+  return dom;
+};
+
+var e=[],t=[];function n(n,r){if(n&&"undefined"!=typeof document){var a,s=!0===r.prepend?"prepend":"append",d=!0===r.singleTag,i="string"==typeof r.container?document.querySelector(r.container):document.getElementsByTagName("head")[0];if(d){var u=e.indexOf(i);-1===u&&(u=e.push(i)-1,t[u]={}),a=t[u]&&t[u][s]?t[u][s]:t[u][s]=c();}else a=c();65279===n.charCodeAt(0)&&(n=n.substring(1)),a.styleSheet?a.styleSheet.cssText+=n:a.appendChild(document.createTextNode(n));}function c(){var e=document.createElement("style");if(e.setAttribute("type","text/css"),r.attributes)for(var t=Object.keys(r.attributes),n=0;n<t.length;n++)e.setAttribute(t[n],r.attributes[t[n]]);var a="prepend"===s?"afterbegin":"beforeend";return i.insertAdjacentElement(a,e),e}}
+
+var css$3 = ".index_module_root__df2866e6{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:9999999999}.index_module_item__df2866e6{align-items:center;animation:index_module_bounceInRight__df2866e6 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__df2866e6>svg{color:var(--theme);margin-right:.5em}.index_module_item__df2866e6[data-exit]{animation:index_module_bounceOutRight__df2866e6 .5s 1}.index_module_schedule__df2866e6{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__df2866e6[data-schedule] .index_module_schedule__df2866e6{transition:transform .1s}.index_module_item__df2866e6:not([data-schedule]) .index_module_schedule__df2866e6{animation:index_module_schedule__df2866e6 linear 1 forwards}:is(.index_module_item__df2866e6:hover,.index_module_item__df2866e6[data-schedule],.index_module_root__df2866e6[data-paused]) .index_module_schedule__df2866e6{animation-play-state:paused}.index_module_msg__df2866e6{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__df2866e6 h2,.index_module_msg__df2866e6 h3{margin:0 0 .7em}.index_module_msg__df2866e6 ul{margin:0;text-align:left}@keyframes index_module_schedule__df2866e6{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__df2866e6{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__df2866e6{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2$3 = {"root":"index_module_root__df2866e6","item":"index_module_item__df2866e6","bounceInRight":"index_module_bounceInRight__df2866e6","bounceOutRight":"index_module_bounceOutRight__df2866e6","schedule":"index_module_schedule__df2866e6","msg":"index_module_msg__df2866e6"};
+n(css$3,{});
+
+const [_state$1, _setState] = store$2.createStore({
+  list: [],
+  map: {}
+});
+const setState$1 = fn => _setState(store$2.produce(fn));
+
+// eslint-disable-next-line solid/reactivity
+const store$1 = _state$1;
+const creatId = () => {
+  let id = \`\${Date.now()}\`;
+  while (Reflect.has(store$1.map, id)) {
+    id += '_';
+  }
+  return id;
+};
+
+const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
+const MdCheckCircle = ((props = {}) => (() => {
+  const _el$ = _tmpl$$G();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const MdWarning = ((props = {}) => (() => {
+  const _el$ = _tmpl$$F();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const MdError = ((props = {}) => (() => {
+  const _el$ = _tmpl$$E();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$D = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
+const MdInfo = ((props = {}) => (() => {
+  const _el$ = _tmpl$$D();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const toast$1 = (msg, options) => {
+  if (!msg) return;
+  const id = options?.id ?? (typeof msg === 'string' ? msg : creatId());
+  setState$1(state => {
+    if (Reflect.has(state.map, id)) {
+      Object.assign(state.map[id], {
+        msg,
+        ...options,
+        update: true
+      });
+      return;
+    }
+    state.map[id] = {
+      id,
+      type: 'info',
+      duration: 3000,
+      msg,
+      ...options
+    };
+    state.list.push(id);
+  });
+};
+toast$1.dismiss = id => {
+  if (!Reflect.has(store$1.map, id)) return;
+  setState$1(state => {
+    state.map[id].exit = true;
+  });
+};
+toast$1.set = (id, options) => {
+  if (!Reflect.has(store$1.map, id)) return;
+  setState$1(state => {
+    Object.assign(state.map[id], options);
+  });
+};
+toast$1.success = (msg, options) => toast$1(msg, {
+  ...options,
+  type: 'success'
+});
+toast$1.warn = (msg, options) => toast$1(msg, {
+  ...options,
+  type: 'warn'
+});
+toast$1.error = (msg, options) => toast$1(msg, {
+  ...options,
+  type: 'error'
+});
+
+const _tmpl$$C = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$7 = /*#__PURE__*/web.template(\`<div><div>\`);
+const iconMap = {
+  info: MdInfo,
+  success: MdCheckCircle,
+  warn: MdWarning,
+  error: MdError
+};
+const colorMap = {
+  info: '#3a97d7',
+  success: '#23bb35',
+  warn: '#f0c53e',
+  error: '#e45042',
+  custom: '#1f2936'
+};
+
+/** 删除 toast */
+const dismissToast = id => setState$1(state => {
+  state.map[id].onDismiss?.({
+    ...state.map[id]
+  });
+  const i = state.list.findIndex(t => t === id);
+  if (i !== -1) state.list.splice(i, 1);
+  Reflect.deleteProperty(state.map, id);
+});
+
+/** 重置 toast 的 update 属性 */
+const resetToastUpdate = id => setState$1(state => {
+  Reflect.deleteProperty(state.map[id], 'update');
+});
+const ToastItem = props => {
+  /** 是否要显示进度 */
+  const showSchedule = solidJs.createMemo(() => props.duration === Infinity && props.schedule ? true : undefined);
+  const dismiss = e => {
+    e.stopPropagation();
+    if (showSchedule() && 'animationName' in e) return;
+    toast$1.dismiss(props.id);
+  };
+
+  // 在退出动画结束后才真的删除
+  const handleAnimationEnd = () => {
+    if (!props.exit) return;
+    dismissToast(props.id);
+  };
+  let scheduleRef;
+  solidJs.createEffect(() => {
+    if (!props.update) return;
+    resetToastUpdate(props.id);
+    scheduleRef?.getAnimations().forEach(animation => {
+      animation.cancel();
+      animation.play();
+    });
+  });
+  return (() => {
+    const _el$ = _tmpl$2$7(),
+      _el$2 = _el$.firstChild;
+    _el$.addEventListener("animationend", handleAnimationEnd);
+    _el$.$$click = dismiss;
+    web.insert(_el$, web.createComponent(web.Dynamic, {
+      get component() {
+        return iconMap[props.type];
+      }
+    }), _el$2);
+    web.insert(_el$2, (() => {
+      const _c$ = web.memo(() => typeof props.msg === 'string');
+      return () => _c$() ? props.msg : web.createComponent(props.msg, {});
+    })());
+    web.insert(_el$, web.createComponent(solidJs.Show, {
+      get when() {
+        return props.duration !== Infinity || props.schedule !== undefined;
+      },
+      get children() {
+        const _el$3 = _tmpl$$C();
+        _el$3.addEventListener("animationend", dismiss);
+        const _ref$ = scheduleRef;
+        typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
+        web.effect(_p$ => {
+          const _v$ = modules_c21c94f2$3.schedule,
+            _v$2 = \`\${props.duration}ms\`,
+            _v$3 = showSchedule() ? \`scaleX(\${props.schedule})\` : undefined;
+          _v$ !== _p$._v$ && web.className(_el$3, _p$._v$ = _v$);
+          _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$3.style.setProperty("animation-duration", _v$2) : _el$3.style.removeProperty("animation-duration"));
+          _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$3.style.setProperty("transform", _v$3) : _el$3.style.removeProperty("transform"));
+          return _p$;
+        }, {
+          _v$: undefined,
+          _v$2: undefined,
+          _v$3: undefined
+        });
+        return _el$3;
+      }
+    }), null);
+    web.effect(_p$ => {
+      const _v$4 = modules_c21c94f2$3.item,
+        _v$5 = colorMap[props.type],
+        _v$6 = showSchedule(),
+        _v$7 = props.exit,
+        _v$8 = modules_c21c94f2$3.msg;
+      _v$4 !== _p$._v$4 && web.className(_el$, _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && ((_p$._v$5 = _v$5) != null ? _el$.style.setProperty("--theme", _v$5) : _el$.style.removeProperty("--theme"));
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-schedule", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-exit", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && web.className(_el$2, _p$._v$8 = _v$8);
+      return _p$;
+    }, {
+      _v$4: undefined,
+      _v$5: undefined,
+      _v$6: undefined,
+      _v$7: undefined,
+      _v$8: undefined
+    });
+    return _el$;
+  })();
+};
+web.delegateEvents(["click"]);
+
+const _tmpl$$B = /*#__PURE__*/web.template(\`<div>\`);
+const Toaster = () => {
+  const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
+  solidJs.onMount(() => {
+    const handleVisibilityChange = () => {
+      setVisible(document.visibilityState === 'visible');
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    solidJs.onCleanup(() => document.removeEventListener('visibilitychange', handleVisibilityChange));
+  });
+  return (() => {
+    const _el$ = _tmpl$$B();
+    web.insert(_el$, web.createComponent(solidJs.For, {
+      get each() {
+        return store$1.list;
+      },
+      children: id => web.createComponent(ToastItem, web.mergeProps(() => store$1.map[id]))
+    }));
+    web.effect(_p$ => {
+      const _v$ = modules_c21c94f2$3.root,
+        _v$2 = visible() ? undefined : '';
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-paused", _p$._v$2 = _v$2);
+      return _p$;
+    }, {
+      _v$: undefined,
+      _v$2: undefined
+    });
+    return _el$;
+  })();
+};
+
+const ToastStyle = css$3;
+
+const _tmpl$$A = /*#__PURE__*/web.template(\`<style type="text/css">\`);
+let dom$1;
+const init = () => {
+  if (!dom$1) dom$1 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
+    const _el$ = _tmpl$$A();
+    web.insert(_el$, ToastStyle);
+    return _el$;
+  })()]);
+};
+const toast = new Proxy(toast$1, {
+  get(target, propKey) {
+    init();
+    return target[propKey];
+  },
+  apply(target, propKey, args) {
+    init();
+    const fn = propKey ? target[propKey] : target;
+    return fn(...args);
+  }
+});
+
 // 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = details => new Promise((resolve, reject) => {
   GM_xmlhttpRequest({
@@ -486,33 +527,10 @@ const request = async (url, details, errorNum = 0) => {
       throw new Error(errorText);
     }
     console.error(errorText, error);
-    await sleep(1000);
+    await helper.sleep(1000);
     return request(url, details, errorNum + 1);
   }
 };
-
-/**
- * 判断使用参数颜色作为默认值时是否需要切换为黑暗模式
- * @param hexColor 十六进制颜色。例如 #112233
- */
-const needDarkMode = hexColor => {
-  // by: https://24ways.org/2010/calculating-color-contrast
-  const r = parseInt(hexColor.substring(1, 3), 16);
-  const g = parseInt(hexColor.substring(3, 5), 16);
-  const b = parseInt(hexColor.substring(5, 7), 16);
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq < 128;
-};
-
-/** 等到指定的 dom 出现 */
-const wait = selector => new Promise(resolve => {
-  const id = window.setInterval(() => {
-    const dom = querySelector(selector);
-    if (!dom) return;
-    window.clearInterval(id);
-    resolve();
-  }, 100);
-});
 
 const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
 const MdAutoFixHigh = ((props = {}) => (() => {
@@ -547,7 +565,7 @@ var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__ddbc29b
 n(css$2,{});
 
 const _tmpl$$v = /*#__PURE__*/web.template(\`<div><button type="button">\`),
-  _tmpl$2$5 = /*#__PURE__*/web.template(\`<div>\`);
+  _tmpl$2$6 = /*#__PURE__*/web.template(\`<div>\`);
 const IconButtonStyle = css$2;
 /**
  * 图标按钮
@@ -572,7 +590,7 @@ const IconButton = _props => {
     web.insert(_el$, (() => {
       const _c$ = web.memo(() => !!(props.popper || props.tip));
       return () => _c$() ? (() => {
-        const _el$3 = _tmpl$2$5();
+        const _el$3 = _tmpl$2$6();
         web.insert(_el$3, () => props.popper || props.tip);
         web.effect(_p$ => {
           const _v$6 = [modules_c21c94f2$2.iconButtonPopper, props.popperClassName].join(' '),
@@ -722,6 +740,16 @@ const MdClose = ((props = {}) => (() => {
   return _el$;
 })());
 
+const useStore = initState => {
+  const [_state, _setState] = store$2.createStore(initState);
+  return {
+    _state,
+    _setState,
+    setState: fn => _setState(store$2.produce(fn)),
+    store: _state
+  };
+};
+
 /** 加载状态的中文描述 */
 const loadTypeMap = {
   error: '加载出错',
@@ -766,28 +794,27 @@ const ScrollbarState = {
   scrollLock: false
 };
 
-const OptionState = {
-  option: {
-    dir: 'rtl',
-    scrollbar: {
-      enabled: true,
-      autoHidden: false,
-      showProgress: true
-    },
-    onePageMode: false,
-    scrollMode: false,
-    clickPage: {
-      enabled: 'ontouchstart' in document.documentElement,
-      overturn: false
-    },
-    disableZoom: false,
-    // 判断用户系统环境是否要求开启暗色模式
-    darkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
-    flipToNext: true,
-    alwaysLoadAllImg: false
+const defaultOption = {
+  dir: 'rtl',
+  scrollbar: {
+    enabled: true,
+    autoHidden: false,
+    showProgress: true
   },
-  /** 显示点击区域 */
-  showTouchArea: false
+  onePageMode: false,
+  scrollMode: false,
+  clickPage: {
+    enabled: 'ontouchstart' in document.documentElement,
+    overturn: false
+  },
+  disableZoom: false,
+  darkMode: false,
+  flipToNext: true,
+  alwaysLoadAllImg: false,
+  scrollModeImgScale: 1
+};
+const OptionState = {
+  option: defaultOption
 };
 
 const OtherState = {
@@ -800,12 +827,10 @@ const OtherState = {
   showScrollbar: false,
   /** 是否显示结束页 */
   showEndPage: false,
+  /** 是否显示点击区域 */
+  showTouchArea: false,
   /** 结束页状态。showEndPage 更改时自动计算 */
   endPageType: undefined,
-  /** 卷轴模式下图片的最大宽度 */
-  scrollModeImgWidth: 0,
-  /** 卷轴模式下图片的缩放比例 */
-  scrollModeImgScale: 1,
   /** 点击结束页按钮时触发的回调 */
   onExit: undefined,
   /** 点击上一话按钮时触发的回调 */
@@ -821,7 +846,11 @@ const OtherState = {
   exitRef: undefined
 };
 
-const [_state, _setState] = store$2.createStore({
+const {
+  store,
+  setState,
+  _state
+} = useStore({
   ...imgState,
   ...ScrollbarState,
   ...OptionState,
@@ -832,10 +861,6 @@ const [_state, _setState] = store$2.createStore({
   nextAreaRef: undefined,
   menuAreaRef: undefined
 });
-const setState = fn => _setState(store$2.produce(fn));
-
-// eslint-disable-next-line solid/reactivity
-const store = _state;
 
 /* eslint-disable no-undefined,no-param-reassign,no-shadow */
 
@@ -1365,6 +1390,7 @@ const turnPage = (state, dir) => {
       default:
         // 弹出卷首结束页
         if (state.activePageIndex === 0) {
+          if (!state.onExit) return;
           // 没有 onPrev 时不弹出
           if (!state.onPrev || !state.option.flipToNext) return;
           state.endPageType = 'start';
@@ -1392,6 +1418,7 @@ const turnPage = (state, dir) => {
       default:
         // 弹出卷尾结束页
         if (state.activePageIndex === state.pageList.length - 1) {
+          if (!state.onExit) return;
           state.endPageType = 'end';
           state.scrollLock = true;
           window.setTimeout(() => {
@@ -1402,6 +1429,18 @@ const turnPage = (state, dir) => {
         if (!state.option.scrollMode) state.activePageIndex += 1;
     }
   }
+};
+const setScrollModeImgScale = newScale => {
+  setState(state => {
+    state.option.scrollModeImgScale = newScale;
+  });
+  // 在调整图片缩放后使当前滚动进度保持不变
+  setState(state => {
+    mangaFlowEle().scrollTo({
+      top: contentHeight() * state.scrollbar.dragTop
+    });
+  });
+  handleMangaFlowScroll();
 };
 const {
   activeImgIndex,
@@ -1449,7 +1488,7 @@ const switchFillEffect = () => {
 
 const handleWheel = e => {
   e.stopPropagation();
-  if (e.altKey && !store.option.scrollMode || !store.endPageType && store.scrollLock) return;
+  if (e.ctrlKey || e.altKey && !store.option.scrollMode || !store.endPageType && store.scrollLock) return;
   const isWheelDown = e.deltaY > 0;
   if (store.option.scrollMode && !store.endPageType) {
     // 实现在卷轴模式滚动到头尾后继续滚动时弹出结束页
@@ -1480,10 +1519,8 @@ const handleWheel = e => {
     // 实现卷轴模式下的缩放
     if (e.altKey) {
       e.preventDefault();
-      setState(state => {
-        const zoomScale = (isWheelDown ? -1 : 1) * 0.1;
-        state.scrollModeImgScale = clamp(5, state.scrollModeImgScale + zoomScale, 0.2);
-      });
+      const zoomScale = (isWheelDown ? -1 : 1) * 0.1;
+      setScrollModeImgScale(clamp(5, store.option.scrollModeImgScale + zoomScale, 0.2));
       // 在调整图片缩放后使当前滚动进度保持不变
       setState(state => {
         mangaFlowEle().scrollTo({
@@ -1563,7 +1600,7 @@ const bindRef = (name, fn) => e => {
   });
 };
 
-var css$1 = ".index_module_img__5504fcb4{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain}.index_module_img__5504fcb4[data-show]{display:unset}.index_module_img__5504fcb4[data-load-type=error],.index_module_img__5504fcb4[data-load-type=wait]{max-width:50%;visibility:hidden}.index_module_img__5504fcb4[data-fill=left]{transform:translate(50%)}.index_module_img__5504fcb4[data-fill=right]{transform:translate(-50%)}.index_module_mangaFlowBox__5504fcb4{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__5504fcb4::-webkit-scrollbar{display:none}.index_module_mangaFlow__5504fcb4{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__5504fcb4.index_module_disableZoom__5504fcb4 .index_module_img__5504fcb4{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__5504fcb4.index_module_scrollMode__5504fcb4{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__5504fcb4.index_module_scrollMode__5504fcb4 .index_module_img__5504fcb4{height:auto;max-height:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--scrollModeImgWidth))}.index_module_mangaFlow__5504fcb4.index_module_scrollMode__5504fcb4 .index_module_img__5504fcb4[data-load-type=wait]{flex-basis:var(--img_placeholder_height,100vh);flex-shrink:0}.index_module_mangaFlow__5504fcb4[dir=ltr]{flex-direction:row}.index_module_endPage__5504fcb4{align-items:center;background-color:#3339;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__5504fcb4>button{animation:index_module_jello__5504fcb4 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__5504fcb4>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__5504fcb4>button:focus-visible{outline:none}.index_module_endPage__5504fcb4>.index_module_tip__5504fcb4{margin:auto;position:absolute}.index_module_endPage__5504fcb4[data-show]{opacity:1;pointer-events:all}.index_module_endPage__5504fcb4[data-type=start]>.index_module_tip__5504fcb4{transform:translateY(-40vh)}.index_module_endPage__5504fcb4[data-type=end]>.index_module_tip__5504fcb4{transform:translateY(40vh)}@keyframes index_module_jello__5504fcb4{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__5504fcb4{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;width:5vw;z-index:9}.index_module_toolbarPanel__5504fcb4{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__5504fcb4[data-show=true] .index_module_toolbarPanel__5504fcb4{transform:none}.index_module_toolbarBg__5504fcb4{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__5504fcb4{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__5504fcb4{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;scrollbar-width:none;top:0;width:15em}.index_module_SettingPanel__5504fcb4::-webkit-scrollbar{display:none}.index_module_SettingBlock__5504fcb4{padding:.5em}.index_module_SettingBlockSubtitle__5504fcb4{color:var(--text_secondary);font-size:.7em;margin-bottom:-.3em}.index_module_SettingsItem__5504fcb4{align-items:center;display:flex;justify-content:space-between;margin-top:1em}.index_module_SettingsItemName__5504fcb4{font-size:.9em}.index_module_SettingsItemSwitch__5504fcb4{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin-right:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__5504fcb4{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__5504fcb4[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__5504fcb4[data-checked=true] .index_module_SettingsItemSwitchRound__5504fcb4{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__5504fcb4{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0;padding:0;position:absolute;right:.7em}.index_module_closeCover__5504fcb4{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_scrollbar__5504fcb4{border-left:10em solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__5504fcb4>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__5504fcb4{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__5504fcb4{flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s,background-color 0ms 1s}.index_module_scrollbarPage__5504fcb4[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__5504fcb4[data-type=loading]{background-color:var(--secondary)}.index_module_scrollbarPage__5504fcb4[data-type=wait]{background-color:var(--secondary);opacity:.5}.index_module_scrollbarPage__5504fcb4[data-type=error]{background-color:#f005}.index_module_scrollbarPoper__5504fcb4{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__5504fcb4:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__5504fcb4[data-show=true],.index_module_scrollbarPoper__5504fcb4[data-show=true],.index_module_scrollbar__5504fcb4:hover .index_module_scrollbarDrag__5504fcb4,.index_module_scrollbar__5504fcb4:hover .index_module_scrollbarPoper__5504fcb4{opacity:1}.index_module_touchAreaRoot__5504fcb4{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchArea__5504fcb4{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none;writing-mode:vertical-rl}.index_module_touchArea__5504fcb4[data-area=menu]{flex-basis:0}.index_module_touchAreaRoot__5504fcb4[data-show=true]{visibility:visible}.index_module_touchAreaRoot__5504fcb4[data-show=true] .index_module_touchArea__5504fcb4[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__5504fcb4[data-show=true] .index_module_touchArea__5504fcb4[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__5504fcb4[data-show=true] .index_module_touchArea__5504fcb4[data-area=next]{background-color:#f38181e6}.index_module_hidden__5504fcb4{display:none}.index_module_invisible__5504fcb4{visibility:hidden}.index_module_opacity1__5504fcb4{opacity:1}.index_module_opacity0__5504fcb4{opacity:0}.index_module_root__5504fcb4{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__5504fcb4 a{color:var(--text_secondary)}";
+var css$1 = ".index_module_img__5504fcb4{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain}.index_module_img__5504fcb4[data-show]{display:unset}.index_module_img__5504fcb4[data-load-type=error],.index_module_img__5504fcb4[data-load-type=wait]{max-width:50%;visibility:hidden}.index_module_img__5504fcb4[data-fill=left]{transform:translate(50%)}.index_module_img__5504fcb4[data-fill=right]{transform:translate(-50%)}.index_module_mangaFlowBox__5504fcb4{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__5504fcb4::-webkit-scrollbar{display:none}.index_module_mangaFlow__5504fcb4{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__5504fcb4.index_module_disableZoom__5504fcb4 .index_module_img__5504fcb4{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__5504fcb4.index_module_scrollMode__5504fcb4{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__5504fcb4.index_module_scrollMode__5504fcb4 .index_module_img__5504fcb4{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__5504fcb4.index_module_scrollMode__5504fcb4 .index_module_img__5504fcb4[data-load-type=wait]{flex-basis:var(--img_placeholder_height,100vh);flex-shrink:0}.index_module_mangaFlow__5504fcb4[dir=ltr]{flex-direction:row}.index_module_endPage__5504fcb4{align-items:center;background-color:#3339;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__5504fcb4>button{animation:index_module_jello__5504fcb4 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__5504fcb4>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__5504fcb4>button:focus-visible{outline:none}.index_module_endPage__5504fcb4>.index_module_tip__5504fcb4{margin:auto;position:absolute}.index_module_endPage__5504fcb4[data-show]{opacity:1;pointer-events:all}.index_module_endPage__5504fcb4[data-type=start]>.index_module_tip__5504fcb4{transform:translateY(-40vh)}.index_module_endPage__5504fcb4[data-type=end]>.index_module_tip__5504fcb4{transform:translateY(40vh)}@keyframes index_module_jello__5504fcb4{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__5504fcb4{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;width:5vw;z-index:9}.index_module_toolbarPanel__5504fcb4{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__5504fcb4[data-show=true] .index_module_toolbarPanel__5504fcb4{transform:none}.index_module_toolbarBg__5504fcb4{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__5504fcb4{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__5504fcb4{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;scrollbar-width:none;top:0;width:15em}.index_module_SettingPanel__5504fcb4::-webkit-scrollbar{display:none}.index_module_SettingBlock__5504fcb4{padding:.5em}.index_module_SettingBlockSubtitle__5504fcb4{color:var(--text_secondary);font-size:.7em;margin-bottom:-.3em}.index_module_SettingsItem__5504fcb4{align-items:center;display:flex;justify-content:space-between;margin-top:1em}.index_module_SettingsItemName__5504fcb4{font-size:.9em}.index_module_SettingsItemSwitch__5504fcb4{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin-right:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__5504fcb4{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__5504fcb4[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__5504fcb4[data-checked=true] .index_module_SettingsItemSwitchRound__5504fcb4{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__5504fcb4{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0;padding:0;position:absolute;right:.7em}.index_module_closeCover__5504fcb4{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_scrollbar__5504fcb4{border-left:10em solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__5504fcb4>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__5504fcb4{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__5504fcb4{flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s,background-color 0ms 1s}.index_module_scrollbarPage__5504fcb4[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__5504fcb4[data-type=loading]{background-color:var(--secondary)}.index_module_scrollbarPage__5504fcb4[data-type=wait]{background-color:var(--secondary);opacity:.5}.index_module_scrollbarPage__5504fcb4[data-type=error]{background-color:#f005}.index_module_scrollbarPoper__5504fcb4{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__5504fcb4:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__5504fcb4[data-show=true],.index_module_scrollbarPoper__5504fcb4[data-show=true],.index_module_scrollbar__5504fcb4:hover .index_module_scrollbarDrag__5504fcb4,.index_module_scrollbar__5504fcb4:hover .index_module_scrollbarPoper__5504fcb4{opacity:1}.index_module_touchAreaRoot__5504fcb4{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchArea__5504fcb4{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none;writing-mode:vertical-rl}.index_module_touchArea__5504fcb4[data-area=menu]{flex-basis:0}.index_module_touchAreaRoot__5504fcb4[data-show=true]{visibility:visible}.index_module_touchAreaRoot__5504fcb4[data-show=true] .index_module_touchArea__5504fcb4[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__5504fcb4[data-show=true] .index_module_touchArea__5504fcb4[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__5504fcb4[data-show=true] .index_module_touchArea__5504fcb4[data-area=next]{background-color:#f38181e6}.index_module_hidden__5504fcb4{display:none}.index_module_invisible__5504fcb4{visibility:hidden}.index_module_opacity1__5504fcb4{opacity:1}.index_module_opacity0__5504fcb4{opacity:0}.index_module_root__5504fcb4{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__5504fcb4 a{color:var(--text_secondary)}";
 var modules_c21c94f2$1 = {"img":"index_module_img__5504fcb4","mangaFlowBox":"index_module_mangaFlowBox__5504fcb4","mangaFlow":"index_module_mangaFlow__5504fcb4","disableZoom":"index_module_disableZoom__5504fcb4","scrollMode":"index_module_scrollMode__5504fcb4","endPage":"index_module_endPage__5504fcb4","jello":"index_module_jello__5504fcb4","tip":"index_module_tip__5504fcb4","toolbar":"index_module_toolbar__5504fcb4","toolbarPanel":"index_module_toolbarPanel__5504fcb4","toolbarBg":"index_module_toolbarBg__5504fcb4","SettingPanelPopper":"index_module_SettingPanelPopper__5504fcb4","SettingPanel":"index_module_SettingPanel__5504fcb4","SettingBlock":"index_module_SettingBlock__5504fcb4","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__5504fcb4","SettingsItem":"index_module_SettingsItem__5504fcb4","SettingsItemName":"index_module_SettingsItemName__5504fcb4","SettingsItemSwitch":"index_module_SettingsItemSwitch__5504fcb4","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__5504fcb4","SettingsItemIconButton":"index_module_SettingsItemIconButton__5504fcb4","closeCover":"index_module_closeCover__5504fcb4","scrollbar":"index_module_scrollbar__5504fcb4","scrollbarDrag":"index_module_scrollbarDrag__5504fcb4","scrollbarPage":"index_module_scrollbarPage__5504fcb4","scrollbarPoper":"index_module_scrollbarPoper__5504fcb4","touchAreaRoot":"index_module_touchAreaRoot__5504fcb4","touchArea":"index_module_touchArea__5504fcb4","hidden":"index_module_hidden__5504fcb4","invisible":"index_module_invisible__5504fcb4","opacity1":"index_module_opacity1__5504fcb4","opacity0":"index_module_opacity0__5504fcb4","root":"index_module_root__5504fcb4"};
 n(css$1,{});
 
@@ -1623,19 +1660,21 @@ const ComicImg = props => {
     typeof _ref$ === "function" ? web.use(_ref$, _el$) : imgRef = _el$;
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.img,
-        _v$2 = props.img.loadType === 'wait' ? '' : props.img.src,
-        _v$3 = \`\${props.index}\`,
-        _v$4 = type().show,
-        _v$5 = type().fill,
-        _v$6 = props.img.type,
-        _v$7 = props.img.loadType;
+        _v$2 = props.img.width ? \`\${props.img.width}px\` : undefined,
+        _v$3 = props.img.loadType === 'wait' ? '' : props.img.src,
+        _v$4 = \`\${props.index}\`,
+        _v$5 = type().show,
+        _v$6 = type().fill,
+        _v$7 = props.img.type,
+        _v$8 = props.img.loadType;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "src", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "alt", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-show", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-fill", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-type", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-load-type", _p$._v$7 = _v$7);
+      _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("--width", _v$2) : _el$.style.removeProperty("--width"));
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "src", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "alt", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-show", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-fill", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-type", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-load-type", _p$._v$8 = _v$8);
       return _p$;
     }, {
       _v$: undefined,
@@ -1644,7 +1683,8 @@ const ComicImg = props => {
       _v$4: undefined,
       _v$5: undefined,
       _v$6: undefined,
-      _v$7: undefined
+      _v$7: undefined,
+      _v$8: undefined
     });
     return _el$;
   })();
@@ -1744,7 +1784,8 @@ const useDoubleClick = (click, doubleClick, timeout = 200) => {
   };
 };
 
-const _tmpl$$q = /*#__PURE__*/web.template(\`<div tabindex="-1"><div>\`);
+const _tmpl$$q = /*#__PURE__*/web.template(\`<div tabindex="-1"><div>\`),
+  _tmpl$2$5 = /*#__PURE__*/web.template(\`<h1>NULL\`);
 
 /**
  * 漫画图片流的容器
@@ -1777,6 +1818,9 @@ const ComicImgFlow = () => {
     web.insert(_el$2, web.createComponent(solidJs.Index, {
       get each() {
         return store.imgList;
+      },
+      get fallback() {
+        return _tmpl$2$5();
       },
       children: (img, i) => web.createComponent(ComicImg, {
         get img() {
@@ -2229,9 +2273,13 @@ const defaultButtonList = [
 () => web.createComponent(IconButton, {
   tip: "\\u653E\\u5927\\u6A21\\u5F0F",
   get enabled() {
-    return store.isZoomed;
+    return store.isZoomed || store.option.scrollMode && store.option.scrollModeImgScale !== 1;
   },
   onClick: () => {
+    if (store.option.scrollMode) {
+      setScrollModeImgScale(store.option.scrollModeImgScale < 2 ? store.option.scrollModeImgScale + 0.2 : 1);
+      return;
+    }
     if (!store.panzoom) return;
     const {
       scale
@@ -2686,8 +2734,7 @@ const light = {
 const cssVar = solidJs.createRoot(() => {
   const _cssVar = solidJs.createMemo(() => ({
     '--bg': store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'),
-    '--scrollModeImgWidth': \`\${store.scrollModeImgWidth}px\`,
-    '--scrollModeImgScale': store.scrollModeImgScale,
+    '--scrollModeImgScale': store.option.scrollModeImgScale,
     '--img_placeholder_height': \`\${windowHeight()}px\`,
     ...(store.option.darkMode ? dark : light)
   }));
@@ -2720,7 +2767,6 @@ const useInit$1 = (props, rootRef) => {
     } = entries.contentRect;
     setState(state => {
       updatePageRatio(state, width, height);
-      state.scrollModeImgWidth = height;
     });
   }));
   // 初始化页面比例
@@ -2802,9 +2848,9 @@ const useInit$1 = (props, rootRef) => {
   });
 
   // 绑定配置发生改变时的回调
-  solidJs.createEffect(solidJs.on(() => store.option, async (option, prevOption) => {
+  solidJs.createEffect(solidJs.on(() => store.option, async option => {
     if (!props.onOptionChange) return;
-    await props.onOptionChange(store$2.unwrap(option), store$2.unwrap(prevOption));
+    await props.onOptionChange(difference(option, defaultOption));
   }, {
     defer: true
   }));
@@ -2822,6 +2868,9 @@ const Manga = props => {
     useInit$1(props, rootRef);
     rootRef.focus();
   });
+  solidJs.createEffect(() => {
+    if (props.show) rootRef.focus();
+  });
   return (() => {
     const _el$ = _tmpl$$8();
     web.addEventListener(_el$, "keydown", stopPropagation, true);
@@ -2836,13 +2885,20 @@ const Manga = props => {
     web.insert(_el$, web.createComponent(EndPage, {}), null);
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.root,
-        _v$2 = cssVar();
+        _v$2 = {
+          [modules_c21c94f2$1.hidden]: !props.show ?? false,
+          [props.class ?? '']: !!props.class,
+          ...props.classList
+        },
+        _v$3 = cssVar();
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _p$._v$2 = web.style(_el$, _v$2, _p$._v$2);
+      _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
+      _p$._v$3 = web.style(_el$, _v$3, _p$._v$3);
       return _p$;
     }, {
       _v$: undefined,
-      _v$2: undefined
+      _v$2: undefined,
+      _v$3: undefined
     });
     return _el$;
   })();
@@ -2901,7 +2957,6 @@ const useManga = async initProps => {
     if (props.imgList.length && props.show) {
       dom.setAttribute('show', '');
       document.documentElement.style.overflow = 'hidden';
-      dom.shadowRoot.firstElementChild.focus();
     } else {
       dom.removeAttribute('show');
       document.documentElement.style.overflow = 'unset';
@@ -3205,12 +3260,18 @@ const useFab = async initProps => {
  * @param defaultOptions 默认配置
  */
 const useSiteOptions = async (name, defaultOptions = {}) => {
-  const rawValue = await GM.getValue(name);
-  const options = store$2.createMutable({
-    option: undefined,
+  const _defaultOptions = {
     autoShow: true,
     hiddenFAB: false,
     ...defaultOptions,
+    option: {
+      ...defaultOption,
+      ...defaultOptions?.option
+    }
+  };
+  const rawValue = await GM.getValue(name);
+  const options = store$2.createMutable({
+    ..._defaultOptions,
     ...rawValue
   });
   const changeCallbackList = [];
@@ -3226,7 +3287,9 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     setOptions: async (newValue, trigger = true) => {
       Object.assign(options, newValue);
       if (trigger) await Promise.all(changeCallbackList.map(callback => callback(options)));
-      return GM.setValue(name, options);
+
+      // 只保存和默认设置不同的部分
+      return GM.setValue(name, difference(options, _defaultOptions));
     },
     /**
      * 监听配置变更事件
@@ -3271,13 +3334,19 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-### [6.0.1](https://github.com/hymbz/ComicReadScript/compare/v6.0.0...v6.0.1) (2023-06-21)
+## [6.1.0](https://github.com/hymbz/ComicReadScript/compare/v6.0.1...v6.1.0) (2023-06-24)
 
 
-### Bug Fixes
+### Features
 
-* :bug: 修复卷轴模式下缩放的异常表现 ([7f8ac0c](https://github.com/hymbz/ComicReadScript/commit/7f8ac0ce60398030a4d437c279c02c101d3ff15f))
-* :bug: 修复与其他插件冲突导致的点击区域一直显示的 bug ([9c80d72](https://github.com/hymbz/ComicReadScript/commit/9c80d729b8ef615353d82c2b71fb61dadedb9bd9))
+* :sparkles: 实现可以加载本地漫画的 pwa 版 ([6e918cd](https://github.com/hymbz/ComicReadScript/commit/6e918cdc0d2eda642a61fcc302ccdaed4622adb7))
+* :sparkles: 支持 welovemanga ([3792080](https://github.com/hymbz/ComicReadScript/commit/37920807e81ba5b98f99b6dd2e578b97265e2ea2))
+
+### Performance Improvements
+
+* :zap: 卷轴模式下默认不再缩放图片 ([ee88001](https://github.com/hymbz/ComicReadScript/commit/ee880014e3ae35f3f3f7d5bee7ee684fc7348d98))
+* :zap: 记住卷轴模式下的图片缩放倍率 ([1ffbfde](https://github.com/hymbz/ComicReadScript/commit/1ffbfde5d3518040d48ab2c2f089fe16f3643533))
+* :zap: ehentai 默认不再自动进入阅读模式 ([b0429b7](https://github.com/hymbz/ComicReadScript/commit/b0429b7d790c351ea4b709f33ced7900535d277a))
 \`;
     toast(() => [(() => {
       const _el$ = _tmpl$();
@@ -3446,6 +3515,7 @@ const useInit = async (name, defaultOptions = {}) => {
 };
 
 exports.dataToParams = dataToParams;
+exports.difference = difference;
 exports.insertNode = insertNode;
 exports.isEqualArray = isEqualArray;
 exports.linstenKeyup = linstenKeyup;
@@ -3537,6 +3607,7 @@ unsafeWindow.crsLib.require = require;
 
 // 匹配站点
 switch (window.location.hostname) {
+  // #百合会——「记录阅读历史，体验优化」
   case 'bbs.yamibo.com':
     {
 const web = require('solid-js/web');
@@ -3861,6 +3932,7 @@ const MdSettings = ((props = {}) => (() => {
 
       break;
     }
+  // #百合会新站
   case 'www.yamibo.com':
     {
 const main = require('main');
@@ -3896,6 +3968,8 @@ const main = require('main');
 
       break;
     }
+
+  // #动漫之家——「解锁隐藏漫画」
   case 'manhua.idmzj.com':
   case 'manhua.dmzj.com':
     {
@@ -4491,6 +4565,7 @@ const turnPage = chapterId => {
   //   break;
   // }
 
+  // #ehentai——「匹配 nhentai 漫画」
   case 'exhentai.org':
   case 'e-hentai.org':
     {
@@ -4512,7 +4587,8 @@ const MdSettings = ((props = {}) => (() => {
     init
   } = await main.useInit('ehentai', {
     匹配nhentai: true,
-    快捷键翻页: true
+    快捷键翻页: true,
+    autoShow: false
   });
 
   // 不是漫画页的话
@@ -4654,11 +4730,11 @@ const MdSettings = ((props = {}) => (() => {
 
     // 重写 _refresh_tagmenu_act 函数，加入脚本的功能
     const nhentaiImgList = {};
+    const raw_refresh_tagmenu_act = unsafeWindow._refresh_tagmenu_act;
     unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(a, b) {
-      const tagmenu_act_dom = document.getElementById('tagmenu_act');
       if (a.includes('nhentai:')) {
-        tagmenu_act_dom.innerHTML = `<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">"><a href="${b.href}" target="_blank"> Jump to nhentai</a>`;
-        tagmenu_act_dom.innerHTML += `<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">"><a href="#"> ${nhentaiImgList[selected_tag] ? 'Read' : 'Load comic'}</a>`;
+        const tagmenu_act_dom = document.getElementById('tagmenu_act');
+        tagmenu_act_dom.innerHTML = ['', `<a href="${b.href}" target="_blank"> Jump to nhentai</a>`, `<a href="#"> ${nhentaiImgList[selected_tag] ? 'Read' : 'Load comic'}</a>`].join('<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">">');
         const nhentaiComicReadModeDom = tagmenu_act_dom.querySelector('a[href="#"]');
 
         // 加载 nhentai 漫画
@@ -4695,27 +4771,17 @@ const MdSettings = ((props = {}) => (() => {
             show: true
           });
         });
-      } else {
-        const mr = '<img src="https://ehgt.org/g/mr.gif" class="mr" alt="&gt;" />';
-        let temp = '';
-        if (b.className !== 'tup') temp += ` ${mr} <a href="#" onclick="tag_vote_up(); return false">${b.className === '' ? 'Vote Up' : 'Withdraw Vote'}</a>`;
-        if (b.className !== 'tdn') temp += ` ${mr} <a href="#" onclick="tag_vote_down(); return false">${b.className === '' ? 'Vote Down' : 'Withdraw Vote'}</a>`;
-        // 删掉原有的 Show Tagged Galleries 按钮空出位置
-        temp += `${mr} <a href="#" onclick="tag_define(); return false">Show Tag Definition</a>${mr} <a href="#" onclick="toggle_tagmenu(undefined, undefined); return false">Add New Tag</a> ${mr} `;
-        const tag = selected_link.id.slice(3).split(':');
-        if (tag.length === 1) {
-          temp += `<a href="https://nhentai.net/tag/${tag[0].replace(/_/g, '-')}" target="_blank">Jump to nhentai</a>`;
-        } else {
-          temp += `<a href="https://nhentai.net/${tag[0] === 'female' ? 'tag' : tag[0]}/${tag[1].replace(/_/g, '-')}" target="_blank">Jump to nhentai</a>`;
-        }
-        tagmenu_act_dom.innerHTML = temp;
       }
+      // 非 nhentai 标签列的用原函数去处理
+      else raw_refresh_tagmenu_act(a, b);
     };
   }
 })();
 
       break;
     }
+
+  // #nhentai——「彻底屏蔽漫画，自动翻页」
   case 'nhentai.net':
     {
 const main = require('main');
@@ -4853,6 +4919,8 @@ const fileType = {
 
       break;
     }
+
+  // #明日方舟泰拉记事社
   case 'terra-historicus.hypergryph.com':
     {
 const main = require('main');
@@ -4916,6 +4984,74 @@ const main = require('main');
 
       break;
     }
+
+  // #禁漫天堂
+  case 'jmcomic.me':
+  case 'jmcomic1.me':
+  case '18comic.org':
+  case '18comic.cc':
+  case '18comic.vip':
+    {
+const main = require('main');
+
+(async () => {
+  // 只在漫画页内运行
+  if (!window.location.pathname.includes('/photo/')) return;
+  const {
+    init,
+    setManga,
+    setFab
+  } = await main.useInit('jm');
+  while (!unsafeWindow?.onImageLoaded) {
+    if (document.readyState === 'complete') {
+      main.toast.error('无法获取图片', {
+        duration: Infinity
+      });
+      return;
+    }
+    // eslint-disable-next-line no-await-in-loop
+    await main.sleep(100);
+  }
+  setManga({
+    onPrev: main.querySelectorClick('.menu-bolock-ul a:has(.fa-angle-double-left)'),
+    onNext: main.querySelectorClick('.menu-bolock-ul a:has(.fa-angle-double-right)')
+  });
+  const imgEleList = main.querySelectorAll('.scramble-page > img');
+
+  // 判断当前漫画是否有被分割，没有就直接获取图片链接加载
+  // 判断条件来自页面上的 scramble_image 函数
+  if (unsafeWindow.aid < unsafeWindow.scramble_id || unsafeWindow.speed === '1') {
+    init(() => imgEleList.map(e => e.getAttribute('data-original')));
+    return;
+  }
+  const getImgUrl = async imgEle => {
+    const res = await main.request(imgEle.getAttribute('data-original'), {
+      responseType: 'blob'
+    });
+    imgEle.src = URL.createObjectURL(res.response);
+    await new Promise((resolve, reject) => {
+      imgEle.onload = resolve;
+      imgEle.onerror = reject;
+    });
+    unsafeWindow.onImageLoaded(imgEle);
+    const blob = await new Promise(resolve => {
+      imgEle.nextElementSibling.toBlob(resolve, 'image/webp', 1);
+    });
+    if (!blob) return '';
+    return `${URL.createObjectURL(blob)}#.webp`;
+  };
+  init(() => main.plimit(imgEleList.map(img => () => getImgUrl(img)), (doneNum, totalNum) => {
+    setFab({
+      progress: doneNum / totalNum,
+      tip: `加载图片中 - ${doneNum}/${totalNum}`
+    });
+  }));
+})();
+
+      break;
+    }
+
+  // #拷贝漫画(copymanga)
   case 'copymanga.site':
   case 'copymanga.info':
   case 'copymanga.net':
@@ -4959,6 +5095,120 @@ const main = require('main');
 
       break;
     }
+
+  // #漫画柜(manhuagui)
+  case 'www.manhuagui.com':
+  case 'www.mhgui.com':
+  case 'tw.manhuagui.com':
+    {
+const main = require('main');
+
+(async () => {
+  // 只在漫画页内运行
+  if (!Reflect.has(unsafeWindow, 'cInfo')) return;
+
+  // 让切换章节的提示可以显示在漫画页上
+  await GM.addStyle(`#smh-msg-box { z-index: 9999999999 !important }`);
+  const {
+    setManga,
+    init
+  } = await main.useInit('manhuagui');
+  setManga({
+    onNext: cInfo.nextId !== 0 ? main.querySelectorClick('a.nextC') : undefined,
+    onPrev: cInfo.prevId !== 0 ? main.querySelectorClick('a.prevC') : undefined
+  });
+  init(() => {
+    const comicInfo = JSON.parse(
+    // 只能通过 eval 获得数据
+    // eslint-disable-next-line no-eval
+    eval(main.querySelectorAll('body > script')[1].innerHTML.slice(26)).slice(12, -12));
+    const sl = Object.entries(comicInfo.sl).map(attr => `${attr[0]}=${attr[1]}`).join('&');
+    return comicInfo.files.map(file => `${pVars.manga.filePath}${file}?${sl}`);
+  });
+})();
+
+      break;
+    }
+
+  // #漫画DB(manhuadb)
+  case 'www.manhuadb.com':
+    {
+const main = require('main');
+
+(async () => {
+  // 只在漫画页内运行
+  if (!Reflect.has(unsafeWindow, 'img_data_arr')) return;
+  const {
+    setManga,
+    init
+  } = await main.useInit('manhuaDB');
+
+  /**
+   * 检查是否有上/下一话
+   */
+  const checkTurnPage = async type => {
+    const res = await $.ajax({
+      method: 'POST',
+      url: '/book/goNumPage',
+      dataType: 'json',
+      data: main.dataToParams({
+        ccid: p_ccid,
+        id: p_id,
+        num: vg_r_data.data('num') + (type === 'next' ? 1 : -1),
+        d: p_d,
+        type
+      })
+    });
+    if (res.state) return main.querySelectorClick(`a[title="${type === 'next' ? '下集' : '上集'}"]`);
+    return undefined;
+  };
+  setManga({
+    onNext: await checkTurnPage('next'),
+    onPrev: await checkTurnPage('pre')
+  });
+  init(() => img_data_arr.map(data => `${img_host}/${img_pre}/${data.img}`));
+})();
+
+      break;
+    }
+
+  // #漫画猫(manhuacat)
+  case 'www.manhuacat.com':
+  case 'www.maofly.com':
+    {
+const main = require('main');
+
+(async () => {
+  // 只在漫画页内运行
+  if (!Reflect.has(unsafeWindow, 'cdnImage')) return;
+  const {
+    setManga,
+    init
+  } = await main.useInit('manhuacat');
+
+  /**
+   * 检查是否有上/下一页
+   */
+  const checkTurnPage = async type => {
+    const res = await $.ajax({
+      type: 'get',
+      url: `/chapter_num?chapter_id=${chapter_num}&ctype=${type === 'next' ? 1 : 2}&type=${chapter_type}`,
+      dataType: 'json'
+    });
+    if (res.code === '0000') return () => goNumPage(type);
+    return undefined;
+  };
+  setManga({
+    onNext: await checkTurnPage('next'),
+    onPrev: await checkTurnPage('pre')
+  });
+  init(() => img_data_arr.map(img => cdnImage(img_pre + img, asset_domain, asset_key)));
+})();
+
+      break;
+    }
+
+  // #动漫屋(dm5)
   case 'tel.dm5.com':
   case 'en.dm5.com':
   case 'www.dm5.com':
@@ -5027,6 +5277,29 @@ const main = require('main');
 
       break;
     }
+
+  // #绅士漫画(wnacg)
+  case 'www.wnacg.com':
+    {
+const main = require('main');
+
+(async () => {
+  // 只在漫画页内运行
+  if (!Reflect.has(unsafeWindow, 'imglist')) return;
+  const {
+    init
+  } = await main.useInit('wnacg');
+  init(() => imglist.filter(({
+    caption
+  }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！').map(({
+    url
+  }) => url));
+})();
+
+      break;
+    }
+
+  // #mangabz
   case 'www.mangabz.com':
   case 'mangabz.com':
     {
@@ -5074,191 +5347,27 @@ const main = require('main');
 
       break;
     }
-  case 'www.manhuagui.com':
-  case 'www.mhgui.com':
-  case 'tw.manhuagui.com':
+
+  // #welovemanga
+  case 'nicomanga.com':
+  case 'weloma.art':
+  case 'welovemanga.one':
     {
 const main = require('main');
 
 (async () => {
+  const imgList = main.querySelectorAll('.chapter-content img[data-src]').map(e => e.getAttribute('data-src'));
   // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'cInfo')) return;
-
-  // 让切换章节的提示可以显示在漫画页上
-  await GM.addStyle(`#smh-msg-box { z-index: 9999999999 !important }`);
+  if (!imgList.length) return;
   const {
     setManga,
     init
   } = await main.useInit('manhuagui');
   setManga({
-    onNext: cInfo.nextId !== 0 ? main.querySelectorClick('a.nextC') : undefined,
-    onPrev: cInfo.prevId !== 0 ? main.querySelectorClick('a.prevC') : undefined
+    onNext: main.querySelectorClick('.rd_top-right.next:not(.disabled)'),
+    onPrev: main.querySelectorClick('.rd_top-left.prev:not(.disabled)')
   });
-  init(() => {
-    const comicInfo = JSON.parse(
-    // 只能通过 eval 获得数据
-    // eslint-disable-next-line no-eval
-    eval(main.querySelectorAll('body > script')[1].innerHTML.slice(26)).slice(12, -12));
-    const sl = Object.entries(comicInfo.sl).map(attr => `${attr[0]}=${attr[1]}`).join('&');
-    return comicInfo.files.map(file => `${pVars.manga.filePath}${file}?${sl}`);
-  });
-})();
-
-      break;
-    }
-  case 'www.manhuadb.com':
-    {
-const main = require('main');
-
-(async () => {
-  // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'img_data_arr')) return;
-  const {
-    setManga,
-    init
-  } = await main.useInit('manhuaDB');
-
-  /**
-   * 检查是否有上/下一话
-   */
-  const checkTurnPage = async type => {
-    const res = await $.ajax({
-      method: 'POST',
-      url: '/book/goNumPage',
-      dataType: 'json',
-      data: main.dataToParams({
-        ccid: p_ccid,
-        id: p_id,
-        num: vg_r_data.data('num') + (type === 'next' ? 1 : -1),
-        d: p_d,
-        type
-      })
-    });
-    if (res.state) return main.querySelectorClick(`a[title="${type === 'next' ? '下集' : '上集'}"]`);
-    return undefined;
-  };
-  setManga({
-    onNext: await checkTurnPage('next'),
-    onPrev: await checkTurnPage('pre')
-  });
-  init(() => img_data_arr.map(data => `${img_host}/${img_pre}/${data.img}`));
-})();
-
-      break;
-    }
-  case 'www.manhuacat.com':
-  case 'www.maofly.com':
-    {
-const main = require('main');
-
-(async () => {
-  // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'cdnImage')) return;
-  const {
-    setManga,
-    init
-  } = await main.useInit('manhuacat');
-
-  /**
-   * 检查是否有上/下一页
-   */
-  const checkTurnPage = async type => {
-    const res = await $.ajax({
-      type: 'get',
-      url: `/chapter_num?chapter_id=${chapter_num}&ctype=${type === 'next' ? 1 : 2}&type=${chapter_type}`,
-      dataType: 'json'
-    });
-    if (res.code === '0000') return () => goNumPage(type);
-    return undefined;
-  };
-  setManga({
-    onNext: await checkTurnPage('next'),
-    onPrev: await checkTurnPage('pre')
-  });
-  init(() => img_data_arr.map(img => cdnImage(img_pre + img, asset_domain, asset_key)));
-})();
-
-      break;
-    }
-  case 'jmcomic.me':
-  case 'jmcomic1.me':
-  case '18comic.org':
-  case '18comic.cc':
-  case '18comic.vip':
-    {
-const main = require('main');
-
-(async () => {
-  // 只在漫画页内运行
-  if (!window.location.pathname.includes('/photo/')) return;
-  const {
-    init,
-    setManga,
-    setFab
-  } = await main.useInit('jm');
-  while (!unsafeWindow?.onImageLoaded) {
-    if (document.readyState === 'complete') {
-      main.toast.error('无法获取图片', {
-        duration: Infinity
-      });
-      return;
-    }
-    // eslint-disable-next-line no-await-in-loop
-    await main.sleep(100);
-  }
-  setManga({
-    onPrev: main.querySelectorClick('.menu-bolock-ul a:has(.fa-angle-double-left)'),
-    onNext: main.querySelectorClick('.menu-bolock-ul a:has(.fa-angle-double-right)')
-  });
-  const imgEleList = main.querySelectorAll('.scramble-page > img');
-
-  // 判断当前漫画是否有被分割，没有就直接获取图片链接加载
-  // 判断条件来自页面上的 scramble_image 函数
-  if (unsafeWindow.aid < unsafeWindow.scramble_id || unsafeWindow.speed === '1') {
-    init(() => imgEleList.map(e => e.getAttribute('data-original')));
-    return;
-  }
-  const getImgUrl = async imgEle => {
-    const res = await main.request(imgEle.getAttribute('data-original'), {
-      responseType: 'blob'
-    });
-    imgEle.src = URL.createObjectURL(res.response);
-    await new Promise((resolve, reject) => {
-      imgEle.onload = resolve;
-      imgEle.onerror = reject;
-    });
-    unsafeWindow.onImageLoaded(imgEle);
-    const blob = await new Promise(resolve => {
-      imgEle.nextElementSibling.toBlob(resolve, 'image/webp', 1);
-    });
-    if (!blob) return '';
-    return `${URL.createObjectURL(blob)}#.webp`;
-  };
-  init(() => main.plimit(imgEleList.map(img => () => getImgUrl(img)), (doneNum, totalNum) => {
-    setFab({
-      progress: doneNum / totalNum,
-      tip: `加载图片中 - ${doneNum}/${totalNum}`
-    });
-  }));
-})();
-
-      break;
-    }
-  case 'www.wnacg.com':
-    {
-const main = require('main');
-
-(async () => {
-  // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'imglist')) return;
-  const {
-    init
-  } = await main.useInit('wnacg');
-  init(() => imglist.filter(({
-    caption
-  }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！').map(({
-    url
-  }) => url));
+  init(() => imgList);
 })();
 
       break;
@@ -5269,17 +5378,61 @@ const main = require('main');
 const store = require('solid-js/store');
 
 /**
+ * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
+ *
+ * 不会修改参数对象，返回的是新对象
+ */
+const difference = (a, b) => {
+  const res = {};
+  const keys = Object.keys(a);
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    if (typeof a[key] === 'object') {
+      const _res = difference(a[key], b[key]);
+      if (Object.keys(_res).length) res[key] = _res;
+    } else if (a[key] !== b[key]) res[key] = a[key];
+  }
+  return res;
+};
+
+const defaultOption = {
+  dir: 'rtl',
+  scrollbar: {
+    enabled: true,
+    autoHidden: false,
+    showProgress: true
+  },
+  onePageMode: false,
+  scrollMode: false,
+  clickPage: {
+    enabled: 'ontouchstart' in document.documentElement,
+    overturn: false
+  },
+  disableZoom: false,
+  darkMode: false,
+  flipToNext: true,
+  alwaysLoadAllImg: false,
+  scrollModeImgScale: 1
+};
+
+/**
  * 对修改站点配置的相关方法的封装
  * @param name 站点名
  * @param defaultOptions 默认配置
  */
 const useSiteOptions = async (name, defaultOptions = {}) => {
-  const rawValue = await GM.getValue(name);
-  const options = store.createMutable({
-    option: undefined,
+  const _defaultOptions = {
     autoShow: true,
     hiddenFAB: false,
     ...defaultOptions,
+    option: {
+      ...defaultOption,
+      ...defaultOptions?.option
+    }
+  };
+  const rawValue = await GM.getValue(name);
+  const options = store.createMutable({
+    ..._defaultOptions,
     ...rawValue
   });
   const changeCallbackList = [];
@@ -5295,7 +5448,9 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     setOptions: async (newValue, trigger = true) => {
       Object.assign(options, newValue);
       if (trigger) await Promise.all(changeCallbackList.map(callback => callback(options)));
-      return GM.setValue(name, options);
+
+      // 只保存和默认设置不同的部分
+      return GM.setValue(name, difference(options, _defaultOptions));
     },
     /**
      * 监听配置变更事件
