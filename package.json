@@ -1,7 +1,7 @@
 {
   "name": "ComicRead",
   "version": "6.1.0",
-  "description": "为漫画站增加双页阅读模式并优化使用体验。",
+  "description": "为主流漫画站增加双页阅读模式并优化使用体验。",
   "author": "hymbz",
   "license": "AGPL-3.0-or-later",
   "private": "true",

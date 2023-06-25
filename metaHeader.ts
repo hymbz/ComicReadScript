@@ -51,13 +51,22 @@ export const updateReadme = () => {
   const readmePath = resolve(__dirname, 'README.md');
   const readmeMd = fs.readFileSync(readmePath, 'utf8');
   const newMd = readmeMd.replace(
-    /(?<=<!-- supportSiteList -->\n).+(?=\n<!-- supportSiteList -->)/s,
+    /(?<=<!-- supportSiteList -->\n\n).+(?=\n\n<!-- supportSiteList -->)/s,
     getSupportSiteList()
       .slice(5)
       .map((siteText) => `- ${siteText}`)
       .join('\n'),
   );
   if (newMd !== readmeMd) fs.writeFileSync(readmePath, newMd);
+
+  // 生成 README-out.md 文件，把相对链接改成 jsdelivr cdn 的链接，方便在其他站点显示图片
+  const outMdPath = resolve(__dirname, 'docs/README-out.md');
+  const outMd = fs.readFileSync(outMdPath, 'utf8');
+  const newOutMd = newMd.replaceAll(
+    /(?<=]\()\/.+\.(md)?.+\)/g,
+    'https://cdn.jsdelivr.net/gh/hymbz/ComicReadScript$&',
+  );
+  if (newOutMd !== outMd) fs.writeFileSync(outMdPath, newOutMd);
 };
 
 /** 脚本头部注释 */
