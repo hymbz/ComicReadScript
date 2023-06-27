@@ -24,6 +24,8 @@ export interface Option {
   disableZoom: boolean;
   /** 黑暗模式 */
   darkMode: boolean;
+  /** 左右翻页键交换 */
+  swapTurnPage: boolean;
   /** 滚动到底后继续滚动会跳至下一话 */
   flipToNext: boolean;
   /** 始终加载所有图片 */
@@ -47,6 +49,7 @@ export const defaultOption: Option = {
   },
   disableZoom: false,
   darkMode: false,
+  swapTurnPage: false,
   flipToNext: true,
   alwaysLoadAllImg: false,
   scrollModeImgScale: 1,

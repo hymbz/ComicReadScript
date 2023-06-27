@@ -70,6 +70,10 @@ export const handleWheel = (e: WheelEvent) => {
   setState((state) => turnPage(state, isWheelDown ? 'next' : 'prev'));
 };
 
+/** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
+const handleSwapTurnPage = (nextPage: boolean) =>
+  store.option.swapTurnPage ? !nextPage : nextPage;
+
 export const handleKeyUp = (e: KeyboardEvent) => {
   e.stopPropagation();
 
@@ -80,7 +84,6 @@ export const handleKeyUp = (e: KeyboardEvent) => {
   switch (e.key) {
     case 'PageUp':
     case 'ArrowUp':
-    case '.':
     case 'w':
       nextPage = false;
       break;
@@ -88,19 +91,20 @@ export const handleKeyUp = (e: KeyboardEvent) => {
     case ' ':
     case 'PageDown':
     case 'ArrowDown':
-    case ',':
     case 's':
       nextPage = true;
       break;
 
     case 'ArrowRight':
+    case '.':
     case 'd':
-      nextPage = store.option.dir !== 'rtl';
+      nextPage = handleSwapTurnPage(store.option.dir !== 'rtl');
       break;
 
     case 'ArrowLeft':
+    case ',':
     case 'a':
-      nextPage = store.option.dir === 'rtl';
+      nextPage = handleSwapTurnPage(store.option.dir === 'rtl');
       break;
 
     case '/':

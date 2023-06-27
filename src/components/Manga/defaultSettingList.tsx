@@ -141,6 +141,17 @@ export const defaultSettingList: SettingList = [
         />
 
         <SettingsItemSwitch
+          name="始终加载所有图片"
+          value={store.option.alwaysLoadAllImg}
+          onChange={() => {
+            setOption((draftOption) => {
+              draftOption.alwaysLoadAllImg = !draftOption.alwaysLoadAllImg;
+            });
+            setState(updateImgLoadType);
+          }}
+        />
+
+        <SettingsItemSwitch
           name="禁止放大图片"
           value={store.option.disableZoom}
           onChange={() => {
@@ -151,13 +162,12 @@ export const defaultSettingList: SettingList = [
         />
 
         <SettingsItemSwitch
-          name="始终加载所有图片"
-          value={store.option.alwaysLoadAllImg}
+          name="左右翻页键交换"
+          value={store.option.swapTurnPage}
           onChange={() => {
             setOption((draftOption) => {
-              draftOption.alwaysLoadAllImg = !draftOption.alwaysLoadAllImg;
+              draftOption.swapTurnPage = !draftOption.swapTurnPage;
             });
-            setState(updateImgLoadType);
           }}
         />
 
