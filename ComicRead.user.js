@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.1.0
-// @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、漫画猫(manhuacat)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、welovemanga
+// @version      6.2.0
+// @description  为主流漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、漫画猫(manhuacat)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
 // @noframes
@@ -231,8 +231,8 @@ const mountComponents = (id, fc) => {
 
 var e=[],t=[];function n(n,r){if(n&&"undefined"!=typeof document){var a,s=!0===r.prepend?"prepend":"append",d=!0===r.singleTag,i="string"==typeof r.container?document.querySelector(r.container):document.getElementsByTagName("head")[0];if(d){var u=e.indexOf(i);-1===u&&(u=e.push(i)-1,t[u]={}),a=t[u]&&t[u][s]?t[u][s]:t[u][s]=c();}else a=c();65279===n.charCodeAt(0)&&(n=n.substring(1)),a.styleSheet?a.styleSheet.cssText+=n:a.appendChild(document.createTextNode(n));}function c(){var e=document.createElement("style");if(e.setAttribute("type","text/css"),r.attributes)for(var t=Object.keys(r.attributes),n=0;n<t.length;n++)e.setAttribute(t[n],r.attributes[t[n]]);var a="prepend"===s?"afterbegin":"beforeend";return i.insertAdjacentElement(a,e),e}}
 
-var css$3 = ".index_module_root__df2866e6{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:9999999999}.index_module_item__df2866e6{align-items:center;animation:index_module_bounceInRight__df2866e6 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__df2866e6>svg{color:var(--theme);margin-right:.5em}.index_module_item__df2866e6[data-exit]{animation:index_module_bounceOutRight__df2866e6 .5s 1}.index_module_schedule__df2866e6{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__df2866e6[data-schedule] .index_module_schedule__df2866e6{transition:transform .1s}.index_module_item__df2866e6:not([data-schedule]) .index_module_schedule__df2866e6{animation:index_module_schedule__df2866e6 linear 1 forwards}:is(.index_module_item__df2866e6:hover,.index_module_item__df2866e6[data-schedule],.index_module_root__df2866e6[data-paused]) .index_module_schedule__df2866e6{animation-play-state:paused}.index_module_msg__df2866e6{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__df2866e6 h2,.index_module_msg__df2866e6 h3{margin:0 0 .7em}.index_module_msg__df2866e6 ul{margin:0;text-align:left}@keyframes index_module_schedule__df2866e6{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__df2866e6{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__df2866e6{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__df2866e6","item":"index_module_item__df2866e6","bounceInRight":"index_module_bounceInRight__df2866e6","bounceOutRight":"index_module_bounceOutRight__df2866e6","schedule":"index_module_schedule__df2866e6","msg":"index_module_msg__df2866e6"};
+var css$3 = ".index_module_root__d312191b{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:9999999999}.index_module_item__d312191b{align-items:center;animation:index_module_bounceInRight__d312191b .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__d312191b>svg{color:var(--theme);margin-right:.5em}.index_module_item__d312191b[data-exit]{animation:index_module_bounceOutRight__d312191b .5s 1}.index_module_schedule__d312191b{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__d312191b[data-schedule] .index_module_schedule__d312191b{transition:transform .1s}.index_module_item__d312191b:not([data-schedule]) .index_module_schedule__d312191b{animation:index_module_schedule__d312191b linear 1 forwards}:is(.index_module_item__d312191b:hover,.index_module_item__d312191b[data-schedule],.index_module_root__d312191b[data-paused]) .index_module_schedule__d312191b{animation-play-state:paused}.index_module_msg__d312191b{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__d312191b h2,.index_module_msg__d312191b h3{margin:.3em 0 .7em}.index_module_msg__d312191b ul{margin:0;text-align:left}@keyframes index_module_schedule__d312191b{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__d312191b{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__d312191b{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2$3 = {"root":"index_module_root__d312191b","item":"index_module_item__d312191b","bounceInRight":"index_module_bounceInRight__d312191b","bounceOutRight":"index_module_bounceOutRight__d312191b","schedule":"index_module_schedule__d312191b","msg":"index_module_msg__d312191b"};
 n(css$3,{});
 
 const [_state$1, _setState] = store$2.createStore({
@@ -809,6 +809,7 @@ const defaultOption = {
   },
   disableZoom: false,
   darkMode: false,
+  swapTurnPage: false,
   flipToNext: true,
   alwaysLoadAllImg: false,
   scrollModeImgScale: 1
@@ -1533,6 +1534,9 @@ const handleWheel = e => {
   }
   setState(state => turnPage(state, isWheelDown ? 'next' : 'prev'));
 };
+
+/** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
+const handleSwapTurnPage = nextPage => store.option.swapTurnPage ? !nextPage : nextPage;
 const handleKeyUp = e => {
   e.stopPropagation();
   if (store.option.scrollMode && !store.endPageType) return;
@@ -1540,24 +1544,24 @@ const handleKeyUp = e => {
   switch (e.key) {
     case 'PageUp':
     case 'ArrowUp':
-    case '.':
     case 'w':
       nextPage = false;
       break;
     case ' ':
     case 'PageDown':
     case 'ArrowDown':
-    case ',':
     case 's':
       nextPage = true;
       break;
     case 'ArrowRight':
+    case '.':
     case 'd':
-      nextPage = store.option.dir !== 'rtl';
+      nextPage = handleSwapTurnPage(store.option.dir !== 'rtl');
       break;
     case 'ArrowLeft':
+    case ',':
     case 'a':
-      nextPage = store.option.dir === 'rtl';
+      nextPage = handleSwapTurnPage(store.option.dir === 'rtl');
       break;
     case '/':
     case 'm':
@@ -2107,6 +2111,17 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
     });
   }
 }), web.createComponent(SettingsItemSwitch, {
+  name: "\\u59CB\\u7EC8\\u52A0\\u8F7D\\u6240\\u6709\\u56FE\\u7247",
+  get value() {
+    return store.option.alwaysLoadAllImg;
+  },
+  onChange: () => {
+    setOption(draftOption => {
+      draftOption.alwaysLoadAllImg = !draftOption.alwaysLoadAllImg;
+    });
+    setState(updateImgLoadType);
+  }
+}), web.createComponent(SettingsItemSwitch, {
   name: "\\u7981\\u6B62\\u653E\\u5927\\u56FE\\u7247",
   get value() {
     return store.option.disableZoom;
@@ -2117,15 +2132,14 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
     });
   }
 }), web.createComponent(SettingsItemSwitch, {
-  name: "\\u59CB\\u7EC8\\u52A0\\u8F7D\\u6240\\u6709\\u56FE\\u7247",
+  name: "\\u5DE6\\u53F3\\u7FFB\\u9875\\u952E\\u4EA4\\u6362",
   get value() {
-    return store.option.alwaysLoadAllImg;
+    return store.option.swapTurnPage;
   },
   onChange: () => {
     setOption(draftOption => {
-      draftOption.alwaysLoadAllImg = !draftOption.alwaysLoadAllImg;
+      draftOption.swapTurnPage = !draftOption.swapTurnPage;
     });
-    setState(updateImgLoadType);
   }
 }), web.createComponent(SettingsItem, {
   name: "\\u80CC\\u666F\\u989C\\u8272",
@@ -3334,19 +3348,17 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.1.0](https://github.com/hymbz/ComicReadScript/compare/v6.0.1...v6.1.0) (2023-06-24)
+## [6.2.0](https://github.com/hymbz/ComicReadScript/compare/v6.1.0...v6.2.0) (2023-06-27)
 
 
 ### Features
 
-* :sparkles: 实现可以加载本地漫画的 pwa 版 ([6e918cd](https://github.com/hymbz/ComicReadScript/commit/6e918cdc0d2eda642a61fcc302ccdaed4622adb7))
-* :sparkles: 支持 welovemanga ([3792080](https://github.com/hymbz/ComicReadScript/commit/37920807e81ba5b98f99b6dd2e578b97265e2ea2))
+* :sparkles: 增加 左右翻页键交换 功能 ([4d67c31](https://github.com/hymbz/ComicReadScript/commit/4d67c3125717ee562960c1cdf4bd31e42e1648e3))
+
 
 ### Performance Improvements
 
-* :zap: 卷轴模式下默认不再缩放图片 ([ee88001](https://github.com/hymbz/ComicReadScript/commit/ee880014e3ae35f3f3f7d5bee7ee684fc7348d98))
-* :zap: 记住卷轴模式下的图片缩放倍率 ([1ffbfde](https://github.com/hymbz/ComicReadScript/commit/1ffbfde5d3518040d48ab2c2f089fe16f3643533))
-* :zap: ehentai 默认不再自动进入阅读模式 ([b0429b7](https://github.com/hymbz/ComicReadScript/commit/b0429b7d790c351ea4b709f33ced7900535d277a))
+* :zap: 为 ehentai 匹配 nhentai 失败后的提示增加跳转链接 ([1c56657](https://github.com/hymbz/ComicReadScript/commit/1c566577dcc57ce27f2f357d231668f806510483))
 \`;
     toast(() => [(() => {
       const _el$ = _tmpl$();
@@ -4708,7 +4720,11 @@ const MdSettings = ((props = {}) => (() => {
       newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
-        匹配失败，请确认 nhentai 登录状态
+        匹配失败，请尝试重新登陆
+        <a href='https://nhentai.net/' target="_blank" >
+          <u>nhentai</u>
+        </a>
+        后刷新
       </td>`;
       taglistDom.appendChild(newTagLine);
       return;
@@ -5410,6 +5426,7 @@ const defaultOption = {
   },
   disableZoom: false,
   darkMode: false,
+  swapTurnPage: false,
   flipToNext: true,
   alwaysLoadAllImg: false,
   scrollModeImgScale: 1
