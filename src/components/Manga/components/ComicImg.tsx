@@ -64,14 +64,19 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
       ref={imgRef!}
       class={classes.img}
       style={{
-        '--width': props.img.width ? `${props.img.width}px` : undefined,
+        '--width':
+          store.option.scrollMode && props.img.width
+            ? `${props.img.width}px`
+            : undefined,
       }}
       src={props.img.loadType === 'wait' ? '' : props.img.src}
       alt={`${props.index}`}
       data-show={type().show}
       data-fill={type().fill}
-      data-type={props.img.type}
-      data-load-type={props.img.loadType}
+      data-type={props.img.type || undefined}
+      data-load-type={
+        props.img.loadType === 'loaded' ? undefined : props.img.loadType
+      }
       onLoad={(e) => handleImgLoaded(props.index, e.currentTarget)}
       onError={(e) => handleImgError(props.index, e.currentTarget)}
     />

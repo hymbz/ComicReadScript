@@ -36,6 +36,7 @@ export const handleComicData = (
       } else {
         imgCache = i;
       }
+      if (Reflect.has(fillEffect, i)) Reflect.deleteProperty(fillEffect, i);
     } else {
       if (imgCache !== null) {
         const nowFillIndex = findFillIndex(i, fillEffect);

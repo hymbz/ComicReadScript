@@ -98,8 +98,7 @@ export const updateImgType = (state: State, draftImg: ComicImg) => {
 
   const imgRatio = width / height;
   if (imgRatio <= state.proportion.单页比例) {
-    if (imgRatio < state.proportion.条漫比例) draftImg.type = 'vertical';
-    else draftImg.type = '';
+    draftImg.type = imgRatio < state.proportion.条漫比例 ? 'vertical' : '';
   } else {
     draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
   }
