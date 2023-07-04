@@ -166,7 +166,7 @@ declare const zcClick: any;
   if ($.cookie('display_mode') === '0') unsafeWindow.qiehuan();
 
   // 根据漫画模式下的夜间模式切换样式
-  if (options.option?.darkMode === false) {
+  if (options.option?.darkMode !== true) {
     document.body.classList.add('day');
   }
 
@@ -196,6 +196,12 @@ declare const zcClick: any;
     body.day .comic_gd_fb .gd_input {
       color: #666;
       background: white
+    }
+
+    /* 修复 dmzj_style 将顶栏固定显示导致的点击图片跳转到下一张时图片顶部会被遮挡一部分 */
+    a[name] {
+      padding-top: 32px;
+      display: block;
     }
   `);
 
