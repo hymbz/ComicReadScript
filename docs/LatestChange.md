@@ -1,11 +1,16 @@
-## [6.2.0](https://github.com/hymbz/ComicReadScript/compare/v6.1.0...v6.2.0) (2023-06-27)
+## [6.3.0](https://github.com/hymbz/ComicReadScript/compare/v6.2.0...v6.3.0) (2023-07-09)
 
 
 ### Features
 
-* :sparkles: 增加 左右翻页键交换 功能 ([4d67c31](https://github.com/hymbz/ComicReadScript/commit/4d67c3125717ee562960c1cdf4bd31e42e1648e3))
+* :sparkles: 增加关闭首页填充的设置项 ([a0c092c](https://github.com/hymbz/ComicReadScript/commit/a0c092c8f4c2fda0b34fa9124cfa45eded93decd))
 
 
-### Performance Improvements
+### Bug Fixes
 
-* :zap: 为 ehentai 匹配 nhentai 失败后的提示增加跳转链接 ([1c56657](https://github.com/hymbz/ComicReadScript/commit/1c566577dcc57ce27f2f357d231668f806510483))
+* :bug: 修复某些情况下页面填充效果异常的 bug ([2935fd7](https://github.com/hymbz/ComicReadScript/commit/2935fd78dbbb1c844d0b5218368211a57ebe1b1a))
+* :bug: 修复 dmzj 改版导致的 bug ([9b7f3d6](https://github.com/hymbz/ComicReadScript/commit/9b7f3d6297b5a4e8998d6a724cfc64b461e6f68f))
+
+### Removed
+
+* 因为改版后失效的缘故，删掉了 dmzj 的样式美化和解除吐槽字数限制的功能

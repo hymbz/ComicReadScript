@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.2.0
+// @version      6.3.0
 // @description  为主流漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、漫画猫(manhuacat)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -39,7 +39,6 @@
 // @resource     panzoom https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js
 // @resource     fflate https://unpkg.com/fflate@0.7.4/umd/index.js
 // @resource     dmzjDecrypt https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199
-// @resource     dmzj_style https://userstyles.org/styles/chrome/119945.json
 // @supportURL   https://github.com/hymbz/ComicReadScript/issues
 // @updateURL    https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
 // @downloadURL  https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
@@ -109,8 +108,7 @@ const insertNode = (node, textnode, referenceNode = null) => {
 /** 返回 Dom 的点击函数 */
 const querySelectorClick = selector => {
   const dom = querySelector(selector);
-  if (!dom) return undefined;
-  return () => dom.click();
+  if (dom) return () => dom.click();
 };
 
 /** 判断两个列表中包含的值是否相同 */
@@ -189,15 +187,17 @@ const needDarkMode = hexColor => {
   return yiq < 128;
 };
 
-/** 等到指定的 dom 出现 */
-const wait = selector => new Promise(resolve => {
+/** 等到传入的函数返回 true */
+const wait = fn => new Promise(resolve => {
   const id = window.setInterval(() => {
-    const dom = querySelector(selector);
-    if (!dom) return;
+    if (!fn()) return;
     window.clearInterval(id);
     resolve();
   }, 100);
 });
+
+/** 等到指定的 dom 出现 */
+const waitDom = selector => wait(() => !!querySelector(selector));
 
 /**
  * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
@@ -217,10 +217,42 @@ const difference = (a, b) => {
   return res;
 };
 
+/**
+ * 通过监视点击等会触发动态加载的事件，在触发动态加载后更新图片列表等
+ * @param update 动态加载后的重新加载
+ */
+const autoUpdate = update => {
+  let running = false;
+  const refresh = async () => {
+    running = true;
+    try {
+      await update();
+    } finally {
+      running = false;
+    }
+  };
+  ['click', 'popstate'].forEach(eventName => {
+    window.addEventListener(eventName, () => setTimeout(() => {
+      if (running) return;
+      refresh();
+    }, 100));
+  });
+  refresh();
+};
+
 /** 挂载 solid-js 组件 */
 const mountComponents = (id, fc) => {
   const dom = document.createElement('div');
   dom.id = id;
+  // TODO:
+  // 目前 solidjs 的所有事件都是在 document 上监听的
+  // 所以现在没法阻止脚本元素上的事件触发原网页的快捷键
+  // 需要等待 solidjs 更新
+  // https://github.com/solidjs/solid/issues/1786
+  //
+  // ['click', 'keydown', 'keypress', 'keyup'].forEach((eventName) =>
+  //   dom.addEventListener(eventName, (e: Event) => e?.stopPropagation()),
+  // );
   document.body.appendChild(dom);
   const shadowDom = dom.attachShadow({
     mode: 'open'
@@ -807,6 +839,7 @@ const defaultOption = {
     enabled: 'ontouchstart' in document.documentElement,
     overturn: false
   },
+  firstPageFill: true,
   disableZoom: false,
   darkMode: false,
   swapTurnPage: false,
@@ -1100,6 +1133,7 @@ const handleComicData = (imgList, fillEffect) => {
       } else {
         imgCache = i;
       }
+      if (Reflect.has(fillEffect, i)) Reflect.deleteProperty(fillEffect, i);
     } else {
       if (imgCache !== null) {
         const nowFillIndex = findFillIndex(i, fillEffect);
@@ -1336,7 +1370,7 @@ const updatePageData = state => {
       scrollMode
     }
   } = state;
-  if (onePageMode || scrollMode) state.pageList = imgList.map((_, i) => [i]);else state.pageList = handleComicData(imgList, fillEffect);
+  if (onePageMode || scrollMode || imgList.length <= 1) state.pageList = imgList.map((_, i) => [i]);else state.pageList = handleComicData(imgList, fillEffect);
   updateDrag(state);
   updateImgLoadType(state);
 };
@@ -1352,7 +1386,7 @@ const updateImgType = (state, draftImg) => {
   if (!width || !height) return;
   const imgRatio = width / height;
   if (imgRatio <= state.proportion.单页比例) {
-    if (imgRatio < state.proportion.条漫比例) draftImg.type = 'vertical';else draftImg.type = '';
+    draftImg.type = imgRatio < state.proportion.条漫比例 ? 'vertical' : '';
   } else {
     draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
   }
@@ -1664,13 +1698,13 @@ const ComicImg = props => {
     typeof _ref$ === "function" ? web.use(_ref$, _el$) : imgRef = _el$;
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.img,
-        _v$2 = props.img.width ? \`\${props.img.width}px\` : undefined,
+        _v$2 = store.option.scrollMode && props.img.width ? \`\${props.img.width}px\` : undefined,
         _v$3 = props.img.loadType === 'wait' ? '' : props.img.src,
         _v$4 = \`\${props.index}\`,
         _v$5 = type().show,
         _v$6 = type().fill,
-        _v$7 = props.img.type,
-        _v$8 = props.img.loadType;
+        _v$7 = props.img.type || undefined,
+        _v$8 = props.img.loadType === 'loaded' ? undefined : props.img.loadType;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("--width", _v$2) : _el$.style.removeProperty("--width"));
       _v$3 !== _p$._v$3 && web.setAttribute(_el$, "src", _p$._v$3 = _v$3);
@@ -2139,6 +2173,16 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
   onChange: () => {
     setOption(draftOption => {
       draftOption.swapTurnPage = !draftOption.swapTurnPage;
+    });
+  }
+}), web.createComponent(SettingsItemSwitch, {
+  name: "\\u9ED8\\u8BA4\\u542F\\u7528\\u9996\\u9875\\u586B\\u5145",
+  get value() {
+    return store.option.firstPageFill;
+  },
+  onChange: () => {
+    setOption(draftOption => {
+      draftOption.firstPageFill = !draftOption.firstPageFill;
     });
   }
 }), web.createComponent(SettingsItem, {
@@ -2798,6 +2842,7 @@ const useInit$1 = (props, rootRef) => {
 
       // 处理初始化
       if (!state.imgList.length) {
+        state.fillEffect[-1] = state.option.firstPageFill;
         state.imgList = props.imgList.map(imgUrl => ({
           type: '',
           src: imgUrl,
@@ -2873,9 +2918,7 @@ const useInit$1 = (props, rootRef) => {
 const _tmpl$$8 = /*#__PURE__*/web.template(\`<div role="presentation" tabindex="-1">\`);
 const MangaStyle = css$1;
 solidJs.enableScheduling();
-/**
- * 漫画组件
- */
+/** 漫画组件 */
 const Manga = props => {
   let rootRef;
   solidJs.onMount(() => {
@@ -3317,8 +3360,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
 const _tmpl$ = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$3 = /*#__PURE__*/web.template(\`<h3>\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<ul>\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<li>\`);
+  _tmpl$4 = /*#__PURE__*/web.template(\`<ul><li>\`);
 
 /**
  * 对所有支持站点页面的初始化操作的封装
@@ -3348,17 +3390,22 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.2.0](https://github.com/hymbz/ComicReadScript/compare/v6.1.0...v6.2.0) (2023-06-27)
+## [6.3.0](https://github.com/hymbz/ComicReadScript/compare/v6.2.0...v6.3.0) (2023-07-09)
 
 
 ### Features
 
-* :sparkles: 增加 左右翻页键交换 功能 ([4d67c31](https://github.com/hymbz/ComicReadScript/commit/4d67c3125717ee562960c1cdf4bd31e42e1648e3))
+* :sparkles: 增加关闭首页填充的设置项 ([a0c092c](https://github.com/hymbz/ComicReadScript/commit/a0c092c8f4c2fda0b34fa9124cfa45eded93decd))
 
 
-### Performance Improvements
+### Bug Fixes
 
-* :zap: 为 ehentai 匹配 nhentai 失败后的提示增加跳转链接 ([1c56657](https://github.com/hymbz/ComicReadScript/commit/1c566577dcc57ce27f2f357d231668f806510483))
+* :bug: 修复某些情况下页面填充效果异常的 bug ([2935fd7](https://github.com/hymbz/ComicReadScript/commit/2935fd78dbbb1c844d0b5218368211a57ebe1b1a))
+* :bug: 修复 dmzj 改版导致的 bug ([9b7f3d6](https://github.com/hymbz/ComicReadScript/commit/9b7f3d6297b5a4e8998d6a724cfc64b461e6f68f))
+
+### Removed
+
+* 因为改版后失效的缘故，删掉了 dmzj 的样式美化和解除吐槽字数限制的功能
 \`;
     toast(() => [(() => {
       const _el$ = _tmpl$();
@@ -3381,17 +3428,9 @@ const useInit = async (name, defaultOptions = {}) => {
               })();
             case '*':
               return (() => {
-                const _el$5 = _tmpl$4();
-                web.insert(_el$5, web.createComponent(solidJs.For, {
-                  get each() {
-                    return mdText.match(/(?<=:.+?: ).+?(?= \\()/);
-                  },
-                  children: item => (() => {
-                    const _el$6 = _tmpl$5();
-                    web.insert(_el$6, item);
-                    return _el$6;
-                  })()
-                }));
+                const _el$5 = _tmpl$4(),
+                  _el$6 = _el$5.firstChild;
+                web.insert(_el$6, () => mdText.replace(/^\\* /, '').replace(/^:\\w+?: /, '').replace(/(?<=^.*)\\(\\[\\w+\\]\\(.+?\\)\\)/, ''));
                 return _el$5;
               })();
             default:
@@ -3526,6 +3565,7 @@ const useInit = async (name, defaultOptions = {}) => {
   };
 };
 
+exports.autoUpdate = autoUpdate;
 exports.dataToParams = dataToParams;
 exports.difference = difference;
 exports.insertNode = insertNode;
@@ -3548,6 +3588,7 @@ exports.useManga = useManga;
 exports.useSiteOptions = useSiteOptions;
 exports.useSpeedDial = useSpeedDial;
 exports.wait = wait;
+exports.waitDom = waitDom;
 `
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
@@ -4114,28 +4155,23 @@ const useComicDetail = comicId => {
   return data;
 };
 
+/** 根据漫画拼音简称找到对应的 id */
+const getComicId = async py => {
+  const res = await main.request(`https://manhua.dmzj.com/api/v1/comic2/comic/detail?${new URLSearchParams({
+    channel: 'pc',
+    app_name: 'comic',
+    version: '1.0.0',
+    timestamp: `${Date.now()}`,
+    uid: '',
+    comic_py: py
+  }).toString()}`);
+  return JSON.parse(res.responseText).data?.comicInfo?.id;
+};
+
 const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2_title2"><span class="h2_icon h2_icon22"></span><h2> `),
-  _tmpl$2 = /*#__PURE__*/web.template(`<div class="cartoon_online_border"><ul></ul><div class="clearfix">`),
+  _tmpl$2 = /*#__PURE__*/web.template(`<div class="cartoon_online_border_other"><ul></ul><div class="clearfix">`),
   _tmpl$3 = /*#__PURE__*/web.template(`<li><a target="_blank">`);
-
 (async () => {
-  // 某些隐藏漫画虽然被删掉了 PC 端页面，但其实手机版的网页依然还在
-  // 所以当跳转至某部漫画的 PC 端页面被提示「页面找不到」时，就先跳转至手机版的页面去
-  if (document.title === '页面找不到') {
-    // 测试例子：https://manhua.dmzj.com/yanquan/48713.shtml
-    const [, comicName, _chapter_id] = window.location.pathname.split(/[./]/);
-    const res = await main.request(`https://manhua.dmzj.com/${comicName}`);
-    const _comic_id = /g_comic_id = "(\d+)/.exec(res.responseText)?.[1];
-    if (!_comic_id) {
-      console.error('无法跳转至手机版页面', res);
-      // eslint-disable-next-line no-alert
-      alert('无法跳转至手机版页面');
-      return;
-    }
-    window.location.href = `https://m.dmzj.com/view/${_comic_id}/${_chapter_id}.html`;
-    return;
-  }
-
   // 通过 rss 链接，在作者作品页里添加上隐藏漫画的链接
   if (window.location.pathname.includes('/tags/')) {
     const res = await main.request(main.querySelector('a.rss').href, {
@@ -4166,20 +4202,26 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2
     return;
   }
 
-  // 跳过漫画目录、漫画页外的其他页面
-  if (!Reflect.has(unsafeWindow, 'g_comic_name')) return;
-  if (!Reflect.has(unsafeWindow, 'g_chapter_name')) {
-    // 判断当前页是漫画详情页
-
+  // 判断当前页是漫画详情页
+  if (/^\/[^/]*?\/?$/.test(window.location.pathname)) {
+    await main.waitDom('.newpl_ans');
     // 判断漫画被禁
     // 测试例子：https://manhua.dmzj.com/yanquan/
     if (main.querySelector('.cartoon_online_border > img')) {
       main.querySelector('.cartoon_online_border').innerHTML = '获取漫画数据中';
+      const comicPy = window.location.pathname.match(/(?<=^\/).*?(?=\/?$)/)?.[0];
+      if (!comicPy) {
+        main.toast.error('漫画数据获取失败', {
+          duration: Infinity
+        });
+        throw new Error('获取漫画拼音简称失败');
+      }
+      const comicId = await getComicId(comicPy);
 
       // 删掉原有的章节 dom
-      main.querySelectorAll('.odd_anim_title ~ div').forEach(e => e.parentNode?.removeChild(e));
+      main.querySelectorAll('.odd_anim_title ~ *').forEach(e => e.parentNode?.removeChild(e));
       web.render(() => {
-        const comicDetail = useComicDetail(g_comic_id);
+        const comicDetail = useComicDetail(comicId);
         return web.createComponent(solidJs.For, {
           get each() {
             return comicDetail.chapters;
@@ -4199,7 +4241,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2
           })(), (() => {
             const _el$6 = _tmpl$2(),
               _el$7 = _el$6.firstChild;
-            _el$6.style.setProperty("border-top", "1px dashed #0187c5");
+            _el$6.style.setProperty("margin-top", "-8px");
             web.insert(_el$7, web.createComponent(solidJs.For, {
               each: list,
               children: ({
@@ -4210,7 +4252,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2
                 const _el$8 = _tmpl$3(),
                   _el$9 = _el$8.firstChild;
                 web.setAttribute(_el$9, "title", title);
-                web.setAttribute(_el$9, "href", `https://manhua.dmzj.com/${g_comic_url}${id}.shtml`);
+                web.setAttribute(_el$9, "href", `https://m.dmzj.com/view/${comicId}/${id}.html`);
                 web.insert(_el$9, title);
                 web.effect(() => _el$9.classList.toggle("color_red", !!(updatetime === comicDetail.last_updatetime)));
                 return _el$8;
@@ -4224,135 +4266,73 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2
     return;
   }
 
+  // 跳过漫画页外的其他页面
+  if (!/^\/.*?\/\d+\.shtml$/.test(window.location.pathname)) return;
+
   // 处理当前页是漫画页的情况
   const {
-    options,
     setManga,
-    init,
-    onOptionChange
-  } = await main.useInit('dmzj', {
-    解除吐槽的字数限制: true
-  });
-
-  // 切换至上下翻页阅读
-  if ($.cookie('display_mode') === '0') unsafeWindow.qiehuan();
-
-  // 根据漫画模式下的夜间模式切换样式
-  if (options.option?.darkMode === false) {
-    document.body.classList.add('day');
-  }
-  onOptionChange(option => {
-    // 监听漫画模式下的夜间模式切换，进行实时切换
-    if (option.option?.darkMode) document.body.classList.remove('day');else document.body.classList.add('day');
-  });
-
-  // 添加自定义样式修改
-  await GM.addStyle(`
-    ${JSON.parse(await GM.getResourceText('dmzj_style')).sections[0].code}
-
-    /* 修复和 dmzj_style 的冲突 */
-    .mainNav {
-      display: none !important
-    }
-
-    /* 增加日间模式的样式 */
-    body.day {
-      background-color: white !important
-    }
-    body.day .header-box {
-      background-color: #DDD !important;
-      box-shadow: 0 1px 2px white
-    }
-    body.day .comic_gd_fb .gd_input {
-      color: #666;
-      background: white
-    }
-  `);
+    init
+  } = await main.useInit('dmzj');
   setManga({
-    onNext: main.querySelectorClick('#next_chapter'),
-    onPrev: main.querySelectorClick('#prev_chapter'),
     onExit: isEnd => {
-      if (isEnd) {
-        unsafeWindow.huPoint();
-        main.scrollIntoView('#hd');
-      }
+      if (isEnd) setTimeout(() => main.scrollIntoView('#hd'));
       setManga({
         show: false
       });
     }
   });
-  init(() => main.querySelectorAll('.inner_img img').map(e => e.getAttribute('data-original')).filter(src => src));
 
-  // 修改发表吐槽的函数，删去字数判断。只是删去了原函数的一个判断条件而已，所以将这段压缩了一下
-  if (options.解除吐槽的字数限制) {
-    const intervalID = setInterval(() => {
-      if (!unsafeWindow.addpoint) return;
-      clearInterval(intervalID);
-      // eslint-disable-next-line
-      unsafeWindow.addpoint = function () {
-        const e = $('#gdInput').val();
-        const c = $('input[name=length]').val();
-        if (e == '') {
-          alert('沉默是你的个性，但还是吐个槽吧！');
-          return false;
-        } else {
-          if ($.trim(e) == '') {
-            alert('空寂是你的个性，但还是吐个槽吧！');
-            return false;
-          }
-        }
-        const d = $('#suBtn');
-        const b = d.attr('onclick');
-        const a = d.html();
-        d.attr('onclick', '').html('发表中..').css({
-          'background': '#eee',
-          'color': '#999',
-          'cursor': 'not-allowed'
-        });
-        if (is_login) {
-          $.ajax({
-            type: 'get',
-            url: `${comicUrl}/api/viewpoint/add`,
-            dataType: 'jsonp',
-            jsonp: 'callback',
-            jsonpCallback: 'success_jsonpCallback_201508281119',
-            data: `type=${type}&type_id=${comic_id}&chapter_id=${chapter_id}&uid=${uid}&nickname=${nickname}&title=${encodeURIComponent(e)}`,
-            success: function (f) {
-              if (f.result == 1000) {
-                $('#gdInput').val('');
-                if ($('#moreLi').length > 0) {
-                  $('#moreLi').before(`<li><a href="javascript:;"  class="c9 said" onclick="clickZ($(this));clickY($(this))"  vote_id="${f.data.id}"  >${e}</a></li>`);
-                } else {
-                  $('#tc').hide();
-                  if (c == undefined) {
-                    $('.comic_gd_li').append(`<li><a href="javascript:;"  class="c0 said" onclick="clickZ($(this));clickY($(this))"  vote_id="${f.data.id}" >${e}</a></li>`);
-                  } else {
-                    if (c > 9) {
-                      $('.comic_gd_li').append(`<li><a href="javascript:;"  class="c9 said" onclick="clickZ($(this));clickY($(this))"  vote_id="${f.data.id}" >${e}</a></li>`);
-                    } else {
-                      $('.comic_gd_li').append(`<li><a href="javascript:;"  onclick="clickZ($(this));clickY($(this))" class="c${c} said"    vote_id="${f.data.id}">${e}</a></li>`);
-                    }
-                  }
-                }
-                alert('吐槽成功');
-              } else {
-                if (f.result == 2001) {
-                  $('body').append(zcHtml);
-                  zcClick();
-                } else {
-                  alert(f.msg);
-                }
-              }
-              d.attr({
-                'onclick': b,
-                'style': ''
-              }).html(a);
-            }
-          });
-        }
-      };
-    }, 2000);
-  }
+  /** 切换至上下滚动阅读 */
+  const waitSwitchScroll = async () => {
+    await main.waitDom('#qiehuan_txt');
+    await main.wait(() => {
+      const dom = main.querySelector('#qiehuan_txt');
+      if (!dom) return;
+      if (dom.innerText !== '切换到上下滚动阅读') return true;
+      dom.click();
+    });
+  };
+  const getImgList = async () => {
+    await waitSwitchScroll();
+    await main.waitDom('.comic_wraCon img');
+    return main.querySelectorAll('.comic_wraCon img').map(e => e.src);
+  };
+
+  /** 当前是否跳到了上/下一话 */
+  let isJumped = false;
+  ['#next_chapter', 'prev_chapter', 'btm_chapter_btn'].forEach(selector => main.querySelector(selector)?.addEventListener('click', () => {
+    isJumped = true;
+  }));
+  const testButton = selector => {
+    const dom = main.querySelector(selector);
+    if (dom && dom.innerText) return () => dom.click();
+  };
+  // 因为上/下一话的按钮不会立即出现，所以加一个延时
+  const updateChapterJump = (num = 0) => {
+    if (num >= 10) return;
+    setManga({
+      onNext: testButton('#next_chapter'),
+      onPrev: testButton('#prev_chapter')
+    });
+    window.setTimeout(updateChapterJump, num * 200, num + 1);
+  };
+  let imgList = [];
+  main.autoUpdate(async () => {
+    updateChapterJump();
+    let newImgList = await getImgList();
+    if (isJumped)
+      // 如果当前跳到了上/下一话，就不断循环等待检测到新的图片列表
+      while (isJumped && main.isEqualArray(newImgList, imgList)) {
+        newImgList = await getImgList();
+      } else if (main.isEqualArray(newImgList, imgList)) return;
+    imgList = newImgList;
+    // 先将 imgList 清空以便 activePageIndex 归零
+    setManga({
+      imgList: []
+    });
+    init(() => imgList);
+  });
 })();
 
       break;
@@ -4376,9 +4356,7 @@ const getChapterInfo = async (comicId, chapterId) => {
     options,
     setManga,
     init
-  } = await main.useInit('dmzj', {
-    解除吐槽的字数限制: true
-  });
+  } = await main.useInit('dmzj');
 
   // 分别处理目录页和漫画页
   switch (window.location.pathname.split('/')[1]) {
@@ -4506,7 +4484,8 @@ const getChapterInfo = async (comicId, chapterId) => {
           } : undefined,
           onPrev: prev_chap_id ? () => {
             window.location.href = `https://m.dmzj.com/view/${comic_id}/${prev_chap_id}.html`;
-          } : undefined
+          } : undefined,
+          editButtonList: e => e
         });
         const showComic = init(() => {
           if (page_url.length) return page_url;
@@ -4542,7 +4521,7 @@ const turnPage = chapterId => {
   };
 };
 (async () => {
-  await main.wait('.head_wz');
+  await main.waitDom('.head_wz');
   // 只在漫画页内运行
   const comicId = main.querySelector('.head_wz [id]')?.id;
   const chapterId = window.location.pathname.match(chapterIdRe)?.[0];
@@ -4962,10 +4941,20 @@ const main = require('main');
       });
     });
   };
-  let running = false;
-  const handleUrlChange = async () => {
-    running = true;
-    await main.wait('footer .HG_GAME_JS_BRIDGE__wrapper');
+  let lastUrl = window.location.href;
+  main.autoUpdate(async () => {
+    if (window.location.href === lastUrl) return;
+    lastUrl = window.location.href;
+    if (!lastUrl.includes('episode')) {
+      setFab({
+        show: false
+      });
+      setManga({
+        show: false
+      });
+      return;
+    }
+    await main.waitDom('footer .HG_GAME_JS_BRIDGE__wrapper');
 
     // 先将 imgList 清空以便 activePageIndex 归零
     setManga({
@@ -4976,26 +4965,7 @@ const main = require('main');
       onPrev: main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__prev a'),
       onNext: main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a')
     });
-    running = false;
-  };
-  let lastUrl = window.location.href;
-  ['click', 'popstate'].forEach(eventName => {
-    window.addEventListener(eventName, () => setTimeout(() => {
-      if (running || window.location.href === lastUrl) return;
-      lastUrl = window.location.href;
-      if (!lastUrl.includes('episode')) {
-        setFab({
-          show: false
-        });
-        setManga({
-          show: false
-        });
-        return;
-      }
-      handleUrlChange();
-    }, 100));
   });
-  handleUrlChange();
 })();
 
       break;
@@ -5424,6 +5394,7 @@ const defaultOption = {
     enabled: 'ontouchstart' in document.documentElement,
     overturn: false
   },
+  firstPageFill: true,
   disableZoom: false,
   darkMode: false,
   swapTurnPage: false,
