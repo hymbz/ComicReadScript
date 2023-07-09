@@ -11,7 +11,6 @@ import { setState, store } from './hooks/useStore';
 import { IconButton } from '../IconButton';
 import { SettingPanel } from './components/SettingPanel';
 
-import classes from './index.module.css';
 import {
   handleMangaFlowScroll,
   jumpBackPage,
@@ -21,6 +20,8 @@ import {
   switchFillEffect,
   updatePageData,
 } from './hooks/useStore/slice';
+
+import classes from './index.module.css';
 
 interface DefaultSettingsButtonProps {
   /** 触发鼠标离开工具栏的事件 */

@@ -28,7 +28,6 @@ const resourceList: Record<string, [string, string] | [string]> = {
   dmzjDecrypt: [
     'https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199',
   ],
-  dmzj_style: ['https://userstyles.org/styles/chrome/119945.json'],
 };
 const resource = {
   prod: Object.fromEntries(

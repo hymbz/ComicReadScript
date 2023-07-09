@@ -15,7 +15,7 @@ pnpm dev
 先在站点漫画页的网页控制台执行下列代码找出网页内的自定义全局变量
 
 ```js
-iframe = document.createElement("iframe", { url: "about:blank" });
+const iframe = document.createElement("iframe", { url: "about:blank" });
 iframe.style.display = "none";
 document.body.appendChild(iframe);
 

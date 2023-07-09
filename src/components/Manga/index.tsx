@@ -53,9 +53,7 @@ export interface MangaProps {
   editSettingList?: State['editSettingList'];
 }
 
-/**
- * 漫画组件
- */
+/** 漫画组件 */
 export const Manga: Component<MangaProps> = (props) => {
   let rootRef: HTMLDivElement;
 

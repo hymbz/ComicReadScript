@@ -43,8 +43,7 @@ export const insertNode = (
 /** 返回 Dom 的点击函数 */
 export const querySelectorClick = (selector: string) => {
   const dom = querySelector(selector);
-  if (!dom) return undefined;
-  return () => dom.click();
+  if (dom) return () => dom.click();
 };
 
 /** 判断两个列表中包含的值是否相同 */
@@ -140,16 +139,19 @@ export const needDarkMode = (hexColor: string) => {
   return yiq < 128;
 };
 
-/** 等到指定的 dom 出现 */
-export const wait = (selector: string) =>
+/** 等到传入的函数返回 true */
+export const wait = (fn: () => boolean | undefined) =>
   new Promise<void>((resolve) => {
     const id = window.setInterval(() => {
-      const dom = querySelector(selector);
-      if (!dom) return;
+      if (!fn()) return;
       window.clearInterval(id);
       resolve();
     }, 100);
   });
+
+/** 等到指定的 dom 出现 */
+export const waitDom = (selector: string) =>
+  wait(() => !!querySelector(selector));
 
 /**
  * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
@@ -167,4 +169,32 @@ export const difference = <T extends object>(a: T, b: T): Partial<T> => {
     } else if (a[key] !== b[key]) res[key] = a[key];
   }
   return res;
+};
+
+/**
+ * 通过监视点击等会触发动态加载的事件，在触发动态加载后更新图片列表等
+ * @param update 动态加载后的重新加载
+ */
+export const autoUpdate = (update: () => Promise<void>) => {
+  let running = false;
+
+  const refresh = async () => {
+    running = true;
+    try {
+      await update();
+    } finally {
+      running = false;
+    }
+  };
+
+  ['click', 'popstate'].forEach((eventName) => {
+    window.addEventListener(eventName, () =>
+      setTimeout(() => {
+        if (running) return;
+        refresh();
+      }, 100),
+    );
+  });
+
+  refresh();
 };

@@ -38,6 +38,8 @@ const publicConfig = {
     'no-console': 'off',
     // 允许 continue
     'no-continue': 'off',
+    // 允许在循环中使用 await
+    'no-await-in-loop': 'off',
 
     // 允许 any 类型的分配
     'no-unsafe-assignment': 'off',
@@ -55,6 +57,8 @@ const publicConfig = {
     // 判断引用循环时跳过动态导入
     'import/no-cycle': ['warn', { allowUnsafeDynamicCyclicDependency: true }],
     'import/no-unresolved': 'off',
+
+    'consistent-return': 'off',
   },
 };
 

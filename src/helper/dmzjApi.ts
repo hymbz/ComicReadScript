@@ -171,3 +171,18 @@ export const useComicDetail = (comicId: string) => {
 
   return data;
 };
+
+/** 根据漫画拼音简称找到对应的 id */
+export const getComicId = async (py: string) => {
+  const res = await request(
+    `https://manhua.dmzj.com/api/v1/comic2/comic/detail?${new URLSearchParams({
+      channel: 'pc',
+      app_name: 'comic',
+      version: '1.0.0',
+      timestamp: `${Date.now()}`,
+      uid: '',
+      comic_py: py,
+    }).toString()}`,
+  );
+  return JSON.parse(res.responseText).data?.comicInfo?.id as string;
+};

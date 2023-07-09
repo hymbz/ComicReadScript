@@ -5,47 +5,17 @@ import {
   querySelector,
   querySelectorAll,
   request,
-  querySelectorClick,
   scrollIntoView,
   useInit,
+  waitDom,
+  autoUpdate,
+  isEqualArray,
+  wait,
+  toast,
 } from 'main';
-import { useComicDetail } from '../helper/dmzjApi';
-
-declare const g_comic_url: string;
-declare const g_comic_id: string;
-declare const $: any;
-
-// 解除吐槽的字数限制 功能部分引用的原代码使用到的变量
-declare const is_login: any;
-declare const comicUrl: any;
-declare const type: any;
-declare const comic_id: any;
-declare const chapter_id: any;
-declare const uid: any;
-declare const nickname: any;
-declare const zcHtml: any;
-declare const zcClick: any;
+import { getComicId, useComicDetail } from '../helper/dmzjApi';
 
 (async () => {
-  // 某些隐藏漫画虽然被删掉了 PC 端页面，但其实手机版的网页依然还在
-  // 所以当跳转至某部漫画的 PC 端页面被提示「页面找不到」时，就先跳转至手机版的页面去
-  if (document.title === '页面找不到') {
-    // 测试例子：https://manhua.dmzj.com/yanquan/48713.shtml
-    const [, comicName, _chapter_id] = window.location.pathname.split(/[./]/);
-    const res = await request(`https://manhua.dmzj.com/${comicName}`);
-
-    const _comic_id = /g_comic_id = "(\d+)/.exec(res.responseText)?.[1];
-    if (!_comic_id) {
-      console.error('无法跳转至手机版页面', res);
-      // eslint-disable-next-line no-alert
-      alert('无法跳转至手机版页面');
-      return;
-    }
-
-    window.location.href = `https://m.dmzj.com/view/${_comic_id}/${_chapter_id}.html`;
-    return;
-  }
-
   // 通过 rss 链接，在作者作品页里添加上隐藏漫画的链接
   if (window.location.pathname.includes('/tags/')) {
     const res = await request(querySelector<HTMLAreaElement>('a.rss')!.href, {
@@ -89,24 +59,29 @@ declare const zcClick: any;
     return;
   }
 
-  // 跳过漫画目录、漫画页外的其他页面
-  if (!Reflect.has(unsafeWindow, 'g_comic_name')) return;
-
-  if (!Reflect.has(unsafeWindow, 'g_chapter_name')) {
-    // 判断当前页是漫画详情页
-
+  // 判断当前页是漫画详情页
+  if (/^\/[^/]*?\/?$/.test(window.location.pathname)) {
+    await waitDom('.newpl_ans');
     // 判断漫画被禁
     // 测试例子：https://manhua.dmzj.com/yanquan/
     if (querySelector('.cartoon_online_border > img')) {
       querySelector('.cartoon_online_border')!.innerHTML = '获取漫画数据中';
 
+      const comicPy =
+        window.location.pathname.match(/(?<=^\/).*?(?=\/?$)/)?.[0];
+      if (!comicPy) {
+        toast.error('漫画数据获取失败', { duration: Infinity });
+        throw new Error('获取漫画拼音简称失败');
+      }
+      const comicId = await getComicId(comicPy);
+
       // 删掉原有的章节 dom
-      querySelectorAll('.odd_anim_title ~ div').forEach((e) =>
+      querySelectorAll('.odd_anim_title ~ *').forEach((e) =>
         e.parentNode?.removeChild(e),
       );
 
       render(() => {
-        const comicDetail = useComicDetail(g_comic_id);
+        const comicDetail = useComicDetail(comicId);
 
         return (
           <For each={comicDetail.chapters}>
@@ -124,8 +99,8 @@ declare const zcClick: any;
                   </div>
                 </div>
                 <div
-                  class="cartoon_online_border"
-                  style={{ 'border-top': '1px dashed #0187c5' }}
+                  class="cartoon_online_border_other"
+                  style={{ 'margin-top': '-8px' }}
                 >
                   <ul>
                     <For each={list}>
@@ -134,7 +109,7 @@ declare const zcClick: any;
                           <a
                             target="_blank"
                             title={title}
-                            href={`https://manhua.dmzj.com/${g_comic_url}${id}.shtml`}
+                            href={`https://m.dmzj.com/view/${comicId}/${id}.html`}
                             classList={{
                               color_red:
                                 updatetime === comicDetail.last_updatetime,
@@ -157,80 +132,77 @@ declare const zcClick: any;
     return;
   }
 
+  // 跳过漫画页外的其他页面
+  if (!/^\/.*?\/\d+\.shtml$/.test(window.location.pathname)) return;
+
   // 处理当前页是漫画页的情况
-  const { options, setManga, init, onOptionChange } = await useInit('dmzj', {
-    解除吐槽的字数限制: true,
-  });
-
-  // 切换至上下翻页阅读
-  if ($.cookie('display_mode') === '0') unsafeWindow.qiehuan();
-
-  // 根据漫画模式下的夜间模式切换样式
-  if (options.option?.darkMode !== true) {
-    document.body.classList.add('day');
-  }
-
-  onOptionChange((option) => {
-    // 监听漫画模式下的夜间模式切换，进行实时切换
-    if (option.option?.darkMode) document.body.classList.remove('day');
-    else document.body.classList.add('day');
-  });
-
-  // 添加自定义样式修改
-  await GM.addStyle(`
-    ${JSON.parse(await GM.getResourceText('dmzj_style')).sections[0].code}
-
-    /* 修复和 dmzj_style 的冲突 */
-    .mainNav {
-      display: none !important
-    }
-
-    /* 增加日间模式的样式 */
-    body.day {
-      background-color: white !important
-    }
-    body.day .header-box {
-      background-color: #DDD !important;
-      box-shadow: 0 1px 2px white
-    }
-    body.day .comic_gd_fb .gd_input {
-      color: #666;
-      background: white
-    }
-
-    /* 修复 dmzj_style 将顶栏固定显示导致的点击图片跳转到下一张时图片顶部会被遮挡一部分 */
-    a[name] {
-      padding-top: 32px;
-      display: block;
-    }
-  `);
+  const { setManga, init } = await useInit('dmzj');
 
   setManga({
-    onNext: querySelectorClick('#next_chapter'),
-    onPrev: querySelectorClick('#prev_chapter'),
     onExit: (isEnd) => {
-      if (isEnd) {
-        unsafeWindow.huPoint();
-        scrollIntoView('#hd');
-      }
+      if (isEnd) setTimeout(() => scrollIntoView('#hd'));
       setManga({ show: false });
     },
   });
 
-  init(
-    () =>
-      querySelectorAll('.inner_img img')
-        .map((e) => e.getAttribute('data-original'))
-        .filter((src) => src) as string[],
+  /** 切换至上下滚动阅读 */
+  const waitSwitchScroll = async (): Promise<void> => {
+    await waitDom('#qiehuan_txt');
+    await wait(() => {
+      const dom = querySelector('#qiehuan_txt');
+      if (!dom) return;
+      if (dom.innerText !== '切换到上下滚动阅读') return true;
+      dom.click();
+    });
+  };
+
+  const getImgList = async () => {
+    await waitSwitchScroll();
+    await waitDom('.comic_wraCon img');
+    return querySelectorAll<HTMLImageElement>('.comic_wraCon img').map(
+      (e) => e.src,
+    );
+  };
+
+  /** 当前是否跳到了上/下一话 */
+  let isJumped = false;
+  ['#next_chapter', 'prev_chapter', 'btm_chapter_btn'].forEach((selector) =>
+    querySelector(selector)?.addEventListener('click', () => {
+      isJumped = true;
+    }),
   );
 
-  // 修改发表吐槽的函数，删去字数判断。只是删去了原函数的一个判断条件而已，所以将这段压缩了一下
-  if (options.解除吐槽的字数限制) {
-    const intervalID = setInterval(() => {
-      if (!unsafeWindow.addpoint) return;
-      clearInterval(intervalID);
-      // eslint-disable-next-line
-      unsafeWindow.addpoint = function () { const e = $('#gdInput').val(); const c = $('input[name=length]').val(); if (e == '') { alert('沉默是你的个性，但还是吐个槽吧！'); return false; } else { if ($.trim(e) == '') { alert('空寂是你的个性，但还是吐个槽吧！'); return false; } } const d = $('#suBtn'); const b = d.attr('onclick'); const a = d.html(); d.attr('onclick', '').html('发表中..').css({ 'background': '#eee', 'color': '#999', 'cursor': 'not-allowed' }); if (is_login) { $.ajax({ type: 'get', url: `${comicUrl}/api/viewpoint/add`, dataType: 'jsonp', jsonp: 'callback', jsonpCallback: 'success_jsonpCallback_201508281119', data: `type=${type}&type_id=${comic_id}&chapter_id=${chapter_id}&uid=${uid}&nickname=${nickname}&title=${encodeURIComponent(e)}`, success: function (f) { if (f.result == 1000) { $('#gdInput').val(''); if ($('#moreLi').length > 0) { $('#moreLi').before(`<li><a href="javascript:;"  class="c9 said" onclick="clickZ($(this));clickY($(this))"  vote_id="${f.data.id}"  >${e}</a></li>`); } else { $('#tc').hide(); if (c == undefined) { $('.comic_gd_li').append(`<li><a href="javascript:;"  class="c0 said" onclick="clickZ($(this));clickY($(this))"  vote_id="${f.data.id}" >${e}</a></li>`); } else { if (c > 9) { $('.comic_gd_li').append(`<li><a href="javascript:;"  class="c9 said" onclick="clickZ($(this));clickY($(this))"  vote_id="${f.data.id}" >${e}</a></li>`); } else { $('.comic_gd_li').append(`<li><a href="javascript:;"  onclick="clickZ($(this));clickY($(this))" class="c${c} said"    vote_id="${f.data.id}">${e}</a></li>`); } } } alert('吐槽成功'); } else { if (f.result == 2001) { $('body').append(zcHtml); zcClick(); } else { alert(f.msg); } } d.attr({ 'onclick': b, 'style': '' }).html(a); } }); } };
-    }, 2000);
-  }
+  const testButton = (selector: string) => {
+    const dom = querySelector(selector);
+    if (dom && dom.innerText) return () => dom.click();
+  };
+  // 因为上/下一话的按钮不会立即出现，所以加一个延时
+  const updateChapterJump = (num = 0) => {
+    if (num >= 10) return;
+    setManga({
+      onNext: testButton('#next_chapter'),
+      onPrev: testButton('#prev_chapter'),
+    });
+    window.setTimeout(updateChapterJump, num * 200, num + 1);
+  };
+
+  let imgList: string[] = [];
+
+  autoUpdate(async () => {
+    updateChapterJump();
+
+    let newImgList = await getImgList();
+
+    if (isJumped)
+      // 如果当前跳到了上/下一话，就不断循环等待检测到新的图片列表
+      while (isJumped && isEqualArray(newImgList, imgList)) {
+        newImgList = await getImgList();
+      }
+    else if (isEqualArray(newImgList, imgList)) return;
+
+    imgList = newImgList;
+    // 先将 imgList 清空以便 activePageIndex 归零
+    setManga({ imgList: [] });
+    init(() => imgList);
+  });
 })();

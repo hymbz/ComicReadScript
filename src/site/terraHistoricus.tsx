@@ -1,4 +1,11 @@
-import { querySelectorClick, useInit, request, plimit, wait } from 'main';
+import {
+  querySelectorClick,
+  useInit,
+  request,
+  plimit,
+  waitDom,
+  autoUpdate,
+} from 'main';
 
 (async () => {
   const { setManga, setFab, init } = await useInit('terraHistoricus');
@@ -25,11 +32,19 @@ import { querySelectorClick, useInit, request, plimit, wait } from 'main';
     );
   };
 
-  let running = false;
+  let lastUrl = window.location.href;
 
-  const handleUrlChange = async () => {
-    running = true;
-    await wait('footer .HG_GAME_JS_BRIDGE__wrapper');
+  autoUpdate(async () => {
+    if (window.location.href === lastUrl) return;
+    lastUrl = window.location.href;
+
+    if (!lastUrl.includes('episode')) {
+      setFab({ show: false });
+      setManga({ show: false });
+      return;
+    }
+
+    await waitDom('footer .HG_GAME_JS_BRIDGE__wrapper');
 
     // 先将 imgList 清空以便 activePageIndex 归零
     setManga({ imgList: [] });
@@ -40,27 +55,5 @@ import { querySelectorClick, useInit, request, plimit, wait } from 'main';
         'footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a',
       ),
     });
-    running = false;
-  };
-
-  let lastUrl = window.location.href;
-
-  ['click', 'popstate'].forEach((eventName) => {
-    window.addEventListener(eventName, () =>
-      setTimeout(() => {
-        if (running || window.location.href === lastUrl) return;
-        lastUrl = window.location.href;
-
-        if (!lastUrl.includes('episode')) {
-          setFab({ show: false });
-          setManga({ show: false });
-          return;
-        }
-
-        handleUrlChange();
-      }, 100),
-    );
   });
-
-  handleUrlChange();
 })();

@@ -121,13 +121,14 @@ export const buildOptions = (
               '',
             );
 
-            if (isDevMode && fileName === 'index') {
-              newCode = [
-                `console.time('脚本启动消耗时间')`,
-                newCode,
-                `console.timeEnd('脚本启动消耗时间')`,
-              ].join('\n');
+            if (fileName === 'index') {
               updateReadme();
+              if (isDevMode)
+                newCode = [
+                  `console.time('脚本启动消耗时间')`,
+                  newCode,
+                  `console.timeEnd('脚本启动消耗时间')`,
+                ].join('\n');
             }
 
             // 为脚本加上油猴的注释

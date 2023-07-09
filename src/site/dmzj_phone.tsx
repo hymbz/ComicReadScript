@@ -12,9 +12,7 @@ import type { ChapterInfo } from '../helper/dmzjApi';
 import { getChapterInfo } from '../helper/dmzjApi';
 
 (async () => {
-  const { options, setManga, init } = await useInit('dmzj', {
-    解除吐槽的字数限制: true,
-  });
+  const { options, setManga, init } = await useInit('dmzj');
 
   // 分别处理目录页和漫画页
   switch (window.location.pathname.split('/')[1]) {
@@ -187,6 +185,7 @@ import { getChapterInfo } from '../helper/dmzjApi';
               window.location.href = `https://m.dmzj.com/view/${comic_id}/${prev_chap_id}.html`;
             }
           : undefined,
+        editButtonList: (e) => e,
       });
 
       const showComic = init(() => {
