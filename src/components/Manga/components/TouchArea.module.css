@@ -28,7 +28,8 @@
 }
 
 .touchArea[data-area="menu"] {
-  flex-basis: 0;
+  flex-basis: 4em;
+  flex-grow: 0;
 }
 
 /* 显示点击区域时 */
