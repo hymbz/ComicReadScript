@@ -47,9 +47,12 @@ export const useInit = async <T extends Record<string, any>>(
                   case '*':
                     return (
                       <ul>
-                        <For each={mdText.match(/(?<=:.+?: ).+?(?= \()/)}>
-                          {(item) => <li>{item}</li>}
-                        </For>
+                        <li>
+                          {mdText
+                            .replace(/^\* /, '')
+                            .replace(/^:\w+?: /, '')
+                            .replace(/(?<=^.*)\(\[\w+\]\(.+?\)\)/, '')}
+                        </li>
                       </ul>
                     );
                   default:
