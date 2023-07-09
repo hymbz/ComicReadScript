@@ -51,6 +51,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
 
       // 处理初始化
       if (!state.imgList.length) {
+        state.fillEffect[-1] = state.option.firstPageFill;
         state.imgList = props.imgList.map((imgUrl) => ({
           type: '',
           src: imgUrl,

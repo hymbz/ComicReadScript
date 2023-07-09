@@ -171,6 +171,16 @@ export const defaultSettingList: SettingList = [
           }}
         />
 
+        <SettingsItemSwitch
+          name="默认启用首页填充"
+          value={store.option.firstPageFill}
+          onChange={() => {
+            setOption((draftOption) => {
+              draftOption.firstPageFill = !draftOption.firstPageFill;
+            });
+          }}
+        />
+
         <SettingsItem name="背景颜色">
           <input
             type="color"

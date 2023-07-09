@@ -18,6 +18,8 @@ export interface Option {
     /** 左右反转点击区域 */
     overturn: boolean;
   };
+  /** 默认启用首页填充 */
+  firstPageFill: boolean;
   /** 自定义背景色 */
   customBackground?: string;
   /** 禁止放大图片 */
@@ -47,6 +49,7 @@ export const defaultOption: Option = {
     enabled: 'ontouchstart' in document.documentElement,
     overturn: false,
   },
+  firstPageFill: true,
   disableZoom: false,
   darkMode: false,
   swapTurnPage: false,
