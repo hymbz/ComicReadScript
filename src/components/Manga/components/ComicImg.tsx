@@ -2,7 +2,7 @@ import type { Component } from 'solid-js';
 import { createMemo } from 'solid-js';
 
 import { setState, store } from '../hooks/useStore';
-import { updateImgType } from '../hooks/useStore/slice';
+import { activePage, updateImgType } from '../hooks/useStore/slice';
 
 import classes from '../index.module.css';
 
@@ -16,6 +16,7 @@ const handleImgLoaded = (i: number, e: HTMLImageElement) => {
   setState((state) => {
     const img = state.imgList[i];
     if (!img) return;
+    if (img.loadType === 'error' && e.src !== img.src) return;
     img.loadType = 'loaded';
     img.height = e.naturalHeight;
     img.width = e.naturalWidth;
@@ -41,27 +42,27 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
 
 /** 漫画图片 */
 export const ComicImg: Component<ComicImgProps> = (props) => {
-  let imgRef: HTMLImageElement;
+  const show = createMemo(
+    () => store.option.scrollMode || activePage().includes(props.index),
+  );
 
-  const type = createMemo(() => {
-    // 卷轴模式下全部显示
-    if (store.option.scrollMode) return { show: '' };
+  const fill = createMemo(() => {
+    if (!show() || props.img.loadType === 'error') return;
 
-    const activePage = store.pageList[store.activePageIndex];
-    if (!activePage?.includes(props.index)) return { show: undefined };
-    return {
-      show: '',
-      fill: ((): undefined | 'left' | 'right' => {
-        const i = activePage.indexOf(-1);
-        if (i === -1) return undefined;
-        return !!i === (store.option.dir === 'rtl') ? 'left' : 'right';
-      })(),
-    };
+    // 判断一下当前是否显示了错误图片
+    const activePageType = activePage().map((i) => store.imgList[i]?.loadType);
+    const errorIndex = activePageType.indexOf('error');
+    if (errorIndex !== -1)
+      return !!errorIndex === (store.option.dir === 'rtl') ? 'left' : 'right';
+
+    // 最后判断是否有填充页
+    const fillIndex = activePage().indexOf(-1);
+    if (fillIndex !== -1)
+      return !!fillIndex === (store.option.dir === 'rtl') ? 'left' : 'right';
   });
 
   return (
     <img
-      ref={imgRef!}
       class={classes.img}
       style={{
         '--width':
@@ -70,9 +71,9 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
             : undefined,
       }}
       src={props.img.loadType === 'wait' ? '' : props.img.src}
-      alt={`${props.index}`}
-      data-show={type().show}
-      data-fill={type().fill}
+      alt={`${props.index + 1}`}
+      data-show={show() ? '' : undefined}
+      data-fill={fill()}
       data-type={props.img.type || undefined}
       data-load-type={
         props.img.loadType === 'loaded' ? undefined : props.img.loadType

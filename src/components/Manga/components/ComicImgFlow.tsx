@@ -2,16 +2,18 @@ import type { Component } from 'solid-js';
 import { Index } from 'solid-js';
 
 import { ComicImg } from './ComicImg';
+import { ErrorTip } from './ErrorTip';
+
 import { store } from '../hooks/useStore';
 import {
   bindRef,
   handleMangaFlowScroll,
   initPanzoom,
 } from '../hooks/useStore/slice';
-
-import classes from '../index.module.css';
 import { handlePageClick } from './TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
+
+import classes from '../index.module.css';
 
 /**
  * 漫画图片流的容器
@@ -54,6 +56,7 @@ export const ComicImgFlow: Component = () => {
         dir={store.option.dir}
         onClick={useDoubleClick(handleClick, handleDoubleClickZoom)}
       >
+        <ErrorTip />
         <Index each={store.imgList} fallback={<h1>NULL</h1>}>
           {(img, i) => <ComicImg img={img()} index={i} />}
         </Index>

@@ -11,19 +11,19 @@
     display: unset;
   }
 
-  /* 隐藏因为 src 为空而出现的图片加载错误的图 */
-  &[data-load-type="error"],
-  &[data-load-type="wait"] {
-    max-width: 50%;
-    visibility: hidden;
-  }
-
   &[data-fill="left"] {
     transform: translate(50%);
   }
 
   &[data-fill="right"] {
     transform: translate(-50%);
+  }
+
+  /* 加载出错的图片直接隐藏 */
+  &[data-load-type="error"],
+  /* 隐藏因为 src 为空而出现的图片加载错误的图标 */
+  &[data-load-type="wait"] {
+    display: none;
   }
 }
 
@@ -80,5 +80,20 @@
   /* 根据漫画方向调换位置 */
   &[dir="ltr"] {
     flex-direction: row;
+  }
+
+  & > svg {
+    position: absolute;
+    width: 20%;
+    color: var(--text_secondary);
+    background-color: var(--bg);
+
+    &[data-fill="left"] {
+      transform: translate(100%);
+    }
+
+    &[data-fill="right"] {
+      transform: translate(-100%);
+    }
   }
 }

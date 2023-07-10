@@ -37,7 +37,7 @@ const loadImg = (
     .some((index) => {
       if (index === -1) return false;
       const img = state.imgList[index];
-      if (img.loadType !== 'loaded') {
+      if (img.src && img.loadType !== 'loaded') {
         img.loadType = 'loading';
         editNum += 1;
       }
@@ -54,8 +54,10 @@ export const updateImgLoadType = debounce(100, (state: State) => {
   const { imgList, activePageIndex } = state;
 
   // 先将所有加载中的图片状态改为暂停
-  imgList.forEach(({ loadType }, i) => {
-    if (loadType === 'loading' || loadType === 'error')
+  imgList.forEach(({ loadType, src }, i) => {
+    if (!src) {
+      imgList[i].loadType = 'error';
+    } else if (loadType === 'loading' || loadType === 'error')
       imgList[i].loadType = 'wait';
   });
 
@@ -206,12 +208,16 @@ export const setScrollModeImgScale = (newScale: number) => {
   handleMangaFlowScroll();
 };
 
-export const { activeImgIndex, nowFillIndex } = createRoot(() => {
+export const { activeImgIndex, nowFillIndex, activePage } = createRoot(() => {
   const activeImgIndexMemo = createMemo(
     () => store.pageList[store.activePageIndex]?.find((i) => i !== -1) ?? 0,
   );
   const nowFillIndexMemo = createMemo(() =>
     findFillIndex(activeImgIndexMemo(), store.fillEffect),
+  );
+
+  const activePageMemo = createMemo(
+    () => store.pageList[store.activePageIndex],
   );
 
   // 页数发生变动时
@@ -233,6 +239,8 @@ export const { activeImgIndex, nowFillIndex } = createRoot(() => {
     activeImgIndex: activeImgIndexMemo,
     /** 当前所处的图片流 */
     nowFillIndex: nowFillIndexMemo,
+    /** 当前显示页面 */
+    activePage: activePageMemo,
   };
 });
 
