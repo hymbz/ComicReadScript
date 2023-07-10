@@ -1,4 +1,5 @@
 @import "./components/ComicImg.module.css";
+@import "./components/EndPage.module.css";
 @import "./components/Toolbar.module.css";
 @import "./components/Setting.module.css";
 @import "./components/Scrollbar.module.css";

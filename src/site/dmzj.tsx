@@ -13,7 +13,12 @@ import {
   wait,
   toast,
 } from 'main';
-import { getComicId, useComicDetail } from '../helper/dmzjApi';
+import {
+  getChapterInfo,
+  getComicId,
+  getViewpoint,
+  useComicDetail,
+} from '../helper/dmzjApi';
 
 (async () => {
   // 通过 rss 链接，在作者作品页里添加上隐藏漫画的链接
@@ -59,6 +64,14 @@ import { getComicId, useComicDetail } from '../helper/dmzjApi';
     return;
   }
 
+  // eslint-disable-next-line prefer-const
+  let [, comicPy, chapterId] = window.location.pathname.split(/\/|\./);
+  if (!comicPy) {
+    toast.error('漫画数据获取失败', { duration: Infinity });
+    throw new Error('获取漫画拼音简称失败');
+  }
+  const comicId = await getComicId(comicPy);
+
   // 判断当前页是漫画详情页
   if (/^\/[^/]*?\/?$/.test(window.location.pathname)) {
     await waitDom('.newpl_ans');
@@ -66,14 +79,6 @@ import { getComicId, useComicDetail } from '../helper/dmzjApi';
     // 测试例子：https://manhua.dmzj.com/yanquan/
     if (querySelector('.cartoon_online_border > img')) {
       querySelector('.cartoon_online_border')!.innerHTML = '获取漫画数据中';
-
-      const comicPy =
-        window.location.pathname.match(/(?<=^\/).*?(?=\/?$)/)?.[0];
-      if (!comicPy) {
-        toast.error('漫画数据获取失败', { duration: Infinity });
-        throw new Error('获取漫画拼音简称失败');
-      }
-      const comicId = await getComicId(comicPy);
 
       // 删掉原有的章节 dom
       querySelectorAll('.odd_anim_title ~ *').forEach((e) =>
@@ -157,6 +162,7 @@ import { getComicId, useComicDetail } from '../helper/dmzjApi';
   };
 
   const getImgList = async () => {
+    console.log('getImgList');
     await waitSwitchScroll();
     await waitDom('.comic_wraCon img');
     return querySelectorAll<HTMLImageElement>('.comic_wraCon img').map(
@@ -165,44 +171,73 @@ import { getComicId, useComicDetail } from '../helper/dmzjApi';
   };
 
   /** 当前是否跳到了上/下一话 */
-  let isJumped = false;
-  ['#next_chapter', 'prev_chapter', 'btm_chapter_btn'].forEach((selector) =>
-    querySelector(selector)?.addEventListener('click', () => {
-      isJumped = true;
-    }),
-  );
+  let isJumped: '' | 'next' | 'prev' = '';
+  // 通过监听点击上/下一话的按钮来判断当前是否切换了章节
+  // 直接绑定在点击按钮上会失效，所以只能全局监听
+  window.addEventListener('click', (e) => {
+    if (!e.target) return;
+    const target = e.target as HTMLElement;
+    if (
+      target.id === 'prev_chapter' ||
+      target.className === 'btm_chapter_btn fl'
+    ) {
+      isJumped = 'prev';
+    } else if (
+      target.id === 'next_chapter' ||
+      target.className === 'btm_chapter_btn fr'
+    ) {
+      isJumped = 'next';
+    }
+  });
 
-  const testButton = (selector: string) => {
+  const checkButton = (selector: string) => {
     const dom = querySelector(selector);
     if (dom && dom.innerText) return () => dom.click();
   };
-  // 因为上/下一话的按钮不会立即出现，所以加一个延时
   const updateChapterJump = (num = 0) => {
     if (num >= 10) return;
     setManga({
-      onNext: testButton('#next_chapter'),
-      onPrev: testButton('#prev_chapter'),
+      onNext: checkButton('#next_chapter'),
+      onPrev: checkButton('#prev_chapter'),
     });
+    // 因为上/下一话的按钮不会立即出现，所以加一个延时
     window.setTimeout(updateChapterJump, num * 200, num + 1);
   };
+
+  /** 章节信息 */
+  let chapterInfo = await getChapterInfo(comicId, chapterId);
 
   let imgList: string[] = [];
 
   autoUpdate(async () => {
-    updateChapterJump();
-
     let newImgList = await getImgList();
 
-    if (isJumped)
+    if (isJumped) {
       // 如果当前跳到了上/下一话，就不断循环等待检测到新的图片列表
-      while (isJumped && isEqualArray(newImgList, imgList)) {
+      while (isJumped && isEqualArray(newImgList, imgList))
         newImgList = await getImgList();
-      }
-    else if (isEqualArray(newImgList, imgList)) return;
+
+      // 更新切换章节后的 chapterId
+      // TODO: 当前刚改版后的 dmzj 切换章节时 url 不会跟着改变，导致必须这样变扭的获取新章节 id
+      // 但是，这样会导致切换章节后刷新会跳回最开始的页面，之后肯定会改
+      // 等 dmzj 改完后这里要改成直接通过 url 来获取 id
+      //
+      // 包括判断当前是否跳到了上/下一话，也要改成通过监听 url 的改变来实现
+      if (isJumped === 'next' && chapterInfo.next_chap_id)
+        chapterId = `${chapterInfo.next_chap_id}`;
+      else if (isJumped === 'prev' && chapterInfo.prev_chap_id)
+        chapterId = `${chapterInfo.prev_chap_id}`;
+      chapterInfo = await getChapterInfo(comicId, chapterId);
+      isJumped = '';
+    } else if (isEqualArray(newImgList, imgList)) return;
 
     imgList = newImgList;
     // 先将 imgList 清空以便 activePageIndex 归零
     setManga({ imgList: [] });
     init(() => imgList);
+
+    updateChapterJump();
+    const commentList: string[] = await getViewpoint(comicId, chapterId);
+    setManga({ commentList });
   });
 })();

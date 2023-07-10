@@ -6,7 +6,11 @@ import type { Component } from 'solid-js';
 import { throttle } from 'throttle-debounce';
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
-import { setOption, updateImgLoadType } from './hooks/useStore/slice';
+import {
+  setOption,
+  switchOption,
+  updateImgLoadType,
+} from './hooks/useStore/slice';
 import { setState, store } from './hooks/useStore';
 import { needDarkMode } from '../../helper';
 
@@ -49,33 +53,19 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="显示滚动条"
           value={store.option.scrollbar.enabled}
-          onChange={() => {
-            setOption((draftOption) => {
-              draftOption.scrollbar.enabled = !draftOption.scrollbar.enabled;
-            });
-          }}
+          onChange={() => switchOption('scrollbar.enabled')}
         />
         <SettingsItemSwitch
           name="自动隐藏滚动条"
           value={store.option.scrollbar.autoHidden}
           classList={{ [classes.hidden]: !store.option.scrollbar.enabled }}
-          onChange={() => {
-            setOption((draftOption) => {
-              draftOption.scrollbar.autoHidden =
-                !draftOption.scrollbar.autoHidden;
-            });
-          }}
+          onChange={() => switchOption('scrollbar.autoHidden')}
         />
         <SettingsItemSwitch
           name="显示图片加载状态"
           value={store.option.scrollbar.showProgress}
           classList={{ [classes.hidden]: !store.option.scrollbar.enabled }}
-          onChange={() => {
-            setOption((draftOption) => {
-              draftOption.scrollbar.showProgress =
-                !draftOption.scrollbar.showProgress;
-            });
-          }}
+          onChange={() => switchOption('scrollbar.showProgress')}
         />
       </>
     ),
@@ -87,21 +77,13 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="启用点击翻页"
           value={store.option.clickPage.enabled}
-          onChange={() => {
-            setOption((draftOption) => {
-              draftOption.clickPage.enabled = !draftOption.clickPage.enabled;
-            });
-          }}
+          onChange={() => switchOption('clickPage.enabled')}
         />
         <SettingsItemSwitch
           name="左右反转点击区域"
           value={store.option.clickPage.overturn}
           classList={{ [classes.hidden]: !store.option.clickPage.enabled }}
-          onChange={() => {
-            setOption((draftOption) => {
-              draftOption.clickPage.overturn = !draftOption.clickPage.overturn;
-            });
-          }}
+          onChange={() => switchOption('clickPage.overturn')}
         />
         <SettingsItemSwitch
           name="显示点击区域提示"
@@ -117,68 +99,43 @@ export const defaultSettingList: SettingList = [
     ),
   ],
   [
-    '其他',
+    '操作',
     () => (
       <>
         <SettingsItemSwitch
           name="翻页至上/下一话"
           value={store.option.flipToNext}
-          onChange={() => {
-            setOption((draftOption) => {
-              draftOption.flipToNext = !draftOption.flipToNext;
-            });
-          }}
-        />
-
-        <SettingsItemSwitch
-          name="启用夜间模式"
-          value={store.option.darkMode}
-          onChange={() => {
-            setOption((draftOption) => {
-              draftOption.darkMode = !draftOption.darkMode;
-            });
-          }}
-        />
-
-        <SettingsItemSwitch
-          name="始终加载所有图片"
-          value={store.option.alwaysLoadAllImg}
-          onChange={() => {
-            setOption((draftOption) => {
-              draftOption.alwaysLoadAllImg = !draftOption.alwaysLoadAllImg;
-            });
-            setState(updateImgLoadType);
-          }}
-        />
-
-        <SettingsItemSwitch
-          name="禁止放大图片"
-          value={store.option.disableZoom}
-          onChange={() => {
-            setOption((draftOption) => {
-              draftOption.disableZoom = !draftOption.disableZoom;
-            });
-          }}
+          onChange={() => switchOption('clickPageflipToNext')}
         />
 
         <SettingsItemSwitch
           name="左右翻页键交换"
           value={store.option.swapTurnPage}
-          onChange={() => {
-            setOption((draftOption) => {
-              draftOption.swapTurnPage = !draftOption.swapTurnPage;
-            });
-          }}
+          onChange={() => switchOption('swapTurnPage')}
+        />
+      </>
+    ),
+  ],
+  [
+    '显示',
+    () => (
+      <>
+        <SettingsItemSwitch
+          name="启用夜间模式"
+          value={store.option.darkMode}
+          onChange={() => switchOption('darkMode')}
         />
 
         <SettingsItemSwitch
-          name="默认启用首页填充"
-          value={store.option.firstPageFill}
-          onChange={() => {
-            setOption((draftOption) => {
-              draftOption.firstPageFill = !draftOption.firstPageFill;
-            });
-          }}
+          name="禁止放大图片"
+          value={store.option.disableZoom}
+          onChange={() => switchOption('disableZoom')}
+        />
+
+        <SettingsItemSwitch
+          name="在结束页显示评论"
+          value={store.option.showComment}
+          onChange={() => switchOption('showComment')}
         />
 
         <SettingsItem name="背景颜色">
@@ -201,6 +158,27 @@ export const defaultSettingList: SettingList = [
             })}
           />
         </SettingsItem>
+      </>
+    ),
+  ],
+  [
+    '其他',
+    () => (
+      <>
+        <SettingsItemSwitch
+          name="始终加载所有图片"
+          value={store.option.alwaysLoadAllImg}
+          onChange={() => {
+            switchOption('alwaysLoadAllImg');
+            setState(updateImgLoadType);
+          }}
+        />
+
+        <SettingsItemSwitch
+          name="默认启用首页填充"
+          value={store.option.firstPageFill}
+          onChange={() => switchOption('firstPageFill')}
+        />
       </>
     ),
   ],

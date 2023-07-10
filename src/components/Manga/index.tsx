@@ -35,6 +35,8 @@ export interface MangaProps {
   option?: Partial<Option>;
   /** 是否显示 */
   show?: boolean;
+  /** 评论列表 */
+  commentList?: string[];
 
   /** 点击结束页按钮时触发的回调 */
   onExit?: State['onExit'];
@@ -70,7 +72,7 @@ export const Manga: Component<MangaProps> = (props) => {
     <div
       class={classes.root}
       classList={{
-        [classes.hidden]: !props.show ?? false,
+        [classes.hidden]: props.show === false,
         [props.class ?? '']: !!props.class,
         ...props.classList,
       }}

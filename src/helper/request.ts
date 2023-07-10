@@ -1,4 +1,4 @@
-import { sleep } from 'helper';
+import { sleep } from '.';
 import { toast } from '../components/useComponents/Toast';
 
 // 将 xmlHttpRequest 包装为 Promise

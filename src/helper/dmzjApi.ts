@@ -38,10 +38,26 @@ export interface ChapterInfo {
 export const getChapterInfo = async (comicId: Text, chapterId: Text) => {
   const res = await request<ChapterInfo>(
     `https://m.dmzj.com/chapinfo/${comicId}/${chapterId}.html`,
-    { errorText: '获取漫画数据失败' },
+    { errorText: '获取章节数据失败' },
   );
 
   return JSON.parse(res.responseText) as ChapterInfo;
+};
+
+/** 根据漫画 id 和章节 id 获取章节评论 */
+export const getViewpoint = async (comicId: Text, chapterId: Text) => {
+  try {
+    const res = await request<ChapterInfo>(
+      `https://manhua.dmzj.com/tpi/api/viewpoint/getViewpoint?type=0&type_id=${comicId}&chapter_id=${chapterId}&more=1`,
+      { errorText: '获取章节评论失败' },
+    );
+
+    return JSON.parse(res.responseText).data.list.map(
+      ({ title, num }) => `${title} [+${num}]`,
+    ) as string[];
+  } catch (_) {
+    return [];
+  }
 };
 
 const getComicDetail_base = async (comicId: string): Promise<ComicDetail> => {

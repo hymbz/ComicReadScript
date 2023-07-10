@@ -29,4 +29,13 @@ import { querySelectorClick, request, useInit } from 'main';
     type ContentsType = { url: string }[];
     return (contents as ContentsType).map(({ url }) => url);
   });
+
+  const chapter_id = window.location.pathname.split('/').at(-1);
+  const res = await request(
+    `https://api.copymanga.site/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`,
+  );
+  const commentList: string[] = JSON.parse(res.responseText).results.list.map(
+    ({ comment }) => comment as string,
+  );
+  setManga({ commentList });
 })();

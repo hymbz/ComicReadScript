@@ -130,6 +130,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
 
       if (props.editButtonList) state.editButtonList = props.editButtonList;
       if (props.editSettingList) state.editSettingList = props.editSettingList;
+      if (props.commentList?.length) state.commentList = props.commentList;
 
       if (props.onLoading) state.onLoading = debounce(100, props.onLoading);
     });

@@ -34,6 +34,8 @@ export interface Option {
   alwaysLoadAllImg: boolean;
   /** 卷轴模式下图片的缩放比例 */
   scrollModeImgScale: number;
+  /** 在结束页显示评论 */
+  showComment: boolean;
 }
 
 export const defaultOption: Option = {
@@ -56,6 +58,7 @@ export const defaultOption: Option = {
   flipToNext: true,
   alwaysLoadAllImg: false,
   scrollModeImgScale: 1,
+  showComment: true,
 };
 
 export const OptionState = { option: defaultOption };

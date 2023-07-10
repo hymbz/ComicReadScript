@@ -18,6 +18,7 @@ import {
   setOption,
   setScrollModeImgScale,
   switchFillEffect,
+  switchOption,
   updatePageData,
 } from './hooks/useStore/slice';
 
@@ -45,9 +46,7 @@ export const defaultButtonList: ToolbarButtonList = [
       onClick={() => {
         setState((state) => {
           const jump = jumpBackPage(state);
-          setOption((draftOption) => {
-            draftOption.onePageMode = !draftOption.onePageMode;
-          });
+          switchOption('onePageMode');
           updatePageData(state);
           jump();
         });

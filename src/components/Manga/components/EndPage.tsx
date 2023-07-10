@@ -5,12 +5,15 @@ import {
   createSignal,
   onCleanup,
   onMount,
+  For,
+  Show,
 } from 'solid-js';
 
 import { setState, store } from '../hooks/useStore';
 import { bindRef, turnPage } from '../hooks/useStore/slice';
 
 import classes from '../index.module.css';
+import { stopPropagation } from '../helper';
 
 let delayTypeTimer = 0;
 
@@ -110,6 +113,11 @@ export const EndPage: Component = () => {
       >
         下一话
       </button>
+      <Show when={store.option.showComment}>
+        <div class={classes.comments} onWheel={stopPropagation}>
+          <For each={store.commentList}>{(comment) => <p>{comment}</p>}</For>
+        </div>
+      </Show>
     </div>
   );
 };

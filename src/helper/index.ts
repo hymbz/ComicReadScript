@@ -48,7 +48,7 @@ export const querySelectorClick = (selector: string) => {
 
 /** 判断两个列表中包含的值是否相同 */
 export const isEqualArray = <T>(a: T[], b: T[]): boolean =>
-  a.length === b.length && !!a.filter((t) => !b.includes(t));
+  a.length === b.length && !a.some((t) => !b.includes(t));
 
 /** 将对象转为 URLParams 类型的字符串 */
 export const dataToParams = (data: Record<string, unknown>) =>
@@ -140,18 +140,19 @@ export const needDarkMode = (hexColor: string) => {
 };
 
 /** 等到传入的函数返回 true */
-export const wait = (fn: () => boolean | undefined) =>
-  new Promise<void>((resolve) => {
+export const wait = <T>(fn: () => T | undefined) =>
+  new Promise<T>((resolve) => {
     const id = window.setInterval(() => {
-      if (!fn()) return;
+      const res = fn();
+      if (!res) return;
       window.clearInterval(id);
-      resolve();
+      resolve(res);
     }, 100);
   });
 
 /** 等到指定的 dom 出现 */
 export const waitDom = (selector: string) =>
-  wait(() => !!querySelector(selector));
+  wait(() => querySelector(selector) as HTMLElement);
 
 /**
  * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性

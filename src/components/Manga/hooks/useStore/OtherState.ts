@@ -19,6 +19,9 @@ export const OtherState = {
   /** 结束页状态。showEndPage 更改时自动计算 */
   endPageType: undefined as undefined | 'start' | 'end',
 
+  /** 评论列表 */
+  commentList: undefined as string[] | undefined,
+
   /** 点击结束页按钮时触发的回调 */
   onExit: undefined as ((isEnd?: boolean) => void) | undefined,
   /** 点击上一话按钮时触发的回调 */
