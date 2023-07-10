@@ -6,8 +6,19 @@ import {
   toast,
   useInit,
   querySelectorClick,
+  querySelector,
   wait,
+  waitImgLoad,
 } from 'main';
+
+// 已知问题：某些漫画始终会有几页在下载原图时出错
+// 并且这类漫画下即使关掉脚本，也还是会有几页就是加载不出来
+// 比较神秘的是这两种情况下加载不出来的图片还不一样
+// 并且在多次刷新的情况下都是那几张图片加载不出来
+// 另外这类漫画也有概率出现，在关闭脚本的情况下所有图片都加载不出来的情况，只能刷新
+// 就很怪
+// 对此只能放弃
+// 例子：https://18comic.vip/photo/450291
 
 (async () => {
   // 只在漫画页内运行
@@ -25,8 +36,14 @@ import {
   }
 
   setManga({
-    onPrev: querySelectorClick('.menu-bolock-ul a:has(.fa-angle-double-left)'),
-    onNext: querySelectorClick('.menu-bolock-ul a:has(.fa-angle-double-right)'),
+    onPrev: querySelectorClick(
+      () =>
+        querySelector('.menu-bolock-ul .fa-angle-double-left')?.parentElement,
+    ),
+    onNext: querySelectorClick(
+      () =>
+        querySelector('.menu-bolock-ul .fa-angle-double-right')?.parentElement,
+    ),
   });
 
   const imgEleList = querySelectorAll<HTMLImageElement>('.scramble-page > img');
@@ -53,20 +70,16 @@ import {
       fetch: true,
     });
     if (!res.response.size) {
-      console.error('下载原图时出错', imgEle);
+      console.error('下载原图时出错', imgEle.getAttribute('data-page'));
       return '';
     }
 
     imgEle.src = URL.createObjectURL(res.response);
-    try {
-      await new Promise((resolve) => {
-        imgEle.onload = resolve;
-        imgEle.onerror = resolve;
-      });
-    } catch (error) {
+    const err = await waitImgLoad(imgEle);
+    if (err) {
       URL.revokeObjectURL(imgEle.src);
       imgEle.src = originalUrl;
-      console.warn('加载原图时出错', imgEle);
+      console.warn('加载原图时出错', imgEle.getAttribute('data-page'));
       return '';
     }
 
@@ -84,7 +97,7 @@ import {
       return `${URL.createObjectURL(blob)}#.webp`;
     } catch (error) {
       imgEle.src = originalUrl;
-      console.warn('转换图片时出错', imgEle);
+      console.warn('转换图片时出错', imgEle.getAttribute('data-page'));
       return '';
     }
   };
@@ -108,4 +121,16 @@ import {
       },
     ),
   );
+
+  const retry = (num = 0) =>
+    setManga(async (state) => {
+      for (let i = 0; i < imgEleList.length; i++) {
+        if (state.imgList[i]) continue;
+        state.imgList[i] = await getImgUrl(imgEleList[i]);
+        await sleep(1000);
+      }
+      if (num < 60 && state.imgList.some((url) => !url))
+        setTimeout(retry, 1000 * 5, num + 1);
+    });
+  retry();
 })();

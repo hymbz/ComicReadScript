@@ -41,8 +41,11 @@ export const insertNode = (
 };
 
 /** 返回 Dom 的点击函数 */
-export const querySelectorClick = (selector: string) => {
-  const dom = querySelector(selector);
+export const querySelectorClick = (
+  selector: string | (() => HTMLElement | undefined | null),
+) => {
+  const dom =
+    typeof selector === 'string' ? querySelector(selector) : selector();
   if (dom) return () => dom.click();
 };
 
@@ -153,6 +156,23 @@ export const wait = <T>(fn: () => T | undefined) =>
 /** 等到指定的 dom 出现 */
 export const waitDom = (selector: string) =>
   wait(() => querySelector(selector) as HTMLElement);
+
+/** 等待指定的图片元素加载完成 */
+export const waitImgLoad = (img: HTMLImageElement, timeout = 1000 * 10) =>
+  new Promise<ErrorEvent | null>((resolve) => {
+    const id = window.setTimeout(
+      () => resolve(new ErrorEvent('超时')),
+      timeout,
+    );
+    img.addEventListener('load', () => {
+      resolve(null);
+      window.clearTimeout(id);
+    });
+    img.addEventListener('error', (e) => {
+      resolve(e);
+      window.clearTimeout(id);
+    });
+  });
 
 /**
  * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
