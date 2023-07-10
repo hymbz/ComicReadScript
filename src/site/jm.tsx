@@ -6,6 +6,7 @@ import {
   toast,
   useInit,
   querySelectorClick,
+  wait,
 } from 'main';
 
 (async () => {
@@ -40,26 +41,61 @@ import {
     return;
   }
 
+  const isBlobUrl = /^blob:https?:\/\//;
+
   const getImgUrl = async (imgEle: HTMLImageElement) => {
+    if (isBlobUrl.test(imgEle.src)) return imgEle.src;
+
+    const originalUrl = imgEle.src;
     const res = await request<Blob>(imgEle.getAttribute('data-original')!, {
       responseType: 'blob',
+      revalidate: true,
+      fetch: true,
     });
+    if (!res.response.size) {
+      console.error('下载原图时出错', imgEle);
+      return '';
+    }
+
     imgEle.src = URL.createObjectURL(res.response);
-    await new Promise((resolve, reject) => {
-      imgEle.onload = resolve;
-      imgEle.onerror = reject;
-    });
-    unsafeWindow.onImageLoaded(imgEle);
-    const blob = await new Promise<Blob | null>((resolve) => {
-      (imgEle.nextElementSibling as HTMLCanvasElement).toBlob(
-        resolve,
-        'image/webp',
-        1,
-      );
-    });
-    if (!blob) return '';
-    return `${URL.createObjectURL(blob)}#.webp`;
+    try {
+      await new Promise((resolve) => {
+        imgEle.onload = resolve;
+        imgEle.onerror = resolve;
+      });
+    } catch (error) {
+      URL.revokeObjectURL(imgEle.src);
+      imgEle.src = originalUrl;
+      console.warn('加载原图时出错', imgEle);
+      return '';
+    }
+
+    try {
+      unsafeWindow.onImageLoaded(imgEle);
+      const blob = await new Promise<Blob | null>((resolve) => {
+        (imgEle.nextElementSibling as HTMLCanvasElement).toBlob(
+          resolve,
+          'image/webp',
+          1,
+        );
+      });
+      URL.revokeObjectURL(imgEle.src);
+      if (!blob) throw new Error('');
+      return `${URL.createObjectURL(blob)}#.webp`;
+    } catch (error) {
+      imgEle.src = originalUrl;
+      console.warn('转换图片时出错', imgEle);
+      return '';
+    }
   };
+
+  // 先等网页自己的懒加载加载完毕
+  await wait(
+    () =>
+      querySelectorAll('.lazy-loaded.hide').length &&
+      querySelectorAll('.lazy-loaded.hide').length ===
+        querySelectorAll('canvas').length,
+  );
 
   init(() =>
     plimit<string>(
