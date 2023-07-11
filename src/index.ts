@@ -1,3 +1,10 @@
+/**
+ * 虽然在打包的时候已经尽可能保持代码格式不变了，但因为脚本代码比较多的缘故
+ * 所以真对脚本代码感兴趣的话，推荐还是直接上 github 仓库来看
+ * <https://github.com/hymbz/ComicReadScript>
+ * 对站点逻辑感兴趣的，结合 `src\index.ts` 看 `src\site` 下的对应文件即可
+ */
+
 inject('import');
 
 // 匹配站点
