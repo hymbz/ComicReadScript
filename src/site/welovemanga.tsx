@@ -1,8 +1,9 @@
 import { querySelectorAll, querySelectorClick, useInit } from 'main';
 
 (async () => {
-  const imgList = querySelectorAll('.chapter-content img[data-src]').map(
-    (e) => e.getAttribute('data-src')!,
+  const imgList = querySelectorAll<HTMLImageElement>('img.chapter-img').map(
+    (e) =>
+      e.getAttribute('data-src') ?? e.getAttribute('data-original') ?? e.src,
   );
   // 只在漫画页内运行
   if (!imgList.length) return;
