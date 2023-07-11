@@ -2,7 +2,7 @@ import type { Component } from 'solid-js';
 import { Index } from 'solid-js';
 
 import { ComicImg } from './ComicImg';
-import { ErrorTip } from './ErrorTip';
+import { LoadTypeTip } from './LoadTypeTip';
 
 import { store } from '../hooks/useStore';
 import {
@@ -56,10 +56,10 @@ export const ComicImgFlow: Component = () => {
         dir={store.option.dir}
         onClick={useDoubleClick(handleClick, handleDoubleClickZoom)}
       >
-        <ErrorTip />
         <Index each={store.imgList} fallback={<h1>NULL</h1>}>
           {(img, i) => <ComicImg img={img()} index={i} />}
         </Index>
+        <LoadTypeTip />
       </div>
     </div>
   );

@@ -21,7 +21,7 @@ declare global {
   }
 
   declare module '*.svg' {
-    const fc: Component;
+    const fc: Component<{ style?: JSX.CSSProperties }>;
     export default fc;
   }
 

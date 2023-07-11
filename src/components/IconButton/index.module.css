@@ -38,6 +38,10 @@
       background-color: var(--hover_bg_color_enable, #fffa);
     }
   }
+
+  & > svg {
+    width: 1em;
+  }
 }
 
 /* 默认悬浮框样式 */

@@ -64,11 +64,11 @@ export const EndPage: Component = () => {
     switch (delayType()) {
       case 'start':
         if (store.onPrev && store.option.flipToNext)
-          return '已到开头，继续翻页将跳至上一话';
+          return '已到开头，继续向上翻页将跳至上一话';
         break;
       case 'end':
         if (store.onNext && store.option.flipToNext)
-          return '已到结尾，继续翻页将跳至下一话';
+          return '已到结尾，继续向下翻页将跳至下一话';
         if (store.onExit) return '已到结尾，继续翻页将退出';
         break;
     }
@@ -113,7 +113,7 @@ export const EndPage: Component = () => {
       >
         下一话
       </button>
-      <Show when={store.option.showComment}>
+      <Show when={store.option.showComment && delayType() === 'end'}>
         <div class={classes.comments} onWheel={stopPropagation}>
           <For each={store.commentList}>{(comment) => <p>{comment}</p>}</For>
         </div>

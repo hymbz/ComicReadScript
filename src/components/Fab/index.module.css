@@ -40,6 +40,7 @@
     0 1px 18px 0 rgb(0 0 0 / 12%);
 
   & > svg {
+    width: 1em;
     font-size: 1.5em;
   }
 

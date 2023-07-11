@@ -10,6 +10,7 @@ import solid from 'vite-plugin-solid';
 const svgoConfig: Config = {
   plugins: [
     'preset-default',
+    'removeDimensions',
     {
       name: 'addAttributesToSVGElement',
       params: {
@@ -48,7 +49,7 @@ export function solidSvg(): Plugin {
       return `export default (props = {}) => ${code
         .replace(/([{}])/g, "{'$1'}")
         .replace(/<!--\s*([\s\S]*?)\s*-->/g, '{/* $1 */}')
-        .replace(/(?<=<svg.*?)(>)/i, '{...props}>')}`;
+        .replace(/(?<=<svg.*?)(>)/i, ' {...props}>')}`;
     },
 
     transform(source, path) {

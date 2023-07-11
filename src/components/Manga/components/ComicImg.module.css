@@ -1,4 +1,6 @@
 .img {
+  z-index: 1;
+
   display: none;
 
   max-width: 100%;
