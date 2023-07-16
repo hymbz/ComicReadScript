@@ -162,7 +162,6 @@ import {
   };
 
   const getImgList = async () => {
-    console.log('getImgList');
     await waitSwitchScroll();
     await waitDom('.comic_wraCon img');
     return querySelectorAll<HTMLImageElement>('.comic_wraCon img').map(

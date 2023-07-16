@@ -71,6 +71,13 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
     } else {
       dom.removeAttribute('show');
       document.documentElement.style.overflow = 'unset';
+
+      setTimeout(() => {
+        document
+          .querySelector<HTMLElement>('#fab')
+          ?.shadowRoot?.querySelector<HTMLElement>('div > button')
+          ?.focus();
+      });
     }
   };
 
