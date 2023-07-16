@@ -14,7 +14,7 @@
   height: 98%;
 
   /* 扩大触发范围 */
-  border-left: 10em solid transparent;
+  border-left: max(6vw, 1em) solid transparent;
   outline: none;
 
   & > div {
