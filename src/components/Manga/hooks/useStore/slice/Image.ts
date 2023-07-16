@@ -12,6 +12,7 @@ import {
   updateTipText,
 } from './Scrollbar';
 import { clamp } from '../../../helper';
+import { setOption } from './Helper';
 
 /** 是否需要自动判断开启卷轴模式 */
 let autoScrollMode = true;
@@ -196,8 +197,8 @@ export const turnPage = (state: State, dir: 'next' | 'prev') => {
 };
 
 export const setScrollModeImgScale = (newScale: number) => {
-  setState((state) => {
-    state.option.scrollModeImgScale = newScale;
+  setOption((draftOption) => {
+    draftOption.scrollModeImgScale = newScale;
   });
   // 在调整图片缩放后使当前滚动进度保持不变
   setState((state) => {

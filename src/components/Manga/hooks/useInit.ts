@@ -64,9 +64,10 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
       state.endPageType = undefined;
 
       /** 修改前的当前显示图片 */
-      const oldActiveImg = state.pageList[state.activePageIndex].map(
-        (i) => state.imgList?.[i]?.src,
-      );
+      const oldActiveImg =
+        state.pageList[state.activePageIndex]?.map(
+          (i) => state.imgList?.[i]?.src,
+        ) ?? [];
 
       state.imgList = props.imgList.map(
         (imgUrl) =>
