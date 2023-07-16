@@ -217,7 +217,7 @@ export const { activeImgIndex, nowFillIndex, activePage } = createRoot(() => {
   );
 
   const activePageMemo = createMemo(
-    () => store.pageList[store.activePageIndex],
+    () => store.pageList[store.activePageIndex] ?? [],
   );
 
   // 页数发生变动时
