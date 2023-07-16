@@ -61,4 +61,6 @@ export const defaultOption: Option = {
   showComment: true,
 };
 
-export const OptionState = { option: defaultOption };
+export const OptionState = {
+  option: JSON.parse(JSON.stringify(defaultOption)) as Option,
+};
