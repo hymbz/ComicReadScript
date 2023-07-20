@@ -26,19 +26,36 @@ export const updateDrag = (state: State) => {
     windowHeight() / (contentHeight() || windowHeight());
 };
 
-/** 获取指定 page 中的图片 index，并在后面加上加载状态 */
-const getPageIndexText = (state: State, pageIndex: number) => {
+/** 获取指定图片的提示文本 */
+const getImgTip = (state: State, i: number) => {
+  if (i === -1) return '填充页';
+  const img = state.imgList[i];
+
+  // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
+  if (img.loadType !== 'loaded')
+    return `${i + 1} (${loadTypeMap[img.loadType]})`;
+
+  if (
+    img.translationType &&
+    img.translationType !== 'hide' &&
+    img.translationMessage
+  )
+    return `${i + 1}：${img.translationMessage}`;
+
+  return `${i + 1}`;
+};
+
+/** 获取指定页面的提示文本 */
+const getPageTip = (
+  state: State,
+  pageIndex: number,
+): [string] | [string, string] => {
   const page = state.pageList[pageIndex];
   if (!page) return ['null'];
-  const pageIndexText = page.map((index) => {
-    if (index === -1) return '填充页';
-    const img = state.imgList[index];
-    if (img.loadType === 'loaded') return `${index + 1}`;
-    // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-    return `${index + 1} (${loadTypeMap[img.loadType]})`;
-  }) as [string] | [string, string];
-  if (state.option.dir === 'rtl')
-    pageIndexText.reverse() as [string] | [string, string];
+  const pageIndexText = page.map((index) => getImgTip(state, index)) as
+    | [string]
+    | [string, string];
+  if (state.option.dir === 'rtl') pageIndexText.reverse();
   return pageIndexText;
 };
 
@@ -46,7 +63,7 @@ const getTipText = (state: State) => {
   if (!state.pageList.length || !state.mangaFlowRef) return '';
 
   if (!state.option.scrollMode)
-    return getPageIndexText(state, state.activePageIndex).join(' | ');
+    return getPageTip(state, state.activePageIndex).join(' | ');
 
   /** 当前显示图片的列表 */
   const activeImageIndexList: number[] = [];
@@ -68,7 +85,7 @@ const getTipText = (state: State) => {
   state.activePageIndex = activeImageIndexList.at(0) ?? 0;
 
   return activeImageIndexList
-    .map((index) => getPageIndexText(state, index))
+    .map((index) => getPageTip(state, index))
     .join('\n');
 };
 

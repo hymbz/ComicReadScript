@@ -193,6 +193,24 @@ export const difference = <T extends object>(a: T, b: T): Partial<T> => {
 };
 
 /**
+ * Object.assign 的深拷贝版，不会导致 a 子对象属性的缺失
+ *
+ * 不会修改参数对象，返回的是新对象
+ */
+export const assign = <T extends object>(a: T, b: T): T => {
+  const res = JSON.parse(JSON.stringify(a)) as T;
+  const keys = Object.keys(b);
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    if (typeof b[key] === 'object') {
+      const _res = assign(a[key], b[key]);
+      if (Object.keys(_res).length) res[key] = _res;
+    } else if (a[key] !== b[key]) res[key] = b[key];
+  }
+  return res;
+};
+
+/**
  * 通过监视点击等会触发动态加载的事件，在触发动态加载后更新图片列表等
  * @param update 动态加载后的重新加载
  */

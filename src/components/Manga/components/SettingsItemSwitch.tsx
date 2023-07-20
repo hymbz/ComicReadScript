@@ -13,9 +13,7 @@ export interface SettingsItemSwitchProps {
   onChange: (val: boolean) => void;
 }
 
-/**
- * 开关式菜单项
- */
+/** 开关式菜单项 */
 export const SettingsItemSwitch: Component<SettingsItemSwitchProps> = (
   props,
 ) => {

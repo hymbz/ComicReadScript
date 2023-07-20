@@ -1,20 +1,26 @@
 import MdOutlineFormatTextdirectionLToR from '@material-design-icons/svg/round/format_textdirection_l_to_r.svg';
 import MdOutlineFormatTextdirectionRToL from '@material-design-icons/svg/round/format_textdirection_r_to_l.svg';
 
-import type { Component } from 'solid-js';
+import { createMemo, type Component, Show } from 'solid-js';
 
 import { throttle } from 'throttle-debounce';
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
 import {
+  createStateSetFn,
   setOption,
   switchOption,
   updateImgLoadType,
 } from './hooks/useStore/slice';
+import {
+  setImgTranslationEnbale,
+  translatorOptions,
+} from './hooks/useStore/slice/Translation';
 import { setState, store } from './hooks/useStore';
 import { needDarkMode } from '../../helper';
 
 import classes from './index.module.css';
+import { SettingsItemSelect } from './components/SettingsItemSelect';
 
 export type SettingList = [string, Component][];
 
@@ -55,18 +61,18 @@ export const defaultSettingList: SettingList = [
           value={store.option.scrollbar.enabled}
           onChange={() => switchOption('scrollbar.enabled')}
         />
-        <SettingsItemSwitch
-          name="自动隐藏滚动条"
-          value={store.option.scrollbar.autoHidden}
-          classList={{ [classes.hidden]: !store.option.scrollbar.enabled }}
-          onChange={() => switchOption('scrollbar.autoHidden')}
-        />
-        <SettingsItemSwitch
-          name="显示图片加载状态"
-          value={store.option.scrollbar.showProgress}
-          classList={{ [classes.hidden]: !store.option.scrollbar.enabled }}
-          onChange={() => switchOption('scrollbar.showProgress')}
-        />
+        <Show when={store.option.scrollbar.enabled}>
+          <SettingsItemSwitch
+            name="自动隐藏滚动条"
+            value={store.option.scrollbar.autoHidden}
+            onChange={() => switchOption('scrollbar.autoHidden')}
+          />
+          <SettingsItemSwitch
+            name="显示图片加载状态"
+            value={store.option.scrollbar.showProgress}
+            onChange={() => switchOption('scrollbar.showProgress')}
+          />
+        </Show>
       </>
     ),
   ],
@@ -79,22 +85,22 @@ export const defaultSettingList: SettingList = [
           value={store.option.clickPage.enabled}
           onChange={() => switchOption('clickPage.enabled')}
         />
-        <SettingsItemSwitch
-          name="左右反转点击区域"
-          value={store.option.clickPage.overturn}
-          classList={{ [classes.hidden]: !store.option.clickPage.enabled }}
-          onChange={() => switchOption('clickPage.overturn')}
-        />
-        <SettingsItemSwitch
-          name="显示点击区域提示"
-          value={store.showTouchArea}
-          classList={{ [classes.hidden]: !store.option.clickPage.enabled }}
-          onChange={() => {
-            setState((state) => {
-              state.showTouchArea = !state.showTouchArea;
-            });
-          }}
-        />
+        <Show when={store.option.clickPage.enabled}>
+          <SettingsItemSwitch
+            name="左右反转点击区域"
+            value={store.option.clickPage.overturn}
+            onChange={() => switchOption('clickPage.overturn')}
+          />
+          <SettingsItemSwitch
+            name="显示点击区域提示"
+            value={store.showTouchArea}
+            onChange={() => {
+              setState((state) => {
+                state.showTouchArea = !state.showTouchArea;
+              });
+            }}
+          />
+        </Show>
       </>
     ),
   ],
@@ -183,32 +189,104 @@ export const defaultSettingList: SettingList = [
     ),
   ],
   [
-    '关于',
-    () => (
-      <>
-        <SettingsItem name="版本号">
-          <a href="https://github.com/hymbz/ComicReadScript" target="_blank">
-            0.0.1
-          </a>
-        </SettingsItem>
-        <SettingsItem name="反馈">
-          <div>
-            <a
-              href="https://github.com/hymbz/ComicReadScript/issues"
-              target="_blank"
-              style={{ 'margin-right': '.5em' }}
-            >
-              Github
-            </a>
-            <a
-              href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback"
-              target="_blank"
-            >
-              Greasy Fork
-            </a>
-          </div>
-        </SettingsItem>
-      </>
-    ),
+    '翻译',
+    () => {
+      /** 是否正在翻译全部图片 */
+      const isTranslationAll = createMemo(() =>
+        store.imgList.every(
+          (img) =>
+            img.translationType === 'show' || img.translationType === 'wait',
+        ),
+      );
+
+      return (
+        <>
+          <SettingsItemSelect
+            name="翻译服务器"
+            options={[['禁用'], ['本地部署'], ['cotrans']]}
+            value={store.option.translation.server}
+            onChange={createStateSetFn('translation.server')}
+          />
+
+          <Show when={store.option.translation.server === 'cotrans'}>
+            <blockquote>
+              <p>
+                将使用{' '}
+                <a href="https://cotrans.touhou.ai" target="_blank">
+                  Cotrans
+                </a>{' '}
+                提供的接口翻译图片，该服务器由维护者用爱发电自费维护
+              </p>
+              <p>
+                所以还请<b>注意用量</b>，并去{' '}
+                <a
+                  href="https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md"
+                  target="_blank"
+                >
+                  Github
+                </a>{' '}
+                上支持下
+              </p>
+              <p>更推荐使用本地部署的项目，不抢服务器资源也不需要排队</p>
+            </blockquote>
+          </Show>
+
+          <Show when={store.option.translation.server !== '禁用'}>
+            <SettingsItemSelect
+              name="文本扫描清晰度"
+              options={[
+                ['S', '1024px'],
+                ['M', '1536px'],
+                ['L', '2048px'],
+                ['X', '2560px'],
+              ]}
+              value={store.option.translation.options.size}
+              onChange={createStateSetFn('translation.options.size')}
+            />
+            <SettingsItemSelect
+              name="文本扫描器"
+              options={[['default'], ['ctd', 'Comic Text Detector']]}
+              value={store.option.translation.options.detector}
+              onChange={createStateSetFn('translation.options.detector')}
+            />
+            <SettingsItemSelect
+              name="翻译服务"
+              options={translatorOptions()}
+              value={store.option.translation.options.translator}
+              onChange={createStateSetFn('translation.options.translator')}
+            />
+            <SettingsItemSelect
+              name="渲染字体方向"
+              options={[
+                ['auto', '自动'],
+                ['h', '水平'],
+                ['v', '垂直'],
+              ]}
+              value={store.option.translation.options.direction}
+              onChange={createStateSetFn('translation.options.direction')}
+            />
+
+            <SettingsItemSwitch
+              name="忽略缓存强制重试"
+              value={store.option.translation.forceRetry}
+              onChange={() => switchOption('translation.forceRetry')}
+            />
+
+            <Show when={store.option.translation.server === '本地部署'}>
+              <SettingsItemSwitch
+                name="翻译全部图片"
+                value={isTranslationAll()}
+                onChange={() =>
+                  setImgTranslationEnbale(
+                    store.imgList.map((_, i) => i),
+                    !isTranslationAll(),
+                  )
+                }
+              />
+            </Show>
+          </Show>
+        </>
+      );
+    },
   ],
 ];

@@ -4,14 +4,15 @@ import MdViewDay from '@material-design-icons/svg/round/view_day.svg';
 import MdQueue from '@material-design-icons/svg/round/queue.svg';
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
 import MdSearch from '@material-design-icons/svg/round/search.svg';
+import MdTranslate from '@material-design-icons/svg/round/translate.svg';
 
-import type { Component } from 'solid-js';
-import { createSignal, createMemo } from 'solid-js';
+import { createMemo, type Component, createSignal } from 'solid-js';
 import { setState, store } from './hooks/useStore';
 import { IconButton } from '../IconButton';
 import { SettingPanel } from './components/SettingPanel';
 
 import {
+  activePage,
   handleMangaFlowScroll,
   jumpBackPage,
   nowFillIndex,
@@ -21,6 +22,8 @@ import {
   switchOption,
   updatePageData,
 } from './hooks/useStore/slice';
+
+import { setImgTranslationEnbale } from './hooks/useStore/slice/Translation';
 
 import classes from './index.module.css';
 
@@ -116,6 +119,30 @@ export const defaultButtonList: ToolbarButtonList = [
       <MdSearch />
     </IconButton>
   ),
+  // 翻译设置
+  () => {
+    /** 当前显示的图片是否正在翻译 */
+    const isTranslatingImage = createMemo(() =>
+      activePage().some(
+        (i) =>
+          store.imgList[i]?.translationType &&
+          store.imgList[i].translationType !== 'hide',
+      ),
+    );
+
+    return (
+      <IconButton
+        tip={isTranslatingImage() ? '关闭当前页的翻译' : '翻译当前页'}
+        enabled={isTranslatingImage()}
+        hidden={store.option.translation.server === '禁用'}
+        onClick={() =>
+          setImgTranslationEnbale(activePage(), !isTranslatingImage())
+        }
+      >
+        <MdTranslate />
+      </IconButton>
+    );
+  },
   // 设置
   (props) => {
     const [showPanel, setShowPanel] = createSignal(false);
@@ -126,7 +153,6 @@ export const defaultButtonList: ToolbarButtonList = [
         state.showToolbar = _showPanel;
       });
       setShowPanel(_showPanel);
-      props.onMouseLeave();
     };
 
     const popper = createMemo(() => (
@@ -134,10 +160,13 @@ export const defaultButtonList: ToolbarButtonList = [
         <SettingPanel />
         <div
           class={classes.closeCover}
-          onClick={handleClick}
+          onClick={() => {
+            handleClick();
+            props.onMouseLeave();
+          }}
           role="button"
           tabIndex={-1}
-          aria-label="关闭设置弹窗的遮罩"
+          aria-label="关闭弹窗的遮罩"
         />
       </>
     ));

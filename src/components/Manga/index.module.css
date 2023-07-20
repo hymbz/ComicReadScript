@@ -36,3 +36,45 @@
     color: var(--text_secondary);
   }
 }
+
+.beautifyScrollbar {
+  /* 火狐的滚动条样式 */
+  scrollbar-color: var(--scrollbar_drag) transparent;
+  scrollbar-width: thin;
+
+  /* chrome 的滚动条样式 */
+  &::-webkit-scrollbar {
+    width: 5px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--scrollbar_drag);
+  }
+}
+
+blockquote {
+  margin: 0.7em 0;
+  padding: 0 1em;
+
+  font-style: italic;
+  line-height: 1.2em;
+  color: var(--text_secondary);
+  text-align: start;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+
+  border-left: 0.25em solid var(--text_secondary);
+
+  & > p + p {
+    margin-top: 0.5em;
+  }
+}
+
+svg {
+  width: 1em;
+}

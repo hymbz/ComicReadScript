@@ -4,10 +4,11 @@ import { createEffect, on, onCleanup } from 'solid-js';
 import type { MangaProps } from '..';
 import { store, setState } from './useStore';
 import { updatePageData, updatePageRatio } from './useStore/slice';
+import type { Option } from './useStore/OptionState';
 import { defaultOption } from './useStore/OptionState';
 import { autoCloseFill } from '../handleComicData';
 import { playAnimation } from '../helper';
-import { difference } from '../../../helper';
+import { assign, difference } from '../../../helper';
 
 /** 初始化 */
 export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
@@ -18,12 +19,9 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
 
   // 初始化配置
   createEffect(() => {
-    if (!props.option) return;
     setState((state) => {
-      state.option = {
-        ...state.option,
-        ...props.option,
-      };
+      if (!props.option) return;
+      state.option = assign(state.option, props.option as Option);
     });
   });
 

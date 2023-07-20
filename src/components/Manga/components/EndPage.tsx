@@ -114,7 +114,10 @@ export const EndPage: Component = () => {
         下一话
       </button>
       <Show when={store.option.showComment && delayType() === 'end'}>
-        <div class={classes.comments} onWheel={stopPropagation}>
+        <div
+          class={`${classes.comments} ${classes.beautifyScrollbar}`}
+          onWheel={stopPropagation}
+        >
           <For each={store.commentList}>{(comment) => <p>{comment}</p>}</For>
         </div>
       </Show>

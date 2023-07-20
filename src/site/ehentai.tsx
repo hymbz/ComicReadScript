@@ -67,11 +67,13 @@ declare const selected_link: HTMLElement;
 
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async (url: string): Promise<string> => {
-    const res = await request(url, {
-      errorText: '从图片页获取图片地址失败',
-    });
+    const res = await request(url, { errorText: '获取图片页源码失败' });
 
-    return res.responseText.split('id="img" src="')[1].split('"')[0];
+    try {
+      return res.responseText.split('id="img" src="')[1].split('"')[0];
+    } catch (error) {
+      throw new Error('从图片页获取图片地址失败');
+    }
   };
 
   /** 从详情页获取图片页的地址的正则 */

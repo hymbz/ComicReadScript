@@ -6,8 +6,7 @@
 }
 
 .SettingPanel {
-  /* 隐藏滚动条但不影响滚动 */
-  scrollbar-width: none;
+  user-select: text;
 
   position: fixed;
   top: 0;
@@ -28,27 +27,39 @@
   box-shadow: rgb(0 0 0 / 20%) 0 3px 1px -2px, rgb(0 0 0 / 14%) 0 2px 2px 0,
     rgb(0 0 0 / 12%) 0 1px 5px 0;
 
-  /* 隐藏滚动条但不影响滚动 */
-  &::-webkit-scrollbar {
-    display: none;
+  & hr {
+    margin: 0;
   }
 }
 
 .SettingBlock {
-  padding: 0.5em;
+  padding: 0 0.5em;
+  padding-bottom: 1em;
 }
 
 .SettingBlockSubtitle {
-  margin-bottom: -0.3em;
+  position: sticky;
+  z-index: 1;
+  top: 0;
+
+  padding-top: 1em;
+  padding-bottom: 1em;
+
   font-size: 0.7em;
   color: var(--text_secondary);
+  text-align: center;
+
+  background-color: var(--page_bg);
 }
 
 .SettingsItem {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 1em;
+
+  & + & {
+    margin-top: 1em;
+  }
 }
 
 .SettingsItemName {
@@ -112,6 +123,19 @@
 
   background-color: transparent;
   border: none;
+}
+
+/* 选择器设置项 */
+.SettingsItemSelect {
+  cursor: pointer;
+
+  width: 6em;
+  margin: 0;
+  padding-right: 0;
+
+  font-size: 1em;
+
+  border-radius: 5px;
 }
 
 /* 关闭设置弹窗的遮罩 */

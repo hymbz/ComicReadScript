@@ -80,7 +80,7 @@ declare namespace Tampermonkey {
      */
     headers?: RequestHeaders | undefined;
     /** String to send via a POST request */
-    data?: string | undefined;
+    data?: string | FormData | undefined;
     /** A cookie to be patched into the sent cookie set */
     cookie?: string | undefined;
     /** Send the data string in binary mode */

@@ -5,6 +5,10 @@ declare global {
     src: string;
     width?: number;
     height?: number;
+
+    translationUrl?: string;
+    translationMessage?: string;
+    translationType?: 'wait' | 'show' | 'hide' | 'error';
   };
 
   type PageList = Array<[number] | [number, number]>;

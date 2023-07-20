@@ -33,6 +33,14 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
   setState((state) => {
     const img = state.imgList[i];
     if (!img) return;
+
+    // 第一次加载出错自动重试一次
+    if (img.loadType !== 'error') {
+      const src = e.getAttribute('src');
+      e.setAttribute('src', '');
+      setTimeout(() => e.setAttribute('src', src!), 500);
+    }
+
     img.loadType = 'error';
     console.error('图片加载失败', e);
 
@@ -61,6 +69,12 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
       return !!fillIndex === (store.option.dir === 'rtl') ? 'left' : 'right';
   });
 
+  const src = createMemo(() => {
+    if (props.img.loadType === 'wait') return '';
+    if (props.img.translationType === 'show') return props.img.translationUrl;
+    return props.img.src;
+  });
+
   return (
     <img
       class={classes.img}
@@ -70,7 +84,7 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
             ? `${props.img.width}px`
             : undefined,
       }}
-      src={props.img.loadType === 'wait' ? '' : props.img.src}
+      src={src()}
       alt={`${props.index + 1}`}
       data-show={show() ? '' : undefined}
       data-fill={fill()}

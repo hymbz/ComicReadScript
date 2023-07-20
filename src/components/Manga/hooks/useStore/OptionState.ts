@@ -36,6 +36,21 @@ export interface Option {
   scrollModeImgScale: number;
   /** 在结束页显示评论 */
   showComment: boolean;
+
+  /** 翻译 */
+  translation: {
+    /** 翻译服务器 */
+    server: '禁用' | '本地部署' | 'cotrans';
+    /** 忽略缓存强制重试 */
+    forceRetry: boolean;
+    /** manga-image-translator 配置 */
+    options: {
+      size: string;
+      detector: string;
+      direction: string;
+      translator: string;
+    };
+  };
 }
 
 export const defaultOption: Option = {
@@ -59,6 +74,17 @@ export const defaultOption: Option = {
   alwaysLoadAllImg: false,
   scrollModeImgScale: 1,
   showComment: true,
+
+  translation: {
+    server: '禁用',
+    forceRetry: false,
+    options: {
+      size: 'M',
+      detector: 'default',
+      translator: 'gpt3.5',
+      direction: 'auto',
+    },
+  },
 };
 
 export const OptionState = {

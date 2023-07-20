@@ -10,9 +10,7 @@ export interface SettingsItemProps {
   children: JSX.Element | JSX.Element[];
 }
 
-/**
- * 设置菜单项
- */
+/** 设置菜单项 */
 export const SettingsItem: Component<SettingsItemProps> = (props) => (
   <div
     class={

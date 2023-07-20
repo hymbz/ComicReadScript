@@ -63,10 +63,6 @@
 }
 
 .comments {
-  /* 火狐的滚动条样式 */
-  scrollbar-color: var(--scrollbar_drag) transparent;
-  scrollbar-width: thin;
-
   position: absolute;
   right: 1em;
 
@@ -79,23 +75,7 @@
   max-height: 80%;
   padding-right: 0.5em;
 
-  opacity: 0.1;
-
-  /* chrome 的滚动条样式 */
-  &::-webkit-scrollbar {
-    width: 5px;
-    height: 10px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 6px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--scrollbar_drag);
-    border-radius: 6px;
-  }
+  opacity: 0.3;
 
   & > p {
     margin: 0.5em 0.1em;

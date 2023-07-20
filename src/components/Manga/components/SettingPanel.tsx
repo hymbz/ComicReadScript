@@ -15,7 +15,7 @@ export const SettingPanel: Component = () => {
 
   return (
     <div
-      class={classes.SettingPanel}
+      class={`${classes.SettingPanel} ${classes.beautifyScrollbar}`}
       onScroll={stopPropagation}
       onWheel={stopPropagation}
     >

@@ -7,13 +7,21 @@ import { contentHeight, windowHeight } from '../hooks/useStore/slice';
 import classes from '../index.module.css';
 
 /** 显示对应图片加载情况的元素 */
-const ScrollbarImg: Component<{ index: number }> = (props) => (
-  <div
-    class={classes.scrollbarPage}
-    data-index={props.index}
-    data-type={store.imgList[props.index].loadType}
-  />
-);
+const ScrollbarImg: Component<{ index: number }> = (props) => {
+  const type = createMemo(() => store.imgList[props.index]?.loadType);
+  const translationType = createMemo(
+    () => store.imgList[props.index]?.translationType,
+  );
+
+  return (
+    <div
+      class={classes.scrollbarPage}
+      data-index={props.index}
+      data-type={type()}
+      data-translation-type={translationType()}
+    />
+  );
+};
 
 /** 滚动条上用于显示对应页面下图片加载情况的元素 */
 export const ScrollbarPage: Component<{ a: number; b?: number }> = (props) => {

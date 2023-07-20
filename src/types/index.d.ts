@@ -31,4 +31,10 @@ declare global {
     };
     export default md;
   }
+
+  interface Window {
+    crsLib?: {
+      GM_xmlhttpRequest: GM_xmlhttpRequest;
+    };
+  }
 }
