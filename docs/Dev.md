@@ -4,7 +4,6 @@
 - 增加自定义快捷键功能
 - 增加进入阅读模式的快捷键
 - switchOption 或许可以删掉？
-- 修复 nhentai 关闭隐藏漫画后，自动加载出来的新漫画没有判断黑名单隐藏的 bug
 
 ## 调试
 
@@ -32,6 +31,8 @@ Object.fromEntries(
 ```
 
 手动检视一遍看能不能通过变量直接获取所有图片的链接，如果可以就参考 [manhuagui.ts](../src/site/manhuagui.tsx) 的代码，否则参考 [mangabz.ts](../src/site/mangabz.tsx) 的代码
+
+> ！！！复制代码后一定要记得修改传给 useInit 的站点名
 
 一般的代码逻辑流程是这样的
 

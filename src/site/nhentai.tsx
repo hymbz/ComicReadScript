@@ -128,14 +128,17 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
         // 在 用户已登录 且 有设置标签黑名单 且 开启了彻底屏蔽功能时，才对结果进行筛选
         (options.彻底屏蔽漫画 && blacklist?.length
-          ? result.filter(({ tags }) =>
-              tags.every((tag) => !blacklist.includes(tag.id)),
+          ? result.filter(
+              ({ tags }) => !tags.some((tag) => blacklist.includes(tag.id)),
             )
           : result
         ).forEach((comic) => {
-          comicDomHtml += `<div class="gallery" data-tags="${comic.tags
-            .map((e) => e.id)
-            .join(' ')}"><a ${
+          const blacklisted = comic.tags.some((tag) =>
+            blacklist.includes(tag.id),
+          );
+          comicDomHtml += `<div class="gallery${
+            blacklisted ? ' blacklisted' : ''
+          }" data-tags="${comic.tags.map((e) => e.id).join(' ')}"><a ${
             options.在新页面中打开链接 ? 'target="_blank"' : ''
           } href="/g/${comic.id}/" class="cover" style="padding:0 0 ${
             (comic.images.thumbnail.h / comic.images.thumbnail.w) * 100
