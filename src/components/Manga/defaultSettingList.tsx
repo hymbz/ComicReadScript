@@ -9,7 +9,6 @@ import { SettingsItemSwitch } from './components/SettingsItemSwitch';
 import {
   createStateSetFn,
   setOption,
-  switchOption,
   updateImgLoadType,
 } from './hooks/useStore/slice';
 import {
@@ -59,18 +58,18 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="显示滚动条"
           value={store.option.scrollbar.enabled}
-          onChange={() => switchOption('scrollbar.enabled')}
+          onChange={createStateSetFn('scrollbar.enabled')}
         />
         <Show when={store.option.scrollbar.enabled}>
           <SettingsItemSwitch
             name="自动隐藏滚动条"
             value={store.option.scrollbar.autoHidden}
-            onChange={() => switchOption('scrollbar.autoHidden')}
+            onChange={createStateSetFn('scrollbar.autoHidden')}
           />
           <SettingsItemSwitch
             name="显示图片加载状态"
             value={store.option.scrollbar.showProgress}
-            onChange={() => switchOption('scrollbar.showProgress')}
+            onChange={createStateSetFn('scrollbar.showProgress')}
           />
         </Show>
       </>
@@ -83,13 +82,13 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="启用点击翻页"
           value={store.option.clickPage.enabled}
-          onChange={() => switchOption('clickPage.enabled')}
+          onChange={createStateSetFn('clickPage.enabled')}
         />
         <Show when={store.option.clickPage.enabled}>
           <SettingsItemSwitch
             name="左右反转点击区域"
             value={store.option.clickPage.overturn}
-            onChange={() => switchOption('clickPage.overturn')}
+            onChange={createStateSetFn('clickPage.overturn')}
           />
           <SettingsItemSwitch
             name="显示点击区域提示"
@@ -111,13 +110,13 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="翻页至上/下一话"
           value={store.option.flipToNext}
-          onChange={() => switchOption('clickPageflipToNext')}
+          onChange={createStateSetFn('flipToNext')}
         />
 
         <SettingsItemSwitch
           name="左右翻页键交换"
           value={store.option.swapTurnPage}
-          onChange={() => switchOption('swapTurnPage')}
+          onChange={createStateSetFn('swapTurnPage')}
         />
       </>
     ),
@@ -129,19 +128,19 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="启用夜间模式"
           value={store.option.darkMode}
-          onChange={() => switchOption('darkMode')}
+          onChange={createStateSetFn('darkMode')}
         />
 
         <SettingsItemSwitch
           name="禁止放大图片"
           value={store.option.disableZoom}
-          onChange={() => switchOption('disableZoom')}
+          onChange={createStateSetFn('disableZoom')}
         />
 
         <SettingsItemSwitch
           name="在结束页显示评论"
           value={store.option.showComment}
-          onChange={() => switchOption('showComment')}
+          onChange={createStateSetFn('showComment')}
         />
 
         <SettingsItem name="背景颜色">
@@ -174,8 +173,10 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="始终加载所有图片"
           value={store.option.alwaysLoadAllImg}
-          onChange={() => {
-            switchOption('alwaysLoadAllImg');
+          onChange={(val) => {
+            setOption((draftOption) => {
+              draftOption.alwaysLoadAllImg = val;
+            });
             setState(updateImgLoadType);
           }}
         />
@@ -183,7 +184,7 @@ export const defaultSettingList: SettingList = [
         <SettingsItemSwitch
           name="默认启用首页填充"
           value={store.option.firstPageFill}
-          onChange={() => switchOption('firstPageFill')}
+          onChange={createStateSetFn('firstPageFill')}
         />
       </>
     ),
@@ -215,17 +216,13 @@ export const defaultSettingList: SettingList = [
                 <a href="https://cotrans.touhou.ai" target="_blank">
                   Cotrans
                 </a>{' '}
-                提供的接口翻译图片，该服务器由维护者用爱发电自费维护
+                提供的接口翻译图片，该服务器由维护者用爱发电自费维护。
               </p>
               <p>
-                所以还请<b>注意用量</b>，并去{' '}
-                <a
-                  href="https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md"
-                  target="_blank"
-                >
-                  Github
-                </a>{' '}
-                上支持下
+                多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试，
+              </p>
+              <p>
+                所以还请<b>注意用量</b>
               </p>
               <p>更推荐使用本地部署的项目，不抢服务器资源也不需要排队</p>
             </blockquote>
@@ -269,7 +266,7 @@ export const defaultSettingList: SettingList = [
             <SettingsItemSwitch
               name="忽略缓存强制重试"
               value={store.option.translation.forceRetry}
-              onChange={() => switchOption('translation.forceRetry')}
+              onChange={createStateSetFn('translation.forceRetry')}
             />
 
             <Show when={store.option.translation.server === '本地部署'}>

@@ -3,7 +3,7 @@ import { createEffect, on, onCleanup } from 'solid-js';
 
 import type { MangaProps } from '..';
 import { store, setState } from './useStore';
-import { updatePageData, updatePageRatio } from './useStore/slice';
+import { updatePageData, handleResize } from './useStore/slice';
 import type { Option } from './useStore/OptionState';
 import { defaultOption } from './useStore/OptionState';
 import { autoCloseFill } from '../handleComicData';
@@ -30,13 +30,13 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
     throttle<ResizeObserverCallback>(100, ([entries]) => {
       const { width, height } = entries.contentRect;
       setState((state) => {
-        updatePageRatio(state, width, height);
+        handleResize(state, width, height);
       });
     }),
   );
   // 初始化页面比例
   setState((state) => {
-    updatePageRatio(state, rootRef.scrollWidth, rootRef.scrollHeight);
+    handleResize(state, rootRef.scrollWidth, rootRef.scrollHeight);
   });
   resizeObserver.disconnect();
   resizeObserver.observe(rootRef);

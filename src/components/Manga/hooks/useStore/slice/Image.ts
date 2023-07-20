@@ -126,12 +126,8 @@ export const updateImgType = (state: State, draftImg: ComicImg) => {
   updatePageData.debounce(state);
 };
 
-/** 更新页面比例 */
-export const updatePageRatio = (
-  state: State,
-  width: number,
-  height: number,
-) => {
+/** 处理显示窗口的长宽变化 */
+export const handleResize = (state: State, width: number, height: number) => {
   state.proportion.单页比例 = Math.min(width / 2 / height, 1);
   state.proportion.横幅比例 = width / height;
   state.proportion.条漫比例 = state.proportion.单页比例 / 2;
