@@ -1,5 +1,5 @@
 /** 阻止事件冒泡 */
-export const stopPropagation = (e: UIEvent) => {
+export const stopPropagation = (e: Event) => {
   e.stopPropagation();
 };
 

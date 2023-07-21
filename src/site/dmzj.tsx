@@ -81,8 +81,8 @@ import {
       querySelector('.cartoon_online_border')!.innerHTML = '获取漫画数据中';
 
       // 删掉原有的章节 dom
-      querySelectorAll('.odd_anim_title ~ *').forEach((e) =>
-        e.parentNode?.removeChild(e),
+      querySelectorAll('.odd_anim_title ~ *').forEach(
+        (e) => e.parentNode?.removeChild(e),
       );
 
       render(() => {

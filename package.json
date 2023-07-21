@@ -11,6 +11,7 @@
     "release": "node release.mjs",
     "release:push": "node release.mjs push",
     "test": "vitest",
+    "eslint": "eslint .",
     "pwa-assets-generator": "pwa-assets-generator",
     "dev:pwa": "vite serve src/pwa",
     "build:pwa": "vite build src/pwa",

@@ -368,8 +368,8 @@ interface History {
                   class="historyTag"
                   onclick="atarget(this)"
                   href="thread-${tid}-${data.lastPageNum}-1.html#${
-                data.lastAnchor
-              }"
+                    data.lastAnchor
+                  }"
                 >
                   回第${data.lastPageNum}页
                 </a>

@@ -86,9 +86,9 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
         if (window.location.pathname === '/')
           return 'https://nhentai.net/api/galleries/all?';
         if (querySelector('a.tag'))
-          return `https://nhentai.net/api/galleries/tagged?tag_id=${
-            querySelector('a.tag')?.classList[1].split('-')[1]
-          }&`;
+          return `https://nhentai.net/api/galleries/tagged?tag_id=${querySelector(
+            'a.tag',
+          )?.classList[1].split('-')[1]}&`;
         if (window.location.pathname.includes('search'))
           return `https://nhentai.net/api/galleries/search?query=${new URLSearchParams(
             window.location.search,
@@ -126,13 +126,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
         let comicDomHtml = '';
 
-        // 在 用户已登录 且 有设置标签黑名单 且 开启了彻底屏蔽功能时，才对结果进行筛选
-        (options.彻底屏蔽漫画 && blacklist?.length
-          ? result.filter(
-              ({ tags }) => !tags.some((tag) => blacklist.includes(tag.id)),
-            )
-          : result
-        ).forEach((comic) => {
+        result.forEach((comic) => {
           const blacklisted = comic.tags.some((tag) =>
             blacklist.includes(tag.id),
           );

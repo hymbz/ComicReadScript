@@ -163,6 +163,7 @@ export const defaultButtonList: ToolbarButtonList = [
           onClick={() => {
             handleClick();
             props.onMouseLeave();
+            store.rootRef?.focus();
           }}
           role="button"
           tabIndex={-1}

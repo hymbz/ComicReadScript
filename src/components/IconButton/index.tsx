@@ -17,7 +17,7 @@ interface IconButtonProps {
   /** 是否启用 */
   enabled?: boolean;
   /** 自定义悬浮显示内容 */
-  popper?: JSX.Element | boolean;
+  popper?: JSX.Element;
 
   popperClassName?: string | boolean;
   children?: JSX.Element;
