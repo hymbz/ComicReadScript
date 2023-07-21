@@ -84,7 +84,11 @@ export const createFormData = (imgBlob: Blob) => {
   formData.append('detector', store.option.translation.options.detector);
   formData.append('direction', store.option.translation.options.direction);
   formData.append('translator', store.option.translation.options.translator);
-  formData.append('target_language', 'CHS');
+  formData.append('tgt_lang', store.option.translation.options.targetLanguage);
+  formData.append(
+    'target_language',
+    store.option.translation.options.targetLanguage,
+  );
   formData.append('retry', `${store.option.translation.forceRetry}`);
 
   return formData;

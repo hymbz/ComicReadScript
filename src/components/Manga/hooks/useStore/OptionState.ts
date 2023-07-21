@@ -49,6 +49,7 @@ export interface Option {
       detector: string;
       direction: string;
       translator: string;
+      targetLanguage: string;
     };
   };
 }
@@ -83,6 +84,7 @@ export const defaultOption: Option = {
       detector: 'default',
       translator: 'gpt3.5',
       direction: 'auto',
+      targetLanguage: 'CHS',
     },
   },
 };

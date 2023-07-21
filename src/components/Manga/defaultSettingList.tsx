@@ -216,10 +216,10 @@ export const defaultSettingList: SettingList = [
                 <a href="https://cotrans.touhou.ai" target="_blank">
                   Cotrans
                 </a>{' '}
-                提供的接口翻译图片，该服务器由维护者用爱发电自费维护。
+                提供的接口翻译图片，该服务器由维护者用爱发电自费维护
               </p>
               <p>
-                多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试，
+                多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试
               </p>
               <p>
                 所以还请<b>注意用量</b>
@@ -261,6 +261,31 @@ export const defaultSettingList: SettingList = [
               ]}
               value={store.option.translation.options.direction}
               onChange={createStateSetFn('translation.options.direction')}
+            />
+            <SettingsItemSelect
+              name="目标语言"
+              options={[
+                ['CHS', '简体中文'],
+                ['CHT', '繁體中文'],
+                ['JPN', '日本語'],
+                ['ENG', 'English'],
+                ['KOR', '한국어'],
+                ['VIN', 'Tiếng Việt'],
+                ['CSY', 'čeština'],
+                ['NLD', 'Nederlands'],
+                ['FRA', 'français'],
+                ['DEU', 'Deutsch'],
+                ['HUN', 'magyar nyelv'],
+                ['ITA', 'italiano'],
+                ['PLK', 'polski'],
+                ['PTB', 'português'],
+                ['ROM', 'limba română'],
+                ['RUS', 'русский язык'],
+                ['ESP', 'español'],
+                ['TRK', 'Türk dili'],
+              ]}
+              value={store.option.translation.options.targetLanguage}
+              onChange={createStateSetFn('translation.options.targetLanguage')}
             />
 
             <SettingsItemSwitch
