@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.5.0
+// @version      6.5.1
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、漫画猫(manhuacat)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -893,7 +893,8 @@ const defaultOption = {
       size: 'M',
       detector: 'default',
       translator: 'gpt3.5',
-      direction: 'auto'
+      direction: 'auto',
+      targetLanguage: 'CHS'
     }
   }
 };
@@ -1853,7 +1854,7 @@ const LoadTypeTip = () => web.createComponent(solidJs.For, {
   children: ShowSvg
 });
 
-const _tmpl$$s = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6>上 一 页</div><div data-area="menu" role="button" tabindex="-1"><h6>菜 单</div><div data-area="next" role="button" tabindex="-1"><h6>下 一 页\`);
+const _tmpl$$s = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6>上 一 页</h6></div><div data-area="menu" role="button" tabindex="-1"><h6>菜 单</h6></div><div data-area="next" role="button" tabindex="-1"><h6>下 一 页\`);
 const handleClick = {
   prev: () => {
     if (store.option.clickPage.enabled) setState(state => turnPage(state, 'prev'));
@@ -2223,7 +2224,8 @@ const createFormData = imgBlob => {
   formData.append('detector', store.option.translation.options.detector);
   formData.append('direction', store.option.translation.options.direction);
   formData.append('translator', store.option.translation.options.translator);
-  formData.append('target_language', 'CHS');
+  formData.append('tgt_lang', store.option.translation.options.targetLanguage);
+  formData.append('target_language', store.option.translation.options.targetLanguage);
   formData.append('retry', \`\${store.option.translation.forceRetry}\`);
   return formData;
 };
@@ -2534,7 +2536,7 @@ const SettingsItemSelect = props => {
 
 const _tmpl$$e = /*#__PURE__*/web.template(\`<button type="button">\`),
   _tmpl$2$5 = /*#__PURE__*/web.template(\`<input type="color">\`),
-  _tmpl$3$4 = /*#__PURE__*/web.template(\`<blockquote><p>将使用 <a href="https://cotrans.touhou.ai" target="_blank">Cotrans</a> 提供的接口翻译图片，该服务器由维护者用爱发电自费维护。</p><p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试，</p><p>所以还请<b>注意用量</b></p><p>更推荐使用本地部署的项目，不抢服务器资源也不需要排队\`);
+  _tmpl$3$4 = /*#__PURE__*/web.template(\`<blockquote><p>将使用 <a href="https://cotrans.touhou.ai" target="_blank">Cotrans</a> 提供的接口翻译图片，该服务器由维护者用爱发电自费维护</p><p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p><p>所以还请<b>注意用量</b></p><p>更推荐使用本地部署的项目，不抢服务器资源也不需要排队\`);
 /** 默认菜单项 */
 const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsItem, {
   get name() {
@@ -2753,6 +2755,15 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
         get onChange() {
           return createStateSetFn('translation.options.direction');
         }
+      }), web.createComponent(SettingsItemSelect, {
+        name: "\\u76EE\\u6807\\u8BED\\u8A00",
+        options: [['CHS', '简体中文'], ['CHT', '繁體中文'], ['JPN', '日本語'], ['ENG', 'English'], ['KOR', '한국어'], ['VIN', 'Tiếng Việt'], ['CSY', 'čeština'], ['NLD', 'Nederlands'], ['FRA', 'français'], ['DEU', 'Deutsch'], ['HUN', 'magyar nyelv'], ['ITA', 'italiano'], ['PLK', 'polski'], ['PTB', 'português'], ['ROM', 'limba română'], ['RUS', 'русский язык'], ['ESP', 'español'], ['TRK', 'Türk dili']],
+        get value() {
+          return store.option.translation.options.targetLanguage;
+        },
+        get onChange() {
+          return createStateSetFn('translation.options.targetLanguage');
+        }
       }), web.createComponent(SettingsItemSwitch, {
         name: "\\u5FFD\\u7565\\u7F13\\u5B58\\u5F3A\\u5236\\u91CD\\u8BD5",
         get value() {
@@ -2947,6 +2958,7 @@ props => {
     _el$2.$$click = () => {
       handleClick();
       props.onMouseLeave();
+      store.rootRef?.focus();
     };
     web.effect(() => web.className(_el$2, modules_c21c94f2$1.closeCover));
     return _el$2;
@@ -4000,17 +4012,17 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.5.0](https://github.com/hymbz/ComicReadScript/compare/v6.4.1...v6.5.0) (2023-07-20)
-
-
-### Features
-
-* :sparkles: 支持调用 manga-image-translator 实现一键汉化功能 ([d8443ec](https://github.com/hymbz/ComicReadScript/commit/d8443ec95f40d5033020d5debcdbf1d46dc98032))
+## [6.5.1](https://github.com/hymbz/ComicReadScript/compare/v6.5.0...v6.5.1) (2023-07-21)
 
 
 ### Bug Fixes
 
-* :bug: 修复部分设置无法正常切换保存的 bug ([90d131a](https://github.com/hymbz/ComicReadScript/commit/90d131a6ae3514494b709a0b6440ff254494d7b5))
+* :bug: 修复关闭设置面板后焦点丢失的 bug ([c12cdcb](https://github.com/hymbz/ComicReadScript/commit/c12cdcb4d29e82ba698c99f916f7562f58ea1b04))
+
+
+### Performance Improvements
+
+* :zap: 为翻译功能增加选择目标语言的配置项 ([6eda615](https://github.com/hymbz/ComicReadScript/commit/6eda615efa678dc80fd4d44e8af55b9303666b7b))
 \`;
     toast(() => [(() => {
       const _el$ = _tmpl$();
@@ -5513,11 +5525,7 @@ const fileType = {
           num_pages
         } = JSON.parse(res.responseText);
         let comicDomHtml = '';
-
-        // 在 用户已登录 且 有设置标签黑名单 且 开启了彻底屏蔽功能时，才对结果进行筛选
-        (options.彻底屏蔽漫画 && blacklist?.length ? result.filter(({
-          tags
-        }) => !tags.some(tag => blacklist.includes(tag.id))) : result).forEach(comic => {
+        result.forEach(comic => {
           const blacklisted = comic.tags.some(tag => blacklist.includes(tag.id));
           comicDomHtml += `<div class="gallery${blacklisted ? ' blacklisted' : ''}" data-tags="${comic.tags.map(e => e.id).join(' ')}"><a ${options.在新页面中打开链接 ? 'target="_blank"' : ''} href="/g/${comic.id}/" class="cover" style="padding:0 0 ${comic.images.thumbnail.h / comic.images.thumbnail.w * 100}% 0"><img is="lazyload-image" class="" width="${comic.images.thumbnail.w}" height="${comic.images.thumbnail.h}" src="https://t.nhentai.net/galleries/${comic.media_id}/thumb.${fileType[comic.images.thumbnail.t]}"><div class="caption">${comic.title.english}</div></a></div>`;
         });
@@ -6108,7 +6116,8 @@ const defaultOption = {
       size: 'M',
       detector: 'default',
       translator: 'gpt3.5',
-      direction: 'auto'
+      direction: 'auto',
+      targetLanguage: 'CHS'
     }
   }
 };

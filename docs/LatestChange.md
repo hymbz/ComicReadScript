@@ -1,11 +1,11 @@
-## [6.5.0](https://github.com/hymbz/ComicReadScript/compare/v6.4.1...v6.5.0) (2023-07-20)
-
-
-### Features
-
-* :sparkles: 支持调用 manga-image-translator 实现一键汉化功能 ([d8443ec](https://github.com/hymbz/ComicReadScript/commit/d8443ec95f40d5033020d5debcdbf1d46dc98032))
+## [6.5.1](https://github.com/hymbz/ComicReadScript/compare/v6.5.0...v6.5.1) (2023-07-21)
 
 
 ### Bug Fixes
 
-* :bug: 修复部分设置无法正常切换保存的 bug ([90d131a](https://github.com/hymbz/ComicReadScript/commit/90d131a6ae3514494b709a0b6440ff254494d7b5))
+* :bug: 修复关闭设置面板后焦点丢失的 bug ([c12cdcb](https://github.com/hymbz/ComicReadScript/commit/c12cdcb4d29e82ba698c99f916f7562f58ea1b04))
+
+
+### Performance Improvements
+
+* :zap: 为翻译功能增加选择目标语言的配置项 ([6eda615](https://github.com/hymbz/ComicReadScript/commit/6eda615efa678dc80fd4d44e8af55b9303666b7b))
