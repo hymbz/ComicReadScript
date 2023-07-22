@@ -80,7 +80,7 @@ const getTipText = (state: State) => {
     if (element.offsetTop > scrollBottom) break;
     // 当图片的底部位置还未达到视窗口的顶部位置时，跳到下一个图片
     if (element.offsetTop + element.offsetHeight < scrollTop) continue;
-    activeImageIndexList.push(+element.alt);
+    activeImageIndexList.push(+element.alt - 1);
   }
   state.activePageIndex = activeImageIndexList.at(0) ?? 0;
 
