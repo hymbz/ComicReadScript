@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.5.1
+// @version      6.5.2
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、漫画猫(manhuacat)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -888,6 +888,7 @@ const defaultOption = {
   showComment: true,
   translation: {
     server: '禁用',
+    localUrl: undefined,
     forceRetry: false,
     options: {
       size: 'M',
@@ -1271,7 +1272,7 @@ const getTipText = state => {
     if (element.offsetTop > scrollBottom) break;
     // 当图片的底部位置还未达到视窗口的顶部位置时，跳到下一个图片
     if (element.offsetTop + element.offsetHeight < scrollTop) continue;
-    activeImageIndexList.push(+element.alt);
+    activeImageIndexList.push(+element.alt - 1);
   }
   state.activePageIndex = activeImageIndexList.at(0) ?? 0;
   return activeImageIndexList.map(index => getPageTip(state, index)).join('\\n');
@@ -1670,7 +1671,7 @@ const handleWheel = e => {
 const handleSwapTurnPage = nextPage => store.option.swapTurnPage ? !nextPage : nextPage;
 const handleKeyUp = e => {
   e.stopPropagation();
-  if (store.option.scrollMode && !store.endPageType) return;
+  if (e.target.tagName === 'INPUT' || store.option.scrollMode && !store.endPageType) return;
   let nextPage = null;
   switch (e.key) {
     case 'PageUp':
@@ -1717,7 +1718,7 @@ const handleKeyUp = e => {
   setState(state => turnPage(state, nextPage ? 'next' : 'prev'));
 };
 
-var css$1 = ".index_module_img__525aec77{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__525aec77[data-show]{display:unset}.index_module_img__525aec77[data-fill=left]{transform:translate(50%)}.index_module_img__525aec77[data-fill=right]{transform:translate(-50%)}.index_module_img__525aec77[data-load-type=error],.index_module_img__525aec77[data-load-type=wait]{display:none}.index_module_mangaFlowBox__525aec77{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__525aec77::-webkit-scrollbar{display:none}.index_module_mangaFlow__525aec77{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__525aec77.index_module_disableZoom__525aec77 .index_module_img__525aec77{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__525aec77.index_module_scrollMode__525aec77{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__525aec77.index_module_scrollMode__525aec77 .index_module_img__525aec77{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__525aec77.index_module_scrollMode__525aec77 .index_module_img__525aec77[data-load-type=wait]{flex-basis:var(--img_placeholder_height,100vh);flex-shrink:0}.index_module_mangaFlow__525aec77[dir=ltr]{flex-direction:row}.index_module_mangaFlow__525aec77>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__525aec77>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__525aec77>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__525aec77{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__525aec77>button{animation:index_module_jello__525aec77 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__525aec77>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__525aec77>button:focus-visible{outline:none}.index_module_endPage__525aec77>.index_module_tip__525aec77{margin:auto;position:absolute}.index_module_endPage__525aec77[data-show]{opacity:1;pointer-events:all}.index_module_endPage__525aec77[data-type=start]>.index_module_tip__525aec77{transform:translateY(-10em)}.index_module_endPage__525aec77[data-type=end]>.index_module_tip__525aec77{transform:translateY(10em)}.index_module_comments__525aec77{align-items:end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__525aec77>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__525aec77:hover{opacity:1}@keyframes index_module_jello__525aec77{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__525aec77{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__525aec77{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__525aec77[data-show=true] .index_module_toolbarPanel__525aec77{transform:none}.index_module_toolbarBg__525aec77{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__525aec77{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__525aec77{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;width:15em}.index_module_SettingPanel__525aec77 hr{margin:0}.index_module_SettingBlock__525aec77{padding:0 .5em 1em}.index_module_SettingBlockSubtitle__525aec77{background-color:var(--page_bg);color:var(--text_secondary);font-size:.7em;padding-bottom:1em;padding-top:1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__525aec77{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__525aec77+.index_module_SettingsItem__525aec77{margin-top:1em}.index_module_SettingsItemName__525aec77{font-size:.9em}.index_module_SettingsItemSwitch__525aec77{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin-right:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__525aec77{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__525aec77[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__525aec77[data-checked=true] .index_module_SettingsItemSwitchRound__525aec77{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__525aec77{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0;padding:0;position:absolute;right:.7em}.index_module_SettingsItemSelect__525aec77{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__525aec77{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_scrollbar__525aec77{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__525aec77>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__525aec77{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__525aec77{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__525aec77[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__525aec77[data-type=wait]{opacity:.5}.index_module_scrollbarPage__525aec77[data-type=error]{background-color:#f005}.index_module_scrollbarPage__525aec77[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__525aec77[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__525aec77[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__525aec77[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__525aec77{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__525aec77:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__525aec77[data-show=true],.index_module_scrollbarPoper__525aec77[data-show=true],.index_module_scrollbar__525aec77:hover .index_module_scrollbarDrag__525aec77,.index_module_scrollbar__525aec77:hover .index_module_scrollbarPoper__525aec77{opacity:1}.index_module_touchAreaRoot__525aec77{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchArea__525aec77{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none;writing-mode:vertical-rl}.index_module_touchArea__525aec77[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__525aec77[data-show=true]{visibility:visible}.index_module_touchAreaRoot__525aec77[data-show=true] .index_module_touchArea__525aec77[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__525aec77[data-show=true] .index_module_touchArea__525aec77[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__525aec77[data-show=true] .index_module_touchArea__525aec77[data-area=next]{background-color:#f38181e6}.index_module_hidden__525aec77{display:none}.index_module_invisible__525aec77{visibility:hidden}.index_module_opacity1__525aec77{opacity:1}.index_module_opacity0__525aec77{opacity:0}.index_module_root__525aec77{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__525aec77 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__525aec77{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__525aec77::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__525aec77::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__525aec77::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.7em 0;overflow-wrap:anywhere;padding:0 1em;text-align:start;white-space:pre-wrap}blockquote>p+p{margin-top:.5em}svg{width:1em}";
+var css$1 = ".index_module_img__525aec77{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__525aec77[data-show]{display:unset}.index_module_img__525aec77[data-fill=left]{transform:translate(50%)}.index_module_img__525aec77[data-fill=right]{transform:translate(-50%)}.index_module_img__525aec77[data-load-type=error],.index_module_img__525aec77[data-load-type=wait]{display:none}.index_module_mangaFlowBox__525aec77{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__525aec77::-webkit-scrollbar{display:none}.index_module_mangaFlow__525aec77{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__525aec77.index_module_disableZoom__525aec77 .index_module_img__525aec77{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__525aec77.index_module_scrollMode__525aec77{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__525aec77.index_module_scrollMode__525aec77 .index_module_img__525aec77{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__525aec77.index_module_scrollMode__525aec77 .index_module_img__525aec77[data-load-type=wait]{flex-basis:var(--img_placeholder_height,100vh);flex-shrink:0}.index_module_mangaFlow__525aec77[dir=ltr]{flex-direction:row}.index_module_mangaFlow__525aec77>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__525aec77>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__525aec77>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__525aec77{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__525aec77>button{animation:index_module_jello__525aec77 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__525aec77>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__525aec77>button:focus-visible{outline:none}.index_module_endPage__525aec77>.index_module_tip__525aec77{margin:auto;position:absolute}.index_module_endPage__525aec77[data-show]{opacity:1;pointer-events:all}.index_module_endPage__525aec77[data-type=start]>.index_module_tip__525aec77{transform:translateY(-10em)}.index_module_endPage__525aec77[data-type=end]>.index_module_tip__525aec77{transform:translateY(10em)}.index_module_comments__525aec77{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__525aec77>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__525aec77:hover{opacity:1}@keyframes index_module_jello__525aec77{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__525aec77{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__525aec77{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__525aec77[data-show=true] .index_module_toolbarPanel__525aec77{transform:none}.index_module_toolbarBg__525aec77{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__525aec77{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__525aec77{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;width:15em}.index_module_SettingPanel__525aec77 hr{margin:0}.index_module_SettingBlock__525aec77{display:flex;flex-direction:column;padding:0 .5em 1em}.index_module_SettingBlockSubtitle__525aec77{background-color:var(--page_bg);color:var(--text_secondary);font-size:.7em;padding-bottom:1em;padding-top:1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__525aec77{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__525aec77+.index_module_SettingsItem__525aec77{margin-top:1em}.index_module_SettingsItemName__525aec77{font-size:.9em}.index_module_SettingsItemSwitch__525aec77{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin-right:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__525aec77{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__525aec77[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__525aec77[data-checked=true] .index_module_SettingsItemSwitchRound__525aec77{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__525aec77{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0;padding:0;position:absolute;right:.7em}.index_module_SettingsItemSelect__525aec77{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__525aec77{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_scrollbar__525aec77{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__525aec77>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__525aec77{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__525aec77{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__525aec77[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__525aec77[data-type=wait]{opacity:.5}.index_module_scrollbarPage__525aec77[data-type=error]{background-color:#f005}.index_module_scrollbarPage__525aec77[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__525aec77[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__525aec77[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__525aec77[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__525aec77{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__525aec77:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__525aec77[data-show=true],.index_module_scrollbarPoper__525aec77[data-show=true],.index_module_scrollbar__525aec77:hover .index_module_scrollbarDrag__525aec77,.index_module_scrollbar__525aec77:hover .index_module_scrollbarPoper__525aec77{opacity:1}.index_module_touchAreaRoot__525aec77{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchArea__525aec77{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none;writing-mode:vertical-rl}.index_module_touchArea__525aec77[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__525aec77[data-show=true]{visibility:visible}.index_module_touchAreaRoot__525aec77[data-show=true] .index_module_touchArea__525aec77[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__525aec77[data-show=true] .index_module_touchArea__525aec77[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__525aec77[data-show=true] .index_module_touchArea__525aec77[data-area=next]{background-color:#f38181e6}.index_module_hidden__525aec77{display:none}.index_module_invisible__525aec77{visibility:hidden}.index_module_opacity1__525aec77{opacity:1}.index_module_opacity0__525aec77{opacity:0}.index_module_root__525aec77{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__525aec77 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__525aec77{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__525aec77::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__525aec77::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__525aec77::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.7em 0;overflow-wrap:anywhere;padding:0 1em;text-align:start;white-space:pre-wrap}blockquote>p+p{margin-top:.5em}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"index_module_img__525aec77","mangaFlowBox":"index_module_mangaFlowBox__525aec77","mangaFlow":"index_module_mangaFlow__525aec77","disableZoom":"index_module_disableZoom__525aec77","scrollMode":"index_module_scrollMode__525aec77","endPage":"index_module_endPage__525aec77","jello":"index_module_jello__525aec77","tip":"index_module_tip__525aec77","comments":"index_module_comments__525aec77","toolbar":"index_module_toolbar__525aec77","toolbarPanel":"index_module_toolbarPanel__525aec77","toolbarBg":"index_module_toolbarBg__525aec77","SettingPanelPopper":"index_module_SettingPanelPopper__525aec77","SettingPanel":"index_module_SettingPanel__525aec77","SettingBlock":"index_module_SettingBlock__525aec77","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__525aec77","SettingsItem":"index_module_SettingsItem__525aec77","SettingsItemName":"index_module_SettingsItemName__525aec77","SettingsItemSwitch":"index_module_SettingsItemSwitch__525aec77","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__525aec77","SettingsItemIconButton":"index_module_SettingsItemIconButton__525aec77","SettingsItemSelect":"index_module_SettingsItemSelect__525aec77","closeCover":"index_module_closeCover__525aec77","scrollbar":"index_module_scrollbar__525aec77","scrollbarDrag":"index_module_scrollbarDrag__525aec77","scrollbarPage":"index_module_scrollbarPage__525aec77","scrollbarPoper":"index_module_scrollbarPoper__525aec77","touchAreaRoot":"index_module_touchAreaRoot__525aec77","touchArea":"index_module_touchArea__525aec77","hidden":"index_module_hidden__525aec77","invisible":"index_module_invisible__525aec77","opacity1":"index_module_opacity1__525aec77","opacity0":"index_module_opacity0__525aec77","root":"index_module_root__525aec77","beautifyScrollbar":"index_module_beautifyScrollbar__525aec77"};
 n(css$1,{});
 
@@ -2233,15 +2234,18 @@ const createFormData = imgBlob => {
 /** 将站点列表转为选择器中的选项 */
 const createOptions = list => list.map(name => [name, translatorMap[name] ?? name]);
 
+const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
+
 /** 获取部署服务的可用翻译 */
 const getValidTranslators = async () => {
   try {
-    const res = await request('http://127.0.0.1:5003');
+    const res = await request(\`\${url()}\`);
     const translatorsText = res.responseText.match(/(?<=validTranslators: ).+?(?=,\\n)/)?.[0];
     if (!translatorsText) return undefined;
     const list = JSON.parse(translatorsText.replaceAll(\`'\`, \`"\`));
     return createOptions(list);
-  } catch (_) {
+  } catch (e) {
+    console.error('获取部署服务的可用翻译时出错', e);
     return undefined;
   }
 };
@@ -2261,7 +2265,7 @@ const selfhostedTranslation = async i => {
   let task_id;
   // 上传图片取得任务 id
   try {
-    const res = await request('http://127.0.0.1:5003/submit', {
+    const res = await request(\`\${url()}/submit\`, {
       method: 'POST',
       data: createFormData(imgBlob)
     });
@@ -2277,7 +2281,7 @@ const selfhostedTranslation = async i => {
   while (!taskState?.finished) {
     try {
       await sleep(200);
-      const res = await request(\`http://127.0.0.1:5003/task-state?taskid=\${task_id}\`);
+      const res = await request(\`\${url()}/task-state?taskid=\${task_id}\`);
       taskState = JSON.parse(res.responseText);
       setMessage(i, \`\${messageMap[taskState.state] ?? taskState.state}\`);
     } catch (error) {
@@ -2286,7 +2290,7 @@ const selfhostedTranslation = async i => {
       errorNum += 1;
     }
   }
-  return \`http://127.0.0.1:5003/result/\${task_id}\`;
+  return \`\${url()}/result/\${task_id}\`;
 };
 
 /** 等待翻译完成 */
@@ -2479,8 +2483,8 @@ const translatorOptions = solidJs.createRoot(() => {
   updateOptions();
 
   // 在切换翻译服务器的同时切换可用翻译的选项列表
-  solidJs.createEffect(solidJs.on(() => store.option.translation.server, async server => {
-    if (server === '禁用') return;
+  solidJs.createEffect(solidJs.on([() => store.option.translation.server, () => store.option.translation.localUrl], async () => {
+    if (store.option.translation.server === '禁用') return;
     await updateOptions();
     // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
     if (!options().some(([val]) => val === store.option.translation.options.translator)) {
@@ -2536,7 +2540,8 @@ const SettingsItemSelect = props => {
 
 const _tmpl$$e = /*#__PURE__*/web.template(\`<button type="button">\`),
   _tmpl$2$5 = /*#__PURE__*/web.template(\`<input type="color">\`),
-  _tmpl$3$4 = /*#__PURE__*/web.template(\`<blockquote><p>将使用 <a href="https://cotrans.touhou.ai" target="_blank">Cotrans</a> 提供的接口翻译图片，该服务器由维护者用爱发电自费维护</p><p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p><p>所以还请<b>注意用量</b></p><p>更推荐使用本地部署的项目，不抢服务器资源也不需要排队\`);
+  _tmpl$3$4 = /*#__PURE__*/web.template(\`<blockquote><p>将使用 <a href="https://cotrans.touhou.ai" target="_blank">Cotrans</a> 提供的接口翻译图片，该服务器由维护者用爱发电自费维护</p><p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p><p>所以还请<b>注意用量</b></p><p>更推荐使用本地部署的项目，不抢服务器资源也不需要排队\`),
+  _tmpl$4$1 = /*#__PURE__*/web.template(\`<input type="url">\`);
 /** 默认菜单项 */
 const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsItem, {
   get name() {
@@ -2777,13 +2782,39 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
           return store.option.translation.server === '本地部署';
         },
         get children() {
-          return web.createComponent(SettingsItemSwitch, {
+          return [web.createComponent(SettingsItemSwitch, {
             name: "\\u7FFB\\u8BD1\\u5168\\u90E8\\u56FE\\u7247",
             get value() {
               return isTranslationAll();
             },
             onChange: () => setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll())
-          });
+          }), web.createComponent(SettingsItemSwitch, {
+            name: "\\u81EA\\u5B9A\\u4E49\\u670D\\u52A1\\u5668 URL",
+            get value() {
+              return store.option.translation.localUrl !== undefined;
+            },
+            onChange: val => {
+              setOption(draftOption => {
+                draftOption.translation.localUrl = val ? '' : undefined;
+              });
+            }
+          }), web.createComponent(solidJs.Show, {
+            get when() {
+              return store.option.translation.localUrl !== undefined;
+            },
+            get children() {
+              const _el$4 = _tmpl$4$1();
+              _el$4.addEventListener("change", e => {
+                setOption(draftOption => {
+                  // 删掉末尾的斜杠
+                  const url = e.target.value.replace(/\\/$/, '');
+                  draftOption.translation.localUrl = url;
+                });
+              });
+              web.effect(() => web.className(_el$4, modules_c21c94f2$1.SettingsItem));
+              return _el$4;
+            }
+          })];
         }
       })];
     }
@@ -4012,17 +4043,17 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.5.1](https://github.com/hymbz/ComicReadScript/compare/v6.5.0...v6.5.1) (2023-07-21)
+## [6.5.2](https://github.com/hymbz/ComicReadScript/compare/v6.5.1...v6.5.2) (2023-07-23)
 
 
 ### Bug Fixes
 
-* :bug: 修复关闭设置面板后焦点丢失的 bug ([c12cdcb](https://github.com/hymbz/ComicReadScript/commit/c12cdcb4d29e82ba698c99f916f7562f58ea1b04))
+* :bug: 修复卷轴模式下首张图片可能无法加载的 bug ([963d686](https://github.com/hymbz/ComicReadScript/commit/963d686ce03262a8ee16e4784a85edbcb746528f))
 
 
 ### Performance Improvements
 
-* :zap: 为翻译功能增加选择目标语言的配置项 ([6eda615](https://github.com/hymbz/ComicReadScript/commit/6eda615efa678dc80fd4d44e8af55b9303666b7b))
+* :zap: 增加自定义翻译服务 URL 的设置 ([645086d](https://github.com/hymbz/ComicReadScript/commit/645086d4f33a59854e8ed665121af0532b7dc538))
 \`;
     toast(() => [(() => {
       const _el$ = _tmpl$();
@@ -6111,6 +6142,7 @@ const defaultOption = {
   showComment: true,
   translation: {
     server: '禁用',
+    localUrl: undefined,
     forceRetry: false,
     options: {
       size: 'M',

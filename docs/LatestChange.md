@@ -1,11 +1,11 @@
-## [6.5.1](https://github.com/hymbz/ComicReadScript/compare/v6.5.0...v6.5.1) (2023-07-21)
+## [6.5.2](https://github.com/hymbz/ComicReadScript/compare/v6.5.1...v6.5.2) (2023-07-23)
 
 
 ### Bug Fixes
 
-* :bug: 修复关闭设置面板后焦点丢失的 bug ([c12cdcb](https://github.com/hymbz/ComicReadScript/commit/c12cdcb4d29e82ba698c99f916f7562f58ea1b04))
+* :bug: 修复卷轴模式下首张图片可能无法加载的 bug ([963d686](https://github.com/hymbz/ComicReadScript/commit/963d686ce03262a8ee16e4784a85edbcb746528f))
 
 
 ### Performance Improvements
 
-* :zap: 为翻译功能增加选择目标语言的配置项 ([6eda615](https://github.com/hymbz/ComicReadScript/commit/6eda615efa678dc80fd4d44e8af55b9303666b7b))
+* :zap: 增加自定义翻译服务 URL 的设置 ([645086d](https://github.com/hymbz/ComicReadScript/commit/645086d4f33a59854e8ed665121af0532b7dc538))
