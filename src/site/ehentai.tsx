@@ -93,7 +93,15 @@ declare const selected_link: HTMLElement;
     const imgPageList = res.responseText.match(
       getImgFromDetailsPageRe,
     ) as string[];
-    if (imgPageList === null) throw new Error('从详情页获取图片页的地址时出错');
+    if (imgPageList === null) {
+      if (
+        res.responseText.includes(
+          'Your IP address has been temporarily banned for excessive',
+        )
+      )
+        throw new Error('IP地址被禁');
+      throw new Error('从详情页获取图片页的地址时出错');
+    }
 
     return imgPageList;
   };
