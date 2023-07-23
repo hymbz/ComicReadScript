@@ -41,6 +41,8 @@ export interface Option {
   translation: {
     /** 翻译服务器 */
     server: '禁用' | '本地部署' | 'cotrans';
+    /** 本地部署的项目 url */
+    localUrl: string | undefined;
     /** 忽略缓存强制重试 */
     forceRetry: boolean;
     /** manga-image-translator 配置 */
@@ -78,6 +80,7 @@ export const defaultOption: Option = {
 
   translation: {
     server: '禁用',
+    localUrl: undefined,
     forceRetry: false,
     options: {
       size: 'M',

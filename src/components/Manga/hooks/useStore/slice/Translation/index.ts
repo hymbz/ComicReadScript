@@ -124,9 +124,12 @@ export const translatorOptions = createRoot(() => {
   // 在切换翻译服务器的同时切换可用翻译的选项列表
   createEffect(
     on(
-      () => store.option.translation.server,
-      async (server) => {
-        if (server === '禁用') return;
+      [
+        () => store.option.translation.server,
+        () => store.option.translation.localUrl,
+      ],
+      async () => {
+        if (store.option.translation.server === '禁用') return;
         await updateOptions();
         // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
         if (

@@ -305,6 +305,30 @@ export const defaultSettingList: SettingList = [
                   )
                 }
               />
+
+              <SettingsItemSwitch
+                name="自定义服务器 URL"
+                value={store.option.translation.localUrl !== undefined}
+                onChange={(val) => {
+                  setOption((draftOption) => {
+                    draftOption.translation.localUrl = val ? '' : undefined;
+                  });
+                }}
+              />
+
+              <Show when={store.option.translation.localUrl !== undefined}>
+                <input
+                  type="url"
+                  class={classes.SettingsItem}
+                  onChange={(e) => {
+                    setOption((draftOption) => {
+                      // 删掉末尾的斜杠
+                      const url = e.target.value.replace(/\/$/, '');
+                      draftOption.translation.localUrl = url;
+                    });
+                  }}
+                />
+              </Show>
             </Show>
           </Show>
         </>

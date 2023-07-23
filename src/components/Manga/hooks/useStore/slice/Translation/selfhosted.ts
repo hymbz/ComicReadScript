@@ -10,17 +10,20 @@ import {
   createOptions,
 } from './helper';
 
+const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
+
 /** 获取部署服务的可用翻译 */
 export const getValidTranslators = async () => {
   try {
-    const res = await request('http://127.0.0.1:5003');
+    const res = await request(`${url()}`);
     const translatorsText = res.responseText.match(
       /(?<=validTranslators: ).+?(?=,\n)/,
     )?.[0];
     if (!translatorsText) return undefined;
     const list = JSON.parse(translatorsText.replaceAll(`'`, `"`)) as string[];
     return createOptions(list);
-  } catch (_) {
+  } catch (e) {
+    console.error('获取部署服务的可用翻译时出错', e);
     return undefined;
   }
 };
@@ -42,7 +45,7 @@ export const selfhostedTranslation = async (i: number) => {
   let task_id: string;
   // 上传图片取得任务 id
   try {
-    const res = await request('http://127.0.0.1:5003/submit', {
+    const res = await request(`${url()}/submit`, {
       method: 'POST',
       data: createFormData(imgBlob),
     });
@@ -64,9 +67,7 @@ export const selfhostedTranslation = async (i: number) => {
   while (!taskState?.finished) {
     try {
       await sleep(200);
-      const res = await request(
-        `http://127.0.0.1:5003/task-state?taskid=${task_id}`,
-      );
+      const res = await request(`${url()}/task-state?taskid=${task_id}`);
       taskState = JSON.parse(res.responseText) as TaskState;
       setMessage(i, `${messageMap[taskState.state] ?? taskState.state}`);
     } catch (error) {
@@ -76,5 +77,5 @@ export const selfhostedTranslation = async (i: number) => {
     }
   }
 
-  return `http://127.0.0.1:5003/result/${task_id}`;
+  return `${url()}/result/${task_id}`;
 };
