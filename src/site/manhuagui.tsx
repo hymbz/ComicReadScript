@@ -1,4 +1,4 @@
-import { querySelectorAll, querySelectorClick, useInit } from 'main';
+import { querySelectorAll, querySelectorClick, useInit, wait } from 'main';
 
 declare const pVars: { manga: { filePath: string } };
 declare const cInfo: { nextId: number; prevId: number };
@@ -11,6 +11,9 @@ declare const cInfo: { nextId: number; prevId: number };
   await GM.addStyle(`#smh-msg-box { z-index: 9999999999 !important }`);
 
   const { setManga, init } = await useInit('manhuagui');
+
+  await wait(() => pVars.manga.filePath);
+
   setManga({
     onNext: cInfo.nextId !== 0 ? querySelectorClick('a.nextC') : undefined,
     onPrev: cInfo.prevId !== 0 ? querySelectorClick('a.prevC') : undefined,
