@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.5.2
+// @version      6.5.3
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、漫画猫(manhuacat)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -3674,9 +3674,7 @@ const useManga = async initProps => {
     } else {
       dom.removeAttribute('show');
       document.documentElement.style.overflow = 'unset';
-      setTimeout(() => {
-        document.querySelector('#fab')?.shadowRoot?.querySelector('div > button')?.focus();
-      });
+      document.querySelector('#fab')?.shadowRoot?.querySelector('div > button')?.focus();
     }
   };
 
@@ -4043,17 +4041,13 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.5.2](https://github.com/hymbz/ComicReadScript/compare/v6.5.1...v6.5.2) (2023-07-23)
+## [6.5.3](https://github.com/hymbz/ComicReadScript/compare/v6.5.2...v6.5.3) (2023-07-27)
 
 
 ### Bug Fixes
 
-* :bug: 修复卷轴模式下首张图片可能无法加载的 bug ([963d686](https://github.com/hymbz/ComicReadScript/commit/963d686ce03262a8ee16e4784a85edbcb746528f))
-
-
-### Performance Improvements
-
-* :zap: 增加自定义翻译服务 URL 的设置 ([645086d](https://github.com/hymbz/ComicReadScript/commit/645086d4f33a59854e8ed665121af0532b7dc538))
+* :bug: 修复进入阅读模式后浏览器焦点不在页面内的 bug ([f7c0fd3](https://github.com/hymbz/ComicReadScript/commit/f7c0fd35452e4d1e0dbffeb6f17eb092c626c445))
+* :bug: 修复漫画柜偶尔加载出错的 bug ([aebbb76](https://github.com/hymbz/ComicReadScript/commit/aebbb76967e2a35a2c1e7513e9750c93337552a6))
 \`;
     toast(() => [(() => {
       const _el$ = _tmpl$();
@@ -5337,7 +5331,10 @@ const MdSettings = ((props = {}) => (() => {
 
     // 从详情页获取图片页的地址
     const imgPageList = res.responseText.match(getImgFromDetailsPageRe);
-    if (imgPageList === null) throw new Error('从详情页获取图片页的地址时出错');
+    if (imgPageList === null) {
+      if (res.responseText.includes('Your IP address has been temporarily banned for excessive')) throw new Error('IP地址被禁');
+      throw new Error('从详情页获取图片页的地址时出错');
+    }
     return imgPageList;
   };
   const showComic = init(async () => {
@@ -5837,6 +5834,7 @@ const main = require('main');
     setManga,
     init
   } = await main.useInit('manhuagui');
+  await main.wait(() => pVars.manga.filePath);
   setManga({
     onNext: cInfo.nextId !== 0 ? main.querySelectorClick('a.nextC') : undefined,
     onPrev: cInfo.prevId !== 0 ? main.querySelectorClick('a.prevC') : undefined
