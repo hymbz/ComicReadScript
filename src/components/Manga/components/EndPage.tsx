@@ -3,7 +3,6 @@ import {
   createMemo,
   createEffect,
   createSignal,
-  onCleanup,
   onMount,
   For,
   Show,
@@ -29,7 +28,6 @@ export const EndPage: Component = () => {
   let ref: HTMLDivElement;
 
   onMount(() => {
-    const controller = new AbortController();
     ref.addEventListener(
       'wheel',
       (e) => {
@@ -37,12 +35,8 @@ export const EndPage: Component = () => {
         e.stopPropagation();
         setState((state) => turnPage(state, e.deltaY > 0 ? 'next' : 'prev'));
       },
-      {
-        passive: false,
-        signal: controller.signal,
-      },
+      { passive: false },
     );
-    onCleanup(() => controller.abort());
   });
 
   // state.endPageType 变量的延时版本，在隐藏的动画效果结束之后才会真正改变

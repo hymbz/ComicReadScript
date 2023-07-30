@@ -77,11 +77,9 @@ const handleSwapTurnPage = (nextPage: boolean) =>
 export const handleKeyUp = (e: KeyboardEvent) => {
   e.stopPropagation();
 
-  if (
-    (e.target as HTMLElement).tagName === 'INPUT' ||
-    (store.option.scrollMode && !store.endPageType)
-  )
-    return;
+  if ((e.target as HTMLElement).tagName === 'INPUT') return;
+
+  if (store.endPageType) e.preventDefault();
 
   let nextPage: boolean | null = null;
 
