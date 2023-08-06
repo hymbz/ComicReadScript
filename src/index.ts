@@ -132,6 +132,12 @@ switch (window.location.hostname) {
     break;
   }
 
+  // #komiic
+  case 'komiic.com': {
+    inject('komiic');
+    break;
+  }
+
   // #welovemanga
   case 'nicomanga.com':
   case 'weloma.art':

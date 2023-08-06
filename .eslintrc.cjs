@@ -118,6 +118,8 @@ module.exports = {
         'default-case': 'off',
         // 允许自增自减
         'no-plusplus': 'off',
+        // 允许空函数
+        'no-empty': 'off',
 
         // 自动将直接 import 的类型改为用 import type 导入
         '@typescript-eslint/consistent-type-imports': ['warn', {}],

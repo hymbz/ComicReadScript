@@ -44,9 +44,9 @@ export const insertNode = (
 export const querySelectorClick = (
   selector: string | (() => HTMLElement | undefined | null),
 ) => {
-  const dom =
+  const getDom = () =>
     typeof selector === 'string' ? querySelector(selector) : selector();
-  if (dom) return () => dom.click();
+  if (getDom()) return () => getDom()?.click();
 };
 
 /** 判断两个列表中包含的值是否相同 */
