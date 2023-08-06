@@ -36,7 +36,7 @@ import {
 
     return querySelectorAll(
       '.ComicImage__bottom-menu-center button:not([disabled])',
-    ).find((e) => e.innerText === text);
+    ).find((e) => e.innerText.includes(text));
   };
 
   autoUpdate(async () => {
@@ -55,8 +55,8 @@ import {
     setManga({ imgList: [] });
     init(getImgList);
     setManga({
-      onPrev: querySelectorClick(findButton('上一話')),
-      onNext: querySelectorClick(findButton('下一話')),
+      onPrev: querySelectorClick(findButton('上一')),
+      onNext: querySelectorClick(findButton('下一')),
     });
   });
 })();
