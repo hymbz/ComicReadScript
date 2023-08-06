@@ -134,3 +134,10 @@ export const handleKeyUp = (e: KeyboardEvent) => {
   if (nextPage === null) return;
   setState((state) => turnPage(state, nextPage ? 'next' : 'prev'));
 };
+
+export const handleMouseDown: EventHandler['onmousedown'] = (e) => {
+  if (e.button !== 1) return;
+  e.stopPropagation();
+  e.preventDefault();
+  switchFillEffect();
+};

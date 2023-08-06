@@ -12,7 +12,11 @@ import type { FillEffect } from './hooks/useStore/ImageState';
 import type { Option } from './hooks/useStore/OptionState';
 import { cssVar } from './hooks/useCssVar';
 import { useInit } from './hooks/useInit';
-import { handleKeyUp, handleWheel } from './hooks/useStore/slice';
+import {
+  handleKeyUp,
+  handleMouseDown,
+  handleWheel,
+} from './hooks/useStore/slice';
 import { stopPropagation } from './helper';
 
 import classes, { css as style } from './index.module.css';
@@ -81,6 +85,7 @@ export const Manga: Component<MangaProps> = (props) => {
       onWheel={handleWheel}
       onKeyUp={stopPropagation}
       onKeyDown={handleKeyUp}
+      onMouseDown={handleMouseDown}
       role="presentation"
       tabIndex={-1}
     >
