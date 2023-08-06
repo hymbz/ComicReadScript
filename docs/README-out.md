@@ -64,6 +64,8 @@
 
 也正因如此，更推荐大家使用本地部署的项目，不抢服务器资源也不需要排队。**一键翻译全部图片**的功能开关只会在使用本地版时可用，脚本的维护重心也是本地版，无法保证 Cotrans 相关 bug 的修复。
 
+脚本默认本地服务器的 url 是`http://127.0.0.1:5003`，如果部署的 url 与这个不同，请通过自定义 url 功能修改。
+
 Cotrans 也有自己的油猴脚本 —— [Cotrans 漫画/图片翻译器](https://greasyfork.org/zh-CN/scripts/437569-cotrans-manga-image-translator-regular-edition)，支持 Pixiv、Twitter、Misskey、Calckey，欢迎有相关需求的人安装。
 
 ![翻译功能示例](https://cdn.jsdelivr.net/gh/hymbz/ComicReadScript/docs/images/翻译功能示例.webp)
@@ -144,6 +146,10 @@ Cotrans 也有自己的油猴脚本 —— [Cotrans 漫画/图片翻译器](http
 也可以直接右键标签点击「在新标签页中打开」跳至 nhentai。
 
 > 不过目前因为 nhentai 加了 CloudFlare 的反爬风控，所以大部分情况下该功能会直接失败，需要手动进入一次 nhentai 页面刷新一下缓存才行。体感缓存很快就会失效，但目前也找不到什么好办法
+
+### 快捷键翻页
+
+在漫画列表页和详情页增加通过左右方向键翻页的功能。~~方便单手操作~~
 
 ## nhentai
 

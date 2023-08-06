@@ -127,8 +127,8 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
         let comicDomHtml = '';
 
         result.forEach((comic) => {
-          const blacklisted = comic.tags.some((tag) =>
-            blacklist.includes(tag.id),
+          const blacklisted = comic.tags.some(
+            (tag) => blacklist?.includes(tag.id),
           );
           comicDomHtml += `<div class="gallery${
             blacklisted ? ' blacklisted' : ''

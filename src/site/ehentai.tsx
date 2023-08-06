@@ -176,7 +176,7 @@ declare const selected_link: HTMLElement;
       newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
-        匹配失败，请尝试重新登陆
+        匹配失败，请在确认登录
         <a href='https://nhentai.net/' target="_blank" >
           <u>nhentai</u>
         </a>
