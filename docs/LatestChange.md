@@ -1,7 +1,12 @@
-## [6.5.3](https://github.com/hymbz/ComicReadScript/compare/v6.5.2...v6.5.3) (2023-07-27)
+## [6.6.0](https://github.com/hymbz/ComicReadScript/compare/v6.5.3...v6.6.0) (2023-08-06)
+
+
+### Features
+
+* :sparkles: 新增支持站点 komiic ([4d1de5e](https://github.com/hymbz/ComicReadScript/commit/4d1de5e076f8e3166fb83b2584303fb0064b12f9))
 
 
 ### Bug Fixes
 
-* :bug: 修复进入阅读模式后浏览器焦点不在页面内的 bug ([f7c0fd3](https://github.com/hymbz/ComicReadScript/commit/f7c0fd35452e4d1e0dbffeb6f17eb092c626c445))
-* :bug: 修复漫画柜偶尔加载出错的 bug ([aebbb76](https://github.com/hymbz/ComicReadScript/commit/aebbb76967e2a35a2c1e7513e9750c93337552a6))
+* :bug: 修复 nhentai 未登录状态下自动翻页失效的 bug ([9e606a1](https://github.com/hymbz/ComicReadScript/commit/9e606a137388575c23be4f0daefda78f7ae75001))
+* :bug: 修复卷轴模式下无法使用键盘弹出结束页的 bug ([ac17ed4](https://github.com/hymbz/ComicReadScript/commit/ac17ed49cd57141c91ba2c7949f99dded05d78f7))

@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.5.3
-// @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、漫画猫(manhuacat)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、welovemanga
+// @version      6.6.0
+// @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、漫画猫(manhuacat)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
 // @noframes
@@ -114,8 +114,8 @@ const insertNode = (node, textnode, referenceNode = null) => {
 
 /** 返回 Dom 的点击函数 */
 const querySelectorClick = selector => {
-  const dom = typeof selector === 'string' ? querySelector(selector) : selector();
-  if (dom) return () => dom.click();
+  const getDom = () => typeof selector === 'string' ? querySelector(selector) : selector();
+  if (getDom()) return () => getDom()?.click();
 };
 
 /** 判断两个列表中包含的值是否相同 */
@@ -1671,7 +1671,8 @@ const handleWheel = e => {
 const handleSwapTurnPage = nextPage => store.option.swapTurnPage ? !nextPage : nextPage;
 const handleKeyUp = e => {
   e.stopPropagation();
-  if (e.target.tagName === 'INPUT' || store.option.scrollMode && !store.endPageType) return;
+  if (e.target.tagName === 'INPUT') return;
+  if (store.endPageType) e.preventDefault();
   let nextPage = null;
   switch (e.key) {
     case 'PageUp':
@@ -3304,16 +3305,13 @@ const EndPage = () => {
   };
   let ref;
   solidJs.onMount(() => {
-    const controller = new AbortController();
     ref.addEventListener('wheel', e => {
       e.preventDefault();
       e.stopPropagation();
       setState(state => turnPage(state, e.deltaY > 0 ? 'next' : 'prev'));
     }, {
-      passive: false,
-      signal: controller.signal
+      passive: false
     });
-    solidJs.onCleanup(() => controller.abort());
   });
 
   // state.endPageType 变量的延时版本，在隐藏的动画效果结束之后才会真正改变
@@ -3587,8 +3585,8 @@ const Manga = props => {
   });
   return (() => {
     const _el$ = _tmpl$$7();
-    web.addEventListener(_el$, "keydown", stopPropagation, true);
-    web.addEventListener(_el$, "keyup", handleKeyUp, true);
+    web.addEventListener(_el$, "keydown", handleKeyUp, true);
+    web.addEventListener(_el$, "keyup", stopPropagation, true);
     web.addEventListener(_el$, "wheel", handleWheel);
     const _ref$ = rootRef;
     typeof _ref$ === "function" ? web.use(_ref$, _el$) : rootRef = _el$;
@@ -4041,13 +4039,18 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.5.3](https://github.com/hymbz/ComicReadScript/compare/v6.5.2...v6.5.3) (2023-07-27)
+## [6.6.0](https://github.com/hymbz/ComicReadScript/compare/v6.5.3...v6.6.0) (2023-08-06)
+
+
+### Features
+
+* :sparkles: 新增支持站点 komiic ([4d1de5e](https://github.com/hymbz/ComicReadScript/commit/4d1de5e076f8e3166fb83b2584303fb0064b12f9))
 
 
 ### Bug Fixes
 
-* :bug: 修复进入阅读模式后浏览器焦点不在页面内的 bug ([f7c0fd3](https://github.com/hymbz/ComicReadScript/commit/f7c0fd35452e4d1e0dbffeb6f17eb092c626c445))
-* :bug: 修复漫画柜偶尔加载出错的 bug ([aebbb76](https://github.com/hymbz/ComicReadScript/commit/aebbb76967e2a35a2c1e7513e9750c93337552a6))
+* :bug: 修复 nhentai 未登录状态下自动翻页失效的 bug ([9e606a1](https://github.com/hymbz/ComicReadScript/commit/9e606a137388575c23be4f0daefda78f7ae75001))
+* :bug: 修复卷轴模式下无法使用键盘弹出结束页的 bug ([ac17ed4](https://github.com/hymbz/ComicReadScript/commit/ac17ed49cd57141c91ba2c7949f99dded05d78f7))
 \`;
     toast(() => [(() => {
       const _el$ = _tmpl$();
@@ -5391,7 +5394,7 @@ const MdSettings = ((props = {}) => (() => {
       newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
-        匹配失败，请尝试重新登陆
+        匹配失败，请在确认登录
         <a href='https://nhentai.net/' target="_blank" >
           <u>nhentai</u>
         </a>
@@ -5554,7 +5557,7 @@ const fileType = {
         } = JSON.parse(res.responseText);
         let comicDomHtml = '';
         result.forEach(comic => {
-          const blacklisted = comic.tags.some(tag => blacklist.includes(tag.id));
+          const blacklisted = comic.tags.some(tag => blacklist?.includes(tag.id));
           comicDomHtml += `<div class="gallery${blacklisted ? ' blacklisted' : ''}" data-tags="${comic.tags.map(e => e.id).join(' ')}"><a ${options.在新页面中打开链接 ? 'target="_blank"' : ''} href="/g/${comic.id}/" class="cover" style="padding:0 0 ${comic.images.thumbnail.h / comic.images.thumbnail.w * 100}% 0"><img is="lazyload-image" class="" width="${comic.images.thumbnail.w}" height="${comic.images.thumbnail.h}" src="https://t.nhentai.net/galleries/${comic.media_id}/thumb.${fileType[comic.images.thumbnail.t]}"><div class="caption">${comic.title.english}</div></a></div>`;
         });
 
@@ -6065,6 +6068,65 @@ const main = require('main');
     return newImgList;
   };
   init(getImgList);
+})();
+
+      break;
+    }
+
+  // #komiic
+  case 'komiic.com':
+    {
+const main = require('main');
+
+(async () => {
+  const {
+    setManga,
+    setFab,
+    init
+  } = await main.useInit('komiic');
+  const getImgList = async () => {
+    const imgList = main.querySelectorAll('.imageContainer > img').map(e => e.getAttribute('data-src') ?? '');
+    if (imgList.includes('')) {
+      await main.sleep(100);
+      return getImgList();
+    }
+    return imgList;
+  };
+  let lastUrl = '';
+  const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
+  const findButton = text => () => {
+    // 点击唤出底栏
+    const id = window.setInterval(() => {
+      main.querySelector('.ComicImageContainer')?.click();
+    }, 500);
+    while (!main.querySelector('.ComicImage__bottom-menu-center')) {}
+    window.clearInterval(id);
+    return main.querySelectorAll('.ComicImage__bottom-menu-center button:not([disabled])').find(e => e.innerText === text);
+  };
+  main.autoUpdate(async () => {
+    if (window.location.pathname === lastUrl) return;
+    lastUrl = window.location.pathname;
+    if (!urlMatchRe.test(lastUrl)) {
+      setFab({
+        show: false
+      });
+      setManga({
+        show: false
+      });
+      return;
+    }
+    await main.waitDom('.imageContainer > img');
+
+    // 先将 imgList 清空以便 activePageIndex 归零
+    setManga({
+      imgList: []
+    });
+    init(getImgList);
+    setManga({
+      onPrev: main.querySelectorClick(findButton('上一話')),
+      onNext: main.querySelectorClick(findButton('下一話'))
+    });
+  });
 })();
 
       break;
