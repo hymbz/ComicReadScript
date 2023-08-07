@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.6.0
+// @version      6.7.0
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、漫画猫(manhuacat)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -233,7 +233,7 @@ const difference = (a, b) => {
     if (typeof a[key] === 'object') {
       const _res = difference(a[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
-    } else if (a[key] !== b[key]) res[key] = a[key];
+    } else if (a[key] !== b?.[key]) res[key] = a[key];
   }
   return res;
 };
@@ -248,10 +248,10 @@ const assign = (a, b) => {
   const keys = Object.keys(b);
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
-    if (typeof b[key] === 'object') {
-      const _res = assign(a[key], b[key]);
+    if (res[key] === undefined) res[key] = b[key];else if (typeof b[key] === 'object') {
+      const _res = assign(res[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
-    } else if (a[key] !== b[key]) res[key] = b[key];
+    } else if (res[key] !== b[key]) res[key] = b[key];
   }
   return res;
 };
@@ -278,6 +278,26 @@ const autoUpdate = update => {
   });
   refresh();
 };
+
+/** 获取键盘事件的编码 */
+const getKeyboardCode = e => {
+  let {
+    key
+  } = e;
+  switch (key) {
+    case 'Shift':
+    case 'Control':
+    case 'Alt':
+      return key;
+  }
+  if (e.ctrlKey) key = \`Ctrl + \${key}\`;
+  if (e.altKey) key = \`Alt + \${key}\`;
+  if (e.shiftKey) key = \`Shift + \${key}\`;
+  return key;
+};
+
+/** 将快捷键的编码转换成更易读的形式 */
+const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\\s$/, '空格');
 
 /** 挂载 solid-js 组件 */
 const mountComponents = (id, fc) => {
@@ -306,11 +326,11 @@ var css$3 = ".index_module_root__e3ca723c{align-items:flex-end;bottom:0;display:
 var modules_c21c94f2$3 = {"root":"index_module_root__e3ca723c","item":"index_module_item__e3ca723c","bounceInRight":"index_module_bounceInRight__e3ca723c","bounceOutRight":"index_module_bounceOutRight__e3ca723c","schedule":"index_module_schedule__e3ca723c","msg":"index_module_msg__e3ca723c"};
 n(css$3,{});
 
-const [_state$1, _setState] = store$2.createStore({
+const [_state$1, _setState$1] = store$2.createStore({
   list: [],
   map: {}
 });
-const setState$1 = fn => _setState(store$2.produce(fn));
+const setState$1 = fn => _setState$1(store$2.produce(fn));
 
 // eslint-disable-next-line solid/reactivity
 const store$1 = _state$1;
@@ -322,30 +342,30 @@ const creatId = () => {
   return id;
 };
 
-const _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
+const _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
 const MdCheckCircle = ((props = {}) => (() => {
-  const _el$ = _tmpl$$J();
+  const _el$ = _tmpl$$O();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
 const MdWarning = ((props = {}) => (() => {
-  const _el$ = _tmpl$$I();
+  const _el$ = _tmpl$$N();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const _tmpl$$M = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
 const MdError = ((props = {}) => (() => {
-  const _el$ = _tmpl$$H();
+  const _el$ = _tmpl$$M();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
+const _tmpl$$L = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
 const MdInfo = ((props = {}) => (() => {
-  const _el$ = _tmpl$$G();
+  const _el$ = _tmpl$$L();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -397,8 +417,8 @@ toast$1.error = (msg, options) => toast$1(msg, {
   type: 'error'
 });
 
-const _tmpl$$F = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$9 = /*#__PURE__*/web.template(\`<div><div>\`);
+const _tmpl$$K = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$b = /*#__PURE__*/web.template(\`<div><div>\`);
 const iconMap = {
   info: MdInfo,
   success: MdCheckCircle,
@@ -451,7 +471,7 @@ const ToastItem = props => {
     });
   });
   return (() => {
-    const _el$ = _tmpl$2$9(),
+    const _el$ = _tmpl$2$b(),
       _el$2 = _el$.firstChild;
     _el$.addEventListener("animationend", handleAnimationEnd);
     _el$.$$click = dismiss;
@@ -469,7 +489,7 @@ const ToastItem = props => {
         return props.duration !== Infinity || props.schedule !== undefined;
       },
       get children() {
-        const _el$3 = _tmpl$$F();
+        const _el$3 = _tmpl$$K();
         _el$3.addEventListener("animationend", dismiss);
         const _ref$ = scheduleRef;
         typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
@@ -513,7 +533,7 @@ const ToastItem = props => {
 };
 web.delegateEvents(["click"]);
 
-const _tmpl$$E = /*#__PURE__*/web.template(\`<div>\`);
+const _tmpl$$J = /*#__PURE__*/web.template(\`<div>\`);
 const Toaster = () => {
   const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
   solidJs.onMount(() => {
@@ -524,7 +544,7 @@ const Toaster = () => {
     solidJs.onCleanup(() => document.removeEventListener('visibilitychange', handleVisibilityChange));
   });
   return (() => {
-    const _el$ = _tmpl$$E();
+    const _el$ = _tmpl$$J();
     web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
         return store$1.list;
@@ -547,11 +567,11 @@ const Toaster = () => {
 
 const ToastStyle = css$3;
 
-const _tmpl$$D = /*#__PURE__*/web.template(\`<style type="text/css">\`);
+const _tmpl$$I = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let dom$1;
 const init = () => {
   if (!dom$1) dom$1 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
-    const _el$ = _tmpl$$D();
+    const _el$ = _tmpl$$I();
     web.insert(_el$, ToastStyle);
     return _el$;
   })()]);
@@ -603,30 +623,30 @@ const request$1 = async (url, details, errorNum = 0) => {
   }
 };
 
-const _tmpl$$C = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
+const _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
 const MdAutoFixHigh = ((props = {}) => (() => {
-  const _el$ = _tmpl$$C();
+  const _el$ = _tmpl$$H();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9zm-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41 1.47-1.45zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42z">\`);
+const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9zm-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41 1.47-1.45zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42z">\`);
 const MdAutoFixOff = ((props = {}) => (() => {
-  const _el$ = _tmpl$$B();
+  const _el$ = _tmpl$$G();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1z">\`);
+const _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1z">\`);
 const MdAutoFlashOn = ((props = {}) => (() => {
-  const _el$ = _tmpl$$A();
+  const _el$ = _tmpl$$F();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28.45-.78zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13 3.15-6.29zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41z">\`);
+const _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28.45-.78zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13 3.15-6.29zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41z">\`);
 const MdAutoFlashOff = ((props = {}) => (() => {
-  const _el$ = _tmpl$$z();
+  const _el$ = _tmpl$$E();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -635,12 +655,10 @@ var css$2 = ".index_module_iconButtonItem__9645dd99{align-items:center;display:f
 var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__9645dd99","iconButton":"index_module_iconButton__9645dd99","enabled":"index_module_enabled__9645dd99","iconButtonPopper":"index_module_iconButtonPopper__9645dd99","hidden":"index_module_hidden__9645dd99"};
 n(css$2,{});
 
-const _tmpl$$y = /*#__PURE__*/web.template(\`<div><button type="button">\`),
-  _tmpl$2$8 = /*#__PURE__*/web.template(\`<div>\`);
+const _tmpl$$D = /*#__PURE__*/web.template(\`<div><button type="button">\`),
+  _tmpl$2$a = /*#__PURE__*/web.template(\`<div>\`);
 const IconButtonStyle = css$2;
-/**
- * 图标按钮
- */
+/** 图标按钮 */
 const IconButton = _props => {
   const props = solidJs.mergeProps({
     placement: 'right'
@@ -652,7 +670,7 @@ const IconButton = _props => {
     props.onClick?.(e);
   };
   return (() => {
-    const _el$ = _tmpl$$y(),
+    const _el$ = _tmpl$$D(),
       _el$2 = _el$.firstChild;
     _el$2.$$click = handleClick;
     const _ref$ = buttonRef;
@@ -661,7 +679,7 @@ const IconButton = _props => {
     web.insert(_el$, (() => {
       const _c$ = web.memo(() => !!(props.popper || props.tip));
       return () => _c$() ? (() => {
-        const _el$3 = _tmpl$2$8();
+        const _el$3 = _tmpl$2$a();
         web.insert(_el$3, () => props.popper || props.tip);
         web.effect(_p$ => {
           const _v$6 = [modules_c21c94f2$2.iconButtonPopper, props.popperClassName].join(' '),
@@ -797,16 +815,16 @@ const useCache = (initSchema, version = 1) => {
   };
 };
 
-const _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71zM5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1z">\`);
+const _tmpl$$C = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71zM5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1z">\`);
 const MdFileDownload = ((props = {}) => (() => {
-  const _el$ = _tmpl$$x();
+  const _el$ = _tmpl$$C();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z">\`);
+const _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z">\`);
 const MdClose = ((props = {}) => (() => {
-  const _el$ = _tmpl$$w();
+  const _el$ = _tmpl$$B();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -903,6 +921,17 @@ const OptionState = {
   option: JSON.parse(JSON.stringify(defaultOption))
 };
 
+const defaultHoeKeys = {
+  向上翻页: ['w', 'ArrowUp', 'PageUp'],
+  向下翻页: [' ', 's', 'ArrowDown', 'PageDown'],
+  向右翻页: ['d', '.', 'ArrowRight'],
+  向左翻页: ['a', ',', 'ArrowLeft'],
+  跳至首页: ['Home'],
+  跳至尾页: ['End'],
+  退出: ['Escape'],
+  切换页面填充: ['/', 'm', 'z'],
+  切换卷轴模式: []
+};
 const OtherState = {
   panzoom: undefined,
   /** 当前是否处于放大模式 */
@@ -919,6 +948,8 @@ const OtherState = {
   endPageType: undefined,
   /** 评论列表 */
   commentList: undefined,
+  /** 快捷键配置 */
+  hotKeys: JSON.parse(JSON.stringify(defaultHoeKeys)),
   /** 点击结束页按钮时触发的回调 */
   onExit: undefined,
   /** 点击上一话按钮时触发的回调 */
@@ -927,6 +958,10 @@ const OtherState = {
   onNext: undefined,
   /** 图片加载状态发生变化时触发的回调 */
   onLoading: undefined,
+  /** 配置发生变化时触发的回调 */
+  onOptionChange: undefined,
+  /** 快捷键配置发生变化时触发的回调 */
+  onHotKeysChange: undefined,
   editButtonList: list => list,
   editSettingList: list => list,
   prevRef: undefined,
@@ -937,7 +972,8 @@ const OtherState = {
 const {
   store,
   setState,
-  _state
+  _state,
+  _setState
 } = useStore({
   ...imgState,
   ...ScrollbarState,
@@ -1365,12 +1401,8 @@ const clamp = (max, val, min) => Math.max(Math.min(max, val), min);
 
 /** 通过重新解构赋值 option 以触发 onOptionChange */
 const setOption = fn => {
-  setState(state => {
-    fn(state.option);
-    state.option = {
-      ...state.option
-    };
-  });
+  setState(state => fn(state.option));
+  store.onOptionChange?.(difference(store.option, defaultOption));
 };
 
 /** 创建一个专门用于修改指定配置项的函数 */
@@ -1619,6 +1651,45 @@ const switchFillEffect = () => {
   });
 };
 
+/** 切换卷轴模式 */
+const switchScrollMode = () => {
+  store.panzoom?.smoothZoomAbs(0, 0, 1);
+  setState(state => {
+    state.activePageIndex = 0;
+    setOption(draftOption => {
+      draftOption.scrollMode = !draftOption.scrollMode;
+      draftOption.onePageMode = draftOption.scrollMode;
+    });
+    updatePageData(state);
+  });
+  setTimeout(handleMangaFlowScroll);
+};
+
+const setHotKeys = (...args) => {
+  _setState.apply(undefined, ['hotKeys', ...args]);
+  store.onHotKeysChange?.(Object.fromEntries(Object.entries(store.hotKeys).filter(([name, keys]) => !defaultHoeKeys[name] || !isEqualArray(keys, defaultHoeKeys[name]))));
+};
+const {
+  hotKeysMap
+} = solidJs.createRoot(() => {
+  const hotKeysMapMemo = solidJs.createMemo(() => Object.fromEntries(Object.entries(store.hotKeys).flatMap(([name, key]) => key.map(k => [k, name]))));
+  return {
+    /** 快捷键配置 */
+    hotKeysMap: hotKeysMapMemo
+  };
+});
+
+/** 删除指定快捷键 */
+const delHotKeys = code => {
+  Object.entries(store.hotKeys).forEach(([name, keys]) => {
+    const i = keys.indexOf(code);
+    if (i === -1) return;
+    const newKeys = [...store.hotKeys[name]];
+    newKeys.splice(i, 1);
+    setHotKeys(name, newKeys);
+  });
+};
+
 const handleWheel = e => {
   e.stopPropagation();
   if (e.ctrlKey || e.altKey && !store.option.scrollMode || !store.endPageType && store.scrollLock) return;
@@ -1668,62 +1739,52 @@ const handleWheel = e => {
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
-const handleSwapTurnPage = nextPage => store.option.swapTurnPage ? !nextPage : nextPage;
-const handleKeyUp = e => {
+const handleSwapTurnPage = nextPage => {
+  const next = store.option.swapTurnPage ? !nextPage : nextPage;
+  return next ? 'next' : 'prev';
+};
+const handleKeyDown = e => {
   e.stopPropagation();
   if (e.target.tagName === 'INPUT') return;
   if (store.endPageType) e.preventDefault();
-  let nextPage = null;
-  switch (e.key) {
-    case 'PageUp':
-    case 'ArrowUp':
-    case 'w':
-      nextPage = false;
-      break;
-    case ' ':
-    case 'PageDown':
-    case 'ArrowDown':
-    case 's':
-      nextPage = true;
-      break;
-    case 'ArrowRight':
-    case '.':
-    case 'd':
-      nextPage = handleSwapTurnPage(store.option.dir !== 'rtl');
-      break;
-    case 'ArrowLeft':
-    case ',':
-    case 'a':
-      nextPage = handleSwapTurnPage(store.option.dir === 'rtl');
-      break;
-    case '/':
-    case 'm':
-    case 'z':
-      switchFillEffect();
-      break;
-    case 'Home':
-      setState(state => {
+  const code = getKeyboardCode(e);
+  switch (hotKeysMap()[code]) {
+    case '向上翻页':
+      return setState(state => turnPage(state, 'prev'));
+    case '向下翻页':
+      return setState(state => turnPage(state, 'next'));
+    case '向右翻页':
+      return setState(state => turnPage(state, handleSwapTurnPage(store.option.dir !== 'rtl')));
+    case '向左翻页':
+      return setState(state => turnPage(state, handleSwapTurnPage(store.option.dir === 'rtl')));
+    case '跳至首页':
+      return setState(state => {
         state.activePageIndex = 0;
       });
-      break;
-    case 'End':
-      setState(state => {
+    case '跳至尾页':
+      return setState(state => {
         state.activePageIndex = state.pageList.length - 1;
       });
-      break;
-    case 'Escape':
-      store.onExit?.();
-      break;
+    case '切换页面填充':
+      return switchFillEffect();
+    case '切换卷轴模式':
+      return switchScrollMode();
+    case '退出':
+      return store.onExit?.();
   }
-  if (nextPage === null) return;
-  setState(state => turnPage(state, nextPage ? 'next' : 'prev'));
+};
+const handleMouseDown = e => {
+  if (e.button !== 1) return;
+  e.stopPropagation();
+  e.preventDefault();
+  switchFillEffect();
 };
 
-var css$1 = ".index_module_img__525aec77{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__525aec77[data-show]{display:unset}.index_module_img__525aec77[data-fill=left]{transform:translate(50%)}.index_module_img__525aec77[data-fill=right]{transform:translate(-50%)}.index_module_img__525aec77[data-load-type=error],.index_module_img__525aec77[data-load-type=wait]{display:none}.index_module_mangaFlowBox__525aec77{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__525aec77::-webkit-scrollbar{display:none}.index_module_mangaFlow__525aec77{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__525aec77.index_module_disableZoom__525aec77 .index_module_img__525aec77{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__525aec77.index_module_scrollMode__525aec77{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__525aec77.index_module_scrollMode__525aec77 .index_module_img__525aec77{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__525aec77.index_module_scrollMode__525aec77 .index_module_img__525aec77[data-load-type=wait]{flex-basis:var(--img_placeholder_height,100vh);flex-shrink:0}.index_module_mangaFlow__525aec77[dir=ltr]{flex-direction:row}.index_module_mangaFlow__525aec77>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__525aec77>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__525aec77>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__525aec77{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__525aec77>button{animation:index_module_jello__525aec77 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__525aec77>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__525aec77>button:focus-visible{outline:none}.index_module_endPage__525aec77>.index_module_tip__525aec77{margin:auto;position:absolute}.index_module_endPage__525aec77[data-show]{opacity:1;pointer-events:all}.index_module_endPage__525aec77[data-type=start]>.index_module_tip__525aec77{transform:translateY(-10em)}.index_module_endPage__525aec77[data-type=end]>.index_module_tip__525aec77{transform:translateY(10em)}.index_module_comments__525aec77{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__525aec77>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__525aec77:hover{opacity:1}@keyframes index_module_jello__525aec77{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__525aec77{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__525aec77{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__525aec77[data-show=true] .index_module_toolbarPanel__525aec77{transform:none}.index_module_toolbarBg__525aec77{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__525aec77{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__525aec77{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;width:15em}.index_module_SettingPanel__525aec77 hr{margin:0}.index_module_SettingBlock__525aec77{display:flex;flex-direction:column;padding:0 .5em 1em}.index_module_SettingBlockSubtitle__525aec77{background-color:var(--page_bg);color:var(--text_secondary);font-size:.7em;padding-bottom:1em;padding-top:1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__525aec77{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__525aec77+.index_module_SettingsItem__525aec77{margin-top:1em}.index_module_SettingsItemName__525aec77{font-size:.9em}.index_module_SettingsItemSwitch__525aec77{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin-right:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__525aec77{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__525aec77[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__525aec77[data-checked=true] .index_module_SettingsItemSwitchRound__525aec77{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__525aec77{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0;padding:0;position:absolute;right:.7em}.index_module_SettingsItemSelect__525aec77{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__525aec77{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_scrollbar__525aec77{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__525aec77>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__525aec77{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__525aec77{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__525aec77[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__525aec77[data-type=wait]{opacity:.5}.index_module_scrollbarPage__525aec77[data-type=error]{background-color:#f005}.index_module_scrollbarPage__525aec77[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__525aec77[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__525aec77[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__525aec77[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__525aec77{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__525aec77:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__525aec77[data-show=true],.index_module_scrollbarPoper__525aec77[data-show=true],.index_module_scrollbar__525aec77:hover .index_module_scrollbarDrag__525aec77,.index_module_scrollbar__525aec77:hover .index_module_scrollbarPoper__525aec77{opacity:1}.index_module_touchAreaRoot__525aec77{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchArea__525aec77{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none;writing-mode:vertical-rl}.index_module_touchArea__525aec77[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__525aec77[data-show=true]{visibility:visible}.index_module_touchAreaRoot__525aec77[data-show=true] .index_module_touchArea__525aec77[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__525aec77[data-show=true] .index_module_touchArea__525aec77[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__525aec77[data-show=true] .index_module_touchArea__525aec77[data-area=next]{background-color:#f38181e6}.index_module_hidden__525aec77{display:none}.index_module_invisible__525aec77{visibility:hidden}.index_module_opacity1__525aec77{opacity:1}.index_module_opacity0__525aec77{opacity:0}.index_module_root__525aec77{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__525aec77 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__525aec77{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__525aec77::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__525aec77::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__525aec77::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.7em 0;overflow-wrap:anywhere;padding:0 1em;text-align:start;white-space:pre-wrap}blockquote>p+p{margin-top:.5em}svg{width:1em}";
-var modules_c21c94f2$1 = {"img":"index_module_img__525aec77","mangaFlowBox":"index_module_mangaFlowBox__525aec77","mangaFlow":"index_module_mangaFlow__525aec77","disableZoom":"index_module_disableZoom__525aec77","scrollMode":"index_module_scrollMode__525aec77","endPage":"index_module_endPage__525aec77","jello":"index_module_jello__525aec77","tip":"index_module_tip__525aec77","comments":"index_module_comments__525aec77","toolbar":"index_module_toolbar__525aec77","toolbarPanel":"index_module_toolbarPanel__525aec77","toolbarBg":"index_module_toolbarBg__525aec77","SettingPanelPopper":"index_module_SettingPanelPopper__525aec77","SettingPanel":"index_module_SettingPanel__525aec77","SettingBlock":"index_module_SettingBlock__525aec77","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__525aec77","SettingsItem":"index_module_SettingsItem__525aec77","SettingsItemName":"index_module_SettingsItemName__525aec77","SettingsItemSwitch":"index_module_SettingsItemSwitch__525aec77","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__525aec77","SettingsItemIconButton":"index_module_SettingsItemIconButton__525aec77","SettingsItemSelect":"index_module_SettingsItemSelect__525aec77","closeCover":"index_module_closeCover__525aec77","scrollbar":"index_module_scrollbar__525aec77","scrollbarDrag":"index_module_scrollbarDrag__525aec77","scrollbarPage":"index_module_scrollbarPage__525aec77","scrollbarPoper":"index_module_scrollbarPoper__525aec77","touchAreaRoot":"index_module_touchAreaRoot__525aec77","touchArea":"index_module_touchArea__525aec77","hidden":"index_module_hidden__525aec77","invisible":"index_module_invisible__525aec77","opacity1":"index_module_opacity1__525aec77","opacity0":"index_module_opacity0__525aec77","root":"index_module_root__525aec77","beautifyScrollbar":"index_module_beautifyScrollbar__525aec77"};
+var css$1 = ".index_module_img__1f403422{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__1f403422[data-show]{display:unset}.index_module_img__1f403422[data-fill=left]{transform:translate(50%)}.index_module_img__1f403422[data-fill=right]{transform:translate(-50%)}.index_module_img__1f403422[data-load-type=error],.index_module_img__1f403422[data-load-type=wait]{display:none}.index_module_mangaFlowBox__1f403422{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__1f403422::-webkit-scrollbar{display:none}.index_module_mangaFlow__1f403422{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__1f403422.index_module_disableZoom__1f403422 .index_module_img__1f403422{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422{height:auto;max-height:unset;max-width:100%;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422[data-load-type=wait]{flex-basis:var(--img_placeholder_height,100vh);flex-shrink:0}.index_module_mangaFlow__1f403422[dir=ltr]{flex-direction:row}.index_module_mangaFlow__1f403422>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__1f403422>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__1f403422>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__1f403422{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__1f403422>button{animation:index_module_jello__1f403422 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__1f403422>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__1f403422>button:focus-visible{outline:none}.index_module_endPage__1f403422>.index_module_tip__1f403422{margin:auto;position:absolute}.index_module_endPage__1f403422[data-show]{opacity:1;pointer-events:all}.index_module_endPage__1f403422[data-type=start]>.index_module_tip__1f403422{transform:translateY(-10em)}.index_module_endPage__1f403422[data-type=end]>.index_module_tip__1f403422{transform:translateY(10em)}.index_module_comments__1f403422{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__1f403422>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__1f403422:hover{opacity:1}@keyframes index_module_jello__1f403422{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__1f403422{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__1f403422{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__1f403422[data-show=true] .index_module_toolbarPanel__1f403422{transform:none}.index_module_toolbarBg__1f403422{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__1f403422{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__1f403422{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;width:15em}.index_module_SettingPanel__1f403422 hr{margin:0}.index_module_SettingBlock__1f403422{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422{overflow:hidden}:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div+:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div{margin-top:1em}.index_module_SettingBlock__1f403422[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__1f403422{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__1f403422{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__1f403422+.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_SettingsItemName__1f403422{font-size:.9em}.index_module_SettingsItemSwitch__1f403422{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__1f403422{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__1f403422[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__1f403422[data-checked=true] .index_module_SettingsItemSwitchRound__1f403422{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__1f403422{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__1f403422{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__1f403422{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__1f403422{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422{overflow:hidden}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422>.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_hotKeys__1f403422{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotKeys__1f403422+.index_module_hotKeys__1f403422{margin-top:.5em}.index_module_hotKeys__1f403422:last-child{border-bottom:none}.index_module_hotKeysItem__1f403422{align-items:center;border-radius:.3em;cursor:pointer;display:flex;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotKeysItem__1f403422>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotKeysItem__1f403422>svg:hover{opacity:.9}.index_module_hotKeysItem__1f403422:hover{padding:.2em .5em}.index_module_hotKeysItem__1f403422:hover>svg{display:unset}.index_module_hotKeysItem__1f403422:focus,.index_module_hotKeysItem__1f403422:focus-visible{outline:var(--text) solid 2px}.index_module_hotKeysHeader__1f403422{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotKeysHeader__1f403422>p{background-color:var(--page_bg);margin:0}.index_module_hotKeysHeader__1f403422>div[title]{background-color:var(--page_bg);cursor:pointer;transform:scale(0);transition:transform .1s}.index_module_hotKeysHeader__1f403422>div[title]>svg{width:1.6em}.index_module_hotKeys__1f403422:hover div[title]{transform:scale(1)}.index_module_scrollbar__1f403422{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__1f403422>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__1f403422{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__1f403422{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__1f403422[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__1f403422[data-type=wait]{opacity:.5}.index_module_scrollbarPage__1f403422[data-type=error]{background-color:#f005}.index_module_scrollbarPage__1f403422[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__1f403422[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__1f403422[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__1f403422[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__1f403422{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__1f403422:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__1f403422[data-show=true],.index_module_scrollbarPoper__1f403422[data-show=true],.index_module_scrollbar__1f403422:hover .index_module_scrollbarDrag__1f403422,.index_module_scrollbar__1f403422:hover .index_module_scrollbarPoper__1f403422{opacity:1}.index_module_touchAreaRoot__1f403422{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchArea__1f403422{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none;writing-mode:vertical-rl}.index_module_touchArea__1f403422[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__1f403422[data-show=true]{visibility:visible}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=next]{background-color:#f38181e6}.index_module_hidden__1f403422{display:none}.index_module_invisible__1f403422{visibility:hidden}.index_module_opacity1__1f403422{opacity:1}.index_module_opacity0__1f403422{opacity:0}.index_module_root__1f403422{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__1f403422 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__1f403422{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:0;overflow-wrap:anywhere;padding:0 1em;text-align:start;white-space:pre-wrap}blockquote>p+p{margin-top:.5em}svg{width:1em}";
+var modules_c21c94f2$1 = {"img":"index_module_img__1f403422","mangaFlowBox":"index_module_mangaFlowBox__1f403422","mangaFlow":"index_module_mangaFlow__1f403422","disableZoom":"index_module_disableZoom__1f403422","scrollMode":"index_module_scrollMode__1f403422","endPage":"index_module_endPage__1f403422","jello":"index_module_jello__1f403422","tip":"index_module_tip__1f403422","comments":"index_module_comments__1f403422","toolbar":"index_module_toolbar__1f403422","toolbarPanel":"index_module_toolbarPanel__1f403422","toolbarBg":"index_module_toolbarBg__1f403422","SettingPanelPopper":"index_module_SettingPanelPopper__1f403422","SettingPanel":"index_module_SettingPanel__1f403422","SettingBlock":"index_module_SettingBlock__1f403422","SettingBlockBody":"index_module_SettingBlockBody__1f403422","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__1f403422","SettingsItem":"index_module_SettingsItem__1f403422","SettingsItemName":"index_module_SettingsItemName__1f403422","SettingsItemSwitch":"index_module_SettingsItemSwitch__1f403422","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__1f403422","SettingsItemIconButton":"index_module_SettingsItemIconButton__1f403422","SettingsItemSelect":"index_module_SettingsItemSelect__1f403422","closeCover":"index_module_closeCover__1f403422","SettingsShowItem":"index_module_SettingsShowItem__1f403422","SettingsShowItemBody":"index_module_SettingsShowItemBody__1f403422","hotKeys":"index_module_hotKeys__1f403422","hotKeysItem":"index_module_hotKeysItem__1f403422","hotKeysHeader":"index_module_hotKeysHeader__1f403422","scrollbar":"index_module_scrollbar__1f403422","scrollbarDrag":"index_module_scrollbarDrag__1f403422","scrollbarPage":"index_module_scrollbarPage__1f403422","scrollbarPoper":"index_module_scrollbarPoper__1f403422","touchAreaRoot":"index_module_touchAreaRoot__1f403422","touchArea":"index_module_touchArea__1f403422","hidden":"index_module_hidden__1f403422","invisible":"index_module_invisible__1f403422","opacity1":"index_module_opacity1__1f403422","opacity0":"index_module_opacity0__1f403422","root":"index_module_root__1f403422","beautifyScrollbar":"index_module_beautifyScrollbar__1f403422"};
 n(css$1,{});
 
-const _tmpl$$v = /*#__PURE__*/web.template(\`<img>\`);
+const _tmpl$$A = /*#__PURE__*/web.template(\`<img>\`);
 /** 图片加载完毕的回调 */
 const handleImgLoaded = (i, e) => {
   setState(state => {
@@ -1779,7 +1840,7 @@ const ComicImg = props => {
     return props.img.src;
   });
   return (() => {
-    const _el$ = _tmpl$$v();
+    const _el$ = _tmpl$$A();
     _el$.addEventListener("error", e => handleImgError(props.index, e.currentTarget));
     _el$.addEventListener("load", e => handleImgLoaded(props.index, e.currentTarget));
     web.effect(_p$ => {
@@ -1814,16 +1875,16 @@ const ComicImg = props => {
   })();
 };
 
-const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m21.19 21.19-.78-.78L18 18l-4.59-4.59-9.82-9.82-.78-.78a.996.996 0 0 0-1.41 0C1 3.2 1 3.83 1.39 4.22L3 5.83V19c0 1.1.9 2 2 2h13.17l1.61 1.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.03 0-1.42zM6.02 18c-.42 0-.65-.48-.39-.81l2.49-3.2a.5.5 0 0 1 .78-.01l2.1 2.53L12.17 15l3 3H6.02zm14.98.17L5.83 3H19c1.1 0 2 .9 2 2v13.17z">\`);
+const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m21.19 21.19-.78-.78L18 18l-4.59-4.59-9.82-9.82-.78-.78a.996.996 0 0 0-1.41 0C1 3.2 1 3.83 1.39 4.22L3 5.83V19c0 1.1.9 2 2 2h13.17l1.61 1.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.03 0-1.42zM6.02 18c-.42 0-.65-.48-.39-.81l2.49-3.2a.5.5 0 0 1 .78-.01l2.1 2.53L12.17 15l3 3H6.02zm14.98.17L5.83 3H19c1.1 0 2 .9 2 2v13.17z">\`);
 const MdImageNotSupported = ((props = {}) => (() => {
-  const _el$ = _tmpl$$u();
+  const _el$ = _tmpl$$z();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
+const _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
 const MdCloudDownload = ((props = {}) => (() => {
-  const _el$ = _tmpl$$t();
+  const _el$ = _tmpl$$y();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -1856,7 +1917,7 @@ const LoadTypeTip = () => web.createComponent(solidJs.For, {
   children: ShowSvg
 });
 
-const _tmpl$$s = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6>上 一 页</h6></div><div data-area="menu" role="button" tabindex="-1"><h6>菜 单</h6></div><div data-area="next" role="button" tabindex="-1"><h6>下 一 页\`);
+const _tmpl$$x = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6>上 一 页</h6></div><div data-area="menu" role="button" tabindex="-1"><h6>菜 单</h6></div><div data-area="next" role="button" tabindex="-1"><h6>下 一 页\`);
 const handleClick = {
   prev: () => {
     if (store.option.clickPage.enabled) setState(state => turnPage(state, 'prev'));
@@ -1892,7 +1953,7 @@ const handlePageClick = ({
 };
 const TouchArea = () => {
   return (() => {
-    const _el$ = _tmpl$$s(),
+    const _el$ = _tmpl$$x(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.nextSibling,
       _el$4 = _el$3.nextSibling;
@@ -1950,8 +2011,8 @@ const useDoubleClick = (click, doubleClick, timeout = 200) => {
   };
 };
 
-const _tmpl$$r = /*#__PURE__*/web.template(\`<div tabindex="-1"><div>\`),
-  _tmpl$2$7 = /*#__PURE__*/web.template(\`<h1>NULL\`);
+const _tmpl$$w = /*#__PURE__*/web.template(\`<div tabindex="-1"><div>\`),
+  _tmpl$2$9 = /*#__PURE__*/web.template(\`<h1>NULL\`);
 
 /**
  * 漫画图片流的容器
@@ -1973,7 +2034,7 @@ const ComicImgFlow = () => {
     });
   };
   return (() => {
-    const _el$ = _tmpl$$r(),
+    const _el$ = _tmpl$$w(),
       _el$2 = _el$.firstChild;
     web.use(e => e.addEventListener('scroll', handleMangaFlowScroll, {
       passive: true
@@ -1986,7 +2047,7 @@ const ComicImgFlow = () => {
         return store.imgList;
       },
       get fallback() {
-        return _tmpl$2$7();
+        return _tmpl$2$9();
       },
       children: (img, i) => web.createComponent(ComicImg, {
         get img() {
@@ -2026,73 +2087,73 @@ const ComicImgFlow = () => {
 };
 web.delegateEvents(["click"]);
 
-const _tmpl$$q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
+const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
 const MdLooksOne = ((props = {}) => (() => {
+  const _el$ = _tmpl$$v();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2v2z">\`);
+const MdLooksTwo = ((props = {}) => (() => {
+  const _el$ = _tmpl$$u();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1z">\`);
+const MdViewDay = ((props = {}) => (() => {
+  const _el$ = _tmpl$$t();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1zm17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+const MdQueue = ((props = {}) => (() => {
+  const _el$ = _tmpl$$s();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$r = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">\`);
+const MdSettings = ((props = {}) => (() => {
+  const _el$ = _tmpl$$r();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">\`);
+const MdSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$q();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2v2z">\`);
-const MdLooksTwo = ((props = {}) => (() => {
+const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7 1.62-4.33L19.12 17h-3.24z">\`);
+const MdTranslate = ((props = {}) => (() => {
   const _el$ = _tmpl$$p();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1z">\`);
-const MdViewDay = ((props = {}) => (() => {
+const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10zm11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7z">\`);
+const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
   const _el$ = _tmpl$$o();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$n = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1zm17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
-const MdQueue = ((props = {}) => (() => {
+const _tmpl$$n = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10zm-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1H8z">\`);
+const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
   const _el$ = _tmpl$$n();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$m = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">\`);
-const MdSettings = ((props = {}) => (() => {
-  const _el$ = _tmpl$$m();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$l = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">\`);
-const MdSearch = ((props = {}) => (() => {
-  const _el$ = _tmpl$$l();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$k = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7 1.62-4.33L19.12 17h-3.24z">\`);
-const MdTranslate = ((props = {}) => (() => {
-  const _el$ = _tmpl$$k();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$j = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10zm11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7z">\`);
-const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
-  const _el$ = _tmpl$$j();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$i = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10zm-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1H8z">\`);
-const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
-  const _el$ = _tmpl$$i();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$h = /*#__PURE__*/web.template(\`<div><div> <!> \`);
+const _tmpl$$m = /*#__PURE__*/web.template(\`<div><div> <!> \`);
 /** 设置菜单项 */
 const SettingsItem = props => (() => {
-  const _el$ = _tmpl$$h(),
+  const _el$ = _tmpl$$m(),
     _el$2 = _el$.firstChild,
     _el$3 = _el$2.firstChild,
     _el$5 = _el$3.nextSibling;
@@ -2105,20 +2166,23 @@ const SettingsItem = props => (() => {
         [props.class ?? '']: !!props.class?.length,
         ...props.classList
       },
-      _v$3 = modules_c21c94f2$1.SettingsItemName;
+      _v$3 = props.style,
+      _v$4 = modules_c21c94f2$1.SettingsItemName;
     _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
     _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
-    _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
+    _p$._v$3 = web.style(_el$, _v$3, _p$._v$3);
+    _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
     return _p$;
   }, {
     _v$: undefined,
     _v$2: undefined,
-    _v$3: undefined
+    _v$3: undefined,
+    _v$4: undefined
   });
   return _el$;
 })();
 
-const _tmpl$$g = /*#__PURE__*/web.template(\`<button type="button"><div>\`);
+const _tmpl$$l = /*#__PURE__*/web.template(\`<button type="button"><div>\`);
 /** 开关式菜单项 */
 const SettingsItemSwitch = props => {
   const handleClick = () => props.onChange(!props.value);
@@ -2133,7 +2197,7 @@ const SettingsItemSwitch = props => {
       return props.classList;
     },
     get children() {
-      const _el$ = _tmpl$$g(),
+      const _el$ = _tmpl$$l(),
         _el$2 = _el$.firstChild;
       _el$.$$click = handleClick;
       web.effect(_p$ => {
@@ -2154,6 +2218,119 @@ const SettingsItemSwitch = props => {
   });
 };
 web.delegateEvents(["click"]);
+
+const _tmpl$$k = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z">\`);
+const MdRefresh = ((props = {}) => (() => {
+  const _el$ = _tmpl$$k();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$j = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+const MdAdd = ((props = {}) => (() => {
+  const _el$ = _tmpl$$j();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$i = /*#__PURE__*/web.template(\`<div tabindex="0">\`),
+  _tmpl$2$8 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div title="添加新快捷键"></div><div title="恢复默认快捷键">\`);
+const KeyItem = props => (() => {
+  const _el$ = _tmpl$$i();
+  _el$.addEventListener("keydown", e => {
+    e.stopPropagation();
+    const code = getKeyboardCode(e);
+    if (!Reflect.has(hotKeysMap(), code)) setHotKeys(props.operateName, props.i, code);
+  }, true);
+  web.insert(_el$, () => keyboardCodeToText(store.hotKeys[props.operateName][props.i]), null);
+  web.insert(_el$, web.createComponent(MdClose, {
+    onClick: () => delHotKeys(store.hotKeys[props.operateName][props.i])
+  }), null);
+  web.effect(() => web.className(_el$, modules_c21c94f2$1.hotKeysItem));
+  return _el$;
+})();
+const SettingHotKeys = () => web.createComponent(solidJs.For, {
+  get each() {
+    return Object.entries(store.hotKeys);
+  },
+  children: ([name, keys]) => (() => {
+    const _el$2 = _tmpl$2$8(),
+      _el$3 = _el$2.firstChild,
+      _el$4 = _el$3.firstChild,
+      _el$5 = _el$4.nextSibling,
+      _el$6 = _el$5.nextSibling,
+      _el$7 = _el$6.nextSibling;
+    web.insert(_el$4, name);
+    _el$5.style.setProperty("flex-grow", "1");
+    _el$6.$$click = () => setHotKeys(name, store.hotKeys[name].length, '');
+    web.insert(_el$6, web.createComponent(MdAdd, {}));
+    _el$7.$$click = () => {
+      const newKeys = defaultHoeKeys[name] ?? [];
+      newKeys.forEach(delHotKeys);
+      setHotKeys(name, newKeys);
+    };
+    web.insert(_el$7, web.createComponent(MdRefresh, {}));
+    web.insert(_el$2, web.createComponent(solidJs.Index, {
+      each: keys,
+      children: (_, i) => web.createComponent(KeyItem, {
+        operateName: name,
+        i: i
+      })
+    }), null);
+    web.effect(_p$ => {
+      const _v$ = modules_c21c94f2$1.hotKeys,
+        _v$2 = modules_c21c94f2$1.hotKeysHeader;
+      _v$ !== _p$._v$ && web.className(_el$2, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.className(_el$3, _p$._v$2 = _v$2);
+      return _p$;
+    }, {
+      _v$: undefined,
+      _v$2: undefined
+    });
+    return _el$2;
+  })()
+});
+web.delegateEvents(["click"]);
+
+const _tmpl$$h = /*#__PURE__*/web.template(\`<select>\`),
+  _tmpl$2$7 = /*#__PURE__*/web.template(\`<option>\`);
+/** 选择器式菜单项 */
+const SettingsItemSelect = props => {
+  let ref;
+  solidJs.createEffect(() => {
+    ref.value = props.options.some(([val]) => val === props.value) ? props.value : '';
+  });
+  return web.createComponent(SettingsItem, {
+    get name() {
+      return props.name;
+    },
+    get ["class"]() {
+      return props.class;
+    },
+    get classList() {
+      return props.classList;
+    },
+    get children() {
+      const _el$ = _tmpl$$h();
+      _el$.addEventListener("change", e => props.onChange(e.target.value));
+      const _ref$ = ref;
+      typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
+      web.insert(_el$, web.createComponent(solidJs.For, {
+        get each() {
+          return props.options;
+        },
+        children: ([val, label]) => (() => {
+          const _el$2 = _tmpl$2$7();
+          _el$2.value = val;
+          web.insert(_el$2, label ?? val);
+          return _el$2;
+        })()
+      }));
+      web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemSelect));
+      return _el$;
+    }
+  });
+};
 
 const messageMap = {
   default: '未知状态',
@@ -2499,207 +2676,32 @@ const translatorOptions = solidJs.createRoot(() => {
   return options;
 });
 
-const _tmpl$$f = /*#__PURE__*/web.template(\`<select>\`),
-  _tmpl$2$6 = /*#__PURE__*/web.template(\`<option>\`);
-/** 选择器式菜单项 */
-const SettingsItemSelect = props => {
-  let ref;
-  solidJs.createEffect(() => {
-    ref.value = props.options.some(([val]) => val === props.value) ? props.value : '';
-  });
-  return web.createComponent(SettingsItem, {
-    get name() {
-      return props.name;
-    },
-    get ["class"]() {
-      return props.class;
-    },
-    get classList() {
-      return props.classList;
-    },
-    get children() {
-      const _el$ = _tmpl$$f();
-      _el$.addEventListener("change", e => props.onChange(e.target.value));
-      const _ref$ = ref;
-      typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
-      web.insert(_el$, web.createComponent(solidJs.For, {
-        get each() {
-          return props.options;
-        },
-        children: ([val, label]) => (() => {
-          const _el$2 = _tmpl$2$6();
-          _el$2.value = val;
-          web.insert(_el$2, label ?? val);
-          return _el$2;
-        })()
-      }));
-      web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemSelect));
-      return _el$;
-    }
-  });
-};
+const _tmpl$$g = /*#__PURE__*/web.template(\`<div><div>\`);
 
-const _tmpl$$e = /*#__PURE__*/web.template(\`<button type="button">\`),
-  _tmpl$2$5 = /*#__PURE__*/web.template(\`<input type="color">\`),
-  _tmpl$3$4 = /*#__PURE__*/web.template(\`<blockquote><p>将使用 <a href="https://cotrans.touhou.ai" target="_blank">Cotrans</a> 提供的接口翻译图片，该服务器由维护者用爱发电自费维护</p><p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p><p>所以还请<b>注意用量</b></p><p>更推荐使用本地部署的项目，不抢服务器资源也不需要排队\`),
-  _tmpl$4$1 = /*#__PURE__*/web.template(\`<input type="url">\`);
-/** 默认菜单项 */
-const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsItem, {
-  get name() {
-    return store.option.dir === 'rtl' ? '从右到左（日漫）' : '从左到右（美漫）';
-  },
-  get children() {
-    const _el$ = _tmpl$$e();
-    _el$.$$click = () => setOption(draftOption => {
-      draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
-    });
-    web.insert(_el$, (() => {
-      const _c$ = web.memo(() => store.option.dir === 'rtl');
-      return () => _c$() ? web.createComponent(MdOutlineFormatTextdirectionRToL, {}) : web.createComponent(MdOutlineFormatTextdirectionLToR, {});
-    })());
-    web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
-    return _el$;
-  }
-})], ['滚动条', () => [web.createComponent(SettingsItemSwitch, {
-  name: "\\u663E\\u793A\\u6EDA\\u52A8\\u6761",
-  get value() {
-    return store.option.scrollbar.enabled;
-  },
-  get onChange() {
-    return createStateSetFn('scrollbar.enabled');
-  }
-}), web.createComponent(solidJs.Show, {
-  get when() {
-    return store.option.scrollbar.enabled;
-  },
-  get children() {
-    return [web.createComponent(SettingsItemSwitch, {
-      name: "\\u81EA\\u52A8\\u9690\\u85CF\\u6EDA\\u52A8\\u6761",
-      get value() {
-        return store.option.scrollbar.autoHidden;
-      },
-      get onChange() {
-        return createStateSetFn('scrollbar.autoHidden');
-      }
-    }), web.createComponent(SettingsItemSwitch, {
-      name: "\\u663E\\u793A\\u56FE\\u7247\\u52A0\\u8F7D\\u72B6\\u6001",
-      get value() {
-        return store.option.scrollbar.showProgress;
-      },
-      get onChange() {
-        return createStateSetFn('scrollbar.showProgress');
-      }
-    })];
-  }
-})]], ['点击翻页', () => [web.createComponent(SettingsItemSwitch, {
-  name: "\\u542F\\u7528\\u70B9\\u51FB\\u7FFB\\u9875",
-  get value() {
-    return store.option.clickPage.enabled;
-  },
-  get onChange() {
-    return createStateSetFn('clickPage.enabled');
-  }
-}), web.createComponent(solidJs.Show, {
-  get when() {
-    return store.option.clickPage.enabled;
-  },
-  get children() {
-    return [web.createComponent(SettingsItemSwitch, {
-      name: "\\u5DE6\\u53F3\\u53CD\\u8F6C\\u70B9\\u51FB\\u533A\\u57DF",
-      get value() {
-        return store.option.clickPage.overturn;
-      },
-      get onChange() {
-        return createStateSetFn('clickPage.overturn');
-      }
-    }), web.createComponent(SettingsItemSwitch, {
-      name: "\\u663E\\u793A\\u70B9\\u51FB\\u533A\\u57DF\\u63D0\\u793A",
-      get value() {
-        return store.showTouchArea;
-      },
-      onChange: () => {
-        setState(state => {
-          state.showTouchArea = !state.showTouchArea;
-        });
-      }
-    })];
-  }
-})]], ['操作', () => [web.createComponent(SettingsItemSwitch, {
-  name: "\\u7FFB\\u9875\\u81F3\\u4E0A/\\u4E0B\\u4E00\\u8BDD",
-  get value() {
-    return store.option.flipToNext;
-  },
-  get onChange() {
-    return createStateSetFn('flipToNext');
-  }
-}), web.createComponent(SettingsItemSwitch, {
-  name: "\\u5DE6\\u53F3\\u7FFB\\u9875\\u952E\\u4EA4\\u6362",
-  get value() {
-    return store.option.swapTurnPage;
-  },
-  get onChange() {
-    return createStateSetFn('swapTurnPage');
-  }
-})]], ['显示', () => [web.createComponent(SettingsItemSwitch, {
-  name: "\\u542F\\u7528\\u591C\\u95F4\\u6A21\\u5F0F",
-  get value() {
-    return store.option.darkMode;
-  },
-  get onChange() {
-    return createStateSetFn('darkMode');
-  }
-}), web.createComponent(SettingsItemSwitch, {
-  name: "\\u7981\\u6B62\\u653E\\u5927\\u56FE\\u7247",
-  get value() {
-    return store.option.disableZoom;
-  },
-  get onChange() {
-    return createStateSetFn('disableZoom');
-  }
-}), web.createComponent(SettingsItemSwitch, {
-  name: "\\u5728\\u7ED3\\u675F\\u9875\\u663E\\u793A\\u8BC4\\u8BBA",
-  get value() {
-    return store.option.showComment;
-  },
-  get onChange() {
-    return createStateSetFn('showComment');
-  }
-}), web.createComponent(SettingsItem, {
-  name: "\\u80CC\\u666F\\u989C\\u8272",
-  get children() {
-    const _el$2 = _tmpl$2$5();
-    web.addEventListener(_el$2, "input", throttle(20, e => {
-      setOption(draftOption => {
-        // 在拉到纯黑或纯白时改回初始值
-        draftOption.customBackground = e.target.value === '#000000' || e.target.value === '#ffffff' ? undefined : e.target.value;
-        draftOption.darkMode = needDarkMode(e.target.value);
-      });
-    }), true);
-    _el$2.style.setProperty("width", "2em");
-    _el$2.style.setProperty("margin-right", ".4em");
-    web.effect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
-    return _el$2;
-  }
-})]], ['其他', () => [web.createComponent(SettingsItemSwitch, {
-  name: "\\u59CB\\u7EC8\\u52A0\\u8F7D\\u6240\\u6709\\u56FE\\u7247",
-  get value() {
-    return store.option.alwaysLoadAllImg;
-  },
-  onChange: val => {
-    setOption(draftOption => {
-      draftOption.alwaysLoadAllImg = val;
-    });
-    setState(updateImgLoadType);
-  }
-}), web.createComponent(SettingsItemSwitch, {
-  name: "\\u9ED8\\u8BA4\\u542F\\u7528\\u9996\\u9875\\u586B\\u5145",
-  get value() {
-    return store.option.firstPageFill;
-  },
-  get onChange() {
-    return createStateSetFn('firstPageFill');
-  }
-})]], ['翻译', () => {
+/** 带有动画过渡的切换显示设置项 */
+const SettingsShowItem = props => (() => {
+  const _el$ = _tmpl$$g(),
+    _el$2 = _el$.firstChild;
+  web.insert(_el$2, () => props.children);
+  web.effect(_p$ => {
+    const _v$ = modules_c21c94f2$1.SettingsShowItem,
+      _v$2 = props.when ? '1fr' : '0fr',
+      _v$3 = modules_c21c94f2$1.SettingsShowItemBody;
+    _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+    _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("grid-template-rows", _v$2) : _el$.style.removeProperty("grid-template-rows"));
+    _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
+    return _p$;
+  }, {
+    _v$: undefined,
+    _v$2: undefined,
+    _v$3: undefined
+  });
+  return _el$;
+})();
+
+const _tmpl$$f = /*#__PURE__*/web.template(\`<blockquote><p>将使用 <a href="https://cotrans.touhou.ai" target="_blank">Cotrans</a> 提供的接口翻译图片，该服务器由维护者用爱发电自费维护</p><p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p><p>所以还请<b>注意用量</b></p><p>更推荐使用本地部署的项目，不抢服务器资源也不需要排队\`),
+  _tmpl$2$6 = /*#__PURE__*/web.template(\`<input type="url">\`);
+const SettingTranslation = () => {
   /** 是否正在翻译全部图片 */
   const isTranslationAll = solidJs.createMemo(() => store.imgList.every(img => img.translationType === 'show' || img.translationType === 'wait'));
   return [web.createComponent(SettingsItemSelect, {
@@ -2711,14 +2713,14 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
     get onChange() {
       return createStateSetFn('translation.server');
     }
-  }), web.createComponent(solidJs.Show, {
+  }), web.createComponent(SettingsShowItem, {
     get when() {
       return store.option.translation.server === 'cotrans';
     },
     get children() {
-      return _tmpl$3$4();
+      return _tmpl$$f();
     }
-  }), web.createComponent(solidJs.Show, {
+  }), web.createComponent(SettingsShowItem, {
     get when() {
       return store.option.translation.server !== '禁用';
     },
@@ -2804,27 +2806,187 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
               return store.option.translation.localUrl !== undefined;
             },
             get children() {
-              const _el$4 = _tmpl$4$1();
-              _el$4.addEventListener("change", e => {
+              const _el$2 = _tmpl$2$6();
+              _el$2.addEventListener("change", e => {
                 setOption(draftOption => {
                   // 删掉末尾的斜杠
                   const url = e.target.value.replace(/\\/$/, '');
                   draftOption.translation.localUrl = url;
                 });
               });
-              web.effect(() => web.className(_el$4, modules_c21c94f2$1.SettingsItem));
-              return _el$4;
+              web.effect(() => web.className(_el$2, modules_c21c94f2$1.SettingsItem));
+              return _el$2;
             }
           })];
         }
       })];
     }
   })];
-}]];
+};
+
+const _tmpl$$e = /*#__PURE__*/web.template(\`<button type="button">\`),
+  _tmpl$2$5 = /*#__PURE__*/web.template(\`<input type="color">\`);
+/** 默认菜单项 */
+const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsItem, {
+  get name() {
+    return store.option.dir === 'rtl' ? '从右到左（日漫）' : '从左到右（美漫）';
+  },
+  get children() {
+    const _el$ = _tmpl$$e();
+    _el$.$$click = () => setOption(draftOption => {
+      draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
+    });
+    web.insert(_el$, (() => {
+      const _c$ = web.memo(() => store.option.dir === 'rtl');
+      return () => _c$() ? web.createComponent(MdOutlineFormatTextdirectionRToL, {}) : web.createComponent(MdOutlineFormatTextdirectionLToR, {});
+    })());
+    web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
+    return _el$;
+  }
+})], ['滚动条', () => [web.createComponent(SettingsItemSwitch, {
+  name: "\\u663E\\u793A\\u6EDA\\u52A8\\u6761",
+  get value() {
+    return store.option.scrollbar.enabled;
+  },
+  get onChange() {
+    return createStateSetFn('scrollbar.enabled');
+  }
+}), web.createComponent(SettingsShowItem, {
+  get when() {
+    return store.option.scrollbar.enabled;
+  },
+  get children() {
+    return [web.createComponent(SettingsItemSwitch, {
+      name: "\\u81EA\\u52A8\\u9690\\u85CF\\u6EDA\\u52A8\\u6761",
+      get value() {
+        return store.option.scrollbar.autoHidden;
+      },
+      get onChange() {
+        return createStateSetFn('scrollbar.autoHidden');
+      }
+    }), web.createComponent(SettingsItemSwitch, {
+      name: "\\u663E\\u793A\\u56FE\\u7247\\u52A0\\u8F7D\\u72B6\\u6001",
+      get value() {
+        return store.option.scrollbar.showProgress;
+      },
+      get onChange() {
+        return createStateSetFn('scrollbar.showProgress');
+      }
+    })];
+  }
+})]], ['操作', () => [web.createComponent(SettingsItemSwitch, {
+  name: "\\u7FFB\\u9875\\u81F3\\u4E0A/\\u4E0B\\u4E00\\u8BDD",
+  get value() {
+    return store.option.flipToNext;
+  },
+  get onChange() {
+    return createStateSetFn('flipToNext');
+  }
+}), web.createComponent(SettingsItemSwitch, {
+  name: "\\u542F\\u7528\\u70B9\\u51FB\\u7FFB\\u9875",
+  get value() {
+    return store.option.clickPage.enabled;
+  },
+  get onChange() {
+    return createStateSetFn('clickPage.enabled');
+  }
+}), web.createComponent(SettingsShowItem, {
+  get when() {
+    return store.option.clickPage.enabled;
+  },
+  get children() {
+    return [web.createComponent(SettingsItemSwitch, {
+      name: "\\u5DE6\\u53F3\\u53CD\\u8F6C\\u70B9\\u51FB\\u533A\\u57DF",
+      get value() {
+        return store.option.clickPage.overturn;
+      },
+      get onChange() {
+        return createStateSetFn('clickPage.overturn');
+      }
+    }), web.createComponent(SettingsItemSwitch, {
+      name: "\\u663E\\u793A\\u70B9\\u51FB\\u533A\\u57DF",
+      get value() {
+        return store.showTouchArea;
+      },
+      onChange: () => {
+        setState(state => {
+          state.showTouchArea = !state.showTouchArea;
+        });
+      }
+    })];
+  }
+})]], ['显示', () => [web.createComponent(SettingsItemSwitch, {
+  name: "\\u542F\\u7528\\u591C\\u95F4\\u6A21\\u5F0F",
+  get value() {
+    return store.option.darkMode;
+  },
+  get onChange() {
+    return createStateSetFn('darkMode');
+  }
+}), web.createComponent(SettingsItemSwitch, {
+  name: "\\u7981\\u6B62\\u653E\\u5927\\u56FE\\u7247",
+  get value() {
+    return store.option.disableZoom;
+  },
+  get onChange() {
+    return createStateSetFn('disableZoom');
+  }
+})]], ['快捷键', SettingHotKeys, true], ['翻译', SettingTranslation, true], ['其他', () => [web.createComponent(SettingsItemSwitch, {
+  name: "\\u59CB\\u7EC8\\u52A0\\u8F7D\\u6240\\u6709\\u56FE\\u7247",
+  get value() {
+    return store.option.alwaysLoadAllImg;
+  },
+  onChange: val => {
+    setOption(draftOption => {
+      draftOption.alwaysLoadAllImg = val;
+    });
+    setState(updateImgLoadType);
+  }
+}), web.createComponent(SettingsItemSwitch, {
+  name: "\\u9ED8\\u8BA4\\u542F\\u7528\\u9996\\u9875\\u586B\\u5145",
+  get value() {
+    return store.option.firstPageFill;
+  },
+  get onChange() {
+    return createStateSetFn('firstPageFill');
+  }
+}), web.createComponent(SettingsItemSwitch, {
+  name: "\\u5728\\u7ED3\\u675F\\u9875\\u663E\\u793A\\u8BC4\\u8BBA",
+  get value() {
+    return store.option.showComment;
+  },
+  get onChange() {
+    return createStateSetFn('showComment');
+  }
+}), web.createComponent(SettingsItemSwitch, {
+  name: "\\u5DE6\\u53F3\\u7FFB\\u9875\\u952E\\u53CD\\u8F6C",
+  get value() {
+    return store.option.swapTurnPage;
+  },
+  get onChange() {
+    return createStateSetFn('swapTurnPage');
+  }
+}), web.createComponent(SettingsItem, {
+  name: "\\u80CC\\u666F\\u989C\\u8272",
+  get children() {
+    const _el$2 = _tmpl$2$5();
+    web.addEventListener(_el$2, "input", throttle(20, e => {
+      setOption(draftOption => {
+        // 在拉到纯黑或纯白时改回初始值
+        draftOption.customBackground = e.target.value === '#000000' || e.target.value === '#ffffff' ? undefined : e.target.value;
+        draftOption.darkMode = needDarkMode(e.target.value);
+      });
+    }), true);
+    _el$2.style.setProperty("width", "2em");
+    _el$2.style.setProperty("margin-right", ".4em");
+    web.effect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
+    return _el$2;
+  }
+})], true]];
 web.delegateEvents(["click", "input"]);
 
 const _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div>\`),
+  _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
   _tmpl$3$3 = /*#__PURE__*/web.template(\`<hr>\`);
 
 /** 菜单面板 */
@@ -2838,31 +3000,44 @@ const SettingPanel = () => {
       get each() {
         return settingList();
       },
-      children: ([key, SettingItem], i) => [web.memo((() => {
-        const _c$ = web.memo(() => !!i());
-        return () => _c$() ? _tmpl$3$3() : null;
-      })()), (() => {
-        const _el$2 = _tmpl$2$4(),
-          _el$3 = _el$2.firstChild;
-        web.insert(_el$3, key);
-        web.insert(_el$2, web.createComponent(SettingItem, {}), null);
-        web.effect(_p$ => {
-          const _v$ = modules_c21c94f2$1.SettingBlock,
-            _v$2 = modules_c21c94f2$1.SettingBlockSubtitle;
-          _v$ !== _p$._v$ && web.className(_el$2, _p$._v$ = _v$);
-          _v$2 !== _p$._v$2 && web.className(_el$3, _p$._v$2 = _v$2);
-          return _p$;
-        }, {
-          _v$: undefined,
-          _v$2: undefined
-        });
-        return _el$2;
-      })()]
+      children: ([name, SettingItem, hidden], i) => {
+        const [show, setShwo] = solidJs.createSignal(!hidden);
+        return [web.memo((() => {
+          const _c$ = web.memo(() => !!i());
+          return () => _c$() ? _tmpl$3$3() : null;
+        })()), (() => {
+          const _el$2 = _tmpl$2$4(),
+            _el$3 = _el$2.firstChild,
+            _el$4 = _el$3.nextSibling;
+          _el$3.$$click = () => setShwo(prev => !prev);
+          web.insert(_el$3, name, null);
+          web.insert(_el$3, () => show() ? null : ' ...', null);
+          web.insert(_el$4, web.createComponent(SettingItem, {}));
+          web.effect(_p$ => {
+            const _v$ = modules_c21c94f2$1.SettingBlock,
+              _v$2 = show(),
+              _v$3 = modules_c21c94f2$1.SettingBlockSubtitle,
+              _v$4 = modules_c21c94f2$1.SettingBlockBody;
+            _v$ !== _p$._v$ && web.className(_el$2, _p$._v$ = _v$);
+            _v$2 !== _p$._v$2 && web.setAttribute(_el$2, "data-show", _p$._v$2 = _v$2);
+            _v$3 !== _p$._v$3 && web.className(_el$3, _p$._v$3 = _v$3);
+            _v$4 !== _p$._v$4 && web.className(_el$4, _p$._v$4 = _v$4);
+            return _p$;
+          }, {
+            _v$: undefined,
+            _v$2: undefined,
+            _v$3: undefined,
+            _v$4: undefined
+          });
+          return _el$2;
+        })()];
+      }
     }));
     web.effect(() => web.className(_el$, \`\${modules_c21c94f2$1.SettingPanel} \${modules_c21c94f2$1.beautifyScrollbar}\`));
     return _el$;
   })();
 };
+web.delegateEvents(["click"]);
 
 const _tmpl$$c = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role="button" tabindex="-1" aria-label="关闭弹窗的遮罩">\`);
@@ -2884,15 +3059,12 @@ const defaultButtonList = [
     return store.option.scrollMode;
   },
   onClick: () => {
-    setState(state => {
-      const jump = jumpBackPage(state);
-      state.option.onePageMode = !state.option.onePageMode;
-      state.option = {
-        ...state.option
-      };
-      updatePageData(state);
-      jump();
+    const jump = jumpBackPage(store);
+    setOption(draftOption => {
+      draftOption.onePageMode = !draftOption.onePageMode;
     });
+    setState(updatePageData);
+    jump();
   },
   get children() {
     return web.memo(() => !!store.option.onePageMode)() ? web.createComponent(MdLooksOne, {}) : web.createComponent(MdLooksTwo, {});
@@ -2904,18 +3076,7 @@ const defaultButtonList = [
   get enabled() {
     return store.option.scrollMode;
   },
-  onClick: () => {
-    store.panzoom?.smoothZoomAbs(0, 0, 1);
-    setState(state => {
-      state.activePageIndex = 0;
-      setOption(draftOption => {
-        draftOption.scrollMode = !draftOption.scrollMode;
-        draftOption.onePageMode = draftOption.scrollMode;
-      });
-      updatePageData(state);
-    });
-    setTimeout(handleMangaFlowScroll);
-  },
+  onClick: switchScrollMode,
   get children() {
     return web.createComponent(MdViewDay, {});
   }
@@ -3466,8 +3627,11 @@ const useInit$1 = (props, rootRef) => {
   // 初始化配置
   solidJs.createEffect(() => {
     setState(state => {
-      if (!props.option) return;
-      state.option = assign(state.option, props.option);
+      if (props.option) state.option = assign(state.option, props.option);
+      state.hotKeys = {
+        ...defaultHoeKeys,
+        ...props.hotKeys
+      };
     });
   });
 
@@ -3556,18 +3720,12 @@ const useInit$1 = (props, rootRef) => {
       } : undefined;
       if (props.editButtonList) state.editButtonList = props.editButtonList;
       if (props.editSettingList) state.editSettingList = props.editSettingList;
-      if (props.commentList?.length) state.commentList = props.commentList;
-      if (props.onLoading) state.onLoading = debounce(100, props.onLoading);
+      state.commentList = props.commentList;
+      state.onLoading = props.onLoading ? debounce(100, props.onLoading) : undefined;
+      state.onOptionChange = props.onOptionChange ? debounce(100, props.onOptionChange) : undefined;
+      state.onHotKeysChange = props.onHotKeysChange ? debounce(100, props.onHotKeysChange) : undefined;
     });
   });
-
-  // 绑定配置发生改变时的回调
-  solidJs.createEffect(solidJs.on(() => store.option, async option => {
-    if (!props.onOptionChange) return;
-    await props.onOptionChange(difference(option, defaultOption));
-  }, {
-    defer: true
-  }));
 };
 
 const _tmpl$$7 = /*#__PURE__*/web.template(\`<div role="presentation" tabindex="-1">\`);
@@ -3585,11 +3743,13 @@ const Manga = props => {
   });
   return (() => {
     const _el$ = _tmpl$$7();
-    web.addEventListener(_el$, "keydown", handleKeyUp, true);
-    web.addEventListener(_el$, "keyup", stopPropagation, true);
+    web.addEventListener(_el$, "mousedown", handleMouseDown, true);
     web.addEventListener(_el$, "wheel", handleWheel);
     const _ref$ = rootRef;
     typeof _ref$ === "function" ? web.use(_ref$, _el$) : rootRef = _el$;
+    _el$.addEventListener("keydown", handleKeyDown, true);
+    _el$.addEventListener("keypress", stopPropagation, true);
+    _el$.addEventListener("keyup", stopPropagation, true);
     web.insert(_el$, web.createComponent(ComicImgFlow, {}), null);
     web.insert(_el$, web.createComponent(Toolbar, {}), null);
     web.insert(_el$, web.createComponent(Scrollbar, {}), null);
@@ -3615,7 +3775,7 @@ const Manga = props => {
     return _el$;
   })();
 };
-web.delegateEvents(["keyup", "keydown"]);
+web.delegateEvents(["mousedown"]);
 
 const _tmpl$$6 = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let dom;
@@ -3672,7 +3832,6 @@ const useManga = async initProps => {
     } else {
       dom.removeAttribute('show');
       document.documentElement.style.overflow = 'unset';
-      document.querySelector('#fab')?.shadowRoot?.querySelector('div > button')?.focus();
     }
   };
 
@@ -3960,6 +4119,11 @@ const useFab = async initProps => {
   return set;
 };
 
+const getHotKeys = async () => ({
+  进入阅读模式: ['v'],
+  ...(await GM.getValue('HotKeys', {}))
+});
+
 /**
  * 对修改站点配置的相关方法的封装
  * @param name 站点名
@@ -3973,36 +4137,37 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     option: {
       ...defaultOption,
       ...defaultOptions?.option
-    }
+    },
+    hotKeys: await getHotKeys()
   };
   const rawValue = await GM.getValue(name);
   const options = store$2.createMutable({
     ..._defaultOptions,
     ...rawValue
   });
-  const changeCallbackList = [];
+  const onHotKeysChange = async newValue => {
+    GM.setValue('HotKeys', newValue);
+    // eslint-disable-next-line solid/reactivity
+    options.hotKeys = await getHotKeys();
+  };
+
+  /** 进入阅读模式的快捷键 */
+  const readModeHotKeys = solidJs.createRoot(() => {
+    const readModeHotKeysMemo = solidJs.createMemo(() => new Set(Object.assign([], options.hotKeys['进入阅读模式'])));
+    return readModeHotKeysMemo;
+  });
   return {
     options,
     /** 该站点是否有储存配置 */
     isRecorded: rawValue !== undefined,
-    /**
-     * 设置新 Option
-     * @param newValue newValue
-     * @param trigger 是否触发变更事件
-     */
-    setOptions: async (newValue, trigger = true) => {
+    setOptions: async newValue => {
       Object.assign(options, newValue);
-      if (trigger) await Promise.all(changeCallbackList.map(callback => callback(options)));
 
       // 只保存和默认设置不同的部分
       return GM.setValue(name, difference(options, _defaultOptions));
     },
-    /**
-     * 监听配置变更事件
-     */
-    onOptionChange: callback => {
-      changeCallbackList.push(callback);
-    }
+    onHotKeysChange,
+    readModeHotKeys
   };
 };
 
@@ -4020,7 +4185,8 @@ const useInit = async (name, defaultOptions = {}) => {
   const {
     options,
     setOptions,
-    onOptionChange
+    readModeHotKeys,
+    onHotKeysChange
   } = await useSiteOptions(name, defaultOptions);
   const setFab = await useFab({
     tip: '阅读模式',
@@ -4032,25 +4198,32 @@ const useInit = async (name, defaultOptions = {}) => {
     onOptionChange: option => setOptions({
       ...options,
       option
-    })
+    }),
+    hotKeys: options.hotKeys,
+    onHotKeysChange
   });
 
   // 检查脚本的版本变化，提示用户
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.6.0](https://github.com/hymbz/ComicReadScript/compare/v6.5.3...v6.6.0) (2023-08-06)
+## [6.7.0](https://github.com/hymbz/ComicReadScript/compare/v6.6.0...v6.7.0) (2023-08-07)
 
 
 ### Features
 
-* :sparkles: 新增支持站点 komiic ([4d1de5e](https://github.com/hymbz/ComicReadScript/commit/4d1de5e076f8e3166fb83b2584303fb0064b12f9))
+* :sparkles: 增加自定义快捷键的设置项 ([707c8c2](https://github.com/hymbz/ComicReadScript/commit/707c8c21275e0dce854d2eb4ba3a32e6923d7cc8))
 
 
 ### Bug Fixes
 
-* :bug: 修复 nhentai 未登录状态下自动翻页失效的 bug ([9e606a1](https://github.com/hymbz/ComicReadScript/commit/9e606a137388575c23be4f0daefda78f7ae75001))
-* :bug: 修复卷轴模式下无法使用键盘弹出结束页的 bug ([ac17ed4](https://github.com/hymbz/ComicReadScript/commit/ac17ed49cd57141c91ba2c7949f99dded05d78f7))
+* :bug: 修复 komiic 在某些情况下上下话翻页功能失效的 bug ([56047ef](https://github.com/hymbz/ComicReadScript/commit/56047ef159df230eedd2c664984f3fa56b9389b0))
+
+
+### Performance Improvements
+
+* :zap: 阅读模式下的按键不再会触发站点的快捷键 ([5d324bd](https://github.com/hymbz/ComicReadScript/commit/5d324bdecf4cf356177848211b1b56ccc4ce6e49))
+* :zap: 实现使用鼠标中键切换页面填充 ([61eda3d](https://github.com/hymbz/ComicReadScript/commit/61eda3dd0bf344d668f8197ac9115894d82b7d3f))
 \`;
     toast(() => [(() => {
       const _el$ = _tmpl$();
@@ -4118,7 +4291,6 @@ const useInit = async (name, defaultOptions = {}) => {
   return {
     options,
     setOptions,
-    onOptionChange,
     setFab,
     setManga,
     /**
@@ -4205,6 +4377,14 @@ const useInit = async (name, defaultOptions = {}) => {
       if (options.autoShow) showComic();
       GM.registerMenuCommand('进入漫画阅读模式', () => showComic(true));
       updateHideFabMenu();
+      window.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT') return;
+        const code = getKeyboardCode(e);
+        if (!readModeHotKeys().has(code)) return;
+        e.stopPropagation();
+        e.preventDefault();
+        showComic(true);
+      });
       return () => showComic(true);
     }
   };
@@ -4214,8 +4394,10 @@ exports.assign = assign;
 exports.autoUpdate = autoUpdate;
 exports.dataToParams = dataToParams;
 exports.difference = difference;
+exports.getKeyboardCode = getKeyboardCode;
 exports.insertNode = insertNode;
 exports.isEqualArray = isEqualArray;
+exports.keyboardCodeToText = keyboardCodeToText;
 exports.linstenKeyup = linstenKeyup;
 exports.needDarkMode = needDarkMode;
 exports.plimit = plimit;
@@ -6101,7 +6283,7 @@ const main = require('main');
     }, 500);
     while (!main.querySelector('.ComicImage__bottom-menu-center')) {}
     window.clearInterval(id);
-    return main.querySelectorAll('.ComicImage__bottom-menu-center button:not([disabled])').find(e => e.innerText === text);
+    return main.querySelectorAll('.ComicImage__bottom-menu-center button:not([disabled])').find(e => e.innerText.includes(text));
   };
   main.autoUpdate(async () => {
     if (window.location.pathname === lastUrl) return;
@@ -6123,8 +6305,8 @@ const main = require('main');
     });
     init(getImgList);
     setManga({
-      onPrev: main.querySelectorClick(findButton('上一話')),
-      onNext: main.querySelectorClick(findButton('下一話'))
+      onPrev: main.querySelectorClick(findButton('上一')),
+      onNext: main.querySelectorClick(findButton('下一'))
     });
   });
 })();
@@ -6160,6 +6342,7 @@ const main = require('main');
     {
 const main = require('main');
 const store = require('solid-js/store');
+const solidJs = require('solid-js');
 
 /**
  * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
@@ -6174,7 +6357,7 @@ const difference = (a, b) => {
     if (typeof a[key] === 'object') {
       const _res = difference(a[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
-    } else if (a[key] !== b[key]) res[key] = a[key];
+    } else if (a[key] !== b?.[key]) res[key] = a[key];
   }
   return res;
 };
@@ -6217,6 +6400,11 @@ const defaultOption = {
   option: JSON.parse(JSON.stringify(defaultOption))
 });
 
+const getHotKeys = async () => ({
+  进入阅读模式: ['v'],
+  ...(await GM.getValue('HotKeys', {}))
+});
+
 /**
  * 对修改站点配置的相关方法的封装
  * @param name 站点名
@@ -6230,36 +6418,37 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     option: {
       ...defaultOption,
       ...defaultOptions?.option
-    }
+    },
+    hotKeys: await getHotKeys()
   };
   const rawValue = await GM.getValue(name);
   const options = store.createMutable({
     ..._defaultOptions,
     ...rawValue
   });
-  const changeCallbackList = [];
+  const onHotKeysChange = async newValue => {
+    GM.setValue('HotKeys', newValue);
+    // eslint-disable-next-line solid/reactivity
+    options.hotKeys = await getHotKeys();
+  };
+
+  /** 进入阅读模式的快捷键 */
+  const readModeHotKeys = solidJs.createRoot(() => {
+    const readModeHotKeysMemo = solidJs.createMemo(() => new Set(Object.assign([], options.hotKeys['进入阅读模式'])));
+    return readModeHotKeysMemo;
+  });
   return {
     options,
     /** 该站点是否有储存配置 */
     isRecorded: rawValue !== undefined,
-    /**
-     * 设置新 Option
-     * @param newValue newValue
-     * @param trigger 是否触发变更事件
-     */
-    setOptions: async (newValue, trigger = true) => {
+    setOptions: async newValue => {
       Object.assign(options, newValue);
-      if (trigger) await Promise.all(changeCallbackList.map(callback => callback(options)));
 
       // 只保存和默认设置不同的部分
       return GM.setValue(name, difference(options, _defaultOptions));
     },
-    /**
-     * 监听配置变更事件
-     */
-    onOptionChange: callback => {
-      changeCallbackList.push(callback);
-    }
+    onHotKeysChange,
+    readModeHotKeys
   };
 };
 
@@ -6267,7 +6456,9 @@ setTimeout(async () => {
   const {
     options,
     setOptions,
-    isRecorded
+    isRecorded,
+    readModeHotKeys,
+    onHotKeysChange
   } = await useSiteOptions(window.location.hostname, {
     autoShow: false
   });
@@ -6286,7 +6477,9 @@ setTimeout(async () => {
       onOptionChange: option => setOptions({
         ...options,
         option
-      }, false)
+      }),
+      hotKeys: options.hotKeys,
+      onHotKeysChange
     });
     setFab = await main.useFab({
       tip: '阅读模式',
@@ -6296,6 +6489,16 @@ setTimeout(async () => {
       speedDial: main.useSpeedDial(options, setOptions)
     });
     setFab();
+    window.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT') return;
+      const code = main.getKeyboardCode(e);
+      if (!readModeHotKeys().has(code)) return;
+      e.stopPropagation();
+      e.preventDefault();
+      setManga({
+        show: true
+      });
+    });
   };
 
   /** 已经被触发过懒加载的图片 */
