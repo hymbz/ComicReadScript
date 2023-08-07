@@ -65,7 +65,7 @@
 
     & .img {
       width: calc(var(--scrollModeImgScale) * var(--width));
-      max-width: unset;
+      max-width: 100%;
       height: auto;
       max-height: unset;
 

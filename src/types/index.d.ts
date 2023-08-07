@@ -49,6 +49,7 @@ declare module 'solid-js' {
     interface CustomCaptureEvents {
       keydown: KeyboardEventSelf;
       keyup: KeyboardEventSelf;
+      keypress: KeyboardEventSelf;
     }
   }
 }

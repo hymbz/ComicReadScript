@@ -87,9 +87,10 @@ export const Manga: Component<MangaProps> = (props) => {
       ref={rootRef!}
       style={cssVar()}
       onWheel={handleWheel}
-      onKeyUp={stopPropagation}
-      onKeyDown={handleKeyDown}
       onMouseDown={handleMouseDown}
+      oncapture:keydown={handleKeyDown}
+      oncapture:keypress={stopPropagation}
+      oncapture:keyup={stopPropagation}
       role="presentation"
       tabIndex={-1}
     >
