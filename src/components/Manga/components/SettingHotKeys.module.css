@@ -34,6 +34,8 @@
   margin: 0.3em;
   padding: 0.2em 1.2em;
 
+  font-family: serif;
+
   border-radius: 0.3em;
   outline: 1px solid;
   outline-color: var(--secondary_bg);
@@ -88,8 +90,13 @@
 
   & > div[title] {
     cursor: pointer;
+
     transform: scale(0);
+
+    display: flex;
+
     background-color: var(--page_bg);
+
     transition: transform 100ms;
 
     & > svg {

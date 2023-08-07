@@ -14,23 +14,47 @@ import classes from '../index.module.css';
 const KeyItem: Component<{
   operateName: string;
   i: number;
-}> = (props) => (
-  <div
-    class={classes.hotKeysItem}
-    tabIndex={0}
-    oncapture:keydown={(e) => {
-      e.stopPropagation();
-      const code = getKeyboardCode(e);
-      if (!Reflect.has(hotKeysMap(), code))
-        setHotKeys(props.operateName, props.i, code);
-    }}
-  >
-    {keyboardCodeToText(store.hotKeys[props.operateName][props.i])}
-    <MdClose
-      onClick={() => delHotKeys(store.hotKeys[props.operateName][props.i])}
-    />
-  </div>
-);
+}> = (props) => {
+  const code = () => store.hotKeys[props.operateName][props.i];
+
+  const del = () => delHotKeys(code());
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    switch (e.key) {
+      case 'Tab':
+      case 'Enter':
+      case 'Escape':
+        store.rootRef?.focus();
+        return;
+
+      case 'Backspace':
+        setHotKeys(props.operateName, props.i, '');
+        return;
+    }
+
+    const newCode = getKeyboardCode(e);
+    if (!Reflect.has(hotKeysMap(), newCode))
+      setHotKeys(props.operateName, props.i, newCode);
+  };
+
+  return (
+    <div
+      class={classes.hotKeysItem}
+      tabIndex={0}
+      on:keydown={handleKeyDown}
+      // 如果被挂载的是空快捷键，则自动设上焦点
+      ref={(ref) => code() || setTimeout(() => ref.focus())}
+      // 如果失去焦点时还是空快捷键，则自动删掉
+      onBlur={() => code() || del()}
+    >
+      {keyboardCodeToText(code())}
+      <MdClose onClick={del} />
+    </div>
+  );
+};
 
 export const SettingHotKeys: Component = () => (
   <For each={Object.entries(store.hotKeys)}>

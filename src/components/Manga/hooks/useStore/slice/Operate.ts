@@ -14,6 +14,8 @@ import { clamp } from '../../../helper';
 import { hotKeysMap } from './HotKeys';
 import { getKeyboardCode } from '../../../../../helper';
 
+import classes from '../../../index.module.css';
+
 export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
 
@@ -84,13 +86,36 @@ const handleSwapTurnPage = (nextPage: boolean) => {
 };
 
 export const handleKeyDown = (e: KeyboardEvent) => {
-  e.stopPropagation();
-
-  if ((e.target as HTMLElement).tagName === 'INPUT') return;
-
-  if (store.endPageType) e.preventDefault();
+  if (
+    (e.target as HTMLElement).tagName === 'INPUT' ||
+    (e.target as HTMLElement).className === classes.hotKeysItem
+  )
+    return;
 
   const code = getKeyboardCode(e);
+
+  switch (e.key) {
+    case ' ':
+    case 'ArrowUp':
+    case 'PageUp':
+    case 'ArrowDown':
+    case 'PageDown':
+    case 'ArrowRight':
+    case 'ArrowLeft':
+    case 'Home':
+    case 'End': {
+      // 卷轴模式下跳过用于移动的按键
+      if (store.option.scrollMode && !store.endPageType) break;
+      // falls through
+    }
+
+    default:
+      // 拦截已注册的快捷键
+      if (Reflect.has(hotKeysMap(), code)) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+  }
 
   switch (hotKeysMap()[code]) {
     case '向上翻页':
