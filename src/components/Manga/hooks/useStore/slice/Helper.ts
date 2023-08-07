@@ -1,13 +1,13 @@
+import { difference } from '../../../../../helper';
 import type { State } from '..';
-import { setState } from '..';
-import type { Option } from '../OptionState';
+import { setState, store } from '..';
+import { defaultOption, type Option } from '../OptionState';
 
 /** 通过重新解构赋值 option 以触发 onOptionChange */
 export const setOption = (fn: (option: Option) => void) => {
-  setState((state) => {
-    fn(state.option);
-    state.option = { ...state.option };
-  });
+  setState((state) => fn(state.option));
+
+  store.onOptionChange?.(difference(store.option, defaultOption));
 };
 
 /** 创建一个专门用于修改指定配置项的函数 */

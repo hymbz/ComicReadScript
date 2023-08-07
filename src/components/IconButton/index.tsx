@@ -24,9 +24,7 @@ interface IconButtonProps {
   onClick?: (e: MouseEvent) => void;
 }
 
-/**
- * 图标按钮
- */
+/** 图标按钮 */
 export const IconButton: Component<IconButtonProps> = (_props) => {
   const props = mergeProps({ placement: 'right' }, _props);
   let buttonRef: HTMLButtonElement;

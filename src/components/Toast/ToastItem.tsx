@@ -6,7 +6,7 @@ import MdInfo from '@material-design-icons/svg/round/info.svg';
 import type { Component } from 'solid-js';
 import { createEffect, createMemo, Show } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
-import { setState } from './helper';
+import { setState } from './store';
 
 import type { Toast } from '.';
 import { toast } from './toast';

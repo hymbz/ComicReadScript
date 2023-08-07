@@ -1,14 +1,13 @@
 import { debounce, throttle } from 'throttle-debounce';
-import { createEffect, on, onCleanup } from 'solid-js';
+import { createEffect, onCleanup } from 'solid-js';
 
 import type { MangaProps } from '..';
 import { store, setState } from './useStore';
 import { updatePageData, handleResize } from './useStore/slice';
 import type { Option } from './useStore/OptionState';
-import { defaultOption } from './useStore/OptionState';
 import { autoCloseFill } from '../handleComicData';
 import { playAnimation } from '../helper';
-import { assign, difference } from '../../../helper';
+import { assign } from '../../../helper';
 
 /** 初始化 */
 export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
@@ -20,8 +19,9 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
   // 初始化配置
   createEffect(() => {
     setState((state) => {
-      if (!props.option) return;
-      state.option = assign(state.option, props.option as Option);
+      if (props.option)
+        state.option = assign(state.option, props.option as Option);
+      if (props.hotKeys) state.hotKeys = assign(state.hotKeys, props.hotKeys);
     });
   });
 
@@ -129,21 +129,18 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
 
       if (props.editButtonList) state.editButtonList = props.editButtonList;
       if (props.editSettingList) state.editSettingList = props.editSettingList;
-      if (props.commentList?.length) state.commentList = props.commentList;
 
-      if (props.onLoading) state.onLoading = debounce(100, props.onLoading);
+      state.commentList = props.commentList;
+
+      state.onLoading = props.onLoading
+        ? debounce(100, props.onLoading)
+        : undefined;
+      state.onOptionChange = props.onOptionChange
+        ? debounce(100, props.onOptionChange)
+        : undefined;
+      state.onHotKeysChange = props.onHotKeysChange
+        ? debounce(100, props.onHotKeysChange)
+        : undefined;
     });
   });
-
-  // 绑定配置发生改变时的回调
-  createEffect(
-    on(
-      () => store.option,
-      async (option) => {
-        if (!props.onOptionChange) return;
-        await props.onOptionChange(difference(option, defaultOption));
-      },
-      { defer: true },
-    ),
-  );
 };

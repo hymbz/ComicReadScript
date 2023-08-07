@@ -21,7 +21,7 @@ declare global {
   }
 
   declare module '*.svg' {
-    const fc: Component<{ style?: JSX.CSSProperties }>;
+    const fc: Component<JSX.HTMLAttributes<HTMLElement>>;
     export default fc;
   }
 
@@ -36,5 +36,19 @@ declare global {
     crsLib?: {
       GM_xmlhttpRequest: GM_xmlhttpRequest;
     };
+  }
+}
+
+declare module 'solid-js' {
+  namespace JSX {
+    type KeyboardEventSelf = KeyboardEvent & {
+      currentTarget: HTMLElement;
+      target: Element;
+    };
+
+    interface CustomCaptureEvents {
+      keydown: KeyboardEventSelf;
+      keyup: KeyboardEventSelf;
+    }
   }
 }

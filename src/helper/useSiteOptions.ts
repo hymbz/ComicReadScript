@@ -36,35 +36,17 @@ export const useSiteOptions = async <T extends Record<string, any>>(
     ...rawValue,
   });
 
-  const changeCallbackList: ((options: Options) => void | Promise<void>)[] = [];
-
   return {
     options,
 
     /** 该站点是否有储存配置 */
     isRecorded: rawValue !== undefined,
 
-    /**
-     * 设置新 Option
-     * @param newValue newValue
-     * @param trigger 是否触发变更事件
-     */
-    setOptions: async (newValue: Options, trigger = true) => {
+    setOptions: async (newValue: Options) => {
       Object.assign(options, newValue);
-      if (trigger)
-        await Promise.all(
-          changeCallbackList.map((callback) => callback(options)),
-        );
 
       // 只保存和默认设置不同的部分
       return GM.setValue(name, difference(options, _defaultOptions));
-    },
-
-    /**
-     * 监听配置变更事件
-     */
-    onOptionChange: (callback: (options: Options) => void | Promise<void>) => {
-      changeCallbackList.push(callback);
     },
   };
 };

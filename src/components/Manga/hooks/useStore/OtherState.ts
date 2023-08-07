@@ -2,6 +2,19 @@ import type { PanZoom } from 'panzoom';
 
 import type { ToolbarButtonList } from '../../defaultButtonList';
 import type { SettingList } from '../../defaultSettingList';
+import type { Option } from './OptionState';
+
+export const defaultHoeKeys: Record<string, string[]> = {
+  向上翻页: ['w', 'ArrowUp', 'PageUp'],
+  向下翻页: [' ', 's', 'ArrowDown', 'PageDown'],
+  向右翻页: ['d', '.', 'ArrowRight'],
+  向左翻页: ['a', ',', 'ArrowLeft'],
+  跳至首页: ['Home'],
+  跳至尾页: ['End'],
+  退出: ['Escape'],
+  切换页面填充: ['/', 'm', 'z'],
+  切换卷轴模式: [],
+};
 
 export const OtherState = {
   panzoom: undefined as PanZoom | undefined,
@@ -22,15 +35,30 @@ export const OtherState = {
   /** 评论列表 */
   commentList: undefined as string[] | undefined,
 
+  /** 快捷键配置 */
+  hotKeys: JSON.parse(JSON.stringify(defaultHoeKeys)) as Record<
+    string,
+    string[]
+  >,
+
   /** 点击结束页按钮时触发的回调 */
   onExit: undefined as ((isEnd?: boolean) => void) | undefined,
   /** 点击上一话按钮时触发的回调 */
   onPrev: undefined as (() => void | Promise<void>) | undefined,
   /** 点击下一话按钮时触发的回调 */
   onNext: undefined as (() => void | Promise<void>) | undefined,
+
   /** 图片加载状态发生变化时触发的回调 */
   onLoading: undefined as
     | ((img: ComicImg, imgList: ComicImg[]) => void | Promise<void>)
+    | undefined,
+  /** 配置发生变化时触发的回调 */
+  onOptionChange: undefined as
+    | ((option: Partial<Option>) => void | Promise<void>)
+    | undefined,
+  /** 快捷键配置发生变化时触发的回调 */
+  onHotKeysChange: undefined as
+    | ((option: Record<string, string[]>) => void | Promise<void>)
     | undefined,
 
   editButtonList: (list: ToolbarButtonList) => list,

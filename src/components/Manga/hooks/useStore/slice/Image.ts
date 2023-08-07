@@ -263,3 +263,17 @@ export const switchFillEffect = () => {
     jump();
   });
 };
+
+/** 切换卷轴模式 */
+export const switchScrollMode = () => {
+  store.panzoom?.smoothZoomAbs(0, 0, 1);
+  setState((state) => {
+    state.activePageIndex = 0;
+    setOption((draftOption) => {
+      draftOption.scrollMode = !draftOption.scrollMode;
+      draftOption.onePageMode = draftOption.scrollMode;
+    });
+    updatePageData(state);
+  });
+  setTimeout(handleMangaFlowScroll);
+};

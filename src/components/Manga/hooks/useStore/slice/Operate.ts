@@ -1,4 +1,9 @@
-import { setScrollModeImgScale, switchFillEffect, turnPage } from './Image';
+import {
+  setScrollModeImgScale,
+  switchFillEffect,
+  switchScrollMode,
+  turnPage,
+} from './Image';
 import { setState, store } from '..';
 import {
   contentHeight,
@@ -6,6 +11,8 @@ import {
   mangaFlowEle,
 } from './Scrollbar';
 import { clamp } from '../../../helper';
+import { hotKeysMap } from './HotKeys';
+import { getKeyboardCode } from '../../../../../helper';
 
 export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
@@ -71,68 +78,55 @@ export const handleWheel = (e: WheelEvent) => {
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
-const handleSwapTurnPage = (nextPage: boolean) =>
-  store.option.swapTurnPage ? !nextPage : nextPage;
+const handleSwapTurnPage = (nextPage: boolean) => {
+  const next = store.option.swapTurnPage ? !nextPage : nextPage;
+  return next ? 'next' : 'prev';
+};
 
-export const handleKeyUp = (e: KeyboardEvent) => {
+export const handleKeyDown = (e: KeyboardEvent) => {
   e.stopPropagation();
 
   if ((e.target as HTMLElement).tagName === 'INPUT') return;
 
   if (store.endPageType) e.preventDefault();
 
-  let nextPage: boolean | null = null;
+  const code = getKeyboardCode(e);
 
-  switch (e.key) {
-    case 'PageUp':
-    case 'ArrowUp':
-    case 'w':
-      nextPage = false;
-      break;
+  switch (hotKeysMap()[code]) {
+    case '向上翻页':
+      return setState((state) => turnPage(state, 'prev'));
 
-    case ' ':
-    case 'PageDown':
-    case 'ArrowDown':
-    case 's':
-      nextPage = true;
-      break;
+    case '向下翻页':
+      return setState((state) => turnPage(state, 'next'));
 
-    case 'ArrowRight':
-    case '.':
-    case 'd':
-      nextPage = handleSwapTurnPage(store.option.dir !== 'rtl');
-      break;
+    case '向右翻页':
+      return setState((state) =>
+        turnPage(state, handleSwapTurnPage(store.option.dir !== 'rtl')),
+      );
 
-    case 'ArrowLeft':
-    case ',':
-    case 'a':
-      nextPage = handleSwapTurnPage(store.option.dir === 'rtl');
-      break;
+    case '向左翻页':
+      return setState((state) =>
+        turnPage(state, handleSwapTurnPage(store.option.dir === 'rtl')),
+      );
 
-    case '/':
-    case 'm':
-    case 'z':
-      switchFillEffect();
-      break;
-
-    case 'Home':
-      setState((state) => {
+    case '跳至首页':
+      return setState((state) => {
         state.activePageIndex = 0;
       });
-      break;
-    case 'End':
-      setState((state) => {
+
+    case '跳至尾页':
+      return setState((state) => {
         state.activePageIndex = state.pageList.length - 1;
       });
-      break;
 
-    case 'Escape':
-      store.onExit?.();
-      break;
+    case '切换页面填充':
+      return switchFillEffect();
+    case '切换卷轴模式':
+      return switchScrollMode();
+
+    case '退出':
+      return store.onExit?.();
   }
-
-  if (nextPage === null) return;
-  setState((state) => turnPage(state, nextPage ? 'next' : 'prev'));
 };
 
 export const handleMouseDown: EventHandler['onmousedown'] = (e) => {

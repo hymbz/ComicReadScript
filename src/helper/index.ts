@@ -237,3 +237,30 @@ export const autoUpdate = (update: () => Promise<void>) => {
 
   refresh();
 };
+
+/** 获取键盘事件的编码 */
+export const getKeyboardCode = (e: KeyboardEvent) => {
+  let { key } = e;
+
+  switch (key) {
+    case 'Shift':
+    case 'Control':
+    case 'Alt':
+      return key;
+  }
+
+  if (e.ctrlKey) key = `Ctrl + ${key}`;
+  if (e.altKey) key = `Alt + ${key}`;
+  if (e.shiftKey) key = `Shift + ${key}`;
+  return key;
+};
+
+/** 将快捷键的编码转换成更易读的形式 */
+export const keyboardCodeToText = (code: string) =>
+  code
+    .replace('Control', 'Ctrl')
+    .replace('ArrowUp', '↑')
+    .replace('ArrowDown', '↓')
+    .replace('ArrowLeft', '←')
+    .replace('ArrowRight', '→')
+    .replace(/^\s$/, '空格');

@@ -6,6 +6,7 @@ export interface SettingsItemProps {
   name: string;
   class?: string;
   classList?: ClassList;
+  style?: JSX.CSSProperties;
 
   children: JSX.Element | JSX.Element[];
 }
@@ -22,6 +23,7 @@ export const SettingsItem: Component<SettingsItemProps> = (props) => (
       [props.class ?? '']: !!props.class?.length,
       ...props.classList,
     }}
+    style={props.style}
   >
     <div class={classes.SettingsItemName}> {props.name} </div>
     {props.children}

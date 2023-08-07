@@ -1,5 +1,5 @@
 import type { Message, Toast } from '.';
-import { creatId, setState, store } from './helper';
+import { creatId, setState, store } from './store';
 
 export const toast = (msg: Message, options?: Partial<Toast>) => {
   if (!msg) return;

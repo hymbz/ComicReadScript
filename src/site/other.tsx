@@ -22,7 +22,7 @@ setTimeout(async () => {
     [setManga] = await useManga({
       imgList,
       show: options.autoShow,
-      onOptionChange: (option) => setOptions({ ...options, option }, false),
+      onOptionChange: (option) => setOptions({ ...options, option }),
     });
 
     setFab = await useFab({

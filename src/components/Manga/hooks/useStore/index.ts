@@ -4,7 +4,7 @@ import { ScrollbarState } from './ScrollbarState';
 import { OptionState } from './OptionState';
 import { OtherState } from './OtherState';
 
-export const { store, setState, _state } = useStore({
+export const { store, setState, _state, _setState } = useStore({
   ...imgState,
   ...ScrollbarState,
   ...OptionState,

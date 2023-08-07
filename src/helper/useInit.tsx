@@ -14,10 +14,7 @@ export const useInit = async <T extends Record<string, any>>(
   name: string,
   defaultOptions = {} as T,
 ) => {
-  const { options, setOptions, onOptionChange } = await useSiteOptions(
-    name,
-    defaultOptions,
-  );
+  const { options, setOptions } = await useSiteOptions(name, defaultOptions);
 
   const setFab = await useFab({
     tip: '阅读模式',
@@ -28,6 +25,9 @@ export const useInit = async <T extends Record<string, any>>(
     imgList: [],
     option: options.option,
     onOptionChange: (option) => setOptions({ ...options, option }),
+    hotKeys: await GM.getValue<Record<string, string[]>>('HotKeys'),
+    onHotKeysChange: (newValue: Record<string, string[]>) =>
+      GM.setValue('HotKeys', newValue),
   });
 
   // 检查脚本的版本变化，提示用户
@@ -103,7 +103,6 @@ export const useInit = async <T extends Record<string, any>>(
   return {
     options,
     setOptions,
-    onOptionChange,
     setFab,
     setManga,
 

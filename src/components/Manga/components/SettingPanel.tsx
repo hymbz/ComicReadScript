@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { For, createMemo } from 'solid-js';
+import { For, createMemo, createSignal } from 'solid-js';
 
 import { defaultSettingList } from '../defaultSettingList';
 import { store } from '../hooks/useStore';
@@ -20,15 +20,26 @@ export const SettingPanel: Component = () => {
       onWheel={stopPropagation}
     >
       <For each={settingList()}>
-        {([key, SettingItem], i) => (
-          <>
-            {i() ? <hr /> : null}
-            <div class={classes.SettingBlock}>
-              <div class={classes.SettingBlockSubtitle}>{key}</div>
-              <SettingItem />
-            </div>
-          </>
-        )}
+        {([name, SettingItem, hidden], i) => {
+          const [show, setShwo] = createSignal(!hidden);
+          return (
+            <>
+              {i() ? <hr /> : null}
+              <div class={classes.SettingBlock} data-show={show()}>
+                <div
+                  class={classes.SettingBlockSubtitle}
+                  onClick={() => setShwo((prev) => !prev)}
+                >
+                  {name}
+                  {show() ? null : ' ...'}
+                </div>
+                <div class={classes.SettingBlockBody}>
+                  <SettingItem />
+                </div>
+              </div>
+            </>
+          );
+        }}
       </For>
     </div>
   );

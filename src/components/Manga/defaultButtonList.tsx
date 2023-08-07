@@ -13,12 +13,12 @@ import { SettingPanel } from './components/SettingPanel';
 
 import {
   activePage,
-  handleMangaFlowScroll,
   jumpBackPage,
   nowFillIndex,
   setOption,
   setScrollModeImgScale,
   switchFillEffect,
+  switchScrollMode,
   updatePageData,
 } from './hooks/useStore/slice';
 
@@ -46,38 +46,24 @@ export const defaultButtonList: ToolbarButtonList = [
       tip={store.option.onePageMode ? '单页模式' : '双页模式'}
       hidden={store.option.scrollMode}
       onClick={() => {
-        setState((state) => {
-          const jump = jumpBackPage(state);
-          state.option.onePageMode = !state.option.onePageMode;
-          state.option = { ...state.option };
-          updatePageData(state);
-          jump();
+        const jump = jumpBackPage(store);
+        setOption((draftOption) => {
+          draftOption.onePageMode = !draftOption.onePageMode;
         });
+        setState(updatePageData);
+        jump();
       }}
-    >
-      {store.option.onePageMode ? <MdLooksOne /> : <MdLooksTwo />}
-    </IconButton>
+      children={store.option.onePageMode ? <MdLooksOne /> : <MdLooksTwo />}
+    />
   ),
   // 卷轴模式
   () => (
     <IconButton
       tip="卷轴模式"
       enabled={store.option.scrollMode}
-      onClick={() => {
-        store.panzoom?.smoothZoomAbs(0, 0, 1);
-        setState((state) => {
-          state.activePageIndex = 0;
-          setOption((draftOption) => {
-            draftOption.scrollMode = !draftOption.scrollMode;
-            draftOption.onePageMode = draftOption.scrollMode;
-          });
-          updatePageData(state);
-        });
-        setTimeout(handleMangaFlowScroll);
-      }}
-    >
-      <MdViewDay />
-    </IconButton>
+      onClick={switchScrollMode}
+      children={<MdViewDay />}
+    />
   ),
   // 页面填充
   () => (
@@ -86,9 +72,8 @@ export const defaultButtonList: ToolbarButtonList = [
       enabled={store.fillEffect[nowFillIndex()]}
       hidden={store.option.onePageMode}
       onClick={switchFillEffect}
-    >
-      <MdQueue />
-    </IconButton>
+      children={<MdQueue />}
+    />
   ),
   buttonListDivider,
   // 放大模式
@@ -115,9 +100,8 @@ export const defaultButtonList: ToolbarButtonList = [
         if (scale === 1) store.panzoom.smoothZoom(0, 0, 1.2);
         else store.panzoom.smoothZoomAbs(0, 0, 1);
       }}
-    >
-      <MdSearch />
-    </IconButton>
+      children={<MdSearch />}
+    />
   ),
   // 翻译设置
   () => {
@@ -138,9 +122,8 @@ export const defaultButtonList: ToolbarButtonList = [
         onClick={() =>
           setImgTranslationEnbale(activePage(), !isTranslatingImage())
         }
-      >
-        <MdTranslate />
-      </IconButton>
+        children={<MdTranslate />}
+      />
     );
   },
   // 设置
@@ -180,9 +163,8 @@ export const defaultButtonList: ToolbarButtonList = [
         onClick={handleClick}
         popperClassName={showPanel() && classes.SettingPanelPopper}
         popper={showPanel() && popper()}
-      >
-        <MdSettings />
-      </IconButton>
+        children={<MdSettings />}
+      />
     );
   },
 ];

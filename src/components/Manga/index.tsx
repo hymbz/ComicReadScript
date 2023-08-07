@@ -13,7 +13,7 @@ import type { Option } from './hooks/useStore/OptionState';
 import { cssVar } from './hooks/useCssVar';
 import { useInit } from './hooks/useInit';
 import {
-  handleKeyUp,
+  handleKeyDown,
   handleMouseDown,
   handleWheel,
 } from './hooks/useStore/slice';
@@ -37,6 +37,8 @@ export interface MangaProps {
   fillEffect?: FillEffect;
   /** 初始化配置 */
   option?: Partial<Option>;
+  /** 快捷键配置 */
+  hotKeys?: State['hotKeys'];
   /** 是否显示 */
   show?: boolean;
   /** 评论列表 */
@@ -49,7 +51,9 @@ export interface MangaProps {
   /** 点击下一话按钮时触发的回调 */
   onNext?: State['onNext'];
   /** 配置发生变化时触发的回调 */
-  onOptionChange?: (option: Partial<Option>) => void | Promise<void>;
+  onOptionChange?: State['onOptionChange'];
+  /** 快捷键配置发生变化时触发的回调 */
+  onHotKeysChange?: State['onHotKeysChange'];
   /** 图片加载状态发生变化时触发的回调 */
   onLoading?: (img: ComicImg, imgList: ComicImg[]) => void | Promise<void>;
 
@@ -84,7 +88,7 @@ export const Manga: Component<MangaProps> = (props) => {
       style={cssVar()}
       onWheel={handleWheel}
       onKeyUp={stopPropagation}
-      onKeyDown={handleKeyUp}
+      onKeyDown={handleKeyDown}
       onMouseDown={handleMouseDown}
       role="presentation"
       tabIndex={-1}
