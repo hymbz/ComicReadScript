@@ -1,12 +1,17 @@
-import { useManga, useFab, useSpeedDial, isEqualArray, toast } from 'main';
+import {
+  useManga,
+  useFab,
+  useSpeedDial,
+  isEqualArray,
+  toast,
+  getKeyboardCode,
+} from 'main';
 import type { AsyncReturnType } from '../helper';
 import { useSiteOptions } from '../helper/useSiteOptions';
 
 setTimeout(async () => {
-  const { options, setOptions, isRecorded } = await useSiteOptions(
-    window.location.hostname,
-    { autoShow: false },
-  );
+  const { options, setOptions, isRecorded, readModeHotKeys, onHotKeysChange } =
+    await useSiteOptions(window.location.hostname, { autoShow: false });
 
   /** 图片列表 */
   let imgList: string[] = [];
@@ -23,6 +28,8 @@ setTimeout(async () => {
       imgList,
       show: options.autoShow,
       onOptionChange: (option) => setOptions({ ...options, option }),
+      hotKeys: options.hotKeys,
+      onHotKeysChange,
     });
 
     setFab = await useFab({
@@ -31,6 +38,15 @@ setTimeout(async () => {
       speedDial: useSpeedDial(options, setOptions),
     });
     setFab();
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.target as HTMLElement).tagName === 'INPUT') return;
+      const code = getKeyboardCode(e);
+      if (!readModeHotKeys().has(code)) return;
+      e.stopPropagation();
+      e.preventDefault();
+      setManga({ show: true });
+    });
   };
 
   /** 已经被触发过懒加载的图片 */

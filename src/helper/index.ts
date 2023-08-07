@@ -187,7 +187,7 @@ export const difference = <T extends object>(a: T, b: T): Partial<T> => {
     if (typeof a[key] === 'object') {
       const _res = difference(a[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
-    } else if (a[key] !== b[key]) res[key] = a[key];
+    } else if (a[key] !== b?.[key]) res[key] = a[key];
   }
   return res;
 };
@@ -202,10 +202,11 @@ export const assign = <T extends object>(a: T, b: T): T => {
   const keys = Object.keys(b);
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
-    if (typeof b[key] === 'object') {
-      const _res = assign(a[key], b[key]);
+    if (res[key] === undefined) res[key] = b[key];
+    else if (typeof b[key] === 'object') {
+      const _res = assign(res[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
-    } else if (a[key] !== b[key]) res[key] = b[key];
+    } else if (res[key] !== b[key]) res[key] = b[key];
   }
   return res;
 };

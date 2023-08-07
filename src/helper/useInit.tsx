@@ -1,4 +1,5 @@
 import { For } from 'solid-js';
+import { getKeyboardCode } from '.';
 import { useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
 import { toast } from '../components/useComponents/Toast';
@@ -14,7 +15,8 @@ export const useInit = async <T extends Record<string, any>>(
   name: string,
   defaultOptions = {} as T,
 ) => {
-  const { options, setOptions } = await useSiteOptions(name, defaultOptions);
+  const { options, setOptions, readModeHotKeys, onHotKeysChange } =
+    await useSiteOptions(name, defaultOptions);
 
   const setFab = await useFab({
     tip: '阅读模式',
@@ -25,9 +27,8 @@ export const useInit = async <T extends Record<string, any>>(
     imgList: [],
     option: options.option,
     onOptionChange: (option) => setOptions({ ...options, option }),
-    hotKeys: await GM.getValue<Record<string, string[]>>('HotKeys'),
-    onHotKeysChange: (newValue: Record<string, string[]>) =>
-      GM.setValue('HotKeys', newValue),
+    hotKeys: options.hotKeys,
+    onHotKeysChange,
   });
 
   // 检查脚本的版本变化，提示用户
@@ -190,6 +191,15 @@ export const useInit = async <T extends Record<string, any>>(
 
       GM.registerMenuCommand('进入漫画阅读模式', () => showComic(true));
       updateHideFabMenu();
+
+      window.addEventListener('keydown', (e) => {
+        if ((e.target as HTMLElement).tagName === 'INPUT') return;
+        const code = getKeyboardCode(e);
+        if (!readModeHotKeys().has(code)) return;
+        e.stopPropagation();
+        e.preventDefault();
+        showComic(true);
+      });
 
       return () => showComic(true);
     },

@@ -1,12 +1,17 @@
 import { createMemo, createRoot } from 'solid-js';
-import { difference } from '../../../../../helper';
 import { _setState, store } from '..';
 import { defaultHoeKeys } from '../OtherState';
+import { isEqualArray } from '../../../../../helper';
 
 export const setHotKeys = (...args: any[]) => {
   _setState.apply(this, ['hotKeys', ...args] as never);
   store.onHotKeysChange?.(
-    difference(store.hotKeys, defaultHoeKeys) as Record<string, string[]>,
+    Object.fromEntries(
+      Object.entries(store.hotKeys).filter(
+        ([name, keys]) =>
+          !defaultHoeKeys[name] || !isEqualArray(keys, defaultHoeKeys[name]),
+      ),
+    ),
   );
 };
 

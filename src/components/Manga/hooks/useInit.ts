@@ -8,6 +8,7 @@ import type { Option } from './useStore/OptionState';
 import { autoCloseFill } from '../handleComicData';
 import { playAnimation } from '../helper';
 import { assign } from '../../../helper';
+import { defaultHoeKeys } from './useStore/OtherState';
 
 /** 初始化 */
 export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
@@ -21,7 +22,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
     setState((state) => {
       if (props.option)
         state.option = assign(state.option, props.option as Option);
-      if (props.hotKeys) state.hotKeys = assign(state.hotKeys, props.hotKeys);
+      state.hotKeys = { ...defaultHoeKeys, ...props.hotKeys };
     });
   });
 
