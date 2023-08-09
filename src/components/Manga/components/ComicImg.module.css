@@ -65,7 +65,7 @@
 
     & .img {
       width: calc(var(--scrollModeImgScale) * var(--width));
-      max-width: 100%;
+      max-width: unset;
       height: auto;
       max-height: unset;
 
@@ -73,7 +73,8 @@
 
       /* 让未显示的图片提前占下位 */
       &[data-load-type="wait"] {
-        flex-basis: var(--img_placeholder_height, 100vh);
+        display: unset;
+        flex-basis: var(--img_placeholder_height);
         flex-shrink: 0;
       }
     }

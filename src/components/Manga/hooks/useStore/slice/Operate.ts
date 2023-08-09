@@ -1,5 +1,5 @@
 import {
-  setScrollModeImgScale,
+  zoomScrollModeImg,
   switchFillEffect,
   switchScrollMode,
   turnPage,
@@ -10,7 +10,6 @@ import {
   handleMangaFlowScroll,
   mangaFlowEle,
 } from './Scrollbar';
-import { clamp } from '../../../helper';
 import { hotKeysMap } from './HotKeys';
 import { getKeyboardCode } from '../../../../../helper';
 
@@ -28,55 +27,50 @@ export const handleWheel = (e: WheelEvent) => {
 
   const isWheelDown = e.deltaY > 0;
 
-  if (store.option.scrollMode && !store.endPageType) {
-    // 实现在卷轴模式滚动到头尾后继续滚动时弹出结束页
-    if (store.scrollbar.dragTop === 0 && !isWheelDown) {
-      window.setTimeout(() => {
-        setState((state) => {
-          state.endPageType = 'start';
-          state.scrollLock = true;
-        });
-      });
-      window.setTimeout(() => {
-        setState((state) => {
-          state.scrollLock = false;
-        });
-      }, 500);
-    } else if (
-      store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 &&
-      isWheelDown
-    ) {
-      setState((state) => {
-        state.endPageType = 'end';
-        state.scrollLock = true;
-      });
-      window.setTimeout(() => {
-        setState((state) => {
-          state.scrollLock = false;
-        });
-      }, 500);
-    }
+  if (store.endPageType || !store.option.scrollMode)
+    return setState((state) => turnPage(state, isWheelDown ? 'next' : 'prev'));
 
-    // 实现卷轴模式下的缩放
-    if (e.altKey) {
-      e.preventDefault();
-      const zoomScale = (isWheelDown ? -1 : 1) * 0.1;
-      setScrollModeImgScale(
-        clamp(5, store.option.scrollModeImgScale + zoomScale, 0.2),
-      );
-      // 在调整图片缩放后使当前滚动进度保持不变
-      setState((state) => {
-        mangaFlowEle().scrollTo({
-          top: contentHeight() * state.scrollbar.dragTop,
-        });
+  // 实现卷轴模式下的缩放
+  if (e.altKey) {
+    e.preventDefault();
+    zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
+    // 在调整图片缩放后使当前滚动进度保持不变
+    setState((state) => {
+      mangaFlowEle().scrollTo({
+        top: contentHeight() * state.scrollbar.dragTop,
       });
-      handleMangaFlowScroll();
-    }
-
+    });
+    handleMangaFlowScroll();
     return;
   }
 
-  setState((state) => turnPage(state, isWheelDown ? 'next' : 'prev'));
+  // 实现在卷轴模式滚动到头尾后继续滚动时弹出结束页
+  if (store.scrollbar.dragTop === 0 && !isWheelDown) {
+    window.setTimeout(() => {
+      setState((state) => {
+        state.endPageType = 'start';
+        state.scrollLock = true;
+      });
+    });
+    window.setTimeout(() => {
+      setState((state) => {
+        state.scrollLock = false;
+      });
+    }, 500);
+  } else if (
+    store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 &&
+    isWheelDown
+  ) {
+    setState((state) => {
+      state.endPageType = 'end';
+      state.scrollLock = true;
+    });
+    window.setTimeout(() => {
+      setState((state) => {
+        state.scrollLock = false;
+      });
+    }, 500);
+  }
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */

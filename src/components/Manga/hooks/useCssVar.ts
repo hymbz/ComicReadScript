@@ -2,7 +2,7 @@ import type { JSX } from 'solid-js';
 import { createRoot, createMemo } from 'solid-js';
 
 import { store } from './useStore';
-import { windowHeight } from './useStore/slice';
+import { imgPlaceholderHeight } from './useStore/slice';
 
 interface CssVar {
   '--hover_bg_color': string;
@@ -71,7 +71,7 @@ export const cssVar = createRoot(() => {
       store.option.customBackground ??
       (store.option.darkMode ? '#000000' : '#ffffff'),
     '--scrollModeImgScale': store.option.scrollModeImgScale,
-    '--img_placeholder_height': `${windowHeight()}px`,
+    '--img_placeholder_height': `${imgPlaceholderHeight()}px`,
     ...(store.option.darkMode ? dark : light),
   }));
   return _cssVar;

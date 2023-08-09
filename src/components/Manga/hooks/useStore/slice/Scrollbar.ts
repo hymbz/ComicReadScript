@@ -96,7 +96,7 @@ export const updateTipText = throttle(100, () => {
   });
 });
 
-/** 监视漫画页的滚动事件 */
+/** 处理漫画页的滚动事件 */
 export const handleMangaFlowScroll = () => {
   if (!store.option.scrollMode) return;
 

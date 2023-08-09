@@ -24,7 +24,7 @@ export const ComicImgFlow: Component = () => {
   /** 处理双击缩放 */
   const handleDoubleClickZoom = (e: MouseEvent) => {
     setTimeout(() => {
-      if (!store.panzoom) return;
+      if (!store.panzoom || store.option.scrollMode) return;
 
       const { scale } = store.panzoom.getTransform();
 

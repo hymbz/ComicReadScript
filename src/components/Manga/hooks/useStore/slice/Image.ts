@@ -180,9 +180,16 @@ export const turnPage = (state: State, dir: 'next' | 'prev') => {
   }
 };
 
-export const setScrollModeImgScale = (newScale: number) => {
+export const zoomScrollModeImg = (zoomLevel?: number) => {
   setOption((draftOption) => {
-    draftOption.scrollModeImgScale = newScale;
+    draftOption.scrollModeImgScale = !zoomLevel
+      ? 1
+      : clamp(
+          3,
+          // 放大到整数再运算，避免精度丢失导致的奇怪的值
+          (store.option.scrollModeImgScale * 10 + zoomLevel * 10) / 10,
+          0.1,
+        );
   });
   // 在调整图片缩放后使当前滚动进度保持不变
   setState((state) => {
@@ -193,7 +200,12 @@ export const setScrollModeImgScale = (newScale: number) => {
   handleMangaFlowScroll();
 };
 
-export const { activeImgIndex, nowFillIndex, activePage } = createRoot(() => {
+export const {
+  activeImgIndex,
+  nowFillIndex,
+  activePage,
+  imgPlaceholderHeight,
+} = createRoot(() => {
   const activeImgIndexMemo = createMemo(
     () => store.pageList[store.activePageIndex]?.find((i) => i !== -1) ?? 0,
   );
@@ -204,6 +216,19 @@ export const { activeImgIndex, nowFillIndex, activePage } = createRoot(() => {
   const activePageMemo = createMemo(
     () => store.pageList[store.activePageIndex] ?? [],
   );
+
+  const imgPlaceholderHeightMemo = createMemo(() => {
+    if (!store.option.scrollMode) return 0;
+    // 使用所有已加载图片高度的中位数
+    const heightList = store.imgList
+      .filter((img) => img.loadType === 'loaded' && img.height)
+      .map((img) => img.height!)
+      .sort();
+    return (
+      heightList[Math.floor(heightList.length / 2)] *
+      store.option.scrollModeImgScale
+    );
+  });
 
   // 页数发生变动时
   createEffect(
@@ -226,6 +251,8 @@ export const { activeImgIndex, nowFillIndex, activePage } = createRoot(() => {
     nowFillIndex: nowFillIndexMemo,
     /** 当前显示页面 */
     activePage: activePageMemo,
+    /** 卷轴模式下的图片占位高度 */
+    imgPlaceholderHeight: imgPlaceholderHeightMemo,
   };
 });
 

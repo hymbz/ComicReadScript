@@ -16,7 +16,7 @@ import {
   jumpBackPage,
   nowFillIndex,
   setOption,
-  setScrollModeImgScale,
+  zoomScrollModeImg,
   switchFillEffect,
   switchScrollMode,
   updatePageData,
@@ -79,19 +79,19 @@ export const defaultButtonList: ToolbarButtonList = [
   // 放大模式
   () => (
     <IconButton
-      tip="放大模式"
+      tip="放大"
       enabled={
         store.isZoomed ||
-        (store.option.scrollMode && store.option.scrollModeImgScale !== 1)
+        (store.option.scrollMode && store.option.scrollModeImgScale > 1)
       }
       onClick={() => {
         if (store.option.scrollMode) {
-          setScrollModeImgScale(
-            store.option.scrollModeImgScale < 2
-              ? store.option.scrollModeImgScale + 0.2
-              : 1,
+          return zoomScrollModeImg(
+            store.option.scrollModeImgScale < 1 ||
+              store.option.scrollModeImgScale > 1.6
+              ? undefined
+              : 0.2,
           );
-          return;
         }
 
         if (!store.panzoom) return;
