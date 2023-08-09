@@ -3,6 +3,7 @@ import { getKeyboardCode, isEqualArray } from '.';
 import { useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
 import { toast } from '../components/useComponents/Toast';
+import type { SiteOptions } from './useSiteOptions';
 import { useSiteOptions } from './useSiteOptions';
 import { useSpeedDial } from './useSpeedDial';
 
@@ -27,7 +28,8 @@ export const useInit = async <T extends Record<string, any>>(
   const [setManga, mangaProps] = await useManga({
     imgList: [],
     option: options.option,
-    onOptionChange: (option) => setOptions({ ...options, option }),
+    onOptionChange: (option) =>
+      setOptions({ option } as Partial<T & SiteOptions>),
     hotKeys: hotKeys(),
     onHotKeysChange,
   });

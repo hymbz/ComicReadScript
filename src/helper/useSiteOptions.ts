@@ -2,10 +2,9 @@ import { createMutable } from 'solid-js/store';
 import { createMemo, createRoot, createSignal } from 'solid-js';
 import type { MangaProps } from '../components/Manga';
 import { difference } from '.';
-import { defaultOption } from '../components/Manga/hooks/useStore/OptionState';
 
 export interface SiteOptions {
-  option: Partial<MangaProps['option']> | undefined;
+  option: MangaProps['option'];
 
   /** 自动进入阅读模式 */
   autoShow: boolean;
@@ -23,27 +22,26 @@ const getHotKeys = async (): Promise<Record<string, string[]>> => ({
  * @param name 站点名
  * @param defaultOptions 默认配置
  */
-export const useSiteOptions = async <T extends Record<string, any>>(
+export const useSiteOptions = async <T = Record<string, any>>(
   name: string,
-  defaultOptions = {} as T,
+  defaultOptions: T = {} as T,
 ) => {
-  type Options = T & SiteOptions;
+  type SaveOptions = T & SiteOptions;
 
   const _defaultOptions = {
     autoShow: true,
     hiddenFAB: false,
     ...defaultOptions,
-    option: { ...defaultOption, ...defaultOptions?.option },
-  } as Options;
+  } as SaveOptions;
 
-  const saveOptions = await GM.getValue<Options>(name);
+  const saveOptions = await GM.getValue<SaveOptions>(name);
 
-  const options = createMutable<Options>({
+  const options = createMutable<SaveOptions>({
     ..._defaultOptions,
     ...saveOptions,
   });
 
-  const setOptions = async (newValue: Partial<Options>) => {
+  const setOptions = async (newValue: Partial<SaveOptions>) => {
     Object.assign(options, newValue);
 
     // 只保存和默认设置不同的部分
