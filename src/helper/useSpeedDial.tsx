@@ -39,6 +39,7 @@ export const useSpeedDial = <T extends Record<string, any>>(
       switch (optionName) {
         case 'hiddenFAB':
         case 'option':
+        case 'hotKeys':
           return null;
 
         case 'autoShow':

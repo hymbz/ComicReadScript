@@ -13,6 +13,17 @@ export const findFillIndex = (pageIndex: number, fillEffect: FillEffect) => {
   return nowFillIndex;
 };
 
+/** 判断图片是否是跨页图 */
+export const isWideImg = (img: ComicImg) => {
+  switch (img.type) {
+    case 'long':
+    case 'wide':
+      return true;
+    default:
+      return false;
+  }
+};
+
 /** 根据图片比例和填充页设置对漫画图片进行排列 */
 export const handleComicData = (
   imgList: ComicImg[],
@@ -29,7 +40,7 @@ export const handleComicData = (
       imgCache = -1;
     }
 
-    if (img.type !== 'long' && img.type !== 'wide') {
+    if (!isWideImg(img)) {
       if (imgCache !== null) {
         pageList.push([imgCache, i]);
         imgCache = null;

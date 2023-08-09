@@ -1,8 +1,10 @@
 import type { Component } from 'solid-js';
 import { createMemo } from 'solid-js';
 
+import type { State } from '../hooks/useStore';
 import { setState, store } from '../hooks/useStore';
 import { activePage, updateImgType } from '../hooks/useStore/slice';
+import { isWideImg } from '../handleComicData';
 
 import classes from '../index.module.css';
 
@@ -10,6 +12,26 @@ export interface ComicImgProps {
   index: number;
   img: ComicImg;
 }
+
+/** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
+const checkImgTypeCount = (
+  state: State,
+  fn: (img: ComicImg) => boolean,
+  maxNum = 3,
+) => {
+  let num = 0;
+  for (let i = 0; i < state.imgList.length; i++) {
+    const img = state.imgList[i];
+    if (img.loadType !== 'loaded') continue;
+    if (!fn(img)) {
+      num = 0;
+      continue;
+    }
+    num += 1;
+    if (num >= maxNum) return true;
+  }
+  return false;
+};
 
 /** 图片加载完毕的回调 */
 const handleImgLoaded = (i: number, e: HTMLImageElement) => {
@@ -21,8 +43,34 @@ const handleImgLoaded = (i: number, e: HTMLImageElement) => {
     img.height = e.naturalHeight;
     img.width = e.naturalWidth;
     updateImgType(state, img);
-
     state.onLoading?.(img, state.imgList);
+
+    switch (img.type) {
+      // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
+      case 'long':
+      case 'wide': {
+        if (!state.flag.autoWide || !checkImgTypeCount(state, isWideImg))
+          return;
+        state.imgList.forEach((comicImg, index) => {
+          if (comicImg.loadType === 'wait' && comicImg.type === '')
+            state.imgList[index].type = 'wide';
+        });
+        state.flag.autoWide = false;
+        break;
+      }
+
+      // 连续出现多张长图后，自动开启卷轴模式
+      case 'vertical': {
+        if (
+          !state.flag.autoScrollMode ||
+          !checkImgTypeCount(state, (image) => image.type === 'vertical')
+        )
+          return;
+        state.option.scrollMode = true;
+        state.flag.autoScrollMode = false;
+        break;
+      }
+    }
   });
 };
 

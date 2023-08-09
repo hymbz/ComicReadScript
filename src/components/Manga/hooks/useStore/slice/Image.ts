@@ -14,9 +14,6 @@ import {
 import { clamp } from '../../../helper';
 import { setOption } from './Helper';
 
-/** 是否需要自动判断开启卷轴模式 */
-let autoScrollMode = true;
-
 /**
  * 预加载指定页数的图片，并取消其他预加载的图片
  * @param state state
@@ -107,16 +104,6 @@ export const updateImgType = (state: State, draftImg: ComicImg) => {
     draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
   }
 
-  // 当超过3张图的类型为长图时，自动开启卷轴模式
-  if (
-    !state.option.scrollMode &&
-    autoScrollMode &&
-    state.imgList.filter((img) => img.type === 'vertical').length > 3
-  ) {
-    state.option.scrollMode = true;
-    autoScrollMode = false;
-  }
-
   if (type === draftImg.type) {
     updateDrag(state);
     updateImgLoadType(state);
@@ -128,6 +115,7 @@ export const updateImgType = (state: State, draftImg: ComicImg) => {
 
 /** 处理显示窗口的长宽变化 */
 export const handleResize = (state: State, width: number, height: number) => {
+  if (!(width && height)) return;
   state.proportion.单页比例 = Math.min(width / 2 / height, 1);
   state.proportion.横幅比例 = width / height;
   state.proportion.条漫比例 = state.proportion.单页比例 / 2;

@@ -67,4 +67,11 @@ export const OtherState = {
   prevRef: undefined as HTMLButtonElement | undefined,
   nextRef: undefined as HTMLButtonElement | undefined,
   exitRef: undefined as HTMLButtonElement | undefined,
+
+  flag: {
+    /** 是否需要自动判断开启卷轴模式 */
+    autoScrollMode: true,
+    /** 是否需要自动将未加载图片类型设为跨页图 */
+    autoWide: true,
+  },
 };
