@@ -12,7 +12,7 @@ import type { ChapterInfo } from '../helper/dmzjApi';
 import { getChapterInfo } from '../helper/dmzjApi';
 
 (async () => {
-  const { options, setManga, init } = await useInit('dmzj');
+  const { setManga, init } = await useInit('dmzj');
 
   // 分别处理目录页和漫画页
   switch (window.location.pathname.split('/')[1]) {
@@ -131,13 +131,12 @@ import { getChapterInfo } from '../helper/dmzjApi';
           onPrev: querySelectorClick('#loadPrevChapter'),
         });
 
-        const showComic = init(
+        init(
           () =>
             querySelectorAll('#commicBox img')
               .map((e) => e.getAttribute('data-original'))
               .filter((src) => src) as string[],
         );
-        if (!options.autoShow) await showComic();
         return;
       }
 
@@ -188,13 +187,12 @@ import { getChapterInfo } from '../helper/dmzjApi';
         editButtonList: (e) => e,
       });
 
-      const showComic = init(() => {
+      init(() => {
         if (page_url.length) return page_url;
 
         tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
         return [];
       });
-      if (!options.autoShow) await showComic();
       break;
     }
   }

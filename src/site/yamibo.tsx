@@ -154,19 +154,17 @@ interface History {
         return imgList.map((img) => img.src);
       };
 
+      updateImgList();
+      const { showComic, loadImgList, onLoading } = init(() =>
+        imgList.map((img) => img.src),
+      );
+
       setManga({
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
-        onLoading: (img) => {
-          // 跳过符合标准的
-          if (img.height && img.width && img.height > 500 && img.width > 500)
-            return;
-
-          const delImgIndex = imgList.findIndex(
-            (image) => image.src === img.src,
-          );
-          if (delImgIndex !== -1) imgList.splice(delImgIndex, 1);
-
-          setManga({ imgList: imgList.map((image) => image.src) });
+        onLoading: (_imgList) => {
+          onLoading(_imgList);
+          updateImgList();
+          return loadImgList();
         },
         onExit: (isEnd) => {
           if (isEnd)
@@ -175,9 +173,6 @@ interface History {
           setManga({ show: false });
         },
       });
-
-      updateImgList();
-      const showComic = init(() => imgList.map((img) => img.src));
 
       setFab({ progress: 1, tip: '阅读模式' });
 

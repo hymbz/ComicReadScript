@@ -43,78 +43,13 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
   resizeObserver.observe(rootRef);
   onCleanup(() => resizeObserver.disconnect());
 
-  // 处理 imgList fillEffect 参数的初始化和修改
-  createEffect(() => {
-    setState((state) => {
-      if (props.fillEffect) state.fillEffect = props.fillEffect;
-
-      // 处理初始化
-      if (!state.imgList.length) {
-        state.flag.autoScrollMode = true;
-        state.flag.autoWide = true;
-
-        state.fillEffect[-1] = state.option.firstPageFill;
-        state.imgList = props.imgList.map((imgUrl) => ({
-          type: '',
-          src: imgUrl,
-          loadType: 'wait',
-        }));
-        updatePageData(state);
-        return;
-      }
-
-      state.endPageType = undefined;
-
-      /** 修改前的当前显示图片 */
-      const oldActiveImg =
-        state.pageList[state.activePageIndex]?.map(
-          (i) => state.imgList?.[i]?.src,
-        ) ?? [];
-
-      state.imgList = props.imgList.map(
-        (imgUrl) =>
-          state.imgList.find((img) => img.src === imgUrl) ?? {
-            type: '',
-            src: imgUrl,
-            loadType: 'wait',
-          },
-      );
-      state.fillEffect = { '-1': true };
-      autoCloseFill.clear();
-      updatePageData(state);
-
-      if (state.pageList.length === 0) {
-        state.activePageIndex = 0;
-        return;
-      }
-
-      // 尽量使当前显示的图片在修改后依然不变
-      oldActiveImg.some((imgUrl) => {
-        // 跳过填充页和已被删除的图片
-        if (!imgUrl || props.imgList.includes(imgUrl)) return false;
-
-        const newPageIndex = state.pageList.findIndex((page) =>
-          page.some((index) => state.imgList?.[index]?.src === imgUrl),
-        );
-        if (newPageIndex === -1) return false;
-
-        state.activePageIndex = newPageIndex;
-        return true;
-      });
-
-      // 如果已经翻到了最后一页，且最后一页的图片被删掉了，那就保持在末页显示
-      if (state.activePageIndex > state.pageList.length - 1)
-        state.activePageIndex = state.pageList.length - 1;
-    });
-  });
-
   createEffect(() => {
     setState((state) => {
       state.onExit = props.onExit
         ? (isEnd?: boolean | Event) => {
             playAnimation(store.exitRef);
             props.onExit?.(!!isEnd);
-            state.activePageIndex = 0;
+            if (isEnd) state.activePageIndex = 0;
             state.endPageType = undefined;
           }
         : undefined;
@@ -145,6 +80,73 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
       state.onHotKeysChange = props.onHotKeysChange
         ? debounce(100, props.onHotKeysChange)
         : undefined;
+    });
+  });
+
+  // 处理 imgList fillEffect 参数的初始化和修改
+  createEffect(() => {
+    setState((state) => {
+      if (props.fillEffect) state.fillEffect = props.fillEffect;
+
+      // 处理初始化
+      if (!state.imgList.length) {
+        state.flag.autoScrollMode = true;
+        state.flag.autoWide = true;
+        autoCloseFill.clear();
+
+        state.fillEffect[-1] = state.option.firstPageFill;
+        state.imgList = props.imgList.map((imgUrl) => ({
+          type: '',
+          src: imgUrl,
+          loadType: 'wait',
+        }));
+        updatePageData(state);
+        state.onLoading?.(state.imgList);
+        return;
+      }
+
+      state.endPageType = undefined;
+
+      /** 修改前的当前显示图片 */
+      const oldActiveImg =
+        state.pageList[state.activePageIndex]?.map(
+          (i) => state.imgList?.[i]?.src,
+        ) ?? [];
+
+      state.imgList = props.imgList.map(
+        (imgUrl) =>
+          state.imgList.find((img) => img.src === imgUrl) ?? {
+            type: '',
+            src: imgUrl,
+            loadType: 'wait',
+          },
+      );
+      state.fillEffect = { '-1': true };
+      updatePageData(state);
+      state.onLoading?.(state.imgList);
+
+      if (state.pageList.length === 0) {
+        state.activePageIndex = 0;
+        return;
+      }
+
+      // 尽量使当前显示的图片在修改后依然不变
+      oldActiveImg.some((imgUrl) => {
+        // 跳过填充页和已被删除的图片
+        if (!imgUrl || props.imgList.includes(imgUrl)) return false;
+
+        const newPageIndex = state.pageList.findIndex((page) =>
+          page.some((index) => state.imgList?.[index]?.src === imgUrl),
+        );
+        if (newPageIndex === -1) return false;
+
+        state.activePageIndex = newPageIndex;
+        return true;
+      });
+
+      // 如果已经翻到了最后一页，且最后一页的图片被删掉了，那就保持在末页显示
+      if (state.activePageIndex > state.pageList.length - 1)
+        state.activePageIndex = state.pageList.length - 1;
     });
   });
 };

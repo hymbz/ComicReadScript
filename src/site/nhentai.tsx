@@ -43,7 +43,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Read</a>',
     );
     const comicReadModeDom = document.getElementById('comicReadMode')!;
-    const showComic = init(() =>
+    const { showComic } = init(() =>
       gallery.images.pages.map(
         ({ number, extension }) =>
           `https://i.nhentai.net/galleries/${gallery.media_id}/${number}.${extension}`,

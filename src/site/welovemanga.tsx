@@ -1,7 +1,10 @@
-import { querySelectorAll, querySelectorClick, useInit } from 'main';
+import { querySelectorAll, querySelectorClick, useInit, waitDom } from 'main';
 
 (async () => {
-  const imgList = querySelectorAll<HTMLImageElement>('img.chapter-img').map(
+  const imgSelector =
+    '#listImgs img.chapter-img.chapter-img:not(.ls-is-cached)';
+  await waitDom(imgSelector);
+  const imgList = querySelectorAll<HTMLImageElement>(imgSelector).map(
     (e) =>
       e.getAttribute('data-src') ?? e.getAttribute('data-original') ?? e.src,
   );

@@ -22,6 +22,8 @@ import {
     return imgList;
   };
 
+  const { loadImgList } = init(getImgList);
+
   let lastUrl = '';
 
   const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
@@ -53,7 +55,7 @@ import {
 
     // 先将 imgList 清空以便 activePageIndex 归零
     setManga({ imgList: [] });
-    init(getImgList);
+    await loadImgList();
     setManga({
       onPrev: querySelectorClick(findButton('上一')),
       onNext: querySelectorClick(findButton('下一')),

@@ -1,6 +1,3 @@
-export type AsyncReturnType<T extends (...args: any) => Promise<any>> =
-  T extends (...args: any) => Promise<infer R> ? R : any;
-
 export const sleep = (ms: number) =>
   new Promise((resolve) => {
     window.setTimeout(resolve, ms);
@@ -86,6 +83,12 @@ export const linstenKeyup = (handler: (e: KeyboardEvent) => unknown) =>
 /** 滚动页面到指定元素的所在位置 */
 export const scrollIntoView = (selector: string) =>
   querySelector(selector)?.scrollIntoView();
+
+/** 循环执行指定函数 */
+export const loop = async (fn: () => unknown, ms?: number) => {
+  await fn();
+  setTimeout(loop, ms, fn, ms);
+};
 
 /**
  * 限制 Promise 并发
@@ -184,7 +187,7 @@ export const difference = <T extends object>(a: T, b: T): Partial<T> => {
   const keys = Object.keys(a);
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
-    if (typeof a[key] === 'object') {
+    if (typeof a[key] === 'object' && typeof b[key] === 'object') {
       const _res = difference(a[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
     } else if (a[key] !== b?.[key]) res[key] = a[key];

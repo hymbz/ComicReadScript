@@ -1,134 +1,114 @@
-import {
-  useManga,
-  useFab,
-  useSpeedDial,
-  isEqualArray,
-  toast,
-  getKeyboardCode,
-} from 'main';
-import type { AsyncReturnType } from '../helper';
-import { useSiteOptions } from '../helper/useSiteOptions';
+import { loop, useInit } from 'main';
 
-setTimeout(async () => {
-  const { options, setOptions, isRecorded, readModeHotKeys, onHotKeysChange } =
-    await useSiteOptions(window.location.hostname, { autoShow: false });
+(async () => {
+  /** 执行脚本操作。如果中途中断，将返回 true */
+  const start = async () => {
+    const { setManga, setFab, init, options } = await useInit(
+      window.location.hostname,
+      { 记住当前站点: true },
+    );
 
-  /** 图片列表 */
-  let imgList: string[] = [];
-  /** 是否正在后台不断检查图片 */
-  let running = 0;
+    // 通过 options 来迂回的实现禁止记住当前站点
+    if (!options['记住当前站点']) {
+      await GM.deleteValue(window.location.hostname);
+      return true;
+    }
 
-  let setManga: AsyncReturnType<typeof useManga>[0];
-  let setFab: AsyncReturnType<typeof useFab>;
+    /** 用于判断是否是图片 url 的正则 */
+    const isImgUrlRe =
+      /^(((https?|ftp|file):)?\/)?\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#%=~_|]$/;
 
-  const init = async () => {
-    if (setManga !== undefined) return;
+    /** 检查元素属性，将格式为图片 url 的属性值作为 src */
+    const tryCorrectUrl = (e: HTMLImageElement) => {
+      e.getAttributeNames().some((key) => {
+        // 跳过白名单
+        switch (key) {
+          case 'src':
+          case 'alt':
+          case 'class':
+          case 'style':
+          case 'id':
+          case 'title':
+          case 'onload':
+          case 'onerror':
+            return false;
+        }
 
-    [setManga] = await useManga({
-      imgList,
-      show: options.autoShow,
-      onOptionChange: (option) => setOptions({ ...options, option }),
-      hotKeys: options.hotKeys,
-      onHotKeysChange,
-    });
+        const val = e.getAttribute(key)!.trim();
+        if (!isImgUrlRe.test(val)) return false;
+        e.setAttribute('src', val);
+        return true;
+      });
+    };
 
-    setFab = await useFab({
-      tip: '阅读模式',
-      onClick: () => setManga({ show: true }),
-      speedDial: useSpeedDial(options, setOptions),
-    });
-    setFab();
+    const getAllImg = () =>
+      [...document.getElementsByTagName('img')]
+        // 根据位置从小到大排序
+        .sort((a, b) => a.offsetTop - b.offsetTop);
 
-    window.addEventListener('keydown', (e) => {
-      if ((e.target as HTMLElement).tagName === 'INPUT') return;
-      const code = getKeyboardCode(e);
-      if (!readModeHotKeys().has(code)) return;
-      e.stopPropagation();
-      e.preventDefault();
-      setManga({ show: true });
-    });
-  };
+    /** 已经被触发过懒加载的图片 */
+    const triggedImgList: Set<HTMLImageElement> = new Set();
 
-  /** 已经被触发过懒加载的图片 */
-  const triggedImgList: Set<HTMLImageElement> = new Set();
-  /** 触发懒加载 */
-  const triggerLazyLoad = () => {
-    const targetImgList = [...document.getElementsByTagName('img')]
+    /** 触发懒加载 */
+    const triggerLazyLoad = () => {
       // 过滤掉已经被触发过懒加载的图片
-      .filter((e) => !triggedImgList.has(e))
-      // 根据位置从小到大排序
-      .sort((a, b) => a.offsetTop - b.offsetTop);
+      const targetImgList = getAllImg().filter((e) => !triggedImgList.has(e));
 
-    /** 上次触发的图片 */
-    let lastTriggedImg: HTMLImageElement | undefined;
-    targetImgList.forEach((e) => {
-      triggedImgList.add(e);
+      /** 上次触发的图片 */
+      let lastTriggedImg: HTMLImageElement | undefined;
 
-      // 过滤掉位置相近，在触发上一张图片时已经顺带被触发了的
-      if (e.offsetTop >= (lastTriggedImg?.offsetTop ?? 0) + window.innerHeight)
-        return;
+      for (let i = 0; i < targetImgList.length; i++) {
+        const e = targetImgList[i];
+        triggedImgList.add(e);
+        tryCorrectUrl(e);
 
-      // 通过瞬间滚动到图片位置、触发滚动事件、再瞬间滚回来，来触发图片的懒加载
-      const nowScroll = window.scrollY;
-      window.scroll({ top: e.offsetTop, behavior: 'auto' });
-      e.dispatchEvent(new Event('scroll', { bubbles: true }));
-      window.scroll({ top: nowScroll, behavior: 'auto' });
+        // 过滤掉位置相近，在触发上一张图片时已经顺带被触发了的
+        if (
+          e.offsetTop >=
+          (lastTriggedImg?.offsetTop ?? 0) + window.innerHeight
+        )
+          return;
 
-      lastTriggedImg = e;
-    });
-  };
+        // 通过瞬间滚动到图片位置、触发滚动事件、再瞬间滚回来，来触发图片的懒加载
+        const nowScroll = window.scrollY;
+        window.scroll({ top: e.offsetTop, behavior: 'auto' });
+        e.dispatchEvent(new Event('scroll', { bubbles: true }));
+        window.scroll({ top: nowScroll, behavior: 'auto' });
 
-  /**
-   * 检查搜索页面上符合标准的图片
-   * @returns 返回是否成功找到图片
-   */
-  const checkFindImg = () => {
-    triggerLazyLoad();
-
-    const newImgList = [...document.getElementsByTagName('img')]
-      .filter((e) => e.naturalHeight > 500 && e.naturalWidth > 500)
-      .map((e) => e.src);
-
-    if (newImgList.length === 0) {
-      if (!options.autoShow) {
-        clearInterval(running);
-        toast.error('没有找到图片');
+        lastTriggedImg = e;
       }
-      return false;
-    }
+    };
 
-    // 在发现新图片后重新渲染
-    if (!isEqualArray(imgList, newImgList)) {
-      imgList = newImgList;
-      setManga({ imgList });
-      setFab({ progress: 1 });
-    }
+    const getImgList = () => {
+      triggerLazyLoad();
+      return getAllImg()
+        .filter((e) => e.naturalHeight > 500 && e.naturalWidth > 500)
+        .map((e) => e.src);
+    };
 
-    return true;
+    const { loadImgList } = init(getImgList);
+
+    /** 重新检查 imgList，并在发生变化时更新相关组件 */
+    const checkImgList = () => {
+      const newImgList = getImgList();
+
+      if (newImgList.length === 0) {
+        setFab({ show: false });
+        setManga({ show: false });
+        return;
+      }
+
+      return loadImgList(newImgList);
+    };
+
+    // 为保证兼容，只能简单粗暴的不断检查
+    loop(checkImgList, 1000);
   };
 
-  await GM.registerMenuCommand('进入漫画阅读模式', async () => {
-    await init();
-
-    if (!running) running = window.setInterval(checkFindImg, 2000);
-    if (!checkFindImg()) return;
-    setManga({ show: true });
-
-    // 自动启用自动加载功能
-    await setOptions({ ...options, autoShow: true });
-
-    await GM.registerMenuCommand('停止在此站点自动运行脚本', () =>
-      GM.deleteValue(window.location.hostname),
-    );
-  });
-
-  if (isRecorded) {
-    await init();
-    // 为了保证兼容，只能简单粗暴的不断检查网页的图片来更新数据
-    running = window.setInterval(checkFindImg, 2000);
-
-    await GM.registerMenuCommand('停止在此站点自动运行脚本', () =>
-      GM.deleteValue(window.location.hostname),
-    );
+  if ((await GM.getValue(window.location.hostname)) !== undefined) start();
+  else {
+    const menuId = await GM.registerMenuCommand('使用简易阅读模式', () => {
+      if (!start()) GM.unregisterMenuCommand(menuId);
+    });
   }
-});
+})();

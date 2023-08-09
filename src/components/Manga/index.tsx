@@ -54,8 +54,12 @@ export interface MangaProps {
   onOptionChange?: State['onOptionChange'];
   /** 快捷键配置发生变化时触发的回调 */
   onHotKeysChange?: State['onHotKeysChange'];
-  /** 图片加载状态发生变化时触发的回调 */
-  onLoading?: (img: ComicImg, imgList: ComicImg[]) => void | Promise<void>;
+  /**
+   * 图片加载状态发生变化时触发的回调
+   *
+   * 当 imgList 发生改变时也会触发，此时 img 参数将为空
+   */
+  onLoading?: (imgList: ComicImg[], img?: ComicImg) => void | Promise<void>;
 
   /** 修改默认侧边栏按钮列表 */
   editButtonList?: State['editButtonList'];

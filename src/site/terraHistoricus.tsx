@@ -32,7 +32,9 @@ import {
     );
   };
 
-  let lastUrl = window.location.href;
+  const { loadImgList } = init(getImgList);
+
+  let lastUrl = '';
 
   autoUpdate(async () => {
     if (window.location.href === lastUrl) return;
@@ -40,7 +42,7 @@ import {
 
     if (!lastUrl.includes('episode')) {
       setFab({ show: false });
-      setManga({ show: false });
+      setManga({ show: false, imgList: [] });
       return;
     }
 
@@ -48,7 +50,7 @@ import {
 
     // 先将 imgList 清空以便 activePageIndex 归零
     setManga({ imgList: [] });
-    init(getImgList);
+    await loadImgList();
     setManga({
       onPrev: querySelectorClick('footer .HG_GAME_JS_BRIDGE__prev a'),
       onNext: querySelectorClick(

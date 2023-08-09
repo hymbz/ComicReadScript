@@ -30,49 +30,50 @@ export const useSiteOptions = async <T extends Record<string, any>>(
 ) => {
   type Options = T & SiteOptions;
 
-  const _defaultOptions: Options = {
+  const _defaultOptions = {
     autoShow: true,
     hiddenFAB: false,
     ...defaultOptions,
     option: { ...defaultOption, ...defaultOptions?.option },
-    hotKeys: await getHotKeys(),
-  };
+  } as Options;
 
-  const rawValue = await GM.getValue<Options>(name);
+  const saveOptions = await GM.getValue<Options>(name);
 
   const options = createMutable<Options>({
     ..._defaultOptions,
-    ...rawValue,
+    ...saveOptions,
+    hotKeys: await getHotKeys(),
   });
 
-  const onHotKeysChange = async (newValue: Record<string, string[]>) => {
-    GM.setValue('HotKeys', newValue);
-    // eslint-disable-next-line solid/reactivity
-    options.hotKeys = await getHotKeys();
+  const setOptions = async (newValue: Partial<Options>) => {
+    Object.assign(options, newValue);
+
+    // 只保存和默认设置不同的部分
+    return GM.setValue(name, difference(options, _defaultOptions));
   };
 
-  /** 进入阅读模式的快捷键 */
-  const readModeHotKeys = createRoot(() => {
-    const readModeHotKeysMemo = createMemo(
-      () => new Set(Object.assign([], options.hotKeys['进入阅读模式'])),
-    );
-    return readModeHotKeysMemo;
-  });
+  // 如果当前站点没有存储配置，就补充上去
+  if (saveOptions === undefined) GM.setValue(name, options);
 
   return {
+    /** 站点配置 */
     options,
 
-    /** 该站点是否有储存配置 */
-    isRecorded: rawValue !== undefined,
+    /** 修改站点配置 */
+    setOptions,
 
-    setOptions: async (newValue: Options) => {
-      Object.assign(options, newValue);
-
-      // 只保存和默认设置不同的部分
-      return GM.setValue(name, difference(options, _defaultOptions));
+    /** 处理快捷键配置的变动 */
+    onHotKeysChange: async (newValue: Record<string, string[]>) => {
+      GM.setValue('HotKeys', newValue);
+      // eslint-disable-next-line solid/reactivity
+      options.hotKeys = await getHotKeys();
     },
-
-    onHotKeysChange,
-    readModeHotKeys,
+    /** 进入阅读模式的快捷键 */
+    readModeHotKeys: createRoot(() => {
+      const readModeHotKeysMemo = createMemo(
+        () => new Set(Object.assign([], options.hotKeys['进入阅读模式'])),
+      );
+      return readModeHotKeysMemo;
+    }),
   };
 };

@@ -83,6 +83,7 @@
     "stylelint-prettier": "^4.0.2",
     "svgo": "^3.0.2",
     "tslib": "^2.6.1",
+    "type-fest": "^4.2.0",
     "vite": "^4.4.9",
     "vite-plugin-pwa": "^0.16.4",
     "vite-plugin-solid": "^2.7.0",

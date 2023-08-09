@@ -43,7 +43,7 @@ const handleImgLoaded = (i: number, e: HTMLImageElement) => {
     img.height = e.naturalHeight;
     img.width = e.naturalWidth;
     updateImgType(state, img);
-    state.onLoading?.(img, state.imgList);
+    state.onLoading?.(state.imgList, img);
 
     switch (img.type) {
       // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
@@ -92,7 +92,7 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
     img.loadType = 'error';
     console.error('图片加载失败', e);
 
-    state.onLoading?.(img, state.imgList);
+    state.onLoading?.(state.imgList, img);
   });
 };
 

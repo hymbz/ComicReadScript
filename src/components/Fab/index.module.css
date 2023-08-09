@@ -24,6 +24,8 @@
 .fab {
   cursor: pointer;
 
+  transform: scale(1);
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -37,8 +39,12 @@
   background-color: var(--fab, #607d8b);
   border: none;
   border-radius: 100%;
-  box-shadow: 0 3px 5px -1px rgb(0 0 0 / 20%), 0 6px 10px 0 rgb(0 0 0 / 14%),
+  box-shadow:
+    0 3px 5px -1px rgb(0 0 0 / 20%),
+    0 6px 10px 0 rgb(0 0 0 / 14%),
     0 1px 18px 0 rgb(0 0 0 / 12%);
+
+  transition: transform 200ms;
 
   & > svg {
     width: 1em;
@@ -52,7 +58,9 @@
   &:focus,
   &:focus-visible {
     outline: none;
-    box-shadow: 0 3px 5px -1px rgb(0 0 0 / 50%), 0 6px 10px 0 rgb(0 0 0 / 34%),
+    box-shadow:
+      0 3px 5px -1px rgb(0 0 0 / 50%),
+      0 6px 10px 0 rgb(0 0 0 / 34%),
       0 1px 18px 0 rgb(0 0 0 / 32%);
   }
 }

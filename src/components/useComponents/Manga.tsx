@@ -136,5 +136,5 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
     },
   });
 
-  return [set, props] as [typeof set, MangaProps];
+  return [set, props] as const;
 };

@@ -1,5 +1,5 @@
 import { For } from 'solid-js';
-import { getKeyboardCode } from '.';
+import { getKeyboardCode, isEqualArray } from '.';
 import { useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
 import { toast } from '../components/useComponents/Toast';
@@ -18,9 +18,10 @@ export const useInit = async <T extends Record<string, any>>(
   const { options, setOptions, readModeHotKeys, onHotKeysChange } =
     await useSiteOptions(name, defaultOptions);
 
-  const setFab = await useFab({
+  const [setFab, fabProps] = await useFab({
     tip: '阅读模式',
     speedDial: useSpeedDial(options, setOptions),
+    show: !options.hiddenFAB && undefined,
   });
 
   const [setManga, mangaProps] = await useManga({
@@ -86,11 +87,11 @@ export const useInit = async <T extends Record<string, any>>(
   }
 
   let menuId: number;
-  /** 更新显示/隐藏阅读模式按钮的菜单项 */
+  /** 更新显示/隐藏悬浮按钮的菜单项 */
   const updateHideFabMenu = async () => {
     await GM.unregisterMenuCommand(menuId);
     menuId = await GM.registerMenuCommand(
-      `${options.hiddenFAB ? '显示' : '隐藏'}阅读模式按钮`,
+      `${options.hiddenFAB ? '显示' : '隐藏'}悬浮按钮`,
       async () => {
         await setOptions({ ...options, hiddenFAB: !options.hiddenFAB });
         setFab((state) => {
@@ -101,107 +102,106 @@ export const useInit = async <T extends Record<string, any>>(
     );
   };
 
+  /** 当前是否还需要判断 autoShow */
+  let needAutoShow = true;
+
   return {
     options,
     setOptions,
     setFab,
     setManga,
+    mangaProps,
 
     /**
      * 完成所有支持站点的初始化
      * @param getImgList 返回图片列表的函数
-     * @param onLoading 图片加载状态发生变化时触发的回调
      * @returns 自动加载图片并进入阅读模式的函数
      */
-    init: (
-      getImgList: () => Promise<string[]> | string[],
-      onLoading: (
-        loadNum: number,
-        totalNum: number,
-        img: ComicImg,
-      ) => void = () => {},
-    ) => {
+    init: (getImgList: () => Promise<string[]> | string[]) => {
+      const firstRun = menuId === undefined;
+
       /** 是否正在加载图片中 */
       let loading = false;
 
-      /** 进入阅读模式 */
-      const showComic = async (show: boolean = options.autoShow) => {
-        if (loading) {
-          toast.warn('加载图片中，请稍候', {
-            duration: 1500,
-            id: '加载图片中，请稍候',
+      const onLoading = (list: ComicImg[]) => {
+        const loadNum = list.filter(
+          (image) => image.loadType === 'loaded',
+        ).length;
+
+        /** 图片加载进度 */
+        const progress = 1 + loadNum / list.length;
+        if (progress !== 2) {
+          setFab({
+            progress,
+            tip: `图片加载中 - ${loadNum}/${list.length}`,
           });
-          return;
-        }
-
-        const { imgList } = mangaProps;
-
-        if (!imgList.length) {
-          loading = true;
-          try {
-            setFab({ progress: 0, show: true });
-            const initImgList = await getImgList();
-            if (initImgList.length === 0) throw new Error('获取漫画图片失败');
-            setFab({
-              progress: 1,
-              tip: '阅读模式',
-              show: !options.hiddenFAB && undefined,
-            });
-            setManga((state) => {
-              state.imgList = initImgList;
-              state.show = show;
-
-              // 监听图片加载状态，将进度显示到 Fab 上
-              state.onLoading = (img, list) => {
-                const loadNum = list.filter(
-                  (image) => image.loadType === 'loaded',
-                ).length;
-
-                onLoading(loadNum, list.length, img);
-
-                /** 图片加载进度 */
-                const progress = 1 + loadNum / list.length;
-                if (progress !== 2) {
-                  setFab({
-                    progress,
-                    tip: `图片加载中 - ${loadNum}/${list.length}`,
-                  });
-                } else {
-                  // 图片全部加载完成后恢复 Fab 状态
-                  setFab({ progress, tip: '阅读模式', show: undefined });
-                }
-              };
-
-              return state;
-            });
-          } catch (e: any) {
-            console.error(e);
-            toast.error(e.message);
-            setFab({ progress: undefined });
-          } finally {
-            loading = false;
-          }
         } else {
-          setManga({ show: true });
+          // 图片全部加载完成后恢复 Fab 状态
+          setFab({ progress, tip: '阅读模式', show: undefined });
         }
       };
 
-      setFab({ onClick: () => showComic(true) });
-      if (options.autoShow) showComic();
+      const loadImgList = async (initImgList?: string[], show?: boolean) => {
+        loading = true;
+        try {
+          if (!initImgList) setFab({ progress: 0, show: true });
+          const newImgList = initImgList ?? (await getImgList());
+          if (newImgList.length === 0) throw new Error('获取漫画图片失败');
+          setManga((state) => {
+            if (!isEqualArray(newImgList, mangaProps.imgList))
+              state.imgList = newImgList;
+            if (show || (needAutoShow && options.autoShow)) {
+              state.show = true;
+              needAutoShow = false;
+            }
 
-      GM.registerMenuCommand('进入漫画阅读模式', () => showComic(true));
-      updateHideFabMenu();
+            if (state.onLoading === undefined) state.onLoading = onLoading;
+          });
+        } catch (e: any) {
+          console.error(e);
+          if (show) toast.error(e.message);
+          setFab({ progress: undefined });
+        } finally {
+          loading = false;
+        }
+      };
 
-      window.addEventListener('keydown', (e) => {
-        if ((e.target as HTMLElement).tagName === 'INPUT') return;
-        const code = getKeyboardCode(e);
-        if (!readModeHotKeys().has(code)) return;
-        e.stopPropagation();
-        e.preventDefault();
-        showComic(true);
-      });
+      /** 进入阅读模式 */
+      const showComic = async () => {
+        if (loading)
+          return toast.warn('加载图片中，请稍候', { duration: 1500 });
 
-      return () => showComic(true);
+        if (!mangaProps.imgList.length) return loadImgList(undefined, true);
+
+        setManga({ show: true });
+      };
+
+      setFab({ onClick: showComic });
+
+      if (needAutoShow && options.autoShow) showComic();
+
+      if (firstRun) {
+        GM.registerMenuCommand('进入漫画阅读模式', fabProps.onClick!);
+        updateHideFabMenu();
+
+        window.addEventListener('keydown', (e) => {
+          if ((e.target as HTMLElement).tagName === 'INPUT') return;
+          const code = getKeyboardCode(e);
+          if (!readModeHotKeys().has(code)) return;
+          e.stopPropagation();
+          e.preventDefault();
+          fabProps.onClick?.();
+        });
+      }
+
+      return {
+        /** 进入阅读模式 */
+        showComic,
+        /** 重新加载 imgList */
+        loadImgList,
+        /** 默认的 onLoading */
+        onLoading,
+      };
     },
   };
 };

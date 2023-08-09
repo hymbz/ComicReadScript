@@ -63,5 +63,5 @@ export const useFab = async (initProps?: FabProps) => {
       setProps(typeof recipe === 'function' ? produce(recipe) : recipe);
   };
 
-  return set;
+  return [set, props] as const;
 };

@@ -106,7 +106,9 @@ declare const selected_link: HTMLElement;
     return imgPageList;
   };
 
-  const showComic = init(async () => {
+  let ehentaiImgList: string[];
+
+  const { loadImgList } = init(async () => {
     const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!.innerText;
 
     comicReadModeDom.innerHTML = ` loading`;
@@ -121,7 +123,7 @@ declare const selected_link: HTMLElement;
       },
     );
 
-    return plimit(
+    const imgList = await plimit(
       imgPageUrlList
         .flat()
         .map((imgPageUrl) => () => getImgFromImgPage(imgPageUrl)),
@@ -134,9 +136,14 @@ declare const selected_link: HTMLElement;
           doneNum !== totalNum ? ` loading - ${doneNum}/${totalNum}` : ` Read`;
       },
     );
+    ehentaiImgList = imgList;
+
+    return imgList;
   });
   setFab({ initialShow: options.autoShow });
-  comicReadModeDom.addEventListener('click', showComic);
+  comicReadModeDom.addEventListener('click', () =>
+    loadImgList(ehentaiImgList, true),
+  );
 
   if (options.快捷键翻页) {
     linstenKeyup((e) => {
@@ -244,7 +251,7 @@ declare const selected_link: HTMLElement;
           tagmenu_act_dom.querySelector('a[href="#"]')!;
 
         // 加载 nhentai 漫画
-        nhentaiComicReadModeDom.addEventListener('click', async (e) => {
+        nhentaiComicReadModeDom.addEventListener('click', async (e: Event) => {
           e.preventDefault();
           const comicInfo =
             nHentaiComicInfo.result[+selected_link.getAttribute('index')!];
@@ -280,7 +287,7 @@ declare const selected_link: HTMLElement;
             );
             nhentaiComicReadModeDom.innerHTML = ' Read';
           }
-          setManga({ imgList: nhentaiImgList[selected_tag], show: true });
+          await loadImgList(nhentaiImgList[selected_tag], true);
         });
       }
       // 非 nhentai 标签列的用原函数去处理

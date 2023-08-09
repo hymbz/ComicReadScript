@@ -50,7 +50,7 @@ export const OtherState = {
 
   /** 图片加载状态发生变化时触发的回调 */
   onLoading: undefined as
-    | ((img: ComicImg, imgList: ComicImg[]) => void | Promise<void>)
+    | ((imgList: ComicImg[], img?: ComicImg) => void | Promise<void>)
     | undefined,
   /** 配置发生变化时触发的回调 */
   onOptionChange: undefined as
