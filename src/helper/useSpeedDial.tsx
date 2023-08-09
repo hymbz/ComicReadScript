@@ -50,6 +50,7 @@ export const useSpeedDial = <T extends Record<string, any>>(
           );
 
         default:
+          if (typeof options[optionName] !== 'boolean') return null;
           return () => <DefaultButton optionName={optionName} />;
       }
     })

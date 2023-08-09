@@ -50,6 +50,18 @@ export const querySelectorClick = (
 export const isEqualArray = <T>(a: T[], b: T[]): boolean =>
   a.length === b.length && !a.some((t) => !b.includes(t));
 
+/** 找出数组中出现最多次的元素 */
+export const getMostItem = <T>(list: T[]) => {
+  const counts = list.reduce((map, val) => {
+    map.set(val, map.get(val) ?? 0 + 1);
+    return map;
+  }, new Map<T, number>());
+
+  return [...counts.entries()].reduce((maxItem, item) =>
+    maxItem[1] > item[1] ? maxItem : item,
+  )[0];
+};
+
 /** 将对象转为 URLParams 类型的字符串 */
 export const dataToParams = (data: Record<string, unknown>) =>
   Object.entries(data)

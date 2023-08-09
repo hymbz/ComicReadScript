@@ -139,7 +139,7 @@ switch (window.location.hostname) {
   }
 
   // #welovemanga
-  case 'nicomanga.com':
+  // case 'nicomanga.com':
   case 'weloma.art':
   case 'welovemanga.one': {
     inject('welovemanga');

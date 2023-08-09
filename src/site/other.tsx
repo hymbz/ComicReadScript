@@ -1,11 +1,11 @@
-import { loop, useInit } from 'main';
+import { getMostItem, loop, querySelector, useInit, wait } from 'main';
 
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
   const start = async () => {
-    const { setManga, setFab, init, options } = await useInit(
+    const { setManga, setFab, init, options, setOptions } = await useInit(
       window.location.hostname,
-      { 记住当前站点: true },
+      { 记住当前站点: true, selector: '' },
     );
 
     // 通过 options 来迂回的实现禁止记住当前站点
@@ -13,6 +13,34 @@ import { loop, useInit } from 'main';
       await GM.deleteValue(window.location.hostname);
       return true;
     }
+
+    // 为避免卡死，提供一个删除 selector 的菜单项
+    const menuId = await GM.registerMenuCommand('使用简易阅读模式', () => {
+      setOptions({ selector: '' });
+      return GM.unregisterMenuCommand(menuId);
+    });
+
+    // 等待 selector 匹配到目标后再继续执行，避免在漫画页外的其他地方运行
+    if (options.selector) await wait(() => querySelector(options.selector));
+
+    /** 获取元素仅记录了层级结构关系的 selector */
+    const getEleSelector = (ele: HTMLElement) => {
+      const parents: string[] = [ele.nodeName];
+      const root = ele.getRootNode();
+      let e = ele;
+      while (e.parentNode && e.parentNode !== root) {
+        e = e.parentNode as HTMLElement;
+        parents.push(e.nodeName);
+      }
+      return parents.reverse().join('>');
+    };
+
+    /** 记录传入的图片元素中最常见的那个 selector */
+    const saveImgEleSelector = (imgEleList: HTMLElement[]) => {
+      if (imgEleList.length < 7) return;
+      const selector = getMostItem(imgEleList.map(getEleSelector));
+      if (selector !== options.selector) setOptions({ selector });
+    };
 
     /** 用于判断是否是图片 url 的正则 */
     const isImgUrlRe =
@@ -81,9 +109,12 @@ import { loop, useInit } from 'main';
 
     const getImgList = () => {
       triggerLazyLoad();
-      return getAllImg()
-        .filter((e) => e.naturalHeight > 500 && e.naturalWidth > 500)
-        .map((e) => e.src);
+
+      const imgEleList = getAllImg().filter(
+        (e) => e.naturalHeight > 500 && e.naturalWidth > 500,
+      );
+      saveImgEleSelector(imgEleList);
+      return imgEleList.map((e) => e.src);
     };
 
     const { loadImgList } = init(getImgList);
