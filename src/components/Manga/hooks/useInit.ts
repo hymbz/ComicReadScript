@@ -22,7 +22,10 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
     setState((state) => {
       if (props.option)
         state.option = assign(state.option, props.option as Option);
-      state.hotKeys = { ...defaultHoeKeys, ...props.hotKeys };
+      state.hotKeys = {
+        ...JSON.parse(JSON.stringify(defaultHoeKeys)),
+        ...props.hotKeys,
+      };
     });
   });
 

@@ -1,12 +1,11 @@
 import { createMutable } from 'solid-js/store';
-import { createMemo, createRoot } from 'solid-js';
+import { createMemo, createRoot, createSignal } from 'solid-js';
 import type { MangaProps } from '../components/Manga';
 import { difference } from '.';
 import { defaultOption } from '../components/Manga/hooks/useStore/OptionState';
 
 export interface SiteOptions {
   option: Partial<MangaProps['option']> | undefined;
-  hotKeys: Record<string, string[]>;
 
   /** 自动进入阅读模式 */
   autoShow: boolean;
@@ -14,7 +13,7 @@ export interface SiteOptions {
   hiddenFAB: boolean;
 }
 
-const getHotKeys = async () => ({
+const getHotKeys = async (): Promise<Record<string, string[]>> => ({
   进入阅读模式: ['v'],
   ...(await GM.getValue<Record<string, string[]>>('HotKeys', {})),
 });
@@ -42,7 +41,6 @@ export const useSiteOptions = async <T extends Record<string, any>>(
   const options = createMutable<Options>({
     ..._defaultOptions,
     ...saveOptions,
-    hotKeys: await getHotKeys(),
   });
 
   const setOptions = async (newValue: Partial<Options>) => {
@@ -52,26 +50,28 @@ export const useSiteOptions = async <T extends Record<string, any>>(
     return GM.setValue(name, difference(options, _defaultOptions));
   };
 
+  const [hotKeys, setHotKeys] = createSignal(await getHotKeys());
+
   // 如果当前站点没有存储配置，就补充上去
   if (saveOptions === undefined) GM.setValue(name, options);
 
   return {
     /** 站点配置 */
     options,
-
     /** 修改站点配置 */
     setOptions,
 
+    /** 快捷键配置 */
+    hotKeys,
     /** 处理快捷键配置的变动 */
-    onHotKeysChange: async (newValue: Record<string, string[]>) => {
+    onHotKeysChange: (newValue: Record<string, string[]>) => {
       GM.setValue('HotKeys', newValue);
-      // eslint-disable-next-line solid/reactivity
-      options.hotKeys = await getHotKeys();
+      setHotKeys(newValue);
     },
     /** 进入阅读模式的快捷键 */
     readModeHotKeys: createRoot(() => {
       const readModeHotKeysMemo = createMemo(
-        () => new Set(Object.assign([], options.hotKeys['进入阅读模式'])),
+        () => new Set(Object.assign([], hotKeys()['进入阅读模式'])),
       );
       return readModeHotKeysMemo;
     }),

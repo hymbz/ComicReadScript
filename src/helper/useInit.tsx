@@ -15,7 +15,7 @@ export const useInit = async <T extends Record<string, any>>(
   name: string,
   defaultOptions = {} as T,
 ) => {
-  const { options, setOptions, readModeHotKeys, onHotKeysChange } =
+  const { options, setOptions, readModeHotKeys, hotKeys, onHotKeysChange } =
     await useSiteOptions(name, defaultOptions);
 
   const [setFab, fabProps] = await useFab({
@@ -28,7 +28,7 @@ export const useInit = async <T extends Record<string, any>>(
     imgList: [],
     option: options.option,
     onOptionChange: (option) => setOptions({ ...options, option }),
-    hotKeys: options.hotKeys,
+    hotKeys: hotKeys(),
     onHotKeysChange,
   });
 

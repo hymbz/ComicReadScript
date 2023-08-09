@@ -56,7 +56,7 @@ export interface Option {
   };
 }
 
-export const defaultOption: Option = {
+export const defaultOption: Readonly<Option> = {
   dir: 'rtl',
   scrollbar: {
     enabled: true,

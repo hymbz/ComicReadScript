@@ -4,7 +4,7 @@ import type { ToolbarButtonList } from '../../defaultButtonList';
 import type { SettingList } from '../../defaultSettingList';
 import type { Option } from './OptionState';
 
-export const defaultHoeKeys: Record<string, string[]> = {
+export const defaultHoeKeys: Readonly<Record<string, string[]>> = {
   向上翻页: ['w', 'ArrowUp', 'PageUp'],
   向下翻页: [' ', 's', 'ArrowDown', 'PageDown'],
   向右翻页: ['d', '.', 'ArrowRight'],
@@ -36,10 +36,7 @@ export const OtherState = {
   commentList: undefined as string[] | undefined,
 
   /** 快捷键配置 */
-  hotKeys: JSON.parse(JSON.stringify(defaultHoeKeys)) as Record<
-    string,
-    string[]
-  >,
+  hotKeys: {} as Record<string, string[]>,
 
   /** 点击结束页按钮时触发的回调 */
   onExit: undefined as ((isEnd?: boolean) => void) | undefined,
