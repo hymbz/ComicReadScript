@@ -8,17 +8,17 @@ import classes from '../index.module.css';
 
 /** 显示对应图片加载情况的元素 */
 const ScrollbarImg: Component<{ index: number }> = (props) => {
-  const type = createMemo(() => store.imgList[props.index]?.loadType);
-  const translationType = createMemo(
-    () => store.imgList[props.index]?.translationType,
+  const img = createMemo<ComicImg | undefined>(
+    () => store.imgList[props.index],
   );
 
   return (
     <div
       class={classes.scrollbarPage}
       data-index={props.index}
-      data-type={type()}
-      data-translation-type={translationType()}
+      data-type={img()?.loadType}
+      data-null={img()?.src ? undefined : ''}
+      data-translation-type={img()?.translationType}
     />
   );
 };

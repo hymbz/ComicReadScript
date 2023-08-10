@@ -60,6 +60,10 @@
     background-color: #f005;
   }
 
+  &[data-null] {
+    background-color: #fbc02d;
+  }
+
   &[data-translation-type] {
     transform-origin: top;
     transform: scaleY(1);

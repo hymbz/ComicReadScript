@@ -128,6 +128,16 @@ const imgList = [
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141214660077.jpg.c800x.jpg',
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141217260078.jpg.c800x.jpg',
   ],
+  [
+    'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141214660077.jpg.c800x.jpg',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+  ],
 ];
 
 export default function DisplayManga() {
@@ -147,5 +157,5 @@ export default function DisplayManga() {
     },
   };
 
-  return <Manga imgList={imgList[1]} onExit={onExit} option={option} />;
+  return <Manga imgList={imgList[2]} onExit={onExit} option={option} />;
 }

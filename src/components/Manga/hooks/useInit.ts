@@ -100,7 +100,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
         state.fillEffect[-1] = state.option.firstPageFill;
         state.imgList = props.imgList.map((imgUrl) => ({
           type: '',
-          src: imgUrl,
+          src: imgUrl || '',
           loadType: 'wait',
         }));
         updatePageData(state);
@@ -120,7 +120,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
         (imgUrl) =>
           state.imgList.find((img) => img.src === imgUrl) ?? {
             type: '',
-            src: imgUrl,
+            src: imgUrl || '',
             loadType: 'wait',
           },
       );

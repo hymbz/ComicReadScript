@@ -151,7 +151,7 @@ export const useInit = async <T extends Record<string, any>>(
           if (newImgList.length === 0) throw new Error('获取漫画图片失败');
           setManga((state) => {
             if (!isEqualArray(newImgList, mangaProps.imgList))
-              state.imgList = newImgList;
+              state.imgList = [...newImgList];
             if (show || (needAutoShow && options.autoShow)) {
               state.show = true;
               needAutoShow = false;

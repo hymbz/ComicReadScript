@@ -52,10 +52,8 @@ export const updateImgLoadType = debounce(100, (state: State) => {
   const { imgList, activePageIndex } = state;
 
   // 先将所有加载中的图片状态改为暂停
-  imgList.forEach(({ loadType, src }, i) => {
-    if (!src) {
-      imgList[i].loadType = 'error';
-    } else if (loadType === 'loading' || loadType === 'error')
+  imgList.forEach((img, i) => {
+    if (img.loadType === 'loading' || img.loadType === 'error')
       imgList[i].loadType = 'wait';
   });
 
