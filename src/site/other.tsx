@@ -1,4 +1,11 @@
-import { getMostItem, loop, querySelector, useInit, wait } from 'main';
+import {
+  getMostItem,
+  loop,
+  querySelector,
+  querySelectorAll,
+  useInit,
+  wait,
+} from 'main';
 
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
@@ -17,11 +24,12 @@ import { getMostItem, loop, querySelector, useInit, wait } from 'main';
     // 为避免卡死，提供一个删除 selector 的菜单项
     const menuId = await GM.registerMenuCommand('使用简易阅读模式', () => {
       setOptions({ selector: '' });
-      return GM.unregisterMenuCommand(menuId);
     });
 
     // 等待 selector 匹配到目标后再继续执行，避免在漫画页外的其他地方运行
-    if (options.selector) await wait(() => querySelector(options.selector));
+    await wait(() => !options.selector || querySelector(options.selector));
+
+    await GM.unregisterMenuCommand(menuId);
 
     /** 获取元素仅记录了层级结构关系的 selector */
     const getEleSelector = (ele: HTMLElement) => {
@@ -69,8 +77,17 @@ import { getMostItem, loop, querySelector, useInit, wait } from 'main';
       });
     };
 
+    const imgBlackList = [
+      // 东方永夜机的预加载图片
+      '#pagetual-preload',
+      // 177picyy 上会在图片下加一个 noscript
+      // 本来只是图片元素的 innerHTML，但经过东方永夜机加载后就会变成真的图片元素，导致重复
+      'noscript',
+    ];
     const getAllImg = () =>
-      [...document.getElementsByTagName('img')]
+      querySelectorAll<HTMLImageElement>(
+        `:not(${imgBlackList.join(',')}) > img`,
+      )
         // 根据位置从小到大排序
         .sort((a, b) => a.offsetTop - b.offsetTop);
 
@@ -79,6 +96,15 @@ import { getMostItem, loop, querySelector, useInit, wait } from 'main';
 
     /** 触发懒加载 */
     const triggerLazyLoad = () => {
+      let nowScroll = window.scrollY;
+      // 滚到底部再滚回来，触发可能存在的自动翻页脚本
+      window.scroll({
+        top: document.body.scrollHeight,
+        behavior: 'auto',
+      });
+      document.body.dispatchEvent(new Event('scroll', { bubbles: true }));
+      window.scroll({ top: nowScroll, behavior: 'auto' });
+
       // 过滤掉已经被触发过懒加载的图片
       const targetImgList = getAllImg().filter((e) => !triggedImgList.has(e));
 
@@ -97,8 +123,9 @@ import { getMostItem, loop, querySelector, useInit, wait } from 'main';
         )
           return;
 
-        // 通过瞬间滚动到图片位置、触发滚动事件、再瞬间滚回来，来触发图片的懒加载
-        const nowScroll = window.scrollY;
+        // 通过滚动到图片位置、触发滚动事件、再滚回来，来触发图片的懒加载
+        // 因为速度很快所以应该是无感的
+        nowScroll = window.scrollY;
         window.scroll({ top: e.offsetTop, behavior: 'auto' });
         e.dispatchEvent(new Event('scroll', { bubbles: true }));
         window.scroll({ top: nowScroll, behavior: 'auto' });

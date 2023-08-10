@@ -20,7 +20,6 @@ export const useFab = async (initProps?: FabProps) => {
       --text_bg: transparent;
 
       position: fixed;
-      z-index: 99999999;
       right: 3vw;
       bottom: 6vh;
 

@@ -22,7 +22,6 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   await GM.addStyle(`
     #comicRead {
       position: fixed;
-      z-index: 999999999;
       top: 0;
       left: 0;
       transform: scale(0);
