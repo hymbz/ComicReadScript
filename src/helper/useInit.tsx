@@ -27,6 +27,9 @@ export const useInit = async <T extends Record<string, any>>(
 
   /** 处理 Manga 组件的 onLoading 回调，将图片加载状态联动到 Fab 上 */
   const onLoading = (list: ComicImg[]) => {
+    if (list.length === 0)
+      return setFab({ progress: undefined, tip: '阅读模式' });
+
     const loadNum = list.filter((image) => image.loadType === 'loaded').length;
 
     /** 图片加载进度 */
