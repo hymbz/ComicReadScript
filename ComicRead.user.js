@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.7.1
-// @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、漫画猫(manhuacat)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
+// @version      6.8.0
+// @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
 // @noframes
@@ -81,6 +81,7 @@ const solidJs = require('solid-js');
 const store$2 = require('solid-js/store');
 const fflate = require('fflate');
 const createPanZoom = require('panzoom');
+const main = require('main');
 
 const sleep = ms => new Promise(resolve => {
   window.setTimeout(resolve, ms);
@@ -121,6 +122,15 @@ const querySelectorClick = selector => {
 /** 判断两个列表中包含的值是否相同 */
 const isEqualArray = (a, b) => a.length === b.length && !a.some(t => !b.includes(t));
 
+/** 找出数组中出现最多次的元素 */
+const getMostItem = list => {
+  const counts = list.reduce((map, val) => {
+    map.set(val, map.get(val) ?? 0 + 1);
+    return map;
+  }, new Map());
+  return [...counts.entries()].reduce((maxItem, item) => maxItem[1] > item[1] ? maxItem : item)[0];
+};
+
 /** 将对象转为 URLParams 类型的字符串 */
 const dataToParams = data => Object.entries(data).map(([key, val]) => \`\${key}=\${val}\`).join('&');
 
@@ -146,6 +156,12 @@ const linstenKeyup = handler => window.addEventListener('keyup', e => {
 
 /** 滚动页面到指定元素的所在位置 */
 const scrollIntoView = selector => querySelector(selector)?.scrollIntoView();
+
+/** 循环执行指定函数 */
+const loop = async (fn, ms) => {
+  await fn();
+  setTimeout(loop, ms, fn, ms);
+};
 
 /**
  * 限制 Promise 并发
@@ -195,14 +211,12 @@ const needDarkMode = hexColor => {
 };
 
 /** 等到传入的函数返回 true */
-const wait = fn => new Promise(resolve => {
-  const id = window.setInterval(() => {
-    const res = fn();
-    if (!res) return;
-    window.clearInterval(id);
-    resolve(res);
-  }, 100);
-});
+const wait = async (fn, timeout = 100) => {
+  const res = await fn();
+  if (res) return res;
+  await sleep(timeout);
+  return wait(fn, timeout);
+};
 
 /** 等到指定的 dom 出现 */
 const waitDom = selector => wait(() => querySelector(selector));
@@ -230,7 +244,7 @@ const difference = (a, b) => {
   const keys = Object.keys(a);
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
-    if (typeof a[key] === 'object') {
+    if (typeof a[key] === 'object' && typeof b[key] === 'object') {
       const _res = difference(a[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
     } else if (a[key] !== b?.[key]) res[key] = a[key];
@@ -303,15 +317,8 @@ const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('Arro
 const mountComponents = (id, fc) => {
   const dom = document.createElement('div');
   dom.id = id;
-  // TODO:
-  // 目前 solidjs 的所有事件都是在 document 上监听的
-  // 所以现在没法阻止脚本元素上的事件触发原网页的快捷键
-  // 需要等待 solidjs 更新
-  // https://github.com/solidjs/solid/issues/1786
-  //
-  // ['click', 'keydown', 'keypress', 'keyup'].forEach((eventName) =>
-  //   dom.addEventListener(eventName, (e: Event) => e?.stopPropagation()),
-  // );
+  dom.style.setProperty('display', 'unset', 'important');
+  dom.style.setProperty('z-index', '9999999999', 'important');
   document.body.appendChild(dom);
   const shadowDom = dom.attachShadow({
     mode: 'open'
@@ -342,30 +349,30 @@ const creatId = () => {
   return id;
 };
 
-const _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
+const _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
 const MdCheckCircle = ((props = {}) => (() => {
+  const _el$ = _tmpl$$P();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const MdWarning = ((props = {}) => (() => {
   const _el$ = _tmpl$$O();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
-const MdWarning = ((props = {}) => (() => {
+const _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const MdError = ((props = {}) => (() => {
   const _el$ = _tmpl$$N();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$M = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
-const MdError = ((props = {}) => (() => {
-  const _el$ = _tmpl$$M();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$L = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
+const _tmpl$$M = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
 const MdInfo = ((props = {}) => (() => {
-  const _el$ = _tmpl$$L();
+  const _el$ = _tmpl$$M();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -417,7 +424,7 @@ toast$1.error = (msg, options) => toast$1(msg, {
   type: 'error'
 });
 
-const _tmpl$$K = /*#__PURE__*/web.template(\`<div>\`),
+const _tmpl$$L = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$b = /*#__PURE__*/web.template(\`<div><div>\`);
 const iconMap = {
   info: MdInfo,
@@ -489,7 +496,7 @@ const ToastItem = props => {
         return props.duration !== Infinity || props.schedule !== undefined;
       },
       get children() {
-        const _el$3 = _tmpl$$K();
+        const _el$3 = _tmpl$$L();
         _el$3.addEventListener("animationend", dismiss);
         const _ref$ = scheduleRef;
         typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
@@ -533,7 +540,7 @@ const ToastItem = props => {
 };
 web.delegateEvents(["click"]);
 
-const _tmpl$$J = /*#__PURE__*/web.template(\`<div>\`);
+const _tmpl$$K = /*#__PURE__*/web.template(\`<div>\`);
 const Toaster = () => {
   const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
   solidJs.onMount(() => {
@@ -544,7 +551,7 @@ const Toaster = () => {
     solidJs.onCleanup(() => document.removeEventListener('visibilitychange', handleVisibilityChange));
   });
   return (() => {
-    const _el$ = _tmpl$$J();
+    const _el$ = _tmpl$$K();
     web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
         return store$1.list;
@@ -567,11 +574,11 @@ const Toaster = () => {
 
 const ToastStyle = css$3;
 
-const _tmpl$$I = /*#__PURE__*/web.template(\`<style type="text/css">\`);
+const _tmpl$$J = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let dom$1;
 const init = () => {
   if (!dom$1) dom$1 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
-    const _el$ = _tmpl$$I();
+    const _el$ = _tmpl$$J();
     web.insert(_el$, ToastStyle);
     return _el$;
   })()]);
@@ -608,6 +615,7 @@ const request$1 = async (url, details, errorNum = 0) => {
       headers: {
         Referer: window.location.href
       },
+      fetch: url.includes(window.location.origin),
       ...details
     });
     if (res.status !== 200) throw new Error(errorText);
@@ -623,30 +631,30 @@ const request$1 = async (url, details, errorNum = 0) => {
   }
 };
 
-const _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
+const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
 const MdAutoFixHigh = ((props = {}) => (() => {
+  const _el$ = _tmpl$$I();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9zm-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41 1.47-1.45zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42z">\`);
+const MdAutoFixOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$H();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9zm-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41 1.47-1.45zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42z">\`);
-const MdAutoFixOff = ((props = {}) => (() => {
+const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1z">\`);
+const MdAutoFlashOn = ((props = {}) => (() => {
   const _el$ = _tmpl$$G();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1z">\`);
-const MdAutoFlashOn = ((props = {}) => (() => {
-  const _el$ = _tmpl$$F();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28.45-.78zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13 3.15-6.29zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41z">\`);
+const _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28.45-.78zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13 3.15-6.29zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41z">\`);
 const MdAutoFlashOff = ((props = {}) => (() => {
-  const _el$ = _tmpl$$E();
+  const _el$ = _tmpl$$F();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -655,7 +663,7 @@ var css$2 = ".index_module_iconButtonItem__9645dd99{align-items:center;display:f
 var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__9645dd99","iconButton":"index_module_iconButton__9645dd99","enabled":"index_module_enabled__9645dd99","iconButtonPopper":"index_module_iconButtonPopper__9645dd99","hidden":"index_module_hidden__9645dd99"};
 n(css$2,{});
 
-const _tmpl$$D = /*#__PURE__*/web.template(\`<div><button type="button">\`),
+const _tmpl$$E = /*#__PURE__*/web.template(\`<div><button type="button">\`),
   _tmpl$2$a = /*#__PURE__*/web.template(\`<div>\`);
 const IconButtonStyle = css$2;
 /** 图标按钮 */
@@ -670,7 +678,7 @@ const IconButton = _props => {
     props.onClick?.(e);
   };
   return (() => {
-    const _el$ = _tmpl$$D(),
+    const _el$ = _tmpl$$E(),
       _el$2 = _el$.firstChild;
     _el$2.$$click = handleClick;
     const _ref$ = buttonRef;
@@ -741,6 +749,7 @@ const useSpeedDial = (options, setOptions) => {
     switch (optionName) {
       case 'hiddenFAB':
       case 'option':
+      case 'hotKeys':
         return null;
       case 'autoShow':
         return () => web.createComponent(DefaultButton, {
@@ -751,6 +760,7 @@ const useSpeedDial = (options, setOptions) => {
           }
         });
       default:
+        if (typeof options[optionName] !== 'boolean') return null;
         return () => web.createComponent(DefaultButton, {
           optionName: optionName
         });
@@ -815,16 +825,16 @@ const useCache = (initSchema, version = 1) => {
   };
 };
 
-const _tmpl$$C = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71zM5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1z">\`);
+const _tmpl$$D = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71zM5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1z">\`);
 const MdFileDownload = ((props = {}) => (() => {
-  const _el$ = _tmpl$$C();
+  const _el$ = _tmpl$$D();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z">\`);
+const _tmpl$$C = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z">\`);
 const MdClose = ((props = {}) => (() => {
-  const _el$ = _tmpl$$B();
+  const _el$ = _tmpl$$C();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -949,7 +959,7 @@ const OtherState = {
   /** 评论列表 */
   commentList: undefined,
   /** 快捷键配置 */
-  hotKeys: JSON.parse(JSON.stringify(defaultHoeKeys)),
+  hotKeys: {},
   /** 点击结束页按钮时触发的回调 */
   onExit: undefined,
   /** 点击上一话按钮时触发的回调 */
@@ -966,7 +976,13 @@ const OtherState = {
   editSettingList: list => list,
   prevRef: undefined,
   nextRef: undefined,
-  exitRef: undefined
+  exitRef: undefined,
+  flag: {
+    /** 是否需要自动判断开启卷轴模式 */
+    autoScrollMode: true,
+    /** 是否需要自动将未加载图片类型设为跨页图 */
+    autoWide: true
+  }
 };
 
 const {
@@ -1206,6 +1222,17 @@ const findFillIndex = (pageIndex, fillEffect) => {
   return nowFillIndex;
 };
 
+/** 判断图片是否是跨页图 */
+const isWideImg = img => {
+  switch (img.type) {
+    case 'long':
+    case 'wide':
+      return true;
+    default:
+      return false;
+  }
+};
+
 /** 根据图片比例和填充页设置对漫画图片进行排列 */
 const handleComicData = (imgList, fillEffect) => {
   const pageList = [];
@@ -1216,7 +1243,7 @@ const handleComicData = (imgList, fillEffect) => {
       if (imgCache !== null) pageList.push([imgCache]);
       imgCache = -1;
     }
-    if (img.type !== 'long' && img.type !== 'wide') {
+    if (!isWideImg(img)) {
       if (imgCache !== null) {
         pageList.push([imgCache, i]);
         imgCache = null;
@@ -1321,7 +1348,7 @@ const updateTipText = throttle(100, () => {
   });
 });
 
-/** 监视漫画页的滚动事件 */
+/** 处理漫画页的滚动事件 */
 const handleMangaFlowScroll = () => {
   if (!store.option.scrollMode) return;
   setState(state => {
@@ -1427,9 +1454,6 @@ const bindRef = (name, fn) => e => {
   });
 };
 
-/** 是否需要自动判断开启卷轴模式 */
-let autoScrollMode = true;
-
 /**
  * 预加载指定页数的图片，并取消其他预加载的图片
  * @param state state
@@ -1462,13 +1486,8 @@ const updateImgLoadType = debounce(100, state => {
   } = state;
 
   // 先将所有加载中的图片状态改为暂停
-  imgList.forEach(({
-    loadType,
-    src
-  }, i) => {
-    if (!src) {
-      imgList[i].loadType = 'error';
-    } else if (loadType === 'loading' || loadType === 'error') imgList[i].loadType = 'wait';
+  imgList.forEach((img, i) => {
+    if (img.loadType === 'loading' || img.loadType === 'error') imgList[i].loadType = 'wait';
   });
   return (
     // 优先加载当前显示页
@@ -1516,12 +1535,6 @@ const updateImgType = (state, draftImg) => {
   } else {
     draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
   }
-
-  // 当超过3张图的类型为长图时，自动开启卷轴模式
-  if (!state.option.scrollMode && autoScrollMode && state.imgList.filter(img => img.type === 'vertical').length > 3) {
-    state.option.scrollMode = true;
-    autoScrollMode = false;
-  }
   if (type === draftImg.type) {
     updateDrag(state);
     updateImgLoadType(state);
@@ -1532,6 +1545,7 @@ const updateImgType = (state, draftImg) => {
 
 /** 处理显示窗口的长宽变化 */
 const handleResize = (state, width, height) => {
+  if (!(width && height)) return;
   state.proportion.单页比例 = Math.min(width / 2 / height, 1);
   state.proportion.横幅比例 = width / height;
   state.proportion.条漫比例 = state.proportion.单页比例 / 2;
@@ -1591,9 +1605,11 @@ const turnPage = (state, dir) => {
     }
   }
 };
-const setScrollModeImgScale = newScale => {
+const zoomScrollModeImg = zoomLevel => {
   setOption(draftOption => {
-    draftOption.scrollModeImgScale = newScale;
+    draftOption.scrollModeImgScale = !zoomLevel ? 1 : clamp(3,
+    // 放大到整数再运算，避免精度丢失导致的奇怪的值
+    (store.option.scrollModeImgScale * 10 + zoomLevel * 10) / 10, 0.1);
   });
   // 在调整图片缩放后使当前滚动进度保持不变
   setState(state => {
@@ -1606,11 +1622,18 @@ const setScrollModeImgScale = newScale => {
 const {
   activeImgIndex,
   nowFillIndex,
-  activePage
+  activePage,
+  imgPlaceholderHeight
 } = solidJs.createRoot(() => {
   const activeImgIndexMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex]?.find(i => i !== -1) ?? 0);
   const nowFillIndexMemo = solidJs.createMemo(() => findFillIndex(activeImgIndexMemo(), store.fillEffect));
   const activePageMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex] ?? []);
+  const imgPlaceholderHeightMemo = solidJs.createMemo(() => {
+    if (!store.option.scrollMode) return 0;
+    // 使用所有已加载图片高度的中位数
+    const heightList = store.imgList.filter(img => img.loadType === 'loaded' && img.height).map(img => img.height).sort();
+    return heightList[Math.floor(heightList.length / 2)] * store.option.scrollModeImgScale;
+  });
 
   // 页数发生变动时
   solidJs.createEffect(solidJs.on(() => store.activePageIndex, () => {
@@ -1627,7 +1650,9 @@ const {
     /** 当前所处的图片流 */
     nowFillIndex: nowFillIndexMemo,
     /** 当前显示页面 */
-    activePage: activePageMemo
+    activePage: activePageMemo,
+    /** 卷轴模式下的图片占位高度 */
+    imgPlaceholderHeight: imgPlaceholderHeightMemo
   };
 });
 
@@ -1690,7 +1715,7 @@ const delHotKeys = code => {
   });
 };
 
-var css$1 = ".index_module_img__1f403422{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__1f403422[data-show]{display:unset}.index_module_img__1f403422[data-fill=left]{transform:translate(50%)}.index_module_img__1f403422[data-fill=right]{transform:translate(-50%)}.index_module_img__1f403422[data-load-type=error],.index_module_img__1f403422[data-load-type=wait]{display:none}.index_module_mangaFlowBox__1f403422{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__1f403422::-webkit-scrollbar{display:none}.index_module_mangaFlow__1f403422{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__1f403422.index_module_disableZoom__1f403422 .index_module_img__1f403422{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422{height:auto;max-height:unset;max-width:100%;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422[data-load-type=wait]{flex-basis:var(--img_placeholder_height,100vh);flex-shrink:0}.index_module_mangaFlow__1f403422[dir=ltr]{flex-direction:row}.index_module_mangaFlow__1f403422>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__1f403422>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__1f403422>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__1f403422{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__1f403422>button{animation:index_module_jello__1f403422 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__1f403422>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__1f403422>button:focus-visible{outline:none}.index_module_endPage__1f403422>.index_module_tip__1f403422{margin:auto;position:absolute}.index_module_endPage__1f403422[data-show]{opacity:1;pointer-events:all}.index_module_endPage__1f403422[data-type=start]>.index_module_tip__1f403422{transform:translateY(-10em)}.index_module_endPage__1f403422[data-type=end]>.index_module_tip__1f403422{transform:translateY(10em)}.index_module_comments__1f403422{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__1f403422>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__1f403422:hover{opacity:1}@keyframes index_module_jello__1f403422{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__1f403422{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__1f403422{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__1f403422[data-show=true] .index_module_toolbarPanel__1f403422{transform:none}.index_module_toolbarBg__1f403422{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__1f403422{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__1f403422{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;width:15em}.index_module_SettingPanel__1f403422 hr{margin:0}.index_module_SettingBlock__1f403422{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422{overflow:hidden}:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div+:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div{margin-top:1em}.index_module_SettingBlock__1f403422[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__1f403422{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__1f403422{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__1f403422+.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_SettingsItemName__1f403422{font-size:.9em}.index_module_SettingsItemSwitch__1f403422{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__1f403422{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__1f403422[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__1f403422[data-checked=true] .index_module_SettingsItemSwitchRound__1f403422{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__1f403422{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__1f403422{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__1f403422{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__1f403422{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422{overflow:hidden}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422>.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_hotKeys__1f403422{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotKeys__1f403422+.index_module_hotKeys__1f403422{margin-top:.5em}.index_module_hotKeys__1f403422:last-child{border-bottom:none}.index_module_hotKeysItem__1f403422{align-items:center;border-radius:.3em;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotKeysItem__1f403422>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotKeysItem__1f403422>svg:hover{opacity:.9}.index_module_hotKeysItem__1f403422:hover{padding:.2em .5em}.index_module_hotKeysItem__1f403422:hover>svg{display:unset}.index_module_hotKeysItem__1f403422:focus,.index_module_hotKeysItem__1f403422:focus-visible{outline:var(--text) solid 2px}.index_module_hotKeysHeader__1f403422{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotKeysHeader__1f403422>p{background-color:var(--page_bg);margin:0}.index_module_hotKeysHeader__1f403422>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotKeysHeader__1f403422>div[title]>svg{width:1.6em}.index_module_hotKeys__1f403422:hover div[title]{transform:scale(1)}.index_module_scrollbar__1f403422{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__1f403422>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__1f403422{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__1f403422{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__1f403422[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__1f403422[data-type=wait]{opacity:.5}.index_module_scrollbarPage__1f403422[data-type=error]{background-color:#f005}.index_module_scrollbarPage__1f403422[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__1f403422[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__1f403422[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__1f403422[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__1f403422{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__1f403422:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__1f403422[data-show=true],.index_module_scrollbarPoper__1f403422[data-show=true],.index_module_scrollbar__1f403422:hover .index_module_scrollbarDrag__1f403422,.index_module_scrollbar__1f403422:hover .index_module_scrollbarPoper__1f403422{opacity:1}.index_module_touchAreaRoot__1f403422{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchArea__1f403422{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none;writing-mode:vertical-rl}.index_module_touchArea__1f403422[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__1f403422[data-show=true]{visibility:visible}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=next]{background-color:#f38181e6}.index_module_hidden__1f403422{display:none}.index_module_invisible__1f403422{visibility:hidden}.index_module_opacity1__1f403422{opacity:1}.index_module_opacity0__1f403422{opacity:0}.index_module_root__1f403422{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__1f403422 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__1f403422{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:0;overflow-wrap:anywhere;padding:0 1em;text-align:start;white-space:pre-wrap}blockquote>p+p{margin-top:.5em}svg{width:1em}";
+var css$1 = ".index_module_img__1f403422{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__1f403422[data-show]{display:unset}.index_module_img__1f403422[data-fill=left]{transform:translate(50%)}.index_module_img__1f403422[data-fill=right]{transform:translate(-50%)}.index_module_img__1f403422[data-load-type=error],.index_module_img__1f403422[data-load-type=wait]{display:none}.index_module_mangaFlowBox__1f403422{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__1f403422::-webkit-scrollbar{display:none}.index_module_mangaFlow__1f403422{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__1f403422.index_module_disableZoom__1f403422 .index_module_img__1f403422{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0}.index_module_mangaFlow__1f403422[dir=ltr]{flex-direction:row}.index_module_mangaFlow__1f403422>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__1f403422>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__1f403422>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__1f403422{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__1f403422>button{animation:index_module_jello__1f403422 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__1f403422>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__1f403422>button:focus-visible{outline:none}.index_module_endPage__1f403422>.index_module_tip__1f403422{margin:auto;position:absolute}.index_module_endPage__1f403422[data-show]{opacity:1;pointer-events:all}.index_module_endPage__1f403422[data-type=start]>.index_module_tip__1f403422{transform:translateY(-10em)}.index_module_endPage__1f403422[data-type=end]>.index_module_tip__1f403422{transform:translateY(10em)}.index_module_comments__1f403422{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__1f403422>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__1f403422:hover{opacity:1}@keyframes index_module_jello__1f403422{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__1f403422{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__1f403422{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__1f403422[data-show=true] .index_module_toolbarPanel__1f403422{transform:none}.index_module_toolbarBg__1f403422{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__1f403422{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__1f403422{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;width:15em}.index_module_SettingPanel__1f403422 hr{margin:0}.index_module_SettingBlock__1f403422{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422{overflow:hidden}:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div+:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div{margin-top:1em}.index_module_SettingBlock__1f403422[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__1f403422{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__1f403422{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__1f403422+.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_SettingsItemName__1f403422{font-size:.9em}.index_module_SettingsItemSwitch__1f403422{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__1f403422{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__1f403422[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__1f403422[data-checked=true] .index_module_SettingsItemSwitchRound__1f403422{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__1f403422{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__1f403422{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__1f403422{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__1f403422{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422{overflow:hidden}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422>.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_hotKeys__1f403422{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotKeys__1f403422+.index_module_hotKeys__1f403422{margin-top:.5em}.index_module_hotKeys__1f403422:last-child{border-bottom:none}.index_module_hotKeysItem__1f403422{align-items:center;border-radius:.3em;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotKeysItem__1f403422>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotKeysItem__1f403422>svg:hover{opacity:.9}.index_module_hotKeysItem__1f403422:hover{padding:.2em .5em}.index_module_hotKeysItem__1f403422:hover>svg{display:unset}.index_module_hotKeysItem__1f403422:focus,.index_module_hotKeysItem__1f403422:focus-visible{outline:var(--text) solid 2px}.index_module_hotKeysHeader__1f403422{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotKeysHeader__1f403422>p{background-color:var(--page_bg);margin:0}.index_module_hotKeysHeader__1f403422>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotKeysHeader__1f403422>div[title]>svg{width:1.6em}.index_module_hotKeys__1f403422:hover div[title]{transform:scale(1)}.index_module_scrollbar__1f403422{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__1f403422>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__1f403422{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__1f403422{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__1f403422[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__1f403422[data-type=wait]{opacity:.5}.index_module_scrollbarPage__1f403422[data-type=error]{background-color:#f005}.index_module_scrollbarPage__1f403422[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__1f403422[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__1f403422[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__1f403422[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__1f403422[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__1f403422{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__1f403422:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__1f403422[data-show=true],.index_module_scrollbarPoper__1f403422[data-show=true],.index_module_scrollbar__1f403422:hover .index_module_scrollbarDrag__1f403422,.index_module_scrollbar__1f403422:hover .index_module_scrollbarPoper__1f403422{opacity:1}.index_module_touchAreaRoot__1f403422{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchArea__1f403422{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none;writing-mode:vertical-rl}.index_module_touchArea__1f403422[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__1f403422[data-show=true]{visibility:visible}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=next]{background-color:#f38181e6}.index_module_hidden__1f403422{display:none}.index_module_invisible__1f403422{visibility:hidden}.index_module_opacity1__1f403422{opacity:1}.index_module_opacity0__1f403422{opacity:0}.index_module_root__1f403422{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__1f403422 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__1f403422{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:0;overflow-wrap:anywhere;padding:0 1em;text-align:start;white-space:pre-wrap}blockquote>p+p{margin-top:.5em}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"index_module_img__1f403422","mangaFlowBox":"index_module_mangaFlowBox__1f403422","mangaFlow":"index_module_mangaFlow__1f403422","disableZoom":"index_module_disableZoom__1f403422","scrollMode":"index_module_scrollMode__1f403422","endPage":"index_module_endPage__1f403422","jello":"index_module_jello__1f403422","tip":"index_module_tip__1f403422","comments":"index_module_comments__1f403422","toolbar":"index_module_toolbar__1f403422","toolbarPanel":"index_module_toolbarPanel__1f403422","toolbarBg":"index_module_toolbarBg__1f403422","SettingPanelPopper":"index_module_SettingPanelPopper__1f403422","SettingPanel":"index_module_SettingPanel__1f403422","SettingBlock":"index_module_SettingBlock__1f403422","SettingBlockBody":"index_module_SettingBlockBody__1f403422","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__1f403422","SettingsItem":"index_module_SettingsItem__1f403422","SettingsItemName":"index_module_SettingsItemName__1f403422","SettingsItemSwitch":"index_module_SettingsItemSwitch__1f403422","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__1f403422","SettingsItemIconButton":"index_module_SettingsItemIconButton__1f403422","SettingsItemSelect":"index_module_SettingsItemSelect__1f403422","closeCover":"index_module_closeCover__1f403422","SettingsShowItem":"index_module_SettingsShowItem__1f403422","SettingsShowItemBody":"index_module_SettingsShowItemBody__1f403422","hotKeys":"index_module_hotKeys__1f403422","hotKeysItem":"index_module_hotKeysItem__1f403422","hotKeysHeader":"index_module_hotKeysHeader__1f403422","scrollbar":"index_module_scrollbar__1f403422","scrollbarDrag":"index_module_scrollbarDrag__1f403422","scrollbarPage":"index_module_scrollbarPage__1f403422","scrollbarPoper":"index_module_scrollbarPoper__1f403422","touchAreaRoot":"index_module_touchAreaRoot__1f403422","touchArea":"index_module_touchArea__1f403422","hidden":"index_module_hidden__1f403422","invisible":"index_module_invisible__1f403422","opacity1":"index_module_opacity1__1f403422","opacity0":"index_module_opacity0__1f403422","root":"index_module_root__1f403422","beautifyScrollbar":"index_module_beautifyScrollbar__1f403422"};
 n(css$1,{});
 
@@ -1698,48 +1723,46 @@ const handleWheel = e => {
   e.stopPropagation();
   if (e.ctrlKey || e.altKey && !store.option.scrollMode || !store.endPageType && store.scrollLock) return;
   const isWheelDown = e.deltaY > 0;
-  if (store.option.scrollMode && !store.endPageType) {
-    // 实现在卷轴模式滚动到头尾后继续滚动时弹出结束页
-    if (store.scrollbar.dragTop === 0 && !isWheelDown) {
-      window.setTimeout(() => {
-        setState(state => {
-          state.endPageType = 'start';
-          state.scrollLock = true;
-        });
-      });
-      window.setTimeout(() => {
-        setState(state => {
-          state.scrollLock = false;
-        });
-      }, 500);
-    } else if (store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 && isWheelDown) {
-      setState(state => {
-        state.endPageType = 'end';
-        state.scrollLock = true;
-      });
-      window.setTimeout(() => {
-        setState(state => {
-          state.scrollLock = false;
-        });
-      }, 500);
-    }
+  if (store.endPageType || !store.option.scrollMode) return setState(state => turnPage(state, isWheelDown ? 'next' : 'prev'));
 
-    // 实现卷轴模式下的缩放
-    if (e.altKey) {
-      e.preventDefault();
-      const zoomScale = (isWheelDown ? -1 : 1) * 0.1;
-      setScrollModeImgScale(clamp(5, store.option.scrollModeImgScale + zoomScale, 0.2));
-      // 在调整图片缩放后使当前滚动进度保持不变
-      setState(state => {
-        mangaFlowEle().scrollTo({
-          top: contentHeight() * state.scrollbar.dragTop
-        });
+  // 实现卷轴模式下的缩放
+  if (e.altKey) {
+    e.preventDefault();
+    zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
+    // 在调整图片缩放后使当前滚动进度保持不变
+    setState(state => {
+      mangaFlowEle().scrollTo({
+        top: contentHeight() * state.scrollbar.dragTop
       });
-      handleMangaFlowScroll();
-    }
+    });
+    handleMangaFlowScroll();
     return;
   }
-  setState(state => turnPage(state, isWheelDown ? 'next' : 'prev'));
+
+  // 实现在卷轴模式滚动到头尾后继续滚动时弹出结束页
+  if (store.scrollbar.dragTop === 0 && !isWheelDown) {
+    window.setTimeout(() => {
+      setState(state => {
+        state.endPageType = 'start';
+        state.scrollLock = true;
+      });
+    });
+    window.setTimeout(() => {
+      setState(state => {
+        state.scrollLock = false;
+      });
+    }, 500);
+  } else if (store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 && isWheelDown) {
+    setState(state => {
+      state.endPageType = 'end';
+      state.scrollLock = true;
+    });
+    window.setTimeout(() => {
+      setState(state => {
+        state.scrollLock = false;
+      });
+    }, 500);
+  }
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
@@ -1805,7 +1828,23 @@ const handleMouseDown = e => {
   switchFillEffect();
 };
 
-const _tmpl$$A = /*#__PURE__*/web.template(\`<img>\`);
+const _tmpl$$B = /*#__PURE__*/web.template(\`<img>\`);
+/** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
+const checkImgTypeCount = (state, fn, maxNum = 3) => {
+  let num = 0;
+  for (let i = 0; i < state.imgList.length; i++) {
+    const img = state.imgList[i];
+    if (img.loadType !== 'loaded') continue;
+    if (!fn(img)) {
+      num = 0;
+      continue;
+    }
+    num += 1;
+    if (num >= maxNum) return true;
+  }
+  return false;
+};
+
 /** 图片加载完毕的回调 */
 const handleImgLoaded = (i, e) => {
   setState(state => {
@@ -1816,7 +1855,29 @@ const handleImgLoaded = (i, e) => {
     img.height = e.naturalHeight;
     img.width = e.naturalWidth;
     updateImgType(state, img);
-    state.onLoading?.(img, state.imgList);
+    state.onLoading?.(state.imgList, img);
+    switch (img.type) {
+      // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
+      case 'long':
+      case 'wide':
+        {
+          if (!state.flag.autoWide || !checkImgTypeCount(state, isWideImg)) return;
+          state.imgList.forEach((comicImg, index) => {
+            if (comicImg.loadType === 'wait' && comicImg.type === '') state.imgList[index].type = 'wide';
+          });
+          state.flag.autoWide = false;
+          break;
+        }
+
+      // 连续出现多张长图后，自动开启卷轴模式
+      case 'vertical':
+        {
+          if (!state.flag.autoScrollMode || !checkImgTypeCount(state, image => image.type === 'vertical')) return;
+          state.option.scrollMode = true;
+          state.flag.autoScrollMode = false;
+          break;
+        }
+    }
   });
 };
 
@@ -1836,7 +1897,7 @@ const handleImgError = (i, e) => {
     }
     img.loadType = 'error';
     console.error('图片加载失败', e);
-    state.onLoading?.(img, state.imgList);
+    state.onLoading?.(state.imgList, img);
   });
 };
 
@@ -1861,7 +1922,7 @@ const ComicImg = props => {
     return props.img.src;
   });
   return (() => {
-    const _el$ = _tmpl$$A();
+    const _el$ = _tmpl$$B();
     _el$.addEventListener("error", e => handleImgError(props.index, e.currentTarget));
     _el$.addEventListener("load", e => handleImgLoaded(props.index, e.currentTarget));
     web.effect(_p$ => {
@@ -1896,15 +1957,22 @@ const ComicImg = props => {
   })();
 };
 
-const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m21.19 21.19-.78-.78L18 18l-4.59-4.59-9.82-9.82-.78-.78a.996.996 0 0 0-1.41 0C1 3.2 1 3.83 1.39 4.22L3 5.83V19c0 1.1.9 2 2 2h13.17l1.61 1.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.03 0-1.42zM6.02 18c-.42 0-.65-.48-.39-.81l2.49-3.2a.5.5 0 0 1 .78-.01l2.1 2.53L12.17 15l3 3H6.02zm14.98.17L5.83 3H19c1.1 0 2 .9 2 2v13.17z">\`);
+const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m21.19 21.19-.78-.78L18 18l-4.59-4.59-9.82-9.82-.78-.78a.996.996 0 0 0-1.41 0C1 3.2 1 3.83 1.39 4.22L3 5.83V19c0 1.1.9 2 2 2h13.17l1.61 1.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.03 0-1.42zM6.02 18c-.42 0-.65-.48-.39-.81l2.49-3.2a.5.5 0 0 1 .78-.01l2.1 2.53L12.17 15l3 3H6.02zm14.98.17L5.83 3H19c1.1 0 2 .9 2 2v13.17z">\`);
 const MdImageNotSupported = ((props = {}) => (() => {
+  const _el$ = _tmpl$$A();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
+const MdCloudDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$z();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
-const MdCloudDownload = ((props = {}) => (() => {
+const _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.9 13.98l2.1 2.53 3.1-3.99c.2-.26.6-.26.8.01l3.51 4.68a.5.5 0 0 1-.4.8H6.02c-.42 0-.65-.48-.39-.81L8.12 14c.19-.26.57-.27.78-.02z">\`);
+const MdPhoto = ((props = {}) => (() => {
   const _el$ = _tmpl$$y();
   web.spread(_el$, props, true, true);
   return _el$;
@@ -1915,6 +1983,11 @@ const loadTypeSvg = {
   loading: MdCloudDownload,
   wait: MdCloudDownload
 };
+const getComponent = img => {
+  if (!img) return;
+  if (!img.src) return MdPhoto;
+  return loadTypeSvg[img.loadType];
+};
 const ShowSvg = index => {
   const position = solidJs.createMemo(() => {
     if (activePage().length === 1) return;
@@ -1922,7 +1995,7 @@ const ShowSvg = index => {
   });
   return web.createComponent(web.Dynamic, {
     get component() {
-      return loadTypeSvg[store.imgList[index]?.loadType];
+      return getComponent(store.imgList[index]);
     },
     get style() {
       return {
@@ -2044,7 +2117,7 @@ const ComicImgFlow = () => {
   /** 处理双击缩放 */
   const handleDoubleClickZoom = e => {
     setTimeout(() => {
-      if (!store.panzoom) return;
+      if (!store.panzoom || store.option.scrollMode) return;
       const {
         scale
       } = store.panzoom.getTransform();
@@ -3136,14 +3209,13 @@ const defaultButtonList = [
 }), buttonListDivider,
 // 放大模式
 () => web.createComponent(IconButton, {
-  tip: "\\u653E\\u5927\\u6A21\\u5F0F",
+  tip: "\\u653E\\u5927",
   get enabled() {
-    return store.isZoomed || store.option.scrollMode && store.option.scrollModeImgScale !== 1;
+    return store.isZoomed || store.option.scrollMode && store.option.scrollModeImgScale > 1;
   },
   onClick: () => {
     if (store.option.scrollMode) {
-      setScrollModeImgScale(store.option.scrollModeImgScale < 2 ? store.option.scrollModeImgScale + 0.2 : 1);
-      return;
+      return zoomScrollModeImg(store.option.scrollModeImgScale < 1 || store.option.scrollModeImgScale > 1.6 ? undefined : 0.2);
     }
     if (!store.panzoom) return;
     const {
@@ -3348,25 +3420,27 @@ const _tmpl$$a = /*#__PURE__*/web.template(\`<div>\`);
 
 /** 显示对应图片加载情况的元素 */
 const ScrollbarImg = props => {
-  const type = solidJs.createMemo(() => store.imgList[props.index]?.loadType);
-  const translationType = solidJs.createMemo(() => store.imgList[props.index]?.translationType);
+  const img = solidJs.createMemo(() => store.imgList[props.index]);
   return (() => {
     const _el$ = _tmpl$$a();
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbarPage,
         _v$2 = props.index,
-        _v$3 = type(),
-        _v$4 = translationType();
+        _v$3 = img()?.loadType,
+        _v$4 = img()?.src ? undefined : '',
+        _v$5 = img()?.translationType;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-index", _p$._v$2 = _v$2);
       _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-translation-type", _p$._v$4 = _v$4);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-null", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-translation-type", _p$._v$5 = _v$5);
       return _p$;
     }, {
       _v$: undefined,
       _v$2: undefined,
       _v$3: undefined,
-      _v$4: undefined
+      _v$4: undefined,
+      _v$5: undefined
     });
     return _el$;
   })();
@@ -3550,7 +3624,7 @@ const EndPage = () => {
     _el$3.$$click = () => store.onPrev?.();
     const _ref$2 = bindRef('prevRef');
     typeof _ref$2 === "function" && web.use(_ref$2, _el$3);
-    _el$4.$$click = () => store.onExit?.(!!store.activePageIndex);
+    _el$4.$$click = () => store.onExit?.(store.endPageType === 'end');
     const _ref$3 = bindRef('exitRef');
     typeof _ref$3 === "function" && web.use(_ref$3, _el$4);
     _el$5.$$click = () => store.onNext?.();
@@ -3650,7 +3724,7 @@ const cssVar = solidJs.createRoot(() => {
   const _cssVar = solidJs.createMemo(() => ({
     '--bg': store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'),
     '--scrollModeImgScale': store.option.scrollModeImgScale,
-    '--img_placeholder_height': \`\${windowHeight()}px\`,
+    '--img_placeholder_height': \`\${imgPlaceholderHeight()}px\`,
     ...(store.option.darkMode ? dark : light)
   }));
   return _cssVar;
@@ -3668,7 +3742,7 @@ const useInit$1 = (props, rootRef) => {
     setState(state => {
       if (props.option) state.option = assign(state.option, props.option);
       state.hotKeys = {
-        ...defaultHoeKeys,
+        ...JSON.parse(JSON.stringify(defaultHoeKeys)),
         ...props.hotKeys
       };
     });
@@ -3691,6 +3765,30 @@ const useInit$1 = (props, rootRef) => {
   resizeObserver.disconnect();
   resizeObserver.observe(rootRef);
   solidJs.onCleanup(() => resizeObserver.disconnect());
+  solidJs.createEffect(() => {
+    setState(state => {
+      state.onExit = props.onExit ? isEnd => {
+        playAnimation(store.exitRef);
+        props.onExit?.(!!isEnd);
+        if (isEnd) state.activePageIndex = 0;
+        state.endPageType = undefined;
+      } : undefined;
+      state.onPrev = props.onPrev ? () => {
+        playAnimation(store.prevRef);
+        props.onPrev?.();
+      } : undefined;
+      state.onNext = props.onNext ? () => {
+        playAnimation(store.nextRef);
+        props.onNext?.();
+      } : undefined;
+      if (props.editButtonList) state.editButtonList = props.editButtonList;
+      if (props.editSettingList) state.editSettingList = props.editSettingList;
+      state.commentList = props.commentList;
+      state.onLoading = props.onLoading ? debounce(100, props.onLoading) : undefined;
+      state.onOptionChange = props.onOptionChange ? debounce(100, props.onOptionChange) : undefined;
+      state.onHotKeysChange = props.onHotKeysChange ? debounce(100, props.onHotKeysChange) : undefined;
+    });
+  });
 
   // 处理 imgList fillEffect 参数的初始化和修改
   solidJs.createEffect(() => {
@@ -3699,13 +3797,17 @@ const useInit$1 = (props, rootRef) => {
 
       // 处理初始化
       if (!state.imgList.length) {
+        state.flag.autoScrollMode = true;
+        state.flag.autoWide = true;
+        autoCloseFill.clear();
         state.fillEffect[-1] = state.option.firstPageFill;
         state.imgList = props.imgList.map(imgUrl => ({
           type: '',
-          src: imgUrl,
+          src: imgUrl || '',
           loadType: 'wait'
         }));
         updatePageData(state);
+        state.onLoading?.(state.imgList);
         return;
       }
       state.endPageType = undefined;
@@ -3714,14 +3816,14 @@ const useInit$1 = (props, rootRef) => {
       const oldActiveImg = state.pageList[state.activePageIndex]?.map(i => state.imgList?.[i]?.src) ?? [];
       state.imgList = props.imgList.map(imgUrl => state.imgList.find(img => img.src === imgUrl) ?? {
         type: '',
-        src: imgUrl,
+        src: imgUrl || '',
         loadType: 'wait'
       });
       state.fillEffect = {
         '-1': true
       };
-      autoCloseFill.clear();
       updatePageData(state);
+      state.onLoading?.(state.imgList);
       if (state.pageList.length === 0) {
         state.activePageIndex = 0;
         return;
@@ -3739,30 +3841,6 @@ const useInit$1 = (props, rootRef) => {
 
       // 如果已经翻到了最后一页，且最后一页的图片被删掉了，那就保持在末页显示
       if (state.activePageIndex > state.pageList.length - 1) state.activePageIndex = state.pageList.length - 1;
-    });
-  });
-  solidJs.createEffect(() => {
-    setState(state => {
-      state.onExit = props.onExit ? isEnd => {
-        playAnimation(store.exitRef);
-        props.onExit?.(!!isEnd);
-        state.activePageIndex = 0;
-        state.endPageType = undefined;
-      } : undefined;
-      state.onPrev = props.onPrev ? () => {
-        playAnimation(store.prevRef);
-        props.onPrev?.();
-      } : undefined;
-      state.onNext = props.onNext ? () => {
-        playAnimation(store.nextRef);
-        props.onNext?.();
-      } : undefined;
-      if (props.editButtonList) state.editButtonList = props.editButtonList;
-      if (props.editSettingList) state.editSettingList = props.editSettingList;
-      state.commentList = props.commentList;
-      state.onLoading = props.onLoading ? debounce(100, props.onLoading) : undefined;
-      state.onOptionChange = props.onOptionChange ? debounce(100, props.onOptionChange) : undefined;
-      state.onHotKeysChange = props.onHotKeysChange ? debounce(100, props.onHotKeysChange) : undefined;
     });
   });
 };
@@ -3826,7 +3904,6 @@ const useManga = async initProps => {
   await GM.addStyle(\`
     #comicRead {
       position: fixed;
-      z-index: 999999999;
       top: 0;
       left: 0;
       transform: scale(0);
@@ -3961,8 +4038,8 @@ const MdImportContacts = ((props = {}) => (() => {
   return _el$;
 })());
 
-var css = ".index_module_fabRoot__f84709fc{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__f84709fc[data-show=false]{pointer-events:none}.index_module_fabRoot__f84709fc[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__f84709fc[data-trans=true]{opacity:.8}.index_module_fabRoot__f84709fc[data-trans=true]:focus,.index_module_fabRoot__f84709fc[data-trans=true]:focus-visible,.index_module_fabRoot__f84709fc[data-trans=true]:hover{opacity:1}.index_module_fab__f84709fc{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;width:3.6em}.index_module_fab__f84709fc>svg{font-size:1.5em;width:1em}.index_module_fab__f84709fc:hover{background-color:var(--fab_hover,#78909c)}.index_module_fab__f84709fc:focus,.index_module_fab__f84709fc:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.index_module_progress__f84709fc{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__f84709fc>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__f84709fc:hover{color:#cfd8dc}.index_module_progress__f84709fc[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__f84709fc{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__f84709fc:hover,.index_module_fabRoot__f84709fc[data-focus=true]) .index_module_popper__f84709fc{display:flex}.index_module_speedDial__f84709fc{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__f84709fc{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__f84709fc:hover,:is(.index_module_fabRoot__f84709fc:hover:not([data-show=false]),.index_module_fabRoot__f84709fc[data-focus=true])>.index_module_speedDial__f84709fc{pointer-events:all}:is(.index_module_fabRoot__f84709fc:hover:not([data-show=false]),.index_module_fabRoot__f84709fc[data-focus=true])>.index_module_speedDial__f84709fc>.index_module_speedDialItem__f84709fc{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__f84709fc{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__f84709fc[data-focus=true] .index_module_backdrop__f84709fc{pointer-events:unset}:is(.index_module_fabRoot__f84709fc:hover:not([data-show=false]),.index_module_fabRoot__f84709fc[data-focus=true],.index_module_speedDial__f84709fc:hover) .index_module_backdrop__f84709fc{opacity:.4}";
-var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__f84709fc","fab":"index_module_fab__f84709fc","progress":"index_module_progress__f84709fc","popper":"index_module_popper__f84709fc","speedDial":"index_module_speedDial__f84709fc","speedDialItem":"index_module_speedDialItem__f84709fc","backdrop":"index_module_backdrop__f84709fc"};
+var css = ".index_module_fabRoot__36cc95e4{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__36cc95e4[data-show=false]{pointer-events:none}.index_module_fabRoot__36cc95e4[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__36cc95e4[data-trans=true]{opacity:.8}.index_module_fabRoot__36cc95e4[data-trans=true]:focus,.index_module_fabRoot__36cc95e4[data-trans=true]:focus-visible,.index_module_fabRoot__36cc95e4[data-trans=true]:hover{opacity:1}.index_module_fab__36cc95e4{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.index_module_fab__36cc95e4>svg{font-size:1.5em;width:1em}.index_module_fab__36cc95e4:hover{background-color:var(--fab_hover,#78909c)}.index_module_fab__36cc95e4:focus,.index_module_fab__36cc95e4:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.index_module_progress__36cc95e4{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__36cc95e4>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__36cc95e4:hover{color:#cfd8dc}.index_module_progress__36cc95e4[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__36cc95e4{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__36cc95e4:hover,.index_module_fabRoot__36cc95e4[data-focus=true]) .index_module_popper__36cc95e4{display:flex}.index_module_speedDial__36cc95e4{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__36cc95e4{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__36cc95e4:hover,:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true])>.index_module_speedDial__36cc95e4{pointer-events:all}:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true])>.index_module_speedDial__36cc95e4>.index_module_speedDialItem__36cc95e4{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__36cc95e4{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__36cc95e4[data-focus=true] .index_module_backdrop__36cc95e4{pointer-events:unset}:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true],.index_module_speedDial__36cc95e4:hover) .index_module_backdrop__36cc95e4{opacity:.4}";
+var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__36cc95e4","fab":"index_module_fab__36cc95e4","progress":"index_module_progress__36cc95e4","popper":"index_module_popper__36cc95e4","speedDial":"index_module_speedDial__36cc95e4","speedDialItem":"index_module_speedDialItem__36cc95e4","backdrop":"index_module_backdrop__36cc95e4"};
 n(css,{});
 
 const _tmpl$$2 = /*#__PURE__*/web.template(\`<div><div>\`),
@@ -4109,7 +4186,6 @@ const useFab = async initProps => {
       --text_bg: transparent;
 
       position: fixed;
-      z-index: 99999999;
       right: 3vw;
       bottom: 6vh;
 
@@ -4155,7 +4231,7 @@ const useFab = async initProps => {
     }
     if (recipe) setProps(typeof recipe === 'function' ? store$2.produce(recipe) : recipe);
   };
-  return set;
+  return [set, props];
 };
 
 const getHotKeys = async () => ({
@@ -4172,41 +4248,40 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
   const _defaultOptions = {
     autoShow: true,
     hiddenFAB: false,
-    ...defaultOptions,
-    option: {
-      ...defaultOption,
-      ...defaultOptions?.option
-    },
-    hotKeys: await getHotKeys()
+    ...defaultOptions
   };
-  const rawValue = await GM.getValue(name);
+  const saveOptions = await GM.getValue(name);
   const options = store$2.createMutable({
     ..._defaultOptions,
-    ...rawValue
+    ...saveOptions
   });
-  const onHotKeysChange = async newValue => {
-    GM.setValue('HotKeys', newValue);
-    // eslint-disable-next-line solid/reactivity
-    options.hotKeys = await getHotKeys();
+  const setOptions = async newValue => {
+    Object.assign(options, newValue);
+
+    // 只保存和默认设置不同的部分
+    return GM.setValue(name, difference(options, _defaultOptions));
   };
+  const [hotKeys, setHotKeys] = solidJs.createSignal(await getHotKeys());
 
-  /** 进入阅读模式的快捷键 */
-  const readModeHotKeys = solidJs.createRoot(() => {
-    const readModeHotKeysMemo = solidJs.createMemo(() => new Set(Object.assign([], options.hotKeys['进入阅读模式'])));
-    return readModeHotKeysMemo;
-  });
+  // 如果当前站点没有存储配置，就补充上去
+  if (saveOptions === undefined) GM.setValue(name, options);
   return {
+    /** 站点配置 */
     options,
-    /** 该站点是否有储存配置 */
-    isRecorded: rawValue !== undefined,
-    setOptions: async newValue => {
-      Object.assign(options, newValue);
-
-      // 只保存和默认设置不同的部分
-      return GM.setValue(name, difference(options, _defaultOptions));
+    /** 修改站点配置 */
+    setOptions,
+    /** 快捷键配置 */
+    hotKeys,
+    /** 处理快捷键配置的变动 */
+    onHotKeysChange: newValue => {
+      GM.setValue('HotKeys', newValue);
+      setHotKeys(newValue);
     },
-    onHotKeysChange,
-    readModeHotKeys
+    /** 进入阅读模式的快捷键 */
+    readModeHotKeys: solidJs.createRoot(() => {
+      const readModeHotKeysMemo = solidJs.createMemo(() => new Set(Object.assign([], hotKeys()['进入阅读模式'])));
+      return readModeHotKeysMemo;
+    })
   };
 };
 
@@ -4216,7 +4291,7 @@ const _tmpl$ = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$4 = /*#__PURE__*/web.template(\`<ul><li>\`);
 
 /**
- * 对所有支持站点页面的初始化操作的封装
+ * 对基础的初始化操作的封装
  * @param name 站点名
  * @param defaultOptions 默认配置
  */
@@ -4225,33 +4300,62 @@ const useInit = async (name, defaultOptions = {}) => {
     options,
     setOptions,
     readModeHotKeys,
+    hotKeys,
     onHotKeysChange
   } = await useSiteOptions(name, defaultOptions);
-  const setFab = await useFab({
+  const [setFab, fabProps] = await useFab({
     tip: '阅读模式',
-    speedDial: useSpeedDial(options, setOptions)
+    speedDial: useSpeedDial(options, setOptions),
+    show: !options.hiddenFAB && undefined
   });
+
+  /** 处理 Manga 组件的 onLoading 回调，将图片加载状态联动到 Fab 上 */
+  const onLoading = list => {
+    const loadNum = list.filter(image => image.loadType === 'loaded').length;
+
+    /** 图片加载进度 */
+    const progress = 1 + loadNum / list.length;
+    if (progress !== 2) {
+      setFab({
+        progress,
+        tip: \`图片加载中 - \${loadNum}/\${list.length}\`
+      });
+    } else {
+      // 图片全部加载完成后恢复 Fab 状态
+      setFab({
+        progress,
+        tip: '阅读模式',
+        show: undefined
+      });
+    }
+  };
   const [setManga, mangaProps] = await useManga({
     imgList: [],
     option: options.option,
     onOptionChange: option => setOptions({
-      ...options,
       option
     }),
-    hotKeys: options.hotKeys,
-    onHotKeysChange
+    hotKeys: hotKeys(),
+    onHotKeysChange,
+    onLoading
   });
 
   // 检查脚本的版本变化，提示用户
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.7.1](https://github.com/hymbz/ComicReadScript/compare/v6.7.0...v6.7.1) (2023-08-07)
+## [6.8.0](https://github.com/hymbz/ComicReadScript/compare/v6.7.1...v6.8.0) (2023-08-11)
+
+
+### Features
+
+* :sparkles: 实现简易阅读模式下和其他自动翻页、聚图脚本的联动 ([7a7b96b](https://github.com/hymbz/ComicReadScript/commit/7a7b96b73100ced876d0a941a322999e104ae4db))
+* :sparkles: 为简易阅读模式增加识别漫画页功能，避免在其他页面运行 ([0e4b64e](https://github.com/hymbz/ComicReadScript/commit/0e4b64e8e262c8e17154af34f580a13d62b03ce9))
 
 
 ### Bug Fixes
 
-* :bug: 修复无法自定义快捷键的 bug ([d8164b4](https://github.com/hymbz/ComicReadScript/commit/d8164b47a8e83bda62b7a6eeb53dfe1982bbba06))
+* :bug: 修复快捷键配置未能正确储存的 bug ([aa49a05](https://github.com/hymbz/ComicReadScript/commit/aa49a05634a47b50825286737bb770e9eb1859bf))
 \`;
     toast(() => [(() => {
       const _el$ = _tmpl$();
@@ -4302,10 +4406,10 @@ const useInit = async (name, defaultOptions = {}) => {
     });
   }
   let menuId;
-  /** 更新显示/隐藏阅读模式按钮的菜单项 */
+  /** 更新显示/隐藏悬浮按钮的菜单项 */
   const updateHideFabMenu = async () => {
     await GM.unregisterMenuCommand(menuId);
-    menuId = await GM.registerMenuCommand(\`\${options.hiddenFAB ? '显示' : '隐藏'}阅读模式按钮\`, async () => {
+    menuId = await GM.registerMenuCommand(\`\${options.hiddenFAB ? '显示' : '隐藏'}悬浮按钮\`, async () => {
       await setOptions({
         ...options,
         hiddenFAB: !options.hiddenFAB
@@ -4316,106 +4420,173 @@ const useInit = async (name, defaultOptions = {}) => {
       await updateHideFabMenu();
     });
   };
+
+  /** 当前是否还需要判断 autoShow */
+  const needAutoShow = {
+    val: true
+  };
   return {
     options,
     setOptions,
     setFab,
     setManga,
+    mangaProps,
+    needAutoShow,
     /**
-     * 完成所有支持站点的初始化
+     * 对 加载图片 和 进入阅读模式 相关初始化的封装
      * @param getImgList 返回图片列表的函数
-     * @param onLoading 图片加载状态发生变化时触发的回调
      * @returns 自动加载图片并进入阅读模式的函数
      */
-    init: (getImgList, onLoading = () => {}) => {
+    init: getImgList => {
+      const firstRun = menuId === undefined;
+
       /** 是否正在加载图片中 */
       let loading = false;
 
-      /** 进入阅读模式 */
-      const showComic = async (show = options.autoShow) => {
-        if (loading) {
-          toast.warn('加载图片中，请稍候', {
-            duration: 1500,
-            id: '加载图片中，请稍候'
-          });
-          return;
-        }
-        const {
-          imgList
-        } = mangaProps;
-        if (!imgList.length) {
-          loading = true;
-          try {
-            setFab({
-              progress: 0,
-              show: true
-            });
-            const initImgList = await getImgList();
-            if (initImgList.length === 0) throw new Error('获取漫画图片失败');
-            setFab({
-              progress: 1,
-              tip: '阅读模式',
-              show: !options.hiddenFAB && undefined
-            });
-            setManga(state => {
-              state.imgList = initImgList;
-              state.show = show;
-
-              // 监听图片加载状态，将进度显示到 Fab 上
-              state.onLoading = (img, list) => {
-                const loadNum = list.filter(image => image.loadType === 'loaded').length;
-                onLoading(loadNum, list.length, img);
-
-                /** 图片加载进度 */
-                const progress = 1 + loadNum / list.length;
-                if (progress !== 2) {
-                  setFab({
-                    progress,
-                    tip: \`图片加载中 - \${loadNum}/\${list.length}\`
-                  });
-                } else {
-                  // 图片全部加载完成后恢复 Fab 状态
-                  setFab({
-                    progress,
-                    tip: '阅读模式',
-                    show: undefined
-                  });
-                }
-              };
-              return state;
-            });
-          } catch (e) {
-            console.error(e);
-            toast.error(e.message);
-            setFab({
-              progress: undefined
-            });
-          } finally {
-            loading = false;
-          }
-        } else {
-          setManga({
+      /** 加载 imgList */
+      const loadImgList = async (initImgList, show) => {
+        loading = true;
+        try {
+          if (!initImgList) setFab({
+            progress: 0,
             show: true
           });
+          const newImgList = initImgList ?? (await getImgList());
+          if (newImgList.length === 0) throw new Error('获取漫画图片失败');
+          setManga(state => {
+            if (!isEqualArray(newImgList, mangaProps.imgList)) state.imgList = [...newImgList];
+            if (show || needAutoShow.val && options.autoShow) {
+              state.show = true;
+              needAutoShow.val = false;
+            }
+          });
+        } catch (e) {
+          console.error(e);
+          if (show) toast.error(e.message);
+          setFab({
+            progress: undefined
+          });
+        } finally {
+          loading = false;
         }
       };
+
+      /** 进入阅读模式 */
+      const showComic = async () => {
+        if (loading) return toast.warn('加载图片中，请稍候', {
+          duration: 1500
+        });
+        if (!mangaProps.imgList.length) return loadImgList(undefined, true);
+        setManga({
+          show: true
+        });
+      };
       setFab({
-        onClick: () => showComic(true)
+        onClick: showComic
       });
-      if (options.autoShow) showComic();
-      GM.registerMenuCommand('进入漫画阅读模式', () => showComic(true));
-      updateHideFabMenu();
-      window.addEventListener('keydown', e => {
-        if (e.target.tagName === 'INPUT') return;
-        const code = getKeyboardCode(e);
-        if (!readModeHotKeys().has(code)) return;
-        e.stopPropagation();
-        e.preventDefault();
-        showComic(true);
-      });
-      return () => showComic(true);
+      if (needAutoShow.val && options.autoShow) showComic();
+      if (firstRun) {
+        GM.registerMenuCommand('进入漫画阅读模式', fabProps.onClick);
+        updateHideFabMenu();
+        window.addEventListener('keydown', e => {
+          if (e.target.tagName === 'INPUT') return;
+          const code = getKeyboardCode(e);
+          if (!readModeHotKeys().has(code)) return;
+          e.stopPropagation();
+          e.preventDefault();
+          fabProps.onClick?.();
+        });
+      }
+      return {
+        /** 进入阅读模式 */
+        showComic,
+        /** 加载 imgList */
+        loadImgList,
+        /** Manga 组件的默认 onLoading */
+        onLoading
+      };
     }
   };
+};
+
+/** 对简单站点的通用解 */
+const universalInit = async ({
+  name,
+  exit,
+  wait: waitFn,
+  getImgList,
+  onPrev,
+  onNext,
+  onExit,
+  getCommentList,
+  SPA
+}) => {
+  if (waitFn) await main.wait(waitFn);
+  if (await exit?.()) return;
+  const fnMap = await main.useInit(name);
+  const {
+    init,
+    options,
+    setManga,
+    setFab,
+    needAutoShow
+  } = fnMap;
+  const {
+    loadImgList
+  } = init(() => getImgList(fnMap));
+  if (onExit) setManga({
+    onExit: isEnd => {
+      onExit?.(isEnd);
+      setManga({
+        show: false
+      });
+    }
+  });
+  if (!SPA) {
+    if (onNext || onPrev) setManga({
+      onNext,
+      onPrev
+    });
+    if (getCommentList) setManga({
+      commentList: await getCommentList()
+    });
+    return;
+  }
+  const {
+    isMangaPage,
+    getOnPrev,
+    getOnNext
+  } = SPA;
+  let lastUrl = '';
+  main.autoUpdate(async () => {
+    if (window.location.href === lastUrl) return;
+    lastUrl = window.location.href;
+    if (isMangaPage && !(await isMangaPage())) {
+      setFab({
+        show: false
+      });
+      setManga({
+        show: false,
+        imgList: []
+      });
+      return;
+    }
+    if (waitFn) await main.wait(waitFn);
+
+    // 先将 imgList 清空以便 activePageIndex 归零
+    setManga({
+      imgList: []
+    });
+    needAutoShow.val = options.autoShow;
+    await loadImgList();
+    if (getOnNext || getOnPrev) setManga({
+      onNext: await getOnNext?.(),
+      onPrev: await getOnPrev?.()
+    });
+    if (getCommentList) setManga({
+      commentList: await getCommentList()
+    });
+  });
 };
 
 exports.assign = assign;
@@ -4423,10 +4594,12 @@ exports.autoUpdate = autoUpdate;
 exports.dataToParams = dataToParams;
 exports.difference = difference;
 exports.getKeyboardCode = getKeyboardCode;
+exports.getMostItem = getMostItem;
 exports.insertNode = insertNode;
 exports.isEqualArray = isEqualArray;
 exports.keyboardCodeToText = keyboardCodeToText;
 exports.linstenKeyup = linstenKeyup;
+exports.loop = loop;
 exports.needDarkMode = needDarkMode;
 exports.plimit = plimit;
 exports.querySelector = querySelector;
@@ -4437,6 +4610,7 @@ exports.saveAs = saveAs;
 exports.scrollIntoView = scrollIntoView;
 exports.sleep = sleep;
 exports.toast = toast;
+exports.universalInit = universalInit;
 exports.useCache = useCache;
 exports.useFab = useFab;
 exports.useInit = useInit;
@@ -4514,6 +4688,12 @@ const require = name => {
 };
 unsafeWindow.crsLib.require = require;
 
+
+/** 站点配置 */
+let options;
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+const main = require('main');
 
 // 匹配站点
 switch (window.location.hostname) {
@@ -4650,16 +4830,18 @@ const MdSettings = ((props = {}) => (() => {
         }
         return imgList.map(img => img.src);
       };
+      updateImgList();
+      const {
+        showComic,
+        loadImgList,
+        onLoading
+      } = init(() => imgList.map(img => img.src));
       setManga({
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
-        onLoading: img => {
-          // 跳过符合标准的
-          if (img.height && img.width && img.height > 500 && img.width > 500) return;
-          const delImgIndex = imgList.findIndex(image => image.src === img.src);
-          if (delImgIndex !== -1) imgList.splice(delImgIndex, 1);
-          setManga({
-            imgList: imgList.map(image => image.src)
-          });
+        onLoading: _imgList => {
+          onLoading(_imgList);
+          updateImgList();
+          return loadImgList();
         },
         onExit: isEnd => {
           if (isEnd) main.scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
@@ -4668,8 +4850,6 @@ const MdSettings = ((props = {}) => (() => {
           });
         }
       });
-      updateImgList();
-      const showComic = init(() => imgList.map(img => img.src));
       setFab({
         progress: 1,
         tip: '阅读模式'
@@ -4845,37 +5025,32 @@ const MdSettings = ((props = {}) => (() => {
   // #百合会新站
   case 'www.yamibo.com':
     {
-const main = require('main');
+      const id = new URLSearchParams(window.location.search).get('id');
 
-(async () => {
-  // 只在漫画页内运行
-  if (!window.location.pathname.includes('/manga/view-chapter')) return;
-  const {
-    setManga,
-    init
-  } = await main.useInit('newYamibo');
-  setManga({
-    onNext: main.querySelectorClick('#btnNext'),
-    onPrev: main.querySelectorClick('#btnPrev'),
-    onExit: isEnd => {
-      if (isEnd) main.scrollIntoView('#w1');
-      setManga({
-        show: false
-      });
-    }
-  });
-  const id = new URLSearchParams(window.location.search).get('id');
-  /** 总页数 */
-  const totalPageNum = +main.querySelector('section div:first-of-type div:last-of-type').innerHTML.split('：')[1];
+      /** 总页数 */
+      const totalPageNum = +main.querySelector('section div:first-of-type div:last-of-type').innerHTML.split('：')[1];
+      if (Number.isNaN(totalPageNum)) throw new Error('页面结构发生改变，无法正常运行');
 
-  /** 获取指定页数的图片 url */
-  const getImg = async (i = 1) => {
-    const res = await main.request(`https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`);
-    return res.responseText.match(/(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/)[0].replaceAll('&amp;', '&');
-  };
-  init(() => main.plimit(Object.keys([...new Array(totalPageNum)]).map(i => () => getImg(+i + 1))));
-})();
-
+      /** 获取指定页数的图片 url */
+      const getImg = async (i = 1) => {
+        const res = await main.request(`https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`);
+        return res.responseText.match(/(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/)[0].replaceAll('&amp;', '&');
+      };
+      options = {
+        name: 'newYamibo',
+        exit: () => !window.location.pathname.includes('/manga/view-chapter'),
+        getImgList: ({
+          setFab
+        }) => main.plimit(Object.keys([...new Array(totalPageNum)]).map(i => () => getImg(+i + 1)), (doneNum, totalNum) => {
+          setFab({
+            progress: doneNum / totalNum,
+            tip: `加载图片中 - ${doneNum}/${totalNum}`
+          });
+        }),
+        onNext: main.querySelectorClick('#btnNext'),
+        onPrev: main.querySelectorClick('#btnPrev'),
+        onExit: isEnd => isEnd && main.scrollIntoView('#w1')
+      };
       break;
     }
 
@@ -5251,7 +5426,6 @@ const getChapterInfo = async (comicId, chapterId) => {
 
 (async () => {
   const {
-    options,
     setManga,
     init
   } = await main.useInit('dmzj');
@@ -5345,8 +5519,7 @@ const getChapterInfo = async (comicId, chapterId) => {
             onNext: main.querySelectorClick('#loadNextChapter'),
             onPrev: main.querySelectorClick('#loadPrevChapter')
           });
-          const showComic = init(() => main.querySelectorAll('#commicBox img').map(e => e.getAttribute('data-original')).filter(src => src));
-          if (!options.autoShow) await showComic();
+          init(() => main.querySelectorAll('#commicBox img').map(e => e.getAttribute('data-original')).filter(src => src));
           return;
         }
         document.body.removeChild(document.body.childNodes[0]);
@@ -5385,12 +5558,11 @@ const getChapterInfo = async (comicId, chapterId) => {
           } : undefined,
           editButtonList: e => e
         });
-        const showComic = init(() => {
+        init(() => {
           if (page_url.length) return page_url;
           tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
           return [];
         });
-        if (!options.autoShow) await showComic();
         break;
       }
   }
@@ -5448,11 +5620,6 @@ const turnPage = chapterId => {
 
       break;
     }
-  // 懒得整理导入导出的代码了，应该也没人用了吧，等有人需要的时候再说
-  // case 'i.dmzj.com': {
-  //   // dmzj_user_info
-  //   break;
-  // }
 
   // #ehentai——「匹配 nhentai 漫画」
   case 'exhentai.org':
@@ -5550,7 +5717,10 @@ const MdSettings = ((props = {}) => (() => {
     }
     return imgPageList;
   };
-  const showComic = init(async () => {
+  let ehentaiImgList;
+  const {
+    loadImgList
+  } = init(async () => {
     const totalPageNum = +main.querySelector('.ptt td:nth-last-child(2)').innerText;
     comicReadModeDom.innerHTML = ` loading`;
 
@@ -5560,18 +5730,20 @@ const MdSettings = ((props = {}) => (() => {
         tip: `获取图片页中 - ${doneNum}/${totalNum}`
       });
     });
-    return main.plimit(imgPageUrlList.flat().map(imgPageUrl => () => getImgFromImgPage(imgPageUrl)), (doneNum, totalNum) => {
+    const imgList = await main.plimit(imgPageUrlList.flat().map(imgPageUrl => () => getImgFromImgPage(imgPageUrl)), (doneNum, totalNum) => {
       setFab({
         progress: doneNum / totalNum,
         tip: `加载图片中 - ${doneNum}/${totalNum}`
       });
       comicReadModeDom.innerHTML = doneNum !== totalNum ? ` loading - ${doneNum}/${totalNum}` : ` Read`;
     });
+    ehentaiImgList = imgList;
+    return imgList;
   });
   setFab({
     initialShow: options.autoShow
   });
-  comicReadModeDom.addEventListener('click', showComic);
+  comicReadModeDom.addEventListener('click', () => loadImgList(ehentaiImgList, true));
   if (options.快捷键翻页) {
     main.linstenKeyup(e => {
       switch (e.key) {
@@ -5666,10 +5838,7 @@ const MdSettings = ((props = {}) => (() => {
             }));
             nhentaiComicReadModeDom.innerHTML = ' Read';
           }
-          setManga({
-            imgList: nhentaiImgList[selected_tag],
-            show: true
-          });
+          await loadImgList(nhentaiImgList[selected_tag], true);
         });
       }
       // 非 nhentai 标签列的用原函数去处理
@@ -5718,7 +5887,9 @@ const fileType = {
     // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
     main.insertNode(document.getElementById('download').parentNode, '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Read</a>');
     const comicReadModeDom = document.getElementById('comicReadMode');
-    const showComic = init(() => gallery.images.pages.map(({
+    const {
+      showComic
+    } = init(() => gallery.images.pages.map(({
       number,
       extension
     }) => `https://i.nhentai.net/galleries/${gallery.media_id}/${number}.${extension}`));
@@ -5820,56 +5991,33 @@ const fileType = {
   // #明日方舟泰拉记事社
   case 'terra-historicus.hypergryph.com':
     {
-const main = require('main');
-
-(async () => {
-  const {
-    setManga,
-    setFab,
-    init
-  } = await main.useInit('terraHistoricus');
-  const apiUrl = () => `https://terra-historicus.hypergryph.com/api${window.location.pathname}`;
-  const getImgUrl = i => async () => {
-    const res = await main.request(`${apiUrl()}/page?pageNum=${i + 1}`);
-    return JSON.parse(res.response).data.url;
-  };
-  const getImgList = async () => {
-    const res = await main.request(apiUrl());
-    const pageList = JSON.parse(res.response).data.pageInfos;
-    if (pageList.length === 0 && window.location.pathname.includes('episode')) throw new Error('获取图片列表时出错');
-    return main.plimit([...Array(pageList.length).keys()].map(getImgUrl), (doneNum, totalNum) => {
-      setFab({
-        tip: `获取图片中 - ${doneNum}/${totalNum}`
-      });
-    });
-  };
-  let lastUrl = window.location.href;
-  main.autoUpdate(async () => {
-    if (window.location.href === lastUrl) return;
-    lastUrl = window.location.href;
-    if (!lastUrl.includes('episode')) {
-      setFab({
-        show: false
-      });
-      setManga({
-        show: false
-      });
-      return;
-    }
-    await main.waitDom('footer .HG_GAME_JS_BRIDGE__wrapper');
-
-    // 先将 imgList 清空以便 activePageIndex 归零
-    setManga({
-      imgList: []
-    });
-    init(getImgList);
-    setManga({
-      onPrev: main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__prev a'),
-      onNext: main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a')
-    });
-  });
-})();
-
+      const apiUrl = () => `https://terra-historicus.hypergryph.com/api${window.location.pathname}`;
+      const getImgUrl = i => async () => {
+        const res = await main.request(`${apiUrl()}/page?pageNum=${i + 1}`);
+        return JSON.parse(res.response).data.url;
+      };
+      options = {
+        name: 'terraHistoricus',
+        wait: () => !!main.querySelector('footer .HG_GAME_JS_BRIDGE__wrapper'),
+        getImgList: async ({
+          setFab
+        }) => {
+          const res = await main.request(apiUrl());
+          const pageList = JSON.parse(res.response).data.pageInfos;
+          if (pageList.length === 0 && window.location.pathname.includes('episode')) throw new Error('获取图片列表时出错');
+          return main.plimit([...Array(pageList.length).keys()].map(getImgUrl), (doneNum, totalNum) => {
+            setFab({
+              progress: doneNum / totalNum,
+              tip: `加载图片中 - ${doneNum}/${totalNum}`
+            });
+          });
+        },
+        SPA: {
+          isMangaPage: () => window.location.href.includes('episode'),
+          getOnPrev: () => main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__prev a'),
+          getOnNext: () => main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a')
+        }
+      };
       break;
     }
 
@@ -5991,42 +6139,25 @@ const main = require('main');
   case 'www.copymanga.tv':
   case 'www.copymanga.com':
     {
-const main = require('main');
-
-(async () => {
-  // 只在漫画页内运行
-  if (!window.location.href.includes('/chapter/')) return;
-  const {
-    setManga,
-    init
-  } = await main.useInit('copymanga');
-  setManga({
-    onNext: main.querySelectorClick('.comicContent-next a:not(.prev-null)'),
-    onPrev: main.querySelectorClick('.comicContent-prev:not(.index,.list) a:not(.prev-null)')
-  });
-  init(async () => {
-    const res = await main.request(window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.site/api/v3'));
-    const {
-      results: {
-        chapter: {
-          contents
+      options = {
+        name: 'copymanga',
+        exit: () => !window.location.href.includes('/chapter/'),
+        getImgList: async () => {
+          const res = await main.request(window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.site/api/v3'));
+          return JSON.parse(res.responseText).results.chapter.contents.map(({
+            url
+          }) => url);
+        },
+        onNext: main.querySelectorClick('.comicContent-next a:not(.prev-null)'),
+        onPrev: main.querySelectorClick('.comicContent-prev:not(.index,.list) a:not(.prev-null)'),
+        getCommentList: async () => {
+          const chapter_id = window.location.pathname.split('/').at(-1);
+          const res = await main.request(`https://api.copymanga.site/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`);
+          return JSON.parse(res.responseText).results.list.map(({
+            comment
+          }) => comment);
         }
-      }
-    } = JSON.parse(res.responseText);
-    return contents.map(({
-      url
-    }) => url);
-  });
-  const chapter_id = window.location.pathname.split('/').at(-1);
-  const res = await main.request(`https://api.copymanga.site/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`);
-  const commentList = JSON.parse(res.responseText).results.list.map(({
-    comment
-  }) => comment);
-  setManga({
-    commentList
-  });
-})();
-
+      };
       break;
     }
 
@@ -6035,111 +6166,35 @@ const main = require('main');
   case 'www.mhgui.com':
   case 'tw.manhuagui.com':
     {
-const main = require('main');
-
-(async () => {
-  // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'cInfo')) return;
-
-  // 让切换章节的提示可以显示在漫画页上
-  await GM.addStyle(`#smh-msg-box { z-index: 9999999999 !important }`);
-  const {
-    setManga,
-    init
-  } = await main.useInit('manhuagui');
-  await main.wait(() => pVars.manga.filePath);
-  setManga({
-    onNext: cInfo.nextId !== 0 ? main.querySelectorClick('a.nextC') : undefined,
-    onPrev: cInfo.prevId !== 0 ? main.querySelectorClick('a.prevC') : undefined
-  });
-  init(() => {
-    const comicInfo = JSON.parse(
-    // 只能通过 eval 获得数据
-    // eslint-disable-next-line no-eval
-    eval(main.querySelectorAll('body > script')[1].innerHTML.slice(26)).slice(12, -12));
-    const sl = Object.entries(comicInfo.sl).map(attr => `${attr[0]}=${attr[1]}`).join('&');
-    return comicInfo.files.map(file => `${pVars.manga.filePath}${file}?${sl}`);
-  });
-})();
-
+      // 让切换章节的提示可以显示在漫画页上
+      GM.addStyle(`#smh-msg-box { z-index: 9999999999 !important }`);
+      options = {
+        name: 'manhuagui',
+        exit: () => !Reflect.has(unsafeWindow, 'cInfo'),
+        getImgList: () => {
+          const comicInfo = JSON.parse(
+          // 只能通过 eval 获得数据
+          // eslint-disable-next-line no-eval
+          eval(main.querySelectorAll('body > script')[1].innerHTML.slice(26)).slice(12, -12));
+          const sl = Object.entries(comicInfo.sl).map(attr => `${attr[0]}=${attr[1]}`).join('&');
+          return comicInfo.files.map(file => `${unsafeWindow.pVars.manga.filePath}${file}?${sl}`);
+        },
+        onNext: unsafeWindow.cInfo.nextId !== 0 ? main.querySelectorClick('a.nextC') : undefined,
+        onPrev: unsafeWindow.cInfo.prevId !== 0 ? main.querySelectorClick('a.prevC') : undefined
+      };
       break;
     }
 
   // #漫画DB(manhuadb)
   case 'www.manhuadb.com':
     {
-const main = require('main');
-
-(async () => {
-  // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'img_data_arr')) return;
-  const {
-    setManga,
-    init
-  } = await main.useInit('manhuaDB');
-
-  /**
-   * 检查是否有上/下一话
-   */
-  const checkTurnPage = async type => {
-    const res = await $.ajax({
-      method: 'POST',
-      url: '/book/goNumPage',
-      dataType: 'json',
-      data: main.dataToParams({
-        ccid: p_ccid,
-        id: p_id,
-        num: vg_r_data.data('num') + (type === 'next' ? 1 : -1),
-        d: p_d,
-        type
-      })
-    });
-    if (res.state) return main.querySelectorClick(`a[title="${type === 'next' ? '下集' : '上集'}"]`);
-    return undefined;
-  };
-  setManga({
-    onNext: await checkTurnPage('next'),
-    onPrev: await checkTurnPage('pre')
-  });
-  init(() => img_data_arr.map(data => `${img_host}/${img_pre}/${data.img}`));
-})();
-
-      break;
-    }
-
-  // #漫画猫(manhuacat)
-  case 'www.manhuacat.com':
-  case 'www.maofly.com':
-    {
-const main = require('main');
-
-(async () => {
-  // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'cdnImage')) return;
-  const {
-    setManga,
-    init
-  } = await main.useInit('manhuacat');
-
-  /**
-   * 检查是否有上/下一页
-   */
-  const checkTurnPage = async type => {
-    const res = await $.ajax({
-      type: 'get',
-      url: `/chapter_num?chapter_id=${chapter_num}&ctype=${type === 'next' ? 1 : 2}&type=${chapter_type}`,
-      dataType: 'json'
-    });
-    if (res.code === '0000') return () => goNumPage(type);
-    return undefined;
-  };
-  setManga({
-    onNext: await checkTurnPage('next'),
-    onPrev: await checkTurnPage('pre')
-  });
-  init(() => img_data_arr.map(img => cdnImage(img_pre + img, asset_domain, asset_key)));
-})();
-
+      options = {
+        name: 'manhuaDB',
+        exit: () => !Reflect.has(unsafeWindow, 'img_data_arr'),
+        getImgList: () => unsafeWindow.img_data_arr.map(data => `${unsafeWindow.img_host}/${unsafeWindow.img_pre}/${data.img}`),
+        onPrev: () => unsafeWindow.goNumPage('pre'),
+        onNext: () => unsafeWindow.goNumPage('next')
+      };
       break;
     }
 
@@ -6150,87 +6205,60 @@ const main = require('main');
   case 'www.dm5.cn':
   case 'www.1kkk.com':
     {
-const main = require('main');
-
-(async () => {
-  // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'DM5_CID')) return;
-  const {
-    setFab,
-    setManga,
-    init
-  } = await main.useInit('dm5');
-  setManga({
-    onNext: main.querySelectorClick('.logo_2'),
-    onPrev: main.querySelectorClick('.logo_1'),
-    onExit: isEnd => {
-      if (isEnd) main.scrollIntoView('.top');
-      setManga({
-        show: false
-      });
-    }
-  });
-  const getImgList = async (imgList = [], errorNum = 0) => {
-    try {
-      const res = await $.ajax({
-        type: 'GET',
-        url: 'chapterfun.ashx',
-        data: {
-          cid: DM5_CID,
-          page: imgList.length + 1,
-          key: $('#dm5_key').length ? $('#dm5_key').val() : '',
-          language: 1,
-          gtk: 6,
-          _cid: DM5_CID,
-          _mid: DM5_MID,
-          _dt: DM5_VIEWSIGN_DT,
-          _sign: DM5_VIEWSIGN
-        }
-      });
-
-      // 返回的数据只能通过 eval 获得
-      // eslint-disable-next-line no-eval
-      const newImgList = [...imgList, ...eval(res)];
-      if (newImgList.length !== DM5_IMAGE_COUNT) {
-        setFab({
-          progress: newImgList.length / DM5_IMAGE_COUNT,
-          tip: `加载图片中 - ${newImgList.length}/${DM5_IMAGE_COUNT}`
+      const getImgList = async (fnMap, imgList = []) => {
+        const res = await unsafeWindow.$.ajax({
+          type: 'GET',
+          url: 'chapterfun.ashx',
+          data: {
+            cid: unsafeWindow.DM5_CID,
+            page: imgList.length + 1,
+            key: unsafeWindow.$('#dm5_key').length ? unsafeWindow.$('#dm5_key').val() : '',
+            language: 1,
+            gtk: 6,
+            _cid: unsafeWindow.DM5_CID,
+            _mid: unsafeWindow.DM5_MID,
+            _dt: unsafeWindow.DM5_VIEWSIGN_DT,
+            _sign: unsafeWindow.DM5_VIEWSIGN
+          }
         });
-        return getImgList(newImgList);
-      }
-      return newImgList;
-    } catch (error) {
-      if (errorNum > 3) throw new Error('加载图片时出错');
-      console.error('加载图片时出错');
-      main.toast.error('加载图片时出错');
-      await main.sleep(1000 * 3);
-      return getImgList(imgList, errorNum + 1);
-    }
-  };
-  init(getImgList);
-})();
 
+        // 返回的数据只能通过 eval 获得
+        const newImgList = [...imgList,
+        // eslint-disable-next-line no-eval
+        ...eval(res)];
+        if (newImgList.length !== unsafeWindow.DM5_IMAGE_COUNT) {
+          // 在 Fab 按钮上通过进度条和提示文本显示当前进度
+          fnMap.setFab({
+            progress: newImgList.length / unsafeWindow.DM5_IMAGE_COUNT,
+            tip: `加载图片中 - ${newImgList.length}/${unsafeWindow.DM5_IMAGE_COUNT}`
+          });
+          return getImgList(fnMap, newImgList);
+        }
+        return newImgList;
+      };
+      options = {
+        name: 'dm5',
+        exit: () => !Reflect.has(unsafeWindow, 'DM5_CID'),
+        getImgList,
+        onNext: main.querySelectorClick('.logo_2'),
+        onPrev: main.querySelectorClick('.logo_1'),
+        onExit: isEnd => isEnd && main.scrollIntoView('.postlist')
+      };
       break;
     }
 
   // #绅士漫画(wnacg)
   case 'www.wnacg.com':
     {
-const main = require('main');
-
-(async () => {
-  // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'imglist')) return;
-  const {
-    init
-  } = await main.useInit('wnacg');
-  init(() => imglist.filter(({
-    caption
-  }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！').map(({
-    url
-  }) => url));
-})();
-
+      options = {
+        name: 'wnacg',
+        exit: () => !Reflect.has(unsafeWindow, 'imglist'),
+        getImgList: () => unsafeWindow.imglist.filter(({
+          caption
+        }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！').map(({
+          url
+        }) => url)
+      };
       break;
     }
 
@@ -6238,107 +6266,77 @@ const main = require('main');
   case 'www.mangabz.com':
   case 'mangabz.com':
     {
-const main = require('main');
+      const getImgList = async (fnMap, imgList = []) => {
+        const res = await unsafeWindow.$.ajax({
+          type: 'GET',
+          url: 'chapterimage.ashx',
+          data: {
+            cid: unsafeWindow.MANGABZ_CID,
+            page: imgList.length + 1,
+            key: '',
+            _cid: unsafeWindow.MANGABZ_CID,
+            _mid: unsafeWindow.MANGABZ_MID,
+            _dt: unsafeWindow.MANGABZ_VIEWSIGN_DT,
+            _sign: unsafeWindow.MANGABZ_VIEWSIGN
+          }
+        });
 
-(async () => {
-  // 只在漫画页内运行
-  if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) return;
-  const {
-    setFab,
-    setManga,
-    init
-  } = await main.useInit('mangabz');
-  setManga({
-    onNext: main.querySelectorClick('body > .container a[href^="/"]:last-child'),
-    onPrev: main.querySelectorClick('body > .container a[href^="/"]:first-child')
-  });
-  const getImgList = async (imgList = []) => {
-    const urlParams = main.dataToParams({
-      cid: MANGABZ_CID,
-      page: imgList.length + 1,
-      key: '',
-      _cid: MANGABZ_CID,
-      _mid: MANGABZ_MID,
-      _dt: MANGABZ_VIEWSIGN_DT.replace(' ', '+').replace(':', '%3A'),
-      _sign: MANGABZ_VIEWSIGN
-    });
-    const res = await main.request(`http://${MANGABZ_COOKIEDOMAIN}${MANGABZ_CURL}chapterimage.ashx?${urlParams}`);
-
-    // 返回的数据只能通过 eval 获得
-    // eslint-disable-next-line no-eval
-    const newImgList = [...imgList, ...eval(res.responseText)];
-    if (newImgList.length !== MANGABZ_IMAGE_COUNT) {
-      // 在 Fab 按钮上通过进度条和提示文本显示当前进度
-      setFab({
-        progress: newImgList.length / MANGABZ_IMAGE_COUNT,
-        tip: `加载图片中 - ${newImgList.length}/${MANGABZ_IMAGE_COUNT}`
-      });
-      return getImgList(newImgList);
-    }
-    return newImgList;
-  };
-  init(getImgList);
-})();
-
+        // 返回的数据只能通过 eval 获得
+        const newImgList = [...imgList,
+        // eslint-disable-next-line no-eval
+        ...eval(res)];
+        if (newImgList.length !== unsafeWindow.MANGABZ_IMAGE_COUNT) {
+          // 在 Fab 按钮上通过进度条和提示文本显示当前进度
+          fnMap.setFab({
+            progress: newImgList.length / unsafeWindow.MANGABZ_IMAGE_COUNT,
+            tip: `加载图片中 - ${newImgList.length}/${unsafeWindow.MANGABZ_IMAGE_COUNT}`
+          });
+          return getImgList(fnMap, newImgList);
+        }
+        return newImgList;
+      };
+      options = {
+        name: 'mangabz',
+        exit: () => !Reflect.has(unsafeWindow, 'MANGABZ_CID'),
+        getImgList,
+        onNext: main.querySelectorClick('body > .container a[href^="/"]:last-child'),
+        onPrev: main.querySelectorClick('body > .container a[href^="/"]:first-child')
+      };
       break;
     }
 
   // #komiic
   case 'komiic.com':
     {
-const main = require('main');
-
-(async () => {
-  const {
-    setManga,
-    setFab,
-    init
-  } = await main.useInit('komiic');
-  const getImgList = async () => {
-    const imgList = main.querySelectorAll('.imageContainer > img').map(e => e.getAttribute('data-src') ?? '');
-    if (imgList.includes('')) {
-      await main.sleep(100);
-      return getImgList();
-    }
-    return imgList;
-  };
-  let lastUrl = '';
-  const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
-  const findButton = text => () => {
-    // 点击唤出底栏
-    const id = window.setInterval(() => {
-      main.querySelector('.ComicImageContainer')?.click();
-    }, 500);
-    while (!main.querySelector('.ComicImage__bottom-menu-center')) {}
-    window.clearInterval(id);
-    return main.querySelectorAll('.ComicImage__bottom-menu-center button:not([disabled])').find(e => e.innerText.includes(text));
-  };
-  main.autoUpdate(async () => {
-    if (window.location.pathname === lastUrl) return;
-    lastUrl = window.location.pathname;
-    if (!urlMatchRe.test(lastUrl)) {
-      setFab({
-        show: false
-      });
-      setManga({
-        show: false
-      });
-      return;
-    }
-    await main.waitDom('.imageContainer > img');
-
-    // 先将 imgList 清空以便 activePageIndex 归零
-    setManga({
-      imgList: []
-    });
-    init(getImgList);
-    setManga({
-      onPrev: main.querySelectorClick(findButton('上一')),
-      onNext: main.querySelectorClick(findButton('下一'))
-    });
-  });
-})();
-
+      const getImgList = async () => {
+        const imgList = main.querySelectorAll('.imageContainer > img').map(e => e.getAttribute('data-src') ?? '');
+        if (imgList.includes('')) {
+          await main.sleep(100);
+          return getImgList();
+        }
+        return imgList;
+      };
+      const handlePrevNext = text => async () => {
+        // 点击唤出底栏
+        const id = window.setInterval(() => {
+          main.querySelector('.ComicImageContainer')?.click();
+        }, 500);
+        await main.waitDom('.ComicImage__bottom-menu-center');
+        window.clearInterval(id);
+        const buttonDom = main.querySelectorAll('.ComicImage__bottom-menu-center button:not([disabled])').find(e => e.innerText.includes(text));
+        return main.querySelectorClick(() => buttonDom);
+      };
+      const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
+      options = {
+        name: 'komiic',
+        wait: () => !!main.querySelector('.imageContainer > img'),
+        getImgList,
+        SPA: {
+          isMangaPage: () => urlMatchRe.test(window.location.href),
+          getOnPrev: handlePrevNext('上一'),
+          getOnNext: handlePrevNext('下一')
+        }
+      };
       break;
     }
 
@@ -6347,272 +6345,195 @@ const main = require('main');
   case 'weloma.art':
   case 'welovemanga.one':
     {
+      const imgSelector = '#listImgs img.chapter-img.chapter-img:not(.ls-is-cached)';
+      const isLoadingGifRe = /loading.*\.gif/;
+      const getImgList = async () => {
+        const imgList = main.querySelectorAll(imgSelector).map(e => e.getAttribute('data-src')?.trim() ?? e.getAttribute('data-original')?.trim() ?? e.src);
+        if (imgList.every(url => !isLoadingGifRe.test(url))) return imgList;
+        await main.sleep(500);
+        return getImgList();
+      };
+      options = {
+        name: 'welovemanga',
+        exit: () => !main.querySelector('#listImgs'),
+        getImgList,
+        onNext: main.querySelectorClick('.rd_top-right.next:not(.disabled)'),
+        onPrev: main.querySelectorClick('.rd_top-left.prev:not(.disabled)')
+      };
+      break;
+    }
+}
+if (options) main.universalInit(options);else {
 const main = require('main');
 
 (async () => {
-  const imgList = main.querySelectorAll('img.chapter-img').map(e => e.getAttribute('data-src') ?? e.getAttribute('data-original') ?? e.src);
-  // 只在漫画页内运行
-  if (!imgList.length) return;
-  const {
-    setManga,
-    init
-  } = await main.useInit('welovemanga');
-  setManga({
-    onNext: main.querySelectorClick('.rd_top-right.next:not(.disabled)'),
-    onPrev: main.querySelectorClick('.rd_top-left.prev:not(.disabled)')
-  });
-  init(() => imgList);
-})();
-
-      break;
-    }
-  default:
-    {
-const main = require('main');
-const store = require('solid-js/store');
-const solidJs = require('solid-js');
-
-/**
- * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
- *
- * 不会修改参数对象，返回的是新对象
- */
-const difference = (a, b) => {
-  const res = {};
-  const keys = Object.keys(a);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
-    if (typeof a[key] === 'object') {
-      const _res = difference(a[key], b[key]);
-      if (Object.keys(_res).length) res[key] = _res;
-    } else if (a[key] !== b?.[key]) res[key] = a[key];
-  }
-  return res;
-};
-
-const defaultOption = {
-  dir: 'rtl',
-  scrollbar: {
-    enabled: true,
-    autoHidden: false,
-    showProgress: true
-  },
-  onePageMode: false,
-  scrollMode: false,
-  clickPage: {
-    enabled: 'ontouchstart' in document.documentElement,
-    overturn: false
-  },
-  firstPageFill: true,
-  disableZoom: false,
-  darkMode: false,
-  swapTurnPage: false,
-  flipToNext: true,
-  alwaysLoadAllImg: false,
-  scrollModeImgScale: 1,
-  showComment: true,
-  translation: {
-    server: '禁用',
-    localUrl: undefined,
-    forceRetry: false,
-    options: {
-      size: 'M',
-      detector: 'default',
-      translator: 'gpt3.5',
-      direction: 'auto',
-      targetLanguage: 'CHS'
-    }
-  }
-};
-({
-  option: JSON.parse(JSON.stringify(defaultOption))
-});
-
-const getHotKeys = async () => ({
-  进入阅读模式: ['v'],
-  ...(await GM.getValue('HotKeys', {}))
-});
-
-/**
- * 对修改站点配置的相关方法的封装
- * @param name 站点名
- * @param defaultOptions 默认配置
- */
-const useSiteOptions = async (name, defaultOptions = {}) => {
-  const _defaultOptions = {
-    autoShow: true,
-    hiddenFAB: false,
-    ...defaultOptions,
-    option: {
-      ...defaultOption,
-      ...defaultOptions?.option
-    },
-    hotKeys: await getHotKeys()
-  };
-  const rawValue = await GM.getValue(name);
-  const options = store.createMutable({
-    ..._defaultOptions,
-    ...rawValue
-  });
-  const onHotKeysChange = async newValue => {
-    GM.setValue('HotKeys', newValue);
-    // eslint-disable-next-line solid/reactivity
-    options.hotKeys = await getHotKeys();
-  };
-
-  /** 进入阅读模式的快捷键 */
-  const readModeHotKeys = solidJs.createRoot(() => {
-    const readModeHotKeysMemo = solidJs.createMemo(() => new Set(Object.assign([], options.hotKeys['进入阅读模式'])));
-    return readModeHotKeysMemo;
-  });
-  return {
-    options,
-    /** 该站点是否有储存配置 */
-    isRecorded: rawValue !== undefined,
-    setOptions: async newValue => {
-      Object.assign(options, newValue);
-
-      // 只保存和默认设置不同的部分
-      return GM.setValue(name, difference(options, _defaultOptions));
-    },
-    onHotKeysChange,
-    readModeHotKeys
-  };
-};
-
-setTimeout(async () => {
-  const {
-    options,
-    setOptions,
-    isRecorded,
-    readModeHotKeys,
-    onHotKeysChange
-  } = await useSiteOptions(window.location.hostname, {
-    autoShow: false
-  });
-
-  /** 图片列表 */
-  let imgList = [];
-  /** 是否正在后台不断检查图片 */
-  let running = 0;
-  let setManga;
-  let setFab;
-  const init = async () => {
-    if (setManga !== undefined) return;
-    [setManga] = await main.useManga({
-      imgList,
-      show: options.autoShow,
-      onOptionChange: option => setOptions({
-        ...options,
-        option
-      }),
-      hotKeys: options.hotKeys,
-      onHotKeysChange
+  /** 执行脚本操作。如果中途中断，将返回 true */
+  const start = async () => {
+    const {
+      setManga,
+      setFab,
+      init,
+      options,
+      setOptions
+    } = await main.useInit(window.location.hostname, {
+      记住当前站点: true,
+      selector: ''
     });
-    setFab = await main.useFab({
-      tip: '阅读模式',
-      onClick: () => setManga({
-        show: true
-      }),
-      speedDial: main.useSpeedDial(options, setOptions)
-    });
-    setFab();
-    window.addEventListener('keydown', e => {
-      if (e.target.tagName === 'INPUT') return;
-      const code = main.getKeyboardCode(e);
-      if (!readModeHotKeys().has(code)) return;
-      e.stopPropagation();
-      e.preventDefault();
-      setManga({
-        show: true
+
+    // 通过 options 来迂回的实现禁止记住当前站点
+    if (!options['记住当前站点']) {
+      await GM.deleteValue(window.location.hostname);
+      return true;
+    }
+
+    // 为避免卡死，提供一个删除 selector 的菜单项
+    const menuId = await GM.registerMenuCommand('使用简易阅读模式', () => {
+      setOptions({
+        selector: ''
       });
     });
-  };
 
-  /** 已经被触发过懒加载的图片 */
-  const triggedImgList = new Set();
-  /** 触发懒加载 */
-  const triggerLazyLoad = () => {
-    const targetImgList = [...document.getElementsByTagName('img')]
-    // 过滤掉已经被触发过懒加载的图片
-    .filter(e => !triggedImgList.has(e))
+    // 等待 selector 匹配到目标后再继续执行，避免在漫画页外的其他地方运行
+    await main.wait(() => !options.selector || main.querySelector(options.selector));
+    await GM.unregisterMenuCommand(menuId);
+
+    /** 获取元素仅记录了层级结构关系的 selector */
+    const getEleSelector = ele => {
+      const parents = [ele.nodeName];
+      const root = ele.getRootNode();
+      let e = ele;
+      while (e.parentNode && e.parentNode !== root) {
+        e = e.parentNode;
+        parents.push(e.nodeName);
+      }
+      return parents.reverse().join('>');
+    };
+
+    /** 记录传入的图片元素中最常见的那个 selector */
+    const saveImgEleSelector = imgEleList => {
+      if (imgEleList.length < 7) return;
+      const selector = main.getMostItem(imgEleList.map(getEleSelector));
+      if (selector !== options.selector) setOptions({
+        selector
+      });
+    };
+
+    /** 用于判断是否是图片 url 的正则 */
+    const isImgUrlRe = /^(((https?|ftp|file):)?\/)?\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#%=~_|]$/;
+
+    /** 检查元素属性，将格式为图片 url 的属性值作为 src */
+    const tryCorrectUrl = e => {
+      e.getAttributeNames().some(key => {
+        // 跳过白名单
+        switch (key) {
+          case 'src':
+          case 'alt':
+          case 'class':
+          case 'style':
+          case 'id':
+          case 'title':
+          case 'onload':
+          case 'onerror':
+            return false;
+        }
+        const val = e.getAttribute(key).trim();
+        if (!isImgUrlRe.test(val)) return false;
+        e.setAttribute('src', val);
+        return true;
+      });
+    };
+    const imgBlackList = [
+    // 东方永夜机的预加载图片
+    '#pagetual-preload',
+    // 177picyy 上会在图片下加一个 noscript
+    // 本来只是图片元素的 innerHTML，但经过东方永夜机加载后就会变成真的图片元素，导致重复
+    'noscript'];
+    const getAllImg = () => main.querySelectorAll(`:not(${imgBlackList.join(',')}) > img`)
     // 根据位置从小到大排序
     .sort((a, b) => a.offsetTop - b.offsetTop);
 
-    /** 上次触发的图片 */
-    let lastTriggedImg;
-    targetImgList.forEach(e => {
-      triggedImgList.add(e);
+    /** 已经被触发过懒加载的图片 */
+    const triggedImgList = new Set();
 
-      // 过滤掉位置相近，在触发上一张图片时已经顺带被触发了的
-      if (e.offsetTop >= (lastTriggedImg?.offsetTop ?? 0) + window.innerHeight) return;
-
-      // 通过瞬间滚动到图片位置、触发滚动事件、再瞬间滚回来，来触发图片的懒加载
-      const nowScroll = window.scrollY;
+    /** 触发懒加载 */
+    const triggerLazyLoad = () => {
+      let nowScroll = window.scrollY;
+      // 滚到底部再滚回来，触发可能存在的自动翻页脚本
       window.scroll({
-        top: e.offsetTop,
+        top: document.body.scrollHeight,
         behavior: 'auto'
       });
-      e.dispatchEvent(new Event('scroll', {
+      document.body.dispatchEvent(new Event('scroll', {
         bubbles: true
       }));
       window.scroll({
         top: nowScroll,
         behavior: 'auto'
       });
-      lastTriggedImg = e;
-    });
-  };
 
-  /**
-   * 检查搜索页面上符合标准的图片
-   * @returns 返回是否成功找到图片
-   */
-  const checkFindImg = () => {
-    triggerLazyLoad();
-    const newImgList = [...document.getElementsByTagName('img')].filter(e => e.naturalHeight > 500 && e.naturalWidth > 500).map(e => e.src);
-    if (newImgList.length === 0) {
-      if (!options.autoShow) {
-        clearInterval(running);
-        main.toast.error('没有找到图片');
+      // 过滤掉已经被触发过懒加载的图片
+      const targetImgList = getAllImg().filter(e => !triggedImgList.has(e));
+
+      /** 上次触发的图片 */
+      let lastTriggedImg;
+      for (let i = 0; i < targetImgList.length; i++) {
+        const e = targetImgList[i];
+        triggedImgList.add(e);
+        tryCorrectUrl(e);
+
+        // 过滤掉位置相近，在触发上一张图片时已经顺带被触发了的
+        if (e.offsetTop >= (lastTriggedImg?.offsetTop ?? 0) + window.innerHeight) return;
+
+        // 通过滚动到图片位置、触发滚动事件、再滚回来，来触发图片的懒加载
+        // 因为速度很快所以应该是无感的
+        nowScroll = window.scrollY;
+        window.scroll({
+          top: e.offsetTop,
+          behavior: 'auto'
+        });
+        e.dispatchEvent(new Event('scroll', {
+          bubbles: true
+        }));
+        window.scroll({
+          top: nowScroll,
+          behavior: 'auto'
+        });
+        lastTriggedImg = e;
       }
-      return false;
-    }
+    };
+    const getImgList = () => {
+      triggerLazyLoad();
+      const imgEleList = getAllImg().filter(e => e.naturalHeight > 500 && e.naturalWidth > 500);
+      saveImgEleSelector(imgEleList);
+      return imgEleList.map(e => e.src);
+    };
+    const {
+      loadImgList
+    } = init(getImgList);
 
-    // 在发现新图片后重新渲染
-    if (!main.isEqualArray(imgList, newImgList)) {
-      imgList = newImgList;
-      setManga({
-        imgList
-      });
-      setFab({
-        progress: 1
-      });
-    }
-    return true;
+    /** 重新检查 imgList，并在发生变化时更新相关组件 */
+    const checkImgList = () => {
+      const newImgList = getImgList();
+      if (newImgList.length === 0) {
+        setFab({
+          show: false
+        });
+        setManga({
+          show: false
+        });
+        return;
+      }
+      return loadImgList(newImgList);
+    };
+
+    // 为保证兼容，只能简单粗暴的不断检查
+    main.loop(checkImgList, 1000);
   };
-  await GM.registerMenuCommand('进入漫画阅读模式', async () => {
-    await init();
-    if (!running) running = window.setInterval(checkFindImg, 2000);
-    if (!checkFindImg()) return;
-    setManga({
-      show: true
+  if ((await GM.getValue(window.location.hostname)) !== undefined) start();else {
+    const menuId = await GM.registerMenuCommand('使用简易阅读模式', () => {
+      if (!start()) GM.unregisterMenuCommand(menuId);
     });
-
-    // 自动启用自动加载功能
-    await setOptions({
-      ...options,
-      autoShow: true
-    });
-    await GM.registerMenuCommand('停止在此站点自动运行脚本', () => GM.deleteValue(window.location.hostname));
-  });
-  if (isRecorded) {
-    await init();
-    // 为了保证兼容，只能简单粗暴的不断检查网页的图片来更新数据
-    running = window.setInterval(checkFindImg, 2000);
-    await GM.registerMenuCommand('停止在此站点自动运行脚本', () => GM.deleteValue(window.location.hostname));
   }
-});
+})();
 
-    }
 }
