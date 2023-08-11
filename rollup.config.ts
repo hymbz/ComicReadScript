@@ -24,7 +24,7 @@ const DEV_PORT = 2405;
 
 const isDevMode = process.env.NODE_ENV === 'development';
 
-const { meta, metaHeader } = getMetaData(isDevMode);
+const { meta, createMetaHeader } = getMetaData(isDevMode);
 
 export const buildOptions = (
   fileName: string,
@@ -82,59 +82,70 @@ export const buildOptions = (
           generateBundle: (_, bundle) => {
             Reflect.deleteProperty(bundle, 'style.css');
           },
-          renderChunk(code) {
-            let newCode = code;
+          renderChunk(rawCode) {
+            let code = rawCode;
             // 将 inject 函数调用替换为 dist 文件夹下的指定文件内容
-            newCode = newCode.replaceAll(
-              /[ ]*inject[(<]'(.+)'\);/g,
-              (_, name) => {
-                switch (name) {
-                  case 'main':
-                    return `\`\n${fs
-                      .readFileSync(resolve(__dirname, 'dist/cache/main.js'))
-                      .toString()
-                      .replaceAll('\\', '\\\\')
-                      .replaceAll('`', '\\`')
-                      .replaceAll('${', '\\${')}\``;
+            code = code.replaceAll(/[ ]*inject[(<]'(.+)'\);/g, (_, name) => {
+              switch (name) {
+                case 'main':
+                  return `\`\n${fs
+                    .readFileSync(resolve(__dirname, 'dist/cache/main.js'))
+                    .toString()
+                    .replaceAll('\\', '\\\\')
+                    .replaceAll('`', '\\`')
+                    .replaceAll('${', '\\${')}\``;
 
-                  case 'LatestChange':
-                    return `\`\n${fs
-                      .readFileSync(resolve(__dirname, `docs/LatestChange.md`))
-                      .toString()}\`;`;
+                case 'LatestChange':
+                  return `\`\n${fs
+                    .readFileSync(resolve(__dirname, `docs/LatestChange.md`))
+                    .toString()}\`;`;
 
-                  default:
-                    return fs
-                      .readFileSync(resolve(__dirname, `dist/cache/${name}.js`))
-                      .toString()
-                      .replaceAll('require$1', 'require');
-                }
-              },
-            );
+                default:
+                  return fs
+                    .readFileSync(resolve(__dirname, `dist/cache/${name}.js`))
+                    .toString()
+                    .replaceAll('require$1', 'require');
+              }
+            });
 
             // 删除 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" }); 语句
-            newCode = newCode.replace(/Object\.defineProperty.+?\n\n/, '');
+            code = code.replace(/Object\.defineProperty.+?\n\n/, '');
             // 删除 exports.require 语句
-            newCode = newCode.replace(/\n\nexports\.require.+;/, '');
+            code = code.replace(/\n\nexports\.require.+;/, '');
             // 删除单独的 require 语句和注释
-            newCode = newCode.replaceAll(
+            code = code.replaceAll(
               /\nrequire.+;|\n\/\*\*.+?\*\/\n(?=\n)|\n\/\/ .+?\n(?=\n)/g,
               '',
             );
 
-            if (fileName === 'index') {
-              updateReadme();
-              if (isDevMode)
-                newCode = [
-                  `console.time('脚本启动消耗时间')`,
-                  newCode,
-                  `console.timeEnd('脚本启动消耗时间')`,
-                ].join('\n');
+            switch (fileName) {
+              case 'index': {
+                updateReadme();
+                if (isDevMode)
+                  code = [
+                    `console.time('脚本启动消耗时间')`,
+                    code,
+                    `console.timeEnd('脚本启动消耗时间')`,
+                  ].join('\n');
+
+                code = createMetaHeader(meta) + code;
+                break;
+              }
+
+              case 'dev': {
+                code =
+                  createMetaHeader({
+                    ...meta,
+                    name: `${meta.name}Test`,
+                    namespace: `${meta.namespace}Test`,
+                    updateURL: undefined,
+                    downloadURL: undefined,
+                  }) + code;
+                break;
+              }
             }
 
-            // 为脚本加上油猴的注释
-            if (isUserScript) newCode = metaHeader + newCode;
-
-            return newCode;
+            return code;
           },
         },
       ],

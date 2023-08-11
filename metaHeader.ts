@@ -70,11 +70,9 @@ export const updateReadme = () => {
 
 /** 脚本头部注释 */
 export const getMetaData = (isDevMode: boolean) => {
-  const scriptName = `${pkg.name}${isDevMode ? 'Test' : ''}`;
-
   const meta = {
-    name: scriptName,
-    namespace: scriptName,
+    name: pkg.name,
+    namespace: pkg.name,
     version: pkg.version,
     description: `${pkg.description}${getSupportSiteList().join('、')}`,
     author: pkg.author,
@@ -121,27 +119,35 @@ export const getMetaData = (isDevMode: boolean) => {
   };
 
   const keyLength = Math.max(...Object.keys(meta).map((key) => key.length)) + 1;
-  const metaStr = Object.entries(meta)
-    .map(([key, val]) => {
-      switch (typeof val) {
-        case 'boolean':
-          return `// @${key}`;
-        case 'object':
-          return Array.isArray(val)
-            ? val
-                .map((v) => `// @${key.padEnd(keyLength, ' ')} ${v}`)
-                .join('\n')
-            : Object.entries(val)
-                .map(([k, v]) => `// @${key.padEnd(keyLength, ' ')} ${k} ${v}`)
-                .join('\n');
-        default:
-          return `// @${key.padEnd(keyLength, ' ')} ${val}`;
-      }
-    })
-    .join('\n');
+
+  const createMetaHeader = (metaData: Record<string, any>) => {
+    const metaText = Object.entries(metaData)
+      .filter(([, val]) => val)
+      .map(([key, val]) => {
+        switch (typeof val) {
+          case 'boolean':
+            return `// @${key}`;
+          case 'object':
+            return Array.isArray(val)
+              ? val
+                  .map((v) => `// @${key.padEnd(keyLength, ' ')} ${v}`)
+                  .join('\n')
+              : Object.entries(val)
+                  .map(
+                    ([k, v]) => `// @${key.padEnd(keyLength, ' ')} ${k} ${v}`,
+                  )
+                  .join('\n');
+          default:
+            return `// @${key.padEnd(keyLength, ' ')} ${val}`;
+        }
+      })
+      .join('\n');
+
+    return `// ==UserScript==\n${metaText}\n// ==/UserScript==\n\n`;
+  };
 
   return {
     meta,
-    metaHeader: `// ==UserScript==\n${metaStr}\n// ==/UserScript==\n\n`,
+    createMetaHeader,
   };
 };
