@@ -60,6 +60,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
           <style type="text/css">{MangaStyle}</style>
         </>
       ));
+      dom.style.setProperty('z-index', '2147483647', 'important');
     }
 
     setProps(typeof recipe === 'function' ? produce(recipe) : recipe);

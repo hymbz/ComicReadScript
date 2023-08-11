@@ -47,7 +47,7 @@ export const useFab = async (initProps?: FabProps) => {
     recipe?: ((draftProps: FabProps) => void) | Partial<FabProps>,
   ) => {
     if (!mounted) {
-      mountComponents('fab', () => (
+      const dom = mountComponents('fab', () => (
         <>
           <Fab {...props}>
             {props.children ?? <Dynamic component={FabIcon()} />}
@@ -56,6 +56,7 @@ export const useFab = async (initProps?: FabProps) => {
           <style type="text/css">{FabStyle}</style>
         </>
       ));
+      dom.style.setProperty('z-index', '2147483646', 'important');
       mounted = true;
     }
     if (recipe)

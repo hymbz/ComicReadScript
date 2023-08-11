@@ -6,7 +6,6 @@ export const mountComponents = (id: string, fc: () => JSX.Element) => {
   const dom = document.createElement('div');
   dom.id = id;
   dom.style.setProperty('display', 'unset', 'important');
-  dom.style.setProperty('z-index', '9999999999', 'important');
   document.body.appendChild(dom);
   const shadowDom = dom.attachShadow({ mode: 'open' });
   render(fc, shadowDom);

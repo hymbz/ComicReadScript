@@ -202,7 +202,7 @@ switch (window.location.hostname) {
   case 'www.mhgui.com':
   case 'tw.manhuagui.com': {
     // 让切换章节的提示可以显示在漫画页上
-    GM.addStyle(`#smh-msg-box { z-index: 9999999999 !important }`);
+    GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
 
     options = {
       name: 'manhuagui',
