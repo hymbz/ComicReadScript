@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.8.0
+// @version      6.8.1
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -60,7 +60,7 @@ const gmApi = {
   unsafeWindow
 };
 const gmApiList = Object.keys(gmApi);
-unsafeWindow.crsLib = {
+const crsLib = {
   // 有些 cjs 模块会检查这个，所以在这里声明下
   process: {
     env: {
@@ -69,6 +69,7 @@ unsafeWindow.crsLib = {
   },
   ...gmApi
 };
+const tempName = Math.random().toString(36).slice(2);
 
 /**
  * 通过 Resource 导入外部模块
@@ -318,7 +319,6 @@ const mountComponents = (id, fc) => {
   const dom = document.createElement('div');
   dom.id = id;
   dom.style.setProperty('display', 'unset', 'important');
-  dom.style.setProperty('z-index', '9999999999', 'important');
   document.body.appendChild(dom);
   const shadowDom = dom.attachShadow({
     mode: 'open'
@@ -329,8 +329,8 @@ const mountComponents = (id, fc) => {
 
 var e=[],t=[];function n(n,r){if(n&&"undefined"!=typeof document){var a,s=!0===r.prepend?"prepend":"append",d=!0===r.singleTag,i="string"==typeof r.container?document.querySelector(r.container):document.getElementsByTagName("head")[0];if(d){var u=e.indexOf(i);-1===u&&(u=e.push(i)-1,t[u]={}),a=t[u]&&t[u][s]?t[u][s]:t[u][s]=c();}else a=c();65279===n.charCodeAt(0)&&(n=n.substring(1)),a.styleSheet?a.styleSheet.cssText+=n:a.appendChild(document.createTextNode(n));}function c(){var e=document.createElement("style");if(e.setAttribute("type","text/css"),r.attributes)for(var t=Object.keys(r.attributes),n=0;n<t.length;n++)e.setAttribute(t[n],r.attributes[t[n]]);var a="prepend"===s?"afterbegin":"beforeend";return i.insertAdjacentElement(a,e),e}}
 
-var css$3 = ".index_module_root__e3ca723c{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:9999999999}.index_module_item__e3ca723c{align-items:center;animation:index_module_bounceInRight__e3ca723c .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__e3ca723c>svg{color:var(--theme);margin-right:.5em;width:1em}.index_module_item__e3ca723c[data-exit]{animation:index_module_bounceOutRight__e3ca723c .5s 1}.index_module_schedule__e3ca723c{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__e3ca723c[data-schedule] .index_module_schedule__e3ca723c{transition:transform .1s}.index_module_item__e3ca723c:not([data-schedule]) .index_module_schedule__e3ca723c{animation:index_module_schedule__e3ca723c linear 1 forwards}:is(.index_module_item__e3ca723c:hover,.index_module_item__e3ca723c[data-schedule],.index_module_root__e3ca723c[data-paused]) .index_module_schedule__e3ca723c{animation-play-state:paused}.index_module_msg__e3ca723c{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__e3ca723c h2,.index_module_msg__e3ca723c h3{margin:.3em 0 .7em}.index_module_msg__e3ca723c ul{margin:0;text-align:left}@keyframes index_module_schedule__e3ca723c{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__e3ca723c{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__e3ca723c{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__e3ca723c","item":"index_module_item__e3ca723c","bounceInRight":"index_module_bounceInRight__e3ca723c","bounceOutRight":"index_module_bounceOutRight__e3ca723c","schedule":"index_module_schedule__e3ca723c","msg":"index_module_msg__e3ca723c"};
+var css$3 = ".index_module_root__a46f90ae{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__a46f90ae{align-items:center;animation:index_module_bounceInRight__a46f90ae .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__a46f90ae>svg{color:var(--theme);margin-right:.5em;width:1em}.index_module_item__a46f90ae[data-exit]{animation:index_module_bounceOutRight__a46f90ae .5s 1}.index_module_schedule__a46f90ae{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__a46f90ae[data-schedule] .index_module_schedule__a46f90ae{transition:transform .1s}.index_module_item__a46f90ae:not([data-schedule]) .index_module_schedule__a46f90ae{animation:index_module_schedule__a46f90ae linear 1 forwards}:is(.index_module_item__a46f90ae:hover,.index_module_item__a46f90ae[data-schedule],.index_module_root__a46f90ae[data-paused]) .index_module_schedule__a46f90ae{animation-play-state:paused}.index_module_msg__a46f90ae{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__a46f90ae h2,.index_module_msg__a46f90ae h3{margin:.3em 0 .7em}.index_module_msg__a46f90ae ul{margin:0;text-align:left}@keyframes index_module_schedule__a46f90ae{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__a46f90ae{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__a46f90ae{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2$3 = {"root":"index_module_root__a46f90ae","item":"index_module_item__a46f90ae","bounceInRight":"index_module_bounceInRight__a46f90ae","bounceOutRight":"index_module_bounceOutRight__a46f90ae","schedule":"index_module_schedule__a46f90ae","msg":"index_module_msg__a46f90ae"};
 n(css$3,{});
 
 const [_state$1, _setState$1] = store$2.createStore({
@@ -377,7 +377,7 @@ const MdInfo = ((props = {}) => (() => {
   return _el$;
 })());
 
-const toast$1 = (msg, options) => {
+const toast$2 = (msg, options) => {
   if (!msg) return;
   const id = options?.id ?? (typeof msg === 'string' ? msg : creatId());
   setState$1(state => {
@@ -399,27 +399,27 @@ const toast$1 = (msg, options) => {
     state.list.push(id);
   });
 };
-toast$1.dismiss = id => {
+toast$2.dismiss = id => {
   if (!Reflect.has(store$1.map, id)) return;
   setState$1(state => {
     state.map[id].exit = true;
   });
 };
-toast$1.set = (id, options) => {
+toast$2.set = (id, options) => {
   if (!Reflect.has(store$1.map, id)) return;
   setState$1(state => {
     Object.assign(state.map[id], options);
   });
 };
-toast$1.success = (msg, options) => toast$1(msg, {
+toast$2.success = (msg, options) => toast$2(msg, {
   ...options,
   type: 'success'
 });
-toast$1.warn = (msg, options) => toast$1(msg, {
+toast$2.warn = (msg, options) => toast$2(msg, {
   ...options,
   type: 'warn'
 });
-toast$1.error = (msg, options) => toast$1(msg, {
+toast$2.error = (msg, options) => toast$2(msg, {
   ...options,
   type: 'error'
 });
@@ -460,7 +460,7 @@ const ToastItem = props => {
   const dismiss = e => {
     e.stopPropagation();
     if (showSchedule() && 'animationName' in e) return;
-    toast$1.dismiss(props.id);
+    toast$2.dismiss(props.id);
   };
 
   // 在退出动画结束后才真的删除
@@ -583,7 +583,7 @@ const init = () => {
     return _el$;
   })()]);
 };
-const toast = new Proxy(toast$1, {
+const toast$1 = new Proxy(toast$2, {
   get(target, propKey) {
     init();
     return target[propKey];
@@ -622,7 +622,7 @@ const request$1 = async (url, details, errorNum = 0) => {
     return res;
   } catch (error) {
     if (errorNum >= 3) {
-      if (errorText && !details?.noTip) toast.error(errorText);
+      if (errorText && !details?.noTip) toast$1.error(errorText);
       throw new Error(errorText);
     }
     console.error(errorText, error);
@@ -2481,8 +2481,8 @@ const setMessage = (i, msg) => {
 };
 const isBlobUrlRe = /^blob:/;
 const request = (url, details) => new Promise((resolve, reject) => {
-  if (!window.crsLib) throw new Error('未安装 ComicRead 插件');
-  window.crsLib.GM_xmlhttpRequest({
+  if (typeof GM_xmlhttpRequest === 'undefined') throw new Error('未安装 ComicRead 插件');
+  GM_xmlhttpRequest({
     method: 'GET',
     url,
     headers: {
@@ -2680,7 +2680,10 @@ const cotransTranslators = createOptions(['google', 'youdao', 'baidu', 'deepl', 
 /** 翻译指定图片 */
 const translationImage = async i => {
   try {
-    if (!window.crsLib) throw new Error('未安装 ComicRead 插件');
+    if (typeof GM_xmlhttpRequest === 'undefined') {
+      toast?.error('未安装 ComicRead 插件，无法翻译');
+      throw new Error('未安装 ComicRead 插件，无法翻译');
+    }
     const img = store.imgList[i];
     if (!img?.src) return;
     if (img.translationType !== 'wait') return;
@@ -3940,6 +3943,7 @@ const useManga = async initProps => {
         web.insert(_el$2, MangaStyle);
         return _el$2;
       })()]);
+      dom.style.setProperty('z-index', '2147483647', 'important');
     }
     setProps(typeof recipe === 'function' ? store$2.produce(recipe) : recipe);
     if (props.imgList.length && props.show) {
@@ -3973,7 +3977,7 @@ const useManga = async initProps => {
           });
           fileData[fileName] = new Uint8Array(res.response);
         } catch (error) {
-          toast.error(\`\${fileName} 下载失败\`);
+          toast$1.error(\`\${fileName} 下载失败\`);
           fileData[\`\${index} - 下载失败.\${fileExt}\`] = new Uint8Array();
         }
       }
@@ -3984,7 +3988,7 @@ const useManga = async initProps => {
       });
       saveAs(new Blob([zipped]), \`\${document.title}.zip\`);
       setTip('下载完成');
-      toast.success('下载完成');
+      toast$1.success('下载完成');
     };
     return web.createComponent(IconButton, {
       get tip() {
@@ -4210,7 +4214,7 @@ const useFab = async initProps => {
   };
   const set = recipe => {
     if (!mounted) {
-      mountComponents('fab', () => [web.createComponent(Fab, web.mergeProps(props, {
+      const dom = mountComponents('fab', () => [web.createComponent(Fab, web.mergeProps(props, {
         get children() {
           return props.children ?? web.createComponent(web.Dynamic, {
             get component() {
@@ -4227,6 +4231,7 @@ const useFab = async initProps => {
         web.insert(_el$2, FabStyle);
         return _el$2;
       })()]);
+      dom.style.setProperty('z-index', '2147483646', 'important');
       mounted = true;
     }
     if (recipe) setProps(typeof recipe === 'function' ? store$2.produce(recipe) : recipe);
@@ -4311,6 +4316,10 @@ const useInit = async (name, defaultOptions = {}) => {
 
   /** 处理 Manga 组件的 onLoading 回调，将图片加载状态联动到 Fab 上 */
   const onLoading = list => {
+    if (list.length === 0) return setFab({
+      progress: undefined,
+      tip: '阅读模式'
+    });
     const loadNum = list.filter(image => image.loadType === 'loaded').length;
 
     /** 图片加载进度 */
@@ -4344,20 +4353,14 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.8.0](https://github.com/hymbz/ComicReadScript/compare/v6.7.1...v6.8.0) (2023-08-11)
-
-
-### Features
-
-* :sparkles: 实现简易阅读模式下和其他自动翻页、聚图脚本的联动 ([7a7b96b](https://github.com/hymbz/ComicReadScript/commit/7a7b96b73100ced876d0a941a322999e104ae4db))
-* :sparkles: 为简易阅读模式增加识别漫画页功能，避免在其他页面运行 ([0e4b64e](https://github.com/hymbz/ComicReadScript/commit/0e4b64e8e262c8e17154af34f580a13d62b03ce9))
+## [6.8.1](https://github.com/hymbz/ComicReadScript/compare/v6.8.0...v6.8.1) (2023-08-11)
 
 
 ### Bug Fixes
 
-* :bug: 修复快捷键配置未能正确储存的 bug ([aa49a05](https://github.com/hymbz/ComicReadScript/commit/aa49a05634a47b50825286737bb770e9eb1859bf))
+* :bug: 修复悬浮按钮显示异常的 bug ([d9a2405](https://github.com/hymbz/ComicReadScript/commit/d9a2405d241d2a68f1177bac9f2b66bec8900e40))
 \`;
-    toast(() => [(() => {
+    toast$1(() => [(() => {
       const _el$ = _tmpl$();
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
@@ -4401,7 +4404,7 @@ const useInit = async (name, defaultOptions = {}) => {
     // 防止在更新版本后一次性打开多个页面，不得不一个一个关过去
     const listenerId = await GM.addValueChangeListener('Version', async (_, __, newVersion) => {
       if (newVersion !== GM.info.script.version) return;
-      toast.dismiss('Version Tip');
+      toast$1.dismiss('Version Tip');
       await GM.removeValueChangeListener(listenerId);
     });
   }
@@ -4462,7 +4465,7 @@ const useInit = async (name, defaultOptions = {}) => {
           });
         } catch (e) {
           console.error(e);
-          if (show) toast.error(e.message);
+          if (show) toast$1.error(e.message);
           setFab({
             progress: undefined
           });
@@ -4473,7 +4476,7 @@ const useInit = async (name, defaultOptions = {}) => {
 
       /** 进入阅读模式 */
       const showComic = async () => {
-        if (loading) return toast.warn('加载图片中，请稍候', {
+        if (loading) return toast$1.warn('加载图片中，请稍候', {
           duration: 1500
         });
         if (!mangaProps.imgList.length) return loadImgList(undefined, true);
@@ -4609,7 +4612,7 @@ exports.request = request$1;
 exports.saveAs = saveAs;
 exports.scrollIntoView = scrollIntoView;
 exports.sleep = sleep;
-exports.toast = toast;
+exports.toast = toast$1;
 exports.universalInit = universalInit;
 exports.useCache = useCache;
 exports.useFab = useFab;
@@ -4626,31 +4629,33 @@ exports.waitImgLoad = waitImgLoad;
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
   // 将模块导出变量放到 crsLib 对象里，防止污染全局作用域和网站自身的模块产生冲突
   const runCode = `
-      window.crsLib['${name}'] = {};
+      window['${tempName}']['${name}'] = {};
       ${''}
       (function (process, require, exports, module, ${gmApiList.join(', ')}) {
         ${code}
       })(
-        window.crsLib.process,
-        window.crsLib.require,
-        window.crsLib['${name}'],
+        window['${tempName}'].process,
+        window['${tempName}'].require,
+        window['${tempName}']['${name}'],
         {
           set exports(value) {
-            window.crsLib['${name}'] = value;
+            window['${tempName}']['${name}'] = value;
           },
           get exports() {
-            return window.crsLib['${name}'];
+            return window['${tempName}']['${name}'];
           },
         },
-        ${gmApiList.map(apiName => `window.crsLib.${apiName}`).join(', ')}
+        ${gmApiList.map(apiName => `window['${tempName}'].${apiName}`).join(', ')}
       );
       ${''}
     `;
-
+  Reflect.deleteProperty(unsafeWindow, tempName);
+  unsafeWindow[tempName] = crsLib;
   // 因为在一些网站比如推特会触发CSP，所以不能使用 eval 来执行
   GM_addElement('script', {
     textContent: runCode
   });
+  Reflect.deleteProperty(unsafeWindow, tempName);
 };
 /**
  * 创建一个外部模块的 Proxy，等到读取对象属性时才加载模块
@@ -4667,26 +4672,26 @@ const require = name => {
     get(_, prop) {
       if (prop === '__esModule') return __esModule;
       if (prop === 'default') return selfDefault;
-      if (!unsafeWindow.crsLib[name]) selfImportSync(name);
-      const module = unsafeWindow.crsLib[name];
+      if (!crsLib[name]) selfImportSync(name);
+      const module = crsLib[name];
       return module.default?.[prop] ?? module?.[prop];
     },
     apply(_, __, args) {
-      if (!unsafeWindow.crsLib[name]) selfImportSync(name);
-      const module = unsafeWindow.crsLib[name];
+      if (!crsLib[name]) selfImportSync(name);
+      const module = crsLib[name];
       const ModuleFunc = typeof module.default === 'function' ? module.default : module;
       return ModuleFunc(...args);
     },
     construct(_, args) {
-      if (!unsafeWindow.crsLib[name]) selfImportSync(name);
-      const module = unsafeWindow.crsLib[name];
+      if (!crsLib[name]) selfImportSync(name);
+      const module = crsLib[name];
       const ModuleFunc = typeof module.default === 'function' ? module.default : module;
       return new ModuleFunc(...args);
     }
   });
   return selfDefault;
 };
-unsafeWindow.crsLib.require = require;
+crsLib.require = require;
 
 
 /** 站点配置 */
@@ -6167,7 +6172,7 @@ const main = require('main');
   case 'tw.manhuagui.com':
     {
       // 让切换章节的提示可以显示在漫画页上
-      GM.addStyle(`#smh-msg-box { z-index: 9999999999 !important }`);
+      GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
       options = {
         name: 'manhuagui',
         exit: () => !Reflect.has(unsafeWindow, 'cInfo'),
@@ -6362,8 +6367,16 @@ const main = require('main');
       };
       break;
     }
+
+  // 为 pwa 版页面提供 api，以便翻译功能能正常运作
+  case 'comic-read.pages.dev':
+    {
+      unsafeWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
+      options = false;
+      break;
+    }
 }
-if (options) main.universalInit(options);else {
+if (options) main.universalInit(options);else if (options !== false) {
 const main = require('main');
 
 (async () => {
