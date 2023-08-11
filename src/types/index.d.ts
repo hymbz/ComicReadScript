@@ -35,7 +35,9 @@ declare global {
   interface Window {
     crsLib?: {
       GM_xmlhttpRequest: GM_xmlhttpRequest;
+      [k: string]: any;
     };
+    [key: string]: any;
   }
 }
 

@@ -111,7 +111,6 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - 拷贝漫画(copymanga)
 - 漫画柜(manhuagui)
 - 漫画DB(manhuadb)
-- 漫画猫(manhuacat)
 - 动漫屋(dm5)
 - 绅士漫画(wnacg)
 - mangabz

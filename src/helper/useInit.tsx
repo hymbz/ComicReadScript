@@ -8,7 +8,7 @@ import { useSiteOptions } from './useSiteOptions';
 import { useSpeedDial } from './useSpeedDial';
 
 /**
- * 对所有支持站点页面的初始化操作的封装
+ * 对基础的初始化操作的封装
  * @param name 站点名
  * @param defaultOptions 默认配置
  */
@@ -25,6 +25,23 @@ export const useInit = async <T extends Record<string, any>>(
     show: !options.hiddenFAB && undefined,
   });
 
+  /** 处理 Manga 组件的 onLoading 回调，将图片加载状态联动到 Fab 上 */
+  const onLoading = (list: ComicImg[]) => {
+    const loadNum = list.filter((image) => image.loadType === 'loaded').length;
+
+    /** 图片加载进度 */
+    const progress = 1 + loadNum / list.length;
+    if (progress !== 2) {
+      setFab({
+        progress,
+        tip: `图片加载中 - ${loadNum}/${list.length}`,
+      });
+    } else {
+      // 图片全部加载完成后恢复 Fab 状态
+      setFab({ progress, tip: '阅读模式', show: undefined });
+    }
+  };
+
   const [setManga, mangaProps] = await useManga({
     imgList: [],
     option: options.option,
@@ -32,6 +49,7 @@ export const useInit = async <T extends Record<string, any>>(
       setOptions({ option } as Partial<T & SiteOptions>),
     hotKeys: hotKeys(),
     onHotKeysChange,
+    onLoading,
   });
 
   // 检查脚本的版本变化，提示用户
@@ -105,7 +123,7 @@ export const useInit = async <T extends Record<string, any>>(
   };
 
   /** 当前是否还需要判断 autoShow */
-  let needAutoShow = true;
+  const needAutoShow = { val: true };
 
   return {
     options,
@@ -113,9 +131,10 @@ export const useInit = async <T extends Record<string, any>>(
     setFab,
     setManga,
     mangaProps,
+    needAutoShow,
 
     /**
-     * 完成所有支持站点的初始化
+     * 对 加载图片 和 进入阅读模式 相关初始化的封装
      * @param getImgList 返回图片列表的函数
      * @returns 自动加载图片并进入阅读模式的函数
      */
@@ -125,24 +144,7 @@ export const useInit = async <T extends Record<string, any>>(
       /** 是否正在加载图片中 */
       let loading = false;
 
-      const onLoading = (list: ComicImg[]) => {
-        const loadNum = list.filter(
-          (image) => image.loadType === 'loaded',
-        ).length;
-
-        /** 图片加载进度 */
-        const progress = 1 + loadNum / list.length;
-        if (progress !== 2) {
-          setFab({
-            progress,
-            tip: `图片加载中 - ${loadNum}/${list.length}`,
-          });
-        } else {
-          // 图片全部加载完成后恢复 Fab 状态
-          setFab({ progress, tip: '阅读模式', show: undefined });
-        }
-      };
-
+      /** 加载 imgList */
       const loadImgList = async (initImgList?: string[], show?: boolean) => {
         loading = true;
         try {
@@ -152,12 +154,10 @@ export const useInit = async <T extends Record<string, any>>(
           setManga((state) => {
             if (!isEqualArray(newImgList, mangaProps.imgList))
               state.imgList = [...newImgList];
-            if (show || (needAutoShow && options.autoShow)) {
+            if (show || (needAutoShow.val && options.autoShow)) {
               state.show = true;
-              needAutoShow = false;
+              needAutoShow.val = false;
             }
-
-            if (state.onLoading === undefined) state.onLoading = onLoading;
           });
         } catch (e: any) {
           console.error(e);
@@ -180,7 +180,7 @@ export const useInit = async <T extends Record<string, any>>(
 
       setFab({ onClick: showComic });
 
-      if (needAutoShow && options.autoShow) showComic();
+      if (needAutoShow.val && options.autoShow) showComic();
 
       if (firstRun) {
         GM.registerMenuCommand('进入漫画阅读模式', fabProps.onClick!);
@@ -199,9 +199,9 @@ export const useInit = async <T extends Record<string, any>>(
       return {
         /** 进入阅读模式 */
         showComic,
-        /** 重新加载 imgList */
+        /** 加载 imgList */
         loadImgList,
-        /** 默认的 onLoading */
+        /** Manga 组件的默认 onLoading */
         onLoading,
       };
     },

@@ -74,20 +74,20 @@ export const require = (name: string) => {
     get(_, prop) {
       if (prop === '__esModule') return __esModule;
       if (prop === 'default') return selfDefault as unknown;
-      if (!unsafeWindow.crsLib[name]) selfImportSync(name);
-      const module: SelfModule = unsafeWindow.crsLib[name];
+      if (!unsafeWindow.crsLib![name]) selfImportSync(name);
+      const module: SelfModule = unsafeWindow.crsLib![name];
       return module.default?.[prop] ?? module?.[prop];
     },
     apply(_, __, args) {
-      if (!unsafeWindow.crsLib[name]) selfImportSync(name);
-      const module = unsafeWindow.crsLib[name];
+      if (!unsafeWindow.crsLib![name]) selfImportSync(name);
+      const module = unsafeWindow.crsLib![name];
       const ModuleFunc =
         typeof module.default === 'function' ? module.default : module;
       return ModuleFunc(...args) as object;
     },
     construct(_, args) {
-      if (!unsafeWindow.crsLib[name]) selfImportSync(name);
-      const module = unsafeWindow.crsLib[name];
+      if (!unsafeWindow.crsLib![name]) selfImportSync(name);
+      const module = unsafeWindow.crsLib![name];
       const ModuleFunc =
         typeof module.default === 'function' ? module.default : module;
       return new ModuleFunc(...args) as object;

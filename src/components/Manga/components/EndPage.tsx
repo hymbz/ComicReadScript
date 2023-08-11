@@ -94,7 +94,7 @@ export const EndPage: Component = () => {
         type="button"
         data-is-end
         tabIndex={store.endPageType ? 0 : -1}
-        onClick={() => store.onExit?.(!!store.activePageIndex)}
+        onClick={() => store.onExit?.(store.endPageType === 'end')}
       >
         退出
       </button>

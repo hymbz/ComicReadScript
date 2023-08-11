@@ -1,3 +1,5 @@
+import type { InitOptions, UseInitFnMap } from './helper/universalInit';
+
 /**
  * 虽然在打包的时候已经尽可能保持代码格式不变了，但因为脚本代码比较多的缘故
  * 所以真对脚本代码感兴趣的话，推荐还是直接上 github 仓库来看
@@ -6,6 +8,12 @@
  */
 
 inject('import');
+
+/** 站点配置 */
+let options: InitOptions | undefined;
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+const main = require('main') as typeof import('./main');
 
 // 匹配站点
 switch (window.location.hostname) {
@@ -16,7 +24,45 @@ switch (window.location.hostname) {
   }
   // #百合会新站
   case 'www.yamibo.com': {
-    inject('newYamibo');
+    const id = new URLSearchParams(window.location.search).get('id');
+
+    /** 总页数 */
+    const totalPageNum = +main
+      .querySelector('section div:first-of-type div:last-of-type')!
+      .innerHTML.split('：')[1];
+    if (Number.isNaN(totalPageNum))
+      throw new Error('页面结构发生改变，无法正常运行');
+
+    /** 获取指定页数的图片 url */
+    const getImg = async (i = 1) => {
+      const res = await main.request(
+        `https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`,
+      );
+
+      return res.responseText
+        .match(/(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/)![0]
+        .replaceAll('&amp;', '&');
+    };
+
+    options = {
+      name: 'newYamibo',
+      exit: () => !window.location.pathname.includes('/manga/view-chapter'),
+      getImgList: ({ setFab }) =>
+        main.plimit(
+          Object.keys([...new Array(totalPageNum)]).map(
+            (i) => () => getImg(+i + 1),
+          ),
+          (doneNum, totalNum) => {
+            setFab({
+              progress: doneNum / totalNum,
+              tip: `加载图片中 - ${doneNum}/${totalNum}`,
+            });
+          },
+        ),
+      onNext: main.querySelectorClick('#btnNext'),
+      onPrev: main.querySelectorClick('#btnPrev'),
+      onExit: (isEnd) => isEnd && main.scrollIntoView('#w1'),
+    };
     break;
   }
 
@@ -36,11 +82,6 @@ switch (window.location.hostname) {
     inject('dmzj_www');
     break;
   }
-  // 懒得整理导入导出的代码了，应该也没人用了吧，等有人需要的时候再说
-  // case 'i.dmzj.com': {
-  //   // dmzj_user_info
-  //   break;
-  // }
 
   // #ehentai——「匹配 nhentai 漫画」
   case 'exhentai.org':
@@ -57,7 +98,46 @@ switch (window.location.hostname) {
 
   // #明日方舟泰拉记事社
   case 'terra-historicus.hypergryph.com': {
-    inject('terraHistoricus');
+    const apiUrl = () =>
+      `https://terra-historicus.hypergryph.com/api${window.location.pathname}`;
+
+    const getImgUrl = (i: number) => async () => {
+      const res = await main.request(`${apiUrl()}/page?pageNum=${i + 1}`);
+      return JSON.parse(res.response).data.url as string;
+    };
+
+    options = {
+      name: 'terraHistoricus',
+      wait: () => !!main.querySelector('footer .HG_GAME_JS_BRIDGE__wrapper'),
+      getImgList: async ({ setFab }) => {
+        const res = await main.request(apiUrl());
+        const pageList = JSON.parse(res.response).data.pageInfos as unknown[];
+        if (
+          pageList.length === 0 &&
+          window.location.pathname.includes('episode')
+        )
+          throw new Error('获取图片列表时出错');
+
+        return main.plimit<string>(
+          [...Array(pageList.length).keys()].map(getImgUrl),
+          (doneNum, totalNum) => {
+            setFab({
+              progress: doneNum / totalNum,
+              tip: `加载图片中 - ${doneNum}/${totalNum}`,
+            });
+          },
+        );
+      },
+      SPA: {
+        isMangaPage: () => window.location.href.includes('episode'),
+        getOnPrev: () =>
+          main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__prev a'),
+        getOnNext: () =>
+          main.querySelectorClick(
+            'footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a',
+          ),
+      },
+    };
     break;
   }
 
@@ -84,7 +164,36 @@ switch (window.location.hostname) {
   case 'www.copymanga.org':
   case 'www.copymanga.tv':
   case 'www.copymanga.com': {
-    inject('copymanga');
+    options = {
+      name: 'copymanga',
+      exit: () => !window.location.href.includes('/chapter/'),
+      getImgList: async () => {
+        const res = await main.request(
+          window.location.href.replace(
+            /.*?(?=\/comic\/)/,
+            'https://api.copymanga.site/api/v3',
+          ),
+        );
+        return (
+          JSON.parse(res.responseText).results.chapter.contents as {
+            url: string;
+          }[]
+        ).map(({ url }) => url);
+      },
+      onNext: main.querySelectorClick('.comicContent-next a:not(.prev-null)'),
+      onPrev: main.querySelectorClick(
+        '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
+      ),
+      getCommentList: async () => {
+        const chapter_id = window.location.pathname.split('/').at(-1);
+        const res = await main.request(
+          `https://api.copymanga.site/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`,
+        );
+        return JSON.parse(res.responseText).results.list.map(
+          ({ comment }) => comment as string,
+        ) as string[];
+      },
+    };
     break;
   }
 
@@ -92,20 +201,52 @@ switch (window.location.hostname) {
   case 'www.manhuagui.com':
   case 'www.mhgui.com':
   case 'tw.manhuagui.com': {
-    inject('manhuagui');
+    // 让切换章节的提示可以显示在漫画页上
+    GM.addStyle(`#smh-msg-box { z-index: 9999999999 !important }`);
+
+    options = {
+      name: 'manhuagui',
+      exit: () => !Reflect.has(unsafeWindow, 'cInfo'),
+      getImgList: () => {
+        const comicInfo = JSON.parse(
+          // 只能通过 eval 获得数据
+          // eslint-disable-next-line no-eval
+          eval(
+            main.querySelectorAll('body > script')[1].innerHTML.slice(26),
+          ).slice(12, -12),
+        );
+        const sl = Object.entries(comicInfo.sl)
+          .map((attr) => `${attr[0]}=${attr[1]}`)
+          .join('&');
+        return (comicInfo.files as string[]).map(
+          (file) => `${unsafeWindow.pVars.manga.filePath}${file}?${sl}`,
+        );
+      },
+      onNext:
+        unsafeWindow.cInfo.nextId !== 0
+          ? main.querySelectorClick('a.nextC')
+          : undefined,
+      onPrev:
+        unsafeWindow.cInfo.prevId !== 0
+          ? main.querySelectorClick('a.prevC')
+          : undefined,
+    };
     break;
   }
 
   // #漫画DB(manhuadb)
   case 'www.manhuadb.com': {
-    inject('manhuaDB');
-    break;
-  }
-
-  // #漫画猫(manhuacat)
-  case 'www.manhuacat.com':
-  case 'www.maofly.com': {
-    inject('manhuacat');
+    options = {
+      name: 'manhuaDB',
+      exit: () => !Reflect.has(unsafeWindow, 'img_data_arr'),
+      getImgList: () =>
+        (unsafeWindow.img_data_arr as { img: string }[]).map(
+          (data) =>
+            `${unsafeWindow.img_host}/${unsafeWindow.img_pre}/${data.img}`,
+        ),
+      onPrev: () => unsafeWindow.goNumPage('pre') as void,
+      onNext: () => unsafeWindow.goNumPage('next') as void,
+    };
     break;
   }
 
@@ -115,26 +256,169 @@ switch (window.location.hostname) {
   case 'www.dm5.com':
   case 'www.dm5.cn':
   case 'www.1kkk.com': {
-    inject('dm5');
+    const getImgList = async (
+      fnMap: UseInitFnMap,
+      imgList: string[] = [],
+    ): Promise<string[]> => {
+      const res = await unsafeWindow.$.ajax({
+        type: 'GET',
+        url: 'chapterfun.ashx',
+        data: {
+          cid: unsafeWindow.DM5_CID,
+          page: imgList.length + 1,
+          key: unsafeWindow.$('#dm5_key').length
+            ? unsafeWindow.$('#dm5_key').val()
+            : '',
+          language: 1,
+          gtk: 6,
+          _cid: unsafeWindow.DM5_CID,
+          _mid: unsafeWindow.DM5_MID,
+          _dt: unsafeWindow.DM5_VIEWSIGN_DT,
+          _sign: unsafeWindow.DM5_VIEWSIGN,
+        },
+      });
+
+      // 返回的数据只能通过 eval 获得
+      const newImgList = [
+        ...imgList,
+        // eslint-disable-next-line no-eval
+        ...(eval(res) as string[]),
+      ];
+
+      if (newImgList.length !== unsafeWindow.DM5_IMAGE_COUNT) {
+        // 在 Fab 按钮上通过进度条和提示文本显示当前进度
+        fnMap.setFab({
+          progress: newImgList.length / unsafeWindow.DM5_IMAGE_COUNT,
+          tip: `加载图片中 - ${newImgList.length}/${unsafeWindow.DM5_IMAGE_COUNT}`,
+        });
+        return getImgList(fnMap, newImgList);
+      }
+
+      return newImgList;
+    };
+
+    options = {
+      name: 'dm5',
+      exit: () => !Reflect.has(unsafeWindow, 'DM5_CID'),
+      getImgList,
+      onNext: main.querySelectorClick('.logo_2'),
+      onPrev: main.querySelectorClick('.logo_1'),
+      onExit: (isEnd) => isEnd && main.scrollIntoView('.postlist'),
+    };
     break;
   }
 
   // #绅士漫画(wnacg)
   case 'www.wnacg.com': {
-    inject('wnacg');
+    options = {
+      name: 'wnacg',
+      exit: () => !Reflect.has(unsafeWindow, 'imglist'),
+      getImgList: () =>
+        (unsafeWindow.imglist as { url: string; caption: string }[])
+          .filter(
+            ({ caption }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！',
+          )
+          .map(({ url }) => url),
+    };
     break;
   }
 
   // #mangabz
   case 'www.mangabz.com':
   case 'mangabz.com': {
-    inject('mangabz');
+    const getImgList = async (
+      fnMap: UseInitFnMap,
+      imgList: string[] = [],
+    ): Promise<string[]> => {
+      const res = await unsafeWindow.$.ajax({
+        type: 'GET',
+        url: 'chapterimage.ashx',
+        data: {
+          cid: unsafeWindow.MANGABZ_CID,
+          page: imgList.length + 1,
+          key: '',
+          _cid: unsafeWindow.MANGABZ_CID,
+          _mid: unsafeWindow.MANGABZ_MID,
+          _dt: unsafeWindow.MANGABZ_VIEWSIGN_DT,
+          _sign: unsafeWindow.MANGABZ_VIEWSIGN,
+        },
+      });
+
+      // 返回的数据只能通过 eval 获得
+      const newImgList = [
+        ...imgList,
+        // eslint-disable-next-line no-eval
+        ...(eval(res) as string[]),
+      ];
+
+      if (newImgList.length !== unsafeWindow.MANGABZ_IMAGE_COUNT) {
+        // 在 Fab 按钮上通过进度条和提示文本显示当前进度
+        fnMap.setFab({
+          progress: newImgList.length / unsafeWindow.MANGABZ_IMAGE_COUNT,
+          tip: `加载图片中 - ${newImgList.length}/${unsafeWindow.MANGABZ_IMAGE_COUNT}`,
+        });
+        return getImgList(fnMap, newImgList);
+      }
+
+      return newImgList;
+    };
+
+    options = {
+      name: 'mangabz',
+      exit: () => !Reflect.has(unsafeWindow, 'MANGABZ_CID'),
+      getImgList,
+      onNext: main.querySelectorClick(
+        'body > .container a[href^="/"]:last-child',
+      ),
+      onPrev: main.querySelectorClick(
+        'body > .container a[href^="/"]:first-child',
+      ),
+    };
     break;
   }
 
   // #komiic
   case 'komiic.com': {
-    inject('komiic');
+    const getImgList = async (): Promise<string[]> => {
+      const imgList = main
+        .querySelectorAll('.imageContainer > img')
+        .map((e) => e.getAttribute('data-src') ?? '');
+      if (imgList.includes('')) {
+        await main.sleep(100);
+        return getImgList();
+      }
+      return imgList;
+    };
+
+    const handlePrevNext = (text: string) => async () => {
+      // 点击唤出底栏
+      const id = window.setInterval(() => {
+        main.querySelector('.ComicImageContainer')?.click();
+      }, 500);
+      await main.waitDom('.ComicImage__bottom-menu-center');
+      window.clearInterval(id);
+
+      const buttonDom = main
+        .querySelectorAll(
+          '.ComicImage__bottom-menu-center button:not([disabled])',
+        )
+        .find((e) => e.innerText.includes(text));
+
+      return main.querySelectorClick(() => buttonDom);
+    };
+
+    const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
+
+    options = {
+      name: 'komiic',
+      wait: () => !!main.querySelector('.imageContainer > img'),
+      getImgList,
+      SPA: {
+        isMangaPage: () => urlMatchRe.test(window.location.href),
+        getOnPrev: handlePrevNext('上一'),
+        getOnNext: handlePrevNext('下一'),
+      },
+    };
     break;
   }
 
@@ -142,11 +426,37 @@ switch (window.location.hostname) {
   case 'nicomanga.com':
   case 'weloma.art':
   case 'welovemanga.one': {
-    inject('welovemanga');
+    const imgSelector =
+      '#listImgs img.chapter-img.chapter-img:not(.ls-is-cached)';
+
+    const isLoadingGifRe = /loading.*\.gif/;
+
+    const getImgList = async (): Promise<string[]> => {
+      const imgList = main
+        .querySelectorAll<HTMLImageElement>(imgSelector)
+        .map(
+          (e) =>
+            e.getAttribute('data-src')?.trim() ??
+            e.getAttribute('data-original')?.trim() ??
+            e.src,
+        );
+      if (imgList.every((url) => !isLoadingGifRe.test(url))) return imgList;
+      await main.sleep(500);
+      return getImgList();
+    };
+
+    options = {
+      name: 'welovemanga',
+      exit: () => !main.querySelector('#listImgs'),
+      getImgList,
+      onNext: main.querySelectorClick('.rd_top-right.next:not(.disabled)'),
+      onPrev: main.querySelectorClick('.rd_top-left.prev:not(.disabled)'),
+    };
     break;
   }
+}
 
-  default: {
-    inject('other');
-  }
+if (options) main.universalInit(options);
+else {
+  inject('other');
 }

@@ -158,15 +158,15 @@ export const needDarkMode = (hexColor: string) => {
 };
 
 /** 等到传入的函数返回 true */
-export const wait = <T>(fn: () => T | undefined) =>
-  new Promise<T>((resolve) => {
-    const id = window.setInterval(() => {
-      const res = fn();
-      if (!res) return;
-      window.clearInterval(id);
-      resolve(res);
-    }, 100);
-  });
+export const wait = async <T>(
+  fn: () => T | undefined | Promise<T | undefined>,
+  timeout = 100,
+): Promise<T> => {
+  const res = await fn();
+  if (res) return res;
+  await sleep(timeout);
+  return wait(fn, timeout);
+};
 
 /** 等到指定的 dom 出现 */
 export const waitDom = (selector: string) =>
