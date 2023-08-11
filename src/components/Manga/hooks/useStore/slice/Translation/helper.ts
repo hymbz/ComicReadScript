@@ -52,8 +52,10 @@ export const request = <T = any>(
   details?: Partial<Tampermonkey.Request<any>>,
 ): Promise<Tampermonkey.Response<T>> =>
   new Promise((resolve, reject) => {
-    if (!window.crsLib) throw new Error('未安装 ComicRead 插件');
-    window.crsLib.GM_xmlhttpRequest({
+    if (typeof GM_xmlhttpRequest === 'undefined')
+      throw new Error('未安装 ComicRead 插件');
+
+    GM_xmlhttpRequest({
       method: 'GET',
       url,
       headers: { Referer: window.location.href },

@@ -10,7 +10,7 @@ import type { InitOptions, UseInitFnMap } from './helper/universalInit';
 inject('import');
 
 /** 站点配置 */
-let options: InitOptions | undefined;
+let options: InitOptions | undefined | false;
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 const main = require('main') as typeof import('./main');
@@ -454,9 +454,16 @@ switch (window.location.hostname) {
     };
     break;
   }
+
+  // 为 pwa 版页面提供 api，以便翻译功能能正常运作
+  case 'comic-read.pages.dev': {
+    unsafeWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
+    options = false;
+    break;
+  }
 }
 
 if (options) main.universalInit(options);
-else {
+else if (options !== false) {
   inject('other');
 }

@@ -9,11 +9,13 @@ const gmApi = {
 };
 const gmApiList = Object.keys(gmApi);
 
-unsafeWindow.crsLib = {
+const crsLib: Window['crsLib'] = {
   // 有些 cjs 模块会检查这个，所以在这里声明下
   process: { env: { NODE_ENV: process.env.NODE_ENV } },
   ...gmApi,
 };
+
+const tempName = Math.random().toString(36).slice(2);
 
 /**
  * 通过 Resource 导入外部模块
@@ -26,29 +28,34 @@ const selfImportSync = (name: string) => {
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
   // 将模块导出变量放到 crsLib 对象里，防止污染全局作用域和网站自身的模块产生冲突
   const runCode = `
-      window.crsLib['${name}'] = {};
+      window['${tempName}']['${name}'] = {};
       ${isDevMode ? `console.time('导入 ${name}');` : ''}
       (function (process, require, exports, module, ${gmApiList.join(', ')}) {
         ${code}
       })(
-        window.crsLib.process,
-        window.crsLib.require,
-        window.crsLib['${name}'],
+        window['${tempName}'].process,
+        window['${tempName}'].require,
+        window['${tempName}']['${name}'],
         {
           set exports(value) {
-            window.crsLib['${name}'] = value;
+            window['${tempName}']['${name}'] = value;
           },
           get exports() {
-            return window.crsLib['${name}'];
+            return window['${tempName}']['${name}'];
           },
         },
-        ${gmApiList.map((apiName) => `window.crsLib.${apiName}`).join(', ')}
+        ${gmApiList
+          .map((apiName) => `window['${tempName}'].${apiName}`)
+          .join(', ')}
       );
       ${isDevMode ? `console.timeEnd('导入 ${name}');` : ''}
     `;
 
+  Reflect.deleteProperty(unsafeWindow, tempName);
+  unsafeWindow[tempName] = crsLib;
   // 因为在一些网站比如推特会触发CSP，所以不能使用 eval 来执行
   GM_addElement('script', { textContent: runCode });
+  Reflect.deleteProperty(unsafeWindow, tempName);
 };
 
 interface SelfModule {
@@ -74,20 +81,20 @@ export const require = (name: string) => {
     get(_, prop) {
       if (prop === '__esModule') return __esModule;
       if (prop === 'default') return selfDefault as unknown;
-      if (!unsafeWindow.crsLib![name]) selfImportSync(name);
-      const module: SelfModule = unsafeWindow.crsLib![name];
+      if (!crsLib[name]) selfImportSync(name);
+      const module: SelfModule = crsLib[name];
       return module.default?.[prop] ?? module?.[prop];
     },
     apply(_, __, args) {
-      if (!unsafeWindow.crsLib![name]) selfImportSync(name);
-      const module = unsafeWindow.crsLib![name];
+      if (!crsLib[name]) selfImportSync(name);
+      const module = crsLib[name];
       const ModuleFunc =
         typeof module.default === 'function' ? module.default : module;
       return ModuleFunc(...args) as object;
     },
     construct(_, args) {
-      if (!unsafeWindow.crsLib![name]) selfImportSync(name);
-      const module = unsafeWindow.crsLib![name];
+      if (!crsLib[name]) selfImportSync(name);
+      const module = crsLib[name];
       const ModuleFunc =
         typeof module.default === 'function' ? module.default : module;
       return new ModuleFunc(...args) as object;
@@ -96,4 +103,4 @@ export const require = (name: string) => {
 
   return selfDefault as unknown;
 };
-unsafeWindow.crsLib.require = require;
+crsLib.require = require;

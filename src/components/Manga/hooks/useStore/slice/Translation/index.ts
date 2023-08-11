@@ -5,10 +5,16 @@ import { setMessage } from './helper';
 import { getValidTranslators, selfhostedTranslation } from './selfhosted';
 import { cotransTranslation, cotransTranslators } from './cotrans';
 
+declare const toast: // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+typeof import('../../../../../Toast/toast').toast | undefined;
+
 /** 翻译指定图片 */
 export const translationImage = async (i: number) => {
   try {
-    if (!window.crsLib) throw new Error('未安装 ComicRead 插件');
+    if (typeof GM_xmlhttpRequest === 'undefined') {
+      toast?.error('未安装 ComicRead 插件，无法翻译');
+      throw new Error('未安装 ComicRead 插件，无法翻译');
+    }
 
     const img = store.imgList[i];
     if (!img?.src) return;

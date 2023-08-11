@@ -10,7 +10,7 @@ import installMd from './md/install.md';
 import type { MangaProps } from '../../components/Manga';
 import { Manga, buttonListDivider } from '../../components/Manga';
 import { IconButton } from '../../components/IconButton';
-import { Toaster } from '../../components/Toast';
+import { Toaster, toast } from '../../components/Toast';
 
 import { store, setState, handleExit, loadNewImglist } from './store';
 import { imgExtension } from './helper';
@@ -69,6 +69,8 @@ const getSaveOption = (): MangaProps['option'] => {
 
 const handleOptionChange: MangaProps['onOptionChange'] = (option) =>
   localStorage.setItem('option', JSON.stringify(option));
+
+window.toast = toast;
 
 export const Root: Component = () => (
   <div ref={(e) => handleDrag(e)} class={classes.root}>
