@@ -24,7 +24,7 @@ import {
   // 只在漫画页内运行
   if (!window.location.pathname.includes('/photo/')) return;
 
-  const { init, setManga, setFab } = await useInit('jm');
+  const { init, setManga, setFab, dynamicUpdate } = await useInit('jm');
 
   while (!unsafeWindow?.onImageLoaded) {
     if (document.readyState === 'complete') {
@@ -102,7 +102,7 @@ import {
     }
   };
 
-  // 先等网页自己的懒加载加载完毕
+  // 先等懒加载触发完毕
   await wait(
     () =>
       querySelectorAll('.lazy-loaded.hide').length &&
@@ -110,16 +110,20 @@ import {
         querySelectorAll('canvas').length,
   );
 
-  init(() =>
-    plimit<string>(
-      imgEleList.map((img) => () => getImgUrl(img)),
-      (doneNum, totalNum) => {
-        setFab({
-          progress: doneNum / totalNum,
-          tip: `加载图片中 - ${doneNum}/${totalNum}`,
-        });
-      },
-    ),
+  init(
+    dynamicUpdate(async (setImg) => {
+      await plimit(
+        imgEleList.map((img, i) => async () => {
+          setImg(i, await getImgUrl(img));
+        }),
+        (doneNum, totalNum) => {
+          setFab({
+            progress: doneNum / totalNum,
+            tip: `加载图片中 - ${doneNum}/${totalNum}`,
+          });
+        },
+      );
+    }, imgEleList.length),
   );
 
   const retry = (num = 0) =>

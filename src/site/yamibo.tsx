@@ -19,13 +19,16 @@ interface History {
 }
 
 (async () => {
-  const { options, setFab, setManga, init } = await useInit('yamibo', {
-    记录阅读进度: true,
-    关闭快捷导航的跳转: true,
-    修正点击页数时的跳转判定: true,
-    固定导航条: true,
-    自动签到: true,
-  });
+  const { options, setFab, setManga, init, onLoading } = await useInit(
+    'yamibo',
+    {
+      记录阅读进度: true,
+      关闭快捷导航的跳转: true,
+      修正点击页数时的跳转判定: true,
+      固定导航条: true,
+      自动签到: true,
+    },
+  );
 
   await GM.addStyle(
     `#fab { --fab: #6E2B19; --fab_hover: #A15640; }
@@ -155,7 +158,7 @@ interface History {
       };
 
       updateImgList();
-      const { showComic, loadImgList, onLoading } = init(() =>
+      const { showComic, loadImgList } = init(() =>
         imgList.map((img) => img.src),
       );
 

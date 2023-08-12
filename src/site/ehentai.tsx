@@ -9,17 +9,21 @@ import {
   useInit,
   toast,
   plimit,
+  querySelectorAll,
 } from 'main';
 
 declare const selected_tag: string;
 declare const selected_link: HTMLElement;
 
 (async () => {
-  const { options, setFab, setManga, init } = await useInit('ehentai', {
-    匹配nhentai: true,
-    快捷键翻页: true,
-    autoShow: false,
-  });
+  const { options, setFab, setManga, init, dynamicUpdate } = await useInit(
+    'ehentai',
+    {
+      匹配nhentai: true,
+      快捷键翻页: true,
+      autoShow: false,
+    },
+  );
 
   // 不是漫画页的话
   if (!Reflect.has(unsafeWindow, 'gid')) {
@@ -65,6 +69,9 @@ declare const selected_link: HTMLElement;
   );
   const comicReadModeDom = document.getElementById('comicReadMode')!;
 
+  /** 获取当前显示页数 */
+  const getCurrentPageNum = +(querySelector('.ptds')?.innerText ?? '');
+
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async (url: string): Promise<string> => {
     const res = await request(url, { errorText: '获取图片页源码失败' });
@@ -82,6 +89,11 @@ declare const selected_link: HTMLElement;
 
   /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
+    if (getCurrentPageNum - 1 === pageNum)
+      return querySelectorAll<HTMLAnchorElement>('.gdtl > a').map(
+        (e) => e.href,
+      );
+
     const res = await request(
       `${window.location.origin}${window.location.pathname}${
         pageNum ? `?p=${pageNum}` : ''
@@ -106,43 +118,47 @@ declare const selected_link: HTMLElement;
     return imgPageList;
   };
 
-  let ehentaiImgList: string[];
+  const totalImgNum = +(
+    querySelector('.gtb .gpc')?.innerText.match(/\d+/g)?.at(-1) ?? '0'
+  );
 
-  const { loadImgList } = init(async () => {
-    const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!.innerText;
+  const ehImgList: string[] = [];
 
-    comicReadModeDom.innerHTML = ` loading`;
+  const { loadImgList } = init(
+    dynamicUpdate(async (setImg) => {
+      comicReadModeDom.innerHTML = ` loading`;
 
-    // 从详情页获取所有图片页的 url
-    const imgPageUrlList = await plimit(
-      [...Array(totalPageNum).keys()].map(
-        (pageNum) => () => getImgFromDetailsPage(pageNum),
-      ),
-      (doneNum, totalNum) => {
-        setFab({ tip: `获取图片页中 - ${doneNum}/${totalNum}` });
-      },
-    );
+      const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!
+        .innerText;
+      for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
+        const startIndex = ehImgList.length;
+        const imgPageUrlList = await getImgFromDetailsPage(pageNum);
+        await plimit(
+          imgPageUrlList.map((imgPageUrl, i) => async () => {
+            const imgUrl = await getImgFromImgPage(imgPageUrl);
+            const index = startIndex + i;
+            ehImgList[index] = imgUrl;
+            setImg(index, imgUrl);
+          }),
+          (_doneNum) => {
+            const doneNum = startIndex + _doneNum;
+            setFab({
+              progress: doneNum / totalImgNum,
+              tip: `加载图片中 - ${doneNum}/${totalImgNum}`,
+            });
+            comicReadModeDom.innerHTML =
+              doneNum !== totalImgNum
+                ? ` loading - ${doneNum}/${totalImgNum}`
+                : ` Read`;
+          },
+        );
+      }
+    }, totalImgNum),
+  );
 
-    const imgList = await plimit(
-      imgPageUrlList
-        .flat()
-        .map((imgPageUrl) => () => getImgFromImgPage(imgPageUrl)),
-      (doneNum, totalNum) => {
-        setFab({
-          progress: doneNum / totalNum,
-          tip: `加载图片中 - ${doneNum}/${totalNum}`,
-        });
-        comicReadModeDom.innerHTML =
-          doneNum !== totalNum ? ` loading - ${doneNum}/${totalNum}` : ` Read`;
-      },
-    );
-    ehentaiImgList = imgList;
-
-    return imgList;
-  });
   setFab({ initialShow: options.autoShow });
   comicReadModeDom.addEventListener('click', () =>
-    loadImgList(ehentaiImgList, true),
+    loadImgList(ehImgList, true),
   );
 
   if (options.快捷键翻页) {

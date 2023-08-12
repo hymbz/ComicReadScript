@@ -62,6 +62,10 @@ export const getMostItem = <T>(list: T[]) => {
   )[0];
 };
 
+/** 将数组扩充到指定长度，不足项用空字符串补足 */
+export const createFillImgList = (imgList: string[], length: number) =>
+  [...imgList, ...Array(length - imgList.length).fill('')] as string[];
+
 /** 将对象转为 URLParams 类型的字符串 */
 export const dataToParams = (data: Record<string, unknown>) =>
   Object.entries(data)

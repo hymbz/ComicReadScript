@@ -1,5 +1,5 @@
 import { For } from 'solid-js';
-import { getKeyboardCode, isEqualArray } from '.';
+import { getKeyboardCode, isEqualArray, wait } from '.';
 import { useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
 import { toast } from '../components/useComponents/Toast';
@@ -45,7 +45,7 @@ export const useInit = async <T extends Record<string, any>>(
     }
   };
 
-  const [setManga, mangaProps] = await useManga({
+  const [setManga, mangaProps, _setManga] = await useManga({
     imgList: [],
     option: options.option,
     onOptionChange: (option) =>
@@ -135,6 +135,8 @@ export const useInit = async <T extends Record<string, any>>(
     setManga,
     mangaProps,
     needAutoShow,
+    /** Manga 组件的默认 onLoading */
+    onLoading,
 
     /**
      * 对 加载图片 和 进入阅读模式 相关初始化的封装
@@ -204,8 +206,30 @@ export const useInit = async <T extends Record<string, any>>(
         showComic,
         /** 加载 imgList */
         loadImgList,
-        /** Manga 组件的默认 onLoading */
-        onLoading,
+      };
+    },
+
+    /** 使用动态更新来加载 imgList */
+    dynamicUpdate: (
+      work: (setImg: (i: number, imgUrl: string) => void) => Promise<void>,
+      totalImgNum: number,
+    ) => {
+      const updateImgList = async () => {
+        setManga({ onLoading: undefined });
+        _setManga('imgList', Array(totalImgNum).fill(''));
+        await work((i, imgUrl) => {
+          _setManga('imgList', i, imgUrl);
+        });
+        setManga({ onLoading });
+      };
+
+      return async () => {
+        if (mangaProps.imgList.length === totalImgNum)
+          return mangaProps.imgList;
+
+        setTimeout(updateImgList);
+        await wait(() => mangaProps.imgList.some(Boolean));
+        return mangaProps.imgList;
       };
     },
   };
