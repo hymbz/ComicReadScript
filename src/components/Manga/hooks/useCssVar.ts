@@ -44,6 +44,8 @@ const dark: CssVar = {
   '--text': 'white',
   '--text_secondary': '#FFFC',
   '--text_bg': '#121212',
+
+  'color-scheme': 'dark',
 };
 
 /** 浅色模式的 css 变量 */
@@ -63,6 +65,8 @@ const light: CssVar = {
   '--text': 'black',
   '--text_secondary': '#0008',
   '--text_bg': '#FAFAFA',
+
+  'color-scheme': 'light',
 };
 
 export const cssVar = createRoot(() => {

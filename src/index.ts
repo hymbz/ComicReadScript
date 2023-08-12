@@ -20,6 +20,7 @@ switch (window.location.hostname) {
   // #百合会——「记录阅读历史，体验优化」
   case 'bbs.yamibo.com': {
     inject('yamibo');
+    options = false;
     break;
   }
   // #百合会新站
@@ -70,16 +71,19 @@ switch (window.location.hostname) {
   case 'manhua.idmzj.com':
   case 'manhua.dmzj.com': {
     inject('dmzj');
+    options = false;
     break;
   }
   case 'm.idmzj.com':
   case 'm.dmzj.com': {
     inject('dmzj_phone');
+    options = false;
     break;
   }
   case 'www.idmzj.com':
   case 'www.dmzj.com': {
     inject('dmzj_www');
+    options = false;
     break;
   }
 
@@ -87,12 +91,14 @@ switch (window.location.hostname) {
   case 'exhentai.org':
   case 'e-hentai.org': {
     inject('ehentai');
+    options = false;
     break;
   }
 
   // #nhentai——「彻底屏蔽漫画，自动翻页」
   case 'nhentai.net': {
     inject('nhentai');
+    options = false;
     break;
   }
 
@@ -148,6 +154,7 @@ switch (window.location.hostname) {
   case '18comic.cc':
   case '18comic.vip': {
     inject('jm');
+    options = false;
     break;
   }
 
