@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.8.1
+// @version      6.8.2
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -131,6 +131,9 @@ const getMostItem = list => {
   }, new Map());
   return [...counts.entries()].reduce((maxItem, item) => maxItem[1] > item[1] ? maxItem : item)[0];
 };
+
+/** 将数组扩充到指定长度，不足项用空字符串补足 */
+const createFillImgList = (imgList, length) => [...imgList, ...Array(length - imgList.length).fill('')];
 
 /** 将对象转为 URLParams 类型的字符串 */
 const dataToParams = data => Object.entries(data).map(([key, val]) => \`\${key}=\${val}\`).join('&');
@@ -321,7 +324,7 @@ const mountComponents = (id, fc) => {
   dom.style.setProperty('display', 'unset', 'important');
   document.body.appendChild(dom);
   const shadowDom = dom.attachShadow({
-    mode: 'open'
+    mode: 'closed'
   });
   web.render(fc, shadowDom);
   return dom;
@@ -481,7 +484,7 @@ const ToastItem = props => {
     const _el$ = _tmpl$2$b(),
       _el$2 = _el$.firstChild;
     _el$.addEventListener("animationend", handleAnimationEnd);
-    _el$.$$click = dismiss;
+    _el$.addEventListener("click", dismiss);
     web.insert(_el$, web.createComponent(web.Dynamic, {
       get component() {
         return iconMap[props.type];
@@ -538,7 +541,6 @@ const ToastItem = props => {
     return _el$;
   })();
 };
-web.delegateEvents(["click"]);
 
 const _tmpl$$K = /*#__PURE__*/web.template(\`<div>\`);
 const Toaster = () => {
@@ -663,7 +665,7 @@ var css$2 = ".index_module_iconButtonItem__9645dd99{align-items:center;display:f
 var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__9645dd99","iconButton":"index_module_iconButton__9645dd99","enabled":"index_module_enabled__9645dd99","iconButtonPopper":"index_module_iconButtonPopper__9645dd99","hidden":"index_module_hidden__9645dd99"};
 n(css$2,{});
 
-const _tmpl$$E = /*#__PURE__*/web.template(\`<div><button type="button">\`),
+const _tmpl$$E = /*#__PURE__*/web.template(\`<div><button type="button" tabindex="-1">\`),
   _tmpl$2$a = /*#__PURE__*/web.template(\`<div>\`);
 const IconButtonStyle = css$2;
 /** 图标按钮 */
@@ -680,9 +682,9 @@ const IconButton = _props => {
   return (() => {
     const _el$ = _tmpl$$E(),
       _el$2 = _el$.firstChild;
-    _el$2.$$click = handleClick;
     const _ref$ = buttonRef;
     typeof _ref$ === "function" ? web.use(_ref$, _el$2) : buttonRef = _el$2;
+    _el$2.addEventListener("click", handleClick);
     web.insert(_el$2, () => props.children);
     web.insert(_el$, (() => {
       const _c$ = web.memo(() => !!(props.popper || props.tip));
@@ -727,7 +729,6 @@ const IconButton = _props => {
     return _el$;
   })();
 };
-web.delegateEvents(["click"]);
 
 const useSpeedDial = (options, setOptions) => {
   const DefaultButton = props => {
@@ -2133,9 +2134,9 @@ const ComicImgFlow = () => {
     web.use(e => e.addEventListener('scroll', handleMangaFlowScroll, {
       passive: true
     }), _el$);
-    web.addEventListener(_el$2, "click", useDoubleClick(handleClick, handleDoubleClickZoom), true);
     const _ref$ = bindRef('mangaFlowRef', initPanzoom);
     typeof _ref$ === "function" && web.use(_ref$, _el$2);
+    _el$2.addEventListener("click", useDoubleClick(handleClick, handleDoubleClickZoom));
     web.insert(_el$2, web.createComponent(solidJs.Index, {
       get each() {
         return store.imgList;
@@ -2179,7 +2180,6 @@ const ComicImgFlow = () => {
     return _el$;
   })();
 };
-web.delegateEvents(["click"]);
 
 const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
 const MdLooksOne = ((props = {}) => (() => {
@@ -2293,7 +2293,7 @@ const SettingsItemSwitch = props => {
     get children() {
       const _el$ = _tmpl$$l(),
         _el$2 = _el$.firstChild;
-      _el$.$$click = handleClick;
+      _el$.addEventListener("click", handleClick);
       web.effect(_p$ => {
         const _v$ = modules_c21c94f2$1.SettingsItemSwitch,
           _v$2 = props.value,
@@ -2311,7 +2311,6 @@ const SettingsItemSwitch = props => {
     }
   });
 };
-web.delegateEvents(["click"]);
 
 const _tmpl$$k = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z">\`);
 const MdRefresh = ((props = {}) => (() => {
@@ -2355,7 +2354,7 @@ const KeyItem = props => {
     _el$.addEventListener("keydown", handleKeyDown);
     web.insert(_el$, () => keyboardCodeToText(code()), null);
     web.insert(_el$, web.createComponent(MdClose, {
-      onClick: del
+      "on:click": del
     }), null);
     web.effect(() => web.className(_el$, modules_c21c94f2$1.hotKeysItem));
     return _el$;
@@ -2374,13 +2373,13 @@ const SettingHotKeys = () => web.createComponent(solidJs.For, {
       _el$7 = _el$6.nextSibling;
     web.insert(_el$4, name);
     _el$5.style.setProperty("flex-grow", "1");
-    _el$6.$$click = () => setHotKeys(name, store.hotKeys[name].length, '');
+    _el$6.addEventListener("click", () => setHotKeys(name, store.hotKeys[name].length, ''));
     web.insert(_el$6, web.createComponent(MdAdd, {}));
-    _el$7.$$click = () => {
+    _el$7.addEventListener("click", () => {
       const newKeys = defaultHoeKeys[name] ?? [];
       newKeys.forEach(delHotKeys);
       setHotKeys(name, newKeys);
-    };
+    });
     web.insert(_el$7, web.createComponent(MdRefresh, {}));
     web.insert(_el$2, web.createComponent(solidJs.Index, {
       each: keys,
@@ -2402,7 +2401,6 @@ const SettingHotKeys = () => web.createComponent(solidJs.For, {
     return _el$2;
   })()
 });
-web.delegateEvents(["click"]);
 
 const _tmpl$$h = /*#__PURE__*/web.template(\`<select>\`),
   _tmpl$2$7 = /*#__PURE__*/web.template(\`<option>\`);
@@ -2948,9 +2946,9 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
   },
   get children() {
     const _el$ = _tmpl$$e();
-    _el$.$$click = () => setOption(draftOption => {
+    _el$.addEventListener("click", () => setOption(draftOption => {
       draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
-    });
+    }));
     web.insert(_el$, (() => {
       const _c$ = web.memo(() => store.option.dir === 'rtl');
       return () => _c$() ? web.createComponent(MdOutlineFormatTextdirectionRToL, {}) : web.createComponent(MdOutlineFormatTextdirectionLToR, {});
@@ -3098,7 +3096,7 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
     return _el$2;
   }
 })], true]];
-web.delegateEvents(["click", "input"]);
+web.delegateEvents(["input"]);
 
 const _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
@@ -3124,7 +3122,7 @@ const SettingPanel = () => {
           const _el$2 = _tmpl$2$4(),
             _el$3 = _el$2.firstChild,
             _el$4 = _el$3.nextSibling;
-          _el$3.$$click = () => setShwo(prev => !prev);
+          _el$3.addEventListener("click", () => setShwo(prev => !prev));
           web.insert(_el$3, name, null);
           web.insert(_el$3, () => show() ? null : ' ...', null);
           web.insert(_el$4, web.createComponent(SettingItem, {}));
@@ -3152,7 +3150,6 @@ const SettingPanel = () => {
     return _el$;
   })();
 };
-web.delegateEvents(["click"]);
 
 const _tmpl$$c = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role="button" tabindex="-1" aria-label="关闭弹窗的遮罩">\`);
@@ -3262,11 +3259,11 @@ props => {
   };
   const popper = solidJs.createMemo(() => [web.createComponent(SettingPanel, {}), (() => {
     const _el$2 = _tmpl$2$3();
-    _el$2.$$click = () => {
+    _el$2.addEventListener("click", () => {
       handleClick();
       props.onMouseLeave();
       store.rootRef?.focus();
-    };
+    });
     web.effect(() => web.className(_el$2, modules_c21c94f2$1.closeCover));
     return _el$2;
   })()]);
@@ -3290,7 +3287,6 @@ props => {
     }
   });
 }];
-web.delegateEvents(["click"]);
 
 const useHover = () => {
   const [isHover, setIsHover] = solidJs.createSignal(false);
@@ -3620,19 +3616,19 @@ const EndPage = () => {
       _el$3 = _el$2.nextSibling,
       _el$4 = _el$3.nextSibling,
       _el$5 = _el$4.nextSibling;
-    _el$.$$click = handleClick;
     const _ref$ = ref;
     typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
+    _el$.addEventListener("click", handleClick);
     web.insert(_el$2, tip);
-    _el$3.$$click = () => store.onPrev?.();
     const _ref$2 = bindRef('prevRef');
     typeof _ref$2 === "function" && web.use(_ref$2, _el$3);
-    _el$4.$$click = () => store.onExit?.(store.endPageType === 'end');
+    _el$3.addEventListener("click", () => store.onPrev?.());
     const _ref$3 = bindRef('exitRef');
     typeof _ref$3 === "function" && web.use(_ref$3, _el$4);
-    _el$5.$$click = () => store.onNext?.();
+    _el$4.addEventListener("click", () => store.onExit?.(store.endPageType === 'end'));
     const _ref$4 = bindRef('nextRef');
     typeof _ref$4 === "function" && web.use(_ref$4, _el$5);
+    _el$5.addEventListener("click", () => store.onNext?.());
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
         return web.memo(() => !!store.option.showComment)() && delayType() === 'end';
@@ -3692,7 +3688,6 @@ const EndPage = () => {
     return _el$;
   })();
 };
-web.delegateEvents(["click"]);
 
 /** 深色模式的 css 变量 */
 const dark = {
@@ -3706,7 +3701,8 @@ const dark = {
   '--secondary_bg': '#556065',
   '--text': 'white',
   '--text_secondary': '#FFFC',
-  '--text_bg': '#121212'
+  '--text_bg': '#121212',
+  'color-scheme': 'dark'
 };
 
 /** 浅色模式的 css 变量 */
@@ -3721,7 +3717,8 @@ const light = {
   '--secondary_bg': '#BAC5CA',
   '--text': 'black',
   '--text_secondary': '#0008',
-  '--text_bg': '#FAFAFA'
+  '--text_bg': '#FAFAFA',
+  'color-scheme': 'light'
 };
 const cssVar = solidJs.createRoot(() => {
   const _cssVar = solidJs.createMemo(() => ({
@@ -4018,7 +4015,7 @@ const useManga = async initProps => {
       })];
     }
   });
-  return [set, props];
+  return [set, props, setProps];
 };
 
 const _tmpl$$5 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03z">\`);
@@ -4047,7 +4044,7 @@ var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__36cc95e4","fab":"index_
 n(css,{});
 
 const _tmpl$$2 = /*#__PURE__*/web.template(\`<div><div>\`),
-  _tmpl$2$1 = /*#__PURE__*/web.template(\`<div><button type="button"><span role="progressbar"><svg viewBox="22 22 44 44"><circle cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6">\`),
+  _tmpl$2$1 = /*#__PURE__*/web.template(\`<div><button type="button" tabindex="-1"><span role="progressbar"><svg viewBox="22 22 44 44"><circle cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6">\`),
   _tmpl$3$1 = /*#__PURE__*/web.template(\`<div>\`);
 const FabStyle = css;
 /**
@@ -4088,7 +4085,7 @@ const Fab = _props => {
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild,
       _el$4 = _el$3.firstChild;
-    _el$2.$$click = () => props.onClick?.();
+    _el$2.addEventListener("click", () => props.onClick?.());
     web.insert(_el$2, () => props.children ?? web.createComponent(MdMenuBook, {}), _el$3);
     web.insert(_el$2, (() => {
       const _c$ = web.memo(() => !!props.tip);
@@ -4106,7 +4103,7 @@ const Fab = _props => {
       get children() {
         const _el$5 = _tmpl$$2(),
           _el$6 = _el$5.firstChild;
-        _el$6.$$click = () => props.onBackdropClick?.();
+        _el$6.addEventListener("click", () => props.onBackdropClick?.());
         web.insert(_el$5, web.createComponent(solidJs.For, {
           get each() {
             return props.speedDial;
@@ -4180,7 +4177,6 @@ const Fab = _props => {
     return _el$;
   })();
 };
-web.delegateEvents(["click"]);
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let mounted = false;
@@ -4338,7 +4334,7 @@ const useInit = async (name, defaultOptions = {}) => {
       });
     }
   };
-  const [setManga, mangaProps] = await useManga({
+  const [setManga, mangaProps, _setManga] = await useManga({
     imgList: [],
     option: options.option,
     onOptionChange: option => setOptions({
@@ -4353,12 +4349,18 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.8.1](https://github.com/hymbz/ComicReadScript/compare/v6.8.0...v6.8.1) (2023-08-11)
+## [6.8.2](https://github.com/hymbz/ComicReadScript/compare/v6.8.1...v6.8.2) (2023-08-12)
 
 
 ### Bug Fixes
 
-* :bug: 修复悬浮按钮显示异常的 bug ([d9a2405](https://github.com/hymbz/ComicReadScript/commit/d9a2405d241d2a68f1177bac9f2b66bec8900e40))
+* :bug: 修复和 Dark Reader 的冲突 ([ffc5336](https://github.com/hymbz/ComicReadScript/commit/ffc5336f14c7a9c9568a04f84ac87d208b724314))
+* :bug: 修复在已支持的站点上显示简易模式菜单项的 bug ([b235add](https://github.com/hymbz/ComicReadScript/commit/b235add45ba4076b3138e1aaba66798ed706be51))
+
+
+### Performance Improvements
+
+* :zap: 优化 eh、jm 的加载策略，尽快进入阅读模式 ([0709ac9](https://github.com/hymbz/ComicReadScript/commit/0709ac9e31776a9d37d8b3cec48108f261293bed))
 \`;
     toast$1(() => [(() => {
       const _el$ = _tmpl$();
@@ -4435,6 +4437,8 @@ const useInit = async (name, defaultOptions = {}) => {
     setManga,
     mangaProps,
     needAutoShow,
+    /** Manga 组件的默认 onLoading */
+    onLoading,
     /**
      * 对 加载图片 和 进入阅读模式 相关初始化的封装
      * @param getImgList 返回图片列表的函数
@@ -4504,9 +4508,28 @@ const useInit = async (name, defaultOptions = {}) => {
         /** 进入阅读模式 */
         showComic,
         /** 加载 imgList */
-        loadImgList,
-        /** Manga 组件的默认 onLoading */
-        onLoading
+        loadImgList
+      };
+    },
+    /** 使用动态更新来加载 imgList */
+    dynamicUpdate: (work, totalImgNum) => {
+      const updateImgList = async () => {
+        setManga({
+          onLoading: undefined
+        });
+        _setManga('imgList', Array(totalImgNum).fill(''));
+        await work((i, imgUrl) => {
+          _setManga('imgList', i, imgUrl);
+        });
+        setManga({
+          onLoading
+        });
+      };
+      return async () => {
+        if (mangaProps.imgList.length === totalImgNum) return mangaProps.imgList;
+        setTimeout(updateImgList);
+        await wait(() => mangaProps.imgList.some(Boolean));
+        return mangaProps.imgList;
       };
     }
   };
@@ -4594,6 +4617,7 @@ const universalInit = async ({
 
 exports.assign = assign;
 exports.autoUpdate = autoUpdate;
+exports.createFillImgList = createFillImgList;
 exports.dataToParams = dataToParams;
 exports.difference = difference;
 exports.getKeyboardCode = getKeyboardCode;
@@ -4720,7 +4744,8 @@ const MdSettings = ((props = {}) => (() => {
     options,
     setFab,
     setManga,
-    init
+    init,
+    onLoading
   } = await main.useInit('yamibo', {
     记录阅读进度: true,
     关闭快捷导航的跳转: true,
@@ -4838,8 +4863,7 @@ const MdSettings = ((props = {}) => (() => {
       updateImgList();
       const {
         showComic,
-        loadImgList,
-        onLoading
+        loadImgList
       } = init(() => imgList.map(img => img.src));
       setManga({
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
@@ -4983,7 +5007,7 @@ const MdSettings = ((props = {}) => (() => {
     if (options.修正点击页数时的跳转判定) {
       const List = main.querySelectorAll('.tps>a');
       let i = List.length;
-      while (i--) List[i].setAttribute('onclick', 'atarget(this)');
+      while (i--) List[i].setAttribute('onClick', 'atarget(this)');
     }
     if (options.记录阅读进度) {
       const cache = main.useCache(db => {
@@ -5006,7 +5030,7 @@ const MdSettings = ((props = {}) => (() => {
           main.insertNode(e.getElementsByTagName('th')[0], `
                 <a
                   class="historyTag"
-                  onclick="atarget(this)"
+                  onClick="atarget(this)"
                   href="thread-${tid}-${data.lastPageNum}-1.html#${data.lastAnchor}"
                 >
                   回第${data.lastPageNum}页
@@ -5025,6 +5049,7 @@ const MdSettings = ((props = {}) => (() => {
   }
 })();
 
+      options = false;
       break;
     }
   // #百合会新站
@@ -5413,6 +5438,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2
   });
 })();
 
+      options = false;
       break;
     }
   case 'm.idmzj.com':
@@ -5573,6 +5599,7 @@ const getChapterInfo = async (comicId, chapterId) => {
   }
 })();
 
+      options = false;
       break;
     }
   case 'www.idmzj.com':
@@ -5623,6 +5650,7 @@ const turnPage = chapterId => {
   }
 })();
 
+      options = false;
       break;
     }
 
@@ -5645,7 +5673,8 @@ const MdSettings = ((props = {}) => (() => {
     options,
     setFab,
     setManga,
-    init
+    init,
+    dynamicUpdate
   } = await main.useInit('ehentai', {
     匹配nhentai: true,
     快捷键翻页: true,
@@ -5693,6 +5722,9 @@ const MdSettings = ((props = {}) => (() => {
   main.insertNode(document.getElementById('gd5'), '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>');
   const comicReadModeDom = document.getElementById('comicReadMode');
 
+  /** 获取当前显示页数 */
+  const getCurrentPageNum = +(main.querySelector('.ptds')?.innerText ?? '');
+
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async url => {
     const res = await main.request(url, {
@@ -5710,6 +5742,7 @@ const MdSettings = ((props = {}) => (() => {
 
   /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (pageNum = 0) => {
+    if (getCurrentPageNum - 1 === pageNum) return main.querySelectorAll('.gdtl > a').map(e => e.href);
     const res = await main.request(`${window.location.origin}${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`, {
       errorText: '从详情页获取图片页地址失败'
     });
@@ -5722,33 +5755,35 @@ const MdSettings = ((props = {}) => (() => {
     }
     return imgPageList;
   };
-  let ehentaiImgList;
+  const totalImgNum = +(main.querySelector('.gtb .gpc')?.innerText.match(/\d+/g)?.at(-1) ?? '0');
+  const ehImgList = [];
   const {
     loadImgList
-  } = init(async () => {
-    const totalPageNum = +main.querySelector('.ptt td:nth-last-child(2)').innerText;
+  } = init(dynamicUpdate(async setImg => {
     comicReadModeDom.innerHTML = ` loading`;
-
-    // 从详情页获取所有图片页的 url
-    const imgPageUrlList = await main.plimit([...Array(totalPageNum).keys()].map(pageNum => () => getImgFromDetailsPage(pageNum)), (doneNum, totalNum) => {
-      setFab({
-        tip: `获取图片页中 - ${doneNum}/${totalNum}`
+    const totalPageNum = +main.querySelector('.ptt td:nth-last-child(2)').innerText;
+    for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
+      const startIndex = ehImgList.length;
+      const imgPageUrlList = await getImgFromDetailsPage(pageNum);
+      await main.plimit(imgPageUrlList.map((imgPageUrl, i) => async () => {
+        const imgUrl = await getImgFromImgPage(imgPageUrl);
+        const index = startIndex + i;
+        ehImgList[index] = imgUrl;
+        setImg(index, imgUrl);
+      }), _doneNum => {
+        const doneNum = startIndex + _doneNum;
+        setFab({
+          progress: doneNum / totalImgNum,
+          tip: `加载图片中 - ${doneNum}/${totalImgNum}`
+        });
+        comicReadModeDom.innerHTML = doneNum !== totalImgNum ? ` loading - ${doneNum}/${totalImgNum}` : ` Read`;
       });
-    });
-    const imgList = await main.plimit(imgPageUrlList.flat().map(imgPageUrl => () => getImgFromImgPage(imgPageUrl)), (doneNum, totalNum) => {
-      setFab({
-        progress: doneNum / totalNum,
-        tip: `加载图片中 - ${doneNum}/${totalNum}`
-      });
-      comicReadModeDom.innerHTML = doneNum !== totalNum ? ` loading - ${doneNum}/${totalNum}` : ` Read`;
-    });
-    ehentaiImgList = imgList;
-    return imgList;
-  });
+    }
+  }, totalImgNum));
   setFab({
     initialShow: options.autoShow
   });
-  comicReadModeDom.addEventListener('click', () => loadImgList(ehentaiImgList, true));
+  comicReadModeDom.addEventListener('click', () => loadImgList(ehImgList, true));
   if (options.快捷键翻页) {
     main.linstenKeyup(e => {
       switch (e.key) {
@@ -5799,7 +5834,7 @@ const MdSettings = ((props = {}) => (() => {
       while (i) {
         i -= 1;
         const tempComicInfo = nHentaiComicInfo.result[i];
-        temp += `<div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${tempComicInfo.title.japanese ? tempComicInfo.title.japanese : tempComicInfo.title.english}"><a href="https://nhentai.net/g/${tempComicInfo.id}/" index=${i} onclick="return toggle_tagmenu('nhentai:${tempComicInfo.id}',this)">${tempComicInfo.id}</a></a></div>`;
+        temp += `<div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${tempComicInfo.title.japanese ? tempComicInfo.title.japanese : tempComicInfo.title.english}"><a href="https://nhentai.net/g/${tempComicInfo.id}/" index=${i} onClick="return toggle_tagmenu('nhentai:${tempComicInfo.id}',this)">${tempComicInfo.id}</a></a></div>`;
       }
       newTagLine.innerHTML = `${temp}</td>`;
     } else newTagLine.innerHTML = '<td class="tc">nhentai:</td><td class="tc" style="text-align: left;">Null</td>';
@@ -5852,6 +5887,7 @@ const MdSettings = ((props = {}) => (() => {
   }
 })();
 
+      options = false;
       break;
     }
 
@@ -5990,6 +6026,7 @@ const fileType = {
   }
 })();
 
+      options = false;
       break;
     }
 
@@ -6048,7 +6085,8 @@ const main = require('main');
   const {
     init,
     setManga,
-    setFab
+    setFab,
+    dynamicUpdate
   } = await main.useInit('jm');
   while (!unsafeWindow?.onImageLoaded) {
     if (document.readyState === 'complete') {
@@ -6108,14 +6146,18 @@ const main = require('main');
     }
   };
 
-  // 先等网页自己的懒加载加载完毕
+  // 先等懒加载触发完毕
   await main.wait(() => main.querySelectorAll('.lazy-loaded.hide').length && main.querySelectorAll('.lazy-loaded.hide').length === main.querySelectorAll('canvas').length);
-  init(() => main.plimit(imgEleList.map(img => () => getImgUrl(img)), (doneNum, totalNum) => {
-    setFab({
-      progress: doneNum / totalNum,
-      tip: `加载图片中 - ${doneNum}/${totalNum}`
+  init(dynamicUpdate(async setImg => {
+    await main.plimit(imgEleList.map((img, i) => async () => {
+      setImg(i, await getImgUrl(img));
+    }), (doneNum, totalNum) => {
+      setFab({
+        progress: doneNum / totalNum,
+        tip: `加载图片中 - ${doneNum}/${totalNum}`
+      });
     });
-  }));
+  }, imgEleList.length));
   const retry = (num = 0) => setManga(async state => {
     for (let i = 0; i < imgEleList.length; i++) {
       if (state.imgList[i]) continue;
@@ -6127,6 +6169,7 @@ const main = require('main');
   retry();
 })();
 
+      options = false;
       break;
     }
 
