@@ -336,7 +336,7 @@ interface History {
     if (options.修正点击页数时的跳转判定) {
       const List = querySelectorAll('.tps>a');
       let i = List.length;
-      while (i--) List[i].setAttribute('onclick', 'atarget(this)');
+      while (i--) List[i].setAttribute('onClick', 'atarget(this)');
     }
 
     if (options.记录阅读进度) {
@@ -364,7 +364,7 @@ interface History {
               `
                 <a
                   class="historyTag"
-                  onclick="atarget(this)"
+                  onClick="atarget(this)"
                   href="thread-${tid}-${data.lastPageNum}-1.html#${
                     data.lastAnchor
                   }"

@@ -78,7 +78,7 @@ export const ToastItem: Component<Toast> = (props) => {
       style={{ '--theme': colorMap[props.type] }}
       data-schedule={showSchedule()}
       data-exit={props.exit}
-      onClick={dismiss}
+      on:click={dismiss}
       onAnimationEnd={handleAnimationEnd}
     >
       <Dynamic component={iconMap[props.type]} />

@@ -47,17 +47,23 @@ declare module 'solid-js' {
       currentTarget: HTMLElement;
       target: Element;
     };
+    type MouseEventSelf = MouseEvent & {
+      currentTarget: HTMLButtonElement;
+      target: Element;
+    };
 
     interface CustomEvents {
       keydown: KeyboardEventSelf;
       keyup: KeyboardEventSelf;
       keypress: KeyboardEventSelf;
+      click: MouseEventSelf;
     }
 
     interface CustomCaptureEvents {
       keydown: KeyboardEventSelf;
       keyup: KeyboardEventSelf;
       keypress: KeyboardEventSelf;
+      click: MouseEventSelf;
     }
   }
 }

@@ -78,16 +78,16 @@ export const Root: Component = () => (
       <div class={classes.body}>
         <div innerHTML={TipMd.html} />
         <span style={{ 'margin-top': '1em' }}>
-          <button type="button" onClick={handleSelectFiles}>
+          <button type="button" on:click={handleSelectFiles}>
             选择文件
           </button>
-          <button type="button" onClick={handleSelectDir}>
+          <button type="button" on:click={handleSelectDir}>
             选择文件夹
           </button>
           <Show when={store.imgList.length}>
             <button
               type="button"
-              onClick={() =>
+              on:click={() =>
                 setState((state) => {
                   state.show = true;
                 })
@@ -103,11 +103,11 @@ export const Root: Component = () => (
         >
           <div innerHTML={installMd.html} />
           <div style={{ 'text-align': 'center' }}>
-            <button type="button" onClick={pwaInstallHandler.install}>
+            <button type="button" on:click={pwaInstallHandler.install}>
               安装
             </button>
             <a
-              onClick={() =>
+              on:click={() =>
                 setState((state) => {
                   state.hiddenInstallTip = 'TD';
                 })

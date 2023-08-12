@@ -28,7 +28,7 @@ export const SettingPanel: Component = () => {
               <div class={classes.SettingBlock} data-show={show()}>
                 <div
                   class={classes.SettingBlockSubtitle}
-                  onClick={() => setShwo((prev) => !prev)}
+                  on:click={() => setShwo((prev) => !prev)}
                 >
                   {name}
                   {show() ? null : ' ...'}

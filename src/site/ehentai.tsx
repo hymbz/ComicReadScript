@@ -234,7 +234,7 @@ declare const selected_link: HTMLElement;
             : tempComicInfo.title.english
         }"><a href="https://nhentai.net/g/${
           tempComicInfo.id
-        }/" index=${i} onclick="return toggle_tagmenu('nhentai:${
+        }/" index=${i} onClick="return toggle_tagmenu('nhentai:${
           tempComicInfo.id
         }',this)">${tempComicInfo.id}</a></a></div>`;
       }

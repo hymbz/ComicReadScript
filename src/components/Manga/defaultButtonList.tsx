@@ -143,7 +143,7 @@ export const defaultButtonList: ToolbarButtonList = [
         <SettingPanel />
         <div
           class={classes.closeCover}
-          onClick={() => {
+          on:click={() => {
             handleClick();
             props.onMouseLeave();
             store.rootRef?.focus();

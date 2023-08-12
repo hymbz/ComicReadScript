@@ -204,7 +204,7 @@ declare namespace Tampermonkey {
     id: string;
   }
 
-  type NotificationOnClick = (this: NotificationThis) => void;
+  type NotificationonClick = (this: NotificationThis) => void;
   /** `clicked` is `true` when `text` was set */
   type NotificationOnDone = (this: NotificationThis, clicked: boolean) => void;
 
@@ -224,7 +224,7 @@ declare namespace Tampermonkey {
      * Called when the notification is closed (no matter if this was
      * triggered by a timeout or a click) or the tab was highlighted
      */
-    onclick?: NotificationOnClick | undefined;
+    onClick?: NotificationonClick | undefined;
     /** Called in case the user clicks the notification */
     ondone?: NotificationOnDone | undefined;
   }
@@ -545,13 +545,13 @@ declare function GM_notification(
  * @param text Text of the notification
  * @param title Notification title. If not specified the script name is used
  * @param image
- * @param onclick Called in case the user clicks the notification
+ * @param onClick Called in case the user clicks the notification
  */
 declare function GM_notification(
   text: string,
   title?: string,
   image?: string,
-  onclick?: Tampermonkey.NotificationOnClick,
+  onClick?: Tampermonkey.NotificationonClick,
 ): void;
 
 /**
@@ -715,14 +715,14 @@ declare const GM: Readonly<{
    * Shows a HTML5 Desktop notification and/or highlight the current tab.
    * @param text Text of the notification
    * @param title Notification title. If not specified the script name is used
-   * @param onclick Called in case the user clicks the notification
+   * @param onClick Called in case the user clicks the notification
    * @returns True if the notification was clicked
    */
   notification(
     text: string,
     title?: string,
     image?: string,
-    onclick?: Tampermonkey.NotificationOnClick,
+    onClick?: Tampermonkey.NotificationonClick,
   ): Promise<boolean>;
 
   /**

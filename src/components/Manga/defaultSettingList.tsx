@@ -37,7 +37,7 @@ export const defaultSettingList: SettingList = [
         <button
           class={classes.SettingsItemIconButton}
           type="button"
-          onClick={() =>
+          on:click={() =>
             setOption((draftOption) => {
               draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
             })

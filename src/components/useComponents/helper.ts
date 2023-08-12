@@ -7,7 +7,7 @@ export const mountComponents = (id: string, fc: () => JSX.Element) => {
   dom.id = id;
   dom.style.setProperty('display', 'unset', 'important');
   document.body.appendChild(dom);
-  const shadowDom = dom.attachShadow({ mode: 'open' });
+  const shadowDom = dom.attachShadow({ mode: 'closed' });
   render(fc, shadowDom);
   return dom;
 };

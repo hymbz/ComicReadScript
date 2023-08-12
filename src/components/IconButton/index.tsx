@@ -45,7 +45,8 @@ export const IconButton: Component<IconButtonProps> = (_props) => {
           [classes.hidden]: props.hidden,
           [classes.enabled]: props.enabled,
         }}
-        onClick={handleClick}
+        tabIndex={-1}
+        on:click={handleClick}
       >
         {props.children}
       </button>

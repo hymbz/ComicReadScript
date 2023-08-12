@@ -75,7 +75,7 @@ export const EndPage: Component = () => {
       class={classes.endPage}
       data-show={store.endPageType}
       data-type={delayType()}
-      onClick={handleClick}
+      on:click={handleClick}
       role="button"
       tabIndex={-1}
     >
@@ -85,7 +85,7 @@ export const EndPage: Component = () => {
         type="button"
         classList={{ [classes.invisible]: !store.onPrev }}
         tabIndex={store.endPageType ? 0 : -1}
-        onClick={() => store.onPrev?.()}
+        on:click={() => store.onPrev?.()}
       >
         上一话
       </button>
@@ -94,7 +94,7 @@ export const EndPage: Component = () => {
         type="button"
         data-is-end
         tabIndex={store.endPageType ? 0 : -1}
-        onClick={() => store.onExit?.(store.endPageType === 'end')}
+        on:click={() => store.onExit?.(store.endPageType === 'end')}
       >
         退出
       </button>
@@ -103,7 +103,7 @@ export const EndPage: Component = () => {
         type="button"
         classList={{ [classes.invisible]: !store.onNext }}
         tabIndex={store.endPageType ? 0 : -1}
-        onClick={() => store.onNext?.()}
+        on:click={() => store.onNext?.()}
       >
         下一话
       </button>

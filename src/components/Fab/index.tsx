@@ -82,7 +82,8 @@ export const Fab: Component<FabProps> = (_props) => {
       <button
         type="button"
         class={classes.fab}
-        onClick={() => props.onClick?.()}
+        on:click={() => props.onClick?.()}
+        tabIndex={-1}
       >
         {props.children ?? <MdMenuBook />}
 
@@ -108,7 +109,7 @@ export const Fab: Component<FabProps> = (_props) => {
         <div class={classes.speedDial}>
           <div
             class={classes.backdrop}
-            onClick={() => props.onBackdropClick?.()}
+            on:click={() => props.onBackdropClick?.()}
           />
           <For each={props.speedDial}>
             {(SpeedDialItem, i) => (

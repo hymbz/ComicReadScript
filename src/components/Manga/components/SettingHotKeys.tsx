@@ -51,7 +51,8 @@ const KeyItem: Component<{
       onBlur={() => code() || del()}
     >
       {keyboardCodeToText(code())}
-      <MdClose onClick={del} />
+      {/* eslint-disable-next-line solid/no-unknown-namespaces */}
+      <MdClose on:click={del} />
     </div>
   );
 };
@@ -65,13 +66,13 @@ export const SettingHotKeys: Component = () => (
           <span style={{ 'flex-grow': 1 }} />
           <div
             title="添加新快捷键"
-            onClick={() => setHotKeys(name, store.hotKeys[name].length, '')}
+            on:click={() => setHotKeys(name, store.hotKeys[name].length, '')}
           >
             <MdAdd />
           </div>
           <div
             title="恢复默认快捷键"
-            onClick={() => {
+            on:click={() => {
               const newKeys = defaultHoeKeys[name] ?? [];
               newKeys.forEach(delHotKeys);
               setHotKeys(name, newKeys);
