@@ -91,7 +91,7 @@ export const Manga: Component<MangaProps> = (props) => {
       ref={rootRef!}
       style={cssVar()}
       onWheel={handleWheel}
-      onMouseDown={handleMouseDown}
+      on:mousedown={handleMouseDown}
       oncapture:keydown={handleKeyDown}
       oncapture:keypress={stopPropagation}
       oncapture:keyup={stopPropagation}

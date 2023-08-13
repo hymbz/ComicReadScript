@@ -57,6 +57,7 @@ declare module 'solid-js' {
       keyup: KeyboardEventSelf;
       keypress: KeyboardEventSelf;
       click: MouseEventSelf;
+      mousedown: MouseEventSelf;
     }
 
     interface CustomCaptureEvents {
@@ -64,6 +65,7 @@ declare module 'solid-js' {
       keyup: KeyboardEventSelf;
       keypress: KeyboardEventSelf;
       click: MouseEventSelf;
+      mousedown: MouseEventSelf;
     }
   }
 }

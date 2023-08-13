@@ -148,7 +148,7 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   }
 };
 
-export const handleMouseDown: EventHandler['onmousedown'] = (e) => {
+export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
   if (e.button !== 1) return;
   e.stopPropagation();
   e.preventDefault();
