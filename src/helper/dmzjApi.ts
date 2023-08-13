@@ -52,6 +52,9 @@ export const getViewpoint = async (comicId: Text, chapterId: Text) => {
       { errorText: '获取章节评论失败' },
     );
 
+    // 还有另一个 api
+    // http://v3api.dmzj.com/viewPoint/0/${comic_id}/${chapter_id}.json
+
     return JSON.parse(res.responseText).data.list.map(
       ({ title, num }) => `${title} [+${num}]`,
     ) as string[];

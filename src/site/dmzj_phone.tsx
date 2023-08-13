@@ -9,7 +9,7 @@ import {
 } from 'main';
 import dmzjDecrypt from 'dmzjDecrypt';
 import type { ChapterInfo } from '../helper/dmzjApi';
-import { getChapterInfo } from '../helper/dmzjApi';
+import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
 
 (async () => {
   const { setManga, init } = await useInit('dmzj');
@@ -147,10 +147,10 @@ import { getChapterInfo } from '../helper/dmzjApi';
 
       let data: ChapterInfo | undefined;
 
+      let comicId: string;
+      let chapterId: string;
       try {
-        const [, comicId, chapterId] = /(\d+)\/(\d+)/.exec(
-          window.location.pathname,
-        )!;
+        [, comicId, chapterId] = /(\d+)\/(\d+)/.exec(window.location.pathname)!;
         data = await getChapterInfo(comicId, chapterId);
       } catch (error) {
         toast.error('获取漫画数据失败', { duration: Infinity });
@@ -192,6 +192,10 @@ import { getChapterInfo } from '../helper/dmzjApi';
 
         tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
         return [];
+      });
+
+      setManga({
+        commentList: await getViewpoint(comicId, chapterId),
       });
       break;
     }
