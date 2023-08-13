@@ -158,7 +158,7 @@ declare const selected_link: HTMLElement;
 
   setFab({ initialShow: options.autoShow });
   comicReadModeDom.addEventListener('click', () =>
-    loadImgList(ehImgList, true),
+    loadImgList(ehImgList.length ? ehImgList : undefined, true),
   );
 
   if (options.快捷键翻页) {
