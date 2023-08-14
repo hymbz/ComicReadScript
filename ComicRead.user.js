@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.8.3
+// @version      6.8.4
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -4348,18 +4348,12 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.8.3](https://github.com/hymbz/ComicReadScript/compare/v6.8.2...v6.8.3) (2023-08-14)
+## [6.8.4](https://github.com/hymbz/ComicReadScript/compare/v6.8.3...v6.8.4) (2023-08-14)
 
 
 ### Bug Fixes
 
-* :bug: 修复无法使用 ehentai 的 load comic 按钮加载的 bug ([08698a2](https://github.com/hymbz/ComicReadScript/commit/08698a2f5cdf6c9301e76bf3a93c8be9c9b9ec69))
-* :bug: 修复无法使用鼠标中键切换页面填充的 bug ([c79f0d6](https://github.com/hymbz/ComicReadScript/commit/c79f0d64c4ea9e516f4a99a224ee8d62d48fd8d3))
-
-
-### Performance Improvements
-
-* :zap: 为 dmzj 的隐藏漫画增加显示评论 ([0ae3707](https://github.com/hymbz/ComicReadScript/commit/0ae3707e5c2c830b43fe998d853c0d53dad60e34))
+* :bug: 修复 eh 和其他脚本冲突导致的加载异常 ([5e6ac07](https://github.com/hymbz/ComicReadScript/commit/5e6ac071cc41510d56223e6e0a46e9652bc9cbca))
 \`;
     toast$1(() => [(() => {
       const _el$ = _tmpl$();
@@ -5749,9 +5743,6 @@ const MdSettings = ((props = {}) => (() => {
   main.insertNode(document.getElementById('gd5'), '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>');
   const comicReadModeDom = document.getElementById('comicReadMode');
 
-  /** 获取当前显示页数 */
-  const getCurrentPageNum = +(main.querySelector('.ptds')?.innerText ?? '');
-
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async url => {
     const res = await main.request(url, {
@@ -5769,7 +5760,6 @@ const MdSettings = ((props = {}) => (() => {
 
   /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (pageNum = 0) => {
-    if (getCurrentPageNum - 1 === pageNum) return main.querySelectorAll('.gdtl > a').map(e => e.href);
     const res = await main.request(`${window.location.origin}${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`, {
       errorText: '从详情页获取图片页地址失败'
     });
