@@ -57,7 +57,8 @@ export const useInit = async <T extends Record<string, any>>(
 
   // 检查脚本的版本变化，提示用户
   const version = await GM.getValue<string>('Version');
-  if (version && version !== GM.info.script.version) {
+  if (!version) await GM.setValue('Version', GM.info.script.version);
+  else if (version !== GM.info.script.version) {
     const latestChange = inject('LatestChange');
     toast(
       () => (
