@@ -1,12 +1,12 @@
-## [6.8.2](https://github.com/hymbz/ComicReadScript/compare/v6.8.1...v6.8.2) (2023-08-12)
+## [6.8.3](https://github.com/hymbz/ComicReadScript/compare/v6.8.2...v6.8.3) (2023-08-14)
 
 
 ### Bug Fixes
 
-* :bug: 修复和 Dark Reader 的冲突 ([ffc5336](https://github.com/hymbz/ComicReadScript/commit/ffc5336f14c7a9c9568a04f84ac87d208b724314))
-* :bug: 修复在已支持的站点上显示简易模式菜单项的 bug ([b235add](https://github.com/hymbz/ComicReadScript/commit/b235add45ba4076b3138e1aaba66798ed706be51))
+* :bug: 修复无法使用 ehentai 的 load comic 按钮加载的 bug ([08698a2](https://github.com/hymbz/ComicReadScript/commit/08698a2f5cdf6c9301e76bf3a93c8be9c9b9ec69))
+* :bug: 修复无法使用鼠标中键切换页面填充的 bug ([c79f0d6](https://github.com/hymbz/ComicReadScript/commit/c79f0d64c4ea9e516f4a99a224ee8d62d48fd8d3))
 
 
 ### Performance Improvements
 
-* :zap: 优化 eh、jm 的加载策略，尽快进入阅读模式 ([0709ac9](https://github.com/hymbz/ComicReadScript/commit/0709ac9e31776a9d37d8b3cec48108f261293bed))
+* :zap: 为 dmzj 的隐藏漫画增加显示评论 ([0ae3707](https://github.com/hymbz/ComicReadScript/commit/0ae3707e5c2c830b43fe998d853c0d53dad60e34))

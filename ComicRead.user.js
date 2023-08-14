@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.8.2
+// @version      6.8.3
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -3860,10 +3860,10 @@ const Manga = props => {
   });
   return (() => {
     const _el$ = _tmpl$$7();
-    web.addEventListener(_el$, "mousedown", handleMouseDown, true);
     web.addEventListener(_el$, "wheel", handleWheel);
     const _ref$ = rootRef;
     typeof _ref$ === "function" ? web.use(_ref$, _el$) : rootRef = _el$;
+    _el$.addEventListener("mousedown", handleMouseDown);
     _el$.addEventListener("keydown", handleKeyDown, true);
     _el$.addEventListener("keypress", stopPropagation, true);
     _el$.addEventListener("keyup", stopPropagation, true);
@@ -3892,7 +3892,6 @@ const Manga = props => {
     return _el$;
   })();
 };
-web.delegateEvents(["mousedown"]);
 
 const _tmpl$$6 = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let dom;
@@ -4349,18 +4348,18 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (version && version !== GM.info.script.version) {
     const latestChange =\`
-## [6.8.2](https://github.com/hymbz/ComicReadScript/compare/v6.8.1...v6.8.2) (2023-08-12)
+## [6.8.3](https://github.com/hymbz/ComicReadScript/compare/v6.8.2...v6.8.3) (2023-08-14)
 
 
 ### Bug Fixes
 
-* :bug: 修复和 Dark Reader 的冲突 ([ffc5336](https://github.com/hymbz/ComicReadScript/commit/ffc5336f14c7a9c9568a04f84ac87d208b724314))
-* :bug: 修复在已支持的站点上显示简易模式菜单项的 bug ([b235add](https://github.com/hymbz/ComicReadScript/commit/b235add45ba4076b3138e1aaba66798ed706be51))
+* :bug: 修复无法使用 ehentai 的 load comic 按钮加载的 bug ([08698a2](https://github.com/hymbz/ComicReadScript/commit/08698a2f5cdf6c9301e76bf3a93c8be9c9b9ec69))
+* :bug: 修复无法使用鼠标中键切换页面填充的 bug ([c79f0d6](https://github.com/hymbz/ComicReadScript/commit/c79f0d64c4ea9e516f4a99a224ee8d62d48fd8d3))
 
 
 ### Performance Improvements
 
-* :zap: 优化 eh、jm 的加载策略，尽快进入阅读模式 ([0709ac9](https://github.com/hymbz/ComicReadScript/commit/0709ac9e31776a9d37d8b3cec48108f261293bed))
+* :zap: 为 dmzj 的隐藏漫画增加显示评论 ([0ae3707](https://github.com/hymbz/ComicReadScript/commit/0ae3707e5c2c830b43fe998d853c0d53dad60e34))
 \`;
     toast$1(() => [(() => {
       const _el$ = _tmpl$();
@@ -5108,6 +5107,10 @@ const getViewpoint = async (comicId, chapterId) => {
     const res = await main.request(`https://manhua.dmzj.com/tpi/api/viewpoint/getViewpoint?type=0&type_id=${comicId}&chapter_id=${chapterId}&more=1`, {
       errorText: '获取章节评论失败'
     });
+
+    // 还有另一个 api
+    // http://v3api.dmzj.com/viewPoint/0/${comic_id}/${chapter_id}.json
+
     return JSON.parse(res.responseText).data.list.map(({
       title,
       num
@@ -5455,6 +5458,25 @@ const getChapterInfo = async (comicId, chapterId) => {
   return JSON.parse(res.responseText);
 };
 
+/** 根据漫画 id 和章节 id 获取章节评论 */
+const getViewpoint = async (comicId, chapterId) => {
+  try {
+    const res = await main.request(`https://manhua.dmzj.com/tpi/api/viewpoint/getViewpoint?type=0&type_id=${comicId}&chapter_id=${chapterId}&more=1`, {
+      errorText: '获取章节评论失败'
+    });
+
+    // 还有另一个 api
+    // http://v3api.dmzj.com/viewPoint/0/${comic_id}/${chapter_id}.json
+
+    return JSON.parse(res.responseText).data.list.map(({
+      title,
+      num
+    }) => `${title} [+${num}]`);
+  } catch (_) {
+    return [];
+  }
+};
+
 (async () => {
   const {
     setManga,
@@ -5558,8 +5580,10 @@ const getChapterInfo = async (comicId, chapterId) => {
         tipDom.innerText = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
         document.body.appendChild(tipDom);
         let data;
+        let comicId;
+        let chapterId;
         try {
-          const [, comicId, chapterId] = /(\d+)\/(\d+)/.exec(window.location.pathname);
+          [, comicId, chapterId] = /(\d+)\/(\d+)/.exec(window.location.pathname);
           data = await getChapterInfo(comicId, chapterId);
         } catch (error) {
           main.toast.error('获取漫画数据失败', {
@@ -5593,6 +5617,9 @@ const getChapterInfo = async (comicId, chapterId) => {
           if (page_url.length) return page_url;
           tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
           return [];
+        });
+        setManga({
+          commentList: await getViewpoint(comicId, chapterId)
         });
         break;
       }
@@ -5783,7 +5810,7 @@ const MdSettings = ((props = {}) => (() => {
   setFab({
     initialShow: options.autoShow
   });
-  comicReadModeDom.addEventListener('click', () => loadImgList(ehImgList, true));
+  comicReadModeDom.addEventListener('click', () => loadImgList(ehImgList.length ? ehImgList : undefined, true));
   if (options.快捷键翻页) {
     main.linstenKeyup(e => {
       switch (e.key) {
