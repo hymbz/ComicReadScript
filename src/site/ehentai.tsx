@@ -9,7 +9,6 @@ import {
   useInit,
   toast,
   plimit,
-  querySelectorAll,
 } from 'main';
 
 declare const selected_tag: string;
@@ -69,9 +68,6 @@ declare const selected_link: HTMLElement;
   );
   const comicReadModeDom = document.getElementById('comicReadMode')!;
 
-  /** 获取当前显示页数 */
-  const getCurrentPageNum = +(querySelector('.ptds')?.innerText ?? '');
-
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async (url: string): Promise<string> => {
     const res = await request(url, { errorText: '获取图片页源码失败' });
@@ -89,11 +85,6 @@ declare const selected_link: HTMLElement;
 
   /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
-    if (getCurrentPageNum - 1 === pageNum)
-      return querySelectorAll<HTMLAnchorElement>('.gdtl > a').map(
-        (e) => e.href,
-      );
-
     const res = await request(
       `${window.location.origin}${window.location.pathname}${
         pageNum ? `?p=${pageNum}` : ''
