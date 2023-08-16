@@ -14,6 +14,7 @@ import { handlePageClick } from './TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
 
 import classes from '../index.module.css';
+import { useHiddenMouse } from '../hooks/useHiddenMouse';
 
 /**
  * 漫画图片流的容器
@@ -35,6 +36,8 @@ export const ComicImgFlow: Component = () => {
     });
   };
 
+  const { hiddenMouse, onMouseMove } = useHiddenMouse();
+
   return (
     <div
       class={classes.mangaFlowBox}
@@ -43,6 +46,8 @@ export const ComicImgFlow: Component = () => {
         e.addEventListener('scroll', handleMangaFlowScroll, { passive: true })
       }
       tabIndex={-1}
+      data-hiddenMouse={hiddenMouse()}
+      on:mousemove={onMouseMove}
     >
       <div
         id={classes.mangaFlow}

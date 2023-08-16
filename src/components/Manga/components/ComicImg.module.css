@@ -39,6 +39,10 @@
   &::-webkit-scrollbar {
     display: none;
   }
+
+  &[data-hiddenMouse="true"] .img {
+    cursor: none;
+  }
 }
 
 .mangaFlow {
