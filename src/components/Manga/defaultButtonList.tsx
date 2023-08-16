@@ -146,6 +146,10 @@ export const defaultButtonList: ToolbarButtonList = [
           on:click={() => {
             handleClick();
             props.onMouseLeave();
+            setState((state) => {
+              state.showToolbar = false;
+              state.showScrollbar = false;
+            });
             store.rootRef?.focus();
           }}
           role="button"

@@ -102,6 +102,24 @@ switch (window.location.hostname) {
     break;
   }
 
+  // #PonpomuYuri
+  case 'www.ponpomu.com': {
+    options = {
+      name: 'terraHistoricus',
+      wait: () => !!main.querySelector('.comic-page-container img'),
+      getImgList: () =>
+        main
+          .querySelectorAll('.comic-page-container img')
+          .map((e) => e.getAttribute('data-srcset')!),
+      SPA: {
+        isMangaPage: () => window.location.href.includes('/comic/'),
+        getOnPrev: () => main.querySelectorClick('.prev-btn a'),
+        getOnNext: () => main.querySelectorClick('.next-btn a'),
+      },
+    };
+    break;
+  }
+
   // #明日方舟泰拉记事社
   case 'terra-historicus.hypergryph.com': {
     const apiUrl = () =>
