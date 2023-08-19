@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.8.4
-// @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
+// @version      6.9.0
+// @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
 // @noframes
@@ -1716,7 +1716,7 @@ const delHotKeys = code => {
   });
 };
 
-var css$1 = ".index_module_img__1f403422{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__1f403422[data-show]{display:unset}.index_module_img__1f403422[data-fill=left]{transform:translate(50%)}.index_module_img__1f403422[data-fill=right]{transform:translate(-50%)}.index_module_img__1f403422[data-load-type=error],.index_module_img__1f403422[data-load-type=wait]{display:none}.index_module_mangaFlowBox__1f403422{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__1f403422::-webkit-scrollbar{display:none}.index_module_mangaFlow__1f403422{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__1f403422.index_module_disableZoom__1f403422 .index_module_img__1f403422{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0}.index_module_mangaFlow__1f403422[dir=ltr]{flex-direction:row}.index_module_mangaFlow__1f403422>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__1f403422>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__1f403422>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__1f403422{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__1f403422>button{animation:index_module_jello__1f403422 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__1f403422>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__1f403422>button:focus-visible{outline:none}.index_module_endPage__1f403422>.index_module_tip__1f403422{margin:auto;position:absolute}.index_module_endPage__1f403422[data-show]{opacity:1;pointer-events:all}.index_module_endPage__1f403422[data-type=start]>.index_module_tip__1f403422{transform:translateY(-10em)}.index_module_endPage__1f403422[data-type=end]>.index_module_tip__1f403422{transform:translateY(10em)}.index_module_comments__1f403422{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__1f403422>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__1f403422:hover{opacity:1}@keyframes index_module_jello__1f403422{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__1f403422{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__1f403422{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__1f403422[data-show=true] .index_module_toolbarPanel__1f403422{transform:none}.index_module_toolbarBg__1f403422{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__1f403422{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__1f403422{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;width:15em}.index_module_SettingPanel__1f403422 hr{margin:0}.index_module_SettingBlock__1f403422{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422{overflow:hidden}:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div+:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div{margin-top:1em}.index_module_SettingBlock__1f403422[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__1f403422{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__1f403422{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__1f403422+.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_SettingsItemName__1f403422{font-size:.9em}.index_module_SettingsItemSwitch__1f403422{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__1f403422{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__1f403422[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__1f403422[data-checked=true] .index_module_SettingsItemSwitchRound__1f403422{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__1f403422{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__1f403422{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__1f403422{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__1f403422{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422{overflow:hidden}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422>.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_hotKeys__1f403422{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotKeys__1f403422+.index_module_hotKeys__1f403422{margin-top:.5em}.index_module_hotKeys__1f403422:last-child{border-bottom:none}.index_module_hotKeysItem__1f403422{align-items:center;border-radius:.3em;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotKeysItem__1f403422>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotKeysItem__1f403422>svg:hover{opacity:.9}.index_module_hotKeysItem__1f403422:hover{padding:.2em .5em}.index_module_hotKeysItem__1f403422:hover>svg{display:unset}.index_module_hotKeysItem__1f403422:focus,.index_module_hotKeysItem__1f403422:focus-visible{outline:var(--text) solid 2px}.index_module_hotKeysHeader__1f403422{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotKeysHeader__1f403422>p{background-color:var(--page_bg);margin:0}.index_module_hotKeysHeader__1f403422>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotKeysHeader__1f403422>div[title]>svg{width:1.6em}.index_module_hotKeys__1f403422:hover div[title]{transform:scale(1)}.index_module_scrollbar__1f403422{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__1f403422>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__1f403422{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__1f403422{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__1f403422[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__1f403422[data-type=wait]{opacity:.5}.index_module_scrollbarPage__1f403422[data-type=error]{background-color:#f005}.index_module_scrollbarPage__1f403422[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__1f403422[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__1f403422[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__1f403422[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__1f403422[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__1f403422{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__1f403422:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__1f403422[data-show=true],.index_module_scrollbarPoper__1f403422[data-show=true],.index_module_scrollbar__1f403422:hover .index_module_scrollbarDrag__1f403422,.index_module_scrollbar__1f403422:hover .index_module_scrollbarPoper__1f403422{opacity:1}.index_module_touchAreaRoot__1f403422{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchArea__1f403422{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none;writing-mode:vertical-rl}.index_module_touchArea__1f403422[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__1f403422[data-show=true]{visibility:visible}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=next]{background-color:#f38181e6}.index_module_hidden__1f403422{display:none}.index_module_invisible__1f403422{visibility:hidden}.index_module_opacity1__1f403422{opacity:1}.index_module_opacity0__1f403422{opacity:0}.index_module_root__1f403422{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__1f403422 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__1f403422{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:0;overflow-wrap:anywhere;padding:0 1em;text-align:start;white-space:pre-wrap}blockquote>p+p{margin-top:.5em}svg{width:1em}";
+var css$1 = ".index_module_img__1f403422{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__1f403422[data-show]{display:unset}.index_module_img__1f403422[data-fill=left]{transform:translate(50%)}.index_module_img__1f403422[data-fill=right]{transform:translate(-50%)}.index_module_img__1f403422[data-load-type=error],.index_module_img__1f403422[data-load-type=wait]{display:none}.index_module_mangaFlowBox__1f403422{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__1f403422::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__1f403422[data-hiddenMouse=true] .index_module_img__1f403422{cursor:none}.index_module_mangaFlow__1f403422{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__1f403422.index_module_disableZoom__1f403422 .index_module_img__1f403422{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0}.index_module_mangaFlow__1f403422[dir=ltr]{flex-direction:row}.index_module_mangaFlow__1f403422>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__1f403422>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__1f403422>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__1f403422{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__1f403422>button{animation:index_module_jello__1f403422 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__1f403422>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__1f403422>button:focus-visible{outline:none}.index_module_endPage__1f403422>.index_module_tip__1f403422{margin:auto;position:absolute}.index_module_endPage__1f403422[data-show]{opacity:1;pointer-events:all}.index_module_endPage__1f403422[data-type=start]>.index_module_tip__1f403422{transform:translateY(-10em)}.index_module_endPage__1f403422[data-type=end]>.index_module_tip__1f403422{transform:translateY(10em)}.index_module_comments__1f403422{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__1f403422>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__1f403422:hover{opacity:1}@keyframes index_module_jello__1f403422{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__1f403422{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__1f403422{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__1f403422[data-show=true] .index_module_toolbarPanel__1f403422{transform:none}.index_module_toolbarBg__1f403422{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__1f403422{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__1f403422{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;width:15em}.index_module_SettingPanel__1f403422 hr{margin:0}.index_module_SettingBlock__1f403422{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422{overflow:hidden}:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div+:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div{margin-top:1em}.index_module_SettingBlock__1f403422[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__1f403422{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__1f403422{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__1f403422+.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_SettingsItemName__1f403422{font-size:.9em}.index_module_SettingsItemSwitch__1f403422{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__1f403422{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__1f403422[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__1f403422[data-checked=true] .index_module_SettingsItemSwitchRound__1f403422{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__1f403422{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__1f403422{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__1f403422{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__1f403422{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422{overflow:hidden}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422>.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_hotKeys__1f403422{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotKeys__1f403422+.index_module_hotKeys__1f403422{margin-top:.5em}.index_module_hotKeys__1f403422:last-child{border-bottom:none}.index_module_hotKeysItem__1f403422{align-items:center;border-radius:.3em;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotKeysItem__1f403422>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotKeysItem__1f403422>svg:hover{opacity:.9}.index_module_hotKeysItem__1f403422:hover{padding:.2em .5em}.index_module_hotKeysItem__1f403422:hover>svg{display:unset}.index_module_hotKeysItem__1f403422:focus,.index_module_hotKeysItem__1f403422:focus-visible{outline:var(--text) solid 2px}.index_module_hotKeysHeader__1f403422{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotKeysHeader__1f403422>p{background-color:var(--page_bg);margin:0}.index_module_hotKeysHeader__1f403422>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotKeysHeader__1f403422>div[title]>svg{width:1.6em}.index_module_hotKeys__1f403422:hover div[title]{transform:scale(1)}.index_module_scrollbar__1f403422{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__1f403422>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__1f403422{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__1f403422{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__1f403422[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__1f403422[data-type=wait]{opacity:.5}.index_module_scrollbarPage__1f403422[data-type=error]{background-color:#f005}.index_module_scrollbarPage__1f403422[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__1f403422[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__1f403422[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__1f403422[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__1f403422[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__1f403422{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__1f403422:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__1f403422[data-show=true],.index_module_scrollbarPoper__1f403422[data-show=true],.index_module_scrollbar__1f403422:hover .index_module_scrollbarDrag__1f403422,.index_module_scrollbar__1f403422:hover .index_module_scrollbarPoper__1f403422{opacity:1}.index_module_touchAreaRoot__1f403422{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchArea__1f403422{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none;writing-mode:vertical-rl}.index_module_touchArea__1f403422[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__1f403422[data-show=true]{visibility:visible}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=next]{background-color:#f38181e6}.index_module_hidden__1f403422{display:none}.index_module_invisible__1f403422{visibility:hidden}.index_module_opacity1__1f403422{opacity:1}.index_module_opacity0__1f403422{opacity:0}.index_module_root__1f403422{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__1f403422 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__1f403422{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:0;overflow-wrap:anywhere;padding:0 1em;text-align:start;white-space:pre-wrap}blockquote>p+p{margin-top:.5em}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"index_module_img__1f403422","mangaFlowBox":"index_module_mangaFlowBox__1f403422","mangaFlow":"index_module_mangaFlow__1f403422","disableZoom":"index_module_disableZoom__1f403422","scrollMode":"index_module_scrollMode__1f403422","endPage":"index_module_endPage__1f403422","jello":"index_module_jello__1f403422","tip":"index_module_tip__1f403422","comments":"index_module_comments__1f403422","toolbar":"index_module_toolbar__1f403422","toolbarPanel":"index_module_toolbarPanel__1f403422","toolbarBg":"index_module_toolbarBg__1f403422","SettingPanelPopper":"index_module_SettingPanelPopper__1f403422","SettingPanel":"index_module_SettingPanel__1f403422","SettingBlock":"index_module_SettingBlock__1f403422","SettingBlockBody":"index_module_SettingBlockBody__1f403422","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__1f403422","SettingsItem":"index_module_SettingsItem__1f403422","SettingsItemName":"index_module_SettingsItemName__1f403422","SettingsItemSwitch":"index_module_SettingsItemSwitch__1f403422","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__1f403422","SettingsItemIconButton":"index_module_SettingsItemIconButton__1f403422","SettingsItemSelect":"index_module_SettingsItemSelect__1f403422","closeCover":"index_module_closeCover__1f403422","SettingsShowItem":"index_module_SettingsShowItem__1f403422","SettingsShowItemBody":"index_module_SettingsShowItemBody__1f403422","hotKeys":"index_module_hotKeys__1f403422","hotKeysItem":"index_module_hotKeysItem__1f403422","hotKeysHeader":"index_module_hotKeysHeader__1f403422","scrollbar":"index_module_scrollbar__1f403422","scrollbarDrag":"index_module_scrollbarDrag__1f403422","scrollbarPage":"index_module_scrollbarPage__1f403422","scrollbarPoper":"index_module_scrollbarPoper__1f403422","touchAreaRoot":"index_module_touchAreaRoot__1f403422","touchArea":"index_module_touchArea__1f403422","hidden":"index_module_hidden__1f403422","invisible":"index_module_invisible__1f403422","opacity1":"index_module_opacity1__1f403422","opacity0":"index_module_opacity0__1f403422","root":"index_module_root__1f403422","beautifyScrollbar":"index_module_beautifyScrollbar__1f403422"};
 n(css$1,{});
 
@@ -2106,6 +2106,20 @@ const useDoubleClick = (click, doubleClick, timeout = 200) => {
   };
 };
 
+/** 在鼠标静止一段时间后自动隐藏 */
+const useHiddenMouse = () => {
+  const [hiddenMouse, setHiddenMouse] = solidJs.createSignal(true);
+  const hidden = debounce(1000, () => setHiddenMouse(true));
+  return {
+    hiddenMouse,
+    /** 鼠标移动 */
+    onMouseMove: () => {
+      setHiddenMouse(false);
+      hidden();
+    }
+  };
+};
+
 const _tmpl$$w = /*#__PURE__*/web.template(\`<div tabindex="-1"><div>\`),
   _tmpl$2$9 = /*#__PURE__*/web.template(\`<h1>NULL\`);
 
@@ -2128,12 +2142,17 @@ const ComicImgFlow = () => {
       if (scale >= 2) store.panzoom.smoothZoomAbs(0, 0, 1);else store.panzoom.smoothZoomAbs(e.clientX, e.clientY, scale + 1);
     });
   };
+  const {
+    hiddenMouse,
+    onMouseMove
+  } = useHiddenMouse();
   return (() => {
     const _el$ = _tmpl$$w(),
       _el$2 = _el$.firstChild;
     web.use(e => e.addEventListener('scroll', handleMangaFlowScroll, {
       passive: true
     }), _el$);
+    _el$.addEventListener("mousemove", onMouseMove);
     const _ref$ = bindRef('mangaFlowRef', initPanzoom);
     typeof _ref$ === "function" && web.use(_ref$, _el$2);
     _el$2.addEventListener("click", useDoubleClick(handleClick, handleDoubleClickZoom));
@@ -2155,19 +2174,21 @@ const ComicImgFlow = () => {
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.mangaFlowBox,
         _v$2 = store.option.scrollMode ? 'auto' : 'hidden',
-        _v$3 = modules_c21c94f2$1.mangaFlow,
+        _v$3 = hiddenMouse(),
         _v$4 = modules_c21c94f2$1.mangaFlow,
-        _v$5 = {
+        _v$5 = modules_c21c94f2$1.mangaFlow,
+        _v$6 = {
           [modules_c21c94f2$1.disableZoom]: store.option.disableZoom || store.option.scrollMode,
           [modules_c21c94f2$1.scrollMode]: store.option.scrollMode
         },
-        _v$6 = store.option.dir;
+        _v$7 = store.option.dir;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("overflow", _v$2) : _el$.style.removeProperty("overflow"));
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$2, "id", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
-      _p$._v$5 = web.classList(_el$2, _v$5, _p$._v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$2, "dir", _p$._v$6 = _v$6);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-hiddenmouse", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$2, "id", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.className(_el$2, _p$._v$5 = _v$5);
+      _p$._v$6 = web.classList(_el$2, _v$6, _p$._v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$2, "dir", _p$._v$7 = _v$7);
       return _p$;
     }, {
       _v$: undefined,
@@ -2175,7 +2196,8 @@ const ComicImgFlow = () => {
       _v$3: undefined,
       _v$4: undefined,
       _v$5: undefined,
-      _v$6: undefined
+      _v$6: undefined,
+      _v$7: undefined
     });
     return _el$;
   })();
@@ -3262,6 +3284,10 @@ props => {
     _el$2.addEventListener("click", () => {
       handleClick();
       props.onMouseLeave();
+      setState(state => {
+        state.showToolbar = false;
+        state.showScrollbar = false;
+      });
       store.rootRef?.focus();
     });
     web.effect(() => web.className(_el$2, modules_c21c94f2$1.closeCover));
@@ -4346,14 +4372,19 @@ const useInit = async (name, defaultOptions = {}) => {
 
   // 检查脚本的版本变化，提示用户
   const version = await GM.getValue('Version');
-  if (version && version !== GM.info.script.version) {
+  if (!version) await GM.setValue('Version', GM.info.script.version);else if (version !== GM.info.script.version) {
     const latestChange =\`
-## [6.8.4](https://github.com/hymbz/ComicReadScript/compare/v6.8.3...v6.8.4) (2023-08-14)
+## [6.9.0](https://github.com/hymbz/ComicReadScript/compare/v6.8.4...v6.9.0) (2023-08-19)
+
+
+### Features
+
+* :sparkles: 新增支持站点 PonpomuYuri ([fe11ac8](https://github.com/hymbz/ComicReadScript/commit/fe11ac831d7fdaf85f98b29ed805c0f0e1beab1e))
 
 
 ### Bug Fixes
 
-* :bug: 修复 eh 和其他脚本冲突导致的加载异常 ([5e6ac07](https://github.com/hymbz/ComicReadScript/commit/5e6ac071cc41510d56223e6e0a46e9652bc9cbca))
+* :bug: 修复 dmzj 改版导致的切换章节后卡死的 bug ([42041ea](https://github.com/hymbz/ComicReadScript/commit/42041ead2d86686a86a1dd811d0142ba8188bc6c))
 \`;
     toast$1(() => [(() => {
       const _el$ = _tmpl$();
@@ -4528,6 +4559,15 @@ const useInit = async (name, defaultOptions = {}) => {
   };
 };
 
+/** 处理延时出现的上/下一话的按钮 */
+const handleDelayPrevNext = async (fn, num = 0) => {
+  if (!fn || num >= 25) return;
+  const domClickFn = await fn();
+  if (domClickFn) return domClickFn;
+  await main.sleep(200);
+  return handleDelayPrevNext(fn, num + 1);
+};
+
 /** 对简单站点的通用解 */
 const universalInit = async ({
   name,
@@ -4540,6 +4580,7 @@ const universalInit = async ({
   getCommentList,
   SPA
 }) => {
+  if (SPA?.isMangaPage) await main.wait(SPA?.isMangaPage);
   if (waitFn) await main.wait(waitFn);
   if (await exit?.()) return;
   const fnMap = await main.useInit(name);
@@ -4598,13 +4639,13 @@ const universalInit = async ({
     });
     needAutoShow.val = options.autoShow;
     await loadImgList();
-    if (getOnNext || getOnPrev) setManga({
-      onNext: await getOnNext?.(),
-      onPrev: await getOnPrev?.()
-    });
-    if (getCommentList) setManga({
+    await Promise.all([async () => getCommentList && setManga({
       commentList: await getCommentList()
-    });
+    }), async () => getOnPrev && setManga({
+      onPrev: await handleDelayPrevNext(getOnPrev)
+    }), async () => getOnNext && setManga({
+      onNext: await handleDelayPrevNext(getOnNext)
+    })].map(fn => fn()));
   });
 };
 
@@ -5275,89 +5316,78 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2
           `).join(''));
     return;
   }
-
-  // eslint-disable-next-line prefer-const
-  let [, comicPy, chapterId] = window.location.pathname.split(/\/|\./);
-  if (!comicPy) {
-    main.toast.error('漫画数据获取失败', {
-      duration: Infinity
-    });
-    throw new Error('获取漫画拼音简称失败');
-  }
-  const comicId = await getComicId(comicPy);
-
-  // 判断当前页是漫画详情页
-  if (/^\/[^/]*?\/?$/.test(window.location.pathname)) {
+  const getId = async () => {
+    const [, comicPy, chapterId] = window.location.pathname.split(/\/|\./);
+    if (!comicPy) {
+      main.toast.error('漫画数据获取失败', {
+        duration: Infinity
+      });
+      throw new Error('获取漫画拼音简称失败');
+    }
+    const comicId = await getComicId(comicPy);
+    return {
+      comicId,
+      chapterId
+    };
+  };
+  const isListPageRe = /^\/[^/]*?\/?$/;
+  const isMangaPageRe = /^\/.*?\/\d+\.shtml$/;
+  const handleListPage = async () => {
     await main.waitDom('.newpl_ans');
     // 判断漫画被禁
     // 测试例子：https://manhua.dmzj.com/yanquan/
-    if (main.querySelector('.cartoon_online_border > img')) {
-      main.querySelector('.cartoon_online_border').innerHTML = '获取漫画数据中';
+    if (!main.querySelector('.cartoon_online_border > img')) return false;
+    main.querySelector('.cartoon_online_border').innerHTML = '获取漫画数据中';
 
-      // 删掉原有的章节 dom
-      main.querySelectorAll('.odd_anim_title ~ *').forEach(e => e.parentNode?.removeChild(e));
-      web.render(() => {
-        const comicDetail = useComicDetail(comicId);
-        return web.createComponent(solidJs.For, {
-          get each() {
-            return comicDetail.chapters;
-          },
-          children: ({
-            name,
-            list
-          }) => [(() => {
-            const _el$ = _tmpl$(),
-              _el$2 = _el$.firstChild,
-              _el$3 = _el$2.firstChild,
-              _el$4 = _el$3.nextSibling,
-              _el$5 = _el$4.firstChild;
-            web.insert(_el$4, () => comicDetail.title, _el$5);
-            web.insert(_el$4, name === '连载' ? '在线漫画全集' : `漫画其它版本：${name}`, null);
-            return _el$;
-          })(), (() => {
-            const _el$6 = _tmpl$2(),
-              _el$7 = _el$6.firstChild;
-            _el$6.style.setProperty("margin-top", "-8px");
-            web.insert(_el$7, web.createComponent(solidJs.For, {
-              each: list,
-              children: ({
-                title,
-                id,
-                updatetime
-              }) => (() => {
-                const _el$8 = _tmpl$3(),
-                  _el$9 = _el$8.firstChild;
-                web.setAttribute(_el$9, "title", title);
-                web.setAttribute(_el$9, "href", `https://m.dmzj.com/view/${comicId}/${id}.html`);
-                web.insert(_el$9, title);
-                web.effect(() => _el$9.classList.toggle("color_red", !!(updatetime === comicDetail.last_updatetime)));
-                return _el$8;
-              })()
-            }));
-            return _el$6;
-          })()]
-        });
-      }, main.querySelector('.middleright_mr'));
-    }
-    return;
-  }
-
-  // 跳过漫画页外的其他页面
-  if (!/^\/.*?\/\d+\.shtml$/.test(window.location.pathname)) return;
-
-  // 处理当前页是漫画页的情况
-  const {
-    setManga,
-    init
-  } = await main.useInit('dmzj');
-  setManga({
-    onExit: isEnd => {
-      if (isEnd) setTimeout(() => main.scrollIntoView('#hd'));
-      setManga({
-        show: false
+    // 删掉原有的章节 dom
+    main.querySelectorAll('.odd_anim_title ~ *').forEach(e => e.parentNode?.removeChild(e));
+    const {
+      comicId
+    } = await getId();
+    web.render(() => {
+      const comicDetail = useComicDetail(comicId);
+      return web.createComponent(solidJs.For, {
+        get each() {
+          return comicDetail.chapters;
+        },
+        children: ({
+          name,
+          list
+        }) => [(() => {
+          const _el$ = _tmpl$(),
+            _el$2 = _el$.firstChild,
+            _el$3 = _el$2.firstChild,
+            _el$4 = _el$3.nextSibling,
+            _el$5 = _el$4.firstChild;
+          web.insert(_el$4, () => comicDetail.title, _el$5);
+          web.insert(_el$4, name === '连载' ? '在线漫画全集' : `漫画其它版本：${name}`, null);
+          return _el$;
+        })(), (() => {
+          const _el$6 = _tmpl$2(),
+            _el$7 = _el$6.firstChild;
+          _el$6.style.setProperty("margin-top", "-8px");
+          web.insert(_el$7, web.createComponent(solidJs.For, {
+            each: list,
+            children: ({
+              title,
+              id,
+              updatetime
+            }) => (() => {
+              const _el$8 = _tmpl$3(),
+                _el$9 = _el$8.firstChild;
+              web.setAttribute(_el$9, "title", title);
+              web.setAttribute(_el$9, "href", `https://m.dmzj.com/view/${comicId}/${id}.html`);
+              web.insert(_el$9, title);
+              web.effect(() => _el$9.classList.toggle("color_red", !!(updatetime === comicDetail.last_updatetime)));
+              return _el$8;
+            })()
+          }));
+          return _el$6;
+        })()]
       });
-    }
-  });
+    }, main.querySelector('.middleright_mr'));
+    return false;
+  };
 
   /** 切换至上下滚动阅读 */
   const waitSwitchScroll = async () => {
@@ -5374,64 +5404,30 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2
     await main.waitDom('.comic_wraCon img');
     return main.querySelectorAll('.comic_wraCon img').map(e => e.src);
   };
-
-  /** 当前是否跳到了上/下一话 */
-  let isJumped = '';
-  // 通过监听点击上/下一话的按钮来判断当前是否切换了章节
-  // 直接绑定在点击按钮上会失效，所以只能全局监听
-  window.addEventListener('click', e => {
-    if (!e.target) return;
-    const target = e.target;
-    if (target.id === 'prev_chapter' || target.className === 'btm_chapter_btn fl') {
-      isJumped = 'prev';
-    } else if (target.id === 'next_chapter' || target.className === 'btm_chapter_btn fr') {
-      isJumped = 'next';
-    }
-  });
   const checkButton = selector => {
     const dom = main.querySelector(selector);
     if (dom && dom.innerText) return () => dom.click();
   };
-  const updateChapterJump = (num = 0) => {
-    if (num >= 10) return;
-    setManga({
-      onNext: checkButton('#next_chapter'),
-      onPrev: checkButton('#prev_chapter')
-    });
-    // 因为上/下一话的按钮不会立即出现，所以加一个延时
-    window.setTimeout(updateChapterJump, num * 200, num + 1);
+  const isMangaPage = async () => {
+    if (isListPageRe.test(window.location.pathname)) return handleListPage();
+    return isMangaPageRe.test(window.location.pathname);
   };
-
-  /** 章节信息 */
-  let chapterInfo = await getChapterInfo(comicId, chapterId);
-  let imgList = [];
-  main.autoUpdate(async () => {
-    let newImgList = await getImgList();
-    if (isJumped) {
-      // 如果当前跳到了上/下一话，就不断循环等待检测到新的图片列表
-      while (isJumped && main.isEqualArray(newImgList, imgList)) newImgList = await getImgList();
-
-      // 更新切换章节后的 chapterId
-      // TODO: 当前刚改版后的 dmzj 切换章节时 url 不会跟着改变，导致必须这样变扭的获取新章节 id
-      // 但是，这样会导致切换章节后刷新会跳回最开始的页面，之后肯定会改
-      // 等 dmzj 改完后这里要改成直接通过 url 来获取 id
-      //
-      // 包括判断当前是否跳到了上/下一话，也要改成通过监听 url 的改变来实现
-      if (isJumped === 'next' && chapterInfo.next_chap_id) chapterId = `${chapterInfo.next_chap_id}`;else if (isJumped === 'prev' && chapterInfo.prev_chap_id) chapterId = `${chapterInfo.prev_chap_id}`;
-      chapterInfo = await getChapterInfo(comicId, chapterId);
-      isJumped = '';
-    } else if (main.isEqualArray(newImgList, imgList)) return;
-    imgList = newImgList;
-    // 先将 imgList 清空以便 activePageIndex 归零
-    setManga({
-      imgList: []
-    });
-    init(() => imgList);
-    updateChapterJump();
-    const commentList = await getViewpoint(comicId, chapterId);
-    setManga({
-      commentList
-    });
+  await main.universalInit({
+    name: 'dmzj',
+    getImgList,
+    onExit: isEnd => isEnd && main.scrollIntoView('#hd'),
+    getCommentList: async () => {
+      const {
+        comicId,
+        chapterId
+      } = await getId();
+      return getViewpoint(comicId, chapterId);
+    },
+    SPA: {
+      isMangaPage,
+      getOnPrev: () => checkButton('.display_left #prev_chapter'),
+      getOnNext: () => checkButton('.display_right #next_chapter')
+    }
   });
 })();
 
@@ -6044,6 +6040,22 @@ const fileType = {
 })();
 
       options = false;
+      break;
+    }
+
+  // #PonpomuYuri
+  case 'www.ponpomu.com':
+    {
+      options = {
+        name: 'terraHistoricus',
+        wait: () => !!main.querySelector('.comic-page-container img'),
+        getImgList: () => main.querySelectorAll('.comic-page-container img').map(e => e.getAttribute('data-srcset')),
+        SPA: {
+          isMangaPage: () => window.location.href.includes('/comic/'),
+          getOnPrev: () => main.querySelectorClick('.prev-btn a'),
+          getOnNext: () => main.querySelectorClick('.next-btn a')
+        }
+      };
       break;
     }
 
