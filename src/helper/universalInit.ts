@@ -1,4 +1,4 @@
-import { autoUpdate, useInit, wait } from 'main';
+import { autoUpdate, sleep, useInit, wait } from 'main';
 import type { AsyncReturnType } from 'type-fest';
 import type { MangaProps } from '../components/Manga';
 
@@ -26,6 +26,18 @@ export interface InitOptions {
   };
 }
 
+/** 处理延时出现的上/下一话的按钮 */
+const handleDelayPrevNext = async (
+  fn?: () => Promise<MangaProps['onNext']> | MangaProps['onNext'],
+  num = 0,
+): Promise<Promise<MangaProps['onNext']> | MangaProps['onNext']> => {
+  if (!fn || num >= 25) return;
+  const domClickFn = await fn();
+  if (domClickFn) return domClickFn;
+  await sleep(200);
+  return handleDelayPrevNext(fn, num + 1);
+};
+
 /** 对简单站点的通用解 */
 export const universalInit = async ({
   name,
@@ -38,6 +50,7 @@ export const universalInit = async ({
   getCommentList,
   SPA,
 }: InitOptions) => {
+  if (SPA?.isMangaPage) await wait(SPA?.isMangaPage);
   if (waitFn) await wait(waitFn);
   if (await exit?.()) return;
 
@@ -80,8 +93,17 @@ export const universalInit = async ({
     needAutoShow.val = options.autoShow;
     await loadImgList();
 
-    if (getOnNext || getOnPrev)
-      setManga({ onNext: await getOnNext?.(), onPrev: await getOnPrev?.() });
-    if (getCommentList) setManga({ commentList: await getCommentList() });
+    await Promise.all(
+      [
+        async () =>
+          getCommentList && setManga({ commentList: await getCommentList() }),
+        async () =>
+          getOnPrev &&
+          setManga({ onPrev: await handleDelayPrevNext(getOnPrev) }),
+        async () =>
+          getOnNext &&
+          setManga({ onNext: await handleDelayPrevNext(getOnNext) }),
+      ].map((fn) => fn()),
+    );
   });
 };
