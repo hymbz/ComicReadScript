@@ -110,7 +110,7 @@ declare const selected_link: HTMLElement;
   };
 
   const totalImgNum = +(
-    querySelector('.gtb .gpc')?.innerText.match(/\d+/g)?.at(-1) ?? '0'
+    querySelector('.gtb .gpc')?.textContent?.match(/\d+/g)?.at(-1) ?? '0'
   );
 
   const ehImgList: string[] = [];
@@ -120,7 +120,7 @@ declare const selected_link: HTMLElement;
       comicReadModeDom.innerHTML = ` loading`;
 
       const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!
-        .innerText;
+        .textContent!;
       for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
         const startIndex = ehImgList.length;
         const imgPageUrlList = await getImgFromDetailsPage(pageNum);
