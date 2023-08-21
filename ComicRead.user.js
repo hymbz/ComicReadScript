@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.9.0
+// @version      6.9.1
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -4374,17 +4374,12 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (!version) await GM.setValue('Version', GM.info.script.version);else if (version !== GM.info.script.version) {
     const latestChange =\`
-## [6.9.0](https://github.com/hymbz/ComicReadScript/compare/v6.8.4...v6.9.0) (2023-08-19)
-
-
-### Features
-
-* :sparkles: 新增支持站点 PonpomuYuri ([fe11ac8](https://github.com/hymbz/ComicReadScript/commit/fe11ac831d7fdaf85f98b29ed805c0f0e1beab1e))
+## [6.9.1](https://github.com/hymbz/ComicReadScript/compare/v6.9.0...v6.9.1) (2023-08-21)
 
 
 ### Bug Fixes
 
-* :bug: 修复 dmzj 改版导致的切换章节后卡死的 bug ([42041ea](https://github.com/hymbz/ComicReadScript/commit/42041ead2d86686a86a1dd811d0142ba8188bc6c))
+* :bug: 修复当网页宽度较窄时在 eh 上无法正常运行的 bug ([97c1085](https://github.com/hymbz/ComicReadScript/commit/97c10855a06a68d4f6abf305ebea9fa978534e0e))
 \`;
     toast$1(() => [(() => {
       const _el$ = _tmpl$();
@@ -5768,13 +5763,13 @@ const MdSettings = ((props = {}) => (() => {
     }
     return imgPageList;
   };
-  const totalImgNum = +(main.querySelector('.gtb .gpc')?.innerText.match(/\d+/g)?.at(-1) ?? '0');
+  const totalImgNum = +(main.querySelector('.gtb .gpc')?.textContent?.match(/\d+/g)?.at(-1) ?? '0');
   const ehImgList = [];
   const {
     loadImgList
   } = init(dynamicUpdate(async setImg => {
     comicReadModeDom.innerHTML = ` loading`;
-    const totalPageNum = +main.querySelector('.ptt td:nth-last-child(2)').innerText;
+    const totalPageNum = +main.querySelector('.ptt td:nth-last-child(2)').textContent;
     for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
       const startIndex = ehImgList.length;
       const imgPageUrlList = await getImgFromDetailsPage(pageNum);

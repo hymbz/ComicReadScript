@@ -1,11 +1,6 @@
-## [6.9.0](https://github.com/hymbz/ComicReadScript/compare/v6.8.4...v6.9.0) (2023-08-19)
-
-
-### Features
-
-* :sparkles: 新增支持站点 PonpomuYuri ([fe11ac8](https://github.com/hymbz/ComicReadScript/commit/fe11ac831d7fdaf85f98b29ed805c0f0e1beab1e))
+## [6.9.1](https://github.com/hymbz/ComicReadScript/compare/v6.9.0...v6.9.1) (2023-08-21)
 
 
 ### Bug Fixes
 
-* :bug: 修复 dmzj 改版导致的切换章节后卡死的 bug ([42041ea](https://github.com/hymbz/ComicReadScript/commit/42041ead2d86686a86a1dd811d0142ba8188bc6c))
+* :bug: 修复当网页宽度较窄时在 eh 上无法正常运行的 bug ([97c1085](https://github.com/hymbz/ComicReadScript/commit/97c10855a06a68d4f6abf305ebea9fa978534e0e))
