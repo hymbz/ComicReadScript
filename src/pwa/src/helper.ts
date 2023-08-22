@@ -1,7 +1,14 @@
 export const imgExtension = new Set(['.png', '.gif', '.jpeg', '.jpg', '.webp']);
 
-export type ZipExtension = '.zip' | '.rar' | '.7z';
-export const zipExtension = new Set<ZipExtension>(['.zip', '.rar', '.7z']);
+export type ZipExtension = '.zip' | '.rar' | '.7z' | '.cbz' | '.cbr' | '.cb7';
+export const zipExtension = new Set<ZipExtension>([
+  '.zip',
+  '.rar',
+  '.7z',
+  '.cbz',
+  '.cbr',
+  '.cb7',
+]);
 
 const extensionRe = /\.[^.]+$/;
 /** 根据文件名判断文件是否受支持 */
