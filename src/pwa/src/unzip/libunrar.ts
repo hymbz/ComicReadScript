@@ -77,7 +77,7 @@ export const libunrar = async (
   password?: string,
 ): Promise<Array<ImgFile | undefined>> => {
   const { zipFile, tip, extension } = zipData;
-  if (extension !== '.rar') return [];
+  if (extension !== '.rar' && extension !== '.cbr') return [];
   if (!rpc) {
     await waitRPC();
     rpc = await RPC.new('./libunrar/worker.js');

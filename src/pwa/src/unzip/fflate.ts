@@ -12,7 +12,7 @@ const fflateUnzip = (data: Uint8Array, opts: AsyncUnzipOptions) =>
 
 /** 解压缩 zip，速度超快 */
 export const fflate = async ({ zipFile, extension }: ZipData) => {
-  if (extension !== '.zip') return [];
+  if (extension !== '.zip' && extension !== '.cbz') return [];
 
   try {
     const fileData = await zipFile

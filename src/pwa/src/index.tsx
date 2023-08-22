@@ -28,9 +28,9 @@ const handleSelectFiles = async () =>
           description: 'Images',
           accept: {
             'image/*': [...imgExtension.values()],
-            'application/zip': '.zip',
-            'application/x-rar-compressed': '.rar',
-            'application/x-7z-compressed': '.7z',
+            'application/zip': ['.zip', '.cbz'],
+            'application/x-rar-compressed': ['.rar', '.cbr'],
+            'application/x-7z-compressed': ['.7z', '.cb7'],
           },
         },
       ],
