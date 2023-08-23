@@ -1,5 +1,13 @@
 # 最简单的 manga-image-translator 本地部署流程
 
+## 开头劝退
+
+本地部署需要一定的动手能力，纯计算机小白且不打算学习动手的可以直接右上角了，目前还没有一键安装部署的方法。
+
+部署好后默认只能使用一些免费的翻译服务，要想有好的翻译效果，还需要自行获取相关翻译服务的 api。翻译效果和获取难度基本成正比，具体请参考 [manga-image-translator](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md#翻译器列表) 文档的翻译器列表部分。
+
+## 简单说明
+
 因为感觉 [manga-image-translator](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md) 的文档对不了解相关知识的普通人来说可能太难看懂了，所以为了方便更多人在本地部署 manga-image-translator 才有了这篇文章。
 
 > 这篇文章仅仅是我自己对部署流程的笔记，具体还请以 [manga-image-translator](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md) 官方文档为主
@@ -11,7 +19,6 @@ manga-image-translator 有两种部署方式，一种是配置好环境后直接
 所以要在本地部署 manga-image-translator 就只有两步：安装 Docker、下载 manga-image-translator，其中比较麻烦的就只有安装 Docker，装好以后只需要一行命令就能自动下载并运行 manga-image-translator 了。
 
 > 注意！在 windows 上开启 Hyper-V 会导致大部分虚拟机、安卓模拟器无法使用，需要修改设置或改换支持Hyper-V的版本。如有相关需求无法开启，就只能参照 [官方文档](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md#使用说明) 来安装了
-
 
 ## 安装 Docker
 
@@ -57,8 +64,6 @@ manga_image_translator_cpu  | Serving up app on http://0.0.0.0:5003
 注意此时不要关闭命令行窗口
 
 ## 配置翻译服务
-
-部署好 manga-image-translator 后，默认只能使用一些免费的翻译服务，要想有好的翻译效果，就需要自己去申请相关翻译服务的 api 来配置。具体请参考 [manga-image-translator](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md#翻译器列表) 文档的翻译器列表部分。
 
 以彩云和 ChatGPT 举例：
 
