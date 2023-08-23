@@ -86,9 +86,7 @@ declare const selected_link: HTMLElement;
   /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
     const res = await request(
-      `${window.location.origin}${window.location.pathname}${
-        pageNum ? `?p=${pageNum}` : ''
-      }`,
+      `${window.location.href}${pageNum ? `?p=${pageNum}` : ''}`,
       { errorText: '从详情页获取图片页地址失败' },
     );
 
@@ -109,9 +107,22 @@ declare const selected_link: HTMLElement;
     return imgPageList;
   };
 
-  const totalImgNum = +(
-    querySelector('.gtb .gpc')?.textContent?.match(/\d+/g)?.at(-1) ?? '0'
-  );
+  const getImgNum = async () => {
+    let numText = querySelector('.gtb .gpc')
+      ?.textContent?.match(/\d+/g)
+      ?.at(-1);
+    if (numText) return +numText;
+
+    const res = await request(window.location.href);
+    numText = res.responseText.match(
+      /(?<=<td class="gdt2">)\d+(?= pages<\/td>)/,
+    )?.[0];
+    if (numText) return +numText;
+
+    toast.error('页面结构发生改变，无法加载漫画');
+    return 0;
+  };
+  const totalImgNum = await getImgNum();
 
   const ehImgList: string[] = [];
 
