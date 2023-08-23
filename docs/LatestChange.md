@@ -1,6 +1,6 @@
-## [6.9.1](https://github.com/hymbz/ComicReadScript/compare/v6.9.0...v6.9.1) (2023-08-21)
+## [6.9.2](https://github.com/hymbz/ComicReadScript/compare/v6.9.1...v6.9.2) (2023-08-23)
 
 
 ### Bug Fixes
 
-* :bug: 修复当网页宽度较窄时在 eh 上无法正常运行的 bug ([97c1085](https://github.com/hymbz/ComicReadScript/commit/97c10855a06a68d4f6abf305ebea9fa978534e0e))
+* :bug: 修复在 eh 上和其他脚本冲突导致的 bug ([59dd68e](https://github.com/hymbz/ComicReadScript/commit/59dd68e10fb7b81aae458f6ea37ae04558fde5a6))

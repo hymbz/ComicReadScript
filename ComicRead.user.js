@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.9.1
+// @version      6.9.2
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -4374,12 +4374,12 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (!version) await GM.setValue('Version', GM.info.script.version);else if (version !== GM.info.script.version) {
     const latestChange =\`
-## [6.9.1](https://github.com/hymbz/ComicReadScript/compare/v6.9.0...v6.9.1) (2023-08-21)
+## [6.9.2](https://github.com/hymbz/ComicReadScript/compare/v6.9.1...v6.9.2) (2023-08-23)
 
 
 ### Bug Fixes
 
-* :bug: 修复当网页宽度较窄时在 eh 上无法正常运行的 bug ([97c1085](https://github.com/hymbz/ComicReadScript/commit/97c10855a06a68d4f6abf305ebea9fa978534e0e))
+* :bug: 修复在 eh 上和其他脚本冲突导致的 bug ([59dd68e](https://github.com/hymbz/ComicReadScript/commit/59dd68e10fb7b81aae458f6ea37ae04558fde5a6))
 \`;
     toast$1(() => [(() => {
       const _el$ = _tmpl$();
@@ -5751,7 +5751,7 @@ const MdSettings = ((props = {}) => (() => {
 
   /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (pageNum = 0) => {
-    const res = await main.request(`${window.location.origin}${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`, {
+    const res = await main.request(`${window.location.href}${pageNum ? `?p=${pageNum}` : ''}`, {
       errorText: '从详情页获取图片页地址失败'
     });
 
@@ -5763,7 +5763,16 @@ const MdSettings = ((props = {}) => (() => {
     }
     return imgPageList;
   };
-  const totalImgNum = +(main.querySelector('.gtb .gpc')?.textContent?.match(/\d+/g)?.at(-1) ?? '0');
+  const getImgNum = async () => {
+    let numText = main.querySelector('.gtb .gpc')?.textContent?.match(/\d+/g)?.at(-1);
+    if (numText) return +numText;
+    const res = await main.request(window.location.href);
+    numText = res.responseText.match(/(?<=<td class="gdt2">)\d+(?= pages<\/td>)/)?.[0];
+    if (numText) return +numText;
+    main.toast.error('页面结构发生改变，无法加载漫画');
+    return 0;
+  };
+  const totalImgNum = await getImgNum();
   const ehImgList = [];
   const {
     loadImgList
