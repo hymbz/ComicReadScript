@@ -28,7 +28,6 @@ export const unzip = async (zipFile: File, extension: ZipExtension) => {
     const unzipFn = unzipFnList[i];
     try {
       console.log(unzipFnOrder[i]);
-      // eslint-disable-next-line no-await-in-loop
       imgDataList = await unzipFn({ zipFile, tip, extension });
     } catch (e) {
       const errorText = `${unzipFnOrder[i]} 解压出错：${(e as Error).message}`;

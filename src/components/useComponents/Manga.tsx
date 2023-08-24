@@ -78,20 +78,16 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   const DownloadButton = () => {
     const [tip, setTip] = createSignal('下载');
     const handleDownload = async () => {
-      // eslint-disable-next-line solid/reactivity
-      const { imgList } = props;
-
       const fileData: fflate.Zippable = {};
-      const imgIndexNum = `${imgList.length}`.length;
+      const imgIndexNum = `${props.imgList.length}`.length;
 
-      for (let i = 0; i < imgList.length; i += 1) {
-        setTip(`下载中 - ${i}/${imgList.length}`);
-        const index = `${`${i}`.padStart(imgIndexNum, '0')}`;
-        const fileExt = imgList[i].split('.').at(-1)!;
+      for (let i = 0; i < props.imgList.length; i += 1) {
+        setTip(`下载中 - ${i}/${props.imgList.length}`);
+        const index = `${i}`.padStart(imgIndexNum, '0');
+        const fileExt = props.imgList[i].split('.').at(-1)!;
         const fileName = `${index}.${fileExt}`;
         try {
-          // eslint-disable-next-line no-await-in-loop
-          const res = await request<ArrayBuffer>(imgList[i], {
+          const res = await request<ArrayBuffer>(props.imgList[i], {
             responseType: 'arraybuffer',
           });
           fileData[fileName] = new Uint8Array(res.response);

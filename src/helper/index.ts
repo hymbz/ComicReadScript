@@ -141,7 +141,6 @@ export const plimit = async <T>(
     while (taskList.length && execPool.size < limit) {
       taskList.shift()!();
     }
-    // eslint-disable-next-line no-await-in-loop
     await Promise.race(execPool);
   }
 

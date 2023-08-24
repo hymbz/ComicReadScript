@@ -146,7 +146,6 @@ const getComicDetail_traversal = async (
 
   while (nextId) {
     try {
-      // eslint-disable-next-line no-await-in-loop
       const { chapter_name, updatetime, prev_chap_id } = await getChapterInfo(
         comicId,
         nextId,
@@ -178,7 +177,6 @@ export const useComicDetail = (comicId: string) => {
   onMount(async () => {
     for (let i = 0; i < apiFn.length; i++) {
       try {
-        // eslint-disable-next-line no-await-in-loop
         Object.assign(data, await apiFn[i](comicId, data));
         if (data.chapters?.some((chapter) => chapter.list.length)) return;
       } catch (_) {}
