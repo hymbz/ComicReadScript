@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.9.2
+// @version      6.9.3
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -195,7 +195,6 @@ const plimit = async (fnList, callBack = undefined, limit = 10) => {
     while (taskList.length && execPool.size < limit) {
       taskList.shift()();
     }
-    // eslint-disable-next-line no-await-in-loop
     await Promise.race(execPool);
   }
   return resList;
@@ -3981,20 +3980,15 @@ const useManga = async initProps => {
   const DownloadButton = () => {
     const [tip, setTip] = solidJs.createSignal('下载');
     const handleDownload = async () => {
-      // eslint-disable-next-line solid/reactivity
-      const {
-        imgList
-      } = props;
       const fileData = {};
-      const imgIndexNum = \`\${imgList.length}\`.length;
-      for (let i = 0; i < imgList.length; i += 1) {
-        setTip(\`下载中 - \${i}/\${imgList.length}\`);
-        const index = \`\${\`\${i}\`.padStart(imgIndexNum, '0')}\`;
-        const fileExt = imgList[i].split('.').at(-1);
+      const imgIndexNum = \`\${props.imgList.length}\`.length;
+      for (let i = 0; i < props.imgList.length; i += 1) {
+        setTip(\`下载中 - \${i}/\${props.imgList.length}\`);
+        const index = \`\${i}\`.padStart(imgIndexNum, '0');
+        const fileExt = props.imgList[i].split('.').at(-1);
         const fileName = \`\${index}.\${fileExt}\`;
         try {
-          // eslint-disable-next-line no-await-in-loop
-          const res = await request$1(imgList[i], {
+          const res = await request$1(props.imgList[i], {
             responseType: 'arraybuffer'
           });
           fileData[fileName] = new Uint8Array(res.response);
@@ -4374,12 +4368,12 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (!version) await GM.setValue('Version', GM.info.script.version);else if (version !== GM.info.script.version) {
     const latestChange =\`
-## [6.9.2](https://github.com/hymbz/ComicReadScript/compare/v6.9.1...v6.9.2) (2023-08-23)
+## [6.9.3](https://github.com/hymbz/ComicReadScript/compare/v6.9.2...v6.9.3) (2023-08-24)
 
 
 ### Bug Fixes
 
-* :bug: 修复在 eh 上和其他脚本冲突导致的 bug ([59dd68e](https://github.com/hymbz/ComicReadScript/commit/59dd68e10fb7b81aae458f6ea37ae04558fde5a6))
+* :bug: 增加支持绅士漫画的其他域名 ([719f494](https://github.com/hymbz/ComicReadScript/commit/719f4948d437a740047be15f64dd4176d19c1ec1))
 \`;
     toast$1(() => [(() => {
       const _el$ = _tmpl$();
@@ -5226,7 +5220,6 @@ const getComicDetail_traversal = async (comicId, draftData) => {
   });
   while (nextId) {
     try {
-      // eslint-disable-next-line no-await-in-loop
       const {
         chapter_name,
         updatetime,
@@ -5252,7 +5245,6 @@ const useComicDetail = comicId => {
   solidJs.onMount(async () => {
     for (let i = 0; i < apiFn.length; i++) {
       try {
-        // eslint-disable-next-line no-await-in-loop
         Object.assign(data, await apiFn[i](comicId, data));
         if (data.chapters?.some(chapter => chapter.list.length)) return;
       } catch (_) {}
@@ -6128,7 +6120,6 @@ const main = require('main');
       });
       return;
     }
-    // eslint-disable-next-line no-await-in-loop
     await main.sleep(100);
   }
   setManga({
@@ -6330,6 +6321,7 @@ const main = require('main');
 
   // #绅士漫画(wnacg)
   case 'www.wnacg.com':
+  case 'wnacg.com':
     {
       options = {
         name: 'wnacg',
