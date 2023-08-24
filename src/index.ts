@@ -334,7 +334,8 @@ switch (window.location.hostname) {
   }
 
   // #绅士漫画(wnacg)
-  case 'www.wnacg.com': {
+  case 'www.wnacg.com':
+  case 'wnacg.com': {
     options = {
       name: 'wnacg',
       exit: () => !Reflect.has(unsafeWindow, 'imglist'),
