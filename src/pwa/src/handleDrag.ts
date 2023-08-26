@@ -1,4 +1,5 @@
 import { setState, loadNewImglist } from './store';
+import { FileSystemToFile } from './helper';
 
 import classes from './index.module.css';
 
@@ -20,7 +21,7 @@ export const handleDrag = (ref: HTMLElement) => {
         ),
       )
     ).filter(Boolean) as FileSystemHandle[];
-    loadNewImglist(handleList);
+    loadNewImglist(await FileSystemToFile(handleList));
   });
 
   // 防止拖拽文件被浏览器处理

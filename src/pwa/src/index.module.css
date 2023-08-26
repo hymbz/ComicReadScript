@@ -9,8 +9,8 @@ body {
 
   width: 100vw;
   max-width: 100vw;
-  height: 100vh;
-  min-height: 100vh;
+  height: 100dvh;
+  min-height: 100dvh;
   margin: 0;
   padding: 0;
 
@@ -22,16 +22,20 @@ body {
   }
 }
 
+@supports (height: 100dvh;) {
+  body {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+}
+
 p {
   margin: 0;
 }
 
 button {
-  margin: 0;
-
-  & + button {
-    margin-left: 1em;
-  }
+  margin: 0.5em;
+  white-space: nowrap;
 }
 
 .root {
@@ -52,7 +56,9 @@ button {
   align-items: center;
   justify-content: center;
 
+  box-sizing: border-box;
   height: 100%;
+  padding: 1em;
 
   border-radius: 1em;
   outline: 4px dashed #607d8b;
@@ -88,7 +94,7 @@ button {
 
 .installTip {
   margin-top: 1em;
-  margin-bottom: -5em;
+  padding-bottom: 1em;
   text-align: left;
   opacity: 0.5;
 

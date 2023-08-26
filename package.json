@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@material-design-icons/svg": "^0.14.10",
+    "browser-fs-access": "^0.34.1",
     "fflate": "^0.8.0",
     "jsencrypt": "^3.3.2",
     "libarchive.js": "^1.3.0",

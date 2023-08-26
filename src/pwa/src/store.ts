@@ -26,25 +26,16 @@ export const { store, setState, _state } = useStore({
 export type State = typeof _state;
 
 /** 自动从句柄中找出并处理为图片数据 */
-const getImgData = async (fileHandle: FileSystemHandle): Promise<ImgFile[]> => {
-  // 处理文件
-  if (fileHandle.kind === 'file') {
-    const fileType = isSupportFile(fileHandle.name);
-    if (!fileType) return [];
-
-    const file = await (fileHandle as FileSystemFileHandle).getFile();
-    return fileType === 'img'
-      ? [{ name: fileHandle.name, url: URL.createObjectURL(file) }]
-      : unzip(file, fileType);
+const getImgData = async (file: File): Promise<ImgFile[]> => {
+  const fileType = isSupportFile(file.name);
+  switch (fileType) {
+    case null:
+      return [];
+    case 'img':
+      return [{ name: file.name, url: URL.createObjectURL(file) }];
+    default:
+      return unzip(file, fileType);
   }
-
-  // 处理文件夹
-  const handleList: Array<FileSystemHandle> = [];
-  // eslint-disable-next-line no-restricted-syntax
-  for await (const handle of (fileHandle as FileSystemDirectoryHandle).values())
-    handleList.push(handle);
-  const list = await Promise.all(handleList.map(getImgData));
-  return list.filter(Boolean).flat();
 };
 
 export const handleExit = () =>
@@ -53,11 +44,8 @@ export const handleExit = () =>
   });
 
 /** 加载新的文件列表 */
-export const loadNewImglist = async (
-  handleList: readonly FileSystemHandle[],
-  errorTip?: string,
-) => {
-  if (!handleList.length) return;
+export const loadNewImglist = async (files: File[], errorTip?: string) => {
+  if (!files.length) return;
 
   if (store.loading) {
     toast.warn('正在加载其他文件中...');
@@ -69,7 +57,7 @@ export const loadNewImglist = async (
   });
 
   try {
-    const newImglist = (await Promise.all(handleList.map(getImgData))).flat();
+    const newImglist = (await Promise.all(files.map(getImgData))).flat();
     if (!newImglist.length) {
       toast.warn(errorTip ?? '找不到图片');
       return;

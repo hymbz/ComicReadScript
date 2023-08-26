@@ -3,6 +3,7 @@ import MdClose from '@material-design-icons/svg/round/close.svg';
 
 import { Show, type Component } from 'solid-js';
 import { pwaInstallHandler } from 'pwa-install-handler';
+import { directoryOpen, fileOpen } from 'browser-fs-access';
 
 import TipMd from './md/tip.md';
 import installMd from './md/install.md';
@@ -13,42 +14,42 @@ import { IconButton } from '../../components/IconButton';
 import { Toaster, toast } from '../../components/Toast';
 
 import { store, setState, handleExit, loadNewImglist } from './store';
-import { imgExtension } from './helper';
+import { FileSystemToFile, imgExtension } from './helper';
 import { handleDrag } from './handleDrag';
 
 import classes from './index.module.css';
 
 /** 选择文件 */
-const handleSelectFiles = async () =>
-  loadNewImglist(
-    await window.showOpenFilePicker({
-      multiple: true,
-      types: [
-        {
-          description: 'Images',
-          accept: {
-            'image/*': [...imgExtension.values()],
-            'application/zip': ['.zip', '.cbz'],
-            'application/x-rar-compressed': ['.rar', '.cbr'],
-            'application/x-7z-compressed': ['.7z', '.cb7'],
-          },
-        },
-      ],
-    }),
-    '请选择图片文件或含有图片文件的压缩包',
-  );
+const handleSelectFiles = async () => {
+  const options = [
+    ['image/*', [...imgExtension.values()]],
+    ['application/zip', ['.zip', '.cbz']],
+    ['application/x-rar-compressed', ['.rar', '.cbr']],
+    ['application/x-7z-compressed', ['.7z', '.cb7']],
+  ] as [string, string[]][];
+
+  const files: File[] = await fileOpen([
+    { multiple: true },
+    ...options.map(([mimeTypes, extensions]) => ({
+      mimeTypes: [mimeTypes],
+      extensions,
+      description: 'Image',
+    })),
+  ]);
+
+  loadNewImglist(files, '请选择图片文件或含有图片文件的压缩包');
+};
 
 /** 选择文件夹 */
-const handleSelectDir = async () =>
-  loadNewImglist(
-    [await window.showDirectoryPicker()],
-    '文件夹下没有图片文件或含有图片文件的压缩包',
-  );
+const handleSelectDir = async () => {
+  const files = (await directoryOpen({ recursive: true })) as File[];
+  loadNewImglist(files, '文件夹下没有图片文件或含有图片文件的压缩包');
+};
 
 // 实现从本地文件的打开方式启动时加载文件
-window.launchQueue?.setConsumer(async (launchParams) =>
-  loadNewImglist(launchParams.files),
-);
+window.launchQueue?.setConsumer(async (launchParams) => {
+  loadNewImglist(await FileSystemToFile(launchParams.files));
+});
 
 // 增加退出按钮
 const editButtonList: MangaProps['editButtonList'] = (list) => [

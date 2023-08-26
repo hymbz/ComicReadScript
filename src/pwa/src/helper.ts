@@ -41,3 +41,8 @@ export const createObjectURL = async (obj: Blob | MediaSource) => {
   if (await testImgUrl(url)) return url;
   return null;
 };
+
+/** 将 FileSystemHandle 转为 File */
+export const FileSystemToFile = (
+  list: readonly FileSystemHandle[] | FileSystemHandle[],
+) => Promise.all(list.map((file) => (file as FileSystemFileHandle).getFile()));

@@ -11,6 +11,9 @@ importers:
       '@material-design-icons/svg':
         specifier: ^0.14.10
         version: 0.14.10
+      browser-fs-access:
+        specifier: ^0.34.1
+        version: 0.34.1
       fflate:
         specifier: ^0.8.0
         version: 0.8.0
@@ -5646,6 +5649,10 @@ packages:
     dependencies:
       fill-range: 7.0.1
     dev: true
+
+  /browser-fs-access@0.34.1:
+    resolution: {integrity: sha512-HPaRf2yimp8kWSuWJXc8Mi78dPbDzfduA+Gyq14H4jlMvd6XNfIRm36Y2yRLaa4x0gwcGuepj4zf14oiTlxrxQ==}
+    dev: false
 
   /browserslist-generator@2.0.3:
     resolution: {integrity: sha512-3j8ogwvlBpOEDR3f5n1H2n5BWXqHPWi/Xm8EC1DPJy5BWl4WkSFisatBygH/L9AEmg0MtOfcR1QnMuM9XL28jA==}
