@@ -16,15 +16,23 @@
   visibility: hidden;
 }
 
+@media (width <= 600px) {
+  .touchAreaRoot {
+    flex-direction: column !important;
+  }
+}
+
 .touchArea {
   display: flex;
   flex-grow: 1;
   align-items: center;
   justify-content: center;
 
-  writing-mode: vertical-rl;
-
   outline: none;
+
+  & > h6 {
+    width: 1em;
+  }
 }
 
 .touchArea[data-area="menu"] {
