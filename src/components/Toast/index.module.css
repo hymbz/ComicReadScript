@@ -88,6 +88,24 @@
     margin: 0;
     text-align: left;
   }
+
+  & button {
+    cursor: pointer;
+
+    margin: 0 0.5em;
+    padding: 0.2em 0.6em;
+
+    font-size: inherit;
+
+    background-color: #eee;
+    border: none;
+    border-radius: 0.4em;
+    outline: none;
+
+    &:hover {
+      background: #e0e0e0;
+    }
+  }
 }
 
 @keyframes schedule {

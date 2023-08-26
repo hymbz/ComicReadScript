@@ -50,14 +50,17 @@ export const useSiteOptions = async <T = Record<string, any>>(
 
   const [hotKeys, setHotKeys] = createSignal(await getHotKeys());
 
+  const isStored = saveOptions !== undefined;
   // 如果当前站点没有存储配置，就补充上去
-  if (saveOptions === undefined) GM.setValue(name, options);
+  if (!isStored) GM.setValue(name, options);
 
   return {
     /** 站点配置 */
     options,
     /** 修改站点配置 */
     setOptions,
+    /** 是否存过配置 */
+    isStored,
 
     /** 快捷键配置 */
     hotKeys,

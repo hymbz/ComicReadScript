@@ -5,20 +5,36 @@ import {
   querySelectorAll,
   useInit,
   wait,
+  toast,
 } from 'main';
 
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
   const start = async () => {
-    const { setManga, setFab, init, options, setOptions } = await useInit(
-      window.location.hostname,
-      { 记住当前站点: true, selector: '' },
-    );
+    const { setManga, setFab, init, options, setOptions, isStored } =
+      await useInit(window.location.hostname, {
+        记住当前站点: true,
+        selector: '',
+      });
 
     // 通过 options 来迂回的实现禁止记住当前站点
     if (!options['记住当前站点']) {
       await GM.deleteValue(window.location.hostname);
       return true;
+    }
+
+    if (!isStored) {
+      toast(
+        () => (
+          <div>
+            将在之后默认自动进入阅读模式
+            <button on:click={() => setOptions({ autoShow: false })}>
+              禁用
+            </button>
+          </div>
+        ),
+        { duration: 1000 * 7 },
+      );
     }
 
     // 为避免卡死，提供一个删除 selector 的菜单项
@@ -134,12 +150,15 @@ import {
       }
     };
 
-    const getImgList = () => {
+    const getImgList = async () => {
       triggerLazyLoad();
 
-      const imgEleList = getAllImg().filter(
-        (e) => e.naturalHeight > 500 && e.naturalWidth > 500,
-      );
+      const imgEleList = (await wait(() => {
+        const newImgList = getAllImg().filter(
+          (e) => e.naturalHeight > 500 && e.naturalWidth > 500,
+        );
+        return newImgList.length > 2 && newImgList;
+      })) as HTMLImageElement[];
       saveImgEleSelector(imgEleList);
       return imgEleList.map((e) => e.src);
     };
@@ -147,15 +166,13 @@ import {
     const { loadImgList } = init(getImgList);
 
     /** 重新检查 imgList，并在发生变化时更新相关组件 */
-    const checkImgList = () => {
-      const newImgList = getImgList();
-
+    const checkImgList = async () => {
+      const newImgList = await getImgList();
       if (newImgList.length === 0) {
         setFab({ show: false });
         setManga({ show: false });
         return;
       }
-
       return loadImgList(newImgList);
     };
 

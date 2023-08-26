@@ -16,8 +16,14 @@ export const useInit = async <T extends Record<string, any>>(
   name: string,
   defaultOptions = {} as T,
 ) => {
-  const { options, setOptions, readModeHotKeys, hotKeys, onHotKeysChange } =
-    await useSiteOptions(name, defaultOptions);
+  const {
+    options,
+    setOptions,
+    readModeHotKeys,
+    hotKeys,
+    onHotKeysChange,
+    isStored,
+  } = await useSiteOptions(name, defaultOptions);
 
   const [setFab, fabProps] = await useFab({
     tip: '阅读模式',
@@ -27,8 +33,7 @@ export const useInit = async <T extends Record<string, any>>(
 
   /** 处理 Manga 组件的 onLoading 回调，将图片加载状态联动到 Fab 上 */
   const onLoading = (list: ComicImg[]) => {
-    if (list.length === 0)
-      return setFab({ progress: undefined, tip: '阅读模式' });
+    if (list.length === 0) return;
 
     const loadNum = list.filter((image) => image.loadType === 'loaded').length;
 
@@ -136,6 +141,7 @@ export const useInit = async <T extends Record<string, any>>(
     setManga,
     mangaProps,
     needAutoShow,
+    isStored,
     /** Manga 组件的默认 onLoading */
     onLoading,
 
