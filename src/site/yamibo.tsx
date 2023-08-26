@@ -122,8 +122,9 @@ interface History {
 
     // 限定板块启用
     if (unsafeWindow.fid === 30 || unsafeWindow.fid === 37) {
+      const isFirstPage = !querySelector('.pg > .prev');
       // 第一页以外不自动加载
-      if (querySelector('.pg > .prev')) needAutoShow.val = false;
+      if (!isFirstPage) needAutoShow.val = false;
 
       let imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
 
@@ -174,7 +175,11 @@ interface History {
         },
       });
 
-      setFab({ progress: 1, tip: '阅读模式', show: undefined });
+      setFab({
+        progress: isFirstPage ? 1 : undefined,
+        tip: '阅读模式',
+        show: undefined,
+      });
 
       // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
       insertNode(
