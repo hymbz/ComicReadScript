@@ -7,7 +7,7 @@ import { updatePageData, handleResize } from './useStore/slice';
 import type { Option } from './useStore/OptionState';
 import { autoCloseFill } from '../handleComicData';
 import { playAnimation } from '../helper';
-import { assign } from '../../../helper';
+import { assign, isEqualArray } from '../../../helper';
 import { defaultHoeKeys } from './useStore/OtherState';
 
 /** 初始化 */
@@ -107,6 +107,14 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
         state.onLoading?.(state.imgList);
         return;
       }
+
+      if (
+        isEqualArray(
+          props.imgList,
+          state.imgList.map(({ src }) => src),
+        )
+      )
+        return state.onLoading?.(state.imgList);
 
       state.endPageType = undefined;
 

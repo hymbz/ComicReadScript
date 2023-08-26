@@ -1,5 +1,5 @@
 import { For } from 'solid-js';
-import { getKeyboardCode, isEqualArray, wait } from '.';
+import { getKeyboardCode, wait } from '.';
 import { useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
 import { toast } from '../components/useComponents/Toast';
@@ -158,8 +158,7 @@ export const useInit = async <T extends Record<string, any>>(
           const newImgList = initImgList ?? (await getImgList());
           if (newImgList.length === 0) throw new Error('获取漫画图片失败');
           setManga((state) => {
-            if (!isEqualArray(newImgList, mangaProps.imgList))
-              state.imgList = [...newImgList];
+            state.imgList = [...newImgList];
             if (show || (needAutoShow.val && options.autoShow)) {
               state.show = true;
               needAutoShow.val = false;

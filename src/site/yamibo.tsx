@@ -19,16 +19,14 @@ interface History {
 }
 
 (async () => {
-  const { options, setFab, setManga, init, onLoading } = await useInit(
-    'yamibo',
-    {
+  const { options, setFab, setManga, init, onLoading, needAutoShow } =
+    await useInit('yamibo', {
       记录阅读进度: true,
       关闭快捷导航的跳转: true,
       修正点击页数时的跳转判定: true,
       固定导航条: true,
       自动签到: true,
-    },
-  );
+    });
 
   await GM.addStyle(
     `#fab { --fab: #6E2B19; --fab_hover: #A15640; }
@@ -122,12 +120,11 @@ interface History {
       e.setAttribute('referrerpolicy', 'no-referrer');
     });
 
-    if (
-      // 限定板块启用
-      (unsafeWindow.fid === 30 || unsafeWindow.fid === 37) &&
-      // 只在第一页生效
-      !querySelector('.pg > .prev')
-    ) {
+    // 限定板块启用
+    if (unsafeWindow.fid === 30 || unsafeWindow.fid === 37) {
+      // 第一页以外不自动加载
+      if (querySelector('.pg > .prev')) needAutoShow.val = false;
+
       let imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
 
       const updateImgList = () => {
@@ -135,6 +132,7 @@ interface History {
         while (i--) {
           const img = imgList[i];
 
+          // 触发懒加载
           const file = img.getAttribute('file');
           if (file && img.src !== file) {
             img.setAttribute('src', file);
@@ -166,8 +164,7 @@ interface History {
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
         onLoading: (_imgList) => {
           onLoading(_imgList);
-          updateImgList();
-          return loadImgList();
+          if (imgList.length !== updateImgList().length) return loadImgList();
         },
         onExit: (isEnd) => {
           if (isEnd)
@@ -177,7 +174,7 @@ interface History {
         },
       });
 
-      setFab({ progress: 1, tip: '阅读模式' });
+      setFab({ progress: 1, tip: '阅读模式', show: undefined });
 
       // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
       insertNode(
