@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.9.3
+// @version      6.9.4
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -316,12 +316,22 @@ const getKeyboardCode = e => {
 /** 将快捷键的编码转换成更易读的形式 */
 const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\\s$/, '空格');
 
+const getDom = id => {
+  let dom = document.getElementById(id);
+  if (dom) {
+    dom.innerHTML = '';
+    return dom;
+  }
+  dom = document.createElement('div');
+  dom.id = id;
+  document.body.appendChild(dom);
+  return dom;
+};
+
 /** 挂载 solid-js 组件 */
 const mountComponents = (id, fc) => {
-  const dom = document.createElement('div');
-  dom.id = id;
+  const dom = getDom(id);
   dom.style.setProperty('display', 'unset', 'important');
-  document.body.appendChild(dom);
   const shadowDom = dom.attachShadow({
     mode: 'closed'
   });
@@ -331,8 +341,8 @@ const mountComponents = (id, fc) => {
 
 var e=[],t=[];function n(n,r){if(n&&"undefined"!=typeof document){var a,s=!0===r.prepend?"prepend":"append",d=!0===r.singleTag,i="string"==typeof r.container?document.querySelector(r.container):document.getElementsByTagName("head")[0];if(d){var u=e.indexOf(i);-1===u&&(u=e.push(i)-1,t[u]={}),a=t[u]&&t[u][s]?t[u][s]:t[u][s]=c();}else a=c();65279===n.charCodeAt(0)&&(n=n.substring(1)),a.styleSheet?a.styleSheet.cssText+=n:a.appendChild(document.createTextNode(n));}function c(){var e=document.createElement("style");if(e.setAttribute("type","text/css"),r.attributes)for(var t=Object.keys(r.attributes),n=0;n<t.length;n++)e.setAttribute(t[n],r.attributes[t[n]]);var a="prepend"===s?"afterbegin":"beforeend";return i.insertAdjacentElement(a,e),e}}
 
-var css$3 = ".index_module_root__a46f90ae{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__a46f90ae{align-items:center;animation:index_module_bounceInRight__a46f90ae .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__a46f90ae>svg{color:var(--theme);margin-right:.5em;width:1em}.index_module_item__a46f90ae[data-exit]{animation:index_module_bounceOutRight__a46f90ae .5s 1}.index_module_schedule__a46f90ae{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__a46f90ae[data-schedule] .index_module_schedule__a46f90ae{transition:transform .1s}.index_module_item__a46f90ae:not([data-schedule]) .index_module_schedule__a46f90ae{animation:index_module_schedule__a46f90ae linear 1 forwards}:is(.index_module_item__a46f90ae:hover,.index_module_item__a46f90ae[data-schedule],.index_module_root__a46f90ae[data-paused]) .index_module_schedule__a46f90ae{animation-play-state:paused}.index_module_msg__a46f90ae{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__a46f90ae h2,.index_module_msg__a46f90ae h3{margin:.3em 0 .7em}.index_module_msg__a46f90ae ul{margin:0;text-align:left}@keyframes index_module_schedule__a46f90ae{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__a46f90ae{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__a46f90ae{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__a46f90ae","item":"index_module_item__a46f90ae","bounceInRight":"index_module_bounceInRight__a46f90ae","bounceOutRight":"index_module_bounceOutRight__a46f90ae","schedule":"index_module_schedule__a46f90ae","msg":"index_module_msg__a46f90ae"};
+var css$3 = ".index_module_root__4b4617d7{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__4b4617d7{align-items:center;animation:index_module_bounceInRight__4b4617d7 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__4b4617d7>svg{color:var(--theme);margin-right:.5em;width:1em}.index_module_item__4b4617d7[data-exit]{animation:index_module_bounceOutRight__4b4617d7 .5s 1}.index_module_schedule__4b4617d7{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__4b4617d7[data-schedule] .index_module_schedule__4b4617d7{transition:transform .1s}.index_module_item__4b4617d7:not([data-schedule]) .index_module_schedule__4b4617d7{animation:index_module_schedule__4b4617d7 linear 1 forwards}:is(.index_module_item__4b4617d7:hover,.index_module_item__4b4617d7[data-schedule],.index_module_root__4b4617d7[data-paused]) .index_module_schedule__4b4617d7{animation-play-state:paused}.index_module_msg__4b4617d7{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__4b4617d7 h2,.index_module_msg__4b4617d7 h3{margin:.3em 0 .7em}.index_module_msg__4b4617d7 ul{margin:0;text-align:left}.index_module_msg__4b4617d7 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__4b4617d7 button:hover{background:#e0e0e0}@keyframes index_module_schedule__4b4617d7{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__4b4617d7{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__4b4617d7{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2$3 = {"root":"index_module_root__4b4617d7","item":"index_module_item__4b4617d7","bounceInRight":"index_module_bounceInRight__4b4617d7","bounceOutRight":"index_module_bounceOutRight__4b4617d7","schedule":"index_module_schedule__4b4617d7","msg":"index_module_msg__4b4617d7"};
 n(css$3,{});
 
 const [_state$1, _setState$1] = store$2.createStore({
@@ -578,11 +588,20 @@ const ToastStyle = css$3;
 const _tmpl$$J = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let dom$1;
 const init = () => {
-  if (!dom$1) dom$1 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
+  if (dom$1) return;
+
+  // 提前挂载漫画节点，防止 toast 没法显示在漫画上层
+  if (!document.getElementById('comicRead')) {
+    const _dom = document.createElement('div');
+    _dom.id = 'comicRead';
+    document.body.appendChild(_dom);
+  }
+  dom$1 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
     const _el$ = _tmpl$$J();
     web.insert(_el$, ToastStyle);
     return _el$;
   })()]);
+  dom$1.style.setProperty('z-index', '2147483647', 'important');
 };
 const toast$1 = new Proxy(toast$2, {
   get(target, propKey) {
@@ -591,7 +610,7 @@ const toast$1 = new Proxy(toast$2, {
   },
   apply(target, propKey, args) {
     init();
-    const fn = propKey ? target[propKey] : target;
+    const fn = propKey in target ? target[propKey] : target;
     return fn(...args);
   }
 });
@@ -3835,6 +3854,9 @@ const useInit$1 = (props, rootRef) => {
         state.onLoading?.(state.imgList);
         return;
       }
+      if (isEqualArray(props.imgList, state.imgList.map(({
+        src
+      }) => src))) return state.onLoading?.(state.imgList);
       state.endPageType = undefined;
 
       /** 修改前的当前显示图片 */
@@ -4282,14 +4304,16 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     return GM.setValue(name, difference(options, _defaultOptions));
   };
   const [hotKeys, setHotKeys] = solidJs.createSignal(await getHotKeys());
-
+  const isStored = saveOptions !== undefined;
   // 如果当前站点没有存储配置，就补充上去
-  if (saveOptions === undefined) GM.setValue(name, options);
+  if (!isStored) GM.setValue(name, options);
   return {
     /** 站点配置 */
     options,
     /** 修改站点配置 */
     setOptions,
+    /** 是否存过配置 */
+    isStored,
     /** 快捷键配置 */
     hotKeys,
     /** 处理快捷键配置的变动 */
@@ -4321,7 +4345,8 @@ const useInit = async (name, defaultOptions = {}) => {
     setOptions,
     readModeHotKeys,
     hotKeys,
-    onHotKeysChange
+    onHotKeysChange,
+    isStored
   } = await useSiteOptions(name, defaultOptions);
   const [setFab, fabProps] = await useFab({
     tip: '阅读模式',
@@ -4331,10 +4356,7 @@ const useInit = async (name, defaultOptions = {}) => {
 
   /** 处理 Manga 组件的 onLoading 回调，将图片加载状态联动到 Fab 上 */
   const onLoading = list => {
-    if (list.length === 0) return setFab({
-      progress: undefined,
-      tip: '阅读模式'
-    });
+    if (list.length === 0) return;
     const loadNum = list.filter(image => image.loadType === 'loaded').length;
 
     /** 图片加载进度 */
@@ -4368,12 +4390,17 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (!version) await GM.setValue('Version', GM.info.script.version);else if (version !== GM.info.script.version) {
     const latestChange =\`
-## [6.9.3](https://github.com/hymbz/ComicReadScript/compare/v6.9.2...v6.9.3) (2023-08-24)
+## [6.9.4](https://github.com/hymbz/ComicReadScript/compare/v6.9.3...v6.9.4) (2023-08-26)
 
 
 ### Bug Fixes
 
-* :bug: 增加支持绅士漫画的其他域名 ([719f494](https://github.com/hymbz/ComicReadScript/commit/719f4948d437a740047be15f64dd4176d19c1ec1))
+* :bug: 修复百合会看不了第二页后的漫画楼层的 bug ([09b0389](https://github.com/hymbz/ComicReadScript/commit/09b038906522a2aeb77fb2e59729df9a88646f38))
+
+
+### Performance Improvements
+
+* :zap: 在开启简易阅读时增加禁用 自动进入阅读模式 的提示 ([60c32f9](https://github.com/hymbz/ComicReadScript/commit/60c32f907491d5b1076ab3c6011bf4728f37ef5e))
 \`;
     toast$1(() => [(() => {
       const _el$ = _tmpl$();
@@ -4450,6 +4477,7 @@ const useInit = async (name, defaultOptions = {}) => {
     setManga,
     mangaProps,
     needAutoShow,
+    isStored,
     /** Manga 组件的默认 onLoading */
     onLoading,
     /**
@@ -4474,7 +4502,7 @@ const useInit = async (name, defaultOptions = {}) => {
           const newImgList = initImgList ?? (await getImgList());
           if (newImgList.length === 0) throw new Error('获取漫画图片失败');
           setManga(state => {
-            if (!isEqualArray(newImgList, mangaProps.imgList)) state.imgList = [...newImgList];
+            state.imgList = [...newImgList];
             if (show || needAutoShow.val && options.autoShow) {
               state.show = true;
               needAutoShow.val = false;
@@ -4768,7 +4796,8 @@ const MdSettings = ((props = {}) => (() => {
     setFab,
     setManga,
     init,
-    onLoading
+    onLoading,
+    needAutoShow
   } = await main.useInit('yamibo', {
     记录阅读进度: true,
     关闭快捷导航的跳转: true,
@@ -4860,16 +4889,18 @@ const MdSettings = ((props = {}) => (() => {
     main.querySelectorAll('img[file*="sinaimg.cn"]').forEach(e => {
       e.setAttribute('referrerpolicy', 'no-referrer');
     });
-    if (
+
     // 限定板块启用
-    (unsafeWindow.fid === 30 || unsafeWindow.fid === 37) &&
-    // 只在第一页生效
-    !main.querySelector('.pg > .prev')) {
+    if (unsafeWindow.fid === 30 || unsafeWindow.fid === 37) {
+      // 第一页以外不自动加载
+      if (main.querySelector('.pg > .prev')) needAutoShow.val = false;
       let imgList = main.querySelectorAll('.t_fsz img');
       const updateImgList = () => {
         let i = imgList.length;
         while (i--) {
           const img = imgList[i];
+
+          // 触发懒加载
           const file = img.getAttribute('file');
           if (file && img.src !== file) {
             img.setAttribute('src', file);
@@ -4892,8 +4923,7 @@ const MdSettings = ((props = {}) => (() => {
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
         onLoading: _imgList => {
           onLoading(_imgList);
-          updateImgList();
-          return loadImgList();
+          if (imgList.length !== updateImgList().length) return loadImgList();
         },
         onExit: isEnd => {
           if (isEnd) main.scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
@@ -4904,7 +4934,8 @@ const MdSettings = ((props = {}) => (() => {
       });
       setFab({
         progress: 1,
-        tip: '阅读模式'
+        tip: '阅读模式',
+        show: undefined
       });
 
       // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
@@ -6445,8 +6476,10 @@ const main = require('main');
     }
 }
 if (options) main.universalInit(options);else if (options !== false) {
+const web = require('solid-js/web');
 const main = require('main');
 
+const _tmpl$ = /*#__PURE__*/web.template(`<div>将在之后默认自动进入阅读模式<button>禁用`);
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
   const start = async () => {
@@ -6455,7 +6488,8 @@ const main = require('main');
       setFab,
       init,
       options,
-      setOptions
+      setOptions,
+      isStored
     } = await main.useInit(window.location.hostname, {
       记住当前站点: true,
       selector: ''
@@ -6465,6 +6499,19 @@ const main = require('main');
     if (!options['记住当前站点']) {
       await GM.deleteValue(window.location.hostname);
       return true;
+    }
+    if (!isStored) {
+      main.toast(() => (() => {
+        const _el$ = _tmpl$(),
+          _el$2 = _el$.firstChild,
+          _el$3 = _el$2.nextSibling;
+        _el$3.addEventListener("click", () => setOptions({
+          autoShow: false
+        }));
+        return _el$;
+      })(), {
+        duration: 1000 * 7
+      });
     }
 
     // 为避免卡死，提供一个删除 selector 的菜单项
@@ -6582,9 +6629,12 @@ const main = require('main');
         lastTriggedImg = e;
       }
     };
-    const getImgList = () => {
+    const getImgList = async () => {
       triggerLazyLoad();
-      const imgEleList = getAllImg().filter(e => e.naturalHeight > 500 && e.naturalWidth > 500);
+      const imgEleList = await main.wait(() => {
+        const newImgList = getAllImg().filter(e => e.naturalHeight > 500 && e.naturalWidth > 500);
+        return newImgList.length > 2 && newImgList;
+      });
       saveImgEleSelector(imgEleList);
       return imgEleList.map(e => e.src);
     };
@@ -6593,8 +6643,8 @@ const main = require('main');
     } = init(getImgList);
 
     /** 重新检查 imgList，并在发生变化时更新相关组件 */
-    const checkImgList = () => {
-      const newImgList = getImgList();
+    const checkImgList = async () => {
+      const newImgList = await getImgList();
       if (newImgList.length === 0) {
         setFab({
           show: false
