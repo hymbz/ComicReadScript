@@ -52,6 +52,11 @@ declare module 'solid-js' {
       target: Element;
     };
 
+    type InputEventSelf = InputEvent & {
+      currentTarget: HTMLInputElement;
+      target: HTMLInputElement;
+    };
+
     interface CustomEvents {
       keydown: KeyboardEventSelf;
       keyup: KeyboardEventSelf;
@@ -59,6 +64,7 @@ declare module 'solid-js' {
       click: MouseEventSelf;
       mousedown: MouseEventSelf;
       mousemove: MouseEventSelf;
+      input: InputEventSelf;
     }
 
     interface CustomCaptureEvents {
@@ -68,6 +74,7 @@ declare module 'solid-js' {
       click: MouseEventSelf;
       mousedown: MouseEventSelf;
       mousemove: MouseEventSelf;
+      input: InputEventSelf;
     }
   }
 }

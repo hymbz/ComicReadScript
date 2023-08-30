@@ -171,14 +171,18 @@ export const defaultSettingList: SettingList = [
               store.option.customBackground ??
               (store.option.darkMode ? '#000000' : '#ffffff')
             }
-            onInput={throttle(20, (e) => {
+            on:input={throttle(20, (e) => {
+              if (!e.target.value) return;
               setOption((draftOption) => {
                 // 在拉到纯黑或纯白时改回初始值
                 draftOption.customBackground =
                   e.target.value === '#000000' || e.target.value === '#ffffff'
                     ? undefined
                     : e.target.value;
-                draftOption.darkMode = needDarkMode(e.target.value);
+                if (draftOption.customBackground)
+                  draftOption.darkMode = needDarkMode(
+                    draftOption.customBackground,
+                  );
               });
             })}
           />
