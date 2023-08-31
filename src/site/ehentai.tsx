@@ -86,7 +86,7 @@ declare const selected_link: HTMLElement;
   /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
     const res = await request(
-      `${window.location.href}${pageNum ? `?p=${pageNum}` : ''}`,
+      `${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
       { errorText: '从详情页获取图片页地址失败' },
     );
 
