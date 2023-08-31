@@ -17,6 +17,8 @@ export interface Option {
     enabled: boolean;
     /** 左右反转点击区域 */
     overturn: boolean;
+    /** 将点击区域改为上下翻页 */
+    vertical: boolean;
   };
   /** 默认启用首页填充 */
   firstPageFill: boolean;
@@ -68,6 +70,7 @@ export const defaultOption: Readonly<Option> = {
   clickPage: {
     enabled: 'ontouchstart' in document.documentElement,
     overturn: false,
+    vertical: false,
   },
   firstPageFill: true,
   disableZoom: false,

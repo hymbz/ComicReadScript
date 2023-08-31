@@ -98,6 +98,11 @@ export const defaultSettingList: SettingList = [
             onChange={createStateSetFn('clickPage.overturn')}
           />
           <SettingsItemSwitch
+            name="上下翻页"
+            value={store.option.clickPage.vertical}
+            onChange={createStateSetFn('clickPage.vertical')}
+          />
+          <SettingsItemSwitch
             name="显示点击区域"
             value={store.showTouchArea}
             onChange={() => {

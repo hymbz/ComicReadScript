@@ -66,6 +66,7 @@ export const TouchArea: Component = () => {
         cursor: store.isZoomed ? 'move' : undefined,
       }}
       data-show={store.showTouchArea}
+      data-vert={store.option.clickPage.vertical}
     >
       <div
         ref={bindRef('prevAreaRef')}
