@@ -10,6 +10,7 @@ import {
   mangaFlowEle,
   updateDrag,
   updateTipText,
+  windowHeight,
 } from './Scrollbar';
 import { clamp } from '../../../helper';
 import { setOption } from './Helper';
@@ -222,6 +223,8 @@ export const {
       .filter((img) => img.loadType === 'loaded' && img.height)
       .map((img) => img.height!)
       .sort();
+
+    if (!heightList.length) return windowHeight();
     return (
       heightList[Math.floor(heightList.length / 2)] *
       store.option.scrollModeImgScale

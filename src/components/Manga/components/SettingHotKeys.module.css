@@ -30,6 +30,7 @@
   display: flex;
   align-items: center;
 
+  box-sizing: content-box;
   height: 1em;
   margin: 0.3em;
   padding: 0.2em 1.2em;

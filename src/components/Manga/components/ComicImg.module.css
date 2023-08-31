@@ -80,6 +80,7 @@
         display: unset;
         flex-basis: var(--img_placeholder_height);
         flex-shrink: 0;
+        visibility: hidden;
       }
     }
   }
