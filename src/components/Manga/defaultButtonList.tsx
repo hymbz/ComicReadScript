@@ -20,6 +20,7 @@ import {
   switchFillEffect,
   switchScrollMode,
   updatePageData,
+  focus,
 } from './hooks/useStore/slice';
 
 import { setImgTranslationEnbale } from './hooks/useStore/slice/Translation';
@@ -150,7 +151,7 @@ export const defaultButtonList: ToolbarButtonList = [
               state.showToolbar = false;
               state.showScrollbar = false;
             });
-            store.rootRef?.focus();
+            focus();
           }}
           role="button"
           tabIndex={-1}

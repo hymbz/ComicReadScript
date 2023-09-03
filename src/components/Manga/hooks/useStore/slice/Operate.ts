@@ -154,3 +154,6 @@ export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
   e.preventDefault();
   switchFillEffect();
 };
+
+export const focus = () =>
+  (store.mangaFlowRef ?? store.rootRef)?.parentElement?.focus();

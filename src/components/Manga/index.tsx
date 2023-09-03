@@ -7,12 +7,13 @@ import { Scrollbar } from './components/Scrollbar';
 import { TouchArea } from './components/TouchArea';
 import { EndPage } from './components/EndPage';
 
-import type { State } from './hooks/useStore/index';
+import { type State } from './hooks/useStore/index';
 import type { FillEffect } from './hooks/useStore/ImageState';
 import type { Option } from './hooks/useStore/OptionState';
 import { cssVar } from './hooks/useCssVar';
 import { useInit } from './hooks/useInit';
 import {
+  focus,
   handleKeyDown,
   handleMouseDown,
   handleWheel,
@@ -73,12 +74,10 @@ export const Manga: Component<MangaProps> = (props) => {
 
   onMount(() => {
     useInit(props, rootRef);
-    rootRef.focus();
+    focus();
   });
 
-  createEffect(() => {
-    if (props.show) rootRef.focus();
-  });
+  createEffect(() => props.show && focus());
 
   return (
     <div

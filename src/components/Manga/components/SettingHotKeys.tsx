@@ -4,7 +4,12 @@ import MdAdd from '@material-design-icons/svg/round/add.svg';
 
 import { type Component, For, Index } from 'solid-js';
 
-import { delHotKeys, hotKeysMap, setHotKeys } from '../hooks/useStore/slice';
+import {
+  delHotKeys,
+  focus,
+  hotKeysMap,
+  setHotKeys,
+} from '../hooks/useStore/slice';
 import { defaultHoeKeys } from '../hooks/useStore/OtherState';
 import { store } from '../hooks/useStore';
 import { getKeyboardCode, keyboardCodeToText } from '../../../helper';
@@ -27,7 +32,7 @@ const KeyItem: Component<{
       case 'Tab':
       case 'Enter':
       case 'Escape':
-        store.rootRef?.focus();
+        focus();
         return;
 
       case 'Backspace':
