@@ -1,6 +1,6 @@
 import { onCleanup, onMount } from 'solid-js';
 
-import { dragOption } from './useStore/slice';
+import { dragOption, focus } from './useStore/slice';
 
 export interface UseDragState {
   /** 事件类型 */
@@ -86,6 +86,7 @@ export const useDrag = (ref: HTMLElement) => {
           state.xy = [e.offsetX, e.offsetY];
           handleDrag(state, e);
           Object.assign(state, defaultStata());
+          focus();
         },
         { capture: false, passive: true, signal: controller.signal },
       );

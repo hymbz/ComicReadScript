@@ -7,12 +7,10 @@ import classes from '../index.module.css';
 
 const handleClick = {
   prev: () => {
-    if (store.option.clickPage.enabled)
-      setState((state) => turnPage(state, 'prev'));
+    if (store.option.clickPage.enabled) turnPage('prev');
   },
   next: () => {
-    if (store.option.clickPage.enabled)
-      setState((state) => turnPage(state, 'next'));
+    if (store.option.clickPage.enabled) turnPage('next');
   },
   menu: () => {
     // 处于放大模式时跳过不处理

@@ -27,11 +27,8 @@ export const handleWheel = (e: WheelEvent) => {
 
   const isWheelDown = e.deltaY > 0;
 
-  if (store.endPageType || !store.option.scrollMode)
-    return setState((state) => turnPage(state, isWheelDown ? 'next' : 'prev'));
-
   // 实现卷轴模式下的缩放
-  if (e.altKey) {
+  if (!store.endPageType && e.altKey) {
     e.preventDefault();
     zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
     // 在调整图片缩放后使当前滚动进度保持不变
@@ -44,33 +41,7 @@ export const handleWheel = (e: WheelEvent) => {
     return;
   }
 
-  // 实现在卷轴模式滚动到头尾后继续滚动时弹出结束页
-  if (store.scrollbar.dragTop === 0 && !isWheelDown) {
-    window.setTimeout(() => {
-      setState((state) => {
-        state.endPageType = 'start';
-        state.scrollLock = true;
-      });
-    });
-    window.setTimeout(() => {
-      setState((state) => {
-        state.scrollLock = false;
-      });
-    }, 500);
-  } else if (
-    store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 &&
-    isWheelDown
-  ) {
-    setState((state) => {
-      state.endPageType = 'end';
-      state.scrollLock = true;
-    });
-    window.setTimeout(() => {
-      setState((state) => {
-        state.scrollLock = false;
-      });
-    }, 500);
-  }
+  return turnPage(isWheelDown ? 'next' : 'prev');
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
@@ -88,45 +59,44 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 
   const code = getKeyboardCode(e);
 
-  switch (e.key) {
-    case ' ':
-    case 'ArrowUp':
-    case 'PageUp':
-    case 'ArrowDown':
-    case 'PageDown':
-    case 'ArrowRight':
-    case 'ArrowLeft':
-    case 'Home':
-    case 'End': {
-      // 卷轴模式下跳过用于移动的按键
-      if (store.option.scrollMode && !store.endPageType) break;
-      // falls through
-    }
+  // 卷轴模式下跳过用于移动的按键
+  if (store.option.scrollMode && !store.endPageType) {
+    switch (e.key) {
+      case 'Home':
+      case 'End':
+      case 'ArrowRight':
+      case 'ArrowLeft':
+        return;
 
-    default:
-      // 拦截已注册的快捷键
-      if (Reflect.has(hotKeysMap(), code)) {
-        e.stopPropagation();
-        e.preventDefault();
-      }
+      case 'ArrowUp':
+      case 'PageUp':
+        return turnPage('prev');
+
+      case 'ArrowDown':
+      case 'PageDown':
+      case ' ':
+        return turnPage('next');
+    }
+  }
+
+  // 拦截已注册的快捷键
+  if (Reflect.has(hotKeysMap(), code)) {
+    e.stopPropagation();
+    e.preventDefault();
   }
 
   switch (hotKeysMap()[code]) {
     case '向上翻页':
-      return setState((state) => turnPage(state, 'prev'));
+      return turnPage('prev');
 
     case '向下翻页':
-      return setState((state) => turnPage(state, 'next'));
+      return turnPage('next');
 
     case '向右翻页':
-      return setState((state) =>
-        turnPage(state, handleSwapTurnPage(store.option.dir !== 'rtl')),
-      );
+      return turnPage(handleSwapTurnPage(store.option.dir !== 'rtl'));
 
     case '向左翻页':
-      return setState((state) =>
-        turnPage(state, handleSwapTurnPage(store.option.dir === 'rtl')),
-      );
+      return turnPage(handleSwapTurnPage(store.option.dir === 'rtl'));
 
     case '跳至首页':
       return setState((state) => {

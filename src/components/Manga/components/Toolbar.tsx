@@ -1,15 +1,20 @@
 import type { Component } from 'solid-js';
-import { For } from 'solid-js';
+import { For, createEffect, createMemo } from 'solid-js';
 
 import { defaultButtonList } from '../defaultButtonList';
 import { useHover } from '../hooks/useHover';
 import { store } from '../hooks/useStore';
 
 import classes from '../index.module.css';
+import { focus } from '../hooks/useStore/slice';
 
 /** 左侧工具栏 */
 export const Toolbar: Component = () => {
   const { isHover, handleMouseEnter, handleMouseLeave } = useHover();
+
+  const show = createMemo(() => isHover() || store.showToolbar);
+
+  createEffect(() => show() || focus());
 
   return (
     <div
@@ -17,7 +22,7 @@ export const Toolbar: Component = () => {
       class={classes.toolbar}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={handleMouseEnter}
-      data-show={isHover() || store.showToolbar}
+      data-show={show()}
     >
       <div class={classes.toolbarPanel}>
         <div class={classes.toolbarBg} />

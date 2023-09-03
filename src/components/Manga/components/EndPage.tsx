@@ -9,7 +9,7 @@ import {
 } from 'solid-js';
 
 import { setState, store } from '../hooks/useStore';
-import { bindRef, turnPage } from '../hooks/useStore/slice';
+import { bindRef, focus, turnPage } from '../hooks/useStore/slice';
 
 import classes from '../index.module.css';
 import { stopPropagation } from '../helper';
@@ -23,6 +23,7 @@ export const EndPage: Component = () => {
       setState((state) => {
         state.endPageType = undefined;
       });
+    focus();
   };
 
   let ref: HTMLDivElement;
@@ -33,7 +34,7 @@ export const EndPage: Component = () => {
       (e) => {
         e.preventDefault();
         e.stopPropagation();
-        setState((state) => turnPage(state, e.deltaY > 0 ? 'next' : 'prev'));
+        turnPage(e.deltaY > 0 ? 'next' : 'prev');
       },
       { passive: false },
     );
