@@ -149,7 +149,7 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 };
 
 export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
-  if (e.button !== 1) return;
+  if (e.button !== 1 || store.option.scrollMode) return;
   e.stopPropagation();
   e.preventDefault();
   switchFillEffect();

@@ -91,25 +91,25 @@ export const defaultSettingList: SettingList = [
           value={store.option.clickPage.enabled}
           onChange={createStateSetFn('clickPage.enabled')}
         />
+        <SettingsItemSwitch
+          name="上下翻页"
+          value={store.option.clickPage.vertical}
+          onChange={createStateSetFn('clickPage.vertical')}
+        />
+        <SettingsItemSwitch
+          name="显示点击区域"
+          value={store.showTouchArea}
+          onChange={() => {
+            setState((state) => {
+              state.showTouchArea = !state.showTouchArea;
+            });
+          }}
+        />
         <SettingsShowItem when={store.option.clickPage.enabled}>
           <SettingsItemSwitch
             name="左右反转点击区域"
             value={store.option.clickPage.overturn}
             onChange={createStateSetFn('clickPage.overturn')}
-          />
-          <SettingsItemSwitch
-            name="上下翻页"
-            value={store.option.clickPage.vertical}
-            onChange={createStateSetFn('clickPage.vertical')}
-          />
-          <SettingsItemSwitch
-            name="显示点击区域"
-            value={store.showTouchArea}
-            onChange={() => {
-              setState((state) => {
-                state.showTouchArea = !state.showTouchArea;
-              });
-            }}
           />
         </SettingsShowItem>
       </>
