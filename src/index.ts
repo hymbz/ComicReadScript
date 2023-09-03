@@ -334,6 +334,7 @@ switch (window.location.hostname) {
   }
 
   // #绅士漫画(wnacg)
+  case 'www.wn3.lol':
   case 'www.wnacg.com':
   case 'wnacg.com': {
     options = {
@@ -344,7 +345,7 @@ switch (window.location.hostname) {
           .filter(
             ({ caption }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！',
           )
-          .map(({ url }) => url),
+          .map(({ url }) => new URL(url, window.location.origin).href),
     };
     break;
   }
