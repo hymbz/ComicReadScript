@@ -116,7 +116,7 @@ export const loop = async (fn: () => unknown, ms?: number) => {
 export const plimit = async <T>(
   fnList: Array<() => Promise<T>>,
   callBack = undefined as
-    | ((doneNum: number, totalNum: number, resList: T[]) => void)
+    | ((doneNum: number, totalNum: number, resList: T[], i: number) => void)
     | undefined,
   limit = 10,
 ) => {
@@ -131,7 +131,7 @@ export const plimit = async <T>(
         resList[i] = await fn();
         doneNum += 1;
         execPool.delete(p);
-        callBack?.(doneNum, totalNum, resList);
+        callBack?.(doneNum, totalNum, resList, i);
       })();
       execPool.add(p);
     };

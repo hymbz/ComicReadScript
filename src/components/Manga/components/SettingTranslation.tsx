@@ -140,6 +140,7 @@ export const SettingTranslation = () => {
             <input
               type="url"
               class={classes.SettingsItem}
+              value={store.option.translation.localUrl}
               onChange={(e) => {
                 setOption((draftOption) => {
                   // 删掉末尾的斜杠
