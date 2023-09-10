@@ -40,7 +40,7 @@
     display: none;
   }
 
-  &[data-hiddenMouse="true"] .img {
+  &[data-hiddenMouse="true"] {
     cursor: none;
   }
 }

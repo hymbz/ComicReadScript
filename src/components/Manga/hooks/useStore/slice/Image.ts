@@ -157,7 +157,7 @@ export const turnPage = (dir: 'next' | 'prev') =>
             state.scrollLock = true;
             window.setTimeout(() => {
               state.scrollLock = false;
-            }, 1000);
+            }, 200);
             return;
           }
           if (!state.option.scrollMode) state.activePageIndex -= 1;
@@ -184,7 +184,7 @@ export const turnPage = (dir: 'next' | 'prev') =>
             state.scrollLock = true;
             window.setTimeout(() => {
               state.scrollLock = false;
-            }, 1000);
+            }, 200);
             return;
           }
           if (!state.option.scrollMode) state.activePageIndex += 1;
