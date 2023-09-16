@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ComicRead
 // @namespace    ComicRead
-// @version      6.10.1
+// @version      6.10.2
 // @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
 // @author       hymbz
 // @license      AGPL-3.0-or-later
@@ -960,7 +960,9 @@ const defaultHoeKeys = {
   跳至尾页: ['End'],
   退出: ['Escape'],
   切换页面填充: ['/', 'm', 'z'],
-  切换卷轴模式: []
+  切换卷轴模式: [],
+  切换单双页模式: [],
+  切换阅读方向: []
 };
 const OtherState = {
   panzoom: undefined,
@@ -1717,6 +1719,21 @@ const switchScrollMode = () => {
   setTimeout(handleMangaFlowScroll);
 };
 
+/** 切换单双页模式 */
+const switchOnePageMode = () => {
+  const jump = jumpBackPage(store);
+  setOption(draftOption => {
+    draftOption.onePageMode = !draftOption.onePageMode;
+  });
+  setState(updatePageData);
+  jump();
+};
+
+/** 切换阅读方向 */
+const switchDir = () => setOption(draftOption => {
+  draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
+});
+
 const setHotKeys = (...args) => {
   _setState.apply(undefined, ['hotKeys', ...args]);
   store.onHotKeysChange?.(Object.fromEntries(Object.entries(store.hotKeys).filter(([name, keys]) => !defaultHoeKeys[name] || !isEqualArray(keys, defaultHoeKeys[name]))));
@@ -1820,6 +1837,10 @@ const handleKeyDown = e => {
       return switchFillEffect();
     case '切换卷轴模式':
       return switchScrollMode();
+    case '切换单双页模式':
+      return switchOnePageMode();
+    case '切换阅读方向':
+      return switchDir();
     case '退出':
       return store.onExit?.();
   }
@@ -2975,9 +2996,7 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
   },
   get children() {
     const _el$ = _tmpl$$e();
-    _el$.addEventListener("click", () => setOption(draftOption => {
-      draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
-    }));
+    _el$.addEventListener("click", switchDir);
     web.insert(_el$, (() => {
       const _c$ = web.memo(() => store.option.dir === 'rtl');
       return () => _c$() ? web.createComponent(MdOutlineFormatTextdirectionRToL, {}) : web.createComponent(MdOutlineFormatTextdirectionLToR, {});
@@ -3207,14 +3226,7 @@ const defaultButtonList = [
   get hidden() {
     return store.option.scrollMode;
   },
-  onClick: () => {
-    const jump = jumpBackPage(store);
-    setOption(draftOption => {
-      draftOption.onePageMode = !draftOption.onePageMode;
-    });
-    setState(updatePageData);
-    jump();
-  },
+  onClick: switchOnePageMode,
   get children() {
     return web.memo(() => !!store.option.onePageMode)() ? web.createComponent(MdLooksOne, {}) : web.createComponent(MdLooksTwo, {});
   }
@@ -4389,12 +4401,12 @@ const useInit = async (name, defaultOptions = {}) => {
   const version = await GM.getValue('Version');
   if (!version) await GM.setValue('Version', GM.info.script.version);else if (version !== GM.info.script.version) {
     const latestChange =\`
-## [6.10.1](https://github.com/hymbz/ComicReadScript/compare/v6.10.0...v6.10.1) (2023-09-10)
+## [6.10.2](https://github.com/hymbz/ComicReadScript/compare/v6.10.1...v6.10.2) (2023-09-16)
 
 
 ### Bug Fixes
 
-* :bug: 修复翻译功能的自定义 URL 未正确显示的 bug ([7b74872](https://github.com/hymbz/ComicReadScript/commit/7b7487225695fc6a755b8097847460bcf061c51f))
+* :bug: 修复 dmzj 改版导致的部分隐藏漫画失效的 bug ([e5bc6f8](https://github.com/hymbz/ComicReadScript/commit/e5bc6f8135d0f2e00d438b8e14b0d6e39c344610))
 \`;
     toast$1(() => [(() => {
       const _el$ = _tmpl$();
@@ -5578,7 +5590,6 @@ const getViewpoint = async (comicId, chapterId) => {
           init(() => main.querySelectorAll('#commicBox img').map(e => e.getAttribute('data-original')).filter(src => src));
           return;
         }
-        document.body.removeChild(document.body.childNodes[0]);
         const tipDom = document.createElement('p');
         tipDom.innerText = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
         document.body.appendChild(tipDom);
