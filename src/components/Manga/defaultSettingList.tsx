@@ -11,6 +11,7 @@ import { SettingTranslation } from './components/SettingTranslation';
 import {
   createStateSetFn,
   setOption,
+  switchDir,
   updateImgLoadType,
 } from './hooks/useStore/slice';
 import { setState, store } from './hooks/useStore';
@@ -37,11 +38,7 @@ export const defaultSettingList: SettingList = [
         <button
           class={classes.SettingsItemIconButton}
           type="button"
-          on:click={() =>
-            setOption((draftOption) => {
-              draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
-            })
-          }
+          on:click={switchDir}
         >
           {store.option.dir === 'rtl' ? (
             <MdOutlineFormatTextdirectionRToL />

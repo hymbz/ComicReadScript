@@ -3,6 +3,8 @@ import {
   switchFillEffect,
   switchScrollMode,
   turnPage,
+  switchOnePageMode,
+  switchDir,
 } from './Image';
 import { setState, store } from '..';
 import {
@@ -112,6 +114,10 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return switchFillEffect();
     case '切换卷轴模式':
       return switchScrollMode();
+    case '切换单双页模式':
+      return switchOnePageMode();
+    case '切换阅读方向':
+      return switchDir();
 
     case '退出':
       return store.onExit?.();

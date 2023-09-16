@@ -306,3 +306,19 @@ export const switchScrollMode = () => {
   });
   setTimeout(handleMangaFlowScroll);
 };
+
+/** 切换单双页模式 */
+export const switchOnePageMode = () => {
+  const jump = jumpBackPage(store);
+  setOption((draftOption) => {
+    draftOption.onePageMode = !draftOption.onePageMode;
+  });
+  setState(updatePageData);
+  jump();
+};
+
+/** 切换阅读方向 */
+export const switchDir = () =>
+  setOption((draftOption) => {
+    draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
+  });

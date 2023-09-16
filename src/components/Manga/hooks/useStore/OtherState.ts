@@ -14,6 +14,8 @@ export const defaultHoeKeys: Readonly<Record<string, string[]>> = {
   退出: ['Escape'],
   切换页面填充: ['/', 'm', 'z'],
   切换卷轴模式: [],
+  切换单双页模式: [],
+  切换阅读方向: [],
 };
 
 export const OtherState = {

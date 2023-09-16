@@ -12,15 +12,13 @@ import { IconButton } from '../IconButton';
 import { SettingPanel } from './components/SettingPanel';
 
 import {
+  focus,
   activePage,
-  jumpBackPage,
   nowFillIndex,
-  setOption,
   zoomScrollModeImg,
   switchFillEffect,
   switchScrollMode,
-  updatePageData,
-  focus,
+  switchOnePageMode,
 } from './hooks/useStore/slice';
 
 import { setImgTranslationEnbale } from './hooks/useStore/slice/Translation';
@@ -46,14 +44,7 @@ export const defaultButtonList: ToolbarButtonList = [
     <IconButton
       tip={store.option.onePageMode ? '单页模式' : '双页模式'}
       hidden={store.option.scrollMode}
-      onClick={() => {
-        const jump = jumpBackPage(store);
-        setOption((draftOption) => {
-          draftOption.onePageMode = !draftOption.onePageMode;
-        });
-        setState(updatePageData);
-        jump();
-      }}
+      onClick={switchOnePageMode}
       children={store.option.onePageMode ? <MdLooksOne /> : <MdLooksTwo />}
     />
   ),
