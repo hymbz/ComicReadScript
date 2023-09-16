@@ -140,7 +140,6 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
         return;
       }
 
-      document.body.removeChild(document.body.childNodes[0]);
       const tipDom = document.createElement('p');
       tipDom.innerText = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
       document.body.appendChild(tipDom);
