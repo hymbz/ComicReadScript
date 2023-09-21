@@ -1,3 +1,4 @@
+import type { SiteOptions } from 'main';
 import { autoUpdate, sleep, useInit, wait } from 'main';
 import type { AsyncReturnType } from 'type-fest';
 import type { MangaProps } from '../components/Manga';
@@ -16,6 +17,9 @@ export interface InitOptions {
   onNext?: MangaProps['onNext'];
   onExit?: MangaProps['onExit'];
   getCommentList?: () => Promise<string[]> | string[];
+
+  /** 默认站点配置 */
+  initOptions?: Partial<SiteOptions>;
 
   /** 用于适配单页应用的配置项 */
   SPA?: {
@@ -48,13 +52,14 @@ export const universalInit = async ({
   onNext,
   onExit,
   getCommentList,
+  initOptions,
   SPA,
 }: InitOptions) => {
   if (SPA?.isMangaPage) await wait(SPA?.isMangaPage);
   if (waitFn) await wait(waitFn);
   if (await exit?.()) return;
 
-  const fnMap = await useInit(name);
+  const fnMap = await useInit(name, initOptions);
   const { init, options, setManga, setFab, needAutoShow } = fnMap;
 
   const { loadImgList } = init(() => getImgList(fnMap));

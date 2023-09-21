@@ -449,6 +449,19 @@ switch (window.location.hostname) {
     break;
   }
 
+  // #kemono
+  case 'kemono.party': {
+    options = {
+      name: 'kemono',
+      getImgList: () =>
+        main
+          .querySelectorAll<HTMLAnchorElement>('.post__thumbnail > a')
+          .map((e) => e.href),
+      initOptions: { autoShow: false, option: { onePageMode: true } },
+    };
+    break;
+  }
+
   // #welovemanga
   case 'nicomanga.com':
   case 'weloma.art':

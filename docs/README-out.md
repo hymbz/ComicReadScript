@@ -116,6 +116,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - 绅士漫画(wnacg)
 - mangabz
 - komiic
+- kemono
 - welovemanga
 
 <!-- supportSiteList -->
