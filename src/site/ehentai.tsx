@@ -9,6 +9,9 @@ import {
   useInit,
   toast,
   plimit,
+  querySelectorAll,
+  wait,
+  triggerEleLazyLoad,
 } from 'main';
 
 declare const selected_tag: string;
@@ -51,6 +54,22 @@ declare const selected_link: HTMLElement;
         }
       });
     }
+    return;
+  }
+
+  if (Reflect.has(unsafeWindow, 'mpvkey')) {
+    const imgEleList = querySelectorAll('.mi0[id]');
+    init(
+      dynamicUpdate(async (setImg) => {
+        for (let i = 0; i < imgEleList.length; i++) {
+          const ele = imgEleList[i];
+          const imgUrl = await wait(
+            () => ele.querySelector('img')?.src || triggerEleLazyLoad(ele),
+          );
+          setImg(i, imgUrl);
+        }
+      }, imgEleList.length),
+    );
     return;
   }
 

@@ -100,6 +100,19 @@ export const linstenKeyup = (handler: (e: KeyboardEvent) => unknown) =>
 export const scrollIntoView = (selector: string) =>
   querySelector(selector)?.scrollIntoView();
 
+/**
+ *
+ * 通过滚动到指定元素位置、触发滚动事件、再滚回来，来触发图片的懒加载
+ *
+ * 因为速度很快所以应该是无感的
+ */
+export const triggerEleLazyLoad = (e: HTMLElement) => {
+  const nowScroll = window.scrollY;
+  e.scrollIntoView();
+  e.dispatchEvent(new Event('scroll', { bubbles: true }));
+  window.scroll({ top: nowScroll, behavior: 'auto' });
+};
+
 /** 循环执行指定函数 */
 export const loop = async (fn: () => unknown, ms?: number) => {
   await fn();
@@ -164,9 +177,9 @@ export const needDarkMode = (hexColor: string) => {
 export const wait = async <T>(
   fn: () => T | undefined | Promise<T | undefined>,
   timeout = 100,
-): Promise<T> => {
-  const res = await fn();
-  if (res) return res;
+): Promise<TrueValue<T>> => {
+  const res: T | undefined = await fn();
+  if (res) return res as TrueValue<T>;
   await sleep(timeout);
   return wait(fn, timeout);
 };

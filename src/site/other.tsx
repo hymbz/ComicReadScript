@@ -6,6 +6,7 @@ import {
   useInit,
   wait,
   toast,
+  triggerEleLazyLoad,
 } from 'main';
 
 (async () => {
@@ -112,7 +113,7 @@ import {
 
     /** 触发懒加载 */
     const triggerLazyLoad = () => {
-      let nowScroll = window.scrollY;
+      const nowScroll = window.scrollY;
       // 滚到底部再滚回来，触发可能存在的自动翻页脚本
       window.scroll({
         top: document.body.scrollHeight,
@@ -139,13 +140,7 @@ import {
         )
           return;
 
-        // 通过滚动到图片位置、触发滚动事件、再滚回来，来触发图片的懒加载
-        // 因为速度很快所以应该是无感的
-        nowScroll = window.scrollY;
-        window.scroll({ top: e.offsetTop, behavior: 'auto' });
-        e.dispatchEvent(new Event('scroll', { bubbles: true }));
-        window.scroll({ top: nowScroll, behavior: 'auto' });
-
+        triggerEleLazyLoad(e);
         lastTriggedImg = e;
       }
     };
@@ -153,12 +148,12 @@ import {
     const getImgList = async () => {
       triggerLazyLoad();
 
-      const imgEleList = (await wait(() => {
+      const imgEleList = await wait(() => {
         const newImgList = getAllImg().filter(
           (e) => e.naturalHeight > 500 && e.naturalWidth > 500,
         );
         return newImgList.length > 2 && newImgList;
-      })) as HTMLImageElement[];
+      });
       saveImgEleSelector(imgEleList);
       return imgEleList.map((e) => e.src);
     };
