@@ -5,6 +5,7 @@ import MdAutoFlashOff from '@material-design-icons/svg/round/flash_off.svg';
 
 import type { Component, JSX } from 'solid-js';
 
+import { t } from './i18n';
 import type { SiteOptions } from './useSiteOptions';
 import { IconButton } from '../components/IconButton';
 
@@ -39,19 +40,26 @@ export const useSpeedDial = <T extends Record<string, any>>(
       switch (optionName) {
         case 'hiddenFAB':
         case 'option':
-        case 'hotKeys':
+        case 'hotkeys':
           return null;
 
         case 'autoShow':
           return () => (
-            <DefaultButton optionName="autoShow" showName="自动进入阅读模式">
+            <DefaultButton
+              optionName="autoShow"
+              showName={t('other.auto_use_read_mode')}
+            >
               {options.autoShow ? <MdAutoFlashOn /> : <MdAutoFlashOff />}
             </DefaultButton>
           );
 
         default:
           if (typeof options[optionName] !== 'boolean') return null;
-          return () => <DefaultButton optionName={optionName} />;
+          return () => (
+            <DefaultButton
+              optionName={t(`site.add_feature.${optionName}`) || optionName}
+            />
+          );
       }
     })
     .filter(Boolean) as Component[];

@@ -2,7 +2,7 @@
 @import "./components/EndPage.module.css";
 @import "./components/Toolbar.module.css";
 @import "./components/Setting.module.css";
-@import "./components/SettingHotKeys.module.css";
+@import "./components/SettingHotkeys.module.css";
 @import "./components/Scrollbar.module.css";
 @import "./components/TouchArea.module.css";
 
@@ -58,9 +58,15 @@
   }
 }
 
+p {
+  margin: 0;
+}
+
 blockquote {
   margin: 0;
-  padding: 0 1em;
+  margin-top: 0.5em;
+  padding: 0;
+  padding-left: 1em;
 
   font-style: italic;
   line-height: 1.2em;
@@ -70,10 +76,6 @@ blockquote {
   white-space: pre-wrap;
 
   border-left: 0.25em solid var(--text_secondary);
-
-  & > p + p {
-    margin-top: 0.5em;
-  }
 }
 
 svg {

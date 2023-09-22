@@ -14,14 +14,6 @@ declare global {
   type PageList = Array<[number] | [number, number]>;
 }
 
-/** 加载状态的中文描述 */
-export const loadTypeMap: Record<ComicImg['loadType'], string> = {
-  error: '加载出错',
-  loading: '正在加载',
-  wait: '等待加载',
-  loaded: '',
-};
-
 /** 页面填充数据 */
 export type FillEffect = Record<number, boolean>;
 

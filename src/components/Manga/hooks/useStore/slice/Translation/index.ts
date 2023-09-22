@@ -1,4 +1,5 @@
 import { createRoot, createEffect, on, createSignal } from 'solid-js';
+import { t } from 'helper/i18n';
 import { setState, store } from '../..';
 import { updateTipText } from '../Scrollbar';
 import { setMessage } from './helper';
@@ -6,14 +7,14 @@ import { getValidTranslators, selfhostedTranslation } from './selfhosted';
 import { cotransTranslation, cotransTranslators } from './cotrans';
 
 declare const toast: // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-typeof import('../../../../../Toast/toast').toast | undefined;
+typeof import('components/Toast/toast').toast | undefined;
 
 /** 翻译指定图片 */
 export const translationImage = async (i: number) => {
   try {
     if (typeof GM_xmlhttpRequest === 'undefined') {
-      toast?.error('未安装 ComicRead 插件，无法翻译');
-      throw new Error('未安装 ComicRead 插件，无法翻译');
+      toast?.error(t('pwa.alert.userscript_not_installed'));
+      throw new Error(t('pwa.alert.userscript_not_installed'));
     }
 
     const img = store.imgList[i];
@@ -26,7 +27,8 @@ export const translationImage = async (i: number) => {
         state.imgList[i].translationType = 'show';
       });
 
-    if (img.loadType !== 'loaded') return setMessage(i, '图片未加载完毕');
+    if (img.loadType !== 'loaded')
+      return setMessage(i, t('translation.tip.img_not_fully_loaded'));
 
     const translationUrl = await (store.option.translation.server === 'cotrans'
       ? cotransTranslation
@@ -34,7 +36,9 @@ export const translationImage = async (i: number) => {
 
     setState((state) => {
       state.imgList[i].translationUrl = translationUrl;
-      state.imgList[i].translationMessage = '翻译完成';
+      state.imgList[i].translationMessage = t(
+        'translation.tip.translation_completed',
+      );
       state.imgList[i].translationType = 'show';
     });
   } catch (error) {
@@ -79,7 +83,7 @@ export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
         if (state.option.translation.forceRetry) {
           img.translationType = 'wait';
           img.translationUrl = undefined;
-          setMessage(i, '等待翻译');
+          setMessage(i, t('translation.tip.wait_translation'));
         } else {
           switch (img.translationType) {
             case 'hide': {
@@ -89,7 +93,7 @@ export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
             case 'error':
             case undefined: {
               img.translationType = 'wait';
-              setMessage(i, '等待翻译');
+              setMessage(i, t('translation.tip.wait_translation'));
               break;
             }
           }
@@ -120,7 +124,7 @@ export const translatorOptions = createRoot(() => {
 
   const updateOptions = async () => {
     setOptions(
-      store.option.translation.server === '本地部署'
+      store.option.translation.server === 'selfhosted'
         ? (await getValidTranslators()) ?? []
         : cotransTranslators,
     );
@@ -135,7 +139,7 @@ export const translatorOptions = createRoot(() => {
         () => store.option.translation.localUrl,
       ],
       async () => {
-        if (store.option.translation.server === '禁用') return;
+        if (store.option.translation.server === 'disable') return;
         await updateOptions();
         // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
         if (

@@ -1,10 +1,10 @@
 import { createEffect, createRoot, on } from 'solid-js';
 
 import { throttle } from 'throttle-debounce';
+import { lang, t } from 'helper/i18n';
 import type { State } from '..';
 import { setState, store } from '..';
 import type { UseDragOption } from '../../useDrag';
-import { loadTypeMap } from '../ImageState';
 
 /** 漫画流的容器 */
 export const mangaFlowEle = () => store.mangaFlowRef?.parentNode as HTMLElement;
@@ -28,12 +28,12 @@ export const updateDrag = (state: State) => {
 
 /** 获取指定图片的提示文本 */
 const getImgTip = (state: State, i: number) => {
-  if (i === -1) return '填充页';
+  if (i === -1) return t('other.fill_page');
   const img = state.imgList[i];
 
   // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
   if (img.loadType !== 'loaded')
-    return `${i + 1} (${loadTypeMap[img.loadType]})`;
+    return `${i + 1} (${t(`img_status.${img.loadType}`)})`;
 
   if (
     img.translationType &&
@@ -175,6 +175,7 @@ createRoot(() => {
         () => store.scrollbar.dragTop,
         () => store.option.scrollMode,
         () => store.option.dir,
+        () => lang(),
       ],
       updateTipText,
     ),

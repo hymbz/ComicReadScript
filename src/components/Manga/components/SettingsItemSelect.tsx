@@ -1,23 +1,24 @@
-import { For, type Component, createEffect } from 'solid-js';
+import { For, createEffect } from 'solid-js';
+import type { JSX } from 'solid-js';
 
 import { SettingsItem } from './SettingsItem';
 
 import classes from '../index.module.css';
 
-export interface SettingsItemSelectProps {
+export interface SettingsItemSelectProps<T> {
   options: ([string, string] | [string])[];
   name: string;
-  value: string;
+  value: T;
   class?: string;
   classList?: ClassList;
 
-  onChange: (val: string) => void;
+  onChange: (val: T) => void;
 }
 
 /** 选择器式菜单项 */
-export const SettingsItemSelect: Component<SettingsItemSelectProps> = (
-  props,
-) => {
+export const SettingsItemSelect = <T extends string = string>(
+  props: SettingsItemSelectProps<T>,
+): JSX.Element => {
   let ref: HTMLSelectElement;
 
   createEffect(() => {
@@ -35,7 +36,7 @@ export const SettingsItemSelect: Component<SettingsItemSelectProps> = (
       <select
         ref={ref!}
         class={classes.SettingsItemSelect}
-        onChange={(e) => props.onChange(e.target.value)}
+        onChange={(e) => props.onChange(e.target.value as T)}
       >
         <For each={props.options}>
           {([val, label]) => <option value={val}>{label ?? val}</option>}

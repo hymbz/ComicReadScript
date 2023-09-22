@@ -6,6 +6,7 @@ import { toast } from '../components/useComponents/Toast';
 import type { SiteOptions } from './useSiteOptions';
 import { useSiteOptions } from './useSiteOptions';
 import { useSpeedDial } from './useSpeedDial';
+import { lang, t } from './i18n';
 
 /**
  * 对基础的初始化操作的封装
@@ -19,14 +20,14 @@ export const useInit = async <T extends Record<string, any>>(
   const {
     options,
     setOptions,
-    readModeHotKeys,
-    hotKeys,
-    onHotKeysChange,
+    readModeHotkeys,
+    hotkeys,
+    onHotkeysChange,
     isStored,
   } = await useSiteOptions(name, defaultOptions);
 
   const [setFab, fabProps] = await useFab({
-    tip: '阅读模式',
+    tip: t('other.read_mode'),
     speedDial: useSpeedDial(options, setOptions),
     show: !options.hiddenFAB && undefined,
   });
@@ -42,11 +43,11 @@ export const useInit = async <T extends Record<string, any>>(
     if (progress !== 2) {
       setFab({
         progress,
-        tip: `图片加载中 - ${loadNum}/${list.length}`,
+        tip: `t('other.img_loading') - ${loadNum}/${list.length}`,
       });
     } else {
       // 图片全部加载完成后恢复 Fab 状态
-      setFab({ progress, tip: '阅读模式', show: undefined });
+      setFab({ progress, tip: t('other.read_mode'), show: undefined });
     }
   };
 
@@ -55,19 +56,20 @@ export const useInit = async <T extends Record<string, any>>(
     option: options.option,
     onOptionChange: (option) =>
       setOptions({ option } as Partial<T & SiteOptions>),
-    hotKeys: hotKeys(),
-    onHotKeysChange,
+    hotkeys: hotkeys(),
+    onHotkeysChange,
     onLoading,
   });
 
   // 检查脚本的版本变化，提示用户
   const version = await GM.getValue<string>('Version');
   if (!version) await GM.setValue('Version', GM.info.script.version);
-  else if (version !== GM.info.script.version) {
+  else if (version !== GM.info.script.version && lang() === 'zh') {
     const latestChange = inject('LatestChange');
     toast(
       () => (
         <>
+          {/* eslint-disable-next-line i18n/no-chinese-character, i18next/no-literal-string */}
           <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
           <div>
             <For each={latestChange.match(/^### [^[].+?$|^\* .+?$/gm)}>
@@ -120,7 +122,7 @@ export const useInit = async <T extends Record<string, any>>(
   const updateHideFabMenu = async () => {
     await GM.unregisterMenuCommand(menuId);
     menuId = await GM.registerMenuCommand(
-      `${options.hiddenFAB ? '显示' : '隐藏'}悬浮按钮`,
+      options.hiddenFAB ? t('other.fab_show') : t('other.fab_hidden'),
       async () => {
         await setOptions({ ...options, hiddenFAB: !options.hiddenFAB });
         setFab((state) => {
@@ -162,7 +164,8 @@ export const useInit = async <T extends Record<string, any>>(
         try {
           if (!initImgList) setFab({ progress: 0, show: true });
           const newImgList = initImgList ?? (await getImgList());
-          if (newImgList.length === 0) throw new Error('获取漫画图片失败');
+          if (newImgList.length === 0)
+            throw new Error(t('alert.get_comic_img_failed'));
           setManga((state) => {
             state.imgList = [...newImgList];
             if (show || (needAutoShow.val && options.autoShow)) {
@@ -182,7 +185,7 @@ export const useInit = async <T extends Record<string, any>>(
       /** 进入阅读模式 */
       const showComic = async () => {
         if (loading)
-          return toast.warn('加载图片中，请稍候', { duration: 1500 });
+          return toast.warn(t('alert.repeat_load'), { duration: 1500 });
 
         if (!mangaProps.imgList.length) return loadImgList(undefined, true);
 
@@ -194,13 +197,16 @@ export const useInit = async <T extends Record<string, any>>(
       if (needAutoShow.val && options.autoShow) showComic();
 
       if (firstRun) {
-        GM.registerMenuCommand('进入漫画阅读模式', fabProps.onClick!);
+        GM.registerMenuCommand(
+          t('other.use_comic_read_mode'),
+          fabProps.onClick!,
+        );
         updateHideFabMenu();
 
         window.addEventListener('keydown', (e) => {
           if ((e.target as HTMLElement).tagName === 'INPUT') return;
           const code = getKeyboardCode(e);
-          if (!readModeHotKeys().has(code)) return;
+          if (!readModeHotkeys().has(code)) return;
           e.stopPropagation();
           e.preventDefault();
           fabProps.onClick?.();

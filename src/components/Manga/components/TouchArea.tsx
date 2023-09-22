@@ -1,5 +1,6 @@
 import type { Component } from 'solid-js';
 
+import { t } from 'helper/i18n';
 import { setState, store } from '../hooks/useStore';
 import { bindRef, turnPage } from '../hooks/useStore/slice';
 
@@ -7,10 +8,10 @@ import classes from '../index.module.css';
 
 const handleClick = {
   prev: () => {
-    if (store.option.clickPage.enabled) turnPage('prev');
+    if (store.option.clickPageTurn.enabled) turnPage('prev');
   },
   next: () => {
-    if (store.option.clickPage.enabled) turnPage('next');
+    if (store.option.clickPageTurn.enabled) turnPage('next');
   },
   menu: () => {
     // 处于放大模式时跳过不处理
@@ -58,13 +59,14 @@ export const TouchArea: Component = () => {
         // 左右方向默认和漫画方向相同，如果开启了左右翻转则翻转
         'flex-direction':
           (store.option.dir === 'rtl') ===
-          (store.option.clickPage.enabled && store.option.clickPage.overturn)
+          (store.option.clickPageTurn.enabled &&
+            store.option.clickPageTurn.reverse)
             ? undefined
             : 'row-reverse',
         cursor: store.isZoomed ? 'move' : undefined,
       }}
       data-show={store.showTouchArea}
-      data-vert={store.option.clickPage.vertical}
+      data-vert={store.option.clickPageTurn.vertical}
     >
       <div
         ref={bindRef('prevAreaRef')}
@@ -73,7 +75,7 @@ export const TouchArea: Component = () => {
         role="button"
         tabIndex={-1}
       >
-        <h6>上 一 页</h6>
+        <h6>{t('touch_area.prev')}</h6>
       </div>
       <div
         ref={bindRef('menuAreaRef')}
@@ -82,7 +84,7 @@ export const TouchArea: Component = () => {
         role="button"
         tabIndex={-1}
       >
-        <h6>菜 单</h6>
+        <h6>{t('touch_area.menu')}</h6>
       </div>
       <div
         ref={bindRef('nextAreaRef')}
@@ -91,7 +93,7 @@ export const TouchArea: Component = () => {
         role="button"
         tabIndex={-1}
       >
-        <h6>下 一 页</h6>
+        <h6>{t('touch_area.next')}</h6>
       </div>
     </div>
   );

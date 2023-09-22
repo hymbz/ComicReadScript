@@ -1,10 +1,14 @@
 /* eslint-disable import/no-extraneous-dependencies */
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 import type { ManifestOptions } from 'vite-plugin-pwa';
 import { VitePWA } from 'vite-plugin-pwa';
 import solidPlugin from 'vite-plugin-solid';
 import markdown from '@jackfranklin/rollup-plugin-markdown';
 import { solidSvg } from '../rollup-solid-svg';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const manifest: Partial<ManifestOptions> = {
   id: 'ComicRead',
@@ -56,6 +60,9 @@ export default defineConfig({
   server: { host: '0.0.0.0' },
   build: { rollupOptions: { external: ['/unarchiver.min.js'] } },
   css: { modules: { globalModulePaths: [/^#/] } },
+  resolve: {
+    alias: { helper: resolve(__dirname, '../../src/helper') },
+  },
   plugins: [
     {
       name: 'selfPlugin',

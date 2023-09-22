@@ -140,7 +140,7 @@ export const turnPage = (dir: 'next' | 'prev') =>
     if (dir === 'prev') {
       switch (state.endPageType) {
         case 'start':
-          if (!state.scrollLock && state.option.flipToNext) state.onPrev?.();
+          if (!state.scrollLock && state.option.jumpToNext) state.onPrev?.();
           return;
         case 'end':
           state.endPageType = undefined;
@@ -151,7 +151,7 @@ export const turnPage = (dir: 'next' | 'prev') =>
           if (isTop(state)) {
             if (!state.onExit) return;
             // 没有 onPrev 时不弹出
-            if (!state.onPrev || !state.option.flipToNext) return;
+            if (!state.onPrev || !state.option.jumpToNext) return;
 
             state.endPageType = 'start';
             state.scrollLock = true;
@@ -166,7 +166,7 @@ export const turnPage = (dir: 'next' | 'prev') =>
       switch (state.endPageType) {
         case 'end':
           if (state.scrollLock) return;
-          if (state.onNext && state.option.flipToNext) {
+          if (state.onNext && state.option.jumpToNext) {
             state.onNext();
             return;
           }

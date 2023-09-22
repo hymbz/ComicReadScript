@@ -9,7 +9,9 @@ import commonjs from '@rollup/plugin-commonjs';
 import { babel } from '@rollup/plugin-babel';
 import styles from 'rollup-plugin-styles';
 import solidPlugin from 'vite-plugin-solid';
+import json from '@rollup/plugin-json';
 
+import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
 import { watchExternal } from 'rollup-plugin-watch-external';
 
@@ -51,7 +53,9 @@ export const buildOptions = (
 
         preventAssignment: true,
       }),
+      alias({ entries: { helper: resolve(__dirname, 'src/helper') } }),
 
+      json({ namedExports: false, indent: '  ' }),
       nodeResolve({ browser: true, extensions: ['.js', '.ts', '.tsx'] }),
       commonjs(),
       styles({ modules: true }),
@@ -62,7 +66,13 @@ export const buildOptions = (
         extensions: ['.ts', '.tsx'],
         exclude: ['node_modules/**'],
         presets: ['@babel/preset-env', '@babel/preset-typescript', 'solid'],
-        plugins: ['@babel/plugin-transform-runtime'],
+        plugins: [
+          '@babel/plugin-transform-runtime',
+          [
+            '@babel/plugin-proposal-import-attributes-to-assertions',
+            { deprecatedAssertSyntax: true },
+          ],
+        ],
       }),
 
       watchFiles && isDevMode && watchExternal({ entries: watchFiles }),

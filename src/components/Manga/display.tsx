@@ -145,17 +145,7 @@ export default function DisplayManga() {
     console.log('end func 点击');
   };
 
-  const option: MangaProps['option'] = {
-    scrollbar: {
-      enabled: true,
-      autoHidden: false,
-      showProgress: true,
-    },
-    clickPage: {
-      enabled: false,
-      overturn: false,
-    },
-  };
+  const option: MangaProps['option'] = {};
 
   return <Manga imgList={imgList[2]} onExit={onExit} option={option} />;
 }

@@ -6,17 +6,17 @@ export interface Option {
     /** 自动隐藏 */
     autoHidden: boolean;
     /** 显示图片加载状态 */
-    showProgress: boolean;
+    showImgStatus: boolean;
   };
   /** 单页模式 */
   onePageMode: boolean;
   /** 卷轴模式 */
   scrollMode: boolean;
   /** 点击翻页 */
-  clickPage: {
+  clickPageTurn: {
     enabled: boolean;
     /** 左右反转点击区域 */
-    overturn: boolean;
+    reverse: boolean;
     /** 将点击区域改为上下翻页 */
     vertical: boolean;
   };
@@ -29,9 +29,9 @@ export interface Option {
   /** 黑暗模式 */
   darkMode: boolean;
   /** 左右翻页键交换 */
-  swapTurnPage: boolean;
+  reversePageTurnKey: boolean;
   /** 滚动到底后继续滚动会跳至下一话 */
-  flipToNext: boolean;
+  jumpToNext: boolean;
   /** 始终加载所有图片 */
   alwaysLoadAllImg: boolean;
   /** 卷轴模式下图片的缩放比例 */
@@ -42,7 +42,7 @@ export interface Option {
   /** 翻译 */
   translation: {
     /** 翻译服务器 */
-    server: '禁用' | '本地部署' | 'cotrans';
+    server: 'disable' | 'selfhosted' | 'cotrans';
     /** 本地部署的项目 url */
     localUrl: string | undefined;
     /** 忽略缓存强制重试 */
@@ -63,26 +63,26 @@ export const defaultOption: Readonly<Option> = {
   scrollbar: {
     enabled: true,
     autoHidden: false,
-    showProgress: true,
+    showImgStatus: true,
   },
   onePageMode: false,
   scrollMode: false,
-  clickPage: {
+  clickPageTurn: {
     enabled: 'ontouchstart' in document.documentElement,
-    overturn: false,
+    reverse: false,
     vertical: false,
   },
   firstPageFill: true,
   disableZoom: false,
   darkMode: false,
-  swapTurnPage: false,
-  flipToNext: true,
+  reversePageTurnKey: false,
+  jumpToNext: true,
   alwaysLoadAllImg: false,
   scrollModeImgScale: 1,
   showComment: true,
 
   translation: {
-    server: '禁用',
+    server: 'disable',
     localUrl: undefined,
     forceRetry: false,
     options: {

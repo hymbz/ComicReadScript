@@ -1,4 +1,4 @@
-import { difference } from '../../../../../helper';
+import { difference } from 'helper';
 import type { State } from '..';
 import { setState, store } from '..';
 import { defaultOption, type Option } from '../OptionState';

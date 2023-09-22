@@ -39,7 +39,7 @@ export interface MangaProps {
   /** 初始化配置 */
   option?: Partial<Option>;
   /** 快捷键配置 */
-  hotKeys?: State['hotKeys'];
+  hotkeys?: State['hotkeys'];
   /** 是否显示 */
   show?: boolean;
   /** 评论列表 */
@@ -54,7 +54,7 @@ export interface MangaProps {
   /** 配置发生变化时触发的回调 */
   onOptionChange?: State['onOptionChange'];
   /** 快捷键配置发生变化时触发的回调 */
-  onHotKeysChange?: State['onHotKeysChange'];
+  onHotkeysChange?: State['onHotkeysChange'];
   /**
    * 图片加载状态发生变化时触发的回调
    *

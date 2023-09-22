@@ -4,10 +4,9 @@ import MdClose from '@material-design-icons/svg/round/close.svg';
 import { Show, type Component } from 'solid-js';
 import { pwaInstallHandler } from 'pwa-install-handler';
 import { directoryOpen, fileOpen } from 'browser-fs-access';
+import { parse as parseMd } from 'marked';
 
-import TipMd from './md/tip.md';
-import installMd from './md/install.md';
-
+import { t } from 'helper/i18n';
 import type { MangaProps } from '../../components/Manga';
 import { Manga, buttonListDivider } from '../../components/Manga';
 import { IconButton } from '../../components/IconButton';
@@ -37,13 +36,13 @@ const handleSelectFiles = async () => {
     })),
   ]);
 
-  loadNewImglist(files, '请选择图片文件或含有图片文件的压缩包');
+  loadNewImglist(files, t('pwa.alert.img_not_found_files'));
 };
 
 /** 选择文件夹 */
 const handleSelectDir = async () => {
   const files = (await directoryOpen({ recursive: true })) as File[];
-  loadNewImglist(files, '文件夹下没有图片文件或含有图片文件的压缩包');
+  loadNewImglist(files, t('pwa.alert.img_not_found_dir'));
 };
 
 // 实现从本地文件的打开方式启动时加载文件
@@ -56,7 +55,7 @@ const editButtonList: MangaProps['editButtonList'] = (list) => [
   ...list,
   buttonListDivider,
   () => (
-    <IconButton tip="退出" onClick={handleExit}>
+    <IconButton tip={t('button.exit')} onClick={handleExit}>
       <MdClose />
     </IconButton>
   ),
@@ -77,13 +76,13 @@ export const Root: Component = () => (
   <div ref={(e) => handleDrag(e)} class={classes.root}>
     <div class={classes.main} data-drag={store.dragging}>
       <div class={classes.body}>
-        <div innerHTML={TipMd.html} />
+        <div innerHTML={parseMd(t('pwa.tip_md'))} />
         <span style={{ 'margin-top': '1em' }}>
           <button type="button" on:click={handleSelectFiles}>
-            选择文件
+            {t('pwa.button.select_files')}
           </button>
           <button type="button" on:click={handleSelectDir}>
-            选择文件夹
+            {t('pwa.button.select_dir')}
           </button>
           <Show when={store.imgList.length}>
             <button
@@ -94,7 +93,7 @@ export const Root: Component = () => (
                 })
               }
             >
-              恢复阅读
+              {t('pwa.button.resume_read')}
             </button>
           </Show>
         </span>
@@ -102,10 +101,10 @@ export const Root: Component = () => (
           class={classes.installTip}
           classList={{ [classes.hide]: !!store.hiddenInstallTip }}
         >
-          <div innerHTML={installMd.html} />
+          <div innerHTML={parseMd(t('pwa.install_md'))} />
           <div style={{ 'text-align': 'center' }}>
             <button type="button" on:click={pwaInstallHandler.install}>
-              安装
+              {t('pwa.button.install')}
             </button>
             <a
               on:click={() =>
@@ -114,7 +113,7 @@ export const Root: Component = () => (
                 })
               }
             >
-              不再提示
+              {t('pwa.button.no_more_prompt')}
             </a>
           </div>
         </div>

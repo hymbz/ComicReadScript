@@ -1,5 +1,6 @@
 import { sleep } from '.';
 import { toast } from '../components/useComponents/Toast';
+import { t } from './i18n';
 
 // 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = (
@@ -23,7 +24,7 @@ export const request = async <T = any>(
   },
   errorNum = 0,
 ): Promise<Tampermonkey.Response<T>> => {
-  const errorText = details?.errorText ?? '漫画加载出错';
+  const errorText = details?.errorText ?? t('alert.comic_load_error');
   try {
     const res = await xmlHttpRequest({
       method: 'GET',

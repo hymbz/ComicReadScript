@@ -12,9 +12,9 @@ export interface SiteOptions {
   hiddenFAB: boolean;
 }
 
-const getHotKeys = async (): Promise<Record<string, string[]>> => ({
-  进入阅读模式: ['v'],
-  ...(await GM.getValue<Record<string, string[]>>('HotKeys', {})),
+const getHotkeys = async (): Promise<Record<string, string[]>> => ({
+  use_read_mode: ['v'],
+  ...(await GM.getValue<Record<string, string[]>>('Hotkeys', {})),
 });
 
 /**
@@ -48,7 +48,7 @@ export const useSiteOptions = async <T = Record<string, any>>(
     return GM.setValue(name, difference(options, _defaultOptions));
   };
 
-  const [hotKeys, setHotKeys] = createSignal(await getHotKeys());
+  const [hotkeys, setHotkeys] = createSignal(await getHotkeys());
 
   const isStored = saveOptions !== undefined;
   // 如果当前站点没有存储配置，就补充上去
@@ -63,18 +63,18 @@ export const useSiteOptions = async <T = Record<string, any>>(
     isStored,
 
     /** 快捷键配置 */
-    hotKeys,
+    hotkeys,
     /** 处理快捷键配置的变动 */
-    onHotKeysChange: (newValue: Record<string, string[]>) => {
-      GM.setValue('HotKeys', newValue);
-      setHotKeys(newValue);
+    onHotkeysChange: (newValue: Record<string, string[]>) => {
+      GM.setValue('Hotkeys', newValue);
+      setHotkeys(newValue);
     },
     /** 进入阅读模式的快捷键 */
-    readModeHotKeys: createRoot(() => {
-      const readModeHotKeysMemo = createMemo(
-        () => new Set(Object.assign([], hotKeys()['进入阅读模式'])),
+    readModeHotkeys: createRoot(() => {
+      const readModeHotkeysMemo = createMemo(
+        () => new Set(Object.assign([], hotkeys().use_read_mode)),
       );
-      return readModeHotKeysMemo;
+      return readModeHotkeysMemo;
     }),
   };
 };

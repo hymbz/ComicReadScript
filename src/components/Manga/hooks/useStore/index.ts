@@ -1,4 +1,4 @@
-import { useStore } from '../../../../helper/useStore';
+import { useStore } from 'helper/useStore';
 import { imgState } from './ImageState';
 import { ScrollbarState } from './ScrollbarState';
 import { OptionState } from './OptionState';

@@ -5,6 +5,7 @@ import fflate from 'fflate';
 import { createSignal } from 'solid-js';
 import { createStore, produce } from 'solid-js/store';
 
+import { t } from 'helper/i18n';
 import { IconButton, IconButtonStyle } from '../IconButton';
 import type { MangaProps } from '../Manga';
 import { buttonListDivider, MangaStyle, Manga } from '../Manga';
@@ -76,13 +77,13 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
 
   /** 下载按钮 */
   const DownloadButton = () => {
-    const [tip, setTip] = createSignal('下载');
+    const [tip, setTip] = createSignal(t('button.download'));
     const handleDownload = async () => {
       const fileData: fflate.Zippable = {};
       const imgIndexNum = `${props.imgList.length}`.length;
 
       for (let i = 0; i < props.imgList.length; i += 1) {
-        setTip(`下载中 - ${i}/${props.imgList.length}`);
+        setTip(`${t('button.downloading')} - ${i}/${props.imgList.length}`);
         const index = `${i}`.padStart(imgIndexNum, '0');
         const fileExt = props.imgList[i].split('.').at(-1)!;
         const fileName = `${index}.${fileExt}`;
@@ -92,19 +93,20 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
           });
           fileData[fileName] = new Uint8Array(res.response);
         } catch (error) {
-          toast.error(`${fileName} 下载失败`);
-          fileData[`${index} - 下载失败.${fileExt}`] = new Uint8Array();
+          toast.error(`${fileName} ${t('button.download_failed')}`);
+          fileData[`${index} - ${t('button.download_failed')}.${fileExt}`] =
+            new Uint8Array();
         }
       }
 
-      setTip('开始打包');
+      setTip(t('button.start_packaging'));
       const zipped = fflate.zipSync(fileData, {
         level: 0,
         comment: window.location.href,
       });
       saveAs(new Blob([zipped]), `${document.title}.zip`);
-      setTip('下载完成');
-      toast.success('下载完成');
+      setTip(t('button.download_completed'));
+      toast.success(t('button.download_completed'));
     };
 
     return (
@@ -124,7 +126,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
         // 再在最下面添加分隔栏和退出按钮
         buttonListDivider,
         () => (
-          <IconButton tip="退出" onClick={() => props.onExit?.()}>
+          <IconButton tip={t('button.exit')} onClick={() => props.onExit?.()}>
             <MdClose />
           </IconButton>
         ),

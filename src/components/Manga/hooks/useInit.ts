@@ -1,14 +1,14 @@
 import { debounce, throttle } from 'throttle-debounce';
 import { createEffect, onCleanup } from 'solid-js';
 
+import { assign, isEqualArray } from 'helper';
 import type { MangaProps } from '..';
 import { store, setState } from './useStore';
 import { updatePageData, handleResize } from './useStore/slice';
 import type { Option } from './useStore/OptionState';
 import { autoCloseFill } from '../handleComicData';
 import { playAnimation } from '../helper';
-import { assign, isEqualArray } from '../../../helper';
-import { defaultHoeKeys } from './useStore/OtherState';
+import { defaultHotkeys } from './useStore/OtherState';
 
 /** 初始化 */
 export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
@@ -22,9 +22,9 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
     setState((state) => {
       if (props.option)
         state.option = assign(state.option, props.option as Option);
-      state.hotKeys = {
-        ...JSON.parse(JSON.stringify(defaultHoeKeys)),
-        ...props.hotKeys,
+      state.hotkeys = {
+        ...JSON.parse(JSON.stringify(defaultHotkeys)),
+        ...props.hotkeys,
       };
     });
   });
@@ -80,8 +80,8 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
       state.onOptionChange = props.onOptionChange
         ? debounce(100, props.onOptionChange)
         : undefined;
-      state.onHotKeysChange = props.onHotKeysChange
-        ? debounce(100, props.onHotKeysChange)
+      state.onHotkeysChange = props.onHotkeysChange
+        ? debounce(100, props.onHotkeysChange)
         : undefined;
     });
   });

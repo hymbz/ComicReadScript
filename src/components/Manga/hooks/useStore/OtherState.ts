@@ -4,18 +4,18 @@ import type { ToolbarButtonList } from '../../defaultButtonList';
 import type { SettingList } from '../../defaultSettingList';
 import type { Option } from './OptionState';
 
-export const defaultHoeKeys: Readonly<Record<string, string[]>> = {
-  向上翻页: ['w', 'ArrowUp', 'PageUp'],
-  向下翻页: [' ', 's', 'ArrowDown', 'PageDown'],
-  向右翻页: ['d', '.', 'ArrowRight'],
-  向左翻页: ['a', ',', 'ArrowLeft'],
-  跳至首页: ['Home'],
-  跳至尾页: ['End'],
-  退出: ['Escape'],
-  切换页面填充: ['/', 'm', 'z'],
-  切换卷轴模式: [],
-  切换单双页模式: [],
-  切换阅读方向: [],
+export const defaultHotkeys: Readonly<Record<string, string[]>> = {
+  turn_page_up: ['w', 'ArrowUp', 'PageUp'],
+  turn_page_down: [' ', 's', 'ArrowDown', 'PageDown'],
+  turn_page_right: ['d', '.', 'ArrowRight'],
+  turn_page_left: ['a', ',', 'ArrowLeft'],
+  jump_to_home: ['Home'],
+  jump_to_end: ['End'],
+  exit: ['Escape'],
+  switch_page_fill: ['/', 'm', 'z'],
+  switch_scroll_mode: [],
+  switch_single_double_page_mode: [],
+  switch_dir: [],
 };
 
 export const OtherState = {
@@ -38,7 +38,7 @@ export const OtherState = {
   commentList: undefined as string[] | undefined,
 
   /** 快捷键配置 */
-  hotKeys: {} as Record<string, string[]>,
+  hotkeys: {} as Record<string, string[]>,
 
   /** 点击结束页按钮时触发的回调 */
   onExit: undefined as ((isEnd?: boolean) => void) | undefined,
@@ -56,7 +56,7 @@ export const OtherState = {
     | ((option: Partial<Option>) => void | Promise<void>)
     | undefined,
   /** 快捷键配置发生变化时触发的回调 */
-  onHotKeysChange: undefined as
+  onHotkeysChange: undefined as
     | ((option: Record<string, string[]>) => void | Promise<void>)
     | undefined,
 

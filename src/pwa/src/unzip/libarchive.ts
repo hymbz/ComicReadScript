@@ -1,8 +1,9 @@
 import { Archive } from 'libarchive.js';
 
+import { plimit } from 'helper';
+import { t } from 'helper/i18n';
 import type { ZipData } from '.';
 import type { ImgFile } from '../store';
-import { plimit } from '../../../helper';
 import { toast } from '../../../components/Toast';
 import { createObjectURL, isSupportFile } from '../helper';
 
@@ -27,7 +28,7 @@ export const libarchive = async ({
   let password: string | null;
   if (await archive.hasEncryptedData()) {
     // eslint-disable-next-line no-alert
-    password = prompt('请输入密码');
+    password = prompt(t('pwa.message.input_password'));
     if (!password) return [];
     await archive.usePassword(password);
   }
@@ -42,7 +43,7 @@ export const libarchive = async ({
           const url = await createObjectURL(
             'extract' in file ? await file.extract() : file,
           );
-          if (!url) throw new Error('图片数据错误');
+          if (!url) throw new Error(t('pwa.alert.img_data_error'));
           return { name: file.name, url };
         } catch (e) {
           // 如果输入了错误的密码，所有文件都会解压出错
@@ -50,13 +51,13 @@ export const libarchive = async ({
           // 但也不能因为一个文件解压出错就直接中断所有文件的解压
           // 因为 libarchive 就是有可能出现其中几个文件解压不出来的情况
           if (password) {
-            toast.error('解压密码错误');
+            toast.error(t('pwa.alert.unzip_password_error'));
             return undefined;
           }
 
-          const errorText = `「${zipFile.name}」 - 「${
-            file.name
-          }」 解压缩时出错：${(e as Error).message}`;
+          const errorText = `「${zipFile.name}」 - 「${file.name}」 ${t(
+            'pwa.alert.unzip_error',
+          )}：${(e as Error).message}`;
           toast.error(errorText, { duration: Infinity });
           console.error(errorText, e);
           return undefined;

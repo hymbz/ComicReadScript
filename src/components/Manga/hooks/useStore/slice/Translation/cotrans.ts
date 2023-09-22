@@ -1,9 +1,9 @@
+import { t } from 'helper/i18n';
 import { store } from '../..';
 import {
   setMessage,
   download,
   request,
-  messageMap,
   createFormData,
   createOptions,
 } from './helper';
@@ -44,17 +44,19 @@ const waitTranslation = (id: string, i: number) => {
           resolve(msg.result.translation_mask);
           break;
         case 'pending':
-          setMessage(i, `正在等待服务器队列，还有 ${msg.pos} 张图片`);
+          setMessage(i, t('translation.tip.pending', { pos: msg.pos }));
           break;
         case 'status':
-          setMessage(i, messageMap[msg.status] ?? msg.status);
+          setMessage(i, t(`translation.status.${msg.status}`) || msg.status);
           break;
 
         case 'error':
-          reject(new Error(`翻译出错：id ${msg.error_id}`));
+          reject(
+            new Error(`${t('translation.tip.error')}：id ${msg.error_id}`),
+          );
           break;
         case 'not_found':
-          reject(new Error(`翻译出错：Not Found`));
+          reject(new Error(`${t('translation.tip.error')}：Not Found`));
           break;
       }
     };
@@ -98,13 +100,13 @@ const mergeImage = async (rawImage: Blob, maskUri: string) => {
 /** 使用 cotrans 翻译指定图片 */
 export const cotransTranslation = async (i: number) => {
   const img = store.imgList[i];
-  setMessage(i, '正在下载图片');
+  setMessage(i, t('translation.tip.img_downloading'));
   let imgBlob: Blob;
   try {
     imgBlob = await download(img.src);
   } catch (error) {
     console.error(error);
-    throw new Error('下载图片失败');
+    throw new Error(t('translation.tip.download_img_failed'));
   }
 
   let id: string;
@@ -128,14 +130,16 @@ export const cotransTranslation = async (i: number) => {
       | { error_id: string };
 
     if ('error_id' in resData)
-      throw new Error(`上传后报错：${resData.error_id}`);
-    if (!resData.id) throw new Error('未返回 id');
+      throw new Error(
+        `${t('translation.tip.upload_return_error')}：${resData.error_id}`,
+      );
+    if (!resData.id) throw new Error(t('translation.tip.id_not_returned'));
 
     id = resData.id;
     translation_mask = resData.result?.translation_mask;
   } catch (error) {
     console.error(error);
-    throw new Error('图片上传出错');
+    throw new Error(t('translation.tip.upload_error'));
   }
 
   if (!translation_mask) translation_mask = await waitTranslation(id, i);

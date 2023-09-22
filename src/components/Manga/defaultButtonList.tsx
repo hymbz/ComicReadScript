@@ -7,6 +7,7 @@ import MdSearch from '@material-design-icons/svg/round/search.svg';
 import MdTranslate from '@material-design-icons/svg/round/translate.svg';
 
 import { createMemo, type Component, createSignal } from 'solid-js';
+import { t } from 'helper/i18n';
 import { setState, store } from './hooks/useStore';
 import { IconButton } from '../IconButton';
 import { SettingPanel } from './components/SettingPanel';
@@ -42,7 +43,11 @@ export const defaultButtonList: ToolbarButtonList = [
   // 单双页模式
   () => (
     <IconButton
-      tip={store.option.onePageMode ? '单页模式' : '双页模式'}
+      tip={
+        store.option.onePageMode
+          ? t('button.page_mode_single')
+          : t('button.page_mode_double')
+      }
       hidden={store.option.scrollMode}
       onClick={switchOnePageMode}
       children={store.option.onePageMode ? <MdLooksOne /> : <MdLooksTwo />}
@@ -51,7 +56,7 @@ export const defaultButtonList: ToolbarButtonList = [
   // 卷轴模式
   () => (
     <IconButton
-      tip="卷轴模式"
+      tip={t('button.scroll_mode')}
       enabled={store.option.scrollMode}
       onClick={switchScrollMode}
       children={<MdViewDay />}
@@ -60,7 +65,7 @@ export const defaultButtonList: ToolbarButtonList = [
   // 页面填充
   () => (
     <IconButton
-      tip="页面填充"
+      tip={t('button.page_fill')}
       enabled={store.fillEffect[nowFillIndex()]}
       hidden={store.option.onePageMode}
       onClick={switchFillEffect}
@@ -71,7 +76,7 @@ export const defaultButtonList: ToolbarButtonList = [
   // 放大模式
   () => (
     <IconButton
-      tip="放大"
+      tip={t('button.zoom_in')}
       enabled={
         store.isZoomed ||
         (store.option.scrollMode && store.option.scrollModeImgScale > 1)
@@ -108,9 +113,13 @@ export const defaultButtonList: ToolbarButtonList = [
 
     return (
       <IconButton
-        tip={isTranslatingImage() ? '关闭当前页的翻译' : '翻译当前页'}
+        tip={
+          isTranslatingImage()
+            ? t('button.close_current_page_translation')
+            : t('button.translate_current_page')
+        }
         enabled={isTranslatingImage()}
-        hidden={store.option.translation.server === '禁用'}
+        hidden={store.option.translation.server === 'disable'}
         onClick={() =>
           setImgTranslationEnbale(activePage(), !isTranslatingImage())
         }
@@ -146,14 +155,13 @@ export const defaultButtonList: ToolbarButtonList = [
           }}
           role="button"
           tabIndex={-1}
-          aria-label="关闭弹窗的遮罩"
         />
       </>
     ));
 
     return (
       <IconButton
-        tip="设置"
+        tip={t('button.setting')}
         enabled={showPanel()}
         showTip={showPanel()}
         onClick={handleClick}

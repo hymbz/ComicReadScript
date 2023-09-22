@@ -4,15 +4,16 @@ import MdAdd from '@material-design-icons/svg/round/add.svg';
 
 import { type Component, For, Index } from 'solid-js';
 
+import { getKeyboardCode, keyboardCodeToText } from 'helper';
+import { t } from 'helper/i18n';
 import {
-  delHotKeys,
+  delHotkeys,
   focus,
-  hotKeysMap,
-  setHotKeys,
+  hotkeysMap,
+  setHotkeys,
 } from '../hooks/useStore/slice';
-import { defaultHoeKeys } from '../hooks/useStore/OtherState';
+import { defaultHotkeys } from '../hooks/useStore/OtherState';
 import { store } from '../hooks/useStore';
-import { getKeyboardCode, keyboardCodeToText } from '../../../helper';
 
 import classes from '../index.module.css';
 
@@ -20,9 +21,9 @@ const KeyItem: Component<{
   operateName: string;
   i: number;
 }> = (props) => {
-  const code = () => store.hotKeys[props.operateName][props.i];
+  const code = () => store.hotkeys[props.operateName][props.i];
 
-  const del = () => delHotKeys(code());
+  const del = () => delHotkeys(code());
 
   const handleKeyDown = (e: KeyboardEvent) => {
     e.stopPropagation();
@@ -36,18 +37,18 @@ const KeyItem: Component<{
         return;
 
       case 'Backspace':
-        setHotKeys(props.operateName, props.i, '');
+        setHotkeys(props.operateName, props.i, '');
         return;
     }
 
     const newCode = getKeyboardCode(e);
-    if (!Reflect.has(hotKeysMap(), newCode))
-      setHotKeys(props.operateName, props.i, newCode);
+    if (!Reflect.has(hotkeysMap(), newCode))
+      setHotkeys(props.operateName, props.i, newCode);
   };
 
   return (
     <div
-      class={classes.hotKeysItem}
+      class={classes.hotkeysItem}
       tabIndex={0}
       on:keydown={handleKeyDown}
       // 如果被挂载的是空快捷键，则自动设上焦点
@@ -62,25 +63,25 @@ const KeyItem: Component<{
   );
 };
 
-export const SettingHotKeys: Component = () => (
-  <For each={Object.entries(store.hotKeys)}>
+export const SettingHotkeys: Component = () => (
+  <For each={Object.entries(store.hotkeys)}>
     {([name, keys]) => (
-      <div class={classes.hotKeys}>
-        <div class={classes.hotKeysHeader}>
-          <p>{name}</p>
+      <div class={classes.hotkeys}>
+        <div class={classes.hotkeysHeader}>
+          <p>{t(`hotkeys.${name}`) || name}</p>
           <span style={{ 'flex-grow': 1 }} />
           <div
-            title="添加新快捷键"
-            on:click={() => setHotKeys(name, store.hotKeys[name].length, '')}
+            title={t('setting.hotkeys.add')}
+            on:click={() => setHotkeys(name, store.hotkeys[name].length, '')}
           >
             <MdAdd />
           </div>
           <div
-            title="恢复默认快捷键"
+            title={t('setting.hotkeys.recover')}
             on:click={() => {
-              const newKeys = defaultHoeKeys[name] ?? [];
-              newKeys.forEach(delHotKeys);
-              setHotKeys(name, newKeys);
+              const newKeys = defaultHotkeys[name] ?? [];
+              newKeys.forEach(delHotkeys);
+              setHotkeys(name, newKeys);
             }}
           >
             <MdRefresh />

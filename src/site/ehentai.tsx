@@ -1,6 +1,7 @@
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
 
 import {
+  t,
   insertNode,
   linstenKeyup,
   querySelector,
@@ -21,25 +22,27 @@ declare const selected_link: HTMLElement;
   const { options, setFab, setManga, init, dynamicUpdate } = await useInit(
     'ehentai',
     {
-      匹配nhentai: true,
-      快捷键翻页: true,
+      /** 关联 nhentai */
+      associate_nhentai: true,
+      /** 快捷键翻页 */
+      shortcut_page_turn: true,
       autoShow: false,
     },
   );
 
   // 不是漫画页的话
   if (!Reflect.has(unsafeWindow, 'gid')) {
-    await GM.registerMenuCommand('显示设置菜单', () =>
+    await GM.registerMenuCommand(t('site.show_settings_menu'), () =>
       setFab({
         show: true,
         focus: true,
-        tip: '设置',
+        tip: t('site.settings_tip'),
         children: <MdSettings />,
         onBackdropClick: () => setFab({ show: false, focus: false }),
       }),
     );
 
-    if (options.快捷键翻页) {
+    if (options.shortcut_page_turn) {
       linstenKeyup((e) => {
         switch (e.key) {
           case 'ArrowRight':
@@ -89,12 +92,14 @@ declare const selected_link: HTMLElement;
 
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async (url: string): Promise<string> => {
-    const res = await request(url, { errorText: '获取图片页源码失败' });
+    const res = await request(url, {
+      errorText: t('site.ehentai.fetch_img_page_source_fail'),
+    });
 
     try {
       return res.responseText.split('id="img" src="')[1].split('"')[0];
     } catch (error) {
-      throw new Error('从图片页获取图片地址失败');
+      throw new Error(t('site.ehentai.fetch_img_url_fail'));
     }
   };
 
@@ -106,7 +111,7 @@ declare const selected_link: HTMLElement;
   const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
     const res = await request(
       `${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
-      { errorText: '从详情页获取图片页地址失败' },
+      { errorText: t('site.ehentai.fetch_img_page_url_fail') },
     );
 
     // 从详情页获取图片页的地址
@@ -119,8 +124,8 @@ declare const selected_link: HTMLElement;
           'Your IP address has been temporarily banned for excessive',
         )
       )
-        throw new Error('IP地址被禁');
-      throw new Error('从详情页获取图片页的地址时出错');
+        throw new Error(t('site.ehentai.ip_banned'));
+      throw new Error(t('site.ehentai.fetch_img_page_url_fail'));
     }
 
     return imgPageList;
@@ -138,7 +143,7 @@ declare const selected_link: HTMLElement;
     )?.[0];
     if (numText) return +numText;
 
-    toast.error('页面结构发生改变，无法加载漫画');
+    toast.error(t('site.ehentai.html_changed_load_fail'));
     return 0;
   };
   const totalImgNum = await getImgNum();
@@ -165,7 +170,7 @@ declare const selected_link: HTMLElement;
             const doneNum = startIndex + _doneNum;
             setFab({
               progress: doneNum / totalImgNum,
-              tip: `加载图片中 - ${doneNum}/${totalImgNum}`,
+              tip: `${t('other.loading_img')} - ${doneNum}/${totalImgNum}`,
             });
             comicReadModeDom.innerHTML =
               doneNum !== totalImgNum
@@ -182,7 +187,7 @@ declare const selected_link: HTMLElement;
     loadImgList(ehImgList.length ? ehImgList : undefined, true),
   );
 
-  if (options.快捷键翻页) {
+  if (options.shortcut_page_turn) {
     linstenKeyup((e) => {
       switch (e.key) {
         case 'ArrowRight':
@@ -198,11 +203,11 @@ declare const selected_link: HTMLElement;
     });
   }
 
-  if (options.匹配nhentai) {
+  if (options.associate_nhentai) {
     const titleDom = document.getElementById('gn');
     const taglistDom = querySelector('#taglist tbody');
     if (!titleDom || !taglistDom) {
-      toast.error('页面结构发生改变，匹配 nhentai 漫画功能无法正常生效');
+      toast.error(t('site.ehentai.html_changed_nhentai_fail'));
       return;
     }
 
@@ -214,17 +219,15 @@ declare const selected_link: HTMLElement;
         `https://nhentai.net/api/galleries/search?query=${encodeURI(
           titleDom.innerText,
         )}`,
-        { errorText: 'nhentai 匹配出错', noTip: true },
+        { errorText: t('site.ehentai.nhentai_error'), noTip: true },
       );
     } catch (_) {
       newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
-        匹配失败，请在确认登录
-        <a href='https://nhentai.net/' target="_blank" >
-          <u>nhentai</u>
-        </a>
-        后刷新
+        ${t('site.ehentai.nhentai_fail', {
+          nhentai: `<a href='https://nhentai.net/' target="_blank" ><u>nhentai</u></a>`,
+        })}
       </td>`;
       taglistDom.appendChild(newTagLine);
       return;
@@ -304,11 +307,11 @@ declare const selected_link: HTMLElement;
             };
 
             nhentaiImgList[selected_tag] = await Promise.all(
-              comicInfo.images.pages.map(async ({ t }, i) => {
+              comicInfo.images.pages.map(async (page, i) => {
                 const imgRes = await request<Blob>(
                   `https://i.nhentai.net/galleries/${comicInfo.media_id}/${
                     i + 1
-                  }.${fileType[t]}`,
+                  }.${fileType[page.t]}`,
                   {
                     headers: {
                       Referer: `https://nhentai.net/g/${comicInfo.media_id}`,

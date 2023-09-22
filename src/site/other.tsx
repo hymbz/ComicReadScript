@@ -1,4 +1,5 @@
 import {
+  t,
   getMostItem,
   loop,
   querySelector,
@@ -14,12 +15,12 @@ import {
   const start = async () => {
     const { setManga, setFab, init, options, setOptions, isStored } =
       await useInit(window.location.hostname, {
-        记住当前站点: true,
+        rememberCurrentSite: true,
         selector: '',
       });
 
     // 通过 options 来迂回的实现禁止记住当前站点
-    if (!options['记住当前站点']) {
+    if (!options.rememberCurrentSite) {
       await GM.deleteValue(window.location.hostname);
       return true;
     }
@@ -28,9 +29,9 @@ import {
       toast(
         () => (
           <div>
-            将在之后默认自动进入阅读模式
+            {t('site.simple.auto_read_mode_message')}
             <button on:click={() => setOptions({ autoShow: false })}>
-              禁用
+              {t('other.disable')}
             </button>
           </div>
         ),
@@ -39,9 +40,10 @@ import {
     }
 
     // 为避免卡死，提供一个删除 selector 的菜单项
-    const menuId = await GM.registerMenuCommand('使用简易阅读模式', () => {
-      setOptions({ selector: '' });
-    });
+    const menuId = await GM.registerMenuCommand(
+      t('site.simple.simple_read_mode'),
+      () => setOptions({ selector: '' }),
+    );
 
     // 等待 selector 匹配到目标后再继续执行，避免在漫画页外的其他地方运行
     await wait(() => !options.selector || querySelector(options.selector));
@@ -177,8 +179,9 @@ import {
 
   if ((await GM.getValue(window.location.hostname)) !== undefined) start();
   else {
-    const menuId = await GM.registerMenuCommand('使用简易阅读模式', () => {
-      if (!start()) GM.unregisterMenuCommand(menuId);
-    });
+    const menuId = await GM.registerMenuCommand(
+      t('site.simple.simple_read_mode'),
+      () => !start() && GM.unregisterMenuCommand(menuId),
+    );
   }
 })();

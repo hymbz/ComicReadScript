@@ -60,6 +60,7 @@ const publicConfig = {
 
     'consistent-return': 'off',
   },
+  reportUnusedDisableDirectives: true,
 };
 
 /** 与公用规则合并 */
@@ -175,6 +176,23 @@ module.exports = {
       rules: {
         // 禁止提醒使用了 dev 的包
         'import/no-extraneous-dependencies': 'off',
+      },
+    }),
+    buildConfig({
+      plugins: ['i18n', 'i18next'],
+      files: ['src/**/*.ts', 'src/**/*.tsx'],
+      excludedFiles: [
+        'display.*',
+        '*.test.*',
+        'vite.config.ts',
+        '**/helper/import.ts',
+        '**/helper/dmzjApi.ts',
+        'src/*.*',
+        'src/site/!(other|nhentai|ehentai).tsx',
+      ],
+      rules: {
+        'i18next/no-literal-string': 'error',
+        'i18n/no-chinese-character': 'error',
       },
     }),
   ],

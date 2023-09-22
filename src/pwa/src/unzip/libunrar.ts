@@ -1,7 +1,8 @@
+import { plimit } from 'helper';
+import { t } from 'helper/i18n';
 import type { ZipData } from '.';
 import type { ImgFile } from '../store';
 import { toast } from '../../../components/Toast';
-import { plimit } from '../../../helper';
 import { createObjectURL, isSupportFile, loadScript } from '../helper';
 
 loadScript('/libunrar/rpc.js');
@@ -52,7 +53,7 @@ const findImgFile = async (
     if (isSupportFile(entry.fullFileName) !== 'img') return [undefined];
 
     const url = await createObjectURL(new Blob([entry.fileContent]));
-    if (!url) throw new Error('图片数据错误');
+    if (!url) throw new Error(t('pwa.alert.img_data_error'));
     return [{ name: path.join('-'), url }];
   }
 
@@ -96,11 +97,11 @@ export const libunrar = async (
       case 'Missing password':
       case 'Bad password': {
         if (password) {
-          toast.error('解压密码错误');
+          toast.error(t('pwa.alert.unzip_password_error'));
           throw new Error(error as string);
         }
         // eslint-disable-next-line no-alert
-        const newPassword = prompt('请输入密码');
+        const newPassword = prompt(t('pwa.message.input_password'));
         if (!newPassword) return [];
         return libunrar(zipData, newPassword);
       }

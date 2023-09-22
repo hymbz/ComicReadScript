@@ -192,7 +192,7 @@ export const waitDom = (selector: string) =>
 export const waitImgLoad = (img: HTMLImageElement, timeout = 1000 * 10) =>
   new Promise<ErrorEvent | null>((resolve) => {
     const id = window.setTimeout(
-      () => resolve(new ErrorEvent('超时')),
+      () => resolve(new ErrorEvent('timeout')),
       timeout,
     );
     img.addEventListener('load', () => {
@@ -295,4 +295,4 @@ export const keyboardCodeToText = (code: string) =>
     .replace('ArrowDown', '↓')
     .replace('ArrowLeft', '←')
     .replace('ArrowRight', '→')
-    .replace(/^\s$/, '空格');
+    .replace(/^\s$/, 'Space');

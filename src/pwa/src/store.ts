@@ -1,5 +1,6 @@
 import { createEffect, createRoot, on } from 'solid-js';
 
+import { t } from 'helper/i18n';
 import { useStore } from '../../helper/useStore';
 import { toast } from '../../components/Toast';
 
@@ -48,7 +49,7 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
   if (!files.length) return;
 
   if (store.loading) {
-    toast.warn('正在加载其他文件中...');
+    toast.warn(t('pwa.alert.repeat_load'));
     return;
   }
 
@@ -59,7 +60,7 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
   try {
     const newImglist = (await Promise.all(files.map(getImgData))).flat();
     if (!newImglist.length) {
-      toast.warn(errorTip ?? '找不到图片');
+      toast.warn(errorTip ?? t('pwa.alert.img_not_found'));
       return;
     }
 

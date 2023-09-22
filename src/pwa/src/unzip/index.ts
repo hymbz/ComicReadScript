@@ -1,3 +1,4 @@
+import { t } from 'helper/i18n';
 import { toast } from '../../../components/Toast';
 import type { ZipExtension } from '../helper';
 import type { ImgFile } from '../store';
@@ -19,7 +20,7 @@ export interface ZipData {
 
 /** 解压缩文件 */
 export const unzip = async (zipFile: File, extension: ZipExtension) => {
-  const tip = `「${zipFile.name}」解压缩中`;
+  const tip = `「${zipFile.name}」${t('pwa.message.unzipping')}`;
   toast(tip, { duration: Infinity });
 
   let imgDataList: Array<ImgFile | undefined> = [];
@@ -30,7 +31,9 @@ export const unzip = async (zipFile: File, extension: ZipExtension) => {
       console.log(unzipFnOrder[i]);
       imgDataList = await unzipFn({ zipFile, tip, extension });
     } catch (e) {
-      const errorText = `${unzipFnOrder[i]} 解压出错：${(e as Error).message}`;
+      const errorText = `${unzipFnOrder[i]} ${t('pwa.alert.unzip_error')}：${
+        (e as Error).message
+      }`;
       toast.error(errorText);
       console.error(errorText, e);
     }

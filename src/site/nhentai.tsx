@@ -4,6 +4,7 @@ import {
   querySelectorAll,
   request,
   scrollIntoView,
+  t,
   toast,
   useInit,
 } from 'main';
@@ -23,9 +24,12 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
 (async () => {
   const { options, setFab, setManga, init } = await useInit('nhentai', {
-    自动翻页: true,
-    彻底屏蔽漫画: true,
-    在新页面中打开链接: true,
+    /** 自动翻页 */
+    auto_page_turn: true,
+    /** 彻底屏蔽漫画 */
+    block_totally: true,
+    /** 在新页面中打开链接 */
+    open_link_new_page: true,
   });
 
   // 在漫画详情页
@@ -57,20 +61,21 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
   // 在漫画浏览页
   if (document.getElementsByClassName('gallery').length) {
-    if (options.在新页面中打开链接)
+    if (options.open_link_new_page)
       querySelectorAll('a:not([href^="javascript:"])').forEach((e) =>
         e.setAttribute('target', '_blank'),
       );
 
     const blacklist: number[] = (unsafeWindow?._n_app ?? unsafeWindow?.n)
       ?.options?.blacklisted_tags;
-    if (blacklist === undefined) toast.error('标签黑名单获取失败');
+    if (blacklist === undefined)
+      toast.error(t('site.nhentai.tag_blacklist_fetch_fail'));
     // blacklist === null 时是未登录
 
-    if (options.彻底屏蔽漫画 && blacklist?.length)
+    if (options.block_totally && blacklist?.length)
       await GM.addStyle('.blacklisted.gallery { display: none; }');
 
-    if (options.自动翻页) {
+    if (options.auto_page_turn) {
       await GM.addStyle(`
         hr { bottom: 0; box-sizing: border-box; margin: -1em auto 2em; }
         hr:last-child { position: relative; animation: load .8s linear alternate infinite; }
@@ -110,7 +115,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
           `${apiUrl}page=${pageNum}${
             window.location.pathname.includes('popular') ? '&sort=popular ' : ''
           }`,
-          { errorText: '下一页漫画信息加载出错' },
+          { errorText: t('site.nhentai.fetch_next_page_fail') },
         );
 
         const { result, num_pages } = JSON.parse(res.responseText) as {
@@ -133,7 +138,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
           comicDomHtml += `<div class="gallery${
             blacklisted ? ' blacklisted' : ''
           }" data-tags="${comic.tags.map((e) => e.id).join(' ')}"><a ${
-            options.在新页面中打开链接 ? 'target="_blank"' : ''
+            options.open_link_new_page ? 'target="_blank"' : ''
           } href="/g/${comic.id}/" class="cover" style="padding:0 0 ${
             (comic.images.thumbnail.h / comic.images.thumbnail.w) * 100
           }% 0"><img is="lazyload-image" class="" width="${
@@ -147,7 +152,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
         // 构建页数按钮
         if (comicDomHtml) {
-          const target = options.在新页面中打开链接 ? 'target="_blank" ' : '';
+          const target = options.open_link_new_page ? 'target="_blank" ' : '';
           const pageNumDom: string[] = [];
           for (let i = pageNum - 5; i <= pageNum + 5; i += 1) {
             if (i > 0 && i <= num_pages)

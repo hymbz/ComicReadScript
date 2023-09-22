@@ -1,11 +1,11 @@
-import { sleep } from '../../../../../../helper';
+import { sleep } from 'helper';
+import { t } from 'helper/i18n';
 import { store } from '../..';
 import type { TaskState } from './helper';
 import {
   setMessage,
   download,
   request,
-  messageMap,
   createFormData,
   createOptions,
 } from './helper';
@@ -23,23 +23,24 @@ export const getValidTranslators = async () => {
     const list = JSON.parse(translatorsText.replaceAll(`'`, `"`)) as string[];
     return createOptions(list);
   } catch (e) {
-    console.error('获取部署服务的可用翻译时出错', e);
+    console.error(t('translation.tip.get_translator_list_error'), e);
     return undefined;
   }
 };
 
 /** 使用自部署服务器翻译指定图片 */
 export const selfhostedTranslation = async (i: number) => {
-  if (!(await getValidTranslators())) throw new Error('无法连接到服务器');
+  if (!(await getValidTranslators()))
+    throw new Error(t('alert.server_connection_failed'));
 
   const img = store.imgList[i];
-  setMessage(i, '正在下载图片');
+  setMessage(i, t('translation.tip.img_downloading'));
   let imgBlob: Blob;
   try {
     imgBlob = await download(img.src);
   } catch (error) {
     console.error(error);
-    throw new Error('下载图片失败');
+    throw new Error(t('translation.tip.download_img_failed'));
   }
 
   let task_id: string;
@@ -58,7 +59,7 @@ export const selfhostedTranslation = async (i: number) => {
     task_id = resData.task_id;
   } catch (error) {
     console.error(error);
-    throw new Error('上传图片失败');
+    throw new Error(t('translation.tip.upload_error'));
   }
 
   let errorNum = 0;
@@ -69,10 +70,14 @@ export const selfhostedTranslation = async (i: number) => {
       await sleep(200);
       const res = await request(`${url()}/task-state?taskid=${task_id}`);
       taskState = JSON.parse(res.responseText) as TaskState;
-      setMessage(i, `${messageMap[taskState.state] ?? taskState.state}`);
+      setMessage(
+        i,
+        `${t(`translation.status.${taskState.state}`) || taskState.state}`,
+      );
     } catch (error) {
       console.error(error);
-      if (errorNum > 5) throw new Error('检查图片状态失败过多');
+      if (errorNum > 5)
+        throw new Error(t('translation.tip.check_img_status_failed'));
       errorNum += 1;
     }
   }

@@ -1,8 +1,8 @@
 import { throttle } from 'throttle-debounce';
 import createPanZoom from 'panzoom';
+import { sleep } from 'helper';
 import type { State } from '..';
 import { setState, store } from '..';
-import { sleep } from '../../../../../helper';
 
 export const initPanzoom = (state: State) => {
   // 销毁之前可能创建过的实例

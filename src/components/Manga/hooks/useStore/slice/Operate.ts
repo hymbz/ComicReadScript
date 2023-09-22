@@ -1,3 +1,4 @@
+import { getKeyboardCode } from 'helper';
 import {
   zoomScrollModeImg,
   switchFillEffect,
@@ -12,8 +13,7 @@ import {
   handleMangaFlowScroll,
   mangaFlowEle,
 } from './Scrollbar';
-import { hotKeysMap } from './HotKeys';
-import { getKeyboardCode } from '../../../../../helper';
+import { hotkeysMap } from './Hotkeys';
 
 import classes from '../../../index.module.css';
 
@@ -47,15 +47,15 @@ export const handleWheel = (e: WheelEvent) => {
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
-const handleSwapTurnPage = (nextPage: boolean) => {
-  const next = store.option.swapTurnPage ? !nextPage : nextPage;
+const handleReversePageTurnKey = (nextPage: boolean) => {
+  const next = store.option.reversePageTurnKey ? !nextPage : nextPage;
   return next ? 'next' : 'prev';
 };
 
 export const handleKeyDown = (e: KeyboardEvent) => {
   if (
     (e.target as HTMLElement).tagName === 'INPUT' ||
-    (e.target as HTMLElement).className === classes.hotKeysItem
+    (e.target as HTMLElement).className === classes.hotkeysItem
   )
     return;
 
@@ -82,44 +82,44 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   }
 
   // 拦截已注册的快捷键
-  if (Reflect.has(hotKeysMap(), code)) {
+  if (Reflect.has(hotkeysMap(), code)) {
     e.stopPropagation();
     e.preventDefault();
   }
 
-  switch (hotKeysMap()[code]) {
-    case '向上翻页':
+  switch (hotkeysMap()[code]) {
+    case 'turn_page_up':
       return turnPage('prev');
 
-    case '向下翻页':
+    case 'turn_page_down':
       return turnPage('next');
 
-    case '向右翻页':
-      return turnPage(handleSwapTurnPage(store.option.dir !== 'rtl'));
+    case 'turn_page_right':
+      return turnPage(handleReversePageTurnKey(store.option.dir !== 'rtl'));
 
-    case '向左翻页':
-      return turnPage(handleSwapTurnPage(store.option.dir === 'rtl'));
+    case 'turn_page_left':
+      return turnPage(handleReversePageTurnKey(store.option.dir === 'rtl'));
 
-    case '跳至首页':
+    case 'jump_to_home':
       return setState((state) => {
         state.activePageIndex = 0;
       });
 
-    case '跳至尾页':
+    case 'jump_to_end':
       return setState((state) => {
         state.activePageIndex = state.pageList.length - 1;
       });
 
-    case '切换页面填充':
+    case 'switch_page_fill':
       return switchFillEffect();
-    case '切换卷轴模式':
+    case 'switch_scroll_mode':
       return switchScrollMode();
-    case '切换单双页模式':
+    case 'switch_single_double_page_mode':
       return switchOnePageMode();
-    case '切换阅读方向':
+    case 'switch_dir':
       return switchDir();
 
-    case '退出':
+    case 'exit':
       return store.onExit?.();
   }
 };

@@ -8,6 +8,7 @@ import {
   Show,
 } from 'solid-js';
 
+import { t } from 'helper/i18n';
 import { setState, store } from '../hooks/useStore';
 import { bindRef, focus, turnPage } from '../hooks/useStore/slice';
 
@@ -58,13 +59,13 @@ export const EndPage: Component = () => {
   const tip = createMemo(() => {
     switch (delayType()) {
       case 'start':
-        if (store.onPrev && store.option.flipToNext)
-          return '已到开头，继续向上翻页将跳至上一话';
+        if (store.onPrev && store.option.jumpToNext)
+          return t('end_page.tip.start_jump');
         break;
       case 'end':
-        if (store.onNext && store.option.flipToNext)
-          return '已到结尾，继续向下翻页将跳至下一话';
-        if (store.onExit) return '已到结尾，继续翻页将退出';
+        if (store.onNext && store.option.jumpToNext)
+          return t('end_page.tip.end_jump');
+        if (store.onExit) return t('end_page.tip.exit');
         break;
     }
     return '';
@@ -88,7 +89,7 @@ export const EndPage: Component = () => {
         tabIndex={store.endPageType ? 0 : -1}
         on:click={() => store.onPrev?.()}
       >
-        上一话
+        {t('end_page.prev_button')}
       </button>
       <button
         ref={bindRef('exitRef')}
@@ -97,7 +98,7 @@ export const EndPage: Component = () => {
         tabIndex={store.endPageType ? 0 : -1}
         on:click={() => store.onExit?.(store.endPageType === 'end')}
       >
-        退出
+        {t('button.exit')}
       </button>
       <button
         ref={bindRef('nextRef')}
@@ -106,7 +107,7 @@ export const EndPage: Component = () => {
         tabIndex={store.endPageType ? 0 : -1}
         on:click={() => store.onNext?.()}
       >
-        下一话
+        {t('end_page.next_button')}
       </button>
       <Show when={store.option.showComment && delayType() === 'end'}>
         <div

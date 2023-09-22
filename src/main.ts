@@ -5,6 +5,7 @@
  */
 
 export * from './helper';
+export * from './helper/i18n';
 export * from './helper/request';
 export * from './helper/useSpeedDial';
 export * from './helper/useCache';

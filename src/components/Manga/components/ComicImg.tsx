@@ -1,6 +1,7 @@
 import type { Component } from 'solid-js';
 import { createMemo } from 'solid-js';
 
+import { t } from 'helper/i18n';
 import type { State } from '../hooks/useStore';
 import { setState, store } from '../hooks/useStore';
 import { activePage, updateImgType } from '../hooks/useStore/slice';
@@ -90,7 +91,7 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
     }
 
     img.loadType = 'error';
-    console.error('图片加载失败', e);
+    console.error(t('alert.img_load_failed'), e);
 
     state.onLoading?.(state.imgList, img);
   });

@@ -71,7 +71,7 @@ export const Scrollbar: Component = () => {
         </div>
       </div>
 
-      <Show when={store.option.scrollbar.showProgress}>
+      <Show when={store.option.scrollbar.showImgStatus}>
         <For each={store.pageList}>
           {([a, b]) => <ScrollbarPage a={a} b={b} />}
         </For>

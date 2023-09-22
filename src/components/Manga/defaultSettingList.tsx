@@ -4,9 +4,10 @@ import MdOutlineFormatTextdirectionRToL from '@material-design-icons/svg/round/f
 import { type Component } from 'solid-js';
 
 import { throttle } from 'throttle-debounce';
+import { lang, setLang, t } from 'helper/i18n';
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
-import { SettingHotKeys } from './components/SettingHotKeys';
+import { SettingHotkeys } from './components/SettingHotkeys';
 import { SettingTranslation } from './components/SettingTranslation';
 import {
   createStateSetFn,
@@ -19,6 +20,7 @@ import { needDarkMode } from '../../helper';
 
 import classes from './index.module.css';
 import { SettingsShowItem } from './components/SettingsShowItem';
+import { SettingsItemSelect } from './components/SettingsItemSelect';
 
 export type SettingList = (
   | [string, Component]
@@ -28,11 +30,13 @@ export type SettingList = (
 /** 默认菜单项 */
 export const defaultSettingList: SettingList = [
   [
-    '阅读方向',
+    t('setting.option.paragraph_dir'),
     () => (
       <SettingsItem
         name={
-          store.option.dir === 'rtl' ? '从右到左（日漫）' : '从左到右（美漫）'
+          store.option.dir === 'rtl'
+            ? t('setting.option.dir_rtl')
+            : t('setting.option.dir_ltr')
         }
       >
         <button
@@ -50,51 +54,51 @@ export const defaultSettingList: SettingList = [
     ),
   ],
   [
-    '滚动条',
+    t('setting.option.paragraph_scrollbar'),
     () => (
       <>
         <SettingsItemSwitch
-          name="显示滚动条"
+          name={t('setting.option.scrollbar_show')}
           value={store.option.scrollbar.enabled}
           onChange={createStateSetFn('scrollbar.enabled')}
         />
         <SettingsShowItem when={store.option.scrollbar.enabled}>
           <SettingsItemSwitch
-            name="自动隐藏滚动条"
+            name={t('setting.option.scrollbar_auto_hidden')}
             value={store.option.scrollbar.autoHidden}
             onChange={createStateSetFn('scrollbar.autoHidden')}
           />
           <SettingsItemSwitch
-            name="显示图片加载状态"
-            value={store.option.scrollbar.showProgress}
-            onChange={createStateSetFn('scrollbar.showProgress')}
+            name={t('setting.option.scrollbar_show_img_status')}
+            value={store.option.scrollbar.showImgStatus}
+            onChange={createStateSetFn('scrollbar.showImgStatus')}
           />
         </SettingsShowItem>
       </>
     ),
   ],
   [
-    '操作',
+    t('setting.option.paragraph_operation'),
     () => (
       <>
         <SettingsItemSwitch
-          name="翻页至上/下一话"
-          value={store.option.flipToNext}
-          onChange={createStateSetFn('flipToNext')}
+          name={t('setting.option.jump_to_next')}
+          value={store.option.jumpToNext}
+          onChange={createStateSetFn('jumpToNext')}
         />
 
         <SettingsItemSwitch
-          name="启用点击翻页"
-          value={store.option.clickPage.enabled}
-          onChange={createStateSetFn('clickPage.enabled')}
+          name={t('setting.option.click_page_turn_enabled')}
+          value={store.option.clickPageTurn.enabled}
+          onChange={createStateSetFn('clickPageTurn.enabled')}
         />
         <SettingsItemSwitch
-          name="上下翻页"
-          value={store.option.clickPage.vertical}
-          onChange={createStateSetFn('clickPage.vertical')}
+          name={t('setting.option.click_page_turn_vertical')}
+          value={store.option.clickPageTurn.vertical}
+          onChange={createStateSetFn('clickPageTurn.vertical')}
         />
         <SettingsItemSwitch
-          name="显示点击区域"
+          name={t('setting.option.show_touch_area')}
           value={store.showTouchArea}
           onChange={() => {
             setState((state) => {
@@ -102,42 +106,42 @@ export const defaultSettingList: SettingList = [
             });
           }}
         />
-        <SettingsShowItem when={store.option.clickPage.enabled}>
+        <SettingsShowItem when={store.option.clickPageTurn.enabled}>
           <SettingsItemSwitch
-            name="左右反转点击区域"
-            value={store.option.clickPage.overturn}
-            onChange={createStateSetFn('clickPage.overturn')}
+            name={t('setting.option.click_page_turn_lr_reverse')}
+            value={store.option.clickPageTurn.reverse}
+            onChange={createStateSetFn('clickPageTurn.reverse')}
           />
         </SettingsShowItem>
       </>
     ),
   ],
   [
-    '显示',
+    t('setting.option.paragraph_display'),
     () => (
       <>
         <SettingsItemSwitch
-          name="启用夜间模式"
+          name={t('setting.option.dark_mode')}
           value={store.option.darkMode}
           onChange={createStateSetFn('darkMode')}
         />
 
         <SettingsItemSwitch
-          name="禁止放大图片"
+          name={t('setting.option.disable_zoom_in')}
           value={store.option.disableZoom}
           onChange={createStateSetFn('disableZoom')}
         />
       </>
     ),
   ],
-  ['快捷键', SettingHotKeys, true],
-  ['翻译', SettingTranslation, true],
+  [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true],
+  [t('setting.option.paragraph_translation'), SettingTranslation, true],
   [
-    '其他',
+    t('setting.option.paragraph_other'),
     () => (
       <>
         <SettingsItemSwitch
-          name="始终加载所有图片"
+          name={t('setting.option.always_load_all_img')}
           value={store.option.alwaysLoadAllImg}
           onChange={(val) => {
             setOption((draftOption) => {
@@ -148,24 +152,24 @@ export const defaultSettingList: SettingList = [
         />
 
         <SettingsItemSwitch
-          name="默认启用首页填充"
+          name={t('setting.option.first_page_fill')}
           value={store.option.firstPageFill}
           onChange={createStateSetFn('firstPageFill')}
         />
 
         <SettingsItemSwitch
-          name="在结束页显示评论"
+          name={t('setting.option.show_comment')}
           value={store.option.showComment}
           onChange={createStateSetFn('showComment')}
         />
 
         <SettingsItemSwitch
-          name="左右翻页键反转"
-          value={store.option.swapTurnPage}
-          onChange={createStateSetFn('swapTurnPage')}
+          name={t('setting.option.reverse_page_turn_key')}
+          value={store.option.reversePageTurnKey}
+          onChange={createStateSetFn('reversePageTurnKey')}
         />
 
-        <SettingsItem name="背景颜色">
+        <SettingsItem name={t('setting.option.background_color')}>
           <input
             type="color"
             style={{ width: '2em', 'margin-right': '.4em' }}
@@ -189,6 +193,16 @@ export const defaultSettingList: SettingList = [
             })}
           />
         </SettingsItem>
+
+        <SettingsItemSelect
+          name={t('setting.language')}
+          options={[
+            ['zh', t('language.zh')],
+            ['en', t('language.en')],
+          ]}
+          value={lang()}
+          onChange={setLang}
+        />
       </>
     ),
     true,
