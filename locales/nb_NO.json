@@ -101,7 +101,7 @@
       "always_load_all_img": "始终加载所有图片",
       "background_color": "背景颜色",
       "click_page_turn_enabled": "启用点击翻页",
-      "click_page_turn_lr_reverse": "左右点击区域交换",
+      "click_page_turn_swap_area": "左右点击区域交换",
       "click_page_turn_vertical": "上下翻页",
       "dark_mode": "启用夜间模式",
       "dir_ltr": "从左到右（美漫）",
@@ -116,12 +116,12 @@
       "paragraph_other": "其他",
       "paragraph_scrollbar": "滚动条",
       "paragraph_translation": "翻译",
-      "reverse_page_turn_key": "左右翻页键交换",
       "scrollbar_auto_hidden": "自动隐藏滚动条",
       "scrollbar_show": "显示滚动条",
       "scrollbar_show_img_status": "显示图片加载状态",
       "show_clickable_area": "显示点击区域",
-      "show_comments": "在结束页显示评论"
+      "show_comments": "在结束页显示评论",
+      "swap_page_turn_key": "左右翻页键交换"
     },
     "translation": {
       "cotrans_tip": "<p>将使用 <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> 提供的接口翻译图片，该服务器由其维护者用爱发电自费维护</p>\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\n<p>所以还请 <b>注意用量</b></p>\n<p>更推荐使用自己本地部署的项目，既不占用服务器资源也不需要排队</p>",

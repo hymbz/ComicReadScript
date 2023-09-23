@@ -108,7 +108,7 @@ export const defaultSettingList: () => SettingList = () => [
         />
         <SettingsShowItem when={store.option.clickPageTurn.enabled}>
           <SettingsItemSwitch
-            name={t('setting.option.click_page_turn_lr_reverse')}
+            name={t('setting.option.click_page_turn_swap_area')}
             value={store.option.clickPageTurn.reverse}
             onChange={createStateSetFn('clickPageTurn.reverse')}
           />
@@ -164,7 +164,7 @@ export const defaultSettingList: () => SettingList = () => [
         />
 
         <SettingsItemSwitch
-          name={t('setting.option.reverse_page_turn_key')}
+          name={t('setting.option.swap_page_turn_key')}
           value={store.option.reversePageTurnKey}
           onChange={createStateSetFn('reversePageTurnKey')}
         />

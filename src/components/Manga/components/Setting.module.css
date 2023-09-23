@@ -14,7 +14,6 @@
 
   overflow: auto;
 
-  width: 15em;
   height: fit-content;
   max-height: 95vh;
   margin: auto;
@@ -44,6 +43,7 @@
   transition: grid-template-rows 200ms ease-out;
 
   & .SettingBlockBody {
+    z-index: 0;
     overflow: hidden;
 
     & > div + & > div {
@@ -86,8 +86,6 @@
 }
 
 .SettingsItemName {
-  max-width: 12em;
-
   font-size: 0.9em;
   text-align: start;
   overflow-wrap: anywhere;

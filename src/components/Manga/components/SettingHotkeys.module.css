@@ -85,6 +85,11 @@
   padding: 0 0.5em;
 
   & > p {
+    line-height: 1em;
+    text-align: start;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+
     background-color: var(--page_bg);
   }
 

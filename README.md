@@ -182,13 +182,17 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 nhentai 的屏蔽机制是在被屏蔽漫画封面加上一层半透明遮罩，所以对于那些屏蔽范围比较大的人来说，在首页或搜索结果里连续翻上几页都是满屏的被屏蔽漫画完全是家常便饭。开启此功能后，被屏蔽漫画将被彻底屏蔽，不会再出现在首页或搜索结果里了。
 
+> 开启此功能后可能出现一整页的漫画都被屏蔽的情况，为此有了自动翻页功能
+
 ### 自动翻页
 
 当网页滚动至底部时将自动在底部加载下一页的内容，加载时底部会有加载条表示正在加载，当加载条停止时表示已到最后页。
-如果同时开启了「彻底屏蔽漫画」功能，将自动跳过没有结果的页面。
+
+> 如果同时开启了「彻底屏蔽漫画」功能，将自动跳过没有结果的页面。
 
 ## i18n
 
 为了方便中文圈外的用户使用，脚本借助 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 实现了多语言的翻译。但受限于本人低下的英文水平和 ChatGPT 的翻译水平，无法保证英文翻译的质量，希望能有好心人通过 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 帮忙改进翻译质量。~~出于同样的原因，这篇介绍没有翻译。~~
 
-[![翻译状态](https://hosted.weblate.org/widget/comic_read_script/main/287x66-grey.png)](https://hosted.weblate.org/engage/comic_read_script/)
+<a href="https://hosted.weblate.org/engage/comic_read_script/" align="left"><img src="https://hosted.weblate.org/widget/comic_read_script/main/287x66-grey.png" alt="翻译状态" /></a>
+<a href="https://hosted.weblate.org/engage/comic_read_script/" align="right"><img src="https://hosted.weblate.org/widget/comic_read_script/main/multi-auto.svg" alt="翻译状态" /></a>

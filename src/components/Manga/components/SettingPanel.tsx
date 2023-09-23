@@ -1,11 +1,14 @@
 import type { Component } from 'solid-js';
 import { For, createMemo, createSignal } from 'solid-js';
 
+import { lang } from 'helper/i18n';
 import { defaultSettingList } from '../defaultSettingList';
 import { store } from '../hooks/useStore';
 import { stopPropagation } from '../helper';
 
 import classes from '../index.module.css';
+
+const LanguageWidthMap = { zh: '15em', en: '20em' };
 
 /** 菜单面板 */
 export const SettingPanel: Component = () => {
@@ -13,9 +16,12 @@ export const SettingPanel: Component = () => {
     store.editSettingList(defaultSettingList()),
   );
 
+  const width = createMemo(() => LanguageWidthMap[lang()] ?? '15em');
+
   return (
     <div
       class={`${classes.SettingPanel} ${classes.beautifyScrollbar}`}
+      style={{ width: width() }}
       onScroll={stopPropagation}
       onWheel={stopPropagation}
     >

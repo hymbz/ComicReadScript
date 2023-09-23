@@ -1,3 +1,5 @@
+import { lang } from 'helper/i18n';
+
 export interface Option {
   dir: 'ltr' | 'rtl';
   /** 滚动条 */
@@ -58,6 +60,9 @@ export interface Option {
   };
 }
 
+const LanguageMap = { zh: 'CHS', en: 'ENG' };
+const targetLanguage = LanguageMap[lang()] ?? 'CHS';
+
 export const defaultOption: Readonly<Option> = {
   dir: 'rtl',
   scrollbar: {
@@ -90,7 +95,7 @@ export const defaultOption: Readonly<Option> = {
       detector: 'default',
       translator: 'gpt3.5',
       direction: 'auto',
-      targetLanguage: 'CHS',
+      targetLanguage,
     },
   },
 };
