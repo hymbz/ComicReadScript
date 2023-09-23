@@ -9,6 +9,8 @@ import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
 import { SettingHotkeys } from './components/SettingHotkeys';
 import { SettingTranslation } from './components/SettingTranslation';
+import { SettingsShowItem } from './components/SettingsShowItem';
+import { SettingsItemSelect } from './components/SettingsItemSelect';
 import {
   createStateSetFn,
   setOption,
@@ -17,10 +19,9 @@ import {
 } from './hooks/useStore/slice';
 import { setState, store } from './hooks/useStore';
 import { needDarkMode } from '../../helper';
+import { clamp } from './helper';
 
 import classes from './index.module.css';
-import { SettingsShowItem } from './components/SettingsShowItem';
-import { SettingsItemSelect } from './components/SettingsItemSelect';
 
 export type SettingList = (
   | [string, Component]
@@ -168,6 +169,28 @@ export const defaultSettingList: () => SettingList = () => [
           value={store.option.reversePageTurnKey}
           onChange={createStateSetFn('reversePageTurnKey')}
         />
+
+        <SettingsItem name={t('setting.option.preload_page_num')}>
+          <div
+            contenteditable
+            data-only-number
+            style={{ 'margin-right': '.7em' }}
+            on:input={(e) =>
+              e.currentTarget.textContent!.length > 5 && e.currentTarget.blur()
+            }
+            onBlur={(e) => {
+              const number = +e.currentTarget.textContent!;
+              if (!Number.isNaN(number))
+                setOption((draftOption) => {
+                  draftOption.preloadPageNum = clamp(0, number, 99999);
+                });
+              // eslint-disable-next-line no-param-reassign
+              e.currentTarget.textContent = `${store.option.preloadPageNum}`;
+            }}
+          >
+            {store.option.preloadPageNum ?? 0}
+          </div>
+        </SettingsItem>
 
         <SettingsItem name={t('setting.option.background_color')}>
           <input

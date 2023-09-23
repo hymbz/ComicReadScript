@@ -40,6 +40,8 @@ export interface Option {
   scrollModeImgScale: number;
   /** 在结束页显示评论 */
   showComment: boolean;
+  /** 预加载页数 */
+  preloadPageNum: number;
 
   /** 翻译 */
   translation: {
@@ -85,6 +87,7 @@ export const defaultOption: Readonly<Option> = {
   alwaysLoadAllImg: false,
   scrollModeImgScale: 1,
   showComment: true,
+  preloadPageNum: 20,
 
   translation: {
     server: 'disable',

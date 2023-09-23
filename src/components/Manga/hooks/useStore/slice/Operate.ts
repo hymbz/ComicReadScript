@@ -52,6 +52,9 @@ const handleReversePageTurnKey = (nextPage: boolean) => {
   return next ? 'next' : 'prev';
 };
 
+/** 判断按键代码是否可以输入字母 */
+const isAlphabetKey = /^(Shift \+ )?[a-zA-Z]$/;
+
 export const handleKeyDown = (e: KeyboardEvent) => {
   if (
     (e.target as HTMLElement).tagName === 'INPUT' ||
@@ -60,6 +63,16 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     return;
 
   const code = getKeyboardCode(e);
+
+  // 处理标注了 data-only-number 的元素
+  if ((e.target as HTMLElement).getAttribute('data-only-number') !== null) {
+    // 拦截能输入数字外的按键
+    if (isAlphabetKey.test(code)) {
+      e.stopPropagation();
+      e.preventDefault();
+    } else if (code.includes('Enter')) (e.target as HTMLElement).blur();
+    return;
+  }
 
   // 卷轴模式下跳过用于移动的按键
   if (store.option.scrollMode && !store.endPageType) {

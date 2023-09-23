@@ -10,5 +10,5 @@ export const playAnimation = (e?: HTMLElement) =>
     animation.play();
   });
 
-export const clamp = (max: number, val: number, min: number) =>
+export const clamp = (min: number, val: number, max: number) =>
   Math.max(Math.min(max, val), min);
