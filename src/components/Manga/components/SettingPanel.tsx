@@ -10,7 +10,7 @@ import classes from '../index.module.css';
 /** 菜单面板 */
 export const SettingPanel: Component = () => {
   const settingList = createMemo(() =>
-    store.editSettingList(defaultSettingList),
+    store.editSettingList(defaultSettingList()),
   );
 
   return (
@@ -31,7 +31,7 @@ export const SettingPanel: Component = () => {
                   on:click={() => setShwo((prev) => !prev)}
                 >
                   {name}
-                  {show() ? null : ' ...'}
+                  {show() ? null : ' …'}
                 </div>
                 <div class={classes.SettingBlockBody}>
                   <SettingItem />

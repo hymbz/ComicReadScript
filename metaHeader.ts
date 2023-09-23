@@ -2,6 +2,8 @@ import fs from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import pkg from './package.json' assert { type: 'json' };
+import zh from './locales/zh.json' assert { type: 'json' };
+import en from './locales/en.json' assert { type: 'json' };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -74,7 +76,8 @@ export const getMetaData = (isDevMode: boolean) => {
     name: pkg.name,
     namespace: pkg.name,
     version: pkg.version,
-    description: `${pkg.description}${getSupportSiteList().join('、')}`,
+    description: `${zh.description}${getSupportSiteList().join('、')}`,
+    'description:en': en.description,
     author: pkg.author,
     license: pkg.license,
     noframes: true,

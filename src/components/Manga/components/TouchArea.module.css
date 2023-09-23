@@ -35,7 +35,8 @@
   outline: none;
 
   & > h6 {
-    width: 1em;
+    writing-mode: vertical-lr;
+    text-orientation: upright;
   }
 }
 

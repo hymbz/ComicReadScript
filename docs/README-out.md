@@ -5,11 +5,12 @@
   <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread"><img src="https://img.shields.io/greasyfork/dt/374903"></a>
   <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread/feedback"><img src="https://img.shields.io/greasyfork/rating-count/374903"></a>
   <a href="https://github.com/hymbz/ComicReadScript/issues"><img src="https://img.shields.io/github/issues/hymbz/ComicReadScript"></a>
+  <a href="https://hosted.weblate.org/engage/comic_read_script/-/en/"><img src="https://hosted.weblate.org/widget/comic_read_script/main/en/svg-badge.svg" alt="Translation status" /></a>
 </p>
 
 ## 简介
 
-这是一个因为目前大部分漫画站都不支持双页显示，所以每次遇到 **漫画中的跨页大图被分割成两页** 就很不爽的人为了有更好的漫画阅读体验而写的油猴脚本，为主流漫画站增加了**双页阅读模式**和优化体验的增强功能。
+这是一个因为目前大部分漫画站都不支持双页显示，所以每次遇到 **漫画中的跨页大图被分割成两页** 就很不爽的人为了有更好的漫画阅读体验而写的油猴脚本，为主流漫画站增加了**双页阅读模式**和各种优化体验的增强功能。
 
 脚本会在网页右下角弹出用于 **进入阅读模式** 的悬浮按钮，其上的快捷按钮用于切换站点增强功能的开启与否，默认会开启**自动进入阅读模式**的功能，也可在这里关闭。脚本没有全局设置，所有修改都只会在当前站点生效保存。~~反正平时也就只上那几个站点~~
 
@@ -32,6 +33,8 @@
 | 切换页面填充 | `/` `m` `z` `鼠标中键` |
 | 退出阅读模式 | `Esc` |
 | 进入阅读模式 | `v` |
+
+> 可在设置中修改
 
 ## 页面填充
 
@@ -84,6 +87,8 @@
 Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](https://greasyfork.org/zh-CN/scripts/437569)」，支持 Pixiv、Twitter、Misskey、Calckey，欢迎有相关需求的人安装。
 
 ![翻译功能示例](https://cdn.jsdelivr.net/gh/hymbz/ComicReadScript/docs/images/翻译功能示例.webp)
+
+> 如果需要翻译本地漫画，可以使用「[ComicRead PWA](https://comic-read.pages.dev/)」
 
 ## 支持网站
 
@@ -181,3 +186,9 @@ nhentai 的屏蔽机制是在被屏蔽漫画封面加上一层半透明遮罩，
 
 当网页滚动至底部时将自动在底部加载下一页的内容，加载时底部会有加载条表示正在加载，当加载条停止时表示已到最后页。
 如果同时开启了「彻底屏蔽漫画」功能，将自动跳过没有结果的页面。
+
+## i18n
+
+为了方便中文圈外的用户使用，脚本借助 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 实现了多语言的翻译。但受限于本人低下的英文水平和 ChatGPT 的翻译水平，无法保证英文翻译的质量，希望能有好心人通过 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 帮忙改进翻译质量。~~出于同样的原因，这篇介绍没有翻译。~~
+
+[![翻译状态](https://hosted.weblate.org/widget/comic_read_script/main/287x66-grey.png)](https://hosted.weblate.org/engage/comic_read_script/)

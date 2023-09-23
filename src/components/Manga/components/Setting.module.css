@@ -86,7 +86,12 @@
 }
 
 .SettingsItemName {
+  max-width: 12em;
+
   font-size: 0.9em;
+  text-align: start;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 /* 开关式设置项 */

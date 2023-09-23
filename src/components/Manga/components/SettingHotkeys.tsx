@@ -77,7 +77,7 @@ export const SettingHotkeys: Component = () => (
             <MdAdd />
           </div>
           <div
-            title={t('setting.hotkeys.recover')}
+            title={t('setting.hotkeys.restore')}
             on:click={() => {
               const newKeys = defaultHotkeys[name] ?? [];
               newKeys.forEach(delHotkeys);

@@ -25,7 +25,7 @@ declare const selected_link: HTMLElement;
       /** 关联 nhentai */
       associate_nhentai: true,
       /** 快捷键翻页 */
-      shortcut_page_turn: true,
+      hotkeys_page_turn: true,
       autoShow: false,
     },
   );
@@ -42,7 +42,7 @@ declare const selected_link: HTMLElement;
       }),
     );
 
-    if (options.shortcut_page_turn) {
+    if (options.hotkeys_page_turn) {
       linstenKeyup((e) => {
         switch (e.key) {
           case 'ArrowRight':
@@ -93,13 +93,13 @@ declare const selected_link: HTMLElement;
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async (url: string): Promise<string> => {
     const res = await request(url, {
-      errorText: t('site.ehentai.fetch_img_page_source_fail'),
+      errorText: t('site.ehentai.fetch_img_page_source_failed'),
     });
 
     try {
       return res.responseText.split('id="img" src="')[1].split('"')[0];
     } catch (error) {
-      throw new Error(t('site.ehentai.fetch_img_url_fail'));
+      throw new Error(t('site.ehentai.fetch_img_url_failed'));
     }
   };
 
@@ -111,7 +111,7 @@ declare const selected_link: HTMLElement;
   const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
     const res = await request(
       `${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
-      { errorText: t('site.ehentai.fetch_img_page_url_fail') },
+      { errorText: t('site.ehentai.fetch_img_page_url_failed') },
     );
 
     // 从详情页获取图片页的地址
@@ -125,7 +125,7 @@ declare const selected_link: HTMLElement;
         )
       )
         throw new Error(t('site.ehentai.ip_banned'));
-      throw new Error(t('site.ehentai.fetch_img_page_url_fail'));
+      throw new Error(t('site.ehentai.fetch_img_page_url_failed'));
     }
 
     return imgPageList;
@@ -143,7 +143,7 @@ declare const selected_link: HTMLElement;
     )?.[0];
     if (numText) return +numText;
 
-    toast.error(t('site.ehentai.html_changed_load_fail'));
+    toast.error(t('site.ehentai.html_changed_load_failed'));
     return 0;
   };
   const totalImgNum = await getImgNum();
@@ -187,7 +187,7 @@ declare const selected_link: HTMLElement;
     loadImgList(ehImgList.length ? ehImgList : undefined, true),
   );
 
-  if (options.shortcut_page_turn) {
+  if (options.hotkeys_page_turn) {
     linstenKeyup((e) => {
       switch (e.key) {
         case 'ArrowRight':
@@ -207,7 +207,7 @@ declare const selected_link: HTMLElement;
     const titleDom = document.getElementById('gn');
     const taglistDom = querySelector('#taglist tbody');
     if (!titleDom || !taglistDom) {
-      toast.error(t('site.ehentai.html_changed_nhentai_fail'));
+      toast.error(t('site.ehentai.html_changed_nhentai_failed'));
       return;
     }
 
@@ -225,7 +225,7 @@ declare const selected_link: HTMLElement;
       newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
-        ${t('site.ehentai.nhentai_fail', {
+        ${t('site.ehentai.nhentai_failed', {
           nhentai: `<a href='https://nhentai.net/' target="_blank" ><u>nhentai</u></a>`,
         })}
       </td>`;

@@ -47,7 +47,7 @@ export const useSpeedDial = <T extends Record<string, any>>(
           return () => (
             <DefaultButton
               optionName="autoShow"
-              showName={t('other.auto_use_read_mode')}
+              showName={t('other.auto_enter_read_mode')}
             >
               {options.autoShow ? <MdAutoFlashOn /> : <MdAutoFlashOff />}
             </DefaultButton>

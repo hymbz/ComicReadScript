@@ -1,224 +1,225 @@
 {
-  "pwa": {
-    "tip_md": "# ComicRead PWA\nRead **local** comics using [ComicRead](https://github.com/hymbz/ComicReadScript) reading mode.\n---\n### Drag and drop image files, folders, or compressed files directly to start reading",
-    "button": {
-      "select_dir": "Select folder",
-      "no_more_prompt": "Do not prompt again",
-      "resume_read": "Restore reading",
-      "select_files": "Select File",
-      "install": "Install"
-    },
-    "alert": {
-      "img_data_error": "Image data error",
-      "unzip_password_error": "Decompression password error",
-      "img_not_found_dir": "No image files or compressed files containing image files in the folder",
-      "img_not_found_files": "Please select an image file or a compressed file containing image files",
-      "img_not_found": "Image not found",
-      "userscript_not_installed": "ComicRead userscript not installed",
-      "repeat_load": "Loading other files…",
-      "unzip_error": "Decompression error"
-    },
-    "install_md": "### Tired of opening this webpage every time?\nIf you wish to:\n1. Have an independent window, as if using local software\n1. Add to the local compressed file opening method for easy direct opening\n1. Use offline\n### Welcome to install this page as a PWA app on your computer😃👍",
-    "message": {
-      "input_password": "Please enter your password",
-      "unzipping": "Unzipping"
+  "alert": {
+    "comic_load_error": "Comic loading error",
+    "download_failed": "Download failed",
+    "fetch_comic_img_failed": "Failed to fetch comic images",
+    "img_load_failed": "Image loading failed",
+    "repeat_load": "Loading image, please wait",
+    "server_connect_failed": "Unable to connect to the server"
+  },
+  "button": {
+    "close_current_page_translation": "Close translation of the current page",
+    "download": "Download",
+    "download_completed": "Download completed",
+    "downloading": "Downloading",
+    "exit": "Exit",
+    "packaging": "Packaging",
+    "page_fill": "Page fill",
+    "page_mode_double": "Double page mode",
+    "page_mode_single": "Single page mode",
+    "scroll_mode": "Scroll mode",
+    "setting": "Setting",
+    "translate_current_page": "Translate current page",
+    "zoom_in": "Zoom in"
+  },
+  "description": "Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.",
+  "end_page": {
+    "next_button": "Next chapter",
+    "prev_button": "Prev chapter",
+    "tip": {
+      "end_jump": "Reached the last page, scrolling down will jump to the next chapter",
+      "exit": "Reached the last page, scrolling down will exit",
+      "start_jump": "Reached the first page, scrolling up will jump to the previous chapter"
     }
+  },
+  "hotkeys": {
+    "enter_read_mode": "Enter reading mode",
+    "exit": "Exit",
+    "jump_to_end": "Jump to the last page",
+    "jump_to_home": "Jump to the first page",
+    "switch_dir": "Switch reading direction",
+    "switch_page_fill": "Switch page fill",
+    "switch_scroll_mode": "Switch scroll mode",
+    "switch_single_double_page_mode": "Switch single/double page mode",
+    "turn_page_down": "Turn the page to the down",
+    "turn_page_left": "Turn the page to the left",
+    "turn_page_right": "Turn the page to the right",
+    "turn_page_up": "Turn the page to the up"
+  },
+  "img_status": {
+    "error": "Load Error",
+    "loading": "Loading",
+    "wait": "Waiting for load"
   },
   "language": {
     "en": "English",
     "zh": "Chinese"
   },
-  "end_page": {
-    "prev_button": "Prev",
-    "next_button": "Next",
-    "tip": {
-      "end_jump": "Reached the last page, scrolling down will jump to the next chapter",
-      "start_jump": "Reached the first page, scrolling up will jump to the previous chapter",
-      "exit": "Reached the last page, scrolling down will exit"
-    }
-  },
-  "translation": {
-    "translator": {
-      "original": "Original",
-      "deepl": "DeepL",
-      "gpt3.5": "GPT-3.5",
-      "offline": "offline translator",
-      "youdao": "youdao",
-      "baidu": "baidu",
-      "google": "Google",
-      "none": "Remove texts"
-    },
-    "status": {
-      "saved": "Saved",
-      "rendering": "Rendering",
-      "error-translating": "Did not get any text back from the text translation service",
-      "pending-pos": "Pending",
-      "upscaling": "Upscaling",
-      "inpainting": "Inpainting",
-      "detection": "Detecting text",
-      "finished": "Finishing",
-      "error": "Error during translation",
-      "error-lang": "The target language is not supported by the chosen translator",
-      "default": "Unknown status",
-      "mask-generation": "Generating mask",
-      "error-with-id": "Error during translation",
-      "translating": "Translating",
-      "pending": "Pending",
-      "ocr": "Scanning text",
-      "downscaling": "Downscaling"
-    },
-    "tip": {
-      "download_img_failed": "Failed to download image",
-      "check_img_status_failed": "Failed to check image status",
-      "translation_completed": "Translation completed",
-      "get_translator_list_error": "Error occurred while getting the list of available translation services",
-      "wait_translation": "Waiting for translation",
-      "id_not_returned": "No id returned",
-      "pending": "Pending, {{pos}} in queue",
-      "img_not_fully_loaded": "Image has not finished loading",
-      "img_downloading": "Downloading images",
-      "upload_error": "Image upload error",
-      "error": "Translation error",
-      "upload_return_error": "Error during server translation"
-    }
-  },
-  "button": {
-    "download": "Download",
-    "page_fill": "Page fill",
-    "exit": "Exit",
-    "download_failed": "Download failed",
-    "zoom_in": "Zoom in",
-    "page_mode_single": "Single page mode",
-    "page_mode_double": "Double page mode",
-    "start_packaging": "Start packaging",
-    "download_completed": "Download completed",
-    "close_current_page_translation": "Close translation of the current page",
-    "scroll_mode": "Scroll mode",
-    "downloading": "Downloading",
-    "setting": "Setting",
-    "translate_current_page": "Translate current page"
-  },
-  "hotkeys": {
-    "exit": "Exit",
-    "switch_page_fill": "Switch page fill",
-    "switch_scroll_mode": "Switch scroll mode",
-    "switch_dir": "Switch reading direction",
-    "turn_page_down": "Scroll down",
-    "switch_single_double_page_mode": "Switch single/double page mode",
-    "turn_page_left": "Scroll left",
-    "jump_to_end": "Jump to the last page",
-    "jump_to_home": "Jump to the first page",
-    "use_read_mode": "Enter reading mode",
-    "turn_page_right": "Scroll right",
-    "turn_page_up": "Scroll up"
-  },
-  "setting": {
-    "translation": {
-      "options": {
-        "forceRetry": "Force retry (ignore cache)",
-        "direction": "Render text orientation",
-        "direction_auto": "Follow source",
-        "translator": "Translator",
-        "detection_resolution": "Text detection resolution",
-        "direction_horizontal": "Horizontal only",
-        "text_detector": "Text detector",
-        "localUrl": "customize server URL",
-        "direction_vertical": "Vertical only",
-        "target_language": "Target language"
-      },
-      "cotrans_tip": "<p>Using the interface provided by <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\n<p>So please <b>mind the frequency of use</b>.</p>\n<p>It is highly recommended to use your own locally deployed project, as it does not consume server resources and does not require queuing.</p>",
-      "server": "Translation server",
-      "translate_all_img_switch": "Translate all images",
-      "server_selfhosted": "Selfhosted"
-    },
-    "option": {
-      "click_page_turn_lr_reverse": "Reverse left and right click areas",
-      "paragraph_scrollbar": "Scrollbar",
-      "always_load_all_img": "Always load all images",
-      "disable_zoom_in": "Disable automatic image scaling",
-      "background_color": "Background Color",
-      "scrollbar_auto_hidden": "Auto hide the scrollbar",
-      "paragraph_translation": "Translation",
-      "paragraph_display": "Display",
-      "paragraph_operation": "Operation",
-      "first_page_fill": "Enable first page fill by default",
-      "click_page_turn_vertical": "Vertically arranged clickable areas",
-      "paragraph_other": "Other",
-      "dir_rtl": "RTL(Japanese manga)",
-      "scrollbar_show": "Show scrollbar",
-      "dark_mode": "Enable dark mode",
-      "jump_to_next": "Turn to the next/previous chapter",
-      "dir_ltr": "LTR(American comics)",
-      "paragraph_dir": "Reading direction",
-      "reverse_page_turn_key": "Swap left and right page-turning keys",
-      "click_page_turn_enabled": "Enable click to turn page",
-      "show_touch_area": "Show clickable areas",
-      "show_comment": "Show comments on the end page",
-      "paragraph_hotkeys": "Hotkeys",
-      "scrollbar_show_img_status": "Show image loading status"
-    },
-    "hotkeys": {
-      "recover": "Restore default hotkeys",
-      "add": "Add new hotkeys"
-    },
-    "language": "Language"
-  },
-  "img_status": {
-    "error": "Load Error",
-    "wait": "Waiting for load",
-    "loading": "Loading"
-  },
-  "site": {
-    "remember_current_site": "Remember the current site",
-    "ehentai": {
-      "ip_banned": "IP address is banned",
-      "html_changed_load_fail": "The web page structure has changed, unable to load comics",
-      "nhentai_error": "Error in nhentai matching",
-      "nhentai_fail": "Matching failed, please refresh after confirming login to {{nhentai}}",
-      "fetch_img_page_url_fail": "failed to get the image page address from the detail page",
-      "html_changed_nhentai_fail": "The web page structure has changed, the function to associate nhentai comics is not working properly",
-      "fetch_img_page_source_fail": "failed to get the source code of the image page",
-      "fetch_img_url_fail": "failed to get the image address from the image page"
-    },
-    "settings_tip": "Settings",
-    "nhentai": {
-      "tag_blacklist_fetch_fail": "Failed to fetch tag blacklist",
-      "fetch_next_page_fail": "Failed to get next page of comic data"
-    },
-    "add_feature": {
-      "open_link_new_page": "open links in a new page",
-      "associate_nhentai": "Associate nhentai",
-      "shortcut_page_turn": "page turning with hotkeys",
-      "auto_page_turn": "Auto page turning",
-      "block_totally": "Totally block comics"
-    },
-    "simple": {
-      "simple_read_mode": "Enter simple reading mode",
-      "auto_read_mode_message": "\"Auto enter reading mode\" is enabled by default"
-    },
-    "show_settings_menu": "Show settings menu"
-  },
   "other": {
+    "auto_enter_read_mode": "Auto enter reading mode",
+    "disable": "Disable",
+    "enter_comic_read_mode": "Enter comic reading mode",
+    "fab_hidden": "Hide floating button",
+    "fab_show": "Show floating button",
+    "fill_page": "Fill Page",
     "img_loading": "Image loading",
     "loading_img": "Loading image",
-    "use_comic_read_mode": "Enter comic reading mode",
-    "auto_use_read_mode": "Auto enter reading mode",
-    "fab_show": "Show floating button",
-    "fab_hidden": "Hide floating button",
-    "disable": "Disable",
-    "fill_page": "Fill Page",
     "read_mode": "Reading mode"
+  },
+  "pwa": {
+    "alert": {
+      "img_data_error": "Image data error",
+      "img_not_found": "Image not found",
+      "img_not_found_files": "Please select an image file or a compressed file containing image files",
+      "img_not_found_folder": "No image files or compressed files containing image files in the folder",
+      "repeat_load": "Loading other files…",
+      "unzip_error": "Decompression error",
+      "unzip_password_error": "Decompression password error",
+      "userscript_not_installed": "ComicRead userscript not installed"
+    },
+    "button": {
+      "install": "Install",
+      "no_more_prompt": "Do not prompt again",
+      "resume_read": "Restore reading",
+      "select_files": "Select File",
+      "select_folder": "Select folder"
+    },
+    "install_md": "### Tired of opening this webpage every time?\nIf you wish to:\n1. Have an independent window, as if using local software\n1. Add to the local compressed file opening method for easy direct opening\n1. Use offline\n### Welcome to install this page as a PWA app on your computer😃👍",
+    "message": {
+      "enter_password": "Please enter your password",
+      "unzipping": "Unzipping"
+    },
+    "tip_md": "# ComicRead PWA\nRead **local** comics using [ComicRead](https://github.com/hymbz/ComicReadScript) reading mode.\n---\n### Drag and drop image files, folders, or compressed files directly to start reading"
+  },
+  "setting": {
+    "hotkeys": {
+      "add": "Add new hotkeys",
+      "restore": "Restore default hotkeys"
+    },
+    "language": "Language",
+    "option": {
+      "always_load_all_img": "Always load all images",
+      "background_color": "Background Color",
+      "click_page_turn_enabled": "Enable click to turn page",
+      "click_page_turn_lr_reverse": "Reverse left and right click areas",
+      "click_page_turn_vertical": "Vertically arranged clickable areas",
+      "dark_mode": "Enable dark mode",
+      "dir_ltr": "LTR (American comics)",
+      "dir_rtl": "RTL (Japanese manga)",
+      "disable_auto_scaling": "Disable automatic image scaling",
+      "first_page_fill": "Enable first page fill by default",
+      "jump_to_next_chapter": "Turn to the next/previous chapter",
+      "paragraph_dir": "Reading direction",
+      "paragraph_display": "Display",
+      "paragraph_hotkeys": "Hotkeys",
+      "paragraph_operation": "Operation",
+      "paragraph_other": "Other",
+      "paragraph_scrollbar": "Scrollbar",
+      "paragraph_translation": "Translation",
+      "reverse_page_turn_key": "Swap left and right page-turning keys",
+      "scrollbar_auto_hidden": "Auto hide the scrollbar",
+      "scrollbar_show": "Show scrollbar",
+      "scrollbar_show_img_status": "Show image loading status",
+      "show_clickable_area": "Show clickable areas",
+      "show_comments": "Show comments on the end page"
+    },
+    "translation": {
+      "cotrans_tip": "<p>Using the interface provided by <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\n<p>So please <b>mind the frequency of use</b>.</p>\n<p>It is highly recommended to use your own locally deployed project, as it does not consume server resources and does not require queuing.</p>",
+      "options": {
+        "detection_resolution": "Text detection resolution",
+        "direction": "Render text orientation",
+        "direction_auto": "Follow source",
+        "direction_horizontal": "Horizontal only",
+        "direction_vertical": "Vertical only",
+        "forceRetry": "Force retry (ignore cache)",
+        "localUrl": "customize server URL",
+        "target_language": "Target language",
+        "text_detector": "Text detector",
+        "translator": "Translator"
+      },
+      "server": "Translation server",
+      "server_selfhosted": "Selfhosted",
+      "translate_all_img": "Translate all images"
+    }
+  },
+  "site": {
+    "add_feature": {
+      "associate_nhentai": "Associate nhentai",
+      "auto_page_turn": "Auto page turning",
+      "block_totally": "Totally block comics",
+      "hotkeys_page_turn": "Page turning with hotkeys",
+      "open_link_new_page": "Open links in a new page"
+    },
+    "ehentai": {
+      "fetch_img_page_source_failed": "Failed to get the source code of the image page",
+      "fetch_img_page_url_failed": "Failed to get the image page address from the detail page",
+      "fetch_img_url_failed": "Failed to get the image address from the image page",
+      "html_changed_load_failed": "The web page structure has changed, unable to load comics",
+      "html_changed_nhentai_failed": "The web page structure has changed, the function to associate nhentai comics is not working properly",
+      "ip_banned": "IP address is banned",
+      "nhentai_error": "Error in nhentai matching",
+      "nhentai_failed": "Matching failed, please refresh after confirming login to {{nhentai}}"
+    },
+    "nhentai": {
+      "fetch_next_page_failed": "Failed to get next page of comic data",
+      "tag_blacklist_fetch_failed": "Failed to fetch tag blacklist"
+    },
+    "remember_current_site": "Remember the current site",
+    "settings_tip": "Settings",
+    "show_settings_menu": "Show settings menu",
+    "simple": {
+      "auto_read_mode_message": "\"Auto enter reading mode\" is enabled by default",
+      "simple_read_mode": "Enter simple reading mode"
+    }
   },
   "touch_area": {
     "menu": "Menu",
-    "prev": "Prev Page",
-    "next": "Next Page"
+    "next": "Next Page",
+    "prev": "Prev Page"
   },
-  "alert": {
-    "comic_load_error": "Comic loading error",
-    "repeat_load": "Loading image, please wait",
-    "server_connection_failed": "Unable to connect to the server",
-    "img_load_failed": "Image loading failed",
-    "get_comic_img_failed": "Failed to retrieve comic images"
+  "translation": {
+    "status": {
+      "default": "Unknown status",
+      "detection": "Detecting text",
+      "downscaling": "Downscaling",
+      "error": "Error during translation",
+      "error-lang": "The target language is not supported by the chosen translator",
+      "error-translating": "Did not get any text back from the text translation service",
+      "error-with-id": "Error during translation",
+      "finished": "Finishing",
+      "inpainting": "Inpainting",
+      "mask-generation": "Generating mask",
+      "ocr": "Scanning text",
+      "pending": "Pending",
+      "pending-pos": "Pending",
+      "rendering": "Rendering",
+      "saved": "Saved",
+      "translating": "Translating",
+      "upscaling": "Upscaling"
+    },
+    "tip": {
+      "check_img_status_failed": "Failed to check image status",
+      "download_img_failed": "Failed to download image",
+      "error": "Translation error",
+      "get_translator_list_error": "Error occurred while getting the list of available translation services",
+      "id_not_returned": "No id returned",
+      "img_downloading": "Downloading images",
+      "img_not_fully_loaded": "Image has not finished loading",
+      "pending": "Pending, {{pos}} in queue",
+      "translation_completed": "Translation completed",
+      "upload_error": "Image upload error",
+      "upload_return_error": "Error during server translation",
+      "wait_translation": "Waiting for translation"
+    },
+    "translator": {
+      "baidu": "baidu",
+      "deepl": "DeepL",
+      "google": "Google",
+      "gpt3.5": "GPT-3.5",
+      "none": "Remove texts",
+      "offline": "offline translator",
+      "original": "Original",
+      "youdao": "youdao"
+    }
   }
 }

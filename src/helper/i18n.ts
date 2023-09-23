@@ -1,10 +1,9 @@
 import { createMemo, createRoot, createSignal } from 'solid-js';
-import type { ValueOf } from 'type-fest';
 import zh from '../../locales/zh.json' assert { type: 'json' };
 import en from '../../locales/en.json' assert { type: 'json' };
 
 const langList = ['zh', 'en'] as const;
-type LangList = ValueOf<typeof langList>;
+type LangList = (typeof langList)[number];
 
 let initLang: LangList | undefined;
 

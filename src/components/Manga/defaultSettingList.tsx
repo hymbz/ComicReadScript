@@ -28,7 +28,7 @@ export type SettingList = (
 )[];
 
 /** 默认菜单项 */
-export const defaultSettingList: SettingList = [
+export const defaultSettingList: () => SettingList = () => [
   [
     t('setting.option.paragraph_dir'),
     () => (
@@ -82,7 +82,7 @@ export const defaultSettingList: SettingList = [
     () => (
       <>
         <SettingsItemSwitch
-          name={t('setting.option.jump_to_next')}
+          name={t('setting.option.jump_to_next_chapter')}
           value={store.option.jumpToNext}
           onChange={createStateSetFn('jumpToNext')}
         />
@@ -98,7 +98,7 @@ export const defaultSettingList: SettingList = [
           onChange={createStateSetFn('clickPageTurn.vertical')}
         />
         <SettingsItemSwitch
-          name={t('setting.option.show_touch_area')}
+          name={t('setting.option.show_clickable_area')}
           value={store.showTouchArea}
           onChange={() => {
             setState((state) => {
@@ -127,7 +127,7 @@ export const defaultSettingList: SettingList = [
         />
 
         <SettingsItemSwitch
-          name={t('setting.option.disable_zoom_in')}
+          name={t('setting.option.disable_auto_scaling')}
           value={store.option.disableZoom}
           onChange={createStateSetFn('disableZoom')}
         />
@@ -158,7 +158,7 @@ export const defaultSettingList: SettingList = [
         />
 
         <SettingsItemSwitch
-          name={t('setting.option.show_comment')}
+          name={t('setting.option.show_comments')}
           value={store.option.showComment}
           onChange={createStateSetFn('showComment')}
         />

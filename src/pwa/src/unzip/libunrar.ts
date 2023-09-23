@@ -101,7 +101,7 @@ export const libunrar = async (
           throw new Error(error as string);
         }
         // eslint-disable-next-line no-alert
-        const newPassword = prompt(t('pwa.message.input_password'));
+        const newPassword = prompt(t('pwa.message.enter_password'));
         if (!newPassword) return [];
         return libunrar(zipData, newPassword);
       }

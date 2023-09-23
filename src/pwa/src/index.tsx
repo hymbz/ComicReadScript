@@ -42,7 +42,7 @@ const handleSelectFiles = async () => {
 /** 选择文件夹 */
 const handleSelectDir = async () => {
   const files = (await directoryOpen({ recursive: true })) as File[];
-  loadNewImglist(files, t('pwa.alert.img_not_found_dir'));
+  loadNewImglist(files, t('pwa.alert.img_not_found_folder'));
 };
 
 // 实现从本地文件的打开方式启动时加载文件
@@ -82,7 +82,7 @@ export const Root: Component = () => (
             {t('pwa.button.select_files')}
           </button>
           <button type="button" on:click={handleSelectDir}>
-            {t('pwa.button.select_dir')}
+            {t('pwa.button.select_folder')}
           </button>
           <Show when={store.imgList.length}>
             <button

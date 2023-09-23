@@ -31,7 +31,7 @@ export const getValidTranslators = async () => {
 /** 使用自部署服务器翻译指定图片 */
 export const selfhostedTranslation = async (i: number) => {
   if (!(await getValidTranslators()))
-    throw new Error(t('alert.server_connection_failed'));
+    throw new Error(t('alert.server_connect_failed'));
 
   const img = store.imgList[i];
   setMessage(i, t('translation.tip.img_downloading'));

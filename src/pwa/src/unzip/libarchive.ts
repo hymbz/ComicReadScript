@@ -28,7 +28,7 @@ export const libarchive = async ({
   let password: string | null;
   if (await archive.hasEncryptedData()) {
     // eslint-disable-next-line no-alert
-    password = prompt(t('pwa.message.input_password'));
+    password = prompt(t('pwa.message.enter_password'));
     if (!password) return [];
     await archive.usePassword(password);
   }

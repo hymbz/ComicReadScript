@@ -69,7 +69,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
     const blacklist: number[] = (unsafeWindow?._n_app ?? unsafeWindow?.n)
       ?.options?.blacklisted_tags;
     if (blacklist === undefined)
-      toast.error(t('site.nhentai.tag_blacklist_fetch_fail'));
+      toast.error(t('site.nhentai.tag_blacklist_fetch_failed'));
     // blacklist === null 时是未登录
 
     if (options.block_totally && blacklist?.length)
@@ -115,7 +115,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
           `${apiUrl}page=${pageNum}${
             window.location.pathname.includes('popular') ? '&sort=popular ' : ''
           }`,
-          { errorText: t('site.nhentai.fetch_next_page_fail') },
+          { errorText: t('site.nhentai.fetch_next_page_failed') },
         );
 
         const { result, num_pages } = JSON.parse(res.responseText) as {

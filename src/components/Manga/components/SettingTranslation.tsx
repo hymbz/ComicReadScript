@@ -110,7 +110,7 @@ export const SettingTranslation = () => {
 
         <Show when={store.option.translation.server === 'selfhosted'}>
           <SettingsItemSwitch
-            name={t('setting.translation.translate_all_img_switch')}
+            name={t('setting.translation.translate_all_img')}
             value={isTranslationAll()}
             onChange={() =>
               setImgTranslationEnbale(

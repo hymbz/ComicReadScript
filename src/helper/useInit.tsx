@@ -43,7 +43,7 @@ export const useInit = async <T extends Record<string, any>>(
     if (progress !== 2) {
       setFab({
         progress,
-        tip: `t('other.img_loading') - ${loadNum}/${list.length}`,
+        tip: `${t('other.img_loading')} - ${loadNum}/${list.length}`,
       });
     } else {
       // 图片全部加载完成后恢复 Fab 状态
@@ -165,7 +165,7 @@ export const useInit = async <T extends Record<string, any>>(
           if (!initImgList) setFab({ progress: 0, show: true });
           const newImgList = initImgList ?? (await getImgList());
           if (newImgList.length === 0)
-            throw new Error(t('alert.get_comic_img_failed'));
+            throw new Error(t('alert.fetch_comic_img_failed'));
           setManga((state) => {
             state.imgList = [...newImgList];
             if (show || (needAutoShow.val && options.autoShow)) {
@@ -198,7 +198,7 @@ export const useInit = async <T extends Record<string, any>>(
 
       if (firstRun) {
         GM.registerMenuCommand(
-          t('other.use_comic_read_mode'),
+          t('other.enter_comic_read_mode'),
           fabProps.onClick!,
         );
         updateHideFabMenu();
