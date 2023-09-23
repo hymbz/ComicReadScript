@@ -71,7 +71,7 @@
       "img_not_found": "找不到图片",
       "img_not_found_dir": "文件夹下没有图片文件或含有图片文件的压缩包",
       "img_not_found_files": "请选择图片文件或含有图片文件的压缩包",
-      "repeat_load": "正在加载其他文件中...",
+      "repeat_load": "正在加载其他文件中……",
       "unzip_error": "解压出错",
       "unzip_password_error": "解压密码错误",
       "userscript_not_installed": "未安装 ComicRead 脚本"
@@ -105,7 +105,7 @@
       "dark_mode": "启用夜间模式",
       "dir_ltr": "从左到右（美漫）",
       "dir_rtl": "从右到左（日漫）",
-      "disable_zoom_in": "禁止放大图片",
+      "disable_zoom_in": "禁止图片自动缩放",
       "first_page_fill": "默认启用首页填充",
       "jump_to_next": "翻页至上/下一话",
       "paragraph_dir": "阅读方向",
@@ -115,7 +115,7 @@
       "paragraph_other": "其他",
       "paragraph_scrollbar": "滚动条",
       "paragraph_translation": "翻译",
-      "reverse_page_turn_key": "左右翻页键反转",
+      "reverse_page_turn_key": "左右翻页键交换",
       "scrollbar_auto_hidden": "自动隐藏滚动条",
       "scrollbar_show": "显示滚动条",
       "scrollbar_show_img_status": "显示图片加载状态",
@@ -123,11 +123,11 @@
       "show_touch_area": "显示点击区域"
     },
     "translation": {
-      "cotrans_tip": "<p>将使用 <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> 提供的接口翻译图片，该服务器由维护者用爱发电自费维护</p>\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\n<p>所以还请 <b>注意用量</b></p>\n<p>更推荐使用本地部署的项目，不占用服务器资源也不需要排队</p>",
+      "cotrans_tip": "<p>将使用 <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> 提供的接口翻译图片，该服务器由其维护者用爱发电自费维护</p>\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\n<p>所以还请 <b>注意用量</b></p>\n<p>更推荐使用自己本地部署的项目，既不占用服务器资源也不需要排队</p>",
       "options": {
         "detection_resolution": "文本扫描清晰度",
         "direction": "渲染字体方向",
-        "direction_auto": "跟随原文本",
+        "direction_auto": "原文一致",
         "direction_horizontal": "仅限水平",
         "direction_vertical": "仅限垂直",
         "forceRetry": "忽略缓存强制重试",
@@ -154,7 +154,7 @@
       "fetch_img_page_url_fail": "从详情页获取图片页地址失败",
       "fetch_img_url_fail": "从图片页获取图片地址失败",
       "html_changed_load_fail": "页面结构发生改变，无法加载漫画",
-      "html_changed_nhentai_fail": "页面结构发生改变，匹配 nhentai 漫画功能无法正常生效",
+      "html_changed_nhentai_fail": "页面结构发生改变，关联 nhentai 漫画功能无法正常生效",
       "ip_banned": "IP地址被禁",
       "nhentai_error": "nhentai 匹配出错",
       "nhentai_fail": "匹配失败，请在确认登录 {{nhentai}} 后刷新"
@@ -167,7 +167,7 @@
     "settings_tip": "设置",
     "show_settings_menu": "显示设置菜单",
     "simple": {
-      "auto_read_mode_message": "将在之后默认自动进入阅读模式",
+      "auto_read_mode_message": "已默认开启「自动进入阅读模式」",
       "simple_read_mode": "使用简易阅读模式"
     }
   },
@@ -192,7 +192,7 @@
       "pending": "正在等待",
       "pending-pos": "正在等待",
       "rendering": "正在渲染",
-      "saved": "正在返回缓存结果",
+      "saved": "保存结果",
       "translating": "正在翻译文本",
       "upscaling": "正在放大图片"
     },
@@ -200,14 +200,14 @@
       "check_img_status_failed": "检查图片状态失败",
       "download_img_failed": "下载图片失败",
       "error": "翻译出错",
-      "get_translator_list_error": "获取部署服务的可用翻译时出错",
+      "get_translator_list_error": "获取可用翻译服务列表时出错",
       "id_not_returned": "未返回 id",
       "img_downloading": "正在下载图片",
       "img_not_fully_loaded": "图片未加载完毕",
       "pending": "正在等待，列队还有 {{pos}} 张图片",
       "translation_completed": "翻译完成",
       "upload_error": "图片上传出错",
-      "upload_return_error": "服务器返回错误",
+      "upload_return_error": "服务器翻译出错",
       "wait_translation": "等待翻译"
     },
     "translator": {
