@@ -180,4 +180,18 @@ createRoot(() => {
       updateTipText,
     ),
   );
+
+  // 在关闭 showToolbar 的同时关掉 showScrollbar
+  createEffect(
+    on(
+      () => store.showToolbar,
+      () => {
+        if (store.showScrollbar && !store.showToolbar)
+          setState((state) => {
+            state.showScrollbar = false;
+          });
+      },
+      { defer: true },
+    ),
+  );
 });
