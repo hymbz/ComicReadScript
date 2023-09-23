@@ -1,4 +1,3 @@
-import { For } from 'solid-js';
 import { getKeyboardCode, wait } from '.';
 import { useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
@@ -66,35 +65,12 @@ export const useInit = async <T extends Record<string, any>>(
   const version = await GM.getValue<string>('Version');
   if (!version) await GM.setValue('Version', GM.info.script.version);
   else if (version !== GM.info.script.version && lang() === 'zh') {
-    const latestChange = inject('LatestChange');
     toast(
       () => (
         <>
           {/* eslint-disable-next-line i18n/no-chinese-character, i18next/no-literal-string */}
           <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
-          <div>
-            <For each={latestChange.match(/^### [^[].+?$|^\* .+?$/gm)}>
-              {(mdText) => {
-                switch (mdText[0]) {
-                  case '#':
-                    return <h3>{mdText.replace('### ', '')}</h3>;
-                  case '*':
-                    return (
-                      <ul>
-                        <li>
-                          {mdText
-                            .replace(/^\* /, '')
-                            .replace(/^:\w+?: /, '')
-                            .replace(/(?<=^.*)\(\[\w+\]\(.+?\)\)/, '')}
-                        </li>
-                      </ul>
-                    );
-                  default:
-                    return null;
-                }
-              }}
-            </For>
-          </div>
+          inject@LatestChange
         </>
       ),
       {

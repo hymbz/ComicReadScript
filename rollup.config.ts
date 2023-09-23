@@ -17,6 +17,7 @@ import { watchExternal } from 'rollup-plugin-watch-external';
 
 import type { Plugin, RollupOptions } from 'rollup';
 import { createServer } from 'vite';
+import { parse as parseMd } from 'marked';
 import { solidSvg } from './src/rollup-solid-svg';
 import { getMetaData, updateReadme } from './metaHeader';
 
@@ -27,6 +28,33 @@ const DEV_PORT = 2405;
 const isDevMode = process.env.NODE_ENV === 'development';
 
 const { meta, createMetaHeader } = getMetaData(isDevMode);
+
+const latestChangeHtml = (() => {
+  const md = fs
+    .readFileSync(resolve(__dirname, `docs/LatestChange.md`))
+    .toString();
+
+  const newMd = md
+    .match(/^### [^[].+?$|^\* .+?$/gm)!
+    .map((mdText) => {
+      switch (mdText[0]) {
+        case '#':
+          return mdText
+            .replaceAll('Features', '新增')
+            .replaceAll('Bug Fixes', '修复')
+            .replaceAll('Performance Improvements', '优化');
+        case '*':
+          return mdText
+            .replace(/(?<=^\* ):\w+?: /, '')
+            .replace(/(?<=^.*)\(\[\w+\]\(.+?\)\)/, '');
+        default:
+          return '';
+      }
+    })
+    .join('\n\n');
+
+  return parseMd(newMd);
+})();
 
 export const buildOptions = (
   fileName: string,
@@ -49,6 +77,7 @@ export const buildOptions = (
           DEV_PORT: `${DEV_PORT}`,
           isDevMode: `${isDevMode}`,
           'process.env.NODE_ENV': isDevMode ? `'development'` : `'production'`,
+          'inject@LatestChange': latestChangeHtml,
         },
 
         preventAssignment: true,
@@ -104,11 +133,6 @@ export const buildOptions = (
                     .replaceAll('\\', '\\\\')
                     .replaceAll('`', '\\`')
                     .replaceAll('${', '\\${')}\``;
-
-                case 'LatestChange':
-                  return `\`\n${fs
-                    .readFileSync(resolve(__dirname, `docs/LatestChange.md`))
-                    .toString()}\`;`;
 
                 default:
                   return fs
