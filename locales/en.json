@@ -101,7 +101,7 @@
       "always_load_all_img": "Always load all images",
       "background_color": "Background Color",
       "click_page_turn_enabled": "Enable click to turn page",
-      "click_page_turn_lr_reverse": "Reverse left and right click areas",
+      "click_page_turn_lr_reverse": "Swap LR clickable areas",
       "click_page_turn_vertical": "Vertically arranged clickable areas",
       "dark_mode": "Enable dark mode",
       "dir_ltr": "LTR (American comics)",
@@ -116,7 +116,7 @@
       "paragraph_other": "Other",
       "paragraph_scrollbar": "Scrollbar",
       "paragraph_translation": "Translation",
-      "reverse_page_turn_key": "Swap left and right page-turning keys",
+      "reverse_page_turn_key": "Swap LR page-turning keys",
       "scrollbar_auto_hidden": "Auto hide the scrollbar",
       "scrollbar_show": "Show scrollbar",
       "scrollbar_show_img_status": "Show image loading status",
@@ -126,7 +126,7 @@
     "translation": {
       "cotrans_tip": "<p>Using the interface provided by <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\n<p>So please <b>mind the frequency of use</b>.</p>\n<p>It is highly recommended to use your own locally deployed project, as it does not consume server resources and does not require queuing.</p>",
       "options": {
-        "detection_resolution": "Text detection resolution",
+        "detection_resolution": "Detection resolution",
         "direction": "Render text orientation",
         "direction_auto": "Follow source",
         "direction_horizontal": "Horizontal only",
