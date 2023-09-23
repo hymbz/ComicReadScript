@@ -13,7 +13,7 @@ export interface SiteOptions {
 }
 
 const getHotkeys = async (): Promise<Record<string, string[]>> => ({
-  use_read_mode: ['v'],
+  enter_read_mode: ['v'],
   ...(await GM.getValue<Record<string, string[]>>('Hotkeys', {})),
 });
 

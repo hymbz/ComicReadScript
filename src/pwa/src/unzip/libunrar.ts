@@ -97,8 +97,9 @@ export const libunrar = async (
       case 'Missing password':
       case 'Bad password': {
         if (password) {
-          toast.error(t('pwa.alert.unzip_password_error'));
-          throw new Error(error as string);
+          toast.error(t('pwa.alert.unzip_password_error'), {
+            throw: new Error(error as string),
+          });
         }
         // eslint-disable-next-line no-alert
         const newPassword = prompt(t('pwa.message.enter_password'));

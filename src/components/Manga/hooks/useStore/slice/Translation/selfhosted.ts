@@ -1,5 +1,6 @@
 import { sleep } from 'helper';
 import { t } from 'helper/i18n';
+import { log } from 'helper/logger';
 import { store } from '../..';
 import type { TaskState } from './helper';
 import {
@@ -23,7 +24,7 @@ export const getValidTranslators = async () => {
     const list = JSON.parse(translatorsText.replaceAll(`'`, `"`)) as string[];
     return createOptions(list);
   } catch (e) {
-    console.error(t('translation.tip.get_translator_list_error'), e);
+    log.error(t('translation.tip.get_translator_list_error'), e);
     return undefined;
   }
 };
@@ -39,7 +40,7 @@ export const selfhostedTranslation = async (i: number) => {
   try {
     imgBlob = await download(img.src);
   } catch (error) {
-    console.error(error);
+    log.error(error);
     throw new Error(t('translation.tip.download_img_failed'));
   }
 
@@ -58,7 +59,7 @@ export const selfhostedTranslation = async (i: number) => {
 
     task_id = resData.task_id;
   } catch (error) {
-    console.error(error);
+    log.error(error);
     throw new Error(t('translation.tip.upload_error'));
   }
 
@@ -75,7 +76,7 @@ export const selfhostedTranslation = async (i: number) => {
         `${t(`translation.status.${taskState.state}`) || taskState.state}`,
       );
     } catch (error) {
-      console.error(error);
+      log.error(error);
       if (errorNum > 5)
         throw new Error(t('translation.tip.check_img_status_failed'));
       errorNum += 1;

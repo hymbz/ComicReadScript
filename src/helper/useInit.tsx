@@ -7,6 +7,7 @@ import type { SiteOptions } from './useSiteOptions';
 import { useSiteOptions } from './useSiteOptions';
 import { useSpeedDial } from './useSpeedDial';
 import { lang, t } from './i18n';
+import { log } from './logger';
 
 /**
  * 对基础的初始化操作的封装
@@ -174,7 +175,7 @@ export const useInit = async <T extends Record<string, any>>(
             }
           });
         } catch (e: any) {
-          console.error(e);
+          log.error(e);
           if (show) toast.error(e.message);
           setFab({ progress: undefined });
         } finally {

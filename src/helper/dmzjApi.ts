@@ -3,6 +3,7 @@ import { onMount } from 'solid-js';
 
 import { toast, request } from 'main';
 import dmzjDecrypt from 'dmzjDecrypt';
+import { log } from './logger';
 
 type Text = number | string;
 
@@ -133,7 +134,7 @@ const getComicDetail_traversal = async (
 ) => {
   let nextId = draftData.last_update_chapter_id;
   if (!nextId) {
-    console.warn('last_update_chapter_id 为空，无法通过遍历获取章节');
+    log.warn('last_update_chapter_id 为空，无法通过遍历获取章节');
     return;
   }
 
@@ -182,8 +183,7 @@ export const useComicDetail = (comicId: string) => {
       } catch (_) {}
     }
 
-    toast.error('漫画数据获取失败', { duration: Infinity });
-    console.error('漫画数据获取失败');
+    toast.error('漫画数据获取失败', { duration: Infinity, console: true });
   });
 
   return data;

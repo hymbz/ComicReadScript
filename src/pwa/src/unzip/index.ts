@@ -1,4 +1,5 @@
 import { t } from 'helper/i18n';
+import { log } from 'helper/logger';
 import { toast } from '../../../components/Toast';
 import type { ZipExtension } from '../helper';
 import type { ImgFile } from '../store';
@@ -28,14 +29,13 @@ export const unzip = async (zipFile: File, extension: ZipExtension) => {
   for (let i = 0; i < unzipFnList.length; i += 1) {
     const unzipFn = unzipFnList[i];
     try {
-      console.log(unzipFnOrder[i]);
+      log(unzipFnOrder[i]);
       imgDataList = await unzipFn({ zipFile, tip, extension });
     } catch (e) {
       const errorText = `${unzipFnOrder[i]} ${t('pwa.alert.unzip_error')}：${
         (e as Error).message
       }`;
-      toast.error(errorText);
-      console.error(errorText, e);
+      toast.error(errorText, { console: e });
     }
     if (imgDataList.length) break;
   }

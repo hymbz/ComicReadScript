@@ -60,8 +60,10 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
   const getId = async () => {
     const [, comicPy, chapterId] = window.location.pathname.split(/\/|\./);
     if (!comicPy) {
-      toast.error('漫画数据获取失败', { duration: Infinity });
-      throw new Error('获取漫画拼音简称失败');
+      toast.error('漫画数据获取失败', {
+        duration: Infinity,
+        throw: new Error('获取漫画拼音简称失败'),
+      });
     }
     const comicId = await getComicId(comicPy);
 

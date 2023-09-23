@@ -34,8 +34,6 @@ const publicConfig = {
 
     // 允许使用下划线命名
     'no-underscore-dangle': 'off',
-    // 允许 console
-    'no-console': 'off',
     // 允许 continue
     'no-continue': 'off',
     // 允许在循环中使用 await

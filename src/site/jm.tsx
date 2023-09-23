@@ -69,7 +69,7 @@ import {
       fetch: true,
     });
     if (!res.response.size) {
-      console.error('下载原图时出错', imgEle.getAttribute('data-page'));
+      toast.warn(`下载原图时出错: ${imgEle.getAttribute('data-page')}`);
       return '';
     }
 
@@ -78,7 +78,7 @@ import {
     if (err) {
       URL.revokeObjectURL(imgEle.src);
       imgEle.src = originalUrl;
-      console.warn('加载原图时出错', imgEle.getAttribute('data-page'));
+      toast.warn(`加载原图时出错: ${imgEle.getAttribute('data-page')}`);
       return '';
     }
 
@@ -96,7 +96,7 @@ import {
       return `${URL.createObjectURL(blob)}#.webp`;
     } catch (error) {
       imgEle.src = originalUrl;
-      console.warn('转换图片时出错', imgEle.getAttribute('data-page'));
+      toast.warn(`转换图片时出错: ${imgEle.getAttribute('data-page')}`);
       return '';
     }
   };

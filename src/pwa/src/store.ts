@@ -80,8 +80,7 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
         state.hiddenInstallTip = '';
     });
   } catch (error) {
-    toast.error((error as Error).message);
-    throw error;
+    toast.error((error as Error).message, { throw: error as Error });
   } finally {
     setState((state) => {
       state.loading = false;

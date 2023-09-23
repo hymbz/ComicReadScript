@@ -58,8 +58,7 @@ export const libarchive = async ({
           const errorText = `「${zipFile.name}」 - 「${file.name}」 ${t(
             'pwa.alert.unzip_error',
           )}：${(e as Error).message}`;
-          toast.error(errorText, { duration: Infinity });
-          console.error(errorText, e);
+          toast.error(errorText, { duration: Infinity, console: e });
           return undefined;
         }
       }),

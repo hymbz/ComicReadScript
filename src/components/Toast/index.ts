@@ -12,7 +12,10 @@ export interface Toast {
   duration: number;
   type: 'info' | 'success' | 'warn' | 'error' | 'custom';
   msg: Message;
+  /** 显示的进度 */
   schedule?: number;
+  /** 弹窗完报错 */
+  throw?: true | Error;
   onDismiss?: (t: Toast) => void;
   exit?: true;
   update?: true;

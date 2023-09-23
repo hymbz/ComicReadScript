@@ -1,3 +1,4 @@
+import { log } from 'helper/logger';
 import type { Message, Toast } from '.';
 import { creatId, setState, store } from './store';
 
@@ -21,6 +22,20 @@ export const toast = (msg: Message, options?: Partial<Toast>) => {
     };
     state.list.push(id);
   });
+
+  /** 弹窗后记录一下 */
+  let fn: (...args: unknown[]) => void = log;
+  switch (options?.type) {
+    case 'warn':
+      fn = log.warn;
+      break;
+    case 'error':
+      fn = log.error;
+      break;
+  }
+  fn.call(this, 'Toast:', msg);
+
+  if (options?.throw && typeof msg === 'string') throw new Error(msg);
 };
 
 toast.dismiss = (id: string) => {
@@ -40,5 +55,6 @@ toast.success = (msg: string, options?: Partial<Toast>) =>
   toast(msg, { ...options, type: 'success' });
 toast.warn = (msg: string, options?: Partial<Toast>) =>
   toast(msg, { ...options, type: 'warn' });
-toast.error = (msg: string, options?: Partial<Toast>) =>
+toast.error = (msg: string, options?: Partial<Toast>) => {
   toast(msg, { ...options, type: 'error' });
+};

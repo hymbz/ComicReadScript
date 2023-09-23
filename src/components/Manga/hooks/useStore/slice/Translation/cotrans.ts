@@ -1,4 +1,5 @@
 import { t } from 'helper/i18n';
+import { log } from 'helper/logger';
 import { store } from '../..';
 import {
   setMessage,
@@ -105,7 +106,7 @@ export const cotransTranslation = async (i: number) => {
   try {
     imgBlob = await download(img.src);
   } catch (error) {
-    console.error(error);
+    log.error(error);
     throw new Error(t('translation.tip.download_img_failed'));
   }
 
@@ -138,7 +139,7 @@ export const cotransTranslation = async (i: number) => {
     id = resData.id;
     translation_mask = resData.result?.translation_mask;
   } catch (error) {
-    console.error(error);
+    log.error(error);
     throw new Error(t('translation.tip.upload_error'));
   }
 

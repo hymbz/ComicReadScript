@@ -2,6 +2,7 @@
  * 用于测试时显示组件
  */
 
+import { log } from 'helper/logger';
 import type { MangaProps } from '.';
 import { Manga } from '.';
 
@@ -142,7 +143,7 @@ const imgList = [
 
 export default function DisplayManga() {
   const onExit: MangaProps['onExit'] = () => {
-    console.log('end func 点击');
+    log('end func 点击');
   };
 
   const option: MangaProps['option'] = {};

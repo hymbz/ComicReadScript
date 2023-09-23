@@ -1,6 +1,7 @@
 import { createMemo, createRoot, createSignal } from 'solid-js';
 import zh from '../../locales/zh.json' assert { type: 'json' };
 import en from '../../locales/en.json' assert { type: 'json' };
+import { log } from './logger';
 
 const langList = ['zh', 'en'] as const;
 type LangList = (typeof langList)[number];
@@ -46,7 +47,7 @@ export const t = createRoot(() => {
       Object.entries(variables).forEach(([k, v]) => {
         text.replaceAll(`{{${k}}}`, `${v}`);
       });
-    if (!text) console.warn('unknown i18n key', keys);
+    if (!text) log.warn('unknown i18n key', keys);
     return text;
   };
 });

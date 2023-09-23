@@ -1,6 +1,7 @@
 import { sleep } from '.';
 import { toast } from '../components/useComponents/Toast';
 import { t } from './i18n';
+import { log } from './logger';
 
 // 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = (
@@ -40,7 +41,7 @@ export const request = async <T = any>(
       if (errorText && !details?.noTip) toast.error(errorText);
       throw new Error(errorText);
     }
-    console.error(errorText, error);
+    log.error(errorText, error);
     await sleep(1000);
     return request(url, details, errorNum + 1);
   }
