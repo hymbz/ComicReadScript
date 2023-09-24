@@ -72,7 +72,7 @@ export const useSiteOptions = async <T = Record<string, any>>(
     /** 进入阅读模式的快捷键 */
     readModeHotkeys: createRoot(() => {
       const readModeHotkeysMemo = createMemo(
-        () => new Set(Object.assign([], hotkeys().use_read_mode)),
+        () => new Set(Object.assign([], hotkeys().enter_read_mode)),
       );
       return readModeHotkeysMemo;
     }),

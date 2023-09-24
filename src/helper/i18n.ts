@@ -64,10 +64,10 @@ export const t = createRoot(() => {
 
   // eslint-disable-next-line solid/reactivity
   return (keys: string, variables?: Record<string, unknown>) => {
-    const text = byPath<string>(locales(), keys) ?? '';
+    let text = byPath<string>(locales(), keys) ?? '';
     if (variables)
       Object.entries(variables).forEach(([k, v]) => {
-        text.replaceAll(`{{${k}}}`, `${v}`);
+        text = text.replaceAll(`{{${k}}}`, `${v}`);
       });
     if (!text) log.warn('unknown i18n key', keys);
     return text;

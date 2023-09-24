@@ -110,19 +110,21 @@ import {
   );
 
   init(
-    dynamicUpdate(async (setImg) => {
-      await plimit(
-        imgEleList.map((img, i) => async () => {
-          setImg(i, await getImgUrl(img));
-        }),
-        (doneNum, totalNum) => {
-          setFab({
-            progress: doneNum / totalNum,
-            tip: `加载图片中 - ${doneNum}/${totalNum}`,
-          });
-        },
-      );
-    }, imgEleList.length),
+    dynamicUpdate(
+      (setImg) =>
+        plimit(
+          imgEleList.map((img, i) => async () => {
+            setImg(i, await getImgUrl(img));
+          }),
+          (doneNum, totalNum) => {
+            setFab({
+              progress: doneNum / totalNum,
+              tip: `加载图片中 - ${doneNum}/${totalNum}`,
+            });
+          },
+        ),
+      imgEleList.length,
+    ),
   );
 
   const retry = (num = 0) =>

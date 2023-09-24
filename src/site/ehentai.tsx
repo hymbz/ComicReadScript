@@ -12,7 +12,6 @@ import {
   plimit,
   querySelectorAll,
   wait,
-  triggerEleLazyLoad,
 } from 'main';
 
 declare const selected_tag: string;
@@ -63,15 +62,21 @@ declare const selected_link: HTMLElement;
   if (Reflect.has(unsafeWindow, 'mpvkey')) {
     const imgEleList = querySelectorAll('.mi0[id]');
     init(
-      dynamicUpdate(async (setImg) => {
-        for (let i = 0; i < imgEleList.length; i++) {
-          const ele = imgEleList[i];
-          const imgUrl = await wait(
-            () => ele.querySelector('img')?.src || triggerEleLazyLoad(ele),
-          );
-          setImg(i, imgUrl);
-        }
-      }, imgEleList.length),
+      dynamicUpdate(
+        (setImg) =>
+          plimit(
+            imgEleList.map((ele, i) => async () => {
+              const getUrl = () => ele.querySelector('img')?.src;
+              if (!getUrl()) unsafeWindow.load_image(i + 1);
+              unsafeWindow.next_possible_request = 0;
+              const imgUrl = await wait(getUrl);
+              setImg(i, imgUrl);
+            }),
+            undefined,
+            4,
+          ),
+        imgEleList.length,
+      ),
     );
     return;
   }
@@ -210,15 +215,14 @@ declare const selected_link: HTMLElement;
       toast.error(t('site.ehentai.html_changed_nhentai_failed'));
       return;
     }
+    const title = encodeURI(titleDom.innerText);
 
     const newTagLine = document.createElement('tr');
 
     let res: Tampermonkey.Response<any>;
     try {
       res = await request(
-        `https://nhentai.net/api/galleries/search?query=${encodeURI(
-          titleDom.innerText,
-        )}`,
+        `https://nhentai.net/api/galleries/search?query=${title}`,
         { errorText: t('site.ehentai.nhentai_error'), noTip: true },
       );
     } catch (_) {
@@ -226,7 +230,7 @@ declare const selected_link: HTMLElement;
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
         ${t('site.ehentai.nhentai_failed', {
-          nhentai: `<a href='https://nhentai.net/' target="_blank" ><u>nhentai</u></a>`,
+          nhentai: `<a href='https://nhentai.net/search/?q=${title}' target="_blank" ><u>nhentai</u></a>`,
         })}
       </td>`;
       taglistDom.appendChild(newTagLine);

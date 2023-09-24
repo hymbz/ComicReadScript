@@ -58,7 +58,7 @@ const migration = async () => {
           'option.flipToNext => jumpToNext',
           // ehentai
           '匹配nhentai => associate_nhentai',
-          '快捷键翻页 => shortcut_page_turn',
+          '快捷键翻页 => hotkeys_page_turn',
           // nhentai
           '自动翻页 => auto_page_turn',
           '彻底屏蔽漫画 => block_totally',

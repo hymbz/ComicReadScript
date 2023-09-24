@@ -172,7 +172,7 @@ export const useInit = async <T extends Record<string, any>>(
 
     /** 使用动态更新来加载 imgList */
     dynamicUpdate: (
-      work: (setImg: (i: number, imgUrl: string) => void) => Promise<void>,
+      work: (setImg: (i: number, imgUrl: string) => void) => Promise<unknown>,
       totalImgNum: number,
     ) => {
       const updateImgList = async () => {
