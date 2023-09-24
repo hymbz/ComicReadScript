@@ -47,8 +47,8 @@ export const handleWheel = (e: WheelEvent) => {
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
-const handleReversePageTurnKey = (nextPage: boolean) => {
-  const next = store.option.reversePageTurnKey ? !nextPage : nextPage;
+const handleSwapPageTurnKey = (nextPage: boolean) => {
+  const next = store.option.swapPageTurnKey ? !nextPage : nextPage;
   return next ? 'next' : 'prev';
 };
 
@@ -108,10 +108,10 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return turnPage('next');
 
     case 'turn_page_right':
-      return turnPage(handleReversePageTurnKey(store.option.dir !== 'rtl'));
+      return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
 
     case 'turn_page_left':
-      return turnPage(handleReversePageTurnKey(store.option.dir === 'rtl'));
+      return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));
 
     case 'jump_to_home':
       return setState((state) => {

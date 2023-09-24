@@ -93,7 +93,7 @@ interface History {
         toast.success('自动签到成功');
         localStorage.setItem('signDate', todayString);
       } catch (e) {
-        toast.error('自动签到失败', { console: e });
+        toast.error('自动签到失败');
       }
     })();
 

@@ -183,7 +183,7 @@ export const useComicDetail = (comicId: string) => {
       } catch (_) {}
     }
 
-    toast.error('漫画数据获取失败', { duration: Infinity, console: true });
+    toast.error('漫画数据获取失败', { duration: Infinity });
   });
 
   return data;

@@ -1,4 +1,5 @@
 import { createMemo, createRoot, createSignal } from 'solid-js';
+import { byPath } from 'helper';
 import zh from '../../locales/zh.json' assert { type: 'json' };
 import en from '../../locales/en.json' assert { type: 'json' };
 import { log } from './logger';
@@ -33,16 +34,7 @@ export const t = createRoot(() => {
 
   // eslint-disable-next-line solid/reactivity
   return (keys: string, variables?: Record<string, unknown>) => {
-    const path = keys.split('.');
-    let target: any = locales();
-    let key = path.shift();
-    while (key) {
-      // 兼容含有「.」的 key
-      while (!target[key] && path.length) key += `.${path.shift()!}`;
-      target = target[key];
-      key = path.shift();
-    }
-    const text = (target as string) ?? '';
+    const text = byPath<string>(locales(), keys) ?? '';
     if (variables)
       Object.entries(variables).forEach(([k, v]) => {
         text.replaceAll(`{{${k}}}`, `${v}`);

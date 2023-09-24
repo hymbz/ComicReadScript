@@ -32,10 +32,11 @@ export const unzip = async (zipFile: File, extension: ZipExtension) => {
       log(unzipFnOrder[i]);
       imgDataList = await unzipFn({ zipFile, tip, extension });
     } catch (e) {
-      const errorText = `${unzipFnOrder[i]} ${t('pwa.alert.unzip_error')}：${
-        (e as Error).message
-      }`;
-      toast.error(errorText, { console: e });
+      toast.error(
+        `${unzipFnOrder[i]} ${t('pwa.alert.unzip_error')}：${
+          (e as Error).message
+        }`,
+      );
     }
     if (imgDataList.length) break;
   }

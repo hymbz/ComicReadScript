@@ -107,6 +107,7 @@ export const getMetaData = (isDevMode: boolean) => {
       'GM.addStyle',
       'GM.getValue',
       'GM.setValue',
+      'GM.listValues',
       'GM.deleteValue',
       'GM.registerMenuCommand',
       'GM.unregisterMenuCommand',

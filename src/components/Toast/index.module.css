@@ -39,7 +39,7 @@
   animation: bounceInRight 0.5s 1;
 
   & > svg {
-    width: 1em;
+    width: 1.5em;
     margin-right: 0.5em;
     color: var(--theme);
   }

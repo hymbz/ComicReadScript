@@ -15,12 +15,12 @@ import {
   const start = async () => {
     const { setManga, setFab, init, options, setOptions, isStored } =
       await useInit(window.location.hostname, {
-        rememberCurrentSite: true,
+        remember_current_site: true,
         selector: '',
       });
 
     // 通过 options 来迂回的实现禁止记住当前站点
-    if (!options.rememberCurrentSite) {
+    if (!options.remember_current_site) {
       await GM.deleteValue(window.location.hostname);
       return true;
     }

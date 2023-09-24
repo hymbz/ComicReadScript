@@ -32,8 +32,7 @@ export const fflate = async ({ zipFile, extension }: ZipData) => {
       }),
     );
   } catch (e) {
-    const errorText = `fflate ${t('pwa.alert.unzip_error')}`;
-    toast.error(errorText, { console: e });
+    toast.error(`fflate ${t('pwa.alert.unzip_error')}`);
     return [];
   }
 };

@@ -55,10 +55,12 @@ export const libarchive = async ({
             return undefined;
           }
 
-          const errorText = `「${zipFile.name}」 - 「${file.name}」 ${t(
-            'pwa.alert.unzip_error',
-          )}：${(e as Error).message}`;
-          toast.error(errorText, { duration: Infinity, console: e });
+          toast.error(
+            `「${zipFile.name}」 - 「${file.name}」 ${t(
+              'pwa.alert.unzip_error',
+            )}：${(e as Error).message}`,
+            { duration: Infinity },
+          );
           return undefined;
         }
       }),

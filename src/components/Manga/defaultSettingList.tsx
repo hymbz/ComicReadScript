@@ -166,8 +166,8 @@ export const defaultSettingList: () => SettingList = () => [
 
         <SettingsItemSwitch
           name={t('setting.option.swap_page_turn_key')}
-          value={store.option.reversePageTurnKey}
-          onChange={createStateSetFn('reversePageTurnKey')}
+          value={store.option.swapPageTurnKey}
+          onChange={createStateSetFn('swapPageTurnKey')}
         />
 
         <SettingsItem name={t('setting.option.preload_page_num')}>

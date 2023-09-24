@@ -242,6 +242,41 @@ export const assign = <T extends object>(a: T, b: T): T => {
   return res;
 };
 
+/** 根据路径获取对象下的指定值 */
+export const byPath = <T = object>(
+  obj: object,
+  path: string,
+  handleVal?: (parentObj: object, key: string) => unknown,
+) => {
+  const keys = path.split('.');
+  let target: object = obj;
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+
+    // 兼容含有「.」的 key
+    while (!Reflect.has(target, key) && i < keys.length) {
+      i += 1;
+      if (keys[i] === undefined) break;
+      key += `.${keys[i]}`;
+    }
+
+    if (handleVal && i > keys.length - 2 && Reflect.has(target, key)) {
+      const res = handleVal(target, key);
+      while (i < keys.length - 1) {
+        target = target[key];
+        i += 1;
+        key = keys[i];
+      }
+      if (res !== undefined) target[key] = res;
+      break;
+    }
+
+    target = target[key];
+  }
+  if (target === obj) return null;
+  return target as T;
+};
+
 /**
  * 通过监视点击等会触发动态加载的事件，在触发动态加载后更新图片列表等
  * @param update 动态加载后的重新加载

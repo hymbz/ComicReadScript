@@ -149,7 +149,8 @@
       "auto_page_turn": "Auto page turning",
       "block_totally": "Totally block comics",
       "hotkeys_page_turn": "Page turning with hotkeys",
-      "open_link_new_page": "Open links in a new page"
+      "open_link_new_page": "Open links in a new page",
+      "remember_current_site": "Remember the current site"
     },
     "ehentai": {
       "fetch_img_page_source_failed": "Failed to get the source code of the image page",
@@ -165,7 +166,6 @@
       "fetch_next_page_failed": "Failed to get next page of comic data",
       "tag_blacklist_fetch_failed": "Failed to fetch tag blacklist"
     },
-    "remember_current_site": "Remember the current site",
     "settings_tip": "Settings",
     "show_settings_menu": "Show settings menu",
     "simple": {

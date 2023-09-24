@@ -2,11 +2,12 @@ import { getKeyboardCode, wait } from '.';
 import { useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
 import { toast } from '../components/useComponents/Toast';
+import { t } from './i18n';
+import { log } from './logger';
+import { handleVersionUpdate } from './version';
 import type { SiteOptions } from './useSiteOptions';
 import { useSiteOptions } from './useSiteOptions';
 import { useSpeedDial } from './useSpeedDial';
-import { lang, t } from './i18n';
-import { log } from './logger';
 
 /**
  * 对基础的初始化操作的封装
@@ -17,6 +18,8 @@ export const useInit = async <T extends Record<string, any>>(
   name: string,
   defaultOptions = {} as T,
 ) => {
+  handleVersionUpdate();
+
   const {
     options,
     setOptions,
@@ -60,39 +63,6 @@ export const useInit = async <T extends Record<string, any>>(
     onHotkeysChange,
     onLoading,
   });
-
-  // 检查脚本的版本变化，提示用户
-  const version = await GM.getValue<string>('Version');
-  if (!version) await GM.setValue('Version', GM.info.script.version);
-  else if (version !== GM.info.script.version && lang() === 'zh') {
-    toast(
-      () => (
-        <>
-          {/* eslint-disable-next-line i18n/no-chinese-character, i18next/no-literal-string */}
-          <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
-          inject@LatestChange
-        </>
-      ),
-      {
-        id: 'Version Tip',
-        type: 'custom',
-        duration: Infinity,
-        // 手动点击关掉通知后才不会再次弹出
-        onDismiss: () => GM.setValue('Version', GM.info.script.version),
-      },
-    );
-
-    // 监听储存的版本数据的变动，如果和当前版本一致就关掉弹窗
-    // 防止在更新版本后一次性打开多个页面，不得不一个一个关过去
-    const listenerId = await GM.addValueChangeListener(
-      'Version',
-      async (_, __, newVersion) => {
-        if (newVersion !== GM.info.script.version) return;
-        toast.dismiss('Version Tip');
-        await GM.removeValueChangeListener(listenerId);
-      },
-    );
-  }
 
   let menuId: number;
   /** 更新显示/隐藏悬浮按钮的菜单项 */
