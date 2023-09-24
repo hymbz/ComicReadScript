@@ -1,21 +1,27 @@
 import { byPath } from '.';
 import { lang } from './i18n';
+import { log } from './logger';
 import { toast } from '../components/useComponents/Toast';
 
 /** 重命名配置项 */
 const renameOption = async (name: string, list: string[]) => {
-  const option = await GM.getValue<object>(name);
-  if (!option) throw new Error(`GM.getValue Error: not found ${name}`);
+  try {
+    const option = await GM.getValue<object>(name);
+    if (!option) throw new Error(`GM.getValue Error: not found ${name}`);
 
-  for (let i = list.length - 1; i; i--) {
-    const [path, newName] = list[i].split(' => ');
-    byPath(option, path, (parent, key) => {
-      Reflect.set(parent, newName, parent[key]);
-      Reflect.deleteProperty(parent, key);
-    });
+    for (let i = list.length - 1; i; i--) {
+      const [path, newName] = list[i].split(' => ');
+      byPath(option, path, (parent, key) => {
+        log('rename Option', list[i]);
+        Reflect.set(parent, newName, parent[key]);
+        Reflect.deleteProperty(parent, key);
+      });
+    }
+
+    await GM.setValue(name, option);
+  } catch (error) {
+    log.error(`migration ${name} option error:`, error);
   }
-
-  await GM.setValue(name, option);
 };
 
 /** 旧版本配置迁移 */
