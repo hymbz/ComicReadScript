@@ -2,7 +2,7 @@ import { getKeyboardCode, wait } from '.';
 import { useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
 import { toast } from '../components/useComponents/Toast';
-import { t } from './i18n';
+import { setInitLang, t } from './i18n';
 import { log } from './logger';
 import { handleVersionUpdate } from './version';
 import type { SiteOptions } from './useSiteOptions';
@@ -18,7 +18,9 @@ export const useInit = async <T extends Record<string, any>>(
   name: string,
   defaultOptions = {} as T,
 ) => {
-  handleVersionUpdate();
+  await setInitLang();
+
+  await handleVersionUpdate();
 
   const {
     options,

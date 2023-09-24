@@ -175,7 +175,7 @@ createRoot(() => {
         () => store.scrollbar.dragTop,
         () => store.option.scrollMode,
         () => store.option.dir,
-        () => lang(),
+        lang,
       ],
       updateTipText,
     ),
