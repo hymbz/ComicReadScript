@@ -6,7 +6,7 @@ import { pwaInstallHandler } from 'pwa-install-handler';
 import { directoryOpen, fileOpen } from 'browser-fs-access';
 import { parse as parseMd } from 'marked';
 
-import { t } from 'helper/i18n';
+import { setInitLang, t } from 'helper/i18n';
 import type { MangaProps } from '../../components/Manga';
 import { Manga, buttonListDivider } from '../../components/Manga';
 import { IconButton } from '../../components/IconButton';
@@ -17,6 +17,8 @@ import { FileSystemToFile, imgExtension } from './helper';
 import { handleDrag } from './handleDrag';
 
 import classes from './index.module.css';
+
+setInitLang();
 
 /** 选择文件 */
 const handleSelectFiles = async () => {

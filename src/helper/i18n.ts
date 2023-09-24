@@ -14,7 +14,7 @@ const langList = ['zh', 'en'] as const;
 type Languages = (typeof langList)[number];
 
 /** 判断传入的字符串是否是支持的语言类型代码 */
-const isLanguages = (lang?: string): lang is Languages =>
+const isLanguages = (lang: string | undefined | null): lang is Languages =>
   langList.includes(lang as Languages);
 
 export const [lang, setLang] = createSignal<Languages>('zh');
@@ -37,21 +37,28 @@ export const autoSetLang = () => {
   if (newLang !== lang()) setLang(newLang);
 };
 
+const getSaveLang = () =>
+  window?.GM?.getValue
+    ? GM.getValue<string>('Languages')
+    : localStorage.getItem('Languages');
+const setSaveLang = (val: string) =>
+  window?.GM?.setValue
+    ? GM.setValue('Languages', val)
+    : localStorage.setItem('Languages', val);
+
 export const setInitLang = async () => {
-  const saveLang = await GM.getValue<string>('Languages');
+  const saveLang = await getSaveLang();
 
   if (isLanguages(saveLang)) {
     if (saveLang !== lang()) setLang(saveLang);
   } else {
     autoSetLang();
-    await GM.setValue('Languages', lang());
+    await setSaveLang(lang());
   }
 };
 
 export const t = createRoot(() => {
-  createEffect(
-    on(lang, () => GM.setValue('Languages', lang()), { defer: true }),
-  );
+  createEffect(on(lang, () => setSaveLang(lang()), { defer: true }));
 
   const locales = createMemo(() => {
     switch (lang()) {

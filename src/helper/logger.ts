@@ -5,10 +5,10 @@ const prefix = [
 
 export const log = (...args: unknown[]) =>
   // eslint-disable-next-line no-console
-  console.log.apply(this, [...prefix, ...args]);
+  console.log.apply(null, [...prefix, ...args]);
 log.warn = (...args: unknown[]) =>
   // eslint-disable-next-line no-console
-  console.warn.apply(this, [...prefix, ...args]);
+  console.warn.apply(null, [...prefix, ...args]);
 log.error = (...args: unknown[]) =>
   // eslint-disable-next-line no-console
-  console.error.apply(this, [...prefix, ...args]);
+  console.error.apply(null, [...prefix, ...args]);
