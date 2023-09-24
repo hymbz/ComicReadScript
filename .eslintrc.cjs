@@ -190,7 +190,7 @@ module.exports = {
       ],
       rules: {
         'i18next/no-literal-string': 'error',
-        'i18n/no-chinese-character': 'error',
+        // 'i18n/no-chinese-character': 'error',
       },
     }),
   ],

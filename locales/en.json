@@ -51,10 +51,6 @@
     "loading": "Loading",
     "wait": "Waiting for load"
   },
-  "language": {
-    "en": "English",
-    "zh": "Chinese"
-  },
   "other": {
     "auto_enter_read_mode": "Auto enter reading mode",
     "disable": "Disable",

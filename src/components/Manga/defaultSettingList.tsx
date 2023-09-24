@@ -220,8 +220,8 @@ export const defaultSettingList: () => SettingList = () => [
         <SettingsItemSelect
           name={t('setting.language')}
           options={[
-            ['zh', t('language.zh')],
-            ['en', t('language.en')],
+            ['zh', '中文'],
+            ['en', 'English'],
           ]}
           value={lang()}
           onChange={setLang}

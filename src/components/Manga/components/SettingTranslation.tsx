@@ -76,11 +76,8 @@ export const SettingTranslation = () => {
         <SettingsItemSelect
           name={t('setting.translation.options.target_language')}
           options={[
-            // eslint-disable-next-line i18n/no-chinese-character
             ['CHS', '简体中文'],
-            // eslint-disable-next-line i18n/no-chinese-character
             ['CHT', '繁體中文'],
-            // eslint-disable-next-line i18n/no-chinese-character
             ['JPN', '日本語'],
             ['ENG', 'English'],
             ['KOR', '한국어'],

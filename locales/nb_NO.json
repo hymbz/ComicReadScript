@@ -51,10 +51,6 @@
     "loading": "正在加载",
     "wait": "等待加载"
   },
-  "language": {
-    "en": "英文",
-    "zh": "中文"
-  },
   "other": {
     "auto_enter_read_mode": "自动进入阅读模式",
     "disable": "禁用",

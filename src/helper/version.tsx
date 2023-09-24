@@ -1,4 +1,3 @@
-/* eslint-disable i18n/no-chinese-character */
 import { byPath } from '.';
 import { lang } from './i18n';
 import { toast } from '../components/useComponents/Toast';
@@ -82,7 +81,7 @@ export const handleVersionUpdate = async () => {
     toast(
       () => (
         <>
-          {/* eslint-disable-next-line i18n/no-chinese-character, i18next/no-literal-string */}
+          {/* eslint-disable-next-line i18next/no-literal-string */}
           <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
           inject@LatestChange
         </>
