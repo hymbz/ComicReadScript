@@ -1,48 +1,50 @@
 // ==UserScript==
-// @name         ComicRead
-// @namespace    ComicRead
-// @version      6.10.2
-// @description  为漫画站增加双页阅读模式并优化使用体验。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、welovemanga
-// @author       hymbz
-// @license      AGPL-3.0-or-later
+// @name            ComicRead
+// @namespace       ComicRead
+// @version         7.0.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
+// @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
+// @author          hymbz
+// @license         AGPL-3.0-or-later
 // @noframes
-// @match        *://*/*
-// @connect      cdn.jsdelivr.net
-// @connect      yamibo.com
-// @connect      dmzj.com
-// @connect      idmzj.com
-// @connect      exhentai.org
-// @connect      e-hentai.org
-// @connect      hath.network
-// @connect      nhentai.net
-// @connect      hypergryph.com
-// @connect      mangabz.com
-// @connect      copymanga.site
-// @connect      self
-// @connect      *
-// @grant        GM_addElement
-// @grant        GM_getResourceText
-// @grant        GM_xmlhttpRequest
-// @grant        GM.addValueChangeListener
-// @grant        GM.removeValueChangeListener
-// @grant        GM.getResourceText
-// @grant        GM.addStyle
-// @grant        GM.getValue
-// @grant        GM.setValue
-// @grant        GM.deleteValue
-// @grant        GM.registerMenuCommand
-// @grant        GM.unregisterMenuCommand
-// @grant        unsafeWindow
-// @icon         data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAACBUExURUxpcWB9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i////198il17idng49DY3PT297/K0MTP1M3X27rHzaCxupmstbTByK69xOfr7bfFy3WOmqi4wPz9/X+XomSBjqW1vZOmsN/l6GmFkomeqe7x8vn6+kv+1vUAAAAOdFJOUwDsAoYli9zV+lIqAZEDwV05SQAAAUZJREFUOMuFk+eWgjAUhGPBiLohjZACUqTp+z/gJkqJy4rzg3Nn+MjhwB0AANjv4BEtdITBHjhtQ4g+CIZbC4Qb9FGb0J4P0YrgCezQqgIA14EDGN8fYz+f3BGMASFkTJ+GDAYMUSONzrFL7SVvjNQIz4B9VERRmV0rbJWbrIwidnsd6ACMlEoip3uad3X2HJmqb3gCkkJELwk5DExRDxA6HnKaDEPSsBnAsZoANgJaoAkg12IJqBiPACImXQKF9IDULIHUkOk7kDpeAMykHqCEWACy8ACdSM7LGSg5F3HtAU1rrkaK9uGAshXS2lZ5QH/nVhmlD8rKlmbO3ZsZwLe8qnpdxJRnLaci1X1V5R32fjd5CndVkfYdGpy3D+htU952C/ypzPtdt3JflzZYBy7fi/O1euvl/XH1Pp+Cw3/1P1xOZwB+AWMcP/iw0AlKAAAAV3pUWHRSYXcgcHJvZmlsZSB0eXBlIGlwdGMAAHic4/IMCHFWKCjKT8vMSeVSAAMjCy5jCxMjE0uTFAMTIESANMNkAyOzVCDL2NTIxMzEHMQHy4BIoEouAOoXEXTyQjWVAAAAAElFTkSuQmCC
-// @resource     solid-js https://unpkg.com/solid-js@1.7.3/dist/solid.cjs
-// @resource     solid-js/store https://unpkg.com/solid-js@1.7.3/store/dist/store.cjs
-// @resource     solid-js/web https://unpkg.com/solid-js@1.7.3/web/dist/web.cjs
-// @resource     panzoom https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js
-// @resource     fflate https://unpkg.com/fflate@0.7.4/umd/index.js
-// @resource     dmzjDecrypt https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199
-// @supportURL   https://github.com/hymbz/ComicReadScript/issues
-// @updateURL    https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
-// @downloadURL  https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
+// @match           *://*/*
+// @connect         cdn.jsdelivr.net
+// @connect         yamibo.com
+// @connect         dmzj.com
+// @connect         idmzj.com
+// @connect         exhentai.org
+// @connect         e-hentai.org
+// @connect         hath.network
+// @connect         nhentai.net
+// @connect         hypergryph.com
+// @connect         mangabz.com
+// @connect         copymanga.site
+// @connect         self
+// @connect         *
+// @grant           GM_addElement
+// @grant           GM_getResourceText
+// @grant           GM_xmlhttpRequest
+// @grant           GM.addValueChangeListener
+// @grant           GM.removeValueChangeListener
+// @grant           GM.getResourceText
+// @grant           GM.addStyle
+// @grant           GM.getValue
+// @grant           GM.setValue
+// @grant           GM.listValues
+// @grant           GM.deleteValue
+// @grant           GM.registerMenuCommand
+// @grant           GM.unregisterMenuCommand
+// @grant           unsafeWindow
+// @icon            data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAACBUExURUxpcWB9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i////198il17idng49DY3PT297/K0MTP1M3X27rHzaCxupmstbTByK69xOfr7bfFy3WOmqi4wPz9/X+XomSBjqW1vZOmsN/l6GmFkomeqe7x8vn6+kv+1vUAAAAOdFJOUwDsAoYli9zV+lIqAZEDwV05SQAAAUZJREFUOMuFk+eWgjAUhGPBiLohjZACUqTp+z/gJkqJy4rzg3Nn+MjhwB0AANjv4BEtdITBHjhtQ4g+CIZbC4Qb9FGb0J4P0YrgCezQqgIA14EDGN8fYz+f3BGMASFkTJ+GDAYMUSONzrFL7SVvjNQIz4B9VERRmV0rbJWbrIwidnsd6ACMlEoip3uad3X2HJmqb3gCkkJELwk5DExRDxA6HnKaDEPSsBnAsZoANgJaoAkg12IJqBiPACImXQKF9IDULIHUkOk7kDpeAMykHqCEWACy8ACdSM7LGSg5F3HtAU1rrkaK9uGAshXS2lZ5QH/nVhmlD8rKlmbO3ZsZwLe8qnpdxJRnLaci1X1V5R32fjd5CndVkfYdGpy3D+htU952C/ypzPtdt3JflzZYBy7fi/O1euvl/XH1Pp+Cw3/1P1xOZwB+AWMcP/iw0AlKAAAAV3pUWHRSYXcgcHJvZmlsZSB0eXBlIGlwdGMAAHic4/IMCHFWKCjKT8vMSeVSAAMjCy5jCxMjE0uTFAMTIESANMNkAyOzVCDL2NTIxMzEHMQHy4BIoEouAOoXEXTyQjWVAAAAAElFTkSuQmCC
+// @resource        solid-js https://unpkg.com/solid-js@1.7.3/dist/solid.cjs
+// @resource        solid-js/store https://unpkg.com/solid-js@1.7.3/store/dist/store.cjs
+// @resource        solid-js/web https://unpkg.com/solid-js@1.7.3/web/dist/web.cjs
+// @resource        panzoom https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js
+// @resource        fflate https://unpkg.com/fflate@0.7.4/umd/index.js
+// @resource        dmzjDecrypt https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199
+// @supportURL      https://github.com/hymbz/ComicReadScript/issues
+// @updateURL       https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
+// @downloadURL     https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
 // ==/UserScript==
 
 /**
@@ -77,8 +79,8 @@ const tempName = Math.random().toString(36).slice(2);
  */
 const selfImportSync = name => {
   const code = name !== 'main' ? GM_getResourceText(name) :`
-const web = require('solid-js/web');
 const solidJs = require('solid-js');
+const web = require('solid-js/web');
 const store$2 = require('solid-js/store');
 const fflate = require('fflate');
 const createPanZoom = require('panzoom');
@@ -161,6 +163,24 @@ const linstenKeyup = handler => window.addEventListener('keyup', e => {
 /** 滚动页面到指定元素的所在位置 */
 const scrollIntoView = selector => querySelector(selector)?.scrollIntoView();
 
+/**
+ *
+ * 通过滚动到指定元素位置、触发滚动事件、再滚回来，来触发图片的懒加载
+ *
+ * 因为速度很快所以应该是无感的
+ */
+const triggerEleLazyLoad = e => {
+  const nowScroll = window.scrollY;
+  e.scrollIntoView();
+  e.dispatchEvent(new Event('scroll', {
+    bubbles: true
+  }));
+  window.scroll({
+    top: nowScroll,
+    behavior: 'auto'
+  });
+};
+
 /** 循环执行指定函数 */
 const loop = async (fn, ms) => {
   await fn();
@@ -226,7 +246,7 @@ const waitDom = selector => wait(() => querySelector(selector));
 
 /** 等待指定的图片元素加载完成 */
 const waitImgLoad = (img, timeout = 1000 * 10) => new Promise(resolve => {
-  const id = window.setTimeout(() => resolve(new ErrorEvent('超时')), timeout);
+  const id = window.setTimeout(() => resolve(new ErrorEvent('timeout')), timeout);
   img.addEventListener('load', () => {
     resolve(null);
     window.clearTimeout(id);
@@ -273,6 +293,35 @@ const assign = (a, b) => {
   return res;
 };
 
+/** 根据路径获取对象下的指定值 */
+const byPath = (obj, path, handleVal) => {
+  const keys = path.split('.');
+  let target = obj;
+  for (let i = 0; i < keys.length; i++) {
+    let key = keys[i];
+
+    // 兼容含有「.」的 key
+    while (!Reflect.has(target, key) && i < keys.length) {
+      i += 1;
+      if (keys[i] === undefined) break;
+      key += \`.\${keys[i]}\`;
+    }
+    if (handleVal && i > keys.length - 2 && Reflect.has(target, key)) {
+      const res = handleVal(target, key);
+      while (i < keys.length - 1) {
+        target = target[key];
+        i += 1;
+        key = keys[i];
+      }
+      if (res !== undefined) target[key] = res;
+      break;
+    }
+    target = target[key];
+  }
+  if (target === obj) return null;
+  return target;
+};
+
 /**
  * 通过监视点击等会触发动态加载的事件，在触发动态加载后更新图片列表等
  * @param update 动态加载后的重新加载
@@ -314,7 +363,515 @@ const getKeyboardCode = e => {
 };
 
 /** 将快捷键的编码转换成更易读的形式 */
-const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\\s$/, '空格');
+const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\\s$/, 'Space');
+
+const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
+const log = (...args) =>
+// eslint-disable-next-line no-console
+console.log.apply(undefined, [...prefix, ...args]);
+log.warn = (...args) =>
+// eslint-disable-next-line no-console
+console.warn.apply(undefined, [...prefix, ...args]);
+log.error = (...args) =>
+// eslint-disable-next-line no-console
+console.error.apply(undefined, [...prefix, ...args]);
+
+const zh = {
+  alert: {
+    comic_load_error: "漫画加载出错",
+    download_failed: "下载失败",
+    fetch_comic_img_failed: "获取漫画图片失败",
+    img_load_failed: "图片加载失败",
+    repeat_load: "加载图片中，请稍候",
+    server_connect_failed: "无法连接到服务器"
+  },
+  button: {
+    close_current_page_translation: "关闭当前页的翻译",
+    download: "下载",
+    download_completed: "下载完成",
+    downloading: "下载中",
+    exit: "退出",
+    packaging: "打包中",
+    page_fill: "页面填充",
+    page_mode_double: "双页模式",
+    page_mode_single: "单页模式",
+    scroll_mode: "卷轴模式",
+    setting: "设置",
+    translate_current_page: "翻译当前页",
+    zoom_in: "放大"
+  },
+  description: "为漫画站增加双页阅读、翻译等优化体验的增强功能。",
+  end_page: {
+    next_button: "下一话",
+    prev_button: "上一话",
+    tip: {
+      end_jump: "已到结尾，继续向下翻页将跳至下一话",
+      exit: "已到结尾，继续翻页将退出",
+      start_jump: "已到开头，继续向上翻页将跳至上一话"
+    }
+  },
+  hotkeys: {
+    enter_read_mode: "进入阅读模式",
+    exit: "退出",
+    jump_to_end: "跳至尾页",
+    jump_to_home: "跳至首页",
+    switch_dir: "切换阅读方向",
+    switch_page_fill: "切换页面填充",
+    switch_scroll_mode: "切换卷轴模式",
+    switch_single_double_page_mode: "切换单双页模式",
+    turn_page_down: "向下翻页",
+    turn_page_left: "向左翻页",
+    turn_page_right: "向右翻页",
+    turn_page_up: "向上翻页"
+  },
+  img_status: {
+    error: "加载出错",
+    loading: "正在加载",
+    wait: "等待加载"
+  },
+  other: {
+    auto_enter_read_mode: "自动进入阅读模式",
+    disable: "禁用",
+    enter_comic_read_mode: "进入漫画阅读模式",
+    fab_hidden: "隐藏悬浮按钮",
+    fab_show: "显示悬浮按钮",
+    fill_page: "填充页",
+    img_loading: "图片加载中",
+    loading_img: "加载图片中",
+    read_mode: "阅读模式"
+  },
+  pwa: {
+    alert: {
+      img_data_error: "图片数据错误",
+      img_not_found: "找不到图片",
+      img_not_found_files: "请选择图片文件或含有图片文件的压缩包",
+      img_not_found_folder: "文件夹下没有图片文件或含有图片文件的压缩包",
+      repeat_load: "正在加载其他文件中……",
+      unzip_error: "解压出错",
+      unzip_password_error: "解压密码错误",
+      userscript_not_installed: "未安装 ComicRead 脚本"
+    },
+    button: {
+      install: "安装",
+      no_more_prompt: "不再提示",
+      resume_read: "恢复阅读",
+      select_files: "选择文件",
+      select_folder: "选择文件夹"
+    },
+    install_md: "### 每次都要打开这个网页很麻烦？\\n如果你希望\\n1. 能有独立的窗口，像是在使用本地软件一样\\n1. 加入本地压缩文件的打开方式之中，方便直接打开\\n1. 离线使用~~（主要是担心国内网络抽风无法访问这个网页~~\\n### 欢迎将本页面作为 PWA 应用安装到电脑上😃👍",
+    message: {
+      enter_password: "请输入密码",
+      unzipping: "解压缩中"
+    },
+    tip_md: "# ComicRead PWA\\n使用 [ComicRead](https://github.com/hymbz/ComicReadScript) 的阅读模式阅读**本地**漫画\\n---\\n### 将图片文件、文件夹、压缩包直接拖入即可开始阅读"
+  },
+  setting: {
+    hotkeys: {
+      add: "添加新快捷键",
+      restore: "恢复默认快捷键"
+    },
+    language: "语言",
+    option: {
+      always_load_all_img: "始终加载所有图片",
+      background_color: "背景颜色",
+      click_page_turn_enabled: "启用点击翻页",
+      click_page_turn_swap_area: "左右点击区域交换",
+      click_page_turn_vertical: "上下翻页",
+      dark_mode: "启用夜间模式",
+      dir_ltr: "从左到右（美漫）",
+      dir_rtl: "从右到左（日漫）",
+      disable_auto_scaling: "禁止图片自动缩放",
+      first_page_fill: "默认启用首页填充",
+      jump_to_next_chapter: "翻页至上/下一话",
+      paragraph_dir: "阅读方向",
+      paragraph_display: "显示",
+      paragraph_hotkeys: "快捷键",
+      paragraph_operation: "操作",
+      paragraph_other: "其他",
+      paragraph_scrollbar: "滚动条",
+      paragraph_translation: "翻译",
+      preload_page_num: "预加载页数",
+      scrollbar_auto_hidden: "自动隐藏滚动条",
+      scrollbar_show: "显示滚动条",
+      scrollbar_show_img_status: "显示图片加载状态",
+      show_clickable_area: "显示点击区域",
+      show_comments: "在结束页显示评论",
+      swap_page_turn_key: "左右翻页键交换"
+    },
+    translation: {
+      cotrans_tip: "<p>将使用 <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans</a> 提供的接口翻译图片，该服务器由其维护者用爱发电自费维护</p>\\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\\n<p>所以还请 <b>注意用量</b></p>\\n<p>更推荐使用自己本地部署的项目，既不占用服务器资源也不需要排队</p>",
+      options: {
+        detection_resolution: "文本扫描清晰度",
+        direction: "渲染字体方向",
+        direction_auto: "原文一致",
+        direction_horizontal: "仅限水平",
+        direction_vertical: "仅限垂直",
+        forceRetry: "忽略缓存强制重试",
+        localUrl: "自定义服务器 URL",
+        target_language: "目标语言",
+        text_detector: "文本扫描器",
+        translator: "翻译服务"
+      },
+      server: "翻译服务器",
+      server_selfhosted: "本地部署",
+      translate_all_img: "翻译全部图片"
+    }
+  },
+  site: {
+    add_feature: {
+      associate_nhentai: "关联nhentai",
+      auto_page_turn: "自动翻页",
+      block_totally: "彻底屏蔽漫画",
+      hotkeys_page_turn: "快捷键翻页",
+      open_link_new_page: "在新页面中打开链接",
+      remember_current_site: "记住当前站点"
+    },
+    ehentai: {
+      fetch_img_page_source_failed: "获取图片页源码失败",
+      fetch_img_page_url_failed: "从详情页获取图片页地址失败",
+      fetch_img_url_failed: "从图片页获取图片地址失败",
+      html_changed_load_failed: "页面结构发生改变，无法加载漫画",
+      html_changed_nhentai_failed: "页面结构发生改变，关联 nhentai 漫画功能无法正常生效",
+      ip_banned: "IP地址被禁",
+      nhentai_error: "nhentai 匹配出错",
+      nhentai_failed: "匹配失败，请在确认登录 {{nhentai}} 后刷新"
+    },
+    nhentai: {
+      fetch_next_page_failed: "获取下一页漫画数据失败",
+      tag_blacklist_fetch_failed: "标签黑名单获取失败"
+    },
+    settings_tip: "设置",
+    show_settings_menu: "显示设置菜单",
+    simple: {
+      auto_read_mode_message: "已默认开启「自动进入阅读模式」",
+      simple_read_mode: "使用简易阅读模式"
+    }
+  },
+  touch_area: {
+    menu: "菜 单",
+    next: "下 一 页",
+    prev: "上 一 页"
+  },
+  translation: {
+    status: {
+      "default": "未知状态",
+      detection: "正在检测文本",
+      downscaling: "正在缩小图片",
+      error: "翻译出错",
+      "error-lang": "你选择的翻译服务不支持你选择的语言",
+      "error-translating": "翻译服务没有返回任何文本",
+      "error-with-id": "翻译出错",
+      finished: "正在整理结果",
+      inpainting: "正在修补图片",
+      "mask-generation": "正在生成文本掩码",
+      ocr: "正在识别文本",
+      pending: "正在等待",
+      "pending-pos": "正在等待",
+      rendering: "正在渲染",
+      saved: "保存结果",
+      translating: "正在翻译文本",
+      upscaling: "正在放大图片"
+    },
+    tip: {
+      check_img_status_failed: "检查图片状态失败",
+      download_img_failed: "下载图片失败",
+      error: "翻译出错",
+      get_translator_list_error: "获取可用翻译服务列表时出错",
+      id_not_returned: "未返回 id",
+      img_downloading: "正在下载图片",
+      img_not_fully_loaded: "图片未加载完毕",
+      pending: "正在等待，列队还有 {{pos}} 张图片",
+      translation_completed: "翻译完成",
+      upload_error: "图片上传出错",
+      upload_return_error: "服务器翻译出错",
+      wait_translation: "等待翻译"
+    },
+    translator: {
+      baidu: "百度",
+      deepl: "DeepL",
+      google: "谷歌",
+      "gpt3.5": "GPT-3.5",
+      none: "删除文本",
+      offline: "离线模型",
+      original: "原文",
+      youdao: "有道"
+    }
+  }
+};
+
+const en = {
+  alert: {
+    comic_load_error: "Comic loading error",
+    download_failed: "Download failed",
+    fetch_comic_img_failed: "Failed to fetch comic images",
+    img_load_failed: "Image loading failed",
+    repeat_load: "Loading image, please wait",
+    server_connect_failed: "Unable to connect to the server"
+  },
+  button: {
+    close_current_page_translation: "Close translation of the current page",
+    download: "Download",
+    download_completed: "Download completed",
+    downloading: "Downloading",
+    exit: "Exit",
+    packaging: "Packaging",
+    page_fill: "Page fill",
+    page_mode_double: "Double page mode",
+    page_mode_single: "Single page mode",
+    scroll_mode: "Scroll mode",
+    setting: "Setting",
+    translate_current_page: "Translate current page",
+    zoom_in: "Zoom in"
+  },
+  description: "Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.",
+  end_page: {
+    next_button: "Next chapter",
+    prev_button: "Prev chapter",
+    tip: {
+      end_jump: "Reached the last page, scrolling down will jump to the next chapter",
+      exit: "Reached the last page, scrolling down will exit",
+      start_jump: "Reached the first page, scrolling up will jump to the previous chapter"
+    }
+  },
+  hotkeys: {
+    enter_read_mode: "Enter reading mode",
+    exit: "Exit",
+    jump_to_end: "Jump to the last page",
+    jump_to_home: "Jump to the first page",
+    switch_dir: "Switch reading direction",
+    switch_page_fill: "Switch page fill",
+    switch_scroll_mode: "Switch scroll mode",
+    switch_single_double_page_mode: "Switch single/double page mode",
+    turn_page_down: "Turn the page to the down",
+    turn_page_left: "Turn the page to the left",
+    turn_page_right: "Turn the page to the right",
+    turn_page_up: "Turn the page to the up"
+  },
+  img_status: {
+    error: "Load Error",
+    loading: "Loading",
+    wait: "Waiting for load"
+  },
+  other: {
+    auto_enter_read_mode: "Auto enter reading mode",
+    disable: "Disable",
+    enter_comic_read_mode: "Enter comic reading mode",
+    fab_hidden: "Hide floating button",
+    fab_show: "Show floating button",
+    fill_page: "Fill Page",
+    img_loading: "Image loading",
+    loading_img: "Loading image",
+    read_mode: "Reading mode"
+  },
+  pwa: {
+    alert: {
+      img_data_error: "Image data error",
+      img_not_found: "Image not found",
+      img_not_found_files: "Please select an image file or a compressed file containing image files",
+      img_not_found_folder: "No image files or compressed files containing image files in the folder",
+      repeat_load: "Loading other files…",
+      unzip_error: "Decompression error",
+      unzip_password_error: "Decompression password error",
+      userscript_not_installed: "ComicRead userscript not installed"
+    },
+    button: {
+      install: "Install",
+      no_more_prompt: "Do not prompt again",
+      resume_read: "Restore reading",
+      select_files: "Select File",
+      select_folder: "Select folder"
+    },
+    install_md: "### Tired of opening this webpage every time?\\nIf you wish to:\\n1. Have an independent window, as if using local software\\n1. Add to the local compressed file opening method for easy direct opening\\n1. Use offline\\n### Welcome to install this page as a PWA app on your computer😃👍",
+    message: {
+      enter_password: "Please enter your password",
+      unzipping: "Unzipping"
+    },
+    tip_md: "# ComicRead PWA\\nRead **local** comics using [ComicRead](https://github.com/hymbz/ComicReadScript) reading mode.\\n---\\n### Drag and drop image files, folders, or compressed files directly to start reading"
+  },
+  setting: {
+    hotkeys: {
+      add: "Add new hotkeys",
+      restore: "Restore default hotkeys"
+    },
+    language: "Language",
+    option: {
+      always_load_all_img: "Always load all images",
+      background_color: "Background Color",
+      click_page_turn_enabled: "Enable click to turn page",
+      click_page_turn_swap_area: "Swap LR clickable areas",
+      click_page_turn_vertical: "Vertically arranged clickable areas",
+      dark_mode: "Enable dark mode",
+      dir_ltr: "LTR (American comics)",
+      dir_rtl: "RTL (Japanese manga)",
+      disable_auto_scaling: "Disable automatic image scaling",
+      first_page_fill: "Enable first page fill by default",
+      jump_to_next_chapter: "Turn to the next/previous chapter",
+      paragraph_dir: "Reading direction",
+      paragraph_display: "Display",
+      paragraph_hotkeys: "Hotkeys",
+      paragraph_operation: "Operation",
+      paragraph_other: "Other",
+      paragraph_scrollbar: "Scrollbar",
+      paragraph_translation: "Translation",
+      preload_page_num: "Preload page number",
+      scrollbar_auto_hidden: "Auto hide the scrollbar",
+      scrollbar_show: "Show scrollbar",
+      scrollbar_show_img_status: "Show image loading status",
+      show_clickable_area: "Show clickable areas",
+      show_comments: "Show comments on the end page",
+      swap_page_turn_key: "Swap LR page-turning keys"
+    },
+    translation: {
+      cotrans_tip: "<p>Using the interface provided by <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\\n<p>So please <b>mind the frequency of use</b>.</p>\\n<p>It is highly recommended to use your own locally deployed project, as it does not consume server resources and does not require queuing.</p>",
+      options: {
+        detection_resolution: "Text detection resolution",
+        direction: "Render text orientation",
+        direction_auto: "Follow source",
+        direction_horizontal: "Horizontal only",
+        direction_vertical: "Vertical only",
+        forceRetry: "Force retry (ignore cache)",
+        localUrl: "customize server URL",
+        target_language: "Target language",
+        text_detector: "Text detector",
+        translator: "Translator"
+      },
+      server: "Translation server",
+      server_selfhosted: "Selfhosted",
+      translate_all_img: "Translate all images"
+    }
+  },
+  site: {
+    add_feature: {
+      associate_nhentai: "Associate nhentai",
+      auto_page_turn: "Auto page turning",
+      block_totally: "Totally block comics",
+      hotkeys_page_turn: "Page turning with hotkeys",
+      open_link_new_page: "Open links in a new page",
+      remember_current_site: "Remember the current site"
+    },
+    ehentai: {
+      fetch_img_page_source_failed: "Failed to get the source code of the image page",
+      fetch_img_page_url_failed: "Failed to get the image page address from the detail page",
+      fetch_img_url_failed: "Failed to get the image address from the image page",
+      html_changed_load_failed: "The web page structure has changed, unable to load comics",
+      html_changed_nhentai_failed: "The web page structure has changed, the function to associate nhentai comics is not working properly",
+      ip_banned: "IP address is banned",
+      nhentai_error: "Error in nhentai matching",
+      nhentai_failed: "Matching failed, please refresh after confirming login to {{nhentai}}"
+    },
+    nhentai: {
+      fetch_next_page_failed: "Failed to get next page of comic data",
+      tag_blacklist_fetch_failed: "Failed to fetch tag blacklist"
+    },
+    settings_tip: "Settings",
+    show_settings_menu: "Show settings menu",
+    simple: {
+      auto_read_mode_message: "\\"Auto enter reading mode\\" is enabled by default",
+      simple_read_mode: "Enter simple reading mode"
+    }
+  },
+  touch_area: {
+    menu: "Menu",
+    next: "Next Page",
+    prev: "Prev Page"
+  },
+  translation: {
+    status: {
+      "default": "Unknown status",
+      detection: "Detecting text",
+      downscaling: "Downscaling",
+      error: "Error during translation",
+      "error-lang": "The target language is not supported by the chosen translator",
+      "error-translating": "Did not get any text back from the text translation service",
+      "error-with-id": "Error during translation",
+      finished: "Finishing",
+      inpainting: "Inpainting",
+      "mask-generation": "Generating mask",
+      ocr: "Scanning text",
+      pending: "Pending",
+      "pending-pos": "Pending",
+      rendering: "Rendering",
+      saved: "Saved",
+      translating: "Translating",
+      upscaling: "Upscaling"
+    },
+    tip: {
+      check_img_status_failed: "Failed to check image status",
+      download_img_failed: "Failed to download image",
+      error: "Translation error",
+      get_translator_list_error: "Error occurred while getting the list of available translation services",
+      id_not_returned: "No id returned",
+      img_downloading: "Downloading images",
+      img_not_fully_loaded: "Image has not finished loading",
+      pending: "Pending, {{pos}} in queue",
+      translation_completed: "Translation completed",
+      upload_error: "Image upload error",
+      upload_return_error: "Error during server translation",
+      wait_translation: "Waiting for translation"
+    },
+    translator: {
+      baidu: "baidu",
+      deepl: "DeepL",
+      google: "Google",
+      "gpt3.5": "GPT-3.5",
+      none: "Remove texts",
+      offline: "offline translator",
+      original: "Original",
+      youdao: "youdao"
+    }
+  }
+};
+
+const langList = ['zh', 'en'];
+/** 判断传入的字符串是否是支持的语言类型代码 */
+const isLanguages = lang => langList.includes(lang);
+const [lang, setLang] = solidJs.createSignal('zh');
+
+/** 根据浏览器的偏好语言自动设置语言 */
+const autoSetLang = () => {
+  let newLang = 'zh';
+  for (let i = 0; i < navigator.languages.length; i++) {
+    const language = navigator.languages[i];
+    const matchLang = langList.find(l => l === language || l === language.split('-')[0]);
+    if (matchLang) {
+      newLang = matchLang;
+      break;
+    }
+  }
+  if (newLang !== lang()) setLang(newLang);
+};
+const setInitLang = async () => {
+  const saveLang = await GM.getValue('Languages');
+  if (isLanguages(saveLang)) {
+    if (saveLang !== lang()) setLang(saveLang);
+  } else {
+    autoSetLang();
+    await GM.setValue('Languages', lang());
+  }
+};
+const t$1 = solidJs.createRoot(() => {
+  solidJs.createEffect(solidJs.on(lang, () => GM.setValue('Languages', lang()), {
+    defer: true
+  }));
+  const locales = solidJs.createMemo(() => {
+    switch (lang()) {
+      case 'en':
+        return en;
+      default:
+        return zh;
+    }
+  });
+
+  // eslint-disable-next-line solid/reactivity
+  return (keys, variables) => {
+    let text = byPath(locales(), keys) ?? '';
+    if (variables) Object.entries(variables).forEach(([k, v]) => {
+      text = text.replaceAll(\`{{\${k}}}\`, \`\${v}\`);
+    });
+    if (!text) log.warn('unknown i18n key', keys);
+    return text;
+  };
+});
 
 const getDom = id => {
   let dom = document.getElementById(id);
@@ -341,8 +898,8 @@ const mountComponents = (id, fc) => {
 
 var e=[],t=[];function n(n,r){if(n&&"undefined"!=typeof document){var a,s=!0===r.prepend?"prepend":"append",d=!0===r.singleTag,i="string"==typeof r.container?document.querySelector(r.container):document.getElementsByTagName("head")[0];if(d){var u=e.indexOf(i);-1===u&&(u=e.push(i)-1,t[u]={}),a=t[u]&&t[u][s]?t[u][s]:t[u][s]=c();}else a=c();65279===n.charCodeAt(0)&&(n=n.substring(1)),a.styleSheet?a.styleSheet.cssText+=n:a.appendChild(document.createTextNode(n));}function c(){var e=document.createElement("style");if(e.setAttribute("type","text/css"),r.attributes)for(var t=Object.keys(r.attributes),n=0;n<t.length;n++)e.setAttribute(t[n],r.attributes[t[n]]);var a="prepend"===s?"afterbegin":"beforeend";return i.insertAdjacentElement(a,e),e}}
 
-var css$3 = ".index_module_root__4b4617d7{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__4b4617d7{align-items:center;animation:index_module_bounceInRight__4b4617d7 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__4b4617d7>svg{color:var(--theme);margin-right:.5em;width:1em}.index_module_item__4b4617d7[data-exit]{animation:index_module_bounceOutRight__4b4617d7 .5s 1}.index_module_schedule__4b4617d7{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__4b4617d7[data-schedule] .index_module_schedule__4b4617d7{transition:transform .1s}.index_module_item__4b4617d7:not([data-schedule]) .index_module_schedule__4b4617d7{animation:index_module_schedule__4b4617d7 linear 1 forwards}:is(.index_module_item__4b4617d7:hover,.index_module_item__4b4617d7[data-schedule],.index_module_root__4b4617d7[data-paused]) .index_module_schedule__4b4617d7{animation-play-state:paused}.index_module_msg__4b4617d7{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__4b4617d7 h2,.index_module_msg__4b4617d7 h3{margin:.3em 0 .7em}.index_module_msg__4b4617d7 ul{margin:0;text-align:left}.index_module_msg__4b4617d7 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__4b4617d7 button:hover{background:#e0e0e0}@keyframes index_module_schedule__4b4617d7{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__4b4617d7{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__4b4617d7{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__4b4617d7","item":"index_module_item__4b4617d7","bounceInRight":"index_module_bounceInRight__4b4617d7","bounceOutRight":"index_module_bounceOutRight__4b4617d7","schedule":"index_module_schedule__4b4617d7","msg":"index_module_msg__4b4617d7"};
+var css$3 = ".index_module_root__94b467e9{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__94b467e9{align-items:center;animation:index_module_bounceInRight__94b467e9 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__94b467e9>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__94b467e9[data-exit]{animation:index_module_bounceOutRight__94b467e9 .5s 1}.index_module_schedule__94b467e9{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__94b467e9[data-schedule] .index_module_schedule__94b467e9{transition:transform .1s}.index_module_item__94b467e9:not([data-schedule]) .index_module_schedule__94b467e9{animation:index_module_schedule__94b467e9 linear 1 forwards}:is(.index_module_item__94b467e9:hover,.index_module_item__94b467e9[data-schedule],.index_module_root__94b467e9[data-paused]) .index_module_schedule__94b467e9{animation-play-state:paused}.index_module_msg__94b467e9{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__94b467e9 h2,.index_module_msg__94b467e9 h3{margin:.3em 0}.index_module_msg__94b467e9 ul{margin:0;text-align:left}.index_module_msg__94b467e9 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__94b467e9 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__94b467e9{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__94b467e9{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__94b467e9{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2$3 = {"root":"index_module_root__94b467e9","item":"index_module_item__94b467e9","bounceInRight":"index_module_bounceInRight__94b467e9","bounceOutRight":"index_module_bounceOutRight__94b467e9","schedule":"index_module_schedule__94b467e9","msg":"index_module_msg__94b467e9"};
 n(css$3,{});
 
 const [_state$1, _setState$1] = store$2.createStore({
@@ -410,6 +967,19 @@ const toast$2 = (msg, options) => {
     };
     state.list.push(id);
   });
+
+  /** 弹窗后记录一下 */
+  let fn = log;
+  switch (options?.type) {
+    case 'warn':
+      fn = log.warn;
+      break;
+    case 'error':
+      fn = log.error;
+      break;
+  }
+  fn.call(undefined, 'Toast:', msg);
+  if (options?.throw && typeof msg === 'string') throw new Error(msg);
 };
 toast$2.dismiss = id => {
   if (!Reflect.has(store$1.map, id)) return;
@@ -431,10 +1001,12 @@ toast$2.warn = (msg, options) => toast$2(msg, {
   ...options,
   type: 'warn'
 });
-toast$2.error = (msg, options) => toast$2(msg, {
-  ...options,
-  type: 'error'
-});
+toast$2.error = (msg, options) => {
+  toast$2(msg, {
+    ...options,
+    type: 'error'
+  });
+};
 
 const _tmpl$$L = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$b = /*#__PURE__*/web.template(\`<div><div>\`);
@@ -627,7 +1199,7 @@ const xmlHttpRequest = details => new Promise((resolve, reject) => {
 
 /** 发起请求 */
 const request$1 = async (url, details, errorNum = 0) => {
-  const errorText = details?.errorText ?? '漫画加载出错';
+  const errorText = details?.errorText ?? t$1('alert.comic_load_error');
   try {
     const res = await xmlHttpRequest({
       method: 'GET',
@@ -645,7 +1217,7 @@ const request$1 = async (url, details, errorNum = 0) => {
       if (errorText && !details?.noTip) toast$1.error(errorText);
       throw new Error(errorText);
     }
-    console.error(errorText, error);
+    log.error(errorText, error);
     await sleep(1000);
     return request$1(url, details, errorNum + 1);
   }
@@ -768,12 +1340,14 @@ const useSpeedDial = (options, setOptions) => {
     switch (optionName) {
       case 'hiddenFAB':
       case 'option':
-      case 'hotKeys':
+      case 'hotkeys':
         return null;
       case 'autoShow':
         return () => web.createComponent(DefaultButton, {
           optionName: "autoShow",
-          showName: "\\u81EA\\u52A8\\u8FDB\\u5165\\u9605\\u8BFB\\u6A21\\u5F0F",
+          get showName() {
+            return t$1('other.auto_enter_read_mode');
+          },
           get children() {
             return web.memo(() => !!options.autoShow)() ? web.createComponent(MdAutoFlashOn, {}) : web.createComponent(MdAutoFlashOff, {});
           }
@@ -781,7 +1355,9 @@ const useSpeedDial = (options, setOptions) => {
       default:
         if (typeof options[optionName] !== 'boolean') return null;
         return () => web.createComponent(DefaultButton, {
-          optionName: optionName
+          get optionName() {
+            return t$1(\`site.add_feature.\${optionName}\`) || optionName;
+          }
         });
     }
   }).filter(Boolean);
@@ -868,14 +1444,6 @@ const useStore = initState => {
   };
 };
 
-/** 加载状态的中文描述 */
-const loadTypeMap = {
-  error: '加载出错',
-  loading: '正在加载',
-  wait: '等待加载',
-  loaded: ''
-};
-
 const imgState = {
   imgList: [],
   pageList: [],
@@ -912,30 +1480,36 @@ const ScrollbarState = {
   scrollLock: false
 };
 
+const LanguageMap = {
+  zh: 'CHS',
+  en: 'ENG'
+};
+const targetLanguage = LanguageMap[lang()] ?? 'CHS';
 const defaultOption = {
   dir: 'rtl',
   scrollbar: {
     enabled: true,
     autoHidden: false,
-    showProgress: true
+    showImgStatus: true
   },
   onePageMode: false,
   scrollMode: false,
-  clickPage: {
+  clickPageTurn: {
     enabled: 'ontouchstart' in document.documentElement,
-    overturn: false,
+    reverse: false,
     vertical: false
   },
   firstPageFill: true,
   disableZoom: false,
   darkMode: false,
-  swapTurnPage: false,
-  flipToNext: true,
+  swapPageTurnKey: false,
+  jumpToNext: true,
   alwaysLoadAllImg: false,
   scrollModeImgScale: 1,
   showComment: true,
+  preloadPageNum: 20,
   translation: {
-    server: '禁用',
+    server: 'disable',
     localUrl: undefined,
     forceRetry: false,
     options: {
@@ -943,7 +1517,7 @@ const defaultOption = {
       detector: 'default',
       translator: 'gpt3.5',
       direction: 'auto',
-      targetLanguage: 'CHS'
+      targetLanguage
     }
   }
 };
@@ -951,18 +1525,18 @@ const OptionState = {
   option: JSON.parse(JSON.stringify(defaultOption))
 };
 
-const defaultHoeKeys = {
-  向上翻页: ['w', 'ArrowUp', 'PageUp'],
-  向下翻页: [' ', 's', 'ArrowDown', 'PageDown'],
-  向右翻页: ['d', '.', 'ArrowRight'],
-  向左翻页: ['a', ',', 'ArrowLeft'],
-  跳至首页: ['Home'],
-  跳至尾页: ['End'],
-  退出: ['Escape'],
-  切换页面填充: ['/', 'm', 'z'],
-  切换卷轴模式: [],
-  切换单双页模式: [],
-  切换阅读方向: []
+const defaultHotkeys = {
+  turn_page_up: ['w', 'ArrowUp', 'PageUp'],
+  turn_page_down: [' ', 's', 'ArrowDown', 'PageDown'],
+  turn_page_right: ['d', '.', 'ArrowRight'],
+  turn_page_left: ['a', ',', 'ArrowLeft'],
+  jump_to_home: ['Home'],
+  jump_to_end: ['End'],
+  exit: ['Escape'],
+  switch_page_fill: ['/', 'm', 'z'],
+  switch_scroll_mode: [],
+  switch_single_double_page_mode: [],
+  switch_dir: []
 };
 const OtherState = {
   panzoom: undefined,
@@ -981,7 +1555,7 @@ const OtherState = {
   /** 评论列表 */
   commentList: undefined,
   /** 快捷键配置 */
-  hotKeys: {},
+  hotkeys: {},
   /** 点击结束页按钮时触发的回调 */
   onExit: undefined,
   /** 点击上一话按钮时触发的回调 */
@@ -993,7 +1567,7 @@ const OtherState = {
   /** 配置发生变化时触发的回调 */
   onOptionChange: undefined,
   /** 快捷键配置发生变化时触发的回调 */
-  onHotKeysChange: undefined,
+  onHotkeysChange: undefined,
   editButtonList: list => list,
   editSettingList: list => list,
   prevRef: undefined,
@@ -1321,11 +1895,11 @@ const updateDrag = state => {
 
 /** 获取指定图片的提示文本 */
 const getImgTip = (state, i) => {
-  if (i === -1) return '填充页';
+  if (i === -1) return t$1('other.fill_page');
   const img = state.imgList[i];
 
   // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-  if (img.loadType !== 'loaded') return \`\${i + 1} (\${loadTypeMap[img.loadType]})\`;
+  if (img.loadType !== 'loaded') return \`\${i + 1} (\${t$1(\`img_status.\${img.loadType}\`)})\`;
   if (img.translationType && img.translationType !== 'hide' && img.translationMessage) return \`\${i + 1}：\${img.translationMessage}\`;
   return \`\${i + 1}\`;
 };
@@ -1433,7 +2007,16 @@ const dragOption = {
 };
 solidJs.createRoot(() => {
   // 更新滚动条提示文本
-  solidJs.createEffect(solidJs.on([() => store.activePageIndex, () => store.pageList, () => store.scrollbar.dragHeight, () => store.scrollbar.dragTop, () => store.option.scrollMode, () => store.option.dir], updateTipText));
+  solidJs.createEffect(solidJs.on([() => store.activePageIndex, () => store.pageList, () => store.scrollbar.dragHeight, () => store.scrollbar.dragTop, () => store.option.scrollMode, () => store.option.dir, lang], updateTipText));
+
+  // 在关闭 showToolbar 的同时关掉 showScrollbar
+  solidJs.createEffect(solidJs.on(() => store.showToolbar, () => {
+    if (store.showScrollbar && !store.showToolbar) setState(state => {
+      state.showScrollbar = false;
+    });
+  }, {
+    defer: true
+  }));
 });
 
 /** 阻止事件冒泡 */
@@ -1446,7 +2029,7 @@ const playAnimation = e => e?.getAnimations().forEach(animation => {
   animation.cancel();
   animation.play();
 });
-const clamp = (max, val, min) => Math.max(Math.min(max, val), min);
+const clamp = (min, val, max) => Math.max(Math.min(max, val), min);
 
 /** 通过重新解构赋值 option 以触发 onOptionChange */
 const setOption = fn => {
@@ -1455,18 +2038,7 @@ const setOption = fn => {
 };
 
 /** 创建一个专门用于修改指定配置项的函数 */
-const createStateSetFn = name => val => {
-  const path = name.split('.');
-  setOption(draftOption => {
-    let target = draftOption;
-    while (path.length > 1) {
-      const key = path.shift();
-      if (!key) break;
-      target = target[key];
-    }
-    target[path[0]] = val;
-  });
-};
+const createStateSetFn = name => val => setOption(draftOption => byPath(draftOption, name, () => val));
 
 /** 创建用于将 ref 绑定到对应 state 上的工具函数 */
 const bindRef = (name, fn) => e => {
@@ -1475,6 +2047,41 @@ const bindRef = (name, fn) => e => {
     fn?.(state);
   });
 };
+
+const {
+  activeImgIndex,
+  nowFillIndex,
+  activePage,
+  imgPlaceholderHeight,
+  preloadNum
+} = solidJs.createRoot(() => {
+  const activeImgIndexMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex]?.find(i => i !== -1) ?? 0);
+  const nowFillIndexMemo = solidJs.createMemo(() => findFillIndex(activeImgIndexMemo(), store.fillEffect));
+  const activePageMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex] ?? []);
+  const imgPlaceholderHeightMemo = solidJs.createMemo(() => {
+    if (!store.option.scrollMode) return 0;
+    // 使用所有已加载图片高度的中位数
+    const heightList = store.imgList.filter(img => img.loadType === 'loaded' && img.height).map(img => img.height).sort();
+    if (!heightList.length) return windowHeight();
+    return heightList[Math.floor(heightList.length / 2)] * store.option.scrollModeImgScale;
+  });
+  const preloadNumMemo = solidJs.createMemo(() => ({
+    front: store.option.preloadPageNum,
+    back: Math.floor(store.option.preloadPageNum / 2)
+  }));
+  return {
+    /** 当前显示的第一张图片的 index */
+    activeImgIndex: activeImgIndexMemo,
+    /** 当前所处的图片流 */
+    nowFillIndex: nowFillIndexMemo,
+    /** 当前显示页面 */
+    activePage: activePageMemo,
+    /** 卷轴模式下的图片占位高度 */
+    imgPlaceholderHeight: imgPlaceholderHeightMemo,
+    /** 预加载页数 */
+    preloadNum: preloadNumMemo
+  };
+});
 
 /**
  * 预加载指定页数的图片，并取消其他预加载的图片
@@ -1486,7 +2093,7 @@ const bindRef = (name, fn) => e => {
  */
 const loadImg = (state, startIndex, endIndex = startIndex + 1, loadNum = 2) => {
   let editNum = 0;
-  state.pageList.slice(Math.max(startIndex, 0), clamp(endIndex, state.pageList.length, 0)).flat().some(index => {
+  state.pageList.slice(Math.max(startIndex, 0), clamp(0, state.pageList.length, endIndex)).flat().some(index => {
     if (index === -1) return false;
     const img = state.imgList[index];
     if (img.src && img.loadType !== 'loaded') {
@@ -1498,6 +2105,80 @@ const loadImg = (state, startIndex, endIndex = startIndex + 1, loadNum = 2) => {
   const edited = editNum > 0;
   if (edited) updateTipText();
   return edited;
+};
+
+/** 判断当前是否已经滚动到底部 */
+const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
+
+/** 判断当前是否已经滚动到顶部 */
+const isTop = state => state.option.scrollMode ? store.scrollbar.dragTop === 0 : state.activePageIndex === 0;
+
+/** 翻页 */
+const turnPage = dir => setState(state => {
+  if (dir === 'prev') {
+    switch (state.endPageType) {
+      case 'start':
+        if (!state.scrollLock && state.option.jumpToNext) state.onPrev?.();
+        return;
+      case 'end':
+        state.endPageType = undefined;
+        return;
+      default:
+        // 弹出卷首结束页
+        if (isTop(state)) {
+          if (!state.onExit) return;
+          // 没有 onPrev 时不弹出
+          if (!state.onPrev || !state.option.jumpToNext) return;
+          state.endPageType = 'start';
+          state.scrollLock = true;
+          window.setTimeout(() => {
+            state.scrollLock = false;
+          }, 200);
+          return;
+        }
+        if (!state.option.scrollMode) state.activePageIndex -= 1;
+    }
+  } else {
+    switch (state.endPageType) {
+      case 'end':
+        if (state.scrollLock) return;
+        if (state.onNext && state.option.jumpToNext) {
+          state.onNext();
+          return;
+        }
+        state.onExit?.(true);
+        return;
+      case 'start':
+        state.endPageType = undefined;
+        return;
+      default:
+        // 弹出卷尾结束页
+        if (isBottom(state)) {
+          if (!state.onExit) return;
+          state.endPageType = 'end';
+          state.scrollLock = true;
+          window.setTimeout(() => {
+            state.scrollLock = false;
+          }, 200);
+          return;
+        }
+        if (!state.option.scrollMode) state.activePageIndex += 1;
+    }
+  }
+});
+const zoomScrollModeImg = zoomLevel => {
+  setOption(draftOption => {
+    draftOption.scrollModeImgScale = !zoomLevel ? 1 : clamp(0.1,
+    // 放大到整数再运算，避免精度丢失导致的奇怪的值
+    (store.option.scrollModeImgScale * 10 + zoomLevel * 10) / 10, 3);
+  });
+  // 在调整图片缩放后使当前滚动进度保持不变
+  setState(state => {
+    mangaFlowEle().scrollTo({
+      top: contentHeight() * state.scrollbar.dragTop
+    });
+  });
+  handleMangaFlowScroll();
 };
 
 /** 根据当前页数更新所有图片的加载状态 */
@@ -1514,10 +2195,10 @@ const updateImgLoadType = debounce(100, state => {
   return (
     // 优先加载当前显示页
     loadImg(state, activePageIndex, activePageIndex + 1) ||
-    // 再加载后十页
-    loadImg(state, activePageIndex + 1, activePageIndex + 20) ||
-    // 再加载前十页
-    loadImg(state, activePageIndex - 10, activePageIndex - 1) ||
+    // 再加载后面几页
+    loadImg(state, activePageIndex + 1, activePageIndex + preloadNum().front) ||
+    // 再加载前面几页
+    loadImg(state, activePageIndex - 10, activePageIndex - preloadNum().back) ||
     // 根据设置决定是否要继续加载其余图片
     !state.option.alwaysLoadAllImg && imgList.length > 60 ||
     // 加载当前页后面的图片
@@ -1574,117 +2255,6 @@ const handleResize = (state, width, height) => {
   state.imgList.forEach(img => updateImgType(state, img));
 };
 
-/** 判断当前是否已经滚动到底部 */
-const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
-
-/** 判断当前是否已经滚动到顶部 */
-const isTop = state => state.option.scrollMode ? store.scrollbar.dragTop === 0 : state.activePageIndex === 0;
-
-/** 翻页 */
-const turnPage = dir => setState(state => {
-  if (dir === 'prev') {
-    switch (state.endPageType) {
-      case 'start':
-        if (!state.scrollLock && state.option.flipToNext) state.onPrev?.();
-        return;
-      case 'end':
-        state.endPageType = undefined;
-        return;
-      default:
-        // 弹出卷首结束页
-        if (isTop(state)) {
-          if (!state.onExit) return;
-          // 没有 onPrev 时不弹出
-          if (!state.onPrev || !state.option.flipToNext) return;
-          state.endPageType = 'start';
-          state.scrollLock = true;
-          window.setTimeout(() => {
-            state.scrollLock = false;
-          }, 200);
-          return;
-        }
-        if (!state.option.scrollMode) state.activePageIndex -= 1;
-    }
-  } else {
-    switch (state.endPageType) {
-      case 'end':
-        if (state.scrollLock) return;
-        if (state.onNext && state.option.flipToNext) {
-          state.onNext();
-          return;
-        }
-        state.onExit?.(true);
-        return;
-      case 'start':
-        state.endPageType = undefined;
-        return;
-      default:
-        // 弹出卷尾结束页
-        if (isBottom(state)) {
-          if (!state.onExit) return;
-          state.endPageType = 'end';
-          state.scrollLock = true;
-          window.setTimeout(() => {
-            state.scrollLock = false;
-          }, 200);
-          return;
-        }
-        if (!state.option.scrollMode) state.activePageIndex += 1;
-    }
-  }
-});
-const zoomScrollModeImg = zoomLevel => {
-  setOption(draftOption => {
-    draftOption.scrollModeImgScale = !zoomLevel ? 1 : clamp(3,
-    // 放大到整数再运算，避免精度丢失导致的奇怪的值
-    (store.option.scrollModeImgScale * 10 + zoomLevel * 10) / 10, 0.1);
-  });
-  // 在调整图片缩放后使当前滚动进度保持不变
-  setState(state => {
-    mangaFlowEle().scrollTo({
-      top: contentHeight() * state.scrollbar.dragTop
-    });
-  });
-  handleMangaFlowScroll();
-};
-const {
-  activeImgIndex,
-  nowFillIndex,
-  activePage,
-  imgPlaceholderHeight
-} = solidJs.createRoot(() => {
-  const activeImgIndexMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex]?.find(i => i !== -1) ?? 0);
-  const nowFillIndexMemo = solidJs.createMemo(() => findFillIndex(activeImgIndexMemo(), store.fillEffect));
-  const activePageMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex] ?? []);
-  const imgPlaceholderHeightMemo = solidJs.createMemo(() => {
-    if (!store.option.scrollMode) return 0;
-    // 使用所有已加载图片高度的中位数
-    const heightList = store.imgList.filter(img => img.loadType === 'loaded' && img.height).map(img => img.height).sort();
-    if (!heightList.length) return windowHeight();
-    return heightList[Math.floor(heightList.length / 2)] * store.option.scrollModeImgScale;
-  });
-
-  // 页数发生变动时
-  solidJs.createEffect(solidJs.on(() => store.activePageIndex, () => {
-    setState(state => {
-      updateImgLoadType(state);
-      if (state.endPageType) state.endPageType = undefined;
-    });
-  }, {
-    defer: true
-  }));
-  return {
-    /** 当前显示的第一张图片的 index */
-    activeImgIndex: activeImgIndexMemo,
-    /** 当前所处的图片流 */
-    nowFillIndex: nowFillIndexMemo,
-    /** 当前显示页面 */
-    activePage: activePageMemo,
-    /** 卷轴模式下的图片占位高度 */
-    imgPlaceholderHeight: imgPlaceholderHeightMemo
-  };
-});
-
 /** 在图片排列改变后自动跳转回原先显示图片所在的页数 */
 const jumpBackPage = state => {
   const lastActiveImgIndex = activeImgIndex();
@@ -1733,34 +2303,45 @@ const switchOnePageMode = () => {
 const switchDir = () => setOption(draftOption => {
   draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
 });
+solidJs.createRoot(() => {
+  // 页数发生变动时
+  solidJs.createEffect(solidJs.on(() => store.activePageIndex, () => {
+    setState(state => {
+      updateImgLoadType(state);
+      if (state.endPageType) state.endPageType = undefined;
+    });
+  }, {
+    defer: true
+  }));
+});
 
-const setHotKeys = (...args) => {
-  _setState.apply(undefined, ['hotKeys', ...args]);
-  store.onHotKeysChange?.(Object.fromEntries(Object.entries(store.hotKeys).filter(([name, keys]) => !defaultHoeKeys[name] || !isEqualArray(keys, defaultHoeKeys[name]))));
+const setHotkeys = (...args) => {
+  _setState.apply(undefined, ['hotkeys', ...args]);
+  store.onHotkeysChange?.(Object.fromEntries(Object.entries(store.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]))));
 };
 const {
-  hotKeysMap
+  hotkeysMap
 } = solidJs.createRoot(() => {
-  const hotKeysMapMemo = solidJs.createMemo(() => Object.fromEntries(Object.entries(store.hotKeys).flatMap(([name, key]) => key.map(k => [k, name]))));
+  const hotkeysMapMemo = solidJs.createMemo(() => Object.fromEntries(Object.entries(store.hotkeys).flatMap(([name, key]) => key.map(k => [k, name]))));
   return {
     /** 快捷键配置 */
-    hotKeysMap: hotKeysMapMemo
+    hotkeysMap: hotkeysMapMemo
   };
 });
 
 /** 删除指定快捷键 */
-const delHotKeys = code => {
-  Object.entries(store.hotKeys).forEach(([name, keys]) => {
+const delHotkeys = code => {
+  Object.entries(store.hotkeys).forEach(([name, keys]) => {
     const i = keys.indexOf(code);
     if (i === -1) return;
-    const newKeys = [...store.hotKeys[name]];
+    const newKeys = [...store.hotkeys[name]];
     newKeys.splice(i, 1);
-    setHotKeys(name, newKeys);
+    setHotkeys(name, newKeys);
   });
 };
 
-var css$1 = ".index_module_img__1f403422{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__1f403422[data-show]{display:unset}.index_module_img__1f403422[data-fill=left]{transform:translate(50%)}.index_module_img__1f403422[data-fill=right]{transform:translate(-50%)}.index_module_img__1f403422[data-load-type=error],.index_module_img__1f403422[data-load-type=wait]{display:none}.index_module_mangaFlowBox__1f403422{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__1f403422::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__1f403422[data-hiddenMouse=true]{cursor:none}.index_module_mangaFlow__1f403422{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__1f403422.index_module_disableZoom__1f403422 .index_module_img__1f403422{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__1f403422.index_module_scrollMode__1f403422 .index_module_img__1f403422[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0;visibility:hidden}.index_module_mangaFlow__1f403422[dir=ltr]{flex-direction:row}.index_module_mangaFlow__1f403422>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__1f403422>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__1f403422>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__1f403422{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__1f403422>button{animation:index_module_jello__1f403422 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__1f403422>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__1f403422>button:focus-visible{outline:none}.index_module_endPage__1f403422>.index_module_tip__1f403422{margin:auto;position:absolute}.index_module_endPage__1f403422[data-show]{opacity:1;pointer-events:all}.index_module_endPage__1f403422[data-type=start]>.index_module_tip__1f403422{transform:translateY(-10em)}.index_module_endPage__1f403422[data-type=end]>.index_module_tip__1f403422{transform:translateY(10em)}.index_module_comments__1f403422{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__1f403422>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__1f403422:hover{opacity:1}@keyframes index_module_jello__1f403422{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__1f403422{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__1f403422{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__1f403422[data-show=true] .index_module_toolbarPanel__1f403422{transform:none}.index_module_toolbarBg__1f403422{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__1f403422{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__1f403422{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;width:15em}.index_module_SettingPanel__1f403422 hr{margin:0}.index_module_SettingBlock__1f403422{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422{overflow:hidden}:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div+:is(.index_module_SettingBlock__1f403422 .index_module_SettingBlockBody__1f403422)>div{margin-top:1em}.index_module_SettingBlock__1f403422[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__1f403422{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__1f403422{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__1f403422+.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_SettingsItemName__1f403422{font-size:.9em}.index_module_SettingsItemSwitch__1f403422{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__1f403422{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__1f403422[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__1f403422[data-checked=true] .index_module_SettingsItemSwitchRound__1f403422{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__1f403422{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__1f403422{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__1f403422{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__1f403422{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422{overflow:hidden}.index_module_SettingsShowItem__1f403422>.index_module_SettingsShowItemBody__1f403422>.index_module_SettingsItem__1f403422{margin-top:1em}.index_module_hotKeys__1f403422{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotKeys__1f403422+.index_module_hotKeys__1f403422{margin-top:.5em}.index_module_hotKeys__1f403422:last-child{border-bottom:none}.index_module_hotKeysItem__1f403422{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotKeysItem__1f403422>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotKeysItem__1f403422>svg:hover{opacity:.9}.index_module_hotKeysItem__1f403422:hover{padding:.2em .5em}.index_module_hotKeysItem__1f403422:hover>svg{display:unset}.index_module_hotKeysItem__1f403422:focus,.index_module_hotKeysItem__1f403422:focus-visible{outline:var(--text) solid 2px}.index_module_hotKeysHeader__1f403422{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotKeysHeader__1f403422>p{background-color:var(--page_bg);margin:0}.index_module_hotKeysHeader__1f403422>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotKeysHeader__1f403422>div[title]>svg{width:1.6em}.index_module_hotKeys__1f403422:hover div[title]{transform:scale(1)}.index_module_scrollbar__1f403422{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__1f403422>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__1f403422{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__1f403422{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__1f403422[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__1f403422[data-type=wait]{opacity:.5}.index_module_scrollbarPage__1f403422[data-type=error]{background-color:#f005}.index_module_scrollbarPage__1f403422[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__1f403422[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__1f403422[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__1f403422[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__1f403422[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__1f403422{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__1f403422:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__1f403422[data-show=true],.index_module_scrollbarPoper__1f403422[data-show=true],.index_module_scrollbar__1f403422:hover .index_module_scrollbarDrag__1f403422,.index_module_scrollbar__1f403422:hover .index_module_scrollbarPoper__1f403422{opacity:1}.index_module_touchAreaRoot__1f403422{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__1f403422[data-vert=true]{flex-direction:column!important}@media (width <= 600px){.index_module_touchAreaRoot__1f403422{flex-direction:column!important}}.index_module_touchArea__1f403422{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none}.index_module_touchArea__1f403422>h6{width:1em}.index_module_touchArea__1f403422[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__1f403422[data-show=true]{visibility:visible}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__1f403422[data-show=true] .index_module_touchArea__1f403422[data-area=next]{background-color:#f38181e6}.index_module_hidden__1f403422{display:none}.index_module_invisible__1f403422{visibility:hidden}.index_module_opacity1__1f403422{opacity:1}.index_module_opacity0__1f403422{opacity:0}.index_module_root__1f403422{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__1f403422 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__1f403422{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__1f403422::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:0;overflow-wrap:anywhere;padding:0 1em;text-align:start;white-space:pre-wrap}blockquote>p+p{margin-top:.5em}svg{width:1em}";
-var modules_c21c94f2$1 = {"img":"index_module_img__1f403422","mangaFlowBox":"index_module_mangaFlowBox__1f403422","mangaFlow":"index_module_mangaFlow__1f403422","disableZoom":"index_module_disableZoom__1f403422","scrollMode":"index_module_scrollMode__1f403422","endPage":"index_module_endPage__1f403422","jello":"index_module_jello__1f403422","tip":"index_module_tip__1f403422","comments":"index_module_comments__1f403422","toolbar":"index_module_toolbar__1f403422","toolbarPanel":"index_module_toolbarPanel__1f403422","toolbarBg":"index_module_toolbarBg__1f403422","SettingPanelPopper":"index_module_SettingPanelPopper__1f403422","SettingPanel":"index_module_SettingPanel__1f403422","SettingBlock":"index_module_SettingBlock__1f403422","SettingBlockBody":"index_module_SettingBlockBody__1f403422","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__1f403422","SettingsItem":"index_module_SettingsItem__1f403422","SettingsItemName":"index_module_SettingsItemName__1f403422","SettingsItemSwitch":"index_module_SettingsItemSwitch__1f403422","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__1f403422","SettingsItemIconButton":"index_module_SettingsItemIconButton__1f403422","SettingsItemSelect":"index_module_SettingsItemSelect__1f403422","closeCover":"index_module_closeCover__1f403422","SettingsShowItem":"index_module_SettingsShowItem__1f403422","SettingsShowItemBody":"index_module_SettingsShowItemBody__1f403422","hotKeys":"index_module_hotKeys__1f403422","hotKeysItem":"index_module_hotKeysItem__1f403422","hotKeysHeader":"index_module_hotKeysHeader__1f403422","scrollbar":"index_module_scrollbar__1f403422","scrollbarDrag":"index_module_scrollbarDrag__1f403422","scrollbarPage":"index_module_scrollbarPage__1f403422","scrollbarPoper":"index_module_scrollbarPoper__1f403422","touchAreaRoot":"index_module_touchAreaRoot__1f403422","touchArea":"index_module_touchArea__1f403422","hidden":"index_module_hidden__1f403422","invisible":"index_module_invisible__1f403422","opacity1":"index_module_opacity1__1f403422","opacity0":"index_module_opacity0__1f403422","root":"index_module_root__1f403422","beautifyScrollbar":"index_module_beautifyScrollbar__1f403422"};
+var css$1 = ".index_module_img__e6e60019{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__e6e60019[data-show]{display:unset}.index_module_img__e6e60019[data-fill=left]{transform:translate(50%)}.index_module_img__e6e60019[data-fill=right]{transform:translate(-50%)}.index_module_img__e6e60019[data-load-type=error],.index_module_img__e6e60019[data-load-type=wait]{display:none}.index_module_mangaFlowBox__e6e60019{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__e6e60019::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__e6e60019[data-hiddenMouse=true]{cursor:none}.index_module_mangaFlow__e6e60019{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__e6e60019.index_module_disableZoom__e6e60019 .index_module_img__e6e60019{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0;visibility:hidden}.index_module_mangaFlow__e6e60019[dir=ltr]{flex-direction:row}.index_module_mangaFlow__e6e60019>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__e6e60019>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__e6e60019>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__e6e60019{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__e6e60019>button{animation:index_module_jello__e6e60019 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__e6e60019>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__e6e60019>button:focus-visible{outline:none}.index_module_endPage__e6e60019>.index_module_tip__e6e60019{margin:auto;position:absolute}.index_module_endPage__e6e60019[data-show]{opacity:1;pointer-events:all}.index_module_endPage__e6e60019[data-type=start]>.index_module_tip__e6e60019{transform:translateY(-10em)}.index_module_endPage__e6e60019[data-type=end]>.index_module_tip__e6e60019{transform:translateY(10em)}.index_module_comments__e6e60019{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__e6e60019>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__e6e60019:hover{opacity:1}@keyframes index_module_jello__e6e60019{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__e6e60019{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__e6e60019{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__e6e60019[data-show=true] .index_module_toolbarPanel__e6e60019{transform:none}.index_module_toolbarBg__e6e60019{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__e6e60019{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__e6e60019{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text}.index_module_SettingPanel__e6e60019 hr{margin:0}.index_module_SettingBlock__e6e60019{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div+:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div{margin-top:1em}.index_module_SettingBlock__e6e60019[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__e6e60019{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__e6e60019{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__e6e60019+.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_SettingsItemName__e6e60019{font-size:.9em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__e6e60019{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__e6e60019{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__e6e60019[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__e6e60019[data-checked=true] .index_module_SettingsItemSwitchRound__e6e60019{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__e6e60019{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__e6e60019{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__e6e60019{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__e6e60019{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019{overflow:hidden}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019>.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_hotkeys__e6e60019{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__e6e60019+.index_module_hotkeys__e6e60019{margin-top:.5em}.index_module_hotkeys__e6e60019:last-child{border-bottom:none}.index_module_hotkeysItem__e6e60019{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__e6e60019>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__e6e60019>svg:hover{opacity:.9}.index_module_hotkeysItem__e6e60019:hover{padding:.2em .5em}.index_module_hotkeysItem__e6e60019:hover>svg{display:unset}.index_module_hotkeysItem__e6e60019:focus,.index_module_hotkeysItem__e6e60019:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__e6e60019{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__e6e60019>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__e6e60019>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__e6e60019>div[title]>svg{width:1.6em}.index_module_hotkeys__e6e60019:hover div[title]{transform:scale(1)}.index_module_scrollbar__e6e60019{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__e6e60019>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__e6e60019{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__e6e60019{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__e6e60019[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__e6e60019[data-type=wait]{opacity:.5}.index_module_scrollbarPage__e6e60019[data-type=error]{background-color:#f005}.index_module_scrollbarPage__e6e60019[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__e6e60019[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__e6e60019[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__e6e60019[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__e6e60019[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__e6e60019{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__e6e60019:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__e6e60019[data-show=true],.index_module_scrollbarPoper__e6e60019[data-show=true],.index_module_scrollbar__e6e60019:hover .index_module_scrollbarDrag__e6e60019,.index_module_scrollbar__e6e60019:hover .index_module_scrollbarPoper__e6e60019{opacity:1}.index_module_touchAreaRoot__e6e60019{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__e6e60019[data-vert=true]{flex-direction:column!important}@media (width <= 600px){.index_module_touchAreaRoot__e6e60019{flex-direction:column!important}}.index_module_touchArea__e6e60019{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none}.index_module_touchArea__e6e60019>h6{text-orientation:upright;writing-mode:vertical-lr}.index_module_touchArea__e6e60019[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__e6e60019[data-show=true]{visibility:visible}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=next]{background-color:#f38181e6}.index_module_hidden__e6e60019{display:none}.index_module_invisible__e6e60019{visibility:hidden}.index_module_opacity1__e6e60019{opacity:1}.index_module_opacity0__e6e60019{opacity:0}.index_module_root__e6e60019{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__e6e60019 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__e6e60019{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var modules_c21c94f2$1 = {"img":"index_module_img__e6e60019","mangaFlowBox":"index_module_mangaFlowBox__e6e60019","mangaFlow":"index_module_mangaFlow__e6e60019","disableZoom":"index_module_disableZoom__e6e60019","scrollMode":"index_module_scrollMode__e6e60019","endPage":"index_module_endPage__e6e60019","jello":"index_module_jello__e6e60019","tip":"index_module_tip__e6e60019","comments":"index_module_comments__e6e60019","toolbar":"index_module_toolbar__e6e60019","toolbarPanel":"index_module_toolbarPanel__e6e60019","toolbarBg":"index_module_toolbarBg__e6e60019","SettingPanelPopper":"index_module_SettingPanelPopper__e6e60019","SettingPanel":"index_module_SettingPanel__e6e60019","SettingBlock":"index_module_SettingBlock__e6e60019","SettingBlockBody":"index_module_SettingBlockBody__e6e60019","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__e6e60019","SettingsItem":"index_module_SettingsItem__e6e60019","SettingsItemName":"index_module_SettingsItemName__e6e60019","SettingsItemSwitch":"index_module_SettingsItemSwitch__e6e60019","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__e6e60019","SettingsItemIconButton":"index_module_SettingsItemIconButton__e6e60019","SettingsItemSelect":"index_module_SettingsItemSelect__e6e60019","closeCover":"index_module_closeCover__e6e60019","SettingsShowItem":"index_module_SettingsShowItem__e6e60019","SettingsShowItemBody":"index_module_SettingsShowItemBody__e6e60019","hotkeys":"index_module_hotkeys__e6e60019","hotkeysItem":"index_module_hotkeysItem__e6e60019","hotkeysHeader":"index_module_hotkeysHeader__e6e60019","scrollbar":"index_module_scrollbar__e6e60019","scrollbarDrag":"index_module_scrollbarDrag__e6e60019","scrollbarPage":"index_module_scrollbarPage__e6e60019","scrollbarPoper":"index_module_scrollbarPoper__e6e60019","touchAreaRoot":"index_module_touchAreaRoot__e6e60019","touchArea":"index_module_touchArea__e6e60019","hidden":"index_module_hidden__e6e60019","invisible":"index_module_invisible__e6e60019","opacity1":"index_module_opacity1__e6e60019","opacity0":"index_module_opacity0__e6e60019","root":"index_module_root__e6e60019","beautifyScrollbar":"index_module_beautifyScrollbar__e6e60019"};
 n(css$1,{});
 
 const handleWheel = e => {
@@ -1785,13 +2366,26 @@ const handleWheel = e => {
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
-const handleSwapTurnPage = nextPage => {
-  const next = store.option.swapTurnPage ? !nextPage : nextPage;
+const handleSwapPageTurnKey = nextPage => {
+  const next = store.option.swapPageTurnKey ? !nextPage : nextPage;
   return next ? 'next' : 'prev';
 };
+
+/** 判断按键代码是否可以输入字母 */
+const isAlphabetKey = /^(Shift \\+ )?[a-zA-Z]$/;
 const handleKeyDown = e => {
-  if (e.target.tagName === 'INPUT' || e.target.className === modules_c21c94f2$1.hotKeysItem) return;
+  if (e.target.tagName === 'INPUT' || e.target.className === modules_c21c94f2$1.hotkeysItem) return;
   const code = getKeyboardCode(e);
+
+  // 处理标注了 data-only-number 的元素
+  if (e.target.getAttribute('data-only-number') !== null) {
+    // 拦截能输入数字外的按键
+    if (isAlphabetKey.test(code)) {
+      e.stopPropagation();
+      e.preventDefault();
+    } else if (code.includes('Enter')) e.target.blur();
+    return;
+  }
 
   // 卷轴模式下跳过用于移动的按键
   if (store.option.scrollMode && !store.endPageType) {
@@ -1812,36 +2406,36 @@ const handleKeyDown = e => {
   }
 
   // 拦截已注册的快捷键
-  if (Reflect.has(hotKeysMap(), code)) {
+  if (Reflect.has(hotkeysMap(), code)) {
     e.stopPropagation();
     e.preventDefault();
   }
-  switch (hotKeysMap()[code]) {
-    case '向上翻页':
+  switch (hotkeysMap()[code]) {
+    case 'turn_page_up':
       return turnPage('prev');
-    case '向下翻页':
+    case 'turn_page_down':
       return turnPage('next');
-    case '向右翻页':
-      return turnPage(handleSwapTurnPage(store.option.dir !== 'rtl'));
-    case '向左翻页':
-      return turnPage(handleSwapTurnPage(store.option.dir === 'rtl'));
-    case '跳至首页':
+    case 'turn_page_right':
+      return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
+    case 'turn_page_left':
+      return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));
+    case 'jump_to_home':
       return setState(state => {
         state.activePageIndex = 0;
       });
-    case '跳至尾页':
+    case 'jump_to_end':
       return setState(state => {
         state.activePageIndex = state.pageList.length - 1;
       });
-    case '切换页面填充':
+    case 'switch_page_fill':
       return switchFillEffect();
-    case '切换卷轴模式':
+    case 'switch_scroll_mode':
       return switchScrollMode();
-    case '切换单双页模式':
+    case 'switch_single_double_page_mode':
       return switchOnePageMode();
-    case '切换阅读方向':
+    case 'switch_dir':
       return switchDir();
-    case '退出':
+    case 'exit':
       return store.onExit?.();
   }
 };
@@ -1921,7 +2515,7 @@ const handleImgError = (i, e) => {
       setTimeout(() => e.setAttribute('src', src), 500);
     }
     img.loadType = 'error';
-    console.error('图片加载失败', e);
+    log.error(t$1('alert.img_load_failed'), e);
     state.onLoading?.(state.imgList, img);
   });
 };
@@ -2036,13 +2630,13 @@ const LoadTypeTip = () => web.createComponent(solidJs.For, {
   children: ShowSvg
 });
 
-const _tmpl$$x = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6>上 一 页</h6></div><div data-area="menu" role="button" tabindex="-1"><h6>菜 单</h6></div><div data-area="next" role="button" tabindex="-1"><h6>下 一 页\`);
+const _tmpl$$x = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6></h6></div><div data-area="menu" role="button" tabindex="-1"><h6></h6></div><div data-area="next" role="button" tabindex="-1"><h6>\`);
 const handleClick = {
   prev: () => {
-    if (store.option.clickPage.enabled) turnPage('prev');
+    if (store.option.clickPageTurn.enabled) turnPage('prev');
   },
   next: () => {
-    if (store.option.clickPage.enabled) turnPage('next');
+    if (store.option.clickPageTurn.enabled) turnPage('next');
   },
   menu: () => {
     // 处于放大模式时跳过不处理
@@ -2074,20 +2668,26 @@ const TouchArea = () => {
   return (() => {
     const _el$ = _tmpl$$x(),
       _el$2 = _el$.firstChild,
-      _el$3 = _el$2.nextSibling,
-      _el$4 = _el$3.nextSibling;
+      _el$3 = _el$2.firstChild,
+      _el$4 = _el$2.nextSibling,
+      _el$5 = _el$4.firstChild,
+      _el$6 = _el$4.nextSibling,
+      _el$7 = _el$6.firstChild;
     const _ref$ = bindRef('prevAreaRef');
     typeof _ref$ === "function" && web.use(_ref$, _el$2);
+    web.insert(_el$3, () => t$1('touch_area.prev'));
     const _ref$2 = bindRef('menuAreaRef');
-    typeof _ref$2 === "function" && web.use(_ref$2, _el$3);
+    typeof _ref$2 === "function" && web.use(_ref$2, _el$4);
+    web.insert(_el$5, () => t$1('touch_area.menu'));
     const _ref$3 = bindRef('nextAreaRef');
-    typeof _ref$3 === "function" && web.use(_ref$3, _el$4);
+    typeof _ref$3 === "function" && web.use(_ref$3, _el$6);
+    web.insert(_el$7, () => t$1('touch_area.next'));
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.touchAreaRoot,
-        _v$2 = store.option.dir === 'rtl' === (store.option.clickPage.enabled && store.option.clickPage.overturn) ? undefined : 'row-reverse',
+        _v$2 = store.option.dir === 'rtl' === (store.option.clickPageTurn.enabled && store.option.clickPageTurn.reverse) ? undefined : 'row-reverse',
         _v$3 = store.isZoomed ? 'move' : undefined,
         _v$4 = store.showTouchArea,
-        _v$5 = store.option.clickPage.vertical,
+        _v$5 = store.option.clickPageTurn.vertical,
         _v$6 = modules_c21c94f2$1.touchArea,
         _v$7 = modules_c21c94f2$1.touchArea,
         _v$8 = modules_c21c94f2$1.touchArea;
@@ -2097,8 +2697,8 @@ const TouchArea = () => {
       _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-show", _p$._v$4 = _v$4);
       _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-vert", _p$._v$5 = _v$5);
       _v$6 !== _p$._v$6 && web.className(_el$2, _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.className(_el$3, _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.className(_el$4, _p$._v$8 = _v$8);
+      _v$7 !== _p$._v$7 && web.className(_el$4, _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && web.className(_el$6, _p$._v$8 = _v$8);
       return _p$;
     }, {
       _v$: undefined,
@@ -2376,10 +2976,10 @@ const MdAdd = ((props = {}) => (() => {
 })());
 
 const _tmpl$$i = /*#__PURE__*/web.template(\`<div tabindex="0">\`),
-  _tmpl$2$8 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div title="添加新快捷键"></div><div title="恢复默认快捷键">\`);
+  _tmpl$2$8 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
 const KeyItem = props => {
-  const code = () => store.hotKeys[props.operateName][props.i];
-  const del = () => delHotKeys(code());
+  const code = () => store.hotkeys[props.operateName][props.i];
+  const del = () => delHotkeys(code());
   const handleKeyDown = e => {
     e.stopPropagation();
     e.preventDefault();
@@ -2390,11 +2990,11 @@ const KeyItem = props => {
         focus();
         return;
       case 'Backspace':
-        setHotKeys(props.operateName, props.i, '');
+        setHotkeys(props.operateName, props.i, '');
         return;
     }
     const newCode = getKeyboardCode(e);
-    if (!Reflect.has(hotKeysMap(), newCode)) setHotKeys(props.operateName, props.i, newCode);
+    if (!Reflect.has(hotkeysMap(), newCode)) setHotkeys(props.operateName, props.i, newCode);
   };
   return (() => {
     const _el$ = _tmpl$$i();
@@ -2405,13 +3005,13 @@ const KeyItem = props => {
     web.insert(_el$, web.createComponent(MdClose, {
       "on:click": del
     }), null);
-    web.effect(() => web.className(_el$, modules_c21c94f2$1.hotKeysItem));
+    web.effect(() => web.className(_el$, modules_c21c94f2$1.hotkeysItem));
     return _el$;
   })();
 };
-const SettingHotKeys = () => web.createComponent(solidJs.For, {
+const SettingHotkeys = () => web.createComponent(solidJs.For, {
   get each() {
-    return Object.entries(store.hotKeys);
+    return Object.entries(store.hotkeys);
   },
   children: ([name, keys]) => (() => {
     const _el$2 = _tmpl$2$8(),
@@ -2420,14 +3020,14 @@ const SettingHotKeys = () => web.createComponent(solidJs.For, {
       _el$5 = _el$4.nextSibling,
       _el$6 = _el$5.nextSibling,
       _el$7 = _el$6.nextSibling;
-    web.insert(_el$4, name);
+    web.insert(_el$4, () => t$1(\`hotkeys.\${name}\`) || name);
     _el$5.style.setProperty("flex-grow", "1");
-    _el$6.addEventListener("click", () => setHotKeys(name, store.hotKeys[name].length, ''));
+    _el$6.addEventListener("click", () => setHotkeys(name, store.hotkeys[name].length, ''));
     web.insert(_el$6, web.createComponent(MdAdd, {}));
     _el$7.addEventListener("click", () => {
-      const newKeys = defaultHoeKeys[name] ?? [];
-      newKeys.forEach(delHotKeys);
-      setHotKeys(name, newKeys);
+      const newKeys = defaultHotkeys[name] ?? [];
+      newKeys.forEach(delHotkeys);
+      setHotkeys(name, newKeys);
     });
     web.insert(_el$7, web.createComponent(MdRefresh, {}));
     web.insert(_el$2, web.createComponent(solidJs.Index, {
@@ -2438,14 +3038,20 @@ const SettingHotKeys = () => web.createComponent(solidJs.For, {
       })
     }), null);
     web.effect(_p$ => {
-      const _v$ = modules_c21c94f2$1.hotKeys,
-        _v$2 = modules_c21c94f2$1.hotKeysHeader;
+      const _v$ = modules_c21c94f2$1.hotkeys,
+        _v$2 = modules_c21c94f2$1.hotkeysHeader,
+        _v$3 = t$1('setting.hotkeys.add'),
+        _v$4 = t$1('setting.hotkeys.restore');
       _v$ !== _p$._v$ && web.className(_el$2, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.className(_el$3, _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$6, "title", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$7, "title", _p$._v$4 = _v$4);
       return _p$;
     }, {
       _v$: undefined,
-      _v$2: undefined
+      _v$2: undefined,
+      _v$3: undefined,
+      _v$4: undefined
     });
     return _el$2;
   })()
@@ -2491,35 +3097,6 @@ const SettingsItemSelect = props => {
   });
 };
 
-const messageMap = {
-  default: '未知状态',
-  pending: '正在等待',
-  'pending-pos': '正在等待',
-  upscaling: '正在放大图片',
-  detection: '正在检测文本',
-  ocr: '正在识别文本',
-  'mask-generation': '正在生成文本掩码',
-  inpainting: '正在修补图片',
-  translating: '正在翻译文本',
-  rendering: '正在渲染',
-  downscaling: '正在缩小图片',
-  finished: '正在整理结果',
-  error: '翻译出错',
-  'error-lang': '你选择的翻译服务不支持你选择的语言',
-  'error-translating': '翻译服务没有返回任何文本',
-  'error-with-id': '翻译出错',
-  saved: '正在返回缓存结果'
-};
-const translatorMap = {
-  youdao: '有道',
-  baidu: '百度',
-  google: '谷歌',
-  deepl: 'DeepL',
-  'gpt3.5': 'GPT-3.5',
-  offline: '离线模型',
-  none: '删除文本',
-  original: '原文'
-};
 const setMessage = (i, msg) => {
   setState(state => {
     state.imgList[i].translationMessage = msg;
@@ -2528,7 +3105,7 @@ const setMessage = (i, msg) => {
 };
 const isBlobUrlRe = /^blob:/;
 const request = (url, details) => new Promise((resolve, reject) => {
-  if (typeof GM_xmlhttpRequest === 'undefined') throw new Error('未安装 ComicRead 插件');
+  if (typeof GM_xmlhttpRequest === 'undefined') throw new Error(t$1('pwa.alert.userscript_not_installed'));
   GM_xmlhttpRequest({
     method: 'GET',
     url,
@@ -2569,7 +3146,7 @@ const createFormData = imgBlob => {
 };
 
 /** 将站点列表转为选择器中的选项 */
-const createOptions = list => list.map(name => [name, translatorMap[name] ?? name]);
+const createOptions = list => list.map(name => [name, t$1(\`translation.translator.\${name}\`) || name]);
 
 const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
 
@@ -2582,22 +3159,22 @@ const getValidTranslators = async () => {
     const list = JSON.parse(translatorsText.replaceAll(\`'\`, \`"\`));
     return createOptions(list);
   } catch (e) {
-    console.error('获取部署服务的可用翻译时出错', e);
+    log.error(t$1('translation.tip.get_translator_list_error'), e);
     return undefined;
   }
 };
 
 /** 使用自部署服务器翻译指定图片 */
 const selfhostedTranslation = async i => {
-  if (!(await getValidTranslators())) throw new Error('无法连接到服务器');
+  if (!(await getValidTranslators())) throw new Error(t$1('alert.server_connect_failed'));
   const img = store.imgList[i];
-  setMessage(i, '正在下载图片');
+  setMessage(i, t$1('translation.tip.img_downloading'));
   let imgBlob;
   try {
     imgBlob = await download(img.src);
   } catch (error) {
-    console.error(error);
-    throw new Error('下载图片失败');
+    log.error(error);
+    throw new Error(t$1('translation.tip.download_img_failed'));
   }
   let task_id;
   // 上传图片取得任务 id
@@ -2609,8 +3186,8 @@ const selfhostedTranslation = async i => {
     const resData = JSON.parse(res.responseText);
     task_id = resData.task_id;
   } catch (error) {
-    console.error(error);
-    throw new Error('上传图片失败');
+    log.error(error);
+    throw new Error(t$1('translation.tip.upload_error'));
   }
   let errorNum = 0;
   let taskState;
@@ -2620,10 +3197,10 @@ const selfhostedTranslation = async i => {
       await sleep(200);
       const res = await request(\`\${url()}/task-state?taskid=\${task_id}\`);
       taskState = JSON.parse(res.responseText);
-      setMessage(i, \`\${messageMap[taskState.state] ?? taskState.state}\`);
+      setMessage(i, \`\${t$1(\`translation.status.\${taskState.state}\`) || taskState.state}\`);
     } catch (error) {
-      console.error(error);
-      if (errorNum > 5) throw new Error('检查图片状态失败过多');
+      log.error(error);
+      if (errorNum > 5) throw new Error(t$1('translation.tip.check_img_status_failed'));
       errorNum += 1;
     }
   }
@@ -2641,16 +3218,18 @@ const waitTranslation = (id, i) => {
           resolve(msg.result.translation_mask);
           break;
         case 'pending':
-          setMessage(i, \`正在等待服务器队列，还有 \${msg.pos} 张图片\`);
+          setMessage(i, t$1('translation.tip.pending', {
+            pos: msg.pos
+          }));
           break;
         case 'status':
-          setMessage(i, messageMap[msg.status] ?? msg.status);
+          setMessage(i, t$1(\`translation.status.\${msg.status}\`) || msg.status);
           break;
         case 'error':
-          reject(new Error(\`翻译出错：id \${msg.error_id}\`));
+          reject(new Error(\`\${t$1('translation.tip.error')}：id \${msg.error_id}\`));
           break;
         case 'not_found':
-          reject(new Error(\`翻译出错：Not Found\`));
+          reject(new Error(\`\${t$1('translation.tip.error')}：Not Found\`));
           break;
       }
     };
@@ -2691,13 +3270,13 @@ const mergeImage = async (rawImage, maskUri) => {
 /** 使用 cotrans 翻译指定图片 */
 const cotransTranslation = async i => {
   const img = store.imgList[i];
-  setMessage(i, '正在下载图片');
+  setMessage(i, t$1('translation.tip.img_downloading'));
   let imgBlob;
   try {
     imgBlob = await download(img.src);
   } catch (error) {
-    console.error(error);
-    throw new Error('下载图片失败');
+    log.error(error);
+    throw new Error(t$1('translation.tip.download_img_failed'));
   }
   let id;
   let translation_mask;
@@ -2711,13 +3290,13 @@ const cotransTranslation = async i => {
       }
     });
     const resData = JSON.parse(res.responseText);
-    if ('error_id' in resData) throw new Error(\`上传后报错：\${resData.error_id}\`);
-    if (!resData.id) throw new Error('未返回 id');
+    if ('error_id' in resData) throw new Error(\`\${t$1('translation.tip.upload_return_error')}：\${resData.error_id}\`);
+    if (!resData.id) throw new Error(t$1('translation.tip.id_not_returned'));
     id = resData.id;
     translation_mask = resData.result?.translation_mask;
   } catch (error) {
-    console.error(error);
-    throw new Error('图片上传出错');
+    log.error(error);
+    throw new Error(t$1('translation.tip.upload_error'));
   }
   if (!translation_mask) translation_mask = await waitTranslation(id, i);
   return mergeImage(imgBlob, translation_mask);
@@ -2728,8 +3307,8 @@ const cotransTranslators = createOptions(['google', 'youdao', 'baidu', 'deepl', 
 const translationImage = async i => {
   try {
     if (typeof GM_xmlhttpRequest === 'undefined') {
-      toast?.error('未安装 ComicRead 插件，无法翻译');
-      throw new Error('未安装 ComicRead 插件，无法翻译');
+      toast?.error(t$1('pwa.alert.userscript_not_installed'));
+      throw new Error(t$1('pwa.alert.userscript_not_installed'));
     }
     const img = store.imgList[i];
     if (!img?.src) return;
@@ -2737,11 +3316,11 @@ const translationImage = async i => {
     if (img.translationUrl) return setState(state => {
       state.imgList[i].translationType = 'show';
     });
-    if (img.loadType !== 'loaded') return setMessage(i, '图片未加载完毕');
+    if (img.loadType !== 'loaded') return setMessage(i, t$1('translation.tip.img_not_fully_loaded'));
     const translationUrl = await (store.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(i);
     setState(state => {
       state.imgList[i].translationUrl = translationUrl;
-      state.imgList[i].translationMessage = '翻译完成';
+      state.imgList[i].translationMessage = t$1('translation.tip.translation_completed');
       state.imgList[i].translationType = 'show';
     });
   } catch (error) {
@@ -2779,7 +3358,7 @@ const setImgTranslationEnbale = (list, enbale) => {
         if (state.option.translation.forceRetry) {
           img.translationType = 'wait';
           img.translationUrl = undefined;
-          setMessage(i, '等待翻译');
+          setMessage(i, t$1('translation.tip.wait_translation'));
         } else {
           switch (img.translationType) {
             case 'hide':
@@ -2791,7 +3370,7 @@ const setImgTranslationEnbale = (list, enbale) => {
             case undefined:
               {
                 img.translationType = 'wait';
-                setMessage(i, '等待翻译');
+                setMessage(i, t$1('translation.tip.wait_translation'));
                 break;
               }
           }
@@ -2818,13 +3397,13 @@ const setImgTranslationEnbale = (list, enbale) => {
 const translatorOptions = solidJs.createRoot(() => {
   const [options, setOptions] = solidJs.createSignal([]);
   const updateOptions = async () => {
-    setOptions(store.option.translation.server === '本地部署' ? (await getValidTranslators()) ?? [] : cotransTranslators);
+    setOptions(store.option.translation.server === 'selfhosted' ? (await getValidTranslators()) ?? [] : cotransTranslators);
   };
   updateOptions();
 
   // 在切换翻译服务器的同时切换可用翻译的选项列表
   solidJs.createEffect(solidJs.on([() => store.option.translation.server, () => store.option.translation.localUrl], async () => {
-    if (store.option.translation.server === '禁用') return;
+    if (store.option.translation.server === 'disable') return;
     await updateOptions();
     // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
     if (!options().some(([val]) => val === store.option.translation.options.translator)) {
@@ -2861,14 +3440,18 @@ const SettingsShowItem = props => (() => {
   return _el$;
 })();
 
-const _tmpl$$f = /*#__PURE__*/web.template(\`<blockquote><p>将使用 <a href="https://cotrans.touhou.ai" target="_blank">Cotrans</a> 提供的接口翻译图片，该服务器由维护者用爱发电自费维护</p><p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p><p>所以还请<b>注意用量</b></p><p>更推荐使用本地部署的项目，不抢服务器资源也不需要排队\`),
+const _tmpl$$f = /*#__PURE__*/web.template(\`<blockquote>\`),
   _tmpl$2$6 = /*#__PURE__*/web.template(\`<input type="url">\`);
 const SettingTranslation = () => {
   /** 是否正在翻译全部图片 */
   const isTranslationAll = solidJs.createMemo(() => store.imgList.every(img => img.translationType === 'show' || img.translationType === 'wait'));
   return [web.createComponent(SettingsItemSelect, {
-    name: "\\u7FFB\\u8BD1\\u670D\\u52A1\\u5668",
-    options: [['禁用'], ['本地部署'], ['cotrans']],
+    get name() {
+      return t$1('setting.translation.server');
+    },
+    get options() {
+      return [['disable', t$1('other.disable')], ['selfhosted', t$1('setting.translation.server_selfhosted')], ['cotrans']];
+    },
     get value() {
       return store.option.translation.server;
     },
@@ -2880,15 +3463,19 @@ const SettingTranslation = () => {
       return store.option.translation.server === 'cotrans';
     },
     get children() {
-      return _tmpl$$f();
+      const _el$ = _tmpl$$f();
+      web.effect(() => _el$.innerHTML = t$1('setting.translation.cotrans_tip'));
+      return _el$;
     }
   }), web.createComponent(SettingsShowItem, {
     get when() {
-      return store.option.translation.server !== '禁用';
+      return store.option.translation.server !== 'disable';
     },
     get children() {
       return [web.createComponent(SettingsItemSelect, {
-        name: "\\u6587\\u672C\\u626B\\u63CF\\u6E05\\u6670\\u5EA6",
+        get name() {
+          return t$1('setting.translation.options.detection_resolution');
+        },
         options: [['S', '1024px'], ['M', '1536px'], ['L', '2048px'], ['X', '2560px']],
         get value() {
           return store.option.translation.options.size;
@@ -2897,7 +3484,9 @@ const SettingTranslation = () => {
           return createStateSetFn('translation.options.size');
         }
       }), web.createComponent(SettingsItemSelect, {
-        name: "\\u6587\\u672C\\u626B\\u63CF\\u5668",
+        get name() {
+          return t$1('setting.translation.options.text_detector');
+        },
         options: [['default'], ['ctd', 'Comic Text Detector']],
         get value() {
           return store.option.translation.options.detector;
@@ -2906,7 +3495,9 @@ const SettingTranslation = () => {
           return createStateSetFn('translation.options.detector');
         }
       }), web.createComponent(SettingsItemSelect, {
-        name: "\\u7FFB\\u8BD1\\u670D\\u52A1",
+        get name() {
+          return t$1('setting.translation.options.translator');
+        },
         get options() {
           return translatorOptions();
         },
@@ -2917,8 +3508,12 @@ const SettingTranslation = () => {
           return createStateSetFn('translation.options.translator');
         }
       }), web.createComponent(SettingsItemSelect, {
-        name: "\\u6E32\\u67D3\\u5B57\\u4F53\\u65B9\\u5411",
-        options: [['auto', '自动'], ['h', '水平'], ['v', '垂直']],
+        get name() {
+          return t$1('setting.translation.options.direction');
+        },
+        get options() {
+          return [['auto', t$1('setting.translation.options.direction_auto')], ['h', t$1('setting.translation.options.direction_horizontal')], ['v', t$1('setting.translation.options.direction_vertical')]];
+        },
         get value() {
           return store.option.translation.options.direction;
         },
@@ -2926,7 +3521,9 @@ const SettingTranslation = () => {
           return createStateSetFn('translation.options.direction');
         }
       }), web.createComponent(SettingsItemSelect, {
-        name: "\\u76EE\\u6807\\u8BED\\u8A00",
+        get name() {
+          return t$1('setting.translation.options.target_language');
+        },
         options: [['CHS', '简体中文'], ['CHT', '繁體中文'], ['JPN', '日本語'], ['ENG', 'English'], ['KOR', '한국어'], ['VIN', 'Tiếng Việt'], ['CSY', 'čeština'], ['NLD', 'Nederlands'], ['FRA', 'français'], ['DEU', 'Deutsch'], ['HUN', 'magyar nyelv'], ['ITA', 'italiano'], ['PLK', 'polski'], ['PTB', 'português'], ['ROM', 'limba română'], ['RUS', 'русский язык'], ['ESP', 'español'], ['TRK', 'Türk dili']],
         get value() {
           return store.option.translation.options.targetLanguage;
@@ -2935,7 +3532,9 @@ const SettingTranslation = () => {
           return createStateSetFn('translation.options.targetLanguage');
         }
       }), web.createComponent(SettingsItemSwitch, {
-        name: "\\u5FFD\\u7565\\u7F13\\u5B58\\u5F3A\\u5236\\u91CD\\u8BD5",
+        get name() {
+          return t$1('setting.translation.options.forceRetry');
+        },
         get value() {
           return store.option.translation.forceRetry;
         },
@@ -2944,17 +3543,21 @@ const SettingTranslation = () => {
         }
       }), web.createComponent(solidJs.Show, {
         get when() {
-          return store.option.translation.server === '本地部署';
+          return store.option.translation.server === 'selfhosted';
         },
         get children() {
           return [web.createComponent(SettingsItemSwitch, {
-            name: "\\u7FFB\\u8BD1\\u5168\\u90E8\\u56FE\\u7247",
+            get name() {
+              return t$1('setting.translation.translate_all_img');
+            },
             get value() {
               return isTranslationAll();
             },
             onChange: () => setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll())
           }), web.createComponent(SettingsItemSwitch, {
-            name: "\\u81EA\\u5B9A\\u4E49\\u670D\\u52A1\\u5668 URL",
+            get name() {
+              return t$1('setting.translation.options.localUrl');
+            },
             get value() {
               return store.option.translation.localUrl !== undefined;
             },
@@ -2988,11 +3591,12 @@ const SettingTranslation = () => {
 };
 
 const _tmpl$$e = /*#__PURE__*/web.template(\`<button type="button">\`),
-  _tmpl$2$5 = /*#__PURE__*/web.template(\`<input type="color">\`);
+  _tmpl$2$5 = /*#__PURE__*/web.template(\`<div contenteditable data-only-number>\`),
+  _tmpl$3$4 = /*#__PURE__*/web.template(\`<input type="color">\`);
 /** 默认菜单项 */
-const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsItem, {
+const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
   get name() {
-    return store.option.dir === 'rtl' ? '从右到左（日漫）' : '从左到右（美漫）';
+    return web.memo(() => store.option.dir === 'rtl')() ? t$1('setting.option.dir_rtl') : t$1('setting.option.dir_ltr');
   },
   get children() {
     const _el$ = _tmpl$$e();
@@ -3004,8 +3608,10 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
     web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
     return _el$;
   }
-})], ['滚动条', () => [web.createComponent(SettingsItemSwitch, {
-  name: "\\u663E\\u793A\\u6EDA\\u52A8\\u6761",
+})], [t$1('setting.option.paragraph_scrollbar'), () => [web.createComponent(SettingsItemSwitch, {
+  get name() {
+    return t$1('setting.option.scrollbar_show');
+  },
   get value() {
     return store.option.scrollbar.enabled;
   },
@@ -3018,7 +3624,9 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
   },
   get children() {
     return [web.createComponent(SettingsItemSwitch, {
-      name: "\\u81EA\\u52A8\\u9690\\u85CF\\u6EDA\\u52A8\\u6761",
+      get name() {
+        return t$1('setting.option.scrollbar_auto_hidden');
+      },
       get value() {
         return store.option.scrollbar.autoHidden;
       },
@@ -3026,41 +3634,51 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
         return createStateSetFn('scrollbar.autoHidden');
       }
     }), web.createComponent(SettingsItemSwitch, {
-      name: "\\u663E\\u793A\\u56FE\\u7247\\u52A0\\u8F7D\\u72B6\\u6001",
+      get name() {
+        return t$1('setting.option.scrollbar_show_img_status');
+      },
       get value() {
-        return store.option.scrollbar.showProgress;
+        return store.option.scrollbar.showImgStatus;
       },
       get onChange() {
-        return createStateSetFn('scrollbar.showProgress');
+        return createStateSetFn('scrollbar.showImgStatus');
       }
     })];
   }
-})]], ['操作', () => [web.createComponent(SettingsItemSwitch, {
-  name: "\\u7FFB\\u9875\\u81F3\\u4E0A/\\u4E0B\\u4E00\\u8BDD",
+})]], [t$1('setting.option.paragraph_operation'), () => [web.createComponent(SettingsItemSwitch, {
+  get name() {
+    return t$1('setting.option.jump_to_next_chapter');
+  },
   get value() {
-    return store.option.flipToNext;
+    return store.option.jumpToNext;
   },
   get onChange() {
-    return createStateSetFn('flipToNext');
+    return createStateSetFn('jumpToNext');
   }
 }), web.createComponent(SettingsItemSwitch, {
-  name: "\\u542F\\u7528\\u70B9\\u51FB\\u7FFB\\u9875",
+  get name() {
+    return t$1('setting.option.click_page_turn_enabled');
+  },
   get value() {
-    return store.option.clickPage.enabled;
+    return store.option.clickPageTurn.enabled;
   },
   get onChange() {
-    return createStateSetFn('clickPage.enabled');
+    return createStateSetFn('clickPageTurn.enabled');
   }
 }), web.createComponent(SettingsItemSwitch, {
-  name: "\\u4E0A\\u4E0B\\u7FFB\\u9875",
+  get name() {
+    return t$1('setting.option.click_page_turn_vertical');
+  },
   get value() {
-    return store.option.clickPage.vertical;
+    return store.option.clickPageTurn.vertical;
   },
   get onChange() {
-    return createStateSetFn('clickPage.vertical');
+    return createStateSetFn('clickPageTurn.vertical');
   }
 }), web.createComponent(SettingsItemSwitch, {
-  name: "\\u663E\\u793A\\u70B9\\u51FB\\u533A\\u57DF",
+  get name() {
+    return t$1('setting.option.show_clickable_area');
+  },
   get value() {
     return store.showTouchArea;
   },
@@ -3071,21 +3689,25 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
   }
 }), web.createComponent(SettingsShowItem, {
   get when() {
-    return store.option.clickPage.enabled;
+    return store.option.clickPageTurn.enabled;
   },
   get children() {
     return web.createComponent(SettingsItemSwitch, {
-      name: "\\u5DE6\\u53F3\\u53CD\\u8F6C\\u70B9\\u51FB\\u533A\\u57DF",
+      get name() {
+        return t$1('setting.option.click_page_turn_swap_area');
+      },
       get value() {
-        return store.option.clickPage.overturn;
+        return store.option.clickPageTurn.reverse;
       },
       get onChange() {
-        return createStateSetFn('clickPage.overturn');
+        return createStateSetFn('clickPageTurn.reverse');
       }
     });
   }
-})]], ['显示', () => [web.createComponent(SettingsItemSwitch, {
-  name: "\\u542F\\u7528\\u591C\\u95F4\\u6A21\\u5F0F",
+})]], [t$1('setting.option.paragraph_display'), () => [web.createComponent(SettingsItemSwitch, {
+  get name() {
+    return t$1('setting.option.dark_mode');
+  },
   get value() {
     return store.option.darkMode;
   },
@@ -3093,15 +3715,19 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
     return createStateSetFn('darkMode');
   }
 }), web.createComponent(SettingsItemSwitch, {
-  name: "\\u7981\\u6B62\\u653E\\u5927\\u56FE\\u7247",
+  get name() {
+    return t$1('setting.option.disable_auto_scaling');
+  },
   get value() {
     return store.option.disableZoom;
   },
   get onChange() {
     return createStateSetFn('disableZoom');
   }
-})]], ['快捷键', SettingHotKeys, true], ['翻译', SettingTranslation, true], ['其他', () => [web.createComponent(SettingsItemSwitch, {
-  name: "\\u59CB\\u7EC8\\u52A0\\u8F7D\\u6240\\u6709\\u56FE\\u7247",
+})]], [t$1('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [t$1('setting.option.paragraph_translation'), SettingTranslation, true], [t$1('setting.option.paragraph_other'), () => [web.createComponent(SettingsItemSwitch, {
+  get name() {
+    return t$1('setting.option.always_load_all_img');
+  },
   get value() {
     return store.option.alwaysLoadAllImg;
   },
@@ -3112,7 +3738,9 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
     setState(updateImgLoadType);
   }
 }), web.createComponent(SettingsItemSwitch, {
-  name: "\\u9ED8\\u8BA4\\u542F\\u7528\\u9996\\u9875\\u586B\\u5145",
+  get name() {
+    return t$1('setting.option.first_page_fill');
+  },
   get value() {
     return store.option.firstPageFill;
   },
@@ -3120,7 +3748,9 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
     return createStateSetFn('firstPageFill');
   }
 }), web.createComponent(SettingsItemSwitch, {
-  name: "\\u5728\\u7ED3\\u675F\\u9875\\u663E\\u793A\\u8BC4\\u8BBA",
+  get name() {
+    return t$1('setting.option.show_comments');
+  },
   get value() {
     return store.option.showComment;
   },
@@ -3128,20 +3758,43 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
     return createStateSetFn('showComment');
   }
 }), web.createComponent(SettingsItemSwitch, {
-  name: "\\u5DE6\\u53F3\\u7FFB\\u9875\\u952E\\u53CD\\u8F6C",
+  get name() {
+    return t$1('setting.option.swap_page_turn_key');
+  },
   get value() {
-    return store.option.swapTurnPage;
+    return store.option.swapPageTurnKey;
   },
   get onChange() {
-    return createStateSetFn('swapTurnPage');
+    return createStateSetFn('swapPageTurnKey');
   }
 }), web.createComponent(SettingsItem, {
-  name: "\\u80CC\\u666F\\u989C\\u8272",
+  get name() {
+    return t$1('setting.option.preload_page_num');
+  },
   get children() {
     const _el$2 = _tmpl$2$5();
-    _el$2.style.setProperty("width", "2em");
-    _el$2.style.setProperty("margin-right", ".4em");
-    _el$2.addEventListener("input", throttle(20, e => {
+    _el$2.addEventListener("blur", e => {
+      const number = +e.currentTarget.textContent;
+      if (!Number.isNaN(number)) setOption(draftOption => {
+        draftOption.preloadPageNum = clamp(0, number, 99999);
+      });
+      // eslint-disable-next-line no-param-reassign
+      e.currentTarget.textContent = \`\${store.option.preloadPageNum}\`;
+    });
+    _el$2.style.setProperty("margin-right", ".7em");
+    _el$2.addEventListener("input", e => e.currentTarget.textContent.length > 5 && e.currentTarget.blur());
+    web.insert(_el$2, () => store.option.preloadPageNum ?? 0);
+    return _el$2;
+  }
+}), web.createComponent(SettingsItem, {
+  get name() {
+    return t$1('setting.option.background_color');
+  },
+  get children() {
+    const _el$3 = _tmpl$3$4();
+    _el$3.style.setProperty("width", "2em");
+    _el$3.style.setProperty("margin-right", ".4em");
+    _el$3.addEventListener("input", throttle(20, e => {
       if (!e.target.value) return;
       setOption(draftOption => {
         // 在拉到纯黑或纯白时改回初始值
@@ -3149,18 +3802,32 @@ const defaultSettingList = [['阅读方向', () => web.createComponent(SettingsI
         if (draftOption.customBackground) draftOption.darkMode = needDarkMode(draftOption.customBackground);
       });
     }));
-    web.effect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
-    return _el$2;
+    web.effect(() => _el$3.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
+    return _el$3;
   }
+}), web.createComponent(SettingsItemSelect, {
+  get name() {
+    return t$1('setting.language');
+  },
+  options: [['zh', '中文'], ['en', 'English']],
+  get value() {
+    return lang();
+  },
+  onChange: setLang
 })], true]];
 
 const _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
   _tmpl$3$3 = /*#__PURE__*/web.template(\`<hr>\`);
+const LanguageWidthMap = {
+  zh: '15em',
+  en: '20em'
+};
 
 /** 菜单面板 */
 const SettingPanel = () => {
-  const settingList = solidJs.createMemo(() => store.editSettingList(defaultSettingList));
+  const settingList = solidJs.createMemo(() => store.editSettingList(defaultSettingList()));
+  const width = solidJs.createMemo(() => LanguageWidthMap[lang()] ?? '15em');
   return (() => {
     const _el$ = _tmpl$$d();
     web.addEventListener(_el$, "wheel", stopPropagation);
@@ -3180,35 +3847,44 @@ const SettingPanel = () => {
             _el$4 = _el$3.nextSibling;
           _el$3.addEventListener("click", () => setShwo(prev => !prev));
           web.insert(_el$3, name, null);
-          web.insert(_el$3, () => show() ? null : ' ...', null);
+          web.insert(_el$3, () => show() ? null : ' …', null);
           web.insert(_el$4, web.createComponent(SettingItem, {}));
           web.effect(_p$ => {
-            const _v$ = modules_c21c94f2$1.SettingBlock,
-              _v$2 = show(),
-              _v$3 = modules_c21c94f2$1.SettingBlockSubtitle,
-              _v$4 = modules_c21c94f2$1.SettingBlockBody;
-            _v$ !== _p$._v$ && web.className(_el$2, _p$._v$ = _v$);
-            _v$2 !== _p$._v$2 && web.setAttribute(_el$2, "data-show", _p$._v$2 = _v$2);
-            _v$3 !== _p$._v$3 && web.className(_el$3, _p$._v$3 = _v$3);
-            _v$4 !== _p$._v$4 && web.className(_el$4, _p$._v$4 = _v$4);
+            const _v$3 = modules_c21c94f2$1.SettingBlock,
+              _v$4 = show(),
+              _v$5 = modules_c21c94f2$1.SettingBlockSubtitle,
+              _v$6 = modules_c21c94f2$1.SettingBlockBody;
+            _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
+            _v$4 !== _p$._v$4 && web.setAttribute(_el$2, "data-show", _p$._v$4 = _v$4);
+            _v$5 !== _p$._v$5 && web.className(_el$3, _p$._v$5 = _v$5);
+            _v$6 !== _p$._v$6 && web.className(_el$4, _p$._v$6 = _v$6);
             return _p$;
           }, {
-            _v$: undefined,
-            _v$2: undefined,
             _v$3: undefined,
-            _v$4: undefined
+            _v$4: undefined,
+            _v$5: undefined,
+            _v$6: undefined
           });
           return _el$2;
         })()];
       }
     }));
-    web.effect(() => web.className(_el$, \`\${modules_c21c94f2$1.SettingPanel} \${modules_c21c94f2$1.beautifyScrollbar}\`));
+    web.effect(_p$ => {
+      const _v$ = \`\${modules_c21c94f2$1.SettingPanel} \${modules_c21c94f2$1.beautifyScrollbar}\`,
+        _v$2 = width();
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("width", _v$2) : _el$.style.removeProperty("width"));
+      return _p$;
+    }, {
+      _v$: undefined,
+      _v$2: undefined
+    });
     return _el$;
   })();
 };
 
 const _tmpl$$c = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role="button" tabindex="-1" aria-label="关闭弹窗的遮罩">\`);
+  _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role="button" tabindex="-1">\`);
 /** 工具栏按钮分隔栏 */
 const buttonListDivider = () => (() => {
   const _el$ = _tmpl$$c();
@@ -3221,7 +3897,7 @@ const defaultButtonList = [
 // 单双页模式
 () => web.createComponent(IconButton, {
   get tip() {
-    return store.option.onePageMode ? '单页模式' : '双页模式';
+    return web.memo(() => !!store.option.onePageMode)() ? t$1('button.page_mode_single') : t$1('button.page_mode_double');
   },
   get hidden() {
     return store.option.scrollMode;
@@ -3233,7 +3909,9 @@ const defaultButtonList = [
 }),
 // 卷轴模式
 () => web.createComponent(IconButton, {
-  tip: "\\u5377\\u8F74\\u6A21\\u5F0F",
+  get tip() {
+    return t$1('button.scroll_mode');
+  },
   get enabled() {
     return store.option.scrollMode;
   },
@@ -3244,7 +3922,9 @@ const defaultButtonList = [
 }),
 // 页面填充
 () => web.createComponent(IconButton, {
-  tip: "\\u9875\\u9762\\u586B\\u5145",
+  get tip() {
+    return t$1('button.page_fill');
+  },
   get enabled() {
     return store.fillEffect[nowFillIndex()];
   },
@@ -3258,7 +3938,9 @@ const defaultButtonList = [
 }), buttonListDivider,
 // 放大模式
 () => web.createComponent(IconButton, {
-  tip: "\\u653E\\u5927",
+  get tip() {
+    return t$1('button.zoom_in');
+  },
   get enabled() {
     return store.isZoomed || store.option.scrollMode && store.option.scrollModeImgScale > 1;
   },
@@ -3282,13 +3964,13 @@ const defaultButtonList = [
   const isTranslatingImage = solidJs.createMemo(() => activePage().some(i => store.imgList[i]?.translationType && store.imgList[i].translationType !== 'hide'));
   return web.createComponent(IconButton, {
     get tip() {
-      return isTranslatingImage() ? '关闭当前页的翻译' : '翻译当前页';
+      return web.memo(() => !!isTranslatingImage())() ? t$1('button.close_current_page_translation') : t$1('button.translate_current_page');
     },
     get enabled() {
       return isTranslatingImage();
     },
     get hidden() {
-      return store.option.translation.server === '禁用';
+      return store.option.translation.server === 'disable';
     },
     onClick: () => setImgTranslationEnbale(activePage(), !isTranslatingImage()),
     get children() {
@@ -3321,7 +4003,9 @@ props => {
     return _el$2;
   })()]);
   return web.createComponent(IconButton, {
-    tip: "\\u8BBE\\u7F6E",
+    get tip() {
+      return t$1('button.setting');
+    },
     get enabled() {
       return showPanel();
     },
@@ -3556,7 +4240,7 @@ const Scrollbar = () => {
     web.insert(_el$3, () => store.scrollbar.tipText);
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
-        return store.option.scrollbar.showProgress;
+        return store.option.scrollbar.showImgStatus;
       },
       get children() {
         return web.createComponent(solidJs.For, {
@@ -3622,7 +4306,7 @@ const Scrollbar = () => {
 };
 
 const _tmpl$$8 = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$2 = /*#__PURE__*/web.template(\`<div role="button" tabindex="-1"><p></p><button type="button">上一话</button><button type="button" data-is-end>退出</button><button type="button">下一话\`),
+  _tmpl$2$2 = /*#__PURE__*/web.template(\`<div role="button" tabindex="-1"><p></p><button type="button"></button><button type="button" data-is-end></button><button type="button">\`),
   _tmpl$3$2 = /*#__PURE__*/web.template(\`<p>\`);
 let delayTypeTimer = 0;
 const EndPage = () => {
@@ -3658,11 +4342,11 @@ const EndPage = () => {
   const tip = solidJs.createMemo(() => {
     switch (delayType()) {
       case 'start':
-        if (store.onPrev && store.option.flipToNext) return '已到开头，继续向上翻页将跳至上一话';
+        if (store.onPrev && store.option.jumpToNext) return t$1('end_page.tip.start_jump');
         break;
       case 'end':
-        if (store.onNext && store.option.flipToNext) return '已到结尾，继续向下翻页将跳至下一话';
-        if (store.onExit) return '已到结尾，继续翻页将退出';
+        if (store.onNext && store.option.jumpToNext) return t$1('end_page.tip.end_jump');
+        if (store.onExit) return t$1('end_page.tip.exit');
         break;
     }
     return '';
@@ -3680,12 +4364,15 @@ const EndPage = () => {
     const _ref$2 = bindRef('prevRef');
     typeof _ref$2 === "function" && web.use(_ref$2, _el$3);
     _el$3.addEventListener("click", () => store.onPrev?.());
+    web.insert(_el$3, () => t$1('end_page.prev_button'));
     const _ref$3 = bindRef('exitRef');
     typeof _ref$3 === "function" && web.use(_ref$3, _el$4);
     _el$4.addEventListener("click", () => store.onExit?.(store.endPageType === 'end'));
+    web.insert(_el$4, () => t$1('button.exit'));
     const _ref$4 = bindRef('nextRef');
     typeof _ref$4 === "function" && web.use(_ref$4, _el$5);
     _el$5.addEventListener("click", () => store.onNext?.());
+    web.insert(_el$5, () => t$1('end_page.next_button'));
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
         return web.memo(() => !!store.option.showComment)() && delayType() === 'end';
@@ -3798,9 +4485,9 @@ const useInit$1 = (props, rootRef) => {
   solidJs.createEffect(() => {
     setState(state => {
       if (props.option) state.option = assign(state.option, props.option);
-      state.hotKeys = {
-        ...JSON.parse(JSON.stringify(defaultHoeKeys)),
-        ...props.hotKeys
+      state.hotkeys = {
+        ...JSON.parse(JSON.stringify(defaultHotkeys)),
+        ...props.hotkeys
       };
     });
   });
@@ -3843,7 +4530,7 @@ const useInit$1 = (props, rootRef) => {
       state.commentList = props.commentList;
       state.onLoading = props.onLoading ? debounce(100, props.onLoading) : undefined;
       state.onOptionChange = props.onOptionChange ? debounce(100, props.onOptionChange) : undefined;
-      state.onHotKeysChange = props.onHotKeysChange ? debounce(100, props.onHotKeysChange) : undefined;
+      state.onHotkeysChange = props.onHotkeysChange ? debounce(100, props.onHotkeysChange) : undefined;
     });
   });
 
@@ -4011,12 +4698,12 @@ const useManga = async initProps => {
 
   /** 下载按钮 */
   const DownloadButton = () => {
-    const [tip, setTip] = solidJs.createSignal('下载');
+    const [statu, setStatu] = solidJs.createSignal('button.download');
     const handleDownload = async () => {
       const fileData = {};
       const imgIndexNum = \`\${props.imgList.length}\`.length;
       for (let i = 0; i < props.imgList.length; i += 1) {
-        setTip(\`下载中 - \${i}/\${props.imgList.length}\`);
+        setStatu(\`\${i}/\${props.imgList.length}\`);
         const index = \`\${i}\`.padStart(imgIndexNum, '0');
         const fileExt = props.imgList[i].split('.').at(-1);
         const fileName = \`\${index}.\${fileExt}\`;
@@ -4026,19 +4713,20 @@ const useManga = async initProps => {
           });
           fileData[fileName] = new Uint8Array(res.response);
         } catch (error) {
-          toast$1.error(\`\${fileName} 下载失败\`);
-          fileData[\`\${index} - 下载失败.\${fileExt}\`] = new Uint8Array();
+          toast$1.error(\`\${fileName} \${t$1('alert.download_failed')}\`);
+          fileData[\`\${index} - \${t$1('alert.download_failed')}.\${fileExt}\`] = new Uint8Array();
         }
       }
-      setTip('开始打包');
+      setStatu('button.packaging');
       const zipped = fflate.zipSync(fileData, {
         level: 0,
         comment: window.location.href
       });
       saveAs(new Blob([zipped]), \`\${document.title}.zip\`);
-      setTip('下载完成');
-      toast$1.success('下载完成');
+      setStatu('button.download_completed');
+      toast$1.success(t$1('button.download_completed'));
     };
+    const tip = solidJs.createMemo(() => t$1(statu()) || \`\${t$1('button.downloading')} - \${statu()}\`);
     return web.createComponent(IconButton, {
       get tip() {
         return tip();
@@ -4059,7 +4747,9 @@ const useManga = async initProps => {
       return [...list,
       // 再在最下面添加分隔栏和退出按钮
       buttonListDivider, () => web.createComponent(IconButton, {
-        tip: "\\u9000\\u51FA",
+        get tip() {
+          return t$1('button.exit');
+        },
         onClick: () => props.onExit?.(),
         get children() {
           return web.createComponent(MdClose, {});
@@ -4287,9 +4977,89 @@ const useFab = async initProps => {
   return [set, props];
 };
 
-const getHotKeys = async () => ({
-  进入阅读模式: ['v'],
-  ...(await GM.getValue('HotKeys', {}))
+const _tmpl$ = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>实现 i18n </p></li><li><p>支持 eh 的多页查看器 </p></li><li><p>支持 hitomi </p></li><li><p>支持 kemono\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>增加 预加载页数 的设置项\`);
+
+/** 重命名配置项 */
+const renameOption = async (name, list) => {
+  const option = await GM.getValue(name);
+  if (!option) throw new Error(\`GM.getValue Error: not found \${name}\`);
+  for (let i = list.length - 1; i; i--) {
+    const [path, newName] = list[i].split(' => ');
+    byPath(option, path, (parent, key) => {
+      Reflect.set(parent, newName, parent[key]);
+      Reflect.deleteProperty(parent, key);
+    });
+  }
+  await GM.setValue(name, option);
+};
+
+/** 旧版本配置迁移 */
+const migration = async () => {
+  const values = await GM.listValues();
+
+  // 6 => 7
+  for (let i = 0; i < values.length; i++) {
+    const key = values[i];
+    switch (key) {
+      case 'Version':
+      case 'Languages':
+        continue;
+      case 'HotKeys':
+        {
+          await renameOption(key, ['向上翻页 => turn_page_up', '向下翻页 => turn_page_down', '向右翻页 => turn_page_right', '向左翻页 => turn_page_left', '跳至首页 => jump_to_home', '跳至尾页 => jump_to_end', '退出 => exit', '切换页面填充 => switch_page_fill', '切换卷轴模式 => switch_scroll_mode', '切换单双页模式 => switch_single_double_page_mode', '切换阅读方向 => switch_dir', '进入阅读模式 => enter_read_mode']);
+          break;
+        }
+      default:
+        await renameOption(key, ['option.scrollbar.showProgress => showImgStatus', 'option.clickPage => clickPageTurn', 'option.clickPage.overturn => reverse', 'option.swapTurnPage => swapPageTurnKey', 'option.flipToNext => jumpToNext',
+        // ehentai
+        '匹配nhentai => associate_nhentai', '快捷键翻页 => hotkeys_page_turn',
+        // nhentai
+        '自动翻页 => auto_page_turn', '彻底屏蔽漫画 => block_totally', '在新页面中打开链接 => open_link_new_page',
+        // other
+        '记住当前站点 => remember_current_site']);
+    }
+  }
+};
+
+/** 处理版本更新相关 */
+const handleVersionUpdate = async () => {
+  const version = await GM.getValue('Version');
+  if (!version) return GM.setValue('Version', GM.info.script.version);
+  if (version === GM.info.script.version) return;
+
+  // 只在语言为中文时弹窗提示最新更新内容
+  if (lang() === 'zh') {
+    toast$1(() => [(() => {
+      const _el$ = _tmpl$();
+        _el$.firstChild;
+      web.insert(_el$, () => GM.info.script.version, null);
+      return _el$;
+    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+      id: 'Version Tip',
+      type: 'custom',
+      duration: Infinity,
+      // 手动点击关掉通知后才不会再次弹出
+      onDismiss: () => GM.setValue('Version', GM.info.script.version)
+    });
+
+    // 监听储存的版本数据的变动，如果和当前版本一致就关掉弹窗
+    // 防止在更新版本后一次性打开多个页面，不得不一个一个关过去
+    const listenerId = await GM.addValueChangeListener('Version', async (_, __, newVersion) => {
+      if (newVersion !== GM.info.script.version) return;
+      toast$1.dismiss('Version Tip');
+      await GM.removeValueChangeListener(listenerId);
+    });
+  }
+  if (version.split('.')[0] !== GM.info.script.version.split('.')[0]) await migration();
+};
+
+const getHotkeys = async () => ({
+  enter_read_mode: ['v'],
+  ...(await GM.getValue('Hotkeys', {}))
 });
 
 /**
@@ -4314,7 +5084,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     // 只保存和默认设置不同的部分
     return GM.setValue(name, difference(options, _defaultOptions));
   };
-  const [hotKeys, setHotKeys] = solidJs.createSignal(await getHotKeys());
+  const [hotkeys, setHotkeys] = solidJs.createSignal(await getHotkeys());
   const isStored = saveOptions !== undefined;
   // 如果当前站点没有存储配置，就补充上去
   if (!isStored) GM.setValue(name, options);
@@ -4326,24 +5096,19 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     /** 是否存过配置 */
     isStored,
     /** 快捷键配置 */
-    hotKeys,
+    hotkeys,
     /** 处理快捷键配置的变动 */
-    onHotKeysChange: newValue => {
-      GM.setValue('HotKeys', newValue);
-      setHotKeys(newValue);
+    onHotkeysChange: newValue => {
+      GM.setValue('Hotkeys', newValue);
+      setHotkeys(newValue);
     },
     /** 进入阅读模式的快捷键 */
-    readModeHotKeys: solidJs.createRoot(() => {
-      const readModeHotKeysMemo = solidJs.createMemo(() => new Set(Object.assign([], hotKeys()['进入阅读模式'])));
-      return readModeHotKeysMemo;
+    readModeHotkeys: solidJs.createRoot(() => {
+      const readModeHotkeysMemo = solidJs.createMemo(() => new Set(Object.assign([], hotkeys().enter_read_mode)));
+      return readModeHotkeysMemo;
     })
   };
 };
-
-const _tmpl$ = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<h3>\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<ul><li>\`);
 
 /**
  * 对基础的初始化操作的封装
@@ -4351,16 +5116,18 @@ const _tmpl$ = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
  * @param defaultOptions 默认配置
  */
 const useInit = async (name, defaultOptions = {}) => {
+  await setInitLang();
+  await handleVersionUpdate();
   const {
     options,
     setOptions,
-    readModeHotKeys,
-    hotKeys,
-    onHotKeysChange,
+    readModeHotkeys,
+    hotkeys,
+    onHotkeysChange,
     isStored
   } = await useSiteOptions(name, defaultOptions);
   const [setFab, fabProps] = await useFab({
-    tip: '阅读模式',
+    tip: t$1('other.read_mode'),
     speedDial: useSpeedDial(options, setOptions),
     show: !options.hiddenFAB && undefined
   });
@@ -4375,13 +5142,13 @@ const useInit = async (name, defaultOptions = {}) => {
     if (progress !== 2) {
       setFab({
         progress,
-        tip: \`图片加载中 - \${loadNum}/\${list.length}\`
+        tip: \`\${t$1('other.img_loading')} - \${loadNum}/\${list.length}\`
       });
     } else {
       // 图片全部加载完成后恢复 Fab 状态
       setFab({
         progress,
-        tip: '阅读模式',
+        tip: t$1('other.read_mode'),
         show: undefined
       });
     }
@@ -4392,75 +5159,15 @@ const useInit = async (name, defaultOptions = {}) => {
     onOptionChange: option => setOptions({
       option
     }),
-    hotKeys: hotKeys(),
-    onHotKeysChange,
+    hotkeys: hotkeys(),
+    onHotkeysChange,
     onLoading
   });
-
-  // 检查脚本的版本变化，提示用户
-  const version = await GM.getValue('Version');
-  if (!version) await GM.setValue('Version', GM.info.script.version);else if (version !== GM.info.script.version) {
-    const latestChange =\`
-## [6.10.2](https://github.com/hymbz/ComicReadScript/compare/v6.10.1...v6.10.2) (2023-09-16)
-
-
-### Bug Fixes
-
-* :bug: 修复 dmzj 改版导致的部分隐藏漫画失效的 bug ([e5bc6f8](https://github.com/hymbz/ComicReadScript/commit/e5bc6f8135d0f2e00d438b8e14b0d6e39c344610))
-\`;
-    toast$1(() => [(() => {
-      const _el$ = _tmpl$();
-        _el$.firstChild;
-      web.insert(_el$, () => GM.info.script.version, null);
-      return _el$;
-    })(), (() => {
-      const _el$3 = _tmpl$2();
-      web.insert(_el$3, web.createComponent(solidJs.For, {
-        get each() {
-          return latestChange.match(/^### [^[].+?$|^\\* .+?$/gm);
-        },
-        children: mdText => {
-          switch (mdText[0]) {
-            case '#':
-              return (() => {
-                const _el$4 = _tmpl$3();
-                web.insert(_el$4, () => mdText.replace('### ', ''));
-                return _el$4;
-              })();
-            case '*':
-              return (() => {
-                const _el$5 = _tmpl$4(),
-                  _el$6 = _el$5.firstChild;
-                web.insert(_el$6, () => mdText.replace(/^\\* /, '').replace(/^:\\w+?: /, '').replace(/(?<=^.*)\\(\\[\\w+\\]\\(.+?\\)\\)/, ''));
-                return _el$5;
-              })();
-            default:
-              return null;
-          }
-        }
-      }));
-      return _el$3;
-    })()], {
-      id: 'Version Tip',
-      type: 'custom',
-      duration: Infinity,
-      // 手动点击关掉通知后才不会再次弹出
-      onDismiss: () => GM.setValue('Version', GM.info.script.version)
-    });
-
-    // 监听储存的版本数据的变动，如果和当前版本一致就关掉弹窗
-    // 防止在更新版本后一次性打开多个页面，不得不一个一个关过去
-    const listenerId = await GM.addValueChangeListener('Version', async (_, __, newVersion) => {
-      if (newVersion !== GM.info.script.version) return;
-      toast$1.dismiss('Version Tip');
-      await GM.removeValueChangeListener(listenerId);
-    });
-  }
   let menuId;
   /** 更新显示/隐藏悬浮按钮的菜单项 */
   const updateHideFabMenu = async () => {
     await GM.unregisterMenuCommand(menuId);
-    menuId = await GM.registerMenuCommand(\`\${options.hiddenFAB ? '显示' : '隐藏'}悬浮按钮\`, async () => {
+    menuId = await GM.registerMenuCommand(options.hiddenFAB ? t$1('other.fab_show') : t$1('other.fab_hidden'), async () => {
       await setOptions({
         ...options,
         hiddenFAB: !options.hiddenFAB
@@ -4506,7 +5213,7 @@ const useInit = async (name, defaultOptions = {}) => {
             show: true
           });
           const newImgList = initImgList ?? (await getImgList());
-          if (newImgList.length === 0) throw new Error('获取漫画图片失败');
+          if (newImgList.length === 0) throw new Error(t$1('alert.fetch_comic_img_failed'));
           setManga(state => {
             state.imgList = [...newImgList];
             if (show || needAutoShow.val && options.autoShow) {
@@ -4515,7 +5222,7 @@ const useInit = async (name, defaultOptions = {}) => {
             }
           });
         } catch (e) {
-          console.error(e);
+          log.error(e);
           if (show) toast$1.error(e.message);
           setFab({
             progress: undefined
@@ -4527,7 +5234,7 @@ const useInit = async (name, defaultOptions = {}) => {
 
       /** 进入阅读模式 */
       const showComic = async () => {
-        if (loading) return toast$1.warn('加载图片中，请稍候', {
+        if (loading) return toast$1.warn(t$1('alert.repeat_load'), {
           duration: 1500
         });
         if (!mangaProps.imgList.length) return loadImgList(undefined, true);
@@ -4540,12 +5247,12 @@ const useInit = async (name, defaultOptions = {}) => {
       });
       if (needAutoShow.val && options.autoShow) showComic();
       if (firstRun) {
-        GM.registerMenuCommand('进入漫画阅读模式', fabProps.onClick);
+        GM.registerMenuCommand(t$1('other.enter_comic_read_mode'), fabProps.onClick);
         updateHideFabMenu();
         window.addEventListener('keydown', e => {
           if (e.target.tagName === 'INPUT') return;
           const code = getKeyboardCode(e);
-          if (!readModeHotKeys().has(code)) return;
+          if (!readModeHotkeys().has(code)) return;
           e.stopPropagation();
           e.preventDefault();
           fabProps.onClick?.();
@@ -4601,12 +5308,13 @@ const universalInit = async ({
   onNext,
   onExit,
   getCommentList,
+  initOptions,
   SPA
 }) => {
   if (SPA?.isMangaPage) await main.wait(SPA?.isMangaPage);
   if (waitFn) await main.wait(waitFn);
   if (await exit?.()) return;
-  const fnMap = await main.useInit(name);
+  const fnMap = await main.useInit(name, initOptions);
   const {
     init,
     options,
@@ -4673,7 +5381,9 @@ const universalInit = async ({
 };
 
 exports.assign = assign;
+exports.autoSetLang = autoSetLang;
 exports.autoUpdate = autoUpdate;
+exports.byPath = byPath;
 exports.createFillImgList = createFillImgList;
 exports.dataToParams = dataToParams;
 exports.difference = difference;
@@ -4682,7 +5392,9 @@ exports.getMostItem = getMostItem;
 exports.insertNode = insertNode;
 exports.isEqualArray = isEqualArray;
 exports.keyboardCodeToText = keyboardCodeToText;
+exports.lang = lang;
 exports.linstenKeyup = linstenKeyup;
+exports.log = log;
 exports.loop = loop;
 exports.needDarkMode = needDarkMode;
 exports.plimit = plimit;
@@ -4692,8 +5404,12 @@ exports.querySelectorClick = querySelectorClick;
 exports.request = request$1;
 exports.saveAs = saveAs;
 exports.scrollIntoView = scrollIntoView;
+exports.setInitLang = setInitLang;
+exports.setLang = setLang;
 exports.sleep = sleep;
+exports.t = t$1;
 exports.toast = toast$1;
+exports.triggerEleLazyLoad = triggerEleLazyLoad;
 exports.universalInit = universalInit;
 exports.useCache = useCache;
 exports.useFab = useFab;
@@ -4780,12 +5496,12 @@ let options;
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 const main = require('main');
-
-// 匹配站点
-switch (window.location.hostname) {
-  // #百合会——「记录阅读历史，体验优化」
-  case 'bbs.yamibo.com':
-    {
+try {
+  // 匹配站点
+  switch (window.location.hostname) {
+    // #百合会——「记录阅读历史，体验优化」
+    case 'bbs.yamibo.com':
+      {
 const web = require('solid-js/web');
 const main = require('main');
 
@@ -4869,7 +5585,6 @@ const MdSettings = ((props = {}) => (() => {
       main.toast.success('自动签到成功');
       localStorage.setItem('signDate', todayString);
     } catch (e) {
-      console.error(e);
       main.toast.error('自动签到失败');
     }
   })();
@@ -5110,50 +5825,61 @@ const MdSettings = ((props = {}) => (() => {
   }
 })();
 
-      options = false;
-      break;
-    }
-  // #百合会新站
-  case 'www.yamibo.com':
-    {
-      const id = new URLSearchParams(window.location.search).get('id');
+        options = false;
+        break;
+      }
+    // #百合会新站
+    case 'www.yamibo.com':
+      {
+        const id = new URLSearchParams(window.location.search).get('id');
 
-      /** 总页数 */
-      const totalPageNum = +main.querySelector('section div:first-of-type div:last-of-type').innerHTML.split('：')[1];
-      if (Number.isNaN(totalPageNum)) throw new Error('页面结构发生改变，无法正常运行');
+        /** 总页数 */
+        const totalPageNum = +main.querySelector('section div:first-of-type div:last-of-type').innerHTML.split('：')[1];
+        if (Number.isNaN(totalPageNum)) throw new Error('页面结构发生改变，无法正常运行');
 
-      /** 获取指定页数的图片 url */
-      const getImg = async (i = 1) => {
-        const res = await main.request(`https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`);
-        return res.responseText.match(/(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/)[0].replaceAll('&amp;', '&');
-      };
-      options = {
-        name: 'newYamibo',
-        exit: () => !window.location.pathname.includes('/manga/view-chapter'),
-        getImgList: ({
-          setFab
-        }) => main.plimit(Object.keys([...new Array(totalPageNum)]).map(i => () => getImg(+i + 1)), (doneNum, totalNum) => {
-          setFab({
-            progress: doneNum / totalNum,
-            tip: `加载图片中 - ${doneNum}/${totalNum}`
-          });
-        }),
-        onNext: main.querySelectorClick('#btnNext'),
-        onPrev: main.querySelectorClick('#btnPrev'),
-        onExit: isEnd => isEnd && main.scrollIntoView('#w1')
-      };
-      break;
-    }
+        /** 获取指定页数的图片 url */
+        const getImg = async (i = 1) => {
+          const res = await main.request(`https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`);
+          return res.responseText.match(/(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/)[0].replaceAll('&amp;', '&');
+        };
+        options = {
+          name: 'newYamibo',
+          exit: () => !window.location.pathname.includes('/manga/view-chapter'),
+          getImgList: ({
+            setFab
+          }) => main.plimit(Object.keys([...new Array(totalPageNum)]).map(i => () => getImg(+i + 1)), (doneNum, totalNum) => {
+            setFab({
+              progress: doneNum / totalNum,
+              tip: `加载图片中 - ${doneNum}/${totalNum}`
+            });
+          }),
+          onNext: main.querySelectorClick('#btnNext'),
+          onPrev: main.querySelectorClick('#btnPrev'),
+          onExit: isEnd => isEnd && main.scrollIntoView('#w1')
+        };
+        break;
+      }
 
-  // #动漫之家——「解锁隐藏漫画」
-  case 'manhua.idmzj.com':
-  case 'manhua.dmzj.com':
-    {
+    // #动漫之家——「解锁隐藏漫画」
+    case 'manhua.idmzj.com':
+    case 'manhua.dmzj.com':
+      {
 const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const main = require('main');
 const store = require('solid-js/store');
 const dmzjDecrypt = require('dmzjDecrypt');
+
+const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
+const log = (...args) =>
+// eslint-disable-next-line no-console
+console.log.apply(undefined, [...prefix, ...args]);
+log.warn = (...args) =>
+// eslint-disable-next-line no-console
+console.warn.apply(undefined, [...prefix, ...args]);
+log.error = (...args) =>
+// eslint-disable-next-line no-console
+console.error.apply(undefined, [...prefix, ...args]);
 
 /** 根据漫画 id 和章节 id 获取章节数据 */
 const getChapterInfo = async (comicId, chapterId) => {
@@ -5245,7 +5971,7 @@ const getComicDetail_v4Api = async comicId => {
 const getComicDetail_traversal = async (comicId, draftData) => {
   let nextId = draftData.last_update_chapter_id;
   if (!nextId) {
-    console.warn('last_update_chapter_id 为空，无法通过遍历获取章节');
+    log.warn('last_update_chapter_id 为空，无法通过遍历获取章节');
     return;
   }
   draftData.chapters[0] = {
@@ -5290,7 +6016,6 @@ const useComicDetail = comicId => {
     main.toast.error('漫画数据获取失败', {
       duration: Infinity
     });
-    console.error('漫画数据获取失败');
   });
   return data;
 };
@@ -5345,9 +6070,9 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2
     const [, comicPy, chapterId] = window.location.pathname.split(/\/|\./);
     if (!comicPy) {
       main.toast.error('漫画数据获取失败', {
-        duration: Infinity
+        duration: Infinity,
+        throw: new Error('获取漫画拼音简称失败')
       });
-      throw new Error('获取漫画拼音简称失败');
     }
     const comicId = await getComicId(comicPy);
     return {
@@ -5456,12 +6181,12 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2
   });
 })();
 
-      options = false;
-      break;
-    }
-  case 'm.idmzj.com':
-  case 'm.dmzj.com':
-    {
+        options = false;
+        break;
+      }
+    case 'm.idmzj.com':
+    case 'm.dmzj.com':
+      {
 const main = require('main');
 const dmzjDecrypt = require('dmzjDecrypt');
 
@@ -5640,12 +6365,12 @@ const getViewpoint = async (comicId, chapterId) => {
   }
 })();
 
-      options = false;
-      break;
-    }
-  case 'www.idmzj.com':
-  case 'www.dmzj.com':
-    {
+        options = false;
+        break;
+      }
+    case 'www.idmzj.com':
+    case 'www.dmzj.com':
+      {
 const main = require('main');
 
 /** 根据漫画 id 和章节 id 获取章节数据 */
@@ -5691,14 +6416,14 @@ const turnPage = chapterId => {
   }
 })();
 
-      options = false;
-      break;
-    }
+        options = false;
+        break;
+      }
 
-  // #ehentai——「匹配 nhentai 漫画」
-  case 'exhentai.org':
-  case 'e-hentai.org':
-    {
+    // #ehentai——「匹配 nhentai 漫画」
+    case 'exhentai.org':
+    case 'e-hentai.org':
+      {
 const web = require('solid-js/web');
 const main = require('main');
 
@@ -5717,24 +6442,26 @@ const MdSettings = ((props = {}) => (() => {
     init,
     dynamicUpdate
   } = await main.useInit('ehentai', {
-    匹配nhentai: true,
-    快捷键翻页: true,
+    /** 关联 nhentai */
+    associate_nhentai: true,
+    /** 快捷键翻页 */
+    hotkeys_page_turn: true,
     autoShow: false
   });
 
   // 不是漫画页的话
   if (!Reflect.has(unsafeWindow, 'gid')) {
-    await GM.registerMenuCommand('显示设置菜单', () => setFab({
+    await GM.registerMenuCommand(main.t('site.show_settings_menu'), () => setFab({
       show: true,
       focus: true,
-      tip: '设置',
+      tip: main.t('site.settings_tip'),
       children: web.createComponent(MdSettings, {}),
       onBackdropClick: () => setFab({
         show: false,
         focus: false
       })
     }));
-    if (options.快捷键翻页) {
+    if (options.hotkeys_page_turn) {
       main.linstenKeyup(e => {
         switch (e.key) {
           case 'ArrowRight':
@@ -5748,6 +6475,17 @@ const MdSettings = ((props = {}) => (() => {
         }
       });
     }
+    return;
+  }
+  if (Reflect.has(unsafeWindow, 'mpvkey')) {
+    const imgEleList = main.querySelectorAll('.mi0[id]');
+    init(dynamicUpdate(setImg => main.plimit(imgEleList.map((ele, i) => async () => {
+      const getUrl = () => ele.querySelector('img')?.src;
+      if (!getUrl()) unsafeWindow.load_image(i + 1);
+      unsafeWindow.next_possible_request = 0;
+      const imgUrl = await main.wait(getUrl);
+      setImg(i, imgUrl);
+    }), undefined, 4), imgEleList.length));
     return;
   }
   setManga({
@@ -5766,12 +6504,12 @@ const MdSettings = ((props = {}) => (() => {
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async url => {
     const res = await main.request(url, {
-      errorText: '获取图片页源码失败'
+      errorText: main.t('site.ehentai.fetch_img_page_source_failed')
     });
     try {
       return res.responseText.split('id="img" src="')[1].split('"')[0];
     } catch (error) {
-      throw new Error('从图片页获取图片地址失败');
+      throw new Error(main.t('site.ehentai.fetch_img_url_failed'));
     }
   };
 
@@ -5781,14 +6519,14 @@ const MdSettings = ((props = {}) => (() => {
   /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (pageNum = 0) => {
     const res = await main.request(`${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`, {
-      errorText: '从详情页获取图片页地址失败'
+      errorText: main.t('site.ehentai.fetch_img_page_url_failed')
     });
 
     // 从详情页获取图片页的地址
     const imgPageList = res.responseText.match(getImgFromDetailsPageRe);
     if (imgPageList === null) {
-      if (res.responseText.includes('Your IP address has been temporarily banned for excessive')) throw new Error('IP地址被禁');
-      throw new Error('从详情页获取图片页的地址时出错');
+      if (res.responseText.includes('Your IP address has been temporarily banned for excessive')) throw new Error(main.t('site.ehentai.ip_banned'));
+      throw new Error(main.t('site.ehentai.fetch_img_page_url_failed'));
     }
     return imgPageList;
   };
@@ -5798,7 +6536,7 @@ const MdSettings = ((props = {}) => (() => {
     const res = await main.request(window.location.href);
     numText = res.responseText.match(/(?<=<td class="gdt2">)\d+(?= pages<\/td>)/)?.[0];
     if (numText) return +numText;
-    main.toast.error('页面结构发生改变，无法加载漫画');
+    main.toast.error(main.t('site.ehentai.html_changed_load_failed'));
     return 0;
   };
   const totalImgNum = await getImgNum();
@@ -5820,7 +6558,7 @@ const MdSettings = ((props = {}) => (() => {
         const doneNum = startIndex + _doneNum;
         setFab({
           progress: doneNum / totalImgNum,
-          tip: `加载图片中 - ${doneNum}/${totalImgNum}`
+          tip: `${main.t('other.loading_img')} - ${doneNum}/${totalImgNum}`
         });
         comicReadModeDom.innerHTML = doneNum !== totalImgNum ? ` loading - ${doneNum}/${totalImgNum}` : ` Read`;
       });
@@ -5830,7 +6568,7 @@ const MdSettings = ((props = {}) => (() => {
     initialShow: options.autoShow
   });
   comicReadModeDom.addEventListener('click', () => loadImgList(ehImgList.length ? ehImgList : undefined, true));
-  if (options.快捷键翻页) {
+  if (options.hotkeys_page_turn) {
     main.linstenKeyup(e => {
       switch (e.key) {
         case 'ArrowRight':
@@ -5844,29 +6582,28 @@ const MdSettings = ((props = {}) => (() => {
       }
     });
   }
-  if (options.匹配nhentai) {
+  if (options.associate_nhentai) {
     const titleDom = document.getElementById('gn');
     const taglistDom = main.querySelector('#taglist tbody');
     if (!titleDom || !taglistDom) {
-      main.toast.error('页面结构发生改变，匹配 nhentai 漫画功能无法正常生效');
+      main.toast.error(main.t('site.ehentai.html_changed_nhentai_failed'));
       return;
     }
+    const title = encodeURI(titleDom.innerText);
     const newTagLine = document.createElement('tr');
     let res;
     try {
-      res = await main.request(`https://nhentai.net/api/galleries/search?query=${encodeURI(titleDom.innerText)}`, {
-        errorText: 'nhentai 匹配出错',
+      res = await main.request(`https://nhentai.net/api/galleries/search?query=${title}`, {
+        errorText: main.t('site.ehentai.nhentai_error'),
         noTip: true
       });
     } catch (_) {
       newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
-        匹配失败，请在确认登录
-        <a href='https://nhentai.net/' target="_blank" >
-          <u>nhentai</u>
-        </a>
-        后刷新
+        ${main.t('site.ehentai.nhentai_failed', {
+        nhentai: `<a href='https://nhentai.net/search/?q=${title}' target="_blank" ><u>nhentai</u></a>`
+      })}
       </td>`;
       taglistDom.appendChild(newTagLine);
       return;
@@ -5908,10 +6645,8 @@ const MdSettings = ((props = {}) => (() => {
               p: 'png',
               g: 'gif'
             };
-            nhentaiImgList[selected_tag] = await Promise.all(comicInfo.images.pages.map(async ({
-              t
-            }, i) => {
-              const imgRes = await main.request(`https://i.nhentai.net/galleries/${comicInfo.media_id}/${i + 1}.${fileType[t]}`, {
+            nhentaiImgList[selected_tag] = await Promise.all(comicInfo.images.pages.map(async (page, i) => {
+              const imgRes = await main.request(`https://i.nhentai.net/galleries/${comicInfo.media_id}/${i + 1}.${fileType[page.t]}`, {
                 headers: {
                   Referer: `https://nhentai.net/g/${comicInfo.media_id}`
                 },
@@ -5933,13 +6668,13 @@ const MdSettings = ((props = {}) => (() => {
   }
 })();
 
-      options = false;
-      break;
-    }
+        options = false;
+        break;
+      }
 
-  // #nhentai——「彻底屏蔽漫画，自动翻页」
-  case 'nhentai.net':
-    {
+    // #nhentai——「彻底屏蔽漫画，自动翻页」
+    case 'nhentai.net':
+      {
 const main = require('main');
 
 /** 用于转换获得图片文件扩展名 */
@@ -5955,9 +6690,12 @@ const fileType = {
     setManga,
     init
   } = await main.useInit('nhentai', {
-    自动翻页: true,
-    彻底屏蔽漫画: true,
-    在新页面中打开链接: true
+    /** 自动翻页 */
+    auto_page_turn: true,
+    /** 彻底屏蔽漫画 */
+    block_totally: true,
+    /** 在新页面中打开链接 */
+    open_link_new_page: true
   });
 
   // 在漫画详情页
@@ -5989,13 +6727,13 @@ const fileType = {
 
   // 在漫画浏览页
   if (document.getElementsByClassName('gallery').length) {
-    if (options.在新页面中打开链接) main.querySelectorAll('a:not([href^="javascript:"])').forEach(e => e.setAttribute('target', '_blank'));
+    if (options.open_link_new_page) main.querySelectorAll('a:not([href^="javascript:"])').forEach(e => e.setAttribute('target', '_blank'));
     const blacklist = (unsafeWindow?._n_app ?? unsafeWindow?.n)?.options?.blacklisted_tags;
-    if (blacklist === undefined) main.toast.error('标签黑名单获取失败');
+    if (blacklist === undefined) main.toast.error(main.t('site.nhentai.tag_blacklist_fetch_failed'));
     // blacklist === null 时是未登录
 
-    if (options.彻底屏蔽漫画 && blacklist?.length) await GM.addStyle('.blacklisted.gallery { display: none; }');
-    if (options.自动翻页) {
+    if (options.block_totally && blacklist?.length) await GM.addStyle('.blacklisted.gallery { display: none; }');
+    if (options.auto_page_turn) {
       await GM.addStyle(`
         hr { bottom: 0; box-sizing: border-box; margin: -1em auto 2em; }
         hr:last-child { position: relative; animation: load .8s linear alternate infinite; }
@@ -6017,7 +6755,7 @@ const fileType = {
         loadLock = true;
         pageNum += 1;
         const res = await main.request(`${apiUrl}page=${pageNum}${window.location.pathname.includes('popular') ? '&sort=popular ' : ''}`, {
-          errorText: '下一页漫画信息加载出错'
+          errorText: main.t('site.nhentai.fetch_next_page_failed')
         });
         const {
           result,
@@ -6026,12 +6764,12 @@ const fileType = {
         let comicDomHtml = '';
         result.forEach(comic => {
           const blacklisted = comic.tags.some(tag => blacklist?.includes(tag.id));
-          comicDomHtml += `<div class="gallery${blacklisted ? ' blacklisted' : ''}" data-tags="${comic.tags.map(e => e.id).join(' ')}"><a ${options.在新页面中打开链接 ? 'target="_blank"' : ''} href="/g/${comic.id}/" class="cover" style="padding:0 0 ${comic.images.thumbnail.h / comic.images.thumbnail.w * 100}% 0"><img is="lazyload-image" class="" width="${comic.images.thumbnail.w}" height="${comic.images.thumbnail.h}" src="https://t.nhentai.net/galleries/${comic.media_id}/thumb.${fileType[comic.images.thumbnail.t]}"><div class="caption">${comic.title.english}</div></a></div>`;
+          comicDomHtml += `<div class="gallery${blacklisted ? ' blacklisted' : ''}" data-tags="${comic.tags.map(e => e.id).join(' ')}"><a ${options.open_link_new_page ? 'target="_blank"' : ''} href="/g/${comic.id}/" class="cover" style="padding:0 0 ${comic.images.thumbnail.h / comic.images.thumbnail.w * 100}% 0"><img is="lazyload-image" class="" width="${comic.images.thumbnail.w}" height="${comic.images.thumbnail.h}" src="https://t.nhentai.net/galleries/${comic.media_id}/thumb.${fileType[comic.images.thumbnail.t]}"><div class="caption">${comic.title.english}</div></a></div>`;
         });
 
         // 构建页数按钮
         if (comicDomHtml) {
-          const target = options.在新页面中打开链接 ? 'target="_blank" ' : '';
+          const target = options.open_link_new_page ? 'target="_blank" ' : '';
           const pageNumDom = [];
           for (let i = pageNum - 5; i <= pageNum + 5; i += 1) {
             if (i > 0 && i <= num_pages) pageNumDom.push(`<a ${target}href="?page=${i}" class="page${i === pageNum ? ' current' : ''}">${i}</a>`);
@@ -6072,66 +6810,66 @@ const fileType = {
   }
 })();
 
-      options = false;
-      break;
-    }
+        options = false;
+        break;
+      }
 
-  // #PonpomuYuri
-  case 'www.ponpomu.com':
-    {
-      options = {
-        name: 'terraHistoricus',
-        wait: () => !!main.querySelector('.comic-page-container img'),
-        getImgList: () => main.querySelectorAll('.comic-page-container img').map(e => e.getAttribute('data-srcset')),
-        SPA: {
-          isMangaPage: () => window.location.href.includes('/comic/'),
-          getOnPrev: () => main.querySelectorClick('.prev-btn a'),
-          getOnNext: () => main.querySelectorClick('.next-btn a')
-        }
-      };
-      break;
-    }
+    // #PonpomuYuri
+    case 'www.ponpomu.com':
+      {
+        options = {
+          name: 'terraHistoricus',
+          wait: () => !!main.querySelector('.comic-page-container img'),
+          getImgList: () => main.querySelectorAll('.comic-page-container img').map(e => e.getAttribute('data-srcset')),
+          SPA: {
+            isMangaPage: () => window.location.href.includes('/comic/'),
+            getOnPrev: () => main.querySelectorClick('.prev-btn a'),
+            getOnNext: () => main.querySelectorClick('.next-btn a')
+          }
+        };
+        break;
+      }
 
-  // #明日方舟泰拉记事社
-  case 'terra-historicus.hypergryph.com':
-    {
-      const apiUrl = () => `https://terra-historicus.hypergryph.com/api${window.location.pathname}`;
-      const getImgUrl = i => async () => {
-        const res = await main.request(`${apiUrl()}/page?pageNum=${i + 1}`);
-        return JSON.parse(res.response).data.url;
-      };
-      options = {
-        name: 'terraHistoricus',
-        wait: () => !!main.querySelector('footer .HG_GAME_JS_BRIDGE__wrapper'),
-        getImgList: async ({
-          setFab
-        }) => {
-          const res = await main.request(apiUrl());
-          const pageList = JSON.parse(res.response).data.pageInfos;
-          if (pageList.length === 0 && window.location.pathname.includes('episode')) throw new Error('获取图片列表时出错');
-          return main.plimit([...Array(pageList.length).keys()].map(getImgUrl), (doneNum, totalNum) => {
-            setFab({
-              progress: doneNum / totalNum,
-              tip: `加载图片中 - ${doneNum}/${totalNum}`
+    // #明日方舟泰拉记事社
+    case 'terra-historicus.hypergryph.com':
+      {
+        const apiUrl = () => `https://terra-historicus.hypergryph.com/api${window.location.pathname}`;
+        const getImgUrl = i => async () => {
+          const res = await main.request(`${apiUrl()}/page?pageNum=${i + 1}`);
+          return JSON.parse(res.response).data.url;
+        };
+        options = {
+          name: 'terraHistoricus',
+          wait: () => !!main.querySelector('footer .HG_GAME_JS_BRIDGE__wrapper'),
+          getImgList: async ({
+            setFab
+          }) => {
+            const res = await main.request(apiUrl());
+            const pageList = JSON.parse(res.response).data.pageInfos;
+            if (pageList.length === 0 && window.location.pathname.includes('episode')) throw new Error('获取图片列表时出错');
+            return main.plimit([...Array(pageList.length).keys()].map(getImgUrl), (doneNum, totalNum) => {
+              setFab({
+                progress: doneNum / totalNum,
+                tip: `加载图片中 - ${doneNum}/${totalNum}`
+              });
             });
-          });
-        },
-        SPA: {
-          isMangaPage: () => window.location.href.includes('episode'),
-          getOnPrev: () => main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__prev a'),
-          getOnNext: () => main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a')
-        }
-      };
-      break;
-    }
+          },
+          SPA: {
+            isMangaPage: () => window.location.href.includes('episode'),
+            getOnPrev: () => main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__prev a'),
+            getOnNext: () => main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a')
+          }
+        };
+        break;
+      }
 
-  // #禁漫天堂
-  case 'jmcomic.me':
-  case 'jmcomic1.me':
-  case '18comic.org':
-  case '18comic.cc':
-  case '18comic.vip':
-    {
+    // #禁漫天堂
+    case 'jmcomic.me':
+    case 'jmcomic1.me':
+    case '18comic.org':
+    case '18comic.cc':
+    case '18comic.vip':
+      {
 const main = require('main');
 
 // 已知问题：某些漫画始终会有几页在下载原图时出错
@@ -6181,7 +6919,7 @@ const main = require('main');
       fetch: true
     });
     if (!res.response.size) {
-      console.error('下载原图时出错', imgEle.getAttribute('data-page'));
+      main.toast.warn(`下载原图时出错: ${imgEle.getAttribute('data-page')}`);
       return '';
     }
     imgEle.src = URL.createObjectURL(res.response);
@@ -6189,7 +6927,7 @@ const main = require('main');
     if (err) {
       URL.revokeObjectURL(imgEle.src);
       imgEle.src = originalUrl;
-      console.warn('加载原图时出错', imgEle.getAttribute('data-page'));
+      main.toast.warn(`加载原图时出错: ${imgEle.getAttribute('data-page')}`);
       return '';
     }
     try {
@@ -6202,23 +6940,21 @@ const main = require('main');
       return `${URL.createObjectURL(blob)}#.webp`;
     } catch (error) {
       imgEle.src = originalUrl;
-      console.warn('转换图片时出错', imgEle.getAttribute('data-page'));
+      main.toast.warn(`转换图片时出错: ${imgEle.getAttribute('data-page')}`);
       return '';
     }
   };
 
   // 先等懒加载触发完毕
   await main.wait(() => main.querySelectorAll('.lazy-loaded.hide').length && main.querySelectorAll('.lazy-loaded.hide').length === main.querySelectorAll('canvas').length);
-  init(dynamicUpdate(async setImg => {
-    await main.plimit(imgEleList.map((img, i) => async () => {
-      setImg(i, await getImgUrl(img));
-    }), (doneNum, totalNum) => {
-      setFab({
-        progress: doneNum / totalNum,
-        tip: `加载图片中 - ${doneNum}/${totalNum}`
-      });
+  init(dynamicUpdate(setImg => main.plimit(imgEleList.map((img, i) => async () => {
+    setImg(i, await getImgUrl(img));
+  }), (doneNum, totalNum) => {
+    setFab({
+      progress: doneNum / totalNum,
+      tip: `加载图片中 - ${doneNum}/${totalNum}`
     });
-  }, imgEleList.length));
+  }), imgEleList.length));
   const retry = (num = 0) => setManga(async state => {
     for (let i = 0; i < imgEleList.length; i++) {
       if (state.imgList[i]) continue;
@@ -6230,263 +6966,289 @@ const main = require('main');
   retry();
 })();
 
-      options = false;
-      break;
-    }
+        options = false;
+        break;
+      }
 
-  // #拷贝漫画(copymanga)
-  case 'copymanga.site':
-  case 'copymanga.info':
-  case 'copymanga.net':
-  case 'copymanga.org':
-  case 'copymanga.tv':
-  case 'copymanga.com':
-  case 'www.copymanga.site':
-  case 'www.copymanga.info':
-  case 'www.copymanga.net':
-  case 'www.copymanga.org':
-  case 'www.copymanga.tv':
-  case 'www.copymanga.com':
-    {
-      options = {
-        name: 'copymanga',
-        exit: () => !window.location.href.includes('/chapter/'),
-        getImgList: async () => {
-          const res = await main.request(window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.site/api/v3'));
-          return JSON.parse(res.responseText).results.chapter.contents.map(({
-            url
-          }) => url);
-        },
-        onNext: main.querySelectorClick('.comicContent-next a:not(.prev-null)'),
-        onPrev: main.querySelectorClick('.comicContent-prev:not(.index,.list) a:not(.prev-null)'),
-        getCommentList: async () => {
-          const chapter_id = window.location.pathname.split('/').at(-1);
-          const res = await main.request(`https://api.copymanga.site/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`);
-          return JSON.parse(res.responseText).results.list.map(({
-            comment
-          }) => comment);
-        }
-      };
-      break;
-    }
+    // #拷贝漫画(copymanga)
+    case 'copymanga.site':
+    case 'copymanga.info':
+    case 'copymanga.net':
+    case 'copymanga.org':
+    case 'copymanga.tv':
+    case 'copymanga.com':
+    case 'www.copymanga.site':
+    case 'www.copymanga.info':
+    case 'www.copymanga.net':
+    case 'www.copymanga.org':
+    case 'www.copymanga.tv':
+    case 'www.copymanga.com':
+      {
+        options = {
+          name: 'copymanga',
+          exit: () => !window.location.href.includes('/chapter/'),
+          getImgList: async () => {
+            const res = await main.request(window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.site/api/v3'));
+            return JSON.parse(res.responseText).results.chapter.contents.map(({
+              url
+            }) => url);
+          },
+          onNext: main.querySelectorClick('.comicContent-next a:not(.prev-null)'),
+          onPrev: main.querySelectorClick('.comicContent-prev:not(.index,.list) a:not(.prev-null)'),
+          getCommentList: async () => {
+            const chapter_id = window.location.pathname.split('/').at(-1);
+            const res = await main.request(`https://api.copymanga.site/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`);
+            return JSON.parse(res.responseText).results.list.map(({
+              comment
+            }) => comment);
+          }
+        };
+        break;
+      }
 
-  // #漫画柜(manhuagui)
-  case 'www.manhuagui.com':
-  case 'www.mhgui.com':
-  case 'tw.manhuagui.com':
-    {
-      // 让切换章节的提示可以显示在漫画页上
-      GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
-      options = {
-        name: 'manhuagui',
-        exit: () => !Reflect.has(unsafeWindow, 'cInfo'),
-        getImgList: () => {
-          const comicInfo = JSON.parse(
-          // 只能通过 eval 获得数据
+    // #漫画柜(manhuagui)
+    case 'www.manhuagui.com':
+    case 'www.mhgui.com':
+    case 'tw.manhuagui.com':
+      {
+        // 让切换章节的提示可以显示在漫画页上
+        GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
+        options = {
+          name: 'manhuagui',
+          exit: () => !Reflect.has(unsafeWindow, 'cInfo'),
+          getImgList: () => {
+            const comicInfo = JSON.parse(
+            // 只能通过 eval 获得数据
+            // eslint-disable-next-line no-eval
+            eval(main.querySelectorAll('body > script')[1].innerHTML.slice(26)).slice(12, -12));
+            const sl = Object.entries(comicInfo.sl).map(attr => `${attr[0]}=${attr[1]}`).join('&');
+            return comicInfo.files.map(file => `${unsafeWindow.pVars.manga.filePath}${file}?${sl}`);
+          },
+          onNext: unsafeWindow.cInfo.nextId !== 0 ? main.querySelectorClick('a.nextC') : undefined,
+          onPrev: unsafeWindow.cInfo.prevId !== 0 ? main.querySelectorClick('a.prevC') : undefined
+        };
+        break;
+      }
+
+    // #漫画DB(manhuadb)
+    case 'www.manhuadb.com':
+      {
+        options = {
+          name: 'manhuaDB',
+          exit: () => !Reflect.has(unsafeWindow, 'img_data_arr'),
+          getImgList: () => unsafeWindow.img_data_arr.map(data => `${unsafeWindow.img_host}/${unsafeWindow.img_pre}/${data.img}`),
+          onPrev: () => unsafeWindow.goNumPage('pre'),
+          onNext: () => unsafeWindow.goNumPage('next')
+        };
+        break;
+      }
+
+    // #动漫屋(dm5)
+    case 'tel.dm5.com':
+    case 'en.dm5.com':
+    case 'www.dm5.com':
+    case 'www.dm5.cn':
+    case 'www.1kkk.com':
+      {
+        const getImgList = async (fnMap, imgList = []) => {
+          const res = await unsafeWindow.$.ajax({
+            type: 'GET',
+            url: 'chapterfun.ashx',
+            data: {
+              cid: unsafeWindow.DM5_CID,
+              page: imgList.length + 1,
+              key: unsafeWindow.$('#dm5_key').length ? unsafeWindow.$('#dm5_key').val() : '',
+              language: 1,
+              gtk: 6,
+              _cid: unsafeWindow.DM5_CID,
+              _mid: unsafeWindow.DM5_MID,
+              _dt: unsafeWindow.DM5_VIEWSIGN_DT,
+              _sign: unsafeWindow.DM5_VIEWSIGN
+            }
+          });
+
+          // 返回的数据只能通过 eval 获得
+          const newImgList = [...imgList,
           // eslint-disable-next-line no-eval
-          eval(main.querySelectorAll('body > script')[1].innerHTML.slice(26)).slice(12, -12));
-          const sl = Object.entries(comicInfo.sl).map(attr => `${attr[0]}=${attr[1]}`).join('&');
-          return comicInfo.files.map(file => `${unsafeWindow.pVars.manga.filePath}${file}?${sl}`);
-        },
-        onNext: unsafeWindow.cInfo.nextId !== 0 ? main.querySelectorClick('a.nextC') : undefined,
-        onPrev: unsafeWindow.cInfo.prevId !== 0 ? main.querySelectorClick('a.prevC') : undefined
-      };
-      break;
-    }
-
-  // #漫画DB(manhuadb)
-  case 'www.manhuadb.com':
-    {
-      options = {
-        name: 'manhuaDB',
-        exit: () => !Reflect.has(unsafeWindow, 'img_data_arr'),
-        getImgList: () => unsafeWindow.img_data_arr.map(data => `${unsafeWindow.img_host}/${unsafeWindow.img_pre}/${data.img}`),
-        onPrev: () => unsafeWindow.goNumPage('pre'),
-        onNext: () => unsafeWindow.goNumPage('next')
-      };
-      break;
-    }
-
-  // #动漫屋(dm5)
-  case 'tel.dm5.com':
-  case 'en.dm5.com':
-  case 'www.dm5.com':
-  case 'www.dm5.cn':
-  case 'www.1kkk.com':
-    {
-      const getImgList = async (fnMap, imgList = []) => {
-        const res = await unsafeWindow.$.ajax({
-          type: 'GET',
-          url: 'chapterfun.ashx',
-          data: {
-            cid: unsafeWindow.DM5_CID,
-            page: imgList.length + 1,
-            key: unsafeWindow.$('#dm5_key').length ? unsafeWindow.$('#dm5_key').val() : '',
-            language: 1,
-            gtk: 6,
-            _cid: unsafeWindow.DM5_CID,
-            _mid: unsafeWindow.DM5_MID,
-            _dt: unsafeWindow.DM5_VIEWSIGN_DT,
-            _sign: unsafeWindow.DM5_VIEWSIGN
+          ...eval(res)];
+          if (newImgList.length !== unsafeWindow.DM5_IMAGE_COUNT) {
+            // 在 Fab 按钮上通过进度条和提示文本显示当前进度
+            fnMap.setFab({
+              progress: newImgList.length / unsafeWindow.DM5_IMAGE_COUNT,
+              tip: `加载图片中 - ${newImgList.length}/${unsafeWindow.DM5_IMAGE_COUNT}`
+            });
+            return getImgList(fnMap, newImgList);
           }
-        });
+          return newImgList;
+        };
+        options = {
+          name: 'dm5',
+          exit: () => !Reflect.has(unsafeWindow, 'DM5_CID'),
+          getImgList,
+          onNext: main.querySelectorClick('.logo_2'),
+          onPrev: main.querySelectorClick('.logo_1'),
+          onExit: isEnd => isEnd && main.scrollIntoView('.postlist')
+        };
+        break;
+      }
 
-        // 返回的数据只能通过 eval 获得
-        const newImgList = [...imgList,
-        // eslint-disable-next-line no-eval
-        ...eval(res)];
-        if (newImgList.length !== unsafeWindow.DM5_IMAGE_COUNT) {
-          // 在 Fab 按钮上通过进度条和提示文本显示当前进度
-          fnMap.setFab({
-            progress: newImgList.length / unsafeWindow.DM5_IMAGE_COUNT,
-            tip: `加载图片中 - ${newImgList.length}/${unsafeWindow.DM5_IMAGE_COUNT}`
+    // #绅士漫画(wnacg)
+    case 'www.wn3.lol':
+    case 'www.wnacg.com':
+    case 'wnacg.com':
+      {
+        options = {
+          name: 'wnacg',
+          exit: () => !Reflect.has(unsafeWindow, 'imglist'),
+          getImgList: () => unsafeWindow.imglist.filter(({
+            caption
+          }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！').map(({
+            url
+          }) => new URL(url, window.location.origin).href)
+        };
+        break;
+      }
+
+    // #mangabz
+    case 'www.mangabz.com':
+    case 'mangabz.com':
+      {
+        const getImgList = async (fnMap, imgList = []) => {
+          const res = await unsafeWindow.$.ajax({
+            type: 'GET',
+            url: 'chapterimage.ashx',
+            data: {
+              cid: unsafeWindow.MANGABZ_CID,
+              page: imgList.length + 1,
+              key: '',
+              _cid: unsafeWindow.MANGABZ_CID,
+              _mid: unsafeWindow.MANGABZ_MID,
+              _dt: unsafeWindow.MANGABZ_VIEWSIGN_DT,
+              _sign: unsafeWindow.MANGABZ_VIEWSIGN
+            }
           });
-          return getImgList(fnMap, newImgList);
-        }
-        return newImgList;
-      };
-      options = {
-        name: 'dm5',
-        exit: () => !Reflect.has(unsafeWindow, 'DM5_CID'),
-        getImgList,
-        onNext: main.querySelectorClick('.logo_2'),
-        onPrev: main.querySelectorClick('.logo_1'),
-        onExit: isEnd => isEnd && main.scrollIntoView('.postlist')
-      };
-      break;
-    }
 
-  // #绅士漫画(wnacg)
-  case 'www.wn3.lol':
-  case 'www.wnacg.com':
-  case 'wnacg.com':
-    {
-      options = {
-        name: 'wnacg',
-        exit: () => !Reflect.has(unsafeWindow, 'imglist'),
-        getImgList: () => unsafeWindow.imglist.filter(({
-          caption
-        }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！').map(({
-          url
-        }) => new URL(url, window.location.origin).href)
-      };
-      break;
-    }
-
-  // #mangabz
-  case 'www.mangabz.com':
-  case 'mangabz.com':
-    {
-      const getImgList = async (fnMap, imgList = []) => {
-        const res = await unsafeWindow.$.ajax({
-          type: 'GET',
-          url: 'chapterimage.ashx',
-          data: {
-            cid: unsafeWindow.MANGABZ_CID,
-            page: imgList.length + 1,
-            key: '',
-            _cid: unsafeWindow.MANGABZ_CID,
-            _mid: unsafeWindow.MANGABZ_MID,
-            _dt: unsafeWindow.MANGABZ_VIEWSIGN_DT,
-            _sign: unsafeWindow.MANGABZ_VIEWSIGN
+          // 返回的数据只能通过 eval 获得
+          const newImgList = [...imgList,
+          // eslint-disable-next-line no-eval
+          ...eval(res)];
+          if (newImgList.length !== unsafeWindow.MANGABZ_IMAGE_COUNT) {
+            // 在 Fab 按钮上通过进度条和提示文本显示当前进度
+            fnMap.setFab({
+              progress: newImgList.length / unsafeWindow.MANGABZ_IMAGE_COUNT,
+              tip: `加载图片中 - ${newImgList.length}/${unsafeWindow.MANGABZ_IMAGE_COUNT}`
+            });
+            return getImgList(fnMap, newImgList);
           }
-        });
+          return newImgList;
+        };
+        options = {
+          name: 'mangabz',
+          exit: () => !Reflect.has(unsafeWindow, 'MANGABZ_CID'),
+          getImgList,
+          onNext: main.querySelectorClick('body > .container a[href^="/"]:last-child'),
+          onPrev: main.querySelectorClick('body > .container a[href^="/"]:first-child')
+        };
+        break;
+      }
 
-        // 返回的数据只能通过 eval 获得
-        const newImgList = [...imgList,
-        // eslint-disable-next-line no-eval
-        ...eval(res)];
-        if (newImgList.length !== unsafeWindow.MANGABZ_IMAGE_COUNT) {
-          // 在 Fab 按钮上通过进度条和提示文本显示当前进度
-          fnMap.setFab({
-            progress: newImgList.length / unsafeWindow.MANGABZ_IMAGE_COUNT,
-            tip: `加载图片中 - ${newImgList.length}/${unsafeWindow.MANGABZ_IMAGE_COUNT}`
-          });
-          return getImgList(fnMap, newImgList);
-        }
-        return newImgList;
-      };
-      options = {
-        name: 'mangabz',
-        exit: () => !Reflect.has(unsafeWindow, 'MANGABZ_CID'),
-        getImgList,
-        onNext: main.querySelectorClick('body > .container a[href^="/"]:last-child'),
-        onPrev: main.querySelectorClick('body > .container a[href^="/"]:first-child')
-      };
-      break;
-    }
+    // #komiic
+    case 'komiic.com':
+      {
+        const getImgList = async () => {
+          const imgList = main.querySelectorAll('.imageContainer > img').map(e => e.getAttribute('data-src') ?? '');
+          if (imgList.includes('')) {
+            await main.sleep(100);
+            return getImgList();
+          }
+          return imgList;
+        };
+        const handlePrevNext = text => async () => {
+          // 点击唤出底栏
+          const id = window.setInterval(() => {
+            main.querySelector('.ComicImageContainer')?.click();
+          }, 500);
+          await main.waitDom('.ComicImage__bottom-menu-center');
+          window.clearInterval(id);
+          const buttonDom = main.querySelectorAll('.ComicImage__bottom-menu-center button:not([disabled])').find(e => e.innerText.includes(text));
+          return main.querySelectorClick(() => buttonDom);
+        };
+        const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
+        options = {
+          name: 'komiic',
+          wait: () => !!main.querySelector('.imageContainer > img'),
+          getImgList,
+          SPA: {
+            isMangaPage: () => urlMatchRe.test(window.location.href),
+            getOnPrev: handlePrevNext('上一'),
+            getOnNext: handlePrevNext('下一')
+          }
+        };
+        break;
+      }
 
-  // #komiic
-  case 'komiic.com':
-    {
-      const getImgList = async () => {
-        const imgList = main.querySelectorAll('.imageContainer > img').map(e => e.getAttribute('data-src') ?? '');
-        if (imgList.includes('')) {
-          await main.sleep(100);
+    // #hitomi
+    case 'hitomi.la':
+      {
+        options = {
+          name: 'hitomi',
+          getImgList: () => main.wait(() => unsafeWindow.galleryinfo?.files).then(files => files.map(img => unsafeWindow.url_from_url_from_hash(unsafeWindow.galleryinfo.id, img, 'webp', undefined, 'a')))
+        };
+        break;
+      }
+
+    // #kemono
+    case 'kemono.party':
+      {
+        options = {
+          name: 'kemono',
+          getImgList: () => main.querySelectorAll('.post__thumbnail > a').map(e => e.href),
+          initOptions: {
+            autoShow: false,
+            option: {
+              onePageMode: true
+            }
+          }
+        };
+        break;
+      }
+
+    // #welovemanga
+    case 'nicomanga.com':
+    case 'weloma.art':
+    case 'welovemanga.one':
+      {
+        const imgSelector = '#listImgs img.chapter-img.chapter-img:not(.ls-is-cached)';
+        const isLoadingGifRe = /loading.*\.gif/;
+        const getImgList = async () => {
+          const imgList = main.querySelectorAll(imgSelector).map(e => e.getAttribute('data-src')?.trim() ?? e.getAttribute('data-original')?.trim() ?? e.src);
+          if (imgList.every(url => !isLoadingGifRe.test(url))) return imgList;
+          await main.sleep(500);
           return getImgList();
-        }
-        return imgList;
-      };
-      const handlePrevNext = text => async () => {
-        // 点击唤出底栏
-        const id = window.setInterval(() => {
-          main.querySelector('.ComicImageContainer')?.click();
-        }, 500);
-        await main.waitDom('.ComicImage__bottom-menu-center');
-        window.clearInterval(id);
-        const buttonDom = main.querySelectorAll('.ComicImage__bottom-menu-center button:not([disabled])').find(e => e.innerText.includes(text));
-        return main.querySelectorClick(() => buttonDom);
-      };
-      const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
-      options = {
-        name: 'komiic',
-        wait: () => !!main.querySelector('.imageContainer > img'),
-        getImgList,
-        SPA: {
-          isMangaPage: () => urlMatchRe.test(window.location.href),
-          getOnPrev: handlePrevNext('上一'),
-          getOnNext: handlePrevNext('下一')
-        }
-      };
-      break;
-    }
+        };
+        options = {
+          name: 'welovemanga',
+          exit: () => !main.querySelector('#listImgs'),
+          getImgList,
+          onNext: main.querySelectorClick('.rd_top-right.next:not(.disabled)'),
+          onPrev: main.querySelectorClick('.rd_top-left.prev:not(.disabled)')
+        };
+        break;
+      }
 
-  // #welovemanga
-  case 'nicomanga.com':
-  case 'weloma.art':
-  case 'welovemanga.one':
-    {
-      const imgSelector = '#listImgs img.chapter-img.chapter-img:not(.ls-is-cached)';
-      const isLoadingGifRe = /loading.*\.gif/;
-      const getImgList = async () => {
-        const imgList = main.querySelectorAll(imgSelector).map(e => e.getAttribute('data-src')?.trim() ?? e.getAttribute('data-original')?.trim() ?? e.src);
-        if (imgList.every(url => !isLoadingGifRe.test(url))) return imgList;
-        await main.sleep(500);
-        return getImgList();
-      };
-      options = {
-        name: 'welovemanga',
-        exit: () => !main.querySelector('#listImgs'),
-        getImgList,
-        onNext: main.querySelectorClick('.rd_top-right.next:not(.disabled)'),
-        onPrev: main.querySelectorClick('.rd_top-left.prev:not(.disabled)')
-      };
-      break;
-    }
-
-  // 为 pwa 版页面提供 api，以便翻译功能能正常运作
-  case 'comic-read.pages.dev':
-    {
-      unsafeWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
-      options = false;
-      break;
-    }
-}
-if (options) main.universalInit(options);else if (options !== false) {
+    // 为 pwa 版页面提供 api，以便翻译功能能正常运作
+    case 'comic-read.pages.dev':
+      {
+        unsafeWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
+        options = false;
+        break;
+      }
+  }
+  if (options) main.universalInit(options);else if (options !== false) {
 const web = require('solid-js/web');
 const main = require('main');
 
-const _tmpl$ = /*#__PURE__*/web.template(`<div>将在之后默认自动进入阅读模式<button>禁用`);
+const _tmpl$ = /*#__PURE__*/web.template(`<div><button>`);
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
   const start = async () => {
@@ -6498,23 +7260,24 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div>将在之后默认自动进入阅
       setOptions,
       isStored
     } = await main.useInit(window.location.hostname, {
-      记住当前站点: true,
+      remember_current_site: true,
       selector: ''
     });
 
     // 通过 options 来迂回的实现禁止记住当前站点
-    if (!options['记住当前站点']) {
+    if (!options.remember_current_site) {
       await GM.deleteValue(window.location.hostname);
       return true;
     }
     if (!isStored) {
       main.toast(() => (() => {
         const _el$ = _tmpl$(),
-          _el$2 = _el$.firstChild,
-          _el$3 = _el$2.nextSibling;
-        _el$3.addEventListener("click", () => setOptions({
+          _el$2 = _el$.firstChild;
+        web.insert(_el$, () => main.t('site.simple.auto_read_mode_message'), _el$2);
+        _el$2.addEventListener("click", () => setOptions({
           autoShow: false
         }));
+        web.insert(_el$2, () => main.t('other.disable'));
         return _el$;
       })(), {
         duration: 1000 * 7
@@ -6522,11 +7285,9 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div>将在之后默认自动进入阅
     }
 
     // 为避免卡死，提供一个删除 selector 的菜单项
-    const menuId = await GM.registerMenuCommand('使用简易阅读模式', () => {
-      setOptions({
-        selector: ''
-      });
-    });
+    const menuId = await GM.registerMenuCommand(main.t('site.simple.simple_read_mode'), () => setOptions({
+      selector: ''
+    }));
 
     // 等待 selector 匹配到目标后再继续执行，避免在漫画页外的其他地方运行
     await main.wait(() => !options.selector || main.querySelector(options.selector));
@@ -6592,7 +7353,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div>将在之后默认自动进入阅
 
     /** 触发懒加载 */
     const triggerLazyLoad = () => {
-      let nowScroll = window.scrollY;
+      const nowScroll = window.scrollY;
       // 滚到底部再滚回来，触发可能存在的自动翻页脚本
       window.scroll({
         top: document.body.scrollHeight,
@@ -6618,21 +7379,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div>将在之后默认自动进入阅
 
         // 过滤掉位置相近，在触发上一张图片时已经顺带被触发了的
         if (e.offsetTop >= (lastTriggedImg?.offsetTop ?? 0) + window.innerHeight) return;
-
-        // 通过滚动到图片位置、触发滚动事件、再滚回来，来触发图片的懒加载
-        // 因为速度很快所以应该是无感的
-        nowScroll = window.scrollY;
-        window.scroll({
-          top: e.offsetTop,
-          behavior: 'auto'
-        });
-        e.dispatchEvent(new Event('scroll', {
-          bubbles: true
-        }));
-        window.scroll({
-          top: nowScroll,
-          behavior: 'auto'
-        });
+        main.triggerEleLazyLoad(e);
         lastTriggedImg = e;
       }
     };
@@ -6668,10 +7415,11 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div>将在之后默认自动进入阅
     main.loop(checkImgList, 1000);
   };
   if ((await GM.getValue(window.location.hostname)) !== undefined) start();else {
-    const menuId = await GM.registerMenuCommand('使用简易阅读模式', () => {
-      if (!start()) GM.unregisterMenuCommand(menuId);
-    });
+    const menuId = await GM.registerMenuCommand(main.t('site.simple.simple_read_mode'), () => !start() && GM.unregisterMenuCommand(menuId));
   }
 })();
 
+  }
+} catch (error) {
+  main.log.error(error);
 }
