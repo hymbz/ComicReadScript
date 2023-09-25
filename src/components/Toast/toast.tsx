@@ -33,7 +33,7 @@ export const toast = (msg: Message, options?: Partial<Toast>) => {
       fn = log.error;
       break;
   }
-  fn.call(this, 'Toast:', msg);
+  fn.call(null, 'Toast:', msg);
 
   if (options?.throw && typeof msg === 'string') throw new Error(msg);
 };

@@ -1,3 +1,6 @@
+// 这个文件里不能含有 jsx 代码，否则会在打包时自动加入 import solidjs 的代码
+
+import { getInitLang } from 'helper/languages';
 import {
   t,
   getMostItem,
@@ -8,6 +11,7 @@ import {
   wait,
   toast,
   triggerEleLazyLoad,
+  autoReadModeMessage,
 } from 'main';
 
 (async () => {
@@ -25,19 +29,8 @@ import {
       return true;
     }
 
-    if (!isStored) {
-      toast(
-        () => (
-          <div>
-            {t('site.simple.auto_read_mode_message')}
-            <button on:click={() => setOptions({ autoShow: false })}>
-              {t('other.disable')}
-            </button>
-          </div>
-        ),
-        { duration: 1000 * 7 },
-      );
-    }
+    if (!isStored)
+      toast(autoReadModeMessage(setOptions), { duration: 1000 * 7 });
 
     // 为避免卡死，提供一个删除 selector 的菜单项
     const menuId = await GM.registerMenuCommand(
@@ -100,7 +93,7 @@ import {
       // 东方永夜机的预加载图片
       '#pagetual-preload',
       // 177picyy 上会在图片下加一个 noscript
-      // 本来只是图片元素的 innerHTML，但经过东方永夜机加载后就会变成真的图片元素，导致重复
+      // 本来只是图片元素的 html 代码，但经过东方永夜机加载后就会变成真的图片元素，导致重复
       'noscript',
     ];
     const getAllImg = () =>
@@ -177,11 +170,11 @@ import {
     loop(checkImgList, 1000);
   };
 
-  if ((await GM.getValue(window.location.hostname)) !== undefined) start();
-  else {
-    const menuId = await GM.registerMenuCommand(
-      t('site.simple.simple_read_mode'),
-      () => !start() && GM.unregisterMenuCommand(menuId),
-    );
-  }
+  if ((await GM.getValue(window.location.hostname)) !== undefined)
+    return start();
+
+  const menuId = await GM.registerMenuCommand(
+    extractI18n('site.simple.simple_read_mode')(await getInitLang()),
+    () => !start() && GM.unregisterMenuCommand(menuId),
+  );
 })();

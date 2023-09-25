@@ -18,7 +18,7 @@ import { watchExternal } from 'rollup-plugin-watch-external';
 import type { Plugin, RollupOptions } from 'rollup';
 import { createServer } from 'vite';
 import { parse as parseMd } from 'marked';
-import { solidSvg } from './src/rollup-solid-svg';
+import { selfPlugins, solidSvg } from './src/rollup-plugin';
 import { getMetaData, updateReadme } from './metaHeader';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -87,7 +87,7 @@ export const buildOptions = (
       json({ namedExports: false, indent: '  ' }),
       nodeResolve({ browser: true, extensions: ['.js', '.ts', '.tsx'] }),
       commonjs(),
-      styles({ modules: true }),
+      styles({ mode: 'extract', modules: true }),
 
       solidSvg(),
       babel({
@@ -114,43 +114,13 @@ export const buildOptions = (
       strict: false,
       generatedCode: 'es2015',
       extend: true,
+      compact: !isDevMode,
       plugins: [
+        ...selfPlugins,
         {
           name: 'selfPlugin',
-          // 不输出 css 文件
-          generateBundle: (_, bundle) => {
-            Reflect.deleteProperty(bundle, 'style.css');
-          },
           renderChunk(rawCode) {
             let code = rawCode;
-            // 将 inject 函数调用替换为 dist 文件夹下的指定文件内容
-            code = code.replaceAll(/[ ]*inject[(<]'(.+)'\);/g, (_, name) => {
-              switch (name) {
-                case 'main':
-                  return `\`\n${fs
-                    .readFileSync(resolve(__dirname, 'dist/cache/main.js'))
-                    .toString()
-                    .replaceAll('\\', '\\\\')
-                    .replaceAll('`', '\\`')
-                    .replaceAll('${', '\\${')}\``;
-
-                default:
-                  return fs
-                    .readFileSync(resolve(__dirname, `dist/cache/${name}.js`))
-                    .toString()
-                    .replaceAll('require$1', 'require');
-              }
-            });
-
-            // 删除 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" }); 语句
-            code = code.replace(/Object\.defineProperty.+?\n\n/, '');
-            // 删除 exports.require 语句
-            code = code.replace(/\n\nexports\.require.+;/, '');
-            // 删除单独的 require 语句和注释
-            code = code.replaceAll(
-              /\nrequire.+;|\n\/\*\*.+?\*\/\n(?=\n)|\n\/\/ .+?\n(?=\n)/g,
-              '',
-            );
 
             switch (fileName) {
               case 'index': {
