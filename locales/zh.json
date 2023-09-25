@@ -191,6 +191,7 @@
       "pending-pos": "正在等待",
       "rendering": "正在渲染",
       "saved": "保存结果",
+      "textline_merge": "正在整合文本",
       "translating": "正在翻译文本",
       "upscaling": "正在放大图片"
     },

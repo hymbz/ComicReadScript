@@ -191,6 +191,7 @@
       "pending-pos": "Pending",
       "rendering": "Rendering",
       "saved": "Saved",
+      "textline_merge": "Merging text lines",
       "translating": "Translating",
       "upscaling": "Upscaling"
     },

@@ -3,11 +3,17 @@ import type { State } from '..';
 import { setState, store } from '..';
 import { defaultOption, type Option } from '../OptionState';
 
-/** 通过重新解构赋值 option 以触发 onOptionChange */
-export const setOption = (fn: (option: Option) => void) => {
-  setState((state) => fn(state.option));
+/** 触发 onOptionChange */
+export const triggerOnOptionChange = () =>
+  setTimeout(
+    () => store.onOptionChange?.(difference(store.option, defaultOption)),
+  );
 
-  store.onOptionChange?.(difference(store.option, defaultOption));
+/** 在 option 后手动触发 onOptionChange */
+export const setOption = (fn: (option: Option, state: State) => void) => {
+  setState((state) => fn(state.option, state));
+
+  triggerOnOptionChange();
 };
 
 /** 创建一个专门用于修改指定配置项的函数 */

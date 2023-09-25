@@ -222,6 +222,7 @@ export const defaultSettingList: () => SettingList = () => [
           options={[
             ['zh', '中文'],
             ['en', 'English'],
+            ['ru', 'Русский'],
           ]}
           value={lang()}
           onChange={setLang}

@@ -86,6 +86,8 @@
 }
 
 .SettingsItemName {
+  max-width: calc(100% - 4em);
+
   font-size: 0.9em;
   text-align: start;
   overflow-wrap: anywhere;

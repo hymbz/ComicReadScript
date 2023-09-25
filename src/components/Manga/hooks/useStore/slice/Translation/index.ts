@@ -1,10 +1,17 @@
-import { createRoot, createEffect, on, createSignal } from 'solid-js';
-import { t } from 'helper/i18n';
+import {
+  createRoot,
+  createEffect,
+  on,
+  createSignal,
+  createMemo,
+} from 'solid-js';
+import { lang, t } from 'helper/i18n';
 import { setState, store } from '../..';
 import { updateTipText } from '../Scrollbar';
-import { setMessage } from './helper';
+import { createOptions, setMessage } from './helper';
 import { getValidTranslators, selfhostedTranslation } from './selfhosted';
 import { cotransTranslation, cotransTranslators } from './cotrans';
+import { setOption } from '../Helper';
 
 declare const toast: // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 typeof import('components/Toast/toast').toast | undefined;
@@ -118,18 +125,9 @@ export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
 };
 
 export const translatorOptions = createRoot(() => {
-  const [options, setOptions] = createSignal<([string, string] | [string])[]>(
+  const [selfhostedOptions, setSelfOptions] = createSignal<[string, string][]>(
     [],
   );
-
-  const updateOptions = async () => {
-    setOptions(
-      store.option.translation.server === 'selfhosted'
-        ? (await getValidTranslators()) ?? []
-        : cotransTranslators,
-    );
-  };
-  updateOptions();
 
   // 在切换翻译服务器的同时切换可用翻译的选项列表
   createEffect(
@@ -139,21 +137,33 @@ export const translatorOptions = createRoot(() => {
         () => store.option.translation.localUrl,
       ],
       async () => {
-        if (store.option.translation.server === 'disable') return;
-        await updateOptions();
+        setSelfOptions((await getValidTranslators()) ?? []);
+
         // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
         if (
-          !options().some(
+          !selfhostedOptions().some(
             ([val]) => val === store.option.translation.options.translator,
           )
         ) {
-          setState((state) => {
-            state.option.translation.options.translator = 'google';
+          setOption((draftOption) => {
+            draftOption.translation.options.translator = 'google';
           });
         }
       },
-      { defer: true },
     ),
+  );
+
+  const options = createMemo(
+    on([selfhostedOptions, lang], () => {
+      switch (store.option.translation.server) {
+        case 'selfhosted':
+          return selfhostedOptions();
+        case 'cotrans':
+          return createOptions(cotransTranslators);
+        case 'disable':
+          return [];
+      }
+    }),
   );
 
   return options;

@@ -1,13 +1,7 @@
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
 import { store } from '../..';
-import {
-  setMessage,
-  download,
-  request,
-  createFormData,
-  createOptions,
-} from './helper';
+import { setMessage, download, request, createFormData } from './helper';
 
 type QueryV1Message =
   | {
@@ -148,7 +142,7 @@ export const cotransTranslation = async (i: number) => {
   return mergeImage(imgBlob, translation_mask);
 };
 
-export const cotransTranslators = createOptions([
+export const cotransTranslators = [
   'google',
   'youdao',
   'baidu',
@@ -156,4 +150,4 @@ export const cotransTranslators = createOptions([
   'gpt3.5',
   'offline',
   'none',
-]);
+];

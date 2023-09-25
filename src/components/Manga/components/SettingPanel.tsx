@@ -8,15 +8,13 @@ import { stopPropagation } from '../helper';
 
 import classes from '../index.module.css';
 
-const LanguageWidthMap = { zh: '15em', en: '20em' };
-
 /** 菜单面板 */
 export const SettingPanel: Component = () => {
   const settingList = createMemo(() =>
     store.editSettingList(defaultSettingList()),
   );
 
-  const width = createMemo(() => LanguageWidthMap[lang()] ?? '15em');
+  const width = createMemo(() => (lang() !== 'zh' ? '20em' : '15em'));
 
   return (
     <div

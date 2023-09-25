@@ -8,9 +8,10 @@ import {
 import { byPath } from 'helper';
 import zh from '../../locales/zh.json' assert { type: 'json' };
 import en from '../../locales/en.json' assert { type: 'json' };
+import ru from '../../locales/ru.json' assert { type: 'json' };
 import { log } from './logger';
 
-const langList = ['zh', 'en'] as const;
+const langList = ['zh', 'en', 'ru'] as const;
 type Languages = (typeof langList)[number];
 
 /** 判断传入的字符串是否是支持的语言类型代码 */
@@ -64,6 +65,8 @@ export const t = createRoot(() => {
     switch (lang()) {
       case 'en':
         return en;
+      case 'ru':
+        return ru;
       default:
         return zh;
     }
