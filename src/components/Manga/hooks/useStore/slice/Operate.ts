@@ -1,4 +1,6 @@
 import { getKeyboardCode } from 'helper';
+import { setState, store } from '..';
+import { hotkeysMap } from './Hotkeys';
 import {
   zoomScrollModeImg,
   switchFillEffect,
@@ -7,13 +9,11 @@ import {
   switchOnePageMode,
   switchDir,
 } from './Image';
-import { setState, store } from '..';
 import {
   contentHeight,
   handleMangaFlowScroll,
   mangaFlowEle,
 } from './Scrollbar';
-import { hotkeysMap } from './Hotkeys';
 
 import classes from '../../../index.module.css';
 
@@ -21,16 +21,16 @@ export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
 
   if (
-    e.ctrlKey ||
+    (e.ctrlKey && !store.option.scrollMode) ||
     (e.altKey && !store.option.scrollMode) ||
     (!store.endPageType && store.scrollLock)
   )
-    return;
+    return e.preventDefault();
 
   const isWheelDown = e.deltaY > 0;
 
   // 实现卷轴模式下的缩放
-  if (!store.endPageType && e.altKey) {
+  if (!store.endPageType && (e.altKey || e.ctrlKey)) {
     e.preventDefault();
     zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
     // 在调整图片缩放后使当前滚动进度保持不变

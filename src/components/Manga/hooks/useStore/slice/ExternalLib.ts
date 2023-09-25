@@ -24,14 +24,15 @@ export const initPanzoom = (state: State) => {
     // 不处理 touch 事件
     onTouch: () => false,
 
-    // 在 处于卷轴模式 或 不处于缩放状态且没有按下 alt 时，不进行缩放
+    // 在 处于卷轴模式 或 不处于缩放状态且没有按下 alt/ctrl 时，不进行缩放
     beforeWheel: (e) =>
       store.option.scrollMode ||
-      (!e.altKey && panzoom.getTransform().scale === 1),
-    // 不处于卷轴模式或按下「alt 键」或「处于放大状态」时才允许拖动
+      (!(e.altKey || e.ctrlKey) && panzoom.getTransform().scale === 1),
+    // 不处于卷轴模式或按下「alt/ctrl」或「处于放大状态」时才允许拖动
     beforeMouseDown: (e) =>
       !(
         !store.option.scrollMode ||
+        e.ctrlKey ||
         e.altKey ||
         panzoom.getTransform().scale !== 1
       ),
