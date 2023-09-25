@@ -114,7 +114,6 @@ export const buildOptions = (
       strict: false,
       generatedCode: 'es2015',
       extend: true,
-      compact: !isDevMode,
       plugins: [
         ...selfPlugins,
         {
