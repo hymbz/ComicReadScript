@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         7.1.0
+// @version         7.1.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @author          hymbz
@@ -54,7 +54,7 @@
  * 对站点逻辑感兴趣的，结合 `src\index.ts` 看 `src\site` 下的对应文件即可
  */
 
-Object.defineProperty(exports,Symbol.toStringTag,{value:'Module'});const gmApi = {
+const gmApi = {
   GM,
   GM_addElement,
   GM_getResourceText,
@@ -79,7 +79,14 @@ const tempName = Math.random().toString(36).slice(2);
  */
 const selfImportSync = name => {
   const code = name !== 'main' ? GM_getResourceText(name) :`
-Object.defineProperty(exports,Symbol.toStringTag,{value:'Module'});const solidJs=require('solid-js'),web=require('solid-js/web'),store$2=require('solid-js/store'),fflate=require('fflate'),createPanZoom=require('panzoom'),main=require('main');const sleep = ms => new Promise(resolve => {
+const solidJs = require('solid-js');
+const web = require('solid-js/web');
+const store$2 = require('solid-js/store');
+const fflate = require('fflate');
+const createPanZoom = require('panzoom');
+const main = require('main');
+
+const sleep = ms => new Promise(resolve => {
   window.setTimeout(resolve, ms);
 });
 
@@ -356,7 +363,9 @@ const getKeyboardCode = e => {
 };
 
 /** 将快捷键的编码转换成更易读的形式 */
-const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\\s$/, 'Space');const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
+const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\\s$/, 'Space');
+
+const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
 const log = (...args) =>
 // eslint-disable-next-line no-console
 console.log.apply(null, [...prefix, ...args]);
@@ -365,7 +374,9 @@ log.warn = (...args) =>
 console.warn.apply(null, [...prefix, ...args]);
 log.error = (...args) =>
 // eslint-disable-next-line no-console
-console.error.apply(null, [...prefix, ...args]);const langList = ['zh', 'en', 'ru'];
+console.error.apply(null, [...prefix, ...args]);
+
+const langList = ['zh', 'en', 'ru'];
 /** 判断传入的字符串是否是支持的语言类型代码 */
 const isLanguages = lang => !!lang && langList.includes(lang);
 
@@ -390,7 +401,9 @@ const getInitLang = async () => {
   const lang = getBrowserLang() ?? 'zh';
   setSaveLang(lang);
   return lang;
-};const zh = {
+};
+
+const zh = {
   alert: {
     comic_load_error: "漫画加载出错",
     download_failed: "下载失败",
@@ -612,7 +625,9 @@ const getInitLang = async () => {
       youdao: "有道"
     }
   }
-};const en = {
+};
+
+const en = {
   alert: {
     comic_load_error: "Comic loading error",
     download_failed: "Download failed",
@@ -834,7 +849,9 @@ const getInitLang = async () => {
       youdao: "youdao"
     }
   }
-};const ru = {
+};
+
+const ru = {
   alert: {
     comic_load_error: "Ошибка загрузки комикса",
     download_failed: "Ошибка загрузки",
@@ -1056,7 +1073,9 @@ const getInitLang = async () => {
       youdao: "youdao"
     }
   }
-};const [lang, setLang] = solidJs.createSignal('zh');
+};
+
+const [lang, setLang] = solidJs.createSignal('zh');
 const setInitLang = async () => setLang(await getInitLang());
 const t = solidJs.createRoot(() => {
   solidJs.createEffect(solidJs.on(lang, () => setSaveLang(lang()), {
@@ -1082,7 +1101,9 @@ const t = solidJs.createRoot(() => {
     if (!text) log.warn('unknown i18n key', keys);
     return text;
   };
-});const getDom = id => {
+});
+
+const getDom = id => {
   let dom = document.getElementById(id);
   if (dom) {
     dom.innerHTML = '';
@@ -1103,8 +1124,12 @@ const mountComponents = (id, fc) => {
   });
   web.render(fc, shadowDom);
   return dom;
-};var css$3 = ".index_module_root__94b467e9{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__94b467e9{align-items:center;animation:index_module_bounceInRight__94b467e9 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__94b467e9>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__94b467e9[data-exit]{animation:index_module_bounceOutRight__94b467e9 .5s 1}.index_module_schedule__94b467e9{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__94b467e9[data-schedule] .index_module_schedule__94b467e9{transition:transform .1s}.index_module_item__94b467e9:not([data-schedule]) .index_module_schedule__94b467e9{animation:index_module_schedule__94b467e9 linear 1 forwards}:is(.index_module_item__94b467e9:hover,.index_module_item__94b467e9[data-schedule],.index_module_root__94b467e9[data-paused]) .index_module_schedule__94b467e9{animation-play-state:paused}.index_module_msg__94b467e9{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__94b467e9 h2,.index_module_msg__94b467e9 h3{margin:.3em 0}.index_module_msg__94b467e9 ul{margin:0;text-align:left}.index_module_msg__94b467e9 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__94b467e9 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__94b467e9{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__94b467e9{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__94b467e9{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__94b467e9","item":"index_module_item__94b467e9","bounceInRight":"index_module_bounceInRight__94b467e9","bounceOutRight":"index_module_bounceOutRight__94b467e9","schedule":"index_module_schedule__94b467e9","msg":"index_module_msg__94b467e9"};const [_state$1, _setState$1] = store$2.createStore({
+};
+
+var css$3 = ".index_module_root__94b467e9{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__94b467e9{align-items:center;animation:index_module_bounceInRight__94b467e9 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__94b467e9>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__94b467e9[data-exit]{animation:index_module_bounceOutRight__94b467e9 .5s 1}.index_module_schedule__94b467e9{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__94b467e9[data-schedule] .index_module_schedule__94b467e9{transition:transform .1s}.index_module_item__94b467e9:not([data-schedule]) .index_module_schedule__94b467e9{animation:index_module_schedule__94b467e9 linear 1 forwards}:is(.index_module_item__94b467e9:hover,.index_module_item__94b467e9[data-schedule],.index_module_root__94b467e9[data-paused]) .index_module_schedule__94b467e9{animation-play-state:paused}.index_module_msg__94b467e9{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__94b467e9 h2,.index_module_msg__94b467e9 h3{margin:.3em 0}.index_module_msg__94b467e9 ul{margin:0;text-align:left}.index_module_msg__94b467e9 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__94b467e9 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__94b467e9{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__94b467e9{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__94b467e9{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2$3 = {"root":"index_module_root__94b467e9","item":"index_module_item__94b467e9","bounceInRight":"index_module_bounceInRight__94b467e9","bounceOutRight":"index_module_bounceOutRight__94b467e9","schedule":"index_module_schedule__94b467e9","msg":"index_module_msg__94b467e9"};
+
+const [_state$1, _setState$1] = store$2.createStore({
   list: [],
   map: {}
 });
@@ -1118,27 +1143,37 @@ const creatId = () => {
     id += '_';
   }
   return id;
-};const _tmpl$$Q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
+};
+
+const _tmpl$$Q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
 const MdCheckCircle = ((props = {}) => (() => {
   const _el$ = _tmpl$$Q();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+})());
+
+const _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
 const MdWarning = ((props = {}) => (() => {
   const _el$ = _tmpl$$P();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+})());
+
+const _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
 const MdError = ((props = {}) => (() => {
   const _el$ = _tmpl$$O();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
+})());
+
+const _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
 const MdInfo = ((props = {}) => (() => {
   const _el$ = _tmpl$$N();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const toast$2 = (msg, options) => {
+})());
+
+const toast$2 = (msg, options) => {
   if (!msg) return;
   const id = options?.id ?? (typeof msg === 'string' ? msg : creatId());
   setState$1(state => {
@@ -1198,7 +1233,9 @@ toast$2.error = (msg, options) => {
     ...options,
     type: 'error'
   });
-};const _tmpl$$M = /*#__PURE__*/web.template(\`<div>\`),
+};
+
+const _tmpl$$M = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$b = /*#__PURE__*/web.template(\`<div><div>\`);
 const iconMap = {
   info: MdInfo,
@@ -1311,7 +1348,9 @@ const ToastItem = props => {
     });
     return _el$;
   })();
-};const _tmpl$$L = /*#__PURE__*/web.template(\`<div>\`);
+};
+
+const _tmpl$$L = /*#__PURE__*/web.template(\`<div>\`);
 const Toaster = () => {
   const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
   solidJs.onMount(() => {
@@ -1341,7 +1380,11 @@ const Toaster = () => {
     });
     return _el$;
   })();
-};const ToastStyle = css$3;const _tmpl$$K = /*#__PURE__*/web.template(\`<style type="text/css">\`);
+};
+
+const ToastStyle = css$3;
+
+const _tmpl$$K = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let dom$1;
 const init = () => {
   if (dom$1) return;
@@ -1369,7 +1412,9 @@ const toast$1 = new Proxy(toast$2, {
     const fn = propKey in target ? target[propKey] : target;
     return fn(...args);
   }
-});// 将 xmlHttpRequest 包装为 Promise
+});
+
+// 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = details => new Promise((resolve, reject) => {
   GM_xmlhttpRequest({
     ...details,
@@ -1403,28 +1448,40 @@ const request$1 = async (url, details, errorNum = 0) => {
     await sleep(1000);
     return request$1(url, details, errorNum + 1);
   }
-};const _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
+};
+
+const _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
 const MdAutoFixHigh = ((props = {}) => (() => {
   const _el$ = _tmpl$$J();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9zm-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41 1.47-1.45zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42z">\`);
+})());
+
+const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9zm-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41 1.47-1.45zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42z">\`);
 const MdAutoFixOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$I();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1z">\`);
+})());
+
+const _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1z">\`);
 const MdAutoFlashOn = ((props = {}) => (() => {
   const _el$ = _tmpl$$H();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28.45-.78zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13 3.15-6.29zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41z">\`);
+})());
+
+const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28.45-.78zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13 3.15-6.29zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41z">\`);
 const MdAutoFlashOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$G();
   web.spread(_el$, props, true, true);
   return _el$;
-})());var css$2 = ".index_module_iconButtonItem__9645dd99{align-items:center;display:flex;position:relative}.index_module_iconButton__9645dd99{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__9645dd99:focus,.index_module_iconButton__9645dd99:hover{background-color:var(--hover_bg_color,#fff3)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99{background-color:var(--text,#fff);color:var(--text_bg,#121212)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:focus,.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:hover{background-color:var(--hover_bg_color_enable,#fffa)}.index_module_iconButton__9645dd99>svg{width:1em}.index_module_iconButtonPopper__9645dd99{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;position:absolute;top:50%;transform:translateY(-50%);user-select:none;white-space:nowrap}.index_module_iconButtonPopper__9645dd99[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=right]:before{border-right-color:var(--switch_bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]:before{border-left-color:var(--switch_bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99:before{background-color:initial;border:.4em solid #0000;content:\\"\\";position:absolute;transition:opacity .15s}.index_module_iconButtonItem__9645dd99:focus .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99:hover .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99[data-show=true] .index_module_iconButtonPopper__9645dd99{opacity:1}.index_module_hidden__9645dd99{display:none}";
-var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__9645dd99","iconButton":"index_module_iconButton__9645dd99","enabled":"index_module_enabled__9645dd99","iconButtonPopper":"index_module_iconButtonPopper__9645dd99","hidden":"index_module_hidden__9645dd99"};const _tmpl$$F = /*#__PURE__*/web.template(\`<div><button type="button" tabindex="-1">\`),
+})());
+
+var css$2 = ".index_module_iconButtonItem__9645dd99{align-items:center;display:flex;position:relative}.index_module_iconButton__9645dd99{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__9645dd99:focus,.index_module_iconButton__9645dd99:hover{background-color:var(--hover_bg_color,#fff3)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99{background-color:var(--text,#fff);color:var(--text_bg,#121212)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:focus,.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:hover{background-color:var(--hover_bg_color_enable,#fffa)}.index_module_iconButton__9645dd99>svg{width:1em}.index_module_iconButtonPopper__9645dd99{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;position:absolute;top:50%;transform:translateY(-50%);user-select:none;white-space:nowrap}.index_module_iconButtonPopper__9645dd99[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=right]:before{border-right-color:var(--switch_bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]:before{border-left-color:var(--switch_bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99:before{background-color:initial;border:.4em solid #0000;content:\\"\\";position:absolute;transition:opacity .15s}.index_module_iconButtonItem__9645dd99:focus .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99:hover .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99[data-show=true] .index_module_iconButtonPopper__9645dd99{opacity:1}.index_module_hidden__9645dd99{display:none}";
+var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__9645dd99","iconButton":"index_module_iconButton__9645dd99","enabled":"index_module_enabled__9645dd99","iconButtonPopper":"index_module_iconButtonPopper__9645dd99","hidden":"index_module_hidden__9645dd99"};
+
+const _tmpl$$F = /*#__PURE__*/web.template(\`<div><button type="button" tabindex="-1">\`),
   _tmpl$2$a = /*#__PURE__*/web.template(\`<div>\`);
 const IconButtonStyle = css$2;
 /** 图标按钮 */
@@ -1487,7 +1544,9 @@ const IconButton = _props => {
     });
     return _el$;
   })();
-};const useSpeedDial = (options, setOptions) => {
+};
+
+const useSpeedDial = (options, setOptions) => {
   const DefaultButton = props => {
     return web.createComponent(IconButton, {
       get tip() {
@@ -1529,7 +1588,9 @@ const IconButton = _props => {
     }
   }).filter(Boolean);
   return list;
-};/* eslint-disable no-param-reassign */
+};
+
+/* eslint-disable no-param-reassign */
 
 const promisifyRequest = request => new Promise((resolve, reject) => {
   // eslint-disable-next-line no-multi-assign
@@ -1583,17 +1644,23 @@ const useCache = (initSchema, version = 1) => {
     //     return promisifyRequest(store.transaction);
     //   }),
   };
-};const _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71zM5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1z">\`);
+};
+
+const _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71zM5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1z">\`);
 const MdFileDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$E();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$D = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z">\`);
+})());
+
+const _tmpl$$D = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z">\`);
 const MdClose = ((props = {}) => (() => {
   const _el$ = _tmpl$$D();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const useStore = initState => {
+})());
+
+const useStore = initState => {
   const [_state, _setState] = store$2.createStore(initState);
   return {
     _state,
@@ -1601,7 +1668,7 @@ const MdClose = ((props = {}) => (() => {
     setState: fn => _setState(store$2.produce(fn)),
     store: _state
   };
-};/** 页面填充数据 */
+};
 
 const imgState = {
   imgList: [],
@@ -1618,7 +1685,9 @@ const imgState = {
     横幅比例: 0,
     条漫比例: 0
   }
-};const ScrollbarState = {
+};
+
+const ScrollbarState = {
   /** 滚动条 */
   scrollbar: {
     /** 滚动条提示文本 */
@@ -1635,7 +1704,9 @@ const imgState = {
    * - 在首次触发结束页时开启，一段时间关闭。开启时禁止触发结束页的上下话切换功能。
    */
   scrollLock: false
-};const LanguageMap = {
+};
+
+const LanguageMap = {
   zh: 'CHS',
   en: 'ENG'
 };
@@ -1678,7 +1749,9 @@ const defaultOption = {
 };
 const OptionState = {
   option: JSON.parse(JSON.stringify(defaultOption))
-};const defaultHotkeys = {
+};
+
+const defaultHotkeys = {
   turn_page_up: ['w', 'ArrowUp', 'PageUp'],
   turn_page_down: [' ', 's', 'ArrowDown', 'PageDown'],
   turn_page_right: ['d', '.', 'ArrowRight'],
@@ -1732,7 +1805,9 @@ const OtherState = {
     /** 是否需要自动将未加载图片类型设为跨页图 */
     autoWide: true
   }
-};const {
+};
+
+const {
   store,
   setState,
   _state,
@@ -1747,7 +1822,9 @@ const OtherState = {
   prevAreaRef: undefined,
   nextAreaRef: undefined,
   menuAreaRef: undefined
-});/* eslint-disable no-undefined,no-param-reassign,no-shadow */
+});
+
+/* eslint-disable no-undefined,no-param-reassign,no-shadow */
 
 /**
  * Throttle execution of a function. Especially useful for rate limiting
@@ -1915,7 +1992,9 @@ function debounce (delay, callback, options) {
   return throttle(delay, callback, {
     debounceMode: atBegin !== false
   });
-}const initPanzoom = state => {
+}
+
+const initPanzoom = state => {
   // 销毁之前可能创建过的实例
   state.panzoom?.dispose();
   const panzoom = createPanZoom(state.mangaFlowRef, {
@@ -1951,7 +2030,9 @@ function debounce (delay, callback, options) {
     });
   }));
   state.panzoom = panzoom;
-};// 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
+};
+
+// 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
 // 2. 因为大部分用户都不会在意正确页序，所以应该尽量少加填充页
 /** 记录自动修改过页面填充的图片流 */
 const autoCloseFill = new Set();
@@ -2017,7 +2098,9 @@ const handleComicData = (imgList, fillEffect) => {
     imgCache = null;
   }
   return pageList;
-};/** 漫画流的容器 */
+};
+
+/** 漫画流的容器 */
 const mangaFlowEle = () => store.mangaFlowRef?.parentNode;
 
 /** 漫画流的总高度 */
@@ -2160,7 +2243,9 @@ solidJs.createRoot(() => {
   }, {
     defer: true
   }));
-});/** 阻止事件冒泡 */
+});
+
+/** 阻止事件冒泡 */
 const stopPropagation = e => {
   e.stopPropagation();
 };
@@ -2170,7 +2255,9 @@ const playAnimation = e => e?.getAnimations().forEach(animation => {
   animation.cancel();
   animation.play();
 });
-const clamp = (min, val, max) => Math.max(Math.min(max, val), min);/** 触发 onOptionChange */
+const clamp = (min, val, max) => Math.max(Math.min(max, val), min);
+
+/** 触发 onOptionChange */
 const triggerOnOptionChange = () => setTimeout(() => store.onOptionChange?.(difference(store.option, defaultOption)));
 
 /** 在 option 后手动触发 onOptionChange */
@@ -2188,7 +2275,9 @@ const bindRef = (name, fn) => e => {
     Reflect.set(state, name, e);
     fn?.(state);
   });
-};const {
+};
+
+const {
   activeImgIndex,
   nowFillIndex,
   activePage,
@@ -2453,7 +2542,9 @@ solidJs.createRoot(() => {
   }, {
     defer: true
   }));
-});const setHotkeys = (...args) => {
+});
+
+const setHotkeys = (...args) => {
   _setState.apply(undefined, ['hotkeys', ...args]);
   store.onHotkeysChange?.(Object.fromEntries(Object.entries(store.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]))));
 };
@@ -2476,8 +2567,12 @@ const delHotkeys = code => {
     newKeys.splice(i, 1);
     setHotkeys(name, newKeys);
   });
-};var css$1 = ".index_module_img__e6e60019{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__e6e60019[data-show]{display:unset}.index_module_img__e6e60019[data-fill=left]{transform:translate(50%)}.index_module_img__e6e60019[data-fill=right]{transform:translate(-50%)}.index_module_img__e6e60019[data-load-type=error],.index_module_img__e6e60019[data-load-type=wait]{display:none}.index_module_mangaFlowBox__e6e60019{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__e6e60019::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__e6e60019[data-hiddenMouse=true]{cursor:none}.index_module_mangaFlow__e6e60019{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__e6e60019.index_module_disableZoom__e6e60019 .index_module_img__e6e60019{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0;visibility:hidden}.index_module_mangaFlow__e6e60019[dir=ltr]{flex-direction:row}.index_module_mangaFlow__e6e60019>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__e6e60019>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__e6e60019>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__e6e60019{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__e6e60019>button{animation:index_module_jello__e6e60019 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__e6e60019>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__e6e60019>button:focus-visible{outline:none}.index_module_endPage__e6e60019>.index_module_tip__e6e60019{margin:auto;position:absolute}.index_module_endPage__e6e60019[data-show]{opacity:1;pointer-events:all}.index_module_endPage__e6e60019[data-type=start]>.index_module_tip__e6e60019{transform:translateY(-10em)}.index_module_endPage__e6e60019[data-type=end]>.index_module_tip__e6e60019{transform:translateY(10em)}.index_module_comments__e6e60019{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__e6e60019>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__e6e60019:hover{opacity:1}@keyframes index_module_jello__e6e60019{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__e6e60019{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__e6e60019{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__e6e60019[data-show=true] .index_module_toolbarPanel__e6e60019{transform:none}.index_module_toolbarBg__e6e60019{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__e6e60019{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__e6e60019{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text}.index_module_SettingPanel__e6e60019 hr{margin:0}.index_module_SettingBlock__e6e60019{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div+:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div{margin-top:1em}.index_module_SettingBlock__e6e60019[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__e6e60019{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__e6e60019{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__e6e60019+.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_SettingsItemName__e6e60019{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__e6e60019{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__e6e60019{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__e6e60019[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__e6e60019[data-checked=true] .index_module_SettingsItemSwitchRound__e6e60019{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__e6e60019{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__e6e60019{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__e6e60019{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__e6e60019{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019{overflow:hidden}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019>.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_hotkeys__e6e60019{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__e6e60019+.index_module_hotkeys__e6e60019{margin-top:.5em}.index_module_hotkeys__e6e60019:last-child{border-bottom:none}.index_module_hotkeysItem__e6e60019{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__e6e60019>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__e6e60019>svg:hover{opacity:.9}.index_module_hotkeysItem__e6e60019:hover{padding:.2em .5em}.index_module_hotkeysItem__e6e60019:hover>svg{display:unset}.index_module_hotkeysItem__e6e60019:focus,.index_module_hotkeysItem__e6e60019:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__e6e60019{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__e6e60019>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__e6e60019>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__e6e60019>div[title]>svg{width:1.6em}.index_module_hotkeys__e6e60019:hover div[title]{transform:scale(1)}.index_module_scrollbar__e6e60019{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__e6e60019>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__e6e60019{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__e6e60019{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__e6e60019[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__e6e60019[data-type=wait]{opacity:.5}.index_module_scrollbarPage__e6e60019[data-type=error]{background-color:#f005}.index_module_scrollbarPage__e6e60019[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__e6e60019[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__e6e60019[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__e6e60019[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__e6e60019[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__e6e60019{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__e6e60019:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__e6e60019[data-show=true],.index_module_scrollbarPoper__e6e60019[data-show=true],.index_module_scrollbar__e6e60019:hover .index_module_scrollbarDrag__e6e60019,.index_module_scrollbar__e6e60019:hover .index_module_scrollbarPoper__e6e60019{opacity:1}.index_module_touchAreaRoot__e6e60019{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__e6e60019[data-vert=true]{flex-direction:column!important}@media (width <= 600px){.index_module_touchAreaRoot__e6e60019{flex-direction:column!important}}.index_module_touchArea__e6e60019{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none}.index_module_touchArea__e6e60019>h6{text-orientation:upright;writing-mode:vertical-lr}.index_module_touchArea__e6e60019[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__e6e60019[data-show=true]{visibility:visible}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=next]{background-color:#f38181e6}.index_module_hidden__e6e60019{display:none}.index_module_invisible__e6e60019{visibility:hidden}.index_module_opacity1__e6e60019{opacity:1}.index_module_opacity0__e6e60019{opacity:0}.index_module_root__e6e60019{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__e6e60019 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__e6e60019{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
-var modules_c21c94f2$1 = {"img":"index_module_img__e6e60019","mangaFlowBox":"index_module_mangaFlowBox__e6e60019","mangaFlow":"index_module_mangaFlow__e6e60019","disableZoom":"index_module_disableZoom__e6e60019","scrollMode":"index_module_scrollMode__e6e60019","endPage":"index_module_endPage__e6e60019","jello":"index_module_jello__e6e60019","tip":"index_module_tip__e6e60019","comments":"index_module_comments__e6e60019","toolbar":"index_module_toolbar__e6e60019","toolbarPanel":"index_module_toolbarPanel__e6e60019","toolbarBg":"index_module_toolbarBg__e6e60019","SettingPanelPopper":"index_module_SettingPanelPopper__e6e60019","SettingPanel":"index_module_SettingPanel__e6e60019","SettingBlock":"index_module_SettingBlock__e6e60019","SettingBlockBody":"index_module_SettingBlockBody__e6e60019","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__e6e60019","SettingsItem":"index_module_SettingsItem__e6e60019","SettingsItemName":"index_module_SettingsItemName__e6e60019","SettingsItemSwitch":"index_module_SettingsItemSwitch__e6e60019","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__e6e60019","SettingsItemIconButton":"index_module_SettingsItemIconButton__e6e60019","SettingsItemSelect":"index_module_SettingsItemSelect__e6e60019","closeCover":"index_module_closeCover__e6e60019","SettingsShowItem":"index_module_SettingsShowItem__e6e60019","SettingsShowItemBody":"index_module_SettingsShowItemBody__e6e60019","hotkeys":"index_module_hotkeys__e6e60019","hotkeysItem":"index_module_hotkeysItem__e6e60019","hotkeysHeader":"index_module_hotkeysHeader__e6e60019","scrollbar":"index_module_scrollbar__e6e60019","scrollbarDrag":"index_module_scrollbarDrag__e6e60019","scrollbarPage":"index_module_scrollbarPage__e6e60019","scrollbarPoper":"index_module_scrollbarPoper__e6e60019","touchAreaRoot":"index_module_touchAreaRoot__e6e60019","touchArea":"index_module_touchArea__e6e60019","hidden":"index_module_hidden__e6e60019","invisible":"index_module_invisible__e6e60019","opacity1":"index_module_opacity1__e6e60019","opacity0":"index_module_opacity0__e6e60019","root":"index_module_root__e6e60019","beautifyScrollbar":"index_module_beautifyScrollbar__e6e60019"};const handleWheel = e => {
+};
+
+var css$1 = ".index_module_img__e6e60019{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__e6e60019[data-show]{display:unset}.index_module_img__e6e60019[data-fill=left]{transform:translate(50%)}.index_module_img__e6e60019[data-fill=right]{transform:translate(-50%)}.index_module_img__e6e60019[data-load-type=error],.index_module_img__e6e60019[data-load-type=wait]{display:none}.index_module_mangaFlowBox__e6e60019{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__e6e60019::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__e6e60019[data-hiddenMouse=true]{cursor:none}.index_module_mangaFlow__e6e60019{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__e6e60019.index_module_disableZoom__e6e60019 .index_module_img__e6e60019{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0;visibility:hidden}.index_module_mangaFlow__e6e60019[dir=ltr]{flex-direction:row}.index_module_mangaFlow__e6e60019>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__e6e60019>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__e6e60019>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__e6e60019{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__e6e60019>button{animation:index_module_jello__e6e60019 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__e6e60019>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__e6e60019>button:focus-visible{outline:none}.index_module_endPage__e6e60019>.index_module_tip__e6e60019{margin:auto;position:absolute}.index_module_endPage__e6e60019[data-show]{opacity:1;pointer-events:all}.index_module_endPage__e6e60019[data-type=start]>.index_module_tip__e6e60019{transform:translateY(-10em)}.index_module_endPage__e6e60019[data-type=end]>.index_module_tip__e6e60019{transform:translateY(10em)}.index_module_comments__e6e60019{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__e6e60019>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__e6e60019:hover{opacity:1}@keyframes index_module_jello__e6e60019{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__e6e60019{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__e6e60019{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__e6e60019[data-show=true] .index_module_toolbarPanel__e6e60019{transform:none}.index_module_toolbarBg__e6e60019{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__e6e60019{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__e6e60019{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text}.index_module_SettingPanel__e6e60019 hr{margin:0}.index_module_SettingBlock__e6e60019{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div+:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div{margin-top:1em}.index_module_SettingBlock__e6e60019[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__e6e60019{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__e6e60019{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__e6e60019+.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_SettingsItemName__e6e60019{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__e6e60019{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__e6e60019{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__e6e60019[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__e6e60019[data-checked=true] .index_module_SettingsItemSwitchRound__e6e60019{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__e6e60019{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__e6e60019{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__e6e60019{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__e6e60019{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019{overflow:hidden}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019>.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_hotkeys__e6e60019{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__e6e60019+.index_module_hotkeys__e6e60019{margin-top:.5em}.index_module_hotkeys__e6e60019:last-child{border-bottom:none}.index_module_hotkeysItem__e6e60019{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__e6e60019>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__e6e60019>svg:hover{opacity:.9}.index_module_hotkeysItem__e6e60019:hover{padding:.2em .5em}.index_module_hotkeysItem__e6e60019:hover>svg{display:unset}.index_module_hotkeysItem__e6e60019:focus,.index_module_hotkeysItem__e6e60019:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__e6e60019{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__e6e60019>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__e6e60019>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__e6e60019>div[title]>svg{width:1.6em}.index_module_hotkeys__e6e60019:hover div[title]{transform:scale(1)}.index_module_scrollbar__e6e60019{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__e6e60019>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__e6e60019{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__e6e60019{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__e6e60019[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__e6e60019[data-type=wait]{opacity:.5}.index_module_scrollbarPage__e6e60019[data-type=error]{background-color:#f005}.index_module_scrollbarPage__e6e60019[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__e6e60019[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__e6e60019[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__e6e60019[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__e6e60019[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__e6e60019{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__e6e60019:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__e6e60019[data-show=true],.index_module_scrollbarPoper__e6e60019[data-show=true],.index_module_scrollbar__e6e60019:hover .index_module_scrollbarDrag__e6e60019,.index_module_scrollbar__e6e60019:hover .index_module_scrollbarPoper__e6e60019{opacity:1}.index_module_touchAreaRoot__e6e60019{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__e6e60019[data-vert=true]{flex-direction:column!important}@media (width <= 600px){.index_module_touchAreaRoot__e6e60019{flex-direction:column!important}}.index_module_touchArea__e6e60019{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none}.index_module_touchArea__e6e60019>h6{text-orientation:upright;writing-mode:vertical-lr}.index_module_touchArea__e6e60019[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__e6e60019[data-show=true]{visibility:visible}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=next]{background-color:#f38181e6}.index_module_hidden__e6e60019{display:none}.index_module_invisible__e6e60019{visibility:hidden}.index_module_opacity1__e6e60019{opacity:1}.index_module_opacity0__e6e60019{opacity:0}.index_module_root__e6e60019{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__e6e60019 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__e6e60019{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var modules_c21c94f2$1 = {"img":"index_module_img__e6e60019","mangaFlowBox":"index_module_mangaFlowBox__e6e60019","mangaFlow":"index_module_mangaFlow__e6e60019","disableZoom":"index_module_disableZoom__e6e60019","scrollMode":"index_module_scrollMode__e6e60019","endPage":"index_module_endPage__e6e60019","jello":"index_module_jello__e6e60019","tip":"index_module_tip__e6e60019","comments":"index_module_comments__e6e60019","toolbar":"index_module_toolbar__e6e60019","toolbarPanel":"index_module_toolbarPanel__e6e60019","toolbarBg":"index_module_toolbarBg__e6e60019","SettingPanelPopper":"index_module_SettingPanelPopper__e6e60019","SettingPanel":"index_module_SettingPanel__e6e60019","SettingBlock":"index_module_SettingBlock__e6e60019","SettingBlockBody":"index_module_SettingBlockBody__e6e60019","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__e6e60019","SettingsItem":"index_module_SettingsItem__e6e60019","SettingsItemName":"index_module_SettingsItemName__e6e60019","SettingsItemSwitch":"index_module_SettingsItemSwitch__e6e60019","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__e6e60019","SettingsItemIconButton":"index_module_SettingsItemIconButton__e6e60019","SettingsItemSelect":"index_module_SettingsItemSelect__e6e60019","closeCover":"index_module_closeCover__e6e60019","SettingsShowItem":"index_module_SettingsShowItem__e6e60019","SettingsShowItemBody":"index_module_SettingsShowItemBody__e6e60019","hotkeys":"index_module_hotkeys__e6e60019","hotkeysItem":"index_module_hotkeysItem__e6e60019","hotkeysHeader":"index_module_hotkeysHeader__e6e60019","scrollbar":"index_module_scrollbar__e6e60019","scrollbarDrag":"index_module_scrollbarDrag__e6e60019","scrollbarPage":"index_module_scrollbarPage__e6e60019","scrollbarPoper":"index_module_scrollbarPoper__e6e60019","touchAreaRoot":"index_module_touchAreaRoot__e6e60019","touchArea":"index_module_touchArea__e6e60019","hidden":"index_module_hidden__e6e60019","invisible":"index_module_invisible__e6e60019","opacity1":"index_module_opacity1__e6e60019","opacity0":"index_module_opacity0__e6e60019","root":"index_module_root__e6e60019","beautifyScrollbar":"index_module_beautifyScrollbar__e6e60019"};
+
+const handleWheel = e => {
   e.stopPropagation();
   if (e.ctrlKey && !store.option.scrollMode || e.altKey && !store.option.scrollMode || !store.endPageType && store.scrollLock) return e.preventDefault();
   const isWheelDown = e.deltaY > 0;
@@ -2578,7 +2673,9 @@ const handleMouseDown = e => {
   e.preventDefault();
   switchFillEffect();
 };
-const focus = () => (store.mangaFlowRef ?? store.rootRef)?.parentElement?.focus();const _tmpl$$C = /*#__PURE__*/web.template(\`<img>\`);
+const focus = () => (store.mangaFlowRef ?? store.rootRef)?.parentElement?.focus();
+
+const _tmpl$$C = /*#__PURE__*/web.template(\`<img>\`);
 /** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
 const checkImgTypeCount = (state, fn, maxNum = 3) => {
   let num = 0;
@@ -2705,22 +2802,30 @@ const ComicImg = props => {
     });
     return _el$;
   })();
-};const _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m21.19 21.19-.78-.78L18 18l-4.59-4.59-9.82-9.82-.78-.78a.996.996 0 0 0-1.41 0C1 3.2 1 3.83 1.39 4.22L3 5.83V19c0 1.1.9 2 2 2h13.17l1.61 1.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.03 0-1.42zM6.02 18c-.42 0-.65-.48-.39-.81l2.49-3.2a.5.5 0 0 1 .78-.01l2.1 2.53L12.17 15l3 3H6.02zm14.98.17L5.83 3H19c1.1 0 2 .9 2 2v13.17z">\`);
+};
+
+const _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m21.19 21.19-.78-.78L18 18l-4.59-4.59-9.82-9.82-.78-.78a.996.996 0 0 0-1.41 0C1 3.2 1 3.83 1.39 4.22L3 5.83V19c0 1.1.9 2 2 2h13.17l1.61 1.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.03 0-1.42zM6.02 18c-.42 0-.65-.48-.39-.81l2.49-3.2a.5.5 0 0 1 .78-.01l2.1 2.53L12.17 15l3 3H6.02zm14.98.17L5.83 3H19c1.1 0 2 .9 2 2v13.17z">\`);
 const MdImageNotSupported = ((props = {}) => (() => {
   const _el$ = _tmpl$$B();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
+})());
+
+const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
 const MdCloudDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$A();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.9 13.98l2.1 2.53 3.1-3.99c.2-.26.6-.26.8.01l3.51 4.68a.5.5 0 0 1-.4.8H6.02c-.42 0-.65-.48-.39-.81L8.12 14c.19-.26.57-.27.78-.02z">\`);
+})());
+
+const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.9 13.98l2.1 2.53 3.1-3.99c.2-.26.6-.26.8.01l3.51 4.68a.5.5 0 0 1-.4.8H6.02c-.42 0-.65-.48-.39-.81L8.12 14c.19-.26.57-.27.78-.02z">\`);
 const MdPhoto = ((props = {}) => (() => {
   const _el$ = _tmpl$$z();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const loadTypeSvg = {
+})());
+
+const loadTypeSvg = {
   error: MdImageNotSupported,
   loading: MdCloudDownload,
   wait: MdCloudDownload
@@ -2751,7 +2856,9 @@ const LoadTypeTip = () => web.createComponent(solidJs.For, {
     return activePage();
   },
   children: ShowSvg
-});const _tmpl$$y = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6></h6></div><div data-area="menu" role="button" tabindex="-1"><h6></h6></div><div data-area="next" role="button" tabindex="-1"><h6>\`);
+});
+
+const _tmpl$$y = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6></h6></div><div data-area="menu" role="button" tabindex="-1"><h6></h6></div><div data-area="next" role="button" tabindex="-1"><h6>\`);
 const handleClick = {
   prev: () => {
     if (store.option.clickPageTurn.enabled) turnPage('prev');
@@ -2833,7 +2940,9 @@ const TouchArea = () => {
     });
     return _el$;
   })();
-};let clickTimeout = null;
+};
+
+let clickTimeout = null;
 const useDoubleClick = (click, doubleClick, timeout = 200) => {
   return event => {
     // 如果点击触发时还有上次计时器的记录，说明这次是双击
@@ -2850,7 +2959,9 @@ const useDoubleClick = (click, doubleClick, timeout = 200) => {
       clickTimeout = null;
     }, timeout);
   };
-};/** 在鼠标静止一段时间后自动隐藏 */
+};
+
+/** 在鼠标静止一段时间后自动隐藏 */
 const useHiddenMouse = () => {
   const [hiddenMouse, setHiddenMouse] = solidJs.createSignal(true);
   const hidden = debounce(1000, () => setHiddenMouse(true));
@@ -2862,7 +2973,9 @@ const useHiddenMouse = () => {
       hidden();
     }
   };
-};const _tmpl$$x = /*#__PURE__*/web.template(\`<div tabindex="-1"><div>\`),
+};
+
+const _tmpl$$x = /*#__PURE__*/web.template(\`<div tabindex="-1"><div>\`),
   _tmpl$2$9 = /*#__PURE__*/web.template(\`<h1>NULL\`);
 
 /**
@@ -2943,52 +3056,72 @@ const ComicImgFlow = () => {
     });
     return _el$;
   })();
-};const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
+};
+
+const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
 const MdLooksOne = ((props = {}) => (() => {
   const _el$ = _tmpl$$w();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2v2z">\`);
+})());
+
+const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2v2z">\`);
 const MdLooksTwo = ((props = {}) => (() => {
   const _el$ = _tmpl$$v();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1z">\`);
+})());
+
+const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1z">\`);
 const MdViewDay = ((props = {}) => (() => {
   const _el$ = _tmpl$$u();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1zm17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+})());
+
+const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1zm17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
 const MdQueue = ((props = {}) => (() => {
   const _el$ = _tmpl$$t();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">\`);
+})());
+
+const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">\`);
 const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$$s();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$r = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">\`);
+})());
+
+const _tmpl$$r = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">\`);
 const MdSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$r();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7 1.62-4.33L19.12 17h-3.24z">\`);
+})());
+
+const _tmpl$$q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7 1.62-4.33L19.12 17h-3.24z">\`);
 const MdTranslate = ((props = {}) => (() => {
   const _el$ = _tmpl$$q();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10zm11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7z">\`);
+})());
+
+const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10zm11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7z">\`);
 const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
   const _el$ = _tmpl$$p();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10zm-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1H8z">\`);
+})());
+
+const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10zm-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1H8z">\`);
 const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
   const _el$ = _tmpl$$o();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$n = /*#__PURE__*/web.template(\`<div><div> <!> \`);
+})());
+
+const _tmpl$$n = /*#__PURE__*/web.template(\`<div><div> <!> \`);
 /** 设置菜单项 */
 const SettingsItem = props => (() => {
   const _el$ = _tmpl$$n(),
@@ -3018,7 +3151,9 @@ const SettingsItem = props => (() => {
     _v$4: undefined
   });
   return _el$;
-})();const _tmpl$$m = /*#__PURE__*/web.template(\`<button type="button"><div>\`);
+})();
+
+const _tmpl$$m = /*#__PURE__*/web.template(\`<button type="button"><div>\`);
 /** 开关式菜单项 */
 const SettingsItemSwitch = props => {
   const handleClick = () => props.onChange(!props.value);
@@ -3052,17 +3187,23 @@ const SettingsItemSwitch = props => {
       return _el$;
     }
   });
-};const _tmpl$$l = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z">\`);
+};
+
+const _tmpl$$l = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z">\`);
 const MdRefresh = ((props = {}) => (() => {
   const _el$ = _tmpl$$l();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$k = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+})());
+
+const _tmpl$$k = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
 const MdAdd = ((props = {}) => (() => {
   const _el$ = _tmpl$$k();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$j = /*#__PURE__*/web.template(\`<div tabindex="0">\`),
+})());
+
+const _tmpl$$j = /*#__PURE__*/web.template(\`<div tabindex="0">\`),
   _tmpl$2$8 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
 const KeyItem = props => {
   const code = () => store.hotkeys[props.operateName][props.i];
@@ -3142,7 +3283,9 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
     });
     return _el$2;
   })()
-});const _tmpl$$i = /*#__PURE__*/web.template(\`<select>\`),
+});
+
+const _tmpl$$i = /*#__PURE__*/web.template(\`<select>\`),
   _tmpl$2$7 = /*#__PURE__*/web.template(\`<option>\`);
 /** 选择器式菜单项 */
 const SettingsItemSelect = props => {
@@ -3180,7 +3323,9 @@ const SettingsItemSelect = props => {
       return _el$;
     }
   });
-};const setMessage = (i, msg) => {
+};
+
+const setMessage = (i, msg) => {
   setState(state => {
     state.imgList[i].translationMessage = msg;
   });
@@ -3229,7 +3374,9 @@ const createFormData = imgBlob => {
 };
 
 /** 将站点列表转为选择器中的选项 */
-const createOptions = list => list.map(name => [name, t(\`translation.translator.\${name}\`) || name]);const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
+const createOptions = list => list.map(name => [name, t(\`translation.translator.\${name}\`) || name]);
+
+const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
 
 /** 获取部署服务的可用翻译 */
 const getValidTranslators = async () => {
@@ -3286,7 +3433,9 @@ const selfhostedTranslation = async i => {
     }
   }
   return \`\${url()}/result/\${task_id}\`;
-};/** 等待翻译完成 */
+};
+
+/** 等待翻译完成 */
 const waitTranslation = (id, i) => {
   const ws = new WebSocket(\`wss://api.cotrans.touhou.ai/task/\${id}/event/v1\`);
   return new Promise((resolve, reject) => {
@@ -3380,7 +3529,9 @@ const cotransTranslation = async i => {
   if (!translation_mask) translation_mask = await waitTranslation(id, i);
   return mergeImage(imgBlob, translation_mask);
 };
-const cotransTranslators = ['google', 'youdao', 'baidu', 'deepl', 'gpt3.5', 'offline', 'none'];/** 翻译指定图片 */
+const cotransTranslators = ['google', 'youdao', 'baidu', 'deepl', 'gpt3.5', 'offline', 'none'];
+
+/** 翻译指定图片 */
 const translationImage = async i => {
   try {
     if (typeof GM_xmlhttpRequest === 'undefined') {
@@ -3496,7 +3647,9 @@ const translatorOptions = solidJs.createRoot(() => {
     }
   }));
   return options;
-});const _tmpl$$h = /*#__PURE__*/web.template(\`<div><div>\`);
+});
+
+const _tmpl$$h = /*#__PURE__*/web.template(\`<div><div>\`);
 
 /** 带有动画过渡的切换显示设置项 */
 const SettingsShowItem = props => (() => {
@@ -3517,7 +3670,9 @@ const SettingsShowItem = props => (() => {
     _v$3: undefined
   });
   return _el$;
-})();const _tmpl$$g = /*#__PURE__*/web.template(\`<blockquote>\`),
+})();
+
+const _tmpl$$g = /*#__PURE__*/web.template(\`<blockquote>\`),
   _tmpl$2$6 = /*#__PURE__*/web.template(\`<input type="url">\`);
 const SettingTranslation = () => {
   /** 是否正在翻译全部图片 */
@@ -3665,7 +3820,9 @@ const SettingTranslation = () => {
       })];
     }
   })];
-};const _tmpl$$f = /*#__PURE__*/web.template(\`<button type="button">\`),
+};
+
+const _tmpl$$f = /*#__PURE__*/web.template(\`<button type="button">\`),
   _tmpl$2$5 = /*#__PURE__*/web.template(\`<div contenteditable data-only-number>\`),
   _tmpl$3$4 = /*#__PURE__*/web.template(\`<input type="color">\`);
 /** 默认菜单项 */
@@ -3889,7 +4046,9 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return lang();
   },
   onChange: setLang
-})], true]];const _tmpl$$e = /*#__PURE__*/web.template(\`<div>\`),
+})], true]];
+
+const _tmpl$$e = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
   _tmpl$3$3 = /*#__PURE__*/web.template(\`<hr>\`);
 
@@ -3950,7 +4109,9 @@ const SettingPanel = () => {
     });
     return _el$;
   })();
-};const _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`),
+};
+
+const _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role="button" tabindex="-1">\`);
 /** 工具栏按钮分隔栏 */
 const buttonListDivider = () => (() => {
@@ -4090,7 +4251,9 @@ props => {
       return web.createComponent(MdSettings, {});
     }
   });
-}];const useHover = () => {
+}];
+
+const useHover = () => {
   const [isHover, setIsHover] = solidJs.createSignal(false);
   return {
     isHover,
@@ -4099,7 +4262,9 @@ props => {
     /** 鼠标移出 */
     handleMouseLeave: () => setIsHover(false)
   };
-};const _tmpl$$c = /*#__PURE__*/web.template(\`<div role="toolbar"><div><div>\`);
+};
+
+const _tmpl$$c = /*#__PURE__*/web.template(\`<div role="toolbar"><div><div>\`);
 
 /** 左侧工具栏 */
 const Toolbar = () => {
@@ -4142,7 +4307,9 @@ const Toolbar = () => {
     });
     return _el$;
   })();
-};const defaultStata = () => ({
+};
+
+const defaultStata = () => ({
   type: 'start',
   xy: [0, 0],
   initial: [0, 0],
@@ -4214,7 +4381,9 @@ const useDrag = ref => {
     }
     solidJs.onCleanup(() => controller.abort());
   });
-};const _tmpl$$b = /*#__PURE__*/web.template(\`<div>\`);
+};
+
+const _tmpl$$b = /*#__PURE__*/web.template(\`<div>\`);
 
 /** 显示对应图片加载情况的元素 */
 const ScrollbarImg = props => {
@@ -4268,7 +4437,9 @@ const ScrollbarPage = props => {
     web.effect(() => flexBasis() != null ? _el$2.style.setProperty("flex-basis", flexBasis()) : _el$2.style.removeProperty("flex-basis"));
     return _el$2;
   })();
-};const _tmpl$$a = /*#__PURE__*/web.template(\`<div role="scrollbar" tabindex="-1"><div><div>\`);
+};
+
+const _tmpl$$a = /*#__PURE__*/web.template(\`<div role="scrollbar" tabindex="-1"><div><div>\`);
 
 /** 滚动条 */
 const Scrollbar = () => {
@@ -4360,7 +4531,9 @@ const Scrollbar = () => {
     });
     return _el$;
   })();
-};const _tmpl$$9 = /*#__PURE__*/web.template(\`<div>\`),
+};
+
+const _tmpl$$9 = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$2 = /*#__PURE__*/web.template(\`<div role="button" tabindex="-1"><p></p><button type="button"></button><button type="button" data-is-end></button><button type="button">\`),
   _tmpl$3$2 = /*#__PURE__*/web.template(\`<p>\`);
 let delayTypeTimer = 0;
@@ -4486,7 +4659,9 @@ const EndPage = () => {
     });
     return _el$;
   })();
-};/** 深色模式的 css 变量 */
+};
+
+/** 深色模式的 css 变量 */
 const dark = {
   '--hover_bg_color': '#FFF3',
   '--hover_bg_color_enable': '#FFFa',
@@ -4525,7 +4700,9 @@ const cssVar = solidJs.createRoot(() => {
     ...(store.option.darkMode ? dark : light)
   }));
   return _cssVar;
-});/** 初始化 */
+});
+
+/** 初始化 */
 const useInit$1 = (props, rootRef) => {
   // 绑定 rootRef
   setState(state => {
@@ -4641,7 +4818,9 @@ const useInit$1 = (props, rootRef) => {
       if (state.activePageIndex > state.pageList.length - 1) state.activePageIndex = state.pageList.length - 1;
     });
   });
-};const _tmpl$$8 = /*#__PURE__*/web.template(\`<div role="presentation" tabindex="-1">\`);
+};
+
+const _tmpl$$8 = /*#__PURE__*/web.template(\`<div role="presentation" tabindex="-1">\`);
 const MangaStyle = css$1;
 solidJs.enableScheduling();
 /** 漫画组件 */
@@ -4685,7 +4864,9 @@ const Manga = props => {
     });
     return _el$;
   })();
-};const _tmpl$$7 = /*#__PURE__*/web.template(\`<style type="text/css">\`);
+};
+
+const _tmpl$$7 = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let dom;
 
 /**
@@ -4805,23 +4986,33 @@ const useManga = async initProps => {
     }
   });
   return [set, props, setProps];
-};const _tmpl$$6 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03z">\`);
+};
+
+const _tmpl$$6 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03z">\`);
 const MdMenuBook = ((props = {}) => (() => {
   const _el$ = _tmpl$$6();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$5 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1zm-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79zm3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42l-2.41-2.4zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z">\`);
+})());
+
+const _tmpl$$5 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1zm-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79zm3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42l-2.41-2.4zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z">\`);
 const MdImageSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$5();
   web.spread(_el$, props, true, true);
   return _el$;
-})());const _tmpl$$4 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z">\`);
+})());
+
+const _tmpl$$4 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z">\`);
 const MdImportContacts = ((props = {}) => (() => {
   const _el$ = _tmpl$$4();
   web.spread(_el$, props, true, true);
   return _el$;
-})());var css = ".index_module_fabRoot__36cc95e4{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__36cc95e4[data-show=false]{pointer-events:none}.index_module_fabRoot__36cc95e4[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__36cc95e4[data-trans=true]{opacity:.8}.index_module_fabRoot__36cc95e4[data-trans=true]:focus,.index_module_fabRoot__36cc95e4[data-trans=true]:focus-visible,.index_module_fabRoot__36cc95e4[data-trans=true]:hover{opacity:1}.index_module_fab__36cc95e4{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.index_module_fab__36cc95e4>svg{font-size:1.5em;width:1em}.index_module_fab__36cc95e4:hover{background-color:var(--fab_hover,#78909c)}.index_module_fab__36cc95e4:focus,.index_module_fab__36cc95e4:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.index_module_progress__36cc95e4{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__36cc95e4>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__36cc95e4:hover{color:#cfd8dc}.index_module_progress__36cc95e4[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__36cc95e4{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__36cc95e4:hover,.index_module_fabRoot__36cc95e4[data-focus=true]) .index_module_popper__36cc95e4{display:flex}.index_module_speedDial__36cc95e4{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__36cc95e4{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__36cc95e4:hover,:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true])>.index_module_speedDial__36cc95e4{pointer-events:all}:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true])>.index_module_speedDial__36cc95e4>.index_module_speedDialItem__36cc95e4{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__36cc95e4{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__36cc95e4[data-focus=true] .index_module_backdrop__36cc95e4{pointer-events:unset}:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true],.index_module_speedDial__36cc95e4:hover) .index_module_backdrop__36cc95e4{opacity:.4}";
-var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__36cc95e4","fab":"index_module_fab__36cc95e4","progress":"index_module_progress__36cc95e4","popper":"index_module_popper__36cc95e4","speedDial":"index_module_speedDial__36cc95e4","speedDialItem":"index_module_speedDialItem__36cc95e4","backdrop":"index_module_backdrop__36cc95e4"};const _tmpl$$3 = /*#__PURE__*/web.template(\`<div><div>\`),
+})());
+
+var css = ".index_module_fabRoot__36cc95e4{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__36cc95e4[data-show=false]{pointer-events:none}.index_module_fabRoot__36cc95e4[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__36cc95e4[data-trans=true]{opacity:.8}.index_module_fabRoot__36cc95e4[data-trans=true]:focus,.index_module_fabRoot__36cc95e4[data-trans=true]:focus-visible,.index_module_fabRoot__36cc95e4[data-trans=true]:hover{opacity:1}.index_module_fab__36cc95e4{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.index_module_fab__36cc95e4>svg{font-size:1.5em;width:1em}.index_module_fab__36cc95e4:hover{background-color:var(--fab_hover,#78909c)}.index_module_fab__36cc95e4:focus,.index_module_fab__36cc95e4:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.index_module_progress__36cc95e4{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__36cc95e4>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__36cc95e4:hover{color:#cfd8dc}.index_module_progress__36cc95e4[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__36cc95e4{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__36cc95e4:hover,.index_module_fabRoot__36cc95e4[data-focus=true]) .index_module_popper__36cc95e4{display:flex}.index_module_speedDial__36cc95e4{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__36cc95e4{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__36cc95e4:hover,:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true])>.index_module_speedDial__36cc95e4{pointer-events:all}:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true])>.index_module_speedDial__36cc95e4>.index_module_speedDialItem__36cc95e4{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__36cc95e4{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__36cc95e4[data-focus=true] .index_module_backdrop__36cc95e4{pointer-events:unset}:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true],.index_module_speedDial__36cc95e4:hover) .index_module_backdrop__36cc95e4{opacity:.4}";
+var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__36cc95e4","fab":"index_module_fab__36cc95e4","progress":"index_module_progress__36cc95e4","popper":"index_module_popper__36cc95e4","speedDial":"index_module_speedDial__36cc95e4","speedDialItem":"index_module_speedDialItem__36cc95e4","backdrop":"index_module_backdrop__36cc95e4"};
+
+const _tmpl$$3 = /*#__PURE__*/web.template(\`<div><div>\`),
   _tmpl$2$1 = /*#__PURE__*/web.template(\`<div><button type="button" tabindex="-1"><span role="progressbar"><svg viewBox="22 22 44 44"><circle cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6">\`),
   _tmpl$3$1 = /*#__PURE__*/web.template(\`<div>\`);
 const FabStyle = css;
@@ -4954,7 +5145,9 @@ const Fab = _props => {
     });
     return _el$;
   })();
-};const _tmpl$$2 = /*#__PURE__*/web.template(\`<style type="text/css">\`);
+};
+
+const _tmpl$$2 = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let mounted = false;
 const useFab = async initProps => {
   await GM.addStyle(\`
@@ -5009,9 +5202,11 @@ const useFab = async initProps => {
     if (recipe) setProps(typeof recipe === 'function' ? store$2.produce(recipe) : recipe);
   };
   return [set, props];
-};const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
+};
+
+const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复 PWA 无法记住选择语言的 bug </p></li><li><p>修复会在无关网页上意外运行并导致 css 异常的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复脚本无法正常运行的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -5090,7 +5285,9 @@ const handleVersionUpdate = async () => {
     });
   }
   if (version.split('.')[0] !== GM.info.script.version.split('.')[0]) await migration();
-};const getHotkeys = async () => ({
+};
+
+const getHotkeys = async () => ({
   enter_read_mode: ['v'],
   ...(await GM.getValue('Hotkeys', {}))
 });
@@ -5141,7 +5338,9 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
       return readModeHotkeysMemo;
     })
   };
-};/**
+};
+
+/**
  * 对基础的初始化操作的封装
  * @param name 站点名
  * @param defaultOptions 默认配置
@@ -5318,7 +5517,9 @@ const useInit = async (name, defaultOptions = {}) => {
       };
     }
   };
-};/** 处理延时出现的上/下一话的按钮 */
+};
+
+/** 处理延时出现的上/下一话的按钮 */
 const handleDelayPrevNext = async (fn, num = 0) => {
   if (!fn || num >= 25) return;
   const domClickFn = await fn();
@@ -5407,7 +5608,9 @@ const universalInit = async ({
       onNext: await handleDelayPrevNext(getOnNext)
     })].map(fn => fn()));
   });
-};const _tmpl$ = /*#__PURE__*/web.template(\`<div><button>\`);
+};
+
+const _tmpl$ = /*#__PURE__*/web.template(\`<div><button>\`);
 /**
  * 提示当前开启了自动进入阅读模式的弹窗
  *
@@ -5423,7 +5626,49 @@ const autoReadModeMessage = setOptions => () => (() => {
   }));
   web.insert(_el$2, () => main.t('other.disable'));
   return _el$;
-})();exports.assign=assign;exports.autoReadModeMessage=autoReadModeMessage;exports.autoUpdate=autoUpdate;exports.byPath=byPath;exports.createFillImgList=createFillImgList;exports.dataToParams=dataToParams;exports.difference=difference;exports.getKeyboardCode=getKeyboardCode;exports.getMostItem=getMostItem;exports.insertNode=insertNode;exports.isEqualArray=isEqualArray;exports.keyboardCodeToText=keyboardCodeToText;exports.lang=lang;exports.linstenKeyup=linstenKeyup;exports.log=log;exports.loop=loop;exports.needDarkMode=needDarkMode;exports.plimit=plimit;exports.querySelector=querySelector;exports.querySelectorAll=querySelectorAll;exports.querySelectorClick=querySelectorClick;exports.request=request$1;exports.saveAs=saveAs;exports.scrollIntoView=scrollIntoView;exports.setInitLang=setInitLang;exports.setLang=setLang;exports.sleep=sleep;exports.t=t;exports.toast=toast$1;exports.triggerEleLazyLoad=triggerEleLazyLoad;exports.universalInit=universalInit;exports.useCache=useCache;exports.useFab=useFab;exports.useInit=useInit;exports.useManga=useManga;exports.useSiteOptions=useSiteOptions;exports.useSpeedDial=useSpeedDial;exports.wait=wait;exports.waitDom=waitDom;exports.waitImgLoad=waitImgLoad;`
+})();
+
+exports.assign = assign;
+exports.autoReadModeMessage = autoReadModeMessage;
+exports.autoUpdate = autoUpdate;
+exports.byPath = byPath;
+exports.createFillImgList = createFillImgList;
+exports.dataToParams = dataToParams;
+exports.difference = difference;
+exports.getKeyboardCode = getKeyboardCode;
+exports.getMostItem = getMostItem;
+exports.insertNode = insertNode;
+exports.isEqualArray = isEqualArray;
+exports.keyboardCodeToText = keyboardCodeToText;
+exports.lang = lang;
+exports.linstenKeyup = linstenKeyup;
+exports.log = log;
+exports.loop = loop;
+exports.needDarkMode = needDarkMode;
+exports.plimit = plimit;
+exports.querySelector = querySelector;
+exports.querySelectorAll = querySelectorAll;
+exports.querySelectorClick = querySelectorClick;
+exports.request = request$1;
+exports.saveAs = saveAs;
+exports.scrollIntoView = scrollIntoView;
+exports.setInitLang = setInitLang;
+exports.setLang = setLang;
+exports.sleep = sleep;
+exports.t = t;
+exports.toast = toast$1;
+exports.triggerEleLazyLoad = triggerEleLazyLoad;
+exports.universalInit = universalInit;
+exports.useCache = useCache;
+exports.useFab = useFab;
+exports.useInit = useInit;
+exports.useManga = useManga;
+exports.useSiteOptions = useSiteOptions;
+exports.useSpeedDial = useSpeedDial;
+exports.wait = wait;
+exports.waitDom = waitDom;
+exports.waitImgLoad = waitImgLoad;
+`
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
@@ -5491,7 +5736,8 @@ const require = name => {
   });
   return selfDefault;
 };
-crsLib.require = require;exports.require=require;
+crsLib.require = require;
+
 
 /** 站点配置 */
 let options;
@@ -5504,12 +5750,17 @@ try {
     // #百合会——「记录阅读历史，体验优化」
     case 'bbs.yamibo.com':
       {
-const web=require('solid-js/web'),main=require('main');const _tmpl$ = /*#__PURE__*/web.template(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">`);
+const web = require('solid-js/web');
+const main = require('main');
+
+const _tmpl$ = /*#__PURE__*/web.template(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">`);
 const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$();
   web.spread(_el$, props, true, true);
   return _el$;
-})());(async () => {
+})());
+
+(async () => {
   const {
     options,
     setFab,
@@ -5821,6 +6072,7 @@ const MdSettings = ((props = {}) => (() => {
     }
   }
 })();
+
         options = false;
         break;
       }
@@ -5860,7 +6112,13 @@ const MdSettings = ((props = {}) => (() => {
     case 'manhua.idmzj.com':
     case 'manhua.dmzj.com':
       {
-const web=require('solid-js/web'),solidJs=require('solid-js'),main=require('main'),store=require('solid-js/store'),dmzjDecrypt=require('dmzjDecrypt');const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
+const web = require('solid-js/web');
+const solidJs = require('solid-js');
+const main = require('main');
+const store = require('solid-js/store');
+const dmzjDecrypt = require('dmzjDecrypt');
+
+const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
 const log = (...args) =>
 // eslint-disable-next-line no-console
 console.log.apply(null, [...prefix, ...args]);
@@ -5869,7 +6127,7 @@ log.warn = (...args) =>
 console.warn.apply(null, [...prefix, ...args]);
 log.error = (...args) =>
 // eslint-disable-next-line no-console
-console.error.apply(null, [...prefix, ...args]);/** dmzj 的漫画详情 */
+console.error.apply(null, [...prefix, ...args]);
 
 /** 根据漫画 id 和章节 id 获取章节数据 */
 const getChapterInfo = async (comicId, chapterId) => {
@@ -6021,7 +6279,9 @@ const getComicId = async py => {
     comic_py: py
   }).toString()}`);
   return JSON.parse(res.responseText).data?.comicInfo?.id;
-};const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2_title2"><span class="h2_icon h2_icon22"></span><h2> `),
+};
+
+const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2_title2"><span class="h2_icon h2_icon22"></span><h2> `),
   _tmpl$2 = /*#__PURE__*/web.template(`<div class="cartoon_online_border_other"><ul></ul><div class="clearfix">`),
   _tmpl$3 = /*#__PURE__*/web.template(`<li><a target="_blank">`);
 (async () => {
@@ -6168,13 +6428,15 @@ const getComicId = async py => {
     }
   });
 })();
+
         options = false;
         break;
       }
     case 'm.idmzj.com':
     case 'm.dmzj.com':
       {
-const main=require('main'),dmzjDecrypt=require('dmzjDecrypt');require('solid-js/store'),require('solid-js');/** dmzj 的漫画详情 */
+const main = require('main');
+const dmzjDecrypt = require('dmzjDecrypt');
 
 /** 根据漫画 id 和章节 id 获取章节数据 */
 const getChapterInfo = async (comicId, chapterId) => {
@@ -6201,7 +6463,9 @@ const getViewpoint = async (comicId, chapterId) => {
   } catch (_) {
     return [];
   }
-};(async () => {
+};
+
+(async () => {
   const {
     setManga,
     init
@@ -6348,13 +6612,14 @@ const getViewpoint = async (comicId, chapterId) => {
       }
   }
 })();
+
         options = false;
         break;
       }
     case 'www.idmzj.com':
     case 'www.dmzj.com':
       {
-const main=require('main');require('solid-js/store'),require('solid-js'),require('dmzjDecrypt');/** dmzj 的漫画详情 */
+const main = require('main');
 
 /** 根据漫画 id 和章节 id 获取章节数据 */
 const getChapterInfo = async (comicId, chapterId) => {
@@ -6362,7 +6627,9 @@ const getChapterInfo = async (comicId, chapterId) => {
     errorText: '获取章节数据失败'
   });
   return JSON.parse(res.responseText);
-};const chapterIdRe = /(?<=\/)\d+(?=\.html)/;
+};
+
+const chapterIdRe = /(?<=\/)\d+(?=\.html)/;
 const turnPage = chapterId => {
   if (!chapterId) return undefined;
   return () => {
@@ -6396,6 +6663,7 @@ const turnPage = chapterId => {
     });
   }
 })();
+
         options = false;
         break;
       }
@@ -6404,12 +6672,17 @@ const turnPage = chapterId => {
     case 'exhentai.org':
     case 'e-hentai.org':
       {
-const web=require('solid-js/web'),main=require('main');const _tmpl$ = /*#__PURE__*/web.template(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">`);
+const web = require('solid-js/web');
+const main = require('main');
+
+const _tmpl$ = /*#__PURE__*/web.template(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">`);
 const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$();
   web.spread(_el$, props, true, true);
   return _el$;
-})());(async () => {
+})());
+
+(async () => {
   const {
     options,
     setFab,
@@ -6642,6 +6915,7 @@ const MdSettings = ((props = {}) => (() => {
     };
   }
 })();
+
         options = false;
         break;
       }
@@ -6649,7 +6923,9 @@ const MdSettings = ((props = {}) => (() => {
     // #nhentai——「彻底屏蔽漫画，自动翻页」
     case 'nhentai.net':
       {
-const main=require('main');/** 用于转换获得图片文件扩展名 */
+const main = require('main');
+
+/** 用于转换获得图片文件扩展名 */
 const fileType = {
   j: 'jpg',
   p: 'png',
@@ -6781,6 +7057,7 @@ const fileType = {
     }
   }
 })();
+
         options = false;
         break;
       }
@@ -6841,7 +7118,9 @@ const fileType = {
     case '18comic.cc':
     case '18comic.vip':
       {
-const main=require('main');// 已知问题：某些漫画始终会有几页在下载原图时出错
+const main = require('main');
+
+// 已知问题：某些漫画始终会有几页在下载原图时出错
 // 并且这类漫画下即使关掉脚本，也还是会有几页就是加载不出来
 // 比较神秘的是这两种情况下加载不出来的图片还不一样
 // 并且在多次刷新的情况下都是那几张图片加载不出来
@@ -6934,6 +7213,7 @@ const main=require('main');// 已知问题：某些漫画始终会有几页在�
   });
   retry();
 })();
+
         options = false;
         break;
       }
@@ -7213,7 +7493,9 @@ const main=require('main');// 已知问题：某些漫画始终会有几页在�
       }
   }
   if (options) main.universalInit(options);else if (options !== false) {
-const main=require('main');const langList = ['zh', 'en', 'ru'];
+const main = require('main');
+
+const langList = ['zh', 'en', 'ru'];
 /** 判断传入的字符串是否是支持的语言类型代码 */
 const isLanguages = lang => !!lang && langList.includes(lang);
 
@@ -7238,7 +7520,7 @@ const getInitLang = async () => {
   const lang = getBrowserLang() ?? 'zh';
   setSaveLang(lang);
   return lang;
-};// 这个文件里不能含有 jsx 代码，否则会在打包时自动加入 import solidjs 的代码
+};
 
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
@@ -7402,6 +7684,7 @@ const getInitLang = async () => {
             }
           })(await getInitLang()), () => !start() && GM.unregisterMenuCommand(menuId));
 })();
+
   }
 } catch (error) {
   main.log.error(error);
