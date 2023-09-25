@@ -1,28 +1,28 @@
 # 最简单的 manga-image-translator 本地部署流程
 
+因为感觉 manga-image-translator 的文档对不了解相关知识的普通人来说可能太难看懂了，所以为了方便更多人在本地部署 manga-image-translator 有了这篇文章。
+
+但这篇文章的定位仅仅是我自己对部署流程的笔记，具体还请以 manga-image-translator [官方文档](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md) 为主。
+
 ## 开头劝退
 
-本地部署需要一定的动手能力，纯计算机小白且不打算学习动手的可以直接右上角了，目前还没有一键安装部署的方法。
+- 虽然标题写了最简单，但实际还是需要一定的动手能力的，纯计算机小白且不打算学习动手的可以直接右上角了，目前还没有一键安装部署的方法
 
-部署好后默认只能使用一些免费的翻译服务，要想有好的翻译效果，还需要自行获取相关翻译服务的 api。翻译效果和获取难度基本成正比，具体请参考 [manga-image-translator](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md#翻译器列表) 文档的翻译器列表部分。
+- 部署好后默认只能使用一些免费的翻译服务，要想有好的翻译效果，还需要自行获取相关翻译服务的 api。翻译效果和获取难度基本成正比，可使用的翻译服务列表见 [manga-image-translator](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md#翻译器列表) 文档的翻译器列表部分。具体的申请 api 方法可以参考 [划词翻译的文档](https://hcfy.app/docs/services/intro/#apply)
 
 ## 简单说明
 
-因为感觉 [manga-image-translator](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md) 的文档对不了解相关知识的普通人来说可能太难看懂了，所以为了方便更多人在本地部署 manga-image-translator 才有了这篇文章。
-
-> 这篇文章仅仅是我自己对部署流程的笔记，具体还请以 [manga-image-translator](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md) 官方文档为主
-
 manga-image-translator 有两种部署方式，一种是配置好环境后直接把代码下载下来运行，因为配置环境很麻烦所以 pass。这篇文章介绍的是更简单的通过 Docker 来部署。
 
-简单介绍下 Docker，你可以把它理解成一个模拟器，可以从应用商店下载各类应用运行，每个应用都是在单独的环境中运行，所以不会影响到电脑，也能很方便的在不同版本的应用间切换。唯一的问题就是它没有图形界面，只能通过命令行来运行。
+简单介绍下 Docker，你可以把它理解成一个模拟器，可以从应用商店下载各类应用运行，每个应用都是在单独的环境中运行，所以不会影响到电脑，也能很方便的在不同版本的应用间切换。
 
-所以要在本地部署 manga-image-translator 就只有两步：安装 Docker、下载 manga-image-translator，其中比较麻烦的就只有安装 Docker，装好以后只需要一行命令就能自动下载并运行 manga-image-translator 了。
+所以要在本地部署 manga-image-translator 就只有两步：1.安装 Docker、下载 manga-image-translator，其中比较麻烦的就只有安装 Docker，装好以后只需要一行命令就能自动下载并运行 manga-image-translator 了。
 
-> 注意！在 windows 上开启 Hyper-V 会导致大部分虚拟机、安卓模拟器无法使用，需要修改设置或改换支持Hyper-V的版本。如有相关需求无法开启，就只能参照 [官方文档](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md#使用说明) 来安装了
+> 注意！在 windows 上开启 Hyper-V 会导致大部分虚拟机、安卓模拟器无法使用，需要修改设置或改换支持Hyper-V的版本。如有相关需求无法开启，就只能参照 [官方文档](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md#使用说明) 或 [这个issues](https://github.com/zyddnys/manga-image-translator/issues/333#issuecomment-1612383229) 来安装了
 
 ## 安装 Docker
 
-安装 Docker 的教程网上已经很多了，可自行搜索「Windows Docker 安装」参考安装。这里推荐 [菜鸟教程的文章](https://www.runoob.com/docker/windows-docker-install.html)
+安装 Docker 的教程网上已经很多了，可自行搜索「Windows Docker 安装」参考安装。这里推荐 [菜鸟教程的文章](https://www.runoob.com/docker/windows-docker-install.html)。
 
 ## 部署 manga-image-translator
 
@@ -61,7 +61,7 @@ manga_image_translator_cpu  | [web] Running in web mode
 manga_image_translator_cpu  | Serving up app on http://0.0.0.0:5003
 ```
 
-注意此时不要关闭命令行窗口
+注意，此时关掉这个窗口的话 docker 也会停止。需要无窗口后台运行的话，应该使用 `docker-compose up -d` 命令。
 
 ## 配置翻译服务
 
@@ -87,8 +87,10 @@ services:
 
 修改后使用命令 `docker-compose restart` 重启 manga-image-translator 即可。
 
-> 按理来说此处应有 ChatGPT 账号的广告，但因为我实在是讨厌中间商赚差价，所以虽然觉得应该在这里推荐几个网站方便购买使用 api，但最后还是作罢，有需要的自行搜索吧。
+> 按理来说此处应有 ChatGPT 账号的广告，方便直接点击购买，但因为我实在是讨厌中间商赚差价，所以还是算了，有需要的自行搜索吧。
 >
-> 不过要提醒一下，比起以时间为单位购买/租借账号，选择那些根据实时用量扣费的会更划算。一次只要充几块钱就能用好久，也不怕网站跑路。
+> 不过还是要提醒一下，比起购买/租借账号，更好的选择是找哪些直接提供 api key 的站点，这类站点会根据实时用量扣费，非常划算。一次只要充几块钱就能用好久，也不怕网站跑路。
+>
+> 不过这类站点可能会要求设置 `API Base`，这就需要在 `environment` 下再加上一行 `OPENAI_API_BASE: <api base URL>`
 
-最后，如果在部署后有任何问题，还请去 [manga-image-translator 的 issues](https://github.com/zyddnys/manga-image-translator/issues) 上反馈。
+最后，如果在部署后有任何问题，还请去 [manga-image-translator 的 issues](https://github.com/zyddnys/manga-image-translator/issues) 上反馈。毕竟我只是个调包侠，对 manga-image-translator 并不了解。
