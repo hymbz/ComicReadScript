@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         7.0.0
+// @version         7.1.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @author          hymbz
@@ -54,7 +54,7 @@
  * 对站点逻辑感兴趣的，结合 `src\index.ts` 看 `src\site` 下的对应文件即可
  */
 
-const gmApi = {
+Object.defineProperty(exports,Symbol.toStringTag,{value:'Module'});const gmApi = {
   GM,
   GM_addElement,
   GM_getResourceText,
@@ -79,14 +79,7 @@ const tempName = Math.random().toString(36).slice(2);
  */
 const selfImportSync = name => {
   const code = name !== 'main' ? GM_getResourceText(name) :`
-const solidJs = require('solid-js');
-const web = require('solid-js/web');
-const store$2 = require('solid-js/store');
-const fflate = require('fflate');
-const createPanZoom = require('panzoom');
-const main = require('main');
-
-const sleep = ms => new Promise(resolve => {
+Object.defineProperty(exports,Symbol.toStringTag,{value:'Module'});const solidJs=require('solid-js'),web=require('solid-js/web'),store$2=require('solid-js/store'),fflate=require('fflate'),createPanZoom=require('panzoom'),main=require('main');const sleep = ms => new Promise(resolve => {
   window.setTimeout(resolve, ms);
 });
 
@@ -363,20 +356,41 @@ const getKeyboardCode = e => {
 };
 
 /** 将快捷键的编码转换成更易读的形式 */
-const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\\s$/, 'Space');
-
-const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
+const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\\s$/, 'Space');const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
 const log = (...args) =>
 // eslint-disable-next-line no-console
-console.log.apply(undefined, [...prefix, ...args]);
+console.log.apply(null, [...prefix, ...args]);
 log.warn = (...args) =>
 // eslint-disable-next-line no-console
-console.warn.apply(undefined, [...prefix, ...args]);
+console.warn.apply(null, [...prefix, ...args]);
 log.error = (...args) =>
 // eslint-disable-next-line no-console
-console.error.apply(undefined, [...prefix, ...args]);
+console.error.apply(null, [...prefix, ...args]);const langList = ['zh', 'en', 'ru'];
+/** 判断传入的字符串是否是支持的语言类型代码 */
+const isLanguages = lang => !!lang && langList.includes(lang);
 
-const zh = {
+/** 返回浏览器偏好语言 */
+const getBrowserLang = () => {
+  let newLang;
+  for (let i = 0; i < navigator.languages.length; i++) {
+    const language = navigator.languages[i];
+    const matchLang = langList.find(l => l === language || l === language.split('-')[0]);
+    if (matchLang) {
+      newLang = matchLang;
+      break;
+    }
+  }
+  return newLang;
+};
+const getSaveLang = () => window?.GM?.getValue ? GM.getValue('Languages') : localStorage.getItem('Languages');
+const setSaveLang = val => window?.GM?.setValue ? GM.setValue('Languages', val) : localStorage.setItem('Languages', val);
+const getInitLang = async () => {
+  const saveLang = await getSaveLang();
+  if (isLanguages(saveLang)) return saveLang;
+  const lang = getBrowserLang() ?? 'zh';
+  setSaveLang(lang);
+  return lang;
+};const zh = {
   alert: {
     comic_load_error: "漫画加载出错",
     download_failed: "下载失败",
@@ -569,6 +583,7 @@ const zh = {
       "pending-pos": "正在等待",
       rendering: "正在渲染",
       saved: "保存结果",
+      textline_merge: "正在整合文本",
       translating: "正在翻译文本",
       upscaling: "正在放大图片"
     },
@@ -597,9 +612,7 @@ const zh = {
       youdao: "有道"
     }
   }
-};
-
-const en = {
+};const en = {
   alert: {
     comic_load_error: "Comic loading error",
     download_failed: "Download failed",
@@ -619,7 +632,7 @@ const en = {
     page_mode_double: "Double page mode",
     page_mode_single: "Single page mode",
     scroll_mode: "Scroll mode",
-    setting: "Setting",
+    setting: "Settings",
     translate_current_page: "Translate current page",
     zoom_in: "Zoom in"
   },
@@ -792,6 +805,7 @@ const en = {
       "pending-pos": "Pending",
       rendering: "Rendering",
       saved: "Saved",
+      textline_merge: "Merging text lines",
       translating: "Translating",
       upscaling: "Upscaling"
     },
@@ -820,43 +834,240 @@ const en = {
       youdao: "youdao"
     }
   }
-};
-
-const langList = ['zh', 'en'];
-/** 判断传入的字符串是否是支持的语言类型代码 */
-const isLanguages = lang => langList.includes(lang);
-const [lang, setLang] = solidJs.createSignal('zh');
-
-/** 根据浏览器的偏好语言自动设置语言 */
-const autoSetLang = () => {
-  let newLang = 'zh';
-  for (let i = 0; i < navigator.languages.length; i++) {
-    const language = navigator.languages[i];
-    const matchLang = langList.find(l => l === language || l === language.split('-')[0]);
-    if (matchLang) {
-      newLang = matchLang;
-      break;
+};const ru = {
+  alert: {
+    comic_load_error: "Ошибка загрузки комикса",
+    download_failed: "Ошибка загрузки",
+    fetch_comic_img_failed: "Не удалось загрузить изображения",
+    img_load_failed: "Не удалось загрузить изображение",
+    repeat_load: "Загрузка изображения, пожалуйста подождите",
+    server_connect_failed: "Не удалось подключиться к серверу"
+  },
+  button: {
+    close_current_page_translation: "Скрыть перевод текущей страницы",
+    download: "Скачать",
+    download_completed: "Загрузка завершена",
+    downloading: "Скачивание",
+    exit: "Выход",
+    packaging: "Упаковка",
+    page_fill: "Заполнить страницу",
+    page_mode_double: "Двухчастичный режим",
+    page_mode_single: "Одностраничный режим",
+    scroll_mode: "Режим прокрутки",
+    setting: "Настройки",
+    translate_current_page: "Перевести текущую страницу",
+    zoom_in: "Приблизить"
+  },
+  description: "Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.",
+  end_page: {
+    next_button: "Следующая глава",
+    prev_button: "Предыдущая глава",
+    tip: {
+      end_jump: "Последняя страница, ниже выполнится переход к следующей главе",
+      exit: "Последняя страница, ниже комикс будет закрыт",
+      start_jump: "Это первая страница, выше выполнится переход к предыдущей главе"
+    }
+  },
+  hotkeys: {
+    enter_read_mode: "Режим для чтения",
+    exit: "Выход",
+    jump_to_end: "Перейти к последней странице",
+    jump_to_home: "Перейти к первой странице",
+    switch_dir: "Переключить направление чтения",
+    switch_page_fill: "Переключить заполнение страницы",
+    switch_scroll_mode: "Переключить режим прокрутки",
+    switch_single_double_page_mode: "Переключить одностраничный/двухстраничный режим",
+    turn_page_down: "Перелистнуть страницу вниз",
+    turn_page_left: "Перелистнуть страницу влево",
+    turn_page_right: "Перелистнуть страницу вправо",
+    turn_page_up: "Перелистнуть страницу вверх"
+  },
+  img_status: {
+    error: "Ошибка загрузки",
+    loading: "Загрузка",
+    wait: "Ожидание загрузки"
+  },
+  other: {
+    auto_enter_read_mode: "Автоматический режим для чтения",
+    disable: "Отключить",
+    enter_comic_read_mode: "Режим для чтения комиксов",
+    fab_hidden: "Скрыть плавающую кнопку",
+    fab_show: "Показать плавающую кнопку",
+    fill_page: "Заполнить страницу",
+    img_loading: "Загрузка изображения",
+    loading_img: "Загрузка изображения",
+    read_mode: "Режим для чтения"
+  },
+  pwa: {
+    alert: {
+      img_data_error: "Ошибка данных изображения",
+      img_not_found: "Изображение не найдено",
+      img_not_found_files: "Пожалуйста выберите файл изображения или архив с изображениями",
+      img_not_found_folder: "В папке не найдены изображения или архивы с изображениями",
+      repeat_load: "Загрузка других файлов…",
+      unzip_error: "Ошибка распаковки",
+      unzip_password_error: "Неверный пароль от архива",
+      userscript_not_installed: "Скрипт ComicRead не установлен"
+    },
+    button: {
+      install: "Установить",
+      no_more_prompt: "Больше не показывать",
+      resume_read: "Продолжить чтение",
+      select_files: "Выбрать файл",
+      select_folder: "Выбрать папку"
+    },
+    install_md: "### Устали открывать эту страницу каждый раз?\\nЕсли вы хотите:\\n1. Запускать приложение в отдельном окне\\n1. Иметь опцию открытия архивов в контекстом меню\\n1. Пользоваться оффлайн\\n### Установите эту страницу в качестве [PWA](https://ru.wikipedia.org/wiki/%D0%9F%D1%80%D0%BE%D0%B3%D1%80%D0%B5%D1%81%D1%81%D0%B8%D0%B2%D0%BD%D0%BE%D0%B5_%D0%B2%D0%B5%D0%B1-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5) на свой компьютер 🐺☝️",
+    message: {
+      enter_password: "Пожалуйста введите пароль",
+      unzipping: "Распаковка"
+    },
+    tip_md: "# ComicRead PWA\\nИспользуйте [ComicRead](https://github.com/hymbz/ComicReadScript) для чтения **локальных** комиксов.\\n---\\n### Перетащите изображения, папки или архивы чтобы начать читать"
+  },
+  setting: {
+    hotkeys: {
+      add: "Добавит горячие клавиши",
+      restore: "Восстановить горячие клавиши по умолчанию"
+    },
+    language: "Язык",
+    option: {
+      always_load_all_img: "Всегда загружать все изображения",
+      background_color: "Цвет фона",
+      click_page_turn_enabled: "Включить перелистывание страниц по клику",
+      click_page_turn_swap_area: "Поменять местами правую и левую области переключения страниц",
+      click_page_turn_vertical: "Вертикальная область переключения страниц",
+      dark_mode: "Тёмная тема",
+      dir_ltr: "Чтение слева направо (Американские комиксы)",
+      dir_rtl: "Чтение справа налево (Японская манга)",
+      disable_auto_scaling: "Отключить автоматическое масштабирование изображений",
+      first_page_fill: "Включить заполнение первой страницы по умолчанию",
+      jump_to_next_chapter: "Перелистнуть главу",
+      paragraph_dir: "Направление чтения",
+      paragraph_display: "Отображение",
+      paragraph_hotkeys: "Горячие клавиши",
+      paragraph_operation: "Управление",
+      paragraph_other: "Другое",
+      paragraph_scrollbar: "Полоса прокрутки",
+      paragraph_translation: "Перевод",
+      preload_page_num: "Предзагрузить страниц",
+      scrollbar_auto_hidden: "Автоматически скрывать полосу прокрутки",
+      scrollbar_show: "Показывать полосу прокрутки",
+      scrollbar_show_img_status: "Показывать статус загрузки изображения",
+      show_clickable_area: "Показывать кликабельные области",
+      show_comments: "Показывать комментарии на последней странице",
+      swap_page_turn_key: "Поменять местами клавиши переключения страниц"
+    },
+    translation: {
+      cotrans_tip: "<p>Использует для перевода <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans API</a>, работающий исключительно за счёт своего создателя.</p>\\n<p>Запросы обрабатываются по одному в порядке синхронной очереди. Когда очередь превышает лимит новые запросы будут приводить к ошибке. Если такое случилось попробуйте позже.</p>\\n<p>Так что пожалуйста <b>учитывайте загруженность при выборе</b></p>\\n<p>Настоятельно рекомендовано использовать проект развёрнутый локально т.к. это не потребляет серверные ресурсы и вы не ограничены очередью.</p>",
+      options: {
+        detection_resolution: "Разрешение распознавания текста",
+        direction: "Ориетнация текста",
+        direction_auto: "Следование оригиналу",
+        direction_horizontal: "Только горизонтально",
+        direction_vertical: "Только вертикально",
+        forceRetry: "Принудительный повтор(Игнорировать кэш)",
+        localUrl: "Настройка URL сервера",
+        target_language: "Целевой язык",
+        text_detector: "Детектор текста",
+        translator: "Переводчик"
+      },
+      server: "Сервер переводчика",
+      server_selfhosted: "Свой",
+      translate_all_img: "Переводить все изображения"
+    }
+  },
+  site: {
+    add_feature: {
+      associate_nhentai: "Соотнести с nhentai",
+      auto_page_turn: "Авто переворот страницы",
+      block_totally: "Полность заблокировать комиксы",
+      hotkeys_page_turn: "Переворот страниц горячими клавишами",
+      open_link_new_page: "Открывать ссылки в новой вкладке",
+      remember_current_site: "Запомнить текущий сайт"
+    },
+    ehentai: {
+      fetch_img_page_source_failed: "Не удалось получить исходный код страницы с изображениями",
+      fetch_img_page_url_failed: "Не удалось получить адрес страницы изображений со страницы деталей",
+      fetch_img_url_failed: "Не удалось получить адрес изображения со страницы изображения",
+      html_changed_load_failed: "Структура страницы изменилась, комикс не может быть загружен",
+      html_changed_nhentai_failed: "Структура страницы изменилась, связанная с ней функция nhentai manga работает некорректно",
+      ip_banned: "IP аддрес забанен",
+      nhentai_error: "Ошибка сопоставления с nhentai",
+      nhentai_failed: "Ошибка сопостовления. Пожалуйста перезагрузите страницу после входа на {{nhentai}}"
+    },
+    nhentai: {
+      fetch_next_page_failed: "Не удалось получить следующую страницу",
+      tag_blacklist_fetch_failed: "Не удалось получить чёрный список тегов"
+    },
+    settings_tip: "Настройки",
+    show_settings_menu: "Показать меню настроек",
+    simple: {
+      auto_read_mode_message: "\\"Автоматический режим чтения\\" включен по умолчанию",
+      simple_read_mode: "Включить простой режим чтения"
+    }
+  },
+  touch_area: {
+    menu: "Меню",
+    next: "Следующая страница",
+    prev: "Предыдущая страница"
+  },
+  translation: {
+    status: {
+      "default": "Неизвестный статус",
+      detection: "Распознавание текста",
+      downscaling: "Уменьшение масштаба",
+      error: "Ошибка во время перевода",
+      "error-lang": "Целевой язык не поддерживается выбранным переводчиком",
+      "error-translating": "Переводчик не вернул какого ли бо текста",
+      "error-with-id": "Ошибка во время перевода",
+      finished: "Завершение",
+      inpainting: "Наложение",
+      "mask-generation": "Генерация маски",
+      ocr: "Сканирование текста",
+      pending: "Ожидание",
+      "pending-pos": "Ожидание",
+      rendering: "Отрисовка",
+      saved: "Сохранено",
+      textline_merge: "Компоновка линий текста",
+      translating: "Переводится",
+      upscaling: "Увеличение изображения"
+    },
+    tip: {
+      check_img_status_failed: "Не удалось проверить статус изображения",
+      download_img_failed: "Не удалось скачать изображение",
+      error: "Ошибка перевода",
+      get_translator_list_error: "Произошла ошибка во время получения списка доступный сервисов для перевода",
+      id_not_returned: "ID не вернули(",
+      img_downloading: "Скачивание изображений",
+      img_not_fully_loaded: "Изображение всё ещё загружается",
+      pending: "Ожидение, позиция в очереди {{pos}}",
+      translation_completed: "Перевод завершён",
+      upload_error: "Ошибка загрузки изображения",
+      upload_return_error: "Ошибка перевода на сервере",
+      wait_translation: "Ожидание перевода"
+    },
+    translator: {
+      baidu: "baidu",
+      deepl: "DeepL",
+      google: "Google",
+      "gpt3.5": "GPT-3.5",
+      none: "Убрать текст",
+      offline: "Оффлайн переводчик",
+      original: "Оригинал",
+      youdao: "youdao"
     }
   }
-  if (newLang !== lang()) setLang(newLang);
-};
-const setInitLang = async () => {
-  const saveLang = await GM.getValue('Languages');
-  if (isLanguages(saveLang)) {
-    if (saveLang !== lang()) setLang(saveLang);
-  } else {
-    autoSetLang();
-    await GM.setValue('Languages', lang());
-  }
-};
-const t$1 = solidJs.createRoot(() => {
-  solidJs.createEffect(solidJs.on(lang, () => GM.setValue('Languages', lang()), {
+};const [lang, setLang] = solidJs.createSignal('zh');
+const setInitLang = async () => setLang(await getInitLang());
+const t = solidJs.createRoot(() => {
+  solidJs.createEffect(solidJs.on(lang, () => setSaveLang(lang()), {
     defer: true
   }));
   const locales = solidJs.createMemo(() => {
     switch (lang()) {
       case 'en':
         return en;
+      case 'ru':
+        return ru;
       default:
         return zh;
     }
@@ -871,9 +1082,7 @@ const t$1 = solidJs.createRoot(() => {
     if (!text) log.warn('unknown i18n key', keys);
     return text;
   };
-});
-
-const getDom = id => {
+});const getDom = id => {
   let dom = document.getElementById(id);
   if (dom) {
     dom.innerHTML = '';
@@ -894,15 +1103,8 @@ const mountComponents = (id, fc) => {
   });
   web.render(fc, shadowDom);
   return dom;
-};
-
-var e=[],t=[];function n(n,r){if(n&&"undefined"!=typeof document){var a,s=!0===r.prepend?"prepend":"append",d=!0===r.singleTag,i="string"==typeof r.container?document.querySelector(r.container):document.getElementsByTagName("head")[0];if(d){var u=e.indexOf(i);-1===u&&(u=e.push(i)-1,t[u]={}),a=t[u]&&t[u][s]?t[u][s]:t[u][s]=c();}else a=c();65279===n.charCodeAt(0)&&(n=n.substring(1)),a.styleSheet?a.styleSheet.cssText+=n:a.appendChild(document.createTextNode(n));}function c(){var e=document.createElement("style");if(e.setAttribute("type","text/css"),r.attributes)for(var t=Object.keys(r.attributes),n=0;n<t.length;n++)e.setAttribute(t[n],r.attributes[t[n]]);var a="prepend"===s?"afterbegin":"beforeend";return i.insertAdjacentElement(a,e),e}}
-
-var css$3 = ".index_module_root__94b467e9{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__94b467e9{align-items:center;animation:index_module_bounceInRight__94b467e9 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__94b467e9>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__94b467e9[data-exit]{animation:index_module_bounceOutRight__94b467e9 .5s 1}.index_module_schedule__94b467e9{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__94b467e9[data-schedule] .index_module_schedule__94b467e9{transition:transform .1s}.index_module_item__94b467e9:not([data-schedule]) .index_module_schedule__94b467e9{animation:index_module_schedule__94b467e9 linear 1 forwards}:is(.index_module_item__94b467e9:hover,.index_module_item__94b467e9[data-schedule],.index_module_root__94b467e9[data-paused]) .index_module_schedule__94b467e9{animation-play-state:paused}.index_module_msg__94b467e9{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__94b467e9 h2,.index_module_msg__94b467e9 h3{margin:.3em 0}.index_module_msg__94b467e9 ul{margin:0;text-align:left}.index_module_msg__94b467e9 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__94b467e9 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__94b467e9{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__94b467e9{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__94b467e9{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__94b467e9","item":"index_module_item__94b467e9","bounceInRight":"index_module_bounceInRight__94b467e9","bounceOutRight":"index_module_bounceOutRight__94b467e9","schedule":"index_module_schedule__94b467e9","msg":"index_module_msg__94b467e9"};
-n(css$3,{});
-
-const [_state$1, _setState$1] = store$2.createStore({
+};var css$3 = ".index_module_root__94b467e9{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__94b467e9{align-items:center;animation:index_module_bounceInRight__94b467e9 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:30vw;overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__94b467e9>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__94b467e9[data-exit]{animation:index_module_bounceOutRight__94b467e9 .5s 1}.index_module_schedule__94b467e9{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__94b467e9[data-schedule] .index_module_schedule__94b467e9{transition:transform .1s}.index_module_item__94b467e9:not([data-schedule]) .index_module_schedule__94b467e9{animation:index_module_schedule__94b467e9 linear 1 forwards}:is(.index_module_item__94b467e9:hover,.index_module_item__94b467e9[data-schedule],.index_module_root__94b467e9[data-paused]) .index_module_schedule__94b467e9{animation-play-state:paused}.index_module_msg__94b467e9{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__94b467e9 h2,.index_module_msg__94b467e9 h3{margin:.3em 0}.index_module_msg__94b467e9 ul{margin:0;text-align:left}.index_module_msg__94b467e9 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__94b467e9 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__94b467e9{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__94b467e9{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__94b467e9{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2$3 = {"root":"index_module_root__94b467e9","item":"index_module_item__94b467e9","bounceInRight":"index_module_bounceInRight__94b467e9","bounceOutRight":"index_module_bounceOutRight__94b467e9","schedule":"index_module_schedule__94b467e9","msg":"index_module_msg__94b467e9"};const [_state$1, _setState$1] = store$2.createStore({
   list: [],
   map: {}
 });
@@ -916,37 +1118,27 @@ const creatId = () => {
     id += '_';
   }
   return id;
-};
-
-const _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
+};const _tmpl$$Q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
 const MdCheckCircle = ((props = {}) => (() => {
+  const _el$ = _tmpl$$Q();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());const _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const MdWarning = ((props = {}) => (() => {
   const _el$ = _tmpl$$P();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
-const MdWarning = ((props = {}) => (() => {
+})());const _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const MdError = ((props = {}) => (() => {
   const _el$ = _tmpl$$O();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
-const MdError = ((props = {}) => (() => {
+})());const _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
+const MdInfo = ((props = {}) => (() => {
   const _el$ = _tmpl$$N();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$M = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
-const MdInfo = ((props = {}) => (() => {
-  const _el$ = _tmpl$$M();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const toast$2 = (msg, options) => {
+})());const toast$2 = (msg, options) => {
   if (!msg) return;
   const id = options?.id ?? (typeof msg === 'string' ? msg : creatId());
   setState$1(state => {
@@ -978,7 +1170,7 @@ const toast$2 = (msg, options) => {
       fn = log.error;
       break;
   }
-  fn.call(undefined, 'Toast:', msg);
+  fn.call(null, 'Toast:', msg);
   if (options?.throw && typeof msg === 'string') throw new Error(msg);
 };
 toast$2.dismiss = id => {
@@ -1006,9 +1198,7 @@ toast$2.error = (msg, options) => {
     ...options,
     type: 'error'
   });
-};
-
-const _tmpl$$L = /*#__PURE__*/web.template(\`<div>\`),
+};const _tmpl$$M = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$b = /*#__PURE__*/web.template(\`<div><div>\`);
 const iconMap = {
   info: MdInfo,
@@ -1080,7 +1270,7 @@ const ToastItem = props => {
         return props.duration !== Infinity || props.schedule !== undefined;
       },
       get children() {
-        const _el$3 = _tmpl$$L();
+        const _el$3 = _tmpl$$M();
         _el$3.addEventListener("animationend", dismiss);
         const _ref$ = scheduleRef;
         typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
@@ -1121,9 +1311,7 @@ const ToastItem = props => {
     });
     return _el$;
   })();
-};
-
-const _tmpl$$K = /*#__PURE__*/web.template(\`<div>\`);
+};const _tmpl$$L = /*#__PURE__*/web.template(\`<div>\`);
 const Toaster = () => {
   const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
   solidJs.onMount(() => {
@@ -1134,7 +1322,7 @@ const Toaster = () => {
     solidJs.onCleanup(() => document.removeEventListener('visibilitychange', handleVisibilityChange));
   });
   return (() => {
-    const _el$ = _tmpl$$K();
+    const _el$ = _tmpl$$L();
     web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
         return store$1.list;
@@ -1153,11 +1341,7 @@ const Toaster = () => {
     });
     return _el$;
   })();
-};
-
-const ToastStyle = css$3;
-
-const _tmpl$$J = /*#__PURE__*/web.template(\`<style type="text/css">\`);
+};const ToastStyle = css$3;const _tmpl$$K = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let dom$1;
 const init = () => {
   if (dom$1) return;
@@ -1169,7 +1353,7 @@ const init = () => {
     document.body.appendChild(_dom);
   }
   dom$1 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
-    const _el$ = _tmpl$$J();
+    const _el$ = _tmpl$$K();
     web.insert(_el$, ToastStyle);
     return _el$;
   })()]);
@@ -1185,9 +1369,7 @@ const toast$1 = new Proxy(toast$2, {
     const fn = propKey in target ? target[propKey] : target;
     return fn(...args);
   }
-});
-
-// 将 xmlHttpRequest 包装为 Promise
+});// 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = details => new Promise((resolve, reject) => {
   GM_xmlhttpRequest({
     ...details,
@@ -1199,7 +1381,7 @@ const xmlHttpRequest = details => new Promise((resolve, reject) => {
 
 /** 发起请求 */
 const request$1 = async (url, details, errorNum = 0) => {
-  const errorText = details?.errorText ?? t$1('alert.comic_load_error');
+  const errorText = details?.errorText ?? t('alert.comic_load_error');
   try {
     const res = await xmlHttpRequest({
       method: 'GET',
@@ -1221,41 +1403,28 @@ const request$1 = async (url, details, errorNum = 0) => {
     await sleep(1000);
     return request$1(url, details, errorNum + 1);
   }
-};
-
-const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
+};const _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
 const MdAutoFixHigh = ((props = {}) => (() => {
+  const _el$ = _tmpl$$J();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9zm-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41 1.47-1.45zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42z">\`);
+const MdAutoFixOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$I();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9zm-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41 1.47-1.45zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42z">\`);
-const MdAutoFixOff = ((props = {}) => (() => {
+})());const _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1z">\`);
+const MdAutoFlashOn = ((props = {}) => (() => {
   const _el$ = _tmpl$$H();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1z">\`);
-const MdAutoFlashOn = ((props = {}) => (() => {
+})());const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28.45-.78zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13 3.15-6.29zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41z">\`);
+const MdAutoFlashOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$G();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28.45-.78zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13 3.15-6.29zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41z">\`);
-const MdAutoFlashOff = ((props = {}) => (() => {
-  const _el$ = _tmpl$$F();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-var css$2 = ".index_module_iconButtonItem__9645dd99{align-items:center;display:flex;position:relative}.index_module_iconButton__9645dd99{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__9645dd99:focus,.index_module_iconButton__9645dd99:hover{background-color:var(--hover_bg_color,#fff3)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99{background-color:var(--text,#fff);color:var(--text_bg,#121212)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:focus,.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:hover{background-color:var(--hover_bg_color_enable,#fffa)}.index_module_iconButton__9645dd99>svg{width:1em}.index_module_iconButtonPopper__9645dd99{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;position:absolute;top:50%;transform:translateY(-50%);user-select:none;white-space:nowrap}.index_module_iconButtonPopper__9645dd99[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=right]:before{border-right-color:var(--switch_bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]:before{border-left-color:var(--switch_bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99:before{background-color:initial;border:.4em solid #0000;content:\\"\\";position:absolute;transition:opacity .15s}.index_module_iconButtonItem__9645dd99:focus .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99:hover .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99[data-show=true] .index_module_iconButtonPopper__9645dd99{opacity:1}.index_module_hidden__9645dd99{display:none}";
-var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__9645dd99","iconButton":"index_module_iconButton__9645dd99","enabled":"index_module_enabled__9645dd99","iconButtonPopper":"index_module_iconButtonPopper__9645dd99","hidden":"index_module_hidden__9645dd99"};
-n(css$2,{});
-
-const _tmpl$$E = /*#__PURE__*/web.template(\`<div><button type="button" tabindex="-1">\`),
+})());var css$2 = ".index_module_iconButtonItem__9645dd99{align-items:center;display:flex;position:relative}.index_module_iconButton__9645dd99{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__9645dd99:focus,.index_module_iconButton__9645dd99:hover{background-color:var(--hover_bg_color,#fff3)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99{background-color:var(--text,#fff);color:var(--text_bg,#121212)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:focus,.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:hover{background-color:var(--hover_bg_color_enable,#fffa)}.index_module_iconButton__9645dd99>svg{width:1em}.index_module_iconButtonPopper__9645dd99{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;position:absolute;top:50%;transform:translateY(-50%);user-select:none;white-space:nowrap}.index_module_iconButtonPopper__9645dd99[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=right]:before{border-right-color:var(--switch_bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]:before{border-left-color:var(--switch_bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99:before{background-color:initial;border:.4em solid #0000;content:\\"\\";position:absolute;transition:opacity .15s}.index_module_iconButtonItem__9645dd99:focus .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99:hover .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99[data-show=true] .index_module_iconButtonPopper__9645dd99{opacity:1}.index_module_hidden__9645dd99{display:none}";
+var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__9645dd99","iconButton":"index_module_iconButton__9645dd99","enabled":"index_module_enabled__9645dd99","iconButtonPopper":"index_module_iconButtonPopper__9645dd99","hidden":"index_module_hidden__9645dd99"};const _tmpl$$F = /*#__PURE__*/web.template(\`<div><button type="button" tabindex="-1">\`),
   _tmpl$2$a = /*#__PURE__*/web.template(\`<div>\`);
 const IconButtonStyle = css$2;
 /** 图标按钮 */
@@ -1270,7 +1439,7 @@ const IconButton = _props => {
     props.onClick?.(e);
   };
   return (() => {
-    const _el$ = _tmpl$$E(),
+    const _el$ = _tmpl$$F(),
       _el$2 = _el$.firstChild;
     const _ref$ = buttonRef;
     typeof _ref$ === "function" ? web.use(_ref$, _el$2) : buttonRef = _el$2;
@@ -1318,9 +1487,7 @@ const IconButton = _props => {
     });
     return _el$;
   })();
-};
-
-const useSpeedDial = (options, setOptions) => {
+};const useSpeedDial = (options, setOptions) => {
   const DefaultButton = props => {
     return web.createComponent(IconButton, {
       get tip() {
@@ -1346,7 +1513,7 @@ const useSpeedDial = (options, setOptions) => {
         return () => web.createComponent(DefaultButton, {
           optionName: "autoShow",
           get showName() {
-            return t$1('other.auto_enter_read_mode');
+            return t('other.auto_enter_read_mode');
           },
           get children() {
             return web.memo(() => !!options.autoShow)() ? web.createComponent(MdAutoFlashOn, {}) : web.createComponent(MdAutoFlashOff, {});
@@ -1356,15 +1523,13 @@ const useSpeedDial = (options, setOptions) => {
         if (typeof options[optionName] !== 'boolean') return null;
         return () => web.createComponent(DefaultButton, {
           get optionName() {
-            return t$1(\`site.add_feature.\${optionName}\`) || optionName;
+            return t(\`site.add_feature.\${optionName}\`) || optionName;
           }
         });
     }
   }).filter(Boolean);
   return list;
-};
-
-/* eslint-disable no-param-reassign */
+};/* eslint-disable no-param-reassign */
 
 const promisifyRequest = request => new Promise((resolve, reject) => {
   // eslint-disable-next-line no-multi-assign
@@ -1418,23 +1583,17 @@ const useCache = (initSchema, version = 1) => {
     //     return promisifyRequest(store.transaction);
     //   }),
   };
-};
-
-const _tmpl$$D = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71zM5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1z">\`);
+};const _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71zM5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1z">\`);
 const MdFileDownload = ((props = {}) => (() => {
+  const _el$ = _tmpl$$E();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());const _tmpl$$D = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z">\`);
+const MdClose = ((props = {}) => (() => {
   const _el$ = _tmpl$$D();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$C = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z">\`);
-const MdClose = ((props = {}) => (() => {
-  const _el$ = _tmpl$$C();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const useStore = initState => {
+})());const useStore = initState => {
   const [_state, _setState] = store$2.createStore(initState);
   return {
     _state,
@@ -1442,7 +1601,7 @@ const useStore = initState => {
     setState: fn => _setState(store$2.produce(fn)),
     store: _state
   };
-};
+};/** 页面填充数据 */
 
 const imgState = {
   imgList: [],
@@ -1459,9 +1618,7 @@ const imgState = {
     横幅比例: 0,
     条漫比例: 0
   }
-};
-
-const ScrollbarState = {
+};const ScrollbarState = {
   /** 滚动条 */
   scrollbar: {
     /** 滚动条提示文本 */
@@ -1478,9 +1635,7 @@ const ScrollbarState = {
    * - 在首次触发结束页时开启，一段时间关闭。开启时禁止触发结束页的上下话切换功能。
    */
   scrollLock: false
-};
-
-const LanguageMap = {
+};const LanguageMap = {
   zh: 'CHS',
   en: 'ENG'
 };
@@ -1523,9 +1678,7 @@ const defaultOption = {
 };
 const OptionState = {
   option: JSON.parse(JSON.stringify(defaultOption))
-};
-
-const defaultHotkeys = {
+};const defaultHotkeys = {
   turn_page_up: ['w', 'ArrowUp', 'PageUp'],
   turn_page_down: [' ', 's', 'ArrowDown', 'PageDown'],
   turn_page_right: ['d', '.', 'ArrowRight'],
@@ -1579,9 +1732,7 @@ const OtherState = {
     /** 是否需要自动将未加载图片类型设为跨页图 */
     autoWide: true
   }
-};
-
-const {
+};const {
   store,
   setState,
   _state,
@@ -1596,9 +1747,7 @@ const {
   prevAreaRef: undefined,
   nextAreaRef: undefined,
   menuAreaRef: undefined
-});
-
-/* eslint-disable no-undefined,no-param-reassign,no-shadow */
+});/* eslint-disable no-undefined,no-param-reassign,no-shadow */
 
 /**
  * Throttle execution of a function. Especially useful for rate limiting
@@ -1766,9 +1915,7 @@ function debounce (delay, callback, options) {
   return throttle(delay, callback, {
     debounceMode: atBegin !== false
   });
-}
-
-const initPanzoom = state => {
+}const initPanzoom = state => {
   // 销毁之前可能创建过的实例
   state.panzoom?.dispose();
   const panzoom = createPanZoom(state.mangaFlowRef, {
@@ -1785,10 +1932,10 @@ const initPanzoom = state => {
     filterKey: () => true,
     // 不处理 touch 事件
     onTouch: () => false,
-    // 在 处于卷轴模式 或 不处于缩放状态且没有按下 alt 时，不进行缩放
-    beforeWheel: e => store.option.scrollMode || !e.altKey && panzoom.getTransform().scale === 1,
-    // 不处于卷轴模式或按下「alt 键」或「处于放大状态」时才允许拖动
-    beforeMouseDown: e => !(!store.option.scrollMode || e.altKey || panzoom.getTransform().scale !== 1)
+    // 在 处于卷轴模式 或 不处于缩放状态且没有按下 alt/ctrl 时，不进行缩放
+    beforeWheel: e => store.option.scrollMode || !(e.altKey || e.ctrlKey) && panzoom.getTransform().scale === 1,
+    // 不处于卷轴模式或按下「alt/ctrl」或「处于放大状态」时才允许拖动
+    beforeMouseDown: e => !(!store.option.scrollMode || e.ctrlKey || e.altKey || panzoom.getTransform().scale !== 1)
   });
   panzoom.on('zoom', throttle(200, () => {
     setState(draftState => {
@@ -1804,9 +1951,7 @@ const initPanzoom = state => {
     });
   }));
   state.panzoom = panzoom;
-};
-
-// 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
+};// 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
 // 2. 因为大部分用户都不会在意正确页序，所以应该尽量少加填充页
 /** 记录自动修改过页面填充的图片流 */
 const autoCloseFill = new Set();
@@ -1872,9 +2017,7 @@ const handleComicData = (imgList, fillEffect) => {
     imgCache = null;
   }
   return pageList;
-};
-
-/** 漫画流的容器 */
+};/** 漫画流的容器 */
 const mangaFlowEle = () => store.mangaFlowRef?.parentNode;
 
 /** 漫画流的总高度 */
@@ -1895,11 +2038,11 @@ const updateDrag = state => {
 
 /** 获取指定图片的提示文本 */
 const getImgTip = (state, i) => {
-  if (i === -1) return t$1('other.fill_page');
+  if (i === -1) return t('other.fill_page');
   const img = state.imgList[i];
 
   // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-  if (img.loadType !== 'loaded') return \`\${i + 1} (\${t$1(\`img_status.\${img.loadType}\`)})\`;
+  if (img.loadType !== 'loaded') return \`\${i + 1} (\${t(\`img_status.\${img.loadType}\`)})\`;
   if (img.translationType && img.translationType !== 'hide' && img.translationMessage) return \`\${i + 1}：\${img.translationMessage}\`;
   return \`\${i + 1}\`;
 };
@@ -2017,9 +2160,7 @@ solidJs.createRoot(() => {
   }, {
     defer: true
   }));
-});
-
-/** 阻止事件冒泡 */
+});/** 阻止事件冒泡 */
 const stopPropagation = e => {
   e.stopPropagation();
 };
@@ -2029,12 +2170,13 @@ const playAnimation = e => e?.getAnimations().forEach(animation => {
   animation.cancel();
   animation.play();
 });
-const clamp = (min, val, max) => Math.max(Math.min(max, val), min);
+const clamp = (min, val, max) => Math.max(Math.min(max, val), min);/** 触发 onOptionChange */
+const triggerOnOptionChange = () => setTimeout(() => store.onOptionChange?.(difference(store.option, defaultOption)));
 
-/** 通过重新解构赋值 option 以触发 onOptionChange */
+/** 在 option 后手动触发 onOptionChange */
 const setOption = fn => {
-  setState(state => fn(state.option));
-  store.onOptionChange?.(difference(store.option, defaultOption));
+  setState(state => fn(state.option, state));
+  triggerOnOptionChange();
 };
 
 /** 创建一个专门用于修改指定配置项的函数 */
@@ -2046,9 +2188,7 @@ const bindRef = (name, fn) => e => {
     Reflect.set(state, name, e);
     fn?.(state);
   });
-};
-
-const {
+};const {
   activeImgIndex,
   nowFillIndex,
   activePage,
@@ -2313,9 +2453,7 @@ solidJs.createRoot(() => {
   }, {
     defer: true
   }));
-});
-
-const setHotkeys = (...args) => {
+});const setHotkeys = (...args) => {
   _setState.apply(undefined, ['hotkeys', ...args]);
   store.onHotkeysChange?.(Object.fromEntries(Object.entries(store.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]))));
 };
@@ -2338,19 +2476,14 @@ const delHotkeys = code => {
     newKeys.splice(i, 1);
     setHotkeys(name, newKeys);
   });
-};
-
-var css$1 = ".index_module_img__e6e60019{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__e6e60019[data-show]{display:unset}.index_module_img__e6e60019[data-fill=left]{transform:translate(50%)}.index_module_img__e6e60019[data-fill=right]{transform:translate(-50%)}.index_module_img__e6e60019[data-load-type=error],.index_module_img__e6e60019[data-load-type=wait]{display:none}.index_module_mangaFlowBox__e6e60019{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__e6e60019::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__e6e60019[data-hiddenMouse=true]{cursor:none}.index_module_mangaFlow__e6e60019{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__e6e60019.index_module_disableZoom__e6e60019 .index_module_img__e6e60019{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0;visibility:hidden}.index_module_mangaFlow__e6e60019[dir=ltr]{flex-direction:row}.index_module_mangaFlow__e6e60019>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__e6e60019>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__e6e60019>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__e6e60019{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__e6e60019>button{animation:index_module_jello__e6e60019 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__e6e60019>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__e6e60019>button:focus-visible{outline:none}.index_module_endPage__e6e60019>.index_module_tip__e6e60019{margin:auto;position:absolute}.index_module_endPage__e6e60019[data-show]{opacity:1;pointer-events:all}.index_module_endPage__e6e60019[data-type=start]>.index_module_tip__e6e60019{transform:translateY(-10em)}.index_module_endPage__e6e60019[data-type=end]>.index_module_tip__e6e60019{transform:translateY(10em)}.index_module_comments__e6e60019{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__e6e60019>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__e6e60019:hover{opacity:1}@keyframes index_module_jello__e6e60019{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__e6e60019{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__e6e60019{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__e6e60019[data-show=true] .index_module_toolbarPanel__e6e60019{transform:none}.index_module_toolbarBg__e6e60019{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__e6e60019{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__e6e60019{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text}.index_module_SettingPanel__e6e60019 hr{margin:0}.index_module_SettingBlock__e6e60019{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div+:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div{margin-top:1em}.index_module_SettingBlock__e6e60019[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__e6e60019{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__e6e60019{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__e6e60019+.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_SettingsItemName__e6e60019{font-size:.9em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__e6e60019{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__e6e60019{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__e6e60019[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__e6e60019[data-checked=true] .index_module_SettingsItemSwitchRound__e6e60019{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__e6e60019{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__e6e60019{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__e6e60019{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__e6e60019{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019{overflow:hidden}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019>.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_hotkeys__e6e60019{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__e6e60019+.index_module_hotkeys__e6e60019{margin-top:.5em}.index_module_hotkeys__e6e60019:last-child{border-bottom:none}.index_module_hotkeysItem__e6e60019{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__e6e60019>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__e6e60019>svg:hover{opacity:.9}.index_module_hotkeysItem__e6e60019:hover{padding:.2em .5em}.index_module_hotkeysItem__e6e60019:hover>svg{display:unset}.index_module_hotkeysItem__e6e60019:focus,.index_module_hotkeysItem__e6e60019:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__e6e60019{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__e6e60019>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__e6e60019>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__e6e60019>div[title]>svg{width:1.6em}.index_module_hotkeys__e6e60019:hover div[title]{transform:scale(1)}.index_module_scrollbar__e6e60019{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__e6e60019>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__e6e60019{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__e6e60019{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__e6e60019[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__e6e60019[data-type=wait]{opacity:.5}.index_module_scrollbarPage__e6e60019[data-type=error]{background-color:#f005}.index_module_scrollbarPage__e6e60019[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__e6e60019[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__e6e60019[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__e6e60019[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__e6e60019[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__e6e60019{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__e6e60019:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__e6e60019[data-show=true],.index_module_scrollbarPoper__e6e60019[data-show=true],.index_module_scrollbar__e6e60019:hover .index_module_scrollbarDrag__e6e60019,.index_module_scrollbar__e6e60019:hover .index_module_scrollbarPoper__e6e60019{opacity:1}.index_module_touchAreaRoot__e6e60019{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__e6e60019[data-vert=true]{flex-direction:column!important}@media (width <= 600px){.index_module_touchAreaRoot__e6e60019{flex-direction:column!important}}.index_module_touchArea__e6e60019{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none}.index_module_touchArea__e6e60019>h6{text-orientation:upright;writing-mode:vertical-lr}.index_module_touchArea__e6e60019[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__e6e60019[data-show=true]{visibility:visible}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=next]{background-color:#f38181e6}.index_module_hidden__e6e60019{display:none}.index_module_invisible__e6e60019{visibility:hidden}.index_module_opacity1__e6e60019{opacity:1}.index_module_opacity0__e6e60019{opacity:0}.index_module_root__e6e60019{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__e6e60019 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__e6e60019{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
-var modules_c21c94f2$1 = {"img":"index_module_img__e6e60019","mangaFlowBox":"index_module_mangaFlowBox__e6e60019","mangaFlow":"index_module_mangaFlow__e6e60019","disableZoom":"index_module_disableZoom__e6e60019","scrollMode":"index_module_scrollMode__e6e60019","endPage":"index_module_endPage__e6e60019","jello":"index_module_jello__e6e60019","tip":"index_module_tip__e6e60019","comments":"index_module_comments__e6e60019","toolbar":"index_module_toolbar__e6e60019","toolbarPanel":"index_module_toolbarPanel__e6e60019","toolbarBg":"index_module_toolbarBg__e6e60019","SettingPanelPopper":"index_module_SettingPanelPopper__e6e60019","SettingPanel":"index_module_SettingPanel__e6e60019","SettingBlock":"index_module_SettingBlock__e6e60019","SettingBlockBody":"index_module_SettingBlockBody__e6e60019","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__e6e60019","SettingsItem":"index_module_SettingsItem__e6e60019","SettingsItemName":"index_module_SettingsItemName__e6e60019","SettingsItemSwitch":"index_module_SettingsItemSwitch__e6e60019","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__e6e60019","SettingsItemIconButton":"index_module_SettingsItemIconButton__e6e60019","SettingsItemSelect":"index_module_SettingsItemSelect__e6e60019","closeCover":"index_module_closeCover__e6e60019","SettingsShowItem":"index_module_SettingsShowItem__e6e60019","SettingsShowItemBody":"index_module_SettingsShowItemBody__e6e60019","hotkeys":"index_module_hotkeys__e6e60019","hotkeysItem":"index_module_hotkeysItem__e6e60019","hotkeysHeader":"index_module_hotkeysHeader__e6e60019","scrollbar":"index_module_scrollbar__e6e60019","scrollbarDrag":"index_module_scrollbarDrag__e6e60019","scrollbarPage":"index_module_scrollbarPage__e6e60019","scrollbarPoper":"index_module_scrollbarPoper__e6e60019","touchAreaRoot":"index_module_touchAreaRoot__e6e60019","touchArea":"index_module_touchArea__e6e60019","hidden":"index_module_hidden__e6e60019","invisible":"index_module_invisible__e6e60019","opacity1":"index_module_opacity1__e6e60019","opacity0":"index_module_opacity0__e6e60019","root":"index_module_root__e6e60019","beautifyScrollbar":"index_module_beautifyScrollbar__e6e60019"};
-n(css$1,{});
-
-const handleWheel = e => {
+};var css$1 = ".index_module_img__e6e60019{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__e6e60019[data-show]{display:unset}.index_module_img__e6e60019[data-fill=left]{transform:translate(50%)}.index_module_img__e6e60019[data-fill=right]{transform:translate(-50%)}.index_module_img__e6e60019[data-load-type=error],.index_module_img__e6e60019[data-load-type=wait]{display:none}.index_module_mangaFlowBox__e6e60019{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__e6e60019::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__e6e60019[data-hiddenMouse=true]{cursor:none}.index_module_mangaFlow__e6e60019{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__e6e60019.index_module_disableZoom__e6e60019 .index_module_img__e6e60019{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0;visibility:hidden}.index_module_mangaFlow__e6e60019[dir=ltr]{flex-direction:row}.index_module_mangaFlow__e6e60019>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__e6e60019>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__e6e60019>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__e6e60019{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__e6e60019>button{animation:index_module_jello__e6e60019 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__e6e60019>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__e6e60019>button:focus-visible{outline:none}.index_module_endPage__e6e60019>.index_module_tip__e6e60019{margin:auto;position:absolute}.index_module_endPage__e6e60019[data-show]{opacity:1;pointer-events:all}.index_module_endPage__e6e60019[data-type=start]>.index_module_tip__e6e60019{transform:translateY(-10em)}.index_module_endPage__e6e60019[data-type=end]>.index_module_tip__e6e60019{transform:translateY(10em)}.index_module_comments__e6e60019{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__e6e60019>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__e6e60019:hover{opacity:1}@keyframes index_module_jello__e6e60019{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__e6e60019{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__e6e60019{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__e6e60019[data-show=true] .index_module_toolbarPanel__e6e60019{transform:none}.index_module_toolbarBg__e6e60019{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__e6e60019{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__e6e60019{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text}.index_module_SettingPanel__e6e60019 hr{margin:0}.index_module_SettingBlock__e6e60019{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div+:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div{margin-top:1em}.index_module_SettingBlock__e6e60019[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__e6e60019{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__e6e60019{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__e6e60019+.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_SettingsItemName__e6e60019{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__e6e60019{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__e6e60019{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__e6e60019[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__e6e60019[data-checked=true] .index_module_SettingsItemSwitchRound__e6e60019{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__e6e60019{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__e6e60019{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__e6e60019{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__e6e60019{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019{overflow:hidden}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019>.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_hotkeys__e6e60019{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__e6e60019+.index_module_hotkeys__e6e60019{margin-top:.5em}.index_module_hotkeys__e6e60019:last-child{border-bottom:none}.index_module_hotkeysItem__e6e60019{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__e6e60019>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__e6e60019>svg:hover{opacity:.9}.index_module_hotkeysItem__e6e60019:hover{padding:.2em .5em}.index_module_hotkeysItem__e6e60019:hover>svg{display:unset}.index_module_hotkeysItem__e6e60019:focus,.index_module_hotkeysItem__e6e60019:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__e6e60019{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__e6e60019>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__e6e60019>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__e6e60019>div[title]>svg{width:1.6em}.index_module_hotkeys__e6e60019:hover div[title]{transform:scale(1)}.index_module_scrollbar__e6e60019{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__e6e60019>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__e6e60019{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__e6e60019{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__e6e60019[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__e6e60019[data-type=wait]{opacity:.5}.index_module_scrollbarPage__e6e60019[data-type=error]{background-color:#f005}.index_module_scrollbarPage__e6e60019[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__e6e60019[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__e6e60019[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__e6e60019[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__e6e60019[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__e6e60019{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__e6e60019:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__e6e60019[data-show=true],.index_module_scrollbarPoper__e6e60019[data-show=true],.index_module_scrollbar__e6e60019:hover .index_module_scrollbarDrag__e6e60019,.index_module_scrollbar__e6e60019:hover .index_module_scrollbarPoper__e6e60019{opacity:1}.index_module_touchAreaRoot__e6e60019{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__e6e60019[data-vert=true]{flex-direction:column!important}@media (width <= 600px){.index_module_touchAreaRoot__e6e60019{flex-direction:column!important}}.index_module_touchArea__e6e60019{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none}.index_module_touchArea__e6e60019>h6{text-orientation:upright;writing-mode:vertical-lr}.index_module_touchArea__e6e60019[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__e6e60019[data-show=true]{visibility:visible}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=next]{background-color:#f38181e6}.index_module_hidden__e6e60019{display:none}.index_module_invisible__e6e60019{visibility:hidden}.index_module_opacity1__e6e60019{opacity:1}.index_module_opacity0__e6e60019{opacity:0}.index_module_root__e6e60019{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__e6e60019 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__e6e60019{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var modules_c21c94f2$1 = {"img":"index_module_img__e6e60019","mangaFlowBox":"index_module_mangaFlowBox__e6e60019","mangaFlow":"index_module_mangaFlow__e6e60019","disableZoom":"index_module_disableZoom__e6e60019","scrollMode":"index_module_scrollMode__e6e60019","endPage":"index_module_endPage__e6e60019","jello":"index_module_jello__e6e60019","tip":"index_module_tip__e6e60019","comments":"index_module_comments__e6e60019","toolbar":"index_module_toolbar__e6e60019","toolbarPanel":"index_module_toolbarPanel__e6e60019","toolbarBg":"index_module_toolbarBg__e6e60019","SettingPanelPopper":"index_module_SettingPanelPopper__e6e60019","SettingPanel":"index_module_SettingPanel__e6e60019","SettingBlock":"index_module_SettingBlock__e6e60019","SettingBlockBody":"index_module_SettingBlockBody__e6e60019","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__e6e60019","SettingsItem":"index_module_SettingsItem__e6e60019","SettingsItemName":"index_module_SettingsItemName__e6e60019","SettingsItemSwitch":"index_module_SettingsItemSwitch__e6e60019","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__e6e60019","SettingsItemIconButton":"index_module_SettingsItemIconButton__e6e60019","SettingsItemSelect":"index_module_SettingsItemSelect__e6e60019","closeCover":"index_module_closeCover__e6e60019","SettingsShowItem":"index_module_SettingsShowItem__e6e60019","SettingsShowItemBody":"index_module_SettingsShowItemBody__e6e60019","hotkeys":"index_module_hotkeys__e6e60019","hotkeysItem":"index_module_hotkeysItem__e6e60019","hotkeysHeader":"index_module_hotkeysHeader__e6e60019","scrollbar":"index_module_scrollbar__e6e60019","scrollbarDrag":"index_module_scrollbarDrag__e6e60019","scrollbarPage":"index_module_scrollbarPage__e6e60019","scrollbarPoper":"index_module_scrollbarPoper__e6e60019","touchAreaRoot":"index_module_touchAreaRoot__e6e60019","touchArea":"index_module_touchArea__e6e60019","hidden":"index_module_hidden__e6e60019","invisible":"index_module_invisible__e6e60019","opacity1":"index_module_opacity1__e6e60019","opacity0":"index_module_opacity0__e6e60019","root":"index_module_root__e6e60019","beautifyScrollbar":"index_module_beautifyScrollbar__e6e60019"};const handleWheel = e => {
   e.stopPropagation();
-  if (e.ctrlKey || e.altKey && !store.option.scrollMode || !store.endPageType && store.scrollLock) return;
+  if (e.ctrlKey && !store.option.scrollMode || e.altKey && !store.option.scrollMode || !store.endPageType && store.scrollLock) return e.preventDefault();
   const isWheelDown = e.deltaY > 0;
 
   // 实现卷轴模式下的缩放
-  if (!store.endPageType && e.altKey) {
+  if (!store.endPageType && (e.altKey || e.ctrlKey)) {
     e.preventDefault();
     zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
     // 在调整图片缩放后使当前滚动进度保持不变
@@ -2445,9 +2578,7 @@ const handleMouseDown = e => {
   e.preventDefault();
   switchFillEffect();
 };
-const focus = () => (store.mangaFlowRef ?? store.rootRef)?.parentElement?.focus();
-
-const _tmpl$$B = /*#__PURE__*/web.template(\`<img>\`);
+const focus = () => (store.mangaFlowRef ?? store.rootRef)?.parentElement?.focus();const _tmpl$$C = /*#__PURE__*/web.template(\`<img>\`);
 /** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
 const checkImgTypeCount = (state, fn, maxNum = 3) => {
   let num = 0;
@@ -2515,7 +2646,7 @@ const handleImgError = (i, e) => {
       setTimeout(() => e.setAttribute('src', src), 500);
     }
     img.loadType = 'error';
-    log.error(t$1('alert.img_load_failed'), e);
+    log.error(t('alert.img_load_failed'), e);
     state.onLoading?.(state.imgList, img);
   });
 };
@@ -2541,7 +2672,7 @@ const ComicImg = props => {
     return props.img.src;
   });
   return (() => {
-    const _el$ = _tmpl$$B();
+    const _el$ = _tmpl$$C();
     _el$.addEventListener("error", e => handleImgError(props.index, e.currentTarget));
     _el$.addEventListener("load", e => handleImgLoaded(props.index, e.currentTarget));
     web.effect(_p$ => {
@@ -2574,30 +2705,22 @@ const ComicImg = props => {
     });
     return _el$;
   })();
-};
-
-const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m21.19 21.19-.78-.78L18 18l-4.59-4.59-9.82-9.82-.78-.78a.996.996 0 0 0-1.41 0C1 3.2 1 3.83 1.39 4.22L3 5.83V19c0 1.1.9 2 2 2h13.17l1.61 1.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.03 0-1.42zM6.02 18c-.42 0-.65-.48-.39-.81l2.49-3.2a.5.5 0 0 1 .78-.01l2.1 2.53L12.17 15l3 3H6.02zm14.98.17L5.83 3H19c1.1 0 2 .9 2 2v13.17z">\`);
+};const _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m21.19 21.19-.78-.78L18 18l-4.59-4.59-9.82-9.82-.78-.78a.996.996 0 0 0-1.41 0C1 3.2 1 3.83 1.39 4.22L3 5.83V19c0 1.1.9 2 2 2h13.17l1.61 1.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.03 0-1.42zM6.02 18c-.42 0-.65-.48-.39-.81l2.49-3.2a.5.5 0 0 1 .78-.01l2.1 2.53L12.17 15l3 3H6.02zm14.98.17L5.83 3H19c1.1 0 2 .9 2 2v13.17z">\`);
 const MdImageNotSupported = ((props = {}) => (() => {
+  const _el$ = _tmpl$$B();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
+const MdCloudDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$A();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
-const MdCloudDownload = ((props = {}) => (() => {
+})());const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.9 13.98l2.1 2.53 3.1-3.99c.2-.26.6-.26.8.01l3.51 4.68a.5.5 0 0 1-.4.8H6.02c-.42 0-.65-.48-.39-.81L8.12 14c.19-.26.57-.27.78-.02z">\`);
+const MdPhoto = ((props = {}) => (() => {
   const _el$ = _tmpl$$z();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.9 13.98l2.1 2.53 3.1-3.99c.2-.26.6-.26.8.01l3.51 4.68a.5.5 0 0 1-.4.8H6.02c-.42 0-.65-.48-.39-.81L8.12 14c.19-.26.57-.27.78-.02z">\`);
-const MdPhoto = ((props = {}) => (() => {
-  const _el$ = _tmpl$$y();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const loadTypeSvg = {
+})());const loadTypeSvg = {
   error: MdImageNotSupported,
   loading: MdCloudDownload,
   wait: MdCloudDownload
@@ -2628,9 +2751,7 @@ const LoadTypeTip = () => web.createComponent(solidJs.For, {
     return activePage();
   },
   children: ShowSvg
-});
-
-const _tmpl$$x = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6></h6></div><div data-area="menu" role="button" tabindex="-1"><h6></h6></div><div data-area="next" role="button" tabindex="-1"><h6>\`);
+});const _tmpl$$y = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6></h6></div><div data-area="menu" role="button" tabindex="-1"><h6></h6></div><div data-area="next" role="button" tabindex="-1"><h6>\`);
 const handleClick = {
   prev: () => {
     if (store.option.clickPageTurn.enabled) turnPage('prev');
@@ -2666,7 +2787,7 @@ const handlePageClick = ({
 };
 const TouchArea = () => {
   return (() => {
-    const _el$ = _tmpl$$x(),
+    const _el$ = _tmpl$$y(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild,
       _el$4 = _el$2.nextSibling,
@@ -2675,13 +2796,13 @@ const TouchArea = () => {
       _el$7 = _el$6.firstChild;
     const _ref$ = bindRef('prevAreaRef');
     typeof _ref$ === "function" && web.use(_ref$, _el$2);
-    web.insert(_el$3, () => t$1('touch_area.prev'));
+    web.insert(_el$3, () => t('touch_area.prev'));
     const _ref$2 = bindRef('menuAreaRef');
     typeof _ref$2 === "function" && web.use(_ref$2, _el$4);
-    web.insert(_el$5, () => t$1('touch_area.menu'));
+    web.insert(_el$5, () => t('touch_area.menu'));
     const _ref$3 = bindRef('nextAreaRef');
     typeof _ref$3 === "function" && web.use(_ref$3, _el$6);
-    web.insert(_el$7, () => t$1('touch_area.next'));
+    web.insert(_el$7, () => t('touch_area.next'));
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.touchAreaRoot,
         _v$2 = store.option.dir === 'rtl' === (store.option.clickPageTurn.enabled && store.option.clickPageTurn.reverse) ? undefined : 'row-reverse',
@@ -2712,9 +2833,7 @@ const TouchArea = () => {
     });
     return _el$;
   })();
-};
-
-let clickTimeout = null;
+};let clickTimeout = null;
 const useDoubleClick = (click, doubleClick, timeout = 200) => {
   return event => {
     // 如果点击触发时还有上次计时器的记录，说明这次是双击
@@ -2731,9 +2850,7 @@ const useDoubleClick = (click, doubleClick, timeout = 200) => {
       clickTimeout = null;
     }, timeout);
   };
-};
-
-/** 在鼠标静止一段时间后自动隐藏 */
+};/** 在鼠标静止一段时间后自动隐藏 */
 const useHiddenMouse = () => {
   const [hiddenMouse, setHiddenMouse] = solidJs.createSignal(true);
   const hidden = debounce(1000, () => setHiddenMouse(true));
@@ -2745,9 +2862,7 @@ const useHiddenMouse = () => {
       hidden();
     }
   };
-};
-
-const _tmpl$$w = /*#__PURE__*/web.template(\`<div tabindex="-1"><div>\`),
+};const _tmpl$$x = /*#__PURE__*/web.template(\`<div tabindex="-1"><div>\`),
   _tmpl$2$9 = /*#__PURE__*/web.template(\`<h1>NULL\`);
 
 /**
@@ -2774,7 +2889,7 @@ const ComicImgFlow = () => {
     onMouseMove
   } = useHiddenMouse();
   return (() => {
-    const _el$ = _tmpl$$w(),
+    const _el$ = _tmpl$$x(),
       _el$2 = _el$.firstChild;
     web.use(e => e.addEventListener('scroll', handleMangaFlowScroll, {
       passive: true
@@ -2828,75 +2943,55 @@ const ComicImgFlow = () => {
     });
     return _el$;
   })();
-};
-
-const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
+};const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
 const MdLooksOne = ((props = {}) => (() => {
+  const _el$ = _tmpl$$w();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2v2z">\`);
+const MdLooksTwo = ((props = {}) => (() => {
   const _el$ = _tmpl$$v();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2v2z">\`);
-const MdLooksTwo = ((props = {}) => (() => {
+})());const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1z">\`);
+const MdViewDay = ((props = {}) => (() => {
   const _el$ = _tmpl$$u();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1z">\`);
-const MdViewDay = ((props = {}) => (() => {
+})());const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1zm17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+const MdQueue = ((props = {}) => (() => {
   const _el$ = _tmpl$$t();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1zm17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
-const MdQueue = ((props = {}) => (() => {
+})());const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">\`);
+const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$$s();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$r = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">\`);
-const MdSettings = ((props = {}) => (() => {
+})());const _tmpl$$r = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">\`);
+const MdSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$r();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">\`);
-const MdSearch = ((props = {}) => (() => {
+})());const _tmpl$$q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7 1.62-4.33L19.12 17h-3.24z">\`);
+const MdTranslate = ((props = {}) => (() => {
   const _el$ = _tmpl$$q();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7 1.62-4.33L19.12 17h-3.24z">\`);
-const MdTranslate = ((props = {}) => (() => {
+})());const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10zm11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7z">\`);
+const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
   const _el$ = _tmpl$$p();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10zm11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7z">\`);
-const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
+})());const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10zm-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1H8z">\`);
+const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
   const _el$ = _tmpl$$o();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$n = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10zm-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1H8z">\`);
-const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
-  const _el$ = _tmpl$$n();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$m = /*#__PURE__*/web.template(\`<div><div> <!> \`);
+})());const _tmpl$$n = /*#__PURE__*/web.template(\`<div><div> <!> \`);
 /** 设置菜单项 */
 const SettingsItem = props => (() => {
-  const _el$ = _tmpl$$m(),
+  const _el$ = _tmpl$$n(),
     _el$2 = _el$.firstChild,
     _el$3 = _el$2.firstChild,
     _el$5 = _el$3.nextSibling;
@@ -2923,9 +3018,7 @@ const SettingsItem = props => (() => {
     _v$4: undefined
   });
   return _el$;
-})();
-
-const _tmpl$$l = /*#__PURE__*/web.template(\`<button type="button"><div>\`);
+})();const _tmpl$$m = /*#__PURE__*/web.template(\`<button type="button"><div>\`);
 /** 开关式菜单项 */
 const SettingsItemSwitch = props => {
   const handleClick = () => props.onChange(!props.value);
@@ -2940,7 +3033,7 @@ const SettingsItemSwitch = props => {
       return props.classList;
     },
     get children() {
-      const _el$ = _tmpl$$l(),
+      const _el$ = _tmpl$$m(),
         _el$2 = _el$.firstChild;
       _el$.addEventListener("click", handleClick);
       web.effect(_p$ => {
@@ -2959,23 +3052,17 @@ const SettingsItemSwitch = props => {
       return _el$;
     }
   });
-};
-
-const _tmpl$$k = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z">\`);
+};const _tmpl$$l = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z">\`);
 const MdRefresh = ((props = {}) => (() => {
+  const _el$ = _tmpl$$l();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());const _tmpl$$k = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+const MdAdd = ((props = {}) => (() => {
   const _el$ = _tmpl$$k();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$j = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
-const MdAdd = ((props = {}) => (() => {
-  const _el$ = _tmpl$$j();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$i = /*#__PURE__*/web.template(\`<div tabindex="0">\`),
+})());const _tmpl$$j = /*#__PURE__*/web.template(\`<div tabindex="0">\`),
   _tmpl$2$8 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
 const KeyItem = props => {
   const code = () => store.hotkeys[props.operateName][props.i];
@@ -2997,7 +3084,7 @@ const KeyItem = props => {
     if (!Reflect.has(hotkeysMap(), newCode)) setHotkeys(props.operateName, props.i, newCode);
   };
   return (() => {
-    const _el$ = _tmpl$$i();
+    const _el$ = _tmpl$$j();
     _el$.addEventListener("blur", () => code() || del());
     web.use(ref => code() || setTimeout(() => ref.focus()), _el$);
     _el$.addEventListener("keydown", handleKeyDown);
@@ -3020,7 +3107,7 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
       _el$5 = _el$4.nextSibling,
       _el$6 = _el$5.nextSibling,
       _el$7 = _el$6.nextSibling;
-    web.insert(_el$4, () => t$1(\`hotkeys.\${name}\`) || name);
+    web.insert(_el$4, () => t(\`hotkeys.\${name}\`) || name);
     _el$5.style.setProperty("flex-grow", "1");
     _el$6.addEventListener("click", () => setHotkeys(name, store.hotkeys[name].length, ''));
     web.insert(_el$6, web.createComponent(MdAdd, {}));
@@ -3040,8 +3127,8 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.hotkeys,
         _v$2 = modules_c21c94f2$1.hotkeysHeader,
-        _v$3 = t$1('setting.hotkeys.add'),
-        _v$4 = t$1('setting.hotkeys.restore');
+        _v$3 = t('setting.hotkeys.add'),
+        _v$4 = t('setting.hotkeys.restore');
       _v$ !== _p$._v$ && web.className(_el$2, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.className(_el$3, _p$._v$2 = _v$2);
       _v$3 !== _p$._v$3 && web.setAttribute(_el$6, "title", _p$._v$3 = _v$3);
@@ -3055,9 +3142,7 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
     });
     return _el$2;
   })()
-});
-
-const _tmpl$$h = /*#__PURE__*/web.template(\`<select>\`),
+});const _tmpl$$i = /*#__PURE__*/web.template(\`<select>\`),
   _tmpl$2$7 = /*#__PURE__*/web.template(\`<option>\`);
 /** 选择器式菜单项 */
 const SettingsItemSelect = props => {
@@ -3076,7 +3161,7 @@ const SettingsItemSelect = props => {
       return props.classList;
     },
     get children() {
-      const _el$ = _tmpl$$h();
+      const _el$ = _tmpl$$i();
       _el$.addEventListener("change", e => props.onChange(e.target.value));
       const _ref$ = ref;
       typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
@@ -3095,9 +3180,7 @@ const SettingsItemSelect = props => {
       return _el$;
     }
   });
-};
-
-const setMessage = (i, msg) => {
+};const setMessage = (i, msg) => {
   setState(state => {
     state.imgList[i].translationMessage = msg;
   });
@@ -3105,7 +3188,7 @@ const setMessage = (i, msg) => {
 };
 const isBlobUrlRe = /^blob:/;
 const request = (url, details) => new Promise((resolve, reject) => {
-  if (typeof GM_xmlhttpRequest === 'undefined') throw new Error(t$1('pwa.alert.userscript_not_installed'));
+  if (typeof GM_xmlhttpRequest === 'undefined') throw new Error(t('pwa.alert.userscript_not_installed'));
   GM_xmlhttpRequest({
     method: 'GET',
     url,
@@ -3146,9 +3229,7 @@ const createFormData = imgBlob => {
 };
 
 /** 将站点列表转为选择器中的选项 */
-const createOptions = list => list.map(name => [name, t$1(\`translation.translator.\${name}\`) || name]);
-
-const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
+const createOptions = list => list.map(name => [name, t(\`translation.translator.\${name}\`) || name]);const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
 
 /** 获取部署服务的可用翻译 */
 const getValidTranslators = async () => {
@@ -3159,22 +3240,22 @@ const getValidTranslators = async () => {
     const list = JSON.parse(translatorsText.replaceAll(\`'\`, \`"\`));
     return createOptions(list);
   } catch (e) {
-    log.error(t$1('translation.tip.get_translator_list_error'), e);
+    log.error(t('translation.tip.get_translator_list_error'), e);
     return undefined;
   }
 };
 
 /** 使用自部署服务器翻译指定图片 */
 const selfhostedTranslation = async i => {
-  if (!(await getValidTranslators())) throw new Error(t$1('alert.server_connect_failed'));
+  if (!(await getValidTranslators())) throw new Error(t('alert.server_connect_failed'));
   const img = store.imgList[i];
-  setMessage(i, t$1('translation.tip.img_downloading'));
+  setMessage(i, t('translation.tip.img_downloading'));
   let imgBlob;
   try {
     imgBlob = await download(img.src);
   } catch (error) {
     log.error(error);
-    throw new Error(t$1('translation.tip.download_img_failed'));
+    throw new Error(t('translation.tip.download_img_failed'));
   }
   let task_id;
   // 上传图片取得任务 id
@@ -3187,7 +3268,7 @@ const selfhostedTranslation = async i => {
     task_id = resData.task_id;
   } catch (error) {
     log.error(error);
-    throw new Error(t$1('translation.tip.upload_error'));
+    throw new Error(t('translation.tip.upload_error'));
   }
   let errorNum = 0;
   let taskState;
@@ -3197,17 +3278,15 @@ const selfhostedTranslation = async i => {
       await sleep(200);
       const res = await request(\`\${url()}/task-state?taskid=\${task_id}\`);
       taskState = JSON.parse(res.responseText);
-      setMessage(i, \`\${t$1(\`translation.status.\${taskState.state}\`) || taskState.state}\`);
+      setMessage(i, \`\${t(\`translation.status.\${taskState.state}\`) || taskState.state}\`);
     } catch (error) {
       log.error(error);
-      if (errorNum > 5) throw new Error(t$1('translation.tip.check_img_status_failed'));
+      if (errorNum > 5) throw new Error(t('translation.tip.check_img_status_failed'));
       errorNum += 1;
     }
   }
   return \`\${url()}/result/\${task_id}\`;
-};
-
-/** 等待翻译完成 */
+};/** 等待翻译完成 */
 const waitTranslation = (id, i) => {
   const ws = new WebSocket(\`wss://api.cotrans.touhou.ai/task/\${id}/event/v1\`);
   return new Promise((resolve, reject) => {
@@ -3218,18 +3297,18 @@ const waitTranslation = (id, i) => {
           resolve(msg.result.translation_mask);
           break;
         case 'pending':
-          setMessage(i, t$1('translation.tip.pending', {
+          setMessage(i, t('translation.tip.pending', {
             pos: msg.pos
           }));
           break;
         case 'status':
-          setMessage(i, t$1(\`translation.status.\${msg.status}\`) || msg.status);
+          setMessage(i, t(\`translation.status.\${msg.status}\`) || msg.status);
           break;
         case 'error':
-          reject(new Error(\`\${t$1('translation.tip.error')}：id \${msg.error_id}\`));
+          reject(new Error(\`\${t('translation.tip.error')}：id \${msg.error_id}\`));
           break;
         case 'not_found':
-          reject(new Error(\`\${t$1('translation.tip.error')}：Not Found\`));
+          reject(new Error(\`\${t('translation.tip.error')}：Not Found\`));
           break;
       }
     };
@@ -3270,13 +3349,13 @@ const mergeImage = async (rawImage, maskUri) => {
 /** 使用 cotrans 翻译指定图片 */
 const cotransTranslation = async i => {
   const img = store.imgList[i];
-  setMessage(i, t$1('translation.tip.img_downloading'));
+  setMessage(i, t('translation.tip.img_downloading'));
   let imgBlob;
   try {
     imgBlob = await download(img.src);
   } catch (error) {
     log.error(error);
-    throw new Error(t$1('translation.tip.download_img_failed'));
+    throw new Error(t('translation.tip.download_img_failed'));
   }
   let id;
   let translation_mask;
@@ -3290,25 +3369,23 @@ const cotransTranslation = async i => {
       }
     });
     const resData = JSON.parse(res.responseText);
-    if ('error_id' in resData) throw new Error(\`\${t$1('translation.tip.upload_return_error')}：\${resData.error_id}\`);
-    if (!resData.id) throw new Error(t$1('translation.tip.id_not_returned'));
+    if ('error_id' in resData) throw new Error(\`\${t('translation.tip.upload_return_error')}：\${resData.error_id}\`);
+    if (!resData.id) throw new Error(t('translation.tip.id_not_returned'));
     id = resData.id;
     translation_mask = resData.result?.translation_mask;
   } catch (error) {
     log.error(error);
-    throw new Error(t$1('translation.tip.upload_error'));
+    throw new Error(t('translation.tip.upload_error'));
   }
   if (!translation_mask) translation_mask = await waitTranslation(id, i);
   return mergeImage(imgBlob, translation_mask);
 };
-const cotransTranslators = createOptions(['google', 'youdao', 'baidu', 'deepl', 'gpt3.5', 'offline', 'none']);
-
-/** 翻译指定图片 */
+const cotransTranslators = ['google', 'youdao', 'baidu', 'deepl', 'gpt3.5', 'offline', 'none'];/** 翻译指定图片 */
 const translationImage = async i => {
   try {
     if (typeof GM_xmlhttpRequest === 'undefined') {
-      toast?.error(t$1('pwa.alert.userscript_not_installed'));
-      throw new Error(t$1('pwa.alert.userscript_not_installed'));
+      toast?.error(t('pwa.alert.userscript_not_installed'));
+      throw new Error(t('pwa.alert.userscript_not_installed'));
     }
     const img = store.imgList[i];
     if (!img?.src) return;
@@ -3316,11 +3393,11 @@ const translationImage = async i => {
     if (img.translationUrl) return setState(state => {
       state.imgList[i].translationType = 'show';
     });
-    if (img.loadType !== 'loaded') return setMessage(i, t$1('translation.tip.img_not_fully_loaded'));
+    if (img.loadType !== 'loaded') return setMessage(i, t('translation.tip.img_not_fully_loaded'));
     const translationUrl = await (store.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(i);
     setState(state => {
       state.imgList[i].translationUrl = translationUrl;
-      state.imgList[i].translationMessage = t$1('translation.tip.translation_completed');
+      state.imgList[i].translationMessage = t('translation.tip.translation_completed');
       state.imgList[i].translationType = 'show';
     });
   } catch (error) {
@@ -3358,7 +3435,7 @@ const setImgTranslationEnbale = (list, enbale) => {
         if (state.option.translation.forceRetry) {
           img.translationType = 'wait';
           img.translationUrl = undefined;
-          setMessage(i, t$1('translation.tip.wait_translation'));
+          setMessage(i, t('translation.tip.wait_translation'));
         } else {
           switch (img.translationType) {
             case 'hide':
@@ -3370,7 +3447,7 @@ const setImgTranslationEnbale = (list, enbale) => {
             case undefined:
               {
                 img.translationType = 'wait';
-                setMessage(i, t$1('translation.tip.wait_translation'));
+                setMessage(i, t('translation.tip.wait_translation'));
                 break;
               }
           }
@@ -3395,33 +3472,35 @@ const setImgTranslationEnbale = (list, enbale) => {
   return translationAll();
 };
 const translatorOptions = solidJs.createRoot(() => {
-  const [options, setOptions] = solidJs.createSignal([]);
-  const updateOptions = async () => {
-    setOptions(store.option.translation.server === 'selfhosted' ? (await getValidTranslators()) ?? [] : cotransTranslators);
-  };
-  updateOptions();
+  const [selfhostedOptions, setSelfOptions] = solidJs.createSignal([]);
 
   // 在切换翻译服务器的同时切换可用翻译的选项列表
   solidJs.createEffect(solidJs.on([() => store.option.translation.server, () => store.option.translation.localUrl], async () => {
-    if (store.option.translation.server === 'disable') return;
-    await updateOptions();
+    setSelfOptions((await getValidTranslators()) ?? []);
+
     // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
-    if (!options().some(([val]) => val === store.option.translation.options.translator)) {
-      setState(state => {
-        state.option.translation.options.translator = 'google';
+    if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
+      setOption(draftOption => {
+        draftOption.translation.options.translator = 'google';
       });
     }
-  }, {
-    defer: true
+  }));
+  const options = solidJs.createMemo(solidJs.on([selfhostedOptions, lang], () => {
+    switch (store.option.translation.server) {
+      case 'selfhosted':
+        return selfhostedOptions();
+      case 'cotrans':
+        return createOptions(cotransTranslators);
+      case 'disable':
+        return [];
+    }
   }));
   return options;
-});
-
-const _tmpl$$g = /*#__PURE__*/web.template(\`<div><div>\`);
+});const _tmpl$$h = /*#__PURE__*/web.template(\`<div><div>\`);
 
 /** 带有动画过渡的切换显示设置项 */
 const SettingsShowItem = props => (() => {
-  const _el$ = _tmpl$$g(),
+  const _el$ = _tmpl$$h(),
     _el$2 = _el$.firstChild;
   web.insert(_el$2, () => props.children);
   web.effect(_p$ => {
@@ -3438,19 +3517,17 @@ const SettingsShowItem = props => (() => {
     _v$3: undefined
   });
   return _el$;
-})();
-
-const _tmpl$$f = /*#__PURE__*/web.template(\`<blockquote>\`),
+})();const _tmpl$$g = /*#__PURE__*/web.template(\`<blockquote>\`),
   _tmpl$2$6 = /*#__PURE__*/web.template(\`<input type="url">\`);
 const SettingTranslation = () => {
   /** 是否正在翻译全部图片 */
   const isTranslationAll = solidJs.createMemo(() => store.imgList.every(img => img.translationType === 'show' || img.translationType === 'wait'));
   return [web.createComponent(SettingsItemSelect, {
     get name() {
-      return t$1('setting.translation.server');
+      return t('setting.translation.server');
     },
     get options() {
-      return [['disable', t$1('other.disable')], ['selfhosted', t$1('setting.translation.server_selfhosted')], ['cotrans']];
+      return [['disable', t('other.disable')], ['selfhosted', t('setting.translation.server_selfhosted')], ['cotrans']];
     },
     get value() {
       return store.option.translation.server;
@@ -3463,8 +3540,8 @@ const SettingTranslation = () => {
       return store.option.translation.server === 'cotrans';
     },
     get children() {
-      const _el$ = _tmpl$$f();
-      web.effect(() => _el$.innerHTML = t$1('setting.translation.cotrans_tip'));
+      const _el$ = _tmpl$$g();
+      web.effect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
       return _el$;
     }
   }), web.createComponent(SettingsShowItem, {
@@ -3474,7 +3551,7 @@ const SettingTranslation = () => {
     get children() {
       return [web.createComponent(SettingsItemSelect, {
         get name() {
-          return t$1('setting.translation.options.detection_resolution');
+          return t('setting.translation.options.detection_resolution');
         },
         options: [['S', '1024px'], ['M', '1536px'], ['L', '2048px'], ['X', '2560px']],
         get value() {
@@ -3485,7 +3562,7 @@ const SettingTranslation = () => {
         }
       }), web.createComponent(SettingsItemSelect, {
         get name() {
-          return t$1('setting.translation.options.text_detector');
+          return t('setting.translation.options.text_detector');
         },
         options: [['default'], ['ctd', 'Comic Text Detector']],
         get value() {
@@ -3496,7 +3573,7 @@ const SettingTranslation = () => {
         }
       }), web.createComponent(SettingsItemSelect, {
         get name() {
-          return t$1('setting.translation.options.translator');
+          return t('setting.translation.options.translator');
         },
         get options() {
           return translatorOptions();
@@ -3509,10 +3586,10 @@ const SettingTranslation = () => {
         }
       }), web.createComponent(SettingsItemSelect, {
         get name() {
-          return t$1('setting.translation.options.direction');
+          return t('setting.translation.options.direction');
         },
         get options() {
-          return [['auto', t$1('setting.translation.options.direction_auto')], ['h', t$1('setting.translation.options.direction_horizontal')], ['v', t$1('setting.translation.options.direction_vertical')]];
+          return [['auto', t('setting.translation.options.direction_auto')], ['h', t('setting.translation.options.direction_horizontal')], ['v', t('setting.translation.options.direction_vertical')]];
         },
         get value() {
           return store.option.translation.options.direction;
@@ -3522,7 +3599,7 @@ const SettingTranslation = () => {
         }
       }), web.createComponent(SettingsItemSelect, {
         get name() {
-          return t$1('setting.translation.options.target_language');
+          return t('setting.translation.options.target_language');
         },
         options: [['CHS', '简体中文'], ['CHT', '繁體中文'], ['JPN', '日本語'], ['ENG', 'English'], ['KOR', '한국어'], ['VIN', 'Tiếng Việt'], ['CSY', 'čeština'], ['NLD', 'Nederlands'], ['FRA', 'français'], ['DEU', 'Deutsch'], ['HUN', 'magyar nyelv'], ['ITA', 'italiano'], ['PLK', 'polski'], ['PTB', 'português'], ['ROM', 'limba română'], ['RUS', 'русский язык'], ['ESP', 'español'], ['TRK', 'Türk dili']],
         get value() {
@@ -3533,7 +3610,7 @@ const SettingTranslation = () => {
         }
       }), web.createComponent(SettingsItemSwitch, {
         get name() {
-          return t$1('setting.translation.options.forceRetry');
+          return t('setting.translation.options.forceRetry');
         },
         get value() {
           return store.option.translation.forceRetry;
@@ -3548,7 +3625,7 @@ const SettingTranslation = () => {
         get children() {
           return [web.createComponent(SettingsItemSwitch, {
             get name() {
-              return t$1('setting.translation.translate_all_img');
+              return t('setting.translation.translate_all_img');
             },
             get value() {
               return isTranslationAll();
@@ -3556,7 +3633,7 @@ const SettingTranslation = () => {
             onChange: () => setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll())
           }), web.createComponent(SettingsItemSwitch, {
             get name() {
-              return t$1('setting.translation.options.localUrl');
+              return t('setting.translation.options.localUrl');
             },
             get value() {
               return store.option.translation.localUrl !== undefined;
@@ -3588,18 +3665,16 @@ const SettingTranslation = () => {
       })];
     }
   })];
-};
-
-const _tmpl$$e = /*#__PURE__*/web.template(\`<button type="button">\`),
+};const _tmpl$$f = /*#__PURE__*/web.template(\`<button type="button">\`),
   _tmpl$2$5 = /*#__PURE__*/web.template(\`<div contenteditable data-only-number>\`),
   _tmpl$3$4 = /*#__PURE__*/web.template(\`<input type="color">\`);
 /** 默认菜单项 */
-const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
+const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
   get name() {
-    return web.memo(() => store.option.dir === 'rtl')() ? t$1('setting.option.dir_rtl') : t$1('setting.option.dir_ltr');
+    return web.memo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
   },
   get children() {
-    const _el$ = _tmpl$$e();
+    const _el$ = _tmpl$$f();
     _el$.addEventListener("click", switchDir);
     web.insert(_el$, (() => {
       const _c$ = web.memo(() => store.option.dir === 'rtl');
@@ -3608,9 +3683,9 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
     web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
     return _el$;
   }
-})], [t$1('setting.option.paragraph_scrollbar'), () => [web.createComponent(SettingsItemSwitch, {
+})], [t('setting.option.paragraph_scrollbar'), () => [web.createComponent(SettingsItemSwitch, {
   get name() {
-    return t$1('setting.option.scrollbar_show');
+    return t('setting.option.scrollbar_show');
   },
   get value() {
     return store.option.scrollbar.enabled;
@@ -3625,7 +3700,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   get children() {
     return [web.createComponent(SettingsItemSwitch, {
       get name() {
-        return t$1('setting.option.scrollbar_auto_hidden');
+        return t('setting.option.scrollbar_auto_hidden');
       },
       get value() {
         return store.option.scrollbar.autoHidden;
@@ -3635,7 +3710,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
       }
     }), web.createComponent(SettingsItemSwitch, {
       get name() {
-        return t$1('setting.option.scrollbar_show_img_status');
+        return t('setting.option.scrollbar_show_img_status');
       },
       get value() {
         return store.option.scrollbar.showImgStatus;
@@ -3645,9 +3720,9 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
       }
     })];
   }
-})]], [t$1('setting.option.paragraph_operation'), () => [web.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_operation'), () => [web.createComponent(SettingsItemSwitch, {
   get name() {
-    return t$1('setting.option.jump_to_next_chapter');
+    return t('setting.option.jump_to_next_chapter');
   },
   get value() {
     return store.option.jumpToNext;
@@ -3657,7 +3732,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   }
 }), web.createComponent(SettingsItemSwitch, {
   get name() {
-    return t$1('setting.option.click_page_turn_enabled');
+    return t('setting.option.click_page_turn_enabled');
   },
   get value() {
     return store.option.clickPageTurn.enabled;
@@ -3667,7 +3742,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   }
 }), web.createComponent(SettingsItemSwitch, {
   get name() {
-    return t$1('setting.option.click_page_turn_vertical');
+    return t('setting.option.click_page_turn_vertical');
   },
   get value() {
     return store.option.clickPageTurn.vertical;
@@ -3677,7 +3752,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   }
 }), web.createComponent(SettingsItemSwitch, {
   get name() {
-    return t$1('setting.option.show_clickable_area');
+    return t('setting.option.show_clickable_area');
   },
   get value() {
     return store.showTouchArea;
@@ -3694,7 +3769,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   get children() {
     return web.createComponent(SettingsItemSwitch, {
       get name() {
-        return t$1('setting.option.click_page_turn_swap_area');
+        return t('setting.option.click_page_turn_swap_area');
       },
       get value() {
         return store.option.clickPageTurn.reverse;
@@ -3704,9 +3779,9 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
       }
     });
   }
-})]], [t$1('setting.option.paragraph_display'), () => [web.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_display'), () => [web.createComponent(SettingsItemSwitch, {
   get name() {
-    return t$1('setting.option.dark_mode');
+    return t('setting.option.dark_mode');
   },
   get value() {
     return store.option.darkMode;
@@ -3716,7 +3791,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   }
 }), web.createComponent(SettingsItemSwitch, {
   get name() {
-    return t$1('setting.option.disable_auto_scaling');
+    return t('setting.option.disable_auto_scaling');
   },
   get value() {
     return store.option.disableZoom;
@@ -3724,9 +3799,9 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   get onChange() {
     return createStateSetFn('disableZoom');
   }
-})]], [t$1('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [t$1('setting.option.paragraph_translation'), SettingTranslation, true], [t$1('setting.option.paragraph_other'), () => [web.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [t('setting.option.paragraph_translation'), SettingTranslation, true], [t('setting.option.paragraph_other'), () => [web.createComponent(SettingsItemSwitch, {
   get name() {
-    return t$1('setting.option.always_load_all_img');
+    return t('setting.option.always_load_all_img');
   },
   get value() {
     return store.option.alwaysLoadAllImg;
@@ -3739,7 +3814,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   }
 }), web.createComponent(SettingsItemSwitch, {
   get name() {
-    return t$1('setting.option.first_page_fill');
+    return t('setting.option.first_page_fill');
   },
   get value() {
     return store.option.firstPageFill;
@@ -3749,7 +3824,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   }
 }), web.createComponent(SettingsItemSwitch, {
   get name() {
-    return t$1('setting.option.show_comments');
+    return t('setting.option.show_comments');
   },
   get value() {
     return store.option.showComment;
@@ -3759,7 +3834,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   }
 }), web.createComponent(SettingsItemSwitch, {
   get name() {
-    return t$1('setting.option.swap_page_turn_key');
+    return t('setting.option.swap_page_turn_key');
   },
   get value() {
     return store.option.swapPageTurnKey;
@@ -3769,7 +3844,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   }
 }), web.createComponent(SettingsItem, {
   get name() {
-    return t$1('setting.option.preload_page_num');
+    return t('setting.option.preload_page_num');
   },
   get children() {
     const _el$2 = _tmpl$2$5();
@@ -3788,7 +3863,7 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   }
 }), web.createComponent(SettingsItem, {
   get name() {
-    return t$1('setting.option.background_color');
+    return t('setting.option.background_color');
   },
   get children() {
     const _el$3 = _tmpl$3$4();
@@ -3807,29 +3882,23 @@ const defaultSettingList = () => [[t$1('setting.option.paragraph_dir'), () => we
   }
 }), web.createComponent(SettingsItemSelect, {
   get name() {
-    return t$1('setting.language');
+    return t('setting.language');
   },
-  options: [['zh', '中文'], ['en', 'English']],
+  options: [['zh', '中文'], ['en', 'English'], ['ru', 'Русский']],
   get value() {
     return lang();
   },
   onChange: setLang
-})], true]];
-
-const _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`),
+})], true]];const _tmpl$$e = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
   _tmpl$3$3 = /*#__PURE__*/web.template(\`<hr>\`);
-const LanguageWidthMap = {
-  zh: '15em',
-  en: '20em'
-};
 
 /** 菜单面板 */
 const SettingPanel = () => {
   const settingList = solidJs.createMemo(() => store.editSettingList(defaultSettingList()));
-  const width = solidJs.createMemo(() => LanguageWidthMap[lang()] ?? '15em');
+  const width = solidJs.createMemo(() => lang() !== 'zh' ? '20em' : '15em');
   return (() => {
-    const _el$ = _tmpl$$d();
+    const _el$ = _tmpl$$e();
     web.addEventListener(_el$, "wheel", stopPropagation);
     web.addEventListener(_el$, "scroll", stopPropagation);
     web.insert(_el$, web.createComponent(solidJs.For, {
@@ -3881,13 +3950,11 @@ const SettingPanel = () => {
     });
     return _el$;
   })();
-};
-
-const _tmpl$$c = /*#__PURE__*/web.template(\`<div>\`),
+};const _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role="button" tabindex="-1">\`);
 /** 工具栏按钮分隔栏 */
 const buttonListDivider = () => (() => {
-  const _el$ = _tmpl$$c();
+  const _el$ = _tmpl$$d();
   _el$.style.setProperty("height", "1em");
   return _el$;
 })();
@@ -3897,7 +3964,7 @@ const defaultButtonList = [
 // 单双页模式
 () => web.createComponent(IconButton, {
   get tip() {
-    return web.memo(() => !!store.option.onePageMode)() ? t$1('button.page_mode_single') : t$1('button.page_mode_double');
+    return web.memo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
   },
   get hidden() {
     return store.option.scrollMode;
@@ -3910,7 +3977,7 @@ const defaultButtonList = [
 // 卷轴模式
 () => web.createComponent(IconButton, {
   get tip() {
-    return t$1('button.scroll_mode');
+    return t('button.scroll_mode');
   },
   get enabled() {
     return store.option.scrollMode;
@@ -3923,7 +3990,7 @@ const defaultButtonList = [
 // 页面填充
 () => web.createComponent(IconButton, {
   get tip() {
-    return t$1('button.page_fill');
+    return t('button.page_fill');
   },
   get enabled() {
     return store.fillEffect[nowFillIndex()];
@@ -3939,7 +4006,7 @@ const defaultButtonList = [
 // 放大模式
 () => web.createComponent(IconButton, {
   get tip() {
-    return t$1('button.zoom_in');
+    return t('button.zoom_in');
   },
   get enabled() {
     return store.isZoomed || store.option.scrollMode && store.option.scrollModeImgScale > 1;
@@ -3964,7 +4031,7 @@ const defaultButtonList = [
   const isTranslatingImage = solidJs.createMemo(() => activePage().some(i => store.imgList[i]?.translationType && store.imgList[i].translationType !== 'hide'));
   return web.createComponent(IconButton, {
     get tip() {
-      return web.memo(() => !!isTranslatingImage())() ? t$1('button.close_current_page_translation') : t$1('button.translate_current_page');
+      return web.memo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
     },
     get enabled() {
       return isTranslatingImage();
@@ -4004,7 +4071,7 @@ props => {
   })()]);
   return web.createComponent(IconButton, {
     get tip() {
-      return t$1('button.setting');
+      return t('button.setting');
     },
     get enabled() {
       return showPanel();
@@ -4023,9 +4090,7 @@ props => {
       return web.createComponent(MdSettings, {});
     }
   });
-}];
-
-const useHover = () => {
+}];const useHover = () => {
   const [isHover, setIsHover] = solidJs.createSignal(false);
   return {
     isHover,
@@ -4034,9 +4099,7 @@ const useHover = () => {
     /** 鼠标移出 */
     handleMouseLeave: () => setIsHover(false)
   };
-};
-
-const _tmpl$$b = /*#__PURE__*/web.template(\`<div role="toolbar"><div><div>\`);
+};const _tmpl$$c = /*#__PURE__*/web.template(\`<div role="toolbar"><div><div>\`);
 
 /** 左侧工具栏 */
 const Toolbar = () => {
@@ -4048,7 +4111,7 @@ const Toolbar = () => {
   const show = solidJs.createMemo(() => isHover() || store.showToolbar);
   solidJs.createEffect(() => show() || focus());
   return (() => {
-    const _el$ = _tmpl$$b(),
+    const _el$ = _tmpl$$c(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
     web.addEventListener(_el$, "mouseenter", handleMouseEnter);
@@ -4079,9 +4142,7 @@ const Toolbar = () => {
     });
     return _el$;
   })();
-};
-
-const defaultStata = () => ({
+};const defaultStata = () => ({
   type: 'start',
   xy: [0, 0],
   initial: [0, 0],
@@ -4153,15 +4214,13 @@ const useDrag = ref => {
     }
     solidJs.onCleanup(() => controller.abort());
   });
-};
-
-const _tmpl$$a = /*#__PURE__*/web.template(\`<div>\`);
+};const _tmpl$$b = /*#__PURE__*/web.template(\`<div>\`);
 
 /** 显示对应图片加载情况的元素 */
 const ScrollbarImg = props => {
   const img = solidJs.createMemo(() => store.imgList[props.index]);
   return (() => {
-    const _el$ = _tmpl$$a();
+    const _el$ = _tmpl$$b();
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbarPage,
         _v$2 = props.index,
@@ -4192,7 +4251,7 @@ const ScrollbarPage = props => {
     return \`\${(store.imgList[props.a]?.height || windowHeight()) / contentHeight() * 100}%\`;
   });
   return (() => {
-    const _el$2 = _tmpl$$a();
+    const _el$2 = _tmpl$$b();
     web.insert(_el$2, web.createComponent(ScrollbarImg, {
       get index() {
         return props.a !== -1 ? props.a : props.b;
@@ -4209,9 +4268,7 @@ const ScrollbarPage = props => {
     web.effect(() => flexBasis() != null ? _el$2.style.setProperty("flex-basis", flexBasis()) : _el$2.style.removeProperty("flex-basis"));
     return _el$2;
   })();
-};
-
-const _tmpl$$9 = /*#__PURE__*/web.template(\`<div role="scrollbar" tabindex="-1"><div><div>\`);
+};const _tmpl$$a = /*#__PURE__*/web.template(\`<div role="scrollbar" tabindex="-1"><div><div>\`);
 
 /** 滚动条 */
 const Scrollbar = () => {
@@ -4232,7 +4289,7 @@ const Scrollbar = () => {
   /** 是否强制显示滚动条 */
   const showScrollbar = solidJs.createMemo(() => store.showScrollbar || !!penetrate());
   return (() => {
-    const _el$ = _tmpl$$9(),
+    const _el$ = _tmpl$$a(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
     _el$.addEventListener("wheel", handleWheel);
@@ -4303,9 +4360,7 @@ const Scrollbar = () => {
     });
     return _el$;
   })();
-};
-
-const _tmpl$$8 = /*#__PURE__*/web.template(\`<div>\`),
+};const _tmpl$$9 = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$2 = /*#__PURE__*/web.template(\`<div role="button" tabindex="-1"><p></p><button type="button"></button><button type="button" data-is-end></button><button type="button">\`),
   _tmpl$3$2 = /*#__PURE__*/web.template(\`<p>\`);
 let delayTypeTimer = 0;
@@ -4342,11 +4397,11 @@ const EndPage = () => {
   const tip = solidJs.createMemo(() => {
     switch (delayType()) {
       case 'start':
-        if (store.onPrev && store.option.jumpToNext) return t$1('end_page.tip.start_jump');
+        if (store.onPrev && store.option.jumpToNext) return t('end_page.tip.start_jump');
         break;
       case 'end':
-        if (store.onNext && store.option.jumpToNext) return t$1('end_page.tip.end_jump');
-        if (store.onExit) return t$1('end_page.tip.exit');
+        if (store.onNext && store.option.jumpToNext) return t('end_page.tip.end_jump');
+        if (store.onExit) return t('end_page.tip.exit');
         break;
     }
     return '';
@@ -4364,21 +4419,21 @@ const EndPage = () => {
     const _ref$2 = bindRef('prevRef');
     typeof _ref$2 === "function" && web.use(_ref$2, _el$3);
     _el$3.addEventListener("click", () => store.onPrev?.());
-    web.insert(_el$3, () => t$1('end_page.prev_button'));
+    web.insert(_el$3, () => t('end_page.prev_button'));
     const _ref$3 = bindRef('exitRef');
     typeof _ref$3 === "function" && web.use(_ref$3, _el$4);
     _el$4.addEventListener("click", () => store.onExit?.(store.endPageType === 'end'));
-    web.insert(_el$4, () => t$1('button.exit'));
+    web.insert(_el$4, () => t('button.exit'));
     const _ref$4 = bindRef('nextRef');
     typeof _ref$4 === "function" && web.use(_ref$4, _el$5);
     _el$5.addEventListener("click", () => store.onNext?.());
-    web.insert(_el$5, () => t$1('end_page.next_button'));
+    web.insert(_el$5, () => t('end_page.next_button'));
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
         return web.memo(() => !!store.option.showComment)() && delayType() === 'end';
       },
       get children() {
-        const _el$6 = _tmpl$$8();
+        const _el$6 = _tmpl$$9();
         web.addEventListener(_el$6, "wheel", stopPropagation);
         web.insert(_el$6, web.createComponent(solidJs.For, {
           get each() {
@@ -4431,9 +4486,7 @@ const EndPage = () => {
     });
     return _el$;
   })();
-};
-
-/** 深色模式的 css 变量 */
+};/** 深色模式的 css 变量 */
 const dark = {
   '--hover_bg_color': '#FFF3',
   '--hover_bg_color_enable': '#FFFa',
@@ -4472,9 +4525,7 @@ const cssVar = solidJs.createRoot(() => {
     ...(store.option.darkMode ? dark : light)
   }));
   return _cssVar;
-});
-
-/** 初始化 */
+});/** 初始化 */
 const useInit$1 = (props, rootRef) => {
   // 绑定 rootRef
   setState(state => {
@@ -4590,9 +4641,7 @@ const useInit$1 = (props, rootRef) => {
       if (state.activePageIndex > state.pageList.length - 1) state.activePageIndex = state.pageList.length - 1;
     });
   });
-};
-
-const _tmpl$$7 = /*#__PURE__*/web.template(\`<div role="presentation" tabindex="-1">\`);
+};const _tmpl$$8 = /*#__PURE__*/web.template(\`<div role="presentation" tabindex="-1">\`);
 const MangaStyle = css$1;
 solidJs.enableScheduling();
 /** 漫画组件 */
@@ -4604,7 +4653,7 @@ const Manga = props => {
   });
   solidJs.createEffect(() => props.show && focus());
   return (() => {
-    const _el$ = _tmpl$$7();
+    const _el$ = _tmpl$$8();
     web.addEventListener(_el$, "wheel", handleWheel);
     const _ref$ = rootRef;
     typeof _ref$ === "function" ? web.use(_ref$, _el$) : rootRef = _el$;
@@ -4636,9 +4685,7 @@ const Manga = props => {
     });
     return _el$;
   })();
-};
-
-const _tmpl$$6 = /*#__PURE__*/web.template(\`<style type="text/css">\`);
+};const _tmpl$$7 = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let dom;
 
 /**
@@ -4676,11 +4723,11 @@ const useManga = async initProps => {
   const set = recipe => {
     if (!dom) {
       dom = mountComponents('comicRead', () => [web.createComponent(Manga, props), (() => {
-        const _el$ = _tmpl$$6();
+        const _el$ = _tmpl$$7();
         web.insert(_el$, IconButtonStyle);
         return _el$;
       })(), (() => {
-        const _el$2 = _tmpl$$6();
+        const _el$2 = _tmpl$$7();
         web.insert(_el$2, MangaStyle);
         return _el$2;
       })()]);
@@ -4713,8 +4760,8 @@ const useManga = async initProps => {
           });
           fileData[fileName] = new Uint8Array(res.response);
         } catch (error) {
-          toast$1.error(\`\${fileName} \${t$1('alert.download_failed')}\`);
-          fileData[\`\${index} - \${t$1('alert.download_failed')}.\${fileExt}\`] = new Uint8Array();
+          toast$1.error(\`\${fileName} \${t('alert.download_failed')}\`);
+          fileData[\`\${index} - \${t('alert.download_failed')}.\${fileExt}\`] = new Uint8Array();
         }
       }
       setStatu('button.packaging');
@@ -4724,9 +4771,9 @@ const useManga = async initProps => {
       });
       saveAs(new Blob([zipped]), \`\${document.title}.zip\`);
       setStatu('button.download_completed');
-      toast$1.success(t$1('button.download_completed'));
+      toast$1.success(t('button.download_completed'));
     };
-    const tip = solidJs.createMemo(() => t$1(statu()) || \`\${t$1('button.downloading')} - \${statu()}\`);
+    const tip = solidJs.createMemo(() => t(statu()) || \`\${t('button.downloading')} - \${statu()}\`);
     return web.createComponent(IconButton, {
       get tip() {
         return tip();
@@ -4748,7 +4795,7 @@ const useManga = async initProps => {
       // 再在最下面添加分隔栏和退出按钮
       buttonListDivider, () => web.createComponent(IconButton, {
         get tip() {
-          return t$1('button.exit');
+          return t('button.exit');
         },
         onClick: () => props.onExit?.(),
         get children() {
@@ -4758,34 +4805,23 @@ const useManga = async initProps => {
     }
   });
   return [set, props, setProps];
-};
-
-const _tmpl$$5 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03z">\`);
+};const _tmpl$$6 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03z">\`);
 const MdMenuBook = ((props = {}) => (() => {
+  const _el$ = _tmpl$$6();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());const _tmpl$$5 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1zm-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79zm3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42l-2.41-2.4zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z">\`);
+const MdImageSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$5();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$4 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1zm-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79zm3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42l-2.41-2.4zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z">\`);
-const MdImageSearch = ((props = {}) => (() => {
+})());const _tmpl$$4 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z">\`);
+const MdImportContacts = ((props = {}) => (() => {
   const _el$ = _tmpl$$4();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-const _tmpl$$3 = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z">\`);
-const MdImportContacts = ((props = {}) => (() => {
-  const _el$ = _tmpl$$3();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-var css = ".index_module_fabRoot__36cc95e4{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__36cc95e4[data-show=false]{pointer-events:none}.index_module_fabRoot__36cc95e4[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__36cc95e4[data-trans=true]{opacity:.8}.index_module_fabRoot__36cc95e4[data-trans=true]:focus,.index_module_fabRoot__36cc95e4[data-trans=true]:focus-visible,.index_module_fabRoot__36cc95e4[data-trans=true]:hover{opacity:1}.index_module_fab__36cc95e4{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.index_module_fab__36cc95e4>svg{font-size:1.5em;width:1em}.index_module_fab__36cc95e4:hover{background-color:var(--fab_hover,#78909c)}.index_module_fab__36cc95e4:focus,.index_module_fab__36cc95e4:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.index_module_progress__36cc95e4{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__36cc95e4>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__36cc95e4:hover{color:#cfd8dc}.index_module_progress__36cc95e4[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__36cc95e4{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__36cc95e4:hover,.index_module_fabRoot__36cc95e4[data-focus=true]) .index_module_popper__36cc95e4{display:flex}.index_module_speedDial__36cc95e4{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__36cc95e4{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__36cc95e4:hover,:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true])>.index_module_speedDial__36cc95e4{pointer-events:all}:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true])>.index_module_speedDial__36cc95e4>.index_module_speedDialItem__36cc95e4{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__36cc95e4{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__36cc95e4[data-focus=true] .index_module_backdrop__36cc95e4{pointer-events:unset}:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true],.index_module_speedDial__36cc95e4:hover) .index_module_backdrop__36cc95e4{opacity:.4}";
-var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__36cc95e4","fab":"index_module_fab__36cc95e4","progress":"index_module_progress__36cc95e4","popper":"index_module_popper__36cc95e4","speedDial":"index_module_speedDial__36cc95e4","speedDialItem":"index_module_speedDialItem__36cc95e4","backdrop":"index_module_backdrop__36cc95e4"};
-n(css,{});
-
-const _tmpl$$2 = /*#__PURE__*/web.template(\`<div><div>\`),
+})());var css = ".index_module_fabRoot__36cc95e4{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__36cc95e4[data-show=false]{pointer-events:none}.index_module_fabRoot__36cc95e4[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__36cc95e4[data-trans=true]{opacity:.8}.index_module_fabRoot__36cc95e4[data-trans=true]:focus,.index_module_fabRoot__36cc95e4[data-trans=true]:focus-visible,.index_module_fabRoot__36cc95e4[data-trans=true]:hover{opacity:1}.index_module_fab__36cc95e4{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.index_module_fab__36cc95e4>svg{font-size:1.5em;width:1em}.index_module_fab__36cc95e4:hover{background-color:var(--fab_hover,#78909c)}.index_module_fab__36cc95e4:focus,.index_module_fab__36cc95e4:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.index_module_progress__36cc95e4{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__36cc95e4>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__36cc95e4:hover{color:#cfd8dc}.index_module_progress__36cc95e4[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__36cc95e4{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__36cc95e4:hover,.index_module_fabRoot__36cc95e4[data-focus=true]) .index_module_popper__36cc95e4{display:flex}.index_module_speedDial__36cc95e4{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__36cc95e4{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__36cc95e4:hover,:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true])>.index_module_speedDial__36cc95e4{pointer-events:all}:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true])>.index_module_speedDial__36cc95e4>.index_module_speedDialItem__36cc95e4{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__36cc95e4{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__36cc95e4[data-focus=true] .index_module_backdrop__36cc95e4{pointer-events:unset}:is(.index_module_fabRoot__36cc95e4:hover:not([data-show=false]),.index_module_fabRoot__36cc95e4[data-focus=true],.index_module_speedDial__36cc95e4:hover) .index_module_backdrop__36cc95e4{opacity:.4}";
+var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__36cc95e4","fab":"index_module_fab__36cc95e4","progress":"index_module_progress__36cc95e4","popper":"index_module_popper__36cc95e4","speedDial":"index_module_speedDial__36cc95e4","speedDialItem":"index_module_speedDialItem__36cc95e4","backdrop":"index_module_backdrop__36cc95e4"};const _tmpl$$3 = /*#__PURE__*/web.template(\`<div><div>\`),
   _tmpl$2$1 = /*#__PURE__*/web.template(\`<div><button type="button" tabindex="-1"><span role="progressbar"><svg viewBox="22 22 44 44"><circle cx="44" cy="44" r="20.2" fill="none" stroke-width="3.6">\`),
   _tmpl$3$1 = /*#__PURE__*/web.template(\`<div>\`);
 const FabStyle = css;
@@ -4843,7 +4879,7 @@ const Fab = _props => {
         return props.speedDial?.length;
       },
       get children() {
-        const _el$5 = _tmpl$$2(),
+        const _el$5 = _tmpl$$3(),
           _el$6 = _el$5.firstChild;
         _el$6.addEventListener("click", () => props.onBackdropClick?.());
         web.insert(_el$5, web.createComponent(solidJs.For, {
@@ -4918,9 +4954,7 @@ const Fab = _props => {
     });
     return _el$;
   })();
-};
-
-const _tmpl$$1 = /*#__PURE__*/web.template(\`<style type="text/css">\`);
+};const _tmpl$$2 = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let mounted = false;
 const useFab = async initProps => {
   await GM.addStyle(\`
@@ -4961,11 +4995,11 @@ const useFab = async initProps => {
           });
         }
       })), (() => {
-        const _el$ = _tmpl$$1();
+        const _el$ = _tmpl$$2();
         web.insert(_el$, IconButtonStyle);
         return _el$;
       })(), (() => {
-        const _el$2 = _tmpl$$1();
+        const _el$2 = _tmpl$$2();
         web.insert(_el$2, FabStyle);
         return _el$2;
       })()]);
@@ -4975,13 +5009,9 @@ const useFab = async initProps => {
     if (recipe) setProps(typeof recipe === 'function' ? store$2.produce(recipe) : recipe);
   };
   return [set, props];
-};
-
-const _tmpl$ = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>实现 i18n </p></li><li><p>支持 eh 的多页查看器 </p></li><li><p>支持 hitomi </p></li><li><p>支持 kemono\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>增加 预加载页数 的设置项\`);
+};const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复 PWA 无法记住选择语言的 bug </p></li><li><p>修复会在无关网页上意外运行并导致 css 异常的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -5039,11 +5069,11 @@ const handleVersionUpdate = async () => {
   // 只在语言为中文时弹窗提示最新更新内容
   if (lang() === 'zh') {
     toast$1(() => [(() => {
-      const _el$ = _tmpl$();
+      const _el$ = _tmpl$$1();
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -5060,9 +5090,7 @@ const handleVersionUpdate = async () => {
     });
   }
   if (version.split('.')[0] !== GM.info.script.version.split('.')[0]) await migration();
-};
-
-const getHotkeys = async () => ({
+};const getHotkeys = async () => ({
   enter_read_mode: ['v'],
   ...(await GM.getValue('Hotkeys', {}))
 });
@@ -5113,9 +5141,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
       return readModeHotkeysMemo;
     })
   };
-};
-
-/**
+};/**
  * 对基础的初始化操作的封装
  * @param name 站点名
  * @param defaultOptions 默认配置
@@ -5132,7 +5158,7 @@ const useInit = async (name, defaultOptions = {}) => {
     isStored
   } = await useSiteOptions(name, defaultOptions);
   const [setFab, fabProps] = await useFab({
-    tip: t$1('other.read_mode'),
+    tip: t('other.read_mode'),
     speedDial: useSpeedDial(options, setOptions),
     show: !options.hiddenFAB && undefined
   });
@@ -5147,13 +5173,13 @@ const useInit = async (name, defaultOptions = {}) => {
     if (progress !== 2) {
       setFab({
         progress,
-        tip: \`\${t$1('other.img_loading')} - \${loadNum}/\${list.length}\`
+        tip: \`\${t('other.img_loading')} - \${loadNum}/\${list.length}\`
       });
     } else {
       // 图片全部加载完成后恢复 Fab 状态
       setFab({
         progress,
-        tip: t$1('other.read_mode'),
+        tip: t('other.read_mode'),
         show: undefined
       });
     }
@@ -5172,7 +5198,7 @@ const useInit = async (name, defaultOptions = {}) => {
   /** 更新显示/隐藏悬浮按钮的菜单项 */
   const updateHideFabMenu = async () => {
     await GM.unregisterMenuCommand(menuId);
-    menuId = await GM.registerMenuCommand(options.hiddenFAB ? t$1('other.fab_show') : t$1('other.fab_hidden'), async () => {
+    menuId = await GM.registerMenuCommand(options.hiddenFAB ? t('other.fab_show') : t('other.fab_hidden'), async () => {
       await setOptions({
         ...options,
         hiddenFAB: !options.hiddenFAB
@@ -5218,7 +5244,7 @@ const useInit = async (name, defaultOptions = {}) => {
             show: true
           });
           const newImgList = initImgList ?? (await getImgList());
-          if (newImgList.length === 0) throw new Error(t$1('alert.fetch_comic_img_failed'));
+          if (newImgList.length === 0) throw new Error(t('alert.fetch_comic_img_failed'));
           setManga(state => {
             state.imgList = [...newImgList];
             if (show || needAutoShow.val && options.autoShow) {
@@ -5239,7 +5265,7 @@ const useInit = async (name, defaultOptions = {}) => {
 
       /** 进入阅读模式 */
       const showComic = async () => {
-        if (loading) return toast$1.warn(t$1('alert.repeat_load'), {
+        if (loading) return toast$1.warn(t('alert.repeat_load'), {
           duration: 1500
         });
         if (!mangaProps.imgList.length) return loadImgList(undefined, true);
@@ -5252,7 +5278,7 @@ const useInit = async (name, defaultOptions = {}) => {
       });
       if (needAutoShow.val && options.autoShow) showComic();
       if (firstRun) {
-        GM.registerMenuCommand(t$1('other.enter_comic_read_mode'), fabProps.onClick);
+        GM.registerMenuCommand(t('other.enter_comic_read_mode'), fabProps.onClick);
         updateHideFabMenu();
         window.addEventListener('keydown', e => {
           if (e.target.tagName === 'INPUT') return;
@@ -5292,9 +5318,7 @@ const useInit = async (name, defaultOptions = {}) => {
       };
     }
   };
-};
-
-/** 处理延时出现的上/下一话的按钮 */
+};/** 处理延时出现的上/下一话的按钮 */
 const handleDelayPrevNext = async (fn, num = 0) => {
   if (!fn || num >= 25) return;
   const domClickFn = await fn();
@@ -5383,49 +5407,23 @@ const universalInit = async ({
       onNext: await handleDelayPrevNext(getOnNext)
     })].map(fn => fn()));
   });
-};
-
-exports.assign = assign;
-exports.autoSetLang = autoSetLang;
-exports.autoUpdate = autoUpdate;
-exports.byPath = byPath;
-exports.createFillImgList = createFillImgList;
-exports.dataToParams = dataToParams;
-exports.difference = difference;
-exports.getKeyboardCode = getKeyboardCode;
-exports.getMostItem = getMostItem;
-exports.insertNode = insertNode;
-exports.isEqualArray = isEqualArray;
-exports.keyboardCodeToText = keyboardCodeToText;
-exports.lang = lang;
-exports.linstenKeyup = linstenKeyup;
-exports.log = log;
-exports.loop = loop;
-exports.needDarkMode = needDarkMode;
-exports.plimit = plimit;
-exports.querySelector = querySelector;
-exports.querySelectorAll = querySelectorAll;
-exports.querySelectorClick = querySelectorClick;
-exports.request = request$1;
-exports.saveAs = saveAs;
-exports.scrollIntoView = scrollIntoView;
-exports.setInitLang = setInitLang;
-exports.setLang = setLang;
-exports.sleep = sleep;
-exports.t = t$1;
-exports.toast = toast$1;
-exports.triggerEleLazyLoad = triggerEleLazyLoad;
-exports.universalInit = universalInit;
-exports.useCache = useCache;
-exports.useFab = useFab;
-exports.useInit = useInit;
-exports.useManga = useManga;
-exports.useSiteOptions = useSiteOptions;
-exports.useSpeedDial = useSpeedDial;
-exports.wait = wait;
-exports.waitDom = waitDom;
-exports.waitImgLoad = waitImgLoad;
-`
+};const _tmpl$ = /*#__PURE__*/web.template(\`<div><button>\`);
+/**
+ * 提示当前开启了自动进入阅读模式的弹窗
+ *
+ * 因为直接放到 site/other 里会导致打包时自动加入 import solidjs 的代码，
+ * 所以只能单独放这好打包进 main 里
+ */
+const autoReadModeMessage = setOptions => () => (() => {
+  const _el$ = _tmpl$(),
+    _el$2 = _el$.firstChild;
+  web.insert(_el$, () => main.t('site.simple.auto_read_mode_message'), _el$2);
+  _el$2.addEventListener("click", () => setOptions({
+    autoShow: false
+  }));
+  web.insert(_el$2, () => main.t('other.disable'));
+  return _el$;
+})();exports.assign=assign;exports.autoReadModeMessage=autoReadModeMessage;exports.autoUpdate=autoUpdate;exports.byPath=byPath;exports.createFillImgList=createFillImgList;exports.dataToParams=dataToParams;exports.difference=difference;exports.getKeyboardCode=getKeyboardCode;exports.getMostItem=getMostItem;exports.insertNode=insertNode;exports.isEqualArray=isEqualArray;exports.keyboardCodeToText=keyboardCodeToText;exports.lang=lang;exports.linstenKeyup=linstenKeyup;exports.log=log;exports.loop=loop;exports.needDarkMode=needDarkMode;exports.plimit=plimit;exports.querySelector=querySelector;exports.querySelectorAll=querySelectorAll;exports.querySelectorClick=querySelectorClick;exports.request=request$1;exports.saveAs=saveAs;exports.scrollIntoView=scrollIntoView;exports.setInitLang=setInitLang;exports.setLang=setLang;exports.sleep=sleep;exports.t=t;exports.toast=toast$1;exports.triggerEleLazyLoad=triggerEleLazyLoad;exports.universalInit=universalInit;exports.useCache=useCache;exports.useFab=useFab;exports.useInit=useInit;exports.useManga=useManga;exports.useSiteOptions=useSiteOptions;exports.useSpeedDial=useSpeedDial;exports.wait=wait;exports.waitDom=waitDom;exports.waitImgLoad=waitImgLoad;`
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
@@ -5493,8 +5491,7 @@ const require = name => {
   });
   return selfDefault;
 };
-crsLib.require = require;
-
+crsLib.require = require;exports.require=require;
 
 /** 站点配置 */
 let options;
@@ -5507,17 +5504,12 @@ try {
     // #百合会——「记录阅读历史，体验优化」
     case 'bbs.yamibo.com':
       {
-const web = require('solid-js/web');
-const main = require('main');
-
-const _tmpl$ = /*#__PURE__*/web.template(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">`);
+const web=require('solid-js/web'),main=require('main');const _tmpl$ = /*#__PURE__*/web.template(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">`);
 const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-(async () => {
+})());(async () => {
   const {
     options,
     setFab,
@@ -5829,7 +5821,6 @@ const MdSettings = ((props = {}) => (() => {
     }
   }
 })();
-
         options = false;
         break;
       }
@@ -5869,22 +5860,16 @@ const MdSettings = ((props = {}) => (() => {
     case 'manhua.idmzj.com':
     case 'manhua.dmzj.com':
       {
-const web = require('solid-js/web');
-const solidJs = require('solid-js');
-const main = require('main');
-const store = require('solid-js/store');
-const dmzjDecrypt = require('dmzjDecrypt');
-
-const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
+const web=require('solid-js/web'),solidJs=require('solid-js'),main=require('main'),store=require('solid-js/store'),dmzjDecrypt=require('dmzjDecrypt');const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
 const log = (...args) =>
 // eslint-disable-next-line no-console
-console.log.apply(undefined, [...prefix, ...args]);
+console.log.apply(null, [...prefix, ...args]);
 log.warn = (...args) =>
 // eslint-disable-next-line no-console
-console.warn.apply(undefined, [...prefix, ...args]);
+console.warn.apply(null, [...prefix, ...args]);
 log.error = (...args) =>
 // eslint-disable-next-line no-console
-console.error.apply(undefined, [...prefix, ...args]);
+console.error.apply(null, [...prefix, ...args]);/** dmzj 的漫画详情 */
 
 /** 根据漫画 id 和章节 id 获取章节数据 */
 const getChapterInfo = async (comicId, chapterId) => {
@@ -6036,9 +6021,7 @@ const getComicId = async py => {
     comic_py: py
   }).toString()}`);
   return JSON.parse(res.responseText).data?.comicInfo?.id;
-};
-
-const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2_title2"><span class="h2_icon h2_icon22"></span><h2> `),
+};const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2_title2"><span class="h2_icon h2_icon22"></span><h2> `),
   _tmpl$2 = /*#__PURE__*/web.template(`<div class="cartoon_online_border_other"><ul></ul><div class="clearfix">`),
   _tmpl$3 = /*#__PURE__*/web.template(`<li><a target="_blank">`);
 (async () => {
@@ -6185,15 +6168,13 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2
     }
   });
 })();
-
         options = false;
         break;
       }
     case 'm.idmzj.com':
     case 'm.dmzj.com':
       {
-const main = require('main');
-const dmzjDecrypt = require('dmzjDecrypt');
+const main=require('main'),dmzjDecrypt=require('dmzjDecrypt');require('solid-js/store'),require('solid-js');/** dmzj 的漫画详情 */
 
 /** 根据漫画 id 和章节 id 获取章节数据 */
 const getChapterInfo = async (comicId, chapterId) => {
@@ -6220,9 +6201,7 @@ const getViewpoint = async (comicId, chapterId) => {
   } catch (_) {
     return [];
   }
-};
-
-(async () => {
+};(async () => {
   const {
     setManga,
     init
@@ -6369,14 +6348,13 @@ const getViewpoint = async (comicId, chapterId) => {
       }
   }
 })();
-
         options = false;
         break;
       }
     case 'www.idmzj.com':
     case 'www.dmzj.com':
       {
-const main = require('main');
+const main=require('main');require('solid-js/store'),require('solid-js'),require('dmzjDecrypt');/** dmzj 的漫画详情 */
 
 /** 根据漫画 id 和章节 id 获取章节数据 */
 const getChapterInfo = async (comicId, chapterId) => {
@@ -6384,9 +6362,7 @@ const getChapterInfo = async (comicId, chapterId) => {
     errorText: '获取章节数据失败'
   });
   return JSON.parse(res.responseText);
-};
-
-const chapterIdRe = /(?<=\/)\d+(?=\.html)/;
+};const chapterIdRe = /(?<=\/)\d+(?=\.html)/;
 const turnPage = chapterId => {
   if (!chapterId) return undefined;
   return () => {
@@ -6420,7 +6396,6 @@ const turnPage = chapterId => {
     });
   }
 })();
-
         options = false;
         break;
       }
@@ -6429,17 +6404,12 @@ const turnPage = chapterId => {
     case 'exhentai.org':
     case 'e-hentai.org':
       {
-const web = require('solid-js/web');
-const main = require('main');
-
-const _tmpl$ = /*#__PURE__*/web.template(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">`);
+const web=require('solid-js/web'),main=require('main');const _tmpl$ = /*#__PURE__*/web.template(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">`);
 const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$();
   web.spread(_el$, props, true, true);
   return _el$;
-})());
-
-(async () => {
+})());(async () => {
   const {
     options,
     setFab,
@@ -6672,7 +6642,6 @@ const MdSettings = ((props = {}) => (() => {
     };
   }
 })();
-
         options = false;
         break;
       }
@@ -6680,9 +6649,7 @@ const MdSettings = ((props = {}) => (() => {
     // #nhentai——「彻底屏蔽漫画，自动翻页」
     case 'nhentai.net':
       {
-const main = require('main');
-
-/** 用于转换获得图片文件扩展名 */
+const main=require('main');/** 用于转换获得图片文件扩展名 */
 const fileType = {
   j: 'jpg',
   p: 'png',
@@ -6814,7 +6781,6 @@ const fileType = {
     }
   }
 })();
-
         options = false;
         break;
       }
@@ -6875,9 +6841,7 @@ const fileType = {
     case '18comic.cc':
     case '18comic.vip':
       {
-const main = require('main');
-
-// 已知问题：某些漫画始终会有几页在下载原图时出错
+const main=require('main');// 已知问题：某些漫画始终会有几页在下载原图时出错
 // 并且这类漫画下即使关掉脚本，也还是会有几页就是加载不出来
 // 比较神秘的是这两种情况下加载不出来的图片还不一样
 // 并且在多次刷新的情况下都是那几张图片加载不出来
@@ -6970,7 +6934,6 @@ const main = require('main');
   });
   retry();
 })();
-
         options = false;
         break;
       }
@@ -7250,10 +7213,33 @@ const main = require('main');
       }
   }
   if (options) main.universalInit(options);else if (options !== false) {
-const web = require('solid-js/web');
-const main = require('main');
+const main=require('main');const langList = ['zh', 'en', 'ru'];
+/** 判断传入的字符串是否是支持的语言类型代码 */
+const isLanguages = lang => !!lang && langList.includes(lang);
 
-const _tmpl$ = /*#__PURE__*/web.template(`<div><button>`);
+/** 返回浏览器偏好语言 */
+const getBrowserLang = () => {
+  let newLang;
+  for (let i = 0; i < navigator.languages.length; i++) {
+    const language = navigator.languages[i];
+    const matchLang = langList.find(l => l === language || l === language.split('-')[0]);
+    if (matchLang) {
+      newLang = matchLang;
+      break;
+    }
+  }
+  return newLang;
+};
+const getSaveLang = () => window?.GM?.getValue ? GM.getValue('Languages') : localStorage.getItem('Languages');
+const setSaveLang = val => window?.GM?.setValue ? GM.setValue('Languages', val) : localStorage.setItem('Languages', val);
+const getInitLang = async () => {
+  const saveLang = await getSaveLang();
+  if (isLanguages(saveLang)) return saveLang;
+  const lang = getBrowserLang() ?? 'zh';
+  setSaveLang(lang);
+  return lang;
+};// 这个文件里不能含有 jsx 代码，否则会在打包时自动加入 import solidjs 的代码
+
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
   const start = async () => {
@@ -7274,20 +7260,9 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div><button>`);
       await GM.deleteValue(window.location.hostname);
       return true;
     }
-    if (!isStored) {
-      main.toast(() => (() => {
-        const _el$ = _tmpl$(),
-          _el$2 = _el$.firstChild;
-        web.insert(_el$, () => main.t('site.simple.auto_read_mode_message'), _el$2);
-        _el$2.addEventListener("click", () => setOptions({
-          autoShow: false
-        }));
-        web.insert(_el$2, () => main.t('other.disable'));
-        return _el$;
-      })(), {
-        duration: 1000 * 7
-      });
-    }
+    if (!isStored) main.toast(main.autoReadModeMessage(setOptions), {
+      duration: 1000 * 7
+    });
 
     // 为避免卡死，提供一个删除 selector 的菜单项
     const menuId = await GM.registerMenuCommand(main.t('site.simple.simple_read_mode'), () => setOptions({
@@ -7347,7 +7322,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div><button>`);
     // 东方永夜机的预加载图片
     '#pagetual-preload',
     // 177picyy 上会在图片下加一个 noscript
-    // 本来只是图片元素的 innerHTML，但经过东方永夜机加载后就会变成真的图片元素，导致重复
+    // 本来只是图片元素的 html 代码，但经过东方永夜机加载后就会变成真的图片元素，导致重复
     'noscript'];
     const getAllImg = () => main.querySelectorAll(`:not(${imgBlackList.join(',')}) > img`)
     // 根据位置从小到大排序
@@ -7419,11 +7394,14 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div><button>`);
     // 为保证兼容，只能简单粗暴的不断检查
     main.loop(checkImgList, 1000);
   };
-  if ((await GM.getValue(window.location.hostname)) !== undefined) start();else {
-    const menuId = await GM.registerMenuCommand(main.t('site.simple.simple_read_mode'), () => !start() && GM.unregisterMenuCommand(menuId));
-  }
+  if ((await GM.getValue(window.location.hostname)) !== undefined) return start();
+  const menuId = await GM.registerMenuCommand(((lang) => {
+            switch (lang) {
+              case 'en': return 'Enter simple reading mode';case 'ru': return 'Включить простой режим чтения';
+              default: return '使用简易阅读模式';
+            }
+          })(await getInitLang()), () => !start() && GM.unregisterMenuCommand(menuId));
 })();
-
   }
 } catch (error) {
   main.log.error(error);
