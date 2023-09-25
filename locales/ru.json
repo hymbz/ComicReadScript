@@ -1,0 +1,222 @@
+{
+  "alert": {
+    "comic_load_error": "",
+    "download_failed": "",
+    "fetch_comic_img_failed": "",
+    "img_load_failed": "",
+    "repeat_load": "",
+    "server_connect_failed": ""
+  },
+  "button": {
+    "close_current_page_translation": "",
+    "download": "",
+    "download_completed": "",
+    "downloading": "",
+    "exit": "",
+    "packaging": "",
+    "page_fill": "",
+    "page_mode_double": "",
+    "page_mode_single": "",
+    "scroll_mode": "",
+    "setting": "",
+    "translate_current_page": "",
+    "zoom_in": ""
+  },
+  "description": "",
+  "end_page": {
+    "next_button": "",
+    "prev_button": "",
+    "tip": {
+      "end_jump": "",
+      "exit": "",
+      "start_jump": ""
+    }
+  },
+  "hotkeys": {
+    "enter_read_mode": "",
+    "exit": "",
+    "jump_to_end": "",
+    "jump_to_home": "",
+    "switch_dir": "",
+    "switch_page_fill": "",
+    "switch_scroll_mode": "",
+    "switch_single_double_page_mode": "",
+    "turn_page_down": "",
+    "turn_page_left": "",
+    "turn_page_right": "",
+    "turn_page_up": ""
+  },
+  "img_status": {
+    "error": "",
+    "loading": "",
+    "wait": ""
+  },
+  "other": {
+    "auto_enter_read_mode": "",
+    "disable": "",
+    "enter_comic_read_mode": "",
+    "fab_hidden": "",
+    "fab_show": "",
+    "fill_page": "",
+    "img_loading": "",
+    "loading_img": "",
+    "read_mode": ""
+  },
+  "pwa": {
+    "alert": {
+      "img_data_error": "",
+      "img_not_found": "",
+      "img_not_found_files": "",
+      "img_not_found_folder": "",
+      "repeat_load": "",
+      "unzip_error": "",
+      "unzip_password_error": "",
+      "userscript_not_installed": ""
+    },
+    "button": {
+      "install": "",
+      "no_more_prompt": "",
+      "resume_read": "",
+      "select_files": "",
+      "select_folder": ""
+    },
+    "install_md": "",
+    "message": {
+      "enter_password": "",
+      "unzipping": ""
+    },
+    "tip_md": ""
+  },
+  "setting": {
+    "hotkeys": {
+      "add": "",
+      "restore": ""
+    },
+    "language": "",
+    "option": {
+      "always_load_all_img": "",
+      "background_color": "",
+      "click_page_turn_enabled": "",
+      "click_page_turn_swap_area": "",
+      "click_page_turn_vertical": "",
+      "dark_mode": "",
+      "dir_ltr": "",
+      "dir_rtl": "",
+      "disable_auto_scaling": "",
+      "first_page_fill": "",
+      "jump_to_next_chapter": "",
+      "paragraph_dir": "",
+      "paragraph_display": "",
+      "paragraph_hotkeys": "",
+      "paragraph_operation": "",
+      "paragraph_other": "",
+      "paragraph_scrollbar": "",
+      "paragraph_translation": "",
+      "preload_page_num": "",
+      "scrollbar_auto_hidden": "",
+      "scrollbar_show": "",
+      "scrollbar_show_img_status": "",
+      "show_clickable_area": "",
+      "show_comments": "",
+      "swap_page_turn_key": ""
+    },
+    "translation": {
+      "cotrans_tip": "",
+      "options": {
+        "detection_resolution": "",
+        "direction": "",
+        "direction_auto": "",
+        "direction_horizontal": "",
+        "direction_vertical": "",
+        "forceRetry": "",
+        "localUrl": "",
+        "target_language": "",
+        "text_detector": "",
+        "translator": ""
+      },
+      "server": "",
+      "server_selfhosted": "",
+      "translate_all_img": ""
+    }
+  },
+  "site": {
+    "add_feature": {
+      "associate_nhentai": "",
+      "auto_page_turn": "",
+      "block_totally": "",
+      "hotkeys_page_turn": "",
+      "open_link_new_page": "",
+      "remember_current_site": ""
+    },
+    "ehentai": {
+      "fetch_img_page_source_failed": "",
+      "fetch_img_page_url_failed": "",
+      "fetch_img_url_failed": "",
+      "html_changed_load_failed": "",
+      "html_changed_nhentai_failed": "",
+      "ip_banned": "",
+      "nhentai_error": "",
+      "nhentai_failed": ""
+    },
+    "nhentai": {
+      "fetch_next_page_failed": "",
+      "tag_blacklist_fetch_failed": ""
+    },
+    "settings_tip": "",
+    "show_settings_menu": "",
+    "simple": {
+      "auto_read_mode_message": "",
+      "simple_read_mode": ""
+    }
+  },
+  "touch_area": {
+    "menu": "",
+    "next": "",
+    "prev": ""
+  },
+  "translation": {
+    "status": {
+      "default": "",
+      "detection": "",
+      "downscaling": "",
+      "error": "",
+      "error-lang": "",
+      "error-translating": "",
+      "error-with-id": "",
+      "finished": "",
+      "inpainting": "",
+      "mask-generation": "",
+      "ocr": "",
+      "pending": "",
+      "pending-pos": "",
+      "rendering": "",
+      "saved": "",
+      "translating": "",
+      "upscaling": ""
+    },
+    "tip": {
+      "check_img_status_failed": "",
+      "download_img_failed": "",
+      "error": "",
+      "get_translator_list_error": "",
+      "id_not_returned": "",
+      "img_downloading": "",
+      "img_not_fully_loaded": "",
+      "pending": "",
+      "translation_completed": "",
+      "upload_error": "",
+      "upload_return_error": "",
+      "wait_translation": ""
+    },
+    "translator": {
+      "baidu": "",
+      "deepl": "",
+      "google": "",
+      "gpt3.5": "",
+      "none": "",
+      "offline": "",
+      "original": "",
+      "youdao": ""
+    }
+  }
+}
