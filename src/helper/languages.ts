@@ -25,12 +25,12 @@ const getBrowserLang = () => {
 };
 
 const getSaveLang = () =>
-  window?.GM?.getValue
+  typeof GM !== 'undefined'
     ? GM.getValue<string>('Languages')
     : localStorage.getItem('Languages');
 
 export const setSaveLang = (val: string) =>
-  window?.GM?.setValue
+  typeof GM !== 'undefined'
     ? GM.setValue('Languages', val)
     : localStorage.setItem('Languages', val);
 

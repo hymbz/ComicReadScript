@@ -1,4 +1,6 @@
 .img {
+  content-visibility: hidden;
+
   z-index: 1;
 
   display: none;
@@ -10,6 +12,7 @@
   background-color: var(--hover_bg_color, #fff3);
 
   &[data-show] {
+    content-visibility: visible;
     display: unset;
   }
 
