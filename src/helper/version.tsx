@@ -82,6 +82,9 @@ export const handleVersionUpdate = async () => {
   if (!version) return GM.setValue('Version', GM.info.script.version);
   if (version === GM.info.script.version) return;
 
+  if (version.split('.')[0] !== GM.info.script.version.split('.')[0])
+    await migration();
+
   // 只在语言为中文时弹窗提示最新更新内容
   if (lang() === 'zh') {
     toast(
@@ -111,8 +114,5 @@ export const handleVersionUpdate = async () => {
         await GM.removeValueChangeListener(listenerId);
       },
     );
-  }
-
-  if (version.split('.')[0] !== GM.info.script.version.split('.')[0])
-    await migration();
+  } else await GM.setValue('Version', GM.info.script.version);
 };
