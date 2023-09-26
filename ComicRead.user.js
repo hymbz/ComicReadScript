@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         7.1.1
+// @version         7.1.2
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @author          hymbz
@@ -20,6 +20,7 @@
 // @connect         mangabz.com
 // @connect         copymanga.site
 // @connect         self
+// @connect         127.0.0.1
 // @connect         *
 // @grant           GM_addElement
 // @grant           GM_getResourceText
@@ -89,6 +90,16 @@ const main = require('main');
 const sleep = ms => new Promise(resolve => {
   window.setTimeout(resolve, ms);
 });
+const clamp = (min, val, max) => Math.max(Math.min(max, val), min);
+
+/** 根据传入的条件列表的真假，对 val 进行取反 */
+const ifNot = (val, ...conditions) => {
+  let res = !!val;
+  conditions.forEach(v => {
+    if (v) res = !res;
+  });
+  return res;
+};
 
 /**
  * 对 document.querySelector 的封装
@@ -393,8 +404,8 @@ const getBrowserLang = () => {
   }
   return newLang;
 };
-const getSaveLang = () => window?.GM?.getValue ? GM.getValue('Languages') : localStorage.getItem('Languages');
-const setSaveLang = val => window?.GM?.setValue ? GM.setValue('Languages', val) : localStorage.setItem('Languages', val);
+const getSaveLang = () => typeof GM !== 'undefined' ? GM.getValue('Languages') : localStorage.getItem('Languages');
+const setSaveLang = val => typeof GM !== 'undefined' ? GM.setValue('Languages', val) : localStorage.setItem('Languages', val);
 const getInitLang = async () => {
   const saveLang = await getSaveLang();
   if (isLanguages(saveLang)) return saveLang;
@@ -2013,8 +2024,8 @@ const initPanzoom = state => {
     onTouch: () => false,
     // 在 处于卷轴模式 或 不处于缩放状态且没有按下 alt/ctrl 时，不进行缩放
     beforeWheel: e => store.option.scrollMode || !(e.altKey || e.ctrlKey) && panzoom.getTransform().scale === 1,
-    // 不处于卷轴模式或按下「alt/ctrl」或「处于放大状态」时才允许拖动
-    beforeMouseDown: e => !(!store.option.scrollMode || e.ctrlKey || e.altKey || panzoom.getTransform().scale !== 1)
+    // 处于放大状态时才允许拖动
+    beforeMouseDown: () => panzoom.getTransform().scale === 1
   });
   panzoom.on('zoom', throttle(200, () => {
     setState(draftState => {
@@ -2245,18 +2256,6 @@ solidJs.createRoot(() => {
   }));
 });
 
-/** 阻止事件冒泡 */
-const stopPropagation = e => {
-  e.stopPropagation();
-};
-
-/** 从头开始播放元素的动画 */
-const playAnimation = e => e?.getAnimations().forEach(animation => {
-  animation.cancel();
-  animation.play();
-});
-const clamp = (min, val, max) => Math.max(Math.min(max, val), min);
-
 /** 触发 onOptionChange */
 const triggerOnOptionChange = () => setTimeout(() => store.onOptionChange?.(difference(store.option, defaultOption)));
 
@@ -2335,66 +2334,6 @@ const loadImg = (state, startIndex, endIndex = startIndex + 1, loadNum = 2) => {
   if (edited) updateTipText();
   return edited;
 };
-
-/** 判断当前是否已经滚动到底部 */
-const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
-
-/** 判断当前是否已经滚动到顶部 */
-const isTop = state => state.option.scrollMode ? store.scrollbar.dragTop === 0 : state.activePageIndex === 0;
-
-/** 翻页 */
-const turnPage = dir => setState(state => {
-  if (dir === 'prev') {
-    switch (state.endPageType) {
-      case 'start':
-        if (!state.scrollLock && state.option.jumpToNext) state.onPrev?.();
-        return;
-      case 'end':
-        state.endPageType = undefined;
-        return;
-      default:
-        // 弹出卷首结束页
-        if (isTop(state)) {
-          if (!state.onExit) return;
-          // 没有 onPrev 时不弹出
-          if (!state.onPrev || !state.option.jumpToNext) return;
-          state.endPageType = 'start';
-          state.scrollLock = true;
-          window.setTimeout(() => {
-            state.scrollLock = false;
-          }, 200);
-          return;
-        }
-        if (!state.option.scrollMode) state.activePageIndex -= 1;
-    }
-  } else {
-    switch (state.endPageType) {
-      case 'end':
-        if (state.scrollLock) return;
-        if (state.onNext && state.option.jumpToNext) {
-          state.onNext();
-          return;
-        }
-        state.onExit?.(true);
-        return;
-      case 'start':
-        state.endPageType = undefined;
-        return;
-      default:
-        // 弹出卷尾结束页
-        if (isBottom(state)) {
-          if (!state.onExit) return;
-          state.endPageType = 'end';
-          state.scrollLock = true;
-          window.setTimeout(() => {
-            state.scrollLock = false;
-          }, 200);
-          return;
-        }
-        if (!state.option.scrollMode) state.activePageIndex += 1;
-    }
-  }
-});
 const zoomScrollModeImg = zoomLevel => {
   setOption(draftOption => {
     draftOption.scrollModeImgScale = !zoomLevel ? 1 : clamp(0.1,
@@ -2530,7 +2469,7 @@ const switchOnePageMode = () => {
 
 /** 切换阅读方向 */
 const switchDir = () => setOption(draftOption => {
-  draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
+  draftOption.dir = draftOption.dir !== 'rtl' ? 'rtl' : 'ltr';
 });
 solidJs.createRoot(() => {
   // 页数发生变动时
@@ -2569,9 +2508,68 @@ const delHotkeys = code => {
   });
 };
 
-var css$1 = ".index_module_img__e6e60019{background-color:var(--hover_bg_color,#fff3);display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__e6e60019[data-show]{display:unset}.index_module_img__e6e60019[data-fill=left]{transform:translate(50%)}.index_module_img__e6e60019[data-fill=right]{transform:translate(-50%)}.index_module_img__e6e60019[data-load-type=error],.index_module_img__e6e60019[data-load-type=wait]{display:none}.index_module_mangaFlowBox__e6e60019{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__e6e60019::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__e6e60019[data-hiddenMouse=true]{cursor:none}.index_module_mangaFlow__e6e60019{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__e6e60019.index_module_disableZoom__e6e60019 .index_module_img__e6e60019{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0;visibility:hidden}.index_module_mangaFlow__e6e60019[dir=ltr]{flex-direction:row}.index_module_mangaFlow__e6e60019>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20%}.index_module_mangaFlow__e6e60019>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__e6e60019>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__e6e60019{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__e6e60019>button{animation:index_module_jello__e6e60019 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__e6e60019>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__e6e60019>button:focus-visible{outline:none}.index_module_endPage__e6e60019>.index_module_tip__e6e60019{margin:auto;position:absolute}.index_module_endPage__e6e60019[data-show]{opacity:1;pointer-events:all}.index_module_endPage__e6e60019[data-type=start]>.index_module_tip__e6e60019{transform:translateY(-10em)}.index_module_endPage__e6e60019[data-type=end]>.index_module_tip__e6e60019{transform:translateY(10em)}.index_module_comments__e6e60019{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__e6e60019>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__e6e60019:hover{opacity:1}@keyframes index_module_jello__e6e60019{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__e6e60019{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__e6e60019{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__e6e60019[data-show=true] .index_module_toolbarPanel__e6e60019{transform:none}.index_module_toolbarBg__e6e60019{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__e6e60019{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__e6e60019{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text}.index_module_SettingPanel__e6e60019 hr{margin:0}.index_module_SettingBlock__e6e60019{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div+:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div{margin-top:1em}.index_module_SettingBlock__e6e60019[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__e6e60019{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__e6e60019{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__e6e60019+.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_SettingsItemName__e6e60019{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__e6e60019{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__e6e60019{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__e6e60019[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__e6e60019[data-checked=true] .index_module_SettingsItemSwitchRound__e6e60019{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__e6e60019{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__e6e60019{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__e6e60019{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__e6e60019{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019{overflow:hidden}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019>.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_hotkeys__e6e60019{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__e6e60019+.index_module_hotkeys__e6e60019{margin-top:.5em}.index_module_hotkeys__e6e60019:last-child{border-bottom:none}.index_module_hotkeysItem__e6e60019{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__e6e60019>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__e6e60019>svg:hover{opacity:.9}.index_module_hotkeysItem__e6e60019:hover{padding:.2em .5em}.index_module_hotkeysItem__e6e60019:hover>svg{display:unset}.index_module_hotkeysItem__e6e60019:focus,.index_module_hotkeysItem__e6e60019:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__e6e60019{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__e6e60019>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__e6e60019>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__e6e60019>div[title]>svg{width:1.6em}.index_module_hotkeys__e6e60019:hover div[title]{transform:scale(1)}.index_module_scrollbar__e6e60019{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__e6e60019>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbarDrag__e6e60019{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;opacity:0;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__e6e60019{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__e6e60019[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__e6e60019[data-type=wait]{opacity:.5}.index_module_scrollbarPage__e6e60019[data-type=error]{background-color:#f005}.index_module_scrollbarPage__e6e60019[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__e6e60019[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__e6e60019[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__e6e60019[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__e6e60019[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__e6e60019{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__e6e60019:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbarDrag__e6e60019[data-show=true],.index_module_scrollbarPoper__e6e60019[data-show=true],.index_module_scrollbar__e6e60019:hover .index_module_scrollbarDrag__e6e60019,.index_module_scrollbar__e6e60019:hover .index_module_scrollbarPoper__e6e60019{opacity:1}.index_module_touchAreaRoot__e6e60019{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__e6e60019[data-vert=true]{flex-direction:column!important}@media (width <= 600px){.index_module_touchAreaRoot__e6e60019{flex-direction:column!important}}.index_module_touchArea__e6e60019{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none}.index_module_touchArea__e6e60019>h6{text-orientation:upright;writing-mode:vertical-lr}.index_module_touchArea__e6e60019[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__e6e60019[data-show=true]{visibility:visible}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=next]{background-color:#f38181e6}.index_module_hidden__e6e60019{display:none}.index_module_invisible__e6e60019{visibility:hidden}.index_module_opacity1__e6e60019{opacity:1}.index_module_opacity0__e6e60019{opacity:0}.index_module_root__e6e60019{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__e6e60019 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__e6e60019{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".index_module_img__e6e60019{background-color:var(--hover_bg_color,#fff3);content-visibility:hidden;display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__e6e60019[data-show]{content-visibility:visible;display:unset}.index_module_img__e6e60019[data-fill=left]{transform:translate(50%)}.index_module_img__e6e60019[data-fill=right]{transform:translate(-50%)}.index_module_img__e6e60019[data-load-type=loading]{position:absolute}.index_module_img__e6e60019[data-load-type=error],.index_module_img__e6e60019[data-load-type=wait]{height:40em!important;opacity:0;position:absolute;width:40em}.index_module_mangaFlowBox__e6e60019{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__e6e60019::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__e6e60019[data-hiddenMouse=true]{cursor:none}.index_module_mangaFlow__e6e60019{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__e6e60019.index_module_disableZoom__e6e60019 .index_module_img__e6e60019{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019{height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__e6e60019.index_module_scrollMode__e6e60019 .index_module_img__e6e60019[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0;visibility:hidden}.index_module_mangaFlow__e6e60019[dir=ltr]{flex-direction:row}.index_module_mangaFlow__e6e60019>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20em}.index_module_mangaFlow__e6e60019>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__e6e60019>svg[data-fill=right]{transform:translate(-100%)}.index_module_endPage__e6e60019{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__e6e60019>button{animation:index_module_jello__e6e60019 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__e6e60019>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__e6e60019>button:focus-visible{outline:none}.index_module_endPage__e6e60019>.index_module_tip__e6e60019{margin:auto;position:absolute}.index_module_endPage__e6e60019[data-show]{opacity:1;pointer-events:all}.index_module_endPage__e6e60019[data-type=start]>.index_module_tip__e6e60019{transform:translateY(-10em)}.index_module_endPage__e6e60019[data-type=end]>.index_module_tip__e6e60019{transform:translateY(10em)}.index_module_comments__e6e60019{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__e6e60019>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__e6e60019:hover{opacity:1}@keyframes index_module_jello__e6e60019{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__e6e60019{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__e6e60019{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__e6e60019[data-show=true] .index_module_toolbarPanel__e6e60019{transform:none}.index_module_toolbarBg__e6e60019{backdrop-filter:blur(3px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.3);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__e6e60019{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__e6e60019{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text}.index_module_SettingPanel__e6e60019 hr{color:#fff;margin:0}.index_module_SettingBlock__e6e60019{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div+:is(.index_module_SettingBlock__e6e60019 .index_module_SettingBlockBody__e6e60019)>div{margin-top:1em}.index_module_SettingBlock__e6e60019[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__e6e60019{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__e6e60019{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__e6e60019+.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_SettingsItemName__e6e60019{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__e6e60019{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__e6e60019{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__e6e60019[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__e6e60019[data-checked=true] .index_module_SettingsItemSwitchRound__e6e60019{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__e6e60019{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__e6e60019{border-radius:5px;cursor:pointer;font-size:1em;margin:0;padding-right:0;width:6em}.index_module_closeCover__e6e60019{height:100%;left:0;position:fixed;top:0;width:100%;z-index:-1}.index_module_SettingsShowItem__e6e60019{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019{overflow:hidden}.index_module_SettingsShowItem__e6e60019>.index_module_SettingsShowItemBody__e6e60019>.index_module_SettingsItem__e6e60019{margin-top:1em}.index_module_hotkeys__e6e60019{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__e6e60019+.index_module_hotkeys__e6e60019{margin-top:.5em}.index_module_hotkeys__e6e60019:last-child{border-bottom:none}.index_module_hotkeysItem__e6e60019{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__e6e60019>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__e6e60019>svg:hover{opacity:.9}.index_module_hotkeysItem__e6e60019:hover{padding:.2em .5em}.index_module_hotkeysItem__e6e60019:hover>svg{display:unset}.index_module_hotkeysItem__e6e60019:focus,.index_module_hotkeysItem__e6e60019:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__e6e60019{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__e6e60019>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__e6e60019>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__e6e60019>div[title]>svg{width:1.6em}.index_module_hotkeys__e6e60019:hover div[title]{transform:scale(1)}.index_module_scrollbar__e6e60019{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;opacity:0;outline:none;position:absolute;right:3px;top:1%;touch-action:none;transition:opacity .15s;user-select:none;width:5px;z-index:9}.index_module_scrollbar__e6e60019>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbar__e6e60019:hover,.index_module_scrollbar__e6e60019[data-show=true]{opacity:1}.index_module_scrollbarDrag__e6e60019{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__e6e60019{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__e6e60019[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__e6e60019[data-type=wait]{opacity:.5}.index_module_scrollbarPage__e6e60019[data-type=error]{background-color:#f005}.index_module_scrollbarPage__e6e60019[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__e6e60019[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__e6e60019[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__e6e60019[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__e6e60019[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__e6e60019{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__e6e60019[data-show=true]{opacity:1}.index_module_scrollbarPoper__e6e60019:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbar__e6e60019:hover .index_module_scrollbarPoper__e6e60019{opacity:1}.index_module_touchAreaRoot__e6e60019{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__e6e60019[data-vert=true]{flex-direction:column!important}@media (width <= 600px){.index_module_touchAreaRoot__e6e60019{flex-direction:column!important}}.index_module_touchArea__e6e60019{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none}.index_module_touchArea__e6e60019>h6{text-orientation:upright;writing-mode:vertical-lr}.index_module_touchArea__e6e60019[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__e6e60019[data-show=true]{visibility:visible}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__e6e60019[data-show=true] .index_module_touchArea__e6e60019[data-area=next]{background-color:#f38181e6}.index_module_hidden__e6e60019{display:none}.index_module_invisible__e6e60019{visibility:hidden}.index_module_opacity1__e6e60019{opacity:1}.index_module_opacity0__e6e60019{opacity:0}.index_module_root__e6e60019{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__e6e60019 a{color:var(--text_secondary)}.index_module_beautifyScrollbar__e6e60019{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__e6e60019::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"index_module_img__e6e60019","mangaFlowBox":"index_module_mangaFlowBox__e6e60019","mangaFlow":"index_module_mangaFlow__e6e60019","disableZoom":"index_module_disableZoom__e6e60019","scrollMode":"index_module_scrollMode__e6e60019","endPage":"index_module_endPage__e6e60019","jello":"index_module_jello__e6e60019","tip":"index_module_tip__e6e60019","comments":"index_module_comments__e6e60019","toolbar":"index_module_toolbar__e6e60019","toolbarPanel":"index_module_toolbarPanel__e6e60019","toolbarBg":"index_module_toolbarBg__e6e60019","SettingPanelPopper":"index_module_SettingPanelPopper__e6e60019","SettingPanel":"index_module_SettingPanel__e6e60019","SettingBlock":"index_module_SettingBlock__e6e60019","SettingBlockBody":"index_module_SettingBlockBody__e6e60019","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__e6e60019","SettingsItem":"index_module_SettingsItem__e6e60019","SettingsItemName":"index_module_SettingsItemName__e6e60019","SettingsItemSwitch":"index_module_SettingsItemSwitch__e6e60019","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__e6e60019","SettingsItemIconButton":"index_module_SettingsItemIconButton__e6e60019","SettingsItemSelect":"index_module_SettingsItemSelect__e6e60019","closeCover":"index_module_closeCover__e6e60019","SettingsShowItem":"index_module_SettingsShowItem__e6e60019","SettingsShowItemBody":"index_module_SettingsShowItemBody__e6e60019","hotkeys":"index_module_hotkeys__e6e60019","hotkeysItem":"index_module_hotkeysItem__e6e60019","hotkeysHeader":"index_module_hotkeysHeader__e6e60019","scrollbar":"index_module_scrollbar__e6e60019","scrollbarDrag":"index_module_scrollbarDrag__e6e60019","scrollbarPage":"index_module_scrollbarPage__e6e60019","scrollbarPoper":"index_module_scrollbarPoper__e6e60019","touchAreaRoot":"index_module_touchAreaRoot__e6e60019","touchArea":"index_module_touchArea__e6e60019","hidden":"index_module_hidden__e6e60019","invisible":"index_module_invisible__e6e60019","opacity1":"index_module_opacity1__e6e60019","opacity0":"index_module_opacity0__e6e60019","root":"index_module_root__e6e60019","beautifyScrollbar":"index_module_beautifyScrollbar__e6e60019"};
 
+/** 判断当前是否已经滚动到底部 */
+const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
+
+/** 判断当前是否已经滚动到顶部 */
+const isTop = state => state.option.scrollMode ? store.scrollbar.dragTop === 0 : state.activePageIndex === 0;
+
+/** 翻页 */
+const turnPage = dir => setState(state => {
+  if (dir === 'prev') {
+    switch (state.endPageType) {
+      case 'start':
+        if (!state.scrollLock && state.option.jumpToNext) state.onPrev?.();
+        return;
+      case 'end':
+        state.endPageType = undefined;
+        return;
+      default:
+        // 弹出卷首结束页
+        if (isTop(state)) {
+          if (!state.onExit) return;
+          // 没有 onPrev 时不弹出
+          if (!state.onPrev || !state.option.jumpToNext) return;
+          state.endPageType = 'start';
+          state.scrollLock = true;
+          window.setTimeout(() => {
+            state.scrollLock = false;
+          }, 200);
+          return;
+        }
+        if (!state.option.scrollMode) state.activePageIndex -= 1;
+    }
+  } else {
+    switch (state.endPageType) {
+      case 'end':
+        if (state.scrollLock) return;
+        if (state.onNext && state.option.jumpToNext) {
+          state.onNext();
+          return;
+        }
+        state.onExit?.(true);
+        return;
+      case 'start':
+        state.endPageType = undefined;
+        return;
+      default:
+        // 弹出卷尾结束页
+        if (isBottom(state)) {
+          if (!state.onExit) return;
+          state.endPageType = 'end';
+          state.scrollLock = true;
+          window.setTimeout(() => {
+            state.scrollLock = false;
+          }, 200);
+          return;
+        }
+        if (!state.option.scrollMode) state.activePageIndex += 1;
+    }
+  }
+});
 const handleWheel = e => {
   e.stopPropagation();
   if (e.ctrlKey && !store.option.scrollMode || e.altKey && !store.option.scrollMode || !store.endPageType && store.scrollLock) return e.preventDefault();
@@ -2752,16 +2750,18 @@ const handleImgError = (i, e) => {
 const ComicImg = props => {
   const show = solidJs.createMemo(() => store.option.scrollMode || activePage().includes(props.index));
   const fill = solidJs.createMemo(() => {
-    if (!show() || props.img.loadType === 'error') return;
+    if (!show() || activePage().length === 1) return;
 
-    // 判断一下当前是否显示了错误图片
-    const activePageType = activePage().map(i => store.imgList[i]?.loadType);
-    const errorIndex = activePageType.indexOf('error');
-    if (errorIndex !== -1) return !!errorIndex === (store.option.dir === 'rtl') ? 'left' : 'right';
-
-    // 最后判断是否有填充页
+    // 判断是否有填充页
     const fillIndex = activePage().indexOf(-1);
-    if (fillIndex !== -1) return !!fillIndex === (store.option.dir === 'rtl') ? 'left' : 'right';
+    if (fillIndex !== -1) return ifNot(fillIndex, store.option.dir !== 'rtl') ? 'left' : 'right';
+
+    // 判断自己的类型
+    if (props.img.loadType === 'loading' || props.img.loadType === 'error') return ifNot(activePage().indexOf(props.index), store.option.dir !== 'rtl') ? 'left' : 'right';
+
+    // 判断另一张图
+    const anotherImg = store.imgList[activePage().findIndex(i => i !== props.index)];
+    if (anotherImg.loadType === 'loading' || anotherImg.loadType === 'error') return ifNot(activePage().indexOf(props.index), store.option.dir !== 'rtl') ? 'left' : 'right';
   });
   const src = solidJs.createMemo(() => {
     if (props.img.loadType === 'wait') return '';
@@ -2912,7 +2912,7 @@ const TouchArea = () => {
     web.insert(_el$7, () => t('touch_area.next'));
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.touchAreaRoot,
-        _v$2 = store.option.dir === 'rtl' === (store.option.clickPageTurn.enabled && store.option.clickPageTurn.reverse) ? undefined : 'row-reverse',
+        _v$2 = ifNot(store.option.clickPageTurn.enabled && store.option.clickPageTurn.reverse, store.option.dir !== 'rtl') ? undefined : 'row-reverse',
         _v$3 = store.isZoomed ? 'move' : undefined,
         _v$4 = store.showTouchArea,
         _v$5 = store.option.clickPageTurn.vertical,
@@ -2993,7 +2993,6 @@ const ComicImgFlow = () => {
       } = store.panzoom.getTransform();
 
       // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
-
       if (scale >= 2) store.panzoom.smoothZoomAbs(0, 0, 1);else store.panzoom.smoothZoomAbs(e.clientX, e.clientY, scale + 1);
     });
   };
@@ -3291,7 +3290,7 @@ const _tmpl$$i = /*#__PURE__*/web.template(\`<select>\`),
 const SettingsItemSelect = props => {
   let ref;
   solidJs.createEffect(() => {
-    ref.value = props.options.some(([val]) => val === props.value) ? props.value : '';
+    ref.value = props.options?.some(([val]) => val === props.value) ? props.value : '';
   });
   return web.createComponent(SettingsItem, {
     get name() {
@@ -3308,6 +3307,7 @@ const SettingsItemSelect = props => {
       _el$.addEventListener("change", e => props.onChange(e.target.value));
       const _ref$ = ref;
       typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
+      _el$.addEventListener("click", () => props.onClick?.());
       web.insert(_el$, web.createComponent(solidJs.For, {
         get each() {
           return props.options;
@@ -3432,7 +3432,7 @@ const selfhostedTranslation = async i => {
       errorNum += 1;
     }
   }
-  return \`\${url()}/result/\${task_id}\`;
+  return URL.createObjectURL(await download(\`\${url()}/result/\${task_id}\`));
 };
 
 /** 等待翻译完成 */
@@ -3738,6 +3738,14 @@ const SettingTranslation = () => {
         },
         get onChange() {
           return createStateSetFn('translation.options.translator');
+        },
+        onClick: () => {
+          if (store.option.translation.server !== 'selfhosted') return;
+          // 通过手动触发变更，以便在点击时再获取一下翻译列表
+          setState(state => {
+            state.option.translation.server = 'disable';
+            state.option.translation.server = 'selfhosted';
+          });
         }
       }), web.createComponent(SettingsItemSelect, {
         get name() {
@@ -4048,6 +4056,17 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   onChange: setLang
 })], true]];
 
+/** 阻止事件冒泡 */
+const stopPropagation = e => {
+  e.stopPropagation();
+};
+
+/** 从头开始播放元素的动画 */
+const playAnimation = e => e?.getAnimations().forEach(animation => {
+  animation.cancel();
+  animation.play();
+});
+
 const _tmpl$$e = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
   _tmpl$3$3 = /*#__PURE__*/web.template(\`<hr>\`);
@@ -4324,7 +4343,7 @@ const useDrag = ref => {
     } = dragOption;
     if (ref) {
       // 在鼠标、手指按下后切换状态
-      ref.addEventListener('mousedown', e => {
+      ref.addEventListener('pointerdown', e => {
         e.stopPropagation();
         // 只处理左键按下触发的事件
         if (e.buttons !== 1) return;
@@ -4339,18 +4358,8 @@ const useDrag = ref => {
         signal: controller.signal
       });
 
-      // TODO: 完成触摸事件的适配
-      // ref.addEventListener(
-      //   'touchstart',
-      //   (e) => {
-      //     down = true;
-      //     handleDrag(e., e.offsetY);
-      //   },
-      //   { capture: false, passive: true, signal: controller.signal },
-      // );
-
       // 在鼠标、手指移动时根据状态判断是否要触发函数
-      ref.addEventListener('mousemove', e => {
+      ref.addEventListener('pointermove', e => {
         e.stopPropagation();
         if (state.startTime === 0) return;
         // 只处理左键按下触发的事件
@@ -4365,7 +4374,7 @@ const useDrag = ref => {
       });
 
       // 在鼠标、手指松开后切换状态
-      ref.addEventListener('mouseup', e => {
+      ref.addEventListener('pointerup', e => {
         e.stopPropagation();
         if (state.startTime === 0) return;
         state.type = 'end';
@@ -4439,7 +4448,7 @@ const ScrollbarPage = props => {
   })();
 };
 
-const _tmpl$$a = /*#__PURE__*/web.template(\`<div role="scrollbar" tabindex="-1"><div><div>\`);
+const _tmpl$$a = /*#__PURE__*/web.template(\`<div role="scrollbar" tabindex="-1"><span><div>\`);
 
 /** 滚动条 */
 const Scrollbar = () => {
@@ -4490,8 +4499,8 @@ const Scrollbar = () => {
         _v$3 = penetrate() ? 'none' : 'auto',
         _v$4 = modules_c21c94f2$1.mangaFlow,
         _v$5 = store.activePageIndex || -1,
-        _v$6 = modules_c21c94f2$1.scrollbarDrag,
-        _v$7 = !store.option.scrollbar.autoHidden || showScrollbar(),
+        _v$6 = !store.option.scrollbar.autoHidden || showScrollbar(),
+        _v$7 = modules_c21c94f2$1.scrollbarDrag,
         _v$8 = height(),
         _v$9 = top(),
         _v$10 = store.option.scrollMode ? undefined : 'top 150ms',
@@ -4505,8 +4514,8 @@ const Scrollbar = () => {
       _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$.style.setProperty("pointer-events", _v$3) : _el$.style.removeProperty("pointer-events"));
       _v$4 !== _p$._v$4 && web.setAttribute(_el$, "aria-controls", _p$._v$4 = _v$4);
       _v$5 !== _p$._v$5 && web.setAttribute(_el$, "aria-valuenow", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.className(_el$2, _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$2, "data-show", _p$._v$7 = _v$7);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-show", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.className(_el$2, _p$._v$7 = _v$7);
       _v$8 !== _p$._v$8 && ((_p$._v$8 = _v$8) != null ? _el$2.style.setProperty("height", _v$8) : _el$2.style.removeProperty("height"));
       _v$9 !== _p$._v$9 && ((_p$._v$9 = _v$9) != null ? _el$2.style.setProperty("top", _v$9) : _el$2.style.removeProperty("top"));
       _v$10 !== _p$._v$10 && ((_p$._v$10 = _v$10) != null ? _el$2.style.setProperty("transition", _v$10) : _el$2.style.removeProperty("transition"));
@@ -5206,7 +5215,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复脚本无法正常运行的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复无法使用本机外自部署的翻译服务的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -5260,6 +5269,7 @@ const handleVersionUpdate = async () => {
   const version = await GM.getValue('Version');
   if (!version) return GM.setValue('Version', GM.info.script.version);
   if (version === GM.info.script.version) return;
+  if (version.split('.')[0] !== GM.info.script.version.split('.')[0]) await migration();
 
   // 只在语言为中文时弹窗提示最新更新内容
   if (lang() === 'zh') {
@@ -5283,8 +5293,7 @@ const handleVersionUpdate = async () => {
       toast$1.dismiss('Version Tip');
       await GM.removeValueChangeListener(listenerId);
     });
-  }
-  if (version.split('.')[0] !== GM.info.script.version.split('.')[0]) await migration();
+  } else await GM.setValue('Version', GM.info.script.version);
 };
 
 const getHotkeys = async () => ({
@@ -5632,11 +5641,13 @@ exports.assign = assign;
 exports.autoReadModeMessage = autoReadModeMessage;
 exports.autoUpdate = autoUpdate;
 exports.byPath = byPath;
+exports.clamp = clamp;
 exports.createFillImgList = createFillImgList;
 exports.dataToParams = dataToParams;
 exports.difference = difference;
 exports.getKeyboardCode = getKeyboardCode;
 exports.getMostItem = getMostItem;
+exports.ifNot = ifNot;
 exports.insertNode = insertNode;
 exports.isEqualArray = isEqualArray;
 exports.keyboardCodeToText = keyboardCodeToText;
@@ -7512,8 +7523,8 @@ const getBrowserLang = () => {
   }
   return newLang;
 };
-const getSaveLang = () => window?.GM?.getValue ? GM.getValue('Languages') : localStorage.getItem('Languages');
-const setSaveLang = val => window?.GM?.setValue ? GM.setValue('Languages', val) : localStorage.setItem('Languages', val);
+const getSaveLang = () => typeof GM !== 'undefined' ? GM.getValue('Languages') : localStorage.getItem('Languages');
+const setSaveLang = val => typeof GM !== 'undefined' ? GM.setValue('Languages', val) : localStorage.setItem('Languages', val);
 const getInitLang = async () => {
   const saveLang = await getSaveLang();
   if (isLanguages(saveLang)) return saveLang;

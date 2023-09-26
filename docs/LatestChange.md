@@ -1,6 +1,6 @@
-## [7.1.1](https://github.com/hymbz/ComicReadScript/compare/v7.1.0...v7.1.1) (2023-09-25)
+## [7.1.2](https://github.com/hymbz/ComicReadScript/compare/v7.1.1...v7.1.2) (2023-09-26)
 
 
 ### Bug Fixes
 
-* :bug: 修复脚本无法正常运行的 bug ([63252b2](https://github.com/hymbz/ComicReadScript/commit/63252b2e34b0f5af36a703e218669a9b0c10c806))
+* :bug: 修复无法使用本机外自部署的翻译服务的 bug ([7c63392](https://github.com/hymbz/ComicReadScript/commit/7c633922a338d92710a1471ac9c11ae7a0789b4f))
