@@ -43,14 +43,14 @@ export const Scrollbar: Component = () => {
       }}
       style={{ 'pointer-events': penetrate() ? 'none' : 'auto' }}
       role="scrollbar"
+      tabIndex={-1}
       aria-controls={classes.mangaFlow}
       aria-valuenow={store.activePageIndex || -1}
-      tabIndex={-1}
+      data-show={!store.option.scrollbar.autoHidden || showScrollbar()}
       onWheel={handleWheel}
     >
-      <div
+      <span
         class={classes.scrollbarDrag}
-        data-show={!store.option.scrollbar.autoHidden || showScrollbar()}
         style={{
           height: height(),
           /**
@@ -69,8 +69,7 @@ export const Scrollbar: Component = () => {
         >
           {store.scrollbar.tipText}
         </div>
-      </div>
-
+      </span>
       <Show when={store.option.scrollbar.showImgStatus}>
         <For each={store.pageList}>
           {([a, b]) => <ScrollbarPage a={a} b={b} />}

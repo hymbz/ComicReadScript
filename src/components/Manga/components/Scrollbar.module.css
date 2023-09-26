@@ -13,15 +13,24 @@
   width: 5px;
   height: 98%;
 
+  opacity: 0;
+
   /* 扩大触发范围 */
   border-left: max(6vw, 1em) solid transparent;
   outline: none;
+
+  transition: opacity 150ms;
 
   & > div {
     pointer-events: none;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+  }
+
+  &:hover,
+  &[data-show="true"] {
+    opacity: 1;
   }
 }
 
@@ -33,7 +42,6 @@
 
   width: 100%;
 
-  opacity: 0;
   background-color: var(--scrollbar_drag);
   border-radius: 1em;
 }
@@ -104,6 +112,10 @@
   border-radius: 0.3em;
 
   transition: opacity 150ms;
+
+  &[data-show="true"] {
+    opacity: 1;
+  }
 }
 
 /* 悬浮框箭头 */
@@ -122,14 +134,7 @@
   border-left-width: 0.5em;
 }
 
-/* 控制滚动条的显示 */
-.scrollbarDrag[data-show="true"],
-.scrollbar:hover .scrollbarDrag {
-  opacity: 1;
-}
-
 /* 控制滚动条悬浮提示的显示 */
-.scrollbarPoper[data-show="true"],
 .scrollbar:hover .scrollbarPoper {
   opacity: 1;
 }
