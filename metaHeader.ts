@@ -95,6 +95,7 @@ export const getMetaData = (isDevMode: boolean) => {
       'mangabz.com',
       'copymanga.site',
       'self',
+      '127.0.0.1',
       '*',
     ],
     grant: [

@@ -170,6 +170,9 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
       port: DEV_PORT,
       cors: false,
     },
+    resolve: {
+      alias: { helper: resolve(__dirname, 'src/helper') },
+    },
     plugins: [
       {
         name: 'selfPlugin',

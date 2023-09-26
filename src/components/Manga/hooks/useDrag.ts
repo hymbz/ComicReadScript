@@ -34,7 +34,7 @@ export const useDrag = (ref: HTMLElement) => {
     if (ref) {
       // 在鼠标、手指按下后切换状态
       ref.addEventListener(
-        'mousedown',
+        'pointerdown',
         (e) => {
           e.stopPropagation();
           // 只处理左键按下触发的事件
@@ -49,19 +49,9 @@ export const useDrag = (ref: HTMLElement) => {
         { capture: false, passive: true, signal: controller.signal },
       );
 
-      // TODO: 完成触摸事件的适配
-      // ref.addEventListener(
-      //   'touchstart',
-      //   (e) => {
-      //     down = true;
-      //     handleDrag(e., e.offsetY);
-      //   },
-      //   { capture: false, passive: true, signal: controller.signal },
-      // );
-
       // 在鼠标、手指移动时根据状态判断是否要触发函数
       ref.addEventListener(
-        'mousemove',
+        'pointermove',
         (e) => {
           e.stopPropagation();
           if (state.startTime === 0) return;
@@ -77,7 +67,7 @@ export const useDrag = (ref: HTMLElement) => {
 
       // 在鼠标、手指松开后切换状态
       ref.addEventListener(
-        'mouseup',
+        'pointerup',
         (e) => {
           e.stopPropagation();
           if (state.startTime === 0) return;
