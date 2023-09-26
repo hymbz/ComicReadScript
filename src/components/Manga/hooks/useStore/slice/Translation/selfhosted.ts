@@ -83,5 +83,5 @@ export const selfhostedTranslation = async (i: number) => {
     }
   }
 
-  return `${url()}/result/${task_id}`;
+  return URL.createObjectURL(await download(`${url()}/result/${task_id}`));
 };
