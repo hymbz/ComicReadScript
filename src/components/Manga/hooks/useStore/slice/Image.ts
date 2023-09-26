@@ -1,6 +1,7 @@
 import { debounce } from 'throttle-debounce';
 import { createEffect, createMemo, createRoot, on } from 'solid-js';
 
+import { clamp } from 'helper';
 import type { State } from '..';
 import { store, setState } from '..';
 import { findFillIndex, handleComicData } from '../../../handleComicData';
@@ -12,7 +13,6 @@ import {
   updateTipText,
   windowHeight,
 } from './Scrollbar';
-import { clamp } from '../../../helper';
 import { setOption } from './Helper';
 
 export const {
@@ -99,76 +99,6 @@ const loadImg = (
   if (edited) updateTipText();
   return edited;
 };
-
-/** 判断当前是否已经滚动到底部 */
-const isBottom = (state: State) =>
-  state.option.scrollMode
-    ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999
-    : state.activePageIndex === state.pageList.length - 1;
-
-/** 判断当前是否已经滚动到顶部 */
-const isTop = (state: State) =>
-  state.option.scrollMode
-    ? store.scrollbar.dragTop === 0
-    : state.activePageIndex === 0;
-
-/** 翻页 */
-export const turnPage = (dir: 'next' | 'prev') =>
-  setState((state) => {
-    if (dir === 'prev') {
-      switch (state.endPageType) {
-        case 'start':
-          if (!state.scrollLock && state.option.jumpToNext) state.onPrev?.();
-          return;
-        case 'end':
-          state.endPageType = undefined;
-          return;
-
-        default:
-          // 弹出卷首结束页
-          if (isTop(state)) {
-            if (!state.onExit) return;
-            // 没有 onPrev 时不弹出
-            if (!state.onPrev || !state.option.jumpToNext) return;
-
-            state.endPageType = 'start';
-            state.scrollLock = true;
-            window.setTimeout(() => {
-              state.scrollLock = false;
-            }, 200);
-            return;
-          }
-          if (!state.option.scrollMode) state.activePageIndex -= 1;
-      }
-    } else {
-      switch (state.endPageType) {
-        case 'end':
-          if (state.scrollLock) return;
-          if (state.onNext && state.option.jumpToNext) {
-            state.onNext();
-            return;
-          }
-          state.onExit?.(true);
-          return;
-        case 'start':
-          state.endPageType = undefined;
-          return;
-
-        default:
-          // 弹出卷尾结束页
-          if (isBottom(state)) {
-            if (!state.onExit) return;
-            state.endPageType = 'end';
-            state.scrollLock = true;
-            window.setTimeout(() => {
-              state.scrollLock = false;
-            }, 200);
-            return;
-          }
-          if (!state.option.scrollMode) state.activePageIndex += 1;
-      }
-    }
-  });
 
 export const zoomScrollModeImg = (zoomLevel?: number) => {
   setOption((draftOption) => {
@@ -314,7 +244,7 @@ export const switchOnePageMode = () => {
 /** 切换阅读方向 */
 export const switchDir = () =>
   setOption((draftOption) => {
-    draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
+    draftOption.dir = draftOption.dir !== 'rtl' ? 'rtl' : 'ltr';
   });
 
 createRoot(() => {

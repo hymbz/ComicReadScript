@@ -1,6 +1,7 @@
 import type { Component } from 'solid-js';
 
 import { t } from 'helper/i18n';
+import { ifNot } from 'helper';
 import { setState, store } from '../hooks/useStore';
 import { bindRef, turnPage } from '../hooks/useStore/slice';
 
@@ -57,12 +58,13 @@ export const TouchArea: Component = () => {
       class={classes.touchAreaRoot}
       style={{
         // 左右方向默认和漫画方向相同，如果开启了左右翻转则翻转
-        'flex-direction':
-          (store.option.dir === 'rtl') ===
-          (store.option.clickPageTurn.enabled &&
-            store.option.clickPageTurn.reverse)
-            ? undefined
-            : 'row-reverse',
+        'flex-direction': ifNot(
+          store.option.clickPageTurn.enabled &&
+            store.option.clickPageTurn.reverse,
+          store.option.dir !== 'rtl',
+        )
+          ? undefined
+          : 'row-reverse',
         cursor: store.isZoomed ? 'move' : undefined,
       }}
       data-show={store.showTouchArea}

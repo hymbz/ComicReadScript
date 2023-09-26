@@ -5,6 +5,7 @@ import { type Component } from 'solid-js';
 
 import { throttle } from 'throttle-debounce';
 import { lang, setLang, t } from 'helper/i18n';
+import { needDarkMode, clamp } from 'helper';
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
 import { SettingHotkeys } from './components/SettingHotkeys';
@@ -18,8 +19,6 @@ import {
   updateImgLoadType,
 } from './hooks/useStore/slice';
 import { setState, store } from './hooks/useStore';
-import { needDarkMode } from '../../helper';
-import { clamp } from './helper';
 
 import classes from './index.module.css';
 

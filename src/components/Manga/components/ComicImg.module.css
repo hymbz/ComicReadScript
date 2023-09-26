@@ -21,11 +21,18 @@
     transform: translate(-50%);
   }
 
+  &[data-load-type="loading"] {
+    position: absolute;
+  }
+
   /* 加载出错的图片直接隐藏 */
   &[data-load-type="error"],
   /* 隐藏因为 src 为空而出现的图片加载错误的图标 */
   &[data-load-type="wait"] {
-    display: none;
+    position: absolute;
+    width: 40em;
+    height: 40em !important;
+    opacity: 0;
   }
 }
 
@@ -92,7 +99,7 @@
 
   & > svg {
     position: absolute;
-    width: 20%;
+    width: 20em;
     color: var(--text_secondary);
     background-color: var(--bg);
 

@@ -28,14 +28,8 @@ export const initPanzoom = (state: State) => {
     beforeWheel: (e) =>
       store.option.scrollMode ||
       (!(e.altKey || e.ctrlKey) && panzoom.getTransform().scale === 1),
-    // 不处于卷轴模式或按下「alt/ctrl」或「处于放大状态」时才允许拖动
-    beforeMouseDown: (e) =>
-      !(
-        !store.option.scrollMode ||
-        e.ctrlKey ||
-        e.altKey ||
-        panzoom.getTransform().scale !== 1
-      ),
+    // 处于放大状态时才允许拖动
+    beforeMouseDown: () => panzoom.getTransform().scale === 1,
   });
 
   panzoom.on(

@@ -3,6 +3,18 @@ export const sleep = (ms: number) =>
     window.setTimeout(resolve, ms);
   });
 
+export const clamp = (min: number, val: number, max: number) =>
+  Math.max(Math.min(max, val), min);
+
+/** 根据传入的条件列表的真假，对 val 进行取反 */
+export const ifNot = (val: unknown, ...conditions: boolean[]) => {
+  let res: boolean = !!val;
+  conditions.forEach((v) => {
+    if (v) res = !res;
+  });
+  return res;
+};
+
 /**
  * 对 document.querySelector 的封装
  * 将默认返回类型改为 HTMLElement

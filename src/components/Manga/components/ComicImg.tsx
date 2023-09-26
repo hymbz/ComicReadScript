@@ -3,6 +3,7 @@ import { createMemo } from 'solid-js';
 
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
+import { ifNot } from 'helper';
 import type { State } from '../hooks/useStore';
 import { setState, store } from '../hooks/useStore';
 import { activePage, updateImgType } from '../hooks/useStore/slice';
@@ -105,18 +106,32 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
   );
 
   const fill = createMemo(() => {
-    if (!show() || props.img.loadType === 'error') return;
+    if (!show() || activePage().length === 1) return;
 
-    // 判断一下当前是否显示了错误图片
-    const activePageType = activePage().map((i) => store.imgList[i]?.loadType);
-    const errorIndex = activePageType.indexOf('error');
-    if (errorIndex !== -1)
-      return !!errorIndex === (store.option.dir === 'rtl') ? 'left' : 'right';
-
-    // 最后判断是否有填充页
+    // 判断是否有填充页
     const fillIndex = activePage().indexOf(-1);
     if (fillIndex !== -1)
-      return !!fillIndex === (store.option.dir === 'rtl') ? 'left' : 'right';
+      return ifNot(fillIndex, store.option.dir !== 'rtl') ? 'left' : 'right';
+
+    // 判断自己的类型
+    if (props.img.loadType === 'loading' || props.img.loadType === 'error')
+      return ifNot(
+        activePage().indexOf(props.index),
+        store.option.dir !== 'rtl',
+      )
+        ? 'left'
+        : 'right';
+
+    // 判断另一张图
+    const anotherImg =
+      store.imgList[activePage().findIndex((i) => i !== props.index)];
+    if (anotherImg.loadType === 'loading' || anotherImg.loadType === 'error')
+      return ifNot(
+        activePage().indexOf(props.index),
+        store.option.dir !== 'rtl',
+      )
+        ? 'left'
+        : 'right';
   });
 
   const src = createMemo(() => {
