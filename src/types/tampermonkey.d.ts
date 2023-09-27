@@ -27,10 +27,10 @@ declare namespace Tampermonkey {
     Done = 4,
   }
 
-  interface ResponseBase {
+  interface ResponseBase<T = any> {
     readonly responseHeaders: string;
     readonly readyState: ReadyState;
-    readonly response: any;
+    readonly response: T;
     readonly responseText: string;
     readonly responseXML: Document | null;
     readonly status: number;
@@ -50,7 +50,7 @@ declare namespace Tampermonkey {
     readonly error: string;
   }
 
-  interface Response<TContext> extends ResponseBase {
+  interface Response<TContext> extends ResponseBase<TContext> {
     readonly finalUrl: string;
     readonly context: TContext;
   }

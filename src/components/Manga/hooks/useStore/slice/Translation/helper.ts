@@ -43,11 +43,13 @@ export const download = async (url: string) => {
   }
 
   const res = await request<Blob>(url, { responseType: 'blob' });
-  return res.response as Blob;
+  return res.response;
 };
 
 export const createFormData = (imgBlob: Blob) => {
-  const file = new File([imgBlob], 'image.jpeg', { type: imgBlob.type });
+  const file = new File([imgBlob], `image.${imgBlob.type.split('/').at(-1)}`, {
+    type: imgBlob.type,
+  });
 
   const formData = new FormData();
   formData.append('file', file);

@@ -156,16 +156,11 @@ export const translatorOptions = createRoot(() => {
   );
 
   const options = createMemo(
-    on([selfhostedOptions, lang], () => {
-      switch (store.option.translation.server) {
-        case 'selfhosted':
-          return selfhostedOptions();
-        case 'cotrans':
-          return createOptions(cotransTranslators);
-        case 'disable':
-          return [];
-      }
-    }),
+    on([selfhostedOptions, lang], () =>
+      store.option.translation.server === 'selfhosted'
+        ? selfhostedOptions
+        : createOptions(cotransTranslators),
+    ),
   );
 
   return options;

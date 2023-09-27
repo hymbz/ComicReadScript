@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import pkg from './package.json' assert { type: 'json' };
 import zh from './locales/zh.json' assert { type: 'json' };
 import en from './locales/en.json' assert { type: 'json' };
+import ru from './locales/ru.json' assert { type: 'json' };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -78,6 +79,7 @@ export const getMetaData = (isDevMode: boolean) => {
     version: pkg.version,
     description: `${zh.description}${getSupportSiteList().join('、')}`,
     'description:en': en.description,
+    'description:ru': ru.description,
     author: pkg.author,
     license: pkg.license,
     noframes: true,

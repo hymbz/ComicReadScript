@@ -65,13 +65,14 @@ const mergeImage = async (rawImage: Blob, maskUri: string) => {
 
   const img = new Image();
   img.src = URL.createObjectURL(rawImage);
-  await new Promise((resolve) => {
+  await new Promise((resolve, reject) => {
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
       canvasCtx.drawImage(img, 0, 0);
       resolve(null);
     };
+    img.onerror = reject;
   });
 
   const img2 = new Image();
@@ -92,6 +93,39 @@ const mergeImage = async (rawImage: Blob, maskUri: string) => {
   return URL.createObjectURL(translated);
 };
 
+/** 缩小过大的图片 */
+const resize = async (blob: Blob): Promise<Blob> => {
+  const img = new Image();
+  img.src = URL.createObjectURL(blob);
+  const [w, h] = await new Promise<[number, number]>((resolve, reject) => {
+    img.onload = () => {
+      URL.revokeObjectURL(img.src);
+      resolve([img.width, img.height]);
+    };
+    img.onerror = reject;
+  });
+
+  if (w <= 4096 && h <= 4096) return blob;
+
+  const scale = Math.min(4096 / w, 4096 / h);
+  const width = Math.floor(w * scale);
+  const height = Math.floor(h * scale);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+
+  const ctx = canvas.getContext('2d')!;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, width, height);
+
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob((newBlob) =>
+      newBlob ? resolve(newBlob) : reject(new Error('Canvas toBlob failed')),
+    );
+  });
+};
+
 /** 使用 cotrans 翻译指定图片 */
 export const cotransTranslation = async (i: number) => {
   const img = store.imgList[i];
@@ -104,10 +138,16 @@ export const cotransTranslation = async (i: number) => {
     throw new Error(t('translation.tip.download_img_failed'));
   }
 
-  let id: string;
-  let translation_mask: string | undefined;
   try {
-    const res = await request('https://api.cotrans.touhou.ai/task/upload/v1', {
+    imgBlob = await resize(imgBlob);
+  } catch (error) {
+    log.error(error);
+    throw new Error(t('translation.tip.resize_img_failed'));
+  }
+
+  let res: Tampermonkey.Response<any>;
+  try {
+    res = await request('https://api.cotrans.touhou.ai/task/upload/v1', {
       method: 'POST',
       data: createFormData(imgBlob),
       headers: {
@@ -115,29 +155,33 @@ export const cotransTranslation = async (i: number) => {
         Referer: 'https://cotrans.touhou.ai/',
       },
     });
-
-    const resData = JSON.parse(res.responseText) as
-      | {
-          id: string;
-          status: string;
-          result: null | { translation_mask: string };
-        }
-      | { error_id: string };
-
-    if ('error_id' in resData)
-      throw new Error(
-        `${t('translation.tip.upload_return_error')}：${resData.error_id}`,
-      );
-    if (!resData.id) throw new Error(t('translation.tip.id_not_returned'));
-
-    id = resData.id;
-    translation_mask = resData.result?.translation_mask;
   } catch (error) {
     log.error(error);
     throw new Error(t('translation.tip.upload_error'));
   }
 
-  if (!translation_mask) translation_mask = await waitTranslation(id, i);
+  let resData:
+    | {
+        id: string;
+        status: string;
+        result: { translation_mask: string } | null;
+      }
+    | { error_id: string };
+  try {
+    resData = JSON.parse(res.responseText);
+  } catch (_) {
+    throw new Error(
+      `${t('translation.tip.upload_return_error')}：${res.responseText}`,
+    );
+  }
+  if ('error_id' in resData)
+    throw new Error(
+      `${t('translation.tip.upload_return_error')}：${resData.error_id}`,
+    );
+  if (!resData.id) throw new Error(t('translation.tip.id_not_returned'));
+
+  const translation_mask =
+    resData.result?.translation_mask || (await waitTranslation(resData.id, i));
 
   return mergeImage(imgBlob, translation_mask);
 };
