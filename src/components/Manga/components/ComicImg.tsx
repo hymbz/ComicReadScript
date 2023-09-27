@@ -1,11 +1,11 @@
 import type { Component } from 'solid-js';
-import { createMemo } from 'solid-js';
+import { createEffect, createMemo, on } from 'solid-js';
 
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
 import { ifNot } from 'helper';
 import type { State } from '../hooks/useStore';
-import { setState, store } from '../hooks/useStore';
+import { _setState, setState, store } from '../hooks/useStore';
 import { activePage, updateImgType } from '../hooks/useStore/slice';
 import { isWideImg } from '../handleComicData';
 
@@ -88,13 +88,6 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
     const img = state.imgList[i];
     if (!img) return;
 
-    // 第一次加载出错自动重试一次
-    if (img.loadType !== 'error') {
-      const src = e.getAttribute('src');
-      e.setAttribute('src', '');
-      setTimeout(() => e.setAttribute('src', src!), 500);
-    }
-
     img.loadType = 'error';
     log.error(t('alert.img_load_failed'), e);
 
@@ -142,6 +135,14 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
     if (props.img.translationType === 'show') return props.img.translationUrl;
     return props.img.src;
   });
+
+  // 如果要显示的是出错图片，就重新加载一次
+  createEffect(
+    on(show, () => {
+      if (show() && props.img.loadType === 'error')
+        _setState('imgList', props.index, 'loadType', 'loading');
+    }),
+  );
 
   return (
     <img

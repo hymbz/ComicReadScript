@@ -55,7 +55,7 @@ const imgList = [
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141017930003.jpg.c800x.jpg',
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141021040004.jpg.c800x.jpg',
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141023760005.jpg.c800x.jpg',
-    'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141026330006.jpg.c800x.jpg',
+    'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/16501426330006.jpg.c800x.jpg',
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141029220007.jpg.c800x.jpg',
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141031680008.jpg.c800x.jpg',
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141034290009.jpg.c800x.jpg',

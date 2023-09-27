@@ -88,7 +88,8 @@ const loadImg = (
     .some((index) => {
       if (index === -1) return false;
       const img = state.imgList[index];
-      if (img.src && img.loadType !== 'loaded') {
+      if (!img.src) return false;
+      if (img.loadType === 'wait') {
         img.loadType = 'loading';
         editNum += 1;
       }
@@ -126,8 +127,7 @@ export const updateImgLoadType = debounce(100, (state: State) => {
 
   // 先将所有加载中的图片状态改为暂停
   imgList.forEach((img, i) => {
-    if (img.loadType === 'loading' || img.loadType === 'error')
-      imgList[i].loadType = 'wait';
+    if (img.loadType === 'loading') imgList[i].loadType = 'wait';
   });
 
   return (

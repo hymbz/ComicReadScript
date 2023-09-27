@@ -26,6 +26,10 @@
 
   &[data-load-type="loading"] {
     position: absolute;
+    opacity: 0;
+
+    /* 加载中的图片稍等一下再显示，避免出错图片的元素被直接显示出来 */
+    animation: show 1s forwards;
   }
 
   /* 加载出错的图片直接隐藏 */
@@ -113,5 +117,19 @@
     &[data-fill="right"] {
       transform: translate(-100%);
     }
+  }
+}
+
+@keyframes show {
+  0% {
+    opacity: 0;
+  }
+
+  90% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
   }
 }
