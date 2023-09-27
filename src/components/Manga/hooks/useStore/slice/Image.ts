@@ -195,7 +195,7 @@ export const handleResize = (state: State, width: number, height: number) => {
 };
 
 /** 在图片排列改变后自动跳转回原先显示图片所在的页数 */
-export const jumpBackPage = (state: State) => {
+const jumpBackPage = (state: State) => {
   const lastActiveImgIndex = activeImgIndex();
   return () => {
     state.activePageIndex = state.pageList.findIndex((page) =>
@@ -220,12 +220,10 @@ export const switchFillEffect = () => {
 /** 切换卷轴模式 */
 export const switchScrollMode = () => {
   store.panzoom?.smoothZoomAbs(0, 0, 1);
-  setState((state) => {
+  setOption((draftOption, state) => {
     state.activePageIndex = 0;
-    setOption((draftOption) => {
-      draftOption.scrollMode = !draftOption.scrollMode;
-      draftOption.onePageMode = draftOption.scrollMode;
-    });
+    draftOption.scrollMode = !draftOption.scrollMode;
+    draftOption.onePageMode = draftOption.scrollMode;
     updatePageData(state);
   });
   setTimeout(handleMangaFlowScroll);
@@ -233,12 +231,12 @@ export const switchScrollMode = () => {
 
 /** 切换单双页模式 */
 export const switchOnePageMode = () => {
-  const jump = jumpBackPage(store);
-  setOption((draftOption) => {
+  setOption((draftOption, state) => {
+    const jump = jumpBackPage(state);
     draftOption.onePageMode = !draftOption.onePageMode;
+    updatePageData(state);
+    jump();
   });
-  setState(updatePageData);
-  jump();
 };
 
 /** 切换阅读方向 */
