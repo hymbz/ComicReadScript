@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@material-design-icons/svg": "^0.14.12",
+    "@placemarkio/flat-drop-files": "^1.0.2",
     "browser-fs-access": "^0.35.0",
     "fflate": "^0.8.1",
     "jsencrypt": "^3.3.2",

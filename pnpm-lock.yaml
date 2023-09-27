@@ -11,6 +11,9 @@ importers:
       '@material-design-icons/svg':
         specifier: ^0.14.12
         version: 0.14.12
+      '@placemarkio/flat-drop-files':
+        specifier: ^1.0.2
+        version: 1.0.2
       browser-fs-access:
         specifier: ^0.35.0
         version: 0.35.0
@@ -4058,6 +4061,10 @@ packages:
       tslib: 2.6.2
     dev: true
 
+  /@placemarkio/flat-drop-files@1.0.2:
+    resolution: {integrity: sha512-nx9S/59s756N+BSIfuyidaQYYHva2QoWihqgfm6oYcQ8g+26Gg2qbcToROOxxDK4mKgKbOjnw04VsXMKFqqX6w==}
+    dev: false
+
   /@pnpm/config.env-replace@1.1.0:
     resolution: {integrity: sha512-htyl8TWnKL7K/ESFa1oW2UB5lVDxuF5DpM7tBi6Hu2LNL3mWkIzNLG6N4zoCUP1lCKNxWy/3iu8mS8MvToGd6w==}
     engines: {node: '>=12.22.0'}
@@ -4160,7 +4167,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.23.0
-      '@babel/helper-module-imports': 7.22.5
+      '@babel/helper-module-imports': 7.22.15
       '@rollup/pluginutils': 3.1.0(rollup@2.79.1)
       rollup: 2.79.1
     dev: true
@@ -11975,7 +11982,7 @@ packages:
     peerDependencies:
       rollup: ^2.0.0
     dependencies:
-      '@babel/code-frame': 7.22.10
+      '@babel/code-frame': 7.22.13
       jest-worker: 26.6.2
       rollup: 2.79.1
       serialize-javascript: 4.0.0

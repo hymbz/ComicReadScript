@@ -1,5 +1,6 @@
+import { getFilesFromDataTransferItems } from '@placemarkio/flat-drop-files';
+
 import { setState, loadNewImglist } from './store';
-import { FileSystemToFile } from './helper';
 
 import classes from './index.module.css';
 
@@ -13,21 +14,16 @@ export const handleDrag = (ref: HTMLElement) => {
     setDragging(false);
     e.preventDefault();
     if (!e.dataTransfer) return;
-
-    const handleList = (
-      await Promise.all(
-        [...e.dataTransfer.items].map((handle) =>
-          handle.getAsFileSystemHandle(),
-        ),
-      )
-    ).filter(Boolean) as FileSystemHandle[];
-    loadNewImglist(await FileSystemToFile(handleList));
+    loadNewImglist(await getFilesFromDataTransferItems(e.dataTransfer.items));
   });
 
   // 防止拖拽文件被浏览器处理
   ref.addEventListener('dragover', (e) => e.preventDefault());
 
-  ref.addEventListener('dragenter', () => setDragging(true));
+  ref.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    setDragging(true);
+  });
   ref.addEventListener('dragleave', (e) => {
     if ((e.target as HTMLElement).className !== classes.root) return;
     setDragging(false);
