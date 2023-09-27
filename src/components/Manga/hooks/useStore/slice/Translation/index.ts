@@ -137,6 +137,8 @@ export const translatorOptions = createRoot(() => {
         () => store.option.translation.localUrl,
       ],
       async () => {
+        if (store.option.translation.server !== 'selfhosted') return;
+
         setSelfOptions((await getValidTranslators()) ?? []);
 
         // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
