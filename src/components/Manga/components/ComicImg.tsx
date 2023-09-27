@@ -117,21 +117,21 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
       return ifNot(fillIndex, store.option.dir !== 'rtl') ? 'left' : 'right';
 
     // 判断自己的类型
-    if (props.img.loadType === 'loading' || props.img.loadType === 'error')
+    if (props.img.loadType !== 'loaded')
       return ifNot(
         activePage().indexOf(props.index),
-        store.option.dir !== 'rtl',
+        store.option.dir === 'rtl',
       )
         ? 'left'
         : 'right';
 
     // 判断另一张图
     const anotherImg =
-      store.imgList[activePage().findIndex((i) => i !== props.index)];
-    if (anotherImg.loadType === 'loading' || anotherImg.loadType === 'error')
+      store.imgList[activePage().find((i) => i !== props.index)!];
+    if (anotherImg.loadType !== 'loaded')
       return ifNot(
         activePage().indexOf(props.index),
-        store.option.dir !== 'rtl',
+        store.option.dir === 'rtl',
       )
         ? 'left'
         : 'right';

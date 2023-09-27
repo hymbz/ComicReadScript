@@ -124,6 +124,11 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
           (i) => state.imgList?.[i]?.src,
         ) ?? [];
 
+      // 释放旧的 URL 对象
+      oldActiveImg.forEach(
+        (url) => url.startsWith('blob:') && URL.revokeObjectURL(url),
+      );
+
       state.imgList = props.imgList.map(
         (imgUrl) =>
           state.imgList.find((img) => img.src === imgUrl) ?? {
