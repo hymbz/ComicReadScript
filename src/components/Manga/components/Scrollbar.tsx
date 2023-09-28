@@ -49,7 +49,7 @@ export const Scrollbar: Component = () => {
       data-show={!store.option.scrollbar.autoHidden || showScrollbar()}
       onWheel={handleWheel}
     >
-      <span
+      <div
         class={classes.scrollbarDrag}
         style={{
           height: height(),
@@ -69,7 +69,7 @@ export const Scrollbar: Component = () => {
         >
           {store.scrollbar.tipText}
         </div>
-      </span>
+      </div>
       <Show when={store.option.scrollbar.showImgStatus}>
         <For each={store.pageList}>
           {([a, b]) => <ScrollbarPage a={a} b={b} />}

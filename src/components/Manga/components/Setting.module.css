@@ -9,6 +9,7 @@
   user-select: text;
 
   position: fixed;
+  z-index: 1;
   top: 0;
   bottom: 0;
 
@@ -160,17 +161,20 @@
 
   width: 6em;
   margin: 0;
+  padding: 0.3em;
   padding-right: 0;
 
   font-size: 1em;
 
+  background-color: var(--hover_bg_color);
+  border: none;
   border-radius: 5px;
+  outline: none;
 }
 
 /* 关闭设置弹窗的遮罩 */
 .closeCover {
   position: fixed;
-  z-index: -1;
   top: 0;
   left: 0;
 
