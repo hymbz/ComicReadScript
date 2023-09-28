@@ -204,6 +204,7 @@
       "img_downloading": "Скачивание изображений",
       "img_not_fully_loaded": "Изображение всё ещё загружается",
       "pending": "Ожидение, позиция в очереди {{pos}}",
+      "resize_img_failed": "缩放图片失败",
       "translation_completed": "Перевод завершён",
       "upload_error": "Ошибка загрузки изображения",
       "upload_return_error": "Ошибка перевода на сервере",
