@@ -94,14 +94,13 @@ const mergeImage = async (rawImage: Blob, maskUri: string) => {
 };
 
 /** 缩小过大的图片 */
-const resize = async (blob: Blob): Promise<Blob> => {
+const resize = async (blob: Blob, w: number, h: number): Promise<Blob> => {
+  if (w <= 4096 && h <= 4096) return blob;
+
   const img = new Image();
   img.src = URL.createObjectURL(blob);
-  const [w, h] = await new Promise<[number, number]>((resolve, reject) => {
-    img.onload = () => {
-      URL.revokeObjectURL(img.src);
-      resolve([img.width, img.height]);
-    };
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
     img.onerror = reject;
   });
 
@@ -118,6 +117,7 @@ const resize = async (blob: Blob): Promise<Blob> => {
   const ctx = canvas.getContext('2d')!;
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(img, 0, 0, width, height);
+  URL.revokeObjectURL(img.src);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((newBlob) =>
@@ -139,7 +139,7 @@ export const cotransTranslation = async (i: number) => {
   }
 
   try {
-    imgBlob = await resize(imgBlob);
+    imgBlob = await resize(imgBlob, img.width!, img.height!);
   } catch (error) {
     log.error(error);
     throw new Error(t('translation.tip.resize_img_failed'));
