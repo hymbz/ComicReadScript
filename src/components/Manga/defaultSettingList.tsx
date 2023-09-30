@@ -127,7 +127,7 @@ export const defaultSettingList: () => SettingList = () => [
         />
 
         <SettingsItemSwitch
-          name={t('setting.option.disable_auto_scaling')}
+          name={t('setting.option.disable_auto_enlarge')}
           value={store.option.disableZoom}
           onChange={createStateSetFn('disableZoom')}
         />

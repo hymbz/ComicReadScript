@@ -26,7 +26,7 @@ export interface Option {
   firstPageFill: boolean;
   /** 自定义背景色 */
   customBackground?: string;
-  /** 禁止放大图片 */
+  /** 禁止自动放大图片 */
   disableZoom: boolean;
   /** 黑暗模式 */
   darkMode: boolean;

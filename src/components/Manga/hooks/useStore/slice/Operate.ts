@@ -16,6 +16,7 @@ import {
 } from './Scrollbar';
 
 import classes from '../../../index.module.css';
+import { setOption } from './Helper';
 
 /** 判断当前是否已经滚动到底部 */
 const isBottom = (state: State) =>
@@ -173,13 +174,11 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   switch (hotkeysMap()[code]) {
     case 'turn_page_up':
       return turnPage('prev');
-
     case 'turn_page_down':
       return turnPage('next');
 
     case 'turn_page_right':
       return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
-
     case 'turn_page_left':
       return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));
 
@@ -187,7 +186,6 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return setState((state) => {
         state.activePageIndex = 0;
       });
-
     case 'jump_to_end':
       return setState((state) => {
         state.activePageIndex = state.pageList.length - 1;
@@ -201,6 +199,11 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return switchOnePageMode();
     case 'switch_dir':
       return switchDir();
+
+    case 'switch_auto_enlarge':
+      return setOption((draftOption) => {
+        draftOption.disableZoom = !draftOption.disableZoom;
+      });
 
     case 'exit':
       return store.onExit?.();
