@@ -61,3 +61,10 @@
     background-color: #f38181e6;
   }
 }
+
+.touchAreaRoot[data-scroll-mode="true"] {
+  & .touchArea[data-area="prev"],
+  & .touchArea[data-area="next"] {
+    visibility: hidden;
+  }
+}

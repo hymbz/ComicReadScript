@@ -26,10 +26,11 @@
 
   &[data-load-type="loading"] {
     position: absolute;
-    opacity: 0;
+    max-width: 100vw !important;
 
     /* 加载中的图片稍等一下再显示，避免出错图片的元素被直接显示出来 */
-    animation: show 1s forwards;
+    opacity: 0;
+    animation: show 2s forwards;
   }
 
   /* 加载出错的图片直接隐藏 */
@@ -82,6 +83,8 @@
     justify-content: flex-start;
 
     & .img {
+      display: unset;
+
       width: calc(var(--scrollModeImgScale) * var(--width));
       max-width: unset;
       height: auto;

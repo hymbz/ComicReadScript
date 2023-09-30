@@ -150,7 +150,7 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
       style={{
         '--width':
           store.option.scrollMode && props.img.width
-            ? `${props.img.width}px`
+            ? `min(100vw, ${props.img.width}px)`
             : undefined,
       }}
       src={src()}
