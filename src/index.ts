@@ -348,6 +348,12 @@ try {
             )
             .map(({ url }) => new URL(url, window.location.origin).href),
       };
+      // 突出显示下拉阅读的按钮
+      const buttonDom = main.querySelector('#bodywrap a.btn');
+      if (buttonDom) {
+        buttonDom.style.setProperty('background-color', '#607d8b');
+        buttonDom.style.setProperty('background-image', 'none');
+      }
       break;
     }
 
