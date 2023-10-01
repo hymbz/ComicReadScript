@@ -70,9 +70,15 @@ export default defineConfig({
       transform(code, id): null | string {
         if (id.includes('node_modules')) return null;
         let newCode = code;
-        // 将 vite 不支持的 rollup-plugin-styles 相关 css 导出代码删除
-        newCode = newCode.replace(', { css as style }', '');
-        newCode = newCode.replace(/\n.+?Style = style;\n/, '');
+        // 将 vite 不支持的 rollup-plugin-styles 相关 css 导出代码改成正常的代码
+        newCode = newCode.replace(
+          /(\n.+?), { css as style }(.+?\n)/,
+          '$1$2const style = ""',
+        );
+        newCode = newCode.replace(
+          /\nimport { css as style } from .+?;\n/,
+          '\nconst style = ""\n',
+        );
         return newCode;
       },
     },

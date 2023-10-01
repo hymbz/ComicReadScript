@@ -24,6 +24,7 @@
     "fflate": "^0.8.1",
     "jsencrypt": "^3.3.2",
     "libarchive.js": "^1.3.0",
+    "magic-bytes.js": "^1.3.0",
     "marked": "^9.0.3",
     "normalize.css": "^8.0.1",
     "panzoom": "^9.4.3",

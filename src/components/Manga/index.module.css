@@ -75,7 +75,7 @@ blockquote {
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 
-  border-left: 0.25em solid var(--text_secondary);
+  border-left: 0.25em solid var(--text_secondary, #607d8b);
 }
 
 svg {

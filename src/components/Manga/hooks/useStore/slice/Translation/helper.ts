@@ -23,7 +23,7 @@ export const request = <T = any>(
 ): Promise<Tampermonkey.Response<T>> =>
   new Promise((resolve, reject) => {
     if (typeof GM_xmlhttpRequest === 'undefined')
-      throw new Error(t('pwa.alert.userscript_not_installed'));
+      reject(new Error(t('pwa.alert.userscript_not_installed')));
 
     GM_xmlhttpRequest({
       method: 'GET',

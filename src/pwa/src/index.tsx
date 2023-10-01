@@ -15,6 +15,7 @@ import { Toaster, toast } from '../../components/Toast';
 import { store, setState, handleExit, loadNewImglist } from './store';
 import { FileSystemToFile, imgExtension } from './helper';
 import { handleDrag } from './handleDrag';
+import { DownloadButton } from './DownloadButton';
 
 import classes from './index.module.css';
 
@@ -79,6 +80,7 @@ export const Root: Component = () => (
     <div class={classes.main} data-drag={store.dragging}>
       <div class={classes.body}>
         <div innerHTML={parseMd(t('pwa.tip_md'))} />
+
         <span style={{ 'margin-top': '1em' }}>
           <button type="button" on:click={handleSelectFiles}>
             {t('pwa.button.select_files')}
@@ -86,6 +88,7 @@ export const Root: Component = () => (
           <button type="button" on:click={handleSelectDir}>
             {t('pwa.button.select_folder')}
           </button>
+          <DownloadButton />
           <Show when={store.imgList.length}>
             <button
               type="button"
@@ -99,6 +102,7 @@ export const Root: Component = () => (
             </button>
           </Show>
         </span>
+
         <div
           class={classes.installTip}
           classList={{ [classes.hide]: !!store.hiddenInstallTip }}

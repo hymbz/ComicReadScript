@@ -75,6 +75,7 @@
       "userscript_not_installed": "未安装 ComicRead 脚本"
     },
     "button": {
+      "enter_url": "输入 URL",
       "install": "安装",
       "no_more_prompt": "不再提示",
       "resume_read": "恢复阅读",
@@ -86,7 +87,8 @@
       "enter_password": "请输入密码",
       "unzipping": "解压缩中"
     },
-    "tip_md": "# ComicRead PWA\n使用 [ComicRead](https://github.com/hymbz/ComicReadScript) 的阅读模式阅读**本地**漫画\n---\n### 将图片文件、文件夹、压缩包直接拖入即可开始阅读"
+    "tip_enter_url": "请输入压缩包 URL",
+    "tip_md": "# ComicRead PWA\n使用 [ComicRead](https://github.com/hymbz/ComicReadScript) 的阅读模式阅读**本地**漫画\n---\n### 将图片文件、文件夹、压缩包直接拖入即可开始阅读\n*也可以选择输入压缩包 URL 下载阅读*"
   },
   "setting": {
     "hotkeys": {

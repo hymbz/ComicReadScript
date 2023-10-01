@@ -75,6 +75,7 @@
       "userscript_not_installed": "ComicRead userscript not installed"
     },
     "button": {
+      "enter_url": "Enter URL",
       "install": "Install",
       "no_more_prompt": "Do not prompt again",
       "resume_read": "Restore reading",
@@ -86,7 +87,8 @@
       "enter_password": "Please enter your password",
       "unzipping": "Unzipping"
     },
-    "tip_md": "# ComicRead PWA\nRead **local** comics using [ComicRead](https://github.com/hymbz/ComicReadScript) reading mode.\n---\n### Drag and drop image files, folders, or compressed files directly to start reading"
+    "tip_enter_url": "Please enter the URL of the compressed file",
+    "tip_md": "# ComicRead PWA\nRead **local** comics using [ComicRead](https://github.com/hymbz/ComicReadScript) reading mode.\n---\n### Drag and drop image files, folders, or compressed files directly to start reading\n*You can also choose to enter the URL of the compressed file for downloading and reading*"
   },
   "setting": {
     "hotkeys": {

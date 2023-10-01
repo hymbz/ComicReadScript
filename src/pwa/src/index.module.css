@@ -34,6 +34,8 @@ p {
 }
 
 button {
+  position: relative;
+  overflow: hidden;
   margin: 0.5em;
   white-space: nowrap;
 }
@@ -118,4 +120,29 @@ button {
 
 .hide {
   display: none;
+}
+
+button[data-loading]::after {
+  content: "";
+
+  position: absolute;
+  inset: auto 0 0;
+
+  overflow: hidden;
+
+  height: 2px;
+
+  background-color: var(--text-bright);
+
+  animation: loading 1s infinite linear;
+}
+
+@keyframes loading {
+  0% {
+    transform: translate(-100%);
+  }
+
+  100% {
+    transform: translate(100%);
+  }
 }
