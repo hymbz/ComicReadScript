@@ -92,7 +92,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
       for (let i = 0; i < props.imgList.length; i += 1) {
         setStatu(`${i}/${props.imgList.length}`);
         const index = `${i}`.padStart(imgIndexNum, '0');
-        const fileExt = props.imgList[i].split('.').at(-1)!;
+        const fileExt = props.imgList[i].match(/.+\/.+\.(\w+)/)?.[1] ?? 'jpg';
         const fileName = `${index}.${fileExt}`;
         try {
           const res = await request<ArrayBuffer>(props.imgList[i], {
