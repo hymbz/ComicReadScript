@@ -75,6 +75,7 @@
       "userscript_not_installed": "ComicRead не установлен"
     },
     "button": {
+      "enter_url": "Ввести URL",
       "install": "Установить",
       "no_more_prompt": "Больше не показывать",
       "resume_read": "Продолжить чтение",
@@ -86,7 +87,8 @@
       "enter_password": "Пожалуйста введите пароль",
       "unzipping": "Распаковка"
     },
-    "tip_md": "# ComicRead PWA\nИспользуйте [ComicRead](https://github.com/hymbz/ComicReadScript) для чтения комиксов локально.\n---\n### Перетащите изображения, папки или архивы чтобы начать читать"
+    "tip_enter_url": "Введите URL архива",
+    "tip_md": "# ComicRead PWA\nИспользуйте [ComicRead](https://github.com/hymbz/ComicReadScript) для чтения комиксов локально.\n---\n### Перетащите изображения, папки или архивы чтобы начать читать\n*Вы так же можете открыть архив по URL напрямую*"
   },
   "setting": {
     "hotkeys": {
