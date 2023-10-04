@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         7.2.0
+// @version         7.3.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -176,9 +176,9 @@ const linstenKeyup = handler => window.addEventListener('keyup', e => {
 const scrollIntoView = selector => querySelector(selector)?.scrollIntoView();
 
 /** 循环执行指定函数 */
-const loop = async (fn, ms) => {
+const loop = async (fn, ms = 0) => {
   await fn();
-  setTimeout(loop, ms, fn, ms);
+  setTimeout(loop, ms, fn);
 };
 
 /**
@@ -228,11 +228,15 @@ const needDarkMode = hexColor => {
 };
 
 /** 等到传入的函数返回 true */
-const wait = async (fn, timeout = 100) => {
-  const res = await fn();
-  if (res) return res;
-  await sleep(timeout);
-  return wait(fn, timeout);
+const wait = async (fn, timeout = Infinity) => {
+  let res = await fn();
+  let _timeout = timeout;
+  while (_timeout > 0 && !res) {
+    res = await fn();
+    await sleep(10);
+    _timeout -= 10;
+  }
+  return res;
 };
 
 /** 等到指定的 dom 出现 */
@@ -263,12 +267,23 @@ const triggerEleLazyLoad = async (e, time = 0, oldSrc = e.src) => {
   e.dispatchEvent(new Event('scroll', {
     bubbles: true
   }));
-  if (time) await Promise.any([sleep(time), wait(() => e.src !== oldSrc)]);
+  if (time) await wait(() => e.src !== oldSrc, time);
   window.scroll({
     top: nowScroll,
     behavior: 'auto'
   });
 };
+
+/** 测试图片 url 能否正确加载 */
+const testImgUrl = url => new Promise(resolve => {
+  const img = new Image();
+  img.onload = () => resolve(true);
+  img.onerror = () => resolve(false);
+  img.src = url;
+});
+const canvasToBlob = (canvas, type, quality) => new Promise((resolve, reject) => {
+  canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')), type, quality);
+});
 
 /**
  * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
@@ -3351,7 +3366,6 @@ const setMessage = (i, msg) => {
   });
   updateTipText();
 };
-const isBlobUrlRe = /^blob:/;
 const request = (url, details) => new Promise((resolve, reject) => {
   if (typeof GM_xmlhttpRequest === 'undefined') reject(new Error(t('pwa.alert.userscript_not_installed')));
   GM_xmlhttpRequest({
@@ -3367,7 +3381,7 @@ const request = (url, details) => new Promise((resolve, reject) => {
   });
 });
 const download = async url => {
-  if (isBlobUrlRe.test(url)) {
+  if (url.startsWith('blob:')) {
     const res = await fetch(url);
     return res.blob();
   }
@@ -3508,12 +3522,7 @@ const mergeImage = async (rawImage, maskUri) => {
       resolve(null);
     };
   });
-  const translated = await new Promise(resolve => {
-    canvas.toBlob(blob => {
-      resolve(blob);
-    }, 'image/png');
-  });
-  return URL.createObjectURL(translated);
+  return URL.createObjectURL(await canvasToBlob(canvas));
 };
 
 /** 缩小过大的图片 */
@@ -3536,9 +3545,7 @@ const resize = async (blob, w, h) => {
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(img, 0, 0, width, height);
   URL.revokeObjectURL(img.src);
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(newBlob => newBlob ? resolve(newBlob) : reject(new Error('Canvas toBlob failed')));
-  });
+  return canvasToBlob(canvas);
 };
 
 /** 使用 cotrans 翻译指定图片 */
@@ -4828,7 +4835,7 @@ const useInit$1 = (props, rootRef) => {
         state.flag.autoWide = true;
         autoCloseFill.clear();
         state.fillEffect[-1] = state.option.firstPageFill;
-        state.imgList = props.imgList.map(imgUrl => ({
+        state.imgList = [...props.imgList].map(imgUrl => ({
           type: '',
           src: imgUrl || '',
           loadType: 'wait'
@@ -4844,10 +4851,7 @@ const useInit$1 = (props, rootRef) => {
 
       /** 修改前的当前显示图片 */
       const oldActiveImg = state.pageList[state.activePageIndex]?.map(i => state.imgList?.[i]?.src) ?? [];
-
-      // 释放旧的 URL 对象
-      oldActiveImg.forEach(url => url?.startsWith('blob:') && URL.revokeObjectURL(url));
-      state.imgList = props.imgList.map(imgUrl => state.imgList.find(img => img.src === imgUrl) ?? {
+      state.imgList = [...props.imgList].map(imgUrl => state.imgList.find(img => img.src === imgUrl) ?? {
         type: '',
         src: imgUrl || '',
         loadType: 'wait'
@@ -5270,9 +5274,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>增加简易模式触发图片加载的方式以适配更多情况 , closes <a href="https://github.com/hymbz/ComicReadScript/issues/109">#109\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>修复部分网站下载的漫画文件后辍异常的 bug , closes <a href="https://github.com/hymbz/ComicReadScript/issues/110">#110\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>增加简易模式触发图片加载的方式以适配更多情况 , closes <a href="https://github.com/hymbz/ComicReadScript/issues/109">#109\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -5335,7 +5337,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -5484,6 +5486,7 @@ const useInit = async (name, defaultOptions = {}) => {
     setOptions,
     setFab,
     setManga,
+    _setManga,
     mangaProps,
     needAutoShow,
     isStored,
@@ -5568,9 +5571,7 @@ const useInit = async (name, defaultOptions = {}) => {
           onLoading: undefined
         });
         _setManga('imgList', Array(totalImgNum).fill(''));
-        await work((i, imgUrl) => {
-          _setManga('imgList', i, imgUrl);
-        });
+        await work((i, imgUrl) => _setManga('imgList', i, imgUrl));
         setManga({
           onLoading
         });
@@ -5698,6 +5699,7 @@ exports.assign = assign;
 exports.autoReadModeMessage = autoReadModeMessage;
 exports.autoUpdate = autoUpdate;
 exports.byPath = byPath;
+exports.canvasToBlob = canvasToBlob;
 exports.clamp = clamp;
 exports.createFillImgList = createFillImgList;
 exports.dataToParams = dataToParams;
@@ -5724,6 +5726,7 @@ exports.setInitLang = setInitLang;
 exports.setLang = setLang;
 exports.sleep = sleep;
 exports.t = t;
+exports.testImgUrl = testImgUrl;
 exports.toast = toast$1;
 exports.triggerEleLazyLoad = triggerEleLazyLoad;
 exports.universalInit = universalInit;
@@ -7248,9 +7251,7 @@ const main = require('main');
     }
     try {
       unsafeWindow.onImageLoaded(imgEle);
-      const blob = await new Promise(resolve => {
-        imgEle.nextElementSibling.toBlob(resolve, 'image/webp', 1);
-      });
+      const blob = await main.canvasToBlob(imgEle.nextElementSibling, 'image/webp', 1);
       URL.revokeObjectURL(imgEle.src);
       if (!blob) throw new Error('');
       return `${URL.createObjectURL(blob)}#.webp`;
@@ -7263,9 +7264,7 @@ const main = require('main');
 
   // 先等懒加载触发完毕
   await main.wait(() => main.querySelectorAll('.lazy-loaded.hide').length && main.querySelectorAll('.lazy-loaded.hide').length === main.querySelectorAll('canvas').length);
-  init(dynamicUpdate(setImg => main.plimit(imgEleList.map((img, i) => async () => {
-    setImg(i, await getImgUrl(img));
-  }), (doneNum, totalNum) => {
+  init(dynamicUpdate(setImg => main.plimit(imgEleList.map((img, i) => async () => setImg(i, await getImgUrl(img))), (doneNum, totalNum) => {
     setFab({
       progress: doneNum / totalNum,
       tip: `加载图片中 - ${doneNum}/${totalNum}`
@@ -7596,11 +7595,183 @@ const getInitLang = async () => {
   return lang;
 };
 
+/* eslint-disable no-undefined,no-param-reassign,no-shadow */
+
+/**
+ * Throttle execution of a function. Especially useful for rate limiting
+ * execution of handlers on events like resize and scroll.
+ *
+ * @param {number} delay -                  A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher)
+ *                                            are most useful.
+ * @param {Function} callback -               A function to be executed after delay milliseconds. The `this` context and all arguments are passed through,
+ *                                            as-is, to `callback` when the throttled-function is executed.
+ * @param {object} [options] -              An object to configure options.
+ * @param {boolean} [options.noTrailing] -   Optional, defaults to false. If noTrailing is true, callback will only execute every `delay` milliseconds
+ *                                            while the throttled-function is being called. If noTrailing is false or unspecified, callback will be executed
+ *                                            one final time after the last throttled-function call. (After the throttled-function has not been called for
+ *                                            `delay` milliseconds, the internal counter is reset).
+ * @param {boolean} [options.noLeading] -   Optional, defaults to false. If noLeading is false, the first throttled-function call will execute callback
+ *                                            immediately. If noLeading is true, the first the callback execution will be skipped. It should be noted that
+ *                                            callback will never executed if both noLeading = true and noTrailing = true.
+ * @param {boolean} [options.debounceMode] - If `debounceMode` is true (at begin), schedule `clear` to execute after `delay` ms. If `debounceMode` is
+ *                                            false (at end), schedule `callback` to execute after `delay` ms.
+ *
+ * @returns {Function} A new, throttled, function.
+ */
+function throttle (delay, callback, options) {
+  var _ref = options || {},
+      _ref$noTrailing = _ref.noTrailing,
+      noTrailing = _ref$noTrailing === void 0 ? false : _ref$noTrailing,
+      _ref$noLeading = _ref.noLeading,
+      noLeading = _ref$noLeading === void 0 ? false : _ref$noLeading,
+      _ref$debounceMode = _ref.debounceMode,
+      debounceMode = _ref$debounceMode === void 0 ? undefined : _ref$debounceMode;
+  /*
+   * After wrapper has stopped being called, this timeout ensures that
+   * `callback` is executed at the proper times in `throttle` and `end`
+   * debounce modes.
+   */
+
+
+  var timeoutID;
+  var cancelled = false; // Keep track of the last time `callback` was executed.
+
+  var lastExec = 0; // Function to clear existing timeout
+
+  function clearExistingTimeout() {
+    if (timeoutID) {
+      clearTimeout(timeoutID);
+    }
+  } // Function to cancel next exec
+
+
+  function cancel(options) {
+    var _ref2 = options || {},
+        _ref2$upcomingOnly = _ref2.upcomingOnly,
+        upcomingOnly = _ref2$upcomingOnly === void 0 ? false : _ref2$upcomingOnly;
+
+    clearExistingTimeout();
+    cancelled = !upcomingOnly;
+  }
+  /*
+   * The `wrapper` function encapsulates all of the throttling / debouncing
+   * functionality and when executed will limit the rate at which `callback`
+   * is executed.
+   */
+
+
+  function wrapper() {
+    for (var _len = arguments.length, arguments_ = new Array(_len), _key = 0; _key < _len; _key++) {
+      arguments_[_key] = arguments[_key];
+    }
+
+    var self = this;
+    var elapsed = Date.now() - lastExec;
+
+    if (cancelled) {
+      return;
+    } // Execute `callback` and update the `lastExec` timestamp.
+
+
+    function exec() {
+      lastExec = Date.now();
+      callback.apply(self, arguments_);
+    }
+    /*
+     * If `debounceMode` is true (at begin) this is used to clear the flag
+     * to allow future `callback` executions.
+     */
+
+
+    function clear() {
+      timeoutID = undefined;
+    }
+
+    if (!noLeading && debounceMode && !timeoutID) {
+      /*
+       * Since `wrapper` is being called for the first time and
+       * `debounceMode` is true (at begin), execute `callback`
+       * and noLeading != true.
+       */
+      exec();
+    }
+
+    clearExistingTimeout();
+
+    if (debounceMode === undefined && elapsed > delay) {
+      if (noLeading) {
+        /*
+         * In throttle mode with noLeading, if `delay` time has
+         * been exceeded, update `lastExec` and schedule `callback`
+         * to execute after `delay` ms.
+         */
+        lastExec = Date.now();
+
+        if (!noTrailing) {
+          timeoutID = setTimeout(debounceMode ? clear : exec, delay);
+        }
+      } else {
+        /*
+         * In throttle mode without noLeading, if `delay` time has been exceeded, execute
+         * `callback`.
+         */
+        exec();
+      }
+    } else if (noTrailing !== true) {
+      /*
+       * In trailing throttle mode, since `delay` time has not been
+       * exceeded, schedule `callback` to execute `delay` ms after most
+       * recent execution.
+       *
+       * If `debounceMode` is true (at begin), schedule `clear` to execute
+       * after `delay` ms.
+       *
+       * If `debounceMode` is false (at end), schedule `callback` to
+       * execute after `delay` ms.
+       */
+      timeoutID = setTimeout(debounceMode ? clear : exec, debounceMode === undefined ? delay - elapsed : delay);
+    }
+  }
+
+  wrapper.cancel = cancel; // Return the wrapper function.
+
+  return wrapper;
+}
+
+/* eslint-disable no-undefined */
+/**
+ * Debounce execution of a function. Debouncing, unlike throttling,
+ * guarantees that a function is only executed a single time, either at the
+ * very beginning of a series of calls, or at the very end.
+ *
+ * @param {number} delay -               A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher) are most useful.
+ * @param {Function} callback -          A function to be executed after delay milliseconds. The `this` context and all arguments are passed through, as-is,
+ *                                        to `callback` when the debounced-function is executed.
+ * @param {object} [options] -           An object to configure options.
+ * @param {boolean} [options.atBegin] -  Optional, defaults to false. If atBegin is false or unspecified, callback will only be executed `delay` milliseconds
+ *                                        after the last debounced-function call. If atBegin is true, callback will be executed only at the first debounced-function call.
+ *                                        (After the throttled-function has not been called for `delay` milliseconds, the internal counter is reset).
+ *
+ * @returns {Function} A new, debounced function.
+ */
+
+function debounce (delay, callback, options) {
+  var _ref = options || {},
+      _ref$atBegin = _ref.atBegin,
+      atBegin = _ref$atBegin === void 0 ? false : _ref$atBegin;
+
+  return throttle(delay, callback, {
+    debounceMode: atBegin !== false
+  });
+}
+
 
 // 测试案例
+// https://www.177picyy.com/html/2023/03/5505307.html
+//  需要配合其他翻页脚本使用
 // https://www.colamanga.com/manga-za76213/1/5.html
 //  直接跳转到图片元素不会立刻触发，还需要停留20ms
-// https://www.177picyy.com/html/2023/03/5505307.html
+// https://www.colamanga.com/manga-kg45140/1/2.html
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
   const start = async () => {
@@ -7611,7 +7782,8 @@ const getInitLang = async () => {
       options,
       setOptions,
       isStored,
-      mangaProps
+      mangaProps,
+      _setManga
     } = await main.useInit(window.location.hostname, {
       remember_current_site: true,
       selector: ''
@@ -7680,6 +7852,21 @@ const getInitLang = async () => {
         return true;
       });
     };
+    const blobUrlMap = new Map();
+    // 处理那些 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片
+    const handleBlobImg = async e => {
+      if (blobUrlMap.has(e.src)) return blobUrlMap.get(e.src);
+      if (!e.src.startsWith('blob:')) return e.src;
+      if (await main.testImgUrl(e.src)) return e.src;
+      const canvas = document.createElement('canvas');
+      const canvasCtx = canvas.getContext('2d');
+      canvas.width = e.naturalWidth;
+      canvas.height = e.naturalHeight;
+      canvasCtx.drawImage(e, 0, 0);
+      const url = URL.createObjectURL(await main.canvasToBlob(canvas));
+      blobUrlMap.set(e.src, url);
+      return url;
+    };
     const imgBlackList = [
     // 东方永夜机的预加载图片
     '#pagetual-preload',
@@ -7689,6 +7876,18 @@ const getInitLang = async () => {
     const getAllImg = () => main.querySelectorAll(`:not(${imgBlackList.join(',')}) > img`)
     // 根据位置从小到大排序
     .sort((a, b) => a.offsetTop - b.offsetTop);
+
+    // 使用 triggerEleLazyLoad 会导致正常的滚动在滚到一半时被打断，所以加个锁限制一下
+    let scrollLock = false;
+    const closeScrollLock = debounce(1000, () => {
+      scrollLock = false;
+    });
+    window.addEventListener('scroll', () => {
+      if (scrollLock || mangaProps.show) return;
+      scrollLock = true;
+      closeScrollLock();
+    });
+    const getScrollLock = () => !scrollLock;
 
     /** 已经被触发过懒加载的图片 */
     const triggedImgList = new Set();
@@ -7713,28 +7912,30 @@ const getInitLang = async () => {
       const targetImgList = getAllImg().filter(e => !triggedImgList.has(e));
       const oldSrcList = targetImgList.map(e => e.src);
       for (let i = 0; i < targetImgList.length; i++) {
+        await main.wait(getScrollLock);
         const e = targetImgList[i];
         tryCorrectUrl(e);
-        await main.triggerEleLazyLoad(e,
+
         // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时，
         // 才在触发懒加载时停留一段时间，避免用户看着页面跳来跳去操作不了
-        mangaProps.show || mangaProps.imgList.length < 2 ? 300 : 0, oldSrcList[i]);
-        if (oldSrcList[i] !== e.src) triggedImgList.add(e);
+        const lazyLoadWaitTime = mangaProps.show || mangaProps.imgList.length < 2 ? 300 : 0;
+        await main.triggerEleLazyLoad(e, lazyLoadWaitTime, oldSrcList[i]);
+        if (
+        // src 发生改变的肯定是成功触发了的
+        oldSrcList[i] !== e.src ||
+        // 停留过一段时间还没触发的大概率是没有懒加载的
+        // 虽然也有概率误判，但到时再加长等待时间就是了
+        // 不把停留过的图片忽略掉的话，遇上图片元素多的站点要等很久才能触发完一遍
+        lazyLoadWaitTime) triggedImgList.add(e);
       }
     };
     let imgEleList;
-    const getImgList = async () => {
+    const updateImgList = async () => {
       imgEleList = await main.wait(() => {
         const newImgList = getAllImg().filter(e => e.naturalHeight > 500 && e.naturalWidth > 500);
         return newImgList.length > 2 && newImgList;
       });
-      return imgEleList.map(e => e.src);
-    };
-    let loadImgList;
-    /** 重新检查 imgList，并在发生变化时更新相关组件 */
-    const checkImgList = async () => {
-      const newImgList = await getImgList();
-      if (newImgList.length === 0) {
+      if (imgEleList.length === 0) {
         setFab({
           show: false
         });
@@ -7743,20 +7944,25 @@ const getInitLang = async () => {
         });
         return;
       }
-      if (!main.isEqualArray(newImgList, mangaProps.imgList)) {
-        saveImgEleSelector(imgEleList);
-        return loadImgList(newImgList);
-      }
+      let isEdited = false;
+      await main.plimit(imgEleList.map((e, i) => async () => {
+        const newUrl = await handleBlobImg(e);
+        if (newUrl === mangaProps.imgList[i]) return;
+        if (!isEdited) isEdited = true;
+        _setManga('imgList', i, newUrl);
+      }));
+      if (isEdited) saveImgEleSelector(imgEleList);
     };
-    loadImgList = init(() => {
+    init(async () => {
       if (!imgEleList) {
         imgEleList = [];
         // 为保证兼容，只能简单粗暴的不断检查
-        main.loop(triggerLazyLoad);
-        main.loop(checkImgList, 1000);
+        main.loop(triggerLazyLoad, 500);
+        main.loop(updateImgList, 1000);
       }
-      return getImgList();
-    }).loadImgList;
+      await main.wait(() => mangaProps.imgList.some(Boolean));
+      return mangaProps.imgList;
+    });
   };
   if ((await GM.getValue(window.location.hostname)) !== undefined) return start();
   const menuId = await GM.registerMenuCommand(((lang) => {
