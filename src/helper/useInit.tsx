@@ -90,6 +90,7 @@ export const useInit = async <T extends Record<string, any>>(
     setOptions,
     setFab,
     setManga,
+    _setManga,
     mangaProps,
     needAutoShow,
     isStored,
@@ -178,9 +179,7 @@ export const useInit = async <T extends Record<string, any>>(
       const updateImgList = async () => {
         setManga({ onLoading: undefined });
         _setManga('imgList', Array(totalImgNum).fill(''));
-        await work((i, imgUrl) => {
-          _setManga('imgList', i, imgUrl);
-        });
+        await work((i, imgUrl) => _setManga('imgList', i, imgUrl));
         setManga({ onLoading });
       };
 

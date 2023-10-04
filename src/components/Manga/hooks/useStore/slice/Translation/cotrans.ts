@@ -1,5 +1,6 @@
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
+import { canvasToBlob } from 'helper';
 import { store } from '../..';
 import { setMessage, download, request, createFormData } from './helper';
 
@@ -85,12 +86,7 @@ const mergeImage = async (rawImage: Blob, maskUri: string) => {
     };
   });
 
-  const translated = await new Promise<Blob>((resolve) => {
-    canvas.toBlob((blob) => {
-      resolve(blob!);
-    }, 'image/png');
-  });
-  return URL.createObjectURL(translated);
+  return URL.createObjectURL(await canvasToBlob(canvas));
 };
 
 /** 缩小过大的图片 */
@@ -119,11 +115,7 @@ const resize = async (blob: Blob, w: number, h: number): Promise<Blob> => {
   ctx.drawImage(img, 0, 0, width, height);
   URL.revokeObjectURL(img.src);
 
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((newBlob) =>
-      newBlob ? resolve(newBlob) : reject(new Error('Canvas toBlob failed')),
-    );
-  });
+  return canvasToBlob(canvas);
 };
 
 /** 使用 cotrans 翻译指定图片 */

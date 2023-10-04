@@ -1,3 +1,5 @@
+import { testImgUrl } from 'helper';
+
 export const imgExtension = new Set(['.png', '.gif', '.jpeg', '.jpg', '.webp']);
 
 export type ZipExtension = '.zip' | '.rar' | '.7z' | '.cbz' | '.cbr' | '.cb7';
@@ -25,15 +27,6 @@ export const loadScript = (url: string) => {
   script.setAttribute('src', url);
   document.head.appendChild(script);
 };
-
-/** 测试图片 url 能否正确加载 */
-const testImgUrl = (url: string) =>
-  new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(true);
-    img.onerror = () => resolve(false);
-    img.src = url;
-  });
 
 /** 创建 blob 链接，但是会先测试图片 url 能否正确加载 */
 export const createObjectURL = async (obj: Blob | MediaSource) => {

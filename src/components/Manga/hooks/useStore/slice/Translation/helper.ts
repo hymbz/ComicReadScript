@@ -15,8 +15,6 @@ export const setMessage = (i: number, msg: string) => {
   updateTipText();
 };
 
-export const isBlobUrlRe = /^blob:/;
-
 export const request = <T = any>(
   url: string,
   details?: Partial<Tampermonkey.Request<any>>,
@@ -37,7 +35,7 @@ export const request = <T = any>(
   });
 
 export const download = async (url: string) => {
-  if (isBlobUrlRe.test(url)) {
+  if (url.startsWith('blob:')) {
     const res = await fetch(url);
     return res.blob();
   }

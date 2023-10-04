@@ -113,9 +113,9 @@ export const scrollIntoView = (selector: string) =>
   querySelector(selector)?.scrollIntoView();
 
 /** 循环执行指定函数 */
-export const loop = async (fn: () => unknown, ms?: number) => {
+export const loop = async (fn: () => unknown, ms = 0) => {
   await fn();
-  setTimeout(loop, ms, fn, ms);
+  setTimeout(loop, ms, fn);
 };
 
 /**
@@ -175,12 +175,16 @@ export const needDarkMode = (hexColor: string) => {
 /** 等到传入的函数返回 true */
 export const wait = async <T>(
   fn: () => T | undefined | Promise<T | undefined>,
-  timeout = 100,
+  timeout = Infinity,
 ): Promise<TrueValue<T>> => {
-  const res: T | undefined = await fn();
-  if (res) return res as TrueValue<T>;
-  await sleep(timeout);
-  return wait(fn, timeout);
+  let res: T | undefined = await fn();
+  let _timeout = timeout;
+  while (_timeout > 0 && !res) {
+    res = await fn();
+    await sleep(10);
+    _timeout -= 10;
+  }
+  return res as TrueValue<T>;
 };
 
 /** 等到指定的 dom 出现 */
@@ -219,9 +223,32 @@ export const triggerEleLazyLoad = async (
   e.scrollIntoView();
   e.dispatchEvent(new Event('scroll', { bubbles: true }));
 
-  if (time) await Promise.any([sleep(time), wait(() => e.src !== oldSrc)]);
+  if (time) await wait(() => e.src !== oldSrc, time);
   window.scroll({ top: nowScroll, behavior: 'auto' });
 };
+
+/** 测试图片 url 能否正确加载 */
+export const testImgUrl = (url: string) =>
+  new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+
+export const canvasToBlob = (
+  canvas: HTMLCanvasElement,
+  type?: string,
+  quality?: any,
+) =>
+  new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) =>
+        blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')),
+      type,
+      quality,
+    );
+  });
 
 /**
  * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性

@@ -98,7 +98,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
         autoCloseFill.clear();
 
         state.fillEffect[-1] = state.option.firstPageFill;
-        state.imgList = props.imgList.map((imgUrl) => ({
+        state.imgList = [...props.imgList].map((imgUrl) => ({
           type: '',
           src: imgUrl || '',
           loadType: 'wait',
@@ -124,12 +124,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
           (i) => state.imgList?.[i]?.src,
         ) ?? [];
 
-      // 释放旧的 URL 对象
-      oldActiveImg.forEach(
-        (url) => url?.startsWith('blob:') && URL.revokeObjectURL(url),
-      );
-
-      state.imgList = props.imgList.map(
+      state.imgList = [...props.imgList].map(
         (imgUrl) =>
           state.imgList.find((img) => img.src === imgUrl) ?? {
             type: '',

@@ -12,14 +12,19 @@ import {
   toast,
   triggerEleLazyLoad,
   autoReadModeMessage,
-  isEqualArray,
+  testImgUrl,
+  canvasToBlob,
+  plimit,
 } from 'main';
+import { debounce } from 'throttle-debounce';
 
 // 测试案例
-// https://www.colamanga.com/manga-za76213/1/5.html
-//  直接跳转到图片元素不会立刻触发，还需要停留20ms
 // https://www.177picyy.com/html/2023/03/5505307.html
 //  需要配合其他翻页脚本使用
+// https://www.colamanga.com/manga-za76213/1/5.html
+//  直接跳转到图片元素不会立刻触发，还需要停留20ms
+// https://www.colamanga.com/manga-kg45140/1/2.html
+//  使用 URL.createObjectURL 后马上 URL.revokeObjectURL 的 URL
 
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
@@ -32,6 +37,7 @@ import {
       setOptions,
       isStored,
       mangaProps,
+      _setManga,
     } = await useInit(window.location.hostname, {
       remember_current_site: true,
       selector: '',
@@ -103,6 +109,25 @@ import {
       });
     };
 
+    const blobUrlMap: Map<string, string> = new Map();
+    // 处理那些 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片
+    const handleBlobImg = async (e: HTMLImageElement): Promise<string> => {
+      if (blobUrlMap.has(e.src)) return blobUrlMap.get(e.src)!;
+      if (!e.src.startsWith('blob:')) return e.src;
+      if (await testImgUrl(e.src)) return e.src;
+
+      const canvas = document.createElement('canvas');
+      const canvasCtx = canvas.getContext('2d')!;
+
+      canvas.width = e.naturalWidth;
+      canvas.height = e.naturalHeight;
+      canvasCtx.drawImage(e, 0, 0);
+
+      const url = URL.createObjectURL(await canvasToBlob(canvas));
+      blobUrlMap.set(e.src, url);
+      return url;
+    };
+
     const imgBlackList = [
       // 东方永夜机的预加载图片
       '#pagetual-preload',
@@ -116,6 +141,18 @@ import {
       )
         // 根据位置从小到大排序
         .sort((a, b) => a.offsetTop - b.offsetTop);
+
+    // 使用 triggerEleLazyLoad 会导致正常的滚动在滚到一半时被打断，所以加个锁限制一下
+    let scrollLock = false;
+    const closeScrollLock = debounce(1000, () => {
+      scrollLock = false;
+    });
+    window.addEventListener('scroll', () => {
+      if (scrollLock || mangaProps.show) return;
+      scrollLock = true;
+      closeScrollLock();
+    });
+    const getScrollLock = () => !scrollLock;
 
     /** 已经被触发过懒加载的图片 */
     const triggedImgList: Set<HTMLImageElement> = new Set();
@@ -137,54 +174,67 @@ import {
       const oldSrcList = targetImgList.map((e) => e.src);
 
       for (let i = 0; i < targetImgList.length; i++) {
+        await wait(getScrollLock);
         const e = targetImgList[i];
         tryCorrectUrl(e);
-        await triggerEleLazyLoad(
-          e,
-          // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时，
-          // 才在触发懒加载时停留一段时间，避免用户看着页面跳来跳去操作不了
-          mangaProps.show || mangaProps.imgList.length < 2 ? 300 : 0,
-          oldSrcList[i],
-        );
-        if (oldSrcList[i] !== e.src) triggedImgList.add(e);
+
+        // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时，
+        // 才在触发懒加载时停留一段时间，避免用户看着页面跳来跳去操作不了
+        const lazyLoadWaitTime =
+          mangaProps.show || mangaProps.imgList.length < 2 ? 300 : 0;
+
+        await triggerEleLazyLoad(e, lazyLoadWaitTime, oldSrcList[i]);
+
+        if (
+          // src 发生改变的肯定是成功触发了的
+          oldSrcList[i] !== e.src ||
+          // 停留过一段时间还没触发的大概率是没有懒加载的
+          // 虽然也有概率误判，但到时再加长等待时间就是了
+          // 不把停留过的图片忽略掉的话，遇上图片元素多的站点要等很久才能触发完一遍
+          lazyLoadWaitTime
+        )
+          triggedImgList.add(e);
       }
     };
 
     let imgEleList: HTMLImageElement[];
-    const getImgList = async () => {
+    const updateImgList = async () => {
       imgEleList = await wait(() => {
         const newImgList = getAllImg().filter(
           (e) => e.naturalHeight > 500 && e.naturalWidth > 500,
         );
         return newImgList.length > 2 && newImgList;
       });
-      return imgEleList.map((e) => e.src);
-    };
 
-    let loadImgList: ReturnType<typeof init>['loadImgList'];
-    /** 重新检查 imgList，并在发生变化时更新相关组件 */
-    const checkImgList = async () => {
-      const newImgList = await getImgList();
-      if (newImgList.length === 0) {
+      if (imgEleList.length === 0) {
         setFab({ show: false });
         setManga({ show: false });
         return;
       }
-      if (!isEqualArray(newImgList, mangaProps.imgList)) {
-        saveImgEleSelector(imgEleList);
-        return loadImgList(newImgList);
-      }
+
+      let isEdited = false;
+      await plimit(
+        imgEleList.map((e, i) => async () => {
+          const newUrl = await handleBlobImg(e);
+          if (newUrl === mangaProps.imgList[i]) return;
+
+          if (!isEdited) isEdited = true;
+          _setManga('imgList', i, newUrl);
+        }),
+      );
+      if (isEdited) saveImgEleSelector(imgEleList);
     };
 
-    loadImgList = init(() => {
+    init(async () => {
       if (!imgEleList) {
         imgEleList = [];
         // 为保证兼容，只能简单粗暴的不断检查
-        loop(triggerLazyLoad);
-        loop(checkImgList, 1000);
+        loop(triggerLazyLoad, 500);
+        loop(updateImgList, 1000);
       }
-      return getImgList();
-    }).loadImgList;
+      await wait(() => mangaProps.imgList.some(Boolean));
+      return mangaProps.imgList;
+    });
   };
 
   if ((await GM.getValue(window.location.hostname)) !== undefined)

@@ -9,6 +9,7 @@ import {
   querySelector,
   wait,
   waitImgLoad,
+  canvasToBlob,
 } from 'main';
 
 // 已知问题：某些漫画始终会有几页在下载原图时出错
@@ -84,13 +85,11 @@ import {
 
     try {
       unsafeWindow.onImageLoaded(imgEle);
-      const blob = await new Promise<Blob | null>((resolve) => {
-        (imgEle.nextElementSibling as HTMLCanvasElement).toBlob(
-          resolve,
-          'image/webp',
-          1,
-        );
-      });
+      const blob = await canvasToBlob(
+        imgEle.nextElementSibling as HTMLCanvasElement,
+        'image/webp',
+        1,
+      );
       URL.revokeObjectURL(imgEle.src);
       if (!blob) throw new Error('');
       return `${URL.createObjectURL(blob)}#.webp`;
@@ -113,9 +112,9 @@ import {
     dynamicUpdate(
       (setImg) =>
         plimit(
-          imgEleList.map((img, i) => async () => {
-            setImg(i, await getImgUrl(img));
-          }),
+          imgEleList.map(
+            (img, i) => async () => setImg(i, await getImgUrl(img)),
+          ),
           (doneNum, totalNum) => {
             setFab({
               progress: doneNum / totalNum,
