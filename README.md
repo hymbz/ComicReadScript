@@ -74,7 +74,7 @@
 
 ## 翻译
 
-「[manga-image-translator](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md)」是一个实现了自动翻译并嵌字的项目，本身开源并且有 docker 可以很方便的部署到本地，同时也有即开即用的演示站「[Cotrans](https://cotrans.touhou.ai/)」可供试用。
+「[manga-image-translator](https://github.com/zyddnys/manga-image-translator/blob/main/README_CN.md)」是一个实现了自动翻译并嵌字的项目，本身开源并且有 docker 可以很方便的部署到本地，同时也有即开即用的在线演示站「[Cotrans](https://cotrans.touhou.ai/)」可供试用。
 
 为方便啃生肉，脚本通过调用其接口实现了一键汉化，并且同时支持本地部署的版本和 Cotrans。在设置中选择好翻译服务器后，就能通过侧边栏中的翻译按钮开启/关闭当前显示页图片的汉化。
 

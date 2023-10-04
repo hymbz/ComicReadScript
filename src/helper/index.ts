@@ -112,19 +112,6 @@ export const linstenKeyup = (handler: (e: KeyboardEvent) => unknown) =>
 export const scrollIntoView = (selector: string) =>
   querySelector(selector)?.scrollIntoView();
 
-/**
- *
- * 通过滚动到指定元素位置、触发滚动事件、再滚回来，来触发图片的懒加载
- *
- * 因为速度很快所以应该是无感的
- */
-export const triggerEleLazyLoad = (e: HTMLElement) => {
-  const nowScroll = window.scrollY;
-  e.scrollIntoView();
-  e.dispatchEvent(new Event('scroll', { bubbles: true }));
-  window.scroll({ top: nowScroll, behavior: 'auto' });
-};
-
 /** 循环执行指定函数 */
 export const loop = async (fn: () => unknown, ms?: number) => {
   await fn();
@@ -216,6 +203,25 @@ export const waitImgLoad = (img: HTMLImageElement, timeout = 1000 * 10) =>
       window.clearTimeout(id);
     });
   });
+
+/**
+ *
+ * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载
+ *
+ * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
+ */
+export const triggerEleLazyLoad = async (
+  e: HTMLImageElement,
+  time = 0,
+  oldSrc = e.src,
+) => {
+  const nowScroll = window.scrollY;
+  e.scrollIntoView();
+  e.dispatchEvent(new Event('scroll', { bubbles: true }));
+
+  if (time) await Promise.any([sleep(time), wait(() => e.src !== oldSrc)]);
+  window.scroll({ top: nowScroll, behavior: 'auto' });
+};
 
 /**
  * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性

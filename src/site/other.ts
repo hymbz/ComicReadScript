@@ -12,16 +12,30 @@ import {
   toast,
   triggerEleLazyLoad,
   autoReadModeMessage,
+  isEqualArray,
 } from 'main';
+
+// 测试案例
+// https://www.colamanga.com/manga-za76213/1/5.html
+//  直接跳转到图片元素不会立刻触发，还需要停留20ms
+// https://www.177picyy.com/html/2023/03/5505307.html
+//  需要配合其他翻页脚本使用
 
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
   const start = async () => {
-    const { setManga, setFab, init, options, setOptions, isStored } =
-      await useInit(window.location.hostname, {
-        remember_current_site: true,
-        selector: '',
-      });
+    const {
+      setManga,
+      setFab,
+      init,
+      options,
+      setOptions,
+      isStored,
+      mangaProps,
+    } = await useInit(window.location.hostname, {
+      remember_current_site: true,
+      selector: '',
+    });
 
     // 通过 options 来迂回的实现禁止记住当前站点
     if (!options.remember_current_site) {
@@ -107,7 +121,7 @@ import {
     const triggedImgList: Set<HTMLImageElement> = new Set();
 
     /** 触发懒加载 */
-    const triggerLazyLoad = () => {
+    const triggerLazyLoad = async () => {
       const nowScroll = window.scrollY;
       // 滚到底部再滚回来，触发可能存在的自动翻页脚本
       window.scroll({
@@ -120,41 +134,34 @@ import {
       // 过滤掉已经被触发过懒加载的图片
       const targetImgList = getAllImg().filter((e) => !triggedImgList.has(e));
 
-      /** 上次触发的图片 */
-      let lastTriggedImg: HTMLImageElement | undefined;
+      const oldSrcList = targetImgList.map((e) => e.src);
 
       for (let i = 0; i < targetImgList.length; i++) {
         const e = targetImgList[i];
-        triggedImgList.add(e);
         tryCorrectUrl(e);
-
-        // 过滤掉位置相近，在触发上一张图片时已经顺带被触发了的
-        if (
-          e.offsetTop >=
-          (lastTriggedImg?.offsetTop ?? 0) + window.innerHeight
-        )
-          return;
-
-        triggerEleLazyLoad(e);
-        lastTriggedImg = e;
+        await triggerEleLazyLoad(
+          e,
+          // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时，
+          // 才在触发懒加载时停留一段时间，避免用户看着页面跳来跳去操作不了
+          mangaProps.show || mangaProps.imgList.length < 2 ? 300 : 0,
+          oldSrcList[i],
+        );
+        if (oldSrcList[i] !== e.src) triggedImgList.add(e);
       }
     };
 
+    let imgEleList: HTMLImageElement[];
     const getImgList = async () => {
-      triggerLazyLoad();
-
-      const imgEleList = await wait(() => {
+      imgEleList = await wait(() => {
         const newImgList = getAllImg().filter(
           (e) => e.naturalHeight > 500 && e.naturalWidth > 500,
         );
         return newImgList.length > 2 && newImgList;
       });
-      saveImgEleSelector(imgEleList);
       return imgEleList.map((e) => e.src);
     };
 
-    const { loadImgList } = init(getImgList);
-
+    let loadImgList: ReturnType<typeof init>['loadImgList'];
     /** 重新检查 imgList，并在发生变化时更新相关组件 */
     const checkImgList = async () => {
       const newImgList = await getImgList();
@@ -163,11 +170,21 @@ import {
         setManga({ show: false });
         return;
       }
-      return loadImgList(newImgList);
+      if (!isEqualArray(newImgList, mangaProps.imgList)) {
+        saveImgEleSelector(imgEleList);
+        return loadImgList(newImgList);
+      }
     };
 
-    // 为保证兼容，只能简单粗暴的不断检查
-    loop(checkImgList, 1000);
+    loadImgList = init(() => {
+      if (!imgEleList) {
+        imgEleList = [];
+        // 为保证兼容，只能简单粗暴的不断检查
+        loop(triggerLazyLoad);
+        loop(checkImgList, 1000);
+      }
+      return getImgList();
+    }).loadImgList;
   };
 
   if ((await GM.getValue(window.location.hostname)) !== undefined)
