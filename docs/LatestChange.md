@@ -1,11 +1,11 @@
-## [7.1.5](https://github.com/hymbz/ComicReadScript/compare/v7.1.4...v7.1.5) (2023-09-30)
+## [7.2.0](https://github.com/hymbz/ComicReadScript/compare/v7.1.5...v7.2.0) (2023-10-04)
+
+
+### Features
+
+* :sparkles: 增加简易模式触发图片加载的方式以适配更多情况 ([2bb2133](https://github.com/hymbz/ComicReadScript/commit/2bb2133dd3f7d27e5d0629a393e3106a8b3b32d1)), closes [#109](https://github.com/hymbz/ComicReadScript/issues/109)
 
 
 ### Bug Fixes
 
-* :bug: 修复手机上卷轴模式的显示异常 ([ed233f0](https://github.com/hymbz/ComicReadScript/commit/ed233f0671ea7e38a750445a4858f3c759aabcd2))
-
-
-### Performance Improvements
-
-* 增加切换图片自动放大选项的快捷键 ([3d9660a](https://github.com/hymbz/ComicReadScript/commit/3d9660a3aceae3f3e9590901b30421117dd8b44f))
+* :bug: 修复部分网站下载的漫画文件后辍异常的 bug ([35ba45b](https://github.com/hymbz/ComicReadScript/commit/35ba45ba96016c2ca02bd1b0abe08a3bf0d3a64d)), closes [#110](https://github.com/hymbz/ComicReadScript/issues/110)
