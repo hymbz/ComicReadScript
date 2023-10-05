@@ -24,7 +24,7 @@
   align-items: center;
 
   width: fit-content;
-  max-width: 30vw;
+  max-width: min(30em, 100vw);
   margin: 1em;
   padding: 0.8em 1em;
 

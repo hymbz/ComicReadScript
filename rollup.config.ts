@@ -46,7 +46,7 @@ const latestChangeHtml = (() => {
         case '*':
           return mdText
             .replace(/(?<=^\* ):\w+?: /, '')
-            .replace(/(?<=^.*)\(\[\w+\]\(.+?\)\)/, '');
+            .replace(/(?<=^.*)\(\[\w+\]\(.+?\)\).*/, '');
         default:
           return '';
       }
