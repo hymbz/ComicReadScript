@@ -167,10 +167,13 @@ try {
     }
 
     // #禁漫天堂
+    // 发布页：https://jmcomic.ltd
+    case '18-comic.work':
+    case '18comic-god.biz':
+    case '18-comic2.work':
     case 'jmcomic.me':
     case 'jmcomic1.me':
     case '18comic.org':
-    case '18comic.cc':
     case '18comic.vip': {
       inject('jm');
       options = false;

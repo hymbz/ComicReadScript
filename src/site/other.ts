@@ -148,7 +148,6 @@ import { debounce } from 'throttle-debounce';
       scrollLock = false;
     });
     window.addEventListener('scroll', () => {
-      if (scrollLock || mangaProps.show) return;
       scrollLock = true;
       closeScrollLock();
     });
@@ -161,10 +160,7 @@ import { debounce } from 'throttle-debounce';
     const triggerLazyLoad = async () => {
       const nowScroll = window.scrollY;
       // 滚到底部再滚回来，触发可能存在的自动翻页脚本
-      window.scroll({
-        top: document.body.scrollHeight,
-        behavior: 'auto',
-      });
+      window.scroll({ top: document.body.scrollHeight, behavior: 'auto' });
       document.body.dispatchEvent(new Event('scroll', { bubbles: true }));
       window.scroll({ top: nowScroll, behavior: 'auto' });
 
@@ -182,7 +178,6 @@ import { debounce } from 'throttle-debounce';
         // 才在触发懒加载时停留一段时间，避免用户看着页面跳来跳去操作不了
         const lazyLoadWaitTime =
           mangaProps.show || mangaProps.imgList.length < 2 ? 300 : 0;
-
         await triggerEleLazyLoad(e, lazyLoadWaitTime, oldSrcList[i]);
 
         if (
@@ -203,7 +198,7 @@ import { debounce } from 'throttle-debounce';
         const newImgList = getAllImg().filter(
           (e) => e.naturalHeight > 500 && e.naturalWidth > 500,
         );
-        return newImgList.length > 2 && newImgList;
+        return newImgList.length >= 2 && newImgList;
       });
 
       if (imgEleList.length === 0) {
