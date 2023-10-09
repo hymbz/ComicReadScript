@@ -3,7 +3,6 @@ import fs from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import shell from 'shelljs';
-// import terser from '@rollup/plugin-terser';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import { babel } from '@rollup/plugin-babel';

@@ -1,5 +1,7 @@
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
 
+import { render } from 'solid-js/web';
+
 import {
   insertNode,
   querySelector,
@@ -9,7 +11,9 @@ import {
   request,
   useInit,
   toast,
+  handleError,
 } from 'main';
+import { Show, createEffect, createMemo, createSignal, on } from 'solid-js';
 
 interface History {
   tid: string;
@@ -115,17 +119,27 @@ interface History {
   // 判断当前页是帖子
   if (/thread(-\d+){3}|mod=viewthread/.test(document.URL)) {
     // 修复微博图床的链接
-    querySelectorAll('img[file*="sinaimg.cn"]').forEach((e) => {
-      e.setAttribute('referrerpolicy', 'no-referrer');
-    });
+    querySelectorAll('img[file*="sinaimg.cn"]').forEach((e) =>
+      e.setAttribute('referrerpolicy', 'no-referrer'),
+    );
+
+    const fid: number =
+      unsafeWindow.fid ??
+      +(
+        new URLSearchParams(
+          querySelector<HTMLAnchorElement>('h2 > a')?.href,
+        ).get('fid') ?? '-1'
+      );
 
     // 限定板块启用
-    if (unsafeWindow.fid === 30 || unsafeWindow.fid === 37) {
+    if (fid === 30 || fid === 37) {
       const isFirstPage = !querySelector('.pg > .prev');
       // 第一页以外不自动加载
       if (!isFirstPage) needAutoShow.val = false;
 
-      let imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
+      let imgList = querySelectorAll<HTMLImageElement>(
+        ':is(.t_fsz, .message) img',
+      );
 
       const updateImgList = () => {
         let i = imgList.length;
@@ -180,14 +194,16 @@ interface History {
         show: undefined,
       });
 
-      // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
-      insertNode(
-        querySelector('div.pti > div.authi')!,
-        '<span class="pipe show">|</span><a id="comicReadMode" class="show" href="javascript:;">漫画阅读</a>',
-      );
-      document
-        .getElementById('comicReadMode')
-        ?.addEventListener('click', showComic);
+      if (!new URLSearchParams(window.location.search).get('mobile')) {
+        // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
+        insertNode(
+          querySelector('div.pti > div.authi')!,
+          '<span class="pipe show">|</span><a id="comicReadMode" class="show" href="javascript:;">漫画阅读</a>',
+        );
+        document
+          .getElementById('comicReadMode')
+          ?.addEventListener('click', showComic);
+      }
 
       // 如果帖子内有设置目录
       if (querySelector('#threadindex')) {
@@ -256,7 +272,10 @@ interface History {
     }
 
     if (options.记录阅读进度) {
-      const { tid } = unsafeWindow;
+      const tid =
+        unsafeWindow.tid ??
+        new URLSearchParams(window.location.search).get('tid');
+      if (!tid) return;
       const res = await request(
         `https://bbs.yamibo.com/api/mobile/index.php?module=viewthread&tid=${tid}`,
         { errorText: '获取帖子回复数时出错' },
@@ -270,7 +289,9 @@ interface History {
 
       /** 当前所在页数 */
       const currentPageNum = parseInt(
-        querySelector('#pgt strong')?.innerHTML ?? '1',
+        querySelector('#pgt strong')?.innerHTML ??
+          querySelector<HTMLSelectElement>('#dumppage')?.value ??
+          '1',
         10,
       );
 
@@ -286,7 +307,7 @@ interface History {
       const watchFloorList = querySelectorAll(
         data?.lastAnchor && currentPageNum === data.lastPageNum
           ? `#${data.lastAnchor} ~ div`
-          : '#postlist > div',
+          : '#postlist > div, .plc.cl',
       );
       if (!watchFloorList.length) return;
 
@@ -345,49 +366,83 @@ interface History {
         db.createObjectStore('history', { keyPath: 'tid' });
       });
 
-      // 更新页面上的阅读进度提示
-      const updateHistoryTag = () => {
-        // 先删除所有进度提示
-        querySelectorAll('.historyTag').forEach((e) => e.remove());
+      const isMobile = new URLSearchParams(window.location.search).get(
+        'mobile',
+      );
 
-        // 再添加上进度提示
-        return Promise.all(
-          querySelectorAll('tbody[id^=normalthread]').map(async (e) => {
-            const tid = e.id.split('_')[1];
-            const data = await cache.get('history', tid);
-            if (!data) return;
+      const [updateFlag, setUpdateFlag] = createSignal(false);
+      const updateHistoryTag = () => setUpdateFlag((val) => !val);
 
-            const lastReplies =
-              +e.querySelector('.num a')!.innerHTML - data.lastReplies;
+      let listSelector = 'tbody[id^=normalthread]';
+      let getTid = (e: HTMLElement) => e.id.split('_')[1];
+      let getUrl = (data: History, tid: string) =>
+        `thread-${tid}-${data.lastPageNum}-1.html#${data.lastAnchor}`;
 
-            insertNode(
-              e.getElementsByTagName('th')[0],
-              `
-                <a
-                  class="historyTag"
-                  onClick="atarget(this)"
-                  href="thread-${tid}-${data.lastPageNum}-1.html#${
-                    data.lastAnchor
-                  }"
-                >
-                  回第${data.lastPageNum}页
-                </a>
-                ${
-                  lastReplies > 0
-                    ? `<div class="historyTag">+${lastReplies}</div>`
-                    : ''
-                }
-              `,
+      if (isMobile) {
+        listSelector = '.threadlist li.list';
+        getTid = (e: HTMLElement) =>
+          new URLSearchParams(e.children[1].getAttribute('href')!).get('tid')!;
+        getUrl = (data, tid) =>
+          `forum.php?mod=viewthread&tid=${tid}&extra=page%3D1&mobile=2&page=${data.lastPageNum}#${data.lastAnchor}`;
+      }
+
+      querySelectorAll(listSelector).forEach((e) => {
+        const tid = getTid(e);
+
+        render(
+          () => {
+            const [data, setData] = createSignal<History | undefined>();
+
+            createEffect(
+              on(updateFlag, () => cache.get('history', tid).then(setData)),
             );
-          }),
+
+            const url = createMemo(() => (data() ? getUrl(data()!, tid) : ''));
+
+            const lastReplies = createMemo(() =>
+              !isMobile && data()
+                ? +e.querySelector('.num a')!.innerHTML - data()!.lastReplies
+                : 0,
+            );
+
+            const pc = () => (
+              <>
+                <a class="historyTag" onClick={window.atarget} href={url()}>
+                  回第{data()?.lastPageNum}页{' '}
+                </a>
+                <Show when={lastReplies() > 0}>
+                  <div class="historyTag">+{lastReplies()}</div>
+                </Show>
+              </>
+            );
+
+            const mobile = () => (
+              <li>
+                <a
+                  onClick={window.atarget}
+                  href={url()}
+                  style={{ color: 'unset' }}
+                >
+                  回第{data()?.lastPageNum}页
+                </a>
+                {/* 因为移动版的回复数貌似有延迟，显示不准，所以移动版上不提示 lastReplies */}
+              </li>
+            );
+
+            return (
+              <Show when={!!data()}>
+                <Show when={isMobile} children={mobile()} fallback={pc()} />
+              </Show>
+            );
+          },
+          isMobile ? e.children[3] : e.getElementsByTagName('th')[0],
         );
-      };
-      updateHistoryTag();
+      });
 
       // 切换回当前页时更新提示
       document.addEventListener('visibilitychange', updateHistoryTag);
       // 点击下一页后更新提示
-      querySelector('#autopbn')!.addEventListener('click', updateHistoryTag);
+      querySelector('#autopbn')?.addEventListener('click', updateHistoryTag);
     }
   }
-})();
+})().catch(handleError);

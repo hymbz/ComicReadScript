@@ -12,6 +12,7 @@ import {
   plimit,
   querySelectorAll,
   wait,
+  handleError,
 } from 'main';
 
 declare const selected_tag: string;
@@ -338,4 +339,4 @@ declare const selected_link: HTMLElement;
       else raw_refresh_tagmenu_act(a, b) as unknown;
     };
   }
-})();
+})().catch(handleError);

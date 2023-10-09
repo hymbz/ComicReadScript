@@ -6,6 +6,7 @@ import {
   request,
   toast,
   useInit,
+  handleError,
 } from 'main';
 import dmzjDecrypt from 'dmzjDecrypt';
 import type { ChapterInfo } from '../helper/dmzjApi';
@@ -199,4 +200,4 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
       break;
     }
   }
-})();
+})().catch(handleError);

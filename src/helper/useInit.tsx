@@ -194,3 +194,8 @@ export const useInit = async <T extends Record<string, any>>(
     },
   };
 };
+
+export const handleError = (e: Error) => {
+  log.error(e);
+  if (e.message) toast.error(e.message);
+};

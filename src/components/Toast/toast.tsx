@@ -46,15 +46,12 @@ toast.dismiss = (id: string) => {
 };
 toast.set = (id: string, options: Partial<Toast>) => {
   if (!Reflect.has(store.map, id)) return;
-  setState((state) => {
-    Object.assign(state.map[id], options);
-  });
+  setState((state) => Object.assign(state.map[id], options));
 };
 
 toast.success = (msg: string, options?: Partial<Toast>) =>
   toast(msg, { ...options, type: 'success' });
 toast.warn = (msg: string, options?: Partial<Toast>) =>
   toast(msg, { ...options, type: 'warn' });
-toast.error = (msg: string, options?: Partial<Toast>) => {
+toast.error = (msg: string, options?: Partial<Toast>) =>
   toast(msg, { ...options, type: 'error' });
-};

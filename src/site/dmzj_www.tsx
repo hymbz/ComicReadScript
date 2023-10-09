@@ -1,4 +1,4 @@
-import { querySelector, toast, useInit, waitDom } from 'main';
+import { handleError, querySelector, toast, useInit, waitDom } from 'main';
 import { getChapterInfo } from '../helper/dmzjApi';
 
 const chapterIdRe = /(?<=\/)\d+(?=\.html)/;
@@ -38,4 +38,4 @@ const turnPage = (chapterId?: number) => {
   } catch (_) {
     toast.error('获取漫画数据失败', { duration: Infinity });
   }
-})();
+})().catch(handleError);

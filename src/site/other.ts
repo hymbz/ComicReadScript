@@ -15,6 +15,7 @@ import {
   testImgUrl,
   canvasToBlob,
   plimit,
+  handleError,
 } from 'main';
 import { debounce } from 'throttle-debounce';
 
@@ -239,4 +240,4 @@ import { debounce } from 'throttle-debounce';
     extractI18n('site.simple.simple_read_mode')(await getInitLang()),
     () => !start() && GM.unregisterMenuCommand(menuId),
   );
-})();
+})().catch(handleError);

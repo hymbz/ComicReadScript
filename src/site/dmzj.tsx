@@ -10,6 +10,7 @@ import {
   wait,
   toast,
   universalInit,
+  handleError,
 } from 'main';
 import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
 
@@ -181,4 +182,4 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
       getOnNext: () => checkButton('.display_right #next_chapter'),
     },
   });
-})();
+})().catch(handleError);

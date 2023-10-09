@@ -38,8 +38,8 @@
   height: 100%;
 
   background-color: var(--page_bg);
-  filter: opacity(0.3);
-  backdrop-filter: blur(3px);
+  filter: opacity(0.6);
+  backdrop-filter: blur(24px);
   border-top-right-radius: 1em;
   border-bottom-right-radius: 1em;
 }

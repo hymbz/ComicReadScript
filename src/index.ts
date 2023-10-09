@@ -541,5 +541,5 @@ try {
     inject('other');
   }
 } catch (error) {
-  main.log.error(error);
+  main.handleError(error as Error);
 }
