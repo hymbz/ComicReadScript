@@ -1,6 +1,6 @@
-## [7.3.1](https://github.com/hymbz/ComicReadScript/compare/v7.3.0...v7.3.1) (2023-10-05)
+## [7.4.0](https://github.com/hymbz/ComicReadScript/compare/v7.3.1...v7.4.0) (2023-10-09)
 
 
-### Bug Fixes
+### Features
 
-* :bug: 更新禁漫天堂的网址 ([824386a](https://github.com/hymbz/ComicReadScript/commit/824386a3b288511dc01754fe988f4fa479c4b0c9))
+* :sparkles: 支持移动版百合会 ([9e8c3db](https://github.com/hymbz/ComicReadScript/commit/9e8c3dbf45ebaaf9fe955c32b71bf6becf5dc3e7)), closes [#111](https://github.com/hymbz/ComicReadScript/issues/111)
