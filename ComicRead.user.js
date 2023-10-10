@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         7.4.0
+// @version         7.4.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -1166,8 +1166,8 @@ const mountComponents = (id, fc) => {
   return dom;
 };
 
-var css$3 = ".index_module_root__5c9082fe{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__5c9082fe{align-items:center;animation:index_module_bounceInRight__5c9082fe .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__5c9082fe>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__5c9082fe[data-exit]{animation:index_module_bounceOutRight__5c9082fe .5s 1}.index_module_schedule__5c9082fe{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__5c9082fe[data-schedule] .index_module_schedule__5c9082fe{transition:transform .1s}.index_module_item__5c9082fe:not([data-schedule]) .index_module_schedule__5c9082fe{animation:index_module_schedule__5c9082fe linear 1 forwards}:is(.index_module_item__5c9082fe:hover,.index_module_item__5c9082fe[data-schedule],.index_module_root__5c9082fe[data-paused]) .index_module_schedule__5c9082fe{animation-play-state:paused}.index_module_msg__5c9082fe{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__5c9082fe h2,.index_module_msg__5c9082fe h3{margin:.3em 0}.index_module_msg__5c9082fe ul{margin:0;text-align:left}.index_module_msg__5c9082fe button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__5c9082fe button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__5c9082fe{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__5c9082fe{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__5c9082fe{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__5c9082fe","item":"index_module_item__5c9082fe","bounceInRight":"index_module_bounceInRight__5c9082fe","bounceOutRight":"index_module_bounceOutRight__5c9082fe","schedule":"index_module_schedule__5c9082fe","msg":"index_module_msg__5c9082fe"};
+var css$3 = ".index_module_root__654c6598{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__654c6598{align-items:center;animation:index_module_bounceInRight__654c6598 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__654c6598>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__654c6598[data-exit]{animation:index_module_bounceOutRight__654c6598 .5s 1}.index_module_schedule__654c6598{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__654c6598[data-schedule] .index_module_schedule__654c6598{transition:transform .1s}.index_module_item__654c6598:not([data-schedule]) .index_module_schedule__654c6598{animation:index_module_schedule__654c6598 linear 1 forwards}:is(.index_module_item__654c6598:hover,.index_module_item__654c6598[data-schedule],.index_module_root__654c6598[data-paused]) .index_module_schedule__654c6598{animation-play-state:paused}.index_module_msg__654c6598{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__654c6598 h2,.index_module_msg__654c6598 h3{margin:.7em 0}.index_module_msg__654c6598 ul{margin:0;text-align:left}.index_module_msg__654c6598 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__654c6598 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__654c6598{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__654c6598{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__654c6598{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2$3 = {"root":"index_module_root__654c6598","item":"index_module_item__654c6598","bounceInRight":"index_module_bounceInRight__654c6598","bounceOutRight":"index_module_bounceOutRight__654c6598","schedule":"index_module_schedule__654c6598","msg":"index_module_msg__654c6598"};
 
 const [_state$1, _setState$1] = store$2.createStore({
   list: [],
@@ -5269,8 +5269,8 @@ const useFab = async initProps => {
 };
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>支持移动版百合会\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在非漫画页弹窗报错的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -5598,7 +5598,6 @@ const handleDelayPrevNext = async (fn, num = 0) => {
 /** 对简单站点的通用解 */
 const universalInit = async ({
   name,
-  exit,
   wait: waitFn,
   getImgList,
   onPrev,
@@ -5610,7 +5609,6 @@ const universalInit = async ({
 }) => {
   if (SPA?.isMangaPage) await main.wait(SPA?.isMangaPage);
   if (waitFn) await main.wait(waitFn);
-  if (await exit?.()) return;
   const fnMap = await main.useInit(name, initOptions);
   const {
     init,
@@ -6198,7 +6196,9 @@ web.delegateEvents(["click"]);
     // #百合会新站
     case 'www.yamibo.com':
       {
+        if (!window.location.pathname.includes('/manga/view-chapter')) break;
         const id = new URLSearchParams(window.location.search).get('id');
+        if (!id) break;
 
         /** 总页数 */
         const totalPageNum = +main.querySelector('section div:first-of-type div:last-of-type').innerHTML.split('：')[1];
@@ -6211,7 +6211,6 @@ web.delegateEvents(["click"]);
         };
         options = {
           name: 'newYamibo',
-          exit: () => !window.location.pathname.includes('/manga/view-chapter'),
           getImgList: ({
             setFab
           }) => main.plimit(Object.keys([...new Array(totalPageNum)]).map(i => () => getImg(+i + 1)), (doneNum, totalNum) => {
@@ -7207,7 +7206,7 @@ const fileType = {
         };
         options = {
           name: 'terraHistoricus',
-          wait: () => !!main.querySelector('footer .HG_GAME_JS_BRIDGE__wrapper'),
+          wait: () => !!main.querySelector('.HG_COMIC_READER_main'),
           getImgList: async ({
             setFab
           }) => {
@@ -7350,9 +7349,9 @@ const main = require('main');
     case 'www.copymanga.tv':
     case 'www.copymanga.com':
       {
+        if (!window.location.href.includes('/chapter/')) break;
         options = {
           name: 'copymanga',
-          exit: () => !window.location.href.includes('/chapter/'),
           getImgList: async () => {
             const res = await main.request(window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.site/api/v3'));
             return JSON.parse(res.responseText).results.chapter.contents.map(({
@@ -7377,11 +7376,11 @@ const main = require('main');
     case 'www.mhgui.com':
     case 'tw.manhuagui.com':
       {
+        if (!Reflect.has(unsafeWindow, 'cInfo')) break;
         // 让切换章节的提示可以显示在漫画页上
         GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
         options = {
           name: 'manhuagui',
-          exit: () => !Reflect.has(unsafeWindow, 'cInfo'),
           getImgList: () => {
             const comicInfo = JSON.parse(
             // 只能通过 eval 获得数据
@@ -7399,9 +7398,9 @@ const main = require('main');
     // #漫画DB(manhuadb)
     case 'www.manhuadb.com':
       {
+        if (!Reflect.has(unsafeWindow, 'img_data_arr')) break;
         options = {
           name: 'manhuaDB',
-          exit: () => !Reflect.has(unsafeWindow, 'img_data_arr'),
           getImgList: () => unsafeWindow.img_data_arr.map(data => `${unsafeWindow.img_host}/${unsafeWindow.img_pre}/${data.img}`),
           onPrev: () => unsafeWindow.goNumPage('pre'),
           onNext: () => unsafeWindow.goNumPage('next')
@@ -7416,6 +7415,7 @@ const main = require('main');
     case 'www.dm5.cn':
     case 'www.1kkk.com':
       {
+        if (!Reflect.has(unsafeWindow, 'DM5_CID')) break;
         const getImgList = async (fnMap, imgList = []) => {
           const res = await unsafeWindow.$.ajax({
             type: 'GET',
@@ -7449,7 +7449,6 @@ const main = require('main');
         };
         options = {
           name: 'dm5',
-          exit: () => !Reflect.has(unsafeWindow, 'DM5_CID'),
           getImgList,
           onNext: main.querySelectorClick('.logo_2'),
           onPrev: main.querySelectorClick('.logo_1'),
@@ -7463,9 +7462,9 @@ const main = require('main');
     case 'www.wnacg.com':
     case 'wnacg.com':
       {
+        if (!Reflect.has(unsafeWindow, 'imglist')) break;
         options = {
           name: 'wnacg',
-          exit: () => !Reflect.has(unsafeWindow, 'imglist'),
           getImgList: () => unsafeWindow.imglist.filter(({
             caption
           }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！').map(({
@@ -7485,6 +7484,7 @@ const main = require('main');
     case 'www.mangabz.com':
     case 'mangabz.com':
       {
+        if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) break;
         const getImgList = async (fnMap, imgList = []) => {
           const res = await unsafeWindow.$.ajax({
             type: 'GET',
@@ -7516,7 +7516,6 @@ const main = require('main');
         };
         options = {
           name: 'mangabz',
-          exit: () => !Reflect.has(unsafeWindow, 'MANGABZ_CID'),
           getImgList,
           onNext: main.querySelectorClick('body > .container a[href^="/"]:last-child'),
           onPrev: main.querySelectorClick('body > .container a[href^="/"]:first-child')
@@ -7590,6 +7589,7 @@ const main = require('main');
     case 'weloma.art':
     case 'welovemanga.one':
       {
+        if (!main.querySelector('#listImgs')) break;
         const imgSelector = '#listImgs img.chapter-img.chapter-img:not(.ls-is-cached)';
         const isLoadingGifRe = /loading.*\.gif/;
         const getImgList = async () => {
@@ -7600,7 +7600,6 @@ const main = require('main');
         };
         options = {
           name: 'welovemanga',
-          exit: () => !main.querySelector('#listImgs'),
           getImgList,
           onNext: main.querySelectorClick('.rd_top-right.next:not(.disabled)'),
           onPrev: main.querySelectorClick('.rd_top-left.prev:not(.disabled)')

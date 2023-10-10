@@ -1,6 +1,6 @@
-## [7.4.0](https://github.com/hymbz/ComicReadScript/compare/v7.3.1...v7.4.0) (2023-10-09)
+## [7.4.1](https://github.com/hymbz/ComicReadScript/compare/v7.4.0...v7.4.1) (2023-10-10)
 
 
-### Features
+### Bug Fixes
 
-* :sparkles: 支持移动版百合会 ([9e8c3db](https://github.com/hymbz/ComicReadScript/commit/9e8c3dbf45ebaaf9fe955c32b71bf6becf5dc3e7)), closes [#111](https://github.com/hymbz/ComicReadScript/issues/111)
+* :bug: 修复在非漫画页弹窗报错的 bug ([d47a00e](https://github.com/hymbz/ComicReadScript/commit/d47a00ef7f6cbc11bfc93c5d805fca0c180bccbb))
