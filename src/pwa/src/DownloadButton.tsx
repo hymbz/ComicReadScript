@@ -2,6 +2,7 @@ import { createSignal, type Component } from 'solid-js';
 import { filetypeinfo } from 'magic-bytes.js';
 import { t } from 'helper/i18n';
 import { request } from 'helper/request';
+import { wait } from 'helper';
 import { loadNewImglist } from './store';
 import { toast } from '../../components/Toast';
 
@@ -12,7 +13,9 @@ const loadUrl = async (url: string | null) => {
     if (progress() !== null) return toast.warn(t('button.downloading'));
     if (!url) return;
 
-    if (typeof GM_xmlhttpRequest === 'undefined')
+    setProgress(0);
+
+    if (!(await wait(() => typeof GM_xmlhttpRequest !== 'undefined', 1000 * 3)))
       throw new Error(t('pwa.alert.userscript_not_installed'));
 
     const res = await request<ArrayBuffer>(url, {
@@ -21,6 +24,7 @@ const loadUrl = async (url: string | null) => {
     });
 
     const [fileType] = filetypeinfo(new Uint8Array(res.response));
+    if (!fileType) throw new Error(t('pwa.alert.img_not_found_files'));
 
     loadNewImglist(
       [
@@ -43,13 +47,14 @@ const handleUrl = () => {
   loadUrl(urlParams.get('url'));
 };
 
+// eslint-disable-next-line solid/reactivity
+handleUrl();
 window.onpopstate = handleUrl;
-setTimeout(handleUrl);
 
 export const DownloadButton: Component = () => (
   <button
     type="button"
-    data-loading={progress() ? '' : undefined}
+    data-loading={progress() !== null ? '' : undefined}
     on:click={() => {
       if (progress() !== null) return toast.warn(t('button.downloading'));
 
