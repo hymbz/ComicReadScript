@@ -26,7 +26,10 @@ try {
     }
     // #百合会新站
     case 'www.yamibo.com': {
+      if (!window.location.pathname.includes('/manga/view-chapter')) break;
+
       const id = new URLSearchParams(window.location.search).get('id');
+      if (!id) break;
 
       /** 总页数 */
       const totalPageNum = +main
@@ -48,7 +51,6 @@ try {
 
       options = {
         name: 'newYamibo',
-        exit: () => !window.location.pathname.includes('/manga/view-chapter'),
         getImgList: ({ setFab }) =>
           main.plimit(
             Object.keys([...new Array(totalPageNum)]).map(
@@ -133,7 +135,7 @@ try {
 
       options = {
         name: 'terraHistoricus',
-        wait: () => !!main.querySelector('footer .HG_GAME_JS_BRIDGE__wrapper'),
+        wait: () => !!main.querySelector('.HG_COMIC_READER_main'),
         getImgList: async ({ setFab }) => {
           const res = await main.request(apiUrl());
           const pageList = JSON.parse(res.response).data.pageInfos as unknown[];
@@ -193,9 +195,10 @@ try {
     case 'www.copymanga.org':
     case 'www.copymanga.tv':
     case 'www.copymanga.com': {
+      if (!window.location.href.includes('/chapter/')) break;
+
       options = {
         name: 'copymanga',
-        exit: () => !window.location.href.includes('/chapter/'),
         getImgList: async () => {
           const res = await main.request(
             window.location.href.replace(
@@ -230,12 +233,12 @@ try {
     case 'www.manhuagui.com':
     case 'www.mhgui.com':
     case 'tw.manhuagui.com': {
+      if (!Reflect.has(unsafeWindow, 'cInfo')) break;
       // 让切换章节的提示可以显示在漫画页上
       GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
 
       options = {
         name: 'manhuagui',
-        exit: () => !Reflect.has(unsafeWindow, 'cInfo'),
         getImgList: () => {
           const comicInfo = JSON.parse(
             // 只能通过 eval 获得数据
@@ -265,9 +268,9 @@ try {
 
     // #漫画DB(manhuadb)
     case 'www.manhuadb.com': {
+      if (!Reflect.has(unsafeWindow, 'img_data_arr')) break;
       options = {
         name: 'manhuaDB',
-        exit: () => !Reflect.has(unsafeWindow, 'img_data_arr'),
         getImgList: () =>
           (unsafeWindow.img_data_arr as { img: string }[]).map(
             (data) =>
@@ -285,6 +288,8 @@ try {
     case 'www.dm5.com':
     case 'www.dm5.cn':
     case 'www.1kkk.com': {
+      if (!Reflect.has(unsafeWindow, 'DM5_CID')) break;
+
       const getImgList = async (
         fnMap: UseInitFnMap,
         imgList: string[] = [],
@@ -328,7 +333,6 @@ try {
 
       options = {
         name: 'dm5',
-        exit: () => !Reflect.has(unsafeWindow, 'DM5_CID'),
         getImgList,
         onNext: main.querySelectorClick('.logo_2'),
         onPrev: main.querySelectorClick('.logo_1'),
@@ -341,9 +345,10 @@ try {
     case 'www.wn3.lol':
     case 'www.wnacg.com':
     case 'wnacg.com': {
+      if (!Reflect.has(unsafeWindow, 'imglist')) break;
+
       options = {
         name: 'wnacg',
-        exit: () => !Reflect.has(unsafeWindow, 'imglist'),
         getImgList: () =>
           (unsafeWindow.imglist as { url: string; caption: string }[])
             .filter(
@@ -363,6 +368,8 @@ try {
     // #mangabz
     case 'www.mangabz.com':
     case 'mangabz.com': {
+      if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) break;
+
       const getImgList = async (
         fnMap: UseInitFnMap,
         imgList: string[] = [],
@@ -402,7 +409,6 @@ try {
 
       options = {
         name: 'mangabz',
-        exit: () => !Reflect.has(unsafeWindow, 'MANGABZ_CID'),
         getImgList,
         onNext: main.querySelectorClick(
           'body > .container a[href^="/"]:last-child',
@@ -499,6 +505,8 @@ try {
     case 'nicomanga.com':
     case 'weloma.art':
     case 'welovemanga.one': {
+      if (!main.querySelector('#listImgs')) break;
+
       const imgSelector =
         '#listImgs img.chapter-img.chapter-img:not(.ls-is-cached)';
 
@@ -520,7 +528,6 @@ try {
 
       options = {
         name: 'welovemanga',
-        exit: () => !main.querySelector('#listImgs'),
         getImgList,
         onNext: main.querySelectorClick('.rd_top-right.next:not(.disabled)'),
         onPrev: main.querySelectorClick('.rd_top-left.prev:not(.disabled)'),

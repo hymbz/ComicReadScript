@@ -9,8 +9,6 @@ export interface InitOptions {
   name: string;
   /** 等待返回 true 后才开始运行。用于等待元素渲染 */
   wait?: () => boolean | Promise<boolean>;
-  /** 返回 true 立刻结束运行。用于跳过非漫画页 */
-  exit?: () => boolean | Promise<boolean>;
 
   getImgList: (fnMap: UseInitFnMap) => Promise<string[]> | string[];
   onPrev?: MangaProps['onPrev'];
@@ -45,7 +43,6 @@ const handleDelayPrevNext = async (
 /** 对简单站点的通用解 */
 export const universalInit = async ({
   name,
-  exit,
   wait: waitFn,
   getImgList,
   onPrev,
@@ -57,7 +54,6 @@ export const universalInit = async ({
 }: InitOptions) => {
   if (SPA?.isMangaPage) await wait(SPA?.isMangaPage);
   if (waitFn) await wait(waitFn);
-  if (await exit?.()) return;
 
   const fnMap = await useInit(name, initOptions);
   const { init, options, setManga, setFab, needAutoShow } = fnMap;
