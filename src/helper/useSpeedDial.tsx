@@ -17,23 +17,24 @@ export const useSpeedDial = <T extends Record<string, any>>(
     optionName: string;
     showName?: string;
     children?: JSX.Element;
-  }> = (props) => {
-    return (
-      <IconButton
-        tip={props.showName ?? props.optionName}
-        placement="left"
-        onClick={() =>
-          setOptions({
-            ...options,
-            [props.optionName]: !options[props.optionName],
-          })
-        }
-      >
-        {props.children ??
-          (options[props.optionName] ? <MdAutoFixHigh /> : <MdAutoFixOff />)}
-      </IconButton>
-    );
-  };
+  }> = (props) => (
+    <IconButton
+      tip={
+        props.showName ??
+        (t(`site.add_feature.${props.optionName}`) || props.optionName)
+      }
+      placement="left"
+      onClick={() =>
+        setOptions({
+          ...options,
+          [props.optionName]: !options[props.optionName],
+        })
+      }
+    >
+      {props.children ??
+        (options[props.optionName] ? <MdAutoFixHigh /> : <MdAutoFixOff />)}
+    </IconButton>
+  );
 
   const list = Object.keys(options)
     .map((optionName) => {
@@ -55,11 +56,7 @@ export const useSpeedDial = <T extends Record<string, any>>(
 
         default:
           if (typeof options[optionName] !== 'boolean') return null;
-          return () => (
-            <DefaultButton
-              optionName={t(`site.add_feature.${optionName}`) || optionName}
-            />
-          );
+          return () => <DefaultButton optionName={optionName} />;
       }
     })
     .filter(Boolean) as Component[];
