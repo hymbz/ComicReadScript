@@ -77,9 +77,12 @@
   width: fit-content;
   text-align: start;
 
-  & h2,
-  & h3 {
+  & h2 {
     margin: 0.7em 0;
+  }
+
+  & h3 {
+    margin: 0;
   }
 
   & ul {

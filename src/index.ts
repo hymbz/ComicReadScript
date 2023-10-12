@@ -10,7 +10,7 @@ import type { InitOptions, UseInitFnMap } from './helper/universalInit';
 inject('import');
 
 /** 站点配置 */
-let options: InitOptions | undefined | false;
+let options: InitOptions | undefined;
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 const main = require('main') as typeof import('./main');
@@ -21,7 +21,6 @@ try {
     // #百合会——「记录阅读历史，体验优化」
     case 'bbs.yamibo.com': {
       inject('yamibo');
-      options = false;
       break;
     }
     // #百合会新站
@@ -74,19 +73,16 @@ try {
     case 'manhua.idmzj.com':
     case 'manhua.dmzj.com': {
       inject('dmzj');
-      options = false;
       break;
     }
     case 'm.idmzj.com':
     case 'm.dmzj.com': {
       inject('dmzj_phone');
-      options = false;
       break;
     }
     case 'www.idmzj.com':
     case 'www.dmzj.com': {
       inject('dmzj_www');
-      options = false;
       break;
     }
 
@@ -94,14 +90,12 @@ try {
     case 'exhentai.org':
     case 'e-hentai.org': {
       inject('ehentai');
-      options = false;
       break;
     }
 
     // #nhentai——「彻底屏蔽漫画，自动翻页」
     case 'nhentai.net': {
       inject('nhentai');
-      options = false;
       break;
     }
 
@@ -178,7 +172,6 @@ try {
     case '18comic.org':
     case '18comic.vip': {
       inject('jm');
-      options = false;
       break;
     }
 
@@ -234,6 +227,7 @@ try {
     case 'www.mhgui.com':
     case 'tw.manhuagui.com': {
       if (!Reflect.has(unsafeWindow, 'cInfo')) break;
+
       // 让切换章节的提示可以显示在漫画页上
       GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
 
@@ -269,6 +263,7 @@ try {
     // #漫画DB(manhuadb)
     case 'www.manhuadb.com': {
       if (!Reflect.has(unsafeWindow, 'img_data_arr')) break;
+
       options = {
         name: 'manhuaDB',
         getImgList: () =>
@@ -345,6 +340,13 @@ try {
     case 'www.wn3.lol':
     case 'www.wnacg.com':
     case 'wnacg.com': {
+      // 突出显示下拉阅读的按钮
+      const buttonDom = main.querySelector('#bodywrap a.btn');
+      if (buttonDom) {
+        buttonDom.style.setProperty('background-color', '#607d8b');
+        buttonDom.style.setProperty('background-image', 'none');
+      }
+
       if (!Reflect.has(unsafeWindow, 'imglist')) break;
 
       options = {
@@ -356,12 +358,6 @@ try {
             )
             .map(({ url }) => new URL(url, window.location.origin).href),
       };
-      // 突出显示下拉阅读的按钮
-      const buttonDom = main.querySelector('#bodywrap a.btn');
-      if (buttonDom) {
-        buttonDom.style.setProperty('background-color', '#607d8b');
-        buttonDom.style.setProperty('background-image', 'none');
-      }
       break;
     }
 
@@ -538,15 +534,15 @@ try {
     // 为 pwa 版页面提供 api，以便翻译功能能正常运作
     case 'comic-read.pages.dev': {
       unsafeWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
-      options = false;
       break;
+    }
+
+    default: {
+      inject('other');
     }
   }
 
   if (options) main.universalInit(options);
-  else if (options !== false) {
-    inject('other');
-  }
 } catch (error) {
   main.handleError(error as Error);
 }
