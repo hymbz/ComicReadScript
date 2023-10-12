@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         7.4.1
+// @version         7.4.2
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -1166,8 +1166,8 @@ const mountComponents = (id, fc) => {
   return dom;
 };
 
-var css$3 = ".index_module_root__654c6598{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__654c6598{align-items:center;animation:index_module_bounceInRight__654c6598 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__654c6598>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__654c6598[data-exit]{animation:index_module_bounceOutRight__654c6598 .5s 1}.index_module_schedule__654c6598{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__654c6598[data-schedule] .index_module_schedule__654c6598{transition:transform .1s}.index_module_item__654c6598:not([data-schedule]) .index_module_schedule__654c6598{animation:index_module_schedule__654c6598 linear 1 forwards}:is(.index_module_item__654c6598:hover,.index_module_item__654c6598[data-schedule],.index_module_root__654c6598[data-paused]) .index_module_schedule__654c6598{animation-play-state:paused}.index_module_msg__654c6598{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__654c6598 h2,.index_module_msg__654c6598 h3{margin:.7em 0}.index_module_msg__654c6598 ul{margin:0;text-align:left}.index_module_msg__654c6598 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__654c6598 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__654c6598{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__654c6598{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__654c6598{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__654c6598","item":"index_module_item__654c6598","bounceInRight":"index_module_bounceInRight__654c6598","bounceOutRight":"index_module_bounceOutRight__654c6598","schedule":"index_module_schedule__654c6598","msg":"index_module_msg__654c6598"};
+var css$3 = ".index_module_root__beb4237a{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__beb4237a{align-items:center;animation:index_module_bounceInRight__beb4237a .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__beb4237a>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__beb4237a[data-exit]{animation:index_module_bounceOutRight__beb4237a .5s 1}.index_module_schedule__beb4237a{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__beb4237a[data-schedule] .index_module_schedule__beb4237a{transition:transform .1s}.index_module_item__beb4237a:not([data-schedule]) .index_module_schedule__beb4237a{animation:index_module_schedule__beb4237a linear 1 forwards}:is(.index_module_item__beb4237a:hover,.index_module_item__beb4237a[data-schedule],.index_module_root__beb4237a[data-paused]) .index_module_schedule__beb4237a{animation-play-state:paused}.index_module_msg__beb4237a{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__beb4237a h2{margin:.7em 0}.index_module_msg__beb4237a h3{margin:0}.index_module_msg__beb4237a ul{margin:0;text-align:left}.index_module_msg__beb4237a button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__beb4237a button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__beb4237a{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__beb4237a{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__beb4237a{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2$3 = {"root":"index_module_root__beb4237a","item":"index_module_item__beb4237a","bounceInRight":"index_module_bounceInRight__beb4237a","bounceOutRight":"index_module_bounceOutRight__beb4237a","schedule":"index_module_schedule__beb4237a","msg":"index_module_msg__beb4237a"};
 
 const [_state$1, _setState$1] = store$2.createStore({
   list: [],
@@ -1583,21 +1583,19 @@ const IconButton = _props => {
 };
 
 const useSpeedDial = (options, setOptions) => {
-  const DefaultButton = props => {
-    return web.createComponent(IconButton, {
-      get tip() {
-        return props.showName ?? props.optionName;
-      },
-      placement: "left",
-      onClick: () => setOptions({
-        ...options,
-        [props.optionName]: !options[props.optionName]
-      }),
-      get children() {
-        return props.children ?? (options[props.optionName] ? web.createComponent(MdAutoFixHigh, {}) : web.createComponent(MdAutoFixOff, {}));
-      }
-    });
-  };
+  const DefaultButton = props => web.createComponent(IconButton, {
+    get tip() {
+      return props.showName ?? (t(\`site.add_feature.\${props.optionName}\`) || props.optionName);
+    },
+    placement: "left",
+    onClick: () => setOptions({
+      ...options,
+      [props.optionName]: !options[props.optionName]
+    }),
+    get children() {
+      return props.children ?? (options[props.optionName] ? web.createComponent(MdAutoFixHigh, {}) : web.createComponent(MdAutoFixOff, {}));
+    }
+  });
   const list = Object.keys(options).map(optionName => {
     switch (optionName) {
       case 'hiddenFAB':
@@ -1617,9 +1615,7 @@ const useSpeedDial = (options, setOptions) => {
       default:
         if (typeof options[optionName] !== 'boolean') return null;
         return () => web.createComponent(DefaultButton, {
-          get optionName() {
-            return t(\`site.add_feature.\${optionName}\`) || optionName;
-          }
+          optionName: optionName
         });
     }
   }).filter(Boolean);
@@ -5270,7 +5266,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在非漫画页弹窗报错的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复会在支持站点误启用简易模式的 bug </p></li><li><p>修复启用简易模式后无法取消记忆当前站点的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6190,7 +6186,6 @@ const _tmpl$ = /*#__PURE__*/web.template(`<a class="historyTag">回第<!>页 `),
 })().catch(main.handleError);
 web.delegateEvents(["click"]);
 
-        options = false;
         break;
       }
     // #百合会新站
@@ -6547,7 +6542,6 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class="photo_part"><div class="h2
   });
 })().catch(main.handleError);
 
-        options = false;
         break;
       }
     case 'm.idmzj.com':
@@ -6731,7 +6725,6 @@ const getViewpoint = async (comicId, chapterId) => {
   }
 })().catch(main.handleError);
 
-        options = false;
         break;
       }
     case 'www.idmzj.com':
@@ -6782,7 +6775,6 @@ const turnPage = chapterId => {
   }
 })().catch(main.handleError);
 
-        options = false;
         break;
       }
 
@@ -7034,7 +7026,6 @@ const MdSettings = ((props = {}) => (() => {
   }
 })().catch(main.handleError);
 
-        options = false;
         break;
       }
 
@@ -7176,7 +7167,6 @@ const fileType = {
   }
 })().catch(main.handleError);
 
-        options = false;
         break;
       }
 
@@ -7331,7 +7321,6 @@ const main = require('main');
   retry();
 })().catch(main.handleError);
 
-        options = false;
         break;
       }
 
@@ -7377,6 +7366,7 @@ const main = require('main');
     case 'tw.manhuagui.com':
       {
         if (!Reflect.has(unsafeWindow, 'cInfo')) break;
+
         // 让切换章节的提示可以显示在漫画页上
         GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
         options = {
@@ -7462,6 +7452,12 @@ const main = require('main');
     case 'www.wnacg.com':
     case 'wnacg.com':
       {
+        // 突出显示下拉阅读的按钮
+        const buttonDom = main.querySelector('#bodywrap a.btn');
+        if (buttonDom) {
+          buttonDom.style.setProperty('background-color', '#607d8b');
+          buttonDom.style.setProperty('background-image', 'none');
+        }
         if (!Reflect.has(unsafeWindow, 'imglist')) break;
         options = {
           name: 'wnacg',
@@ -7471,12 +7467,6 @@ const main = require('main');
             url
           }) => new URL(url, window.location.origin).href)
         };
-        // 突出显示下拉阅读的按钮
-        const buttonDom = main.querySelector('#bodywrap a.btn');
-        if (buttonDom) {
-          buttonDom.style.setProperty('background-color', '#607d8b');
-          buttonDom.style.setProperty('background-image', 'none');
-        }
         break;
       }
 
@@ -7611,11 +7601,10 @@ const main = require('main');
     case 'comic-read.pages.dev':
       {
         unsafeWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
-        options = false;
         break;
       }
-  }
-  if (options) main.universalInit(options);else if (options !== false) {
+    default:
+      {
 const main = require('main');
 
 const langList = ['zh', 'en', 'ru'];
@@ -8022,7 +8011,9 @@ function debounce (delay, callback, options) {
           })(await getInitLang()), () => !start() && GM.unregisterMenuCommand(menuId));
 })().catch(main.handleError);
 
+      }
   }
+  if (options) main.universalInit(options);
 } catch (error) {
   main.handleError(error);
 }
