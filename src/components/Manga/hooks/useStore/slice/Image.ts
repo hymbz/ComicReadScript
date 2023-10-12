@@ -148,6 +148,7 @@ export const updateImgLoadType = debounce(100, (state: State) => {
 
 /** 重新计算 PageData */
 export const updatePageData = (state: State) => {
+  const lastActiveImgIndex = activeImgIndex();
   const {
     imgList,
     fillEffect,
@@ -159,6 +160,12 @@ export const updatePageData = (state: State) => {
   else state.pageList = handleComicData(imgList, fillEffect);
   updateDrag(state);
   updateImgLoadType(state);
+
+  // 在图片排列改变后自动跳转回原先显示图片所在的页数
+  if (lastActiveImgIndex !== activeImgIndex())
+    state.activePageIndex = state.pageList.findIndex((page) =>
+      page.includes(lastActiveImgIndex),
+    );
 };
 updatePageData.debounce = debounce(100, updatePageData);
 
@@ -194,26 +201,14 @@ export const handleResize = (state: State, width: number, height: number) => {
   state.imgList.forEach((img) => updateImgType(state, img));
 };
 
-/** 在图片排列改变后自动跳转回原先显示图片所在的页数 */
-const jumpBackPage = (state: State) => {
-  const lastActiveImgIndex = activeImgIndex();
-  return () => {
-    state.activePageIndex = state.pageList.findIndex((page) =>
-      page.includes(lastActiveImgIndex),
-    );
-  };
-};
-
 /** 切换页面填充 */
 export const switchFillEffect = () => {
   setState((state) => {
     // 如果当前页不是双页显示的就跳过，避免在显示跨页图的页面切换却没看到效果的疑惑
     if (state.pageList[state.activePageIndex].length !== 2) return;
 
-    const jump = jumpBackPage(state);
     state.fillEffect[nowFillIndex()] = !state.fillEffect[nowFillIndex()];
     updatePageData(state);
-    jump();
   });
 };
 
@@ -232,10 +227,8 @@ export const switchScrollMode = () => {
 /** 切换单双页模式 */
 export const switchOnePageMode = () => {
   setOption((draftOption, state) => {
-    const jump = jumpBackPage(state);
     draftOption.onePageMode = !draftOption.onePageMode;
     updatePageData(state);
-    jump();
   });
 };
 
