@@ -83,19 +83,19 @@ export const defaultButtonList: ToolbarButtonList = [
       }
       onClick={() => {
         if (store.option.scrollMode) {
-          return zoomScrollModeImg(
-            store.option.scrollModeImgScale < 1 ||
-              store.option.scrollModeImgScale > 1.6
-              ? undefined
-              : 0.2,
-          );
+          if (
+            store.option.scrollModeImgScale >= 1 &&
+            store.option.scrollModeImgScale < 1.6
+          )
+            return zoomScrollModeImg(0.2);
+          return zoomScrollModeImg(1, true);
         }
 
         if (!store.panzoom) return;
         const { scale } = store.panzoom.getTransform();
 
-        if (scale === 1) store.panzoom.smoothZoom(0, 0, 1.2);
-        else store.panzoom.smoothZoomAbs(0, 0, 1);
+        if (scale === 1) store.panzoom.smoothZoom(0, 0, 2);
+        else store.panzoom.smoothZoomAbs(0, 0, 0.99);
       }}
       children={<MdSearch />}
     />

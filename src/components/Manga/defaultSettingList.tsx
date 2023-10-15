@@ -1,7 +1,7 @@
 import MdOutlineFormatTextdirectionLToR from '@material-design-icons/svg/round/format_textdirection_l_to_r.svg';
 import MdOutlineFormatTextdirectionRToL from '@material-design-icons/svg/round/format_textdirection_r_to_l.svg';
 
-import { type Component } from 'solid-js';
+import { Show, type Component } from 'solid-js';
 
 import { throttle } from 'throttle-debounce';
 import { lang, setLang, t } from 'helper/i18n';
@@ -17,10 +17,12 @@ import {
   setOption,
   switchDir,
   updateImgLoadType,
+  zoomScrollModeImg,
 } from './hooks/useStore/slice';
 import { setState, store } from './hooks/useStore';
 
 import classes from './index.module.css';
+import { SettingsItemNumber } from './components/SettingsItemNumber';
 
 export type SettingList = (
   | [string, Component]
@@ -174,27 +176,31 @@ export const defaultSettingList: () => SettingList = () => [
           onChange={createStateSetFn('swapPageTurnKey')}
         />
 
-        <SettingsItem name={t('setting.option.preload_page_num')}>
-          <div
-            contenteditable
-            data-only-number
-            style={{ 'margin-right': '.7em' }}
-            on:input={(e) =>
-              e.currentTarget.textContent!.length > 5 && e.currentTarget.blur()
-            }
-            onBlur={(e) => {
-              const number = +e.currentTarget.textContent!;
-              if (!Number.isNaN(number))
-                setOption((draftOption) => {
-                  draftOption.preloadPageNum = clamp(0, number, 99999);
-                });
-              // eslint-disable-next-line no-param-reassign
-              e.currentTarget.textContent = `${store.option.preloadPageNum}`;
+        <SettingsItemNumber
+          name={t('setting.option.preload_page_num')}
+          maxLength={5}
+          onChange={(val) => {
+            if (Number.isNaN(val)) return;
+            setOption((draftOption) => {
+              draftOption.preloadPageNum = clamp(0, val, 99999);
+            });
+          }}
+          value={store.option.preloadPageNum}
+        />
+
+        <Show when={store.option.scrollMode}>
+          <SettingsItemNumber
+            name={t('setting.option.scroll_mode_img_scale')}
+            maxLength={3}
+            suffix="%"
+            step={5}
+            onChange={(val) => {
+              if (Number.isNaN(val)) return;
+              zoomScrollModeImg(val / 100, true);
             }}
-          >
-            {store.option.preloadPageNum ?? 0}
-          </div>
-        </SettingsItem>
+            value={Math.round(store.option.scrollModeImgScale * 100)}
+          />
+        </Show>
 
         <SettingsItem name={t('setting.option.background_color')}>
           <input

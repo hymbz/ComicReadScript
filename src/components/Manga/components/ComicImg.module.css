@@ -85,7 +85,7 @@
     & .img {
       display: unset;
 
-      width: calc(var(--scrollModeImgScale) * var(--width));
+      width: calc(var(--scrollModeImgScale) * var(--width, 100%));
       max-width: unset;
       height: auto;
       max-height: unset;
@@ -98,6 +98,10 @@
         flex-basis: var(--img_placeholder_height);
         flex-shrink: 0;
         visibility: hidden;
+      }
+
+      &[data-load-type="loading"] {
+        position: unset;
       }
     }
   }

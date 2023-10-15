@@ -101,16 +101,14 @@ const loadImg = (
   return edited;
 };
 
-export const zoomScrollModeImg = (zoomLevel?: number) => {
+export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
   setOption((draftOption) => {
-    draftOption.scrollModeImgScale = !zoomLevel
-      ? 1
-      : clamp(
-          0.1,
-          // 放大到整数再运算，避免精度丢失导致的奇怪的值
-          (store.option.scrollModeImgScale * 10 + zoomLevel * 10) / 10,
-          3,
-        );
+    const newVal = set
+      ? zoomLevel
+      : // 放大到整数再运算，避免精度丢失导致的奇怪的值
+        (store.option.scrollModeImgScale * 100 + zoomLevel * 100) / 100;
+
+    draftOption.scrollModeImgScale = clamp(0.1, newVal, 3);
   });
   // 在调整图片缩放后使当前滚动进度保持不变
   setState((state) => {
