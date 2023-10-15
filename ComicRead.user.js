@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         7.4.2
+// @version         7.5.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -549,7 +549,9 @@ const zh = {
       paragraph_scrollbar: "滚动条",
       paragraph_translation: "翻译",
       preload_page_num: "预加载页数",
+      scroll_mode_img_scale: "卷轴图片缩放",
       scrollbar_auto_hidden: "自动隐藏滚动条",
+      scrollbar_easy_scroll: "快捷滚动",
       scrollbar_show: "显示滚动条",
       scrollbar_show_img_status: "显示图片加载状态",
       show_clickable_area: "显示点击区域",
@@ -777,7 +779,9 @@ const en = {
       paragraph_scrollbar: "Scrollbar",
       paragraph_translation: "Translation",
       preload_page_num: "Preload page number",
+      scroll_mode_img_scale: "Scroll mode image zoom ratio",
       scrollbar_auto_hidden: "Auto hide the scrollbar",
+      scrollbar_easy_scroll: "Easy scroll",
       scrollbar_show: "Show scrollbar",
       scrollbar_show_img_status: "Show image loading status",
       show_clickable_area: "Show clickable areas",
@@ -1185,30 +1189,30 @@ const creatId = () => {
   return id;
 };
 
-const _tmpl$$Q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
+const _tmpl$$R = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
 const MdCheckCircle = ((props = {}) => (() => {
+  const _el$ = _tmpl$$R();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$Q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const MdWarning = ((props = {}) => (() => {
   const _el$ = _tmpl$$Q();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
-const MdWarning = ((props = {}) => (() => {
+const _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const MdError = ((props = {}) => (() => {
   const _el$ = _tmpl$$P();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
-const MdError = ((props = {}) => (() => {
-  const _el$ = _tmpl$$O();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
+const _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
 const MdInfo = ((props = {}) => (() => {
-  const _el$ = _tmpl$$N();
+  const _el$ = _tmpl$$O();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -1271,7 +1275,7 @@ toast$2.error = (msg, options) => toast$2(msg, {
   type: 'error'
 });
 
-const _tmpl$$M = /*#__PURE__*/web.template(\`<div>\`),
+const _tmpl$$N = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$b = /*#__PURE__*/web.template(\`<div><div>\`);
 const iconMap = {
   info: MdInfo,
@@ -1343,7 +1347,7 @@ const ToastItem = props => {
         return props.duration !== Infinity || props.schedule !== undefined;
       },
       get children() {
-        const _el$3 = _tmpl$$M();
+        const _el$3 = _tmpl$$N();
         _el$3.addEventListener("animationend", dismiss);
         const _ref$ = scheduleRef;
         typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
@@ -1386,7 +1390,7 @@ const ToastItem = props => {
   })();
 };
 
-const _tmpl$$L = /*#__PURE__*/web.template(\`<div>\`);
+const _tmpl$$M = /*#__PURE__*/web.template(\`<div>\`);
 const Toaster = () => {
   const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
   solidJs.onMount(() => {
@@ -1397,7 +1401,7 @@ const Toaster = () => {
     solidJs.onCleanup(() => document.removeEventListener('visibilitychange', handleVisibilityChange));
   });
   return (() => {
-    const _el$ = _tmpl$$L();
+    const _el$ = _tmpl$$M();
     web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
         return store$1.list;
@@ -1420,7 +1424,7 @@ const Toaster = () => {
 
 const ToastStyle = css$3;
 
-const _tmpl$$K = /*#__PURE__*/web.template(\`<style type="text/css">\`);
+const _tmpl$$L = /*#__PURE__*/web.template(\`<style type="text/css">\`);
 let dom$1;
 const init = () => {
   if (dom$1) return;
@@ -1432,7 +1436,7 @@ const init = () => {
     document.body.appendChild(_dom);
   }
   dom$1 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
-    const _el$ = _tmpl$$K();
+    const _el$ = _tmpl$$L();
     web.insert(_el$, ToastStyle);
     return _el$;
   })()]);
@@ -1486,30 +1490,30 @@ const request$1 = async (url, details, errorNum = 0) => {
   }
 };
 
-const _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
+const _tmpl$$K = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
 const MdAutoFixHigh = ((props = {}) => (() => {
+  const _el$ = _tmpl$$K();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9zm-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41 1.47-1.45zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42z">\`);
+const MdAutoFixOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$J();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9zm-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41 1.47-1.45zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42z">\`);
-const MdAutoFixOff = ((props = {}) => (() => {
+const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1z">\`);
+const MdAutoFlashOn = ((props = {}) => (() => {
   const _el$ = _tmpl$$I();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1z">\`);
-const MdAutoFlashOn = ((props = {}) => (() => {
-  const _el$ = _tmpl$$H();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28.45-.78zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13 3.15-6.29zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41z">\`);
+const _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28.45-.78zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13 3.15-6.29zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41z">\`);
 const MdAutoFlashOff = ((props = {}) => (() => {
-  const _el$ = _tmpl$$G();
+  const _el$ = _tmpl$$H();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -1517,7 +1521,7 @@ const MdAutoFlashOff = ((props = {}) => (() => {
 var css$2 = ".index_module_iconButtonItem__9645dd99{align-items:center;display:flex;position:relative}.index_module_iconButton__9645dd99{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__9645dd99:focus,.index_module_iconButton__9645dd99:hover{background-color:var(--hover_bg_color,#fff3)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99{background-color:var(--text,#fff);color:var(--text_bg,#121212)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:focus,.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:hover{background-color:var(--hover_bg_color_enable,#fffa)}.index_module_iconButton__9645dd99>svg{width:1em}.index_module_iconButtonPopper__9645dd99{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;position:absolute;top:50%;transform:translateY(-50%);user-select:none;white-space:nowrap}.index_module_iconButtonPopper__9645dd99[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=right]:before{border-right-color:var(--switch_bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]:before{border-left-color:var(--switch_bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99:before{background-color:initial;border:.4em solid #0000;content:\\"\\";position:absolute;transition:opacity .15s}.index_module_iconButtonItem__9645dd99:focus .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99:hover .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99[data-show=true] .index_module_iconButtonPopper__9645dd99{opacity:1}.index_module_hidden__9645dd99{display:none}";
 var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__9645dd99","iconButton":"index_module_iconButton__9645dd99","enabled":"index_module_enabled__9645dd99","iconButtonPopper":"index_module_iconButtonPopper__9645dd99","hidden":"index_module_hidden__9645dd99"};
 
-const _tmpl$$F = /*#__PURE__*/web.template(\`<div><button type="button" tabindex="-1">\`),
+const _tmpl$$G = /*#__PURE__*/web.template(\`<div><button type="button" tabindex="-1">\`),
   _tmpl$2$a = /*#__PURE__*/web.template(\`<div>\`);
 const IconButtonStyle = css$2;
 /** 图标按钮 */
@@ -1532,7 +1536,7 @@ const IconButton = _props => {
     props.onClick?.(e);
   };
   return (() => {
-    const _el$ = _tmpl$$F(),
+    const _el$ = _tmpl$$G(),
       _el$2 = _el$.firstChild;
     const _ref$ = buttonRef;
     typeof _ref$ === "function" ? web.use(_ref$, _el$2) : buttonRef = _el$2;
@@ -1678,16 +1682,16 @@ const useCache = (initSchema, version = 1) => {
   };
 };
 
-const _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71zM5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1z">\`);
+const _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71zM5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1z">\`);
 const MdFileDownload = ((props = {}) => (() => {
-  const _el$ = _tmpl$$E();
+  const _el$ = _tmpl$$F();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$D = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z">\`);
+const _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z">\`);
 const MdClose = ((props = {}) => (() => {
-  const _el$ = _tmpl$$D();
+  const _el$ = _tmpl$$E();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -1748,7 +1752,8 @@ const defaultOption = {
   scrollbar: {
     enabled: true,
     autoHidden: false,
-    showImgStatus: true
+    showImgStatus: true,
+    easyScroll: false
   },
   onePageMode: false,
   scrollMode: false,
@@ -2357,11 +2362,12 @@ const loadImg = (state, startIndex, endIndex = startIndex + 1, loadNum = 2) => {
   if (edited) updateTipText();
   return edited;
 };
-const zoomScrollModeImg = zoomLevel => {
+const zoomScrollModeImg = (zoomLevel, set = false) => {
   setOption(draftOption => {
-    draftOption.scrollModeImgScale = !zoomLevel ? 1 : clamp(0.1,
+    const newVal = set ? zoomLevel :
     // 放大到整数再运算，避免精度丢失导致的奇怪的值
-    (store.option.scrollModeImgScale * 10 + zoomLevel * 10) / 10, 3);
+    (store.option.scrollModeImgScale * 100 + zoomLevel * 100) / 100;
+    draftOption.scrollModeImgScale = clamp(0.1, newVal, 3);
   });
   // 在调整图片缩放后使当前滚动进度保持不变
   setState(state => {
@@ -2401,6 +2407,7 @@ const updateImgLoadType = debounce(100, state => {
 
 /** 重新计算 PageData */
 const updatePageData = state => {
+  const lastActiveImgIndex = activeImgIndex();
   const {
     imgList,
     fillEffect,
@@ -2412,6 +2419,9 @@ const updatePageData = state => {
   if (onePageMode || scrollMode || imgList.length <= 1) state.pageList = imgList.map((_, i) => [i]);else state.pageList = handleComicData(imgList, fillEffect);
   updateDrag(state);
   updateImgLoadType(state);
+
+  // 在图片排列改变后自动跳转回原先显示图片所在的页数
+  if (lastActiveImgIndex !== activeImgIndex()) state.activePageIndex = state.pageList.findIndex(page => page.includes(lastActiveImgIndex));
 };
 updatePageData.debounce = debounce(100, updatePageData);
 
@@ -2446,23 +2456,13 @@ const handleResize = (state, width, height) => {
   state.imgList.forEach(img => updateImgType(state, img));
 };
 
-/** 在图片排列改变后自动跳转回原先显示图片所在的页数 */
-const jumpBackPage = state => {
-  const lastActiveImgIndex = activeImgIndex();
-  return () => {
-    state.activePageIndex = state.pageList.findIndex(page => page.includes(lastActiveImgIndex));
-  };
-};
-
 /** 切换页面填充 */
 const switchFillEffect = () => {
   setState(state => {
     // 如果当前页不是双页显示的就跳过，避免在显示跨页图的页面切换却没看到效果的疑惑
     if (state.pageList[state.activePageIndex].length !== 2) return;
-    const jump = jumpBackPage(state);
     state.fillEffect[nowFillIndex()] = !state.fillEffect[nowFillIndex()];
     updatePageData(state);
-    jump();
   });
 };
 
@@ -2481,10 +2481,8 @@ const switchScrollMode = () => {
 /** 切换单双页模式 */
 const switchOnePageMode = () => {
   setOption((draftOption, state) => {
-    const jump = jumpBackPage(state);
     draftOption.onePageMode = !draftOption.onePageMode;
     updatePageData(state);
-    jump();
   });
 };
 
@@ -2529,7 +2527,7 @@ const delHotkeys = code => {
   });
 };
 
-var css$1 = ".index_module_img__cd47b47c{background-color:var(--hover_bg_color,#fff3);content-visibility:hidden;display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__cd47b47c[data-show]{content-visibility:visible;display:unset}.index_module_img__cd47b47c[data-fill=left]{transform:translate(50%)}.index_module_img__cd47b47c[data-fill=right]{transform:translate(-50%)}.index_module_img__cd47b47c[data-load-type=loading]{animation:index_module_show__cd47b47c 2s forwards;max-width:100vw!important;opacity:0;position:absolute}.index_module_img__cd47b47c[data-load-type=error],.index_module_img__cd47b47c[data-load-type=wait]{height:40em!important;opacity:0;position:absolute;width:40em}.index_module_mangaFlowBox__cd47b47c{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__cd47b47c::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__cd47b47c[data-hiddenMouse=true]{cursor:none}.index_module_mangaFlow__cd47b47c{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__cd47b47c.index_module_disableZoom__cd47b47c .index_module_img__cd47b47c{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__cd47b47c.index_module_scrollMode__cd47b47c{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__cd47b47c.index_module_scrollMode__cd47b47c .index_module_img__cd47b47c{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width))}.index_module_mangaFlow__cd47b47c.index_module_scrollMode__cd47b47c .index_module_img__cd47b47c[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0;visibility:hidden}.index_module_mangaFlow__cd47b47c[dir=ltr]{flex-direction:row}.index_module_mangaFlow__cd47b47c>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20em}.index_module_mangaFlow__cd47b47c>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__cd47b47c>svg[data-fill=right]{transform:translate(-100%)}@keyframes index_module_show__cd47b47c{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__cd47b47c{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__cd47b47c>button{animation:index_module_jello__cd47b47c .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__cd47b47c>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__cd47b47c>button:focus-visible{outline:none}.index_module_endPage__cd47b47c>.index_module_tip__cd47b47c{margin:auto;position:absolute}.index_module_endPage__cd47b47c[data-show]{opacity:1;pointer-events:all}.index_module_endPage__cd47b47c[data-type=start]>.index_module_tip__cd47b47c{transform:translateY(-10em)}.index_module_endPage__cd47b47c[data-type=end]>.index_module_tip__cd47b47c{transform:translateY(10em)}.index_module_comments__cd47b47c{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__cd47b47c>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__cd47b47c:hover{opacity:1}@keyframes index_module_jello__cd47b47c{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__cd47b47c{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__cd47b47c{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__cd47b47c[data-show=true] .index_module_toolbarPanel__cd47b47c{transform:none}.index_module_toolbarBg__cd47b47c{backdrop-filter:blur(24px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__cd47b47c{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__cd47b47c{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;z-index:1}.index_module_SettingPanel__cd47b47c hr{color:#fff;margin:0}.index_module_SettingBlock__cd47b47c{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__cd47b47c .index_module_SettingBlockBody__cd47b47c{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__cd47b47c .index_module_SettingBlockBody__cd47b47c)>div+:is(.index_module_SettingBlock__cd47b47c .index_module_SettingBlockBody__cd47b47c)>div{margin-top:1em}.index_module_SettingBlock__cd47b47c[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__cd47b47c{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__cd47b47c{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__cd47b47c+.index_module_SettingsItem__cd47b47c{margin-top:1em}.index_module_SettingsItemName__cd47b47c{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__cd47b47c{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__cd47b47c{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__cd47b47c[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__cd47b47c[data-checked=true] .index_module_SettingsItemSwitchRound__cd47b47c{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__cd47b47c{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__cd47b47c{background-color:var(--hover_bg_color);border:none;border-radius:5px;cursor:pointer;font-size:1em;margin:0;outline:none;padding:.3em 0 .3em .3em;width:6em}.index_module_closeCover__cd47b47c{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__cd47b47c{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__cd47b47c>.index_module_SettingsShowItemBody__cd47b47c{overflow:hidden}.index_module_SettingsShowItem__cd47b47c>.index_module_SettingsShowItemBody__cd47b47c>.index_module_SettingsItem__cd47b47c{margin-top:1em}.index_module_hotkeys__cd47b47c{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__cd47b47c+.index_module_hotkeys__cd47b47c{margin-top:.5em}.index_module_hotkeys__cd47b47c:last-child{border-bottom:none}.index_module_hotkeysItem__cd47b47c{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__cd47b47c>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__cd47b47c>svg:hover{opacity:.9}.index_module_hotkeysItem__cd47b47c:hover{padding:.2em .5em}.index_module_hotkeysItem__cd47b47c:hover>svg{display:unset}.index_module_hotkeysItem__cd47b47c:focus,.index_module_hotkeysItem__cd47b47c:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__cd47b47c{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__cd47b47c>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__cd47b47c>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__cd47b47c>div[title]>svg{width:1.6em}.index_module_hotkeys__cd47b47c:hover div[title]{transform:scale(1)}.index_module_scrollbar__cd47b47c{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;opacity:0;outline:none;position:absolute;right:3px;top:1%;touch-action:none;transition:opacity .15s;user-select:none;width:5px;z-index:9}.index_module_scrollbar__cd47b47c>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbar__cd47b47c:hover,.index_module_scrollbar__cd47b47c[data-show=true]{opacity:1}.index_module_scrollbarDrag__cd47b47c{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__cd47b47c{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__cd47b47c[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__cd47b47c[data-type=wait]{opacity:.5}.index_module_scrollbarPage__cd47b47c[data-type=error]{background-color:#f005}.index_module_scrollbarPage__cd47b47c[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__cd47b47c[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__cd47b47c[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__cd47b47c[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__cd47b47c[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__cd47b47c{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__cd47b47c[data-show=true]{opacity:1}.index_module_scrollbarPoper__cd47b47c:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbar__cd47b47c:hover .index_module_scrollbarPoper__cd47b47c{opacity:1}.index_module_touchAreaRoot__cd47b47c{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__cd47b47c[data-vert=true]{flex-direction:column!important}@media (width <= 600px){.index_module_touchAreaRoot__cd47b47c{flex-direction:column!important}}.index_module_touchArea__cd47b47c{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none}.index_module_touchArea__cd47b47c>h6{text-orientation:upright;writing-mode:vertical-lr}.index_module_touchArea__cd47b47c[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__cd47b47c[data-show=true]{visibility:visible}.index_module_touchAreaRoot__cd47b47c[data-show=true] .index_module_touchArea__cd47b47c[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__cd47b47c[data-show=true] .index_module_touchArea__cd47b47c[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__cd47b47c[data-show=true] .index_module_touchArea__cd47b47c[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__cd47b47c[data-scroll-mode=true] .index_module_touchArea__cd47b47c[data-area=next],.index_module_touchAreaRoot__cd47b47c[data-scroll-mode=true] .index_module_touchArea__cd47b47c[data-area=prev]{visibility:hidden}.index_module_hidden__cd47b47c{display:none}.index_module_invisible__cd47b47c{visibility:hidden}.index_module_opacity1__cd47b47c{opacity:1}.index_module_opacity0__cd47b47c{opacity:0}.index_module_root__cd47b47c{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__cd47b47c a{color:var(--text_secondary)}.index_module_beautifyScrollbar__cd47b47c{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__cd47b47c::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__cd47b47c::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__cd47b47c::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary,#607d8b);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".index_module_img__cd47b47c{background-color:var(--hover_bg_color,#fff3);content-visibility:hidden;display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__cd47b47c[data-show]{content-visibility:visible;display:unset}.index_module_img__cd47b47c[data-fill=left]{transform:translate(50%)}.index_module_img__cd47b47c[data-fill=right]{transform:translate(-50%)}.index_module_img__cd47b47c[data-load-type=loading]{animation:index_module_show__cd47b47c 2s forwards;max-width:100vw!important;opacity:0;position:absolute}.index_module_img__cd47b47c[data-load-type=error],.index_module_img__cd47b47c[data-load-type=wait]{height:40em!important;opacity:0;position:absolute;width:40em}.index_module_mangaFlowBox__cd47b47c{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__cd47b47c::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__cd47b47c[data-hiddenMouse=true]{cursor:none}.index_module_mangaFlow__cd47b47c{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__cd47b47c.index_module_disableZoom__cd47b47c .index_module_img__cd47b47c{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__cd47b47c.index_module_scrollMode__cd47b47c{flex-direction:column;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__cd47b47c.index_module_scrollMode__cd47b47c .index_module_img__cd47b47c{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width, 100%))}.index_module_mangaFlow__cd47b47c.index_module_scrollMode__cd47b47c .index_module_img__cd47b47c[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0;visibility:hidden}.index_module_mangaFlow__cd47b47c.index_module_scrollMode__cd47b47c .index_module_img__cd47b47c[data-load-type=loading]{position:unset}.index_module_mangaFlow__cd47b47c[dir=ltr]{flex-direction:row}.index_module_mangaFlow__cd47b47c>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20em}.index_module_mangaFlow__cd47b47c>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__cd47b47c>svg[data-fill=right]{transform:translate(-100%)}@keyframes index_module_show__cd47b47c{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__cd47b47c{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__cd47b47c>button{animation:index_module_jello__cd47b47c .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__cd47b47c>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__cd47b47c>button:focus-visible{outline:none}.index_module_endPage__cd47b47c>.index_module_tip__cd47b47c{margin:auto;position:absolute}.index_module_endPage__cd47b47c[data-show]{opacity:1;pointer-events:all}.index_module_endPage__cd47b47c[data-type=start]>.index_module_tip__cd47b47c{transform:translateY(-10em)}.index_module_endPage__cd47b47c[data-type=end]>.index_module_tip__cd47b47c{transform:translateY(10em)}.index_module_comments__cd47b47c{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__cd47b47c>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__cd47b47c:hover{opacity:1}@keyframes index_module_jello__cd47b47c{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__cd47b47c{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__cd47b47c{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__cd47b47c[data-show=true] .index_module_toolbarPanel__cd47b47c{transform:none}.index_module_toolbarBg__cd47b47c{backdrop-filter:blur(24px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__cd47b47c{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__cd47b47c{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;z-index:1}.index_module_SettingPanel__cd47b47c hr{color:#fff;margin:0}.index_module_SettingBlock__cd47b47c{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__cd47b47c .index_module_SettingBlockBody__cd47b47c{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__cd47b47c .index_module_SettingBlockBody__cd47b47c)>div+:is(.index_module_SettingBlock__cd47b47c .index_module_SettingBlockBody__cd47b47c)>div{margin-top:1em}.index_module_SettingBlock__cd47b47c[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__cd47b47c{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__cd47b47c{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__cd47b47c+.index_module_SettingsItem__cd47b47c{margin-top:1em}.index_module_SettingsItemName__cd47b47c{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__cd47b47c{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__cd47b47c{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__cd47b47c[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__cd47b47c[data-checked=true] .index_module_SettingsItemSwitchRound__cd47b47c{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__cd47b47c{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__cd47b47c{background-color:var(--hover_bg_color);border:none;border-radius:5px;cursor:pointer;font-size:1em;margin:0;outline:none;padding:.3em 0 .3em .3em;width:6em}.index_module_closeCover__cd47b47c{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__cd47b47c{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__cd47b47c>.index_module_SettingsShowItemBody__cd47b47c{overflow:hidden}.index_module_SettingsShowItem__cd47b47c>.index_module_SettingsShowItemBody__cd47b47c>.index_module_SettingsItem__cd47b47c{margin-top:1em}.index_module_hotkeys__cd47b47c{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__cd47b47c+.index_module_hotkeys__cd47b47c{margin-top:.5em}.index_module_hotkeys__cd47b47c:last-child{border-bottom:none}.index_module_hotkeysItem__cd47b47c{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__cd47b47c>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__cd47b47c>svg:hover{opacity:.9}.index_module_hotkeysItem__cd47b47c:hover{padding:.2em .5em}.index_module_hotkeysItem__cd47b47c:hover>svg{display:unset}.index_module_hotkeysItem__cd47b47c:focus,.index_module_hotkeysItem__cd47b47c:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__cd47b47c{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__cd47b47c>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__cd47b47c>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__cd47b47c>div[title]>svg{width:1.6em}.index_module_hotkeys__cd47b47c:hover div[title]{transform:scale(1)}.index_module_scrollbar__cd47b47c{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;opacity:0;outline:none;position:absolute;right:3px;top:1%;touch-action:none;transition:opacity .15s;user-select:none;width:5px;z-index:9}.index_module_scrollbar__cd47b47c>div{display:flex;flex-direction:column;flex-grow:1;pointer-events:none}.index_module_scrollbar__cd47b47c:hover,.index_module_scrollbar__cd47b47c[data-show=true]{opacity:1}.index_module_scrollbarDrag__cd47b47c{background-color:var(--scrollbar_drag);border-radius:1em;justify-content:center;position:absolute;width:100%;z-index:1}.index_module_scrollbarPage__cd47b47c{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__cd47b47c[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__cd47b47c[data-type=wait]{opacity:.5}.index_module_scrollbarPage__cd47b47c[data-type=error]{background-color:#f005}.index_module_scrollbarPage__cd47b47c[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__cd47b47c[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__cd47b47c[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__cd47b47c[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__cd47b47c[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__cd47b47c{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__cd47b47c[data-show=true]{opacity:1}.index_module_scrollbarPoper__cd47b47c:after{background-color:#303030;background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbar__cd47b47c:hover .index_module_scrollbarPoper__cd47b47c{opacity:1}.index_module_touchAreaRoot__cd47b47c{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__cd47b47c[data-vert=true]{flex-direction:column!important}@media (width <= 600px){.index_module_touchAreaRoot__cd47b47c{flex-direction:column!important}}.index_module_touchArea__cd47b47c{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none}.index_module_touchArea__cd47b47c>h6{text-orientation:upright;writing-mode:vertical-lr}.index_module_touchArea__cd47b47c[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__cd47b47c[data-show=true]{visibility:visible}.index_module_touchAreaRoot__cd47b47c[data-show=true] .index_module_touchArea__cd47b47c[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__cd47b47c[data-show=true] .index_module_touchArea__cd47b47c[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__cd47b47c[data-show=true] .index_module_touchArea__cd47b47c[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__cd47b47c[data-scroll-mode=true] .index_module_touchArea__cd47b47c[data-area=next],.index_module_touchAreaRoot__cd47b47c[data-scroll-mode=true] .index_module_touchArea__cd47b47c[data-area=prev]{visibility:hidden}.index_module_hidden__cd47b47c{display:none}.index_module_invisible__cd47b47c{visibility:hidden}.index_module_opacity1__cd47b47c{opacity:1}.index_module_opacity0__cd47b47c{opacity:0}.index_module_root__cd47b47c{background-color:var(--bg);height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__cd47b47c a{color:var(--text_secondary)}.index_module_beautifyScrollbar__cd47b47c{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__cd47b47c::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__cd47b47c::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__cd47b47c::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary,#607d8b);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"index_module_img__cd47b47c","show":"index_module_show__cd47b47c","mangaFlowBox":"index_module_mangaFlowBox__cd47b47c","mangaFlow":"index_module_mangaFlow__cd47b47c","disableZoom":"index_module_disableZoom__cd47b47c","scrollMode":"index_module_scrollMode__cd47b47c","endPage":"index_module_endPage__cd47b47c","jello":"index_module_jello__cd47b47c","tip":"index_module_tip__cd47b47c","comments":"index_module_comments__cd47b47c","toolbar":"index_module_toolbar__cd47b47c","toolbarPanel":"index_module_toolbarPanel__cd47b47c","toolbarBg":"index_module_toolbarBg__cd47b47c","SettingPanelPopper":"index_module_SettingPanelPopper__cd47b47c","SettingPanel":"index_module_SettingPanel__cd47b47c","SettingBlock":"index_module_SettingBlock__cd47b47c","SettingBlockBody":"index_module_SettingBlockBody__cd47b47c","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__cd47b47c","SettingsItem":"index_module_SettingsItem__cd47b47c","SettingsItemName":"index_module_SettingsItemName__cd47b47c","SettingsItemSwitch":"index_module_SettingsItemSwitch__cd47b47c","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__cd47b47c","SettingsItemIconButton":"index_module_SettingsItemIconButton__cd47b47c","SettingsItemSelect":"index_module_SettingsItemSelect__cd47b47c","closeCover":"index_module_closeCover__cd47b47c","SettingsShowItem":"index_module_SettingsShowItem__cd47b47c","SettingsShowItemBody":"index_module_SettingsShowItemBody__cd47b47c","hotkeys":"index_module_hotkeys__cd47b47c","hotkeysItem":"index_module_hotkeysItem__cd47b47c","hotkeysHeader":"index_module_hotkeysHeader__cd47b47c","scrollbar":"index_module_scrollbar__cd47b47c","scrollbarDrag":"index_module_scrollbarDrag__cd47b47c","scrollbarPage":"index_module_scrollbarPage__cd47b47c","scrollbarPoper":"index_module_scrollbarPoper__cd47b47c","touchAreaRoot":"index_module_touchAreaRoot__cd47b47c","touchArea":"index_module_touchArea__cd47b47c","hidden":"index_module_hidden__cd47b47c","invisible":"index_module_invisible__cd47b47c","opacity1":"index_module_opacity1__cd47b47c","opacity0":"index_module_opacity0__cd47b47c","root":"index_module_root__cd47b47c","beautifyScrollbar":"index_module_beautifyScrollbar__cd47b47c"};
 
 /** 判断当前是否已经滚动到底部 */
@@ -2698,7 +2696,7 @@ const handleMouseDown = e => {
 };
 const focus = () => (store.mangaFlowRef ?? store.rootRef)?.parentElement?.focus();
 
-const _tmpl$$C = /*#__PURE__*/web.template(\`<img>\`);
+const _tmpl$$D = /*#__PURE__*/web.template(\`<img>\`);
 /** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
 const checkImgTypeCount = (state, fn, maxNum = 3) => {
   let num = 0;
@@ -2795,12 +2793,12 @@ const ComicImg = props => {
     if (show() && props.img.loadType === 'error') _setState('imgList', props.index, 'loadType', 'loading');
   }));
   return (() => {
-    const _el$ = _tmpl$$C();
+    const _el$ = _tmpl$$D();
     _el$.addEventListener("error", e => handleImgError(props.index, e.currentTarget));
     _el$.addEventListener("load", e => handleImgLoaded(props.index, e.currentTarget));
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.img,
-        _v$2 = store.option.scrollMode && props.img.width ? \`min(100vw, \${props.img.width}px)\` : undefined,
+        _v$2 = props.img.width ? \`min(100%, \${props.img.width}px)\` : undefined,
         _v$3 = src(),
         _v$4 = \`\${props.index + 1}\`,
         _v$5 = show() ? '' : undefined,
@@ -2830,23 +2828,23 @@ const ComicImg = props => {
   })();
 };
 
-const _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m21.19 21.19-.78-.78L18 18l-4.59-4.59-9.82-9.82-.78-.78a.996.996 0 0 0-1.41 0C1 3.2 1 3.83 1.39 4.22L3 5.83V19c0 1.1.9 2 2 2h13.17l1.61 1.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.03 0-1.42zM6.02 18c-.42 0-.65-.48-.39-.81l2.49-3.2a.5.5 0 0 1 .78-.01l2.1 2.53L12.17 15l3 3H6.02zm14.98.17L5.83 3H19c1.1 0 2 .9 2 2v13.17z">\`);
+const _tmpl$$C = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="m21.19 21.19-.78-.78L18 18l-4.59-4.59-9.82-9.82-.78-.78a.996.996 0 0 0-1.41 0C1 3.2 1 3.83 1.39 4.22L3 5.83V19c0 1.1.9 2 2 2h13.17l1.61 1.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.03 0-1.42zM6.02 18c-.42 0-.65-.48-.39-.81l2.49-3.2a.5.5 0 0 1 .78-.01l2.1 2.53L12.17 15l3 3H6.02zm14.98.17L5.83 3H19c1.1 0 2 .9 2 2v13.17z">\`);
 const MdImageNotSupported = ((props = {}) => (() => {
+  const _el$ = _tmpl$$C();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
+const MdCloudDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$B();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
-const MdCloudDownload = ((props = {}) => (() => {
-  const _el$ = _tmpl$$A();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.9 13.98l2.1 2.53 3.1-3.99c.2-.26.6-.26.8.01l3.51 4.68a.5.5 0 0 1-.4.8H6.02c-.42 0-.65-.48-.39-.81L8.12 14c.19-.26.57-.27.78-.02z">\`);
+const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.9 13.98l2.1 2.53 3.1-3.99c.2-.26.6-.26.8.01l3.51 4.68a.5.5 0 0 1-.4.8H6.02c-.42 0-.65-.48-.39-.81L8.12 14c.19-.26.57-.27.78-.02z">\`);
 const MdPhoto = ((props = {}) => (() => {
-  const _el$ = _tmpl$$z();
+  const _el$ = _tmpl$$A();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -2884,7 +2882,7 @@ const LoadTypeTip = () => web.createComponent(solidJs.For, {
   children: ShowSvg
 });
 
-const _tmpl$$y = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6></h6></div><div data-area="menu" role="button" tabindex="-1"><h6></h6></div><div data-area="next" role="button" tabindex="-1"><h6>\`);
+const _tmpl$$z = /*#__PURE__*/web.template(\`<div><div data-area="prev" role="button" tabindex="-1"><h6></h6></div><div data-area="menu" role="button" tabindex="-1"><h6></h6></div><div data-area="next" role="button" tabindex="-1"><h6>\`);
 const handleClick = {
   prev: () => {
     if (store.option.clickPageTurn.enabled) turnPage('prev');
@@ -2919,7 +2917,7 @@ const handlePageClick = ({
   handleClick[targetArea.getAttribute('data-area')]();
 };
 const TouchArea = () => (() => {
-  const _el$ = _tmpl$$y(),
+  const _el$ = _tmpl$$z(),
     _el$2 = _el$.firstChild,
     _el$3 = _el$2.firstChild,
     _el$4 = _el$2.nextSibling,
@@ -3002,7 +3000,7 @@ const useHiddenMouse = () => {
   };
 };
 
-const _tmpl$$x = /*#__PURE__*/web.template(\`<div tabindex="-1"><div>\`),
+const _tmpl$$y = /*#__PURE__*/web.template(\`<div tabindex="-1"><div>\`),
   _tmpl$2$9 = /*#__PURE__*/web.template(\`<h1>NULL\`);
 
 /**
@@ -3028,7 +3026,7 @@ const ComicImgFlow = () => {
     onMouseMove
   } = useHiddenMouse();
   return (() => {
-    const _el$ = _tmpl$$x(),
+    const _el$ = _tmpl$$y(),
       _el$2 = _el$.firstChild;
     web.use(e => e.addEventListener('scroll', handleMangaFlowScroll, {
       passive: true
@@ -3084,73 +3082,73 @@ const ComicImgFlow = () => {
   })();
 };
 
-const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
+const _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
 const MdLooksOne = ((props = {}) => (() => {
+  const _el$ = _tmpl$$x();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2v2z">\`);
+const MdLooksTwo = ((props = {}) => (() => {
   const _el$ = _tmpl$$w();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2v2z">\`);
-const MdLooksTwo = ((props = {}) => (() => {
+const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1z">\`);
+const MdViewDay = ((props = {}) => (() => {
   const _el$ = _tmpl$$v();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1z">\`);
-const MdViewDay = ((props = {}) => (() => {
+const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1zm17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+const MdQueue = ((props = {}) => (() => {
   const _el$ = _tmpl$$u();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1zm17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
-const MdQueue = ((props = {}) => (() => {
+const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">\`);
+const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$$t();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">\`);
-const MdSettings = ((props = {}) => (() => {
+const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">\`);
+const MdSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$s();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$r = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">\`);
-const MdSearch = ((props = {}) => (() => {
+const _tmpl$$r = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7 1.62-4.33L19.12 17h-3.24z">\`);
+const MdTranslate = ((props = {}) => (() => {
   const _el$ = _tmpl$$r();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7 1.62-4.33L19.12 17h-3.24z">\`);
-const MdTranslate = ((props = {}) => (() => {
+const _tmpl$$q = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10zm11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7z">\`);
+const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
   const _el$ = _tmpl$$q();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10zm11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7z">\`);
-const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
+const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10zm-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1H8z">\`);
+const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
   const _el$ = _tmpl$$p();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10zm-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1H8z">\`);
-const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
-  const _el$ = _tmpl$$o();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$n = /*#__PURE__*/web.template(\`<div><div> <!> \`);
+const _tmpl$$o = /*#__PURE__*/web.template(\`<div><div> <!> \`);
 /** 设置菜单项 */
 const SettingsItem = props => (() => {
-  const _el$ = _tmpl$$n(),
+  const _el$ = _tmpl$$o(),
     _el$2 = _el$.firstChild,
     _el$3 = _el$2.firstChild,
     _el$5 = _el$3.nextSibling;
@@ -3179,7 +3177,7 @@ const SettingsItem = props => (() => {
   return _el$;
 })();
 
-const _tmpl$$m = /*#__PURE__*/web.template(\`<button type="button"><div>\`);
+const _tmpl$$n = /*#__PURE__*/web.template(\`<button type="button"><div>\`);
 /** 开关式菜单项 */
 const SettingsItemSwitch = props => {
   const handleClick = () => props.onChange(!props.value);
@@ -3194,7 +3192,7 @@ const SettingsItemSwitch = props => {
       return props.classList;
     },
     get children() {
-      const _el$ = _tmpl$$m(),
+      const _el$ = _tmpl$$n(),
         _el$2 = _el$.firstChild;
       _el$.addEventListener("click", handleClick);
       web.effect(_p$ => {
@@ -3215,21 +3213,21 @@ const SettingsItemSwitch = props => {
   });
 };
 
-const _tmpl$$l = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z">\`);
+const _tmpl$$m = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z">\`);
 const MdRefresh = ((props = {}) => (() => {
+  const _el$ = _tmpl$$m();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$l = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+const MdAdd = ((props = {}) => (() => {
   const _el$ = _tmpl$$l();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$k = /*#__PURE__*/web.template(\`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
-const MdAdd = ((props = {}) => (() => {
-  const _el$ = _tmpl$$k();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$j = /*#__PURE__*/web.template(\`<div tabindex="0">\`),
+const _tmpl$$k = /*#__PURE__*/web.template(\`<div tabindex="0">\`),
   _tmpl$2$8 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
 const KeyItem = props => {
   const code = () => store.hotkeys[props.operateName][props.i];
@@ -3251,7 +3249,7 @@ const KeyItem = props => {
     if (!Reflect.has(hotkeysMap(), newCode)) setHotkeys(props.operateName, props.i, newCode);
   };
   return (() => {
-    const _el$ = _tmpl$$j();
+    const _el$ = _tmpl$$k();
     _el$.addEventListener("blur", () => code() || del());
     web.use(ref => code() || setTimeout(() => ref.focus()), _el$);
     _el$.addEventListener("keydown", handleKeyDown);
@@ -3311,7 +3309,7 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
   })()
 });
 
-const _tmpl$$i = /*#__PURE__*/web.template(\`<select>\`),
+const _tmpl$$j = /*#__PURE__*/web.template(\`<select>\`),
   _tmpl$2$7 = /*#__PURE__*/web.template(\`<option>\`);
 /** 选择器式菜单项 */
 const SettingsItemSelect = props => {
@@ -3330,7 +3328,7 @@ const SettingsItemSelect = props => {
       return props.classList;
     },
     get children() {
-      const _el$ = _tmpl$$i();
+      const _el$ = _tmpl$$j();
       _el$.addEventListener("change", e => props.onChange(e.target.value));
       const _ref$ = ref;
       typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
@@ -3694,11 +3692,11 @@ const translatorOptions = solidJs.createRoot(() => {
   return options;
 });
 
-const _tmpl$$h = /*#__PURE__*/web.template(\`<div><div>\`);
+const _tmpl$$i = /*#__PURE__*/web.template(\`<div><div>\`);
 
 /** 带有动画过渡的切换显示设置项 */
 const SettingsShowItem = props => (() => {
-  const _el$ = _tmpl$$h(),
+  const _el$ = _tmpl$$i(),
     _el$2 = _el$.firstChild;
   web.insert(_el$2, () => props.children);
   web.effect(_p$ => {
@@ -3717,7 +3715,7 @@ const SettingsShowItem = props => (() => {
   return _el$;
 })();
 
-const _tmpl$$g = /*#__PURE__*/web.template(\`<blockquote>\`),
+const _tmpl$$h = /*#__PURE__*/web.template(\`<blockquote>\`),
   _tmpl$2$6 = /*#__PURE__*/web.template(\`<input type="url">\`);
 const SettingTranslation = () => {
   /** 是否正在翻译全部图片 */
@@ -3740,7 +3738,7 @@ const SettingTranslation = () => {
       return store.option.translation.server === 'cotrans';
     },
     get children() {
-      const _el$ = _tmpl$$g();
+      const _el$ = _tmpl$$h();
       web.effect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
       return _el$;
     }
@@ -3875,9 +3873,55 @@ const SettingTranslation = () => {
   })];
 };
 
+const _tmpl$$g = /*#__PURE__*/web.template(\`<div><span contenteditable data-only-number></span><span>\`);
+/** 数值输入框菜单项 */
+const SettingsItemNumber = props => {
+  const handleInput = e => {
+    if (e.currentTarget.textContent.length > props.maxLength) e.currentTarget.blur();
+  };
+  const handleKeyDown = e => {
+    switch (e.key) {
+      case 'ArrowUp':
+        return props.onChange(+e.target.textContent + (props.step ?? 1));
+      case 'ArrowDown':
+        return props.onChange(+e.target.textContent - (props.step ?? 1));
+    }
+  };
+  return web.createComponent(SettingsItem, {
+    get name() {
+      return props.name;
+    },
+    get ["class"]() {
+      return props.class;
+    },
+    get classList() {
+      return props.classList;
+    },
+    get children() {
+      const _el$ = _tmpl$$g(),
+        _el$2 = _el$.firstChild,
+        _el$3 = _el$2.nextSibling;
+      _el$2.addEventListener("blur", e => {
+        try {
+          props.onChange(+e.currentTarget.textContent);
+        } finally {
+          // eslint-disable-next-line no-param-reassign
+          e.currentTarget.textContent = \`\${props.value}\`;
+        }
+      });
+      _el$2.addEventListener("input", handleInput);
+      _el$2.addEventListener("keydown", handleKeyDown);
+      web.insert(_el$2, () => props.value);
+      _el$3.style.setProperty("margin-left", ".1em");
+      web.insert(_el$3, () => props.suffix ?? '');
+      web.effect(() => (props.suffix ? '.3em' : '.6em') != null ? _el$.style.setProperty("margin-right", props.suffix ? '.3em' : '.6em') : _el$.style.removeProperty("margin-right"));
+      return _el$;
+    }
+  });
+};
+
 const _tmpl$$f = /*#__PURE__*/web.template(\`<button type="button">\`),
-  _tmpl$2$5 = /*#__PURE__*/web.template(\`<div contenteditable data-only-number>\`),
-  _tmpl$3$4 = /*#__PURE__*/web.template(\`<input type="color">\`);
+  _tmpl$2$5 = /*#__PURE__*/web.template(\`<input type="color">\`);
 /** 默认菜单项 */
 const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
   get name() {
@@ -3927,6 +3971,16 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       },
       get onChange() {
         return createStateSetFn('scrollbar.showImgStatus');
+      }
+    }), web.createComponent(SettingsItemSwitch, {
+      get name() {
+        return t('setting.option.scrollbar_easy_scroll');
+      },
+      get value() {
+        return store.option.scrollbar.easyScroll;
+      },
+      get onChange() {
+        return createStateSetFn('scrollbar.easyScroll');
       }
     })];
   }
@@ -4052,34 +4106,50 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('swapPageTurnKey');
   }
-}), web.createComponent(SettingsItem, {
+}), web.createComponent(SettingsItemNumber, {
   get name() {
     return t('setting.option.preload_page_num');
   },
-  get children() {
-    const _el$2 = _tmpl$2$5();
-    _el$2.addEventListener("blur", e => {
-      const number = +e.currentTarget.textContent;
-      if (!Number.isNaN(number)) setOption(draftOption => {
-        draftOption.preloadPageNum = clamp(0, number, 99999);
-      });
-      // eslint-disable-next-line no-param-reassign
-      e.currentTarget.textContent = \`\${store.option.preloadPageNum}\`;
+  maxLength: 5,
+  onChange: val => {
+    if (Number.isNaN(val)) return;
+    setOption(draftOption => {
+      draftOption.preloadPageNum = clamp(0, val, 99999);
     });
-    _el$2.style.setProperty("margin-right", ".7em");
-    _el$2.addEventListener("input", e => e.currentTarget.textContent.length > 5 && e.currentTarget.blur());
-    web.insert(_el$2, () => store.option.preloadPageNum ?? 0);
-    return _el$2;
+  },
+  get value() {
+    return store.option.preloadPageNum;
+  }
+}), web.createComponent(solidJs.Show, {
+  get when() {
+    return store.option.scrollMode;
+  },
+  get children() {
+    return web.createComponent(SettingsItemNumber, {
+      get name() {
+        return t('setting.option.scroll_mode_img_scale');
+      },
+      maxLength: 3,
+      suffix: "%",
+      step: 5,
+      onChange: val => {
+        if (Number.isNaN(val)) return;
+        zoomScrollModeImg(val / 100, true);
+      },
+      get value() {
+        return Math.round(store.option.scrollModeImgScale * 100);
+      }
+    });
   }
 }), web.createComponent(SettingsItem, {
   get name() {
     return t('setting.option.background_color');
   },
   get children() {
-    const _el$3 = _tmpl$3$4();
-    _el$3.style.setProperty("width", "2em");
-    _el$3.style.setProperty("margin-right", ".4em");
-    _el$3.addEventListener("input", throttle(20, e => {
+    const _el$2 = _tmpl$2$5();
+    _el$2.style.setProperty("width", "2em");
+    _el$2.style.setProperty("margin-right", ".4em");
+    _el$2.addEventListener("input", throttle(20, e => {
       if (!e.target.value) return;
       setOption(draftOption => {
         // 在拉到纯黑或纯白时改回初始值
@@ -4087,8 +4157,8 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         if (draftOption.customBackground) draftOption.darkMode = needDarkMode(draftOption.customBackground);
       });
     }));
-    web.effect(() => _el$3.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
-    return _el$3;
+    web.effect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
+    return _el$2;
   }
 }), web.createComponent(SettingsItemSelect, {
   get name() {
@@ -4238,13 +4308,14 @@ const defaultButtonList = [
   },
   onClick: () => {
     if (store.option.scrollMode) {
-      return zoomScrollModeImg(store.option.scrollModeImgScale < 1 || store.option.scrollModeImgScale > 1.6 ? undefined : 0.2);
+      if (store.option.scrollModeImgScale >= 1 && store.option.scrollModeImgScale < 1.6) return zoomScrollModeImg(0.2);
+      return zoomScrollModeImg(1, true);
     }
     if (!store.panzoom) return;
     const {
       scale
     } = store.panzoom.getTransform();
-    if (scale === 1) store.panzoom.smoothZoom(0, 0, 1.2);else store.panzoom.smoothZoomAbs(0, 0, 1);
+    if (scale === 1) store.panzoom.smoothZoom(0, 0, 2);else store.panzoom.smoothZoomAbs(0, 0, 0.99);
   },
   get children() {
     return web.createComponent(MdSearch, {});
@@ -4380,12 +4451,9 @@ const defaultStata = () => ({
   startTime: 0
 });
 const state = defaultStata();
-const useDrag = ref => {
+const useDrag = (ref, handleDrag, easyMode = () => false) => {
   solidJs.onMount(() => {
     const controller = new AbortController();
-    const {
-      handleDrag
-    } = dragOption;
     if (ref) {
       // 在鼠标、手指按下后切换状态
       ref.addEventListener('pointerdown', e => {
@@ -4406,9 +4474,7 @@ const useDrag = ref => {
       // 在鼠标、手指移动时根据状态判断是否要触发函数
       ref.addEventListener('pointermove', e => {
         e.stopPropagation();
-        if (state.startTime === 0) return;
-        // 只处理左键按下触发的事件
-        if (e.buttons !== 1) return;
+        if (!easyMode() && (state.startTime === 0 || e.buttons !== 1)) return;
         state.type = 'dragging';
         state.xy = [e.offsetX, e.offsetY];
         handleDrag(state, e);
@@ -4494,6 +4560,9 @@ const ScrollbarPage = props => {
 };
 
 const _tmpl$$a = /*#__PURE__*/web.template(\`<div role="scrollbar" tabindex="-1"><div><div>\`);
+const {
+  handleDrag
+} = dragOption;
 
 /** 滚动条 */
 const Scrollbar = () => {
@@ -4518,7 +4587,7 @@ const Scrollbar = () => {
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
     _el$.addEventListener("wheel", handleWheel);
-    web.use(e => useDrag(e), _el$);
+    web.use(e => useDrag(e, handleDrag, () => store.option.scrollbar.easyScroll), _el$);
     web.insert(_el$3, () => store.scrollbar.tipText);
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
@@ -5265,8 +5334,10 @@ const useFab = async initProps => {
 };
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复会在支持站点误启用简易模式的 bug </p></li><li><p>修复启用简易模式后无法取消记忆当前站点的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>增加快捷滚动功能\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>增加卷轴模式下的图片缩放比例设置项\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -5329,7 +5400,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3()], {
+    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -6808,7 +6879,7 @@ const MdSettings = ((props = {}) => (() => {
   });
 
   // 不是漫画页的话
-  if (!Reflect.has(unsafeWindow, 'gid')) {
+  if (!Reflect.has(unsafeWindow, 'apikey')) {
     await GM.registerMenuCommand(main.t('site.show_settings_menu'), () => setFab({
       show: true,
       focus: true,

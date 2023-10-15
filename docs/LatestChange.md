@@ -1,7 +1,11 @@
-## [7.4.2](https://github.com/hymbz/ComicReadScript/compare/v7.4.1...v7.4.2) (2023-10-12)
+## [7.5.0](https://github.com/hymbz/ComicReadScript/compare/v7.4.2...v7.5.0) (2023-10-15)
 
 
-### Bug Fixes
+### Features
 
-* :bug: 修复会在支持站点误启用简易模式的 bug ([5721505](https://github.com/hymbz/ComicReadScript/commit/5721505e3bc000e0e04867187db7aa2145057e76))
-* :bug: 修复启用简易模式后无法取消记忆当前站点的 bug ([7d49901](https://github.com/hymbz/ComicReadScript/commit/7d499016cdb69c4f7d62f7f9f58989c3b1953626))
+* :sparkles: 增加快捷滚动功能 ([b1f3d42](https://github.com/hymbz/ComicReadScript/commit/b1f3d4261a791ed27020a0b48589379f776c322f))
+
+
+### Performance Improvements
+
+* 增加卷轴模式下的图片缩放比例设置项 ([933f613](https://github.com/hymbz/ComicReadScript/commit/933f6138640ec0227d4cf2fd71aabd30b199c4a5))
