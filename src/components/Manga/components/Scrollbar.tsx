@@ -1,11 +1,16 @@
 import type { Component } from 'solid-js';
 import { createSignal, createMemo, Show, For } from 'solid-js';
 import { debounce } from 'throttle-debounce';
+
 import { store } from '../hooks/useStore';
 import { useDrag } from '../hooks/useDrag';
+import { dragOption } from '../hooks/useStore/slice';
+
+import { ScrollbarPage } from './ScrollbarPage';
 
 import classes from '../index.module.css';
-import { ScrollbarPage } from './ScrollbarPage';
+
+const { handleDrag } = dragOption;
 
 /** 滚动条 */
 export const Scrollbar: Component = () => {
@@ -36,7 +41,9 @@ export const Scrollbar: Component = () => {
 
   return (
     <div
-      ref={(e) => useDrag(e)}
+      ref={(e) =>
+        useDrag(e, handleDrag, () => store.option.scrollbar.easyScroll)
+      }
       class={classes.scrollbar}
       classList={{
         [classes.hidden]: !store.option.scrollbar.enabled && !showScrollbar(),

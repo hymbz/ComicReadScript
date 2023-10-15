@@ -9,6 +9,8 @@ export interface Option {
     autoHidden: boolean;
     /** 显示图片加载状态 */
     showImgStatus: boolean;
+    /** 快捷滚动 */
+    easyScroll: boolean;
   };
   /** 单页模式 */
   onePageMode: boolean;
@@ -71,6 +73,7 @@ export const defaultOption: Readonly<Option> = {
     enabled: true,
     autoHidden: false,
     showImgStatus: true,
+    easyScroll: false,
   },
   onePageMode: false,
   scrollMode: false,

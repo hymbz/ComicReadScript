@@ -1,6 +1,6 @@
 import { onCleanup, onMount } from 'solid-js';
 
-import { dragOption, focus } from './useStore/slice';
+import { focus } from './useStore/slice';
 
 export interface UseDragState {
   /** 事件类型 */
@@ -26,10 +26,13 @@ const defaultStata = (): UseDragState => ({
 
 const state = defaultStata();
 
-export const useDrag = (ref: HTMLElement) => {
+export const useDrag = (
+  ref: HTMLElement,
+  handleDrag: (state: UseDragState, e: MouseEvent) => void,
+  easyMode: () => boolean = () => false,
+) => {
   onMount(() => {
     const controller = new AbortController();
-    const { handleDrag } = dragOption;
 
     if (ref) {
       // 在鼠标、手指按下后切换状态
@@ -54,9 +57,7 @@ export const useDrag = (ref: HTMLElement) => {
         'pointermove',
         (e) => {
           e.stopPropagation();
-          if (state.startTime === 0) return;
-          // 只处理左键按下触发的事件
-          if (e.buttons !== 1) return;
+          if (!easyMode() && (state.startTime === 0 || e.buttons !== 1)) return;
 
           state.type = 'dragging';
           state.xy = [e.offsetX, e.offsetY];

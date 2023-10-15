@@ -31,7 +31,7 @@ declare const selected_link: HTMLElement;
   );
 
   // 不是漫画页的话
-  if (!Reflect.has(unsafeWindow, 'gid')) {
+  if (!Reflect.has(unsafeWindow, 'apikey')) {
     await GM.registerMenuCommand(t('site.show_settings_menu'), () =>
       setFab({
         show: true,
