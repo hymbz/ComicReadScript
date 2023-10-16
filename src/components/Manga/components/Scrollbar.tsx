@@ -42,7 +42,11 @@ export const Scrollbar: Component = () => {
   return (
     <div
       ref={(e) =>
-        useDrag(e, handleDrag, () => store.option.scrollbar.easyScroll)
+        useDrag(
+          e,
+          handleDrag,
+          () => store.option.scrollMode && store.option.scrollbar.easyScroll,
+        )
       }
       class={classes.scrollbar}
       classList={{
