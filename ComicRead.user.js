@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         7.5.0
+// @version         7.5.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -1170,8 +1170,8 @@ const mountComponents = (id, fc) => {
   return dom;
 };
 
-var css$3 = ".index_module_root__beb4237a{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__beb4237a{align-items:center;animation:index_module_bounceInRight__beb4237a .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__beb4237a>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__beb4237a[data-exit]{animation:index_module_bounceOutRight__beb4237a .5s 1}.index_module_schedule__beb4237a{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__beb4237a[data-schedule] .index_module_schedule__beb4237a{transition:transform .1s}.index_module_item__beb4237a:not([data-schedule]) .index_module_schedule__beb4237a{animation:index_module_schedule__beb4237a linear 1 forwards}:is(.index_module_item__beb4237a:hover,.index_module_item__beb4237a[data-schedule],.index_module_root__beb4237a[data-paused]) .index_module_schedule__beb4237a{animation-play-state:paused}.index_module_msg__beb4237a{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__beb4237a h2{margin:.7em 0}.index_module_msg__beb4237a h3{margin:0}.index_module_msg__beb4237a ul{margin:0;text-align:left}.index_module_msg__beb4237a button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__beb4237a button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__beb4237a{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__beb4237a{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__beb4237a{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__beb4237a","item":"index_module_item__beb4237a","bounceInRight":"index_module_bounceInRight__beb4237a","bounceOutRight":"index_module_bounceOutRight__beb4237a","schedule":"index_module_schedule__beb4237a","msg":"index_module_msg__beb4237a"};
+var css$3 = ".index_module_root__d8c71ff0{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__d8c71ff0{align-items:center;animation:index_module_bounceInRight__d8c71ff0 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__d8c71ff0>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__d8c71ff0[data-exit]{animation:index_module_bounceOutRight__d8c71ff0 .5s 1}.index_module_schedule__d8c71ff0{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__d8c71ff0[data-schedule] .index_module_schedule__d8c71ff0{transition:transform .1s}.index_module_item__d8c71ff0:not([data-schedule]) .index_module_schedule__d8c71ff0{animation:index_module_schedule__d8c71ff0 linear 1 forwards}:is(.index_module_item__d8c71ff0:hover,.index_module_item__d8c71ff0[data-schedule],.index_module_root__d8c71ff0[data-paused]) .index_module_schedule__d8c71ff0{animation-play-state:paused}.index_module_msg__d8c71ff0{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__d8c71ff0 h2{margin:0}.index_module_msg__d8c71ff0 h3{margin:.7em 0}.index_module_msg__d8c71ff0 ul{margin:0;text-align:left}.index_module_msg__d8c71ff0 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__d8c71ff0 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__d8c71ff0{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__d8c71ff0{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__d8c71ff0{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2$3 = {"root":"index_module_root__d8c71ff0","item":"index_module_item__d8c71ff0","bounceInRight":"index_module_bounceInRight__d8c71ff0","bounceOutRight":"index_module_bounceOutRight__d8c71ff0","schedule":"index_module_schedule__d8c71ff0","msg":"index_module_msg__d8c71ff0"};
 
 const [_state$1, _setState$1] = store$2.createStore({
   list: [],
@@ -4587,7 +4587,7 @@ const Scrollbar = () => {
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
     _el$.addEventListener("wheel", handleWheel);
-    web.use(e => useDrag(e, handleDrag, () => store.option.scrollbar.easyScroll), _el$);
+    web.use(e => useDrag(e, handleDrag, () => store.option.scrollMode && store.option.scrollbar.easyScroll), _el$);
     web.insert(_el$3, () => store.scrollbar.tipText);
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
@@ -5334,10 +5334,8 @@ const useFab = async initProps => {
 };
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>增加快捷滚动功能\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>增加卷轴模式下的图片缩放比例设置项\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>优化\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>将快捷滚动限定为只在卷轴模式下生效\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -5400,7 +5398,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,

@@ -1,11 +1,6 @@
-## [7.5.0](https://github.com/hymbz/ComicReadScript/compare/v7.4.2...v7.5.0) (2023-10-15)
-
-
-### Features
-
-* :sparkles: 增加快捷滚动功能 ([b1f3d42](https://github.com/hymbz/ComicReadScript/commit/b1f3d4261a791ed27020a0b48589379f776c322f))
+## [7.5.1](https://github.com/hymbz/ComicReadScript/compare/v7.5.0...v7.5.1) (2023-10-18)
 
 
 ### Performance Improvements
 
-* 增加卷轴模式下的图片缩放比例设置项 ([933f613](https://github.com/hymbz/ComicReadScript/commit/933f6138640ec0227d4cf2fd71aabd30b199c4a5))
+* 将快捷滚动限定为只在卷轴模式下生效 ([e2baf70](https://github.com/hymbz/ComicReadScript/commit/e2baf70ec719abf2d367d1d84714c48486066d7d))

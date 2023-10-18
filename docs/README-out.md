@@ -1,12 +1,12 @@
 ![页面填充示例](https://cdn.jsdelivr.net/gh/hymbz/ComicReadScript/docs/images/页面填充示例.webp)
 
-<!-- <p align="center">
+<p align="center">
   <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread"><img src="https://img.shields.io/greasyfork/v/374903"></a>
   <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread"><img src="https://img.shields.io/greasyfork/dt/374903"></a>
   <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread/feedback"><img src="https://img.shields.io/greasyfork/rating-count/374903"></a>
   <a href="https://github.com/hymbz/ComicReadScript/issues"><img src="https://img.shields.io/github/issues/hymbz/ComicReadScript"></a>
   <a href="https://hosted.weblate.org/engage/comic_read_script/-/en/"><img src="https://hosted.weblate.org/widget/comic_read_script/main/en/svg-badge.svg" alt="Translation status" /></a>
-</p> -->
+</p>
 
 ## 简介
 
