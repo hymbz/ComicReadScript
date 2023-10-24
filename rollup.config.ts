@@ -14,7 +14,7 @@ import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
 import { watchExternal } from 'rollup-plugin-watch-external';
 
-import type { Plugin, RollupOptions } from 'rollup';
+import type { InputPluginOption, Plugin, RollupOptions } from 'rollup';
 import { createServer } from 'vite';
 import { parse as parseMd } from 'marked';
 import { selfPlugins, solidSvg } from './src/rollup-plugin';
@@ -88,7 +88,7 @@ export const buildOptions = (
       commonjs(),
       styles({ mode: 'extract', modules: true }),
 
-      solidSvg(),
+      solidSvg() as InputPluginOption,
       babel({
         babelHelpers: 'runtime',
         extensions: ['.ts', '.tsx'],
