@@ -1,6 +1,6 @@
-## [7.5.1](https://github.com/hymbz/ComicReadScript/compare/v7.5.0...v7.5.1) (2023-10-18)
+## [7.5.2](https://github.com/hymbz/ComicReadScript/compare/v7.5.1...v7.5.2) (2023-10-27)
 
 
-### Performance Improvements
+### Bug Fixes
 
-* 将快捷滚动限定为只在卷轴模式下生效 ([e2baf70](https://github.com/hymbz/ComicReadScript/commit/e2baf70ec719abf2d367d1d84714c48486066d7d))
+* :bug: 更新禁漫天堂的支持站点 ([07723fc](https://github.com/hymbz/ComicReadScript/commit/07723fcad4bdc5edbae3f951e5b2816a1c9d2e32))
