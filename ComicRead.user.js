@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         7.5.2
+// @version         7.5.3
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -5335,7 +5335,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>更新禁漫天堂的支持站点\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复 ehentai 改版导致的标签点击 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -7044,7 +7044,17 @@ const MdSettings = ((props = {}) => (() => {
       while (i) {
         i -= 1;
         const tempComicInfo = nHentaiComicInfo.result[i];
-        temp += `<div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${tempComicInfo.title.japanese ? tempComicInfo.title.japanese : tempComicInfo.title.english}"><a href="https://nhentai.net/g/${tempComicInfo.id}/" index=${i} onClick="return toggle_tagmenu('nhentai:${tempComicInfo.id}',this)">${tempComicInfo.id}</a></a></div>`;
+        const _title = tempComicInfo.title.japanese ? tempComicInfo.title.japanese : tempComicInfo.title.english;
+        temp += `
+          <div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${_title}">
+            <a
+              href="https://nhentai.net/g/${tempComicInfo.id}/"
+              onClick="return toggle_tagmenu(1, 'nhentai:${tempComicInfo.id}',this)"
+              nhentai-index=${i}
+            >
+              ${tempComicInfo.id}
+            </a>
+          </div>`;
       }
       newTagLine.innerHTML = `${temp}</td>`;
     } else newTagLine.innerHTML = '<td class="tc">nhentai:</td><td class="tc" style="text-align: left;">Null</td>';
@@ -7053,44 +7063,45 @@ const MdSettings = ((props = {}) => (() => {
     // 重写 _refresh_tagmenu_act 函数，加入脚本的功能
     const nhentaiImgList = {};
     const raw_refresh_tagmenu_act = unsafeWindow._refresh_tagmenu_act;
-    unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(a, b) {
-      if (a.includes('nhentai:')) {
+    unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(a) {
+      if (a.hasAttribute('nhentai-index')) {
         const tagmenu_act_dom = document.getElementById('tagmenu_act');
-        tagmenu_act_dom.innerHTML = ['', `<a href="${b.href}" target="_blank"> Jump to nhentai</a>`, `<a href="#"> ${nhentaiImgList[selected_tag] ? 'Read' : 'Load comic'}</a>`].join('<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">">');
-        const nhentaiComicReadModeDom = tagmenu_act_dom.querySelector('a[href="#"]');
+        tagmenu_act_dom.innerHTML = ['', `<a href="${a.href}" target="_blank"> Jump to nhentai</a>`, `<a href="#"> ${nhentaiImgList[selected_tagname] ? 'Read' : 'Load comic'}</a>`].join('<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">">');
+        const nhentaiComicReadButton = tagmenu_act_dom.querySelector('a[href="#"]');
+        const {
+          media_id,
+          num_pages,
+          images
+        } = nHentaiComicInfo.result[+a.getAttribute('nhentai-index')];
+        // nhentai api 对应的扩展名
+        const fileType = {
+          j: 'jpg',
+          p: 'png',
+          g: 'gif'
+        };
+        const showNhentaiComic = init(dynamicUpdate(async setImg => {
+          nhentaiComicReadButton.innerHTML = ` loading - 0/${num_pages}`;
+          nhentaiImgList[selected_tagname] = await main.plimit(images.pages.map((page, i) => async () => {
+            const imgRes = await main.request(`https://i.nhentai.net/galleries/${media_id}/${i + 1}.${fileType[page.t]}`, {
+              headers: {
+                Referer: `https://nhentai.net/g/${media_id}`
+              },
+              responseType: 'blob'
+            });
+            const blobUrl = URL.createObjectURL(imgRes.response);
+            setImg(i, blobUrl);
+            return blobUrl;
+          }), (doneNum, totalNum) => {
+            nhentaiComicReadButton.innerHTML = ` loading - ${doneNum}/${totalNum}`;
+          });
+          nhentaiComicReadButton.innerHTML = ' Read';
+        }, num_pages)).showComic;
 
         // 加载 nhentai 漫画
-        nhentaiComicReadModeDom.addEventListener('click', async e => {
-          e.preventDefault();
-          const comicInfo = nHentaiComicInfo.result[+selected_link.getAttribute('index')];
-          let loadNum = 0;
-          if (!nhentaiImgList[selected_tag]) {
-            nhentaiComicReadModeDom.innerHTML = ` loading - ${loadNum}/${comicInfo.num_pages}`;
-            // 用于转换获得图片文件扩展名的 dict
-            const fileType = {
-              j: 'jpg',
-              p: 'png',
-              g: 'gif'
-            };
-            nhentaiImgList[selected_tag] = await Promise.all(comicInfo.images.pages.map(async (page, i) => {
-              const imgRes = await main.request(`https://i.nhentai.net/galleries/${comicInfo.media_id}/${i + 1}.${fileType[page.t]}`, {
-                headers: {
-                  Referer: `https://nhentai.net/g/${comicInfo.media_id}`
-                },
-                responseType: 'blob'
-              });
-              const blobUrl = URL.createObjectURL(imgRes.response);
-              loadNum += 1;
-              nhentaiComicReadModeDom.innerHTML = ` loading - ${loadNum}/${comicInfo.num_pages}`;
-              return blobUrl;
-            }));
-            nhentaiComicReadModeDom.innerHTML = ' Read';
-          }
-          await loadImgList(nhentaiImgList[selected_tag], true);
-        });
+        nhentaiComicReadButton.addEventListener('click', showNhentaiComic);
       }
       // 非 nhentai 标签列的用原函数去处理
-      else raw_refresh_tagmenu_act(a, b);
+      else raw_refresh_tagmenu_act(a);
     };
   }
 })().catch(main.handleError);
