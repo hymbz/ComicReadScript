@@ -15,8 +15,7 @@ import {
   handleError,
 } from 'main';
 
-declare const selected_tag: string;
-declare const selected_link: HTMLElement;
+declare const selected_tagname: string;
 
 (async () => {
   const { options, setFab, setManga, init, dynamicUpdate } = await useInit(
@@ -237,7 +236,6 @@ declare const selected_link: HTMLElement;
       taglistDom.appendChild(newTagLine);
       return;
     }
-
     const nHentaiComicInfo = JSON.parse(res.responseText) as {
       result: Array<{
         id: number;
@@ -255,17 +253,19 @@ declare const selected_link: HTMLElement;
       while (i) {
         i -= 1;
         const tempComicInfo = nHentaiComicInfo.result[i];
-        temp += `<div id="td_nhentai:${
-          tempComicInfo.id
-        }" class="gtl" style="opacity:1.0" title="${
-          tempComicInfo.title.japanese
-            ? tempComicInfo.title.japanese
-            : tempComicInfo.title.english
-        }"><a href="https://nhentai.net/g/${
-          tempComicInfo.id
-        }/" index=${i} onClick="return toggle_tagmenu('nhentai:${
-          tempComicInfo.id
-        }',this)">${tempComicInfo.id}</a></a></div>`;
+        const _title = tempComicInfo.title.japanese
+          ? tempComicInfo.title.japanese
+          : tempComicInfo.title.english;
+        temp += `
+          <div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${_title}">
+            <a
+              href="https://nhentai.net/g/${tempComicInfo.id}/"
+              onClick="return toggle_tagmenu(1, 'nhentai:${tempComicInfo.id}',this)"
+              nhentai-index=${i}
+            >
+              ${tempComicInfo.id}
+            </a>
+          </div>`;
       }
       newTagLine.innerHTML = `${temp}</td>`;
     } else
@@ -278,65 +278,57 @@ declare const selected_link: HTMLElement;
     const nhentaiImgList: Record<string, string[]> = {};
     const raw_refresh_tagmenu_act = unsafeWindow._refresh_tagmenu_act;
     unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(
-      a: any,
-      b: any,
+      a: HTMLAnchorElement,
     ) {
-      if (a.includes('nhentai:')) {
+      if (a.hasAttribute('nhentai-index')) {
         const tagmenu_act_dom = document.getElementById('tagmenu_act')!;
-
         tagmenu_act_dom.innerHTML = [
           '',
-          `<a href="${b.href}" target="_blank"> Jump to nhentai</a>`,
+          `<a href="${a.href}" target="_blank"> Jump to nhentai</a>`,
           `<a href="#"> ${
-            nhentaiImgList[selected_tag] ? 'Read' : 'Load comic'
+            nhentaiImgList[selected_tagname] ? 'Read' : 'Load comic'
           }</a>`,
         ].join('<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">">');
 
-        const nhentaiComicReadModeDom =
+        const nhentaiComicReadButton =
           tagmenu_act_dom.querySelector('a[href="#"]')!;
 
-        // 加载 nhentai 漫画
-        nhentaiComicReadModeDom.addEventListener('click', async (e: Event) => {
-          e.preventDefault();
-          const comicInfo =
-            nHentaiComicInfo.result[+selected_link.getAttribute('index')!];
-          let loadNum = 0;
+        const { media_id, num_pages, images } =
+          nHentaiComicInfo.result[+a.getAttribute('nhentai-index')!];
+        // nhentai api 对应的扩展名
+        const fileType = { j: 'jpg', p: 'png', g: 'gif' };
 
-          if (!nhentaiImgList[selected_tag]) {
-            nhentaiComicReadModeDom.innerHTML = ` loading - ${loadNum}/${comicInfo.num_pages}`;
-            // 用于转换获得图片文件扩展名的 dict
-            const fileType = {
-              j: 'jpg',
-              p: 'png',
-              g: 'gif',
-            };
-
-            nhentaiImgList[selected_tag] = await Promise.all(
-              comicInfo.images.pages.map(async (page, i) => {
+        const showNhentaiComic = init(
+          dynamicUpdate(async (setImg) => {
+            nhentaiComicReadButton.innerHTML = ` loading - 0/${num_pages}`;
+            nhentaiImgList[selected_tagname] = await plimit(
+              images.pages.map((page, i) => async () => {
                 const imgRes = await request<Blob>(
-                  `https://i.nhentai.net/galleries/${comicInfo.media_id}/${
-                    i + 1
-                  }.${fileType[page.t]}`,
+                  `https://i.nhentai.net/galleries/${media_id}/${i + 1}.${
+                    fileType[page.t]
+                  }`,
                   {
-                    headers: {
-                      Referer: `https://nhentai.net/g/${comicInfo.media_id}`,
-                    },
+                    headers: { Referer: `https://nhentai.net/g/${media_id}` },
                     responseType: 'blob',
                   },
                 );
                 const blobUrl = URL.createObjectURL(imgRes.response);
-                loadNum += 1;
-                nhentaiComicReadModeDom.innerHTML = ` loading - ${loadNum}/${comicInfo.num_pages}`;
+                setImg(i, blobUrl);
                 return blobUrl;
               }),
+              (doneNum, totalNum) => {
+                nhentaiComicReadButton.innerHTML = ` loading - ${doneNum}/${totalNum}`;
+              },
             );
-            nhentaiComicReadModeDom.innerHTML = ' Read';
-          }
-          await loadImgList(nhentaiImgList[selected_tag], true);
-        });
+            nhentaiComicReadButton.innerHTML = ' Read';
+          }, num_pages),
+        ).showComic;
+
+        // 加载 nhentai 漫画
+        nhentaiComicReadButton.addEventListener('click', showNhentaiComic);
       }
       // 非 nhentai 标签列的用原函数去处理
-      else raw_refresh_tagmenu_act(a, b) as unknown;
+      else raw_refresh_tagmenu_act(a) as unknown;
     };
   }
 })().catch(handleError);
