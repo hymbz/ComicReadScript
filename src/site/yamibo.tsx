@@ -194,8 +194,7 @@ interface History {
         show: undefined,
       });
 
-      if (!new URLSearchParams(window.location.search).get('mobile')) {
-        // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
+      if (querySelector('div.pti > div.authi')) {
         insertNode(
           querySelector('div.pti > div.authi')!,
           '<span class="pipe show">|</span><a id="comicReadMode" class="show" href="javascript:;">漫画阅读</a>',
@@ -366,9 +365,7 @@ interface History {
         db.createObjectStore('history', { keyPath: 'tid' });
       });
 
-      const isMobile = new URLSearchParams(window.location.search).get(
-        'mobile',
-      );
+      const isMobile = !!document.querySelector('#flk');
 
       const [updateFlag, setUpdateFlag] = createSignal(false);
       const updateHistoryTag = () => setUpdateFlag((val) => !val);
