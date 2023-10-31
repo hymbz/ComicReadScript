@@ -6,7 +6,7 @@ import {
   request,
   toast,
   useInit,
-  handleError,
+  log,
 } from 'main';
 import dmzjDecrypt from 'dmzjDecrypt';
 import type { ChapterInfo } from '../helper/dmzjApi';
@@ -23,7 +23,7 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
 
       const comicId = parseInt(window.location.pathname.split('/')[2], 10);
       if (Number.isNaN(comicId)) {
-        document.body.removeChild(document.body.childNodes[0]);
+        document.body.childNodes[0].remove();
         insertNode(
           document.body,
           `
@@ -94,7 +94,7 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
         insertNode(document.body, temp);
       });
 
-      document.body.removeChild(document.body.childNodes[0]);
+      document.body.childNodes[0].remove();
       await GM.addStyle(
         `
           h1 {
@@ -200,4 +200,4 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
       break;
     }
   }
-})().catch(handleError);
+})().catch(log.error);

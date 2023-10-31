@@ -10,7 +10,7 @@ import {
   wait,
   waitImgLoad,
   canvasToBlob,
-  handleError,
+  log,
 } from 'main';
 
 // 已知问题：某些漫画始终会有几页在下载原图时出错
@@ -138,4 +138,4 @@ import {
         setTimeout(retry, 1000 * 5, num + 1);
     });
   retry();
-})().catch(handleError);
+})().catch(log.error);

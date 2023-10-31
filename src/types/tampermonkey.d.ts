@@ -569,8 +569,11 @@ declare function GM_setClipboard(
 
 declare function GM_addElement(
   tag_name: string,
-  attributes: { textContent: string },
-): void;
+  attributes: {
+    textContent: string;
+    [key: string]: any;
+  },
+): HTMLElement;
 
 // GM.*
 

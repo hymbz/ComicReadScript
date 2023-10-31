@@ -544,5 +544,5 @@ try {
 
   if (options) main.universalInit(options);
 } catch (error) {
-  main.handleError(error as Error);
+  main.log.error(error as Error);
 }

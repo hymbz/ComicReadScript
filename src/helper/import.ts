@@ -54,7 +54,7 @@ const selfImportSync = (name: string) => {
   Reflect.deleteProperty(unsafeWindow, tempName);
   unsafeWindow[tempName] = crsLib;
   // 因为在一些网站比如推特会触发CSP，所以不能使用 eval 来执行
-  GM_addElement('script', { textContent: runCode });
+  GM_addElement('script', { textContent: runCode })?.remove();
   Reflect.deleteProperty(unsafeWindow, tempName);
 };
 

@@ -1,5 +1,6 @@
 import {
   insertNode,
+  log,
   querySelector,
   querySelectorAll,
   request,
@@ -7,7 +8,6 @@ import {
   t,
   toast,
   useInit,
-  handleError,
 } from 'main';
 
 /** 用于转换获得图片文件扩展名 */
@@ -216,4 +216,4 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       await loadNewComic();
     }
   }
-})().catch(handleError);
+})().catch(log.error);

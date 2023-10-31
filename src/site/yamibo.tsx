@@ -11,7 +11,7 @@ import {
   request,
   useInit,
   toast,
-  handleError,
+  log,
 } from 'main';
 import { Show, createEffect, createMemo, createSignal, on } from 'solid-js';
 
@@ -442,4 +442,4 @@ interface History {
       querySelector('#autopbn')?.addEventListener('click', updateHistoryTag);
     }
   }
-})().catch(handleError);
+})().catch(log.error);

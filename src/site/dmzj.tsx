@@ -10,7 +10,7 @@ import {
   wait,
   toast,
   universalInit,
-  handleError,
+  log,
 } from 'main';
 import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
 
@@ -83,9 +83,7 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
     querySelector('.cartoon_online_border')!.innerHTML = '获取漫画数据中';
 
     // 删掉原有的章节 dom
-    querySelectorAll('.odd_anim_title ~ *').forEach(
-      (e) => e.parentNode?.removeChild(e),
-    );
+    querySelectorAll('.odd_anim_title ~ *').forEach((e) => e.remove());
 
     const { comicId } = await getId();
 
@@ -182,4 +180,4 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
       getOnNext: () => checkButton('.display_right #next_chapter'),
     },
   });
-})().catch(handleError);
+})().catch(log.error);

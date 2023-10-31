@@ -12,7 +12,7 @@ import {
   plimit,
   querySelectorAll,
   wait,
-  handleError,
+  log,
 } from 'main';
 
 declare const selected_tagname: string;
@@ -28,6 +28,28 @@ declare const selected_tagname: string;
       autoShow: false,
     },
   );
+
+  if (Reflect.has(unsafeWindow, 'mpvkey')) {
+    const imgEleList = querySelectorAll('.mi0[id]');
+    init(
+      dynamicUpdate(
+        (setImg) =>
+          plimit(
+            imgEleList.map((ele, i) => async () => {
+              const getUrl = () => ele.querySelector('img')?.src;
+              if (!getUrl()) unsafeWindow.load_image(i + 1);
+              unsafeWindow.next_possible_request = 0;
+              const imgUrl = await wait(getUrl);
+              setImg(i, imgUrl);
+            }),
+            undefined,
+            4,
+          ),
+        imgEleList.length,
+      ),
+    );
+    return;
+  }
 
   // 不是漫画页的话
   if (!Reflect.has(unsafeWindow, 'apikey')) {
@@ -56,28 +78,6 @@ declare const selected_tagname: string;
         }
       });
     }
-    return;
-  }
-
-  if (Reflect.has(unsafeWindow, 'mpvkey')) {
-    const imgEleList = querySelectorAll('.mi0[id]');
-    init(
-      dynamicUpdate(
-        (setImg) =>
-          plimit(
-            imgEleList.map((ele, i) => async () => {
-              const getUrl = () => ele.querySelector('img')?.src;
-              if (!getUrl()) unsafeWindow.load_image(i + 1);
-              unsafeWindow.next_possible_request = 0;
-              const imgUrl = await wait(getUrl);
-              setImg(i, imgUrl);
-            }),
-            undefined,
-            4,
-          ),
-        imgEleList.length,
-      ),
-    );
     return;
   }
 
@@ -331,4 +331,4 @@ declare const selected_tagname: string;
       else raw_refresh_tagmenu_act(a) as unknown;
     };
   }
-})().catch(handleError);
+})().catch(log.error);
