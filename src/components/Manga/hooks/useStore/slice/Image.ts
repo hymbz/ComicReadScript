@@ -212,7 +212,7 @@ export const switchFillEffect = () => {
 
 /** 切换卷轴模式 */
 export const switchScrollMode = () => {
-  store.panzoom?.smoothZoomAbs(0, 0, 1);
+  store.panzoom?.smoothZoomAbs(0, 0, 0.99);
   setOption((draftOption, state) => {
     state.activePageIndex = 0;
     draftOption.scrollMode = !draftOption.scrollMode;

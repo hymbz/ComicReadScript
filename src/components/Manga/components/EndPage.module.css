@@ -62,6 +62,12 @@
   }
 }
 
+@media (width <= 600px) {
+  .endPage > button {
+    width: 1em;
+  }
+}
+
 .comments {
   position: absolute;
   right: 1em;

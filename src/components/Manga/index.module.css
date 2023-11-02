@@ -30,11 +30,19 @@
   width: 100%;
   height: 100%;
 
+  font-size: 1em;
+
   background-color: var(--bg);
   outline: 0;
 
   & a {
     color: var(--text_secondary);
+  }
+}
+
+@media (width <= 600px) {
+  .root {
+    font-size: 0.8em;
   }
 }
 

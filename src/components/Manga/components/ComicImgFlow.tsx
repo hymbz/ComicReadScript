@@ -30,7 +30,7 @@ export const ComicImgFlow: Component = () => {
       const { scale } = store.panzoom.getTransform();
 
       // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
-      if (scale >= 2) store.panzoom.smoothZoomAbs(0, 0, 1);
+      if (scale >= 2) store.panzoom.smoothZoomAbs(0, 0, 0.99);
       else store.panzoom.smoothZoomAbs(e.clientX, e.clientY, scale + 1);
     });
   };
