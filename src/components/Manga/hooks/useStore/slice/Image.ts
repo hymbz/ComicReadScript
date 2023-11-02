@@ -151,9 +151,10 @@ export const updatePageData = (state: State) => {
     imgList,
     fillEffect,
     option: { onePageMode, scrollMode },
+    isMobile,
   } = state;
 
-  if (onePageMode || scrollMode || imgList.length <= 1)
+  if (onePageMode || scrollMode || isMobile || imgList.length <= 1)
     state.pageList = imgList.map((_, i) => [i]);
   else state.pageList = handleComicData(imgList, fillEffect);
   updateDrag(state);
