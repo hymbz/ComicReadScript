@@ -104,6 +104,11 @@
         position: unset;
       }
     }
+
+    /* 卷轴模式下的图片间距 */
+    & .img + .img {
+      margin-top: calc(var(--scrollModeSpacing) * 0.1em);
+    }
   }
 
   /* 根据漫画方向调换位置 */

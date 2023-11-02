@@ -138,6 +138,31 @@ export const defaultSettingList: () => SettingList = () => [
           value={store.option.disableZoom}
           onChange={createStateSetFn('disableZoom')}
         />
+
+        <Show when={store.option.scrollMode}>
+          <SettingsItemNumber
+            name={t('setting.option.scroll_mode_img_scale')}
+            maxLength={3}
+            suffix="%"
+            step={5}
+            onChange={(val) => {
+              if (Number.isNaN(val)) return;
+              zoomScrollModeImg(val / 100, true);
+            }}
+            value={Math.round(store.option.scrollModeImgScale * 100)}
+          />
+          <SettingsItemNumber
+            name={t('setting.option.scroll_mode_img_spacing')}
+            maxLength={5}
+            onChange={(val) => {
+              if (Number.isNaN(val)) return;
+              setOption((draftOption) => {
+                draftOption.scrollModeSpacing = clamp(0, val, Infinity);
+              });
+            }}
+            value={Math.round(store.option.scrollModeSpacing)}
+          />
+        </Show>
       </>
     ),
   ],
@@ -187,20 +212,6 @@ export const defaultSettingList: () => SettingList = () => [
           }}
           value={store.option.preloadPageNum}
         />
-
-        <Show when={store.option.scrollMode}>
-          <SettingsItemNumber
-            name={t('setting.option.scroll_mode_img_scale')}
-            maxLength={3}
-            suffix="%"
-            step={5}
-            onChange={(val) => {
-              if (Number.isNaN(val)) return;
-              zoomScrollModeImg(val / 100, true);
-            }}
-            value={Math.round(store.option.scrollModeImgScale * 100)}
-          />
-        </Show>
 
         <SettingsItem name={t('setting.option.background_color')}>
           <input

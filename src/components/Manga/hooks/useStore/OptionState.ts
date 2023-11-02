@@ -16,6 +16,8 @@ export interface Option {
   onePageMode: boolean;
   /** 卷轴模式 */
   scrollMode: boolean;
+  /** 卷轴模式下的图片间距 */
+  scrollModeSpacing: number;
   /** 点击翻页 */
   clickPageTurn: {
     enabled: boolean;
@@ -77,6 +79,7 @@ export const defaultOption: Readonly<Option> = {
   },
   onePageMode: false,
   scrollMode: false,
+  scrollModeSpacing: 0,
   clickPageTurn: {
     enabled: 'ontouchstart' in document.documentElement,
     reverse: false,

@@ -75,6 +75,7 @@ export const cssVar = createRoot(() => {
       store.option.customBackground ??
       (store.option.darkMode ? '#000000' : '#ffffff'),
     '--scrollModeImgScale': store.option.scrollModeImgScale,
+    '--scrollModeSpacing': store.option.scrollModeSpacing,
     '--img_placeholder_height': `${imgPlaceholderHeight()}px`,
     ...(store.option.darkMode ? dark : light),
   }));
