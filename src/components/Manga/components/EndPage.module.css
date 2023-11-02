@@ -62,10 +62,8 @@
   }
 }
 
-@media (width <= 600px) {
-  .endPage > button {
-    width: 1em;
-  }
+.root[data-mobile] .endPage > button {
+  width: 1em;
 }
 
 .comments {

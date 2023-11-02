@@ -20,10 +20,8 @@
   }
 }
 
-@media (width <= 600px) {
-  .touchAreaRoot {
-    flex-direction: column !important;
-  }
+.root[data-mobile] .touchAreaRoot {
+  flex-direction: column !important;
 }
 
 .touchArea {

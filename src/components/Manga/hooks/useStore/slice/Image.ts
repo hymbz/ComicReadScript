@@ -197,6 +197,8 @@ export const handleResize = (state: State, width: number, height: number) => {
   state.proportion.条漫比例 = state.proportion.单页比例 / 2;
 
   state.imgList.forEach((img) => updateImgType(state, img));
+
+  state.isMobile = window.matchMedia('(max-width: 600px)').matches;
 };
 
 /** 切换页面填充 */

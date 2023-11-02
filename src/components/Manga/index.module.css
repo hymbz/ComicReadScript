@@ -38,10 +38,8 @@
   & a {
     color: var(--text_secondary);
   }
-}
 
-@media (width <= 600px) {
-  .root {
+  &[data-mobile] {
     font-size: 0.8em;
   }
 }

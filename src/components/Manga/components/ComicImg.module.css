@@ -79,7 +79,7 @@
 
   &.scrollMode {
     overflow: visible;
-    flex-direction: column;
+    flex-direction: column !important;
     justify-content: flex-start;
 
     & .img {

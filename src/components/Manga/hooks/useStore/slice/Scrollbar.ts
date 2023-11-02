@@ -4,7 +4,7 @@ import { throttle } from 'throttle-debounce';
 import { lang, t } from 'helper/i18n';
 import type { State } from '..';
 import { setState, store } from '..';
-import type { UseDragOption } from '../../useDrag';
+import type { UseDragOption, UseDragState } from '../../useDrag';
 
 /** 漫画流的容器 */
 export const mangaFlowEle = () => store.mangaFlowRef?.parentNode as HTMLElement;
@@ -110,58 +110,75 @@ export const handleMangaFlowScroll = () => {
   updateTipText();
 };
 
+/** 判断点击位置在滚动条上的位置比率 */
+const getClickTop = (x: number, y: number, e: HTMLElement): number => {
+  if (!store.isMobile) return y / e.offsetHeight;
+  return store.option.dir === 'ltr' ? x / e.offsetWidth : 1 - x / e.offsetWidth;
+};
+
+/** 计算在滚动条上的拖动距离 */
+const getDragDist = (
+  [x, y]: UseDragState['xy'],
+  [ix, iy]: UseDragState['initial'],
+  e: HTMLElement,
+) => {
+  if (!store.isMobile) return (y - iy) / e.offsetHeight;
+  return store.option.dir === 'ltr'
+    ? (x - ix) / e.offsetWidth
+    : (1 - (x - ix)) / e.offsetWidth;
+};
+
 /** 开始拖拽时的 dragTop 值 */
 let startTop = 0;
-export const dragOption: UseDragOption = {
-  handleDrag: ({ type, xy: [, y], initial: [, iy] }, e) => {
-    // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
-    if (type === 'end') return;
-    // 跳过没必要处理的情况
-    if (type === 'dragging' && y === iy) return;
+export const handleDrag: UseDragOption['handleDrag'] = (
+  { type, xy, initial },
+  e,
+) => {
+  const [x, y] = xy;
 
-    if (!store.mangaFlowRef) return;
+  // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
+  if (type === 'end') return;
 
-    /** 滚动条高度 */
-    const scrollbarHeight = (e.target as HTMLElement).offsetHeight;
-    /** 点击位置在滚动条上的位置比率 */
-    const clickTop = y / scrollbarHeight;
-    let top = clickTop;
+  if (!store.mangaFlowRef) return;
 
-    if (store.option.scrollMode) {
-      if (type === 'dragging') {
-        /** 在滚动条上的移动比率 */
-        const dy = (y - iy) / scrollbarHeight;
-        top = startTop + dy;
-        // 处理超出范围的情况
-        if (top < 0) top = 0;
-        else if (top > 1) top = 1;
-        mangaFlowEle().scrollTo({
-          top: top * contentHeight(),
-          behavior: 'instant',
-        });
-      } else {
-        // 确保滚动条的中心会在点击位置
-        top -= store.scrollbar.dragHeight / 2;
-        startTop = top;
-        mangaFlowEle().scrollTo({
-          top: top * contentHeight(),
-          behavior: 'smooth',
-        });
-      }
-    } else {
-      let newPageIndex = Math.floor(top * store.pageList.length);
+  const scrollbarDom = e.target as HTMLElement;
+
+  /** 点击位置在滚动条上的位置比率 */
+  const clickTop = getClickTop(x, y, e.target as HTMLElement);
+  let top = clickTop;
+
+  if (store.option.scrollMode) {
+    if (type === 'dragging') {
+      top = startTop + getDragDist(xy, initial, scrollbarDom);
       // 处理超出范围的情况
-      if (newPageIndex < 0) newPageIndex = 0;
-      else if (newPageIndex >= store.pageList.length)
-        newPageIndex = store.pageList.length - 1;
-
-      if (newPageIndex !== store.activePageIndex) {
-        setState((state) => {
-          state.activePageIndex = newPageIndex;
-        });
-      }
+      if (top < 0) top = 0;
+      else if (top > 1) top = 1;
+      mangaFlowEle().scrollTo({
+        top: top * contentHeight(),
+        behavior: 'instant',
+      });
+    } else {
+      // 确保滚动条的中心会在点击位置
+      top -= store.scrollbar.dragHeight / 2;
+      startTop = top;
+      mangaFlowEle().scrollTo({
+        top: top * contentHeight(),
+        behavior: 'smooth',
+      });
     }
-  },
+  } else {
+    let newPageIndex = Math.floor(top * store.pageList.length);
+    // 处理超出范围的情况
+    if (newPageIndex < 0) newPageIndex = 0;
+    else if (newPageIndex >= store.pageList.length)
+      newPageIndex = store.pageList.length - 1;
+
+    if (newPageIndex !== store.activePageIndex) {
+      setState((state) => {
+        state.activePageIndex = newPageIndex;
+      });
+    }
+  }
 };
 
 createRoot(() => {

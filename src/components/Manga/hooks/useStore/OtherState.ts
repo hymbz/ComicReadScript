@@ -23,6 +23,8 @@ export const OtherState = {
   panzoom: undefined as PanZoom | undefined,
   /** 当前是否处于放大模式 */
   isZoomed: false,
+  /** 当前设备是否是移动端 */
+  isMobile: false,
 
   /** 是否强制显示侧边栏 */
   showToolbar: false,

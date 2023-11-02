@@ -7,7 +7,7 @@ import { Scrollbar } from './components/Scrollbar';
 import { TouchArea } from './components/TouchArea';
 import { EndPage } from './components/EndPage';
 
-import { type State } from './hooks/useStore/index';
+import { store, type State } from './hooks/useStore/index';
 import type { FillEffect } from './hooks/useStore/ImageState';
 import type { Option } from './hooks/useStore/OptionState';
 import { cssVar } from './hooks/useCssVar';
@@ -94,6 +94,7 @@ export const Manga: Component<MangaProps> = (props) => {
       oncapture:keydown={handleKeyDown}
       oncapture:keypress={stopPropagation}
       oncapture:keyup={stopPropagation}
+      data-mobile={store.isMobile ? '' : undefined}
       role="presentation"
       tabIndex={-1}
     >

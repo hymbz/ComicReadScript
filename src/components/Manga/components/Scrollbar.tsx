@@ -4,13 +4,11 @@ import { debounce } from 'throttle-debounce';
 
 import { store } from '../hooks/useStore';
 import { useDrag } from '../hooks/useDrag';
-import { dragOption } from '../hooks/useStore/slice';
+import { handleDrag } from '../hooks/useStore/slice';
 
 import { ScrollbarPage } from './ScrollbarPage';
 
 import classes from '../index.module.css';
-
-const { handleDrag } = dragOption;
 
 /** 滚动条 */
 export const Scrollbar: Component = () => {
@@ -58,18 +56,19 @@ export const Scrollbar: Component = () => {
       aria-controls={classes.mangaFlow}
       aria-valuenow={store.activePageIndex || -1}
       data-show={!store.option.scrollbar.autoHidden || showScrollbar()}
+      dir={store.option.dir}
       onWheel={handleWheel}
     >
       <div
         class={classes.scrollbarDrag}
         style={{
-          height: height(),
+          '--height': height(),
           /**
            * 使用 transform 来移动的话因为涉及到百分比的四舍五入，
            * 会在长漫画的滚动结束后出现明显的抖动，
            * 所以这里只能用 top 来控制
            */
-          top: top(),
+          '--top': top(),
           transition: store.option.scrollMode ? undefined : 'top 150ms',
         }}
       >
