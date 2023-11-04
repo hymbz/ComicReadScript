@@ -1,20 +1,8 @@
 .img {
-  content-visibility: hidden;
-
-  z-index: 1;
-
-  display: none;
-
   max-width: 100%;
-  height: 100%;
-
+  max-height: 100%;
   object-fit: contain;
   background-color: var(--hover_bg_color, #fff3);
-
-  &[data-show] {
-    content-visibility: visible;
-    display: unset;
-  }
 
   &[data-fill="left"] {
     transform: translate(50%);
@@ -22,6 +10,10 @@
 
   &[data-fill="right"] {
     transform: translate(-50%);
+  }
+
+  &[data-fill="page"] {
+    display: none;
   }
 
   &[data-load-type="loading"] {
@@ -33,14 +25,68 @@
     animation: show 2s forwards;
   }
 
-  /* 加载出错的图片直接隐藏 */
   &[data-load-type="error"],
-  /* 隐藏因为 src 为空而出现的图片加载错误的图标 */
-  &[data-load-type="wait"] {
-    position: absolute;
-    width: 40em;
-    height: 40em !important;
+  &[data-load-type="wait"],
+  &[src=""] {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    height: 100%;
+  }
+
+  /* 隐藏火狐的出错图片标识 */
+  :is(&[data-load-type="error"], &[src=""])::before {
     opacity: 0;
+  }
+
+  /* 遮住默认的出错图片标识 */
+  :is(&[data-load-type], &[src=""])::after {
+    pointer-events: none;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: var(--bg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 30%;
+  }
+
+  :is(&[data-load-type="loading"], &[data-load-type="wait"])::after {
+    content: "";
+    background-image: var(--MdCloudDownload);
+  }
+
+  &[src=""]::after {
+    content: "";
+    background-image: var(--MdPhoto);
+  }
+
+  &[data-load-type="error"]::after {
+    content: "";
+    background-image: var(--MdImageNotSupported);
+  }
+}
+
+.page {
+  content-visibility: hidden;
+
+  z-index: 1;
+
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  &[data-show] {
+    content-visibility: visible;
+    display: flex;
   }
 }
 
@@ -61,74 +107,73 @@
 }
 
 .mangaFlow {
+  touch-action: none;
   user-select: none;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  grid-auto-columns: 100%;
+  grid-auto-flow: column;
+  grid-template-columns: 100%;
+  grid-template-rows: 100%;
 
   height: 100%;
 
   color: var(--text);
 
-  &.disableZoom .img {
+  backface-visibility: hidden;
+
+  &[data-disableZoom] .img {
     height: unset;
     max-height: 100%;
     object-fit: scale-down;
   }
 
-  &.scrollMode {
-    overflow: visible;
-    flex-direction: column !important;
-    justify-content: flex-start;
-
-    & .img {
-      display: unset;
-
-      width: calc(var(--scrollModeImgScale) * var(--width, 100%));
-      max-width: unset;
-      height: auto;
-      max-height: unset;
-
-      object-fit: contain;
-
-      /* 让未显示的图片提前占下位 */
-      &[data-load-type="wait"] {
-        display: unset;
-        flex-basis: var(--img_placeholder_height);
-        flex-shrink: 0;
-        visibility: hidden;
-      }
-
-      &[data-load-type="loading"] {
-        position: unset;
-      }
-    }
-
-    /* 卷轴模式下的图片间距 */
-    & .img + .img {
-      margin-top: calc(var(--scrollModeSpacing) * 0.1em);
-    }
-  }
-
   /* 根据漫画方向调换位置 */
-  &[dir="ltr"] {
+  &[dir="ltr"] .page {
     flex-direction: row;
   }
+}
 
-  & > svg {
-    position: absolute;
-    width: 20em;
-    color: var(--text_secondary);
-    background-color: var(--bg);
+.mangaFlow[data-scrollMode] {
+  overflow: visible;
+  grid-auto-flow: row;
+  grid-template-rows: auto;
 
-    &[data-fill="left"] {
-      transform: translate(100%);
+  & .page {
+    content-visibility: visible;
+    display: flex;
+    width: unset;
+    height: unset;
+  }
+
+  & .img {
+    display: unset;
+
+    width: calc(var(--scrollModeImgScale) * var(--width, 100%));
+    max-width: unset;
+    height: auto;
+    max-height: unset;
+
+    object-fit: contain;
+
+    /* 让未显示的图片提前占下位 */
+    &[data-load-type="wait"] {
+      height: var(--img_placeholder_height);
     }
 
-    &[data-fill="right"] {
-      transform: translate(-100%);
+    &[data-load-type="loading"] {
+      position: unset;
     }
+
+    &[data-load-type="error"] {
+      width: 30em;
+      height: 20em;
+    }
+  }
+
+  /* 卷轴模式下的图片间距 */
+  & .img + .img {
+    margin-top: calc(var(--scrollModeSpacing) * 0.1em);
   }
 }
 

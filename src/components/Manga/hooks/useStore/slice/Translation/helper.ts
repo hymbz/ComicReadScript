@@ -1,6 +1,5 @@
 import { t } from 'helper/i18n';
 import { setState, store } from '../..';
-import { updateTipText } from '../Scrollbar';
 
 export type TaskState = {
   state: 'saved' | 'finished' | 'error' | 'error-lang';
@@ -12,7 +11,6 @@ export const setMessage = (i: number, msg: string) => {
   setState((state) => {
     state.imgList[i].translationMessage = msg;
   });
-  updateTipText();
 };
 
 export const request = <T = any>(

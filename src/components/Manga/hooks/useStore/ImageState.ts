@@ -21,6 +21,17 @@ export const imgState = {
   imgList: [] as ComicImg[],
   pageList: [] as PageList,
 
+  /** 渲染的页面 */
+  renderPageList: [] as PageList,
+  /** 页面切换动画 */
+  pageAnimation: false,
+  /** 页面偏移量，百分比 */
+  pageOffsetPct: 0,
+  /** 页面偏移量，像素 */
+  pageOffsetPx: 0,
+  /** 是否处于拖拽模式 */
+  dragMode: false,
+
   /** 页面填充数据 */
   fillEffect: { '-1': true } as FillEffect,
 

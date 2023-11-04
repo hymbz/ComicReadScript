@@ -13,24 +13,22 @@ export interface UseDragState {
   startTime: number;
 }
 
-export interface UseDragOption {
-  handleDrag: (state: UseDragState, e: MouseEvent) => void;
-}
+export type UseDrag = (state: UseDragState, e: MouseEvent) => void;
 
-const defaultStata = (): UseDragState => ({
+const initStata = (): UseDragState => ({
   type: 'start',
   xy: [0, 0],
   initial: [0, 0],
   startTime: 0,
 });
 
-const state = defaultStata();
-
 export const useDrag = (
   ref: HTMLElement,
-  handleDrag: (state: UseDragState, e: MouseEvent) => void,
+  handleDrag: UseDrag,
   easyMode: () => boolean = () => false,
 ) => {
+  let state = initStata();
+
   onMount(() => {
     const controller = new AbortController();
 
@@ -44,8 +42,8 @@ export const useDrag = (
           if (e.buttons !== 1) return;
 
           state.type = 'start';
-          state.xy = [e.offsetX, e.offsetY];
-          state.initial = [e.offsetX, e.offsetY];
+          state.xy = [e.x, e.y];
+          state.initial = [e.x, e.y];
           state.startTime = Date.now();
           handleDrag(state, e);
         },
@@ -57,13 +55,14 @@ export const useDrag = (
         'pointermove',
         (e) => {
           e.stopPropagation();
+          e.preventDefault();
           if (!easyMode() && (state.startTime === 0 || e.buttons !== 1)) return;
 
           state.type = 'dragging';
-          state.xy = [e.offsetX, e.offsetY];
+          state.xy = [e.x, e.y];
           handleDrag(state, e);
         },
-        { capture: false, passive: true, signal: controller.signal },
+        { capture: false, passive: false, signal: controller.signal },
       );
 
       // 在鼠标、手指松开后切换状态
@@ -74,9 +73,9 @@ export const useDrag = (
           if (state.startTime === 0) return;
 
           state.type = 'end';
-          state.xy = [e.offsetX, e.offsetY];
+          state.xy = [e.x, e.y];
           handleDrag(state, e);
-          Object.assign(state, defaultStata());
+          state = initStata();
           focus();
         },
         { capture: false, passive: true, signal: controller.signal },

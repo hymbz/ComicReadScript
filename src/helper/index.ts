@@ -6,6 +6,10 @@ export const sleep = (ms: number) =>
 export const clamp = (min: number, val: number, max: number) =>
   Math.max(Math.min(max, val), min);
 
+/** 判断两个数是否在指定误差范围内相等 */
+export const isEqual = (val: number, target: number, range: number) =>
+  Math.abs(target - val) <= range;
+
 /** 根据传入的条件列表的真假，对 val 进行取反 */
 export const ifNot = (val: unknown, ...conditions: boolean[]) => {
   let res: boolean = !!val;
@@ -208,6 +212,9 @@ export const waitImgLoad = (img: HTMLImageElement, timeout = 1000 * 10) =>
     });
   });
 
+/** 将指定的布尔值转换为字符串或未定义 */
+export const boolDataVal = (val: boolean) => (val ? '' : undefined);
+
 /**
  *
  * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载
@@ -320,6 +327,15 @@ export const byPath = <T = object>(
   }
   if (target === obj) return null;
   return target as T;
+};
+
+export const requestIdleCallback = (
+  callback: IdleRequestCallback,
+  timeout?: number,
+) => {
+  if (Reflect.has(window, 'requestIdleCallback'))
+    return window.requestIdleCallback(callback, { timeout });
+  return window.setTimeout(callback, 1);
 };
 
 /**

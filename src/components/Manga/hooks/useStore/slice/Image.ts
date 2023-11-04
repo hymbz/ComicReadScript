@@ -10,7 +10,6 @@ import {
   handleMangaFlowScroll,
   mangaFlowEle,
   updateDrag,
-  updateTipText,
   windowHeight,
 } from './Scrollbar';
 import { setOption } from './Helper';
@@ -22,15 +21,16 @@ export const {
   imgPlaceholderHeight,
   preloadNum,
 } = createRoot(() => {
-  const activeImgIndexMemo = createMemo(
-    () => store.pageList[store.activePageIndex]?.find((i) => i !== -1) ?? 0,
-  );
-  const nowFillIndexMemo = createMemo(() =>
-    findFillIndex(activeImgIndexMemo(), store.fillEffect),
-  );
-
   const activePageMemo = createMemo(
     () => store.pageList[store.activePageIndex] ?? [],
+  );
+
+  const activeImgIndexMemo = createMemo(
+    () => activePageMemo().find((i) => i !== -1) ?? 0,
+  );
+
+  const nowFillIndexMemo = createMemo(() =>
+    findFillIndex(activeImgIndexMemo(), store.fillEffect),
   );
 
   const imgPlaceholderHeightMemo = createMemo(() => {
@@ -49,8 +49,8 @@ export const {
   });
 
   const preloadNumMemo = createMemo(() => ({
-    front: store.option.preloadPageNum,
-    back: Math.floor(store.option.preloadPageNum / 2),
+    back: store.option.preloadPageNum,
+    front: Math.floor(store.option.preloadPageNum / 2),
   }));
 
   return {
@@ -67,38 +67,42 @@ export const {
   };
 });
 
-/**
- * 预加载指定页数的图片，并取消其他预加载的图片
- * @param state state
- * @param startIndex 起始 page index
- * @param endIndex 结束 page index
- * @param loadNum 加载图片的数量
- * @returns 返回指定范围内的图片在执行前是否还有未加载完的
- */
-const loadImg = (
-  state: State,
-  startIndex: number,
-  endIndex = startIndex + 1,
-  loadNum = 2,
-) => {
-  let editNum = 0;
-  state.pageList
-    .slice(Math.max(startIndex, 0), clamp(0, state.pageList.length, endIndex))
-    .flat()
-    .some((index) => {
-      if (index === -1) return false;
-      const img = state.imgList[index];
-      if (!img.src) return false;
-      if (img.loadType === 'wait') {
-        img.loadType = 'loading';
-        editNum += 1;
-      }
-      return editNum >= loadNum;
-    });
+type LoadImgDraft = { editNum: number; loadNum: number };
+const loadImg = (state: State, index: number, draft: LoadImgDraft) => {
+  if (index === -1) return false;
+  const img = state.imgList[index];
+  if (!img.src) return false;
+  if (img.loadType === 'wait') {
+    img.loadType = 'loading';
+    draft.editNum += 1;
+  }
+  return draft.editNum >= draft.loadNum;
+};
+const loadPage = (state: State, index: number, draft: LoadImgDraft) =>
+  state.pageList[index].some((i) => loadImg(state, i, draft));
 
-  const edited = editNum > 0;
-  if (edited) updateTipText();
-  return edited;
+/**
+ * 以当前显示页为基准，预加载附近指定页数的图片，并取消其他预加载的图片
+ * @param state state
+ * @param loadPageNum 加载页数
+ * @param loadNum 加载图片的数量
+ * @returns 返回是否成功加载了未加载图片
+ */
+const loadPageImg = (state: State, loadPageNum = Infinity, loadNum = 2) => {
+  const draft: LoadImgDraft = { editNum: 0, loadNum };
+  const targetPage = state.activePageIndex + loadPageNum;
+
+  if (targetPage < state.activePageIndex) {
+    const end = Math.max(0, targetPage);
+    for (let i = state.activePageIndex; i >= end; i--)
+      if (loadPage(state, i, draft)) break;
+  } else {
+    const end = Math.min(state.pageList.length, targetPage);
+    for (let i = state.activePageIndex; i < end; i++)
+      if (loadPage(state, i, draft)) break;
+  }
+
+  return draft.editNum > 0;
 };
 
 export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
@@ -121,26 +125,24 @@ export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
 
 /** 根据当前页数更新所有图片的加载状态 */
 export const updateImgLoadType = debounce(100, (state: State) => {
-  const { imgList, activePageIndex } = state;
-
   // 先将所有加载中的图片状态改为暂停
-  imgList.forEach((img, i) => {
-    if (img.loadType === 'loading') imgList[i].loadType = 'wait';
+  state.imgList.forEach((img, i) => {
+    if (img.loadType === 'loading') state.imgList[i].loadType = 'wait';
   });
 
   return (
     // 优先加载当前显示页
-    loadImg(state, activePageIndex, activePageIndex + 1) ||
+    loadPageImg(state, 1) ||
     // 再加载后面几页
-    loadImg(state, activePageIndex + 1, activePageIndex + preloadNum().front) ||
+    loadPageImg(state, preloadNum().back) ||
     // 再加载前面几页
-    loadImg(state, activePageIndex - 10, activePageIndex - preloadNum().back) ||
+    loadPageImg(state, -preloadNum().front) ||
     // 根据设置决定是否要继续加载其余图片
-    (!state.option.alwaysLoadAllImg && imgList.length > 60) ||
+    (!state.option.alwaysLoadAllImg && state.imgList.length > 60) ||
     // 加载当前页后面的图片
-    loadImg(state, activePageIndex + 1, imgList.length, 5) ||
-    // 加载剩余未加载页面
-    loadImg(state, 0, imgList.length, 5)
+    loadPageImg(state, Infinity, 5) ||
+    // 加载当前页前面的图片
+    loadPageImg(state, -Infinity, 5)
   );
 });
 
@@ -239,6 +241,19 @@ export const switchDir = () =>
     draftOption.dir = draftOption.dir !== 'rtl' ? 'rtl' : 'ltr';
   });
 
+/** 更新渲染页面相关变量 */
+export const updateRenderPage = (state: State, animation = false) => {
+  state.renderPageList = state.pageList.slice(
+    Math.max(0, state.activePageIndex - 1),
+    Math.min(state.pageList.length, state.activePageIndex + 2),
+  );
+
+  const i = state.renderPageList.indexOf(state.pageList[state.activePageIndex]);
+  state.pageOffsetPct = i === -1 ? 0 : i * 100;
+
+  state.pageAnimation = animation;
+};
+
 createRoot(() => {
   // 页数发生变动时
   createEffect(
@@ -252,5 +267,21 @@ createRoot(() => {
       },
       { defer: true },
     ),
+  );
+
+  createEffect(
+    on(activePage, (page) => {
+      // 如果当前显示页面有出错的图片，就重新加载一次
+      page?.forEach((i) => {
+        if (store.imgList[i]?.loadType !== 'error') return;
+        setState((state) => {
+          state.imgList[i].loadType = 'wait';
+        });
+      });
+
+      if (store.option.scrollMode) return;
+      // 在翻页时重新计算要渲染的页面
+      if (!store.dragMode) setState(updateRenderPage);
+    }),
   );
 });

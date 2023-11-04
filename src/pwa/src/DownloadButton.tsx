@@ -2,7 +2,7 @@ import { createSignal, type Component } from 'solid-js';
 import { filetypeinfo } from 'magic-bytes.js';
 import { t } from 'helper/i18n';
 import { request } from 'helper/request';
-import { wait } from 'helper';
+import { boolDataVal, wait } from 'helper';
 import { loadNewImglist } from './store';
 import { toast } from '../../components/Toast';
 
@@ -54,7 +54,7 @@ window.onpopstate = handleUrl;
 export const DownloadButton: Component = () => (
   <button
     type="button"
-    data-loading={progress() !== null ? '' : undefined}
+    data-loading={boolDataVal(progress() !== null)}
     on:click={() => {
       if (progress() !== null) return toast.warn(t('button.downloading'));
 

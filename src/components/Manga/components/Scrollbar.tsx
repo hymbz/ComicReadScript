@@ -4,7 +4,7 @@ import { debounce } from 'throttle-debounce';
 
 import { store } from '../hooks/useStore';
 import { useDrag } from '../hooks/useDrag';
-import { handleDrag } from '../hooks/useStore/slice';
+import { handleScrollbarDrag } from '../hooks/useStore/slice';
 
 import { ScrollbarPage } from './ScrollbarPage';
 
@@ -42,7 +42,7 @@ export const Scrollbar: Component = () => {
       ref={(e) =>
         useDrag(
           e,
-          handleDrag,
+          handleScrollbarDrag,
           () => store.option.scrollMode && store.option.scrollbar.easyScroll,
         )
       }
@@ -50,13 +50,15 @@ export const Scrollbar: Component = () => {
       classList={{
         [classes.hidden]: !store.option.scrollbar.enabled && !showScrollbar(),
       }}
-      style={{ 'pointer-events': penetrate() ? 'none' : 'auto' }}
+      style={{
+        'pointer-events': penetrate() || store.dragMode ? 'none' : 'auto',
+      }}
       role="scrollbar"
       tabIndex={-1}
       aria-controls={classes.mangaFlow}
       aria-valuenow={store.activePageIndex || -1}
       data-show={!store.option.scrollbar.autoHidden || showScrollbar()}
-      dir={store.option.dir}
+      data-dir={store.option.dir}
       onWheel={handleWheel}
     >
       <div

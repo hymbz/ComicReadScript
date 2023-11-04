@@ -1,19 +1,18 @@
 import type { Component } from 'solid-js';
-import { createEffect, createMemo, on } from 'solid-js';
+import { createMemo } from 'solid-js';
 
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
-import { ifNot } from 'helper';
 import type { State } from '../hooks/useStore';
-import { _setState, setState, store } from '../hooks/useStore';
-import { activePage, updateImgType } from '../hooks/useStore/slice';
+import { setState, store } from '../hooks/useStore';
+import { updateImgType } from '../hooks/useStore/slice';
 import { isWideImg } from '../handleComicData';
 
 import classes from '../index.module.css';
 
 export interface ComicImgProps {
   index: number;
-  img: ComicImg;
+  fill?: undefined | 'left' | 'right';
 }
 
 /** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
@@ -97,68 +96,26 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
 
 /** 漫画图片 */
 export const ComicImg: Component<ComicImgProps> = (props) => {
-  const show = createMemo(
-    () => store.option.scrollMode || activePage().includes(props.index),
-  );
-
-  const fill = createMemo(() => {
-    if (!show() || activePage().length === 1) return;
-
-    // 判断是否有填充页
-    const fillIndex = activePage().indexOf(-1);
-    if (fillIndex !== -1)
-      return ifNot(fillIndex, store.option.dir !== 'rtl') ? 'left' : 'right';
-
-    // 判断自己的类型
-    if (props.img.loadType !== 'loaded')
-      return ifNot(
-        activePage().indexOf(props.index),
-        store.option.dir === 'rtl',
-      )
-        ? 'left'
-        : 'right';
-
-    // 判断另一张图
-    const anotherImg =
-      store.imgList[activePage().find((i) => i !== props.index)!];
-    if (anotherImg.loadType !== 'loaded')
-      return ifNot(
-        activePage().indexOf(props.index),
-        store.option.dir === 'rtl',
-      )
-        ? 'left'
-        : 'right';
-  });
+  const img = createMemo(() => store.imgList[props.index]);
 
   const src = createMemo(() => {
-    if (props.img.loadType === 'wait') return '';
-    if (props.img.translationType === 'show') return props.img.translationUrl;
-    return props.img.src;
+    if (!img() || img().loadType === 'wait') return '';
+    if (img().translationType === 'show') return img().translationUrl;
+    return img().src;
   });
-
-  // 如果要显示的是出错图片，就重新加载一次
-  createEffect(
-    on(show, () => {
-      if (show() && props.img.loadType === 'error')
-        _setState('imgList', props.index, 'loadType', 'loading');
-    }),
-  );
 
   return (
     <img
       class={classes.img}
       style={{
-        '--width': props.img.width
-          ? `min(100%, ${props.img.width}px)`
-          : undefined,
+        '--width': img()?.width ? `min(100%, ${img()?.width}px)` : undefined,
       }}
       src={src()}
       alt={`${props.index + 1}`}
-      data-show={show() ? '' : undefined}
-      data-fill={fill()}
-      data-type={props.img.type || undefined}
+      data-fill={props.index === -1 ? 'page' : props.fill}
+      data-type={img()?.type || undefined}
       data-load-type={
-        props.img.loadType === 'loaded' ? undefined : props.img.loadType
+        img()?.loadType === 'loaded' ? undefined : img()?.loadType
       }
       onLoad={(e) => handleImgLoaded(props.index, e.currentTarget)}
       onError={(e) => handleImgError(props.index, e.currentTarget)}

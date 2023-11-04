@@ -1,4 +1,4 @@
-import { getKeyboardCode } from 'helper';
+import { getKeyboardCode, requestIdleCallback } from 'helper';
 import type { State } from '..';
 import { setState, store } from '..';
 import { hotkeysMap } from './Hotkeys';
@@ -8,6 +8,7 @@ import {
   switchScrollMode,
   switchOnePageMode,
   switchDir,
+  updateRenderPage,
 } from './Image';
 import {
   contentHeight,
@@ -17,6 +18,16 @@ import {
 
 import classes from '../../../index.module.css';
 import { setOption } from './Helper';
+
+export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
+  if (e.button !== 1 || store.option.scrollMode) return;
+  e.stopPropagation();
+  e.preventDefault();
+  switchFillEffect();
+};
+
+export const focus = () =>
+  (store.mangaFlowRef ?? store.rootRef)?.parentElement?.focus();
 
 /** 判断当前是否已经滚动到底部 */
 const isBottom = (state: State) =>
@@ -30,63 +41,93 @@ const isTop = (state: State) =>
     ? store.scrollbar.dragTop === 0
     : state.activePageIndex === 0;
 
-/** 翻页 */
-export const turnPage = (dir: 'next' | 'prev') =>
-  setState((state) => {
-    if (dir === 'prev') {
-      switch (state.endPageType) {
-        case 'start':
-          if (!state.scrollLock && state.option.jumpToNext) state.onPrev?.();
-          return;
-        case 'end':
-          state.endPageType = undefined;
-          return;
+/** 翻页。返回是否成功改变了当前页数 */
+const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
+  if (dir === 'prev') {
+    switch (state.endPageType) {
+      case 'start':
+        if (!state.scrollLock && state.option.jumpToNext) state.onPrev?.();
+        return false;
+      case 'end':
+        state.endPageType = undefined;
+        return false;
 
-        default:
-          // 弹出卷首结束页
-          if (isTop(state)) {
-            if (!state.onExit) return;
-            // 没有 onPrev 时不弹出
-            if (!state.onPrev || !state.option.jumpToNext) return;
+      default:
+        // 弹出卷首结束页
+        if (isTop(state)) {
+          if (!state.onExit) return false;
+          // 没有 onPrev 时不弹出
+          if (!state.onPrev || !state.option.jumpToNext) return false;
 
-            state.endPageType = 'start';
-            state.scrollLock = true;
-            window.setTimeout(() => {
-              state.scrollLock = false;
-            }, 200);
-            return;
-          }
-          if (!state.option.scrollMode) state.activePageIndex -= 1;
-      }
-    } else {
-      switch (state.endPageType) {
-        case 'end':
-          if (state.scrollLock) return;
-          if (state.onNext && state.option.jumpToNext) {
-            state.onNext();
-            return;
-          }
-          state.onExit?.(true);
-          return;
-        case 'start':
-          state.endPageType = undefined;
-          return;
-
-        default:
-          // 弹出卷尾结束页
-          if (isBottom(state)) {
-            if (!state.onExit) return;
-            state.endPageType = 'end';
-            state.scrollLock = true;
-            window.setTimeout(() => {
-              state.scrollLock = false;
-            }, 200);
-            return;
-          }
-          if (!state.option.scrollMode) state.activePageIndex += 1;
-      }
+          state.endPageType = 'start';
+          state.scrollLock = true;
+          window.setTimeout(() => {
+            state.scrollLock = false;
+          }, 200);
+          return false;
+        }
+        if (state.option.scrollMode) return false;
+        state.activePageIndex -= 1;
+        return true;
     }
+  } else {
+    switch (state.endPageType) {
+      case 'end':
+        if (state.scrollLock) return false;
+        if (state.onNext && state.option.jumpToNext) {
+          state.onNext();
+          return false;
+        }
+        state.onExit?.(true);
+        return false;
+      case 'start':
+        state.endPageType = undefined;
+        return false;
+
+      default:
+        // 弹出卷尾结束页
+        if (isBottom(state)) {
+          if (!state.onExit) return false;
+          state.endPageType = 'end';
+          state.scrollLock = true;
+          window.setTimeout(() => {
+            state.scrollLock = false;
+          }, 200);
+          return false;
+        }
+        if (state.option.scrollMode) return false;
+        state.activePageIndex += 1;
+        return true;
+    }
+  }
+};
+
+export const turnPage = (dir: 'next' | 'prev') =>
+  setState((state) => turnPageFn(state, dir));
+
+export const turnPageAnimation = (dir: 'next' | 'prev') => {
+  setState((state) => {
+    // 无法翻页就恢复原位
+    if (!turnPageFn(state, dir)) {
+      state.pageOffsetPx = 0;
+      updateRenderPage(state, true);
+      state.dragMode = false;
+      return;
+    }
+
+    state.dragMode = true;
+    updateRenderPage(state);
+    state.pageOffsetPct += dir === 'next' ? -100 : 100;
+
+    requestIdleCallback(() => {
+      setState((draftState) => {
+        updateRenderPage(draftState, true);
+        draftState.pageOffsetPx = 0;
+        draftState.dragMode = false;
+      });
+    }, 50);
   });
+};
 
 export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
@@ -210,12 +251,4 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   }
 };
 
-export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
-  if (e.button !== 1 || store.option.scrollMode) return;
-  e.stopPropagation();
-  e.preventDefault();
-  switchFillEffect();
-};
-
-export const focus = () =>
-  (store.mangaFlowRef ?? store.rootRef)?.parentElement?.focus();
+window.a = turnPageAnimation;

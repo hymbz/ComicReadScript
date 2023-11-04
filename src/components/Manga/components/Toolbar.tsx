@@ -23,6 +23,8 @@ export const Toolbar: Component = () => {
       onMouseLeave={handleMouseLeave}
       onMouseEnter={handleMouseEnter}
       data-show={show()}
+      // 避免在页面拖拽时触发
+      style={{ 'pointer-events': store.dragMode ? 'none' : undefined }}
     >
       <div class={classes.toolbarPanel}>
         <div class={classes.toolbarBg} />

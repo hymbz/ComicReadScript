@@ -4,7 +4,7 @@ import { throttle } from 'throttle-debounce';
 import { lang, t } from 'helper/i18n';
 import type { State } from '..';
 import { setState, store } from '..';
-import type { UseDragOption, UseDragState } from '../../useDrag';
+import type { UseDrag, UseDragState } from '../../useDrag';
 
 /** 漫画流的容器 */
 export const mangaFlowEle = () => store.mangaFlowRef?.parentNode as HTMLElement;
@@ -69,8 +69,7 @@ const getTipText = (state: State) => {
   const activeImageIndexList: number[] = [];
 
   const { scrollTop } = mangaFlowEle();
-  const imgEleList = store.mangaFlowRef!
-    .childNodes as NodeListOf<HTMLImageElement>;
+  const imgEleList = store.mangaFlowRef!.getElementsByTagName('img');
   const scrollBottom = scrollTop + store.rootRef!.offsetHeight;
 
   // 通过一个一个检查图片元素所在高度来判断图片是否被显示
@@ -130,10 +129,7 @@ const getDragDist = (
 
 /** 开始拖拽时的 dragTop 值 */
 let startTop = 0;
-export const handleDrag: UseDragOption['handleDrag'] = (
-  { type, xy, initial },
-  e,
-) => {
+export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
   const [x, y] = xy;
 
   // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
@@ -186,8 +182,12 @@ createRoot(() => {
   createEffect(
     on(
       [
-        () => store.activePageIndex,
-        () => store.pageList,
+        () =>
+          store.pageList[store.activePageIndex]?.map(
+            (i) =>
+              store.imgList[i]?.translationMessage ||
+              store.imgList[i]?.loadType,
+          ),
         () => store.scrollbar.dragHeight,
         () => store.scrollbar.dragTop,
         () => store.option.scrollMode,

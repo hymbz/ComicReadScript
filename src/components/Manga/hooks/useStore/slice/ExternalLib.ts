@@ -8,7 +8,7 @@ export const initPanzoom = (state: State) => {
   // 销毁之前可能创建过的实例
   state.panzoom?.dispose();
 
-  const panzoom = createPanZoom(state.mangaFlowRef!, {
+  const panzoom = createPanZoom(state.mangaFlowRef!.parentElement!, {
     // 边界限制
     bounds: true,
     boundsPadding: 1,

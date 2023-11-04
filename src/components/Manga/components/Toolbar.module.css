@@ -43,3 +43,8 @@
   border-top-right-radius: 1em;
   border-bottom-right-radius: 1em;
 }
+
+/* 移动端下只能通过点击中心来唤出工具栏，防止误触 */
+.root[data-mobile] .toolbar[data-show="false"] {
+  pointer-events: none;
+}

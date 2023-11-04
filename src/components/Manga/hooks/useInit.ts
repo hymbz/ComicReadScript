@@ -10,6 +10,12 @@ import { autoCloseFill } from '../handleComicData';
 import { playAnimation } from '../helper';
 import { defaultHotkeys } from './useStore/OtherState';
 
+const createComicImg = (url: string): ComicImg => ({
+  type: '',
+  src: url || '',
+  loadType: 'wait',
+});
+
 /** 初始化 */
 export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
   // 绑定 rootRef
@@ -98,11 +104,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
         autoCloseFill.clear();
 
         state.fillEffect[-1] = state.option.firstPageFill;
-        state.imgList = [...props.imgList].map((imgUrl) => ({
-          type: '',
-          src: imgUrl || '',
-          loadType: 'wait',
-        }));
+        state.imgList = [...props.imgList].map(createComicImg);
         updatePageData(state);
         state.onLoading?.(state.imgList);
         return;
@@ -126,11 +128,8 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
 
       state.imgList = [...props.imgList].map(
         (imgUrl) =>
-          state.imgList.find((img) => img.src === imgUrl) ?? {
-            type: '',
-            src: imgUrl || '',
-            loadType: 'wait',
-          },
+          state.imgList.find((img) => img.src === imgUrl) ??
+          createComicImg(imgUrl),
       );
       state.fillEffect = { '-1': true };
       updatePageData(state);

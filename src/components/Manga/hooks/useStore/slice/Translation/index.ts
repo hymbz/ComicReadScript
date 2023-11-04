@@ -7,7 +7,6 @@ import {
 } from 'solid-js';
 import { lang, t } from 'helper/i18n';
 import { setState, store } from '../..';
-import { updateTipText } from '../Scrollbar';
 import { createOptions, setMessage } from './helper';
 import { getValidTranslators, selfhostedTranslation } from './selfhosted';
 import { cotransTranslation, cotransTranslators } from './cotrans';
@@ -54,8 +53,6 @@ export const translationImage = async (i: number) => {
       if ((error as Error).message)
         state.imgList[i].translationMessage = (error as Error).message;
     });
-  } finally {
-    updateTipText();
   }
 };
 

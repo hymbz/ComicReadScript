@@ -1,6 +1,7 @@
 import type { Component } from 'solid-js';
 import { createEffect, enableScheduling, onMount } from 'solid-js';
 
+import { boolDataVal } from 'helper';
 import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
 import { Scrollbar } from './components/Scrollbar';
@@ -94,7 +95,7 @@ export const Manga: Component<MangaProps> = (props) => {
       oncapture:keydown={handleKeyDown}
       oncapture:keypress={stopPropagation}
       oncapture:keyup={stopPropagation}
-      data-mobile={store.isMobile ? '' : undefined}
+      data-mobile={boolDataVal(store.isMobile)}
       role="presentation"
       tabIndex={-1}
     >

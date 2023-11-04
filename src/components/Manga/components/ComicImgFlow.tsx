@@ -1,69 +1,71 @@
 import type { Component } from 'solid-js';
-import { Index } from 'solid-js';
+import { Index, createMemo, onMount } from 'solid-js';
 
-import { ComicImg } from './ComicImg';
-import { LoadTypeTip } from './LoadTypeTip';
-
-import { store } from '../hooks/useStore';
+import { boolDataVal } from 'helper';
+import { setState, store } from '../hooks/useStore';
 import {
   bindRef,
+  handleMangaFlowDrag,
   handleMangaFlowScroll,
   initPanzoom,
+  updateRenderPage,
 } from '../hooks/useStore/slice';
-import { handlePageClick } from './TouchArea';
-import { useDoubleClick } from '../hooks/useDoubleClick';
+import { useHiddenMouse } from '../hooks/useHiddenMouse';
+import { useDrag } from '../hooks/useDrag';
+import { ComicPage } from './ComicPage';
 
 import classes from '../index.module.css';
-import { useHiddenMouse } from '../hooks/useHiddenMouse';
 
 /**
  * 漫画图片流的容器
  */
 export const ComicImgFlow: Component = () => {
-  const handleClick = (e: MouseEvent) => handlePageClick(e);
+  const { hiddenMouse, onMouseMove } = useHiddenMouse();
 
-  /** 处理双击缩放 */
-  const handleDoubleClickZoom = (e: MouseEvent) => {
-    setTimeout(() => {
-      if (!store.panzoom || store.option.scrollMode) return;
-
-      const { scale } = store.panzoom.getTransform();
-
-      // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
-      if (scale >= 2) store.panzoom.smoothZoomAbs(0, 0, 0.99);
-      else store.panzoom.smoothZoomAbs(e.clientX, e.clientY, scale + 1);
-    });
+  const handleTransitionEnd = () => {
+    if (store.dragMode) return;
+    setState((state) => updateRenderPage(state, true));
   };
 
-  const { hiddenMouse, onMouseMove } = useHiddenMouse();
+  const transform = createMemo(() => {
+    const x = `calc(${store.pageOffsetPct}% + ${store.pageOffsetPx}px)`;
+
+    if (store.option.dir === 'rtl') return `translate3d(${x}, 0, 0)`;
+    return ` translate3d(calc(${x} * -1), 0, 0)`;
+  });
+
+  onMount(() => setState((state) => initPanzoom(state)));
 
   return (
     <div
       class={classes.mangaFlowBox}
       style={{ overflow: store.option.scrollMode ? 'auto' : 'hidden' }}
-      ref={(e) =>
-        e.addEventListener('scroll', handleMangaFlowScroll, { passive: true })
-      }
+      ref={(e) => {
+        e.addEventListener('scroll', handleMangaFlowScroll, { passive: true });
+        useDrag(e, handleMangaFlowDrag);
+      }}
       tabIndex={-1}
       data-hiddenMouse={hiddenMouse()}
       on:mousemove={onMouseMove}
+      onTransitionEnd={handleTransitionEnd}
     >
       <div
         id={classes.mangaFlow}
-        ref={bindRef('mangaFlowRef', initPanzoom)}
+        ref={bindRef('mangaFlowRef')}
         class={classes.mangaFlow}
-        classList={{
-          [classes.disableZoom]:
-            store.option.disableZoom || store.option.scrollMode,
-          [classes.scrollMode]: store.option.scrollMode,
-        }}
+        data-scrollMode={boolDataVal(store.option.scrollMode)}
+        data-disableZoom={boolDataVal(
+          store.option.disableZoom || store.option.scrollMode,
+        )}
         dir={store.option.dir}
-        on:click={useDoubleClick(handleClick, handleDoubleClickZoom)}
+        style={{
+          transform: transform(),
+          'transition-duration': `${store.pageAnimation ? 300 : 0}ms`,
+        }}
       >
-        <Index each={store.imgList} fallback={<h1>NULL</h1>}>
-          {(img, i) => <ComicImg img={img()} index={i} />}
+        <Index each={store.pageList} fallback={<h1>NULL</h1>}>
+          {(page) => <ComicPage page={page()} />}
         </Index>
-        <LoadTypeTip />
       </div>
     </div>
   );
