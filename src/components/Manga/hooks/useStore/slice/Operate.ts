@@ -46,22 +46,22 @@ const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
   if (state.gridMode) return false;
 
   if (dir === 'prev') {
-    switch (state.endPageType) {
+    switch (state.show.endPage) {
       case 'start':
-        if (!state.scrollLock && state.option.jumpToNext) state.onPrev?.();
+        if (!state.scrollLock && state.option.jumpToNext) state.prop.Prev?.();
         return false;
       case 'end':
-        state.endPageType = undefined;
+        state.show.endPage = undefined;
         return false;
 
       default:
         // 弹出卷首结束页
         if (isTop(state)) {
-          if (!state.onExit) return false;
+          if (!state.prop.Exit) return false;
           // 没有 onPrev 时不弹出
-          if (!state.onPrev || !state.option.jumpToNext) return false;
+          if (!state.prop.Prev || !state.option.jumpToNext) return false;
 
-          state.endPageType = 'start';
+          state.show.endPage = 'start';
           state.scrollLock = true;
           window.setTimeout(() => {
             state.scrollLock = false;
@@ -73,24 +73,24 @@ const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
         return true;
     }
   } else {
-    switch (state.endPageType) {
+    switch (state.show.endPage) {
       case 'end':
         if (state.scrollLock) return false;
-        if (state.onNext && state.option.jumpToNext) {
-          state.onNext();
+        if (state.prop.Next && state.option.jumpToNext) {
+          state.prop.Next();
           return false;
         }
-        state.onExit?.(true);
+        state.prop.Exit?.(true);
         return false;
       case 'start':
-        state.endPageType = undefined;
+        state.show.endPage = undefined;
         return false;
 
       default:
         // 弹出卷尾结束页
         if (isBottom(state)) {
-          if (!state.onExit) return false;
-          state.endPageType = 'end';
+          if (!state.prop.Exit) return false;
+          state.show.endPage = 'end';
           state.scrollLock = true;
           window.setTimeout(() => {
             state.scrollLock = false;
@@ -137,14 +137,14 @@ export const handleWheel = (e: WheelEvent) => {
   if (
     (e.ctrlKey && !store.option.scrollMode) ||
     (e.altKey && !store.option.scrollMode) ||
-    (!store.endPageType && store.scrollLock)
+    (!store.show.endPage && store.scrollLock)
   )
     return e.preventDefault();
 
   const isWheelDown = e.deltaY > 0;
 
   // 实现卷轴模式下的缩放
-  if (!store.endPageType && (e.altKey || e.ctrlKey)) {
+  if (!store.show.endPage && (e.altKey || e.ctrlKey)) {
     e.preventDefault();
     zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
     // 在调整图片缩放后使当前滚动进度保持不变
@@ -184,9 +184,9 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return setState((state) => {
         state.gridMode = false;
       });
-    if (store.endPageType)
+    if (store.show.endPage)
       return setState((state) => {
-        state.endPageType = undefined;
+        state.show.endPage = undefined;
       });
   }
 
@@ -201,7 +201,7 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   }
 
   // 卷轴模式下跳过用于移动的按键
-  if (store.option.scrollMode && !store.endPageType) {
+  if (store.option.scrollMode && !store.show.endPage) {
     switch (e.key) {
       case 'Home':
       case 'End':
@@ -261,7 +261,7 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       });
 
     case 'exit':
-      return store.onExit?.();
+      return store.prop.Exit?.();
   }
 };
 

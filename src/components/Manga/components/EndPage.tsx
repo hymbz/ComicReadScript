@@ -22,7 +22,7 @@ export const EndPage: Component = () => {
     e.stopPropagation();
     if (e.target?.nodeName !== 'BUTTON')
       setState((state) => {
-        state.endPageType = undefined;
+        state.show.endPage = undefined;
       });
     focus();
   };
@@ -41,16 +41,16 @@ export const EndPage: Component = () => {
     );
   });
 
-  // state.endPageType 变量的延时版本，在隐藏的动画效果结束之后才会真正改变
+  // state.show.endPage 变量的延时版本，在隐藏的动画效果结束之后才会真正改变
   // 防止在动画效果结束前 tip 就消失或改变了位置
   const [delayType, setDelayType] = createSignal<'start' | 'end' | undefined>();
   createEffect(() => {
-    if (store.endPageType) {
+    if (store.show.endPage) {
       window.clearTimeout(delayTypeTimer);
-      setDelayType(store.endPageType);
+      setDelayType(store.show.endPage);
     } else {
       delayTypeTimer = window.setTimeout(
-        () => setDelayType(store.endPageType),
+        () => setDelayType(store.show.endPage),
         500,
       );
     }
@@ -59,13 +59,13 @@ export const EndPage: Component = () => {
   const tip = createMemo(() => {
     switch (delayType()) {
       case 'start':
-        if (store.onPrev && store.option.jumpToNext)
+        if (store.prop.Prev && store.option.jumpToNext)
           return t('end_page.tip.start_jump');
         break;
       case 'end':
-        if (store.onNext && store.option.jumpToNext)
+        if (store.prop.Next && store.option.jumpToNext)
           return t('end_page.tip.end_jump');
-        if (store.onExit) return t('end_page.tip.exit');
+        if (store.prop.Exit) return t('end_page.tip.exit');
         break;
     }
     return '';
@@ -75,7 +75,7 @@ export const EndPage: Component = () => {
     <div
       ref={ref!}
       class={classes.endPage}
-      data-show={store.endPageType}
+      data-show={store.show.endPage}
       data-type={delayType()}
       on:click={handleClick}
       role="button"
@@ -85,9 +85,9 @@ export const EndPage: Component = () => {
       <button
         ref={bindRef('prev')}
         type="button"
-        classList={{ [classes.invisible]: !store.onPrev }}
-        tabIndex={store.endPageType ? 0 : -1}
-        on:click={() => store.onPrev?.()}
+        classList={{ [classes.invisible]: !store.prop.Prev }}
+        tabIndex={store.show.endPage ? 0 : -1}
+        on:click={() => store.prop.Prev?.()}
       >
         {t('end_page.prev_button')}
       </button>
@@ -95,17 +95,17 @@ export const EndPage: Component = () => {
         ref={bindRef('exit')}
         type="button"
         data-is-end
-        tabIndex={store.endPageType ? 0 : -1}
-        on:click={() => store.onExit?.(store.endPageType === 'end')}
+        tabIndex={store.show.endPage ? 0 : -1}
+        on:click={() => store.prop.Exit?.(store.show.endPage === 'end')}
       >
         {t('button.exit')}
       </button>
       <button
         ref={bindRef('next')}
         type="button"
-        classList={{ [classes.invisible]: !store.onNext }}
-        tabIndex={store.endPageType ? 0 : -1}
-        on:click={() => store.onNext?.()}
+        classList={{ [classes.invisible]: !store.prop.Next }}
+        tabIndex={store.show.endPage ? 0 : -1}
+        on:click={() => store.prop.Next?.()}
       >
         {t('end_page.next_button')}
       </button>

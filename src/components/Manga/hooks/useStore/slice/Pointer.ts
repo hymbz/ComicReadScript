@@ -15,8 +15,8 @@ const pageClick = {
     // 处于放大模式时跳过不处理
     if (store.isZoomed) return;
     setState((state) => {
-      state.showScrollbar = !state.showScrollbar;
-      state.showToolbar = !state.showToolbar;
+      state.show.scrollbar = !state.show.scrollbar;
+      state.show.toolbar = !state.show.toolbar;
     });
   },
 };

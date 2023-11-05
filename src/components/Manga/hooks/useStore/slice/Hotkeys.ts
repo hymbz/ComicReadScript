@@ -5,7 +5,7 @@ import { defaultHotkeys } from '../OtherState';
 
 export const setHotkeys = (...args: any[]) => {
   _setState.apply(this, ['hotkeys', ...args] as never);
-  store.onHotkeysChange?.(
+  store.prop.HotkeysChange?.(
     Object.fromEntries(
       Object.entries(store.hotkeys).filter(
         ([name, keys]) =>

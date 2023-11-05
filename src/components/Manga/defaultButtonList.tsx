@@ -148,7 +148,7 @@ export const defaultButtonList: ToolbarButtonList = [
     const handleClick = () => {
       const _showPanel = !showPanel();
       setState((state) => {
-        state.showToolbar = _showPanel;
+        state.show.toolbar = _showPanel;
       });
       setShowPanel(_showPanel);
     };
@@ -162,8 +162,8 @@ export const defaultButtonList: ToolbarButtonList = [
             handleClick();
             props.onMouseLeave();
             setState((state) => {
-              state.showToolbar = false;
-              state.showScrollbar = false;
+              state.show.toolbar = false;
+              state.show.scrollbar = false;
             });
             focus();
           }}

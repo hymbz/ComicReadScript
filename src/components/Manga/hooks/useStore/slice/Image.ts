@@ -264,7 +264,7 @@ createRoot(() => {
       () => {
         setState((state) => {
           updateImgLoadType(state);
-          if (state.endPageType) state.endPageType = undefined;
+          if (state.show.endPage) state.show.endPage = undefined;
         });
       },
       { defer: true },

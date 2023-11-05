@@ -47,15 +47,15 @@ export interface MangaProps {
   commentList?: string[];
 
   /** 点击结束页按钮时触发的回调 */
-  onExit?: State['onExit'];
+  onExit?: State['prop']['Exit'];
   /** 点击上一话按钮时触发的回调 */
-  onPrev?: State['onPrev'];
+  onPrev?: State['prop']['Prev'];
   /** 点击下一话按钮时触发的回调 */
-  onNext?: State['onNext'];
+  onNext?: State['prop']['Next'];
   /** 配置发生变化时触发的回调 */
-  onOptionChange?: State['onOptionChange'];
+  onOptionChange?: State['prop']['OptionChange'];
   /** 快捷键配置发生变化时触发的回调 */
-  onHotkeysChange?: State['onHotkeysChange'];
+  onHotkeysChange?: State['prop']['HotkeysChange'];
   /**
    * 图片加载状态发生变化时触发的回调
    *
@@ -64,19 +64,16 @@ export interface MangaProps {
   onLoading?: (imgList: ComicImg[], img?: ComicImg) => void | Promise<void>;
 
   /** 修改默认侧边栏按钮列表 */
-  editButtonList?: State['editButtonList'];
+  editButtonList?: State['prop']['editButtonList'];
   /** 修改默认设置项列表 */
-  editSettingList?: State['editSettingList'];
+  editSettingList?: State['prop']['editSettingList'];
 }
 
 /** 漫画组件 */
 export const Manga: Component<MangaProps> = (props) => {
   let rootRef: HTMLDivElement;
 
-  onMount(() => {
-    useInit(props, rootRef);
-    focus();
-  });
+  onMount(() => useInit(props, rootRef));
 
   createEffect(() => props.show && focus());
 

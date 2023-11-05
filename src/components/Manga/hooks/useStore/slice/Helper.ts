@@ -6,7 +6,7 @@ import { defaultOption, type Option } from '../OptionState';
 /** 触发 onOptionChange */
 export const triggerOnOptionChange = () =>
   setTimeout(
-    () => store.onOptionChange?.(difference(store.option, defaultOption)),
+    () => store.prop.OptionChange?.(difference(store.option, defaultOption)),
   );
 
 /** 在 option 后手动触发 onOptionChange */

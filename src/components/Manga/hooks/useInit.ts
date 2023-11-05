@@ -4,7 +4,7 @@ import { createEffect, onCleanup } from 'solid-js';
 import { assign, isEqualArray } from 'helper';
 import type { MangaProps } from '..';
 import { store, setState } from './useStore';
-import { updatePageData, handleResize } from './useStore/slice';
+import { updatePageData, handleResize, focus } from './useStore/slice';
 import type { Option } from './useStore/OptionState';
 import { autoCloseFill } from '../handleComicData';
 import { playAnimation } from '../helper';
@@ -54,39 +54,41 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
 
   createEffect(() => {
     setState((state) => {
-      state.onExit = props.onExit
+      state.prop.Exit = props.onExit
         ? (isEnd?: boolean | Event) => {
             playAnimation(store.ref.exit);
             props.onExit?.(!!isEnd);
             if (isEnd) state.activePageIndex = 0;
-            state.endPageType = undefined;
+            state.show.endPage = undefined;
           }
         : undefined;
-      state.onPrev = props.onPrev
+      state.prop.Prev = props.onPrev
         ? () => {
             playAnimation(store.ref.prev);
             props.onPrev?.();
           }
         : undefined;
-      state.onNext = props.onNext
+      state.prop.Next = props.onNext
         ? () => {
             playAnimation(store.ref.next);
             props.onNext?.();
           }
         : undefined;
 
-      if (props.editButtonList) state.editButtonList = props.editButtonList;
-      if (props.editSettingList) state.editSettingList = props.editSettingList;
+      if (props.editButtonList)
+        state.prop.editButtonList = props.editButtonList;
+      if (props.editSettingList)
+        state.prop.editSettingList = props.editSettingList;
 
       state.commentList = props.commentList;
 
-      state.onLoading = props.onLoading
+      state.prop.Loading = props.onLoading
         ? debounce(100, props.onLoading)
         : undefined;
-      state.onOptionChange = props.onOptionChange
+      state.prop.OptionChange = props.onOptionChange
         ? debounce(100, props.onOptionChange)
         : undefined;
-      state.onHotkeysChange = props.onHotkeysChange
+      state.prop.HotkeysChange = props.onHotkeysChange
         ? debounce(100, props.onHotkeysChange)
         : undefined;
     });
@@ -106,7 +108,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
         state.fillEffect[-1] = state.option.firstPageFill;
         state.imgList = [...props.imgList].map(createComicImg);
         updatePageData(state);
-        state.onLoading?.(state.imgList);
+        state.prop.Loading?.(state.imgList);
         return;
       }
 
@@ -116,9 +118,9 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
           state.imgList.map(({ src }) => src),
         )
       )
-        return state.onLoading?.(state.imgList);
+        return state.prop.Loading?.(state.imgList);
 
-      state.endPageType = undefined;
+      state.show.endPage = undefined;
 
       /** 修改前的当前显示图片 */
       const oldActiveImg =
@@ -133,7 +135,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
       );
       state.fillEffect = { '-1': true };
       updatePageData(state);
-      state.onLoading?.(state.imgList);
+      state.prop.Loading?.(state.imgList);
 
       if (state.pageList.length === 0) {
         state.activePageIndex = 0;
@@ -159,4 +161,6 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
         state.activePageIndex = state.pageList.length - 1;
     });
   });
+
+  focus();
 };

@@ -45,7 +45,7 @@ const handleImgLoaded = (i: number, e: HTMLImageElement) => {
     img.height = e.naturalHeight;
     img.width = e.naturalWidth;
     updateImgType(state, img);
-    state.onLoading?.(state.imgList, img);
+    state.prop.Loading?.(state.imgList, img);
     // 因为火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
     // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
     e.decode();
@@ -90,7 +90,7 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
     img.loadType = 'error';
     log.error(t('alert.img_load_failed'), e);
 
-    state.onLoading?.(state.imgList, img);
+    state.prop.Loading?.(state.imgList, img);
   });
 };
 

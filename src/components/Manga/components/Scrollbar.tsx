@@ -35,7 +35,7 @@ export const Scrollbar: Component = () => {
   };
 
   /** 是否强制显示滚动条 */
-  const showScrollbar = createMemo(() => store.showScrollbar || !!penetrate());
+  const showScrollbar = createMemo(() => store.show.scrollbar || !!penetrate());
 
   return (
     <div

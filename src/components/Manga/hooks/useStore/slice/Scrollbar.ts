@@ -143,11 +143,11 @@ createRoot(() => {
   // 在关闭工具栏的同时关掉滚动条的强制显示
   createEffect(
     on(
-      () => store.showToolbar,
+      () => store.show.toolbar,
       () => {
-        if (store.showScrollbar && !store.showToolbar)
+        if (store.show.scrollbar && !store.show.toolbar)
           setState((state) => {
-            state.showScrollbar = false;
+            state.show.scrollbar = false;
           });
       },
       { defer: true },
@@ -161,8 +161,8 @@ createRoot(() => {
       (gridMode) => {
         if (gridMode)
           setState((state) => {
-            state.showScrollbar = false;
-            state.showToolbar = false;
+            state.show.scrollbar = false;
+            state.show.toolbar = false;
           });
       },
       { defer: true },

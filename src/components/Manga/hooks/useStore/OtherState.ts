@@ -26,16 +26,6 @@ export const OtherState = {
   /** 当前设备是否是移动端 */
   isMobile: false,
 
-  /** 是否强制显示侧边栏 */
-  showToolbar: false,
-  /** 是否强制显示滚动条 */
-  showScrollbar: false,
-  /** 是否显示结束页 */
-  showEndPage: false,
-  /** 是否显示点击区域 */
-  showTouchArea: false,
-  /** 结束页状态 */
-  endPageType: undefined as undefined | 'start' | 'end',
   /** 网格模式 */
   gridMode: false,
 
@@ -45,28 +35,41 @@ export const OtherState = {
   /** 快捷键配置 */
   hotkeys: {} as Record<string, string[]>,
 
-  /** 点击结束页按钮时触发的回调 */
-  onExit: undefined as ((isEnd?: boolean) => void) | undefined,
-  /** 点击上一话按钮时触发的回调 */
-  onPrev: undefined as (() => void | Promise<void>) | undefined,
-  /** 点击下一话按钮时触发的回调 */
-  onNext: undefined as (() => void | Promise<void>) | undefined,
+  show: {
+    /** 是否强制显示侧边栏 */
+    toolbar: false,
+    /** 是否强制显示滚动条 */
+    scrollbar: false,
+    /** 是否显示点击区域 */
+    touchArea: false,
+    /** 结束页状态 */
+    endPage: undefined as undefined | 'start' | 'end',
+  },
 
-  /** 图片加载状态发生变化时触发的回调 */
-  onLoading: undefined as
-    | ((imgList: ComicImg[], img?: ComicImg) => void | Promise<void>)
-    | undefined,
-  /** 配置发生变化时触发的回调 */
-  onOptionChange: undefined as
-    | ((option: Partial<Option>) => void | Promise<void>)
-    | undefined,
-  /** 快捷键配置发生变化时触发的回调 */
-  onHotkeysChange: undefined as
-    | ((option: Record<string, string[]>) => void | Promise<void>)
-    | undefined,
+  prop: {
+    /** 点击结束页按钮时触发的回调 */
+    Exit: undefined as ((isEnd?: boolean) => void) | undefined,
+    /** 点击上一话按钮时触发的回调 */
+    Prev: undefined as (() => void | Promise<void>) | undefined,
+    /** 点击下一话按钮时触发的回调 */
+    Next: undefined as (() => void | Promise<void>) | undefined,
 
-  editButtonList: (list: ToolbarButtonList) => list,
-  editSettingList: (list: SettingList) => list,
+    /** 图片加载状态发生变化时触发的回调 */
+    Loading: undefined as
+      | ((imgList: ComicImg[], img?: ComicImg) => void | Promise<void>)
+      | undefined,
+    /** 配置发生变化时触发的回调 */
+    OptionChange: undefined as
+      | ((option: Partial<Option>) => void | Promise<void>)
+      | undefined,
+    /** 快捷键配置发生变化时触发的回调 */
+    HotkeysChange: undefined as
+      | ((option: Record<string, string[]>) => void | Promise<void>)
+      | undefined,
+
+    editButtonList: (list: ToolbarButtonList) => list,
+    editSettingList: (list: SettingList) => list,
+  },
 
   // 自动更新不能手动修改的变量
   memo: {

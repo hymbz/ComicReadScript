@@ -11,7 +11,7 @@ import classes from '../index.module.css';
 /** 菜单面板 */
 export const SettingPanel: Component = () => {
   const settingList = createMemo(() =>
-    store.editSettingList(defaultSettingList()),
+    store.prop.editSettingList(defaultSettingList()),
   );
 
   return (

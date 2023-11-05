@@ -12,7 +12,7 @@ import { focus } from '../hooks/useStore/slice';
 export const Toolbar: Component = () => {
   const { isHover, handleMouseEnter, handleMouseLeave } = useHover();
 
-  const show = createMemo(() => isHover() || store.showToolbar);
+  const show = createMemo(() => isHover() || store.show.toolbar);
 
   createEffect(() => show() || focus());
 
@@ -28,7 +28,7 @@ export const Toolbar: Component = () => {
     >
       <div class={classes.toolbarPanel}>
         <div class={classes.toolbarBg} />
-        <For each={store.editButtonList(defaultButtonList)}>
+        <For each={store.prop.editButtonList(defaultButtonList)}>
           {(ButtonItem) => <ButtonItem onMouseLeave={handleMouseLeave} />}
         </For>
       </div>

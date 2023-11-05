@@ -106,10 +106,10 @@ export const defaultSettingList: () => SettingList = () => [
         />
         <SettingsItemSwitch
           name={t('setting.option.show_clickable_area')}
-          value={store.showTouchArea}
+          value={store.show.touchArea}
           onChange={() => {
             setState((state) => {
-              state.showTouchArea = !state.showTouchArea;
+              state.show.touchArea = !state.show.touchArea;
             });
           }}
         />
