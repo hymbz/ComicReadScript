@@ -34,8 +34,10 @@ export const OtherState = {
   showEndPage: false,
   /** 是否显示点击区域 */
   showTouchArea: false,
-  /** 结束页状态。showEndPage 更改时自动计算 */
+  /** 结束页状态 */
   endPageType: undefined as undefined | 'start' | 'end',
+  /** 网格模式 */
+  gridMode: false,
 
   /** 评论列表 */
   commentList: undefined as string[] | undefined,
@@ -66,9 +68,13 @@ export const OtherState = {
   editButtonList: (list: ToolbarButtonList) => list,
   editSettingList: (list: SettingList) => list,
 
-  prevRef: undefined as HTMLButtonElement | undefined,
-  nextRef: undefined as HTMLButtonElement | undefined,
-  exitRef: undefined as HTMLButtonElement | undefined,
+  // 自动更新不能手动修改的变量
+  memo: {
+    /** 当前显示的页面 */
+    showPageList: [] as number[],
+    /** 要渲染的页面 */
+    renderPageList: [] as PageList,
+  },
 
   flag: {
     /** 是否需要自动判断开启卷轴模式 */

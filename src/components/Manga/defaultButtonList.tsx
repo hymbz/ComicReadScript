@@ -5,6 +5,7 @@ import MdQueue from '@material-design-icons/svg/round/queue.svg';
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
 import MdSearch from '@material-design-icons/svg/round/search.svg';
 import MdTranslate from '@material-design-icons/svg/round/translate.svg';
+import MdGrid from '@material-design-icons/svg/round/grid_4x4.svg';
 
 import { createMemo, type Component, createSignal } from 'solid-js';
 import { t } from 'helper/i18n';
@@ -73,6 +74,19 @@ export const defaultButtonList: ToolbarButtonList = [
     />
   ),
   buttonListDivider,
+  // 网格模式
+  () => (
+    <IconButton
+      tip={t('button.grid_mode')}
+      enabled={store.gridMode}
+      onClick={() =>
+        setState((state) => {
+          state.gridMode = !state.gridMode;
+        })
+      }
+      children={<MdGrid />}
+    />
+  ),
   // 放大模式
   () => (
     <IconButton

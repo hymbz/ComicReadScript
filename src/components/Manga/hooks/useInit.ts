@@ -20,7 +20,7 @@ const createComicImg = (url: string): ComicImg => ({
 export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
   // 绑定 rootRef
   setState((state) => {
-    state.rootRef = rootRef;
+    state.ref.root = rootRef;
   });
 
   // 初始化配置
@@ -56,7 +56,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
     setState((state) => {
       state.onExit = props.onExit
         ? (isEnd?: boolean | Event) => {
-            playAnimation(store.exitRef);
+            playAnimation(store.ref.exit);
             props.onExit?.(!!isEnd);
             if (isEnd) state.activePageIndex = 0;
             state.endPageType = undefined;
@@ -64,13 +64,13 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
         : undefined;
       state.onPrev = props.onPrev
         ? () => {
-            playAnimation(store.prevRef);
+            playAnimation(store.ref.prev);
             props.onPrev?.();
           }
         : undefined;
       state.onNext = props.onNext
         ? () => {
-            playAnimation(store.nextRef);
+            playAnimation(store.ref.next);
             props.onNext?.();
           }
         : undefined;

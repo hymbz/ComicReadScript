@@ -10,11 +10,17 @@ export const { store, setState, _state, _setState } = useStore({
   ...OptionState,
   ...OtherState,
 
-  rootRef: undefined as HTMLElement | undefined,
-  mangaFlowRef: undefined as HTMLElement | undefined,
-  prevAreaRef: undefined as HTMLElement | undefined,
-  nextAreaRef: undefined as HTMLElement | undefined,
-  menuAreaRef: undefined as HTMLElement | undefined,
+  ref: {
+    prev: undefined as HTMLButtonElement | undefined,
+    next: undefined as HTMLButtonElement | undefined,
+    exit: undefined as HTMLButtonElement | undefined,
+
+    root: undefined as HTMLElement | undefined,
+    mangaFlow: undefined as HTMLElement | undefined,
+    prevArea: undefined as HTMLElement | undefined,
+    nextArea: undefined as HTMLElement | undefined,
+    menuArea: undefined as HTMLElement | undefined,
+  },
 });
 
 export type State = typeof _state;

@@ -243,12 +243,14 @@ export const switchDir = () =>
 
 /** 更新渲染页面相关变量 */
 export const updateRenderPage = (state: State, animation = false) => {
-  state.renderPageList = state.pageList.slice(
+  state.memo.renderPageList = state.pageList.slice(
     Math.max(0, state.activePageIndex - 1),
     Math.min(state.pageList.length, state.activePageIndex + 2),
   );
 
-  const i = state.renderPageList.indexOf(state.pageList[state.activePageIndex]);
+  const i = state.memo.renderPageList.indexOf(
+    state.pageList[state.activePageIndex],
+  );
   state.pageOffsetPct = i === -1 ? 0 : i * 100;
 
   state.pageAnimation = animation;

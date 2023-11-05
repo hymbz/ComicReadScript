@@ -8,7 +8,7 @@ export const initPanzoom = (state: State) => {
   // 销毁之前可能创建过的实例
   state.panzoom?.dispose();
 
-  const panzoom = createPanZoom(state.mangaFlowRef!.parentElement!, {
+  const panzoom = createPanZoom(state.ref.mangaFlow!.parentElement!, {
     // 边界限制
     bounds: true,
     boundsPadding: 1,
@@ -26,6 +26,7 @@ export const initPanzoom = (state: State) => {
 
     // 在 处于卷轴模式 或 不处于缩放状态且没有按下 alt/ctrl 时，不进行缩放
     beforeWheel: (e) =>
+      store.gridMode ||
       store.option.scrollMode ||
       (!(e.altKey || e.ctrlKey) && panzoom.getTransform().scale === 1),
     // 处于放大状态时才允许拖动

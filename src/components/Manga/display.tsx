@@ -149,5 +149,5 @@ export default function DisplayManga() {
 
   const option: MangaProps['option'] = {};
 
-  return <Manga imgList={imgList[1]} onExit={onExit} option={option} />;
+  return <Manga imgList={imgList[0]} onExit={onExit} option={option} />;
 }

@@ -14,12 +14,10 @@ export const SettingPanel: Component = () => {
     store.editSettingList(defaultSettingList()),
   );
 
-  const width = createMemo(() => (lang() !== 'zh' ? '20em' : '15em'));
-
   return (
     <div
       class={`${classes.SettingPanel} ${classes.beautifyScrollbar}`}
-      style={{ width: width() }}
+      style={{ width: lang() !== 'zh' ? '20em' : '15em' }}
       onScroll={stopPropagation}
       onWheel={stopPropagation}
     >

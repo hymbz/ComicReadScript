@@ -1,19 +1,21 @@
 import { createEffect, createRoot, on } from 'solid-js';
 
+import { isEqualArray } from 'helper';
 import { throttle } from 'throttle-debounce';
-import { lang, t } from 'helper/i18n';
+import { t } from 'helper/i18n';
+import type { UseDrag, UseDragState } from '../../useDrag';
 import type { State } from '..';
 import { setState, store } from '..';
-import type { UseDrag, UseDragState } from '../../useDrag';
 
 /** 漫画流的容器 */
-export const mangaFlowEle = () => store.mangaFlowRef?.parentNode as HTMLElement;
+export const mangaFlowEle = () =>
+  store.ref.mangaFlow?.parentNode as HTMLElement;
 
 /** 漫画流的总高度 */
 export const contentHeight = () => mangaFlowEle().scrollHeight;
 
 /** 能显示出漫画的高度 */
-export const windowHeight = () => store.rootRef?.offsetHeight ?? 0;
+export const windowHeight = () => store.ref.root?.offsetHeight ?? 0;
 
 /** 更新滚动条滑块的高度和所处高度 */
 export const updateDrag = (state: State) => {
@@ -27,7 +29,7 @@ export const updateDrag = (state: State) => {
 };
 
 /** 获取指定图片的提示文本 */
-const getImgTip = (state: State, i: number) => {
+export const getImgTip = (state: State, i: number) => {
   if (i === -1) return t('other.fill_page');
   const img = state.imgList[i];
 
@@ -46,54 +48,15 @@ const getImgTip = (state: State, i: number) => {
 };
 
 /** 获取指定页面的提示文本 */
-const getPageTip = (
-  state: State,
-  pageIndex: number,
-): [string] | [string, string] => {
-  const page = state.pageList[pageIndex];
-  if (!page) return ['null'];
-  const pageIndexText = page.map((index) => getImgTip(state, index)) as
+export const getPageTip = (pageIndex: number): string => {
+  const page = store.pageList[pageIndex];
+  if (!page) return 'null';
+  const pageIndexText = page.map((index) => getImgTip(store, index)) as
     | [string]
     | [string, string];
-  if (state.option.dir === 'rtl') pageIndexText.reverse();
-  return pageIndexText;
+  if (store.option.dir === 'rtl') pageIndexText.reverse();
+  return pageIndexText.join(store.option.scrollMode ? '\n' : ' | ');
 };
-
-const getTipText = (state: State) => {
-  if (!state.pageList.length || !state.mangaFlowRef) return '';
-
-  if (!state.option.scrollMode)
-    return getPageTip(state, state.activePageIndex).join(' | ');
-
-  /** 当前显示图片的列表 */
-  const activeImageIndexList: number[] = [];
-
-  const { scrollTop } = mangaFlowEle();
-  const imgEleList = store.mangaFlowRef!.getElementsByTagName('img');
-  const scrollBottom = scrollTop + store.rootRef!.offsetHeight;
-
-  // 通过一个一个检查图片元素所在高度来判断图片是否被显示
-  for (let i = 0; i < imgEleList.length; i += 1) {
-    const element = imgEleList[i];
-    // 当图片的顶部位置在视窗口的底部位置时中断循环
-    if (element.offsetTop > scrollBottom) break;
-    // 当图片的底部位置还未达到视窗口的顶部位置时，跳到下一个图片
-    if (element.offsetTop + element.offsetHeight < scrollTop) continue;
-    activeImageIndexList.push(+element.alt - 1);
-  }
-  state.activePageIndex = activeImageIndexList.at(0) ?? 0;
-
-  return activeImageIndexList
-    .map((index) => getPageTip(state, index))
-    .join('\n');
-};
-
-/** 更新滚动条提示文本 */
-export const updateTipText = throttle(100, () => {
-  setState((state) => {
-    state.scrollbar.tipText = getTipText(state);
-  });
-});
 
 /** 处理漫画页的滚动事件 */
 export const handleMangaFlowScroll = () => {
@@ -106,7 +69,6 @@ export const handleMangaFlowScroll = () => {
         : mangaFlowEle().scrollTop / contentHeight();
     updateDrag(state);
   });
-  updateTipText();
 };
 
 /** 判断点击位置在滚动条上的位置比率 */
@@ -135,7 +97,7 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
   // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
   if (type === 'end') return;
 
-  if (!store.mangaFlowRef) return;
+  if (!store.ref.mangaFlow) return;
 
   const scrollbarDom = e.target as HTMLElement;
 
@@ -178,27 +140,7 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
 };
 
 createRoot(() => {
-  // 更新滚动条提示文本
-  createEffect(
-    on(
-      [
-        () =>
-          store.pageList[store.activePageIndex]?.map(
-            (i) =>
-              store.imgList[i]?.translationMessage ||
-              store.imgList[i]?.loadType,
-          ),
-        () => store.scrollbar.dragHeight,
-        () => store.scrollbar.dragTop,
-        () => store.option.scrollMode,
-        () => store.option.dir,
-        lang,
-      ],
-      updateTipText,
-    ),
-  );
-
-  // 在关闭 showToolbar 的同时关掉 showScrollbar
+  // 在关闭工具栏的同时关掉滚动条的强制显示
   createEffect(
     on(
       () => store.showToolbar,
@@ -208,6 +150,66 @@ createRoot(() => {
             state.showScrollbar = false;
           });
       },
+      { defer: true },
+    ),
+  );
+
+  // 在开启网格模式后关掉 滚动条和工具栏 的强制显示
+  createEffect(
+    on(
+      () => store.gridMode,
+      (gridMode) => {
+        if (gridMode)
+          setState((state) => {
+            state.showScrollbar = false;
+            state.showToolbar = false;
+          });
+      },
+      { defer: true },
+    ),
+  );
+
+  // 计算 showPageList
+  createEffect(
+    on(
+      [
+        () => store.activePageIndex,
+        () => store.scrollbar.dragHeight,
+        () => store.scrollbar.dragTop,
+        () => store.option.scrollMode,
+      ],
+      throttle(500, () => {
+        setState((state) => {
+          if (!state.option.scrollMode) {
+            state.memo.showPageList = [state.activePageIndex];
+            return;
+          }
+
+          /** 当前显示页面列表 */
+          const showPageList: number[] = [];
+
+          const { scrollTop } = mangaFlowEle();
+          const eleList = state.ref.mangaFlow!
+            .childNodes as NodeListOf<HTMLImageElement>;
+          const scrollBottom = scrollTop + state.ref.root!.offsetHeight;
+
+          // 通过一个一个检查页面元素所在高度来判断页面是否被显示
+          for (let i = 0; i < eleList.length; i += 1) {
+            const element = eleList[i];
+            // 当页面的顶部位置在视窗口的底部位置时中断循环
+            if (element.offsetTop > scrollBottom) break;
+            // 当页面的底部位置还未达到视窗口的顶部位置时，跳到下一个页面
+            if (element.offsetTop + element.offsetHeight < scrollTop) continue;
+            const pageIndex = +element.getAttribute('data-index')!;
+            if (!Number.isNaN(pageIndex)) showPageList.push(pageIndex);
+          }
+
+          state.activePageIndex = showPageList.at(-1) ?? 0;
+
+          if (isEqualArray(state.memo.showPageList, showPageList)) return;
+          state.memo.showPageList = showPageList;
+        });
+      }),
       { defer: true },
     ),
   );

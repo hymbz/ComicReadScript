@@ -38,13 +38,21 @@
   height: 100%;
 
   background-color: var(--page_bg);
-  filter: opacity(0.8);
+  filter: opacity(0.6);
   backdrop-filter: blur(24px);
   border-top-right-radius: 1em;
   border-bottom-right-radius: 1em;
 }
 
-/* 移动端下只能通过点击中心来唤出工具栏，防止误触 */
-.root[data-mobile] .toolbar[data-show="false"] {
-  pointer-events: none;
+/* 移动端优化 */
+.root[data-mobile] {
+  /* 只能通过点击中心来唤出工具栏，防止误触 */
+  & .toolbar[data-show="false"] {
+    pointer-events: none;
+  }
+
+  /* 减少背景的透明度，方便辨识 */
+  & .toolbarBg {
+    filter: opacity(0.8);
+  }
 }

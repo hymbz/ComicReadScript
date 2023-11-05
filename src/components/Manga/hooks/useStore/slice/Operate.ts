@@ -27,7 +27,7 @@ export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
 };
 
 export const focus = () =>
-  (store.mangaFlowRef ?? store.rootRef)?.parentElement?.focus();
+  (store.ref.mangaFlow ?? store.ref.root)?.parentElement?.focus();
 
 /** 判断当前是否已经滚动到底部 */
 const isBottom = (state: State) =>
@@ -43,6 +43,8 @@ const isTop = (state: State) =>
 
 /** 翻页。返回是否成功改变了当前页数 */
 const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
+  if (state.gridMode) return false;
+
   if (dir === 'prev') {
     switch (state.endPageType) {
       case 'start':
@@ -176,6 +178,18 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 
   const code = getKeyboardCode(e);
 
+  // esc 在触发配置操作前，先用于退出一些界面
+  if (e.key === 'Escape') {
+    if (store.gridMode)
+      return setState((state) => {
+        state.gridMode = false;
+      });
+    if (store.endPageType)
+      return setState((state) => {
+        state.endPageType = undefined;
+      });
+  }
+
   // 处理标注了 data-only-number 的元素
   if ((e.target as HTMLElement).getAttribute('data-only-number') !== null) {
     // 拦截能输入数字外的按键
@@ -197,12 +211,12 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 
       case 'ArrowUp':
       case 'PageUp':
-        return turnPage('prev');
+        return;
 
       case 'ArrowDown':
       case 'PageDown':
       case ' ':
-        return turnPage('next');
+        return;
     }
   }
 

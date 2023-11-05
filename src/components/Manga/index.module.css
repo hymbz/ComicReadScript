@@ -7,19 +7,11 @@
 @import "./components/TouchArea.module.css";
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .invisible {
-  visibility: hidden;
-}
-
-.opacity1 {
-  opacity: 1;
-}
-
-.opacity0 {
-  opacity: 0;
+  visibility: hidden !important;
 }
 
 .root {

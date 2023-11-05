@@ -4,7 +4,7 @@ import { debounce } from 'throttle-debounce';
 
 import { store } from '../hooks/useStore';
 import { useDrag } from '../hooks/useDrag';
-import { handleScrollbarDrag } from '../hooks/useStore/slice';
+import { getPageTip, handleScrollbarDrag } from '../hooks/useStore/slice';
 
 import { ScrollbarPage } from './ScrollbarPage';
 
@@ -28,7 +28,7 @@ export const Scrollbar: Component = () => {
 
   // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
   const [penetrate, setPenetrate] = createSignal(false);
-  const resetPenetrate = debounce(200, () => setPenetrate(false));
+  const resetPenetrate = debounce(100, () => setPenetrate(false));
   const handleWheel = () => {
     setPenetrate(true);
     resetPenetrate();
@@ -51,7 +51,8 @@ export const Scrollbar: Component = () => {
         [classes.hidden]: !store.option.scrollbar.enabled && !showScrollbar(),
       }}
       style={{
-        'pointer-events': penetrate() || store.dragMode ? 'none' : 'auto',
+        'pointer-events':
+          penetrate() || store.dragMode || store.gridMode ? 'none' : 'auto',
       }}
       role="scrollbar"
       tabIndex={-1}
@@ -63,6 +64,7 @@ export const Scrollbar: Component = () => {
     >
       <div
         class={classes.scrollbarDrag}
+        classList={{ [classes.hidden]: store.gridMode }}
         style={{
           '--height': height(),
           /**
@@ -74,12 +76,8 @@ export const Scrollbar: Component = () => {
           transition: store.option.scrollMode ? undefined : 'top 150ms',
         }}
       >
-        <div
-          class={classes.scrollbarPoper}
-          classList={{ [classes.hidden]: !store.scrollbar.tipText }}
-          data-show={showScrollbar()}
-        >
-          {store.scrollbar.tipText}
+        <div class={classes.scrollbarPoper} data-show={showScrollbar()}>
+          {store.memo.showPageList.map((i) => getPageTip(i)).join('\n')}
         </div>
       </div>
       <Show when={store.option.scrollbar.showImgStatus}>

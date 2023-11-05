@@ -83,7 +83,7 @@ export const EndPage: Component = () => {
     >
       <p class={classes.tip}>{tip()}</p>
       <button
-        ref={bindRef('prevRef')}
+        ref={bindRef('prev')}
         type="button"
         classList={{ [classes.invisible]: !store.onPrev }}
         tabIndex={store.endPageType ? 0 : -1}
@@ -92,7 +92,7 @@ export const EndPage: Component = () => {
         {t('end_page.prev_button')}
       </button>
       <button
-        ref={bindRef('exitRef')}
+        ref={bindRef('exit')}
         type="button"
         data-is-end
         tabIndex={store.endPageType ? 0 : -1}
@@ -101,7 +101,7 @@ export const EndPage: Component = () => {
         {t('button.exit')}
       </button>
       <button
-        ref={bindRef('nextRef')}
+        ref={bindRef('next')}
         type="button"
         classList={{ [classes.invisible]: !store.onNext }}
         tabIndex={store.endPageType ? 0 : -1}

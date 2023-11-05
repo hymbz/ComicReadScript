@@ -30,7 +30,7 @@
   &[src=""] {
     position: relative;
     aspect-ratio: 3 / 4;
-    height: 100%;
+    height: 100% !important;
   }
 
   /* 隐藏火狐的出错图片标识 */
@@ -74,6 +74,7 @@
 .page {
   content-visibility: hidden;
 
+  position: relative;
   z-index: 1;
 
   display: none;
@@ -113,6 +114,7 @@
   display: grid;
   grid-auto-columns: 100%;
   grid-auto-flow: column;
+  grid-row-gap: 1.5em;
   grid-template-columns: 100%;
   grid-template-rows: 100%;
 
@@ -174,6 +176,44 @@
   /* 卷轴模式下的图片间距 */
   & .img + .img {
     margin-top: calc(var(--scrollModeSpacing) * 0.1em);
+  }
+}
+
+.mangaFlow[data-grid-mode] {
+  touch-action: auto;
+
+  overflow: auto;
+  grid-auto-flow: row;
+  grid-auto-rows: 25%;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: unset;
+
+  box-sizing: border-box;
+  padding: 2em 0;
+
+  & .page {
+    height: auto;
+
+    &::after {
+      content: var(--tip);
+
+      position: absolute;
+      bottom: -1.2em;
+      left: 0;
+      transform: scale(0.8);
+
+      direction: ltr;
+
+      width: 100%;
+
+      text-align: center;
+
+      opacity: 0.5;
+    }
+  }
+
+  & .page .img {
+    cursor: pointer;
   }
 }
 

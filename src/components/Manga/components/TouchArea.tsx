@@ -26,7 +26,7 @@ export const TouchArea: Component = () => (
     data-scroll-mode={store.option.scrollMode}
   >
     <div
-      ref={bindRef('prevAreaRef')}
+      ref={bindRef('prevArea')}
       class={classes.touchArea}
       data-area="prev"
       role="button"
@@ -35,7 +35,7 @@ export const TouchArea: Component = () => (
       <h6>{t('touch_area.prev')}</h6>
     </div>
     <div
-      ref={bindRef('menuAreaRef')}
+      ref={bindRef('menuArea')}
       class={classes.touchArea}
       data-area="menu"
       role="button"
@@ -44,7 +44,7 @@ export const TouchArea: Component = () => (
       <h6>{t('touch_area.menu')}</h6>
     </div>
     <div
-      ref={bindRef('nextAreaRef')}
+      ref={bindRef('nextArea')}
       class={classes.touchArea}
       data-area="next"
       role="button"

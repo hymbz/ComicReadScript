@@ -21,8 +21,6 @@ export const imgState = {
   imgList: [] as ComicImg[],
   pageList: [] as PageList,
 
-  /** 渲染的页面 */
-  renderPageList: [] as PageList,
   /** 页面切换动画 */
   pageAnimation: false,
   /** 页面偏移量，百分比 */

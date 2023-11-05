@@ -27,9 +27,10 @@ export const ComicImgFlow: Component = () => {
     setState((state) => updateRenderPage(state, true));
   };
 
-  const transform = createMemo(() => {
-    const x = `calc(${store.pageOffsetPct}% + ${store.pageOffsetPx}px)`;
+  const transform = createMemo<string>(() => {
+    if (store.gridMode || store.option.scrollMode) return '';
 
+    const x = `calc(${store.pageOffsetPct}% + ${store.pageOffsetPx}px)`;
     if (store.option.dir === 'rtl') return `translate3d(${x}, 0, 0)`;
     return ` translate3d(calc(${x} * -1), 0, 0)`;
   });
@@ -45,18 +46,21 @@ export const ComicImgFlow: Component = () => {
         useDrag(e, handleMangaFlowDrag);
       }}
       tabIndex={-1}
-      data-hiddenMouse={hiddenMouse()}
+      data-hiddenMouse={!store.gridMode && hiddenMouse()}
       on:mousemove={onMouseMove}
       onTransitionEnd={handleTransitionEnd}
     >
       <div
         id={classes.mangaFlow}
-        ref={bindRef('mangaFlowRef')}
-        class={classes.mangaFlow}
-        data-scrollMode={boolDataVal(store.option.scrollMode)}
+        ref={bindRef('mangaFlow')}
+        class={`${classes.mangaFlow} ${classes.beautifyScrollbar}`}
+        data-scrollMode={boolDataVal(
+          !store.gridMode && store.option.scrollMode,
+        )}
         data-disableZoom={boolDataVal(
           store.option.disableZoom || store.option.scrollMode,
         )}
+        data-grid-mode={boolDataVal(store.gridMode)}
         dir={store.option.dir}
         style={{
           transform: transform(),
@@ -64,7 +68,7 @@ export const ComicImgFlow: Component = () => {
         }}
       >
         <Index each={store.pageList} fallback={<h1>NULL</h1>}>
-          {(page) => <ComicPage page={page()} />}
+          {(page, i) => <ComicPage page={page()} index={i} />}
         </Index>
       </div>
     </div>

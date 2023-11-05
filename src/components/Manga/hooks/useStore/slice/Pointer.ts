@@ -1,4 +1,4 @@
-import { isEqual } from 'helper';
+import { isEqual, requestIdleCallback } from 'helper';
 import { store, setState } from '..';
 import { useDoubleClick } from '../../useDoubleClick';
 import type { UseDrag } from '../../useDrag';
@@ -27,9 +27,9 @@ export const handlePageClick = ({ x, y }: MouseEvent) => {
 
   // 找到当前
   const targetArea = [
-    store.nextAreaRef,
-    store.menuAreaRef,
-    store.prevAreaRef,
+    store.ref.nextArea,
+    store.ref.menuArea,
+    store.ref.prevArea,
   ].find((e) => {
     if (!e) return false;
     const rect = e.getBoundingClientRect();
@@ -41,19 +41,35 @@ export const handlePageClick = ({ x, y }: MouseEvent) => {
   pageClick[targetArea.getAttribute('data-area') as keyof typeof pageClick]();
 };
 
-/** 处理双击缩放 */
-const handleDoubleClickZoom = (e: MouseEvent) => {
-  setTimeout(() => {
-    if (!store.panzoom || store.option.scrollMode) return;
-
-    const { scale } = store.panzoom.getTransform();
-
-    // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
-    if (scale >= 2) store.panzoom.smoothZoomAbs(0, 0, 0.99);
-    else store.panzoom.smoothZoomAbs(e.clientX, e.clientY, scale + 1);
+/** 网格模式下点击图片跳到对应页 */
+export const handleGridClick = (e: MouseEvent) => {
+  const target = e.target as HTMLElement;
+  if (target.tagName !== 'IMG') return;
+  const pageNumText = target.parentElement?.getAttribute('data-index');
+  if (!pageNumText) return;
+  const pageNum = +pageNumText;
+  if (!Reflect.has(store.pageList, pageNum)) return;
+  setState((state) => {
+    state.activePageIndex = pageNum;
+    state.gridMode = false;
   });
 };
-const handleClick = useDoubleClick(handlePageClick, handleDoubleClickZoom);
+
+/** 双击放大 */
+const doubleClickZoom = (e: MouseEvent) => {
+  if (!store.panzoom || store.option.scrollMode || store.gridMode) return;
+  requestIdleCallback(() => {
+    const { scale } = store.panzoom!.getTransform();
+
+    // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
+    if (scale >= 2) store.panzoom!.smoothZoomAbs(0, 0, 0.99);
+    else store.panzoom!.smoothZoomAbs(e.clientX, e.clientY, scale + 1);
+  });
+};
+const handleClick = useDoubleClick(
+  (e) => (store.gridMode ? handleGridClick(e) : handlePageClick(e)),
+  doubleClickZoom,
+);
 
 type SlideState = {
   /** 滑动方向 */
@@ -87,7 +103,7 @@ const getTurnPageDir = (
   distance: number,
 ): undefined | 'prev' | 'next' => {
   // 根据距离判断
-  if (Math.abs(distance) > store.rootRef!.scrollWidth / 3)
+  if (Math.abs(distance) > store.ref.root!.scrollWidth / 3)
     return distance > 0 ? 'next' : 'prev';
 
   const speed = distance / (Date.now() - startTime);
@@ -104,13 +120,16 @@ export const handleMangaFlowDrag: UseDrag = (
 ) => {
   if (store.option.scrollMode || store.isZoomed) return;
 
+  // 移动一段距离或按住一段时间后，将操作视为拖拽
   if (
     slideState.isClick &&
-    (Math.abs(x - ix) + Math.abs(y - iy) || Date.now() - startTime > 500)
+    (Math.abs(x - ix) + Math.abs(y - iy) > 10 || Date.now() - startTime > 500)
   ) {
     slideState.isClick = false;
-    return;
   }
+
+  // 网格模式下只允许点击
+  if (store.gridMode && !slideState.isClick) return;
 
   switch (type) {
     case 'dragging': {
