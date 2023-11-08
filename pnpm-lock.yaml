@@ -35,9 +35,6 @@ importers:
       normalize.css:
         specifier: ^8.0.1
         version: 8.0.1
-      panzoom:
-        specifier: ^9.4.3
-        version: 9.4.3
       protobufjs:
         specifier: ^7.2.5
         version: 7.2.5

@@ -21,6 +21,8 @@ import {
   switchFillEffect,
   switchScrollMode,
   switchOnePageMode,
+  zoom,
+  doubleClickZoom,
 } from './hooks/useStore/slice';
 
 import { setImgTranslationEnbale } from './hooks/useStore/slice/Translation';
@@ -82,6 +84,7 @@ export const defaultButtonList: ToolbarButtonList = [
       onClick={() =>
         setState((state) => {
           state.gridMode = !state.gridMode;
+          if (state.zoom.scale !== 100) zoom(100);
         })
       }
       children={<MdGrid />}
@@ -92,24 +95,18 @@ export const defaultButtonList: ToolbarButtonList = [
     <IconButton
       tip={t('button.zoom_in')}
       enabled={
-        store.isZoomed ||
+        store.zoom.scale !== 100 ||
         (store.option.scrollMode && store.option.scrollModeImgScale > 1)
       }
       onClick={() => {
-        if (store.option.scrollMode) {
-          if (
-            store.option.scrollModeImgScale >= 1 &&
-            store.option.scrollModeImgScale < 1.6
-          )
-            return zoomScrollModeImg(0.2);
-          return zoomScrollModeImg(1, true);
-        }
+        if (!store.option.scrollMode) return doubleClickZoom();
 
-        if (!store.panzoom) return;
-        const { scale } = store.panzoom.getTransform();
-
-        if (scale === 1) store.panzoom.smoothZoom(0, 0, 2);
-        else store.panzoom.smoothZoomAbs(0, 0, 0.99);
+        if (
+          store.option.scrollModeImgScale >= 1 &&
+          store.option.scrollModeImgScale < 1.6
+        )
+          return zoomScrollModeImg(0.2);
+        return zoomScrollModeImg(1, true);
       }}
       children={<MdSearch />}
     />

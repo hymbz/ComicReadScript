@@ -8,11 +8,11 @@ import { findFillIndex, handleComicData } from '../../../handleComicData';
 import {
   contentHeight,
   handleMangaFlowScroll,
-  mangaFlowEle,
   updateDrag,
   windowHeight,
 } from './Scrollbar';
 import { setOption } from './Helper';
+import { zoom } from './Zoom';
 
 export const {
   activeImgIndex,
@@ -71,7 +71,7 @@ type LoadImgDraft = { editNum: number; loadNum: number };
 const loadImg = (state: State, index: number, draft: LoadImgDraft) => {
   if (index === -1) return false;
   const img = state.imgList[index];
-  if (!img.src) return false;
+  if (!img?.src) return false;
   if (img.loadType === 'wait') {
     img.loadType = 'loading';
     draft.editNum += 1;
@@ -79,7 +79,7 @@ const loadImg = (state: State, index: number, draft: LoadImgDraft) => {
   return draft.editNum >= draft.loadNum;
 };
 const loadPage = (state: State, index: number, draft: LoadImgDraft) =>
-  state.pageList[index].some((i) => loadImg(state, i, draft));
+  state.pageList[index]?.some((i) => loadImg(state, i, draft));
 
 /**
  * 以当前显示页为基准，预加载附近指定页数的图片，并取消其他预加载的图片
@@ -116,7 +116,7 @@ export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
   });
   // 在调整图片缩放后使当前滚动进度保持不变
   setState((state) => {
-    mangaFlowEle().scrollTo({
+    store.ref.mangaFlow.scrollTo({
       top: contentHeight() * state.scrollbar.dragTop,
     });
   });
@@ -217,7 +217,7 @@ export const switchFillEffect = () => {
 
 /** 切换卷轴模式 */
 export const switchScrollMode = () => {
-  store.panzoom?.smoothZoomAbs(0, 0, 0.99);
+  zoom(100);
   setOption((draftOption, state) => {
     state.activePageIndex = 0;
     draftOption.scrollMode = !draftOption.scrollMode;
@@ -251,9 +251,9 @@ export const updateRenderPage = (state: State, animation = false) => {
   const i = state.memo.renderPageList.indexOf(
     state.pageList[state.activePageIndex],
   );
-  state.pageOffsetPct = i === -1 ? 0 : i * 100;
+  state.page.offset.x.pct = i === -1 ? 0 : i * 100;
 
-  state.pageAnimation = animation;
+  state.page.anima = animation ? 'page' : '';
 };
 
 createRoot(() => {

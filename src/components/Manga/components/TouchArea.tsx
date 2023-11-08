@@ -19,7 +19,7 @@ export const TouchArea: Component = () => (
       )
         ? undefined
         : 'row-reverse',
-      cursor: store.isZoomed ? 'move' : undefined,
+      cursor: store.zoom.scale !== 100 ? 'move' : undefined,
     }}
     data-show={store.show.touchArea}
     data-vert={store.option.clickPageTurn.vertical}

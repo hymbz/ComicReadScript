@@ -1,7 +1,10 @@
 import { getKeyboardCode, requestIdleCallback } from 'helper';
+import { setOption } from './Helper';
 import type { State } from '..';
 import { setState, store } from '..';
 import { hotkeysMap } from './Hotkeys';
+import { contentHeight, handleMangaFlowScroll } from './Scrollbar';
+import { zoom } from './Zoom';
 import {
   zoomScrollModeImg,
   switchFillEffect,
@@ -10,14 +13,8 @@ import {
   switchDir,
   updateRenderPage,
 } from './Image';
-import {
-  contentHeight,
-  handleMangaFlowScroll,
-  mangaFlowEle,
-} from './Scrollbar';
 
 import classes from '../../../index.module.css';
-import { setOption } from './Helper';
 
 export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
   if (e.button !== 1 || store.option.scrollMode) return;
@@ -111,7 +108,7 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
   setState((state) => {
     // 无法翻页就恢复原位
     if (!turnPageFn(state, dir)) {
-      state.pageOffsetPx = 0;
+      state.page.offset.x.px = 0;
       updateRenderPage(state, true);
       state.dragMode = false;
       return;
@@ -119,12 +116,12 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
 
     state.dragMode = true;
     updateRenderPage(state);
-    state.pageOffsetPct += dir === 'next' ? -100 : 100;
+    state.page.offset.x.pct += dir === 'next' ? -100 : 100;
 
     requestIdleCallback(() => {
       setState((draftState) => {
         updateRenderPage(draftState, true);
-        draftState.pageOffsetPx = 0;
+        draftState.page.offset.x.px = 0;
         draftState.dragMode = false;
       });
     }, 50);
@@ -133,27 +130,32 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
 
 export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
-
-  if (
-    (e.ctrlKey && !store.option.scrollMode) ||
-    (e.altKey && !store.option.scrollMode) ||
-    (!store.show.endPage && store.scrollLock)
-  )
-    return e.preventDefault();
+  if (e.ctrlKey || e.altKey) e.preventDefault();
+  if (!store.show.endPage && store.scrollLock) return;
 
   const isWheelDown = e.deltaY > 0;
 
-  // 实现卷轴模式下的缩放
-  if (!store.show.endPage && (e.altKey || e.ctrlKey)) {
-    e.preventDefault();
-    zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
-    // 在调整图片缩放后使当前滚动进度保持不变
-    setState((state) => {
-      mangaFlowEle().scrollTo({
-        top: contentHeight() * state.scrollbar.dragTop,
+  if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
+
+  if (store.option.scrollMode) {
+    // 卷轴模式下的缩放
+    if (e.altKey || e.ctrlKey) {
+      e.preventDefault();
+      zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
+      // 在调整图片缩放后使当前滚动进度保持不变
+      setState((state) => {
+        store.ref.mangaFlow.scrollTo({
+          top: contentHeight() * state.scrollbar.dragTop,
+        });
       });
-    });
-    handleMangaFlowScroll();
+      handleMangaFlowScroll();
+    }
+    return;
+  }
+
+  // 翻页模式下的缩放
+  if (e.altKey || e.ctrlKey || store.zoom.scale !== 100) {
+    zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
     return;
   }
 

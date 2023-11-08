@@ -63,7 +63,7 @@ export interface MangaProps {
    */
   onLoading?: (imgList: ComicImg[], img?: ComicImg) => void | Promise<void>;
 
-  /** 修改默认侧边栏按钮列表 */
+  /** 修改默认工具栏按钮列表 */
   editButtonList?: State['prop']['editButtonList'];
   /** 修改默认设置项列表 */
   editSettingList?: State['prop']['editSettingList'];

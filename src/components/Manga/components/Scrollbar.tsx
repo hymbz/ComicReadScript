@@ -40,11 +40,12 @@ export const Scrollbar: Component = () => {
   return (
     <div
       ref={(e) =>
-        useDrag(
-          e,
-          handleScrollbarDrag,
-          () => store.option.scrollMode && store.option.scrollbar.easyScroll,
-        )
+        useDrag({
+          ref: e,
+          handleDrag: handleScrollbarDrag,
+          easyMode: () =>
+            store.option.scrollMode && store.option.scrollbar.easyScroll,
+        })
       }
       class={classes.scrollbar}
       classList={{
@@ -69,15 +70,16 @@ export const Scrollbar: Component = () => {
           '--height': height(),
           /**
            * 使用 transform 来移动的话因为涉及到百分比的四舍五入，
-           * 会在长漫画的滚动结束后出现明显的抖动，
-           * 所以这里只能用 top 来控制
+           * 会在长漫画的滚动结束后出现明显的抖动，所以这里只能用 top 来控制
            */
           '--top': top(),
           transition: store.option.scrollMode ? undefined : 'top 150ms',
         }}
       >
         <div class={classes.scrollbarPoper} data-show={showScrollbar()}>
-          {store.memo.showPageList.map((i) => getPageTip(i)).join('\n')}
+          {store.option.scrollMode
+            ? store.memo.showPageList.map((i) => getPageTip(i)).join('\n')
+            : getPageTip(store.activePageIndex)}
         </div>
       </div>
       <Show when={store.option.scrollbar.showImgStatus}>

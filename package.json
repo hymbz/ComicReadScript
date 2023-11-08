@@ -27,7 +27,6 @@
     "magic-bytes.js": "^1.5.0",
     "marked": "^9.1.2",
     "normalize.css": "^8.0.1",
-    "panzoom": "^9.4.3",
     "protobufjs": "^7.2.5",
     "pwa-install-handler": "^2.5.0",
     "solid-element": "^1.8.0",

@@ -75,11 +75,13 @@ export const defaultSettingList: () => SettingList = () => [
             value={store.option.scrollbar.showImgStatus}
             onChange={createStateSetFn('scrollbar.showImgStatus')}
           />
-          <SettingsItemSwitch
-            name={t('setting.option.scrollbar_easy_scroll')}
-            value={store.option.scrollbar.easyScroll}
-            onChange={createStateSetFn('scrollbar.easyScroll')}
-          />
+          <Show when={store.option.scrollMode}>
+            <SettingsItemSwitch
+              name={t('setting.option.scrollbar_easy_scroll')}
+              value={store.option.scrollbar.easyScroll}
+              onChange={createStateSetFn('scrollbar.easyScroll')}
+            />
+          </Show>
         </SettingsShowItem>
       </>
     ),

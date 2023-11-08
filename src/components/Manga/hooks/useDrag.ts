@@ -1,85 +1,138 @@
 import { onCleanup, onMount } from 'solid-js';
 
+import { isEqual } from 'helper';
 import { focus } from './useStore/slice';
 
-export interface UseDragState {
+export interface PointerState {
+  id: number;
   /** 事件类型 */
-  type: 'start' | 'dragging' | 'end';
+  type: 'down' | 'move' | 'up' | 'cancel';
   /** 触发时的 xy 位置 */
   xy: [number, number];
   /** 手势开始时的 xy 位置 */
   initial: [number, number];
+  /** 上次触发时的 xy 位置 */
+  last: [number, number];
   /** 手势开始时间 */
   startTime: number;
 }
 
-export type UseDrag = (state: UseDragState, e: MouseEvent) => void;
+const createPointerState = (
+  e: PointerEvent,
+  type: PointerState['type'] = 'down',
+): PointerState => {
+  const xy = [e.clientX, e.clientY] as [number, number];
+  return {
+    id: e.pointerId,
+    type,
+    xy,
+    initial: xy,
+    last: xy,
+    startTime: performance.now(),
+  };
+};
 
-const initStata = (): UseDragState => ({
-  type: 'start',
-  xy: [0, 0],
-  initial: [0, 0],
-  startTime: 0,
-});
+type UseDragOptions = {
+  ref: HTMLElement;
+  handleDrag: UseDrag;
+  easyMode?: () => boolean;
+  handleClick?: (e: PointerEvent) => boolean | void;
+  touches?: Map<number, PointerState>;
+};
 
-export const useDrag = (
-  ref: HTMLElement,
-  handleDrag: UseDrag,
-  easyMode: () => boolean = () => false,
-) => {
-  let state = initStata();
+export type UseDrag = (state: PointerState, e: PointerEvent) => void;
 
+export const useDrag = ({
+  ref,
+  handleDrag,
+  easyMode,
+  handleClick,
+  touches = new Map(),
+}: UseDragOptions) => {
   onMount(() => {
     const controller = new AbortController();
+    const options = {
+      capture: false,
+      passive: true,
+      signal: controller.signal,
+    };
 
-    if (ref) {
-      // 在鼠标、手指按下后切换状态
-      ref.addEventListener(
-        'pointerdown',
-        (e) => {
-          e.stopPropagation();
-          // 只处理左键按下触发的事件
-          if (e.buttons !== 1) return;
+    const handleDown = (e: PointerEvent) => {
+      e.stopPropagation();
+      if (!easyMode?.() && e.buttons !== 1) return;
 
-          state.type = 'start';
-          state.xy = [e.x, e.y];
-          state.initial = [e.x, e.y];
-          state.startTime = Date.now();
-          handleDrag(state, e);
-        },
-        { capture: false, passive: true, signal: controller.signal },
-      );
+      const state = createPointerState(e);
+      touches.set(e.pointerId, state);
+      handleDrag(state, e);
+    };
 
-      // 在鼠标、手指移动时根据状态判断是否要触发函数
-      ref.addEventListener(
-        'pointermove',
-        (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          if (!easyMode() && (state.startTime === 0 || e.buttons !== 1)) return;
+    const handleMove = (e: PointerEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
 
-          state.type = 'dragging';
-          state.xy = [e.x, e.y];
-          handleDrag(state, e);
-        },
-        { capture: false, passive: false, signal: controller.signal },
-      );
+      if (!easyMode?.() && e.buttons !== 1) return;
 
-      // 在鼠标、手指松开后切换状态
-      ref.addEventListener(
-        'pointerup',
-        (e) => {
-          e.stopPropagation();
-          if (state.startTime === 0) return;
+      const state = touches.get(e.pointerId);
+      if (!state) return;
 
-          state.type = 'end';
-          state.xy = [e.x, e.y];
-          handleDrag(state, e);
-          state = initStata();
-          focus();
-        },
-        { capture: false, passive: true, signal: controller.signal },
-      );
+      state.type = 'move';
+      state.xy = [e.clientX, e.clientY];
+
+      handleDrag(state, e);
+
+      state.last = state.xy;
+    };
+
+    const handleUp = (e: PointerEvent) => {
+      e.stopPropagation();
+      const state = touches.get(e.pointerId);
+      if (!state) return;
+      touches.delete(e.pointerId);
+
+      state.type = 'up';
+      state.xy = [e.clientX, e.clientY];
+
+      // 判断单击
+      if (
+        handleClick &&
+        touches.size === 0 &&
+        isEqual(state.xy[0] - state.initial[0], 0, 5) &&
+        isEqual(state.xy[1] - state.initial[1], 0, 5) &&
+        performance.now() - state.startTime < 200
+      )
+        handleClick(e);
+
+      handleDrag(state, e);
+      focus();
+    };
+
+    ref.addEventListener('pointerdown', handleDown, options);
+
+    ref.addEventListener('pointermove', handleMove, {
+      ...options,
+      passive: false,
+    });
+
+    ref.addEventListener('pointerup', handleUp, options);
+
+    ref.addEventListener(
+      'pointercancel',
+      (e) => {
+        e.stopPropagation();
+        const state = touches.get(e.pointerId);
+        if (!state) return;
+
+        state.type = 'cancel';
+        handleDrag(state, e);
+        touches.clear();
+        focus();
+      },
+      { capture: false, passive: true, signal: controller.signal },
+    );
+
+    if (easyMode) {
+      ref.addEventListener('pointerover', handleDown, options);
+      ref.addEventListener('pointerout', handleUp, options);
     }
 
     onCleanup(() => controller.abort());

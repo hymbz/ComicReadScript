@@ -11,15 +11,15 @@ export const { store, setState, _state, _setState } = useStore({
   ...OtherState,
 
   ref: {
-    prev: undefined as HTMLButtonElement | undefined,
-    next: undefined as HTMLButtonElement | undefined,
-    exit: undefined as HTMLButtonElement | undefined,
+    prev: undefined as unknown as HTMLButtonElement,
+    next: undefined as unknown as HTMLButtonElement,
+    exit: undefined as unknown as HTMLButtonElement,
 
-    root: undefined as HTMLElement | undefined,
-    mangaFlow: undefined as HTMLElement | undefined,
-    prevArea: undefined as HTMLElement | undefined,
-    nextArea: undefined as HTMLElement | undefined,
-    menuArea: undefined as HTMLElement | undefined,
+    root: undefined as unknown as HTMLElement,
+    mangaFlow: undefined as unknown as HTMLElement,
+    prevArea: undefined as unknown as HTMLElement,
+    nextArea: undefined as unknown as HTMLElement,
+    menuArea: undefined as unknown as HTMLElement,
   },
 });
 

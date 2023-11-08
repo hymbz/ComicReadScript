@@ -1,5 +1,3 @@
-import type { PanZoom } from 'panzoom';
-
 import type { ToolbarButtonList } from '../../defaultButtonList';
 import type { SettingList } from '../../defaultSettingList';
 import type { Option } from './OptionState';
@@ -20,9 +18,6 @@ export const defaultHotkeys: Readonly<Record<string, string[]>> = {
 };
 
 export const OtherState = {
-  panzoom: undefined as PanZoom | undefined,
-  /** 当前是否处于放大模式 */
-  isZoomed: false,
   /** 当前设备是否是移动端 */
   isMobile: false,
 
@@ -36,7 +31,7 @@ export const OtherState = {
   hotkeys: {} as Record<string, string[]>,
 
   show: {
-    /** 是否强制显示侧边栏 */
+    /** 是否强制显示工具栏 */
     toolbar: false,
     /** 是否强制显示滚动条 */
     scrollbar: false,
