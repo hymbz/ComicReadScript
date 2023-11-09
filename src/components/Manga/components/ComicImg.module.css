@@ -107,7 +107,8 @@
   display: grid;
   grid-auto-columns: 100%;
   grid-auto-flow: column;
-  grid-row-gap: 1.5em;
+  grid-auto-rows: 100%;
+  grid-row-gap: 0;
   grid-template-columns: 100%;
   grid-template-rows: 100%;
 
@@ -147,6 +148,10 @@
 
   &[data-animation="zoom"] {
     transition-duration: 300ms;
+  }
+
+  &[data-vertical] {
+    grid-auto-flow: row;
   }
 }
 
@@ -203,6 +208,7 @@
   overflow: auto;
   grid-auto-flow: row;
   grid-auto-rows: 25%;
+  grid-row-gap: 1.5em;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: unset;
 

@@ -46,10 +46,6 @@ export const ComicImgFlow: Component = () => {
     const x = `calc(${store.page.offset.x.pct}% + ${store.page.offset.x.px}px)`;
     return store.option.dir === 'rtl' ? x : `calc(${x} * -1)`;
   });
-  const pageY = createMemo(() => {
-    const y = `calc(${store.page.offset.y.pct}% + ${store.page.offset.y.px}px)`;
-    return store.option.dir === 'rtl' ? y : `calc(${y} * -1)`;
-  });
 
   return (
     <div
@@ -62,6 +58,7 @@ export const ComicImgFlow: Component = () => {
         store.option.disableZoom || store.option.scrollMode,
       )}
       data-grid-mode={boolDataVal(store.gridMode)}
+      data-vertical={boolDataVal(store.page.vertical)}
       data-animation={store.page.anima}
       data-hidden-mouse={!store.gridMode && hiddenMouse()}
       on:mousemove={onMouseMove}
@@ -72,7 +69,7 @@ export const ComicImgFlow: Component = () => {
         '--x': `${store.zoom.offset.x || 0}px`,
         '--y': `${store.zoom.offset.y || 0}px`,
         '--page_x': pageX(),
-        '--page_y': pageY(),
+        '--page_y': `calc(${store.page.offset.y.pct}% + ${store.page.offset.y.px}px)`,
       }}
       tabIndex={-1}
     >

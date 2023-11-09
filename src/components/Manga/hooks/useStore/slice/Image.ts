@@ -251,7 +251,11 @@ export const updateRenderPage = (state: State, animation = false) => {
   const i = state.memo.renderPageList.indexOf(
     state.pageList[state.activePageIndex],
   );
-  state.page.offset.x.pct = i === -1 ? 0 : i * 100;
+
+  state.page.offset.x.pct = 0;
+  state.page.offset.y.pct = 0;
+  if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;
+  else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
 
   state.page.anima = animation ? 'page' : '';
 };

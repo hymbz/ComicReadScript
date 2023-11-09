@@ -85,6 +85,7 @@ export const defaultButtonList: ToolbarButtonList = [
         setState((state) => {
           state.gridMode = !state.gridMode;
           if (state.zoom.scale !== 100) zoom(100);
+          state.page.anima = '';
         })
       }
       children={<MdGrid />}

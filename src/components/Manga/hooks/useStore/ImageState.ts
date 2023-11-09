@@ -40,6 +40,8 @@ export const imgState = {
   page: {
     /** 动画效果 */
     anima: '' as '' | 'zoom' | 'page',
+    /** 竖向排列 */
+    vertical: false,
 
     /** 正常显示页面所需的偏移量 */
     offset: {

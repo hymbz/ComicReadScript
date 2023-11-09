@@ -109,6 +109,7 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
     // 无法翻页就恢复原位
     if (!turnPageFn(state, dir)) {
       state.page.offset.x.px = 0;
+      state.page.offset.y.px = 0;
       updateRenderPage(state, true);
       state.dragMode = false;
       return;
@@ -116,12 +117,15 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
 
     state.dragMode = true;
     updateRenderPage(state);
-    state.page.offset.x.pct += dir === 'next' ? -100 : 100;
+    if (store.page.vertical)
+      state.page.offset.y.pct += dir === 'next' ? 100 : -100;
+    else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
 
     requestIdleCallback(() => {
       setState((draftState) => {
         updateRenderPage(draftState, true);
         draftState.page.offset.x.px = 0;
+        draftState.page.offset.y.px = 0;
         draftState.dragMode = false;
       });
     }, 50);

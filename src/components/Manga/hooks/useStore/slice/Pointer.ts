@@ -4,6 +4,7 @@ import { useDoubleClick } from '../../useDoubleClick';
 import type { UseDrag } from '../../useDrag';
 import { turnPage, turnPageAnimation } from './Operate';
 import { zoom } from './Zoom';
+import { updateRenderPage } from './Image';
 
 const pageClick = {
   prev: () => store.option.clickPageTurn.enabled && turnPage('prev'),
@@ -68,36 +69,30 @@ export const handleClick = useDoubleClick(
   doubleClickZoom,
 );
 
-/** 滑动方向 */
-let slideDir: 'up' | 'down' | 'left' | 'right' | undefined;
-
-const PI2 = Math.PI / 2;
-
-/** 根据传入的角度判断滑动方向 */
-const getSlideDir = (angle: number): typeof slideDir => {
-  if (isEqual(angle, -PI2, 1.3)) return 'up';
-  if (isEqual(angle, 0, 1)) return 'right';
-  if (isEqual(angle, PI2, 1.3)) return 'down';
-  if (isEqual(angle, Math.PI, 1)) return 'left';
-  if (isEqual(angle, -Math.PI, 1)) return 'left';
-  return undefined;
-};
-
 /** 判断翻页方向 */
-const getTurnPageDir = (
-  startTime: number,
-  distance: number,
-): undefined | 'prev' | 'next' => {
-  // 滑动距离超过 1/3 判定翻页
-  if (Math.abs(distance) > store.ref.root.scrollWidth / 3)
-    return distance > 0 ? 'next' : 'prev';
+const getTurnPageDir = (startTime: number): undefined | 'prev' | 'next' => {
+  let dir: undefined | 'prev' | 'next';
+  let move: number;
+  let total: number;
+
+  if (store.page.vertical) {
+    move = -store.page.offset.y.px;
+    total = store.ref.root.clientHeight;
+  } else {
+    move = store.page.offset.x.px;
+    total = store.ref.root.clientWidth;
+  }
+
+  // 滑动距离超过总长度三分之一判定翻页
+  if (Math.abs(move) > total / 3) dir = move > 0 ? 'next' : 'prev';
+  if (dir) return dir;
 
   // 滑动速度超过 0.4 判定翻页
-  const velocity = distance / (performance.now() - startTime);
-  if (velocity > 0.4) return 'next';
-  if (velocity < -0.4) return 'prev';
+  const velocity = move / (performance.now() - startTime);
+  if (velocity < -0.4) dir = 'prev';
+  if (velocity > 0.4) dir = 'next';
 
-  return undefined;
+  return dir;
 };
 
 export const handleMangaFlowDrag: UseDrag = ({
@@ -108,53 +103,40 @@ export const handleMangaFlowDrag: UseDrag = ({
 }) => {
   switch (type) {
     case 'move': {
-      if (store.dragMode)
+      if (store.dragMode) {
         setState((state) => {
-          state.page.offset.x.px = state.option.dir === 'rtl' ? x - ix : ix - x;
+          if (state.page.vertical) state.page.offset.y.px = y - iy;
+          else
+            state.page.offset.x.px =
+              state.option.dir === 'rtl' ? x - ix : ix - x;
         });
-
-      slideDir = getSlideDir(Math.atan2(y - iy, x - ix));
-      switch (slideDir) {
-        case 'left':
-        case 'right':
-          if (!store.dragMode)
-            setState((state) => {
-              state.dragMode = true;
-              state.page.anima = '';
-            });
-          break;
+        return;
       }
+
+      const dx = x - ix;
+      const dy = y - iy;
+      let slideDir: 'vertical' | 'horizontal' | undefined;
+      if (Math.abs(dx) > 5 && isEqual(dy, 0, 3)) slideDir = 'horizontal';
+      if (Math.abs(dy) > 5 && isEqual(dx, 0, 3)) slideDir = 'vertical';
+      if (!slideDir) return;
+
+      setState((state) => {
+        state.page.vertical = slideDir === 'vertical';
+        state.dragMode = true;
+        updateRenderPage(state);
+      });
       return;
     }
     case 'up': {
       // 将拖动的页面移回正常位置
-      if (store.page.offset.x.px !== 0) {
-        const dir = getTurnPageDir(startTime, store.page.offset.x.px);
-        switch (dir) {
-          case 'next':
-          case 'prev': {
-            turnPageAnimation(dir);
-            break;
-          }
-          default:
-            setState((state) => {
-              state.page.offset.x.px = 0;
-              state.page.anima = 'page';
-              state.dragMode = false;
-            });
-        }
-      }
-      // 上下滑动速度达标后触发翻页
-      else if (slideDir) {
-        switch (slideDir) {
-          case 'up':
-          case 'down':
-            if (getTurnPageDir(startTime, y - iy))
-              turnPage(slideDir === 'up' ? 'next' : 'prev');
-            break;
-        }
-      }
-      slideDir = undefined;
+      const dir = getTurnPageDir(startTime);
+      if (dir) return turnPageAnimation(dir);
+      setState((state) => {
+        state.page.offset.x.px = 0;
+        state.page.offset.y.px = 0;
+        state.page.anima = 'page';
+        state.dragMode = false;
+      });
     }
   }
 };
