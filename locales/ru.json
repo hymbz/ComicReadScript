@@ -55,6 +55,7 @@
   },
   "other": {
     "auto_enter_read_mode": "Автоматически включать режим чтения",
+    "default": "默认",
     "disable": "Отключить",
     "enter_comic_read_mode": "Режим чтения комиксов",
     "fab_hidden": "Скрыть плавающую кнопку",
@@ -100,6 +101,7 @@
     "option": {
       "always_load_all_img": "Всегда загружать все изображения",
       "background_color": "Цвет фона",
+      "click_page_turn_area": "点击区域",
       "click_page_turn_enabled": "Включить перелистывание страниц по клику",
       "click_page_turn_swap_area": "Поменять местами правую и левую области переключения страниц",
       "click_page_turn_vertical": "Вертикальная область переключения страниц",
@@ -179,7 +181,13 @@
   "touch_area": {
     "menu": "Меню",
     "next": "Следующая страница",
-    "prev": "Предыдущая страница"
+    "prev": "Предыдущая страница",
+    "type": {
+      "edge": "边缘",
+      "l": "L",
+      "left_right": "左右",
+      "up_down": "上下"
+    }
   },
   "translation": {
     "status": {
