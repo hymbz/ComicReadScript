@@ -59,6 +59,7 @@ export const useDrag = ({
 
     const handleDown = (e: PointerEvent) => {
       e.stopPropagation();
+      ref.setPointerCapture(e.pointerId);
       if (!easyMode?.() && e.buttons !== 1) return;
 
       const state = createPointerState(e);
@@ -85,6 +86,7 @@ export const useDrag = ({
 
     const handleUp = (e: PointerEvent) => {
       e.stopPropagation();
+      ref.releasePointerCapture(e.pointerId);
       const state = touches.get(e.pointerId);
       if (!state) return;
       touches.delete(e.pointerId);

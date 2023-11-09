@@ -75,7 +75,6 @@ export const defaultButtonList: ToolbarButtonList = [
       children={<MdQueue />}
     />
   ),
-  buttonListDivider,
   // 网格模式
   () => (
     <IconButton
@@ -91,6 +90,7 @@ export const defaultButtonList: ToolbarButtonList = [
       children={<MdGrid />}
     />
   ),
+  buttonListDivider,
   // 放大模式
   () => (
     <IconButton

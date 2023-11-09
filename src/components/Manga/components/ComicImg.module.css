@@ -98,9 +98,6 @@
   touch-action: none;
   user-select: none;
 
-  /* 隐藏滚动条但不影响滚动 */
-  scrollbar-width: none;
-
   transform-origin: 0 0;
   transform: translate(var(--x), var(--y)) scale(var(--scale)) translateZ(0);
 
@@ -122,9 +119,14 @@
 
   transition-duration: 0ms;
 
-  /* 隐藏滚动条但不影响滚动 */
-  &::-webkit-scrollbar {
-    display: none;
+  &:not([data-grid-mode]) {
+    /* 隐藏滚动条但不影响滚动 */
+    scrollbar-width: none;
+
+    /* 隐藏滚动条但不影响滚动 */
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   &[data-disable-zoom] .img {

@@ -95,6 +95,24 @@ const getTurnPageDir = (startTime: number): undefined | 'prev' | 'next' => {
   return dir;
 };
 
+let dx = 0;
+let dy = 0;
+let animationId: number | null = null;
+const handleDragAnima = () => {
+  // 当停着不动时退出循环
+  if (dx === store.page.offset.x.px && dy === store.page.offset.y.px) {
+    animationId = null;
+    return;
+  }
+
+  setState((state) => {
+    if (state.page.vertical) state.page.offset.y.px = dy;
+    else state.page.offset.x.px = dx;
+  });
+
+  animationId = requestAnimationFrame(handleDragAnima);
+};
+
 export const handleMangaFlowDrag: UseDrag = ({
   type,
   xy: [x, y],
@@ -103,24 +121,22 @@ export const handleMangaFlowDrag: UseDrag = ({
 }) => {
   switch (type) {
     case 'move': {
+      dx = store.option.dir === 'rtl' ? x - ix : ix - x;
+      dy = y - iy;
+
       if (store.dragMode) {
-        setState((state) => {
-          if (state.page.vertical) state.page.offset.y.px = y - iy;
-          else
-            state.page.offset.x.px =
-              state.option.dir === 'rtl' ? x - ix : ix - x;
-        });
+        if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
         return;
       }
 
-      const dx = x - ix;
-      const dy = y - iy;
+      // 判断滑动方向
       let slideDir: 'vertical' | 'horizontal' | undefined;
       if (Math.abs(dx) > 5 && isEqual(dy, 0, 3)) slideDir = 'horizontal';
       if (Math.abs(dy) > 5 && isEqual(dx, 0, 3)) slideDir = 'vertical';
       if (!slideDir) return;
 
       setState((state) => {
+        // 根据滑动方向自动切换排列模式
         state.page.vertical = slideDir === 'vertical';
         state.dragMode = true;
         updateRenderPage(state);
@@ -128,6 +144,11 @@ export const handleMangaFlowDrag: UseDrag = ({
       return;
     }
     case 'up': {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+
       // 将拖动的页面移回正常位置
       const dir = getTurnPageDir(startTime);
       if (dir) return turnPageAnimation(dir);
