@@ -5,13 +5,16 @@
   position: absolute;
   top: 0;
 
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr min(40%, 10em) 1fr;
+  grid-template-rows: 1fr min(30%, 10em) 1fr;
 
   width: 100%;
   height: 100%;
 
   font-size: 3em;
   color: white;
+  letter-spacing: 0.5em;
 
   visibility: hidden;
 
@@ -20,49 +23,65 @@
   }
 }
 
-.root[data-mobile] .touchAreaRoot {
-  flex-direction: column !important;
-}
-
-.touchArea {
-  display: flex;
-  flex-grow: 1;
-  align-items: center;
-  justify-content: center;
-
-  outline: none;
-
-  & > h6 {
-    writing-mode: vertical-lr;
-    text-orientation: upright;
-  }
-}
-
-.touchArea[data-area="menu"] {
-  flex-basis: 4em;
-  flex-grow: 0;
-}
-
 /* 显示点击区域时 */
 .touchAreaRoot[data-show="true"] {
   visibility: visible;
 
-  & .touchArea[data-area="prev"] {
-    background-color: #95e1d3e6;
-  }
+  & .touchArea {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 
-  & .touchArea[data-area="menu"] {
-    background-color: #fce38ae6;
-  }
+    &[data-area="prev"],
+    &[data-area="PREV"] {
+      background-color: #95e1d3e6;
+    }
 
-  & .touchArea[data-area="next"] {
-    background-color: #f38181e6;
+    &[data-area="menu"],
+    &[data-area="MENU"] {
+      background-color: #fce38ae6;
+    }
+
+    &[data-area="next"],
+    &[data-area="NEXT"] {
+      background-color: #f38181e6;
+    }
+
+    &[data-area="PREV"]::after {
+      content: var(--i18n-touch-area-prev);
+    }
+
+    &[data-area="MENU"]::after {
+      content: var(--i18n-touch-area-menu);
+    }
+
+    &[data-area="NEXT"]::after {
+      content: var(--i18n-touch-area-next);
+    }
   }
 }
 
-.touchAreaRoot[data-scroll-mode="true"] {
+.touchAreaRoot:not([data-turn-page]) {
+  & .touchArea[data-area="next"],
+  & .touchArea[data-area="NEXT"],
   & .touchArea[data-area="prev"],
-  & .touchArea[data-area="next"] {
+  & .touchArea[data-area="PREV"] {
     visibility: hidden;
+  }
+}
+
+.touchAreaRoot[data-area="edge"] {
+  grid-template-columns: 1fr min(30%, 10em) 1fr;
+}
+
+.root[data-mobile] {
+  & .touchAreaRoot {
+    flex-direction: column !important;
+    letter-spacing: 0;
+  }
+
+  & [data-area]::after {
+    font-size: 0.8em;
   }
 }

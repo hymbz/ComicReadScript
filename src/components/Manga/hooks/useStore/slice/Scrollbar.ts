@@ -2,6 +2,7 @@ import { createEffect, createRoot, on } from 'solid-js';
 
 import { isEqualArray } from 'helper';
 import { t } from 'helper/i18n';
+import { resetUI } from './Helper';
 import type { UseDrag, PointerState } from '../../useDrag';
 import type { State } from '..';
 import { setState, store } from '..';
@@ -191,13 +192,7 @@ createRoot(() => {
   createEffect(
     on(
       () => store.gridMode,
-      (gridMode) => {
-        if (gridMode)
-          setState((state) => {
-            state.show.scrollbar = false;
-            state.show.toolbar = false;
-          });
-      },
+      (gridMode) => gridMode && setState(resetUI),
       { defer: true },
     ),
   );

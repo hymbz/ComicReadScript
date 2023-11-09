@@ -5,44 +5,49 @@ import type { UseDrag } from '../../useDrag';
 import { turnPage, turnPageAnimation } from './Operate';
 import { zoom } from './Zoom';
 import { updateRenderPage } from './Image';
+import type { Area } from '../../../components/TouchArea';
+import { resetUI } from './Helper';
 
-const pageClick = {
-  prev: () => store.option.clickPageTurn.enabled && turnPage('prev'),
-  next: () => store.option.clickPageTurn.enabled && turnPage('next'),
-  menu: () => {
-    // 处于放大模式时跳过不处理
-    if (store.zoom.scale !== 100) return;
-    setState((state) => {
-      state.show.scrollbar = !state.show.scrollbar;
-      state.show.toolbar = !state.show.toolbar;
-    });
-  },
-};
-
-/** 根据点击坐标触发指定的操作 */
-export const handlePageClick = ({ x, y }: MouseEvent) => {
-  if (store.zoom.scale !== 100) return;
-
-  // 找到当前
-  const targetArea = [
-    store.ref.nextArea,
-    store.ref.menuArea,
-    store.ref.prevArea,
-  ].find((e) => {
-    if (!e) return false;
+/** 根据坐标判断点击的元素 */
+const findClickEle = (eleList: HTMLCollection, { x, y }: MouseEvent) =>
+  [...eleList].find((e) => {
     const rect = e.getBoundingClientRect();
     return (
       x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom
     );
   });
+
+/** 触发 touchArea 操作 */
+export const handlePageClick = (e: MouseEvent) => {
+  const targetArea = findClickEle(store.ref.touchArea.children, e);
   if (!targetArea) return;
-  pageClick[targetArea.getAttribute('data-area') as keyof typeof pageClick]();
+
+  const areaName = targetArea.getAttribute('data-area') as Area | undefined;
+  switch (areaName) {
+    case 'menu':
+    case 'MENU': {
+      return setState((state) => {
+        state.show.scrollbar = !state.show.scrollbar;
+        state.show.toolbar = !state.show.toolbar;
+      });
+    }
+    case 'prev':
+    case 'PREV': {
+      setState(resetUI);
+      return store.option.clickPageTurn.enabled && turnPage('prev');
+    }
+    case 'next':
+    case 'NEXT': {
+      setState(resetUI);
+      return store.option.clickPageTurn.enabled && turnPage('next');
+    }
+  }
 };
 
 /** 网格模式下点击图片跳到对应页 */
 export const handleGridClick = (e: MouseEvent) => {
-  const target = e.target as HTMLElement;
-  if (target.tagName !== 'IMG') return;
+  const target = findClickEle(store.ref.root.getElementsByTagName('img'), e);
+  if (!target) return;
   const pageNumText = target.parentElement?.getAttribute('data-index');
   if (!pageNumText) return;
   const pageNum = +pageNumText;
@@ -64,10 +69,11 @@ export const doubleClickZoom = (e?: MouseEvent) => {
     });
   });
 };
-export const handleClick = useDoubleClick(
-  (e) => (store.gridMode ? handleGridClick(e) : handlePageClick(e)),
-  doubleClickZoom,
-);
+export const handleClick = useDoubleClick((e) => {
+  if (store.zoom.scale !== 100) return;
+  if (store.gridMode) return handleGridClick(e);
+  handlePageClick(e);
+}, doubleClickZoom);
 
 /** 判断翻页方向 */
 const getTurnPageDir = (startTime: number): undefined | 'prev' | 'next' => {

@@ -1,4 +1,5 @@
 import { lang } from 'helper/i18n';
+import type { areaArrayMap } from '../../components/TouchArea';
 
 export interface Option {
   dir: 'ltr' | 'rtl';
@@ -23,8 +24,8 @@ export interface Option {
     enabled: boolean;
     /** 左右反转点击区域 */
     reverse: boolean;
-    /** 将点击区域改为上下翻页 */
-    vertical: boolean;
+    /** 区域排列类型 */
+    area: '' | keyof typeof areaArrayMap;
   };
   /** 默认启用首页填充 */
   firstPageFill: boolean;
@@ -83,7 +84,7 @@ export const defaultOption: Readonly<Option> = {
   clickPageTurn: {
     enabled: 'ontouchstart' in document.documentElement,
     reverse: false,
-    vertical: false,
+    area: '',
   },
   firstPageFill: true,
   disableZoom: false,

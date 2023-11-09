@@ -29,12 +29,7 @@ import { setImgTranslationEnbale } from './hooks/useStore/slice/Translation';
 
 import classes from './index.module.css';
 
-interface DefaultSettingsButtonProps {
-  /** 触发鼠标离开工具栏的事件 */
-  onMouseLeave: () => void;
-}
-
-export type ToolbarButtonList = Component<DefaultSettingsButtonProps>[];
+export type ToolbarButtonList = Component[];
 
 /** 工具栏按钮分隔栏 */
 export const buttonListDivider: Component = () => (
@@ -51,7 +46,7 @@ export const defaultButtonList: ToolbarButtonList = [
           ? t('button.page_mode_single')
           : t('button.page_mode_double')
       }
-      hidden={store.option.scrollMode}
+      hidden={store.isMobile || store.option.scrollMode}
       onClick={switchOnePageMode}
       children={store.option.onePageMode ? <MdLooksOne /> : <MdLooksTwo />}
     />
@@ -70,7 +65,7 @@ export const defaultButtonList: ToolbarButtonList = [
     <IconButton
       tip={t('button.page_fill')}
       enabled={store.fillEffect[nowFillIndex()]}
-      hidden={store.option.onePageMode}
+      hidden={store.isMobile || store.option.onePageMode}
       onClick={switchFillEffect}
       children={<MdQueue />}
     />
@@ -140,7 +135,7 @@ export const defaultButtonList: ToolbarButtonList = [
     );
   },
   // 设置
-  (props) => {
+  () => {
     const [showPanel, setShowPanel] = createSignal(false);
 
     const handleClick = () => {
@@ -158,11 +153,6 @@ export const defaultButtonList: ToolbarButtonList = [
           class={classes.closeCover}
           on:click={() => {
             handleClick();
-            props.onMouseLeave();
-            setState((state) => {
-              state.show.toolbar = false;
-              state.show.scrollbar = false;
-            });
             focus();
           }}
           role="button"

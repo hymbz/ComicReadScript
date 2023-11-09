@@ -23,10 +23,13 @@
   transition: transform 200ms;
 }
 
-.toolbar[data-show="true"] {
-  & .toolbarPanel {
-    transform: none;
-  }
+:is(.toolbar[data-show], .toolbar:hover) .toolbarPanel {
+  transform: none;
+}
+
+.toolbar[data-close] .toolbarPanel {
+  transform: translateX(-100%);
+  visibility: hidden;
 }
 
 .toolbarBg {
@@ -46,8 +49,13 @@
 
 /* 移动端优化 */
 .root[data-mobile] {
+  /* 调大样式 */
+  & .toolbar {
+    font-size: 1.3em;
+  }
+
   /* 只能通过点击中心来唤出工具栏，防止误触 */
-  & .toolbar[data-show="false"] {
+  & .toolbar:not([data-show]) {
     pointer-events: none;
   }
 

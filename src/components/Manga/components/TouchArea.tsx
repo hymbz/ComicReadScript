@@ -1,56 +1,79 @@
-import type { Component } from 'solid-js';
+import { For, type Component, createMemo } from 'solid-js';
 
-import { t } from 'helper/i18n';
-import { ifNot } from 'helper';
+import { boolDataVal } from 'helper';
 import { store } from '../hooks/useStore';
-import { bindRef } from '../hooks/useStore/slice';
 
 import classes from '../index.module.css';
+import { bindRef } from '../hooks/useStore/slice';
 
-export const TouchArea: Component = () => (
-  <div
-    class={classes.touchAreaRoot}
-    style={{
-      // 左右方向默认和漫画方向相同，如果开启了左右翻转则翻转
-      'flex-direction': ifNot(
-        store.option.clickPageTurn.enabled &&
-          store.option.clickPageTurn.reverse,
-        store.option.dir !== 'rtl',
-      )
-        ? undefined
-        : 'row-reverse',
-      cursor: store.zoom.scale !== 100 ? 'move' : undefined,
-    }}
-    data-show={store.show.touchArea}
-    data-vert={store.option.clickPageTurn.vertical}
-    data-scroll-mode={store.option.scrollMode}
-  >
+// 用大写表示要在此区块上显示提示
+export type Area = 'prev' | 'menu' | 'next' | 'PREV' | 'MENU' | 'NEXT';
+type Rows = [Area, Area, Area];
+type ArrayConfig = [Rows, Rows, Rows];
+
+export const areaArrayMap = {
+  left_right: [
+    ['prev', 'menu', 'next'],
+    ['PREV', 'MENU', 'NEXT'],
+    ['prev', 'menu', 'next'],
+  ] as ArrayConfig,
+  up_down: [
+    ['prev', 'PREV', 'prev'],
+    ['menu', 'MENU', 'menu'],
+    ['next', 'NEXT', 'next'],
+  ] as ArrayConfig,
+  edge: [
+    ['next', 'menu', 'next'],
+    ['NEXT', 'MENU', 'NEXT'],
+    ['next', 'PREV', 'next'],
+  ] as ArrayConfig,
+  l: [
+    ['PREV', 'prev', 'prev'],
+    ['prev', 'MENU', 'next'],
+    ['next', 'next', 'NEXT'],
+  ] as ArrayConfig,
+};
+
+export const TouchArea: Component = () => {
+  const areaType = createMemo(() => {
+    if (
+      !store.option.clickPageTurn.enabled ||
+      !Reflect.has(areaArrayMap, store.option.clickPageTurn.area)
+    )
+      return store.isMobile ? 'up_down' : 'left_right';
+    return store.option.clickPageTurn.area as keyof typeof areaArrayMap;
+  });
+
+  const dir = () => {
+    if (!store.option.clickPageTurn.reverse) return store.option.dir;
+    return store.option.dir === 'rtl' ? 'ltr' : 'rtl';
+  };
+
+  return (
     <div
-      ref={bindRef('prevArea')}
-      class={classes.touchArea}
-      data-area="prev"
-      role="button"
-      tabIndex={-1}
+      ref={bindRef('touchArea')}
+      class={classes.touchAreaRoot}
+      dir={dir()}
+      data-show={store.show.touchArea}
+      data-area={areaType()}
+      data-turn-page={boolDataVal(
+        store.option.clickPageTurn.enabled && !store.option.scrollMode,
+      )}
     >
-      <h6>{t('touch_area.prev')}</h6>
+      <For each={areaArrayMap[areaType()]}>
+        {(rows) => (
+          <For each={rows}>
+            {(area) => (
+              <div
+                class={classes.touchArea}
+                data-area={area}
+                role="button"
+                tabIndex={-1}
+              />
+            )}
+          </For>
+        )}
+      </For>
     </div>
-    <div
-      ref={bindRef('menuArea')}
-      class={classes.touchArea}
-      data-area="menu"
-      role="button"
-      tabIndex={-1}
-    >
-      <h6>{t('touch_area.menu')}</h6>
-    </div>
-    <div
-      ref={bindRef('nextArea')}
-      class={classes.touchArea}
-      data-area="next"
-      role="button"
-      tabIndex={-1}
-    >
-      <h6>{t('touch_area.next')}</h6>
-    </div>
-  </div>
-);
+  );
+};

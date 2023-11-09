@@ -55,6 +55,7 @@
   },
   "other": {
     "auto_enter_read_mode": "Auto enter reading mode",
+    "default": "Default",
     "disable": "Disable",
     "enter_comic_read_mode": "Enter comic reading mode",
     "fab_hidden": "Hide floating button",
@@ -100,6 +101,7 @@
     "option": {
       "always_load_all_img": "Always load all images",
       "background_color": "Background Color",
+      "click_page_turn_area": "Touch area",
       "click_page_turn_enabled": "Enable click to turn page",
       "click_page_turn_swap_area": "Swap LR clickable areas",
       "click_page_turn_vertical": "Vertically arranged clickable areas",
@@ -179,7 +181,13 @@
   "touch_area": {
     "menu": "Menu",
     "next": "Next Page",
-    "prev": "Prev Page"
+    "prev": "Prev Page",
+    "type": {
+      "edge": "edge",
+      "l": "L",
+      "left_right": "left right",
+      "up_down": "up down"
+    }
   },
   "translation": {
     "status": {

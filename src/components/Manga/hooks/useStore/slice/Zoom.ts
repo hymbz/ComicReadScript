@@ -4,6 +4,7 @@ import { debounce } from 'throttle-debounce';
 import type { State } from '..';
 import { store, setState } from '..';
 import type { PointerState, UseDrag } from '../../useDrag';
+import { resetUI } from './Helper';
 
 export const touches = new Map<number, PointerState>();
 
@@ -67,9 +68,7 @@ export const zoom = (
       closeScrollLock();
     }
 
-    // 缩放的时候关掉强制显示的工具栏和滚动条
-    state.show.toolbar = false;
-    state.show.scrollbar = false;
+    resetUI(state);
   });
 };
 

@@ -27,3 +27,10 @@ export const bindRef =
   <T extends HTMLElement = HTMLElement>(name: keyof State['ref']) =>
   (e: T) =>
     _setState('ref', name, e);
+
+/** 将界面恢复到正常状态 */
+export const resetUI = (state: State) => {
+  state.show.toolbar = false;
+  state.show.scrollbar = false;
+  state.show.touchArea = false;
+};

@@ -270,5 +270,3 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return store.prop.Exit?.();
   }
 };
-
-window.a = turnPageAnimation;

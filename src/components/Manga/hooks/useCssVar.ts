@@ -1,5 +1,6 @@
 import type { JSX } from 'solid-js';
 import { createRoot, createMemo } from 'solid-js';
+import { t } from 'helper/i18n';
 
 import { store } from './useStore';
 import { imgPlaceholderHeight } from './useStore/slice';
@@ -89,15 +90,22 @@ export const cssVar = createRoot(() => {
     };
   });
 
+  const i18n = createMemo(() => ({
+    '--i18n-touch-area-prev': `'${t('touch_area.prev')}'`,
+    '--i18n-touch-area-next': `'${t('touch_area.next')}'`,
+    '--i18n-touch-area-menu': `'${t('touch_area.menu')}'`,
+  }));
+
   const _cssVar = createMemo<JSX.CSSProperties>(() => ({
     '--bg':
       store.option.customBackground ??
       (store.option.darkMode ? '#000' : '#fff'),
     '--scrollModeImgScale': store.option.scrollModeImgScale,
     '--scrollModeSpacing': store.option.scrollModeSpacing,
-    '--img_placeholder_height': `${imgPlaceholderHeight()}px`,
+    '--img-placeholder-height': `${imgPlaceholderHeight()}px`,
     ...(store.option.darkMode ? dark : light),
     ...svg(),
+    ...i18n(),
   }));
   return _cssVar;
 });

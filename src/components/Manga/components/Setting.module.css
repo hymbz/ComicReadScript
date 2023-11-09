@@ -15,8 +15,9 @@
 
   overflow: auto;
 
+  max-width: calc(100% - 5em);
   height: fit-content;
-  max-height: 95vh;
+  max-height: 95%;
   margin: auto;
 
   font-size: 1.2em;

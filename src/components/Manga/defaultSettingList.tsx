@@ -23,6 +23,7 @@ import { setState, store } from './hooks/useStore';
 
 import classes from './index.module.css';
 import { SettingsItemNumber } from './components/SettingsItemNumber';
+import { areaArrayMap } from './components/TouchArea';
 
 export type SettingList = (
   | [string, Component]
@@ -97,16 +98,6 @@ export const defaultSettingList: () => SettingList = () => [
         />
 
         <SettingsItemSwitch
-          name={t('setting.option.click_page_turn_enabled')}
-          value={store.option.clickPageTurn.enabled}
-          onChange={createStateSetFn('clickPageTurn.enabled')}
-        />
-        <SettingsItemSwitch
-          name={t('setting.option.click_page_turn_vertical')}
-          value={store.option.clickPageTurn.vertical}
-          onChange={createStateSetFn('clickPageTurn.vertical')}
-        />
-        <SettingsItemSwitch
           name={t('setting.option.show_clickable_area')}
           value={store.show.touchArea}
           onChange={() => {
@@ -115,7 +106,24 @@ export const defaultSettingList: () => SettingList = () => [
             });
           }}
         />
+
+        <SettingsItemSwitch
+          name={t('setting.option.click_page_turn_enabled')}
+          value={store.option.clickPageTurn.enabled}
+          onChange={createStateSetFn('clickPageTurn.enabled')}
+        />
         <SettingsShowItem when={store.option.clickPageTurn.enabled}>
+          <SettingsItemSelect
+            name={t('setting.option.click_page_turn_area')}
+            options={[
+              ['', t('other.default')],
+              ...Object.keys(areaArrayMap).map(
+                (key) => [key, t(`touch_area.type.${key}`)] as [string, string],
+              ),
+            ]}
+            value={store.option.clickPageTurn.area}
+            onChange={createStateSetFn('clickPageTurn.area')}
+          />
           <SettingsItemSwitch
             name={t('setting.option.click_page_turn_swap_area')}
             value={store.option.clickPageTurn.reverse}
