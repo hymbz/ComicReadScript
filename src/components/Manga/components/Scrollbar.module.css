@@ -189,4 +189,9 @@
       border-bottom: 0.4em solid #303030;
     }
   }
+
+  /* 移动端下禁用悬浮显示 */
+  .scrollbar:hover .scrollbarPoper {
+    opacity: 0;
+  }
 }
