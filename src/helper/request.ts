@@ -16,16 +16,20 @@ const xmlHttpRequest = (
     });
   });
 
+type RequestDetails = Partial<Tampermonkey.Request<any>> & {
+  errorText?: string;
+  noTip?: true;
+};
+
 /** 发起请求 */
 export const request = async <T = any>(
   url: string,
-  details?: Partial<Tampermonkey.Request<any>> & {
-    errorText?: string;
-    noTip?: true;
-  },
+  details?: RequestDetails,
   errorNum = 0,
 ): Promise<Tampermonkey.Response<T>> => {
-  const errorText = details?.errorText ?? t('alert.comic_load_error');
+  const errorText = `${
+    details?.errorText ?? t('alert.comic_load_error')
+  } - ${url}`;
   try {
     const res = await xmlHttpRequest({
       method: 'GET',
@@ -37,8 +41,8 @@ export const request = async <T = any>(
     if (res.status !== 200) throw new Error(errorText);
     return res;
   } catch (error) {
-    if (errorNum >= 3) {
-      if (errorText && !details?.noTip) toast.error(errorText);
+    if (errorNum >= 0) {
+      if (!details?.noTip) toast.error(errorText);
       throw new Error(errorText);
     }
     log.error(errorText, error);
@@ -46,3 +50,20 @@ export const request = async <T = any>(
     return request(url, details, errorNum + 1);
   }
 };
+
+/** 同时向多个 api 发起请求 */
+export const tryApi = async <T = any>(
+  url: string,
+  baseUrlList: string[],
+  details?: RequestDetails,
+) =>
+  Promise.any(
+    baseUrlList.map((baseUrl) =>
+      request<T>(`${baseUrl}${url}`, { ...details, noTip: true }),
+    ),
+  ).catch(() => {
+    const errorText = details?.errorText ?? t('alert.comic_load_error');
+    if (!details?.noTip) toast.error(errorText);
+    log.error('所有 api 请求均失败', url, baseUrlList, details);
+    throw new Error(errorText);
+  });

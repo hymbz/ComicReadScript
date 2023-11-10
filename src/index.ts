@@ -190,14 +190,22 @@ try {
     case 'www.copymanga.com': {
       if (!window.location.href.includes('/chapter/')) break;
 
+      const apiList = [
+        'https://api.copymanga.site',
+        'https://api.copymanga.info',
+        'https://api.copymanga.net',
+        'https://api.copymanga.org',
+        'https://api.copymanga.tv',
+        'https://api.mangacopy.com',
+        'https://api.xsskc.com',
+      ];
+
       options = {
         name: 'copymanga',
         getImgList: async () => {
-          const res = await main.request(
-            window.location.href.replace(
-              /.*?(?=\/comic\/)/,
-              'https://api.copymanga.site/api/v3',
-            ),
+          const res = await main.tryApi(
+            window.location.href.replace(/.*?(?=\/comic\/)/, '/api/v3'),
+            apiList,
           );
           return (
             JSON.parse(res.responseText).results.chapter.contents as {
@@ -211,8 +219,10 @@ try {
         ),
         getCommentList: async () => {
           const chapter_id = window.location.pathname.split('/').at(-1);
-          const res = await main.request(
-            `https://api.copymanga.site/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`,
+          const res = await main.tryApi(
+            `/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`,
+            apiList,
+            { errorText: '获取漫画评论失败' },
           );
           return JSON.parse(res.responseText).results.list.map(
             ({ comment }) => comment as string,
