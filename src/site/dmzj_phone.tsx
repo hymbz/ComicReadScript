@@ -7,6 +7,7 @@ import {
   toast,
   useInit,
   log,
+  universalInit,
 } from 'main';
 import dmzjDecrypt from 'dmzjDecrypt';
 import type { ChapterInfo } from '../helper/dmzjApi';
@@ -127,17 +128,18 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
       // 如果不是隐藏漫画，直接进入阅读模式
       if (unsafeWindow.comic_id) {
         await GM.addStyle('.subHeader{display:none !important}');
-        setManga({
-          onNext: querySelectorClick('#loadNextChapter'),
-          onPrev: querySelectorClick('#loadPrevChapter'),
-        });
 
-        init(
-          () =>
+        await universalInit({
+          name: 'dmzj',
+          getImgList: () =>
             querySelectorAll('#commicBox img')
               .map((e) => e.getAttribute('data-original'))
               .filter((src) => src) as string[],
-        );
+          getCommentList: () =>
+            getViewpoint(unsafeWindow.subId, unsafeWindow.chapterId),
+          onNext: querySelectorClick('#loadNextChapter'),
+          onPrev: querySelectorClick('#loadPrevChapter'),
+        });
         return;
       }
 

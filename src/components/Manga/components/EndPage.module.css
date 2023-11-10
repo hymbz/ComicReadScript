@@ -93,6 +93,12 @@
   }
 }
 
+.root[data-mobile] .comments {
+  top: calc(50% + 15em);
+  max-height: 15em;
+  opacity: 0.8;
+}
+
 @keyframes jello {
   0%,
   11.1%,

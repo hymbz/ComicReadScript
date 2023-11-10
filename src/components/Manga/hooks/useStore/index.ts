@@ -14,6 +14,11 @@ export const { store, setState, _state, _setState } = useStore({
     root: undefined as unknown as HTMLElement,
     mangaFlow: undefined as unknown as HTMLElement,
     touchArea: undefined as unknown as HTMLElement,
+
+    // 结束页上的按钮
+    prev: undefined as unknown as HTMLButtonElement,
+    next: undefined as unknown as HTMLButtonElement,
+    exit: undefined as unknown as HTMLButtonElement,
   },
 });
 
