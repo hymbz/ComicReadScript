@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         7.6.0
+// @version         8.0.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -20,6 +20,12 @@
 // @connect         hypergryph.com
 // @connect         mangabz.com
 // @connect         copymanga.site
+// @connect         copymanga.info
+// @connect         copymanga.net
+// @connect         copymanga.org
+// @connect         copymanga.tv
+// @connect         mangacopy.com
+// @connect         xsskc.com
 // @connect         self
 // @connect         127.0.0.1
 // @connect         *
@@ -38,11 +44,11 @@
 // @grant           GM.unregisterMenuCommand
 // @grant           unsafeWindow
 // @icon            data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAACBUExURUxpcWB9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i////198il17idng49DY3PT297/K0MTP1M3X27rHzaCxupmstbTByK69xOfr7bfFy3WOmqi4wPz9/X+XomSBjqW1vZOmsN/l6GmFkomeqe7x8vn6+kv+1vUAAAAOdFJOUwDsAoYli9zV+lIqAZEDwV05SQAAAUZJREFUOMuFk+eWgjAUhGPBiLohjZACUqTp+z/gJkqJy4rzg3Nn+MjhwB0AANjv4BEtdITBHjhtQ4g+CIZbC4Qb9FGb0J4P0YrgCezQqgIA14EDGN8fYz+f3BGMASFkTJ+GDAYMUSONzrFL7SVvjNQIz4B9VERRmV0rbJWbrIwidnsd6ACMlEoip3uad3X2HJmqb3gCkkJELwk5DExRDxA6HnKaDEPSsBnAsZoANgJaoAkg12IJqBiPACImXQKF9IDULIHUkOk7kDpeAMykHqCEWACy8ACdSM7LGSg5F3HtAU1rrkaK9uGAshXS2lZ5QH/nVhmlD8rKlmbO3ZsZwLe8qnpdxJRnLaci1X1V5R32fjd5CndVkfYdGpy3D+htU952C/ypzPtdt3JflzZYBy7fi/O1euvl/XH1Pp+Cw3/1P1xOZwB+AWMcP/iw0AlKAAAAV3pUWHRSYXcgcHJvZmlsZSB0eXBlIGlwdGMAAHic4/IMCHFWKCjKT8vMSeVSAAMjCy5jCxMjE0uTFAMTIESANMNkAyOzVCDL2NTIxMzEHMQHy4BIoEouAOoXEXTyQjWVAAAAAElFTkSuQmCC
-// @resource        solid-js https://unpkg.com/solid-js@1.7.3/dist/solid.cjs
-// @resource        solid-js/store https://unpkg.com/solid-js@1.7.3/store/dist/store.cjs
-// @resource        solid-js/web https://unpkg.com/solid-js@1.7.3/web/dist/web.cjs
+// @resource        solid-js https://unpkg.com/solid-js@1.8.5/dist/solid.cjs
+// @resource        solid-js/store https://unpkg.com/solid-js@1.8.5/store/dist/store.cjs
+// @resource        solid-js/web https://unpkg.com/solid-js@1.8.5/web/dist/web.cjs
 // @resource        panzoom https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js
-// @resource        fflate https://unpkg.com/fflate@0.7.4/umd/index.js
+// @resource        fflate https://unpkg.com/fflate@0.8.1/umd/index.js
 // @resource        dmzjDecrypt https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199
 // @supportURL      https://github.com/hymbz/ComicReadScript/issues
 // @updateURL       https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
@@ -85,13 +91,15 @@ const solidJs = require('solid-js');
 const web = require('solid-js/web');
 const store$2 = require('solid-js/store');
 const fflate = require('fflate');
-const createPanZoom = require('panzoom');
 const main = require('main');
 
 const sleep = ms => new Promise(resolve => {
   window.setTimeout(resolve, ms);
 });
 const clamp = (min, val, max) => Math.max(Math.min(max, val), min);
+
+/** 判断两个数是否在指定误差范围内相等 */
+const isEqual = (val, target, range) => Math.abs(target - val) <= range;
 
 /** 根据传入的条件列表的真假，对 val 进行取反 */
 const ifNot = (val, ...conditions) => {
@@ -255,6 +263,9 @@ const waitImgLoad = (img, timeout = 1000 * 10) => new Promise(resolve => {
   });
 });
 
+/** 将指定的布尔值转换为字符串或未定义 */
+const boolDataVal = val => val ? '' : undefined;
+
 /**
  *
  * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载
@@ -348,6 +359,12 @@ const byPath = (obj, path, handleVal) => {
   }
   if (target === obj) return null;
   return target;
+};
+const requestIdleCallback = (callback, timeout) => {
+  if (Reflect.has(window, 'requestIdleCallback')) return window.requestIdleCallback(callback, {
+    timeout
+  });
+  return window.setTimeout(callback, 1);
 };
 
 /**
@@ -446,6 +463,7 @@ const zh = {
     download_completed: "下载完成",
     downloading: "下载中",
     exit: "退出",
+    grid_mode: "网格模式",
     packaging: "打包中",
     page_fill: "页面填充",
     page_mode_double: "双页模式",
@@ -472,6 +490,7 @@ const zh = {
     jump_to_home: "跳至首页",
     switch_auto_enlarge: "切换图片自动放大选项",
     switch_dir: "切换阅读方向",
+    switch_grid_mode: "切换网格模式",
     switch_page_fill: "切换页面填充",
     switch_scroll_mode: "切换卷轴模式",
     switch_single_double_page_mode: "切换单双页模式",
@@ -487,6 +506,7 @@ const zh = {
   },
   other: {
     auto_enter_read_mode: "自动进入阅读模式",
+    "default": "默认",
     disable: "禁用",
     enter_comic_read_mode: "进入漫画阅读模式",
     fab_hidden: "隐藏悬浮按钮",
@@ -532,6 +552,7 @@ const zh = {
     option: {
       always_load_all_img: "始终加载所有图片",
       background_color: "背景颜色",
+      click_page_turn_area: "点击区域",
       click_page_turn_enabled: "启用点击翻页",
       click_page_turn_swap_area: "左右点击区域交换",
       click_page_turn_vertical: "上下翻页",
@@ -575,6 +596,7 @@ const zh = {
       },
       server: "翻译服务器",
       server_selfhosted: "本地部署",
+      translate_after_current: "翻译当前页至结尾",
       translate_all_img: "翻译全部图片"
     }
   },
@@ -609,9 +631,15 @@ const zh = {
     }
   },
   touch_area: {
-    menu: "菜 单",
-    next: "下 一 页",
-    prev: "上 一 页"
+    menu: "菜单",
+    next: "下页",
+    prev: "上页",
+    type: {
+      edge: "边缘",
+      l: "L",
+      left_right: "左右",
+      up_down: "上下"
+    }
   },
   translation: {
     status: {
@@ -677,6 +705,7 @@ const en = {
     download_completed: "Download completed",
     downloading: "Downloading",
     exit: "Exit",
+    grid_mode: "Grid mode",
     packaging: "Packaging",
     page_fill: "Page fill",
     page_mode_double: "Double page mode",
@@ -703,6 +732,7 @@ const en = {
     jump_to_home: "Jump to the first page",
     switch_auto_enlarge: "Switch auto image enlarge option",
     switch_dir: "Switch reading direction",
+    switch_grid_mode: "Switch grid mode",
     switch_page_fill: "Switch page fill",
     switch_scroll_mode: "Switch scroll mode",
     switch_single_double_page_mode: "Switch single/double page mode",
@@ -718,6 +748,7 @@ const en = {
   },
   other: {
     auto_enter_read_mode: "Auto enter reading mode",
+    "default": "Default",
     disable: "Disable",
     enter_comic_read_mode: "Enter comic reading mode",
     fab_hidden: "Hide floating button",
@@ -763,6 +794,7 @@ const en = {
     option: {
       always_load_all_img: "Always load all images",
       background_color: "Background Color",
+      click_page_turn_area: "Touch area",
       click_page_turn_enabled: "Enable click to turn page",
       click_page_turn_swap_area: "Swap LR clickable areas",
       click_page_turn_vertical: "Vertically arranged clickable areas",
@@ -806,6 +838,7 @@ const en = {
       },
       server: "Translation server",
       server_selfhosted: "Selfhosted",
+      translate_after_current: "Translate the current page to the end",
       translate_all_img: "Translate all images"
     }
   },
@@ -842,7 +875,13 @@ const en = {
   touch_area: {
     menu: "Menu",
     next: "Next Page",
-    prev: "Prev Page"
+    prev: "Prev Page",
+    type: {
+      edge: "edge",
+      l: "L",
+      left_right: "left right",
+      up_down: "up down"
+    }
   },
   translation: {
     status: {
@@ -908,6 +947,7 @@ const ru = {
     download_completed: "Загрузка завершена",
     downloading: "Скачивание",
     exit: "Выход",
+    grid_mode: "网格模式",
     packaging: "Упаковка",
     page_fill: "Заполнить страницу",
     page_mode_double: "Двухчастичный режим",
@@ -934,6 +974,7 @@ const ru = {
     jump_to_home: "Перейти к первой странице",
     switch_auto_enlarge: "Автоматическое приближение изображения",
     switch_dir: "Переключить направление чтения",
+    switch_grid_mode: "切换网格模式",
     switch_page_fill: "Переключить заполнение страницы",
     switch_scroll_mode: "Переключить режим прокрутки",
     switch_single_double_page_mode: "Одностраничный/Двухстраничный режим",
@@ -949,6 +990,7 @@ const ru = {
   },
   other: {
     auto_enter_read_mode: "Автоматически включать режим чтения",
+    "default": "默认",
     disable: "Отключить",
     enter_comic_read_mode: "Режим чтения комиксов",
     fab_hidden: "Скрыть плавающую кнопку",
@@ -994,6 +1036,7 @@ const ru = {
     option: {
       always_load_all_img: "Всегда загружать все изображения",
       background_color: "Цвет фона",
+      click_page_turn_area: "点击区域",
       click_page_turn_enabled: "Включить перелистывание страниц по клику",
       click_page_turn_swap_area: "Поменять местами правую и левую области переключения страниц",
       click_page_turn_vertical: "Вертикальная область переключения страниц",
@@ -1011,7 +1054,10 @@ const ru = {
       paragraph_scrollbar: "Полоса прокрутки",
       paragraph_translation: "Перевод",
       preload_page_num: "Предзагружать страниц",
+      scroll_mode_img_scale: "卷轴图片缩放",
+      scroll_mode_img_spacing: "卷轴图片间距",
       scrollbar_auto_hidden: "Автоматически скрывать полосу прокрутки",
+      scrollbar_easy_scroll: "快捷滚动",
       scrollbar_show: "Показывать полосу прокрутки",
       scrollbar_show_img_status: "Показывать статус загрузки изображения",
       show_clickable_area: "Показывать кликабельные области",
@@ -1034,6 +1080,7 @@ const ru = {
       },
       server: "Сервер",
       server_selfhosted: "Свой",
+      translate_after_current: "翻译当前页至结尾",
       translate_all_img: "Перевести все изображения"
     }
   },
@@ -1070,7 +1117,13 @@ const ru = {
   touch_area: {
     menu: "Меню",
     next: "Следующая страница",
-    prev: "Предыдущая страница"
+    prev: "Предыдущая страница",
+    type: {
+      edge: "边缘",
+      l: "L",
+      left_right: "左右",
+      up_down: "上下"
+    }
   },
   translation: {
     status: {
@@ -1278,7 +1331,7 @@ toast$2.error = (msg, options) => toast$2(msg, {
 });
 
 const _tmpl$$N = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$b = /*#__PURE__*/web.template(\`<div><div>\`);
+  _tmpl$2$d = /*#__PURE__*/web.template(\`<div><div>\`);
 const iconMap = {
   info: MdInfo,
   success: MdCheckCircle,
@@ -1331,7 +1384,7 @@ const ToastItem = props => {
     });
   });
   return (() => {
-    const _el$ = _tmpl$2$b(),
+    const _el$ = _tmpl$2$d(),
       _el$2 = _el$.firstChild;
     _el$.addEventListener("animationend", handleAnimationEnd);
     _el$.addEventListener("click", dismiss);
@@ -1465,10 +1518,9 @@ const xmlHttpRequest = details => new Promise((resolve, reject) => {
     ontimeout: reject
   });
 });
-
 /** 发起请求 */
 const request$1 = async (url, details, errorNum = 0) => {
-  const errorText = details?.errorText ?? t('alert.comic_load_error');
+  const errorText = \`\${details?.errorText ?? t('alert.comic_load_error')} - \${url}\`;
   try {
     const res = await xmlHttpRequest({
       method: 'GET',
@@ -1482,8 +1534,8 @@ const request$1 = async (url, details, errorNum = 0) => {
     if (res.status !== 200) throw new Error(errorText);
     return res;
   } catch (error) {
-    if (errorNum >= 3) {
-      if (errorText && !details?.noTip) toast$1.error(errorText);
+    if (errorNum >= 0) {
+      if (!details?.noTip) toast$1.error(errorText);
       throw new Error(errorText);
     }
     log.error(errorText, error);
@@ -1491,6 +1543,17 @@ const request$1 = async (url, details, errorNum = 0) => {
     return request$1(url, details, errorNum + 1);
   }
 };
+
+/** 同时向多个 api 发起请求 */
+const tryApi = async (url, baseUrlList, details) => Promise.any(baseUrlList.map(baseUrl => request$1(\`\${baseUrl}\${url}\`, {
+  ...details,
+  noTip: true
+}))).catch(() => {
+  const errorText = details?.errorText ?? t('alert.comic_load_error');
+  if (!details?.noTip) toast$1.error(errorText);
+  log.error('所有 api 请求均失败', url, baseUrlList, details);
+  throw new Error(errorText);
+});
 
 const _tmpl$$K = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
 const MdAutoFixHigh = ((props = {}) => (() => {
@@ -1524,7 +1587,7 @@ var css$2 = ".index_module_iconButtonItem__9645dd99{align-items:center;display:f
 var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__9645dd99","iconButton":"index_module_iconButton__9645dd99","enabled":"index_module_enabled__9645dd99","iconButtonPopper":"index_module_iconButtonPopper__9645dd99","hidden":"index_module_hidden__9645dd99"};
 
 const _tmpl$$G = /*#__PURE__*/web.template(\`<div><button type=button tabindex=-1>\`),
-  _tmpl$2$a = /*#__PURE__*/web.template(\`<div>\`);
+  _tmpl$2$c = /*#__PURE__*/web.template(\`<div>\`);
 const IconButtonStyle = css$2;
 /** 图标按钮 */
 const IconButton = _props => {
@@ -1547,7 +1610,7 @@ const IconButton = _props => {
     web.insert(_el$, (() => {
       const _c$ = web.memo(() => !!(props.popper || props.tip));
       return () => _c$() ? (() => {
-        const _el$3 = _tmpl$2$a();
+        const _el$3 = _tmpl$2$c();
         web.insert(_el$3, () => props.popper || props.tip);
         web.effect(_p$ => {
           const _v$6 = [modules_c21c94f2$2.iconButtonPopper, props.popperClassName].join(' '),
@@ -1722,14 +1785,40 @@ const imgState = {
     单页比例: 0,
     横幅比例: 0,
     条漫比例: 0
+  },
+  /** 是否处于拖拽模式 */
+  dragMode: false,
+  page: {
+    /** 动画效果 */
+    anima: '',
+    /** 竖向排列 */
+    vertical: false,
+    /** 正常显示页面所需的偏移量 */
+    offset: {
+      x: {
+        pct: 0,
+        px: 0
+      },
+      y: {
+        pct: 0,
+        px: 0
+      }
+    }
+  },
+  zoom: {
+    /** 缩放大小 */
+    scale: 100,
+    /** 确保缩放前后基准点不变所需的偏移量 */
+    offset: {
+      x: 0,
+      y: 0
+    }
   }
 };
 
 const ScrollbarState = {
   /** 滚动条 */
   scrollbar: {
-    /** 滚动条提示文本 */
-    tipText: '',
     /** 滚动条高度比率 */
     dragHeight: 0,
     /** 滚动条所处高度比率 */
@@ -1763,7 +1852,7 @@ const defaultOption = {
   clickPageTurn: {
     enabled: 'ontouchstart' in document.documentElement,
     reverse: false,
-    vertical: false
+    area: ''
   },
   firstPageFill: true,
   disableZoom: false,
@@ -1801,47 +1890,53 @@ const defaultHotkeys = {
   exit: ['Escape'],
   switch_page_fill: ['/', 'm', 'z'],
   switch_scroll_mode: [],
+  switch_grid_mode: [],
   switch_single_double_page_mode: [],
   switch_dir: [],
   switch_auto_enlarge: []
 };
 const OtherState = {
-  panzoom: undefined,
-  /** 当前是否处于放大模式 */
-  isZoomed: false,
   /** 当前设备是否是移动端 */
   isMobile: false,
-  /** 是否强制显示侧边栏 */
-  showToolbar: false,
-  /** 是否强制显示滚动条 */
-  showScrollbar: false,
-  /** 是否显示结束页 */
-  showEndPage: false,
-  /** 是否显示点击区域 */
-  showTouchArea: false,
-  /** 结束页状态。showEndPage 更改时自动计算 */
-  endPageType: undefined,
+  /** 网格模式 */
+  gridMode: false,
   /** 评论列表 */
   commentList: undefined,
   /** 快捷键配置 */
   hotkeys: {},
-  /** 点击结束页按钮时触发的回调 */
-  onExit: undefined,
-  /** 点击上一话按钮时触发的回调 */
-  onPrev: undefined,
-  /** 点击下一话按钮时触发的回调 */
-  onNext: undefined,
-  /** 图片加载状态发生变化时触发的回调 */
-  onLoading: undefined,
-  /** 配置发生变化时触发的回调 */
-  onOptionChange: undefined,
-  /** 快捷键配置发生变化时触发的回调 */
-  onHotkeysChange: undefined,
-  editButtonList: list => list,
-  editSettingList: list => list,
-  prevRef: undefined,
-  nextRef: undefined,
-  exitRef: undefined,
+  show: {
+    /** 是否强制显示工具栏 */
+    toolbar: false,
+    /** 是否强制显示滚动条 */
+    scrollbar: false,
+    /** 是否显示点击区域 */
+    touchArea: false,
+    /** 结束页状态 */
+    endPage: undefined
+  },
+  prop: {
+    /** 点击结束页按钮时触发的回调 */
+    Exit: undefined,
+    /** 点击上一话按钮时触发的回调 */
+    Prev: undefined,
+    /** 点击下一话按钮时触发的回调 */
+    Next: undefined,
+    /** 图片加载状态发生变化时触发的回调 */
+    Loading: undefined,
+    /** 配置发生变化时触发的回调 */
+    OptionChange: undefined,
+    /** 快捷键配置发生变化时触发的回调 */
+    HotkeysChange: undefined,
+    editButtonList: list => list,
+    editSettingList: list => list
+  },
+  // 自动更新不能手动修改的变量
+  memo: {
+    /** 当前显示的页面 */
+    showPageList: [],
+    /** 要渲染的页面 */
+    renderPageList: []
+  },
   flag: {
     /** 是否需要自动判断开启卷轴模式 */
     autoScrollMode: true,
@@ -1860,11 +1955,15 @@ const {
   ...ScrollbarState,
   ...OptionState,
   ...OtherState,
-  rootRef: undefined,
-  mangaFlowRef: undefined,
-  prevAreaRef: undefined,
-  nextAreaRef: undefined,
-  menuAreaRef: undefined
+  ref: {
+    root: undefined,
+    mangaFlow: undefined,
+    touchArea: undefined,
+    // 结束页上的按钮
+    prev: undefined,
+    next: undefined,
+    exit: undefined
+  }
 });
 
 /* eslint-disable no-undefined,no-param-reassign,no-shadow */
@@ -2037,44 +2136,6 @@ function debounce (delay, callback, options) {
   });
 }
 
-const initPanzoom = state => {
-  // 销毁之前可能创建过的实例
-  state.panzoom?.dispose();
-  const panzoom = createPanZoom(state.mangaFlowRef, {
-    // 边界限制
-    bounds: true,
-    boundsPadding: 1,
-    // 禁止缩小
-    minZoom: 1,
-    // 禁用默认的双击缩放
-    zoomDoubleClickSpeed: 1,
-    // 禁止处理手指捏合动作，交给浏览器去缩放
-    pinchSpeed: 0,
-    // 忽略键盘事件
-    filterKey: () => true,
-    // 不处理 touch 事件
-    onTouch: () => false,
-    // 在 处于卷轴模式 或 不处于缩放状态且没有按下 alt/ctrl 时，不进行缩放
-    beforeWheel: e => store.option.scrollMode || !(e.altKey || e.ctrlKey) && panzoom.getTransform().scale === 1,
-    // 处于放大状态时才允许拖动
-    beforeMouseDown: () => panzoom.getTransform().scale === 1
-  });
-  panzoom.on('zoom', throttle(200, () => {
-    setState(draftState => {
-      if (!draftState.scrollLock) draftState.scrollLock = true;
-      draftState.isZoomed = panzoom.getTransform().scale !== 1;
-    });
-    setState(async draftState => {
-      if (!draftState.isZoomed && draftState.scrollLock) {
-        // 防止在放大模式下通过滚轮缩小至原尺寸后立刻跳转至下一页，所以加一个延时
-        await sleep(200);
-        draftState.scrollLock = false;
-      }
-    });
-  }));
-  state.panzoom = panzoom;
-};
-
 // 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
 // 2. 因为大部分用户都不会在意正确页序，所以应该尽量少加填充页
 /** 记录自动修改过页面填充的图片流 */
@@ -2143,14 +2204,33 @@ const handleComicData = (imgList, fillEffect) => {
   return pageList;
 };
 
-/** 漫画流的容器 */
-const mangaFlowEle = () => store.mangaFlowRef?.parentNode;
+/** 触发 onOptionChange */
+const triggerOnOptionChange = () => setTimeout(() => store.prop.OptionChange?.(difference(store.option, defaultOption)));
+
+/** 在 option 后手动触发 onOptionChange */
+const setOption = fn => {
+  setState(state => fn(state.option, state));
+  triggerOnOptionChange();
+};
+
+/** 创建一个专门用于修改指定配置项的函数 */
+const createStateSetFn = name => val => setOption(draftOption => byPath(draftOption, name, () => val));
+
+/** 创建用于将 ref 绑定到对应 state 上的工具函数 */
+const bindRef = name => e => _setState('ref', name, e);
+
+/** 将界面恢复到正常状态 */
+const resetUI = state => {
+  state.show.toolbar = false;
+  state.show.scrollbar = false;
+  state.show.touchArea = false;
+};
 
 /** 漫画流的总高度 */
-const contentHeight = () => mangaFlowEle().scrollHeight;
+const contentHeight = () => store.ref.mangaFlow.scrollHeight;
 
 /** 能显示出漫画的高度 */
-const windowHeight = () => store.rootRef?.offsetHeight ?? 0;
+const windowHeight = () => store.ref.root.offsetHeight ?? 0;
 
 /** 更新滚动条滑块的高度和所处高度 */
 const updateDrag = state => {
@@ -2174,53 +2254,12 @@ const getImgTip = (state, i) => {
 };
 
 /** 获取指定页面的提示文本 */
-const getPageTip = (state, pageIndex) => {
-  const page = state.pageList[pageIndex];
-  if (!page) return ['null'];
-  const pageIndexText = page.map(index => getImgTip(state, index));
-  if (state.option.dir === 'rtl') pageIndexText.reverse();
-  return pageIndexText;
-};
-const getTipText = state => {
-  if (!state.pageList.length || !state.mangaFlowRef) return '';
-  if (!state.option.scrollMode) return getPageTip(state, state.activePageIndex).join(' | ');
-
-  /** 当前显示图片的列表 */
-  const activeImageIndexList = [];
-  const {
-    scrollTop
-  } = mangaFlowEle();
-  const imgEleList = store.mangaFlowRef.childNodes;
-  const scrollBottom = scrollTop + store.rootRef.offsetHeight;
-
-  // 通过一个一个检查图片元素所在高度来判断图片是否被显示
-  for (let i = 0; i < imgEleList.length; i += 1) {
-    const element = imgEleList[i];
-    // 当图片的顶部位置在视窗口的底部位置时中断循环
-    if (element.offsetTop > scrollBottom) break;
-    // 当图片的底部位置还未达到视窗口的顶部位置时，跳到下一个图片
-    if (element.offsetTop + element.offsetHeight < scrollTop) continue;
-    activeImageIndexList.push(+element.alt - 1);
-  }
-  state.activePageIndex = activeImageIndexList.at(0) ?? 0;
-  return activeImageIndexList.map(index => getPageTip(state, index)).join('\\n');
-};
-
-/** 更新滚动条提示文本 */
-const updateTipText = throttle(100, () => {
-  setState(state => {
-    state.scrollbar.tipText = getTipText(state);
-  });
-});
-
-/** 处理漫画页的滚动事件 */
-const handleMangaFlowScroll = () => {
-  if (!store.option.scrollMode) return;
-  setState(state => {
-    state.scrollbar.dragTop = !mangaFlowEle || !contentHeight() ? 0 : mangaFlowEle().scrollTop / contentHeight();
-    updateDrag(state);
-  });
-  updateTipText();
+const getPageTip = pageIndex => {
+  const page = store.pageList[pageIndex];
+  if (!page) return 'null';
+  const pageIndexText = page.map(index => getImgTip(store, index));
+  if (store.option.dir === 'rtl') pageIndexText.reverse();
+  return pageIndexText.join(store.option.scrollMode ? '\\n' : ' | ');
 };
 
 /** 判断点击位置在滚动条上的位置比率 */
@@ -2237,7 +2276,7 @@ const getDragDist = ([x, y], [ix, iy], e) => {
 
 /** 开始拖拽时的 dragTop 值 */
 let startTop = 0;
-const handleDrag = ({
+const handleScrollbarDrag = ({
   type,
   xy,
   initial
@@ -2245,19 +2284,20 @@ const handleDrag = ({
   const [x, y] = xy;
 
   // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
-  if (type === 'end') return;
-  if (!store.mangaFlowRef) return;
+  if (type === 'up') return;
+  if (!store.ref.mangaFlow) return;
   const scrollbarDom = e.target;
 
   /** 点击位置在滚动条上的位置比率 */
   const clickTop = getClickTop(x, y, e.target);
   let top = clickTop;
   if (store.option.scrollMode) {
-    if (type === 'dragging') {
+    if (type === 'move') {
+      // console.log(initial);
       top = startTop + getDragDist(xy, initial, scrollbarDom);
       // 处理超出范围的情况
       if (top < 0) top = 0;else if (top > 1) top = 1;
-      mangaFlowEle().scrollTo({
+      store.ref.mangaFlow.scrollTo({
         top: top * contentHeight(),
         behavior: 'instant'
       });
@@ -2265,7 +2305,7 @@ const handleDrag = ({
       // 确保滚动条的中心会在点击位置
       top -= store.scrollbar.dragHeight / 2;
       startTop = top;
-      mangaFlowEle().scrollTo({
+      store.ref.mangaFlow.scrollTo({
         top: top * contentHeight(),
         behavior: 'smooth'
       });
@@ -2281,38 +2321,290 @@ const handleDrag = ({
     }
   }
 };
-solidJs.createRoot(() => {
-  // 更新滚动条提示文本
-  solidJs.createEffect(solidJs.on([() => store.activePageIndex, () => store.pageList, () => store.scrollbar.dragHeight, () => store.scrollbar.dragTop, () => store.option.scrollMode, () => store.option.dir, lang], updateTipText));
 
-  // 在关闭 showToolbar 的同时关掉 showScrollbar
-  solidJs.createEffect(solidJs.on(() => store.showToolbar, () => {
-    if (store.showScrollbar && !store.showToolbar) setState(state => {
-      state.showScrollbar = false;
+// 更新 showPageList
+const updateShowPageList = state => {
+  if (!state.option.scrollMode) {
+    state.memo.showPageList = [state.activePageIndex];
+    return;
+  }
+
+  // TODO: 用 Observer 重构
+
+  /** 当前显示页面列表 */
+  const showPageList = [];
+  const {
+    scrollTop
+  } = store.ref.mangaFlow;
+  const eleList = state.ref.mangaFlow.childNodes;
+  const scrollBottom = scrollTop + state.ref.root.offsetHeight;
+
+  // 通过一个一个检查页面元素所在高度来判断页面是否被显示
+  for (let i = 0; i < eleList.length; i += 1) {
+    const element = eleList[i];
+    // 当页面的顶部位置在视窗口的底部位置时中断循环
+    if (element.offsetTop > scrollBottom) break;
+    // 当页面的底部位置还未达到视窗口的顶部位置时，跳到下一个页面
+    if (element.offsetTop + element.offsetHeight < scrollTop) continue;
+    const pageIndex = +element.getAttribute('data-index');
+    if (!Number.isNaN(pageIndex)) showPageList.push(pageIndex);
+  }
+  state.activePageIndex = showPageList.at(-1) ?? 0;
+  if (isEqualArray(state.memo.showPageList, showPageList)) return;
+  state.memo.showPageList = showPageList;
+};
+
+/** 处理漫画页的滚动事件 */
+const handleMangaFlowScroll = () => {
+  if (!store.option.scrollMode) return;
+  requestAnimationFrame(() => {
+    setState(state => {
+      state.scrollbar.dragTop = !store.ref.mangaFlow || !contentHeight() ? 0 : store.ref.mangaFlow.scrollTop / contentHeight();
+      updateDrag(state);
+      updateShowPageList(state);
+    });
+  });
+};
+solidJs.createRoot(() => {
+  // 在关闭工具栏的同时关掉滚动条的强制显示
+  solidJs.createEffect(solidJs.on(() => store.show.toolbar, () => {
+    if (store.show.scrollbar && !store.show.toolbar) setState(state => {
+      state.show.scrollbar = false;
     });
   }, {
     defer: true
   }));
+
+  // 在开启网格模式后关掉 滚动条和工具栏 的强制显示
+  solidJs.createEffect(solidJs.on(() => store.gridMode, gridMode => gridMode && setState(resetUI), {
+    defer: true
+  }));
 });
 
-/** 触发 onOptionChange */
-const triggerOnOptionChange = () => setTimeout(() => store.onOptionChange?.(difference(store.option, defaultOption)));
+const touches = new Map();
+const scale = () => store.zoom.scale / 100;
+const mangaFlowBox = () => store.ref.mangaFlow;
+const width = () => store.ref.mangaFlow?.clientWidth ?? 0;
+const height = () => store.ref.mangaFlow?.clientHeight ?? 0;
+const bound = solidJs.createRoot(() => {
+  const x = solidJs.createMemo(() => -width() * (scale() - 1));
+  const y = solidJs.createMemo(() => -height() * (scale() - 1));
+  return {
+    x,
+    y
+  };
+});
+const checkBound = state => {
+  state.zoom.offset.x = clamp(bound.x(), state.zoom.offset.x, 0);
+  state.zoom.offset.y = clamp(bound.y(), state.zoom.offset.y, 0);
+};
+const closeScrollLock = debounce(200, () => setState(state => {
+  state.scrollLock = false;
+}));
+const zoom = (val, focal, animation = false) => {
+  const newScale = clamp(100, val, 500);
+  if (newScale === store.zoom.scale) return;
 
-/** 在 option 后手动触发 onOptionChange */
-const setOption = fn => {
-  setState(state => fn(state.option, state));
-  triggerOnOptionChange();
+  // 消除放大导致的偏移
+  const {
+    left,
+    top
+  } = mangaFlowBox().getBoundingClientRect();
+  const x = (focal?.x ?? width() / 2) - left;
+  const y = (focal?.y ?? height() / 2) - top;
+
+  // 当前直接放大后的基准点坐标
+  const newX = x / (store.zoom.scale / 100) * (newScale / 100);
+  const newY = y / (store.zoom.scale / 100) * (newScale / 100);
+
+  // 放大后基准点的偏移距离
+  const dx = newX - x;
+  const dy = newY - y;
+  setState(state => {
+    state.zoom.scale = newScale;
+    state.zoom.offset.x -= dx;
+    state.zoom.offset.y -= dy;
+    checkBound(state);
+    if (animation) state.page.anima = 'zoom';
+
+    // 加一个延时锁防止在放大模式下通过滚轮缩小至原尺寸后就立刻跳到下一页
+    if (newScale === 100) {
+      state.scrollLock = true;
+      closeScrollLock();
+    }
+    resetUI(state);
+  });
 };
 
-/** 创建一个专门用于修改指定配置项的函数 */
-const createStateSetFn = name => val => setOption(draftOption => byPath(draftOption, name, () => val));
+//
+// 惯性滑动
+//
 
-/** 创建用于将 ref 绑定到对应 state 上的工具函数 */
-const bindRef = (name, fn) => e => {
+/** 摩擦系数 */
+const FRICTION_COEFF = 0.91;
+const mouse = {
+  x: 0,
+  y: 0
+};
+const last = {
+  x: 0,
+  y: 0
+};
+const velocity = {
+  x: 0,
+  y: 0
+};
+let animationId$1 = null;
+const cancelAnimation = () => {
+  if (!animationId$1) return;
+  cancelAnimationFrame(animationId$1);
+  animationId$1 = null;
+};
+let lastTime = 0;
+
+/** 逐帧计算惯性滑动 */
+const handleSlideAnima = timestamp => {
+  // 当速率足够小时停止计算动画
+  if (isEqual(velocity.x, 0, 1) && isEqual(velocity.y, 0, 1)) {
+    animationId$1 = null;
+    return;
+  }
+
+  // 在拖拽后模拟惯性滑动
   setState(state => {
-    Reflect.set(state, name, e);
-    fn?.(state);
+    state.zoom.offset.x += velocity.x;
+    state.zoom.offset.y += velocity.y;
+    checkBound(state);
+
+    // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
+    if (timestamp - lastTime > 16) {
+      velocity.x *= FRICTION_COEFF;
+      velocity.y *= FRICTION_COEFF;
+      lastTime = timestamp;
+    }
   });
+  animationId$1 = requestAnimationFrame(handleSlideAnima);
+};
+
+/** 逐帧根据鼠标坐标移动元素，并计算速率 */
+const handleDragAnima$1 = () => {
+  // 当停着不动时退出循环
+  if (mouse.x === store.zoom.offset.x && mouse.y === store.zoom.offset.y) {
+    animationId$1 = null;
+    return;
+  }
+  setState(state => {
+    last.x = state.zoom.offset.x;
+    last.y = state.zoom.offset.y;
+    state.zoom.offset.x = mouse.x;
+    state.zoom.offset.y = mouse.y;
+    checkBound(state);
+    velocity.x = state.zoom.offset.x - last.x;
+    velocity.y = state.zoom.offset.y - last.y;
+  });
+  animationId$1 = requestAnimationFrame(handleDragAnima$1);
+};
+
+/** 是否正在双指捏合缩放中 */
+let pinchZoom = false;
+
+/** 处理放大后的拖拽移动 */
+const handleZoomDrag = ({
+  type,
+  xy: [x, y],
+  last: [lx, ly]
+}) => {
+  if (store.zoom.scale === 100) return;
+  switch (type) {
+    case 'down':
+      {
+        mouse.x = store.zoom.offset.x;
+        mouse.y = store.zoom.offset.y;
+        if (animationId$1) cancelAnimation();
+        break;
+      }
+    case 'move':
+      {
+        if (animationId$1) cancelAnimation();
+        mouse.x += x - lx;
+        mouse.y += y - ly;
+        if (animationId$1 === null) animationId$1 = requestAnimationFrame(handleDragAnima$1);
+        break;
+      }
+    case 'up':
+      {
+        // 当双指捏合结束，一个手指抬起时，将剩余的指针当作刚点击来处理
+        if (pinchZoom) {
+          pinchZoom = false;
+          mouse.x = store.zoom.offset.x;
+          mouse.y = store.zoom.offset.y;
+          return;
+        }
+        if (animationId$1) cancelAnimationFrame(animationId$1);
+        animationId$1 = requestAnimationFrame(handleSlideAnima);
+      }
+  }
+};
+
+//
+// 双指捏合缩放
+//
+
+/** 初始双指距离 */
+let initDistance = 0;
+/** 初始缩放比例 */
+let initScale = 100;
+
+/** 获取两个指针之间的距离 */
+const getDistance = (a, b) => Math.hypot(b.xy[0] - a.xy[0], b.xy[1] - a.xy[1]);
+
+/** 逐帧计算当前屏幕上两点之间的距离，并换算成缩放比例 */
+const handlePinchZoomAnima = () => {
+  if (touches.size < 2) {
+    animationId$1 = null;
+    return;
+  }
+  const [a, b] = [...touches.values()];
+  const distance = getDistance(a, b);
+  zoom(distance / initDistance * initScale, {
+    x: (a.xy[0] + b.xy[0]) / 2,
+    y: (a.xy[1] + b.xy[1]) / 2
+  });
+  animationId$1 = requestAnimationFrame(handlePinchZoomAnima);
+};
+
+/** 处理双指捏合缩放 */
+const handlePinchZoom = ({
+  type
+}) => {
+  if (touches.size < 2) return;
+  switch (type) {
+    case 'down':
+      {
+        pinchZoom = true;
+        const [a, b] = [...touches.values()];
+        initDistance = getDistance(a, b);
+        initScale = store.zoom.scale;
+        break;
+      }
+    case 'up':
+      {
+        const [a, b] = [...touches.values()];
+        initDistance = getDistance(a, b);
+        break;
+      }
+    case 'move':
+      {
+        if (animationId$1 === null) animationId$1 = requestAnimationFrame(handlePinchZoomAnima);
+        break;
+      }
+    case 'cancel':
+      {
+        const [a, b] = [...touches.values()];
+        initDistance = getDistance(a, b);
+        break;
+      }
+  }
 };
 
 const {
@@ -2322,9 +2614,9 @@ const {
   imgPlaceholderHeight,
   preloadNum
 } = solidJs.createRoot(() => {
-  const activeImgIndexMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex]?.find(i => i !== -1) ?? 0);
-  const nowFillIndexMemo = solidJs.createMemo(() => findFillIndex(activeImgIndexMemo(), store.fillEffect));
   const activePageMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex] ?? []);
+  const activeImgIndexMemo = solidJs.createMemo(() => activePageMemo().find(i => i !== -1) ?? 0);
+  const nowFillIndexMemo = solidJs.createMemo(() => findFillIndex(activeImgIndexMemo(), store.fillEffect));
   const imgPlaceholderHeightMemo = solidJs.createMemo(() => {
     if (!store.option.scrollMode) return 0;
     // 使用所有已加载图片高度的中位数
@@ -2333,8 +2625,8 @@ const {
     return heightList[Math.floor(heightList.length / 2)] * store.option.scrollModeImgScale;
   });
   const preloadNumMemo = solidJs.createMemo(() => ({
-    front: store.option.preloadPageNum,
-    back: Math.floor(store.option.preloadPageNum / 2)
+    back: store.option.preloadPageNum,
+    front: Math.floor(store.option.preloadPageNum / 2)
   }));
   return {
     /** 当前显示的第一张图片的 index */
@@ -2349,30 +2641,39 @@ const {
     preloadNum: preloadNumMemo
   };
 });
+const loadImg = (state, index, draft) => {
+  if (index === -1) return false;
+  const img = state.imgList[index];
+  if (!img?.src) return false;
+  if (img.loadType === 'wait') {
+    img.loadType = 'loading';
+    draft.editNum += 1;
+  }
+  return draft.editNum >= draft.loadNum;
+};
+const loadPage = (state, index, draft) => state.pageList[index]?.some(i => loadImg(state, i, draft));
 
 /**
- * 预加载指定页数的图片，并取消其他预加载的图片
+ * 以当前显示页为基准，预加载附近指定页数的图片，并取消其他预加载的图片
  * @param state state
- * @param startIndex 起始 page index
- * @param endIndex 结束 page index
+ * @param loadPageNum 加载页数
  * @param loadNum 加载图片的数量
- * @returns 返回指定范围内的图片在执行前是否还有未加载完的
+ * @returns 返回是否成功加载了未加载图片
  */
-const loadImg = (state, startIndex, endIndex = startIndex + 1, loadNum = 2) => {
-  let editNum = 0;
-  state.pageList.slice(Math.max(startIndex, 0), clamp(0, state.pageList.length, endIndex)).flat().some(index => {
-    if (index === -1) return false;
-    const img = state.imgList[index];
-    if (!img.src) return false;
-    if (img.loadType === 'wait') {
-      img.loadType = 'loading';
-      editNum += 1;
-    }
-    return editNum >= loadNum;
-  });
-  const edited = editNum > 0;
-  if (edited) updateTipText();
-  return edited;
+const loadPageImg = (state, loadPageNum = Infinity, loadNum = 2) => {
+  const draft = {
+    editNum: 0,
+    loadNum
+  };
+  const targetPage = state.activePageIndex + loadPageNum;
+  if (targetPage < state.activePageIndex) {
+    const end = Math.max(0, targetPage);
+    for (let i = state.activePageIndex; i >= end; i--) if (loadPage(state, i, draft)) break;
+  } else {
+    const end = Math.min(state.pageList.length, targetPage);
+    for (let i = state.activePageIndex; i < end; i++) if (loadPage(state, i, draft)) break;
+  }
+  return draft.editNum > 0;
 };
 const zoomScrollModeImg = (zoomLevel, set = false) => {
   setOption(draftOption => {
@@ -2383,7 +2684,7 @@ const zoomScrollModeImg = (zoomLevel, set = false) => {
   });
   // 在调整图片缩放后使当前滚动进度保持不变
   setState(state => {
-    mangaFlowEle().scrollTo({
+    store.ref.mangaFlow.scrollTo({
       top: contentHeight() * state.scrollbar.dragTop
     });
   });
@@ -2392,28 +2693,23 @@ const zoomScrollModeImg = (zoomLevel, set = false) => {
 
 /** 根据当前页数更新所有图片的加载状态 */
 const updateImgLoadType = debounce(100, state => {
-  const {
-    imgList,
-    activePageIndex
-  } = state;
-
   // 先将所有加载中的图片状态改为暂停
-  imgList.forEach((img, i) => {
-    if (img.loadType === 'loading') imgList[i].loadType = 'wait';
+  state.imgList.forEach((img, i) => {
+    if (img.loadType === 'loading') state.imgList[i].loadType = 'wait';
   });
   return (
     // 优先加载当前显示页
-    loadImg(state, activePageIndex, activePageIndex + 1) ||
+    loadPageImg(state, 1) ||
     // 再加载后面几页
-    loadImg(state, activePageIndex + 1, activePageIndex + preloadNum().front) ||
+    loadPageImg(state, preloadNum().back) ||
     // 再加载前面几页
-    loadImg(state, activePageIndex - 10, activePageIndex - preloadNum().back) ||
+    loadPageImg(state, -preloadNum().front) ||
     // 根据设置决定是否要继续加载其余图片
-    !state.option.alwaysLoadAllImg && imgList.length > 60 ||
+    !state.option.alwaysLoadAllImg && state.imgList.length > 60 ||
     // 加载当前页后面的图片
-    loadImg(state, activePageIndex + 1, imgList.length, 5) ||
-    // 加载剩余未加载页面
-    loadImg(state, 0, imgList.length, 5)
+    loadPageImg(state, Infinity, 5) ||
+    // 加载当前页前面的图片
+    loadPageImg(state, -Infinity, 5)
   );
 });
 
@@ -2426,9 +2722,10 @@ const updatePageData = state => {
     option: {
       onePageMode,
       scrollMode
-    }
+    },
+    isMobile
   } = state;
-  if (onePageMode || scrollMode || imgList.length <= 1) state.pageList = imgList.map((_, i) => [i]);else state.pageList = handleComicData(imgList, fillEffect);
+  if (onePageMode || scrollMode || isMobile || imgList.length <= 1) state.pageList = imgList.map((_, i) => [i]);else state.pageList = handleComicData(imgList, fillEffect);
   updateDrag(state);
   updateImgLoadType(state);
 
@@ -2466,7 +2763,7 @@ const handleResize = (state, width, height) => {
   state.proportion.横幅比例 = width / height;
   state.proportion.条漫比例 = state.proportion.单页比例 / 2;
   state.imgList.forEach(img => updateImgType(state, img));
-  state.isMobile = window.matchMedia('(max-width: 600px)').matches;
+  state.isMobile = window.matchMedia('(max-width: 800px)').matches;
 };
 
 /** 切换页面填充 */
@@ -2481,7 +2778,7 @@ const switchFillEffect = () => {
 
 /** 切换卷轴模式 */
 const switchScrollMode = () => {
-  store.panzoom?.smoothZoomAbs(0, 0, 0.99);
+  zoom(100);
   setOption((draftOption, state) => {
     state.activePageIndex = 0;
     draftOption.scrollMode = !draftOption.scrollMode;
@@ -2500,24 +2797,57 @@ const switchOnePageMode = () => {
 };
 
 /** 切换阅读方向 */
-const switchDir = () => setOption(draftOption => {
-  draftOption.dir = draftOption.dir !== 'rtl' ? 'rtl' : 'ltr';
-});
+const switchDir = () => {
+  setOption(draftOption => {
+    draftOption.dir = draftOption.dir !== 'rtl' ? 'rtl' : 'ltr';
+  });
+};
+
+/** 切换网格模式 */
+const switchGridMode = () => {
+  setState(state => {
+    state.gridMode = !state.gridMode;
+    if (state.zoom.scale !== 100) zoom(100);
+    state.page.anima = '';
+  });
+};
+
+/** 更新渲染页面相关变量 */
+const updateRenderPage = (state, animation = false) => {
+  state.memo.renderPageList = state.pageList.slice(Math.max(0, state.activePageIndex - 1), Math.min(state.pageList.length, state.activePageIndex + 2));
+  const i = state.memo.renderPageList.indexOf(state.pageList[state.activePageIndex]);
+  state.page.offset.x.pct = 0;
+  state.page.offset.y.pct = 0;
+  if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
+  state.page.anima = animation ? 'page' : '';
+};
 solidJs.createRoot(() => {
   // 页数发生变动时
   solidJs.createEffect(solidJs.on(() => store.activePageIndex, () => {
     setState(state => {
       updateImgLoadType(state);
-      if (state.endPageType) state.endPageType = undefined;
+      if (state.show.endPage) state.show.endPage = undefined;
     });
   }, {
     defer: true
+  }));
+  solidJs.createEffect(solidJs.on(activePage, page => {
+    // 如果当前显示页面有出错的图片，就重新加载一次
+    page?.forEach(i => {
+      if (store.imgList[i]?.loadType !== 'error') return;
+      setState(state => {
+        state.imgList[i].loadType = 'wait';
+      });
+    });
+    if (store.option.scrollMode) return;
+    // 在翻页时重新计算要渲染的页面
+    if (!store.dragMode) setState(updateRenderPage);
   }));
 });
 
 const setHotkeys = (...args) => {
   _setState.apply(undefined, ['hotkeys', ...args]);
-  store.onHotkeysChange?.(Object.fromEntries(Object.entries(store.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]))));
+  store.prop.HotkeysChange?.(Object.fromEntries(Object.entries(store.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]))));
 };
 const {
   hotkeysMap
@@ -2540,8 +2870,16 @@ const delHotkeys = code => {
   });
 };
 
-var css$1 = ".index_module_img__8ddc4bab{background-color:var(--hover_bg_color,#fff3);content-visibility:hidden;display:none;height:100%;max-width:100%;object-fit:contain;z-index:1}.index_module_img__8ddc4bab[data-show]{content-visibility:visible;display:unset}.index_module_img__8ddc4bab[data-fill=left]{transform:translate(50%)}.index_module_img__8ddc4bab[data-fill=right]{transform:translate(-50%)}.index_module_img__8ddc4bab[data-load-type=loading]{animation:index_module_show__8ddc4bab 2s forwards;max-width:100vw!important;opacity:0;position:absolute}.index_module_img__8ddc4bab[data-load-type=error],.index_module_img__8ddc4bab[data-load-type=wait]{height:40em!important;opacity:0;position:absolute;width:40em}.index_module_mangaFlowBox__8ddc4bab{height:100%;outline:none;scrollbar-width:none}.index_module_mangaFlowBox__8ddc4bab::-webkit-scrollbar{display:none}.index_module_mangaFlowBox__8ddc4bab[data-hiddenMouse=true]{cursor:none}.index_module_mangaFlow__8ddc4bab{align-items:center;color:var(--text);display:flex;height:100%;justify-content:center;user-select:none}.index_module_mangaFlow__8ddc4bab.index_module_disableZoom__8ddc4bab .index_module_img__8ddc4bab{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__8ddc4bab.index_module_scrollMode__8ddc4bab{flex-direction:column!important;justify-content:flex-start;overflow:visible}.index_module_mangaFlow__8ddc4bab.index_module_scrollMode__8ddc4bab .index_module_img__8ddc4bab{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width, 100%))}.index_module_mangaFlow__8ddc4bab.index_module_scrollMode__8ddc4bab .index_module_img__8ddc4bab[data-load-type=wait]{display:unset;flex-basis:var(--img_placeholder_height);flex-shrink:0;visibility:hidden}.index_module_mangaFlow__8ddc4bab.index_module_scrollMode__8ddc4bab .index_module_img__8ddc4bab[data-load-type=loading]{position:unset}.index_module_mangaFlow__8ddc4bab.index_module_scrollMode__8ddc4bab .index_module_img__8ddc4bab+.index_module_img__8ddc4bab{margin-top:calc(var(--scrollModeSpacing)*.1em)}.index_module_mangaFlow__8ddc4bab[dir=ltr]{flex-direction:row}.index_module_mangaFlow__8ddc4bab>svg{background-color:var(--bg);color:var(--text_secondary);position:absolute;width:20em}.index_module_mangaFlow__8ddc4bab>svg[data-fill=left]{transform:translate(100%)}.index_module_mangaFlow__8ddc4bab>svg[data-fill=right]{transform:translate(-100%)}@keyframes index_module_show__8ddc4bab{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__8ddc4bab{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__8ddc4bab>button{animation:index_module_jello__8ddc4bab .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__8ddc4bab>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__8ddc4bab>button:focus-visible{outline:none}.index_module_endPage__8ddc4bab>.index_module_tip__8ddc4bab{margin:auto;position:absolute}.index_module_endPage__8ddc4bab[data-show]{opacity:1;pointer-events:all}.index_module_endPage__8ddc4bab[data-type=start]>.index_module_tip__8ddc4bab{transform:translateY(-10em)}.index_module_endPage__8ddc4bab[data-type=end]>.index_module_tip__8ddc4bab{transform:translateY(10em)}.index_module_root__8ddc4bab[data-mobile] .index_module_endPage__8ddc4bab>button{width:1em}.index_module_comments__8ddc4bab{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__8ddc4bab>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__8ddc4bab:hover{opacity:1}@keyframes index_module_jello__8ddc4bab{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__8ddc4bab{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__8ddc4bab{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}.index_module_toolbar__8ddc4bab[data-show=true] .index_module_toolbarPanel__8ddc4bab{transform:none}.index_module_toolbarBg__8ddc4bab{backdrop-filter:blur(24px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_SettingPanelPopper__8ddc4bab{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__8ddc4bab{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95vh;overflow:auto;position:fixed;top:0;user-select:text;z-index:1}.index_module_SettingPanel__8ddc4bab hr{color:#fff;margin:0}.index_module_SettingBlock__8ddc4bab{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__8ddc4bab .index_module_SettingBlockBody__8ddc4bab{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__8ddc4bab .index_module_SettingBlockBody__8ddc4bab)>div+:is(.index_module_SettingBlock__8ddc4bab .index_module_SettingBlockBody__8ddc4bab)>div{margin-top:1em}.index_module_SettingBlock__8ddc4bab[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__8ddc4bab{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__8ddc4bab{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__8ddc4bab+.index_module_SettingsItem__8ddc4bab{margin-top:1em}.index_module_SettingsItemName__8ddc4bab{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__8ddc4bab{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__8ddc4bab{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__8ddc4bab[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__8ddc4bab[data-checked=true] .index_module_SettingsItemSwitchRound__8ddc4bab{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__8ddc4bab{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__8ddc4bab{background-color:var(--hover_bg_color);border:none;border-radius:5px;cursor:pointer;font-size:1em;margin:0;outline:none;padding:.3em 0 .3em .3em;width:6em}.index_module_closeCover__8ddc4bab{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__8ddc4bab{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__8ddc4bab>.index_module_SettingsShowItemBody__8ddc4bab{overflow:hidden}.index_module_SettingsShowItem__8ddc4bab>.index_module_SettingsShowItemBody__8ddc4bab>.index_module_SettingsItem__8ddc4bab{margin-top:1em}.index_module_hotkeys__8ddc4bab{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__8ddc4bab+.index_module_hotkeys__8ddc4bab{margin-top:.5em}.index_module_hotkeys__8ddc4bab:last-child{border-bottom:none}.index_module_hotkeysItem__8ddc4bab{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__8ddc4bab>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__8ddc4bab>svg:hover{opacity:.9}.index_module_hotkeysItem__8ddc4bab:hover{padding:.2em .5em}.index_module_hotkeysItem__8ddc4bab:hover>svg{display:unset}.index_module_hotkeysItem__8ddc4bab:focus,.index_module_hotkeysItem__8ddc4bab:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__8ddc4bab{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__8ddc4bab>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__8ddc4bab>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__8ddc4bab>div[title]>svg{width:1.6em}.index_module_hotkeys__8ddc4bab:hover div[title]{transform:scale(1)}.index_module_scrollbar__8ddc4bab{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;opacity:0;outline:none;position:absolute;right:3px;top:1%;touch-action:none;transition:opacity .15s;user-select:none;width:5px;z-index:9}.index_module_scrollbar__8ddc4bab>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbar__8ddc4bab:hover,.index_module_scrollbar__8ddc4bab[data-show=true]{opacity:1}.index_module_scrollbarDrag__8ddc4bab{background-color:var(--scrollbar_drag);border-radius:1em;height:var(--height);justify-content:center;position:absolute;top:var(--top);width:100%;z-index:1}.index_module_scrollbarPage__8ddc4bab{background-color:var(--secondary);flex-grow:1;transform:scaleY(1);transform-origin:bottom;transition:transform 1s}.index_module_scrollbarPage__8ddc4bab[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__8ddc4bab[data-type=wait]{opacity:.5}.index_module_scrollbarPage__8ddc4bab[data-type=error]{background-color:#f005}.index_module_scrollbarPage__8ddc4bab[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__8ddc4bab[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__8ddc4bab[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__8ddc4bab[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__8ddc4bab[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__8ddc4bab{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;justify-content:center;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__8ddc4bab[data-show=true]{opacity:1}.index_module_scrollbarPoper__8ddc4bab:after{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbar__8ddc4bab:hover .index_module_scrollbarPoper__8ddc4bab{opacity:1}.index_module_root__8ddc4bab[data-mobile] .index_module_scrollbar__8ddc4bab{border-bottom:2em solid #0000;border-left:none;flex-direction:row-reverse;height:5px;right:1%;top:1px;width:98%}.index_module_root__8ddc4bab[data-mobile] .index_module_scrollbarDrag__8ddc4bab{height:100%;right:var(--top);top:unset;width:var(--height)}.index_module_root__8ddc4bab[data-mobile] .index_module_scrollbar__8ddc4bab[dir=ltr]{flex-direction:row}.index_module_root__8ddc4bab[data-mobile] .index_module_scrollbar__8ddc4bab[dir=ltr] .index_module_scrollbarDrag__8ddc4bab{left:var(--top);right:unset}.index_module_root__8ddc4bab[data-mobile] .index_module_scrollbarPoper__8ddc4bab{padding:.1em .3em;right:unset;top:1.2em}.index_module_root__8ddc4bab[data-mobile] .index_module_scrollbarPoper__8ddc4bab:after{border:.3em solid #0000;border-bottom:.4em solid #303030;bottom:100%;left:unset}.index_module_touchAreaRoot__8ddc4bab{color:#fff;display:flex;font-size:3em;height:100%;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_root__8ddc4bab[data-mobile] .index_module_touchAreaRoot__8ddc4bab,.index_module_touchAreaRoot__8ddc4bab[data-vert=true]{flex-direction:column!important}.index_module_touchArea__8ddc4bab{align-items:center;display:flex;flex-grow:1;justify-content:center;outline:none}.index_module_touchArea__8ddc4bab>h6{text-orientation:upright;writing-mode:vertical-lr}.index_module_touchArea__8ddc4bab[data-area=menu]{flex-basis:4em;flex-grow:0}.index_module_touchAreaRoot__8ddc4bab[data-show=true]{visibility:visible}.index_module_touchAreaRoot__8ddc4bab[data-show=true] .index_module_touchArea__8ddc4bab[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__8ddc4bab[data-show=true] .index_module_touchArea__8ddc4bab[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__8ddc4bab[data-show=true] .index_module_touchArea__8ddc4bab[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__8ddc4bab[data-scroll-mode=true] .index_module_touchArea__8ddc4bab[data-area=next],.index_module_touchAreaRoot__8ddc4bab[data-scroll-mode=true] .index_module_touchArea__8ddc4bab[data-area=prev]{visibility:hidden}.index_module_hidden__8ddc4bab{display:none}.index_module_invisible__8ddc4bab{visibility:hidden}.index_module_opacity1__8ddc4bab{opacity:1}.index_module_opacity0__8ddc4bab{opacity:0}.index_module_root__8ddc4bab{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__8ddc4bab a{color:var(--text_secondary)}.index_module_root__8ddc4bab[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__8ddc4bab{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__8ddc4bab::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__8ddc4bab::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__8ddc4bab::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary,#607d8b);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
-var modules_c21c94f2$1 = {"img":"index_module_img__8ddc4bab","show":"index_module_show__8ddc4bab","mangaFlowBox":"index_module_mangaFlowBox__8ddc4bab","mangaFlow":"index_module_mangaFlow__8ddc4bab","disableZoom":"index_module_disableZoom__8ddc4bab","scrollMode":"index_module_scrollMode__8ddc4bab","endPage":"index_module_endPage__8ddc4bab","jello":"index_module_jello__8ddc4bab","tip":"index_module_tip__8ddc4bab","root":"index_module_root__8ddc4bab","comments":"index_module_comments__8ddc4bab","toolbar":"index_module_toolbar__8ddc4bab","toolbarPanel":"index_module_toolbarPanel__8ddc4bab","toolbarBg":"index_module_toolbarBg__8ddc4bab","SettingPanelPopper":"index_module_SettingPanelPopper__8ddc4bab","SettingPanel":"index_module_SettingPanel__8ddc4bab","SettingBlock":"index_module_SettingBlock__8ddc4bab","SettingBlockBody":"index_module_SettingBlockBody__8ddc4bab","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__8ddc4bab","SettingsItem":"index_module_SettingsItem__8ddc4bab","SettingsItemName":"index_module_SettingsItemName__8ddc4bab","SettingsItemSwitch":"index_module_SettingsItemSwitch__8ddc4bab","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__8ddc4bab","SettingsItemIconButton":"index_module_SettingsItemIconButton__8ddc4bab","SettingsItemSelect":"index_module_SettingsItemSelect__8ddc4bab","closeCover":"index_module_closeCover__8ddc4bab","SettingsShowItem":"index_module_SettingsShowItem__8ddc4bab","SettingsShowItemBody":"index_module_SettingsShowItemBody__8ddc4bab","hotkeys":"index_module_hotkeys__8ddc4bab","hotkeysItem":"index_module_hotkeysItem__8ddc4bab","hotkeysHeader":"index_module_hotkeysHeader__8ddc4bab","scrollbar":"index_module_scrollbar__8ddc4bab","scrollbarDrag":"index_module_scrollbarDrag__8ddc4bab","scrollbarPage":"index_module_scrollbarPage__8ddc4bab","scrollbarPoper":"index_module_scrollbarPoper__8ddc4bab","touchAreaRoot":"index_module_touchAreaRoot__8ddc4bab","touchArea":"index_module_touchArea__8ddc4bab","hidden":"index_module_hidden__8ddc4bab","invisible":"index_module_invisible__8ddc4bab","opacity1":"index_module_opacity1__8ddc4bab","opacity0":"index_module_opacity0__8ddc4bab","beautifyScrollbar":"index_module_beautifyScrollbar__8ddc4bab"};
+var css$1 = ".index_module_img__d6bc57d1{background-color:var(--hover_bg_color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d6bc57d1[data-fill=left]{transform:translate(50%)}.index_module_img__d6bc57d1[data-fill=right]{transform:translate(-50%)}.index_module_img__d6bc57d1[data-fill=page]{display:none}.index_module_img__d6bc57d1[data-type=long]{height:auto;width:100%}.index_module_img__d6bc57d1[data-load-type=loading]{animation:index_module_show__d6bc57d1 2s forwards;max-width:100vw!important;opacity:0;position:absolute}.index_module_img__d6bc57d1[data-load-type=error],.index_module_img__d6bc57d1[data-load-type=wait],.index_module_img__d6bc57d1[src=\\"\\"]{aspect-ratio:3/4;height:100%!important;position:relative}:is(.index_module_img__d6bc57d1[data-load-type=error],.index_module_img__d6bc57d1[src=\\"\\"]):before{opacity:0}:is(.index_module_img__d6bc57d1[data-load-type],.index_module_img__d6bc57d1[src=\\"\\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d6bc57d1[data-load-type=loading],.index_module_img__d6bc57d1[data-load-type=wait]):after{background-image:var(--MdCloudDownload);content:\\"\\"}.index_module_img__d6bc57d1[src=\\"\\"]:after{background-image:var(--MdPhoto);content:\\"\\"}.index_module_img__d6bc57d1[data-load-type=error]:after{background-image:var(--MdImageNotSupported);content:\\"\\"}.index_module_page__d6bc57d1{align-items:center;content-visibility:hidden;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page_x),var(--page_y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d6bc57d1[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d6bc57d1{grid-row-gap:0;backface-visibility:hidden;color:var(--text);display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;touch-action:none;transform:translate(var(--x),var(--y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;transition-duration:0ms;user-select:none;width:100%}.index_module_mangaFlow__d6bc57d1:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d6bc57d1:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d6bc57d1[data-disable-zoom] .index_module_img__d6bc57d1{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d6bc57d1[dir=ltr] .index_module_page__d6bc57d1{flex-direction:row}.index_module_mangaFlow__d6bc57d1[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d6bc57d1[data-animation=page] .index_module_page__d6bc57d1,.index_module_mangaFlow__d6bc57d1[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d6bc57d1[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d6bc57d1[data-scroll-mode]{grid-row-gap:calc(var(--scrollModeSpacing)*.1em);grid-auto-flow:row;grid-auto-rows:auto;grid-template-rows:auto;overflow:auto;touch-action:auto}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_page__d6bc57d1{content-visibility:auto;display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width, 100%))}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1[data-load-type=wait]{height:var(--img-placeholder-height)}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1[data-load-type=loading]{position:unset}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1[data-load-type=error]{height:20em;width:30em}.index_module_mangaFlow__d6bc57d1[data-grid-mode]{grid-row-gap:1.5em;box-sizing:border-box;grid-auto-flow:row;grid-auto-rows:33.33333%;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;overflow:auto;padding-bottom:2em;touch-action:auto;transform:none}.index_module_mangaFlow__d6bc57d1[data-grid-mode] .index_module_page__d6bc57d1{height:auto;transform:none}.index_module_mangaFlow__d6bc57d1[data-grid-mode] .index_module_page__d6bc57d1:after{bottom:-1.5em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);width:100%}.index_module_mangaFlow__d6bc57d1[data-grid-mode] .index_module_page__d6bc57d1 .index_module_img__d6bc57d1{content-visibility:auto;cursor:pointer}@keyframes index_module_show__d6bc57d1{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d6bc57d1{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d6bc57d1>button{animation:index_module_jello__d6bc57d1 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d6bc57d1>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d6bc57d1>button:focus-visible{outline:none}.index_module_endPage__d6bc57d1>.index_module_tip__d6bc57d1{margin:auto;position:absolute}.index_module_endPage__d6bc57d1[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d6bc57d1[data-type=start]>.index_module_tip__d6bc57d1{transform:translateY(-10em)}.index_module_endPage__d6bc57d1[data-type=end]>.index_module_tip__d6bc57d1{transform:translateY(10em)}.index_module_root__d6bc57d1[data-mobile] .index_module_endPage__d6bc57d1>button{width:1em}.index_module_comments__d6bc57d1{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d6bc57d1>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d6bc57d1:hover{opacity:1}.index_module_root__d6bc57d1[data-mobile] .index_module_comments__d6bc57d1{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d6bc57d1{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d6bc57d1{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d6bc57d1{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d6bc57d1[data-show],.index_module_toolbar__d6bc57d1:hover) .index_module_toolbarPanel__d6bc57d1{transform:none}.index_module_toolbar__d6bc57d1[data-close] .index_module_toolbarPanel__d6bc57d1{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d6bc57d1{backdrop-filter:blur(24px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d6bc57d1[data-mobile] .index_module_toolbar__d6bc57d1{font-size:1.3em}.index_module_root__d6bc57d1[data-mobile] .index_module_toolbar__d6bc57d1:not([data-show]){pointer-events:none}.index_module_root__d6bc57d1[data-mobile] .index_module_toolbarBg__d6bc57d1{filter:opacity(.8)}.index_module_SettingPanelPopper__d6bc57d1{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__d6bc57d1{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;user-select:text;z-index:1}.index_module_SettingPanel__d6bc57d1 hr{color:#fff;margin:0}.index_module_SettingBlock__d6bc57d1{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d6bc57d1 .index_module_SettingBlockBody__d6bc57d1{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__d6bc57d1 .index_module_SettingBlockBody__d6bc57d1)>div+:is(.index_module_SettingBlock__d6bc57d1 .index_module_SettingBlockBody__d6bc57d1)>div{margin-top:1em}.index_module_SettingBlock__d6bc57d1[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__d6bc57d1{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d6bc57d1{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d6bc57d1+.index_module_SettingsItem__d6bc57d1{margin-top:1em}.index_module_SettingsItemName__d6bc57d1{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d6bc57d1{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d6bc57d1{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d6bc57d1[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__d6bc57d1[data-checked=true] .index_module_SettingsItemSwitchRound__d6bc57d1{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d6bc57d1{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d6bc57d1{background-color:var(--hover_bg_color);border:none;border-radius:5px;cursor:pointer;font-size:1em;margin:0;outline:none;padding:.3em 0 .3em .3em;width:6em}.index_module_closeCover__d6bc57d1{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d6bc57d1{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d6bc57d1>.index_module_SettingsShowItemBody__d6bc57d1{overflow:hidden}.index_module_SettingsShowItem__d6bc57d1>.index_module_SettingsShowItemBody__d6bc57d1>.index_module_SettingsItem__d6bc57d1{margin-top:1em}.index_module_hotkeys__d6bc57d1{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d6bc57d1+.index_module_hotkeys__d6bc57d1{margin-top:.5em}.index_module_hotkeys__d6bc57d1:last-child{border-bottom:none}.index_module_hotkeysItem__d6bc57d1{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__d6bc57d1>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d6bc57d1>svg:hover{opacity:.9}.index_module_hotkeysItem__d6bc57d1:hover{padding:.2em .5em}.index_module_hotkeysItem__d6bc57d1:hover>svg{display:unset}.index_module_hotkeysItem__d6bc57d1:focus,.index_module_hotkeysItem__d6bc57d1:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d6bc57d1{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d6bc57d1>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d6bc57d1>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d6bc57d1>div[title]>svg{width:1.6em}.index_module_hotkeys__d6bc57d1:hover div[title]{transform:scale(1)}.index_module_scrollbar__d6bc57d1{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;opacity:0;outline:none;position:absolute;right:3px;top:1%;touch-action:none;transition:opacity .15s;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d6bc57d1>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbar__d6bc57d1:hover,.index_module_scrollbar__d6bc57d1[data-show=true]{opacity:1}.index_module_scrollbarDrag__d6bc57d1{background-color:var(--scrollbar_drag);border-radius:1em;height:var(--height);justify-content:center;position:absolute;top:var(--top);width:100%;z-index:1}.index_module_scrollbarPage__d6bc57d1{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d6bc57d1[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d6bc57d1[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d6bc57d1[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d6bc57d1[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d6bc57d1[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d6bc57d1[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d6bc57d1[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d6bc57d1[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__d6bc57d1{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;justify-content:center;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__d6bc57d1[data-show=true]{opacity:1}.index_module_scrollbarPoper__d6bc57d1:after{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbar__d6bc57d1:hover .index_module_scrollbarPoper__d6bc57d1{opacity:1}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbar__d6bc57d1{border-bottom:2em solid #0000;border-left:none;flex-direction:row-reverse;height:5px;right:1%;top:1px;width:98%}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbarDrag__d6bc57d1{height:100%;right:var(--top);top:unset;width:var(--height)}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbar__d6bc57d1[data-dir=ltr]{flex-direction:row}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbar__d6bc57d1[data-dir=ltr] .index_module_scrollbarDrag__d6bc57d1{left:var(--top);right:unset}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbarPoper__d6bc57d1{padding:.1em .3em;right:unset;top:1.2em}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbarPoper__d6bc57d1:after{border:.3em solid #0000;border-bottom:.4em solid #303030;bottom:100%;left:unset}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbar__d6bc57d1:hover .index_module_scrollbarPoper__d6bc57d1{opacity:0}.index_module_touchAreaRoot__d6bc57d1{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(40%,10em) 1fr;grid-template-rows:1fr min(30%,10em) 1fr;height:100%;letter-spacing:.5em;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__d6bc57d1[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d6bc57d1[data-show=true]{visibility:visible}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=PREV],.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=MENU],.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=NEXT],.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=NEXT],.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=PREV],.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=next],.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d6bc57d1[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d6bc57d1[data-mobile] .index_module_touchAreaRoot__d6bc57d1{flex-direction:column!important;letter-spacing:0}.index_module_root__d6bc57d1[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d6bc57d1{display:none!important}.index_module_invisible__d6bc57d1{visibility:hidden!important}.index_module_root__d6bc57d1{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d6bc57d1 a{color:var(--text_secondary)}.index_module_root__d6bc57d1[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d6bc57d1{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d6bc57d1::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d6bc57d1::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d6bc57d1::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary,#607d8b);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var modules_c21c94f2$1 = {"img":"index_module_img__d6bc57d1","show":"index_module_show__d6bc57d1","mangaFlow":"index_module_mangaFlow__d6bc57d1","endPage":"index_module_endPage__d6bc57d1","jello":"index_module_jello__d6bc57d1","tip":"index_module_tip__d6bc57d1","root":"index_module_root__d6bc57d1","comments":"index_module_comments__d6bc57d1","toolbar":"index_module_toolbar__d6bc57d1","toolbarPanel":"index_module_toolbarPanel__d6bc57d1","toolbarBg":"index_module_toolbarBg__d6bc57d1","SettingPanelPopper":"index_module_SettingPanelPopper__d6bc57d1","SettingPanel":"index_module_SettingPanel__d6bc57d1","SettingBlock":"index_module_SettingBlock__d6bc57d1","SettingBlockBody":"index_module_SettingBlockBody__d6bc57d1","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__d6bc57d1","SettingsItem":"index_module_SettingsItem__d6bc57d1","SettingsItemName":"index_module_SettingsItemName__d6bc57d1","SettingsItemSwitch":"index_module_SettingsItemSwitch__d6bc57d1","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__d6bc57d1","SettingsItemIconButton":"index_module_SettingsItemIconButton__d6bc57d1","SettingsItemSelect":"index_module_SettingsItemSelect__d6bc57d1","closeCover":"index_module_closeCover__d6bc57d1","SettingsShowItem":"index_module_SettingsShowItem__d6bc57d1","SettingsShowItemBody":"index_module_SettingsShowItemBody__d6bc57d1","hotkeys":"index_module_hotkeys__d6bc57d1","hotkeysItem":"index_module_hotkeysItem__d6bc57d1","hotkeysHeader":"index_module_hotkeysHeader__d6bc57d1","scrollbar":"index_module_scrollbar__d6bc57d1","scrollbarDrag":"index_module_scrollbarDrag__d6bc57d1","scrollbarPage":"index_module_scrollbarPage__d6bc57d1","scrollbarPoper":"index_module_scrollbarPoper__d6bc57d1","touchAreaRoot":"index_module_touchAreaRoot__d6bc57d1","touchArea":"index_module_touchArea__d6bc57d1","hidden":"index_module_hidden__d6bc57d1","invisible":"index_module_invisible__d6bc57d1","beautifyScrollbar":"index_module_beautifyScrollbar__d6bc57d1","page":"index_module_page__d6bc57d1"};
+
+const handleMouseDown = e => {
+  if (e.button !== 1 || store.option.scrollMode) return;
+  e.stopPropagation();
+  e.preventDefault();
+  switchFillEffect();
+};
+const focus = () => (store.ref.mangaFlow ?? store.ref.root)?.parentElement?.focus();
 
 /** 判断当前是否已经滚动到底部 */
 const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
@@ -2549,75 +2887,113 @@ const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight +
 /** 判断当前是否已经滚动到顶部 */
 const isTop = state => state.option.scrollMode ? store.scrollbar.dragTop === 0 : state.activePageIndex === 0;
 
-/** 翻页 */
-const turnPage = dir => setState(state => {
+/** 翻页。返回是否成功改变了当前页数 */
+const turnPageFn = (state, dir) => {
+  if (state.gridMode) return false;
   if (dir === 'prev') {
-    switch (state.endPageType) {
+    switch (state.show.endPage) {
       case 'start':
-        if (!state.scrollLock && state.option.jumpToNext) state.onPrev?.();
-        return;
+        if (!state.scrollLock && state.option.jumpToNext) state.prop.Prev?.();
+        return false;
       case 'end':
-        state.endPageType = undefined;
-        return;
+        state.show.endPage = undefined;
+        return false;
       default:
         // 弹出卷首结束页
         if (isTop(state)) {
-          if (!state.onExit) return;
+          if (!state.prop.Exit) return false;
           // 没有 onPrev 时不弹出
-          if (!state.onPrev || !state.option.jumpToNext) return;
-          state.endPageType = 'start';
+          if (!state.prop.Prev || !state.option.jumpToNext) return false;
+          state.show.endPage = 'start';
           state.scrollLock = true;
           window.setTimeout(() => {
             state.scrollLock = false;
           }, 200);
-          return;
+          return false;
         }
-        if (!state.option.scrollMode) state.activePageIndex -= 1;
+        if (state.option.scrollMode) return false;
+        state.activePageIndex -= 1;
+        return true;
     }
   } else {
-    switch (state.endPageType) {
+    switch (state.show.endPage) {
       case 'end':
-        if (state.scrollLock) return;
-        if (state.onNext && state.option.jumpToNext) {
-          state.onNext();
-          return;
+        if (state.scrollLock) return false;
+        if (state.prop.Next && state.option.jumpToNext) {
+          state.prop.Next();
+          return false;
         }
-        state.onExit?.(true);
-        return;
+        state.prop.Exit?.(true);
+        return false;
       case 'start':
-        state.endPageType = undefined;
-        return;
+        state.show.endPage = undefined;
+        return false;
       default:
         // 弹出卷尾结束页
         if (isBottom(state)) {
-          if (!state.onExit) return;
-          state.endPageType = 'end';
+          if (!state.prop.Exit) return false;
+          state.show.endPage = 'end';
           state.scrollLock = true;
           window.setTimeout(() => {
             state.scrollLock = false;
           }, 200);
-          return;
+          return false;
         }
-        if (!state.option.scrollMode) state.activePageIndex += 1;
+        if (state.option.scrollMode) return false;
+        state.activePageIndex += 1;
+        return true;
     }
   }
-});
+};
+const turnPage = dir => setState(state => turnPageFn(state, dir));
+const turnPageAnimation = dir => {
+  setState(state => {
+    // 无法翻页就恢复原位
+    if (!turnPageFn(state, dir)) {
+      state.page.offset.x.px = 0;
+      state.page.offset.y.px = 0;
+      updateRenderPage(state, true);
+      state.dragMode = false;
+      return;
+    }
+    state.dragMode = true;
+    updateRenderPage(state);
+    if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 100 : -100;else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
+    requestIdleCallback(() => {
+      setState(draftState => {
+        updateRenderPage(draftState, true);
+        draftState.page.offset.x.px = 0;
+        draftState.page.offset.y.px = 0;
+        draftState.dragMode = false;
+      });
+    }, 50);
+  });
+};
 const handleWheel = e => {
   e.stopPropagation();
-  if (e.ctrlKey && !store.option.scrollMode || e.altKey && !store.option.scrollMode || !store.endPageType && store.scrollLock) return e.preventDefault();
+  if (e.ctrlKey || e.altKey) e.preventDefault();
+  if (!store.show.endPage && store.scrollLock) return;
   const isWheelDown = e.deltaY > 0;
-
-  // 实现卷轴模式下的缩放
-  if (!store.endPageType && (e.altKey || e.ctrlKey)) {
-    e.preventDefault();
-    zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
-    // 在调整图片缩放后使当前滚动进度保持不变
-    setState(state => {
-      mangaFlowEle().scrollTo({
-        top: contentHeight() * state.scrollbar.dragTop
+  if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
+  if (store.option.scrollMode) {
+    // 卷轴模式下的缩放
+    if (e.altKey || e.ctrlKey) {
+      e.preventDefault();
+      zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
+      // 在调整图片缩放后使当前滚动进度保持不变
+      setState(state => {
+        store.ref.mangaFlow.scrollTo({
+          top: contentHeight() * state.scrollbar.dragTop
+        });
       });
-    });
-    handleMangaFlowScroll();
+      handleMangaFlowScroll();
+    }
+    return;
+  }
+
+  // 翻页模式下的缩放
+  if (e.altKey || e.ctrlKey || store.zoom.scale !== 100) {
+    zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
     return;
   }
   return turnPage(isWheelDown ? 'next' : 'prev');
@@ -2635,6 +3011,16 @@ const handleKeyDown = e => {
   if (e.target.tagName === 'INPUT' || e.target.className === modules_c21c94f2$1.hotkeysItem) return;
   const code = getKeyboardCode(e);
 
+  // esc 在触发配置操作前，先用于退出一些界面
+  if (e.key === 'Escape') {
+    if (store.gridMode) return setState(state => {
+      state.gridMode = false;
+    });
+    if (store.show.endPage) return setState(state => {
+      state.show.endPage = undefined;
+    });
+  }
+
   // 处理标注了 data-only-number 的元素
   if (e.target.getAttribute('data-only-number') !== null) {
     // 拦截能输入数字外的按键
@@ -2646,7 +3032,7 @@ const handleKeyDown = e => {
   }
 
   // 卷轴模式下跳过用于移动的按键
-  if (store.option.scrollMode && !store.endPageType) {
+  if (store.option.scrollMode && !store.show.endPage) {
     switch (e.key) {
       case 'Home':
       case 'End':
@@ -2655,11 +3041,11 @@ const handleKeyDown = e => {
         return;
       case 'ArrowUp':
       case 'PageUp':
-        return turnPage('prev');
+        return;
       case 'ArrowDown':
       case 'PageDown':
       case ' ':
-        return turnPage('next');
+        return;
     }
   }
 
@@ -2693,21 +3079,289 @@ const handleKeyDown = e => {
       return switchOnePageMode();
     case 'switch_dir':
       return switchDir();
+    case 'switch_grid_mode':
+      return switchGridMode();
     case 'switch_auto_enlarge':
       return setOption(draftOption => {
         draftOption.disableZoom = !draftOption.disableZoom;
       });
     case 'exit':
-      return store.onExit?.();
+      return store.prop.Exit?.();
   }
 };
-const handleMouseDown = e => {
-  if (e.button !== 1 || store.option.scrollMode) return;
-  e.stopPropagation();
-  e.preventDefault();
-  switchFillEffect();
+
+let clickTimeout = null;
+const useDoubleClick = (click, doubleClick, timeout = 200) => {
+  return event => {
+    // 如果点击触发时还有上次计时器的记录，说明这次是双击
+    if (clickTimeout) {
+      clearTimeout(clickTimeout);
+      clickTimeout = null;
+      doubleClick?.(event);
+      return;
+    }
+
+    // 单击事件延迟触发
+    clickTimeout = window.setTimeout(() => {
+      click(event);
+      clickTimeout = null;
+    }, timeout);
+  };
 };
-const focus = () => (store.mangaFlowRef ?? store.rootRef)?.parentElement?.focus();
+
+/** 根据坐标判断点击的元素 */
+const findClickEle = (eleList, {
+  x,
+  y
+}) => [...eleList].find(e => {
+  const rect = e.getBoundingClientRect();
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+});
+
+/** 触发 touchArea 操作 */
+const handlePageClick = e => {
+  const targetArea = findClickEle(store.ref.touchArea.children, e);
+  if (!targetArea) return;
+  const areaName = targetArea.getAttribute('data-area');
+  switch (areaName) {
+    case 'menu':
+    case 'MENU':
+      {
+        return setState(state => {
+          state.show.scrollbar = !state.show.scrollbar;
+          state.show.toolbar = !state.show.toolbar;
+        });
+      }
+    case 'prev':
+    case 'PREV':
+      {
+        setState(resetUI);
+        return store.option.clickPageTurn.enabled && turnPage('prev');
+      }
+    case 'next':
+    case 'NEXT':
+      {
+        setState(resetUI);
+        return store.option.clickPageTurn.enabled && turnPage('next');
+      }
+  }
+};
+
+/** 网格模式下点击图片跳到对应页 */
+const handleGridClick = e => {
+  const target = findClickEle(store.ref.root.getElementsByTagName('img'), e);
+  if (!target) return;
+  const pageNumText = target.parentElement?.getAttribute('data-index');
+  if (!pageNumText) return;
+  const pageNum = +pageNumText;
+  if (!Reflect.has(store.pageList, pageNum)) return;
+  setState(state => {
+    state.activePageIndex = pageNum;
+    state.gridMode = false;
+  });
+};
+
+/** 双击放大 */
+const doubleClickZoom = e => {
+  if (store.option.scrollMode || store.gridMode) return;
+  requestAnimationFrame(() => {
+    setState(state => {
+      // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
+      const newScale = state.zoom.scale >= 300 ? 100 : state.zoom.scale + 100;
+      zoom(newScale, e, true);
+    });
+  });
+};
+const handleClick = useDoubleClick(e => {
+  if (store.zoom.scale !== 100) return;
+  if (store.gridMode) return handleGridClick(e);
+  handlePageClick(e);
+}, doubleClickZoom);
+
+/** 判断翻页方向 */
+const getTurnPageDir = startTime => {
+  let dir;
+  let move;
+  let total;
+  if (store.page.vertical) {
+    move = -store.page.offset.y.px;
+    total = store.ref.root.clientHeight;
+  } else {
+    move = store.page.offset.x.px;
+    total = store.ref.root.clientWidth;
+  }
+
+  // 滑动距离超过总长度三分之一判定翻页
+  if (Math.abs(move) > total / 3) dir = move > 0 ? 'next' : 'prev';
+  if (dir) return dir;
+
+  // 滑动速度超过 0.4 判定翻页
+  const velocity = move / (performance.now() - startTime);
+  if (velocity < -0.4) dir = 'prev';
+  if (velocity > 0.4) dir = 'next';
+  return dir;
+};
+let dx = 0;
+let dy = 0;
+let animationId = null;
+const handleDragAnima = () => {
+  // 当停着不动时退出循环
+  if (dx === store.page.offset.x.px && dy === store.page.offset.y.px) {
+    animationId = null;
+    return;
+  }
+  setState(state => {
+    if (state.page.vertical) state.page.offset.y.px = dy;else state.page.offset.x.px = dx;
+  });
+  animationId = requestAnimationFrame(handleDragAnima);
+};
+const handleMangaFlowDrag = ({
+  type,
+  xy: [x, y],
+  initial: [ix, iy],
+  startTime
+}) => {
+  switch (type) {
+    case 'move':
+      {
+        dx = store.option.dir === 'rtl' ? x - ix : ix - x;
+        dy = y - iy;
+        if (store.dragMode) {
+          if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
+          return;
+        }
+
+        // 判断滑动方向
+        let slideDir;
+        if (Math.abs(dx) > 5 && isEqual(dy, 0, 3)) slideDir = 'horizontal';
+        if (Math.abs(dy) > 5 && isEqual(dx, 0, 3)) slideDir = 'vertical';
+        if (!slideDir) return;
+        setState(state => {
+          // 根据滑动方向自动切换排列模式
+          state.page.vertical = slideDir === 'vertical';
+          state.dragMode = true;
+          updateRenderPage(state);
+        });
+        return;
+      }
+    case 'up':
+      {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+
+        // 将拖动的页面移回正常位置
+        const dir = getTurnPageDir(startTime);
+        if (dir) return turnPageAnimation(dir);
+        setState(state => {
+          state.page.offset.x.px = 0;
+          state.page.offset.y.px = 0;
+          state.page.anima = 'page';
+          state.dragMode = false;
+        });
+      }
+  }
+};
+
+/** 在鼠标静止一段时间后自动隐藏 */
+const useHiddenMouse = () => {
+  const [hiddenMouse, setHiddenMouse] = solidJs.createSignal(true);
+  const hidden = debounce(1000, () => setHiddenMouse(true));
+  return {
+    hiddenMouse,
+    /** 鼠标移动 */
+    onMouseMove: () => {
+      setHiddenMouse(false);
+      hidden();
+    }
+  };
+};
+
+const createPointerState = (e, type = 'down') => {
+  const xy = [e.clientX, e.clientY];
+  return {
+    id: e.pointerId,
+    type,
+    xy,
+    initial: xy,
+    last: xy,
+    startTime: performance.now()
+  };
+};
+const useDrag = ({
+  ref,
+  handleDrag,
+  easyMode,
+  handleClick,
+  touches = new Map()
+}) => {
+  solidJs.onMount(() => {
+    const controller = new AbortController();
+    const options = {
+      capture: false,
+      passive: true,
+      signal: controller.signal
+    };
+    const handleDown = e => {
+      e.stopPropagation();
+      ref.setPointerCapture(e.pointerId);
+      if (!easyMode?.() && e.buttons !== 1) return;
+      const state = createPointerState(e);
+      touches.set(e.pointerId, state);
+      handleDrag(state, e);
+    };
+    const handleMove = e => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (!easyMode?.() && e.buttons !== 1) return;
+      const state = touches.get(e.pointerId);
+      if (!state) return;
+      state.type = 'move';
+      state.xy = [e.clientX, e.clientY];
+      handleDrag(state, e);
+      state.last = state.xy;
+    };
+    const handleUp = e => {
+      e.stopPropagation();
+      ref.releasePointerCapture(e.pointerId);
+      const state = touches.get(e.pointerId);
+      if (!state) return;
+      touches.delete(e.pointerId);
+      state.type = 'up';
+      state.xy = [e.clientX, e.clientY];
+
+      // 判断单击
+      if (handleClick && touches.size === 0 && isEqual(state.xy[0] - state.initial[0], 0, 5) && isEqual(state.xy[1] - state.initial[1], 0, 5) && performance.now() - state.startTime < 200) handleClick(e);
+      handleDrag(state, e);
+      focus();
+    };
+    ref.addEventListener('pointerdown', handleDown, options);
+    ref.addEventListener('pointermove', handleMove, {
+      ...options,
+      passive: false
+    });
+    ref.addEventListener('pointerup', handleUp, options);
+    ref.addEventListener('pointercancel', e => {
+      e.stopPropagation();
+      const state = touches.get(e.pointerId);
+      if (!state) return;
+      state.type = 'cancel';
+      handleDrag(state, e);
+      touches.clear();
+      focus();
+    }, {
+      capture: false,
+      passive: true,
+      signal: controller.signal
+    });
+    if (easyMode) {
+      ref.addEventListener('pointerover', handleDown, options);
+      ref.addEventListener('pointerout', handleUp, options);
+    }
+    solidJs.onCleanup(() => controller.abort());
+  });
+};
 
 const _tmpl$$D = /*#__PURE__*/web.template(\`<img>\`);
 /** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
@@ -2736,7 +3390,7 @@ const handleImgLoaded = (i, e) => {
     img.height = e.naturalHeight;
     img.width = e.naturalWidth;
     updateImgType(state, img);
-    state.onLoading?.(state.imgList, img);
+    state.prop.Loading?.(state.imgList, img);
     // 因为火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
     // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
     e.decode();
@@ -2774,313 +3428,37 @@ const handleImgError = (i, e) => {
     if (!img) return;
     img.loadType = 'error';
     log.error(t('alert.img_load_failed'), e);
-    state.onLoading?.(state.imgList, img);
+    state.prop.Loading?.(state.imgList, img);
   });
 };
 
 /** 漫画图片 */
 const ComicImg = props => {
-  const show = solidJs.createMemo(() => store.option.scrollMode || activePage().includes(props.index));
-  const fill = solidJs.createMemo(() => {
-    if (!show() || activePage().length === 1) return;
-
-    // 判断是否有填充页
-    const fillIndex = activePage().indexOf(-1);
-    if (fillIndex !== -1) return ifNot(fillIndex, store.option.dir !== 'rtl') ? 'left' : 'right';
-
-    // 判断自己的类型
-    if (props.img.loadType !== 'loaded') return ifNot(activePage().indexOf(props.index), store.option.dir === 'rtl') ? 'left' : 'right';
-
-    // 判断另一张图
-    const anotherImg = store.imgList[activePage().find(i => i !== props.index)];
-    if (anotherImg.loadType !== 'loaded') return ifNot(activePage().indexOf(props.index), store.option.dir === 'rtl') ? 'left' : 'right';
-  });
+  const img = solidJs.createMemo(() => store.imgList[props.index]);
   const src = solidJs.createMemo(() => {
-    if (props.img.loadType === 'wait') return '';
-    if (props.img.translationType === 'show') return props.img.translationUrl;
-    return props.img.src;
+    if (!img() || img().loadType === 'wait') return '';
+    if (img().translationType === 'show') return img().translationUrl;
+    return img().src;
   });
-
-  // 如果要显示的是出错图片，就重新加载一次
-  solidJs.createEffect(solidJs.on(show, () => {
-    if (show() && props.img.loadType === 'error') _setState('imgList', props.index, 'loadType', 'loading');
-  }));
   return (() => {
     const _el$ = _tmpl$$D();
     _el$.addEventListener("error", e => handleImgError(props.index, e.currentTarget));
     _el$.addEventListener("load", e => handleImgLoaded(props.index, e.currentTarget));
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.img,
-        _v$2 = props.img.width ? \`min(100%, \${props.img.width}px)\` : undefined,
+        _v$2 = img()?.width ? \`min(100%, \${img()?.width}px)\` : undefined,
         _v$3 = src(),
         _v$4 = \`\${props.index + 1}\`,
-        _v$5 = show() ? '' : undefined,
-        _v$6 = fill(),
-        _v$7 = props.img.type || undefined,
-        _v$8 = props.img.loadType === 'loaded' ? undefined : props.img.loadType;
+        _v$5 = props.index === -1 ? 'page' : props.fill,
+        _v$6 = img()?.type || undefined,
+        _v$7 = img()?.loadType === 'loaded' ? undefined : img()?.loadType;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("--width", _v$2) : _el$.style.removeProperty("--width"));
       _v$3 !== _p$._v$3 && web.setAttribute(_el$, "src", _p$._v$3 = _v$3);
       _v$4 !== _p$._v$4 && web.setAttribute(_el$, "alt", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-show", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-fill", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-type", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-load-type", _p$._v$8 = _v$8);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined,
-      _v$5: undefined,
-      _v$6: undefined,
-      _v$7: undefined,
-      _v$8: undefined
-    });
-    return _el$;
-  })();
-};
-
-const _tmpl$$C = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m21.19 21.19-.78-.78L18 18l-4.59-4.59-9.82-9.82-.78-.78a.996.996 0 0 0-1.41 0C1 3.2 1 3.83 1.39 4.22L3 5.83V19c0 1.1.9 2 2 2h13.17l1.61 1.61c.39.39 1.02.39 1.41 0 .39-.39.39-1.03 0-1.42zM6.02 18c-.42 0-.65-.48-.39-.81l2.49-3.2a.5.5 0 0 1 .78-.01l2.1 2.53L12.17 15l3 3H6.02zm14.98.17L5.83 3H19c1.1 0 2 .9 2 2v13.17z">\`);
-const MdImageNotSupported = ((props = {}) => (() => {
-  const _el$ = _tmpl$$C();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
-const MdCloudDownload = ((props = {}) => (() => {
-  const _el$ = _tmpl$$B();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.9 13.98l2.1 2.53 3.1-3.99c.2-.26.6-.26.8.01l3.51 4.68a.5.5 0 0 1-.4.8H6.02c-.42 0-.65-.48-.39-.81L8.12 14c.19-.26.57-.27.78-.02z">\`);
-const MdPhoto = ((props = {}) => (() => {
-  const _el$ = _tmpl$$A();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const loadTypeSvg = {
-  error: MdImageNotSupported,
-  loading: MdCloudDownload,
-  wait: MdCloudDownload
-};
-const getComponent = img => {
-  if (!img) return;
-  if (!img.src) return MdPhoto;
-  return loadTypeSvg[img.loadType];
-};
-const ShowSvg = index => {
-  const position = solidJs.createMemo(() => {
-    if (activePage().length === 1) return;
-    return activePage().indexOf(index) ? 'after' : 'before';
-  });
-  return web.createComponent(web.Dynamic, {
-    get component() {
-      return getComponent(store.imgList[index]);
-    },
-    get style() {
-      return {
-        transform: position() && \`translate(\${position() === 'before' ? '' : '-'}100%)\`
-      };
-    }
-  });
-};
-const LoadTypeTip = () => web.createComponent(solidJs.For, {
-  get each() {
-    return activePage();
-  },
-  children: ShowSvg
-});
-
-const _tmpl$$z = /*#__PURE__*/web.template(\`<div><div data-area=prev role=button tabindex=-1><h6></h6></div><div data-area=menu role=button tabindex=-1><h6></h6></div><div data-area=next role=button tabindex=-1><h6>\`);
-const handleClick = {
-  prev: () => {
-    if (store.option.clickPageTurn.enabled) turnPage('prev');
-  },
-  next: () => {
-    if (store.option.clickPageTurn.enabled) turnPage('next');
-  },
-  menu: () => {
-    // 处于放大模式时跳过不处理
-    if (store.isZoomed) return;
-    setState(state => {
-      state.showScrollbar = !state.showScrollbar;
-      state.showToolbar = !state.showToolbar;
-    });
-  }
-};
-
-/** 根据点击坐标触发指定的操作 */
-const handlePageClick = ({
-  clientX: x,
-  clientY: y
-}) => {
-  if (store.isZoomed) return;
-
-  // 找到当前
-  const targetArea = [store.nextAreaRef, store.menuAreaRef, store.prevAreaRef].find(e => {
-    if (!e) return false;
-    const rect = e.getBoundingClientRect();
-    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-  });
-  if (!targetArea) return;
-  handleClick[targetArea.getAttribute('data-area')]();
-};
-const TouchArea = () => (() => {
-  const _el$ = _tmpl$$z(),
-    _el$2 = _el$.firstChild,
-    _el$3 = _el$2.firstChild,
-    _el$4 = _el$2.nextSibling,
-    _el$5 = _el$4.firstChild,
-    _el$6 = _el$4.nextSibling,
-    _el$7 = _el$6.firstChild;
-  const _ref$ = bindRef('prevAreaRef');
-  typeof _ref$ === "function" && web.use(_ref$, _el$2);
-  web.insert(_el$3, () => t('touch_area.prev'));
-  const _ref$2 = bindRef('menuAreaRef');
-  typeof _ref$2 === "function" && web.use(_ref$2, _el$4);
-  web.insert(_el$5, () => t('touch_area.menu'));
-  const _ref$3 = bindRef('nextAreaRef');
-  typeof _ref$3 === "function" && web.use(_ref$3, _el$6);
-  web.insert(_el$7, () => t('touch_area.next'));
-  web.effect(_p$ => {
-    const _v$ = modules_c21c94f2$1.touchAreaRoot,
-      _v$2 = ifNot(store.option.clickPageTurn.enabled && store.option.clickPageTurn.reverse, store.option.dir !== 'rtl') ? undefined : 'row-reverse',
-      _v$3 = store.isZoomed ? 'move' : undefined,
-      _v$4 = store.showTouchArea,
-      _v$5 = store.option.clickPageTurn.vertical,
-      _v$6 = store.option.scrollMode,
-      _v$7 = modules_c21c94f2$1.touchArea,
-      _v$8 = modules_c21c94f2$1.touchArea,
-      _v$9 = modules_c21c94f2$1.touchArea;
-    _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-    _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("flex-direction", _v$2) : _el$.style.removeProperty("flex-direction"));
-    _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$.style.setProperty("cursor", _v$3) : _el$.style.removeProperty("cursor"));
-    _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-show", _p$._v$4 = _v$4);
-    _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-vert", _p$._v$5 = _v$5);
-    _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-scroll-mode", _p$._v$6 = _v$6);
-    _v$7 !== _p$._v$7 && web.className(_el$2, _p$._v$7 = _v$7);
-    _v$8 !== _p$._v$8 && web.className(_el$4, _p$._v$8 = _v$8);
-    _v$9 !== _p$._v$9 && web.className(_el$6, _p$._v$9 = _v$9);
-    return _p$;
-  }, {
-    _v$: undefined,
-    _v$2: undefined,
-    _v$3: undefined,
-    _v$4: undefined,
-    _v$5: undefined,
-    _v$6: undefined,
-    _v$7: undefined,
-    _v$8: undefined,
-    _v$9: undefined
-  });
-  return _el$;
-})();
-
-let clickTimeout = null;
-const useDoubleClick = (click, doubleClick, timeout = 200) => {
-  return event => {
-    // 如果点击触发时还有上次计时器的记录，说明这次是双击
-    if (clickTimeout) {
-      clearTimeout(clickTimeout);
-      clickTimeout = null;
-      doubleClick?.(event);
-      return;
-    }
-
-    // 单击事件延迟触发
-    clickTimeout = window.setTimeout(() => {
-      click(event);
-      clickTimeout = null;
-    }, timeout);
-  };
-};
-
-/** 在鼠标静止一段时间后自动隐藏 */
-const useHiddenMouse = () => {
-  const [hiddenMouse, setHiddenMouse] = solidJs.createSignal(true);
-  const hidden = debounce(1000, () => setHiddenMouse(true));
-  return {
-    hiddenMouse,
-    /** 鼠标移动 */
-    onMouseMove: () => {
-      setHiddenMouse(false);
-      hidden();
-    }
-  };
-};
-
-const _tmpl$$y = /*#__PURE__*/web.template(\`<div tabindex=-1><div>\`),
-  _tmpl$2$9 = /*#__PURE__*/web.template(\`<h1>NULL\`);
-
-/**
- * 漫画图片流的容器
- */
-const ComicImgFlow = () => {
-  const handleClick = e => handlePageClick(e);
-
-  /** 处理双击缩放 */
-  const handleDoubleClickZoom = e => {
-    setTimeout(() => {
-      if (!store.panzoom || store.option.scrollMode) return;
-      const {
-        scale
-      } = store.panzoom.getTransform();
-
-      // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
-      if (scale >= 2) store.panzoom.smoothZoomAbs(0, 0, 0.99);else store.panzoom.smoothZoomAbs(e.clientX, e.clientY, scale + 1);
-    });
-  };
-  const {
-    hiddenMouse,
-    onMouseMove
-  } = useHiddenMouse();
-  return (() => {
-    const _el$ = _tmpl$$y(),
-      _el$2 = _el$.firstChild;
-    web.use(e => e.addEventListener('scroll', handleMangaFlowScroll, {
-      passive: true
-    }), _el$);
-    _el$.addEventListener("mousemove", onMouseMove);
-    const _ref$ = bindRef('mangaFlowRef', initPanzoom);
-    typeof _ref$ === "function" && web.use(_ref$, _el$2);
-    _el$2.addEventListener("click", useDoubleClick(handleClick, handleDoubleClickZoom));
-    web.insert(_el$2, web.createComponent(solidJs.Index, {
-      get each() {
-        return store.imgList;
-      },
-      get fallback() {
-        return _tmpl$2$9();
-      },
-      children: (img, i) => web.createComponent(ComicImg, {
-        get img() {
-          return img();
-        },
-        index: i
-      })
-    }), null);
-    web.insert(_el$2, web.createComponent(LoadTypeTip, {}), null);
-    web.effect(_p$ => {
-      const _v$ = modules_c21c94f2$1.mangaFlowBox,
-        _v$2 = store.option.scrollMode ? 'auto' : 'hidden',
-        _v$3 = hiddenMouse(),
-        _v$4 = modules_c21c94f2$1.mangaFlow,
-        _v$5 = modules_c21c94f2$1.mangaFlow,
-        _v$6 = {
-          [modules_c21c94f2$1.disableZoom]: store.option.disableZoom || store.option.scrollMode,
-          [modules_c21c94f2$1.scrollMode]: store.option.scrollMode
-        },
-        _v$7 = store.option.dir;
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("overflow", _v$2) : _el$.style.removeProperty("overflow"));
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-hiddenmouse", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$2, "id", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.className(_el$2, _p$._v$5 = _v$5);
-      _p$._v$6 = web.classList(_el$2, _v$6, _p$._v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$2, "dir", _p$._v$7 = _v$7);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-fill", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-type", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-load-type", _p$._v$7 = _v$7);
       return _p$;
     }, {
       _v$: undefined,
@@ -3095,73 +3473,228 @@ const ComicImgFlow = () => {
   })();
 };
 
-const _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
+const _tmpl$$C = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$b = /*#__PURE__*/web.template(\`<h1>NULL\`);
+const ComicPage = props => {
+  const show = solidJs.createMemo(() => store.gridMode || store.option.scrollMode || store.memo.renderPageList.some(page => isEqualArray(page, props.page)));
+  const fill = solidJs.createMemo(() => {
+    if (props.page.length === 1) return undefined;
+
+    // 判断是否有填充页
+    const fillIndex = props.page.indexOf(-1);
+    if (fillIndex !== -1) return store.option.dir !== 'rtl' ? ['right', 'left'] : ['left', 'right'];
+    return undefined;
+  });
+  return (() => {
+    const _el$ = _tmpl$$C();
+    web.insert(_el$, web.createComponent(solidJs.For, {
+      get each() {
+        return props.page;
+      },
+      get fallback() {
+        return _tmpl$2$b();
+      },
+      children: (imgIndex, i) => web.createComponent(ComicImg, {
+        index: imgIndex,
+        get fill() {
+          return fill()?.[i()];
+        }
+      })
+    }));
+    web.effect(_p$ => {
+      const _v$ = modules_c21c94f2$1.page,
+        _v$2 = boolDataVal(show()),
+        _v$3 = props.index,
+        _v$4 = store.gridMode ? \`"\${getPageTip(props.index)}"\` : '"null"';
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-index", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("--tip", _v$4) : _el$.style.removeProperty("--tip"));
+      return _p$;
+    }, {
+      _v$: undefined,
+      _v$2: undefined,
+      _v$3: undefined,
+      _v$4: undefined
+    });
+    return _el$;
+  })();
+};
+
+const _tmpl$$B = /*#__PURE__*/web.template(\`<div tabindex=-1>\`),
+  _tmpl$2$a = /*#__PURE__*/web.template(\`<h1>NULL\`);
+const ComicImgFlow = () => {
+  const {
+    hiddenMouse,
+    onMouseMove
+  } = useHiddenMouse();
+  const handleDrag = (state, e) => {
+    if (store.gridMode) return;
+    if (touches.size > 1) return handlePinchZoom(state);
+    if (store.zoom.scale !== 100) return handleZoomDrag(state);
+    if (!store.option.scrollMode) return handleMangaFlowDrag(state);
+  };
+  solidJs.onMount(() => useDrag({
+    ref: store.ref.mangaFlow,
+    handleDrag,
+    handleClick,
+    touches
+  }));
+  const handleTransitionEnd = () => {
+    if (store.dragMode) return;
+    setState(state => {
+      if (store.zoom.scale === 100) updateRenderPage(state, true);else state.page.anima = '';
+    });
+  };
+  const pageX = solidJs.createMemo(() => {
+    const x = \`calc(\${store.page.offset.x.pct}% + \${store.page.offset.x.px}px)\`;
+    return store.option.dir === 'rtl' ? x : \`calc(\${x} * -1)\`;
+  });
+  return (() => {
+    const _el$ = _tmpl$$B();
+    web.addEventListener(_el$, "scroll", handleMangaFlowScroll);
+    _el$.addEventListener("transitionend", handleTransitionEnd);
+    const _ref$ = bindRef('mangaFlow');
+    typeof _ref$ === "function" && web.use(_ref$, _el$);
+    _el$.addEventListener("mousemove", onMouseMove);
+    web.insert(_el$, web.createComponent(solidJs.Index, {
+      get each() {
+        return store.pageList;
+      },
+      get fallback() {
+        return _tmpl$2$a();
+      },
+      children: (page, i) => web.createComponent(ComicPage, {
+        get page() {
+          return page();
+        },
+        index: i
+      })
+    }));
+    web.effect(_p$ => {
+      const _v$ = modules_c21c94f2$1.mangaFlow,
+        _v$2 = store.option.dir,
+        _v$3 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
+        _v$4 = boolDataVal(!store.gridMode && store.option.scrollMode),
+        _v$5 = boolDataVal(store.option.disableZoom || store.option.scrollMode),
+        _v$6 = boolDataVal(store.gridMode),
+        _v$7 = boolDataVal(store.page.vertical),
+        _v$8 = store.page.anima,
+        _v$9 = !store.gridMode && hiddenMouse(),
+        _v$10 = store.zoom.scale / 100,
+        _v$11 = \`\${store.zoom.offset.x || 0}px\`,
+        _v$12 = \`\${store.zoom.offset.y || 0}px\`,
+        _v$13 = pageX(),
+        _v$14 = \`calc(\${store.page.offset.y.pct}% + \${store.page.offset.y.px}px)\`;
+      _v$ !== _p$._v$ && web.setAttribute(_el$, "id", _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "dir", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && web.className(_el$, _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-scroll-mode", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-disable-zoom", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-grid-mode", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-vertical", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-animation", _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && web.setAttribute(_el$, "data-hidden-mouse", _p$._v$9 = _v$9);
+      _v$10 !== _p$._v$10 && ((_p$._v$10 = _v$10) != null ? _el$.style.setProperty("--scale", _v$10) : _el$.style.removeProperty("--scale"));
+      _v$11 !== _p$._v$11 && ((_p$._v$11 = _v$11) != null ? _el$.style.setProperty("--x", _v$11) : _el$.style.removeProperty("--x"));
+      _v$12 !== _p$._v$12 && ((_p$._v$12 = _v$12) != null ? _el$.style.setProperty("--y", _v$12) : _el$.style.removeProperty("--y"));
+      _v$13 !== _p$._v$13 && ((_p$._v$13 = _v$13) != null ? _el$.style.setProperty("--page_x", _v$13) : _el$.style.removeProperty("--page_x"));
+      _v$14 !== _p$._v$14 && ((_p$._v$14 = _v$14) != null ? _el$.style.setProperty("--page_y", _v$14) : _el$.style.removeProperty("--page_y"));
+      return _p$;
+    }, {
+      _v$: undefined,
+      _v$2: undefined,
+      _v$3: undefined,
+      _v$4: undefined,
+      _v$5: undefined,
+      _v$6: undefined,
+      _v$7: undefined,
+      _v$8: undefined,
+      _v$9: undefined,
+      _v$10: undefined,
+      _v$11: undefined,
+      _v$12: undefined,
+      _v$13: undefined,
+      _v$14: undefined
+    });
+    return _el$;
+  })();
+};
+
+const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
 const MdLooksOne = ((props = {}) => (() => {
+  const _el$ = _tmpl$$A();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2v2z">\`);
+const MdLooksTwo = ((props = {}) => (() => {
+  const _el$ = _tmpl$$z();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1z">\`);
+const MdViewDay = ((props = {}) => (() => {
+  const _el$ = _tmpl$$y();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1zm17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+const MdQueue = ((props = {}) => (() => {
   const _el$ = _tmpl$$x();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2v2z">\`);
-const MdLooksTwo = ((props = {}) => (() => {
+const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">\`);
+const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$$w();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1z">\`);
-const MdViewDay = ((props = {}) => (() => {
+const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">\`);
+const MdSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$v();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1zm17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
-const MdQueue = ((props = {}) => (() => {
+const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7 1.62-4.33L19.12 17h-3.24z">\`);
+const MdTranslate = ((props = {}) => (() => {
   const _el$ = _tmpl$$u();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">\`);
-const MdSettings = ((props = {}) => (() => {
+const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1zM7 7h4v4H7V7zm0 10v-4h4v4H7zm10 0h-4v-4h4v4zm0-6h-4V7h4v4z">\`);
+const MdGrid = ((props = {}) => (() => {
   const _el$ = _tmpl$$t();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">\`);
-const MdSearch = ((props = {}) => (() => {
+const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10zm11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7z">\`);
+const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
   const _el$ = _tmpl$$s();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$r = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7 1.62-4.33L19.12 17h-3.24z">\`);
-const MdTranslate = ((props = {}) => (() => {
+const _tmpl$$r = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10zm-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1H8z">\`);
+const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
   const _el$ = _tmpl$$r();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$q = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10zm11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7z">\`);
-const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
-  const _el$ = _tmpl$$q();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10zm-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1H8z">\`);
-const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
-  const _el$ = _tmpl$$p();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$o = /*#__PURE__*/web.template(\`<div><div> <!> \`);
+const _tmpl$$q = /*#__PURE__*/web.template(\`<div><div> <!> \`);
 /** 设置菜单项 */
 const SettingsItem = props => (() => {
-  const _el$ = _tmpl$$o(),
+  const _el$ = _tmpl$$q(),
     _el$2 = _el$.firstChild,
     _el$3 = _el$2.firstChild,
     _el$5 = _el$3.nextSibling;
@@ -3190,7 +3723,7 @@ const SettingsItem = props => (() => {
   return _el$;
 })();
 
-const _tmpl$$n = /*#__PURE__*/web.template(\`<button type=button><div>\`);
+const _tmpl$$p = /*#__PURE__*/web.template(\`<button type=button><div>\`);
 /** 开关式菜单项 */
 const SettingsItemSwitch = props => {
   const handleClick = () => props.onChange(!props.value);
@@ -3205,7 +3738,7 @@ const SettingsItemSwitch = props => {
       return props.classList;
     },
     get children() {
-      const _el$ = _tmpl$$n(),
+      const _el$ = _tmpl$$p(),
         _el$2 = _el$.firstChild;
       _el$.addEventListener("click", handleClick);
       web.effect(_p$ => {
@@ -3226,22 +3759,22 @@ const SettingsItemSwitch = props => {
   });
 };
 
-const _tmpl$$m = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z">\`);
+const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z">\`);
 const MdRefresh = ((props = {}) => (() => {
-  const _el$ = _tmpl$$m();
+  const _el$ = _tmpl$$o();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$l = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+const _tmpl$$n = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
 const MdAdd = ((props = {}) => (() => {
-  const _el$ = _tmpl$$l();
+  const _el$ = _tmpl$$n();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$k = /*#__PURE__*/web.template(\`<div tabindex=0>\`),
-  _tmpl$2$8 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
+const _tmpl$$m = /*#__PURE__*/web.template(\`<div tabindex=0>\`),
+  _tmpl$2$9 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
 const KeyItem = props => {
   const code = () => store.hotkeys[props.operateName][props.i];
   const del = () => delHotkeys(code());
@@ -3262,7 +3795,7 @@ const KeyItem = props => {
     if (!Reflect.has(hotkeysMap(), newCode)) setHotkeys(props.operateName, props.i, newCode);
   };
   return (() => {
-    const _el$ = _tmpl$$k();
+    const _el$ = _tmpl$$m();
     _el$.addEventListener("blur", () => code() || del());
     web.use(ref => code() || setTimeout(() => ref.focus()), _el$);
     _el$.addEventListener("keydown", handleKeyDown);
@@ -3279,7 +3812,7 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
     return Object.entries(store.hotkeys);
   },
   children: ([name, keys]) => (() => {
-    const _el$2 = _tmpl$2$8(),
+    const _el$2 = _tmpl$2$9(),
       _el$3 = _el$2.firstChild,
       _el$4 = _el$3.firstChild,
       _el$5 = _el$4.nextSibling,
@@ -3322,8 +3855,8 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
   })()
 });
 
-const _tmpl$$j = /*#__PURE__*/web.template(\`<select>\`),
-  _tmpl$2$7 = /*#__PURE__*/web.template(\`<option>\`);
+const _tmpl$$l = /*#__PURE__*/web.template(\`<select>\`),
+  _tmpl$2$8 = /*#__PURE__*/web.template(\`<option>\`);
 /** 选择器式菜单项 */
 const SettingsItemSelect = props => {
   let ref;
@@ -3341,7 +3874,7 @@ const SettingsItemSelect = props => {
       return props.classList;
     },
     get children() {
-      const _el$ = _tmpl$$j();
+      const _el$ = _tmpl$$l();
       _el$.addEventListener("change", e => props.onChange(e.target.value));
       const _ref$ = ref;
       typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
@@ -3351,7 +3884,7 @@ const SettingsItemSelect = props => {
           return props.options;
         },
         children: ([val, label]) => (() => {
-          const _el$2 = _tmpl$2$7();
+          const _el$2 = _tmpl$2$8();
           _el$2.value = val;
           web.insert(_el$2, label ?? val);
           return _el$2;
@@ -3367,7 +3900,6 @@ const setMessage = (i, msg) => {
   setState(state => {
     state.imgList[i].translationMessage = msg;
   });
-  updateTipText();
 };
 const request = (url, details) => new Promise((resolve, reject) => {
   if (typeof GM_xmlhttpRequest === 'undefined') reject(new Error(t('pwa.alert.userscript_not_installed')));
@@ -3620,8 +4152,6 @@ const translationImage = async i => {
       state.imgList[i].translationType = 'error';
       if (error.message) state.imgList[i].translationMessage = error.message;
     });
-  } finally {
-    updateTipText();
   }
 };
 let running = false;
@@ -3705,11 +4235,11 @@ const translatorOptions = solidJs.createRoot(() => {
   return options;
 });
 
-const _tmpl$$i = /*#__PURE__*/web.template(\`<div><div>\`);
+const _tmpl$$k = /*#__PURE__*/web.template(\`<div><div>\`);
 
 /** 带有动画过渡的切换显示设置项 */
 const SettingsShowItem = props => (() => {
-  const _el$ = _tmpl$$i(),
+  const _el$ = _tmpl$$k(),
     _el$2 = _el$.firstChild;
   web.insert(_el$2, () => props.children);
   web.effect(_p$ => {
@@ -3728,11 +4258,14 @@ const SettingsShowItem = props => (() => {
   return _el$;
 })();
 
-const _tmpl$$h = /*#__PURE__*/web.template(\`<blockquote>\`),
-  _tmpl$2$6 = /*#__PURE__*/web.template(\`<input type=url>\`);
+const _tmpl$$j = /*#__PURE__*/web.template(\`<blockquote>\`),
+  _tmpl$2$7 = /*#__PURE__*/web.template(\`<input type=url>\`);
 const SettingTranslation = () => {
   /** 是否正在翻译全部图片 */
   const isTranslationAll = solidJs.createMemo(() => store.imgList.every(img => img.translationType === 'show' || img.translationType === 'wait'));
+
+  /** 是否正在翻译当前页以后的全部图片 */
+  const isTranslationAfterCurrent = solidJs.createMemo(() => store.imgList.slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
   return [web.createComponent(SettingsItemSelect, {
     get name() {
       return t('setting.translation.server');
@@ -3751,7 +4284,7 @@ const SettingTranslation = () => {
       return store.option.translation.server === 'cotrans';
     },
     get children() {
-      const _el$ = _tmpl$$h();
+      const _el$ = _tmpl$$j();
       web.effect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
       return _el$;
     }
@@ -3849,7 +4382,19 @@ const SettingTranslation = () => {
             get value() {
               return isTranslationAll();
             },
-            onChange: () => setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll())
+            onChange: () => {
+              setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll());
+            }
+          }), web.createComponent(SettingsItemSwitch, {
+            get name() {
+              return t('setting.translation.translate_after_current');
+            },
+            get value() {
+              return isTranslationAfterCurrent();
+            },
+            onChange: () => {
+              setImgTranslationEnbale(store.pageList.slice(store.activePageIndex).flat(), !isTranslationAfterCurrent());
+            }
           }), web.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.options.localUrl');
@@ -3867,7 +4412,7 @@ const SettingTranslation = () => {
               return store.option.translation.localUrl !== undefined;
             },
             get children() {
-              const _el$2 = _tmpl$2$6();
+              const _el$2 = _tmpl$2$7();
               _el$2.addEventListener("change", e => {
                 setOption(draftOption => {
                   // 删掉末尾的斜杠
@@ -3886,7 +4431,7 @@ const SettingTranslation = () => {
   })];
 };
 
-const _tmpl$$g = /*#__PURE__*/web.template(\`<div><span contenteditable data-only-number></span><span>\`);
+const _tmpl$$i = /*#__PURE__*/web.template(\`<div><span contenteditable data-only-number></span><span>\`);
 /** 数值输入框菜单项 */
 const SettingsItemNumber = props => {
   const handleInput = e => {
@@ -3911,7 +4456,7 @@ const SettingsItemNumber = props => {
       return props.classList;
     },
     get children() {
-      const _el$ = _tmpl$$g(),
+      const _el$ = _tmpl$$i(),
         _el$2 = _el$.firstChild,
         _el$3 = _el$2.nextSibling;
       _el$2.addEventListener("blur", e => {
@@ -3933,7 +4478,66 @@ const SettingsItemNumber = props => {
   });
 };
 
-const _tmpl$$f = /*#__PURE__*/web.template(\`<button type=button>\`),
+const _tmpl$$h = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$6 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
+
+const areaArrayMap = {
+  left_right: [['prev', 'menu', 'next'], ['PREV', 'MENU', 'NEXT'], ['prev', 'menu', 'next']],
+  up_down: [['prev', 'PREV', 'prev'], ['menu', 'MENU', 'menu'], ['next', 'NEXT', 'next']],
+  edge: [['next', 'menu', 'next'], ['NEXT', 'MENU', 'NEXT'], ['next', 'PREV', 'next']],
+  l: [['PREV', 'prev', 'prev'], ['prev', 'MENU', 'next'], ['next', 'next', 'NEXT']]
+};
+const TouchArea = () => {
+  const areaType = solidJs.createMemo(() => {
+    if (!store.option.clickPageTurn.enabled || !Reflect.has(areaArrayMap, store.option.clickPageTurn.area)) return store.isMobile ? 'up_down' : 'left_right';
+    return store.option.clickPageTurn.area;
+  });
+  const dir = () => {
+    if (!store.option.clickPageTurn.reverse) return store.option.dir;
+    return store.option.dir === 'rtl' ? 'ltr' : 'rtl';
+  };
+  return (() => {
+    const _el$ = _tmpl$$h();
+    const _ref$ = bindRef('touchArea');
+    typeof _ref$ === "function" && web.use(_ref$, _el$);
+    web.insert(_el$, web.createComponent(solidJs.For, {
+      get each() {
+        return areaArrayMap[areaType()];
+      },
+      children: rows => web.createComponent(solidJs.For, {
+        each: rows,
+        children: area => (() => {
+          const _el$2 = _tmpl$2$6();
+          web.setAttribute(_el$2, "data-area", area);
+          web.effect(() => web.className(_el$2, modules_c21c94f2$1.touchArea));
+          return _el$2;
+        })()
+      })
+    }));
+    web.effect(_p$ => {
+      const _v$ = modules_c21c94f2$1.touchAreaRoot,
+        _v$2 = dir(),
+        _v$3 = store.show.touchArea,
+        _v$4 = areaType(),
+        _v$5 = boolDataVal(store.option.clickPageTurn.enabled && !store.option.scrollMode);
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "dir", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-show", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-area", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-turn-page", _p$._v$5 = _v$5);
+      return _p$;
+    }, {
+      _v$: undefined,
+      _v$2: undefined,
+      _v$3: undefined,
+      _v$4: undefined,
+      _v$5: undefined
+    });
+    return _el$;
+  })();
+};
+
+const _tmpl$$g = /*#__PURE__*/web.template(\`<button type=button>\`),
   _tmpl$2$5 = /*#__PURE__*/web.template(\`<input type=color>\`);
 /** 默认菜单项 */
 const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
@@ -3941,7 +4545,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return web.memo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
   },
   get children() {
-    const _el$ = _tmpl$$f();
+    const _el$ = _tmpl$$g();
     _el$.addEventListener("click", switchDir);
     web.insert(_el$, (() => {
       const _c$ = web.memo(() => store.option.dir === 'rtl');
@@ -3985,15 +4589,22 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       get onChange() {
         return createStateSetFn('scrollbar.showImgStatus');
       }
-    }), web.createComponent(SettingsItemSwitch, {
-      get name() {
-        return t('setting.option.scrollbar_easy_scroll');
+    }), web.createComponent(solidJs.Show, {
+      get when() {
+        return store.option.scrollMode;
       },
-      get value() {
-        return store.option.scrollbar.easyScroll;
-      },
-      get onChange() {
-        return createStateSetFn('scrollbar.easyScroll');
+      get children() {
+        return web.createComponent(SettingsItemSwitch, {
+          get name() {
+            return t('setting.option.scrollbar_easy_scroll');
+          },
+          get value() {
+            return store.option.scrollbar.easyScroll;
+          },
+          get onChange() {
+            return createStateSetFn('scrollbar.easyScroll');
+          }
+        });
       }
     })];
   }
@@ -4009,6 +4620,18 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   }
 }), web.createComponent(SettingsItemSwitch, {
   get name() {
+    return t('setting.option.show_clickable_area');
+  },
+  get value() {
+    return store.show.touchArea;
+  },
+  onChange: () => {
+    setState(state => {
+      state.show.touchArea = !state.show.touchArea;
+    });
+  }
+}), web.createComponent(SettingsItemSwitch, {
+  get name() {
     return t('setting.option.click_page_turn_enabled');
   },
   get value() {
@@ -4017,34 +4640,25 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('clickPageTurn.enabled');
   }
-}), web.createComponent(SettingsItemSwitch, {
-  get name() {
-    return t('setting.option.click_page_turn_vertical');
-  },
-  get value() {
-    return store.option.clickPageTurn.vertical;
-  },
-  get onChange() {
-    return createStateSetFn('clickPageTurn.vertical');
-  }
-}), web.createComponent(SettingsItemSwitch, {
-  get name() {
-    return t('setting.option.show_clickable_area');
-  },
-  get value() {
-    return store.showTouchArea;
-  },
-  onChange: () => {
-    setState(state => {
-      state.showTouchArea = !state.showTouchArea;
-    });
-  }
 }), web.createComponent(SettingsShowItem, {
   get when() {
     return store.option.clickPageTurn.enabled;
   },
   get children() {
-    return web.createComponent(SettingsItemSwitch, {
+    return [web.createComponent(SettingsItemSelect, {
+      get name() {
+        return t('setting.option.click_page_turn_area');
+      },
+      get options() {
+        return [['', t('other.default')], ...Object.keys(areaArrayMap).map(key => [key, t(\`touch_area.type.\${key}\`)])];
+      },
+      get value() {
+        return store.option.clickPageTurn.area;
+      },
+      get onChange() {
+        return createStateSetFn('clickPageTurn.area');
+      }
+    }), web.createComponent(SettingsItemSwitch, {
       get name() {
         return t('setting.option.click_page_turn_swap_area');
       },
@@ -4054,7 +4668,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       get onChange() {
         return createStateSetFn('clickPageTurn.reverse');
       }
-    });
+    })];
   }
 })]], [t('setting.option.paragraph_display'), () => [web.createComponent(SettingsItemSwitch, {
   get name() {
@@ -4209,16 +4823,15 @@ const playAnimation = e => e?.getAnimations().forEach(animation => {
   animation.play();
 });
 
-const _tmpl$$e = /*#__PURE__*/web.template(\`<div>\`),
+const _tmpl$$f = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
   _tmpl$3$3 = /*#__PURE__*/web.template(\`<hr>\`);
 
 /** 菜单面板 */
 const SettingPanel = () => {
-  const settingList = solidJs.createMemo(() => store.editSettingList(defaultSettingList()));
-  const width = solidJs.createMemo(() => lang() !== 'zh' ? '20em' : '15em');
+  const settingList = solidJs.createMemo(() => store.prop.editSettingList(defaultSettingList()));
   return (() => {
-    const _el$ = _tmpl$$e();
+    const _el$ = _tmpl$$f();
     web.addEventListener(_el$, "wheel", stopPropagation);
     web.addEventListener(_el$, "scroll", stopPropagation);
     web.insert(_el$, web.createComponent(solidJs.For, {
@@ -4260,7 +4873,7 @@ const SettingPanel = () => {
     }));
     web.effect(_p$ => {
       const _v$ = \`\${modules_c21c94f2$1.SettingPanel} \${modules_c21c94f2$1.beautifyScrollbar}\`,
-        _v$2 = width();
+        _v$2 = lang() !== 'zh' ? '20em' : '15em';
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("width", _v$2) : _el$.style.removeProperty("width"));
       return _p$;
@@ -4272,11 +4885,11 @@ const SettingPanel = () => {
   })();
 };
 
-const _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`),
+const _tmpl$$e = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
 /** 工具栏按钮分隔栏 */
 const buttonListDivider = () => (() => {
-  const _el$ = _tmpl$$d();
+  const _el$ = _tmpl$$e();
   _el$.style.setProperty("height", "1em");
   return _el$;
 })();
@@ -4289,7 +4902,7 @@ const defaultButtonList = [
     return web.memo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
   },
   get hidden() {
-    return store.option.scrollMode;
+    return store.isMobile || store.option.scrollMode;
   },
   onClick: switchOnePageMode,
   get children() {
@@ -4318,11 +4931,24 @@ const defaultButtonList = [
     return store.fillEffect[nowFillIndex()];
   },
   get hidden() {
-    return store.option.onePageMode;
+    return store.isMobile || store.option.onePageMode;
   },
   onClick: switchFillEffect,
   get children() {
     return web.createComponent(MdQueue, {});
+  }
+}),
+// 网格模式
+() => web.createComponent(IconButton, {
+  get tip() {
+    return t('button.grid_mode');
+  },
+  get enabled() {
+    return store.gridMode;
+  },
+  onClick: switchGridMode,
+  get children() {
+    return web.createComponent(MdGrid, {});
   }
 }), buttonListDivider,
 // 放大模式
@@ -4331,18 +4957,12 @@ const defaultButtonList = [
     return t('button.zoom_in');
   },
   get enabled() {
-    return store.isZoomed || store.option.scrollMode && store.option.scrollModeImgScale > 1;
+    return store.zoom.scale !== 100 || store.option.scrollMode && store.option.scrollModeImgScale > 1;
   },
   onClick: () => {
-    if (store.option.scrollMode) {
-      if (store.option.scrollModeImgScale >= 1 && store.option.scrollModeImgScale < 1.6) return zoomScrollModeImg(0.2);
-      return zoomScrollModeImg(1, true);
-    }
-    if (!store.panzoom) return;
-    const {
-      scale
-    } = store.panzoom.getTransform();
-    if (scale === 1) store.panzoom.smoothZoom(0, 0, 2);else store.panzoom.smoothZoomAbs(0, 0, 0.99);
+    if (!store.option.scrollMode) return doubleClickZoom();
+    if (store.option.scrollModeImgScale >= 1 && store.option.scrollModeImgScale < 1.6) return zoomScrollModeImg(0.2);
+    return zoomScrollModeImg(1, true);
   },
   get children() {
     return web.createComponent(MdSearch, {});
@@ -4369,12 +4989,12 @@ const defaultButtonList = [
   });
 },
 // 设置
-props => {
+() => {
   const [showPanel, setShowPanel] = solidJs.createSignal(false);
   const handleClick = () => {
     const _showPanel = !showPanel();
     setState(state => {
-      state.showToolbar = _showPanel;
+      state.show.toolbar = _showPanel;
     });
     setShowPanel(_showPanel);
   };
@@ -4382,11 +5002,6 @@ props => {
     const _el$2 = _tmpl$2$3();
     _el$2.addEventListener("click", () => {
       handleClick();
-      props.onMouseLeave();
-      setState(state => {
-        state.showToolbar = false;
-        state.showScrollbar = false;
-      });
       focus();
     });
     web.effect(() => web.className(_el$2, modules_c21c94f2$1.closeCover));
@@ -4415,128 +5030,54 @@ props => {
   });
 }];
 
-const useHover = () => {
-  const [isHover, setIsHover] = solidJs.createSignal(false);
-  return {
-    isHover,
-    /** 鼠标移入 */
-    handleMouseEnter: () => setIsHover(true),
-    /** 鼠标移出 */
-    handleMouseLeave: () => setIsHover(false)
-  };
-};
-
-const _tmpl$$c = /*#__PURE__*/web.template(\`<div role=toolbar><div><div>\`);
+const _tmpl$$d = /*#__PURE__*/web.template(\`<div role=toolbar><div><div>\`);
 
 /** 左侧工具栏 */
 const Toolbar = () => {
-  const {
-    isHover,
-    handleMouseEnter,
-    handleMouseLeave
-  } = useHover();
-  const show = solidJs.createMemo(() => isHover() || store.showToolbar);
-  solidJs.createEffect(() => show() || focus());
+  solidJs.createEffect(() => store.show.toolbar || focus());
   return (() => {
-    const _el$ = _tmpl$$c(),
+    const _el$ = _tmpl$$d(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
-    web.addEventListener(_el$, "mouseenter", handleMouseEnter);
-    web.addEventListener(_el$, "mouseleave", handleMouseLeave);
     web.insert(_el$2, web.createComponent(solidJs.For, {
       get each() {
-        return store.editButtonList(defaultButtonList);
+        return store.prop.editButtonList(defaultButtonList);
       },
-      children: ButtonItem => web.createComponent(ButtonItem, {
-        onMouseLeave: handleMouseLeave
-      })
+      children: ButtonItem => web.createComponent(ButtonItem, {})
     }), null);
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.toolbar,
-        _v$2 = show(),
-        _v$3 = modules_c21c94f2$1.toolbarPanel,
-        _v$4 = modules_c21c94f2$1.toolbarBg;
+        _v$2 = boolDataVal(store.show.toolbar),
+        _v$3 = boolDataVal(store.isMobile && store.gridMode),
+        _v$4 = store.dragMode ? 'none' : undefined,
+        _v$5 = modules_c21c94f2$1.toolbarPanel,
+        _v$6 = modules_c21c94f2$1.toolbarBg;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.className(_el$3, _p$._v$4 = _v$4);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-close", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("pointer-events", _v$4) : _el$.style.removeProperty("pointer-events"));
+      _v$5 !== _p$._v$5 && web.className(_el$2, _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.className(_el$3, _p$._v$6 = _v$6);
       return _p$;
     }, {
       _v$: undefined,
       _v$2: undefined,
       _v$3: undefined,
-      _v$4: undefined
+      _v$4: undefined,
+      _v$5: undefined,
+      _v$6: undefined
     });
     return _el$;
   })();
 };
 
-const defaultStata = () => ({
-  type: 'start',
-  xy: [0, 0],
-  initial: [0, 0],
-  startTime: 0
-});
-const state = defaultStata();
-const useDrag = (ref, handleDrag, easyMode = () => false) => {
-  solidJs.onMount(() => {
-    const controller = new AbortController();
-    if (ref) {
-      // 在鼠标、手指按下后切换状态
-      ref.addEventListener('pointerdown', e => {
-        e.stopPropagation();
-        // 只处理左键按下触发的事件
-        if (e.buttons !== 1) return;
-        state.type = 'start';
-        state.xy = [e.offsetX, e.offsetY];
-        state.initial = [e.offsetX, e.offsetY];
-        state.startTime = Date.now();
-        handleDrag(state, e);
-      }, {
-        capture: false,
-        passive: true,
-        signal: controller.signal
-      });
-
-      // 在鼠标、手指移动时根据状态判断是否要触发函数
-      ref.addEventListener('pointermove', e => {
-        e.stopPropagation();
-        if (!easyMode() && (state.startTime === 0 || e.buttons !== 1)) return;
-        state.type = 'dragging';
-        state.xy = [e.offsetX, e.offsetY];
-        handleDrag(state, e);
-      }, {
-        capture: false,
-        passive: true,
-        signal: controller.signal
-      });
-
-      // 在鼠标、手指松开后切换状态
-      ref.addEventListener('pointerup', e => {
-        e.stopPropagation();
-        if (state.startTime === 0) return;
-        state.type = 'end';
-        state.xy = [e.offsetX, e.offsetY];
-        handleDrag(state, e);
-        Object.assign(state, defaultStata());
-        focus();
-      }, {
-        capture: false,
-        passive: true,
-        signal: controller.signal
-      });
-    }
-    solidJs.onCleanup(() => controller.abort());
-  });
-};
-
-const _tmpl$$b = /*#__PURE__*/web.template(\`<div>\`);
+const _tmpl$$c = /*#__PURE__*/web.template(\`<div>\`);
 
 /** 显示对应图片加载情况的元素 */
 const ScrollbarImg = props => {
   const img = solidJs.createMemo(() => store.imgList[props.index]);
   return (() => {
-    const _el$ = _tmpl$$b();
+    const _el$ = _tmpl$$c();
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbarPage,
         _v$2 = props.index,
@@ -4567,7 +5108,7 @@ const ScrollbarPage = props => {
     return \`\${(store.imgList[props.a]?.height || windowHeight()) / contentHeight() * 100}%\`;
   });
   return (() => {
-    const _el$2 = _tmpl$$b();
+    const _el$2 = _tmpl$$c();
     web.insert(_el$2, web.createComponent(ScrollbarImg, {
       get index() {
         return props.a !== -1 ? props.a : props.b;
@@ -4586,7 +5127,7 @@ const ScrollbarPage = props => {
   })();
 };
 
-const _tmpl$$a = /*#__PURE__*/web.template(\`<div role=scrollbar tabindex=-1><div><div>\`);
+const _tmpl$$b = /*#__PURE__*/web.template(\`<div role=scrollbar tabindex=-1><div><div>\`);
 
 /** 滚动条 */
 const Scrollbar = () => {
@@ -4598,21 +5139,28 @@ const Scrollbar = () => {
 
   // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
   const [penetrate, setPenetrate] = solidJs.createSignal(false);
-  const resetPenetrate = debounce(200, () => setPenetrate(false));
+  const resetPenetrate = debounce(100, () => setPenetrate(false));
   const handleWheel = () => {
     setPenetrate(true);
     resetPenetrate();
   };
 
   /** 是否强制显示滚动条 */
-  const showScrollbar = solidJs.createMemo(() => store.showScrollbar || !!penetrate());
+  const showScrollbar = solidJs.createMemo(() => store.show.scrollbar || !!penetrate());
   return (() => {
-    const _el$ = _tmpl$$a(),
+    const _el$ = _tmpl$$b(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
     _el$.addEventListener("wheel", handleWheel);
-    web.use(e => useDrag(e, handleDrag, () => store.option.scrollMode && store.option.scrollbar.easyScroll), _el$);
-    web.insert(_el$3, () => store.scrollbar.tipText);
+    web.use(e => useDrag({
+      ref: e,
+      handleDrag: handleScrollbarDrag,
+      easyMode: () => store.option.scrollMode && store.option.scrollbar.easyScroll
+    }), _el$);
+    web.insert(_el$3, (() => {
+      const _c$ = web.memo(() => !!store.option.scrollMode);
+      return () => _c$() ? store.memo.showPageList.map(i => getPageTip(i)).join('\\n') : getPageTip(store.activePageIndex);
+    })());
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
         return store.option.scrollbar.showImgStatus;
@@ -4634,19 +5182,19 @@ const Scrollbar = () => {
         _v$2 = {
           [modules_c21c94f2$1.hidden]: !store.option.scrollbar.enabled && !showScrollbar()
         },
-        _v$3 = penetrate() ? 'none' : 'auto',
+        _v$3 = penetrate() || store.dragMode || store.gridMode ? 'none' : 'auto',
         _v$4 = modules_c21c94f2$1.mangaFlow,
         _v$5 = store.activePageIndex || -1,
         _v$6 = !store.option.scrollbar.autoHidden || showScrollbar(),
         _v$7 = store.option.dir,
         _v$8 = modules_c21c94f2$1.scrollbarDrag,
-        _v$9 = height(),
-        _v$10 = top(),
-        _v$11 = store.option.scrollMode ? undefined : 'top 150ms',
-        _v$12 = modules_c21c94f2$1.scrollbarPoper,
-        _v$13 = {
-          [modules_c21c94f2$1.hidden]: !store.scrollbar.tipText
+        _v$9 = {
+          [modules_c21c94f2$1.hidden]: store.gridMode
         },
+        _v$10 = height(),
+        _v$11 = top(),
+        _v$12 = store.option.scrollMode ? undefined : 'top 150ms',
+        _v$13 = modules_c21c94f2$1.scrollbarPoper,
         _v$14 = showScrollbar();
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
@@ -4654,13 +5202,13 @@ const Scrollbar = () => {
       _v$4 !== _p$._v$4 && web.setAttribute(_el$, "aria-controls", _p$._v$4 = _v$4);
       _v$5 !== _p$._v$5 && web.setAttribute(_el$, "aria-valuenow", _p$._v$5 = _v$5);
       _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-show", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "dir", _p$._v$7 = _v$7);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-dir", _p$._v$7 = _v$7);
       _v$8 !== _p$._v$8 && web.className(_el$2, _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && ((_p$._v$9 = _v$9) != null ? _el$2.style.setProperty("--height", _v$9) : _el$2.style.removeProperty("--height"));
-      _v$10 !== _p$._v$10 && ((_p$._v$10 = _v$10) != null ? _el$2.style.setProperty("--top", _v$10) : _el$2.style.removeProperty("--top"));
-      _v$11 !== _p$._v$11 && ((_p$._v$11 = _v$11) != null ? _el$2.style.setProperty("transition", _v$11) : _el$2.style.removeProperty("transition"));
-      _v$12 !== _p$._v$12 && web.className(_el$3, _p$._v$12 = _v$12);
-      _p$._v$13 = web.classList(_el$3, _v$13, _p$._v$13);
+      _p$._v$9 = web.classList(_el$2, _v$9, _p$._v$9);
+      _v$10 !== _p$._v$10 && ((_p$._v$10 = _v$10) != null ? _el$2.style.setProperty("--height", _v$10) : _el$2.style.removeProperty("--height"));
+      _v$11 !== _p$._v$11 && ((_p$._v$11 = _v$11) != null ? _el$2.style.setProperty("--top", _v$11) : _el$2.style.removeProperty("--top"));
+      _v$12 !== _p$._v$12 && ((_p$._v$12 = _v$12) != null ? _el$2.style.setProperty("transition", _v$12) : _el$2.style.removeProperty("transition"));
+      _v$13 !== _p$._v$13 && web.className(_el$3, _p$._v$13 = _v$13);
       _v$14 !== _p$._v$14 && web.setAttribute(_el$3, "data-show", _p$._v$14 = _v$14);
       return _p$;
     }, {
@@ -4683,7 +5231,7 @@ const Scrollbar = () => {
   })();
 };
 
-const _tmpl$$9 = /*#__PURE__*/web.template(\`<div>\`),
+const _tmpl$$a = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$2 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1><p></p><button type=button></button><button type=button data-is-end></button><button type=button>\`),
   _tmpl$3$2 = /*#__PURE__*/web.template(\`<p>\`);
 let delayTypeTimer = 0;
@@ -4691,7 +5239,7 @@ const EndPage = () => {
   const handleClick = e => {
     e.stopPropagation();
     if (e.target?.nodeName !== 'BUTTON') setState(state => {
-      state.endPageType = undefined;
+      state.show.endPage = undefined;
     });
     focus();
   };
@@ -4706,25 +5254,25 @@ const EndPage = () => {
     });
   });
 
-  // state.endPageType 变量的延时版本，在隐藏的动画效果结束之后才会真正改变
+  // state.show.endPage 变量的延时版本，在隐藏的动画效果结束之后才会真正改变
   // 防止在动画效果结束前 tip 就消失或改变了位置
   const [delayType, setDelayType] = solidJs.createSignal();
   solidJs.createEffect(() => {
-    if (store.endPageType) {
+    if (store.show.endPage) {
       window.clearTimeout(delayTypeTimer);
-      setDelayType(store.endPageType);
+      setDelayType(store.show.endPage);
     } else {
-      delayTypeTimer = window.setTimeout(() => setDelayType(store.endPageType), 500);
+      delayTypeTimer = window.setTimeout(() => setDelayType(store.show.endPage), 500);
     }
   });
   const tip = solidJs.createMemo(() => {
     switch (delayType()) {
       case 'start':
-        if (store.onPrev && store.option.jumpToNext) return t('end_page.tip.start_jump');
+        if (store.prop.Prev && store.option.jumpToNext) return t('end_page.tip.start_jump');
         break;
       case 'end':
-        if (store.onNext && store.option.jumpToNext) return t('end_page.tip.end_jump');
-        if (store.onExit) return t('end_page.tip.exit');
+        if (store.prop.Next && store.option.jumpToNext) return t('end_page.tip.end_jump');
+        if (store.prop.Exit) return t('end_page.tip.exit');
         break;
     }
     return '';
@@ -4739,24 +5287,24 @@ const EndPage = () => {
     typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
     _el$.addEventListener("click", handleClick);
     web.insert(_el$2, tip);
-    const _ref$2 = bindRef('prevRef');
+    const _ref$2 = bindRef('prev');
     typeof _ref$2 === "function" && web.use(_ref$2, _el$3);
-    _el$3.addEventListener("click", () => store.onPrev?.());
+    _el$3.addEventListener("click", () => store.prop.Prev?.());
     web.insert(_el$3, () => t('end_page.prev_button'));
-    const _ref$3 = bindRef('exitRef');
+    const _ref$3 = bindRef('exit');
     typeof _ref$3 === "function" && web.use(_ref$3, _el$4);
-    _el$4.addEventListener("click", () => store.onExit?.(store.endPageType === 'end'));
+    _el$4.addEventListener("click", () => store.prop.Exit?.(store.show.endPage === 'end'));
     web.insert(_el$4, () => t('button.exit'));
-    const _ref$4 = bindRef('nextRef');
+    const _ref$4 = bindRef('next');
     typeof _ref$4 === "function" && web.use(_ref$4, _el$5);
-    _el$5.addEventListener("click", () => store.onNext?.());
+    _el$5.addEventListener("click", () => store.prop.Next?.());
     web.insert(_el$5, () => t('end_page.next_button'));
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
         return web.memo(() => !!store.option.showComment)() && delayType() === 'end';
       },
       get children() {
-        const _el$6 = _tmpl$$9();
+        const _el$6 = _tmpl$$a();
         web.addEventListener(_el$6, "wheel", stopPropagation);
         web.insert(_el$6, web.createComponent(solidJs.For, {
           get each() {
@@ -4774,18 +5322,18 @@ const EndPage = () => {
     }), null);
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.endPage,
-        _v$2 = store.endPageType,
+        _v$2 = store.show.endPage,
         _v$3 = delayType(),
         _v$4 = modules_c21c94f2$1.tip,
         _v$5 = {
-          [modules_c21c94f2$1.invisible]: !store.onPrev
+          [modules_c21c94f2$1.invisible]: !store.prop.Prev
         },
-        _v$6 = store.endPageType ? 0 : -1,
-        _v$7 = store.endPageType ? 0 : -1,
+        _v$6 = store.show.endPage ? 0 : -1,
+        _v$7 = store.show.endPage ? 0 : -1,
         _v$8 = {
-          [modules_c21c94f2$1.invisible]: !store.onNext
+          [modules_c21c94f2$1.invisible]: !store.prop.Next
         },
-        _v$9 = store.endPageType ? 0 : -1;
+        _v$9 = store.show.endPage ? 0 : -1;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
       _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
@@ -4842,22 +5390,47 @@ const light = {
   '--text_bg': '#FAFAFA',
   'color-scheme': 'light'
 };
+const createSvgIcon = (fill, d) => \`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='\${fill}' viewBox='0 0 24 24'%3E%3Cpath d='\${d}'/%3E%3C/svg%3E")\`;
+const MdImageNotSupported = \`m21.9 21.9-8.49-8.49-9.82-9.82L2.1 2.1.69 3.51 3 5.83V19c0 1.1.9 2 2 2h13.17l2.31 2.31 1.42-1.41zM5 18l3.5-4.5 2.5 3.01L12.17 15l3 3H5zm16 .17L5.83 3H19c1.1 0 2 .9 2 2v13.17z\`;
+const MdCloudDownload$1 = \`M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z\`;
+const MdPhoto = \`M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86-3 3.87L9 13.14 6 17h12l-3.86-5.14z\`;
 const cssVar = solidJs.createRoot(() => {
+  const svg = solidJs.createMemo(() => {
+    const fill = store.option.darkMode ? 'rgb(156,156,156)' : 'rgb(110,110,110)';
+    return {
+      '--MdImageNotSupported': createSvgIcon(fill, MdImageNotSupported),
+      '--MdCloudDownload': createSvgIcon(fill, MdCloudDownload$1),
+      '--MdPhoto': createSvgIcon(fill, MdPhoto)
+    };
+  });
+  const i18n = solidJs.createMemo(() => ({
+    '--i18n-touch-area-prev': \`'\${t('touch_area.prev')}'\`,
+    '--i18n-touch-area-next': \`'\${t('touch_area.next')}'\`,
+    '--i18n-touch-area-menu': \`'\${t('touch_area.menu')}'\`
+  }));
   const _cssVar = solidJs.createMemo(() => ({
-    '--bg': store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'),
+    '--bg': store.option.customBackground ?? (store.option.darkMode ? '#000' : '#fff'),
     '--scrollModeImgScale': store.option.scrollModeImgScale,
     '--scrollModeSpacing': store.option.scrollModeSpacing,
-    '--img_placeholder_height': \`\${imgPlaceholderHeight()}px\`,
-    ...(store.option.darkMode ? dark : light)
+    '--img-placeholder-height': \`\${imgPlaceholderHeight()}px\`,
+    ...(store.option.darkMode ? dark : light),
+    ...svg(),
+    ...i18n()
   }));
   return _cssVar;
+});
+
+const createComicImg = url => ({
+  type: '',
+  src: url || '',
+  loadType: 'wait'
 });
 
 /** 初始化 */
 const useInit$1 = (props, rootRef) => {
   // 绑定 rootRef
   setState(state => {
-    state.rootRef = rootRef;
+    state.ref.root = rootRef;
   });
 
   // 初始化配置
@@ -4890,26 +5463,26 @@ const useInit$1 = (props, rootRef) => {
   solidJs.onCleanup(() => resizeObserver.disconnect());
   solidJs.createEffect(() => {
     setState(state => {
-      state.onExit = props.onExit ? isEnd => {
-        playAnimation(store.exitRef);
+      state.prop.Exit = props.onExit ? isEnd => {
+        playAnimation(store.ref.exit);
         props.onExit?.(!!isEnd);
         if (isEnd) state.activePageIndex = 0;
-        state.endPageType = undefined;
+        state.show.endPage = undefined;
       } : undefined;
-      state.onPrev = props.onPrev ? () => {
-        playAnimation(store.prevRef);
+      state.prop.Prev = props.onPrev ? () => {
+        playAnimation(store.ref.prev);
         props.onPrev?.();
       } : undefined;
-      state.onNext = props.onNext ? () => {
-        playAnimation(store.nextRef);
+      state.prop.Next = props.onNext ? () => {
+        playAnimation(store.ref.next);
         props.onNext?.();
       } : undefined;
-      if (props.editButtonList) state.editButtonList = props.editButtonList;
-      if (props.editSettingList) state.editSettingList = props.editSettingList;
+      if (props.editButtonList) state.prop.editButtonList = props.editButtonList;
+      if (props.editSettingList) state.prop.editSettingList = props.editSettingList;
       state.commentList = props.commentList;
-      state.onLoading = props.onLoading ? debounce(100, props.onLoading) : undefined;
-      state.onOptionChange = props.onOptionChange ? debounce(100, props.onOptionChange) : undefined;
-      state.onHotkeysChange = props.onHotkeysChange ? debounce(100, props.onHotkeysChange) : undefined;
+      state.prop.Loading = props.onLoading ? debounce(100, props.onLoading) : undefined;
+      state.prop.OptionChange = props.onOptionChange ? debounce(100, props.onOptionChange) : undefined;
+      state.prop.HotkeysChange = props.onHotkeysChange ? debounce(100, props.onHotkeysChange) : undefined;
     });
   });
 
@@ -4924,32 +5497,24 @@ const useInit$1 = (props, rootRef) => {
         state.flag.autoWide = true;
         autoCloseFill.clear();
         state.fillEffect[-1] = state.option.firstPageFill;
-        state.imgList = [...props.imgList].map(imgUrl => ({
-          type: '',
-          src: imgUrl || '',
-          loadType: 'wait'
-        }));
+        state.imgList = [...props.imgList].map(createComicImg);
         updatePageData(state);
-        state.onLoading?.(state.imgList);
+        state.prop.Loading?.(state.imgList);
         return;
       }
       if (isEqualArray(props.imgList, state.imgList.map(({
         src
-      }) => src))) return state.onLoading?.(state.imgList);
-      state.endPageType = undefined;
+      }) => src))) return state.prop.Loading?.(state.imgList);
+      state.show.endPage = undefined;
 
       /** 修改前的当前显示图片 */
       const oldActiveImg = state.pageList[state.activePageIndex]?.map(i => state.imgList?.[i]?.src) ?? [];
-      state.imgList = [...props.imgList].map(imgUrl => state.imgList.find(img => img.src === imgUrl) ?? {
-        type: '',
-        src: imgUrl || '',
-        loadType: 'wait'
-      });
+      state.imgList = [...props.imgList].map(imgUrl => state.imgList.find(img => img.src === imgUrl) ?? createComicImg(imgUrl));
       state.fillEffect = {
         '-1': true
       };
       updatePageData(state);
-      state.onLoading?.(state.imgList);
+      state.prop.Loading?.(state.imgList);
       if (state.pageList.length === 0) {
         state.activePageIndex = 0;
         return;
@@ -4969,21 +5534,19 @@ const useInit$1 = (props, rootRef) => {
       if (state.activePageIndex > state.pageList.length - 1) state.activePageIndex = state.pageList.length - 1;
     });
   });
+  focus();
 };
 
-const _tmpl$$8 = /*#__PURE__*/web.template(\`<div role=presentation tabindex=-1>\`);
+const _tmpl$$9 = /*#__PURE__*/web.template(\`<div role=presentation tabindex=-1>\`);
 const MangaStyle = css$1;
 solidJs.enableScheduling();
 /** 漫画组件 */
 const Manga = props => {
   let rootRef;
-  solidJs.onMount(() => {
-    useInit$1(props, rootRef);
-    focus();
-  });
+  solidJs.onMount(() => useInit$1(props, rootRef));
   solidJs.createEffect(() => props.show && focus());
   return (() => {
-    const _el$ = _tmpl$$8();
+    const _el$ = _tmpl$$9();
     web.addEventListener(_el$, "wheel", handleWheel);
     const _ref$ = rootRef;
     typeof _ref$ === "function" ? web.use(_ref$, _el$) : rootRef = _el$;
@@ -5004,7 +5567,7 @@ const Manga = props => {
           ...props.classList
         },
         _v$3 = cssVar(),
-        _v$4 = store.isMobile ? '' : undefined;
+        _v$4 = boolDataVal(store.isMobile);
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
       _p$._v$3 = web.style(_el$, _v$3, _p$._v$3);
@@ -5020,7 +5583,7 @@ const Manga = props => {
   })();
 };
 
-const _tmpl$$7 = /*#__PURE__*/web.template(\`<style type=text/css>\`);
+const _tmpl$$8 = /*#__PURE__*/web.template(\`<style type=text/css>\`);
 let dom;
 
 /**
@@ -5064,11 +5627,11 @@ const useManga = async initProps => {
   const set = recipe => {
     if (!dom) {
       dom = mountComponents('comicRead', () => [web.createComponent(Manga, props), (() => {
-        const _el$ = _tmpl$$7();
+        const _el$ = _tmpl$$8();
         web.insert(_el$, IconButtonStyle);
         return _el$;
       })(), (() => {
-        const _el$2 = _tmpl$$7();
+        const _el$2 = _tmpl$$8();
         web.insert(_el$2, MangaStyle);
         return _el$2;
       })()]);
@@ -5148,22 +5711,29 @@ const useManga = async initProps => {
   return [set, props, setProps];
 };
 
-const _tmpl$$6 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03z">\`);
+const _tmpl$$7 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03z">\`);
 const MdMenuBook = ((props = {}) => (() => {
+  const _el$ = _tmpl$$7();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const _tmpl$$6 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1zm-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79zm3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42l-2.41-2.4zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z">\`);
+const MdImageSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$6();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$5 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1zm-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79zm3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42l-2.41-2.4zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z">\`);
-const MdImageSearch = ((props = {}) => (() => {
+const _tmpl$$5 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z">\`);
+const MdImportContacts = ((props = {}) => (() => {
   const _el$ = _tmpl$$5();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$4 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z">\`);
-const MdImportContacts = ((props = {}) => (() => {
+const _tmpl$$4 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
+const MdCloudDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$4();
   web.spread(_el$, props, true, true);
   return _el$;
@@ -5366,9 +5936,9 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>移动端下改用顶部滚动条 </p></li><li><p>增加 卷轴模式下的图片间距 配置\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>实现滑动翻页 </p></li><li><p>实现网格模式 </p></li><li><p>增加 翻译当前页至结尾 选项 </p></li><li><p>增加多种点击区域排列\`),
   _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复移动端放大后无法翻页的 bug </p></li><li><p>修复在 ehentai 多页查看器上未正常工作的 bug\`);
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复拷贝漫画因为 api 域名被墙而无法正常工作的 bug </p></li><li><p>修复移动端点击滚动条后一直显示着页数的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -5790,6 +6360,7 @@ const autoReadModeMessage = setOptions => () => (() => {
 exports.assign = assign;
 exports.autoReadModeMessage = autoReadModeMessage;
 exports.autoUpdate = autoUpdate;
+exports.boolDataVal = boolDataVal;
 exports.byPath = byPath;
 exports.canvasToBlob = canvasToBlob;
 exports.clamp = clamp;
@@ -5800,6 +6371,7 @@ exports.getKeyboardCode = getKeyboardCode;
 exports.getMostItem = getMostItem;
 exports.ifNot = ifNot;
 exports.insertNode = insertNode;
+exports.isEqual = isEqual;
 exports.isEqualArray = isEqualArray;
 exports.keyboardCodeToText = keyboardCodeToText;
 exports.lang = lang;
@@ -5812,6 +6384,7 @@ exports.querySelector = querySelector;
 exports.querySelectorAll = querySelectorAll;
 exports.querySelectorClick = querySelectorClick;
 exports.request = request$1;
+exports.requestIdleCallback = requestIdleCallback;
 exports.saveAs = saveAs;
 exports.scrollIntoView = scrollIntoView;
 exports.setInitLang = setInitLang;
@@ -5821,6 +6394,7 @@ exports.t = t;
 exports.testImgUrl = testImgUrl;
 exports.toast = toast$1;
 exports.triggerEleLazyLoad = triggerEleLazyLoad;
+exports.tryApi = tryApi;
 exports.universalInit = universalInit;
 exports.useCache = useCache;
 exports.useFab = useFab;
@@ -6764,11 +7338,13 @@ const getViewpoint = async (comicId, chapterId) => {
         // 如果不是隐藏漫画，直接进入阅读模式
         if (unsafeWindow.comic_id) {
           await GM.addStyle('.subHeader{display:none !important}');
-          setManga({
+          await main.universalInit({
+            name: 'dmzj',
+            getImgList: () => main.querySelectorAll('#commicBox img').map(e => e.getAttribute('data-original')).filter(src => src),
+            getCommentList: () => getViewpoint(unsafeWindow.subId, unsafeWindow.chapterId),
             onNext: main.querySelectorClick('#loadNextChapter'),
             onPrev: main.querySelectorClick('#loadPrevChapter')
           });
-          init(() => main.querySelectorAll('#commicBox img').map(e => e.getAttribute('data-original')).filter(src => src));
           return;
         }
         const tipDom = document.createElement('p');
@@ -7446,10 +8022,11 @@ const main = require('main');
     case 'www.copymanga.com':
       {
         if (!window.location.href.includes('/chapter/')) break;
+        const apiList = ['https://api.copymanga.site', 'https://api.copymanga.info', 'https://api.copymanga.net', 'https://api.copymanga.org', 'https://api.copymanga.tv', 'https://api.mangacopy.com', 'https://api.xsskc.com'];
         options = {
           name: 'copymanga',
           getImgList: async () => {
-            const res = await main.request(window.location.href.replace(/.*?(?=\/comic\/)/, 'https://api.copymanga.site/api/v3'));
+            const res = await main.tryApi(window.location.href.replace(/.*?(?=\/comic\/)/, '/api/v3'), apiList);
             return JSON.parse(res.responseText).results.chapter.contents.map(({
               url
             }) => url);
@@ -7458,7 +8035,9 @@ const main = require('main');
           onPrev: main.querySelectorClick('.comicContent-prev:not(.index,.list) a:not(.prev-null)'),
           getCommentList: async () => {
             const chapter_id = window.location.pathname.split('/').at(-1);
-            const res = await main.request(`https://api.copymanga.site/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`);
+            const res = await main.tryApi(`/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`, apiList, {
+              errorText: '获取漫画评论失败'
+            });
             return JSON.parse(res.responseText).results.list.map(({
               comment
             }) => comment);
