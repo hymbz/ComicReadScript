@@ -18,6 +18,11 @@
     display: none;
   }
 
+  &[data-type="long"] {
+    width: 100%;
+    height: auto;
+  }
+
   &[data-load-type="loading"] {
     position: absolute;
     max-width: 100vw !important;
@@ -214,13 +219,13 @@
 
   overflow: auto;
   grid-auto-flow: row;
-  grid-auto-rows: 25%;
+  grid-auto-rows: calc(100% / 3);
   grid-row-gap: 1.5em;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: unset;
 
   box-sizing: border-box;
-  padding: 2em 0;
+  padding-bottom: 2em;
 
   & .page {
     transform: none;
@@ -230,7 +235,7 @@
       content: var(--tip);
 
       position: absolute;
-      bottom: -1.2em;
+      bottom: -1.5em;
       left: 0;
       transform: scale(0.8);
 
