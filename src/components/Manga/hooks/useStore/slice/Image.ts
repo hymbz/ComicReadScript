@@ -236,10 +236,20 @@ export const switchOnePageMode = () => {
 };
 
 /** 切换阅读方向 */
-export const switchDir = () =>
+export const switchDir = () => {
   setOption((draftOption) => {
     draftOption.dir = draftOption.dir !== 'rtl' ? 'rtl' : 'ltr';
   });
+};
+
+/** 切换网格模式 */
+export const switchGridMode = () => {
+  setState((state) => {
+    state.gridMode = !state.gridMode;
+    if (state.zoom.scale !== 100) zoom(100);
+    state.page.anima = '';
+  });
+};
 
 /** 更新渲染页面相关变量 */
 export const updateRenderPage = (state: State, animation = false) => {

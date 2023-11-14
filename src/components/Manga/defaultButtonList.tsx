@@ -21,8 +21,8 @@ import {
   switchFillEffect,
   switchScrollMode,
   switchOnePageMode,
-  zoom,
   doubleClickZoom,
+  switchGridMode,
 } from './hooks/useStore/slice';
 
 import { setImgTranslationEnbale } from './hooks/useStore/slice/Translation';
@@ -75,13 +75,7 @@ export const defaultButtonList: ToolbarButtonList = [
     <IconButton
       tip={t('button.grid_mode')}
       enabled={store.gridMode}
-      onClick={() =>
-        setState((state) => {
-          state.gridMode = !state.gridMode;
-          if (state.zoom.scale !== 100) zoom(100);
-          state.page.anima = '';
-        })
-      }
+      onClick={switchGridMode}
       children={<MdGrid />}
     />
   ),

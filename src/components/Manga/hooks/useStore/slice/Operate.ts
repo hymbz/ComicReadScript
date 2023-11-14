@@ -12,6 +12,7 @@ import {
   switchOnePageMode,
   switchDir,
   updateRenderPage,
+  switchGridMode,
 } from './Image';
 
 import classes from '../../../index.module.css';
@@ -260,6 +261,8 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return switchOnePageMode();
     case 'switch_dir':
       return switchDir();
+    case 'switch_grid_mode':
+      return switchGridMode();
 
     case 'switch_auto_enlarge':
       return setOption((draftOption) => {
