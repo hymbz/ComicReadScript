@@ -145,6 +145,7 @@
       },
       "server": "Translation server",
       "server_selfhosted": "Selfhosted",
+      "translate_after_current": "Translate the current page to the end",
       "translate_all_img": "Translate all images"
     }
   },

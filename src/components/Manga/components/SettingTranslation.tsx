@@ -3,7 +3,11 @@ import { createMemo, Show } from 'solid-js';
 import { t } from 'helper/i18n';
 import { SettingsItemSwitch } from './SettingsItemSwitch';
 import { SettingsItemSelect } from './SettingsItemSelect';
-import { createStateSetFn, setOption } from '../hooks/useStore/slice';
+import {
+  activeImgIndex,
+  createStateSetFn,
+  setOption,
+} from '../hooks/useStore/slice';
 import {
   setImgTranslationEnbale,
   translatorOptions,
@@ -19,6 +23,16 @@ export const SettingTranslation = () => {
     store.imgList.every(
       (img) => img.translationType === 'show' || img.translationType === 'wait',
     ),
+  );
+
+  /** 是否正在翻译当前页以后的全部图片 */
+  const isTranslationAfterCurrent = createMemo(() =>
+    store.imgList
+      .slice(activeImgIndex())
+      .every(
+        (img) =>
+          img.translationType === 'show' || img.translationType === 'wait',
+      ),
   );
 
   return (
@@ -117,12 +131,23 @@ export const SettingTranslation = () => {
           <SettingsItemSwitch
             name={t('setting.translation.translate_all_img')}
             value={isTranslationAll()}
-            onChange={() =>
+            onChange={() => {
               setImgTranslationEnbale(
                 store.imgList.map((_, i) => i),
                 !isTranslationAll(),
-              )
-            }
+              );
+            }}
+          />
+
+          <SettingsItemSwitch
+            name={t('setting.translation.translate_after_current')}
+            value={isTranslationAfterCurrent()}
+            onChange={() => {
+              setImgTranslationEnbale(
+                store.pageList.slice(store.activePageIndex).flat(),
+                !isTranslationAfterCurrent(),
+              );
+            }}
           />
 
           <SettingsItemSwitch
