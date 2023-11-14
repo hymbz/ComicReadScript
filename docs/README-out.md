@@ -18,6 +18,13 @@
 
 > 如果喜欢这种阅读模式，也想用来看**本地漫画**的话，欢迎使用「[ComicRead PWA](https://comic-read.pages.dev/)」，只要打开网页拖入本地漫画即可获得完全一致的体验
 
+<blockquote>
+  <p>
+    对你有帮助的话就点个⭐Star吧
+    <a href="https://github.com/hymbz/ComicReadScript"><img src="https://img.shields.io/github/stars/hymbz/ComicReadScript?style=social"></a>
+  </p>
+</blockquote>
+
 ## 安装
 
 1. 首先需要在浏览器上装好 [Violentmonkey](https://violentmonkey.github.io/)、[Tampermonkey](https://tampermonkey.net/) 之类的油猴扩展

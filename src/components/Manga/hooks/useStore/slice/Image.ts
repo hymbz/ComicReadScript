@@ -201,7 +201,7 @@ export const handleResize = (state: State, width: number, height: number) => {
 
   state.imgList.forEach((img) => updateImgType(state, img));
 
-  state.isMobile = window.matchMedia('(max-width: 600px)').matches;
+  state.isMobile = window.matchMedia('(max-width: 800px)').matches;
 };
 
 /** 切换页面填充 */
