@@ -21,6 +21,7 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
   // 绑定 rootRef
   setState((state) => {
     state.ref.root = rootRef;
+    props.getStore?.(store);
   });
 
   // 初始化配置

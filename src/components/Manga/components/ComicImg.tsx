@@ -96,7 +96,7 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
 
 /** 漫画图片 */
 export const ComicImg: Component<ComicImgProps> = (props) => {
-  const img = createMemo(() => store.imgList[props.index]);
+  const img = () => store.imgList[props.index];
 
   const src = createMemo(() => {
     if (!img() || img().loadType === 'wait') return '';

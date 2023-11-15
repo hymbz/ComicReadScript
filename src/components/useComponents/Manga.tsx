@@ -13,8 +13,10 @@ import { request } from '../../helper/request';
 import { saveAs } from '../../helper';
 import { mountComponents } from './helper';
 import { toast } from './Toast';
+import type { State } from '../Manga/hooks/useStore';
 
 let dom: HTMLDivElement;
+let store: State;
 
 /**
  * 显示漫画阅读窗口
@@ -53,6 +55,9 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   const [props, setProps] = createStore({
     imgList: [],
     show: false,
+    getStore: (val) => {
+      store = val;
+    },
     ...initProps,
   } as MangaProps);
 
@@ -85,17 +90,25 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   const DownloadButton = () => {
     const [statu, setStatu] = createSignal('button.download');
 
+    const getFileExt = (url: string) => url.split('.').pop();
+
     const handleDownload = async () => {
       const fileData: fflate.Zippable = {};
       const imgIndexNum = `${props.imgList.length}`.length;
 
-      for (let i = 0; i < props.imgList.length; i += 1) {
-        setStatu(`${i}/${props.imgList.length}`);
+      const imgList = store.imgList.map((img) =>
+        img.translationType === 'show'
+          ? `${img.translationUrl!}#.${getFileExt(img.src)}`
+          : img.src,
+      );
+
+      for (let i = 0; i < imgList.length; i += 1) {
+        setStatu(`${i}/${imgList.length}`);
         const index = `${i}`.padStart(imgIndexNum, '0');
-        const fileExt = props.imgList[i].match(/.+\/.+\.(\w+)/)?.[1] ?? 'jpg';
+        const fileExt = getFileExt(imgList[i]) ?? 'jpg';
         const fileName = `${index}.${fileExt}`;
         try {
-          const res = await request<ArrayBuffer>(props.imgList[i], {
+          const res = await request<ArrayBuffer>(imgList[i], {
             responseType: 'arraybuffer',
           });
           fileData[fileName] = new Uint8Array(res.response);

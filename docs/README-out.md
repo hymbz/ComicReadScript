@@ -202,11 +202,10 @@ nhentai 的屏蔽机制是在被屏蔽漫画封面加上一层半透明遮罩，
 
 ## i18n
 
-为了方便中文圈外的用户使用，脚本借助 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 实现了多语言的翻译。但受限于本人低下的英文能力和 ChatGPT 的翻译水平，无法保证英文翻译的质量，希望能有好心人通过 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 帮忙改进翻译质量。~~出于同样的原因，这篇介绍没有翻译。~~
+为了方便中文圈外的用户使用，脚本借助 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 实现了多语言的翻译。欢迎好心人通过 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 提供新语言翻译或帮忙改进现有翻译质量。
 
 同时非常感谢以下已经为脚本提供了翻译的贡献者
 
-- English - ChatGPT
 - русский язык - [@EnergoStalin](https://github.com/EnergoStalin)
 
 <a href="https://hosted.weblate.org/engage/comic_read_script/" align="left"><img src="https://hosted.weblate.org/widget/comic_read_script/main/287x66-grey.png" alt="翻译状态" /></a>
