@@ -60,7 +60,7 @@ export const handleGridClick = (e: MouseEvent) => {
 
 /** 双击放大 */
 export const doubleClickZoom = (e?: MouseEvent) => {
-  if (store.option.scrollMode || store.gridMode) return;
+  if (store.gridMode) return;
   requestAnimationFrame(() => {
     setState((state) => {
       // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
