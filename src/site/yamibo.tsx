@@ -365,7 +365,7 @@ interface History {
         db.createObjectStore('history', { keyPath: 'tid' });
       });
 
-      const isMobile = !!document.querySelector('#flk');
+      const isMobile = !document.querySelector('#flk');
 
       const [updateFlag, setUpdateFlag] = createSignal(false);
       const updateHistoryTag = () => setUpdateFlag((val) => !val);
