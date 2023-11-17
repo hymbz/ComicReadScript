@@ -23,7 +23,12 @@ export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
   switchFillEffect();
 };
 
-export const focus = () => (store.ref.mangaFlow ?? store.ref.root)?.focus();
+// 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
+export const focus = () =>
+  requestAnimationFrame(() => {
+    store.ref.mangaFlow?.click();
+    store.ref.mangaFlow?.focus();
+  });
 
 /** 判断当前是否已经滚动到底部 */
 const isBottom = (state: State) =>

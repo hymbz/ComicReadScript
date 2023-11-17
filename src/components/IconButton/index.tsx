@@ -21,14 +21,14 @@ interface IconButtonProps {
 
   popperClassName?: string | boolean;
   children?: JSX.Element;
-  onClick?: (e: MouseEvent) => void;
+  onClick?: EventHandler['on:click'];
 }
 
 /** 图标按钮 */
 export const IconButton: Component<IconButtonProps> = (_props) => {
   const props = mergeProps({ placement: 'right' }, _props);
   let buttonRef: HTMLButtonElement;
-  const handleClick = (e: MouseEvent) => {
+  const handleClick: EventHandler['on:click'] = (e) => {
     props.onClick?.(e);
     // 在每次点击后取消焦点
     buttonRef?.blur();

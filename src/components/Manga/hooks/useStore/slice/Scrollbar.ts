@@ -145,6 +145,8 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
 
 let showImgList: Element[] = [];
 export const handleObserver: IntersectionObserverCallback = (entries) => {
+  if (store.gridMode) return;
+
   entries.forEach(({ isIntersecting, target }) => {
     if (isIntersecting) showImgList.push(target);
     else showImgList = showImgList.filter((img) => img !== target);

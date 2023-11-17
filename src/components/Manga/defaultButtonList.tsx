@@ -14,7 +14,6 @@ import { IconButton } from '../IconButton';
 import { SettingPanel } from './components/SettingPanel';
 
 import {
-  focus,
   activePage,
   nowFillIndex,
   zoomScrollModeImg,
@@ -145,10 +144,7 @@ export const defaultButtonList: ToolbarButtonList = [
         <SettingPanel />
         <div
           class={classes.closeCover}
-          on:click={() => {
-            handleClick();
-            focus();
-          }}
+          on:click={handleClick}
           role="button"
           tabIndex={-1}
         />

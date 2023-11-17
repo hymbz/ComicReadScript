@@ -20,6 +20,7 @@ export const SettingPanel: Component = () => {
       style={{ width: lang() !== 'zh' ? '20em' : '15em' }}
       onScroll={stopPropagation}
       onWheel={stopPropagation}
+      on:click={stopPropagation}
     >
       <For each={settingList()}>
         {([name, SettingItem, hidden], i) => {
