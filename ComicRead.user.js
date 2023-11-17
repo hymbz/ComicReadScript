@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.0.0
+// @version         8.1.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -89,7 +89,7 @@ const selfImportSync = name => {
   const code = name !== 'main' ? GM_getResourceText(name) :`
 const solidJs = require('solid-js');
 const web = require('solid-js/web');
-const store$2 = require('solid-js/store');
+const store$3 = require('solid-js/store');
 const fflate = require('fflate');
 const main = require('main');
 
@@ -553,10 +553,10 @@ const zh = {
       always_load_all_img: "始终加载所有图片",
       background_color: "背景颜色",
       click_page_turn_area: "点击区域",
-      click_page_turn_enabled: "启用点击翻页",
+      click_page_turn_enabled: "点击翻页",
       click_page_turn_swap_area: "左右点击区域交换",
       click_page_turn_vertical: "上下翻页",
-      dark_mode: "启用夜间模式",
+      dark_mode: "夜间模式",
       dir_ltr: "从左到右（美漫）",
       dir_rtl: "从右到左（日漫）",
       disable_auto_enlarge: "禁止图片自动放大",
@@ -572,9 +572,14 @@ const zh = {
       preload_page_num: "预加载页数",
       scroll_mode_img_scale: "卷轴图片缩放",
       scroll_mode_img_spacing: "卷轴图片间距",
-      scrollbar_auto_hidden: "自动隐藏滚动条",
+      scrollbar_auto_hidden: "自动隐藏",
       scrollbar_easy_scroll: "快捷滚动",
-      scrollbar_show: "显示滚动条",
+      scrollbar_position: "位置",
+      scrollbar_position_auto: "自动",
+      scrollbar_position_bottom: "底部",
+      scrollbar_position_hidden: "隐藏",
+      scrollbar_position_right: "右侧",
+      scrollbar_position_top: "顶部",
       scrollbar_show_img_status: "显示图片加载状态",
       show_clickable_area: "显示点击区域",
       show_comments: "在结束页显示评论",
@@ -795,10 +800,10 @@ const en = {
       always_load_all_img: "Always load all images",
       background_color: "Background Color",
       click_page_turn_area: "Touch area",
-      click_page_turn_enabled: "Enable click to turn page",
+      click_page_turn_enabled: "Click to turn page",
       click_page_turn_swap_area: "Swap LR clickable areas",
       click_page_turn_vertical: "Vertically arranged clickable areas",
-      dark_mode: "Enable dark mode",
+      dark_mode: "Dark mode",
       dir_ltr: "LTR (American comics)",
       dir_rtl: "RTL (Japanese manga)",
       disable_auto_enlarge: "Disable automatic image enlarge",
@@ -814,9 +819,14 @@ const en = {
       preload_page_num: "Preload page number",
       scroll_mode_img_scale: "Scroll mode image zoom ratio",
       scroll_mode_img_spacing: "Scroll mode image spacing",
-      scrollbar_auto_hidden: "Auto hide the scrollbar",
+      scrollbar_auto_hidden: "Auto hide",
       scrollbar_easy_scroll: "Easy scroll",
-      scrollbar_show: "Show scrollbar",
+      scrollbar_position: "position",
+      scrollbar_position_auto: "Auto",
+      scrollbar_position_bottom: "Bottom",
+      scrollbar_position_hidden: "Hidden",
+      scrollbar_position_right: "Right",
+      scrollbar_position_top: "Top",
       scrollbar_show_img_status: "Show image loading status",
       show_clickable_area: "Show clickable areas",
       show_comments: "Show comments on the end page",
@@ -877,10 +887,10 @@ const en = {
     next: "Next Page",
     prev: "Prev Page",
     type: {
-      edge: "edge",
+      edge: "Edge",
       l: "L",
-      left_right: "left right",
-      up_down: "up down"
+      left_right: "Left Right",
+      up_down: "Up Down"
     }
   },
   translation: {
@@ -1058,7 +1068,6 @@ const ru = {
       scroll_mode_img_spacing: "卷轴图片间距",
       scrollbar_auto_hidden: "Автоматически скрывать полосу прокрутки",
       scrollbar_easy_scroll: "快捷滚动",
-      scrollbar_show: "Показывать полосу прокрутки",
       scrollbar_show_img_status: "Показывать статус загрузки изображения",
       show_clickable_area: "Показывать кликабельные области",
       show_comments: "Показывать комментарии на последней странице",
@@ -1228,17 +1237,17 @@ const mountComponents = (id, fc) => {
 var css$3 = ".index_module_root__d8c71ff0{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__d8c71ff0{align-items:center;animation:index_module_bounceInRight__d8c71ff0 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__d8c71ff0>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__d8c71ff0[data-exit]{animation:index_module_bounceOutRight__d8c71ff0 .5s 1}.index_module_schedule__d8c71ff0{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__d8c71ff0[data-schedule] .index_module_schedule__d8c71ff0{transition:transform .1s}.index_module_item__d8c71ff0:not([data-schedule]) .index_module_schedule__d8c71ff0{animation:index_module_schedule__d8c71ff0 linear 1 forwards}:is(.index_module_item__d8c71ff0:hover,.index_module_item__d8c71ff0[data-schedule],.index_module_root__d8c71ff0[data-paused]) .index_module_schedule__d8c71ff0{animation-play-state:paused}.index_module_msg__d8c71ff0{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__d8c71ff0 h2{margin:0}.index_module_msg__d8c71ff0 h3{margin:.7em 0}.index_module_msg__d8c71ff0 ul{margin:0;text-align:left}.index_module_msg__d8c71ff0 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__d8c71ff0 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__d8c71ff0{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__d8c71ff0{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__d8c71ff0{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
 var modules_c21c94f2$3 = {"root":"index_module_root__d8c71ff0","item":"index_module_item__d8c71ff0","bounceInRight":"index_module_bounceInRight__d8c71ff0","bounceOutRight":"index_module_bounceOutRight__d8c71ff0","schedule":"index_module_schedule__d8c71ff0","msg":"index_module_msg__d8c71ff0"};
 
-const [_state$1, _setState$1] = store$2.createStore({
+const [_state$1, _setState$1] = store$3.createStore({
   list: [],
   map: {}
 });
-const setState$1 = fn => _setState$1(store$2.produce(fn));
+const setState$1 = fn => _setState$1(store$3.produce(fn));
 
 // eslint-disable-next-line solid/reactivity
-const store$1 = _state$1;
+const store$2 = _state$1;
 const creatId = () => {
   let id = \`\${Date.now()}\`;
-  while (Reflect.has(store$1.map, id)) {
+  while (Reflect.has(store$2.map, id)) {
     id += '_';
   }
   return id;
@@ -1308,13 +1317,13 @@ const toast$2 = (msg, options) => {
   if (options?.throw && typeof msg === 'string') throw new Error(msg);
 };
 toast$2.dismiss = id => {
-  if (!Reflect.has(store$1.map, id)) return;
+  if (!Reflect.has(store$2.map, id)) return;
   setState$1(state => {
     state.map[id].exit = true;
   });
 };
 toast$2.set = (id, options) => {
-  if (!Reflect.has(store$1.map, id)) return;
+  if (!Reflect.has(store$2.map, id)) return;
   setState$1(state => Object.assign(state.map[id], options));
 };
 toast$2.success = (msg, options) => toast$2(msg, {
@@ -1459,9 +1468,9 @@ const Toaster = () => {
     const _el$ = _tmpl$$M();
     web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
-        return store$1.list;
+        return store$2.list;
       },
-      children: id => web.createComponent(ToastItem, web.mergeProps(() => store$1.map[id]))
+      children: id => web.createComponent(ToastItem, web.mergeProps(() => store$2.map[id]))
     }));
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$3.root,
@@ -1583,10 +1592,10 @@ const MdAutoFlashOff = ((props = {}) => (() => {
   return _el$;
 })());
 
-var css$2 = ".index_module_iconButtonItem__9645dd99{align-items:center;display:flex;position:relative}.index_module_iconButton__9645dd99{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__9645dd99:focus,.index_module_iconButton__9645dd99:hover{background-color:var(--hover_bg_color,#fff3)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99{background-color:var(--text,#fff);color:var(--text_bg,#121212)}.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:focus,.index_module_iconButton__9645dd99.index_module_enabled__9645dd99:hover{background-color:var(--hover_bg_color_enable,#fffa)}.index_module_iconButton__9645dd99>svg{width:1em}.index_module_iconButtonPopper__9645dd99{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;position:absolute;top:50%;transform:translateY(-50%);user-select:none;white-space:nowrap}.index_module_iconButtonPopper__9645dd99[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=right]:before{border-right-color:var(--switch_bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__9645dd99[data-placement=left]:before{border-left-color:var(--switch_bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__9645dd99:before{background-color:initial;border:.4em solid #0000;content:\\"\\";position:absolute;transition:opacity .15s}.index_module_iconButtonItem__9645dd99:focus .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99:hover .index_module_iconButtonPopper__9645dd99,.index_module_iconButtonItem__9645dd99[data-show=true] .index_module_iconButtonPopper__9645dd99{opacity:1}.index_module_hidden__9645dd99{display:none}";
-var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__9645dd99","iconButton":"index_module_iconButton__9645dd99","enabled":"index_module_enabled__9645dd99","iconButtonPopper":"index_module_iconButtonPopper__9645dd99","hidden":"index_module_hidden__9645dd99"};
+var css$2 = ".index_module_iconButtonItem__90006f70{align-items:center;display:flex;position:relative}.index_module_iconButton__90006f70{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__90006f70:focus,.index_module_iconButton__90006f70:hover{background-color:var(--hover_bg_color,#fff3)}.index_module_iconButton__90006f70.index_module_enabled__90006f70{background-color:var(--text,#fff);color:var(--text_bg,#121212)}.index_module_iconButton__90006f70.index_module_enabled__90006f70:focus,.index_module_iconButton__90006f70.index_module_enabled__90006f70:hover{background-color:var(--hover_bg_color_enable,#fffa)}.index_module_iconButton__90006f70>svg{width:1em}.index_module_iconButtonPopper__90006f70{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);user-select:none;white-space:nowrap}.index_module_iconButtonPopper__90006f70[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__90006f70[data-placement=right]:before{border-right-color:var(--switch_bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__90006f70[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__90006f70[data-placement=left]:before{border-left-color:var(--switch_bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__90006f70:before{background-color:initial;border:.4em solid #0000;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.index_module_iconButtonItem__90006f70:focus .index_module_iconButtonPopper__90006f70,.index_module_iconButtonItem__90006f70:hover .index_module_iconButtonPopper__90006f70,.index_module_iconButtonItem__90006f70[data-show=true] .index_module_iconButtonPopper__90006f70{opacity:1}.index_module_hidden__90006f70{display:none}";
+var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__90006f70","iconButton":"index_module_iconButton__90006f70","enabled":"index_module_enabled__90006f70","iconButtonPopper":"index_module_iconButtonPopper__90006f70","hidden":"index_module_hidden__90006f70"};
 
-const _tmpl$$G = /*#__PURE__*/web.template(\`<div><button type=button tabindex=-1>\`),
+const _tmpl$$G = /*#__PURE__*/web.template(\`<div><button type=button tabindex=0>\`),
   _tmpl$2$c = /*#__PURE__*/web.template(\`<div>\`);
 const IconButtonStyle = css$2;
 /** 图标按钮 */
@@ -1596,9 +1605,9 @@ const IconButton = _props => {
   }, _props);
   let buttonRef;
   const handleClick = e => {
+    props.onClick?.(e);
     // 在每次点击后取消焦点
     buttonRef?.blur();
-    props.onClick?.(e);
   };
   return (() => {
     const _el$ = _tmpl$$G(),
@@ -1762,11 +1771,11 @@ const MdClose = ((props = {}) => (() => {
 })());
 
 const useStore = initState => {
-  const [_state, _setState] = store$2.createStore(initState);
+  const [_state, _setState] = store$3.createStore(initState);
   return {
     _state,
     _setState,
-    setState: fn => _setState(store$2.produce(fn)),
+    setState: fn => _setState(store$3.produce(fn)),
     store: _state
   };
 };
@@ -1841,7 +1850,7 @@ const targetLanguage = LanguageMap[lang()] ?? 'CHS';
 const defaultOption = {
   dir: 'rtl',
   scrollbar: {
-    enabled: true,
+    position: 'auto',
     autoHidden: false,
     showImgStatus: true,
     easyScroll: false
@@ -1904,6 +1913,8 @@ const OtherState = {
   commentList: undefined,
   /** 快捷键配置 */
   hotkeys: {},
+  /** 监视图片是否出现的 observer */
+  observer: null,
   show: {
     /** 是否强制显示工具栏 */
     toolbar: false,
@@ -1932,6 +1943,8 @@ const OtherState = {
   },
   // 自动更新不能手动修改的变量
   memo: {
+    /** 当前显示的图片 */
+    showImgList: [],
     /** 当前显示的页面 */
     showPageList: [],
     /** 要渲染的页面 */
@@ -1946,7 +1959,7 @@ const OtherState = {
 };
 
 const {
-  store,
+  store: store$1,
   setState,
   _state,
   _setState
@@ -2205,7 +2218,7 @@ const handleComicData = (imgList, fillEffect) => {
 };
 
 /** 触发 onOptionChange */
-const triggerOnOptionChange = () => setTimeout(() => store.prop.OptionChange?.(difference(store.option, defaultOption)));
+const triggerOnOptionChange = () => setTimeout(() => store$1.prop.OptionChange?.(difference(store$1.option, defaultOption)));
 
 /** 在 option 后手动触发 onOptionChange */
 const setOption = fn => {
@@ -2227,10 +2240,10 @@ const resetUI = state => {
 };
 
 /** 漫画流的总高度 */
-const contentHeight = () => store.ref.mangaFlow.scrollHeight;
+const contentHeight = () => store$1.ref.mangaFlow.scrollHeight;
 
 /** 能显示出漫画的高度 */
-const windowHeight = () => store.ref.root.offsetHeight ?? 0;
+const windowHeight = () => store$1.ref.root.offsetHeight ?? 0;
 
 /** 更新滚动条滑块的高度和所处高度 */
 const updateDrag = state => {
@@ -2255,23 +2268,39 @@ const getImgTip = (state, i) => {
 
 /** 获取指定页面的提示文本 */
 const getPageTip = pageIndex => {
-  const page = store.pageList[pageIndex];
+  const page = store$1.pageList[pageIndex];
   if (!page) return 'null';
-  const pageIndexText = page.map(index => getImgTip(store, index));
-  if (store.option.dir === 'rtl') pageIndexText.reverse();
-  return pageIndexText.join(store.option.scrollMode ? '\\n' : ' | ');
+  const pageIndexText = page.map(index => getImgTip(store$1, index));
+  if (store$1.option.dir === 'rtl') pageIndexText.reverse();
+  return pageIndexText.join(store$1.option.scrollMode ? '\\n' : ' | ');
+};
+
+/** 获取滚动条位置 */
+const getScrollPosition = () => {
+  if (store$1.option.scrollbar.position === 'auto') return store$1.isMobile ? 'top' : 'right';
+  return store$1.option.scrollbar.position;
 };
 
 /** 判断点击位置在滚动条上的位置比率 */
 const getClickTop = (x, y, e) => {
-  if (!store.isMobile) return y / e.offsetHeight;
-  return store.option.dir === 'ltr' ? x / e.offsetWidth : 1 - x / e.offsetWidth;
+  switch (getScrollPosition()) {
+    case 'bottom':
+    case 'top':
+      return store$1.option.dir === 'rtl' ? 1 - x / e.offsetWidth : x / e.offsetWidth;
+    default:
+      return y / e.offsetHeight;
+  }
 };
 
 /** 计算在滚动条上的拖动距离 */
 const getDragDist = ([x, y], [ix, iy], e) => {
-  if (!store.isMobile) return (y - iy) / e.offsetHeight;
-  return store.option.dir === 'ltr' ? (x - ix) / e.offsetWidth : (1 - (x - ix)) / e.offsetWidth;
+  switch (getScrollPosition()) {
+    case 'bottom':
+    case 'top':
+      return store$1.option.dir === 'ltr' ? (x - ix) / e.offsetWidth : (1 - (x - ix)) / e.offsetWidth;
+    default:
+      return (y - iy) / e.offsetHeight;
+  }
 };
 
 /** 开始拖拽时的 dragTop 值 */
@@ -2285,107 +2314,87 @@ const handleScrollbarDrag = ({
 
   // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
   if (type === 'up') return;
-  if (!store.ref.mangaFlow) return;
+  if (!store$1.ref.mangaFlow) return;
   const scrollbarDom = e.target;
 
   /** 点击位置在滚动条上的位置比率 */
   const clickTop = getClickTop(x, y, e.target);
   let top = clickTop;
-  if (store.option.scrollMode) {
+  if (store$1.option.scrollMode) {
     if (type === 'move') {
-      // console.log(initial);
       top = startTop + getDragDist(xy, initial, scrollbarDom);
       // 处理超出范围的情况
       if (top < 0) top = 0;else if (top > 1) top = 1;
-      store.ref.mangaFlow.scrollTo({
+      store$1.ref.mangaFlow.scrollTo({
         top: top * contentHeight(),
         behavior: 'instant'
       });
     } else {
       // 确保滚动条的中心会在点击位置
-      top -= store.scrollbar.dragHeight / 2;
+      top -= store$1.scrollbar.dragHeight / 2;
       startTop = top;
-      store.ref.mangaFlow.scrollTo({
+      store$1.ref.mangaFlow.scrollTo({
         top: top * contentHeight(),
         behavior: 'smooth'
       });
     }
   } else {
-    let newPageIndex = Math.floor(top * store.pageList.length);
+    let newPageIndex = Math.floor(top * store$1.pageList.length);
     // 处理超出范围的情况
-    if (newPageIndex < 0) newPageIndex = 0;else if (newPageIndex >= store.pageList.length) newPageIndex = store.pageList.length - 1;
-    if (newPageIndex !== store.activePageIndex) {
+    if (newPageIndex < 0) newPageIndex = 0;else if (newPageIndex >= store$1.pageList.length) newPageIndex = store$1.pageList.length - 1;
+    if (newPageIndex !== store$1.activePageIndex) {
       setState(state => {
         state.activePageIndex = newPageIndex;
       });
     }
   }
 };
-
-// 更新 showPageList
-const updateShowPageList = state => {
-  if (!state.option.scrollMode) {
-    state.memo.showPageList = [state.activePageIndex];
-    return;
-  }
-
-  // TODO: 用 Observer 重构
-
-  /** 当前显示页面列表 */
-  const showPageList = [];
-  const {
-    scrollTop
-  } = store.ref.mangaFlow;
-  const eleList = state.ref.mangaFlow.childNodes;
-  const scrollBottom = scrollTop + state.ref.root.offsetHeight;
-
-  // 通过一个一个检查页面元素所在高度来判断页面是否被显示
-  for (let i = 0; i < eleList.length; i += 1) {
-    const element = eleList[i];
-    // 当页面的顶部位置在视窗口的底部位置时中断循环
-    if (element.offsetTop > scrollBottom) break;
-    // 当页面的底部位置还未达到视窗口的顶部位置时，跳到下一个页面
-    if (element.offsetTop + element.offsetHeight < scrollTop) continue;
-    const pageIndex = +element.getAttribute('data-index');
-    if (!Number.isNaN(pageIndex)) showPageList.push(pageIndex);
-  }
-  state.activePageIndex = showPageList.at(-1) ?? 0;
-  if (isEqualArray(state.memo.showPageList, showPageList)) return;
-  state.memo.showPageList = showPageList;
+const handleObserver = entries => {
+  if (store$1.gridMode) return;
+  setState(state => {
+    entries.forEach(({
+      isIntersecting,
+      target
+    }) => {
+      if (isIntersecting) state.memo.showImgList.push(target);else state.memo.showImgList = state.memo.showImgList.filter(img => img !== target);
+    });
+    state.memo.showPageList = [...new Set(state.memo.showImgList.map(img => +img.parentElement.getAttribute('data-index')))];
+    state.memo.showPageList.sort();
+    if (state.option.scrollMode) state.activePageIndex = state.memo.showPageList[0] ?? 0;
+  });
 };
 
 /** 处理漫画页的滚动事件 */
 const handleMangaFlowScroll = () => {
-  if (!store.option.scrollMode) return;
+  if (!store$1.option.scrollMode) return;
   requestAnimationFrame(() => {
     setState(state => {
-      state.scrollbar.dragTop = !store.ref.mangaFlow || !contentHeight() ? 0 : store.ref.mangaFlow.scrollTop / contentHeight();
+      state.scrollbar.dragTop = store$1.ref.mangaFlow.scrollTop / contentHeight();
       updateDrag(state);
-      updateShowPageList(state);
     });
   });
 };
 solidJs.createRoot(() => {
   // 在关闭工具栏的同时关掉滚动条的强制显示
-  solidJs.createEffect(solidJs.on(() => store.show.toolbar, () => {
-    if (store.show.scrollbar && !store.show.toolbar) setState(state => {
+  solidJs.createEffect(solidJs.on(() => store$1.show.toolbar, () => {
+    if (store$1.show.scrollbar && !store$1.show.toolbar) setState(state => {
       state.show.scrollbar = false;
     });
   }, {
     defer: true
   }));
 
-  // 在开启网格模式后关掉 滚动条和工具栏 的强制显示
-  solidJs.createEffect(solidJs.on(() => store.gridMode, gridMode => gridMode && setState(resetUI), {
+  // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
+  solidJs.createEffect(solidJs.on(() => store$1.gridMode, () => setState(resetUI), {
     defer: true
   }));
 });
 
 const touches = new Map();
-const scale = () => store.zoom.scale / 100;
-const mangaFlowBox = () => store.ref.mangaFlow;
-const width = () => store.ref.mangaFlow?.clientWidth ?? 0;
-const height = () => store.ref.mangaFlow?.clientHeight ?? 0;
+const scale = () => store$1.zoom.scale / 100;
+const mangaFlowBox = () => store$1.ref.mangaFlow;
+const width = () => store$1.ref.mangaFlow?.clientWidth ?? 0;
+const height = () => store$1.ref.mangaFlow?.clientHeight ?? 0;
 const bound = solidJs.createRoot(() => {
   const x = solidJs.createMemo(() => -width() * (scale() - 1));
   const y = solidJs.createMemo(() => -height() * (scale() - 1));
@@ -2403,7 +2412,7 @@ const closeScrollLock = debounce(200, () => setState(state => {
 }));
 const zoom = (val, focal, animation = false) => {
   const newScale = clamp(100, val, 500);
-  if (newScale === store.zoom.scale) return;
+  if (newScale === store$1.zoom.scale) return;
 
   // 消除放大导致的偏移
   const {
@@ -2414,8 +2423,8 @@ const zoom = (val, focal, animation = false) => {
   const y = (focal?.y ?? height() / 2) - top;
 
   // 当前直接放大后的基准点坐标
-  const newX = x / (store.zoom.scale / 100) * (newScale / 100);
-  const newY = y / (store.zoom.scale / 100) * (newScale / 100);
+  const newX = x / (store$1.zoom.scale / 100) * (newScale / 100);
+  const newY = y / (store$1.zoom.scale / 100) * (newScale / 100);
 
   // 放大后基准点的偏移距离
   const dx = newX - x;
@@ -2489,7 +2498,7 @@ const handleSlideAnima = timestamp => {
 /** 逐帧根据鼠标坐标移动元素，并计算速率 */
 const handleDragAnima$1 = () => {
   // 当停着不动时退出循环
-  if (mouse.x === store.zoom.offset.x && mouse.y === store.zoom.offset.y) {
+  if (mouse.x === store$1.zoom.offset.x && mouse.y === store$1.zoom.offset.y) {
     animationId$1 = null;
     return;
   }
@@ -2514,12 +2523,12 @@ const handleZoomDrag = ({
   xy: [x, y],
   last: [lx, ly]
 }) => {
-  if (store.zoom.scale === 100) return;
+  if (store$1.zoom.scale === 100) return;
   switch (type) {
     case 'down':
       {
-        mouse.x = store.zoom.offset.x;
-        mouse.y = store.zoom.offset.y;
+        mouse.x = store$1.zoom.offset.x;
+        mouse.y = store$1.zoom.offset.y;
         if (animationId$1) cancelAnimation();
         break;
       }
@@ -2536,8 +2545,8 @@ const handleZoomDrag = ({
         // 当双指捏合结束，一个手指抬起时，将剩余的指针当作刚点击来处理
         if (pinchZoom) {
           pinchZoom = false;
-          mouse.x = store.zoom.offset.x;
-          mouse.y = store.zoom.offset.y;
+          mouse.x = store$1.zoom.offset.x;
+          mouse.y = store$1.zoom.offset.y;
           return;
         }
         if (animationId$1) cancelAnimationFrame(animationId$1);
@@ -2584,7 +2593,7 @@ const handlePinchZoom = ({
         pinchZoom = true;
         const [a, b] = [...touches.values()];
         initDistance = getDistance(a, b);
-        initScale = store.zoom.scale;
+        initScale = store$1.zoom.scale;
         break;
       }
     case 'up':
@@ -2614,19 +2623,19 @@ const {
   imgPlaceholderHeight,
   preloadNum
 } = solidJs.createRoot(() => {
-  const activePageMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex] ?? []);
+  const activePageMemo = solidJs.createMemo(() => store$1.pageList[store$1.activePageIndex] ?? []);
   const activeImgIndexMemo = solidJs.createMemo(() => activePageMemo().find(i => i !== -1) ?? 0);
-  const nowFillIndexMemo = solidJs.createMemo(() => findFillIndex(activeImgIndexMemo(), store.fillEffect));
+  const nowFillIndexMemo = solidJs.createMemo(() => findFillIndex(activeImgIndexMemo(), store$1.fillEffect));
   const imgPlaceholderHeightMemo = solidJs.createMemo(() => {
-    if (!store.option.scrollMode) return 0;
+    if (!store$1.option.scrollMode) return 0;
     // 使用所有已加载图片高度的中位数
-    const heightList = store.imgList.filter(img => img.loadType === 'loaded' && img.height).map(img => img.height).sort();
+    const heightList = store$1.imgList.filter(img => img.loadType === 'loaded' && img.height).map(img => img.height).sort();
     if (!heightList.length) return windowHeight();
-    return heightList[Math.floor(heightList.length / 2)] * store.option.scrollModeImgScale;
+    return heightList[Math.floor(heightList.length / 2)] * store$1.option.scrollModeImgScale;
   });
   const preloadNumMemo = solidJs.createMemo(() => ({
-    back: store.option.preloadPageNum,
-    front: Math.floor(store.option.preloadPageNum / 2)
+    back: store$1.option.preloadPageNum,
+    front: Math.floor(store$1.option.preloadPageNum / 2)
   }));
   return {
     /** 当前显示的第一张图片的 index */
@@ -2679,14 +2688,13 @@ const zoomScrollModeImg = (zoomLevel, set = false) => {
   setOption(draftOption => {
     const newVal = set ? zoomLevel :
     // 放大到整数再运算，避免精度丢失导致的奇怪的值
-    (store.option.scrollModeImgScale * 100 + zoomLevel * 100) / 100;
+    (store$1.option.scrollModeImgScale * 100 + zoomLevel * 100) / 100;
     draftOption.scrollModeImgScale = clamp(0.1, newVal, 3);
   });
   // 在调整图片缩放后使当前滚动进度保持不变
-  setState(state => {
-    store.ref.mangaFlow.scrollTo({
-      top: contentHeight() * state.scrollbar.dragTop
-    });
+  store$1.ref.mangaFlow.scrollTo({
+    top: contentHeight() * store$1.scrollbar.dragTop,
+    behavior: 'instant'
   });
   handleMangaFlowScroll();
 };
@@ -2780,12 +2788,13 @@ const switchFillEffect = () => {
 const switchScrollMode = () => {
   zoom(100);
   setOption((draftOption, state) => {
-    state.activePageIndex = 0;
     draftOption.scrollMode = !draftOption.scrollMode;
     draftOption.onePageMode = draftOption.scrollMode;
     updatePageData(state);
   });
-  setTimeout(handleMangaFlowScroll);
+  requestAnimationFrame(handleMangaFlowScroll);
+  // 切换卷轴模式后自动定位到对应页
+  if (store$1.option.scrollMode) store$1.ref.mangaFlow.children[store$1.activePageIndex]?.scrollIntoView();
 };
 
 /** 切换单双页模式 */
@@ -2810,6 +2819,8 @@ const switchGridMode = () => {
     if (state.zoom.scale !== 100) zoom(100);
     state.page.anima = '';
   });
+  // 切换网格模式后自动定位到对应页
+  if (store$1.gridMode) store$1.ref.mangaFlow.children[store$1.activePageIndex]?.scrollIntoView();
 };
 
 /** 更新渲染页面相关变量 */
@@ -2818,12 +2829,12 @@ const updateRenderPage = (state, animation = false) => {
   const i = state.memo.renderPageList.indexOf(state.pageList[state.activePageIndex]);
   state.page.offset.x.pct = 0;
   state.page.offset.y.pct = 0;
-  if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
+  if (store$1.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
   state.page.anima = animation ? 'page' : '';
 };
 solidJs.createRoot(() => {
   // 页数发生变动时
-  solidJs.createEffect(solidJs.on(() => store.activePageIndex, () => {
+  solidJs.createEffect(solidJs.on(() => store$1.activePageIndex, () => {
     setState(state => {
       updateImgLoadType(state);
       if (state.show.endPage) state.show.endPage = undefined;
@@ -2834,25 +2845,25 @@ solidJs.createRoot(() => {
   solidJs.createEffect(solidJs.on(activePage, page => {
     // 如果当前显示页面有出错的图片，就重新加载一次
     page?.forEach(i => {
-      if (store.imgList[i]?.loadType !== 'error') return;
+      if (store$1.imgList[i]?.loadType !== 'error') return;
       setState(state => {
         state.imgList[i].loadType = 'wait';
       });
     });
-    if (store.option.scrollMode) return;
+    if (store$1.option.scrollMode) return;
     // 在翻页时重新计算要渲染的页面
-    if (!store.dragMode) setState(updateRenderPage);
+    if (!store$1.dragMode) setState(updateRenderPage);
   }));
 });
 
 const setHotkeys = (...args) => {
   _setState.apply(undefined, ['hotkeys', ...args]);
-  store.prop.HotkeysChange?.(Object.fromEntries(Object.entries(store.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]))));
+  store$1.prop.HotkeysChange?.(Object.fromEntries(Object.entries(store$1.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]))));
 };
 const {
   hotkeysMap
 } = solidJs.createRoot(() => {
-  const hotkeysMapMemo = solidJs.createMemo(() => Object.fromEntries(Object.entries(store.hotkeys).flatMap(([name, key]) => key.map(k => [k, name]))));
+  const hotkeysMapMemo = solidJs.createMemo(() => Object.fromEntries(Object.entries(store$1.hotkeys).flatMap(([name, key]) => key.map(k => [k, name]))));
   return {
     /** 快捷键配置 */
     hotkeysMap: hotkeysMapMemo
@@ -2861,31 +2872,36 @@ const {
 
 /** 删除指定快捷键 */
 const delHotkeys = code => {
-  Object.entries(store.hotkeys).forEach(([name, keys]) => {
+  Object.entries(store$1.hotkeys).forEach(([name, keys]) => {
     const i = keys.indexOf(code);
     if (i === -1) return;
-    const newKeys = [...store.hotkeys[name]];
+    const newKeys = [...store$1.hotkeys[name]];
     newKeys.splice(i, 1);
     setHotkeys(name, newKeys);
   });
 };
 
-var css$1 = ".index_module_img__d6bc57d1{background-color:var(--hover_bg_color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d6bc57d1[data-fill=left]{transform:translate(50%)}.index_module_img__d6bc57d1[data-fill=right]{transform:translate(-50%)}.index_module_img__d6bc57d1[data-fill=page]{display:none}.index_module_img__d6bc57d1[data-type=long]{height:auto;width:100%}.index_module_img__d6bc57d1[data-load-type=loading]{animation:index_module_show__d6bc57d1 2s forwards;max-width:100vw!important;opacity:0;position:absolute}.index_module_img__d6bc57d1[data-load-type=error],.index_module_img__d6bc57d1[data-load-type=wait],.index_module_img__d6bc57d1[src=\\"\\"]{aspect-ratio:3/4;height:100%!important;position:relative}:is(.index_module_img__d6bc57d1[data-load-type=error],.index_module_img__d6bc57d1[src=\\"\\"]):before{opacity:0}:is(.index_module_img__d6bc57d1[data-load-type],.index_module_img__d6bc57d1[src=\\"\\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d6bc57d1[data-load-type=loading],.index_module_img__d6bc57d1[data-load-type=wait]):after{background-image:var(--MdCloudDownload);content:\\"\\"}.index_module_img__d6bc57d1[src=\\"\\"]:after{background-image:var(--MdPhoto);content:\\"\\"}.index_module_img__d6bc57d1[data-load-type=error]:after{background-image:var(--MdImageNotSupported);content:\\"\\"}.index_module_page__d6bc57d1{align-items:center;content-visibility:hidden;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page_x),var(--page_y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d6bc57d1[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d6bc57d1{grid-row-gap:0;backface-visibility:hidden;color:var(--text);display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;touch-action:none;transform:translate(var(--x),var(--y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;transition-duration:0ms;user-select:none;width:100%}.index_module_mangaFlow__d6bc57d1:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d6bc57d1:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d6bc57d1[data-disable-zoom] .index_module_img__d6bc57d1{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d6bc57d1[dir=ltr] .index_module_page__d6bc57d1{flex-direction:row}.index_module_mangaFlow__d6bc57d1[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d6bc57d1[data-animation=page] .index_module_page__d6bc57d1,.index_module_mangaFlow__d6bc57d1[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d6bc57d1[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d6bc57d1[data-scroll-mode]{grid-row-gap:calc(var(--scrollModeSpacing)*.1em);grid-auto-flow:row;grid-auto-rows:auto;grid-template-rows:auto;overflow:auto;touch-action:auto}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_page__d6bc57d1{content-visibility:auto;display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width, 100%))}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1[data-load-type=wait]{height:var(--img-placeholder-height)}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1[data-load-type=loading]{position:unset}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1[data-load-type=error]{height:20em;width:30em}.index_module_mangaFlow__d6bc57d1[data-grid-mode]{grid-row-gap:1.5em;box-sizing:border-box;grid-auto-flow:row;grid-auto-rows:33.33333%;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;overflow:auto;padding-bottom:2em;touch-action:auto;transform:none}.index_module_mangaFlow__d6bc57d1[data-grid-mode] .index_module_page__d6bc57d1{height:auto;transform:none}.index_module_mangaFlow__d6bc57d1[data-grid-mode] .index_module_page__d6bc57d1:after{bottom:-1.5em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);width:100%}.index_module_mangaFlow__d6bc57d1[data-grid-mode] .index_module_page__d6bc57d1 .index_module_img__d6bc57d1{content-visibility:auto;cursor:pointer}@keyframes index_module_show__d6bc57d1{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d6bc57d1{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d6bc57d1>button{animation:index_module_jello__d6bc57d1 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d6bc57d1>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d6bc57d1>button:focus-visible{outline:none}.index_module_endPage__d6bc57d1>.index_module_tip__d6bc57d1{margin:auto;position:absolute}.index_module_endPage__d6bc57d1[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d6bc57d1[data-type=start]>.index_module_tip__d6bc57d1{transform:translateY(-10em)}.index_module_endPage__d6bc57d1[data-type=end]>.index_module_tip__d6bc57d1{transform:translateY(10em)}.index_module_root__d6bc57d1[data-mobile] .index_module_endPage__d6bc57d1>button{width:1em}.index_module_comments__d6bc57d1{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d6bc57d1>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d6bc57d1:hover{opacity:1}.index_module_root__d6bc57d1[data-mobile] .index_module_comments__d6bc57d1{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d6bc57d1{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d6bc57d1{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d6bc57d1{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d6bc57d1[data-show],.index_module_toolbar__d6bc57d1:hover) .index_module_toolbarPanel__d6bc57d1{transform:none}.index_module_toolbar__d6bc57d1[data-close] .index_module_toolbarPanel__d6bc57d1{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d6bc57d1{backdrop-filter:blur(24px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d6bc57d1[data-mobile] .index_module_toolbar__d6bc57d1{font-size:1.3em}.index_module_root__d6bc57d1[data-mobile] .index_module_toolbar__d6bc57d1:not([data-show]){pointer-events:none}.index_module_root__d6bc57d1[data-mobile] .index_module_toolbarBg__d6bc57d1{filter:opacity(.8)}.index_module_SettingPanelPopper__d6bc57d1{height:0!important;padding:0!important;transform:none!important}.index_module_SettingPanel__d6bc57d1{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;user-select:text;z-index:1}.index_module_SettingPanel__d6bc57d1 hr{color:#fff;margin:0}.index_module_SettingBlock__d6bc57d1{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d6bc57d1 .index_module_SettingBlockBody__d6bc57d1{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__d6bc57d1 .index_module_SettingBlockBody__d6bc57d1)>div+:is(.index_module_SettingBlock__d6bc57d1 .index_module_SettingBlockBody__d6bc57d1)>div{margin-top:1em}.index_module_SettingBlock__d6bc57d1[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__d6bc57d1{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d6bc57d1{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d6bc57d1+.index_module_SettingsItem__d6bc57d1{margin-top:1em}.index_module_SettingsItemName__d6bc57d1{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d6bc57d1{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d6bc57d1{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d6bc57d1[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__d6bc57d1[data-checked=true] .index_module_SettingsItemSwitchRound__d6bc57d1{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d6bc57d1{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d6bc57d1{background-color:var(--hover_bg_color);border:none;border-radius:5px;cursor:pointer;font-size:1em;margin:0;outline:none;padding:.3em 0 .3em .3em;width:6em}.index_module_closeCover__d6bc57d1{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d6bc57d1{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d6bc57d1>.index_module_SettingsShowItemBody__d6bc57d1{overflow:hidden}.index_module_SettingsShowItem__d6bc57d1>.index_module_SettingsShowItemBody__d6bc57d1>.index_module_SettingsItem__d6bc57d1{margin-top:1em}.index_module_hotkeys__d6bc57d1{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d6bc57d1+.index_module_hotkeys__d6bc57d1{margin-top:.5em}.index_module_hotkeys__d6bc57d1:last-child{border-bottom:none}.index_module_hotkeysItem__d6bc57d1{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__d6bc57d1>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d6bc57d1>svg:hover{opacity:.9}.index_module_hotkeysItem__d6bc57d1:hover{padding:.2em .5em}.index_module_hotkeysItem__d6bc57d1:hover>svg{display:unset}.index_module_hotkeysItem__d6bc57d1:focus,.index_module_hotkeysItem__d6bc57d1:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d6bc57d1{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d6bc57d1>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d6bc57d1>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d6bc57d1>div[title]>svg{width:1.6em}.index_module_hotkeys__d6bc57d1:hover div[title]{transform:scale(1)}.index_module_scrollbar__d6bc57d1{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;opacity:0;outline:none;position:absolute;right:3px;top:1%;touch-action:none;transition:opacity .15s;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d6bc57d1>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbar__d6bc57d1:hover,.index_module_scrollbar__d6bc57d1[data-show=true]{opacity:1}.index_module_scrollbarDrag__d6bc57d1{background-color:var(--scrollbar_drag);border-radius:1em;height:var(--height);justify-content:center;position:absolute;top:var(--top);width:100%;z-index:1}.index_module_scrollbarPage__d6bc57d1{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d6bc57d1[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d6bc57d1[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d6bc57d1[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d6bc57d1[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d6bc57d1[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d6bc57d1[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d6bc57d1[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d6bc57d1[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__d6bc57d1{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;justify-content:center;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__d6bc57d1[data-show=true]{opacity:1}.index_module_scrollbarPoper__d6bc57d1:after{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbar__d6bc57d1:hover .index_module_scrollbarPoper__d6bc57d1{opacity:1}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbar__d6bc57d1{border-bottom:2em solid #0000;border-left:none;flex-direction:row-reverse;height:5px;right:1%;top:1px;width:98%}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbarDrag__d6bc57d1{height:100%;right:var(--top);top:unset;width:var(--height)}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbar__d6bc57d1[data-dir=ltr]{flex-direction:row}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbar__d6bc57d1[data-dir=ltr] .index_module_scrollbarDrag__d6bc57d1{left:var(--top);right:unset}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbarPoper__d6bc57d1{padding:.1em .3em;right:unset;top:1.2em}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbarPoper__d6bc57d1:after{border:.3em solid #0000;border-bottom:.4em solid #303030;bottom:100%;left:unset}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbar__d6bc57d1:hover .index_module_scrollbarPoper__d6bc57d1{opacity:0}.index_module_touchAreaRoot__d6bc57d1{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(40%,10em) 1fr;grid-template-rows:1fr min(30%,10em) 1fr;height:100%;letter-spacing:.5em;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__d6bc57d1[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d6bc57d1[data-show=true]{visibility:visible}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=PREV],.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=MENU],.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=NEXT],.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=NEXT],.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=PREV],.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=next],.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d6bc57d1[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d6bc57d1[data-mobile] .index_module_touchAreaRoot__d6bc57d1{flex-direction:column!important;letter-spacing:0}.index_module_root__d6bc57d1[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d6bc57d1{display:none!important}.index_module_invisible__d6bc57d1{visibility:hidden!important}.index_module_root__d6bc57d1{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d6bc57d1 a{color:var(--text_secondary)}.index_module_root__d6bc57d1[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d6bc57d1{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d6bc57d1::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d6bc57d1::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d6bc57d1::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary,#607d8b);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".index_module_img__d6bc57d1{background-color:var(--hover_bg_color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d6bc57d1[data-fill=left]{transform:translate(50%)}.index_module_img__d6bc57d1[data-fill=right]{transform:translate(-50%)}.index_module_img__d6bc57d1[data-fill=page]{display:none}.index_module_img__d6bc57d1[data-type=long]{height:auto;width:100%}.index_module_img__d6bc57d1[data-load-type=loading]{animation:index_module_show__d6bc57d1 2s forwards;max-width:100vw!important;opacity:0;position:absolute}.index_module_img__d6bc57d1[data-load-type=error],.index_module_img__d6bc57d1[data-load-type=wait],.index_module_img__d6bc57d1[src=\\"\\"]{aspect-ratio:3/4;height:100%!important;position:relative}:is(.index_module_img__d6bc57d1[data-load-type=error],.index_module_img__d6bc57d1[src=\\"\\"]):before{opacity:0}:is(.index_module_img__d6bc57d1[data-load-type],.index_module_img__d6bc57d1[src=\\"\\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d6bc57d1[data-load-type=loading],.index_module_img__d6bc57d1[data-load-type=wait]):after{background-image:var(--MdCloudDownload);content:\\"\\"}.index_module_img__d6bc57d1[src=\\"\\"]:after{background-image:var(--MdPhoto);content:\\"\\"}.index_module_img__d6bc57d1[data-load-type=error]:after{background-image:var(--MdImageNotSupported);content:\\"\\"}.index_module_page__d6bc57d1{align-items:center;content-visibility:hidden;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d6bc57d1[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d6bc57d1{grid-row-gap:0;backface-visibility:hidden;color:var(--text);display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;transition-duration:0ms;user-select:none;width:100%}.index_module_mangaFlow__d6bc57d1:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d6bc57d1:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d6bc57d1[data-disable-zoom] .index_module_img__d6bc57d1{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d6bc57d1[dir=ltr] .index_module_page__d6bc57d1{flex-direction:row}.index_module_mangaFlow__d6bc57d1[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d6bc57d1[data-animation=page] .index_module_page__d6bc57d1,.index_module_mangaFlow__d6bc57d1[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d6bc57d1[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d6bc57d1[data-scroll-mode]{grid-row-gap:calc(var(--scrollModeSpacing)*.1em);grid-auto-flow:row;grid-auto-rows:auto;grid-template-rows:auto;overflow:auto;touch-action:auto}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_page__d6bc57d1{display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scrollModeImgScale)*var(--width, 100%))}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1[data-load-type=wait]{height:var(--img-placeholder-height)}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1[data-load-type=loading]{position:unset}.index_module_mangaFlow__d6bc57d1[data-scroll-mode] .index_module_img__d6bc57d1[data-load-type=error]{height:20em;width:30em}.index_module_mangaFlow__d6bc57d1[data-grid-mode]{grid-row-gap:1.5em;box-sizing:border-box;grid-auto-flow:row;grid-auto-rows:33.33333%;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;overflow:auto;padding-bottom:2em;touch-action:auto;transform:none}.index_module_mangaFlow__d6bc57d1[data-grid-mode] .index_module_page__d6bc57d1{height:auto;transform:none}.index_module_mangaFlow__d6bc57d1[data-grid-mode] .index_module_page__d6bc57d1:after{bottom:-1.4em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);white-space:pre;width:100%}.index_module_mangaFlow__d6bc57d1[data-grid-mode] .index_module_page__d6bc57d1 .index_module_img__d6bc57d1{cursor:pointer}@keyframes index_module_show__d6bc57d1{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d6bc57d1{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d6bc57d1>button{animation:index_module_jello__d6bc57d1 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d6bc57d1>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d6bc57d1>button:focus-visible{outline:none}.index_module_endPage__d6bc57d1>.index_module_tip__d6bc57d1{margin:auto;position:absolute}.index_module_endPage__d6bc57d1[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d6bc57d1[data-type=start]>.index_module_tip__d6bc57d1{transform:translateY(-10em)}.index_module_endPage__d6bc57d1[data-type=end]>.index_module_tip__d6bc57d1{transform:translateY(10em)}.index_module_root__d6bc57d1[data-mobile] .index_module_endPage__d6bc57d1>button{width:1em}.index_module_comments__d6bc57d1{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d6bc57d1>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d6bc57d1:hover{opacity:1}.index_module_root__d6bc57d1[data-mobile] .index_module_comments__d6bc57d1{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d6bc57d1{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d6bc57d1{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d6bc57d1{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d6bc57d1[data-show],.index_module_toolbar__d6bc57d1:hover) .index_module_toolbarPanel__d6bc57d1{transform:none}.index_module_toolbar__d6bc57d1[data-close] .index_module_toolbarPanel__d6bc57d1{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d6bc57d1{backdrop-filter:blur(24px);background-color:var(--page_bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d6bc57d1[data-mobile] .index_module_toolbar__d6bc57d1{font-size:1.3em}.index_module_root__d6bc57d1[data-mobile] .index_module_toolbar__d6bc57d1:not([data-show]){pointer-events:none}.index_module_root__d6bc57d1[data-mobile] .index_module_toolbarBg__d6bc57d1{filter:opacity(.8)}.index_module_SettingPanelPopper__d6bc57d1{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__d6bc57d1{background-color:var(--page_bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;user-select:text;z-index:1}.index_module_SettingPanel__d6bc57d1 hr{color:#fff;margin:0}.index_module_SettingBlock__d6bc57d1{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d6bc57d1 .index_module_SettingBlockBody__d6bc57d1{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__d6bc57d1 .index_module_SettingBlockBody__d6bc57d1)>div+:is(.index_module_SettingBlock__d6bc57d1 .index_module_SettingBlockBody__d6bc57d1)>div{margin-top:1em}.index_module_SettingBlock__d6bc57d1[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__d6bc57d1{background-color:var(--page_bg);color:var(--text_secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d6bc57d1{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d6bc57d1+.index_module_SettingsItem__d6bc57d1{margin-top:1em}.index_module_SettingsItemName__d6bc57d1{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d6bc57d1{align-items:center;background-color:var(--switch_bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d6bc57d1{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d6bc57d1[data-checked=true]{background:var(--secondary_bg)}.index_module_SettingsItemSwitch__d6bc57d1[data-checked=true] .index_module_SettingsItemSwitchRound__d6bc57d1{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d6bc57d1{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d6bc57d1{background-color:var(--hover_bg_color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6em;outline:none;padding:.3em}.index_module_closeCover__d6bc57d1{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d6bc57d1{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d6bc57d1>.index_module_SettingsShowItemBody__d6bc57d1{overflow:hidden}.index_module_SettingsShowItem__d6bc57d1>.index_module_SettingsShowItemBody__d6bc57d1>.index_module_SettingsItem__d6bc57d1{margin-top:1em}.index_module_hotkeys__d6bc57d1{align-items:center;border-bottom:1px solid var(--secondary_bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d6bc57d1+.index_module_hotkeys__d6bc57d1{margin-top:.5em}.index_module_hotkeys__d6bc57d1:last-child{border-bottom:none}.index_module_hotkeysItem__d6bc57d1{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary_bg);padding:.2em 1.2em}.index_module_hotkeysItem__d6bc57d1>svg{background-color:var(--text);border-radius:1em;color:var(--page_bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d6bc57d1>svg:hover{opacity:.9}.index_module_hotkeysItem__d6bc57d1:hover{padding:.2em .5em}.index_module_hotkeysItem__d6bc57d1:hover>svg{display:unset}.index_module_hotkeysItem__d6bc57d1:focus,.index_module_hotkeysItem__d6bc57d1:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d6bc57d1{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d6bc57d1>p{background-color:var(--page_bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d6bc57d1>div[title]{background-color:var(--page_bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d6bc57d1>div[title]>svg{width:1.6em}.index_module_hotkeys__d6bc57d1:hover div[title]{transform:scale(1)}.index_module_scrollbar__d6bc57d1{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;opacity:0;outline:none;position:absolute;right:3px;top:1%;touch-action:none;transition:opacity .15s;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d6bc57d1>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbar__d6bc57d1:hover,.index_module_scrollbar__d6bc57d1[data-show=true]{opacity:1}.index_module_scrollbarDrag__d6bc57d1{background-color:var(--scrollbar_drag);border-radius:1em;height:var(--height);justify-content:center;position:absolute;top:var(--top);width:100%;z-index:1}.index_module_scrollbarPage__d6bc57d1{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d6bc57d1[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d6bc57d1[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d6bc57d1[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d6bc57d1[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d6bc57d1[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d6bc57d1[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d6bc57d1[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d6bc57d1[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__d6bc57d1{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;justify-content:center;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__d6bc57d1[data-show=true]{opacity:1}.index_module_scrollbarPoper__d6bc57d1:after{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbar__d6bc57d1:hover .index_module_scrollbarPoper__d6bc57d1{opacity:1}.index_module_scrollbar__d6bc57d1[data-position=hidden]{display:none}.index_module_scrollbar__d6bc57d1[data-position=bottom],.index_module_scrollbar__d6bc57d1[data-position=top]{border-left:none;flex-direction:row-reverse;height:5px;right:1%;top:unset;width:98%}.index_module_scrollbar__d6bc57d1[data-position=bottom] .index_module_scrollbarDrag__d6bc57d1,.index_module_scrollbar__d6bc57d1[data-position=top] .index_module_scrollbarDrag__d6bc57d1{height:100%;right:var(--top);top:unset;width:var(--height)}.index_module_scrollbar__d6bc57d1[data-position=bottom][data-dir=ltr],.index_module_scrollbar__d6bc57d1[data-position=top][data-dir=ltr]{flex-direction:row}.index_module_scrollbar__d6bc57d1[data-position=bottom][data-dir=ltr] .index_module_scrollbarDrag__d6bc57d1,.index_module_scrollbar__d6bc57d1[data-position=top][data-dir=ltr] .index_module_scrollbarDrag__d6bc57d1{left:var(--top);right:unset}.index_module_scrollbar__d6bc57d1[data-position=bottom] .index_module_scrollbarPoper__d6bc57d1,.index_module_scrollbar__d6bc57d1[data-position=top] .index_module_scrollbarPoper__d6bc57d1{padding:.1em .3em;right:unset}.index_module_scrollbar__d6bc57d1[data-position=bottom] .index_module_scrollbarPoper__d6bc57d1:after,.index_module_scrollbar__d6bc57d1[data-position=top] .index_module_scrollbarPoper__d6bc57d1:after{border:.3em solid #0000;left:unset}.index_module_scrollbar__d6bc57d1[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__d6bc57d1[data-position=top] .index_module_scrollbarPoper__d6bc57d1{top:1.2em}.index_module_scrollbar__d6bc57d1[data-position=top] .index_module_scrollbarPoper__d6bc57d1:after{border-bottom:.4em solid #303030;bottom:100%}.index_module_scrollbar__d6bc57d1[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px}.index_module_scrollbar__d6bc57d1[data-position=bottom] .index_module_scrollbarPoper__d6bc57d1{bottom:1.2em}.index_module_scrollbar__d6bc57d1[data-position=bottom] .index_module_scrollbarPoper__d6bc57d1:after{border-top:.4em solid #303030;top:100%}.index_module_root__d6bc57d1[data-mobile] .index_module_scrollbar__d6bc57d1:hover .index_module_scrollbarPoper__d6bc57d1{opacity:0}.index_module_touchAreaRoot__d6bc57d1{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(40%,10em) 1fr;grid-template-rows:1fr min(30%,10em) 1fr;height:100%;letter-spacing:.5em;pointer-events:none;position:absolute;top:0;user-select:none;visibility:hidden;width:100%}.index_module_touchAreaRoot__d6bc57d1[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d6bc57d1[data-show=true]{visibility:visible}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=PREV],.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=MENU],.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=NEXT],.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d6bc57d1[data-show=true] .index_module_touchArea__d6bc57d1[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=NEXT],.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=PREV],.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=next],.index_module_touchAreaRoot__d6bc57d1:not([data-turn-page]) .index_module_touchArea__d6bc57d1[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d6bc57d1[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d6bc57d1[data-mobile] .index_module_touchAreaRoot__d6bc57d1{flex-direction:column!important;letter-spacing:0}.index_module_root__d6bc57d1[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d6bc57d1{display:none!important}.index_module_invisible__d6bc57d1{visibility:hidden!important}.index_module_root__d6bc57d1{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d6bc57d1 a{color:var(--text_secondary)}.index_module_root__d6bc57d1[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d6bc57d1{scrollbar-color:var(--scrollbar_drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d6bc57d1::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d6bc57d1::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d6bc57d1::-webkit-scrollbar-thumb{background:var(--scrollbar_drag)}p{margin:0}blockquote{border-left:.25em solid var(--text_secondary,#607d8b);color:var(--text_secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"index_module_img__d6bc57d1","show":"index_module_show__d6bc57d1","mangaFlow":"index_module_mangaFlow__d6bc57d1","endPage":"index_module_endPage__d6bc57d1","jello":"index_module_jello__d6bc57d1","tip":"index_module_tip__d6bc57d1","root":"index_module_root__d6bc57d1","comments":"index_module_comments__d6bc57d1","toolbar":"index_module_toolbar__d6bc57d1","toolbarPanel":"index_module_toolbarPanel__d6bc57d1","toolbarBg":"index_module_toolbarBg__d6bc57d1","SettingPanelPopper":"index_module_SettingPanelPopper__d6bc57d1","SettingPanel":"index_module_SettingPanel__d6bc57d1","SettingBlock":"index_module_SettingBlock__d6bc57d1","SettingBlockBody":"index_module_SettingBlockBody__d6bc57d1","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__d6bc57d1","SettingsItem":"index_module_SettingsItem__d6bc57d1","SettingsItemName":"index_module_SettingsItemName__d6bc57d1","SettingsItemSwitch":"index_module_SettingsItemSwitch__d6bc57d1","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__d6bc57d1","SettingsItemIconButton":"index_module_SettingsItemIconButton__d6bc57d1","SettingsItemSelect":"index_module_SettingsItemSelect__d6bc57d1","closeCover":"index_module_closeCover__d6bc57d1","SettingsShowItem":"index_module_SettingsShowItem__d6bc57d1","SettingsShowItemBody":"index_module_SettingsShowItemBody__d6bc57d1","hotkeys":"index_module_hotkeys__d6bc57d1","hotkeysItem":"index_module_hotkeysItem__d6bc57d1","hotkeysHeader":"index_module_hotkeysHeader__d6bc57d1","scrollbar":"index_module_scrollbar__d6bc57d1","scrollbarDrag":"index_module_scrollbarDrag__d6bc57d1","scrollbarPage":"index_module_scrollbarPage__d6bc57d1","scrollbarPoper":"index_module_scrollbarPoper__d6bc57d1","touchAreaRoot":"index_module_touchAreaRoot__d6bc57d1","touchArea":"index_module_touchArea__d6bc57d1","hidden":"index_module_hidden__d6bc57d1","invisible":"index_module_invisible__d6bc57d1","beautifyScrollbar":"index_module_beautifyScrollbar__d6bc57d1","page":"index_module_page__d6bc57d1"};
 
 const handleMouseDown = e => {
-  if (e.button !== 1 || store.option.scrollMode) return;
+  if (e.button !== 1 || store$1.option.scrollMode) return;
   e.stopPropagation();
   e.preventDefault();
   switchFillEffect();
 };
-const focus = () => (store.ref.mangaFlow ?? store.ref.root)?.parentElement?.focus();
+
+// 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
+const focus = () => requestAnimationFrame(() => {
+  store$1.ref.mangaFlow?.click();
+  store$1.ref.mangaFlow?.focus();
+});
 
 /** 判断当前是否已经滚动到底部 */
-const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
+const isBottom = state => state.option.scrollMode ? store$1.scrollbar.dragHeight + store$1.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
 
 /** 判断当前是否已经滚动到顶部 */
-const isTop = state => state.option.scrollMode ? store.scrollbar.dragTop === 0 : state.activePageIndex === 0;
+const isTop = state => state.option.scrollMode ? store$1.scrollbar.dragTop === 0 : state.activePageIndex === 0;
 
 /** 翻页。返回是否成功改变了当前页数 */
 const turnPageFn = (state, dir) => {
@@ -2958,7 +2974,7 @@ const turnPageAnimation = dir => {
     }
     state.dragMode = true;
     updateRenderPage(state);
-    if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 100 : -100;else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
+    if (store$1.page.vertical) state.page.offset.y.pct += dir === 'next' ? 100 : -100;else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
     requestIdleCallback(() => {
       setState(draftState => {
         updateRenderPage(draftState, true);
@@ -2972,28 +2988,20 @@ const turnPageAnimation = dir => {
 const handleWheel = e => {
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
-  if (!store.show.endPage && store.scrollLock) return;
+  if (!store$1.show.endPage && store$1.scrollLock) return;
   const isWheelDown = e.deltaY > 0;
-  if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
-  if (store.option.scrollMode) {
-    // 卷轴模式下的缩放
-    if (e.altKey || e.ctrlKey) {
-      e.preventDefault();
-      zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
-      // 在调整图片缩放后使当前滚动进度保持不变
-      setState(state => {
-        store.ref.mangaFlow.scrollTo({
-          top: contentHeight() * state.scrollbar.dragTop
-        });
-      });
-      handleMangaFlowScroll();
-    }
+  if (store$1.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
+
+  // 卷轴模式下的缩放
+  if (store$1.option.scrollMode && (e.altKey || e.ctrlKey)) {
+    e.preventDefault();
+    zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
     return;
   }
 
   // 翻页模式下的缩放
-  if (e.altKey || e.ctrlKey || store.zoom.scale !== 100) {
-    zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
+  if (e.altKey || e.ctrlKey || store$1.zoom.scale !== 100) {
+    zoom(store$1.zoom.scale + (isWheelDown ? -25 : 25), e);
     return;
   }
   return turnPage(isWheelDown ? 'next' : 'prev');
@@ -3001,7 +3009,7 @@ const handleWheel = e => {
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
 const handleSwapPageTurnKey = nextPage => {
-  const next = store.option.swapPageTurnKey ? !nextPage : nextPage;
+  const next = store$1.option.swapPageTurnKey ? !nextPage : nextPage;
   return next ? 'next' : 'prev';
 };
 
@@ -3013,10 +3021,10 @@ const handleKeyDown = e => {
 
   // esc 在触发配置操作前，先用于退出一些界面
   if (e.key === 'Escape') {
-    if (store.gridMode) return setState(state => {
+    if (store$1.gridMode) return setState(state => {
       state.gridMode = false;
     });
-    if (store.show.endPage) return setState(state => {
+    if (store$1.show.endPage) return setState(state => {
       state.show.endPage = undefined;
     });
   }
@@ -3031,8 +3039,8 @@ const handleKeyDown = e => {
     return;
   }
 
-  // 卷轴模式下跳过用于移动的按键
-  if (store.option.scrollMode && !store.show.endPage) {
+  // 卷轴、网格模式下跳过用于移动的按键
+  if ((store$1.option.scrollMode || store$1.gridMode) && !store$1.show.endPage) {
     switch (e.key) {
       case 'Home':
       case 'End':
@@ -3041,11 +3049,11 @@ const handleKeyDown = e => {
         return;
       case 'ArrowUp':
       case 'PageUp':
-        return;
+        return store$1.gridMode || turnPage('prev');
       case 'ArrowDown':
       case 'PageDown':
       case ' ':
-        return;
+        return store$1.gridMode || turnPage('next');
     }
   }
 
@@ -3060,9 +3068,9 @@ const handleKeyDown = e => {
     case 'turn_page_down':
       return turnPage('next');
     case 'turn_page_right':
-      return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
+      return turnPage(handleSwapPageTurnKey(store$1.option.dir !== 'rtl'));
     case 'turn_page_left':
-      return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));
+      return turnPage(handleSwapPageTurnKey(store$1.option.dir === 'rtl'));
     case 'jump_to_home':
       return setState(state => {
         state.activePageIndex = 0;
@@ -3086,7 +3094,7 @@ const handleKeyDown = e => {
         draftOption.disableZoom = !draftOption.disableZoom;
       });
     case 'exit':
-      return store.prop.Exit?.();
+      return store$1.prop.Exit?.();
   }
 };
 
@@ -3120,7 +3128,7 @@ const findClickEle = (eleList, {
 
 /** 触发 touchArea 操作 */
 const handlePageClick = e => {
-  const targetArea = findClickEle(store.ref.touchArea.children, e);
+  const targetArea = findClickEle(store$1.ref.touchArea.children, e);
   if (!targetArea) return;
   const areaName = targetArea.getAttribute('data-area');
   switch (areaName) {
@@ -3136,25 +3144,25 @@ const handlePageClick = e => {
     case 'PREV':
       {
         setState(resetUI);
-        return store.option.clickPageTurn.enabled && turnPage('prev');
+        return store$1.option.clickPageTurn.enabled && turnPage('prev');
       }
     case 'next':
     case 'NEXT':
       {
         setState(resetUI);
-        return store.option.clickPageTurn.enabled && turnPage('next');
+        return store$1.option.clickPageTurn.enabled && turnPage('next');
       }
   }
 };
 
 /** 网格模式下点击图片跳到对应页 */
 const handleGridClick = e => {
-  const target = findClickEle(store.ref.root.getElementsByTagName('img'), e);
+  const target = findClickEle(store$1.ref.root.getElementsByTagName('img'), e);
   if (!target) return;
   const pageNumText = target.parentElement?.getAttribute('data-index');
   if (!pageNumText) return;
   const pageNum = +pageNumText;
-  if (!Reflect.has(store.pageList, pageNum)) return;
+  if (!Reflect.has(store$1.pageList, pageNum)) return;
   setState(state => {
     state.activePageIndex = pageNum;
     state.gridMode = false;
@@ -3163,7 +3171,7 @@ const handleGridClick = e => {
 
 /** 双击放大 */
 const doubleClickZoom = e => {
-  if (store.option.scrollMode || store.gridMode) return;
+  if (store$1.gridMode) return;
   requestAnimationFrame(() => {
     setState(state => {
       // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
@@ -3173,8 +3181,8 @@ const doubleClickZoom = e => {
   });
 };
 const handleClick = useDoubleClick(e => {
-  if (store.zoom.scale !== 100) return;
-  if (store.gridMode) return handleGridClick(e);
+  if (store$1.zoom.scale !== 100) return;
+  if (store$1.gridMode) return handleGridClick(e);
   handlePageClick(e);
 }, doubleClickZoom);
 
@@ -3183,12 +3191,12 @@ const getTurnPageDir = startTime => {
   let dir;
   let move;
   let total;
-  if (store.page.vertical) {
-    move = -store.page.offset.y.px;
-    total = store.ref.root.clientHeight;
+  if (store$1.page.vertical) {
+    move = -store$1.page.offset.y.px;
+    total = store$1.ref.root.clientHeight;
   } else {
-    move = store.page.offset.x.px;
-    total = store.ref.root.clientWidth;
+    move = store$1.page.offset.x.px;
+    total = store$1.ref.root.clientWidth;
   }
 
   // 滑动距离超过总长度三分之一判定翻页
@@ -3206,7 +3214,7 @@ let dy = 0;
 let animationId = null;
 const handleDragAnima = () => {
   // 当停着不动时退出循环
-  if (dx === store.page.offset.x.px && dy === store.page.offset.y.px) {
+  if (dx === store$1.page.offset.x.px && dy === store$1.page.offset.y.px) {
     animationId = null;
     return;
   }
@@ -3224,9 +3232,9 @@ const handleMangaFlowDrag = ({
   switch (type) {
     case 'move':
       {
-        dx = store.option.dir === 'rtl' ? x - ix : ix - x;
+        dx = store$1.option.dir === 'rtl' ? x - ix : ix - x;
         dy = y - iy;
-        if (store.dragMode) {
+        if (store$1.dragMode) {
           if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
           return;
         }
@@ -3434,7 +3442,17 @@ const handleImgError = (i, e) => {
 
 /** 漫画图片 */
 const ComicImg = props => {
-  const img = solidJs.createMemo(() => store.imgList[props.index]);
+  let ref;
+  solidJs.onMount(() => {
+    store$1.observer?.observe(ref);
+    solidJs.onCleanup(() => {
+      store$1.observer?.unobserve(ref);
+      setState(state => {
+        state.memo.showImgList = state.memo.showImgList.filter(img => img !== ref);
+      });
+    });
+  });
+  const img = () => store$1.imgList[props.index];
   const src = solidJs.createMemo(() => {
     if (!img() || img().loadType === 'wait') return '';
     if (img().translationType === 'show') return img().translationUrl;
@@ -3444,6 +3462,8 @@ const ComicImg = props => {
     const _el$ = _tmpl$$D();
     _el$.addEventListener("error", e => handleImgError(props.index, e.currentTarget));
     _el$.addEventListener("load", e => handleImgLoaded(props.index, e.currentTarget));
+    const _ref$ = ref;
+    typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.img,
         _v$2 = img()?.width ? \`min(100%, \${img()?.width}px)\` : undefined,
@@ -3476,14 +3496,23 @@ const ComicImg = props => {
 const _tmpl$$C = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$b = /*#__PURE__*/web.template(\`<h1>NULL\`);
 const ComicPage = props => {
-  const show = solidJs.createMemo(() => store.gridMode || store.option.scrollMode || store.memo.renderPageList.some(page => isEqualArray(page, props.page)));
+  const show = solidJs.createMemo(() => store$1.gridMode || store$1.option.scrollMode || store$1.memo.renderPageList.some(page => isEqualArray(page, props.page)));
   const fill = solidJs.createMemo(() => {
     if (props.page.length === 1) return undefined;
 
     // 判断是否有填充页
     const fillIndex = props.page.indexOf(-1);
-    if (fillIndex !== -1) return store.option.dir !== 'rtl' ? ['right', 'left'] : ['left', 'right'];
+    if (fillIndex !== -1) return store$1.option.dir !== 'rtl' ? ['right', 'left'] : ['left', 'right'];
     return undefined;
+  });
+  const style = solidJs.createMemo(() => {
+    if (!store$1.gridMode) return {};
+    const highlight = props.index === store$1.activePageIndex;
+    const tip = getPageTip(props.index);
+    return {
+      '--tip': highlight ? \`">    \${tip}    <"\` : \`"\${tip}"\`,
+      'box-shadow': highlight ? 'var(--text_secondary) 0 0 1em' : undefined
+    };
   });
   return (() => {
     const _el$ = _tmpl$$C();
@@ -3505,11 +3534,11 @@ const ComicPage = props => {
       const _v$ = modules_c21c94f2$1.page,
         _v$2 = boolDataVal(show()),
         _v$3 = props.index,
-        _v$4 = store.gridMode ? \`"\${getPageTip(props.index)}"\` : '"null"';
+        _v$4 = style();
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
       _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-index", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("--tip", _v$4) : _el$.style.removeProperty("--tip"));
+      _p$._v$4 = web.style(_el$, _v$4, _p$._v$4);
       return _p$;
     }, {
       _v$: undefined,
@@ -3529,27 +3558,41 @@ const ComicImgFlow = () => {
     onMouseMove
   } = useHiddenMouse();
   const handleDrag = (state, e) => {
-    if (store.gridMode) return;
+    if (store$1.gridMode) return;
     if (touches.size > 1) return handlePinchZoom(state);
-    if (store.zoom.scale !== 100) return handleZoomDrag(state);
-    if (!store.option.scrollMode) return handleMangaFlowDrag(state);
+    if (store$1.zoom.scale !== 100) return handleZoomDrag(state);
+    if (!store$1.option.scrollMode) return handleMangaFlowDrag(state);
   };
-  solidJs.onMount(() => useDrag({
-    ref: store.ref.mangaFlow,
-    handleDrag,
-    handleClick,
-    touches
-  }));
-  const handleTransitionEnd = () => {
-    if (store.dragMode) return;
+  solidJs.onMount(() => {
+    useDrag({
+      ref: store$1.ref.mangaFlow,
+      handleDrag,
+      handleClick,
+      touches
+    });
     setState(state => {
-      if (store.zoom.scale === 100) updateRenderPage(state, true);else state.page.anima = '';
+      state.observer = new IntersectionObserver(handleObserver, {
+        root: store$1.ref.mangaFlow,
+        threshold: 0.01
+      });
+    });
+    solidJs.onCleanup(() => {
+      setState(state => {
+        state.observer?.disconnect();
+        state.observer = null;
+      });
+    });
+  });
+  const handleTransitionEnd = () => {
+    if (store$1.dragMode) return;
+    setState(state => {
+      if (store$1.zoom.scale === 100) updateRenderPage(state, true);else state.page.anima = '';
     });
   };
-  const pageX = solidJs.createMemo(() => {
-    const x = \`calc(\${store.page.offset.x.pct}% + \${store.page.offset.x.px}px)\`;
-    return store.option.dir === 'rtl' ? x : \`calc(\${x} * -1)\`;
-  });
+  const pageX = () => {
+    const x = \`calc(\${store$1.page.offset.x.pct}% + \${store$1.page.offset.x.px}px)\`;
+    return store$1.option.dir === 'rtl' ? x : \`calc(\${x} * -1)\`;
+  };
   return (() => {
     const _el$ = _tmpl$$B();
     web.addEventListener(_el$, "scroll", handleMangaFlowScroll);
@@ -3559,7 +3602,7 @@ const ComicImgFlow = () => {
     _el$.addEventListener("mousemove", onMouseMove);
     web.insert(_el$, web.createComponent(solidJs.Index, {
       get each() {
-        return store.pageList;
+        return store$1.pageList;
       },
       get fallback() {
         return _tmpl$2$a();
@@ -3573,19 +3616,19 @@ const ComicImgFlow = () => {
     }));
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.mangaFlow,
-        _v$2 = store.option.dir,
+        _v$2 = store$1.option.dir,
         _v$3 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
-        _v$4 = boolDataVal(!store.gridMode && store.option.scrollMode),
-        _v$5 = boolDataVal(store.option.disableZoom || store.option.scrollMode),
-        _v$6 = boolDataVal(store.gridMode),
-        _v$7 = boolDataVal(store.page.vertical),
-        _v$8 = store.page.anima,
-        _v$9 = !store.gridMode && hiddenMouse(),
-        _v$10 = store.zoom.scale / 100,
-        _v$11 = \`\${store.zoom.offset.x || 0}px\`,
-        _v$12 = \`\${store.zoom.offset.y || 0}px\`,
+        _v$4 = boolDataVal(!store$1.gridMode && store$1.option.scrollMode),
+        _v$5 = boolDataVal(store$1.option.disableZoom || store$1.option.scrollMode),
+        _v$6 = boolDataVal(store$1.gridMode),
+        _v$7 = boolDataVal(store$1.page.vertical),
+        _v$8 = store$1.page.anima,
+        _v$9 = !store$1.gridMode && hiddenMouse(),
+        _v$10 = store$1.zoom.scale / 100,
+        _v$11 = \`\${store$1.zoom.offset.x || 0}px\`,
+        _v$12 = \`\${store$1.zoom.offset.y || 0}px\`,
         _v$13 = pageX(),
-        _v$14 = \`calc(\${store.page.offset.y.pct}% + \${store.page.offset.y.px}px)\`;
+        _v$14 = \`calc(\${store$1.page.offset.y.pct}% + \${store$1.page.offset.y.px}px)\`;
       _v$ !== _p$._v$ && web.setAttribute(_el$, "id", _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.setAttribute(_el$, "dir", _p$._v$2 = _v$2);
       _v$3 !== _p$._v$3 && web.className(_el$, _p$._v$3 = _v$3);
@@ -3596,10 +3639,10 @@ const ComicImgFlow = () => {
       _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-animation", _p$._v$8 = _v$8);
       _v$9 !== _p$._v$9 && web.setAttribute(_el$, "data-hidden-mouse", _p$._v$9 = _v$9);
       _v$10 !== _p$._v$10 && ((_p$._v$10 = _v$10) != null ? _el$.style.setProperty("--scale", _v$10) : _el$.style.removeProperty("--scale"));
-      _v$11 !== _p$._v$11 && ((_p$._v$11 = _v$11) != null ? _el$.style.setProperty("--x", _v$11) : _el$.style.removeProperty("--x"));
-      _v$12 !== _p$._v$12 && ((_p$._v$12 = _v$12) != null ? _el$.style.setProperty("--y", _v$12) : _el$.style.removeProperty("--y"));
-      _v$13 !== _p$._v$13 && ((_p$._v$13 = _v$13) != null ? _el$.style.setProperty("--page_x", _v$13) : _el$.style.removeProperty("--page_x"));
-      _v$14 !== _p$._v$14 && ((_p$._v$14 = _v$14) != null ? _el$.style.setProperty("--page_y", _v$14) : _el$.style.removeProperty("--page_y"));
+      _v$11 !== _p$._v$11 && ((_p$._v$11 = _v$11) != null ? _el$.style.setProperty("--zoom-x", _v$11) : _el$.style.removeProperty("--zoom-x"));
+      _v$12 !== _p$._v$12 && ((_p$._v$12 = _v$12) != null ? _el$.style.setProperty("--zoom-y", _v$12) : _el$.style.removeProperty("--zoom-y"));
+      _v$13 !== _p$._v$13 && ((_p$._v$13 = _v$13) != null ? _el$.style.setProperty("--page-x", _v$13) : _el$.style.removeProperty("--page-x"));
+      _v$14 !== _p$._v$14 && ((_p$._v$14 = _v$14) != null ? _el$.style.setProperty("--page-y", _v$14) : _el$.style.removeProperty("--page-y"));
       return _p$;
     }, {
       _v$: undefined,
@@ -3776,7 +3819,7 @@ const MdAdd = ((props = {}) => (() => {
 const _tmpl$$m = /*#__PURE__*/web.template(\`<div tabindex=0>\`),
   _tmpl$2$9 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
 const KeyItem = props => {
-  const code = () => store.hotkeys[props.operateName][props.i];
+  const code = () => store$1.hotkeys[props.operateName][props.i];
   const del = () => delHotkeys(code());
   const handleKeyDown = e => {
     e.stopPropagation();
@@ -3809,7 +3852,7 @@ const KeyItem = props => {
 };
 const SettingHotkeys = () => web.createComponent(solidJs.For, {
   get each() {
-    return Object.entries(store.hotkeys);
+    return Object.entries(store$1.hotkeys);
   },
   children: ([name, keys]) => (() => {
     const _el$2 = _tmpl$2$9(),
@@ -3820,7 +3863,7 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
       _el$7 = _el$6.nextSibling;
     web.insert(_el$4, () => t(\`hotkeys.\${name}\`) || name);
     _el$5.style.setProperty("flex-grow", "1");
-    _el$6.addEventListener("click", () => setHotkeys(name, store.hotkeys[name].length, ''));
+    _el$6.addEventListener("click", () => setHotkeys(name, store$1.hotkeys[name].length, ''));
     web.insert(_el$6, web.createComponent(MdAdd, {}));
     _el$7.addEventListener("click", () => {
       const newKeys = defaultHotkeys[name] ?? [];
@@ -3932,20 +3975,20 @@ const createFormData = imgBlob => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('mime', file.type);
-  formData.append('size', store.option.translation.options.size);
-  formData.append('detector', store.option.translation.options.detector);
-  formData.append('direction', store.option.translation.options.direction);
-  formData.append('translator', store.option.translation.options.translator);
-  formData.append('tgt_lang', store.option.translation.options.targetLanguage);
-  formData.append('target_language', store.option.translation.options.targetLanguage);
-  formData.append('retry', \`\${store.option.translation.forceRetry}\`);
+  formData.append('size', store$1.option.translation.options.size);
+  formData.append('detector', store$1.option.translation.options.detector);
+  formData.append('direction', store$1.option.translation.options.direction);
+  formData.append('translator', store$1.option.translation.options.translator);
+  formData.append('tgt_lang', store$1.option.translation.options.targetLanguage);
+  formData.append('target_language', store$1.option.translation.options.targetLanguage);
+  formData.append('retry', \`\${store$1.option.translation.forceRetry}\`);
   return formData;
 };
 
 /** 将站点列表转为选择器中的选项 */
 const createOptions = list => list.map(name => [name, t(\`translation.translator.\${name}\`) || name]);
 
-const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
+const url = () => store$1.option.translation.localUrl || 'http://127.0.0.1:5003';
 
 /** 获取部署服务的可用翻译 */
 const getValidTranslators = async () => {
@@ -3964,7 +4007,7 @@ const getValidTranslators = async () => {
 /** 使用自部署服务器翻译指定图片 */
 const selfhostedTranslation = async i => {
   if (!(await getValidTranslators())) throw new Error(t('alert.server_connect_failed'));
-  const img = store.imgList[i];
+  const img = store$1.imgList[i];
   setMessage(i, t('translation.tip.img_downloading'));
   let imgBlob;
   try {
@@ -4085,7 +4128,7 @@ const resize = async (blob, w, h) => {
 
 /** 使用 cotrans 翻译指定图片 */
 const cotransTranslation = async i => {
-  const img = store.imgList[i];
+  const img = store$1.imgList[i];
   setMessage(i, t('translation.tip.img_downloading'));
   let imgBlob;
   try {
@@ -4134,14 +4177,14 @@ const translationImage = async i => {
       toast?.error(t('pwa.alert.userscript_not_installed'));
       throw new Error(t('pwa.alert.userscript_not_installed'));
     }
-    const img = store.imgList[i];
+    const img = store$1.imgList[i];
     if (!img?.src) return;
     if (img.translationType !== 'wait') return;
     if (img.translationUrl) return setState(state => {
       state.imgList[i].translationType = 'show';
     });
     if (img.loadType !== 'loaded') return setMessage(i, t('translation.tip.img_not_fully_loaded'));
-    const translationUrl = await (store.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(i);
+    const translationUrl = await (store$1.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(i);
     setState(state => {
       state.imgList[i].translationUrl = translationUrl;
       state.imgList[i].translationMessage = t('translation.tip.translation_completed');
@@ -4159,7 +4202,7 @@ let running = false;
 /** 逐个翻译状态为等待翻译的图片 */
 const translationAll = async () => {
   if (running) return;
-  const i = store.imgList.findIndex(img => img.loadType === 'loaded' && img.translationType === 'wait');
+  const i = store$1.imgList.findIndex(img => img.loadType === 'loaded' && img.translationType === 'wait');
   if (i === -1) return;
   running = true;
   try {
@@ -4220,18 +4263,18 @@ const translatorOptions = solidJs.createRoot(() => {
   const [selfhostedOptions, setSelfOptions] = solidJs.createSignal([]);
 
   // 在切换翻译服务器的同时切换可用翻译的选项列表
-  solidJs.createEffect(solidJs.on([() => store.option.translation.server, () => store.option.translation.localUrl], async () => {
-    if (store.option.translation.server !== 'selfhosted') return;
+  solidJs.createEffect(solidJs.on([() => store$1.option.translation.server, () => store$1.option.translation.localUrl], async () => {
+    if (store$1.option.translation.server !== 'selfhosted') return;
     setSelfOptions((await getValidTranslators()) ?? []);
 
     // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
-    if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
+    if (!selfhostedOptions().some(([val]) => val === store$1.option.translation.options.translator)) {
       setOption(draftOption => {
         draftOption.translation.options.translator = 'google';
       });
     }
   }));
-  const options = solidJs.createMemo(solidJs.on([selfhostedOptions, lang], () => store.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
+  const options = solidJs.createMemo(solidJs.on([selfhostedOptions, lang], () => store$1.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
   return options;
 });
 
@@ -4262,10 +4305,10 @@ const _tmpl$$j = /*#__PURE__*/web.template(\`<blockquote>\`),
   _tmpl$2$7 = /*#__PURE__*/web.template(\`<input type=url>\`);
 const SettingTranslation = () => {
   /** 是否正在翻译全部图片 */
-  const isTranslationAll = solidJs.createMemo(() => store.imgList.every(img => img.translationType === 'show' || img.translationType === 'wait'));
+  const isTranslationAll = solidJs.createMemo(() => store$1.imgList.every(img => img.translationType === 'show' || img.translationType === 'wait'));
 
   /** 是否正在翻译当前页以后的全部图片 */
-  const isTranslationAfterCurrent = solidJs.createMemo(() => store.imgList.slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
+  const isTranslationAfterCurrent = solidJs.createMemo(() => store$1.imgList.slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
   return [web.createComponent(SettingsItemSelect, {
     get name() {
       return t('setting.translation.server');
@@ -4274,14 +4317,14 @@ const SettingTranslation = () => {
       return [['disable', t('other.disable')], ['selfhosted', t('setting.translation.server_selfhosted')], ['cotrans']];
     },
     get value() {
-      return store.option.translation.server;
+      return store$1.option.translation.server;
     },
     get onChange() {
       return createStateSetFn('translation.server');
     }
   }), web.createComponent(SettingsShowItem, {
     get when() {
-      return store.option.translation.server === 'cotrans';
+      return store$1.option.translation.server === 'cotrans';
     },
     get children() {
       const _el$ = _tmpl$$j();
@@ -4290,7 +4333,7 @@ const SettingTranslation = () => {
     }
   }), web.createComponent(SettingsShowItem, {
     get when() {
-      return store.option.translation.server !== 'disable';
+      return store$1.option.translation.server !== 'disable';
     },
     get children() {
       return [web.createComponent(SettingsItemSelect, {
@@ -4299,7 +4342,7 @@ const SettingTranslation = () => {
         },
         options: [['S', '1024px'], ['M', '1536px'], ['L', '2048px'], ['X', '2560px']],
         get value() {
-          return store.option.translation.options.size;
+          return store$1.option.translation.options.size;
         },
         get onChange() {
           return createStateSetFn('translation.options.size');
@@ -4310,7 +4353,7 @@ const SettingTranslation = () => {
         },
         options: [['default'], ['ctd', 'Comic Text Detector']],
         get value() {
-          return store.option.translation.options.detector;
+          return store$1.option.translation.options.detector;
         },
         get onChange() {
           return createStateSetFn('translation.options.detector');
@@ -4323,13 +4366,13 @@ const SettingTranslation = () => {
           return translatorOptions();
         },
         get value() {
-          return store.option.translation.options.translator;
+          return store$1.option.translation.options.translator;
         },
         get onChange() {
           return createStateSetFn('translation.options.translator');
         },
         onClick: () => {
-          if (store.option.translation.server !== 'selfhosted') return;
+          if (store$1.option.translation.server !== 'selfhosted') return;
           // 通过手动触发变更，以便在点击时再获取一下翻译列表
           setState(state => {
             state.option.translation.server = 'disable';
@@ -4344,7 +4387,7 @@ const SettingTranslation = () => {
           return [['auto', t('setting.translation.options.direction_auto')], ['h', t('setting.translation.options.direction_horizontal')], ['v', t('setting.translation.options.direction_vertical')]];
         },
         get value() {
-          return store.option.translation.options.direction;
+          return store$1.option.translation.options.direction;
         },
         get onChange() {
           return createStateSetFn('translation.options.direction');
@@ -4355,7 +4398,7 @@ const SettingTranslation = () => {
         },
         options: [['CHS', '简体中文'], ['CHT', '繁體中文'], ['JPN', '日本語'], ['ENG', 'English'], ['KOR', '한국어'], ['VIN', 'Tiếng Việt'], ['CSY', 'čeština'], ['NLD', 'Nederlands'], ['FRA', 'français'], ['DEU', 'Deutsch'], ['HUN', 'magyar nyelv'], ['ITA', 'italiano'], ['PLK', 'polski'], ['PTB', 'português'], ['ROM', 'limba română'], ['RUS', 'русский язык'], ['ESP', 'español'], ['TRK', 'Türk dili']],
         get value() {
-          return store.option.translation.options.targetLanguage;
+          return store$1.option.translation.options.targetLanguage;
         },
         get onChange() {
           return createStateSetFn('translation.options.targetLanguage');
@@ -4365,14 +4408,14 @@ const SettingTranslation = () => {
           return t('setting.translation.options.forceRetry');
         },
         get value() {
-          return store.option.translation.forceRetry;
+          return store$1.option.translation.forceRetry;
         },
         get onChange() {
           return createStateSetFn('translation.forceRetry');
         }
       }), web.createComponent(solidJs.Show, {
         get when() {
-          return store.option.translation.server === 'selfhosted';
+          return store$1.option.translation.server === 'selfhosted';
         },
         get children() {
           return [web.createComponent(SettingsItemSwitch, {
@@ -4383,7 +4426,7 @@ const SettingTranslation = () => {
               return isTranslationAll();
             },
             onChange: () => {
-              setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll());
+              setImgTranslationEnbale(store$1.imgList.map((_, i) => i), !isTranslationAll());
             }
           }), web.createComponent(SettingsItemSwitch, {
             get name() {
@@ -4393,14 +4436,14 @@ const SettingTranslation = () => {
               return isTranslationAfterCurrent();
             },
             onChange: () => {
-              setImgTranslationEnbale(store.pageList.slice(store.activePageIndex).flat(), !isTranslationAfterCurrent());
+              setImgTranslationEnbale(store$1.pageList.slice(store$1.activePageIndex).flat(), !isTranslationAfterCurrent());
             }
           }), web.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.options.localUrl');
             },
             get value() {
-              return store.option.translation.localUrl !== undefined;
+              return store$1.option.translation.localUrl !== undefined;
             },
             onChange: val => {
               setOption(draftOption => {
@@ -4409,7 +4452,7 @@ const SettingTranslation = () => {
             }
           }), web.createComponent(solidJs.Show, {
             get when() {
-              return store.option.translation.localUrl !== undefined;
+              return store$1.option.translation.localUrl !== undefined;
             },
             get children() {
               const _el$2 = _tmpl$2$7();
@@ -4421,7 +4464,7 @@ const SettingTranslation = () => {
                 });
               });
               web.effect(() => web.className(_el$2, modules_c21c94f2$1.SettingsItem));
-              web.effect(() => _el$2.value = store.option.translation.localUrl);
+              web.effect(() => _el$2.value = store$1.option.translation.localUrl);
               return _el$2;
             }
           })];
@@ -4489,12 +4532,12 @@ const areaArrayMap = {
 };
 const TouchArea = () => {
   const areaType = solidJs.createMemo(() => {
-    if (!store.option.clickPageTurn.enabled || !Reflect.has(areaArrayMap, store.option.clickPageTurn.area)) return store.isMobile ? 'up_down' : 'left_right';
-    return store.option.clickPageTurn.area;
+    if (!store$1.option.clickPageTurn.enabled || !Reflect.has(areaArrayMap, store$1.option.clickPageTurn.area)) return store$1.isMobile ? 'up_down' : 'left_right';
+    return store$1.option.clickPageTurn.area;
   });
   const dir = () => {
-    if (!store.option.clickPageTurn.reverse) return store.option.dir;
-    return store.option.dir === 'rtl' ? 'ltr' : 'rtl';
+    if (!store$1.option.clickPageTurn.reverse) return store$1.option.dir;
+    return store$1.option.dir === 'rtl' ? 'ltr' : 'rtl';
   };
   return (() => {
     const _el$ = _tmpl$$h();
@@ -4517,9 +4560,9 @@ const TouchArea = () => {
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.touchAreaRoot,
         _v$2 = dir(),
-        _v$3 = store.show.touchArea,
+        _v$3 = store$1.show.touchArea,
         _v$4 = areaType(),
-        _v$5 = boolDataVal(store.option.clickPageTurn.enabled && !store.option.scrollMode);
+        _v$5 = boolDataVal(store$1.option.clickPageTurn.enabled && !store$1.option.scrollMode);
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.setAttribute(_el$, "dir", _p$._v$2 = _v$2);
       _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-show", _p$._v$3 = _v$3);
@@ -4542,31 +4585,34 @@ const _tmpl$$g = /*#__PURE__*/web.template(\`<button type=button>\`),
 /** 默认菜单项 */
 const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
   get name() {
-    return web.memo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
+    return web.memo(() => store$1.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
   },
   get children() {
     const _el$ = _tmpl$$g();
     _el$.addEventListener("click", switchDir);
     web.insert(_el$, (() => {
-      const _c$ = web.memo(() => store.option.dir === 'rtl');
+      const _c$ = web.memo(() => store$1.option.dir === 'rtl');
       return () => _c$() ? web.createComponent(MdOutlineFormatTextdirectionRToL, {}) : web.createComponent(MdOutlineFormatTextdirectionLToR, {});
     })());
     web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
     return _el$;
   }
-})], [t('setting.option.paragraph_scrollbar'), () => [web.createComponent(SettingsItemSwitch, {
+})], [t('setting.option.paragraph_scrollbar'), () => [web.createComponent(SettingsItemSelect, {
   get name() {
-    return t('setting.option.scrollbar_show');
+    return t('setting.option.scrollbar_position');
+  },
+  get options() {
+    return [['auto', t('setting.option.scrollbar_position_auto')], ['right', t('setting.option.scrollbar_position_right')], ['top', t('setting.option.scrollbar_position_top')], ['bottom', t('setting.option.scrollbar_position_bottom')], ['hidden', t('setting.option.scrollbar_position_hidden')]];
   },
   get value() {
-    return store.option.scrollbar.enabled;
+    return store$1.option.scrollbar.position;
   },
   get onChange() {
-    return createStateSetFn('scrollbar.enabled');
+    return createStateSetFn('scrollbar.position');
   }
 }), web.createComponent(SettingsShowItem, {
   get when() {
-    return store.option.scrollbar.enabled;
+    return store$1.option.scrollbar.position !== 'hidden';
   },
   get children() {
     return [web.createComponent(SettingsItemSwitch, {
@@ -4574,7 +4620,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         return t('setting.option.scrollbar_auto_hidden');
       },
       get value() {
-        return store.option.scrollbar.autoHidden;
+        return store$1.option.scrollbar.autoHidden;
       },
       get onChange() {
         return createStateSetFn('scrollbar.autoHidden');
@@ -4584,14 +4630,14 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         return t('setting.option.scrollbar_show_img_status');
       },
       get value() {
-        return store.option.scrollbar.showImgStatus;
+        return store$1.option.scrollbar.showImgStatus;
       },
       get onChange() {
         return createStateSetFn('scrollbar.showImgStatus');
       }
     }), web.createComponent(solidJs.Show, {
       get when() {
-        return store.option.scrollMode;
+        return store$1.option.scrollMode;
       },
       get children() {
         return web.createComponent(SettingsItemSwitch, {
@@ -4599,7 +4645,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
             return t('setting.option.scrollbar_easy_scroll');
           },
           get value() {
-            return store.option.scrollbar.easyScroll;
+            return store$1.option.scrollbar.easyScroll;
           },
           get onChange() {
             return createStateSetFn('scrollbar.easyScroll');
@@ -4613,7 +4659,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.jump_to_next_chapter');
   },
   get value() {
-    return store.option.jumpToNext;
+    return store$1.option.jumpToNext;
   },
   get onChange() {
     return createStateSetFn('jumpToNext');
@@ -4623,7 +4669,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.show_clickable_area');
   },
   get value() {
-    return store.show.touchArea;
+    return store$1.show.touchArea;
   },
   onChange: () => {
     setState(state => {
@@ -4635,14 +4681,14 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.click_page_turn_enabled');
   },
   get value() {
-    return store.option.clickPageTurn.enabled;
+    return store$1.option.clickPageTurn.enabled;
   },
   get onChange() {
     return createStateSetFn('clickPageTurn.enabled');
   }
 }), web.createComponent(SettingsShowItem, {
   get when() {
-    return store.option.clickPageTurn.enabled;
+    return store$1.option.clickPageTurn.enabled;
   },
   get children() {
     return [web.createComponent(SettingsItemSelect, {
@@ -4653,7 +4699,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         return [['', t('other.default')], ...Object.keys(areaArrayMap).map(key => [key, t(\`touch_area.type.\${key}\`)])];
       },
       get value() {
-        return store.option.clickPageTurn.area;
+        return store$1.option.clickPageTurn.area;
       },
       get onChange() {
         return createStateSetFn('clickPageTurn.area');
@@ -4663,7 +4709,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         return t('setting.option.click_page_turn_swap_area');
       },
       get value() {
-        return store.option.clickPageTurn.reverse;
+        return store$1.option.clickPageTurn.reverse;
       },
       get onChange() {
         return createStateSetFn('clickPageTurn.reverse');
@@ -4675,7 +4721,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.dark_mode');
   },
   get value() {
-    return store.option.darkMode;
+    return store$1.option.darkMode;
   },
   get onChange() {
     return createStateSetFn('darkMode');
@@ -4685,14 +4731,14 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.disable_auto_enlarge');
   },
   get value() {
-    return store.option.disableZoom;
+    return store$1.option.disableZoom;
   },
   get onChange() {
     return createStateSetFn('disableZoom');
   }
 }), web.createComponent(solidJs.Show, {
   get when() {
-    return store.option.scrollMode;
+    return store$1.option.scrollMode;
   },
   get children() {
     return [web.createComponent(SettingsItemNumber, {
@@ -4707,7 +4753,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         zoomScrollModeImg(val / 100, true);
       },
       get value() {
-        return Math.round(store.option.scrollModeImgScale * 100);
+        return Math.round(store$1.option.scrollModeImgScale * 100);
       }
     }), web.createComponent(SettingsItemNumber, {
       get name() {
@@ -4721,7 +4767,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         });
       },
       get value() {
-        return Math.round(store.option.scrollModeSpacing);
+        return Math.round(store$1.option.scrollModeSpacing);
       }
     })];
   }
@@ -4730,7 +4776,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.always_load_all_img');
   },
   get value() {
-    return store.option.alwaysLoadAllImg;
+    return store$1.option.alwaysLoadAllImg;
   },
   onChange: val => {
     setOption(draftOption => {
@@ -4743,7 +4789,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.first_page_fill');
   },
   get value() {
-    return store.option.firstPageFill;
+    return store$1.option.firstPageFill;
   },
   get onChange() {
     return createStateSetFn('firstPageFill');
@@ -4753,7 +4799,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.show_comments');
   },
   get value() {
-    return store.option.showComment;
+    return store$1.option.showComment;
   },
   get onChange() {
     return createStateSetFn('showComment');
@@ -4763,7 +4809,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.swap_page_turn_key');
   },
   get value() {
-    return store.option.swapPageTurnKey;
+    return store$1.option.swapPageTurnKey;
   },
   get onChange() {
     return createStateSetFn('swapPageTurnKey');
@@ -4780,7 +4826,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     });
   },
   get value() {
-    return store.option.preloadPageNum;
+    return store$1.option.preloadPageNum;
   }
 }), web.createComponent(SettingsItem, {
   get name() {
@@ -4798,7 +4844,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         if (draftOption.customBackground) draftOption.darkMode = needDarkMode(draftOption.customBackground);
       });
     }));
-    web.effect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
+    web.effect(() => _el$2.value = store$1.option.customBackground ?? (store$1.option.darkMode ? '#000000' : '#ffffff'));
     return _el$2;
   }
 }), web.createComponent(SettingsItemSelect, {
@@ -4829,11 +4875,12 @@ const _tmpl$$f = /*#__PURE__*/web.template(\`<div>\`),
 
 /** 菜单面板 */
 const SettingPanel = () => {
-  const settingList = solidJs.createMemo(() => store.prop.editSettingList(defaultSettingList()));
+  const settingList = solidJs.createMemo(() => store$1.prop.editSettingList(defaultSettingList()));
   return (() => {
     const _el$ = _tmpl$$f();
     web.addEventListener(_el$, "wheel", stopPropagation);
     web.addEventListener(_el$, "scroll", stopPropagation);
+    _el$.addEventListener("click", stopPropagation);
     web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
         return settingList();
@@ -4899,14 +4946,14 @@ const defaultButtonList = [
 // 单双页模式
 () => web.createComponent(IconButton, {
   get tip() {
-    return web.memo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
+    return web.memo(() => !!store$1.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
   },
   get hidden() {
-    return store.isMobile || store.option.scrollMode;
+    return store$1.isMobile || store$1.option.scrollMode;
   },
   onClick: switchOnePageMode,
   get children() {
-    return web.memo(() => !!store.option.onePageMode)() ? web.createComponent(MdLooksOne, {}) : web.createComponent(MdLooksTwo, {});
+    return web.memo(() => !!store$1.option.onePageMode)() ? web.createComponent(MdLooksOne, {}) : web.createComponent(MdLooksTwo, {});
   }
 }),
 // 卷轴模式
@@ -4915,7 +4962,7 @@ const defaultButtonList = [
     return t('button.scroll_mode');
   },
   get enabled() {
-    return store.option.scrollMode;
+    return store$1.option.scrollMode;
   },
   onClick: switchScrollMode,
   get children() {
@@ -4928,10 +4975,10 @@ const defaultButtonList = [
     return t('button.page_fill');
   },
   get enabled() {
-    return store.fillEffect[nowFillIndex()];
+    return store$1.fillEffect[nowFillIndex()];
   },
   get hidden() {
-    return store.isMobile || store.option.onePageMode;
+    return store$1.isMobile || store$1.option.onePageMode;
   },
   onClick: switchFillEffect,
   get children() {
@@ -4944,7 +4991,7 @@ const defaultButtonList = [
     return t('button.grid_mode');
   },
   get enabled() {
-    return store.gridMode;
+    return store$1.gridMode;
   },
   onClick: switchGridMode,
   get children() {
@@ -4957,11 +5004,11 @@ const defaultButtonList = [
     return t('button.zoom_in');
   },
   get enabled() {
-    return store.zoom.scale !== 100 || store.option.scrollMode && store.option.scrollModeImgScale > 1;
+    return store$1.zoom.scale !== 100 || store$1.option.scrollMode && store$1.option.scrollModeImgScale > 1;
   },
   onClick: () => {
-    if (!store.option.scrollMode) return doubleClickZoom();
-    if (store.option.scrollModeImgScale >= 1 && store.option.scrollModeImgScale < 1.6) return zoomScrollModeImg(0.2);
+    if (!store$1.option.scrollMode) return doubleClickZoom();
+    if (store$1.option.scrollModeImgScale >= 1 && store$1.option.scrollModeImgScale < 1.6) return zoomScrollModeImg(0.2);
     return zoomScrollModeImg(1, true);
   },
   get children() {
@@ -4971,7 +5018,7 @@ const defaultButtonList = [
 // 翻译设置
 () => {
   /** 当前显示的图片是否正在翻译 */
-  const isTranslatingImage = solidJs.createMemo(() => activePage().some(i => store.imgList[i]?.translationType && store.imgList[i].translationType !== 'hide'));
+  const isTranslatingImage = solidJs.createMemo(() => activePage().some(i => store$1.imgList[i]?.translationType && store$1.imgList[i].translationType !== 'hide'));
   return web.createComponent(IconButton, {
     get tip() {
       return web.memo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
@@ -4980,7 +5027,7 @@ const defaultButtonList = [
       return isTranslatingImage();
     },
     get hidden() {
-      return store.option.translation.server === 'disable';
+      return store$1.option.translation.server === 'disable';
     },
     onClick: () => setImgTranslationEnbale(activePage(), !isTranslatingImage()),
     get children() {
@@ -5000,10 +5047,7 @@ const defaultButtonList = [
   };
   const popper = solidJs.createMemo(() => [web.createComponent(SettingPanel, {}), (() => {
     const _el$2 = _tmpl$2$3();
-    _el$2.addEventListener("click", () => {
-      handleClick();
-      focus();
-    });
+    _el$2.addEventListener("click", handleClick);
     web.effect(() => web.className(_el$2, modules_c21c94f2$1.closeCover));
     return _el$2;
   })()]);
@@ -5034,22 +5078,23 @@ const _tmpl$$d = /*#__PURE__*/web.template(\`<div role=toolbar><div><div>\`);
 
 /** 左侧工具栏 */
 const Toolbar = () => {
-  solidJs.createEffect(() => store.show.toolbar || focus());
+  solidJs.createEffect(() => store$1.show.toolbar || focus());
   return (() => {
     const _el$ = _tmpl$$d(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
+    _el$2.addEventListener("click", focus);
     web.insert(_el$2, web.createComponent(solidJs.For, {
       get each() {
-        return store.prop.editButtonList(defaultButtonList);
+        return store$1.prop.editButtonList(defaultButtonList);
       },
       children: ButtonItem => web.createComponent(ButtonItem, {})
     }), null);
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.toolbar,
-        _v$2 = boolDataVal(store.show.toolbar),
-        _v$3 = boolDataVal(store.isMobile && store.gridMode),
-        _v$4 = store.dragMode ? 'none' : undefined,
+        _v$2 = boolDataVal(store$1.show.toolbar),
+        _v$3 = boolDataVal(store$1.isMobile && store$1.gridMode),
+        _v$4 = store$1.dragMode ? 'none' : undefined,
         _v$5 = modules_c21c94f2$1.toolbarPanel,
         _v$6 = modules_c21c94f2$1.toolbarBg;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
@@ -5075,7 +5120,7 @@ const _tmpl$$c = /*#__PURE__*/web.template(\`<div>\`);
 
 /** 显示对应图片加载情况的元素 */
 const ScrollbarImg = props => {
-  const img = solidJs.createMemo(() => store.imgList[props.index]);
+  const img = solidJs.createMemo(() => store$1.imgList[props.index]);
   return (() => {
     const _el$ = _tmpl$$c();
     web.effect(_p$ => {
@@ -5104,8 +5149,8 @@ const ScrollbarImg = props => {
 /** 滚动条上用于显示对应页面下图片加载情况的元素 */
 const ScrollbarPage = props => {
   const flexBasis = solidJs.createMemo(() => {
-    if (!store.option.scrollMode) return undefined;
-    return \`\${(store.imgList[props.a]?.height || windowHeight()) / contentHeight() * 100}%\`;
+    if (!store$1.option.scrollMode) return undefined;
+    return \`\${(store$1.imgList[props.a]?.height || windowHeight()) / contentHeight() * 100}%\`;
   });
   return (() => {
     const _el$2 = _tmpl$$c();
@@ -5132,10 +5177,10 @@ const _tmpl$$b = /*#__PURE__*/web.template(\`<div role=scrollbar tabindex=-1><di
 /** 滚动条 */
 const Scrollbar = () => {
   /** 滚动条高度 */
-  const height = solidJs.createMemo(() => store.scrollbar.dragHeight ? \`\${store.scrollbar.dragHeight * 100}%\` : \`\${1 / store.pageList.length * 100}%\`);
+  const height = solidJs.createMemo(() => store$1.scrollbar.dragHeight ? \`\${store$1.scrollbar.dragHeight * 100}%\` : \`\${1 / store$1.pageList.length * 100}%\`);
 
   /** 滚动条位置高度 */
-  const top = solidJs.createMemo(() => store.option.scrollMode ? \`\${store.scrollbar.dragTop * 100}%\` : \`\${1 / store.pageList.length * 100 * store.activePageIndex}%\`);
+  const top = solidJs.createMemo(() => store$1.option.scrollMode ? \`\${store$1.scrollbar.dragTop * 100}%\` : \`\${1 / store$1.pageList.length * 100 * store$1.activePageIndex}%\`);
 
   // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
   const [penetrate, setPenetrate] = solidJs.createSignal(false);
@@ -5146,7 +5191,15 @@ const Scrollbar = () => {
   };
 
   /** 是否强制显示滚动条 */
-  const showScrollbar = solidJs.createMemo(() => store.show.scrollbar || !!penetrate());
+  const showScrollbar = solidJs.createMemo(() => store$1.show.scrollbar || !!penetrate());
+  const showTip = solidJs.createMemo(() => {
+    if (store$1.memo.showPageList.length === 0) return 'null';
+    if (store$1.memo.showPageList.length === 1) return getPageTip(store$1.memo.showPageList[0]);
+    const tipList = store$1.memo.showPageList.map(i => getPageTip(i));
+    if (store$1.option.scrollMode || store$1.page.vertical) return tipList.join('\\n');
+    if (store$1.option.dir === 'rtl') tipList.reverse();
+    return tipList.join('   ');
+  });
   return (() => {
     const _el$ = _tmpl$$b(),
       _el$2 = _el$.firstChild,
@@ -5155,20 +5208,17 @@ const Scrollbar = () => {
     web.use(e => useDrag({
       ref: e,
       handleDrag: handleScrollbarDrag,
-      easyMode: () => store.option.scrollMode && store.option.scrollbar.easyScroll
+      easyMode: () => store$1.option.scrollMode && store$1.option.scrollbar.easyScroll
     }), _el$);
-    web.insert(_el$3, (() => {
-      const _c$ = web.memo(() => !!store.option.scrollMode);
-      return () => _c$() ? store.memo.showPageList.map(i => getPageTip(i)).join('\\n') : getPageTip(store.activePageIndex);
-    })());
+    web.insert(_el$3, showTip);
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
-        return store.option.scrollbar.showImgStatus;
+        return store$1.option.scrollbar.showImgStatus;
       },
       get children() {
         return web.createComponent(solidJs.For, {
           get each() {
-            return store.pageList;
+            return store$1.pageList;
           },
           children: ([a, b]) => web.createComponent(ScrollbarPage, {
             a: a,
@@ -5179,30 +5229,28 @@ const Scrollbar = () => {
     }), null);
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbar,
-        _v$2 = {
-          [modules_c21c94f2$1.hidden]: !store.option.scrollbar.enabled && !showScrollbar()
-        },
-        _v$3 = penetrate() || store.dragMode || store.gridMode ? 'none' : 'auto',
-        _v$4 = modules_c21c94f2$1.mangaFlow,
-        _v$5 = store.activePageIndex || -1,
-        _v$6 = !store.option.scrollbar.autoHidden || showScrollbar(),
-        _v$7 = store.option.dir,
+        _v$2 = penetrate() || store$1.dragMode || store$1.gridMode ? 'none' : 'auto',
+        _v$3 = modules_c21c94f2$1.mangaFlow,
+        _v$4 = store$1.activePageIndex || -1,
+        _v$5 = !store$1.option.scrollbar.autoHidden || showScrollbar(),
+        _v$6 = store$1.option.dir,
+        _v$7 = getScrollPosition(),
         _v$8 = modules_c21c94f2$1.scrollbarDrag,
         _v$9 = {
-          [modules_c21c94f2$1.hidden]: store.gridMode
+          [modules_c21c94f2$1.hidden]: store$1.gridMode
         },
         _v$10 = height(),
         _v$11 = top(),
-        _v$12 = store.option.scrollMode ? undefined : 'top 150ms',
+        _v$12 = store$1.option.scrollMode ? undefined : 'top 150ms',
         _v$13 = modules_c21c94f2$1.scrollbarPoper,
         _v$14 = showScrollbar();
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
-      _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$.style.setProperty("pointer-events", _v$3) : _el$.style.removeProperty("pointer-events"));
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "aria-controls", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "aria-valuenow", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-show", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-dir", _p$._v$7 = _v$7);
+      _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("pointer-events", _v$2) : _el$.style.removeProperty("pointer-events"));
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "aria-controls", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "aria-valuenow", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-show", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-dir", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-position", _p$._v$7 = _v$7);
       _v$8 !== _p$._v$8 && web.className(_el$2, _p$._v$8 = _v$8);
       _p$._v$9 = web.classList(_el$2, _v$9, _p$._v$9);
       _v$10 !== _p$._v$10 && ((_p$._v$10 = _v$10) != null ? _el$2.style.setProperty("--height", _v$10) : _el$2.style.removeProperty("--height"));
@@ -5258,21 +5306,21 @@ const EndPage = () => {
   // 防止在动画效果结束前 tip 就消失或改变了位置
   const [delayType, setDelayType] = solidJs.createSignal();
   solidJs.createEffect(() => {
-    if (store.show.endPage) {
+    if (store$1.show.endPage) {
       window.clearTimeout(delayTypeTimer);
-      setDelayType(store.show.endPage);
+      setDelayType(store$1.show.endPage);
     } else {
-      delayTypeTimer = window.setTimeout(() => setDelayType(store.show.endPage), 500);
+      delayTypeTimer = window.setTimeout(() => setDelayType(store$1.show.endPage), 500);
     }
   });
   const tip = solidJs.createMemo(() => {
     switch (delayType()) {
       case 'start':
-        if (store.prop.Prev && store.option.jumpToNext) return t('end_page.tip.start_jump');
+        if (store$1.prop.Prev && store$1.option.jumpToNext) return t('end_page.tip.start_jump');
         break;
       case 'end':
-        if (store.prop.Next && store.option.jumpToNext) return t('end_page.tip.end_jump');
-        if (store.prop.Exit) return t('end_page.tip.exit');
+        if (store$1.prop.Next && store$1.option.jumpToNext) return t('end_page.tip.end_jump');
+        if (store$1.prop.Exit) return t('end_page.tip.exit');
         break;
     }
     return '';
@@ -5289,26 +5337,26 @@ const EndPage = () => {
     web.insert(_el$2, tip);
     const _ref$2 = bindRef('prev');
     typeof _ref$2 === "function" && web.use(_ref$2, _el$3);
-    _el$3.addEventListener("click", () => store.prop.Prev?.());
+    _el$3.addEventListener("click", () => store$1.prop.Prev?.());
     web.insert(_el$3, () => t('end_page.prev_button'));
     const _ref$3 = bindRef('exit');
     typeof _ref$3 === "function" && web.use(_ref$3, _el$4);
-    _el$4.addEventListener("click", () => store.prop.Exit?.(store.show.endPage === 'end'));
+    _el$4.addEventListener("click", () => store$1.prop.Exit?.(store$1.show.endPage === 'end'));
     web.insert(_el$4, () => t('button.exit'));
     const _ref$4 = bindRef('next');
     typeof _ref$4 === "function" && web.use(_ref$4, _el$5);
-    _el$5.addEventListener("click", () => store.prop.Next?.());
+    _el$5.addEventListener("click", () => store$1.prop.Next?.());
     web.insert(_el$5, () => t('end_page.next_button'));
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
-        return web.memo(() => !!store.option.showComment)() && delayType() === 'end';
+        return web.memo(() => !!store$1.option.showComment)() && delayType() === 'end';
       },
       get children() {
         const _el$6 = _tmpl$$a();
         web.addEventListener(_el$6, "wheel", stopPropagation);
         web.insert(_el$6, web.createComponent(solidJs.For, {
           get each() {
-            return store.commentList;
+            return store$1.commentList;
           },
           children: comment => (() => {
             const _el$7 = _tmpl$3$2();
@@ -5322,18 +5370,18 @@ const EndPage = () => {
     }), null);
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.endPage,
-        _v$2 = store.show.endPage,
+        _v$2 = store$1.show.endPage,
         _v$3 = delayType(),
         _v$4 = modules_c21c94f2$1.tip,
         _v$5 = {
-          [modules_c21c94f2$1.invisible]: !store.prop.Prev
+          [modules_c21c94f2$1.invisible]: !store$1.prop.Prev
         },
-        _v$6 = store.show.endPage ? 0 : -1,
-        _v$7 = store.show.endPage ? 0 : -1,
+        _v$6 = store$1.show.endPage ? 0 : -1,
+        _v$7 = store$1.show.endPage ? 0 : -1,
         _v$8 = {
-          [modules_c21c94f2$1.invisible]: !store.prop.Next
+          [modules_c21c94f2$1.invisible]: !store$1.prop.Next
         },
-        _v$9 = store.show.endPage ? 0 : -1;
+        _v$9 = store$1.show.endPage ? 0 : -1;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
       _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
@@ -5396,7 +5444,7 @@ const MdCloudDownload$1 = \`M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.
 const MdPhoto = \`M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86-3 3.87L9 13.14 6 17h12l-3.86-5.14z\`;
 const cssVar = solidJs.createRoot(() => {
   const svg = solidJs.createMemo(() => {
-    const fill = store.option.darkMode ? 'rgb(156,156,156)' : 'rgb(110,110,110)';
+    const fill = store$1.option.darkMode ? 'rgb(156,156,156)' : 'rgb(110,110,110)';
     return {
       '--MdImageNotSupported': createSvgIcon(fill, MdImageNotSupported),
       '--MdCloudDownload': createSvgIcon(fill, MdCloudDownload$1),
@@ -5409,11 +5457,11 @@ const cssVar = solidJs.createRoot(() => {
     '--i18n-touch-area-menu': \`'\${t('touch_area.menu')}'\`
   }));
   const _cssVar = solidJs.createMemo(() => ({
-    '--bg': store.option.customBackground ?? (store.option.darkMode ? '#000' : '#fff'),
-    '--scrollModeImgScale': store.option.scrollModeImgScale,
-    '--scrollModeSpacing': store.option.scrollModeSpacing,
+    '--bg': store$1.option.customBackground ?? (store$1.option.darkMode ? '#000' : '#fff'),
+    '--scrollModeImgScale': store$1.option.scrollModeImgScale,
+    '--scrollModeSpacing': store$1.option.scrollModeSpacing,
     '--img-placeholder-height': \`\${imgPlaceholderHeight()}px\`,
-    ...(store.option.darkMode ? dark : light),
+    ...(store$1.option.darkMode ? dark : light),
     ...svg(),
     ...i18n()
   }));
@@ -5427,10 +5475,10 @@ const createComicImg = url => ({
 });
 
 /** 初始化 */
-const useInit$1 = (props, rootRef) => {
+const useInit$1 = (props, root) => {
   // 绑定 rootRef
   setState(state => {
-    state.ref.root = rootRef;
+    state.ref.root = root;
   });
 
   // 初始化配置
@@ -5456,25 +5504,25 @@ const useInit$1 = (props, rootRef) => {
   }));
   // 初始化页面比例
   setState(state => {
-    handleResize(state, rootRef.scrollWidth, rootRef.scrollHeight);
+    handleResize(state, root.scrollWidth, root.scrollHeight);
   });
   resizeObserver.disconnect();
-  resizeObserver.observe(rootRef);
+  resizeObserver.observe(root);
   solidJs.onCleanup(() => resizeObserver.disconnect());
   solidJs.createEffect(() => {
     setState(state => {
       state.prop.Exit = props.onExit ? isEnd => {
-        playAnimation(store.ref.exit);
+        playAnimation(store$1.ref.exit);
         props.onExit?.(!!isEnd);
         if (isEnd) state.activePageIndex = 0;
         state.show.endPage = undefined;
       } : undefined;
       state.prop.Prev = props.onPrev ? () => {
-        playAnimation(store.ref.prev);
+        playAnimation(store$1.ref.prev);
         props.onPrev?.();
       } : undefined;
       state.prop.Next = props.onNext ? () => {
-        playAnimation(store.ref.next);
+        playAnimation(store$1.ref.next);
         props.onNext?.();
       } : undefined;
       if (props.editButtonList) state.prop.editButtonList = props.editButtonList;
@@ -5534,10 +5582,11 @@ const useInit$1 = (props, rootRef) => {
       if (state.activePageIndex > state.pageList.length - 1) state.activePageIndex = state.pageList.length - 1;
     });
   });
+  props.getStore?.(store$1);
   focus();
 };
 
-const _tmpl$$9 = /*#__PURE__*/web.template(\`<div role=presentation tabindex=-1>\`);
+const _tmpl$$9 = /*#__PURE__*/web.template(\`<div role=presentation>\`);
 const MangaStyle = css$1;
 solidJs.enableScheduling();
 /** 漫画组件 */
@@ -5567,7 +5616,7 @@ const Manga = props => {
           ...props.classList
         },
         _v$3 = cssVar(),
-        _v$4 = boolDataVal(store.isMobile);
+        _v$4 = boolDataVal(store$1.isMobile);
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
       _p$._v$3 = web.style(_el$, _v$3, _p$._v$3);
@@ -5585,6 +5634,7 @@ const Manga = props => {
 
 const _tmpl$$8 = /*#__PURE__*/web.template(\`<style type=text/css>\`);
 let dom;
+let store;
 
 /**
  * 显示漫画阅读窗口
@@ -5619,9 +5669,12 @@ const useManga = async initProps => {
       transition: opacity 300ms, transform 100ms;
     }
   \`);
-  const [props, setProps] = store$2.createStore({
+  const [props, setProps] = store$3.createStore({
     imgList: [],
     show: false,
+    getStore: val => {
+      store = val;
+    },
     ...initProps
   });
   const set = recipe => {
@@ -5637,7 +5690,7 @@ const useManga = async initProps => {
       })()]);
       dom.style.setProperty('z-index', '2147483647', 'important');
     }
-    setProps(typeof recipe === 'function' ? store$2.produce(recipe) : recipe);
+    setProps(typeof recipe === 'function' ? store$3.produce(recipe) : recipe);
     if (props.imgList.length && props.show) {
       dom.setAttribute('show', '');
       document.documentElement.style.overflow = 'hidden';
@@ -5650,16 +5703,18 @@ const useManga = async initProps => {
   /** 下载按钮 */
   const DownloadButton = () => {
     const [statu, setStatu] = solidJs.createSignal('button.download');
+    const getFileExt = url => url.split('.').pop();
     const handleDownload = async () => {
       const fileData = {};
       const imgIndexNum = \`\${props.imgList.length}\`.length;
-      for (let i = 0; i < props.imgList.length; i += 1) {
-        setStatu(\`\${i}/\${props.imgList.length}\`);
+      const imgList = store.imgList.map(img => img.translationType === 'show' ? \`\${img.translationUrl}#.\${getFileExt(img.src)}\` : img.src);
+      for (let i = 0; i < imgList.length; i += 1) {
+        setStatu(\`\${i}/\${imgList.length}\`);
         const index = \`\${i}\`.padStart(imgIndexNum, '0');
-        const fileExt = props.imgList[i].match(/.+\\/.+\\.(\\w+)/)?.[1] ?? 'jpg';
+        const fileExt = getFileExt(imgList[i]) ?? 'jpg';
         const fileName = \`\${index}.\${fileExt}\`;
         try {
-          const res = await request$1(props.imgList[i], {
+          const res = await request$1(imgList[i], {
             responseType: 'arraybuffer'
           });
           fileData[fileName] = new Uint8Array(res.response);
@@ -5891,7 +5946,7 @@ const useFab = async initProps => {
       font-size: clamp(12px, 1.5vw, 16px);
     }
   \`);
-  const [props, setProps] = store$2.createStore({
+  const [props, setProps] = store$3.createStore({
     ...initProps
   });
   const FabIcon = () => {
@@ -5929,16 +5984,16 @@ const useFab = async initProps => {
       dom.style.setProperty('z-index', '2147483646', 'important');
       mounted = true;
     }
-    if (recipe) setProps(typeof recipe === 'function' ? store$2.produce(recipe) : recipe);
+    if (recipe) setProps(typeof recipe === 'function' ? store$3.produce(recipe) : recipe);
   };
   return [set, props];
 };
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>实现滑动翻页 </p></li><li><p>实现网格模式 </p></li><li><p>增加 翻译当前页至结尾 选项 </p></li><li><p>增加多种点击区域排列\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>实现自定义滚动条位置\`),
   _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复拷贝漫画因为 api 域名被墙而无法正常工作的 bug </p></li><li><p>修复移动端点击滚动条后一直显示着页数的 bug\`);
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复 300 帖子阅读进度不显示的 bug </p></li><li><p>修复卷轴模式下的一系列 bug </p></li><li><p>修复已翻译图片未正确下载的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6036,7 +6091,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     ...defaultOptions
   };
   const saveOptions = await GM.getValue(name);
-  const options = store$2.createMutable({
+  const options = store$3.createMutable({
     ..._defaultOptions,
     ...saveOptions
   });
@@ -6778,7 +6833,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
           keyPath: 'tid'
         });
       });
-      const isMobile = !!document.querySelector('#flk');
+      const isMobile = !document.querySelector('#flk');
       const [updateFlag, setUpdateFlag] = solidJs.createSignal(false);
       const updateHistoryTag = () => setUpdateFlag(val => !val);
       let listSelector = 'tbody[id^=normalthread]';
@@ -7951,9 +8006,8 @@ const main = require('main');
     init(() => imgEleList.map(e => e.getAttribute('data-original')));
     return;
   }
-  const isBlobUrl = /^blob:https?:\/\//;
   const getImgUrl = async imgEle => {
-    if (isBlobUrl.test(imgEle.src)) return imgEle.src;
+    if (imgEle.src.startsWith('blob:')) return imgEle.src;
     const originalUrl = imgEle.src;
     const res = await main.request(imgEle.getAttribute('data-original'), {
       responseType: 'blob',

@@ -1,15 +1,13 @@
-## [8.0.0](https://github.com/hymbz/ComicReadScript/compare/v7.6.0...v8.0.0) (2023-11-14)
+## [8.1.0](https://github.com/hymbz/ComicReadScript/compare/v8.0.0...v8.1.0) (2023-11-17)
 
 
 ### Features
 
-* :sparkles: 实现滑动翻页 ([9976b2f](https://github.com/hymbz/ComicReadScript/commit/9976b2fd2e94648084b54ac11f6e1da2db6ed093))
-* :sparkles: 实现网格模式 ([86a4c60](https://github.com/hymbz/ComicReadScript/commit/86a4c60a767f831005bc7d003bd7c2d86e6f23a7))
-* :sparkles: 增加 翻译当前页至结尾 选项 ([f714a5f](https://github.com/hymbz/ComicReadScript/commit/f714a5fcf0519fff7924a0312b0b99bd9d254ebc))
-* :sparkles: 增加多种点击区域排列 ([30c9fcb](https://github.com/hymbz/ComicReadScript/commit/30c9fcb6cd6c38cd13d3d8705c9a5352d74ce06d))
+* :sparkles: 实现自定义滚动条位置 ([f64d70f](https://github.com/hymbz/ComicReadScript/commit/f64d70f42fa0f16d2deee38e3df70d6119333aa4))
 
 
 ### Bug Fixes
 
-* :bug: 修复拷贝漫画因为 api 域名被墙而无法正常工作的 bug ([1213458](https://github.com/hymbz/ComicReadScript/commit/1213458ae794f9c8aa28b8346b78fd5e5aa1dfda))
-* :bug: 修复移动端点击滚动条后一直显示着页数的 bug ([de330c4](https://github.com/hymbz/ComicReadScript/commit/de330c4d6cc1e4f1ceae0930ad8ea8c954212965))
+* :bug: 修复 300 帖子阅读进度不显示的 bug ([430591d](https://github.com/hymbz/ComicReadScript/commit/430591d0c903f518622795ddad5c0703d60a93a2))
+* :bug: 修复卷轴模式下的一系列 bug ([4ae5ce8](https://github.com/hymbz/ComicReadScript/commit/4ae5ce8397236a006df64cd630c7c68ee55e8ddf))
+* :bug: 修复已翻译图片未正确下载的 bug ([948f8bd](https://github.com/hymbz/ComicReadScript/commit/948f8bd1c90aa77ca983501a3abba02a73562149)), closes [#119](https://github.com/hymbz/ComicReadScript/issues/119)
