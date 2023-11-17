@@ -232,7 +232,7 @@
       content: var(--tip);
 
       position: absolute;
-      bottom: -1.5em;
+      bottom: -1.4em;
       left: 0;
       transform: scale(0.8);
 
@@ -241,6 +241,7 @@
       width: 100%;
 
       text-align: center;
+      white-space: pre;
 
       opacity: 0.5;
     }

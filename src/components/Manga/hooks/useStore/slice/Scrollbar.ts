@@ -197,11 +197,11 @@ createRoot(() => {
     ),
   );
 
-  // 在开启网格模式后关掉 滚动条和工具栏 的强制显示
+  // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
   createEffect(
     on(
       () => store.gridMode,
-      (gridMode) => gridMode && setState(resetUI),
+      () => setState(resetUI),
       { defer: true },
     ),
   );

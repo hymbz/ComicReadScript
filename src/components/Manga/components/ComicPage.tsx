@@ -31,14 +31,22 @@ export const ComicPage: Component<ComicPageProps> = (props) => {
     return undefined;
   });
 
+  const style = createMemo(() => {
+    if (!store.gridMode) return {};
+    const highlight = props.index === store.activePageIndex;
+    const tip = getPageTip(props.index);
+    return {
+      '--tip': highlight ? `">    ${tip}    <"` : `"${tip}"`,
+      'box-shadow': highlight ? 'var(--text_secondary) 0 0 1em' : undefined,
+    };
+  });
+
   return (
     <div
       class={classes.page}
       data-show={boolDataVal(show())}
       data-index={props.index}
-      style={{
-        '--tip': store.gridMode ? `"${getPageTip(props.index)}"` : undefined,
-      }}
+      style={style()}
     >
       <For each={props.page} fallback={<h1>NULL</h1>}>
         {(imgIndex, i) => <ComicImg index={imgIndex} fill={fill()?.[i()]} />}
