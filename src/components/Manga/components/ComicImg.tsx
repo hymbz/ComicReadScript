@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { createMemo, onCleanup } from 'solid-js';
+import { createMemo, onCleanup, onMount } from 'solid-js';
 
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
@@ -96,6 +96,21 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
 
 /** 漫画图片 */
 export const ComicImg: Component<ComicImgProps> = (props) => {
+  let ref: HTMLImageElement;
+
+  onMount(() => {
+    store.observer?.observe(ref);
+
+    onCleanup(() => {
+      store.observer?.unobserve(ref);
+      setState((state) => {
+        state.memo.showImgList = state.memo.showImgList.filter(
+          (img) => img !== ref,
+        );
+      });
+    });
+  });
+
   const img = () => store.imgList[props.index];
 
   const src = createMemo(() => {
@@ -106,10 +121,7 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
 
   return (
     <img
-      ref={(ref) => {
-        onCleanup(() => store.observer?.unobserve(ref));
-        store.observer?.observe(ref);
-      }}
+      ref={ref!}
       class={classes.img}
       style={{
         '--width': img()?.width ? `min(100%, ${img()?.width}px)` : undefined,

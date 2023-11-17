@@ -143,19 +143,22 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
   }
 };
 
-let showImgList: Element[] = [];
 export const handleObserver: IntersectionObserverCallback = (entries) => {
   if (store.gridMode) return;
 
-  entries.forEach(({ isIntersecting, target }) => {
-    if (isIntersecting) showImgList.push(target);
-    else showImgList = showImgList.filter((img) => img !== target);
-  });
-
   setState((state) => {
+    entries.forEach(({ isIntersecting, target }) => {
+      if (isIntersecting)
+        state.memo.showImgList.push(target as HTMLImageElement);
+      else
+        state.memo.showImgList = state.memo.showImgList.filter(
+          (img) => img !== target,
+        );
+    });
+
     state.memo.showPageList = [
       ...new Set(
-        showImgList.map(
+        state.memo.showImgList.map(
           (img) => +img.parentElement!.getAttribute('data-index')!,
         ),
       ),
