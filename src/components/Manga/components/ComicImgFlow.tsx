@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { Index, createMemo, onMount } from 'solid-js';
+import { Index, onCleanup, onMount } from 'solid-js';
 
 import { boolDataVal } from 'helper';
 import { setState, store } from '../hooks/useStore';
@@ -12,6 +12,7 @@ import {
   handleZoomDrag,
   handleMangaFlowDrag,
   touches,
+  handleObserver,
 } from '../hooks/useStore/slice';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
 import type { UseDrag } from '../hooks/useDrag';
@@ -30,9 +31,21 @@ export const ComicImgFlow: Component = () => {
     if (!store.option.scrollMode) return handleMangaFlowDrag(state, e);
   };
 
-  onMount(() =>
-    useDrag({ ref: store.ref.mangaFlow, handleDrag, handleClick, touches }),
-  );
+  onMount(() => {
+    useDrag({ ref: store.ref.mangaFlow, handleDrag, handleClick, touches });
+    setState((state) => {
+      state.observer = new IntersectionObserver(handleObserver, {
+        root: store.ref.mangaFlow,
+        threshold: 0.01,
+      });
+    });
+    onCleanup(() => {
+      setState((state) => {
+        state.observer?.disconnect();
+        state.observer = null;
+      });
+    });
+  });
 
   const handleTransitionEnd = () => {
     if (store.dragMode) return;
@@ -42,10 +55,10 @@ export const ComicImgFlow: Component = () => {
     });
   };
 
-  const pageX = createMemo(() => {
+  const pageX = () => {
     const x = `calc(${store.page.offset.x.pct}% + ${store.page.offset.x.px}px)`;
     return store.option.dir === 'rtl' ? x : `calc(${x} * -1)`;
-  });
+  };
 
   return (
     <div
@@ -66,10 +79,10 @@ export const ComicImgFlow: Component = () => {
       onScroll={handleMangaFlowScroll}
       style={{
         '--scale': store.zoom.scale / 100,
-        '--x': `${store.zoom.offset.x || 0}px`,
-        '--y': `${store.zoom.offset.y || 0}px`,
-        '--page_x': pageX(),
-        '--page_y': `calc(${store.page.offset.y.pct}% + ${store.page.offset.y.px}px)`,
+        '--zoom-x': `${store.zoom.offset.x || 0}px`,
+        '--zoom-y': `${store.zoom.offset.y || 0}px`,
+        '--page-x': pageX(),
+        '--page-y': `calc(${store.page.offset.y.pct}% + ${store.page.offset.y.px}px)`,
       }}
       tabIndex={-1}
     >

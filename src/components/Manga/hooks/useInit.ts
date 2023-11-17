@@ -17,11 +17,10 @@ const createComicImg = (url: string): ComicImg => ({
 });
 
 /** 初始化 */
-export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
+export const useInit = (props: MangaProps, root: HTMLElement) => {
   // 绑定 rootRef
   setState((state) => {
-    state.ref.root = rootRef;
-    props.getStore?.(store);
+    state.ref.root = root;
   });
 
   // 初始化配置
@@ -47,10 +46,10 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
   );
   // 初始化页面比例
   setState((state) => {
-    handleResize(state, rootRef.scrollWidth, rootRef.scrollHeight);
+    handleResize(state, root.scrollWidth, root.scrollHeight);
   });
   resizeObserver.disconnect();
-  resizeObserver.observe(rootRef);
+  resizeObserver.observe(root);
   onCleanup(() => resizeObserver.disconnect());
 
   createEffect(() => {
@@ -163,5 +162,6 @@ export const useInit = (props: MangaProps, rootRef: HTMLElement) => {
     });
   });
 
+  props.getStore?.(store);
   focus();
 };

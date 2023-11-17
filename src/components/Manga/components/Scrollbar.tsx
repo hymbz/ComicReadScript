@@ -37,6 +37,20 @@ export const Scrollbar: Component = () => {
   /** 是否强制显示滚动条 */
   const showScrollbar = createMemo(() => store.show.scrollbar || !!penetrate());
 
+  const showTip = createMemo(() => {
+    if (store.memo.showPageList.length === 0) return 'null';
+    if (store.memo.showPageList.length === 1)
+      return getPageTip(store.memo.showPageList[0]);
+
+    const tipList = store.memo.showPageList.map((i) => getPageTip(i));
+
+    if (store.option.scrollMode || store.page.vertical)
+      return tipList.join('\n');
+
+    if (store.option.dir === 'rtl') tipList.reverse();
+    return tipList.join('   ');
+  });
+
   return (
     <div
       ref={(e) =>
@@ -77,9 +91,7 @@ export const Scrollbar: Component = () => {
         }}
       >
         <div class={classes.scrollbarPoper} data-show={showScrollbar()}>
-          {store.option.scrollMode
-            ? store.memo.showPageList.map((i) => getPageTip(i)).join('\n')
-            : getPageTip(store.activePageIndex)}
+          {showTip()}
         </div>
       </div>
       <Show when={store.option.scrollbar.showImgStatus}>

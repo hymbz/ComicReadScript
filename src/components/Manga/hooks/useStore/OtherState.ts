@@ -31,6 +31,9 @@ export const OtherState = {
   /** 快捷键配置 */
   hotkeys: {} as Record<string, string[]>,
 
+  /** 监视图片是否出现的 observer */
+  observer: null as IntersectionObserver | null,
+
   show: {
     /** 是否强制显示工具栏 */
     toolbar: false,
@@ -69,7 +72,7 @@ export const OtherState = {
 
   // 自动更新不能手动修改的变量
   memo: {
-    /** 当前显示的页面 */
+    /** 当前显示的图片 */
     showPageList: [] as number[],
     /** 要渲染的页面 */
     renderPageList: [] as PageList,

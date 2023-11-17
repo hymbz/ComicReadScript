@@ -29,9 +29,9 @@ export const IconButton: Component<IconButtonProps> = (_props) => {
   const props = mergeProps({ placement: 'right' }, _props);
   let buttonRef: HTMLButtonElement;
   const handleClick = (e: MouseEvent) => {
+    props.onClick?.(e);
     // 在每次点击后取消焦点
     buttonRef?.blur();
-    props.onClick?.(e);
   };
 
   return (
@@ -45,7 +45,7 @@ export const IconButton: Component<IconButtonProps> = (_props) => {
           [classes.hidden]: props.hidden,
           [classes.enabled]: props.enabled,
         }}
-        tabIndex={-1}
+        tabIndex={0}
         on:click={handleClick}
       >
         {props.children}

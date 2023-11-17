@@ -3,7 +3,6 @@ import { setOption } from './Helper';
 import type { State } from '..';
 import { setState, store } from '..';
 import { hotkeysMap } from './Hotkeys';
-import { contentHeight, handleMangaFlowScroll } from './Scrollbar';
 import { zoom } from './Zoom';
 import {
   zoomScrollModeImg,
@@ -24,8 +23,7 @@ export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
   switchFillEffect();
 };
 
-export const focus = () =>
-  (store.ref.mangaFlow ?? store.ref.root)?.parentElement?.focus();
+export const focus = () => (store.ref.mangaFlow ?? store.ref.root)?.focus();
 
 /** 判断当前是否已经滚动到底部 */
 const isBottom = (state: State) =>
@@ -142,19 +140,10 @@ export const handleWheel = (e: WheelEvent) => {
 
   if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
 
-  if (store.option.scrollMode) {
-    // 卷轴模式下的缩放
-    if (e.altKey || e.ctrlKey) {
-      e.preventDefault();
-      zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
-      // 在调整图片缩放后使当前滚动进度保持不变
-      setState((state) => {
-        store.ref.mangaFlow.scrollTo({
-          top: contentHeight() * state.scrollbar.dragTop,
-        });
-      });
-      handleMangaFlowScroll();
-    }
+  // 卷轴模式下的缩放
+  if (store.option.scrollMode && (e.altKey || e.ctrlKey)) {
+    e.preventDefault();
+    zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
     return;
   }
 
@@ -218,12 +207,12 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 
       case 'ArrowUp':
       case 'PageUp':
-        return;
+        return turnPage('prev');
 
       case 'ArrowDown':
       case 'PageDown':
       case ' ':
-        return;
+        return turnPage('next');
     }
   }
 

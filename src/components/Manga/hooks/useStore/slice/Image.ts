@@ -115,10 +115,9 @@ export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
     draftOption.scrollModeImgScale = clamp(0.1, newVal, 3);
   });
   // 在调整图片缩放后使当前滚动进度保持不变
-  setState((state) => {
-    store.ref.mangaFlow.scrollTo({
-      top: contentHeight() * state.scrollbar.dragTop,
-    });
+  store.ref.mangaFlow.scrollTo({
+    top: contentHeight() * store.scrollbar.dragTop,
+    behavior: 'instant',
   });
   handleMangaFlowScroll();
 };

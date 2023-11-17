@@ -22,7 +22,7 @@ export const Toolbar: Component = () => {
       // 避免在页面拖拽时触发
       style={{ 'pointer-events': store.dragMode ? 'none' : undefined }}
     >
-      <div class={classes.toolbarPanel}>
+      <div class={classes.toolbarPanel} on:click={focus}>
         <div class={classes.toolbarBg} />
         <For
           each={store.prop.editButtonList(defaultButtonList)}

@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { createMemo } from 'solid-js';
+import { createMemo, onCleanup } from 'solid-js';
 
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
@@ -106,6 +106,10 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
 
   return (
     <img
+      ref={(ref) => {
+        onCleanup(() => store.observer?.unobserve(ref));
+        store.observer?.observe(ref);
+      }}
       class={classes.img}
       style={{
         '--width': img()?.width ? `min(100%, ${img()?.width}px)` : undefined,

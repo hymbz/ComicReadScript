@@ -37,7 +37,7 @@ export const ComicPage: Component<ComicPageProps> = (props) => {
       data-show={boolDataVal(show())}
       data-index={props.index}
       style={{
-        '--tip': store.gridMode ? `"${getPageTip(props.index)}"` : '"null"',
+        '--tip': store.gridMode ? `"${getPageTip(props.index)}"` : undefined,
       }}
     >
       <For each={props.page} fallback={<h1>NULL</h1>}>

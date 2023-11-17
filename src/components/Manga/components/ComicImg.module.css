@@ -83,7 +83,7 @@
 
   position: relative;
   z-index: 1;
-  transform: translate(var(--page_x), var(--page_y)) translateZ(0);
+  transform: translate(var(--page-x), var(--page-y)) translateZ(0);
 
   display: none;
   flex-shrink: 0;
@@ -106,7 +106,8 @@
   user-select: none;
 
   transform-origin: 0 0;
-  transform: translate(var(--x), var(--y)) scale(var(--scale)) translateZ(0);
+  transform: translate(var(--zoom-x), var(--zoom-y)) scale(var(--scale))
+    translateZ(0);
 
   display: grid;
   grid-auto-columns: 100%;
@@ -176,12 +177,8 @@
   grid-template-rows: auto;
 
   & .page {
-    content-visibility: auto;
-
     transform: none;
-
     display: flex;
-
     width: unset;
     height: fit-content;
   }

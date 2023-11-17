@@ -96,7 +96,6 @@ export const Manga: Component<MangaProps> = (props) => {
       oncapture:keyup={stopPropagation}
       data-mobile={boolDataVal(store.isMobile)}
       role="presentation"
-      tabIndex={-1}
     >
       <ComicImgFlow />
       <Toolbar />

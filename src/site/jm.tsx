@@ -59,10 +59,8 @@ import {
     return;
   }
 
-  const isBlobUrl = /^blob:https?:\/\//;
-
   const getImgUrl = async (imgEle: HTMLImageElement) => {
-    if (isBlobUrl.test(imgEle.src)) return imgEle.src;
+    if (imgEle.src.startsWith('blob:')) return imgEle.src;
 
     const originalUrl = imgEle.src;
     const res = await request<Blob>(imgEle.getAttribute('data-original')!, {

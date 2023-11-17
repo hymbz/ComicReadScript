@@ -1,6 +1,5 @@
 import { createEffect, createRoot, on } from 'solid-js';
 
-import { isEqualArray } from 'helper';
 import { t } from 'helper/i18n';
 import { resetUI } from './Helper';
 import type { UseDrag, PointerState } from '../../useDrag';
@@ -123,38 +122,26 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
   }
 };
 
-// 更新 showPageList
-const updateShowPageList = (state: State) => {
-  if (!state.option.scrollMode) {
-    state.memo.showPageList = [state.activePageIndex];
-    return;
-  }
+let showImgList: Element[] = [];
+export const handleObserver: IntersectionObserverCallback = (entries) => {
+  entries.forEach(({ isIntersecting, target }) => {
+    if (isIntersecting) showImgList.push(target);
+    else showImgList = showImgList.filter((img) => img !== target);
+  });
 
-  // TODO: 用 Observer 重构
+  setState((state) => {
+    state.memo.showPageList = [
+      ...new Set(
+        showImgList.map(
+          (img) => +img.parentElement!.getAttribute('data-index')!,
+        ),
+      ),
+    ];
+    state.memo.showPageList.sort((a, b) => a - b);
 
-  /** 当前显示页面列表 */
-  const showPageList: number[] = [];
-
-  const { scrollTop } = store.ref.mangaFlow;
-  const eleList = state.ref.mangaFlow
-    .childNodes as NodeListOf<HTMLImageElement>;
-  const scrollBottom = scrollTop + state.ref.root.offsetHeight;
-
-  // 通过一个一个检查页面元素所在高度来判断页面是否被显示
-  for (let i = 0; i < eleList.length; i += 1) {
-    const element = eleList[i];
-    // 当页面的顶部位置在视窗口的底部位置时中断循环
-    if (element.offsetTop > scrollBottom) break;
-    // 当页面的底部位置还未达到视窗口的顶部位置时，跳到下一个页面
-    if (element.offsetTop + element.offsetHeight < scrollTop) continue;
-    const pageIndex = +element.getAttribute('data-index')!;
-    if (!Number.isNaN(pageIndex)) showPageList.push(pageIndex);
-  }
-
-  state.activePageIndex = showPageList.at(-1) ?? 0;
-
-  if (isEqualArray(state.memo.showPageList, showPageList)) return;
-  state.memo.showPageList = showPageList;
+    if (state.option.scrollMode)
+      state.activePageIndex = state.memo.showPageList[0] ?? 0;
+  });
 };
 
 /** 处理漫画页的滚动事件 */
@@ -163,12 +150,8 @@ export const handleMangaFlowScroll = () => {
 
   requestAnimationFrame(() => {
     setState((state) => {
-      state.scrollbar.dragTop =
-        !store.ref.mangaFlow || !contentHeight()
-          ? 0
-          : store.ref.mangaFlow.scrollTop / contentHeight();
+      state.scrollbar.dragTop = store.ref.mangaFlow.scrollTop / contentHeight();
       updateDrag(state);
-      updateShowPageList(state);
     });
   });
 };
