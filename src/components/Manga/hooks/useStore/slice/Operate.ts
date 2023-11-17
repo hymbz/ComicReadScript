@@ -196,8 +196,8 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     return;
   }
 
-  // 卷轴模式下跳过用于移动的按键
-  if (store.option.scrollMode && !store.show.endPage) {
+  // 卷轴、网格模式下跳过用于移动的按键
+  if ((store.option.scrollMode || store.gridMode) && !store.show.endPage) {
     switch (e.key) {
       case 'Home':
       case 'End':
@@ -207,12 +207,12 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 
       case 'ArrowUp':
       case 'PageUp':
-        return turnPage('prev');
+        return store.gridMode || turnPage('prev');
 
       case 'ArrowDown':
       case 'PageDown':
       case ' ':
-        return turnPage('next');
+        return store.gridMode || turnPage('next');
     }
   }
 

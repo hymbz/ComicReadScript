@@ -218,12 +218,14 @@ export const switchFillEffect = () => {
 export const switchScrollMode = () => {
   zoom(100);
   setOption((draftOption, state) => {
-    state.activePageIndex = 0;
     draftOption.scrollMode = !draftOption.scrollMode;
     draftOption.onePageMode = draftOption.scrollMode;
     updatePageData(state);
   });
-  setTimeout(handleMangaFlowScroll);
+  requestAnimationFrame(handleMangaFlowScroll);
+  // 切换卷轴模式后自动定位到对应页
+  if (store.option.scrollMode)
+    store.ref.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
 };
 
 /** 切换单双页模式 */
@@ -248,6 +250,9 @@ export const switchGridMode = () => {
     if (state.zoom.scale !== 100) zoom(100);
     state.page.anima = '';
   });
+  // 切换网格模式后自动定位到对应页
+  if (store.gridMode)
+    store.ref.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
 };
 
 /** 更新渲染页面相关变量 */
