@@ -103,10 +103,10 @@
       "always_load_all_img": "Always load all images",
       "background_color": "Background Color",
       "click_page_turn_area": "Touch area",
-      "click_page_turn_enabled": "Enable click to turn page",
+      "click_page_turn_enabled": "Click to turn page",
       "click_page_turn_swap_area": "Swap LR clickable areas",
       "click_page_turn_vertical": "Vertically arranged clickable areas",
-      "dark_mode": "Enable dark mode",
+      "dark_mode": "Dark mode",
       "dir_ltr": "LTR (American comics)",
       "dir_rtl": "RTL (Japanese manga)",
       "disable_auto_enlarge": "Disable automatic image enlarge",
@@ -122,9 +122,14 @@
       "preload_page_num": "Preload page number",
       "scroll_mode_img_scale": "Scroll mode image zoom ratio",
       "scroll_mode_img_spacing": "Scroll mode image spacing",
-      "scrollbar_auto_hidden": "Auto hide the scrollbar",
+      "scrollbar_auto_hidden": "Auto hide",
       "scrollbar_easy_scroll": "Easy scroll",
-      "scrollbar_show": "Show scrollbar",
+      "scrollbar_position": "position",
+      "scrollbar_position_auto": "Auto",
+      "scrollbar_position_bottom": "Bottom",
+      "scrollbar_position_hidden": "Hidden",
+      "scrollbar_position_right": "Right",
+      "scrollbar_position_top": "Top",
       "scrollbar_show_img_status": "Show image loading status",
       "show_clickable_area": "Show clickable areas",
       "show_comments": "Show comments on the end page",
@@ -185,10 +190,10 @@
     "next": "Next Page",
     "prev": "Prev Page",
     "type": {
-      "edge": "edge",
+      "edge": "Edge",
       "l": "L",
-      "left_right": "left right",
-      "up_down": "up down"
+      "left_right": "Left Right",
+      "up_down": "Up Down"
     }
   },
   "translation": {

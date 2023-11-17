@@ -53,10 +53,26 @@ export const getPageTip = (pageIndex: number): string => {
   return pageIndexText.join(store.option.scrollMode ? '\n' : ' | ');
 };
 
+/** 获取滚动条位置 */
+export const getScrollPosition =
+  (): State['option']['scrollbar']['position'] => {
+    if (store.option.scrollbar.position === 'auto')
+      return store.isMobile ? 'top' : 'right';
+    return store.option.scrollbar.position;
+  };
+
 /** 判断点击位置在滚动条上的位置比率 */
 const getClickTop = (x: number, y: number, e: HTMLElement): number => {
-  if (!store.isMobile) return y / e.offsetHeight;
-  return store.option.dir === 'ltr' ? x / e.offsetWidth : 1 - x / e.offsetWidth;
+  switch (getScrollPosition()) {
+    case 'bottom':
+    case 'top':
+      return store.option.dir === 'rtl'
+        ? 1 - x / e.offsetWidth
+        : x / e.offsetWidth;
+
+    default:
+      return y / e.offsetHeight;
+  }
 };
 
 /** 计算在滚动条上的拖动距离 */
@@ -65,10 +81,16 @@ const getDragDist = (
   [ix, iy]: PointerState['initial'],
   e: HTMLElement,
 ) => {
-  if (!store.isMobile) return (y - iy) / e.offsetHeight;
-  return store.option.dir === 'ltr'
-    ? (x - ix) / e.offsetWidth
-    : (1 - (x - ix)) / e.offsetWidth;
+  switch (getScrollPosition()) {
+    case 'bottom':
+    case 'top':
+      return store.option.dir === 'ltr'
+        ? (x - ix) / e.offsetWidth
+        : (1 - (x - ix)) / e.offsetWidth;
+
+    default:
+      return (y - iy) / e.offsetHeight;
+  }
 };
 
 /** 开始拖拽时的 dragTop 值 */
@@ -89,7 +111,6 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
 
   if (store.option.scrollMode) {
     if (type === 'move') {
-      // console.log(initial);
       top = startTop + getDragDist(xy, initial, scrollbarDom);
       // 处理超出范围的情况
       if (top < 0) top = 0;
@@ -137,7 +158,7 @@ export const handleObserver: IntersectionObserverCallback = (entries) => {
         ),
       ),
     ];
-    state.memo.showPageList.sort((a, b) => a - b);
+    state.memo.showPageList.sort();
 
     if (state.option.scrollMode)
       state.activePageIndex = state.memo.showPageList[0] ?? 0;

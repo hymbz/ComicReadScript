@@ -5,7 +5,8 @@ export interface Option {
   dir: 'ltr' | 'rtl';
   /** 滚动条 */
   scrollbar: {
-    enabled: boolean;
+    /** 滚动条位置 */
+    position: 'hidden' | 'auto' | 'top' | 'bottom' | 'right';
     /** 自动隐藏 */
     autoHidden: boolean;
     /** 显示图片加载状态 */
@@ -73,7 +74,7 @@ const targetLanguage = LanguageMap[lang()] ?? 'CHS';
 export const defaultOption: Readonly<Option> = {
   dir: 'rtl',
   scrollbar: {
-    enabled: true,
+    position: 'auto',
     autoHidden: false,
     showImgStatus: true,
     easyScroll: false,

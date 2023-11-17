@@ -60,12 +60,19 @@ export const defaultSettingList: () => SettingList = () => [
     t('setting.option.paragraph_scrollbar'),
     () => (
       <>
-        <SettingsItemSwitch
-          name={t('setting.option.scrollbar_show')}
-          value={store.option.scrollbar.enabled}
-          onChange={createStateSetFn('scrollbar.enabled')}
+        <SettingsItemSelect
+          name={t('setting.option.scrollbar_position')}
+          options={[
+            ['auto', t('setting.option.scrollbar_position_auto')],
+            ['right', t('setting.option.scrollbar_position_right')],
+            ['top', t('setting.option.scrollbar_position_top')],
+            ['bottom', t('setting.option.scrollbar_position_bottom')],
+            ['hidden', t('setting.option.scrollbar_position_hidden')],
+          ]}
+          value={store.option.scrollbar.position}
+          onChange={createStateSetFn('scrollbar.position')}
         />
-        <SettingsShowItem when={store.option.scrollbar.enabled}>
+        <SettingsShowItem when={store.option.scrollbar.position !== 'hidden'}>
           <SettingsItemSwitch
             name={t('setting.option.scrollbar_auto_hidden')}
             value={store.option.scrollbar.autoHidden}

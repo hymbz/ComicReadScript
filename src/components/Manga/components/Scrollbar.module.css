@@ -146,20 +146,21 @@
   opacity: 1;
 }
 
-/* 移动端下改用顶部滚动条 */
-.root[data-mobile] {
-  & .scrollbar {
-    top: 1px;
-    right: 1%;
+.scrollbar[data-position="hidden"] {
+  display: none;
+}
 
-    flex-direction: row-reverse;
+.scrollbar[data-position="top"],
+.scrollbar[data-position="bottom"] {
+  top: unset;
+  right: 1%;
 
-    width: 98%;
-    height: 5px;
+  flex-direction: row-reverse;
 
-    border-bottom: 2em solid transparent;
-    border-left: none;
-  }
+  width: 98%;
+  height: 5px;
+
+  border-left: none;
 
   & .scrollbarDrag {
     top: unset;
@@ -168,7 +169,7 @@
     height: 100%;
   }
 
-  & .scrollbar[data-dir="ltr"] {
+  &[data-dir="ltr"] {
     flex-direction: row;
 
     & .scrollbarDrag {
@@ -178,18 +179,49 @@
   }
 
   .scrollbarPoper {
-    top: 1.2em;
     right: unset;
     padding: 0.1em 0.3em;
 
     &::after {
-      bottom: 100%;
       left: unset;
       border: 0.3em solid #0000;
+    }
+  }
+}
+
+.scrollbar[data-position="top"] {
+  top: 1px;
+
+  /* 扩大触发范围 */
+  border-bottom: max(6vh, 1em) solid transparent;
+
+  .scrollbarPoper {
+    top: 1.2em;
+
+    &::after {
+      bottom: 100%;
       border-bottom: 0.4em solid #303030;
     }
   }
+}
 
+.scrollbar[data-position="bottom"] {
+  bottom: 1px;
+
+  /* 扩大触发范围 */
+  border-top: max(6vh, 1em) solid transparent;
+
+  .scrollbarPoper {
+    bottom: 1.2em;
+
+    &::after {
+      top: 100%;
+      border-top: 0.4em solid #303030;
+    }
+  }
+}
+
+.root[data-mobile] {
   /* 移动端下禁用悬浮显示 */
   .scrollbar:hover .scrollbarPoper {
     opacity: 0;

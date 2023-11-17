@@ -4,7 +4,11 @@ import { debounce } from 'throttle-debounce';
 
 import { store } from '../hooks/useStore';
 import { useDrag } from '../hooks/useDrag';
-import { getPageTip, handleScrollbarDrag } from '../hooks/useStore/slice';
+import {
+  getPageTip,
+  getScrollPosition,
+  handleScrollbarDrag,
+} from '../hooks/useStore/slice';
 
 import { ScrollbarPage } from './ScrollbarPage';
 
@@ -62,9 +66,6 @@ export const Scrollbar: Component = () => {
         })
       }
       class={classes.scrollbar}
-      classList={{
-        [classes.hidden]: !store.option.scrollbar.enabled && !showScrollbar(),
-      }}
       style={{
         'pointer-events':
           penetrate() || store.dragMode || store.gridMode ? 'none' : 'auto',
@@ -75,6 +76,7 @@ export const Scrollbar: Component = () => {
       aria-valuenow={store.activePageIndex || -1}
       data-show={!store.option.scrollbar.autoHidden || showScrollbar()}
       data-dir={store.option.dir}
+      data-position={getScrollPosition()}
       onWheel={handleWheel}
     >
       <div

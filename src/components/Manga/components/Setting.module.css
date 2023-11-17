@@ -1,5 +1,6 @@
 /* 设置面板所在的悬浮框样式 */
 .SettingPanelPopper {
+  pointer-events: unset !important;
   transform: none !important;
   height: 0 !important;
   padding: 0 !important;
@@ -160,12 +161,11 @@
 .SettingsItemSelect {
   cursor: pointer;
 
-  width: 6em;
+  max-width: 6em;
   margin: 0;
   padding: 0.3em;
-  padding-right: 0;
 
-  font-size: 1em;
+  font-size: 0.9em;
 
   background-color: var(--hover_bg_color);
   border: none;

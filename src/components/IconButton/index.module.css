@@ -46,6 +46,7 @@
 
 /* 默认悬浮框样式 */
 .iconButtonPopper {
+  pointer-events: none;
   user-select: none;
 
   position: absolute;
@@ -88,6 +89,7 @@
 
 /* 工具栏按钮的悬浮框的箭头 */
 .iconButtonPopper::before {
+  pointer-events: none;
   content: "";
 
   position: absolute;
