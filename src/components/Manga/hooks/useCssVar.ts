@@ -3,7 +3,6 @@ import { createRoot, createMemo } from 'solid-js';
 import { t } from 'helper/i18n';
 
 import { store } from './useStore';
-import { imgPlaceholderHeight } from './useStore/slice';
 
 interface CssVar {
   '--hover_bg_color': string;
@@ -102,7 +101,6 @@ export const cssVar = createRoot(() => {
       (store.option.darkMode ? '#000' : '#fff'),
     '--scrollModeImgScale': store.option.scrollModeImgScale,
     '--scrollModeSpacing': store.option.scrollModeSpacing,
-    '--img-placeholder-height': `${imgPlaceholderHeight()}px`,
     ...(store.option.darkMode ? dark : light),
     ...svg(),
     ...i18n(),

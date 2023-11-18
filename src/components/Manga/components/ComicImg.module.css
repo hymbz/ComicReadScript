@@ -24,7 +24,6 @@
   }
 
   &[data-load-type="loading"] {
-    position: absolute;
     max-width: 100vw !important;
 
     /* 加载中的图片稍等一下再显示，避免出错图片的元素被直接显示出来 */
@@ -190,17 +189,12 @@
   & .img {
     display: unset;
 
-    width: calc(var(--scrollModeImgScale) * var(--width, 100%));
+    width: calc(var(--scrollModeImgScale) * min(100%, var(--width, 100%)));
     max-width: unset;
-    height: auto;
+    height: calc(var(--scrollModeImgScale) * var(--height, 0)) !important;
     max-height: unset;
 
     object-fit: contain;
-
-    /* 让未显示的图片提前占下位 */
-    &[data-load-type="wait"] {
-      height: var(--img-placeholder-height);
-    }
 
     &[data-load-type="loading"] {
       position: unset;

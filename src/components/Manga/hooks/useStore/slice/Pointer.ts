@@ -56,6 +56,8 @@ export const handleGridClick = (e: MouseEvent) => {
     state.activePageIndex = pageNum;
     state.gridMode = false;
   });
+  if (store.option.scrollMode)
+    store.ref.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
 };
 
 /** 双击放大 */

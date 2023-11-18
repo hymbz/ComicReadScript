@@ -19,6 +19,7 @@ export const updateDrag = (state: State) => {
     state.scrollbar.dragTop = 0;
     return;
   }
+  state.scrollbar.dragTop = store.ref.mangaFlow.scrollTop / contentHeight();
   state.scrollbar.dragHeight =
     windowHeight() / (contentHeight() || windowHeight());
 };
@@ -167,18 +168,6 @@ export const handleObserver: IntersectionObserverCallback = (entries) => {
 
     if (state.option.scrollMode)
       state.activePageIndex = state.memo.showPageList[0] ?? 0;
-  });
-};
-
-/** 处理漫画页的滚动事件 */
-export const handleMangaFlowScroll = () => {
-  if (!store.option.scrollMode) return;
-
-  requestAnimationFrame(() => {
-    setState((state) => {
-      state.scrollbar.dragTop = store.ref.mangaFlow.scrollTop / contentHeight();
-      updateDrag(state);
-    });
   });
 };
 

@@ -5,67 +5,39 @@ import { clamp } from 'helper';
 import type { State } from '..';
 import { store, setState } from '..';
 import { findFillIndex, handleComicData } from '../../../handleComicData';
-import {
-  contentHeight,
-  handleMangaFlowScroll,
-  updateDrag,
-  windowHeight,
-} from './Scrollbar';
+import { contentHeight, updateDrag } from './Scrollbar';
 import { setOption } from './Helper';
-import { zoom } from './Zoom';
 
-export const {
-  activeImgIndex,
-  nowFillIndex,
-  activePage,
-  imgPlaceholderHeight,
-  preloadNum,
-} = createRoot(() => {
-  const activePageMemo = createMemo(
-    () => store.pageList[store.activePageIndex] ?? [],
-  );
-
-  const activeImgIndexMemo = createMemo(
-    () => activePageMemo().find((i) => i !== -1) ?? 0,
-  );
-
-  const nowFillIndexMemo = createMemo(() =>
-    findFillIndex(activeImgIndexMemo(), store.fillEffect),
-  );
-
-  const imgPlaceholderHeightMemo = createMemo(() => {
-    if (!store.option.scrollMode) return 0;
-    // 使用所有已加载图片高度的中位数
-    const heightList = store.imgList
-      .filter((img) => img.loadType === 'loaded' && img.height)
-      .map((img) => img.height!)
-      .sort();
-
-    if (!heightList.length) return windowHeight();
-    return (
-      heightList[Math.floor(heightList.length / 2)] *
-      store.option.scrollModeImgScale
+export const { activeImgIndex, nowFillIndex, activePage, preloadNum } =
+  createRoot(() => {
+    const activePageMemo = createMemo(
+      () => store.pageList[store.activePageIndex] ?? [],
     );
+
+    const activeImgIndexMemo = createMemo(
+      () => activePageMemo().find((i) => i !== -1) ?? 0,
+    );
+
+    const nowFillIndexMemo = createMemo(() =>
+      findFillIndex(activeImgIndexMemo(), store.fillEffect),
+    );
+
+    const preloadNumMemo = createMemo(() => ({
+      back: store.option.preloadPageNum,
+      front: Math.floor(store.option.preloadPageNum / 2),
+    }));
+
+    return {
+      /** 当前显示的第一张图片的 index */
+      activeImgIndex: activeImgIndexMemo,
+      /** 当前所处的图片流 */
+      nowFillIndex: nowFillIndexMemo,
+      /** 当前显示页面 */
+      activePage: activePageMemo,
+      /** 预加载页数 */
+      preloadNum: preloadNumMemo,
+    };
   });
-
-  const preloadNumMemo = createMemo(() => ({
-    back: store.option.preloadPageNum,
-    front: Math.floor(store.option.preloadPageNum / 2),
-  }));
-
-  return {
-    /** 当前显示的第一张图片的 index */
-    activeImgIndex: activeImgIndexMemo,
-    /** 当前所处的图片流 */
-    nowFillIndex: nowFillIndexMemo,
-    /** 当前显示页面 */
-    activePage: activePageMemo,
-    /** 卷轴模式下的图片占位高度 */
-    imgPlaceholderHeight: imgPlaceholderHeightMemo,
-    /** 预加载页数 */
-    preloadNum: preloadNumMemo,
-  };
-});
 
 type LoadImgDraft = { editNum: number; loadNum: number };
 const loadImg = (state: State, index: number, draft: LoadImgDraft) => {
@@ -119,7 +91,7 @@ export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
     top: contentHeight() * store.scrollbar.dragTop,
     behavior: 'instant',
   });
-  handleMangaFlowScroll();
+  setState(updateDrag);
 };
 
 /** 根据当前页数更新所有图片的加载状态 */
@@ -167,93 +139,7 @@ export const updatePageData = (state: State) => {
       page.includes(lastActiveImgIndex),
     );
 };
-updatePageData.debounce = debounce(100, updatePageData);
-
-/** 根据比例更新图片类型 */
-export const updateImgType = (state: State, draftImg: ComicImg) => {
-  const { width, height, type } = draftImg;
-
-  if (!width || !height) return;
-
-  const imgRatio = width / height;
-  if (imgRatio <= state.proportion.单页比例) {
-    draftImg.type = imgRatio < state.proportion.条漫比例 ? 'vertical' : '';
-  } else {
-    draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
-  }
-
-  if (type === draftImg.type) {
-    updateDrag(state);
-    updateImgLoadType(state);
-    return;
-  }
-
-  updatePageData.debounce(state);
-};
-
-/** 处理显示窗口的长宽变化 */
-export const handleResize = (state: State, width: number, height: number) => {
-  if (!(width && height)) return;
-  state.proportion.单页比例 = Math.min(width / 2 / height, 1);
-  state.proportion.横幅比例 = width / height;
-  state.proportion.条漫比例 = state.proportion.单页比例 / 2;
-
-  state.imgList.forEach((img) => updateImgType(state, img));
-
-  state.isMobile = window.matchMedia('(max-width: 800px)').matches;
-};
-
-/** 切换页面填充 */
-export const switchFillEffect = () => {
-  setState((state) => {
-    // 如果当前页不是双页显示的就跳过，避免在显示跨页图的页面切换却没看到效果的疑惑
-    if (state.pageList[state.activePageIndex].length !== 2) return;
-
-    state.fillEffect[nowFillIndex()] = !state.fillEffect[nowFillIndex()];
-    updatePageData(state);
-  });
-};
-
-/** 切换卷轴模式 */
-export const switchScrollMode = () => {
-  zoom(100);
-  setOption((draftOption, state) => {
-    draftOption.scrollMode = !draftOption.scrollMode;
-    draftOption.onePageMode = draftOption.scrollMode;
-    updatePageData(state);
-  });
-  requestAnimationFrame(handleMangaFlowScroll);
-  // 切换卷轴模式后自动定位到对应页
-  if (store.option.scrollMode)
-    store.ref.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
-};
-
-/** 切换单双页模式 */
-export const switchOnePageMode = () => {
-  setOption((draftOption, state) => {
-    draftOption.onePageMode = !draftOption.onePageMode;
-    updatePageData(state);
-  });
-};
-
-/** 切换阅读方向 */
-export const switchDir = () => {
-  setOption((draftOption) => {
-    draftOption.dir = draftOption.dir !== 'rtl' ? 'rtl' : 'ltr';
-  });
-};
-
-/** 切换网格模式 */
-export const switchGridMode = () => {
-  setState((state) => {
-    state.gridMode = !state.gridMode;
-    if (state.zoom.scale !== 100) zoom(100);
-    state.page.anima = '';
-  });
-  // 切换网格模式后自动定位到对应页
-  if (store.gridMode)
-    store.ref.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
-};
+updatePageData.debounce = debounce(100, () => setState(updatePageData));
 
 /** 更新渲染页面相关变量 */
 export const updateRenderPage = (state: State, animation = false) => {

@@ -4,15 +4,14 @@ import type { State } from '..';
 import { setState, store } from '..';
 import { hotkeysMap } from './Hotkeys';
 import { zoom } from './Zoom';
+import { zoomScrollModeImg, updateRenderPage } from './Image';
 import {
-  zoomScrollModeImg,
-  switchFillEffect,
-  switchScrollMode,
-  switchOnePageMode,
   switchDir,
-  updateRenderPage,
+  switchFillEffect,
   switchGridMode,
-} from './Image';
+  switchOnePageMode,
+  switchScrollMode,
+} from './Switch';
 
 import classes from '../../../index.module.css';
 

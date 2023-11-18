@@ -5,3 +5,5 @@ export * from './Helper';
 export * from './Hotkeys';
 export * from './Pointer';
 export * from './Zoom';
+export * from './ImageSize';
+export * from './Switch';

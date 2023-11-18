@@ -6,13 +6,13 @@ import { setState, store } from '../hooks/useStore';
 import {
   bindRef,
   handleClick,
-  handleMangaFlowScroll,
   updateRenderPage,
   handlePinchZoom,
   handleZoomDrag,
   handleMangaFlowDrag,
   touches,
   handleObserver,
+  updateDrag,
 } from '../hooks/useStore/slice';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
 import type { UseDrag } from '../hooks/useDrag';
@@ -77,7 +77,7 @@ export const ComicImgFlow: Component = () => {
       data-hidden-mouse={!store.gridMode && hiddenMouse()}
       on:mousemove={onMouseMove}
       onTransitionEnd={handleTransitionEnd}
-      onScroll={handleMangaFlowScroll}
+      onScroll={() => setState(updateDrag)}
       style={{
         '--scale': store.zoom.scale / 100,
         '--zoom-x': `${store.zoom.offset.x || 0}px`,
