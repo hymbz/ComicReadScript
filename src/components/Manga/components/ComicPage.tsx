@@ -37,7 +37,7 @@ export const ComicPage: Component<ComicPageProps> = (props) => {
     const tip = getPageTip(props.index);
     return {
       '--tip': highlight ? `">    ${tip}    <"` : `"${tip}"`,
-      'box-shadow': highlight ? 'var(--text_secondary) 0 0 1em' : undefined,
+      'box-shadow': highlight ? 'var(--text-secondary) 0 0 1em' : undefined,
     };
   });
 

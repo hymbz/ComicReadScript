@@ -47,7 +47,7 @@
   width: 100%;
   height: var(--height);
 
-  background-color: var(--scrollbar_drag);
+  background-color: var(--scrollbar-drag);
   border-radius: 1em;
 }
 

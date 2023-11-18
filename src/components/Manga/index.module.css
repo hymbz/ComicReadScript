@@ -28,7 +28,7 @@
   outline: 0;
 
   & a {
-    color: var(--text_secondary);
+    color: var(--text-secondary);
   }
 
   &[data-mobile] {
@@ -38,7 +38,7 @@
 
 .beautifyScrollbar {
   /* 火狐的滚动条样式 */
-  scrollbar-color: var(--scrollbar_drag) transparent;
+  scrollbar-color: var(--scrollbar-drag) transparent;
   scrollbar-width: thin;
 
   /* chrome 的滚动条样式 */
@@ -52,7 +52,7 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--scrollbar_drag);
+    background: var(--scrollbar-drag);
   }
 }
 
@@ -68,12 +68,12 @@ blockquote {
 
   font-style: italic;
   line-height: 1.2em;
-  color: var(--text_secondary);
+  color: var(--text-secondary);
   text-align: start;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 
-  border-left: 0.25em solid var(--text_secondary, #607d8b);
+  border-left: 0.25em solid var(--text-secondary, #607d8b);
 }
 
 svg {

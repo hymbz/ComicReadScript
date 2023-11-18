@@ -52,7 +52,7 @@
   }
 
   &:hover {
-    background-color: var(--fab_hover, #78909c);
+    background-color: var(fab-hover, #78909c);
   }
 
   &:focus,

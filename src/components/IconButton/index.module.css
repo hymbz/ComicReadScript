@@ -26,16 +26,16 @@
 
   &:focus,
   &:hover {
-    background-color: var(--hover_bg_color, #fff3);
+    background-color: var(--hover-bg-color, #fff3);
   }
 
   &.enabled {
-    color: var(--text_bg, #121212);
+    color: var(--text-bg, #121212);
     background-color: var(--text, white);
 
     &:focus,
     &:hover {
-      background-color: var(--hover_bg_color_enable, #fffa);
+      background-color: var(--hover-bg-color-enable, #fffa);
     }
   }
 
@@ -71,7 +71,7 @@
 
     &::before {
       right: calc(100% + 0.5em);
-      border-right-color: var(--switch_bg, #6e6e6e);
+      border-right-color: var(--switch-bg, #6e6e6e);
       border-right-width: 0.5em;
     }
   }
@@ -81,7 +81,7 @@
 
     &::before {
       left: calc(100% + 0.5em);
-      border-left-color: var(--switch_bg, #6e6e6e);
+      border-left-color: var(--switch-bg, #6e6e6e);
       border-left-width: 0.5em;
     }
   }

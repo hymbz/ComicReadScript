@@ -24,7 +24,7 @@
   font-size: 1.2em;
   color: var(--text);
 
-  background-color: var(--page_bg);
+  background-color: var(--page-bg);
   border-radius: 0.3em;
   box-shadow:
     rgb(0 0 0 / 20%) 0 3px 1px -2px,
@@ -73,10 +73,10 @@
 
   font-size: 0.7em;
   line-height: 3em;
-  color: var(--text_secondary);
+  color: var(--text-secondary);
   text-align: center;
 
-  background-color: var(--page_bg);
+  background-color: var(--page-bg);
 }
 
 .SettingsItem {
@@ -110,7 +110,7 @@
   margin: 0.3em;
   padding: 0;
 
-  background-color: var(--switch_bg);
+  background-color: var(--switch-bg);
   border: 0;
   border-radius: 1em;
 }
@@ -133,7 +133,7 @@
 }
 
 .SettingsItemSwitch[data-checked="true"] {
-  background: var(--secondary_bg);
+  background: var(--secondary-bg);
 
   & .SettingsItemSwitchRound {
     transform: translateX(110%);
@@ -167,7 +167,7 @@
 
   font-size: 0.9em;
 
-  background-color: var(--hover_bg_color);
+  background-color: var(--hover-bg-color);
   border: none;
   border-radius: 5px;
   outline: none;

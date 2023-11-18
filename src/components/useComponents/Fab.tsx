@@ -1,4 +1,3 @@
-/* eslint-disable import/no-relative-packages */
 import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 import MdImageSearch from '@material-design-icons/svg/round/image_search.svg';
 import MdImportContacts from '@material-design-icons/svg/round/import_contacts.svg';
@@ -17,7 +16,7 @@ let mounted = false;
 export const useFab = async (initProps?: FabProps) => {
   await GM.addStyle(`
     #fab {
-      --text_bg: transparent;
+      --text-bg: transparent;
 
       position: fixed;
       right: 3vw;

@@ -13,7 +13,7 @@
   font-size: 0.9em;
   color: var(--text);
 
-  border-bottom: 1px solid var(--secondary_bg);
+  border-bottom: 1px solid var(--secondary-bg);
 
   & + & {
     margin-top: 0.5em;
@@ -39,7 +39,7 @@
 
   border-radius: 0.3em;
   outline: 1px solid;
-  outline-color: var(--secondary_bg);
+  outline-color: var(--secondary-bg);
 
   & > svg {
     display: none;
@@ -47,7 +47,7 @@
     height: 1em;
     margin-left: 0.4em;
 
-    color: var(--page_bg);
+    color: var(--page-bg);
 
     opacity: 0.5;
     background-color: var(--text);
@@ -90,7 +90,7 @@
     overflow-wrap: anywhere;
     white-space: pre-wrap;
 
-    background-color: var(--page_bg);
+    background-color: var(--page-bg);
   }
 
   & > div[title] {
@@ -100,7 +100,7 @@
 
     display: flex;
 
-    background-color: var(--page_bg);
+    background-color: var(--page-bg);
 
     transition: transform 100ms;
 

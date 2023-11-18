@@ -7,11 +7,11 @@ import { Toolbar } from './components/Toolbar';
 import { Scrollbar } from './components/Scrollbar';
 import { TouchArea } from './components/TouchArea';
 import { EndPage } from './components/EndPage';
+import { CssVar } from './components/CssVar';
 
 import { store, type State } from './hooks/useStore/index';
 import type { FillEffect } from './hooks/useStore/ImageState';
 import type { Option } from './hooks/useStore/OptionState';
-import { cssVar } from './hooks/useCssVar';
 import { useInit } from './hooks/useInit';
 import {
   focus,
@@ -80,28 +80,30 @@ export const Manga: Component<MangaProps> = (props) => {
   createEffect(() => props.show && focus());
 
   return (
-    <div
-      class={classes.root}
-      classList={{
-        [classes.hidden]: props.show === false,
-        [props.class ?? '']: !!props.class,
-        ...props.classList,
-      }}
-      ref={rootRef!}
-      style={cssVar()}
-      onWheel={handleWheel}
-      on:mousedown={handleMouseDown}
-      oncapture:keydown={handleKeyDown}
-      oncapture:keypress={stopPropagation}
-      oncapture:keyup={stopPropagation}
-      data-mobile={boolDataVal(store.isMobile)}
-      role="presentation"
-    >
-      <ComicImgFlow />
-      <Toolbar />
-      <Scrollbar />
-      <TouchArea />
-      <EndPage />
-    </div>
+    <>
+      <div
+        class={classes.root}
+        classList={{
+          [classes.hidden]: props.show === false,
+          [props.class ?? '']: !!props.class,
+          ...props.classList,
+        }}
+        ref={rootRef!}
+        onWheel={handleWheel}
+        on:mousedown={handleMouseDown}
+        oncapture:keydown={handleKeyDown}
+        oncapture:keypress={stopPropagation}
+        oncapture:keyup={stopPropagation}
+        data-mobile={boolDataVal(store.isMobile)}
+        role="presentation"
+      >
+        <ComicImgFlow />
+        <Toolbar />
+        <Scrollbar />
+        <TouchArea />
+        <EndPage />
+      </div>
+      <CssVar />
+    </>
   );
 };

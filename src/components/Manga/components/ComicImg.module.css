@@ -4,7 +4,7 @@
   max-height: 100%;
 
   object-fit: contain;
-  background-color: var(--hover_bg_color, #fff3);
+  background-color: var(--hover-bg-color, #fff3);
 
   &[data-fill="left"] {
     transform: translate(50%);
@@ -63,17 +63,17 @@
 
   :is(&[data-load-type="loading"], &[data-load-type="wait"])::after {
     content: "";
-    background-image: var(--MdCloudDownload);
+    background-image: var(--md-cloud-download);
   }
 
   &[src=""]::after {
     content: "";
-    background-image: var(--MdPhoto);
+    background-image: var(--md-photo);
   }
 
   &[data-load-type="error"]::after {
     content: "";
-    background-image: var(--MdImageNotSupported);
+    background-image: var(--md-image-not-supported);
   }
 }
 
@@ -176,7 +176,7 @@
   grid-auto-rows: auto;
 
   /* 卷轴模式下的图片间距 */
-  grid-row-gap: calc(var(--scrollModeSpacing) * 0.1em);
+  grid-row-gap: calc(var(--scroll-mode-spacing) * 0.1em);
   grid-template-rows: auto;
 
   & .page {
@@ -189,9 +189,9 @@
   & .img {
     display: unset;
 
-    width: calc(var(--scrollModeImgScale) * min(100%, var(--width, 100%)));
+    width: calc(var(--scroll-mode-img-scale) * min(100%, var(--width, 100%)));
     max-width: unset;
-    height: calc(var(--scrollModeImgScale) * var(--height, 0)) !important;
+    height: calc(var(--scroll-mode-img-scale) * var(--height, 0)) !important;
     max-height: unset;
 
     object-fit: contain;
