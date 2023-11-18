@@ -139,23 +139,24 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
 export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
-  if (!store.show.endPage && store.scrollLock) return;
-
+  if (store.scrollLock) return;
   const isWheelDown = e.deltaY > 0;
 
   if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
 
-  // 卷轴模式下的缩放
-  if (store.option.scrollMode && (e.altKey || e.ctrlKey)) {
+  // 卷轴模式下的图片缩放
+  if (
+    (e.ctrlKey || e.altKey) &&
+    store.option.scrollMode &&
+    store.zoom.scale === 100
+  ) {
     e.preventDefault();
-    zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
-    return;
+    return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
   }
 
-  // 翻页模式下的缩放
-  if (e.altKey || e.ctrlKey || store.zoom.scale !== 100) {
-    zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
-    return;
+  if (e.ctrlKey || e.altKey || store.zoom.scale !== 100) {
+    e.preventDefault();
+    return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
   }
 
   return turnPage(isWheelDown ? 'next' : 'prev');

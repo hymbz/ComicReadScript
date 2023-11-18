@@ -1,11 +1,11 @@
 ![页面填充示例](/docs/images/页面填充示例.webp)
 
 <p align="center">
-  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread"><img src="https://img.shields.io/greasyfork/v/374903"></a>
-  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread"><img src="https://img.shields.io/greasyfork/dt/374903"></a>
-  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread/feedback"><img src="https://img.shields.io/greasyfork/rating-count/374903"></a>
-  <a href="https://github.com/hymbz/ComicReadScript/issues"><img src="https://img.shields.io/github/issues/hymbz/ComicReadScript"></a>
-  <a href="https://hosted.weblate.org/engage/comic_read_script/-/en/"><img src="https://hosted.weblate.org/widget/comic_read_script/main/en/svg-badge.svg" alt="Translation status" /></a>
+  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread" target="_blank"><img src="https://img.shields.io/greasyfork/v/374903"></a>
+  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread" target="_blank"><img src="https://img.shields.io/greasyfork/dt/374903"></a>
+  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread/feedback" target="_blank"><img src="https://img.shields.io/greasyfork/rating-count/374903"></a>
+  <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank"><img src="https://img.shields.io/github/issues/hymbz/ComicReadScript"></a>
+  <a href="https://hosted.weblate.org/engage/comic_read_script/-/en/" target="_blank"><img src="https://hosted.weblate.org/widget/comic_read_script/main/en/svg-badge.svg" alt="Translation status" /></a>
 </p>
 
 ## 简介
@@ -21,7 +21,7 @@
 <blockquote>
   <p>
     对你有帮助的话就点个⭐Star吧
-    <a href="https://github.com/hymbz/ComicReadScript"><img src="https://img.shields.io/github/stars/hymbz/ComicReadScript?style=social"></a>
+    <a href="https://github.com/hymbz/ComicReadScript" target="_blank"><img src="https://img.shields.io/github/stars/hymbz/ComicReadScript?style=social"></a>
   </p>
 </blockquote>
 

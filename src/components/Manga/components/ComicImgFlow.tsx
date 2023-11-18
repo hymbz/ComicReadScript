@@ -71,6 +71,7 @@ export const ComicImgFlow: Component = () => {
         store.option.disableZoom || store.option.scrollMode,
       )}
       data-grid-mode={boolDataVal(store.gridMode)}
+      data-scale-mode={boolDataVal(store.zoom.scale !== 100)}
       data-vertical={boolDataVal(store.page.vertical)}
       data-animation={store.page.anima}
       data-hidden-mouse={!store.gridMode && hiddenMouse()}

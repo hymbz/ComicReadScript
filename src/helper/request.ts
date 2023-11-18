@@ -51,19 +51,21 @@ export const request = async <T = any>(
   }
 };
 
-/** 同时向多个 api 发起请求 */
-export const tryApi = async <T = any>(
+/** 轮流向多个 api 发起请求 */
+export const eachApi = async <T = any>(
   url: string,
   baseUrlList: string[],
   details?: RequestDetails,
-) =>
-  Promise.any(
-    baseUrlList.map((baseUrl) =>
-      request<T>(`${baseUrl}${url}`, { ...details, noTip: true }),
-    ),
-  ).catch(() => {
-    const errorText = details?.errorText ?? t('alert.comic_load_error');
-    if (!details?.noTip) toast.error(errorText);
-    log.error('所有 api 请求均失败', url, baseUrlList, details);
-    throw new Error(errorText);
-  });
+) => {
+  for (let i = 0; i < baseUrlList.length; i++) {
+    const baseUrl = baseUrlList[i];
+    try {
+      return await request<T>(`${baseUrl}${url}`, { ...details, noTip: true });
+    } catch (_) {}
+  }
+
+  const errorText = details?.errorText ?? t('alert.comic_load_error');
+  if (!details?.noTip) toast.error(errorText);
+  log.error('所有 api 请求均失败', url, baseUrlList, details);
+  throw new Error(errorText);
+};
