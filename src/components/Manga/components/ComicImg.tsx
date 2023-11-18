@@ -1,10 +1,10 @@
-import type { Component } from 'solid-js';
+import type { Component, JSX } from 'solid-js';
 import { createMemo, onCleanup, onMount } from 'solid-js';
 
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
 import { setState, store } from '../hooks/useStore';
-import { updateImgLoadType, windowHeight } from '../hooks/useStore/slice';
+import { updateImgLoadType } from '../hooks/useStore/slice';
 
 import classes from '../index.module.css';
 
@@ -68,14 +68,19 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
     return img().src;
   });
 
+  const style = createMemo<JSX.CSSProperties | undefined>(() => {
+    if (!store.option.scrollMode) return undefined;
+    return {
+      '--width': `${img().width}px`,
+      'aspect-ratio': `${img().width} / ${img().height}`,
+    };
+  });
+
   return (
     <img
       ref={ref!}
       class={classes.img}
-      style={{
-        '--width': img()?.width ? `${img().width}px` : undefined,
-        '--height': `${img()?.height || windowHeight()}px`,
-      }}
+      style={style()}
       src={src()}
       alt={`${props.index + 1}`}
       data-fill={props.index === -1 ? 'page' : props.fill}

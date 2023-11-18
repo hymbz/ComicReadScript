@@ -62,7 +62,7 @@
 
   background-color: var(--secondary);
 
-  transition: transform 1000ms;
+  transition: transform 1s;
 
   &[data-type="loaded"] {
     transform: scaleY(0);
@@ -185,6 +185,19 @@
     &::after {
       left: unset;
       border: 0.3em solid #0000;
+    }
+  }
+
+  /* 将 scaleY 改成 scaleX */
+  & .scrollbarPage {
+    transform: scaleX(1);
+
+    &[data-type="loaded"] {
+      transform: scaleX(0);
+    }
+
+    &[data-translation-type] {
+      transform: scaleX(1);
     }
   }
 }

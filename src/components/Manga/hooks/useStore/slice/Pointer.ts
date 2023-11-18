@@ -139,8 +139,8 @@ export const handleMangaFlowDrag: UseDrag = ({
 
       // 判断滑动方向
       let slideDir: 'vertical' | 'horizontal' | undefined;
-      if (Math.abs(dx) > 5 && isEqual(dy, 0, 3)) slideDir = 'horizontal';
-      if (Math.abs(dy) > 5 && isEqual(dx, 0, 3)) slideDir = 'vertical';
+      if (Math.abs(dx) > 5 && isEqual(dy, 0, 5)) slideDir = 'horizontal';
+      if (Math.abs(dy) > 5 && isEqual(dx, 0, 5)) slideDir = 'vertical';
       if (!slideDir) return;
 
       setState((state) => {
