@@ -16,16 +16,13 @@
   color: white;
   letter-spacing: 0.5em;
 
-  visibility: hidden;
+  opacity: 0;
 
-  &[data-vert="true"] {
-    flex-direction: column !important;
+  transition: opacity 400ms;
+
+  &[data-show] {
+    opacity: 1;
   }
-}
-
-/* 显示点击区域时 */
-.touchAreaRoot[data-show="true"] {
-  visibility: visible;
 
   & .touchArea {
     display: flex;
@@ -59,6 +56,10 @@
     &[data-area="NEXT"]::after {
       content: var(--i18n-touch-area-next);
     }
+  }
+
+  &[data-vert="true"] {
+    flex-direction: column !important;
   }
 }
 

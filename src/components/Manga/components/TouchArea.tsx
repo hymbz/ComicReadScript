@@ -54,7 +54,7 @@ export const TouchArea: Component = () => {
       ref={bindRef('touchArea')}
       class={classes.touchAreaRoot}
       dir={dir()}
-      data-show={store.show.touchArea}
+      data-show={boolDataVal(store.show.touchArea)}
       data-area={areaType()}
       data-turn-page={boolDataVal(
         store.option.clickPageTurn.enabled && !store.option.scrollMode,

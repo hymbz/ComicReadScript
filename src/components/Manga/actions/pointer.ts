@@ -21,27 +21,18 @@ const findClickEle = (eleList: HTMLCollection, { x, y }: MouseEvent) =>
 export const handlePageClick = (e: MouseEvent) => {
   const targetArea = findClickEle(refs.touchArea.children, e);
   if (!targetArea) return;
-
   const areaName = targetArea.getAttribute('data-area') as Area | undefined;
-  switch (areaName) {
-    case 'menu':
-    case 'MENU': {
-      return setState((state) => {
-        state.show.scrollbar = !state.show.scrollbar;
-        state.show.toolbar = !state.show.toolbar;
-      });
-    }
-    case 'prev':
-    case 'PREV': {
-      setState(resetUI);
-      return store.option.clickPageTurn.enabled && turnPage('prev');
-    }
-    case 'next':
-    case 'NEXT': {
-      setState(resetUI);
-      return store.option.clickPageTurn.enabled && turnPage('next');
-    }
-  }
+  if (!areaName) return;
+
+  if (areaName === 'menu' || areaName === 'MENU')
+    return setState((state) => {
+      state.show.scrollbar = !state.show.scrollbar;
+      state.show.toolbar = !state.show.toolbar;
+    });
+
+  if (!store.option.clickPageTurn.enabled || store.zoom.scale !== 100) return;
+  setState(resetUI);
+  turnPage(areaName.toLowerCase() as 'prev' | 'next');
 };
 
 /** 网格模式下点击图片跳到对应页 */
@@ -71,11 +62,10 @@ export const doubleClickZoom = (e?: MouseEvent) => {
     });
   });
 };
-export const handleClick = useDoubleClick((e) => {
-  if (store.zoom.scale !== 100) return;
-  if (store.gridMode) return handleGridClick(e);
-  handlePageClick(e);
-}, doubleClickZoom);
+export const handleClick = useDoubleClick(
+  (e) => (store.gridMode ? handleGridClick(e) : handlePageClick(e)),
+  doubleClickZoom,
+);
 
 /** 判断翻页方向 */
 const getTurnPageDir = (startTime: number): undefined | 'prev' | 'next' => {

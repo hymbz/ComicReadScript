@@ -66,9 +66,9 @@ export const CssVar: Component = () => {
 
   const i18n = createMemo(
     () => `
-      --i18n-touch-area-prev: ${t('touch_area.prev')};
-      --i18n-touch-area-next: ${t('touch_area.next')};
-      --i18n-touch-area-menu: ${t('touch_area.menu')};`,
+      --i18n-touch-area-prev: "${t('touch_area.prev')}";
+      --i18n-touch-area-next: "${t('touch_area.next')}";
+      --i18n-touch-area-menu: "${t('touch_area.menu')}";`,
   );
 
   return (
