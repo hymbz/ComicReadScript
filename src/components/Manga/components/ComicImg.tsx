@@ -1,10 +1,8 @@
 import type { Component, JSX } from 'solid-js';
 import { createMemo, onCleanup, onMount } from 'solid-js';
 
-import { t } from 'helper/i18n';
-import { log } from 'helper/logger';
 import { setState, store } from '../store';
-import { updateImgLoadType } from '../actions';
+import { handleImgError, updateImgLoadType, updateImgSize } from '../actions';
 
 import classes from '../index.module.css';
 
@@ -19,6 +17,8 @@ const handleImgLoaded = (i: number, e: HTMLImageElement) => {
     const img = state.imgList[i];
     if (!img) return;
     if (img.loadType === 'error' && e.src !== img.src) return;
+    if (!(img.width && img.height))
+      updateImgSize(i, e.naturalWidth, e.naturalHeight);
     img.loadType = 'loaded';
     updateImgLoadType(state);
     state.prop.Loading?.(state.imgList, img);
@@ -26,20 +26,6 @@ const handleImgLoaded = (i: number, e: HTMLImageElement) => {
     // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
     // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
     e.decode();
-  });
-};
-
-/** 图片加载出错的回调 */
-const handleImgError = (i: number, e: HTMLImageElement) => {
-  // 跳过因为 src 为空导致的错误
-  if (e.getAttribute('src') === '') return;
-  setState((state) => {
-    const img = state.imgList[i];
-    if (!img) return;
-    img.loadType = 'error';
-    updateImgLoadType(state);
-    log.error(t('alert.img_load_failed'), e);
-    state.prop.Loading?.(state.imgList, img);
   });
 };
 

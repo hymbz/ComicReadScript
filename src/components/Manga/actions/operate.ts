@@ -5,7 +5,8 @@ import { store, setState, refs } from '../store';
 import { zoom } from './zoom';
 import { setOption } from './helper';
 import { hotkeysMap } from './hotkeys';
-import { updateRenderPage, zoomScrollModeImg } from './image';
+import { zoomScrollModeImg } from './image';
+import { updateRenderPage } from './show';
 import {
   switchFillEffect,
   switchScrollMode,

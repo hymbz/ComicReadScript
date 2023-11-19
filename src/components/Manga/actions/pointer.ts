@@ -4,7 +4,7 @@ import { useDoubleClick } from '../hooks/useDoubleClick';
 import type { UseDrag } from '../hooks/useDrag';
 import { store, setState, refs } from '../store';
 import { resetUI } from './helper';
-import { updateRenderPage } from './image';
+import { updateRenderPage } from './show';
 import { turnPage, turnPageAnimation } from './operate';
 import { zoom } from './zoom';
 

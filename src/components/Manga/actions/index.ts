@@ -7,3 +7,4 @@ export * from './pointer';
 export * from './zoom';
 export * from './imageSize';
 export * from './switch';
+export * from './show';

@@ -24,7 +24,7 @@ export const switchScrollMode = () => {
     updatePageData(state);
   });
   setState(updateDrag);
-  // 切换卷轴模式后自动定位到对应页
+  // 切换到卷轴模式后自动定位到对应页
   if (store.option.scrollMode)
     refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
 };
@@ -51,7 +51,10 @@ export const switchGridMode = () => {
     if (state.zoom.scale !== 100) zoom(100);
     state.page.anima = '';
   });
-  // 切换网格模式后自动定位到对应页
+  // 切换到网格模式后自动定位到当前页
   if (store.gridMode)
-    refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
+    refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView({
+      block: 'center',
+      inline: 'center',
+    });
 };

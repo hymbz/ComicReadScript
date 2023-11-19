@@ -1,10 +1,10 @@
 import { createEffect, createRoot, on } from 'solid-js';
-import { plimit, sleep } from 'helper';
+import { plimit } from 'helper';
 import type { State } from '../store';
 import { setState, store } from '../store';
 import { updateDrag } from './scrollbar';
 import { isWideImg } from '../handleComicData';
-import { updatePageData } from './image';
+import { handleImgError, updatePageData } from './image';
 
 /** 根据比例更新图片类型 */
 export const updateImgType = (state: State, draftImg: ComicImg) => {
@@ -54,8 +54,8 @@ const checkImgTypeCount = (
   return false;
 };
 
-/** 更新图片图片宽高 */
-const updateImgSize = (i: number, width: number, height: number) => {
+/** 更新图片尺寸 */
+export const updateImgSize = (i: number, width: number, height: number) => {
   setState((state) => {
     const img = state.imgList[i];
     if (!img) return;
@@ -93,24 +93,55 @@ const updateImgSize = (i: number, width: number, height: number) => {
   });
 };
 
-/** 更新所有图片的宽高 */
-const updateAllImgSize = async (): Promise<void> => {
-  const imgList = store.imgList.filter((img) => !(img.width || img.height));
-  if (imgList.length === 0) return;
+/** 等待图片的真实尺寸被加载出来 */
+const waitImgSizeLoaded = (
+  img: HTMLImageElement,
+  resolve: (value: unknown) => void,
+): void => {
+  if (img.naturalWidth && img.naturalHeight) return resolve(null);
+  setTimeout(waitImgSizeLoaded, 30, img, resolve);
+};
 
+let continueRun = false;
+let timeoutId: number | undefined;
+/** 更新所有图片的尺寸 */
+const updateAllImgSize = async (): Promise<void> => {
   await plimit(
-    imgList.map(({ src }, i) => async () => {
-      const img = new Image();
-      img.src = src;
-      while (!(img.naturalWidth || img.naturalHeight)) await sleep(30);
-      updateImgSize(i, img.naturalWidth, img.naturalHeight);
+    store.imgList.map((img, i) => async () => {
+      if (img.loadType !== 'wait' || img.width || img.height || !img.src)
+        return;
+
+      const image = new Image();
+
+      try {
+        await new Promise((resolve, reject) => {
+          image.onerror = reject;
+          image.src = img.src;
+          waitImgSizeLoaded(image, resolve);
+        });
+        updateImgSize(i, image.naturalWidth, image.naturalHeight);
+      } catch (_) {
+        handleImgError(i, image);
+      }
     }),
     undefined,
     Math.max(store.option.preloadPageNum, 1),
   );
-  return updateAllImgSize();
+  if (continueRun) {
+    continueRun = false;
+    timeoutId = window.setTimeout(updateAllImgSize);
+  } else timeoutId = undefined;
 };
 
 createRoot(() => {
-  createEffect(on(() => store.imgList, updateAllImgSize));
+  createEffect(
+    on(
+      () => store.imgList,
+      () => {
+        if (continueRun) return;
+        if (timeoutId) continueRun = true;
+        else timeoutId = window.setTimeout(updateAllImgSize);
+      },
+    ),
+  );
 });

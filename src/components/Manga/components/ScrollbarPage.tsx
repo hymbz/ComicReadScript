@@ -3,6 +3,7 @@ import { createMemo } from 'solid-js';
 
 import { store } from '../store';
 import { contentHeight, windowHeight } from '../actions';
+import { boolDataVal } from '../../../helper';
 
 import classes from '../index.module.css';
 
@@ -15,7 +16,7 @@ const ScrollbarImg: Component<{ index: number }> = (props) => {
       class={classes.scrollbarPage}
       data-index={props.index}
       data-type={img()?.loadType}
-      data-null={img()?.width && img()?.height ? undefined : ''}
+      data-null={boolDataVal(!img()?.src)}
       data-translation-type={img()?.translationType}
     />
   );
