@@ -110,7 +110,7 @@ import { debounce } from 'throttle-debounce';
       });
     };
 
-    const blobUrlMap: Map<string, string> = new Map();
+    const blobUrlMap = new Map<string, string>();
     // 处理那些 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片
     const handleBlobImg = async (e: HTMLImageElement): Promise<string> => {
       if (blobUrlMap.has(e.src)) return blobUrlMap.get(e.src)!;
@@ -225,22 +225,34 @@ import { debounce } from 'throttle-debounce';
         return;
       }
 
+      /** 找出应该是漫画图片，且未触发过懒加载的图片个数 */
+      const expectCount = querySelectorAll<HTMLImageElement>(
+        options.selector,
+      ).filter((e) => !imgEleList.includes(e) && !triggedImgList.has(e)).length;
+      const _imgEleList = expectCount
+        ? [...imgEleList, ...new Array<null>(expectCount)]
+        : imgEleList;
+
       let isEdited = false;
       await plimit(
-        imgEleList.map((e, i) => async () => {
-          const newUrl = await handleBlobImg(e);
+        _imgEleList.map((e, i) => async () => {
+          const newUrl = e ? await handleBlobImg(e) : '';
           if (newUrl === mangaProps.imgList[i]) return;
 
           if (!isEdited) isEdited = true;
           _setManga('imgList', i, newUrl);
         }),
       );
+      // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估数量，需要在这里删掉多余的页数
+      if (mangaProps.imgList.length !== _imgEleList.length)
+        _setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
       if (isEdited) saveImgEleSelector(imgEleList);
     };
 
     init(async () => {
       if (!imgEleList) {
         imgEleList = [];
+        // TODO: 使用 MutationObserver 重构
         // 为保证兼容，只能简单粗暴的不断检查
         loop(triggerLazyLoad, 500);
         loop(updateImgList, 500);
