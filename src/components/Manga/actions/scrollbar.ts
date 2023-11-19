@@ -1,16 +1,16 @@
 import { createEffect, createRoot, on } from 'solid-js';
 
 import { t } from 'helper/i18n';
-import { resetUI } from './Helper';
-import type { UseDrag, PointerState } from '../../useDrag';
-import type { State } from '..';
-import { setState, store } from '..';
+import type { PointerState, UseDrag } from '../hooks/useDrag';
+import type { State } from '../store';
+import { store, setState, refs } from '../store';
+import { resetUI } from './helper';
 
 /** 漫画流的总高度 */
-export const contentHeight = () => store.ref.mangaFlow.scrollHeight;
+export const contentHeight = () => refs.mangaFlow.scrollHeight;
 
 /** 能显示出漫画的高度 */
-export const windowHeight = () => store.ref.root.offsetHeight ?? 0;
+export const windowHeight = () => refs.root.offsetHeight ?? 0;
 
 /** 更新滚动条滑块的高度和所处高度 */
 export const updateDrag = (state: State) => {
@@ -19,7 +19,7 @@ export const updateDrag = (state: State) => {
     state.scrollbar.dragTop = 0;
     return;
   }
-  state.scrollbar.dragTop = store.ref.mangaFlow.scrollTop / contentHeight();
+  state.scrollbar.dragTop = refs.mangaFlow.scrollTop / contentHeight();
   state.scrollbar.dragHeight =
     windowHeight() / (contentHeight() || windowHeight());
 };
@@ -102,7 +102,7 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
   // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
   if (type === 'up') return;
 
-  if (!store.ref.mangaFlow) return;
+  if (!refs.mangaFlow) return;
 
   const scrollbarDom = e.target as HTMLElement;
 
@@ -116,7 +116,7 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
       // 处理超出范围的情况
       if (top < 0) top = 0;
       else if (top > 1) top = 1;
-      store.ref.mangaFlow.scrollTo({
+      refs.mangaFlow.scrollTo({
         top: top * contentHeight(),
         behavior: 'instant',
       });
@@ -124,7 +124,7 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
       // 确保滚动条的中心会在点击位置
       top -= store.scrollbar.dragHeight / 2;
       startTop = top;
-      store.ref.mangaFlow.scrollTo({
+      refs.mangaFlow.scrollTo({
         top: top * contentHeight(),
         behavior: 'smooth',
       });

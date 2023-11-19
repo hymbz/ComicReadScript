@@ -1,10 +1,10 @@
 import { For, type Component, createMemo } from 'solid-js';
 
 import { boolDataVal } from 'helper';
-import { store } from '../hooks/useStore';
+import { store } from '../store';
 
 import classes from '../index.module.css';
-import { bindRef } from '../hooks/useStore/slice';
+import { bindRef } from '../actions';
 
 // 用大写表示要在此区块上显示提示
 export type Area = 'prev' | 'menu' | 'next' | 'PREV' | 'MENU' | 'NEXT';

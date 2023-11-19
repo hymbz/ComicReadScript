@@ -6,11 +6,11 @@ import {
   createMemo,
 } from 'solid-js';
 import { lang, t } from 'helper/i18n';
-import { setState, store } from '../..';
+import { store, setState } from '../../store';
 import { createOptions, setMessage } from './helper';
 import { getValidTranslators, selfhostedTranslation } from './selfhosted';
 import { cotransTranslation, cotransTranslators } from './cotrans';
-import { setOption } from '../Helper';
+import { setOption } from '../helper';
 
 declare const toast: // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 typeof import('components/Toast/toast').toast | undefined;

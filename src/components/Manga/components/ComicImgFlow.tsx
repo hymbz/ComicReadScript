@@ -2,7 +2,7 @@ import type { Component } from 'solid-js';
 import { Index, onCleanup, onMount } from 'solid-js';
 
 import { boolDataVal } from 'helper';
-import { setState, store } from '../hooks/useStore';
+import { refs, setState, store } from '../store';
 import {
   bindRef,
   handleClick,
@@ -13,7 +13,7 @@ import {
   touches,
   handleObserver,
   updateDrag,
-} from '../hooks/useStore/slice';
+} from '../actions';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
 import type { UseDrag } from '../hooks/useDrag';
 import { useDrag } from '../hooks/useDrag';
@@ -32,10 +32,10 @@ export const ComicImgFlow: Component = () => {
   };
 
   onMount(() => {
-    useDrag({ ref: store.ref.mangaFlow, handleDrag, handleClick, touches });
+    useDrag({ ref: refs.mangaFlow, handleDrag, handleClick, touches });
     setState((state) => {
       state.observer = new IntersectionObserver(handleObserver, {
-        root: store.ref.mangaFlow,
+        root: refs.mangaFlow,
         threshold: 0.01,
       });
     });
@@ -48,7 +48,7 @@ export const ComicImgFlow: Component = () => {
   });
 
   const handleTransitionEnd = () => {
-    if (store.dragMode) return;
+    if (store.isDragMode) return;
     setState((state) => {
       if (store.zoom.scale === 100) updateRenderPage(state, true);
       else state.page.anima = '';

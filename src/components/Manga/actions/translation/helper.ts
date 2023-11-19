@@ -1,5 +1,5 @@
 import { t } from 'helper/i18n';
-import { setState, store } from '../..';
+import { setState, store } from '../../store';
 
 export type TaskState = {
   state: 'saved' | 'finished' | 'error' | 'error-lang';

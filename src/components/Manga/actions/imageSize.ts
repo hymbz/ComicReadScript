@@ -1,10 +1,10 @@
 import { createEffect, createRoot, on } from 'solid-js';
 import { plimit, sleep } from 'helper';
-import type { State } from '..';
-import { setState, store } from '..';
-import { updateDrag } from './Scrollbar';
-import { isWideImg } from '../../../handleComicData';
-import { updatePageData } from './Image';
+import type { State } from '../store';
+import { setState, store } from '../store';
+import { updateDrag } from './scrollbar';
+import { isWideImg } from '../handleComicData';
+import { updatePageData } from './image';
 
 /** 根据比例更新图片类型 */
 export const updateImgType = (state: State, draftImg: ComicImg) => {
@@ -106,7 +106,7 @@ const updateAllImgSize = async (): Promise<void> => {
       updateImgSize(i, img.naturalWidth, img.naturalHeight);
     }),
     undefined,
-    store.option.preloadPageNum,
+    Math.max(store.option.preloadPageNum, 1),
   );
   return updateAllImgSize();
 };

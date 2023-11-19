@@ -2,11 +2,11 @@ import { debounce } from 'throttle-debounce';
 import { createEffect, createMemo, createRoot, on } from 'solid-js';
 
 import { clamp } from 'helper';
-import type { State } from '..';
-import { store, setState } from '..';
-import { findFillIndex, handleComicData } from '../../../handleComicData';
-import { contentHeight, updateDrag } from './Scrollbar';
-import { setOption } from './Helper';
+import { findFillIndex, handleComicData } from '../handleComicData';
+import type { State } from '../store';
+import { store, setState, refs } from '../store';
+import { contentHeight, updateDrag } from './scrollbar';
+import { setOption } from './helper';
 
 export const { activeImgIndex, nowFillIndex, activePage, preloadNum } =
   createRoot(() => {
@@ -87,7 +87,7 @@ export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
     draftOption.scrollModeImgScale = clamp(0.1, newVal, 3);
   });
   // 在调整图片缩放后使当前滚动进度保持不变
-  store.ref.mangaFlow.scrollTo({
+  refs.mangaFlow.scrollTo({
     top: contentHeight() * store.scrollbar.dragTop,
     behavior: 'instant',
   });
@@ -187,7 +187,7 @@ createRoot(() => {
 
       if (store.option.scrollMode) return;
       // 在翻页时重新计算要渲染的页面
-      if (!store.dragMode) setState(updateRenderPage);
+      if (!store.isDragMode) setState(updateRenderPage);
     }),
   );
 });

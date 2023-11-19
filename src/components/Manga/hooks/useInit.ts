@@ -1,14 +1,19 @@
+/* eslint-disable solid/reactivity */
 import { debounce, throttle } from 'throttle-debounce';
 import { createEffect, onCleanup } from 'solid-js';
 
 import { assign, isEqualArray } from 'helper';
 import type { MangaProps } from '..';
-import { store, setState } from './useStore';
-import { updatePageData, handleResize, focus } from './useStore/slice';
-import type { Option } from './useStore/OptionState';
+import { refs, setState, store } from '../store';
+import {
+  defaultHotkeys,
+  focus,
+  handleResize,
+  updatePageData,
+} from '../actions';
+import type { Option } from '../store/option';
 import { autoCloseFill } from '../handleComicData';
 import { playAnimation } from '../helper';
-import { defaultHotkeys } from './useStore/OtherState';
 
 const createComicImg = (url: string): ComicImg => ({
   type: '',
@@ -17,12 +22,7 @@ const createComicImg = (url: string): ComicImg => ({
 });
 
 /** 初始化 */
-export const useInit = (props: MangaProps, root: HTMLElement) => {
-  // 绑定 rootRef
-  setState((state) => {
-    state.ref.root = root;
-  });
-
+export const useInit = (props: MangaProps) => {
   // 初始化配置
   createEffect(() => {
     setState((state) => {
@@ -45,18 +45,18 @@ export const useInit = (props: MangaProps, root: HTMLElement) => {
     }),
   );
   // 初始化页面比例
-  setState((state) => {
-    handleResize(state, root.scrollWidth, root.scrollHeight);
-  });
+  setState((state) =>
+    handleResize(state, refs.root.scrollWidth, refs.root.scrollHeight),
+  );
   resizeObserver.disconnect();
-  resizeObserver.observe(root);
+  resizeObserver.observe(refs.root);
   onCleanup(() => resizeObserver.disconnect());
 
   createEffect(() => {
     setState((state) => {
       state.prop.Exit = props.onExit
         ? (isEnd?: boolean | Event) => {
-            playAnimation(store.ref.exit);
+            playAnimation(refs.exit);
             props.onExit?.(!!isEnd);
             if (isEnd) state.activePageIndex = 0;
             state.show.endPage = undefined;
@@ -64,13 +64,13 @@ export const useInit = (props: MangaProps, root: HTMLElement) => {
         : undefined;
       state.prop.Prev = props.onPrev
         ? () => {
-            playAnimation(store.ref.prev);
+            playAnimation(refs.prev);
             props.onPrev?.();
           }
         : undefined;
       state.prop.Next = props.onNext
         ? () => {
-            playAnimation(store.ref.next);
+            playAnimation(refs.next);
             props.onNext?.();
           }
         : undefined;

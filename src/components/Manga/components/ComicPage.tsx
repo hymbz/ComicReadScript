@@ -1,7 +1,7 @@
 import { For, type Component, createMemo } from 'solid-js';
 import { boolDataVal, isEqualArray } from '../../../helper';
-import { store } from '../hooks/useStore';
-import { getPageTip } from '../hooks/useStore/slice';
+import { store } from '../store';
+import { getPageTip } from '../actions';
 import type { ComicImgProps } from './ComicImg';
 import { ComicImg } from './ComicImg';
 

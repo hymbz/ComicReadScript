@@ -3,16 +3,12 @@ import { createMemo, Show } from 'solid-js';
 import { t } from 'helper/i18n';
 import { SettingsItemSwitch } from './SettingsItemSwitch';
 import { SettingsItemSelect } from './SettingsItemSelect';
-import {
-  activeImgIndex,
-  createStateSetFn,
-  setOption,
-} from '../hooks/useStore/slice';
+import { activeImgIndex, createStateSetFn, setOption } from '../actions';
 import {
   setImgTranslationEnbale,
   translatorOptions,
-} from '../hooks/useStore/slice/Translation';
-import { setState, store } from '../hooks/useStore';
+} from '../actions/translation';
+import { setState, store } from '../store';
 
 import classes from '../index.module.css';
 import { SettingsShowItem } from './SettingsShowItem';

@@ -18,8 +18,8 @@ import {
   switchDir,
   updateImgLoadType,
   zoomScrollModeImg,
-} from './hooks/useStore/slice';
-import { setState, store } from './hooks/useStore';
+} from './actions';
+import { setState, store } from './store';
 
 import classes from './index.module.css';
 import { SettingsItemNumber } from './components/SettingsItemNumber';

@@ -2,13 +2,9 @@ import type { Component } from 'solid-js';
 import { createSignal, createMemo, Show, For } from 'solid-js';
 import { debounce } from 'throttle-debounce';
 
-import { store } from '../hooks/useStore';
+import { store } from '../store';
 import { useDrag } from '../hooks/useDrag';
-import {
-  getPageTip,
-  getScrollPosition,
-  handleScrollbarDrag,
-} from '../hooks/useStore/slice';
+import { getPageTip, getScrollPosition, handleScrollbarDrag } from '../actions';
 
 import { ScrollbarPage } from './ScrollbarPage';
 
@@ -68,7 +64,7 @@ export const Scrollbar: Component = () => {
       class={classes.scrollbar}
       style={{
         'pointer-events':
-          penetrate() || store.dragMode || store.gridMode ? 'none' : 'auto',
+          penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
       }}
       role="scrollbar"
       tabIndex={-1}

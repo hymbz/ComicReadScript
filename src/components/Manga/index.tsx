@@ -9,16 +9,17 @@ import { TouchArea } from './components/TouchArea';
 import { EndPage } from './components/EndPage';
 import { CssVar } from './components/CssVar';
 
-import { store, type State } from './hooks/useStore/index';
-import type { FillEffect } from './hooks/useStore/ImageState';
-import type { Option } from './hooks/useStore/OptionState';
+import { store, type State } from './store/index';
+import type { FillEffect } from './store/image';
+import type { Option } from './store/option';
 import { useInit } from './hooks/useInit';
 import {
+  bindRef,
   focus,
   handleKeyDown,
   handleMouseDown,
   handleWheel,
-} from './hooks/useStore/slice';
+} from './actions';
 import { stopPropagation } from './helper';
 
 import classes, { css as style } from './index.module.css';
@@ -73,9 +74,7 @@ export interface MangaProps {
 
 /** 漫画组件 */
 export const Manga: Component<MangaProps> = (props) => {
-  let rootRef: HTMLDivElement;
-
-  onMount(() => useInit(props, rootRef));
+  onMount(() => useInit(props));
 
   createEffect(() => props.show && focus());
 
@@ -88,7 +87,7 @@ export const Manga: Component<MangaProps> = (props) => {
           [props.class ?? '']: !!props.class,
           ...props.classList,
         }}
-        ref={rootRef!}
+        ref={bindRef('root')}
         onWheel={handleWheel}
         on:mousedown={handleMouseDown}
         oncapture:keydown={handleKeyDown}

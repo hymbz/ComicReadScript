@@ -3,10 +3,10 @@ import { For, createEffect } from 'solid-js';
 
 import { boolDataVal } from 'helper';
 import { defaultButtonList } from '../defaultButtonList';
-import { store } from '../hooks/useStore';
+import { store } from '../store';
 
 import classes from '../index.module.css';
-import { focus } from '../hooks/useStore/slice';
+import { focus } from '../actions';
 
 /** 左侧工具栏 */
 export const Toolbar: Component = () => {
@@ -20,7 +20,7 @@ export const Toolbar: Component = () => {
       // 移动端开启网格模式后关闭工具栏
       data-close={boolDataVal(store.isMobile && store.gridMode)}
       // 避免在页面拖拽时触发
-      style={{ 'pointer-events': store.dragMode ? 'none' : undefined }}
+      style={{ 'pointer-events': store.isDragMode ? 'none' : undefined }}
     >
       <div class={classes.toolbarPanel} on:click={focus}>
         <div class={classes.toolbarBg} />

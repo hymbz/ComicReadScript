@@ -1,7 +1,7 @@
 import { sleep } from 'helper';
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
-import { store } from '../..';
+import { store } from '../../store';
 import type { TaskState } from './helper';
 import {
   setMessage,

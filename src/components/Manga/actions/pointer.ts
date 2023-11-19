@@ -1,12 +1,12 @@
 import { isEqual } from 'helper';
-import { store, setState } from '..';
-import { useDoubleClick } from '../../useDoubleClick';
-import type { UseDrag } from '../../useDrag';
-import { turnPage, turnPageAnimation } from './Operate';
-import { zoom } from './Zoom';
-import { updateRenderPage } from './Image';
-import type { Area } from '../../../components/TouchArea';
-import { resetUI } from './Helper';
+import type { Area } from '../components/TouchArea';
+import { useDoubleClick } from '../hooks/useDoubleClick';
+import type { UseDrag } from '../hooks/useDrag';
+import { store, setState, refs } from '../store';
+import { resetUI } from './helper';
+import { updateRenderPage } from './image';
+import { turnPage, turnPageAnimation } from './operate';
+import { zoom } from './zoom';
 
 /** 根据坐标判断点击的元素 */
 const findClickEle = (eleList: HTMLCollection, { x, y }: MouseEvent) =>
@@ -19,7 +19,7 @@ const findClickEle = (eleList: HTMLCollection, { x, y }: MouseEvent) =>
 
 /** 触发 touchArea 操作 */
 export const handlePageClick = (e: MouseEvent) => {
-  const targetArea = findClickEle(store.ref.touchArea.children, e);
+  const targetArea = findClickEle(refs.touchArea.children, e);
   if (!targetArea) return;
 
   const areaName = targetArea.getAttribute('data-area') as Area | undefined;
@@ -46,7 +46,7 @@ export const handlePageClick = (e: MouseEvent) => {
 
 /** 网格模式下点击图片跳到对应页 */
 export const handleGridClick = (e: MouseEvent) => {
-  const target = findClickEle(store.ref.root.getElementsByTagName('img'), e);
+  const target = findClickEle(refs.root.getElementsByTagName('img'), e);
   if (!target) return;
   const pageNumText = target.parentElement?.getAttribute('data-index');
   if (!pageNumText) return;
@@ -57,7 +57,7 @@ export const handleGridClick = (e: MouseEvent) => {
     state.gridMode = false;
   });
   if (store.option.scrollMode)
-    store.ref.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
+    refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
 };
 
 /** 双击放大 */
@@ -85,10 +85,10 @@ const getTurnPageDir = (startTime: number): undefined | 'prev' | 'next' => {
 
   if (store.page.vertical) {
     move = -store.page.offset.y.px;
-    total = store.ref.root.clientHeight;
+    total = refs.root.clientHeight;
   } else {
     move = store.page.offset.x.px;
-    total = store.ref.root.clientWidth;
+    total = refs.root.clientWidth;
   }
 
   // 滑动距离超过总长度三分之一判定翻页
@@ -132,7 +132,7 @@ export const handleMangaFlowDrag: UseDrag = ({
       dx = store.option.dir === 'rtl' ? x - ix : ix - x;
       dy = y - iy;
 
-      if (store.dragMode) {
+      if (store.isDragMode) {
         if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
         return;
       }
@@ -146,7 +146,7 @@ export const handleMangaFlowDrag: UseDrag = ({
       setState((state) => {
         // 根据滑动方向自动切换排列模式
         state.page.vertical = slideDir === 'vertical';
-        state.dragMode = true;
+        state.isDragMode = true;
         updateRenderPage(state);
       });
       return;
@@ -164,7 +164,7 @@ export const handleMangaFlowDrag: UseDrag = ({
         state.page.offset.x.px = 0;
         state.page.offset.y.px = 0;
         state.page.anima = 'page';
-        state.dragMode = false;
+        state.isDragMode = false;
       });
     }
   }

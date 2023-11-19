@@ -1,7 +1,7 @@
 import { onCleanup, onMount } from 'solid-js';
 
 import { isEqual } from 'helper';
-import { focus } from './useStore/slice';
+import { focus } from '../actions';
 
 export interface PointerState {
   id: number;

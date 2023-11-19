@@ -1,7 +1,8 @@
 import { difference, byPath } from 'helper';
-import type { State } from '..';
-import { _setState, setState, store } from '..';
-import { defaultOption, type Option } from '../OptionState';
+import type { State } from '../store';
+import { store, setState, refs } from '../store';
+import type { Option } from '../store/option';
+import { defaultOption } from '../store/option';
 
 /** 触发 onOptionChange */
 export const triggerOnOptionChange = () =>
@@ -24,9 +25,9 @@ export const createStateSetFn =
 
 /** 创建用于将 ref 绑定到对应 state 上的工具函数 */
 export const bindRef =
-  <T extends HTMLElement = HTMLElement>(name: keyof State['ref']) =>
+  <T extends HTMLElement = HTMLElement>(name: keyof typeof refs) =>
   (e: T) =>
-    _setState('ref', name, e);
+    Reflect.set(refs, name, e);
 
 /** 将界面恢复到正常状态 */
 export const resetUI = (state: State) => {

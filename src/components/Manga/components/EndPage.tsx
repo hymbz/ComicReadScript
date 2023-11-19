@@ -9,8 +9,8 @@ import {
 } from 'solid-js';
 
 import { t } from 'helper/i18n';
-import { setState, store } from '../hooks/useStore';
-import { bindRef, focus, turnPage } from '../hooks/useStore/slice';
+import { setState, store } from '../store';
+import { bindRef, focus, turnPage } from '../actions';
 
 import classes from '../index.module.css';
 import { stopPropagation } from '../helper';

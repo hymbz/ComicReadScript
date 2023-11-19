@@ -1,8 +1,8 @@
 import type { Component } from 'solid-js';
 import { createMemo } from 'solid-js';
 
-import { store } from '../hooks/useStore';
-import { contentHeight, windowHeight } from '../hooks/useStore/slice';
+import { store } from '../store';
+import { contentHeight, windowHeight } from '../actions';
 
 import classes from '../index.module.css';
 

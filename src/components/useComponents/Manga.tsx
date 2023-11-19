@@ -13,7 +13,7 @@ import { request } from '../../helper/request';
 import { saveAs } from '../../helper';
 import { mountComponents } from './helper';
 import { toast } from './Toast';
-import type { State } from '../Manga/hooks/useStore';
+import type { State } from '../Manga/store';
 
 let dom: HTMLDivElement;
 let store: State;

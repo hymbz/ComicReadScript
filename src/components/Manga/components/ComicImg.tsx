@@ -3,8 +3,8 @@ import { createMemo, onCleanup, onMount } from 'solid-js';
 
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
-import { setState, store } from '../hooks/useStore';
-import { updateImgLoadType } from '../hooks/useStore/slice';
+import { setState, store } from '../store';
+import { updateImgLoadType } from '../actions';
 
 import classes from '../index.module.css';
 

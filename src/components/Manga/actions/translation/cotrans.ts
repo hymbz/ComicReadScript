@@ -1,7 +1,7 @@
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
 import { canvasToBlob } from 'helper';
-import { store } from '../..';
+import { store } from '../../store';
 import { setMessage, download, request, createFormData } from './helper';
 
 type QueryV1Message =

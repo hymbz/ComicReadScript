@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { beforeEach, expect, it } from 'vitest';
 import { handleComicData, autoCloseFill } from './handleComicData';
-import type { FillEffect } from './hooks/useStore/ImageState';
+import type { FillEffect } from './store/image';
 
 // 例子
 // https://www.copymanga.site/comic/yiquanchaoren/chapter/c4ba81ae-5ace-11e9-8b68-024352452ce0

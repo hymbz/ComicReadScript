@@ -1,8 +1,8 @@
-import { store, setState } from '..';
-import { updateDrag } from './Scrollbar';
-import { setOption } from './Helper';
-import { zoom } from './Zoom';
-import { nowFillIndex, updatePageData } from './Image';
+import { refs, setState, store } from '../store';
+import { updateDrag } from './scrollbar';
+import { zoom } from './zoom';
+import { setOption } from './helper';
+import { nowFillIndex, updatePageData } from './image';
 
 /** 切换页面填充 */
 export const switchFillEffect = () => {
@@ -26,7 +26,7 @@ export const switchScrollMode = () => {
   setState(updateDrag);
   // 切换卷轴模式后自动定位到对应页
   if (store.option.scrollMode)
-    store.ref.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
+    refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
 };
 
 /** 切换单双页模式 */
@@ -53,5 +53,5 @@ export const switchGridMode = () => {
   });
   // 切换网格模式后自动定位到对应页
   if (store.gridMode)
-    store.ref.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
+    refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
 };

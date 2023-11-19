@@ -1,19 +1,20 @@
 import { getKeyboardCode, requestIdleCallback } from 'helper';
-import { setOption } from './Helper';
-import type { State } from '..';
-import { setState, store } from '..';
-import { hotkeysMap } from './Hotkeys';
-import { zoom } from './Zoom';
-import { zoomScrollModeImg, updateRenderPage } from './Image';
-import {
-  switchDir,
-  switchFillEffect,
-  switchGridMode,
-  switchOnePageMode,
-  switchScrollMode,
-} from './Switch';
 
-import classes from '../../../index.module.css';
+import type { State } from '../store';
+import { store, setState, refs } from '../store';
+import { zoom } from './zoom';
+import { setOption } from './helper';
+import { hotkeysMap } from './hotkeys';
+import { updateRenderPage, zoomScrollModeImg } from './image';
+import {
+  switchFillEffect,
+  switchScrollMode,
+  switchOnePageMode,
+  switchDir,
+  switchGridMode,
+} from './switch';
+
+import classes from '../index.module.css';
 
 export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
   if (e.button !== 1 || store.option.scrollMode) return;
@@ -25,8 +26,8 @@ export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 export const focus = () =>
   requestAnimationFrame(() => {
-    store.ref.mangaFlow?.click();
-    store.ref.mangaFlow?.focus();
+    refs.mangaFlow?.click();
+    refs.mangaFlow?.focus();
   });
 
 /** 判断当前是否已经滚动到底部 */
@@ -48,7 +49,8 @@ const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
   if (dir === 'prev') {
     switch (state.show.endPage) {
       case 'start':
-        if (!state.scrollLock && state.option.jumpToNext) state.prop.Prev?.();
+        if (!state.flag.scrollLock && state.option.jumpToNext)
+          state.prop.Prev?.();
         return false;
       case 'end':
         state.show.endPage = undefined;
@@ -62,9 +64,9 @@ const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
           if (!state.prop.Prev || !state.option.jumpToNext) return false;
 
           state.show.endPage = 'start';
-          state.scrollLock = true;
+          state.flag.scrollLock = true;
           window.setTimeout(() => {
-            state.scrollLock = false;
+            state.flag.scrollLock = false;
           }, 200);
           return false;
         }
@@ -75,7 +77,7 @@ const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
   } else {
     switch (state.show.endPage) {
       case 'end':
-        if (state.scrollLock) return false;
+        if (state.flag.scrollLock) return false;
         if (state.prop.Next && state.option.jumpToNext) {
           state.prop.Next();
           return false;
@@ -91,9 +93,9 @@ const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
         if (isBottom(state)) {
           if (!state.prop.Exit) return false;
           state.show.endPage = 'end';
-          state.scrollLock = true;
+          state.flag.scrollLock = true;
           window.setTimeout(() => {
-            state.scrollLock = false;
+            state.flag.scrollLock = false;
           }, 200);
           return false;
         }
@@ -114,11 +116,11 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
       state.page.offset.x.px = 0;
       state.page.offset.y.px = 0;
       updateRenderPage(state, true);
-      state.dragMode = false;
+      state.isDragMode = false;
       return;
     }
 
-    state.dragMode = true;
+    state.isDragMode = true;
     updateRenderPage(state);
     if (store.page.vertical)
       state.page.offset.y.pct += dir === 'next' ? 100 : -100;
@@ -129,7 +131,7 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
         updateRenderPage(draftState, true);
         draftState.page.offset.x.px = 0;
         draftState.page.offset.y.px = 0;
-        draftState.dragMode = false;
+        draftState.isDragMode = false;
       });
     }, 50);
   });
@@ -138,7 +140,7 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
 export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
-  if (store.scrollLock) return;
+  if (store.flag.scrollLock) return;
   const isWheelDown = e.deltaY > 0;
 
   if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');

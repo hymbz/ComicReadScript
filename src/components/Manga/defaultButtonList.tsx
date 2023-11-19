@@ -9,7 +9,7 @@ import MdGrid from '@material-design-icons/svg/round/grid_4x4.svg';
 
 import { createMemo, type Component, createSignal } from 'solid-js';
 import { t } from 'helper/i18n';
-import { setState, store } from './hooks/useStore';
+import { setState, store } from './store';
 import { IconButton } from '../IconButton';
 import { SettingPanel } from './components/SettingPanel';
 
@@ -22,9 +22,9 @@ import {
   switchOnePageMode,
   doubleClickZoom,
   switchGridMode,
-} from './hooks/useStore/slice';
+} from './actions';
 
-import { setImgTranslationEnbale } from './hooks/useStore/slice/Translation';
+import { setImgTranslationEnbale } from './actions/translation';
 
 import classes from './index.module.css';
 

@@ -6,14 +6,14 @@ import { type Component, For, Index } from 'solid-js';
 
 import { getKeyboardCode, keyboardCodeToText } from 'helper';
 import { t } from 'helper/i18n';
+import { store } from '../store';
 import {
+  defaultHotkeys,
   delHotkeys,
   focus,
   hotkeysMap,
   setHotkeys,
-} from '../hooks/useStore/slice';
-import { defaultHotkeys } from '../hooks/useStore/OtherState';
-import { store } from '../hooks/useStore';
+} from '../actions';
 
 import classes from '../index.module.css';
 

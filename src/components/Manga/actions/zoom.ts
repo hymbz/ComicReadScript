@@ -1,17 +1,17 @@
 import { createRoot, createMemo } from 'solid-js';
 import { clamp, isEqual } from 'helper';
 import { debounce } from 'throttle-debounce';
-import type { State } from '..';
-import { store, setState } from '..';
-import type { PointerState, UseDrag } from '../../useDrag';
-import { resetUI } from './Helper';
+import type { PointerState, UseDrag } from '../hooks/useDrag';
+import type { State } from '../store';
+import { store, setState, refs } from '../store';
+import { resetUI } from './helper';
 
 export const touches = new Map<number, PointerState>();
 
 const scale = () => store.zoom.scale / 100;
 
-const width = () => store.ref.mangaFlow?.clientWidth ?? 0;
-const height = () => store.ref.mangaFlow?.clientHeight ?? 0;
+const width = () => refs.mangaFlow?.clientWidth ?? 0;
+const height = () => refs.mangaFlow?.clientHeight ?? 0;
 
 const bound = createRoot(() => {
   const x = createMemo(() => -width() * (scale() - 1));
@@ -27,7 +27,7 @@ const checkBound = (state: State) => {
 
 const closeScrollLock = debounce(200, () =>
   setState((state) => {
-    state.scrollLock = false;
+    state.flag.scrollLock = false;
   }),
 );
 
@@ -40,7 +40,7 @@ export const zoom = (
   if (newScale === store.zoom.scale) return;
 
   // 消除放大导致的偏移
-  const { left, top } = store.ref.mangaFlow.getBoundingClientRect();
+  const { left, top } = refs.mangaFlow.getBoundingClientRect();
   const x = (focal?.x ?? width() / 2) - left;
   const y = (focal?.y ?? height() / 2) - top;
 
@@ -62,7 +62,7 @@ export const zoom = (
 
     // 加一个延时锁防止在放大模式下通过滚轮缩小至原尺寸后就立刻跳到下一页
     if (newScale === 100) {
-      state.scrollLock = true;
+      state.flag.scrollLock = true;
       closeScrollLock();
     }
 

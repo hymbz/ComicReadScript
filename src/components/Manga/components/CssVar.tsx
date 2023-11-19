@@ -1,6 +1,6 @@
 import { createMemo, type Component } from 'solid-js';
 import { t } from 'helper/i18n';
-import { store } from '../hooks/useStore';
+import { store } from '../store';
 
 import classes from '../index.module.css';
 /** 深色模式 */

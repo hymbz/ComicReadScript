@@ -3,7 +3,7 @@ import { For, createMemo, createSignal } from 'solid-js';
 
 import { lang } from 'helper/i18n';
 import { defaultSettingList } from '../defaultSettingList';
-import { store } from '../hooks/useStore';
+import { store } from '../store';
 import { stopPropagation } from '../helper';
 
 import classes from '../index.module.css';

@@ -1,10 +1,25 @@
 import { createMemo, createRoot } from 'solid-js';
 import { isEqualArray } from 'helper';
-import { _setState, store } from '..';
-import { defaultHotkeys } from '../OtherState';
+import { _setState, store } from '../store';
+
+export const defaultHotkeys: Readonly<Record<string, string[]>> = {
+  turn_page_up: ['w', 'ArrowUp', 'PageUp'],
+  turn_page_down: [' ', 's', 'ArrowDown', 'PageDown'],
+  turn_page_right: ['d', '.', 'ArrowRight'],
+  turn_page_left: ['a', ',', 'ArrowLeft'],
+  jump_to_home: ['Home'],
+  jump_to_end: ['End'],
+  exit: ['Escape'],
+  switch_page_fill: ['/', 'm', 'z'],
+  switch_scroll_mode: [],
+  switch_grid_mode: [],
+  switch_single_double_page_mode: [],
+  switch_dir: [],
+  switch_auto_enlarge: [],
+};
 
 export const setHotkeys = (...args: any[]) => {
-  _setState.apply(this, ['hotkeys', ...args] as never);
+  _setState(...(['hotkeys', ...args] as [any]));
   store.prop.HotkeysChange?.(
     Object.fromEntries(
       Object.entries(store.hotkeys).filter(
