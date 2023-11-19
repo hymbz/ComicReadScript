@@ -88,7 +88,7 @@ import { debounce } from 'throttle-debounce';
       /^(((https?|ftp|file):)?\/)?\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#%=~_|]$/;
 
     /** 检查元素属性，将格式为图片 url 的属性值作为 src */
-    const tryCorrectUrl = (e: HTMLImageElement) => {
+    const tryCorrectUrl = (e: Element) => {
       e.getAttributeNames().some((key) => {
         // 跳过白名单
         switch (key) {
@@ -148,14 +148,39 @@ import { debounce } from 'throttle-debounce';
     const closeScrollLock = debounce(1000, () => {
       scrollLock = false;
     });
-    window.addEventListener('scroll', () => {
+    window.addEventListener('wheel', () => {
       scrollLock = true;
       closeScrollLock();
     });
     const getScrollLock = () => !scrollLock;
 
+    let observer: IntersectionObserver;
+    const observerTimeoutMap: Map<Element, number> = new Map();
+
     /** 已经被触发过懒加载的图片 */
-    const triggedImgList: Set<HTMLImageElement> = new Set();
+    const triggedImgList: Set<Element> = new Set();
+
+    /** 图片懒加载触发完后调用 */
+    const handleTrigged = (e: Element) => {
+      triggedImgList.add(e);
+      observerTimeoutMap.delete(e);
+      observer.unobserve(e);
+    };
+
+    observer = new IntersectionObserver((entries) =>
+      entries.forEach((img) => {
+        if (img.isIntersecting)
+          return observerTimeoutMap.set(
+            img.target,
+            window.setTimeout(handleTrigged, 300, img.target),
+          );
+
+        const timeoutID = observerTimeoutMap.get(img.target);
+        if (!timeoutID) return;
+        window.clearTimeout(timeoutID);
+      }),
+    );
+    getAllImg().forEach((e) => observer.observe(e));
 
     /** 触发懒加载 */
     const triggerLazyLoad = async () => {
@@ -167,29 +192,21 @@ import { debounce } from 'throttle-debounce';
 
       // 过滤掉已经被触发过懒加载的图片
       const targetImgList = getAllImg().filter((e) => !triggedImgList.has(e));
-
+      targetImgList.forEach((e) => observer.observe(e));
       const oldSrcList = targetImgList.map((e) => e.src);
 
       for (let i = 0; i < targetImgList.length; i++) {
         await wait(getScrollLock);
         const e = targetImgList[i];
+        if (triggedImgList.has(e)) continue;
         tryCorrectUrl(e);
 
         // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时，
         // 才在触发懒加载时停留一段时间，避免用户看着页面跳来跳去操作不了
-        const lazyLoadWaitTime =
+        const waitTime =
           mangaProps.show || mangaProps.imgList.length < 2 ? 300 : 0;
-        await triggerEleLazyLoad(e, lazyLoadWaitTime, oldSrcList[i]);
-
-        if (
-          // src 发生改变的肯定是成功触发了的
-          oldSrcList[i] !== e.src ||
-          // 停留过一段时间还没触发的大概率是没有懒加载的
-          // 虽然也有概率误判，但到时再加长等待时间就是了
-          // 不把停留过的图片忽略掉的话，遇上图片元素多的站点要等很久才能触发完一遍
-          lazyLoadWaitTime
-        )
-          triggedImgList.add(e);
+        if (await triggerEleLazyLoad(e, waitTime, oldSrcList[i]))
+          handleTrigged(e);
       }
     };
 
@@ -226,7 +243,7 @@ import { debounce } from 'throttle-debounce';
         imgEleList = [];
         // 为保证兼容，只能简单粗暴的不断检查
         loop(triggerLazyLoad, 500);
-        loop(updateImgList, 1000);
+        loop(updateImgList, 500);
       }
       await wait(() => mangaProps.imgList.some(Boolean));
       return mangaProps.imgList;

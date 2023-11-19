@@ -184,9 +184,9 @@ export const wait = async <T>(
   let res: T | undefined = await fn();
   let _timeout = timeout;
   while (_timeout > 0 && !res) {
-    res = await fn();
     await sleep(10);
     _timeout -= 10;
+    res = await fn();
   }
   return res as TrueValue<T>;
 };
@@ -217,7 +217,7 @@ export const boolDataVal = (val: boolean) => (val ? '' : undefined);
 
 /**
  *
- * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载
+ * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
  *
  * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
  */
@@ -230,8 +230,9 @@ export const triggerEleLazyLoad = async (
   e.scrollIntoView();
   e.dispatchEvent(new Event('scroll', { bubbles: true }));
 
-  if (time) await wait(() => e.src !== oldSrc, time);
+  const res = await wait(() => e.src !== oldSrc, time);
   window.scroll({ top: nowScroll, behavior: 'auto' });
+  return res;
 };
 
 /** 测试图片 url 能否正确加载 */
