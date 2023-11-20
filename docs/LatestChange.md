@@ -1,13 +1,13 @@
-## [8.1.0](https://github.com/hymbz/ComicReadScript/compare/v8.0.0...v8.1.0) (2023-11-17)
-
-
-### Features
-
-* :sparkles: 实现自定义滚动条位置 ([f64d70f](https://github.com/hymbz/ComicReadScript/commit/f64d70f42fa0f16d2deee38e3df70d6119333aa4))
+## [8.1.1](https://github.com/hymbz/ComicReadScript/compare/v8.1.0...v8.1.1) (2023-11-20)
 
 
 ### Bug Fixes
 
-* :bug: 修复 300 帖子阅读进度不显示的 bug ([430591d](https://github.com/hymbz/ComicReadScript/commit/430591d0c903f518622795ddad5c0703d60a93a2))
-* :bug: 修复卷轴模式下的一系列 bug ([4ae5ce8](https://github.com/hymbz/ComicReadScript/commit/4ae5ce8397236a006df64cd630c7c68ee55e8ddf))
-* :bug: 修复已翻译图片未正确下载的 bug ([948f8bd](https://github.com/hymbz/ComicReadScript/commit/948f8bd1c90aa77ca983501a3abba02a73562149)), closes [#119](https://github.com/hymbz/ComicReadScript/issues/119)
+* :bug: 修复放大后无法调出菜单的 bug ([fde7493](https://github.com/hymbz/ComicReadScript/commit/fde7493cc55277925fb21e93977d28371d2148f0))
+* :bug: 修复卷轴模式下缩放后无法正常拖动的 bug ([d6cf084](https://github.com/hymbz/ComicReadScript/commit/d6cf084de580b6d5a1542486169e65cee804a32d))
+
+
+### Performance Improvements
+
+* :zap: 优化简易模式加载速度 ([bbb1b31](https://github.com/hymbz/ComicReadScript/commit/bbb1b316b8c0d571641af28b96025fdf0962a8d4))
+* 在简易模式下提前预测页数 ([a9e7d6d](https://github.com/hymbz/ComicReadScript/commit/a9e7d6ded3dc0cfca4405023b8fb896288272f84))
