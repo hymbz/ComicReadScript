@@ -52,7 +52,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
     }
 
     /* 防止其他扩展的元素显示到漫画上来 */
-    #comicRead[show] ~ * {
+    #comicRead[show] ~ :not(#fab, #toast) {
       display: none !important;
       pointer-events: none !important;
       visibility: hidden !important;

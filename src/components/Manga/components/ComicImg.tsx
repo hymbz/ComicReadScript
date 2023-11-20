@@ -2,7 +2,12 @@ import type { Component, JSX } from 'solid-js';
 import { createMemo, onCleanup, onMount } from 'solid-js';
 
 import { setState, store } from '../store';
-import { handleImgError, updateImgLoadType, updateImgSize } from '../actions';
+import {
+  handleImgError,
+  placeholderSize,
+  updateImgLoadType,
+  updateImgSize,
+} from '../actions';
 
 import classes from '../index.module.css';
 
@@ -56,9 +61,10 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
 
   const style = createMemo<JSX.CSSProperties | undefined>(() => {
     if (!store.option.scrollMode) return undefined;
+    const size = img()?.width ? img() : placeholderSize();
     return {
-      '--width': `${img().width}px`,
-      'aspect-ratio': `${img().width} / ${img().height}`,
+      '--width': `${size.width}px`,
+      'aspect-ratio': `${size.width} / ${size.height}`,
     };
   });
 

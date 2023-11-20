@@ -269,6 +269,26 @@ export const triggerEleLazyLoad = async (
   return res;
 };
 
+/** 获取图片尺寸 */
+export const getImgSize = async (
+  url: string,
+): Promise<[number, number] | null> => {
+  try {
+    let error = false;
+    const image = new Image();
+    image.onerror = () => {
+      error = true;
+    };
+    image.src = url;
+
+    await wait(() => !error && (image.naturalWidth || image.naturalHeight));
+    if (error) return null;
+    return [image.naturalWidth, image.naturalHeight];
+  } catch (_) {
+    return null;
+  }
+};
+
 /** 测试图片 url 能否正确加载 */
 export const testImgUrl = (url: string) =>
   new Promise((resolve) => {

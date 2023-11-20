@@ -36,7 +36,7 @@
   &[src=""] {
     position: relative;
     aspect-ratio: 3 / 4;
-    height: 100% !important;
+    height: 100%;
   }
 
   /* 隐藏火狐的出错图片标识 */
@@ -191,7 +191,7 @@
 
     width: calc(var(--scroll-mode-img-scale) * min(100%, var(--width, 100%)));
     max-width: unset;
-    height: calc(var(--scroll-mode-img-scale) * var(--height, 0)) !important;
+    height: auto;
     max-height: unset;
 
     object-fit: contain;

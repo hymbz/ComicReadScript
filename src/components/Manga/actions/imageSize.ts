@@ -1,7 +1,7 @@
-import { createEffect, createRoot, on } from 'solid-js';
-import { plimit, singleThreaded } from 'helper';
+import { createEffect, createMemo, createRoot, on } from 'solid-js';
+import { getImgSize, plimit, singleThreaded } from 'helper';
 import type { State } from '../store';
-import { setState, store } from '../store';
+import { refs, setState, store } from '../store';
 import { updateDrag } from './scrollbar';
 import { isWideImg } from '../handleComicData';
 import { handleImgError, updatePageData } from './image';
@@ -93,15 +93,6 @@ export const updateImgSize = (i: number, width: number, height: number) => {
   });
 };
 
-/** 等待图片的真实尺寸被加载出来 */
-const waitImgSizeLoaded = (
-  img: HTMLImageElement,
-  resolve: (value: unknown) => void,
-): void => {
-  if (img.naturalWidth && img.naturalHeight) return resolve(null);
-  setTimeout(waitImgSizeLoaded, 30, img, resolve);
-};
-
 /** 更新所有图片的尺寸 */
 const updateAllImgSize = singleThreaded(async (): Promise<void> => {
   await plimit(
@@ -109,23 +100,39 @@ const updateAllImgSize = singleThreaded(async (): Promise<void> => {
       if (img.loadType !== 'wait' || img.width || img.height || !img.src)
         return;
 
-      try {
-        const image = new Image();
-        await new Promise((resolve, reject) => {
-          image.onerror = reject;
-          image.src = img.src;
-          waitImgSizeLoaded(image, resolve);
-        });
-        updateImgSize(i, image.naturalWidth, image.naturalHeight);
-      } catch (_) {
-        handleImgError(i);
-      }
+      const size = await getImgSize(img.src);
+      if (!size) return handleImgError(i);
+      return updateImgSize(i, ...size);
     }),
     undefined,
     Math.max(store.option.preloadPageNum, 1),
   );
 });
 
-createRoot(() => {
+/** 获取图片列表中指定属性的中位数 */
+const getImgMedian = (
+  sizeFn: (value: ComicImg) => number,
+  fallback: number,
+) => {
+  if (!store.option.scrollMode) return 0;
+  const list = store.imgList
+    .filter((img) => img.loadType === 'loaded' && img.width)
+    .map(sizeFn)
+    .sort();
+  if (!list.length) return fallback;
+  return list[Math.floor(list.length / 2)];
+};
+
+export const { placeholderSize } = createRoot(() => {
   createEffect(on(() => store.imgList, updateAllImgSize));
+
+  const placeholderSizeMemo = createMemo(() => ({
+    width: getImgMedian((img) => img.width!, refs.root?.offsetWidth),
+    height: getImgMedian((img) => img.height!, refs.root?.offsetHeight),
+  }));
+
+  return {
+    /** 图片占位尺寸 */
+    placeholderSize: placeholderSizeMemo,
+  };
 });

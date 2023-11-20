@@ -2,7 +2,7 @@ import type { Component } from 'solid-js';
 import { createMemo } from 'solid-js';
 
 import { store } from '../store';
-import { contentHeight, windowHeight } from '../actions';
+import { contentHeight, placeholderSize } from '../actions';
 import { boolDataVal } from '../../../helper';
 
 import classes from '../index.module.css';
@@ -27,8 +27,9 @@ export const ScrollbarPage: Component<{ a: number; b?: number }> = (props) => {
   const flexBasis = createMemo(() => {
     if (!store.option.scrollMode) return undefined;
     return `${
-      ((store.imgList[props.a]?.height || windowHeight()) / contentHeight()) *
-      100
+      ((store.imgList[props.a]?.height || placeholderSize().height) /
+        contentHeight()) *
+      store.option.scrollModeImgScale
     }%`;
   });
 
