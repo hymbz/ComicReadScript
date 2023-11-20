@@ -156,10 +156,10 @@ import { debounce, throttle } from 'throttle-debounce';
 
     /** 监视图片是否被显示的 Observer */
     let imgShowObserver: IntersectionObserver;
-    const observerTimeoutMap: Map<Element, number> = new Map();
+    const observerTimeoutMap = new Map<Element, number>();
 
     /** 已经被触发过懒加载的图片 */
-    const triggedImgList: Set<Element> = new Set();
+    const triggedImgList = new Set<Element>();
 
     /** 图片懒加载触发完后调用 */
     const handleTrigged = (e: Element) => {
@@ -293,6 +293,7 @@ import { debounce, throttle } from 'throttle-debounce';
           attributeFilter: ['src'],
         });
         updateImgList();
+        triggerLazyLoad();
       }
       await wait(() => mangaProps.imgList.length);
       return mangaProps.imgList;

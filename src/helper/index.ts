@@ -281,7 +281,7 @@ export const testImgUrl = (url: string) =>
 export const canvasToBlob = (
   canvas: HTMLCanvasElement,
   type?: string,
-  quality?: any,
+  quality = 1,
 ) =>
   new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(

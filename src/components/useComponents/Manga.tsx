@@ -50,6 +50,15 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
       opacity: 1;
       transition: opacity 300ms, transform 100ms;
     }
+
+    /* 防止其他扩展的元素显示到漫画上来 */
+    #comicRead[show] ~ * {
+      display: none !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      z-index: 1 !important;
+    }
   `);
 
   const [props, setProps] = createStore({
