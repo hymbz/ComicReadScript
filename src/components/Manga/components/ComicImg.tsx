@@ -17,7 +17,7 @@ const handleImgLoaded = (i: number, e: HTMLImageElement) => {
     const img = state.imgList[i];
     if (!img) return;
     if (img.loadType === 'error' && e.src !== img.src) return;
-    if (!(img.width && img.height))
+    if (img.width !== e.naturalWidth || img.height !== e.naturalHeight)
       updateImgSize(i, e.naturalWidth, e.naturalHeight);
     img.loadType = 'loaded';
     updateImgLoadType(state);

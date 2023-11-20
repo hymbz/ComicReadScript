@@ -1,5 +1,5 @@
 import { createEffect, createRoot, on } from 'solid-js';
-import { plimit } from 'helper';
+import { plimit, singleThreaded } from 'helper';
 import type { State } from '../store';
 import { setState, store } from '../store';
 import { updateDrag } from './scrollbar';
@@ -102,18 +102,15 @@ const waitImgSizeLoaded = (
   setTimeout(waitImgSizeLoaded, 30, img, resolve);
 };
 
-let continueRun = false;
-let timeoutId: number | undefined;
 /** 更新所有图片的尺寸 */
-const updateAllImgSize = async (): Promise<void> => {
+const updateAllImgSize = singleThreaded(async (): Promise<void> => {
   await plimit(
     store.imgList.map((img, i) => async () => {
       if (img.loadType !== 'wait' || img.width || img.height || !img.src)
         return;
 
-      const image = new Image();
-
       try {
+        const image = new Image();
         await new Promise((resolve, reject) => {
           image.onerror = reject;
           image.src = img.src;
@@ -121,27 +118,14 @@ const updateAllImgSize = async (): Promise<void> => {
         });
         updateImgSize(i, image.naturalWidth, image.naturalHeight);
       } catch (_) {
-        handleImgError(i, image);
+        handleImgError(i);
       }
     }),
     undefined,
     Math.max(store.option.preloadPageNum, 1),
   );
-  if (continueRun) {
-    continueRun = false;
-    timeoutId = window.setTimeout(updateAllImgSize);
-  } else timeoutId = undefined;
-};
+});
 
 createRoot(() => {
-  createEffect(
-    on(
-      () => store.imgList,
-      () => {
-        if (continueRun) return;
-        if (timeoutId) continueRun = true;
-        else timeoutId = window.setTimeout(updateAllImgSize);
-      },
-    ),
-  );
+  createEffect(on(() => store.imgList, updateAllImgSize));
 });

@@ -144,15 +144,15 @@ export const updatePageData = (state: State) => {
 updatePageData.debounce = debounce(100, () => setState(updatePageData));
 
 /** 图片加载出错的回调 */
-export const handleImgError = (i: number, e: HTMLImageElement) => {
+export const handleImgError = (i: number, e?: HTMLImageElement) => {
   // 跳过因为 src 为空导致的错误
-  if (e.getAttribute('src') === '') return;
+  if (e?.getAttribute('src') === '') return;
   setState((state) => {
     const img = state.imgList[i];
     if (!img) return;
     img.loadType = 'error';
     updateImgLoadType(state);
-    log.error(t('alert.img_load_failed'), e);
+    if (e) log.error(t('alert.img_load_failed'), e);
     state.prop.Loading?.(state.imgList, img);
   });
 };

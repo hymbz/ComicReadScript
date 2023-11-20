@@ -122,6 +122,40 @@ export const loop = async (fn: () => unknown, ms = 0) => {
   setTimeout(loop, ms, fn);
 };
 
+/** 使指定函数延迟运行期间的多次调用直到运行结束 */
+export const singleThreaded = <T extends any[]>(
+  callback: (...args: T) => unknown,
+) => {
+  let running = false;
+  let continueRun = false;
+
+  const fn = async (...args: T) => {
+    if (continueRun) return;
+    if (running) {
+      continueRun = true;
+      return;
+    }
+
+    try {
+      running = true;
+      await callback(...args);
+    } catch (error) {
+      continueRun = false;
+      await sleep(100);
+      throw error;
+    } finally {
+      running = false;
+    }
+
+    if (continueRun) {
+      continueRun = false;
+      setTimeout(fn);
+    } else running = false;
+  };
+
+  return fn;
+};
+
 /**
  * 限制 Promise 并发
  * @param fnList 任务函数列表
