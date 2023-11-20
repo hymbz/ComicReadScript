@@ -4,7 +4,6 @@ import { getInitLang } from 'helper/languages';
 import {
   t,
   getMostItem,
-  loop,
   querySelector,
   querySelectorAll,
   useInit,
@@ -16,8 +15,9 @@ import {
   canvasToBlob,
   plimit,
   log,
+  singleThreaded,
 } from 'main';
-import { debounce } from 'throttle-debounce';
+import { debounce, throttle } from 'throttle-debounce';
 
 // 测试案例
 // https://www.177picyy.com/html/2023/03/5505307.html
@@ -154,7 +154,8 @@ import { debounce } from 'throttle-debounce';
     });
     const getScrollLock = () => !scrollLock;
 
-    let observer: IntersectionObserver;
+    /** 监视图片是否被显示的 Observer */
+    let imgShowObserver: IntersectionObserver;
     const observerTimeoutMap: Map<Element, number> = new Map();
 
     /** 已经被触发过懒加载的图片 */
@@ -164,10 +165,10 @@ import { debounce } from 'throttle-debounce';
     const handleTrigged = (e: Element) => {
       triggedImgList.add(e);
       observerTimeoutMap.delete(e);
-      observer.unobserve(e);
+      imgShowObserver.unobserve(e);
     };
 
-    observer = new IntersectionObserver((entries) =>
+    imgShowObserver = new IntersectionObserver((entries) =>
       entries.forEach((img) => {
         if (img.isIntersecting)
           return observerTimeoutMap.set(
@@ -180,10 +181,10 @@ import { debounce } from 'throttle-debounce';
         window.clearTimeout(timeoutID);
       }),
     );
-    getAllImg().forEach((e) => observer.observe(e));
+    getAllImg().forEach((e) => imgShowObserver.observe(e));
 
-    /** 触发懒加载 */
-    const triggerLazyLoad = async () => {
+    /** 触发页面上所有图片元素的懒加载 */
+    const triggerLazyLoad = singleThreaded(async () => {
       const nowScroll = window.scrollY;
       // 滚到底部再滚回来，触发可能存在的自动翻页脚本
       window.scroll({ top: document.body.scrollHeight, behavior: 'auto' });
@@ -192,7 +193,7 @@ import { debounce } from 'throttle-debounce';
 
       // 过滤掉已经被触发过懒加载的图片
       const targetImgList = getAllImg().filter((e) => !triggedImgList.has(e));
-      targetImgList.forEach((e) => observer.observe(e));
+      targetImgList.forEach((e) => imgShowObserver.observe(e));
       const oldSrcList = targetImgList.map((e) => e.src);
 
       for (let i = 0; i < targetImgList.length; i++) {
@@ -208,10 +209,11 @@ import { debounce } from 'throttle-debounce';
         if (await triggerEleLazyLoad(e, waitTime, oldSrcList[i]))
           handleTrigged(e);
       }
-    };
+    });
 
     let imgEleList: HTMLImageElement[];
-    const updateImgList = async () => {
+    /** 检查筛选符合标准的图片元素用于更新 imgList */
+    const updateImgList = throttle(500, async () => {
       imgEleList = await wait(() => {
         const newImgList = getAllImg().filter(
           (e) => e.naturalHeight > 500 && e.naturalWidth > 500,
@@ -226,9 +228,11 @@ import { debounce } from 'throttle-debounce';
       }
 
       /** 找出应该是漫画图片，且未触发过懒加载的图片个数 */
-      const expectCount = querySelectorAll<HTMLImageElement>(
-        options.selector,
-      ).filter((e) => !imgEleList.includes(e) && !triggedImgList.has(e)).length;
+      const expectCount = options.selector
+        ? querySelectorAll<HTMLImageElement>(options.selector).filter(
+            (e) => !imgEleList.includes(e) && !triggedImgList.has(e),
+          ).length
+        : 0;
       const _imgEleList = expectCount
         ? [...imgEleList, ...new Array<null>(expectCount)]
         : imgEleList;
@@ -243,21 +247,54 @@ import { debounce } from 'throttle-debounce';
           _setManga('imgList', i, newUrl);
         }),
       );
-      // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估数量，需要在这里删掉多余的页数
-      if (mangaProps.imgList.length !== _imgEleList.length)
-        _setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
       if (isEdited) saveImgEleSelector(imgEleList);
+
+      // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要在这里删掉多余的页数
+      if (!expectCount && mangaProps.imgList.length !== _imgEleList.length)
+        _setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
+
+      if (
+        expectCount ||
+        imgEleList.some((e) => !e.naturalWidth && !e.naturalHeight)
+      )
+        setTimeout(updateImgList);
+    });
+
+    /** 判断指定元素子树下是否含有图片 */
+    const hasImgNode = (node: Element | Node) =>
+      node.nodeName === 'IMG' ||
+      ('id' in node && !!node.getElementsByTagName('img').length);
+
+    /** 判断是否有图片元素受到影响 */
+    const isImgAffected = (mutation: MutationRecord) => {
+      if (
+        hasImgNode(mutation.target) ||
+        [...mutation.addedNodes].some(hasImgNode) ||
+        [...mutation.removedNodes].some(hasImgNode)
+      )
+        return true;
+      return false;
     };
+
+    /** 监视图片元素发生变化的 Observer */
+    const imgDomObserver = new MutationObserver((mutationsList) => {
+      if (!mutationsList.some(isImgAffected)) return;
+      triggerLazyLoad();
+      updateImgList();
+    });
 
     init(async () => {
       if (!imgEleList) {
         imgEleList = [];
-        // TODO: 使用 MutationObserver 重构
-        // 为保证兼容，只能简单粗暴的不断检查
-        loop(triggerLazyLoad, 500);
-        loop(updateImgList, 500);
+        imgDomObserver.observe(document.body, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+          attributeFilter: ['src'],
+        });
+        updateImgList();
       }
-      await wait(() => mangaProps.imgList.some(Boolean));
+      await wait(() => mangaProps.imgList.length);
       return mangaProps.imgList;
     });
   };

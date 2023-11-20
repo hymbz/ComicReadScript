@@ -32,6 +32,7 @@ export const useInit = (props: MangaProps) => {
         ...JSON.parse(JSON.stringify(defaultHotkeys)),
         ...props.hotkeys,
       };
+      state.commentList = props.commentList;
     });
   });
 
@@ -79,8 +80,6 @@ export const useInit = (props: MangaProps) => {
         state.prop.editButtonList = props.editButtonList;
       if (props.editSettingList)
         state.prop.editSettingList = props.editSettingList;
-
-      state.commentList = props.commentList;
 
       state.prop.Loading = props.onLoading
         ? debounce(100, props.onLoading)
