@@ -38,13 +38,15 @@ services:
   manga_image_translator:
     image: zyddnys/manga-image-translator:main
     container_name: manga_image_translator_cpu
-    command: -l ENG --manga2eng -v --mode web --host=0.0.0.0 --port=5003
+    command: --manga2eng -v --mode web --host=0.0.0.0 --port=5003
     volumes:
       - ./result:/app/result
     ports:
       - 5003:5003
     ipc: host
 ```
+
+> 如果电脑内存小于等于16G，或出现成功翻译了文本但无法输出图像的情况，请在 `command` 末尾加上 ` --inpainting-precision bf16 --inpainting-size 1024`（注意参数之间要用空格分隔开）
 
 点击文件夹左上角「文件」菜单中的，「打开 Windows PowerShell」，这样启动的 PowerShell 会自动将所在路径设为当前目录
 
@@ -61,7 +63,7 @@ manga_image_translator_cpu  | [web] Running in web mode
 manga_image_translator_cpu  | Serving up app on http://0.0.0.0:5003
 ```
 
-注意，此时关掉这个窗口的话 docker 也会停止。需要无窗口后台运行的话，应该使用 `docker-compose up -d` 命令。
+注意，此时关掉这个窗口的话 docker 也会停止。需要无窗口后台运行的话，请使用 `docker-compose up -d` 命令。
 
 ## 配置翻译服务
 
