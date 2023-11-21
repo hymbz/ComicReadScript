@@ -1,5 +1,5 @@
 import type { Component } from 'solid-js';
-import { Index, onCleanup, onMount } from 'solid-js';
+import { Index, createMemo, onCleanup, onMount } from 'solid-js';
 
 import { boolDataVal } from 'helper';
 import { refs, setState, store } from '../store';
@@ -13,6 +13,7 @@ import {
   touches,
   handleObserver,
   updateDrag,
+  bound,
 } from '../actions';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
 import type { UseDrag } from '../hooks/useDrag';
@@ -55,10 +56,31 @@ export const ComicImgFlow: Component = () => {
     });
   };
 
-  const pageX = () => {
+  const pageXY = createMemo(() => {
     const x = `calc(${store.page.offset.x.pct}% + ${store.page.offset.x.px}px)`;
-    return store.option.dir === 'rtl' ? x : `calc(${x} * -1)`;
-  };
+    return {
+      '--page-x': store.option.dir === 'rtl' ? x : `calc(${x} * -1)`,
+      '--page-y': `calc(${store.page.offset.y.pct}% + ${store.page.offset.y.px}px)`,
+    };
+  });
+
+  const zoom = createMemo(() => ({
+    '--scale': store.zoom.scale / 100,
+    '--zoom-x': `${store.zoom.offset.x || 0}px`,
+    '--zoom-y': `${store.zoom.offset.y || 0}px`,
+  }));
+
+  const touchAction = createMemo(() => {
+    if (store.gridMode) return 'auto';
+    if (store.zoom.scale !== 100) {
+      if (store.option.scrollMode) {
+        if (store.zoom.offset.y === 0) return 'pan-up';
+        if (store.zoom.offset.y === bound.y()) return 'pan-down';
+      }
+      return 'none';
+    }
+    if (store.option.scrollMode) return 'pan-y';
+  });
 
   return (
     <div
@@ -78,13 +100,7 @@ export const ComicImgFlow: Component = () => {
       on:mousemove={onMouseMove}
       onTransitionEnd={handleTransitionEnd}
       onScroll={() => setState(updateDrag)}
-      style={{
-        '--scale': store.zoom.scale / 100,
-        '--zoom-x': `${store.zoom.offset.x || 0}px`,
-        '--zoom-y': `${store.zoom.offset.y || 0}px`,
-        '--page-x': pageX(),
-        '--page-y': `calc(${store.page.offset.y.pct}% + ${store.page.offset.y.px}px)`,
-      }}
+      style={{ 'touch-action': touchAction(), ...zoom(), ...pageXY() }}
       tabIndex={-1}
     >
       <Index each={store.pageList} fallback={<h1>NULL</h1>}>

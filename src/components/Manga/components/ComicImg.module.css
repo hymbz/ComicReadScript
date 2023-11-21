@@ -162,15 +162,9 @@
   &[data-vertical] {
     grid-auto-flow: row;
   }
-
-  &[data-scale-mode] {
-    touch-action: none !important;
-  }
 }
 
 .mangaFlow[data-scroll-mode] {
-  touch-action: pan-y;
-
   overflow: auto;
   grid-auto-flow: row;
   grid-auto-rows: auto;
@@ -208,8 +202,6 @@
 }
 
 .mangaFlow[data-grid-mode] {
-  touch-action: auto;
-
   transform: none;
 
   overflow: auto;

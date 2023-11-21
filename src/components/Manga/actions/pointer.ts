@@ -52,16 +52,9 @@ export const handleGridClick = (e: MouseEvent) => {
 };
 
 /** 双击放大 */
-export const doubleClickZoom = (e?: MouseEvent) => {
-  if (store.gridMode) return;
-  requestAnimationFrame(() => {
-    setState((state) => {
-      // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
-      const newScale = state.zoom.scale >= 300 ? 100 : state.zoom.scale + 100;
-      zoom(newScale, e, true);
-    });
-  });
-};
+export const doubleClickZoom = (e?: MouseEvent) =>
+  !store.gridMode && zoom(store.zoom.scale !== 100 ? 100 : 350, e, true);
+
 export const handleClick = useDoubleClick(
   (e) => (store.gridMode ? handleGridClick(e) : handlePageClick(e)),
   doubleClickZoom,

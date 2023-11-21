@@ -13,7 +13,7 @@ const scale = () => store.zoom.scale / 100;
 const width = () => refs.mangaFlow?.clientWidth ?? 0;
 const height = () => refs.mangaFlow?.clientHeight ?? 0;
 
-const bound = createRoot(() => {
+export const bound = createRoot(() => {
   const x = createMemo(() => -width() * (scale() - 1));
   const y = createMemo(() => -height() * (scale() - 1));
 
