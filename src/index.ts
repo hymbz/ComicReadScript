@@ -152,10 +152,10 @@ try {
         SPA: {
           isMangaPage: () => window.location.href.includes('episode'),
           getOnPrev: () =>
-            main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__prev a'),
+            main.querySelectorClick('footer .HG_COMIC_READER_prev a'),
           getOnNext: () =>
             main.querySelectorClick(
-              'footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a',
+              'footer .HG_COMIC_READER_prev+.HG_COMIC_READER_buttonEp a',
             ),
         },
       };
