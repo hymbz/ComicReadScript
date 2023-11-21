@@ -19,7 +19,7 @@ import {
   updateImgLoadType,
   zoomScrollModeImg,
 } from './actions';
-import { setState, store } from './store';
+import { _setState, setState, store } from './store';
 
 import classes from './index.module.css';
 import { SettingsItemNumber } from './components/SettingsItemNumber';
@@ -107,11 +107,7 @@ export const defaultSettingList: () => SettingList = () => [
         <SettingsItemSwitch
           name={t('setting.option.show_clickable_area')}
           value={store.show.touchArea}
-          onChange={() => {
-            setState((state) => {
-              state.show.touchArea = !state.show.touchArea;
-            });
-          }}
+          onChange={() => _setState('show', 'touchArea', !store.show.touchArea)}
         />
 
         <SettingsItemSwitch

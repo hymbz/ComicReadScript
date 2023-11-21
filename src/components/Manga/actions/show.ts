@@ -1,6 +1,6 @@
 import { createRoot, createEffect, on } from 'solid-js';
 import type { State } from '../store';
-import { setState, store } from '../store';
+import { _setState, setState, store } from '../store';
 import { updateImgLoadType, activePage } from './image';
 
 /** 更新渲染页面相关变量 */
@@ -42,9 +42,7 @@ createRoot(() => {
       // 如果当前显示页面有出错的图片，就重新加载一次
       page?.forEach((i) => {
         if (store.imgList[i]?.loadType !== 'error') return;
-        setState((state) => {
-          state.imgList[i].loadType = 'wait';
-        });
+        _setState('imgList', i, 'loadType', 'wait');
       });
 
       if (store.option.scrollMode) return;

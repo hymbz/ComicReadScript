@@ -12,7 +12,7 @@ import { Manga, buttonListDivider } from '../../components/Manga';
 import { IconButton } from '../../components/IconButton';
 import { Toaster, toast } from '../../components/Toast';
 
-import { store, setState, handleExit, loadNewImglist } from './store';
+import { store, handleExit, loadNewImglist, _setState } from './store';
 import { FileSystemToFile, imgExtension } from './helper';
 import { handleDrag } from './handleDrag';
 import { DownloadButton } from './DownloadButton';
@@ -90,14 +90,7 @@ export const Root: Component = () => (
           </button>
           <DownloadButton />
           <Show when={store.imgList.length}>
-            <button
-              type="button"
-              on:click={() =>
-                setState((state) => {
-                  state.show = true;
-                })
-              }
-            >
+            <button type="button" on:click={() => _setState('show', true)}>
               {t('pwa.button.resume_read')}
             </button>
           </Show>
@@ -112,13 +105,7 @@ export const Root: Component = () => (
             <button type="button" on:click={pwaInstallHandler.install}>
               {t('pwa.button.install')}
             </button>
-            <a
-              on:click={() =>
-                setState((state) => {
-                  state.hiddenInstallTip = 'TD';
-                })
-              }
-            >
+            <a on:click={() => _setState('hiddenInstallTip', 'TD')}>
               {t('pwa.button.no_more_prompt')}
             </a>
           </div>

@@ -11,7 +11,7 @@ export interface ImgFile {
   name: string;
   url: string;
 }
-export const { store, setState, _state } = useStore({
+export const { store, setState, _state, _setState } = useStore({
   /** 图片文件数据列表 */
   imgList: [] as ImgFile[],
   /** 是否显示漫画 */
@@ -39,10 +39,7 @@ const getImgData = async (file: File): Promise<ImgFile[]> => {
   }
 };
 
-export const handleExit = () =>
-  setState((state) => {
-    state.show = false;
-  });
+export const handleExit = () => _setState('show', false);
 
 /** 加载新的文件列表 */
 export const loadNewImglist = async (files: File[], errorTip?: string) => {
@@ -53,9 +50,7 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
     return;
   }
 
-  setState((state) => {
-    state.loading = true;
-  });
+  _setState('loading', true);
 
   try {
     const newImglist = (await Promise.all(files.map(getImgData))).flat();
@@ -82,9 +77,7 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
   } catch (error) {
     toast.error((error as Error).message, { throw: error as Error });
   } finally {
-    setState((state) => {
-      state.loading = false;
-    });
+    _setState('loading', false);
   }
 };
 

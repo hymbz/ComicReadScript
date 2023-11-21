@@ -3,7 +3,7 @@ import { createEffect, createRoot, on } from 'solid-js';
 import { t } from 'helper/i18n';
 import type { PointerState, UseDrag } from '../hooks/useDrag';
 import type { State } from '../store';
-import { store, setState, refs } from '../store';
+import { store, setState, refs, _setState } from '../store';
 import { resetUI } from './helper';
 
 /** 漫画流的总高度 */
@@ -136,11 +136,8 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
     else if (newPageIndex >= store.pageList.length)
       newPageIndex = store.pageList.length - 1;
 
-    if (newPageIndex !== store.activePageIndex) {
-      setState((state) => {
-        state.activePageIndex = newPageIndex;
-      });
-    }
+    if (newPageIndex !== store.activePageIndex)
+      _setState('activePageIndex', newPageIndex);
   }
 };
 
@@ -178,9 +175,7 @@ createRoot(() => {
       () => store.show.toolbar,
       () => {
         if (store.show.scrollbar && !store.show.toolbar)
-          setState((state) => {
-            state.show.scrollbar = false;
-          });
+          _setState('show', 'scrollbar', false);
       },
       { defer: true },
     ),

@@ -6,7 +6,7 @@ import {
   createMemo,
 } from 'solid-js';
 import { lang, t } from 'helper/i18n';
-import { store, setState } from '../../store';
+import { store, setState, _setState } from '../../store';
 import { createOptions, setMessage } from './helper';
 import { getValidTranslators, selfhostedTranslation } from './selfhosted';
 import { cotransTranslation, cotransTranslators } from './cotrans';
@@ -29,9 +29,7 @@ export const translationImage = async (i: number) => {
     if (img.translationType !== 'wait') return;
 
     if (img.translationUrl)
-      return setState((state) => {
-        state.imgList[i].translationType = 'show';
-      });
+      return _setState('imgList', i, 'translationType', 'show');
 
     if (img.loadType !== 'loaded')
       return setMessage(i, t('translation.tip.img_not_fully_loaded'));

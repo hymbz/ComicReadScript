@@ -9,7 +9,7 @@ import MdGrid from '@material-design-icons/svg/round/grid_4x4.svg';
 
 import { createMemo, type Component, createSignal } from 'solid-js';
 import { t } from 'helper/i18n';
-import { setState, store } from './store';
+import { _setState, store } from './store';
 import { IconButton } from '../IconButton';
 import { SettingPanel } from './components/SettingPanel';
 
@@ -133,9 +133,7 @@ export const defaultButtonList: ToolbarButtonList = [
 
     const handleClick = () => {
       const _showPanel = !showPanel();
-      setState((state) => {
-        state.show.toolbar = _showPanel;
-      });
+      _setState('show', 'toolbar', _showPanel);
       setShowPanel(_showPanel);
     };
 

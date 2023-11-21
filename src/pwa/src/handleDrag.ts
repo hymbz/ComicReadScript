@@ -1,13 +1,10 @@
 import { getFilesFromDataTransferItems } from '@placemarkio/flat-drop-files';
 
-import { setState, loadNewImglist } from './store';
+import { loadNewImglist, _setState } from './store';
 
 import classes from './index.module.css';
 
-const setDragging = (v: boolean) =>
-  setState((state) => {
-    state.dragging = v;
-  });
+const setDragging = (v: boolean) => _setState('dragging', v);
 
 export const handleDrag = (ref: HTMLElement) => {
   ref.addEventListener('drop', async (e: DragEvent) => {

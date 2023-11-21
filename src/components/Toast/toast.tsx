@@ -1,6 +1,6 @@
 import { log } from 'helper/logger';
 import type { Message, Toast } from '.';
-import { creatId, setState, store } from './store';
+import { creatId, setState, _setState, store } from './store';
 
 export const toast = (msg: Message, options?: Partial<Toast>) => {
   if (!msg) return;
@@ -40,9 +40,7 @@ export const toast = (msg: Message, options?: Partial<Toast>) => {
 
 toast.dismiss = (id: string) => {
   if (!Reflect.has(store.map, id)) return;
-  setState((state) => {
-    state.map[id].exit = true;
-  });
+  _setState('map', id, 'exit', true);
 };
 toast.set = (id: string, options: Partial<Toast>) => {
   if (!Reflect.has(store.map, id)) return;

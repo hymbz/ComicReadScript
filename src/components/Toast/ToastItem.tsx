@@ -6,7 +6,7 @@ import MdInfo from '@material-design-icons/svg/round/info.svg';
 import type { Component } from 'solid-js';
 import { createEffect, createMemo, Show } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
-import { setState } from './store';
+import { _setState, setState } from './store';
 
 import type { Toast } from '.';
 import { toast } from './toast';
@@ -39,9 +39,7 @@ const dismissToast = (id: string) =>
 
 /** 重置 toast 的 update 属性 */
 const resetToastUpdate = (id: string) =>
-  setState((state) => {
-    Reflect.deleteProperty(state.map[id], 'update');
-  });
+  _setState('map', id, 'update', undefined);
 
 export const ToastItem: Component<Toast> = (props) => {
   /** 是否要显示进度 */

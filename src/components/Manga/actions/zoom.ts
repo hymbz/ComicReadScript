@@ -3,7 +3,7 @@ import { clamp, isEqual } from 'helper';
 import { debounce } from 'throttle-debounce';
 import type { PointerState, UseDrag } from '../hooks/useDrag';
 import type { State } from '../store';
-import { store, setState, refs } from '../store';
+import { store, setState, refs, _setState } from '../store';
 import { resetUI } from './helper';
 
 export const touches = new Map<number, PointerState>();
@@ -26,9 +26,7 @@ const checkBound = (state: State) => {
 };
 
 const closeScrollLock = debounce(200, () =>
-  setState((state) => {
-    state.flag.scrollLock = false;
-  }),
+  _setState('flag', 'scrollLock', false),
 );
 
 export const zoom = (

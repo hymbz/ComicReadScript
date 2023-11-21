@@ -9,7 +9,7 @@ import {
 } from 'solid-js';
 
 import { t } from 'helper/i18n';
-import { setState, store } from '../store';
+import { _setState, store } from '../store';
 import { bindRef, focus, turnPage } from '../actions';
 
 import classes from '../index.module.css';
@@ -21,9 +21,7 @@ export const EndPage: Component = () => {
   const handleClick: EventHandler['onClick'] = (e) => {
     e.stopPropagation();
     if (e.target?.nodeName !== 'BUTTON')
-      setState((state) => {
-        state.show.endPage = undefined;
-      });
+      _setState('show', 'endPage', undefined);
     focus();
   };
 

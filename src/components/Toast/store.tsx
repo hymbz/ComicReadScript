@@ -1,7 +1,7 @@
 import { createStore, produce } from 'solid-js/store';
 import type { Toast } from '.';
 
-const [_state, _setState] = createStore({
+export const [_state, _setState] = createStore({
   list: [] as Toast['id'][],
   map: {} as Record<Toast['id'], Toast>,
 });
