@@ -1,10 +1,7 @@
-import { createEffect, createRoot, on } from 'solid-js';
-
 import { t } from 'helper/i18n';
 import type { PointerState, UseDrag } from '../hooks/useDrag';
 import type { State } from '../store';
-import { store, setState, refs, _setState } from '../store';
-import { resetUI } from './helper';
+import { store, refs, _setState } from '../store';
 
 /** 漫画流的总高度 */
 export const contentHeight = () => refs.mangaFlow.scrollHeight;
@@ -140,53 +137,3 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
       _setState('activePageIndex', newPageIndex);
   }
 };
-
-export const handleObserver: IntersectionObserverCallback = (entries) => {
-  if (store.gridMode) return;
-
-  setState((state) => {
-    entries.forEach(({ isIntersecting, target }) => {
-      if (isIntersecting)
-        state.memo.showImgList.push(target as HTMLImageElement);
-      else
-        state.memo.showImgList = state.memo.showImgList.filter(
-          (img) => img !== target,
-        );
-    });
-
-    state.memo.showPageList = [
-      ...new Set(
-        state.memo.showImgList.map(
-          (img) => +img.parentElement!.getAttribute('data-index')!,
-        ),
-      ),
-    ];
-    state.memo.showPageList.sort();
-
-    if (state.option.scrollMode)
-      state.activePageIndex = state.memo.showPageList[0] ?? 0;
-  });
-};
-
-createRoot(() => {
-  // 在关闭工具栏的同时关掉滚动条的强制显示
-  createEffect(
-    on(
-      () => store.show.toolbar,
-      () => {
-        if (store.show.scrollbar && !store.show.toolbar)
-          _setState('show', 'scrollbar', false);
-      },
-      { defer: true },
-    ),
-  );
-
-  // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
-  createEffect(
-    on(
-      () => store.gridMode,
-      () => setState(resetUI),
-      { defer: true },
-    ),
-  );
-});

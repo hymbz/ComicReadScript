@@ -113,8 +113,10 @@ export const linstenKeyup = (handler: (e: KeyboardEvent) => unknown) =>
   });
 
 /** 滚动页面到指定元素的所在位置 */
-export const scrollIntoView = (selector: string) =>
-  querySelector(selector)?.scrollIntoView();
+export const scrollIntoView = (
+  selector: string,
+  behavior: ScrollBehavior = 'instant',
+) => querySelector(selector)?.scrollIntoView({ behavior });
 
 /** 循环执行指定函数 */
 export const loop = async (fn: () => unknown, ms = 0) => {
@@ -261,7 +263,7 @@ export const triggerEleLazyLoad = async (
   oldSrc = e.src,
 ) => {
   const nowScroll = window.scrollY;
-  e.scrollIntoView();
+  e.scrollIntoView({ behavior: 'instant' });
   e.dispatchEvent(new Event('scroll', { bubbles: true }));
 
   const res = await wait(() => e.src !== oldSrc, time);

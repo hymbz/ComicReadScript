@@ -170,7 +170,6 @@
 
 .mangaFlow[data-scroll-mode] {
   touch-action: pan-y;
-  scroll-behavior: smooth;
 
   overflow: auto;
   grid-auto-flow: row;
