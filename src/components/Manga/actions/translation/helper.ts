@@ -1,5 +1,5 @@
 import { t } from 'helper/i18n';
-import { setState, store } from '../../store';
+import { _setState, store } from '../../store';
 
 export type TaskState = {
   state: 'saved' | 'finished' | 'error' | 'error-lang';
@@ -7,11 +7,8 @@ export type TaskState = {
   waiting: number;
 };
 
-export const setMessage = (i: number, msg: string) => {
-  setState((state) => {
-    state.imgList[i].translationMessage = msg;
-  });
-};
+export const setMessage = (i: number, msg: string) =>
+  _setState('imgList', i, 'translationMessage', msg);
 
 export const request = <T = any>(
   url: string,

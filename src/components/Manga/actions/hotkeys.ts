@@ -3,8 +3,8 @@ import { isEqualArray } from 'helper';
 import { _setState, store } from '../store';
 
 export const defaultHotkeys: Readonly<Record<string, string[]>> = {
-  turn_page_up: ['w', 'ArrowUp', 'PageUp'],
-  turn_page_down: [' ', 's', 'ArrowDown', 'PageDown'],
+  turn_page_up: ['w', 'ArrowUp', 'PageUp', 'Shift + W'],
+  turn_page_down: [' ', 's', 'ArrowDown', 'PageDown', 'Shift + S'],
   turn_page_right: ['d', '.', 'ArrowRight'],
   turn_page_left: ['a', ',', 'ArrowLeft'],
   jump_to_home: ['Home'],

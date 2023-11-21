@@ -1,7 +1,8 @@
-import { getKeyboardCode, requestIdleCallback } from 'helper';
+import { debounce } from 'throttle-debounce';
 
+import { getKeyboardCode, requestIdleCallback } from 'helper';
 import type { State } from '../store';
-import { store, setState, refs } from '../store';
+import { store, setState, refs, _setState } from '../store';
 import { zoom } from './zoom';
 import { setOption } from './helper';
 import { hotkeysMap } from './hotkeys';
@@ -43,6 +44,10 @@ const isTop = (state: State) =>
     ? store.scrollbar.dragTop === 0
     : state.activePageIndex === 0;
 
+const closeScrollLock = debounce(200, () =>
+  _setState('flag', 'scrollLock', false),
+);
+
 /** 翻页。返回是否成功改变了当前页数 */
 const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
   if (state.gridMode) return false;
@@ -66,9 +71,7 @@ const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
 
           state.show.endPage = 'start';
           state.flag.scrollLock = true;
-          window.setTimeout(() => {
-            state.flag.scrollLock = false;
-          }, 200);
+          closeScrollLock();
           return false;
         }
         if (state.option.scrollMode) return false;
@@ -95,9 +98,7 @@ const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
           if (!state.prop.Exit) return false;
           state.show.endPage = 'end';
           state.flag.scrollLock = true;
-          window.setTimeout(() => {
-            state.flag.scrollLock = false;
-          }, 200);
+          closeScrollLock();
           return false;
         }
         if (state.option.scrollMode) return false;
@@ -136,6 +137,17 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
       });
     }, 50);
   });
+};
+
+/** 卷轴模式下的滚动 */
+const scrollModeScroll = (dir: 'next' | 'prev') => {
+  if (!store.show.endPage)
+    refs.mangaFlow.scrollBy({
+      top: refs.root.clientHeight * 0.8 * (dir === 'next' ? 1 : -1),
+      behavior: 'instant',
+    });
+  _setState('flag', 'scrollLock', true);
+  closeScrollLock();
 };
 
 export const handleWheel = (e: WheelEvent) => {
@@ -184,14 +196,16 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 
   // esc 在触发配置操作前，先用于退出一些界面
   if (e.key === 'Escape') {
-    if (store.gridMode)
-      return setState((state) => {
-        state.gridMode = false;
-      });
-    if (store.show.endPage)
-      return setState((state) => {
-        state.show.endPage = undefined;
-      });
+    if (store.gridMode) {
+      e.stopPropagation();
+      e.preventDefault();
+      return _setState('gridMode', false);
+    }
+    if (store.show.endPage) {
+      e.stopPropagation();
+      e.preventDefault();
+      return _setState('show', 'endPage', undefined);
+    }
   }
 
   // 处理标注了 data-only-number 的元素
@@ -231,10 +245,14 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   }
 
   switch (hotkeysMap()[code]) {
-    case 'turn_page_up':
+    case 'turn_page_up': {
+      if (store.option.scrollMode) scrollModeScroll('prev');
       return turnPage('prev');
-    case 'turn_page_down':
+    }
+    case 'turn_page_down': {
+      if (store.option.scrollMode) scrollModeScroll('next');
       return turnPage('next');
+    }
 
     case 'turn_page_right':
       return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
@@ -242,13 +260,9 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));
 
     case 'jump_to_home':
-      return setState((state) => {
-        state.activePageIndex = 0;
-      });
+      return _setState('activePageIndex', 0);
     case 'jump_to_end':
-      return setState((state) => {
-        state.activePageIndex = state.pageList.length - 1;
-      });
+      return _setState('activePageIndex', store.pageList.length - 1);
 
     case 'switch_page_fill':
       return switchFillEffect();
