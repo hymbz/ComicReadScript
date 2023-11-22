@@ -1,29 +1,49 @@
 import type { Component } from 'solid-js';
-import { createSignal, createMemo, Show, For } from 'solid-js';
+import { createSignal, createMemo, Show, For, onMount } from 'solid-js';
 import { debounce } from 'throttle-debounce';
 
-import { store } from '../store';
+import { refs, store } from '../store';
 import { useDrag } from '../hooks/useDrag';
-import { getPageTip, getScrollPosition, handleScrollbarDrag } from '../actions';
+import {
+  bindRef,
+  getPageTip,
+  getScrollPosition,
+  handleScrollbarDrag,
+} from '../actions';
 
 import { ScrollbarPage } from './ScrollbarPage';
 
 import classes from '../index.module.css';
+import { boolDataVal } from '../../../helper';
 
 /** 滚动条 */
 export const Scrollbar: Component = () => {
+  onMount(() => {
+    useDrag({
+      ref: refs.scrollbar,
+      handleDrag: handleScrollbarDrag,
+      easyMode: () =>
+        store.option.scrollMode && store.option.scrollbar.easyScroll,
+    });
+  });
+
   /** 滚动条高度 */
   const height = createMemo(() =>
-    store.scrollbar.dragHeight
-      ? `${store.scrollbar.dragHeight * 100}%`
-      : `${(1 / store.pageList.length) * 100}%`,
+    store.option.scrollMode
+      ? store.scrollbar.dragHeight
+      : 1 / store.pageList.length,
   );
 
   /** 滚动条位置高度 */
   const top = createMemo(() =>
     store.option.scrollMode
-      ? `${store.scrollbar.dragTop * 100}%`
-      : `${(1 / store.pageList.length) * 100 * store.activePageIndex}%`,
+      ? store.scrollbar.dragTop
+      : (1 / store.pageList.length) * store.activePageIndex,
+  );
+
+  /** 滚动条滑块的中心点高度 */
+  const dragMidpoint = createMemo(
+    () => store.memo.scrollLength * (top() + height() / 2),
   );
 
   // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
@@ -53,24 +73,20 @@ export const Scrollbar: Component = () => {
 
   return (
     <div
-      ref={(e) =>
-        useDrag({
-          ref: e,
-          handleDrag: handleScrollbarDrag,
-          easyMode: () =>
-            store.option.scrollMode && store.option.scrollbar.easyScroll,
-        })
-      }
+      ref={bindRef('scrollbar')}
       class={classes.scrollbar}
       style={{
         'pointer-events':
           penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
+        '--drag-midpoint': `${dragMidpoint()}px`,
+        '--scroll-length': `${store.memo.scrollLength}px`,
       }}
       role="scrollbar"
       tabIndex={-1}
       aria-controls={classes.mangaFlow}
       aria-valuenow={store.activePageIndex || -1}
-      data-show={!store.option.scrollbar.autoHidden || showScrollbar()}
+      data-auto-hidden={boolDataVal(store.option.scrollbar.autoHidden)}
+      data-force-show={boolDataVal(showScrollbar())}
       data-dir={store.option.dir}
       data-position={getScrollPosition()}
       onWheel={handleWheel}
@@ -79,19 +95,12 @@ export const Scrollbar: Component = () => {
         class={classes.scrollbarDrag}
         classList={{ [classes.hidden]: store.gridMode }}
         style={{
-          '--height': height(),
-          /**
-           * 使用 transform 来移动的话因为涉及到百分比的四舍五入，
-           * 会在长漫画的滚动结束后出现明显的抖动，所以这里只能用 top 来控制
-           */
-          '--top': top(),
-          transition: store.option.scrollMode ? undefined : 'top 150ms',
+          '--height-ratio': height(),
+          '--top-ratio': top(),
         }}
-      >
-        <div class={classes.scrollbarPoper} data-show={showScrollbar()}>
-          {showTip()}
-        </div>
-      </div>
+      />
+      <div class={classes.scrollbarPoper} children={showTip()} />
+
       <Show when={store.option.scrollbar.showImgStatus}>
         <For each={store.pageList}>
           {([a, b]) => <ScrollbarPage a={a} b={b} />}

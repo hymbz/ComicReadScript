@@ -147,7 +147,9 @@ export default function DisplayManga() {
     log('end func 点击');
   };
 
-  const option: MangaProps['option'] = {};
+  const option: MangaProps['option'] = {
+    // scrollMode: true,
+  };
 
   return <Manga imgList={imgList[0]} onExit={onExit} option={option} />;
 }

@@ -73,11 +73,13 @@ export const defaultSettingList: () => SettingList = () => [
           onChange={createStateSetFn('scrollbar.position')}
         />
         <SettingsShowItem when={store.option.scrollbar.position !== 'hidden'}>
-          <SettingsItemSwitch
-            name={t('setting.option.scrollbar_auto_hidden')}
-            value={store.option.scrollbar.autoHidden}
-            onChange={createStateSetFn('scrollbar.autoHidden')}
-          />
+          <Show when={!store.isMobile}>
+            <SettingsItemSwitch
+              name={t('setting.option.scrollbar_auto_hidden')}
+              value={store.option.scrollbar.autoHidden}
+              onChange={createStateSetFn('scrollbar.autoHidden')}
+            />
+          </Show>
           <SettingsItemSwitch
             name={t('setting.option.scrollbar_show_img_status')}
             value={store.option.scrollbar.showImgStatus}

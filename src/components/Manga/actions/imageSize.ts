@@ -22,18 +22,6 @@ export const updateImgType = (state: State, draftImg: ComicImg) => {
   if (type !== draftImg.type) updatePageData.debounce();
 };
 
-/** 处理显示窗口的长宽变化 */
-export const handleResize = (state: State, width: number, height: number) => {
-  if (!(width && height)) return;
-  state.proportion.单页比例 = Math.min(width / 2 / height, 1);
-  state.proportion.横幅比例 = width / height;
-  state.proportion.条漫比例 = state.proportion.单页比例 / 2;
-
-  state.imgList.forEach((img) => updateImgType(state, img));
-
-  state.isMobile = window.matchMedia('(max-width: 800px)').matches;
-};
-
 /** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
 const checkImgTypeCount = (
   state: State,
@@ -125,6 +113,21 @@ const getImgMedian = (
 
 export const { placeholderSize } = createRoot(() => {
   createEffect(on(() => store.imgList, updateAllImgSize));
+
+  /** 处理显示窗口的长宽变化 */
+  createEffect(
+    on(
+      () => store.memo.size,
+      ({ width, height }) =>
+        setState((state) => {
+          state.proportion.单页比例 = Math.min(width / 2 / height, 1);
+          state.proportion.横幅比例 = width / height;
+          state.proportion.条漫比例 = state.proportion.单页比例 / 2;
+
+          state.imgList.forEach((img) => updateImgType(state, img));
+        }),
+    ),
+  );
 
   const placeholderSizeMemo = createMemo(() => ({
     width: getImgMedian((img) => img.width!, refs.root?.offsetWidth),

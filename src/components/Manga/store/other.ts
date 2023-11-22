@@ -4,12 +4,16 @@ export const OtherState = {
 
   /** 自动更新不能手动修改的变量 */
   memo: {
+    /** 显示窗口的尺寸 */
+    size: { width: 0, height: 0 },
     /** 当前显示的图片 */
     showImgList: [] as HTMLImageElement[],
     /** 当前显示的页面 */
     showPageList: [] as number[],
     /** 要渲染的页面 */
     renderPageList: [] as PageList,
+    /** 滚动条长度 */
+    scrollLength: 0,
   },
 
   flag: {

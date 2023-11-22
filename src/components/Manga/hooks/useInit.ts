@@ -36,18 +36,13 @@ export const useInit = (props: MangaProps) => {
     });
   });
 
+  // 初始化页面比例
+  handleResize(refs.root.scrollWidth, refs.root.scrollHeight);
   // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
   const resizeObserver = new ResizeObserver(
-    throttle<ResizeObserverCallback>(100, ([entries]) => {
-      const { width, height } = entries.contentRect;
-      setState((state) => {
-        handleResize(state, width, height);
-      });
+    throttle<ResizeObserverCallback>(100, ([{ contentRect }]) => {
+      handleResize(contentRect.width, contentRect.height);
     }),
-  );
-  // 初始化页面比例
-  setState((state) =>
-    handleResize(state, refs.root.scrollWidth, refs.root.scrollHeight),
   );
   resizeObserver.disconnect();
   resizeObserver.observe(refs.root);

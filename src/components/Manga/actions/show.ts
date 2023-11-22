@@ -4,6 +4,13 @@ import { _setState, setState, store } from '../store';
 import { updateImgLoadType, activePage } from './image';
 import { resetUI } from './helper';
 
+export const handleResize = (width: number, height: number) => {
+  setState((state) => {
+    state.memo.size = { width, height };
+    state.isMobile = width < 800;
+  });
+};
+
 /** 更新渲染页面相关变量 */
 export const updateRenderPage = (state: State, animation = false) => {
   state.memo.renderPageList = state.pageList.slice(

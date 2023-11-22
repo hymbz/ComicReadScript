@@ -88,7 +88,6 @@ export const ComicImgFlow: Component = () => {
       ref={bindRef('mangaFlow')}
       dir={store.option.dir}
       class={`${classes.mangaFlow} ${classes.beautifyScrollbar}`}
-      data-scroll-mode={boolDataVal(store.option.scrollMode)}
       data-disable-zoom={boolDataVal(
         store.option.disableZoom || store.option.scrollMode,
       )}

@@ -1,4 +1,5 @@
 import { t } from 'helper/i18n';
+import { createEffect, createRoot, on } from 'solid-js';
 import type { PointerState, UseDrag } from '../hooks/useDrag';
 import type { State } from '../store';
 import { store, refs, _setState } from '../store';
@@ -137,3 +138,16 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
       _setState('activePageIndex', newPageIndex);
   }
 };
+
+createRoot(() => {
+  // 更新 scrollLength
+  createEffect(
+    on([getScrollPosition, () => store.memo.size], () => {
+      _setState(
+        'memo',
+        'scrollLength',
+        Math.max(refs.scrollbar?.clientWidth, refs.scrollbar?.clientHeight),
+      );
+    }),
+  );
+});
