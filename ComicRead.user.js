@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.1.1
+// @version         8.2.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -181,7 +181,9 @@ const linstenKeyup = handler => window.addEventListener('keyup', e => {
 });
 
 /** 滚动页面到指定元素的所在位置 */
-const scrollIntoView = selector => querySelector(selector)?.scrollIntoView();
+const scrollIntoView = (selector, behavior = 'instant') => querySelector(selector)?.scrollIntoView({
+  behavior
+});
 
 /** 循环执行指定函数 */
 const loop = async (fn, ms = 0) => {
@@ -302,7 +304,9 @@ const boolDataVal = val => val ? '' : undefined;
  */
 const triggerEleLazyLoad = async (e, time = 0, oldSrc = e.src) => {
   const nowScroll = window.scrollY;
-  e.scrollIntoView();
+  e.scrollIntoView({
+    behavior: 'instant'
+  });
   e.dispatchEvent(new Event('scroll', {
     bubbles: true
   }));
@@ -312,6 +316,23 @@ const triggerEleLazyLoad = async (e, time = 0, oldSrc = e.src) => {
     behavior: 'auto'
   });
   return res;
+};
+
+/** 获取图片尺寸 */
+const getImgSize = async url => {
+  try {
+    let error = false;
+    const image = new Image();
+    image.onerror = () => {
+      error = true;
+    };
+    image.src = url;
+    await wait(() => !error && (image.naturalWidth || image.naturalHeight));
+    if (error) return null;
+    return [image.naturalWidth, image.naturalHeight];
+  } catch (_) {
+    return null;
+  }
 };
 
 /** 测试图片 url 能否正确加载 */
@@ -1353,9 +1374,7 @@ const toast$2 = (msg, options) => {
 };
 toast$2.dismiss = id => {
   if (!Reflect.has(store$2.map, id)) return;
-  setState$1(state => {
-    state.map[id].exit = true;
-  });
+  _setState$1('map', id, 'exit', true);
 };
 toast$2.set = (id, options) => {
   if (!Reflect.has(store$2.map, id)) return;
@@ -1401,9 +1420,7 @@ const dismissToast = id => setState$1(state => {
 });
 
 /** 重置 toast 的 update 属性 */
-const resetToastUpdate = id => setState$1(state => {
-  Reflect.deleteProperty(state.map[id], 'update');
-});
+const resetToastUpdate = id => _setState$1('map', id, 'update', undefined);
 const ToastItem = props => {
   /** 是否要显示进度 */
   const showSchedule = solidJs.createMemo(() => props.duration === Infinity && props.schedule ? true : undefined);
@@ -1888,12 +1905,19 @@ const OtherState = {
   observer: null,
   /** 自动更新不能手动修改的变量 */
   memo: {
+    /** 显示窗口的尺寸 */
+    size: {
+      width: 0,
+      height: 0
+    },
     /** 当前显示的图片 */
     showImgList: [],
     /** 当前显示的页面 */
     showPageList: [],
     /** 要渲染的页面 */
-    renderPageList: []
+    renderPageList: [],
+    /** 滚动条长度 */
+    scrollLength: 0
   },
   flag: {
     /** 是否需要自动判断开启卷轴模式 */
@@ -2003,6 +2027,7 @@ const refs = {
   root: undefined,
   mangaFlow: undefined,
   touchArea: undefined,
+  scrollbar: undefined,
   // 结束页上的按钮
   prev: undefined,
   next: undefined,
@@ -2247,28 +2272,6 @@ const handleComicData = (imgList, fillEffect) => {
   return pageList;
 };
 
-/** 触发 onOptionChange */
-const triggerOnOptionChange = () => setTimeout(() => store$1.prop.OptionChange?.(difference(store$1.option, defaultOption)));
-
-/** 在 option 后手动触发 onOptionChange */
-const setOption = fn => {
-  setState(state => fn(state.option, state));
-  triggerOnOptionChange();
-};
-
-/** 创建一个专门用于修改指定配置项的函数 */
-const createStateSetFn = name => val => setOption(draftOption => byPath(draftOption, name, () => val));
-
-/** 创建用于将 ref 绑定到对应 state 上的工具函数 */
-const bindRef = name => e => Reflect.set(refs, name, e);
-
-/** 将界面恢复到正常状态 */
-const resetUI = state => {
-  state.show.toolbar = false;
-  state.show.scrollbar = false;
-  state.show.touchArea = false;
-};
-
 /** 漫画流的总高度 */
 const contentHeight = () => refs.mangaFlow.scrollHeight;
 
@@ -2373,42 +2376,37 @@ const handleScrollbarDrag = ({
     let newPageIndex = Math.floor(top * store$1.pageList.length);
     // 处理超出范围的情况
     if (newPageIndex < 0) newPageIndex = 0;else if (newPageIndex >= store$1.pageList.length) newPageIndex = store$1.pageList.length - 1;
-    if (newPageIndex !== store$1.activePageIndex) {
-      setState(state => {
-        state.activePageIndex = newPageIndex;
-      });
-    }
+    if (newPageIndex !== store$1.activePageIndex) _setState('activePageIndex', newPageIndex);
   }
 };
-const handleObserver = entries => {
-  if (store$1.gridMode) return;
-  setState(state => {
-    entries.forEach(({
-      isIntersecting,
-      target
-    }) => {
-      if (isIntersecting) state.memo.showImgList.push(target);else state.memo.showImgList = state.memo.showImgList.filter(img => img !== target);
-    });
-    state.memo.showPageList = [...new Set(state.memo.showImgList.map(img => +img.parentElement.getAttribute('data-index')))];
-    state.memo.showPageList.sort();
-    if (state.option.scrollMode) state.activePageIndex = state.memo.showPageList[0] ?? 0;
-  });
-};
 solidJs.createRoot(() => {
-  // 在关闭工具栏的同时关掉滚动条的强制显示
-  solidJs.createEffect(solidJs.on(() => store$1.show.toolbar, () => {
-    if (store$1.show.scrollbar && !store$1.show.toolbar) setState(state => {
-      state.show.scrollbar = false;
-    });
-  }, {
-    defer: true
-  }));
-
-  // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
-  solidJs.createEffect(solidJs.on(() => store$1.gridMode, () => setState(resetUI), {
-    defer: true
+  // 更新 scrollLength
+  solidJs.createEffect(solidJs.on([getScrollPosition, () => store$1.memo.size], () => {
+    _setState('memo', 'scrollLength', Math.max(refs.scrollbar?.clientWidth, refs.scrollbar?.clientHeight));
   }));
 });
+
+/** 触发 onOptionChange */
+const triggerOnOptionChange = () => setTimeout(() => store$1.prop.OptionChange?.(difference(store$1.option, defaultOption)));
+
+/** 在 option 后手动触发 onOptionChange */
+const setOption = fn => {
+  setState(state => fn(state.option, state));
+  triggerOnOptionChange();
+};
+
+/** 创建一个专门用于修改指定配置项的函数 */
+const createStateSetFn = name => val => setOption(draftOption => byPath(draftOption, name, () => val));
+
+/** 创建用于将 ref 绑定到对应 state 上的工具函数 */
+const bindRef = name => e => Reflect.set(refs, name, e);
+
+/** 将界面恢复到正常状态 */
+const resetUI = state => {
+  state.show.toolbar = false;
+  state.show.scrollbar = false;
+  state.show.touchArea = false;
+};
 
 const {
   activeImgIndex,
@@ -2556,9 +2554,7 @@ const checkBound = state => {
   state.zoom.offset.x = clamp(bound.x(), state.zoom.offset.x, 0);
   state.zoom.offset.y = clamp(bound.y(), state.zoom.offset.y, 0);
 };
-const closeScrollLock = debounce(200, () => setState(state => {
-  state.flag.scrollLock = false;
-}));
+const closeScrollLock$1 = debounce(200, () => _setState('flag', 'scrollLock', false));
 const zoom = (val, focal, animation = false) => {
   const newScale = clamp(100, val, 500);
   if (newScale === store$1.zoom.scale) return;
@@ -2588,7 +2584,7 @@ const zoom = (val, focal, animation = false) => {
     // 加一个延时锁防止在放大模式下通过滚轮缩小至原尺寸后就立刻跳到下一页
     if (newScale === 100) {
       state.flag.scrollLock = true;
-      closeScrollLock();
+      closeScrollLock$1();
     }
     resetUI(state);
   });
@@ -2766,8 +2762,8 @@ const handlePinchZoom = ({
 };
 
 const defaultHotkeys = {
-  turn_page_up: ['w', 'ArrowUp', 'PageUp'],
-  turn_page_down: [' ', 's', 'ArrowDown', 'PageDown'],
+  turn_page_up: ['w', 'ArrowUp', 'PageUp', 'Shift + W'],
+  turn_page_down: [' ', 's', 'ArrowDown', 'PageDown', 'Shift + S'],
   turn_page_right: ['d', '.', 'ArrowRight'],
   turn_page_left: ['a', ',', 'ArrowLeft'],
   jump_to_home: ['Home'],
@@ -2805,6 +2801,16 @@ const delHotkeys = code => {
   });
 };
 
+const handleResize = (width, height) => {
+  setState(state => {
+    state.memo.size = {
+      width,
+      height
+    };
+    state.isMobile = width < 800;
+  });
+};
+
 /** 更新渲染页面相关变量 */
 const updateRenderPage = (state, animation = false) => {
   state.memo.renderPageList = state.pageList.slice(Math.max(0, state.activePageIndex - 1), Math.min(state.pageList.length, state.activePageIndex + 2));
@@ -2813,6 +2819,22 @@ const updateRenderPage = (state, animation = false) => {
   state.page.offset.y.pct = 0;
   if (store$1.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
   state.page.anima = animation ? 'page' : '';
+};
+const updateShowPageList = state => {
+  state.memo.showPageList = [...new Set(state.memo.showImgList.map(img => +img.parentElement.getAttribute('data-index')))];
+  state.memo.showPageList.sort();
+  if (state.option.scrollMode) state.activePageIndex = state.memo.showPageList[0] ?? 0;
+};
+const handleObserver = entries => {
+  setState(state => {
+    entries.forEach(({
+      isIntersecting,
+      target
+    }) => {
+      if (isIntersecting) state.memo.showImgList.push(target);else state.memo.showImgList = state.memo.showImgList.filter(img => img !== target);
+    });
+    if (!store$1.gridMode) updateShowPageList(state);
+  });
 };
 solidJs.createRoot(() => {
   // 页数发生变动时
@@ -2824,17 +2846,27 @@ solidJs.createRoot(() => {
   }, {
     defer: true
   }));
+
+  // 在关闭工具栏的同时关掉滚动条的强制显示
+  solidJs.createEffect(solidJs.on(() => store$1.show.toolbar, () => {
+    if (store$1.show.scrollbar && !store$1.show.toolbar) _setState('show', 'scrollbar', false);
+  }, {
+    defer: true
+  }));
   solidJs.createEffect(solidJs.on(activePage, page => {
+    if (!store$1.option.scrollMode && !store$1.isDragMode) setState(updateRenderPage);
     // 如果当前显示页面有出错的图片，就重新加载一次
     page?.forEach(i => {
       if (store$1.imgList[i]?.loadType !== 'error') return;
-      setState(state => {
-        state.imgList[i].loadType = 'wait';
-      });
+      _setState('imgList', i, 'loadType', 'wait');
     });
-    if (store$1.option.scrollMode) return;
-    // 在翻页时重新计算要渲染的页面
-    if (!store$1.isDragMode) setState(updateRenderPage);
+  }, {
+    defer: true
+  }));
+
+  // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
+  solidJs.createEffect(solidJs.on(() => store$1.gridMode, () => setState(resetUI), {
+    defer: true
   }));
 });
 
@@ -2890,8 +2922,8 @@ const switchGridMode = () => {
   });
 };
 
-var css$1 = ".index_module_img__d1a5aaee{background-color:var(--hover-bg-color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d1a5aaee[data-fill=left]{transform:translate(50%)}.index_module_img__d1a5aaee[data-fill=right]{transform:translate(-50%)}.index_module_img__d1a5aaee[data-fill=page]{display:none}.index_module_img__d1a5aaee[data-type=long]{height:auto;width:100%}.index_module_img__d1a5aaee[data-load-type=loading]{animation:index_module_show__d1a5aaee 2s forwards;max-width:100vw!important;opacity:0}.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[data-load-type=wait],.index_module_img__d1a5aaee[src=\\"\\"]{aspect-ratio:3/4;height:100%!important;position:relative}:is(.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[src=\\"\\"]):before{opacity:0}:is(.index_module_img__d1a5aaee[data-load-type],.index_module_img__d1a5aaee[src=\\"\\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d1a5aaee[data-load-type=loading],.index_module_img__d1a5aaee[data-load-type=wait]):after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__d1a5aaee[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__d1a5aaee[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_page__d1a5aaee{align-items:center;content-visibility:hidden;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d1a5aaee[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d1a5aaee{grid-row-gap:0;backface-visibility:hidden;color:var(--text);display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;transition-duration:0ms;user-select:none;width:100%}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d1a5aaee[data-disable-zoom] .index_module_img__d1a5aaee{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d1a5aaee[dir=ltr] .index_module_page__d1a5aaee{flex-direction:row}.index_module_mangaFlow__d1a5aaee[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d1a5aaee[data-animation=page] .index_module_page__d1a5aaee,.index_module_mangaFlow__d1a5aaee[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d1a5aaee[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d1a5aaee[data-scale-mode]{touch-action:none!important}.index_module_mangaFlow__d1a5aaee[data-scroll-mode]{grid-row-gap:calc(var(--scroll-mode-spacing)*.1em);grid-auto-flow:row;grid-auto-rows:auto;grid-template-rows:auto;overflow:auto;touch-action:pan-y}.index_module_mangaFlow__d1a5aaee[data-scroll-mode] .index_module_page__d1a5aaee{display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_mangaFlow__d1a5aaee[data-scroll-mode] .index_module_img__d1a5aaee{display:unset;height:calc(var(--scroll-mode-img-scale)*var(--height, 0))!important;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width, 100%)))}.index_module_mangaFlow__d1a5aaee[data-scroll-mode] .index_module_img__d1a5aaee[data-load-type=loading]{position:unset}.index_module_mangaFlow__d1a5aaee[data-scroll-mode] .index_module_img__d1a5aaee[data-load-type=error]{height:20em;width:30em}.index_module_mangaFlow__d1a5aaee[data-grid-mode]{grid-row-gap:1.5em;box-sizing:border-box;grid-auto-flow:row;grid-auto-rows:33.33333%;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;overflow:auto;padding-bottom:2em;touch-action:auto;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee{height:auto;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee:after{bottom:-1.4em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);white-space:pre;width:100%}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee .index_module_img__d1a5aaee{cursor:pointer}@keyframes index_module_show__d1a5aaee{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d1a5aaee{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d1a5aaee>button{animation:index_module_jello__d1a5aaee .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d1a5aaee>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d1a5aaee>button:focus-visible{outline:none}.index_module_endPage__d1a5aaee>.index_module_tip__d1a5aaee{margin:auto;position:absolute}.index_module_endPage__d1a5aaee[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d1a5aaee[data-type=start]>.index_module_tip__d1a5aaee{transform:translateY(-10em)}.index_module_endPage__d1a5aaee[data-type=end]>.index_module_tip__d1a5aaee{transform:translateY(10em)}.index_module_root__d1a5aaee[data-mobile] .index_module_endPage__d1a5aaee>button{width:1em}.index_module_comments__d1a5aaee{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d1a5aaee>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d1a5aaee:hover{opacity:1}.index_module_root__d1a5aaee[data-mobile] .index_module_comments__d1a5aaee{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d1a5aaee{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d1a5aaee{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d1a5aaee{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d1a5aaee[data-show],.index_module_toolbar__d1a5aaee:hover) .index_module_toolbarPanel__d1a5aaee{transform:none}.index_module_toolbar__d1a5aaee[data-close] .index_module_toolbarPanel__d1a5aaee{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d1a5aaee{backdrop-filter:blur(24px);background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee{font-size:1.3em}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee:not([data-show]){pointer-events:none}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbarBg__d1a5aaee{filter:opacity(.8)}.index_module_SettingPanelPopper__d1a5aaee{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__d1a5aaee{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;user-select:text;z-index:1}.index_module_SettingPanel__d1a5aaee hr{color:#fff;margin:0}.index_module_SettingBlock__d1a5aaee{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div+:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div{margin-top:1em}.index_module_SettingBlock__d1a5aaee[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__d1a5aaee{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d1a5aaee{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d1a5aaee+.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_SettingsItemName__d1a5aaee{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d1a5aaee{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true] .index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d1a5aaee{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d1a5aaee{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6em;outline:none;padding:.3em}.index_module_closeCover__d1a5aaee{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d1a5aaee{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee{overflow:hidden}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee>.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_hotkeys__d1a5aaee{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d1a5aaee+.index_module_hotkeys__d1a5aaee{margin-top:.5em}.index_module_hotkeys__d1a5aaee:last-child{border-bottom:none}.index_module_hotkeysItem__d1a5aaee{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__d1a5aaee>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d1a5aaee>svg:hover{opacity:.9}.index_module_hotkeysItem__d1a5aaee:hover{padding:.2em .5em}.index_module_hotkeysItem__d1a5aaee:hover>svg{display:unset}.index_module_hotkeysItem__d1a5aaee:focus,.index_module_hotkeysItem__d1a5aaee:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d1a5aaee{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d1a5aaee>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d1a5aaee>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d1a5aaee>div[title]>svg{width:1.6em}.index_module_hotkeys__d1a5aaee:hover div[title]{transform:scale(1)}.index_module_scrollbar__d1a5aaee{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;opacity:0;outline:none;position:absolute;right:3px;top:1%;touch-action:none;transition:opacity .15s;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d1a5aaee>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbar__d1a5aaee:hover,.index_module_scrollbar__d1a5aaee[data-show=true]{opacity:1}.index_module_scrollbarDrag__d1a5aaee{background-color:var(--scrollbar-drag);border-radius:1em;height:var(--height);justify-content:center;position:absolute;top:var(--top);width:100%;z-index:1}.index_module_scrollbarPage__d1a5aaee{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d1a5aaee[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d1a5aaee[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d1a5aaee[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d1a5aaee[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d1a5aaee[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d1a5aaee[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d1a5aaee[data-translation-type=error]{background-color:#f005}.index_module_scrollbarPoper__d1a5aaee{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;justify-content:center;line-height:1.5em;opacity:0;padding:.2em .5em;position:absolute;right:2em;text-align:center;transition:opacity .15s;white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbarPoper__d1a5aaee[data-show=true]{opacity:1}.index_module_scrollbarPoper__d1a5aaee:after{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";left:100%;position:absolute}.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee{opacity:1}.index_module_scrollbar__d1a5aaee[data-position=hidden]{display:none}.index_module_scrollbar__d1a5aaee[data-position=bottom],.index_module_scrollbar__d1a5aaee[data-position=top]{border-left:none;flex-direction:row-reverse;height:5px;right:1%;top:unset;width:98%}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarDrag__d1a5aaee{height:100%;right:var(--top);top:unset;width:var(--height)}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr],.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]{flex-direction:row}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee{left:var(--top);right:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{padding:.1em .3em;right:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee:after,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee:after{border:.3em solid #0000;left:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee{transform:scaleX(1)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-type=loaded],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-translation-type],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-translation-type]{transform:scaleX(1)}.index_module_scrollbar__d1a5aaee[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{top:1.2em}.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee:after{border-bottom:.4em solid #303030;bottom:100%}.index_module_scrollbar__d1a5aaee[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee{bottom:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee:after{border-top:.4em solid #303030;top:100%}.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee{opacity:0}.index_module_touchAreaRoot__d1a5aaee{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(40%,10em) 1fr;grid-template-rows:1fr min(30%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;user-select:none;width:100%}.index_module_touchAreaRoot__d1a5aaee[data-show]{opacity:1}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d1a5aaee[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=next],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d1a5aaee[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d1a5aaee[data-mobile] .index_module_touchAreaRoot__d1a5aaee{flex-direction:column!important;letter-spacing:0}.index_module_root__d1a5aaee[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d1a5aaee{display:none!important}.index_module_invisible__d1a5aaee{visibility:hidden!important}.index_module_root__d1a5aaee{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d1a5aaee a{color:var(--text-secondary)}.index_module_root__d1a5aaee[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d1a5aaee{scrollbar-color:var(--scrollbar-drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-thumb{background:var(--scrollbar-drag)}p{margin:0}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
-var modules_c21c94f2$1 = {"img":"index_module_img__d1a5aaee","show":"index_module_show__d1a5aaee","mangaFlow":"index_module_mangaFlow__d1a5aaee","endPage":"index_module_endPage__d1a5aaee","jello":"index_module_jello__d1a5aaee","tip":"index_module_tip__d1a5aaee","root":"index_module_root__d1a5aaee","comments":"index_module_comments__d1a5aaee","toolbar":"index_module_toolbar__d1a5aaee","toolbarPanel":"index_module_toolbarPanel__d1a5aaee","toolbarBg":"index_module_toolbarBg__d1a5aaee","SettingPanelPopper":"index_module_SettingPanelPopper__d1a5aaee","SettingPanel":"index_module_SettingPanel__d1a5aaee","SettingBlock":"index_module_SettingBlock__d1a5aaee","SettingBlockBody":"index_module_SettingBlockBody__d1a5aaee","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__d1a5aaee","SettingsItem":"index_module_SettingsItem__d1a5aaee","SettingsItemName":"index_module_SettingsItemName__d1a5aaee","SettingsItemSwitch":"index_module_SettingsItemSwitch__d1a5aaee","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__d1a5aaee","SettingsItemIconButton":"index_module_SettingsItemIconButton__d1a5aaee","SettingsItemSelect":"index_module_SettingsItemSelect__d1a5aaee","closeCover":"index_module_closeCover__d1a5aaee","SettingsShowItem":"index_module_SettingsShowItem__d1a5aaee","SettingsShowItemBody":"index_module_SettingsShowItemBody__d1a5aaee","hotkeys":"index_module_hotkeys__d1a5aaee","hotkeysItem":"index_module_hotkeysItem__d1a5aaee","hotkeysHeader":"index_module_hotkeysHeader__d1a5aaee","scrollbar":"index_module_scrollbar__d1a5aaee","scrollbarDrag":"index_module_scrollbarDrag__d1a5aaee","scrollbarPage":"index_module_scrollbarPage__d1a5aaee","scrollbarPoper":"index_module_scrollbarPoper__d1a5aaee","touchAreaRoot":"index_module_touchAreaRoot__d1a5aaee","touchArea":"index_module_touchArea__d1a5aaee","hidden":"index_module_hidden__d1a5aaee","invisible":"index_module_invisible__d1a5aaee","beautifyScrollbar":"index_module_beautifyScrollbar__d1a5aaee","page":"index_module_page__d1a5aaee"};
+var css$1 = ".index_module_img__d1a5aaee{background-color:var(--hover-bg-color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d1a5aaee[data-fill=left]{transform:translate(50%)}.index_module_img__d1a5aaee[data-fill=right]{transform:translate(-50%)}.index_module_img__d1a5aaee[data-fill=page]{display:none}.index_module_img__d1a5aaee[data-type=long]{height:auto;width:100%}.index_module_img__d1a5aaee[data-load-type=loading]{animation:index_module_show__d1a5aaee 2s forwards;max-width:100vw!important;opacity:0}.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[data-load-type=wait],.index_module_img__d1a5aaee[src=\\"\\"]{aspect-ratio:3/4;height:100%;position:relative}:is(.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[src=\\"\\"]):before{opacity:0}:is(.index_module_img__d1a5aaee[data-load-type],.index_module_img__d1a5aaee[src=\\"\\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d1a5aaee[data-load-type=loading],.index_module_img__d1a5aaee[data-load-type=wait]):after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__d1a5aaee[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__d1a5aaee[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_page__d1a5aaee{align-items:center;content-visibility:hidden;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d1a5aaee[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d1a5aaee{grid-row-gap:0;backface-visibility:hidden;color:var(--text);display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;transition-duration:0ms;user-select:none;width:100%}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d1a5aaee[data-disable-zoom] .index_module_img__d1a5aaee{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d1a5aaee[dir=ltr] .index_module_page__d1a5aaee{flex-direction:row}.index_module_mangaFlow__d1a5aaee[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d1a5aaee[data-animation=page] .index_module_page__d1a5aaee,.index_module_mangaFlow__d1a5aaee[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d1a5aaee[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d1a5aaee[data-grid-mode]{grid-row-gap:1.5em;box-sizing:border-box;grid-auto-flow:row;grid-auto-rows:33.33333%;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;overflow:auto;padding-bottom:2em;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee{height:auto;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee:after{bottom:-1.4em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);white-space:pre;width:100%}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee .index_module_img__d1a5aaee{cursor:pointer}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee{grid-row-gap:calc(var(--scroll-mode-spacing)*.1em);grid-auto-flow:row;grid-auto-rows:auto;grid-template-rows:auto;overflow:auto}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_page__d1a5aaee{display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width, 100%)))}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=loading]{position:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=error]{height:20em;width:30em}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_img__d1a5aaee{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}@keyframes index_module_show__d1a5aaee{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d1a5aaee{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d1a5aaee>button{animation:index_module_jello__d1a5aaee .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d1a5aaee>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d1a5aaee>button:focus-visible{outline:none}.index_module_endPage__d1a5aaee>.index_module_tip__d1a5aaee{margin:auto;position:absolute}.index_module_endPage__d1a5aaee[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d1a5aaee[data-type=start]>.index_module_tip__d1a5aaee{transform:translateY(-10em)}.index_module_endPage__d1a5aaee[data-type=end]>.index_module_tip__d1a5aaee{transform:translateY(10em)}.index_module_root__d1a5aaee[data-mobile] .index_module_endPage__d1a5aaee>button{width:1em}.index_module_comments__d1a5aaee{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d1a5aaee>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d1a5aaee:hover{opacity:1}.index_module_root__d1a5aaee[data-mobile] .index_module_comments__d1a5aaee{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d1a5aaee{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d1a5aaee{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d1a5aaee{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d1a5aaee[data-show],.index_module_toolbar__d1a5aaee:hover) .index_module_toolbarPanel__d1a5aaee{transform:none}.index_module_toolbar__d1a5aaee[data-close] .index_module_toolbarPanel__d1a5aaee{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d1a5aaee{backdrop-filter:blur(24px);background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee{font-size:1.3em}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee:not([data-show]){pointer-events:none}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbarBg__d1a5aaee{filter:opacity(.8)}.index_module_SettingPanelPopper__d1a5aaee{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__d1a5aaee{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;user-select:text;z-index:1}.index_module_SettingPanel__d1a5aaee hr{color:#fff;margin:0}.index_module_SettingBlock__d1a5aaee{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div+:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div{margin-top:1em}.index_module_SettingBlock__d1a5aaee[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__d1a5aaee{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d1a5aaee{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d1a5aaee+.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_SettingsItemName__d1a5aaee{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d1a5aaee{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true] .index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d1a5aaee{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d1a5aaee{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6em;outline:none;padding:.3em}.index_module_closeCover__d1a5aaee{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d1a5aaee{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee{overflow:hidden}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee>.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_hotkeys__d1a5aaee{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d1a5aaee+.index_module_hotkeys__d1a5aaee{margin-top:.5em}.index_module_hotkeys__d1a5aaee:last-child{border-bottom:none}.index_module_hotkeysItem__d1a5aaee{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__d1a5aaee>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d1a5aaee>svg:hover{opacity:.9}.index_module_hotkeysItem__d1a5aaee:hover{padding:.2em .5em}.index_module_hotkeysItem__d1a5aaee:hover>svg{display:unset}.index_module_hotkeysItem__d1a5aaee:focus,.index_module_hotkeysItem__d1a5aaee:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d1a5aaee{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d1a5aaee>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d1a5aaee>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d1a5aaee>div[title]>svg{width:1.6em}.index_module_hotkeys__d1a5aaee:hover div[title]{transform:scale(1)}.index_module_scrollbar__d1a5aaee{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d1a5aaee>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__d1a5aaee{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d1a5aaee[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d1a5aaee[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d1a5aaee[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d1a5aaee[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d1a5aaee[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d1a5aaee[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d1a5aaee[data-translation-type=error]{background-color:#f005}.index_module_scrollbarDrag__d1a5aaee{--top:calc(var(--top-ratio)*var(--scroll-length));--height:calc(var(--height-ratio)*var(--scroll-length));background-color:var(--scrollbar-drag);border-radius:1em;height:var(--height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__d1a5aaee{--poper-top:clamp(0%,calc(var(--drag-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__d1a5aaee:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--drag-midpoint) - 50%))}.index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover:before,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show]:before{opacity:1}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarDrag__d1a5aaee{opacity:0}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarDrag__d1a5aaee{opacity:1}.index_module_scrollbar__d1a5aaee[data-position=hidden]{display:none}.index_module_scrollbar__d1a5aaee[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--before-x),-120%)}.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{top:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--before-x),120%)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee{bottom:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom],.index_module_scrollbar__d1a5aaee[data-position=top]{--before-x:calc(var(--drag-midpoint)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before,.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarDrag__d1a5aaee{height:100%;transform:translateX(calc(var(--top)*-1));width:var(--height)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr],.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]{--before-x:calc(var(--drag-midpoint) - 50%);flex-direction:row}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee{transform:translateX(var(--top))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee{transform:translateX(var(--poper-top))}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee{transform:scaleX(1)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-type=loaded],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-translation-type],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-translation-type]{transform:scaleX(1)}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_scrollbar__d1a5aaee:before,.index_module_root__d1a5aaee[data-scroll-mode] :is(.index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbarPoper__d1a5aaee){transition:opacity .15s}.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover:before{opacity:0}.index_module_touchAreaRoot__d1a5aaee{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(40%,10em) 1fr;grid-template-rows:1fr min(30%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;user-select:none;width:100%}.index_module_touchAreaRoot__d1a5aaee[data-show]{opacity:1}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d1a5aaee[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=next],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d1a5aaee[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d1a5aaee[data-mobile] .index_module_touchAreaRoot__d1a5aaee{flex-direction:column!important;letter-spacing:0}.index_module_root__d1a5aaee[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d1a5aaee{display:none!important}.index_module_invisible__d1a5aaee{visibility:hidden!important}.index_module_root__d1a5aaee{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d1a5aaee a{color:var(--text-secondary)}.index_module_root__d1a5aaee[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d1a5aaee{scrollbar-color:var(--scrollbar-drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-thumb{background:var(--scrollbar-drag)}p{margin:0}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var modules_c21c94f2$1 = {"img":"index_module_img__d1a5aaee","show":"index_module_show__d1a5aaee","mangaFlow":"index_module_mangaFlow__d1a5aaee","root":"index_module_root__d1a5aaee","endPage":"index_module_endPage__d1a5aaee","jello":"index_module_jello__d1a5aaee","tip":"index_module_tip__d1a5aaee","comments":"index_module_comments__d1a5aaee","toolbar":"index_module_toolbar__d1a5aaee","toolbarPanel":"index_module_toolbarPanel__d1a5aaee","toolbarBg":"index_module_toolbarBg__d1a5aaee","SettingPanelPopper":"index_module_SettingPanelPopper__d1a5aaee","SettingPanel":"index_module_SettingPanel__d1a5aaee","SettingBlock":"index_module_SettingBlock__d1a5aaee","SettingBlockBody":"index_module_SettingBlockBody__d1a5aaee","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__d1a5aaee","SettingsItem":"index_module_SettingsItem__d1a5aaee","SettingsItemName":"index_module_SettingsItemName__d1a5aaee","SettingsItemSwitch":"index_module_SettingsItemSwitch__d1a5aaee","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__d1a5aaee","SettingsItemIconButton":"index_module_SettingsItemIconButton__d1a5aaee","SettingsItemSelect":"index_module_SettingsItemSelect__d1a5aaee","closeCover":"index_module_closeCover__d1a5aaee","SettingsShowItem":"index_module_SettingsShowItem__d1a5aaee","SettingsShowItemBody":"index_module_SettingsShowItemBody__d1a5aaee","hotkeys":"index_module_hotkeys__d1a5aaee","hotkeysItem":"index_module_hotkeysItem__d1a5aaee","hotkeysHeader":"index_module_hotkeysHeader__d1a5aaee","scrollbar":"index_module_scrollbar__d1a5aaee","scrollbarPage":"index_module_scrollbarPage__d1a5aaee","scrollbarDrag":"index_module_scrollbarDrag__d1a5aaee","scrollbarPoper":"index_module_scrollbarPoper__d1a5aaee","touchAreaRoot":"index_module_touchAreaRoot__d1a5aaee","touchArea":"index_module_touchArea__d1a5aaee","hidden":"index_module_hidden__d1a5aaee","invisible":"index_module_invisible__d1a5aaee","beautifyScrollbar":"index_module_beautifyScrollbar__d1a5aaee","page":"index_module_page__d1a5aaee"};
 
 const handleMouseDown = e => {
   if (e.button !== 1 || store$1.option.scrollMode) return;
@@ -2911,6 +2943,7 @@ const isBottom = state => state.option.scrollMode ? store$1.scrollbar.dragHeight
 
 /** 判断当前是否已经滚动到顶部 */
 const isTop = state => state.option.scrollMode ? store$1.scrollbar.dragTop === 0 : state.activePageIndex === 0;
+const closeScrollLock = debounce(200, () => _setState('flag', 'scrollLock', false));
 
 /** 翻页。返回是否成功改变了当前页数 */
 const turnPageFn = (state, dir) => {
@@ -2931,9 +2964,7 @@ const turnPageFn = (state, dir) => {
           if (!state.prop.Prev || !state.option.jumpToNext) return false;
           state.show.endPage = 'start';
           state.flag.scrollLock = true;
-          window.setTimeout(() => {
-            state.flag.scrollLock = false;
-          }, 200);
+          closeScrollLock();
           return false;
         }
         if (state.option.scrollMode) return false;
@@ -2959,9 +2990,7 @@ const turnPageFn = (state, dir) => {
           if (!state.prop.Exit) return false;
           state.show.endPage = 'end';
           state.flag.scrollLock = true;
-          window.setTimeout(() => {
-            state.flag.scrollLock = false;
-          }, 200);
+          closeScrollLock();
           return false;
         }
         if (state.option.scrollMode) return false;
@@ -2984,15 +3013,25 @@ const turnPageAnimation = dir => {
     state.isDragMode = true;
     updateRenderPage(state);
     if (store$1.page.vertical) state.page.offset.y.pct += dir === 'next' ? 100 : -100;else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
-    requestIdleCallback(() => {
+    requestAnimationFrame(() => {
       setState(draftState => {
         updateRenderPage(draftState, true);
         draftState.page.offset.x.px = 0;
         draftState.page.offset.y.px = 0;
         draftState.isDragMode = false;
       });
-    }, 50);
+    });
   });
+};
+
+/** 卷轴模式下的滚动 */
+const scrollModeScroll = dir => {
+  if (!store$1.show.endPage) refs.mangaFlow.scrollBy({
+    top: refs.root.clientHeight * 0.8 * (dir === 'next' ? 1 : -1),
+    behavior: 'instant'
+  });
+  _setState('flag', 'scrollLock', true);
+  closeScrollLock();
 };
 const handleWheel = e => {
   e.stopPropagation();
@@ -3027,12 +3066,16 @@ const handleKeyDown = e => {
 
   // esc 在触发配置操作前，先用于退出一些界面
   if (e.key === 'Escape') {
-    if (store$1.gridMode) return setState(state => {
-      state.gridMode = false;
-    });
-    if (store$1.show.endPage) return setState(state => {
-      state.show.endPage = undefined;
-    });
+    if (store$1.gridMode) {
+      e.stopPropagation();
+      e.preventDefault();
+      return _setState('gridMode', false);
+    }
+    if (store$1.show.endPage) {
+      e.stopPropagation();
+      e.preventDefault();
+      return _setState('show', 'endPage', undefined);
+    }
   }
 
   // 处理标注了 data-only-number 的元素
@@ -3070,21 +3113,23 @@ const handleKeyDown = e => {
   }
   switch (hotkeysMap()[code]) {
     case 'turn_page_up':
-      return turnPage('prev');
+      {
+        if (store$1.option.scrollMode) scrollModeScroll('prev');
+        return turnPage('prev');
+      }
     case 'turn_page_down':
-      return turnPage('next');
+      {
+        if (store$1.option.scrollMode) scrollModeScroll('next');
+        return turnPage('next');
+      }
     case 'turn_page_right':
       return turnPage(handleSwapPageTurnKey(store$1.option.dir !== 'rtl'));
     case 'turn_page_left':
       return turnPage(handleSwapPageTurnKey(store$1.option.dir === 'rtl'));
     case 'jump_to_home':
-      return setState(state => {
-        state.activePageIndex = 0;
-      });
+      return _setState('activePageIndex', 0);
     case 'jump_to_end':
-      return setState(state => {
-        state.activePageIndex = state.pageList.length - 1;
-      });
+      return _setState('activePageIndex', store$1.pageList.length - 1);
     case 'switch_page_fill':
       return switchFillEffect();
     case 'switch_scroll_mode':
@@ -3163,16 +3208,7 @@ const handleGridClick = e => {
 };
 
 /** 双击放大 */
-const doubleClickZoom = e => {
-  if (store$1.gridMode) return;
-  requestAnimationFrame(() => {
-    setState(state => {
-      // 当缩放到一定程度时再双击会缩放回原尺寸，否则正常触发缩放
-      const newScale = state.zoom.scale >= 300 ? 100 : state.zoom.scale + 100;
-      zoom(newScale, e, true);
-    });
-  });
-};
+const doubleClickZoom = e => !store$1.gridMode && zoom(store$1.zoom.scale !== 100 ? 100 : 350, e, true);
 const handleClick = useDoubleClick(e => store$1.gridMode ? handleGridClick(e) : handlePageClick(e), doubleClickZoom);
 
 /** 判断翻页方向 */
@@ -3278,16 +3314,6 @@ const updateImgType = (state, draftImg) => {
   if (type !== draftImg.type) updatePageData.debounce();
 };
 
-/** 处理显示窗口的长宽变化 */
-const handleResize = (state, width, height) => {
-  if (!(width && height)) return;
-  state.proportion.单页比例 = Math.min(width / 2 / height, 1);
-  state.proportion.横幅比例 = width / height;
-  state.proportion.条漫比例 = state.proportion.单页比例 / 2;
-  state.imgList.forEach(img => updateImgType(state, img));
-  state.isMobile = window.matchMedia('(max-width: 800px)').matches;
-};
-
 /** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
 const checkImgTypeCount = (state, fn, maxNum = 3) => {
   let num = 0;
@@ -3338,31 +3364,46 @@ const updateImgSize = (i, width, height) => {
   });
 };
 
-/** 等待图片的真实尺寸被加载出来 */
-const waitImgSizeLoaded = (img, resolve) => {
-  if (img.naturalWidth && img.naturalHeight) return resolve(null);
-  setTimeout(waitImgSizeLoaded, 30, img, resolve);
-};
-
 /** 更新所有图片的尺寸 */
 const updateAllImgSize = singleThreaded(async () => {
   await plimit(store$1.imgList.map((img, i) => async () => {
     if (img.loadType !== 'wait' || img.width || img.height || !img.src) return;
-    try {
-      const image = new Image();
-      await new Promise((resolve, reject) => {
-        image.onerror = reject;
-        image.src = img.src;
-        waitImgSizeLoaded(image, resolve);
-      });
-      updateImgSize(i, image.naturalWidth, image.naturalHeight);
-    } catch (_) {
-      handleImgError(i);
-    }
+    const size = await getImgSize(img.src);
+    if (!size) return handleImgError(i);
+    return updateImgSize(i, ...size);
   }), undefined, Math.max(store$1.option.preloadPageNum, 1));
 });
-solidJs.createRoot(() => {
+
+/** 获取图片列表中指定属性的中位数 */
+const getImgMedian = (sizeFn, fallback) => {
+  if (!store$1.option.scrollMode) return 0;
+  const list = store$1.imgList.filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort();
+  if (!list.length) return fallback;
+  return list[Math.floor(list.length / 2)];
+};
+const {
+  placeholderSize
+} = solidJs.createRoot(() => {
   solidJs.createEffect(solidJs.on(() => store$1.imgList, updateAllImgSize));
+
+  /** 处理显示窗口的长宽变化 */
+  solidJs.createEffect(solidJs.on(() => store$1.memo.size, ({
+    width,
+    height
+  }) => setState(state => {
+    state.proportion.单页比例 = Math.min(width / 2 / height, 1);
+    state.proportion.横幅比例 = width / height;
+    state.proportion.条漫比例 = state.proportion.单页比例 / 2;
+    state.imgList.forEach(img => updateImgType(state, img));
+  })));
+  const placeholderSizeMemo = solidJs.createMemo(() => ({
+    width: getImgMedian(img => img.width, refs.root?.offsetWidth),
+    height: getImgMedian(img => img.height, refs.root?.offsetHeight)
+  }));
+  return {
+    /** 图片占位尺寸 */
+    placeholderSize: placeholderSizeMemo
+  };
 });
 
 /** 在鼠标静止一段时间后自动隐藏 */
@@ -3502,9 +3543,10 @@ const ComicImg = props => {
   });
   const style = solidJs.createMemo(() => {
     if (!store$1.option.scrollMode) return undefined;
+    const size = img()?.width ? img() : placeholderSize();
     return {
-      '--width': \`\${img().width}px\`,
-      'aspect-ratio': \`\${img().width} / \${img().height}\`
+      '--width': \`\${size.width}px\`,
+      'aspect-ratio': \`\${size.width} / \${size.height}\`
     };
   });
   return (() => {
@@ -3638,10 +3680,29 @@ const ComicImgFlow = () => {
       if (store$1.zoom.scale === 100) updateRenderPage(state, true);else state.page.anima = '';
     });
   };
-  const pageX = () => {
+  const pageXY = solidJs.createMemo(() => {
     const x = \`calc(\${store$1.page.offset.x.pct}% + \${store$1.page.offset.x.px}px)\`;
-    return store$1.option.dir === 'rtl' ? x : \`calc(\${x} * -1)\`;
-  };
+    return {
+      '--page-x': store$1.option.dir === 'rtl' ? x : \`calc(\${x} * -1)\`,
+      '--page-y': \`calc(\${store$1.page.offset.y.pct}% + \${store$1.page.offset.y.px}px)\`
+    };
+  });
+  const zoom = solidJs.createMemo(() => ({
+    '--scale': store$1.zoom.scale / 100,
+    '--zoom-x': \`\${store$1.zoom.offset.x || 0}px\`,
+    '--zoom-y': \`\${store$1.zoom.offset.y || 0}px\`
+  }));
+  const touchAction = solidJs.createMemo(() => {
+    if (store$1.gridMode) return 'auto';
+    if (store$1.zoom.scale !== 100) {
+      if (store$1.option.scrollMode) {
+        if (store$1.zoom.offset.y === 0) return 'pan-up';
+        if (store$1.zoom.offset.y === bound.y()) return 'pan-down';
+      }
+      return 'none';
+    }
+    if (store$1.option.scrollMode) return 'pan-y';
+  });
   return (() => {
     const _el$ = _tmpl$$C();
     _el$.addEventListener("scroll", () => setState(updateDrag));
@@ -3667,33 +3728,27 @@ const ComicImgFlow = () => {
       const _v$ = modules_c21c94f2$1.mangaFlow,
         _v$2 = store$1.option.dir,
         _v$3 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
-        _v$4 = boolDataVal(!store$1.gridMode && store$1.option.scrollMode),
-        _v$5 = boolDataVal(store$1.option.disableZoom || store$1.option.scrollMode),
-        _v$6 = boolDataVal(store$1.gridMode),
-        _v$7 = boolDataVal(store$1.zoom.scale !== 100),
-        _v$8 = boolDataVal(store$1.page.vertical),
-        _v$9 = store$1.page.anima,
-        _v$10 = !store$1.gridMode && hiddenMouse(),
-        _v$11 = store$1.zoom.scale / 100,
-        _v$12 = \`\${store$1.zoom.offset.x || 0}px\`,
-        _v$13 = \`\${store$1.zoom.offset.y || 0}px\`,
-        _v$14 = pageX(),
-        _v$15 = \`calc(\${store$1.page.offset.y.pct}% + \${store$1.page.offset.y.px}px)\`;
+        _v$4 = boolDataVal(store$1.option.disableZoom || store$1.option.scrollMode),
+        _v$5 = boolDataVal(store$1.gridMode),
+        _v$6 = boolDataVal(store$1.zoom.scale !== 100),
+        _v$7 = boolDataVal(store$1.page.vertical),
+        _v$8 = store$1.page.anima,
+        _v$9 = !store$1.gridMode && hiddenMouse(),
+        _v$10 = {
+          'touch-action': touchAction(),
+          ...zoom(),
+          ...pageXY()
+        };
       _v$ !== _p$._v$ && web.setAttribute(_el$, "id", _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.setAttribute(_el$, "dir", _p$._v$2 = _v$2);
       _v$3 !== _p$._v$3 && web.className(_el$, _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-scroll-mode", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-disable-zoom", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-grid-mode", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-scale-mode", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-vertical", _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && web.setAttribute(_el$, "data-animation", _p$._v$9 = _v$9);
-      _v$10 !== _p$._v$10 && web.setAttribute(_el$, "data-hidden-mouse", _p$._v$10 = _v$10);
-      _v$11 !== _p$._v$11 && ((_p$._v$11 = _v$11) != null ? _el$.style.setProperty("--scale", _v$11) : _el$.style.removeProperty("--scale"));
-      _v$12 !== _p$._v$12 && ((_p$._v$12 = _v$12) != null ? _el$.style.setProperty("--zoom-x", _v$12) : _el$.style.removeProperty("--zoom-x"));
-      _v$13 !== _p$._v$13 && ((_p$._v$13 = _v$13) != null ? _el$.style.setProperty("--zoom-y", _v$13) : _el$.style.removeProperty("--zoom-y"));
-      _v$14 !== _p$._v$14 && ((_p$._v$14 = _v$14) != null ? _el$.style.setProperty("--page-x", _v$14) : _el$.style.removeProperty("--page-x"));
-      _v$15 !== _p$._v$15 && ((_p$._v$15 = _v$15) != null ? _el$.style.setProperty("--page-y", _v$15) : _el$.style.removeProperty("--page-y"));
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-disable-zoom", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-grid-mode", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-scale-mode", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-vertical", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-animation", _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && web.setAttribute(_el$, "data-hidden-mouse", _p$._v$9 = _v$9);
+      _p$._v$10 = web.style(_el$, _v$10, _p$._v$10);
       return _p$;
     }, {
       _v$: undefined,
@@ -3705,12 +3760,7 @@ const ComicImgFlow = () => {
       _v$7: undefined,
       _v$8: undefined,
       _v$9: undefined,
-      _v$10: undefined,
-      _v$11: undefined,
-      _v$12: undefined,
-      _v$13: undefined,
-      _v$14: undefined,
-      _v$15: undefined
+      _v$10: undefined
     });
     return _el$;
   })();
@@ -3991,11 +4041,7 @@ const SettingsItemSelect = props => {
   });
 };
 
-const setMessage = (i, msg) => {
-  setState(state => {
-    state.imgList[i].translationMessage = msg;
-  });
-};
+const setMessage = (i, msg) => _setState('imgList', i, 'translationMessage', msg);
 const request = (url, details) => new Promise((resolve, reject) => {
   if (typeof GM_xmlhttpRequest === 'undefined') reject(new Error(t('pwa.alert.userscript_not_installed')));
   GM_xmlhttpRequest({
@@ -4232,9 +4278,7 @@ const translationImage = async i => {
     const img = store$1.imgList[i];
     if (!img?.src) return;
     if (img.translationType !== 'wait') return;
-    if (img.translationUrl) return setState(state => {
-      state.imgList[i].translationType = 'show';
-    });
+    if (img.translationUrl) return _setState('imgList', i, 'translationType', 'show');
     if (img.loadType !== 'loaded') return setMessage(i, t('translation.tip.img_not_fully_loaded'));
     const translationUrl = await (store$1.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(i);
     setState(state => {
@@ -4667,15 +4711,22 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return store$1.option.scrollbar.position !== 'hidden';
   },
   get children() {
-    return [web.createComponent(SettingsItemSwitch, {
-      get name() {
-        return t('setting.option.scrollbar_auto_hidden');
+    return [web.createComponent(solidJs.Show, {
+      get when() {
+        return !store$1.isMobile;
       },
-      get value() {
-        return store$1.option.scrollbar.autoHidden;
-      },
-      get onChange() {
-        return createStateSetFn('scrollbar.autoHidden');
+      get children() {
+        return web.createComponent(SettingsItemSwitch, {
+          get name() {
+            return t('setting.option.scrollbar_auto_hidden');
+          },
+          get value() {
+            return store$1.option.scrollbar.autoHidden;
+          },
+          get onChange() {
+            return createStateSetFn('scrollbar.autoHidden');
+          }
+        });
       }
     }), web.createComponent(SettingsItemSwitch, {
       get name() {
@@ -4723,11 +4774,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get value() {
     return store$1.show.touchArea;
   },
-  onChange: () => {
-    setState(state => {
-      state.show.touchArea = !state.show.touchArea;
-    });
-  }
+  onChange: () => _setState('show', 'touchArea', !store$1.show.touchArea)
 }), web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.click_page_turn_enabled');
@@ -5092,9 +5139,7 @@ const defaultButtonList = [
   const [showPanel, setShowPanel] = solidJs.createSignal(false);
   const handleClick = () => {
     const _showPanel = !showPanel();
-    setState(state => {
-      state.show.toolbar = _showPanel;
-    });
+    _setState('show', 'toolbar', _showPanel);
     setShowPanel(_showPanel);
   };
   const popper = solidJs.createMemo(() => [web.createComponent(SettingPanel, {}), (() => {
@@ -5202,7 +5247,7 @@ const ScrollbarImg = props => {
 const ScrollbarPage = props => {
   const flexBasis = solidJs.createMemo(() => {
     if (!store$1.option.scrollMode) return undefined;
-    return \`\${(store$1.imgList[props.a]?.height || windowHeight()) / contentHeight() * 100}%\`;
+    return \`\${(store$1.imgList[props.a]?.height || placeholderSize().height) / contentHeight() * store$1.option.scrollModeImgScale}%\`;
   });
   return (() => {
     const _el$2 = _tmpl$$d();
@@ -5224,15 +5269,26 @@ const ScrollbarPage = props => {
   })();
 };
 
-const _tmpl$$c = /*#__PURE__*/web.template(\`<div role=scrollbar tabindex=-1><div><div>\`);
+const _tmpl$$c = /*#__PURE__*/web.template(\`<div role=scrollbar tabindex=-1><div></div><div>\`);
 
 /** 滚动条 */
 const Scrollbar = () => {
+  solidJs.onMount(() => {
+    useDrag({
+      ref: refs.scrollbar,
+      handleDrag: handleScrollbarDrag,
+      easyMode: () => store$1.option.scrollMode && store$1.option.scrollbar.easyScroll
+    });
+  });
+
   /** 滚动条高度 */
-  const height = solidJs.createMemo(() => store$1.scrollbar.dragHeight ? \`\${store$1.scrollbar.dragHeight * 100}%\` : \`\${1 / store$1.pageList.length * 100}%\`);
+  const height = solidJs.createMemo(() => store$1.option.scrollMode ? store$1.scrollbar.dragHeight : 1 / store$1.pageList.length);
 
   /** 滚动条位置高度 */
-  const top = solidJs.createMemo(() => store$1.option.scrollMode ? \`\${store$1.scrollbar.dragTop * 100}%\` : \`\${1 / store$1.pageList.length * 100 * store$1.activePageIndex}%\`);
+  const top = solidJs.createMemo(() => store$1.option.scrollMode ? store$1.scrollbar.dragTop : 1 / store$1.pageList.length * store$1.activePageIndex);
+
+  /** 滚动条滑块的中心点高度 */
+  const dragMidpoint = solidJs.createMemo(() => store$1.memo.scrollLength * (top() + height() / 2));
 
   // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
   const [penetrate, setPenetrate] = solidJs.createSignal(false);
@@ -5255,13 +5311,10 @@ const Scrollbar = () => {
   return (() => {
     const _el$ = _tmpl$$c(),
       _el$2 = _el$.firstChild,
-      _el$3 = _el$2.firstChild;
+      _el$3 = _el$2.nextSibling;
     _el$.addEventListener("wheel", handleWheel);
-    web.use(e => useDrag({
-      ref: e,
-      handleDrag: handleScrollbarDrag,
-      easyMode: () => store$1.option.scrollMode && store$1.option.scrollbar.easyScroll
-    }), _el$);
+    const _ref$ = bindRef('scrollbar');
+    typeof _ref$ === "function" && web.use(_ref$, _el$);
     web.insert(_el$3, showTip);
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
@@ -5282,34 +5335,36 @@ const Scrollbar = () => {
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbar,
         _v$2 = penetrate() || store$1.isDragMode || store$1.gridMode ? 'none' : 'auto',
-        _v$3 = modules_c21c94f2$1.mangaFlow,
-        _v$4 = store$1.activePageIndex || -1,
-        _v$5 = !store$1.option.scrollbar.autoHidden || showScrollbar(),
-        _v$6 = store$1.option.dir,
-        _v$7 = getScrollPosition(),
-        _v$8 = modules_c21c94f2$1.scrollbarDrag,
-        _v$9 = {
+        _v$3 = \`\${dragMidpoint()}px\`,
+        _v$4 = \`\${store$1.memo.scrollLength}px\`,
+        _v$5 = modules_c21c94f2$1.mangaFlow,
+        _v$6 = store$1.activePageIndex || -1,
+        _v$7 = boolDataVal(store$1.option.scrollbar.autoHidden),
+        _v$8 = boolDataVal(showScrollbar()),
+        _v$9 = store$1.option.dir,
+        _v$10 = getScrollPosition(),
+        _v$11 = modules_c21c94f2$1.scrollbarDrag,
+        _v$12 = {
           [modules_c21c94f2$1.hidden]: store$1.gridMode
         },
-        _v$10 = height(),
-        _v$11 = top(),
-        _v$12 = store$1.option.scrollMode ? undefined : 'top 150ms',
-        _v$13 = modules_c21c94f2$1.scrollbarPoper,
-        _v$14 = showScrollbar();
+        _v$13 = height(),
+        _v$14 = top(),
+        _v$15 = modules_c21c94f2$1.scrollbarPoper;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("pointer-events", _v$2) : _el$.style.removeProperty("pointer-events"));
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "aria-controls", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "aria-valuenow", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-show", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-dir", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-position", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.className(_el$2, _p$._v$8 = _v$8);
-      _p$._v$9 = web.classList(_el$2, _v$9, _p$._v$9);
-      _v$10 !== _p$._v$10 && ((_p$._v$10 = _v$10) != null ? _el$2.style.setProperty("--height", _v$10) : _el$2.style.removeProperty("--height"));
-      _v$11 !== _p$._v$11 && ((_p$._v$11 = _v$11) != null ? _el$2.style.setProperty("--top", _v$11) : _el$2.style.removeProperty("--top"));
-      _v$12 !== _p$._v$12 && ((_p$._v$12 = _v$12) != null ? _el$2.style.setProperty("transition", _v$12) : _el$2.style.removeProperty("transition"));
-      _v$13 !== _p$._v$13 && web.className(_el$3, _p$._v$13 = _v$13);
-      _v$14 !== _p$._v$14 && web.setAttribute(_el$3, "data-show", _p$._v$14 = _v$14);
+      _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$.style.setProperty("--drag-midpoint", _v$3) : _el$.style.removeProperty("--drag-midpoint"));
+      _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("--scroll-length", _v$4) : _el$.style.removeProperty("--scroll-length"));
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "aria-controls", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "aria-valuenow", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-auto-hidden", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-force-show", _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && web.setAttribute(_el$, "data-dir", _p$._v$9 = _v$9);
+      _v$10 !== _p$._v$10 && web.setAttribute(_el$, "data-position", _p$._v$10 = _v$10);
+      _v$11 !== _p$._v$11 && web.className(_el$2, _p$._v$11 = _v$11);
+      _p$._v$12 = web.classList(_el$2, _v$12, _p$._v$12);
+      _v$13 !== _p$._v$13 && ((_p$._v$13 = _v$13) != null ? _el$2.style.setProperty("--height-ratio", _v$13) : _el$2.style.removeProperty("--height-ratio"));
+      _v$14 !== _p$._v$14 && ((_p$._v$14 = _v$14) != null ? _el$2.style.setProperty("--top-ratio", _v$14) : _el$2.style.removeProperty("--top-ratio"));
+      _v$15 !== _p$._v$15 && web.className(_el$3, _p$._v$15 = _v$15);
       return _p$;
     }, {
       _v$: undefined,
@@ -5325,7 +5380,8 @@ const Scrollbar = () => {
       _v$11: undefined,
       _v$12: undefined,
       _v$13: undefined,
-      _v$14: undefined
+      _v$14: undefined,
+      _v$15: undefined
     });
     return _el$;
   })();
@@ -5338,9 +5394,7 @@ let delayTypeTimer = 0;
 const EndPage = () => {
   const handleClick = e => {
     e.stopPropagation();
-    if (e.target?.nodeName !== 'BUTTON') setState(state => {
-      state.show.endPage = undefined;
-    });
+    if (e.target?.nodeName !== 'BUTTON') _setState('show', 'endPage', undefined);
     focus();
   };
   let ref;
@@ -5554,18 +5608,14 @@ const useInit$1 = props => {
     });
   });
 
-  // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
-  const resizeObserver = new ResizeObserver(throttle(100, ([entries]) => {
-    const {
-      width,
-      height
-    } = entries.contentRect;
-    setState(state => {
-      handleResize(state, width, height);
-    });
-  }));
   // 初始化页面比例
-  setState(state => handleResize(state, refs.root.scrollWidth, refs.root.scrollHeight));
+  handleResize(refs.root.scrollWidth, refs.root.scrollHeight);
+  // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
+  const resizeObserver = new ResizeObserver(throttle(100, ([{
+    contentRect
+  }]) => {
+    handleResize(contentRect.width, contentRect.height);
+  }));
   resizeObserver.disconnect();
   resizeObserver.observe(refs.root);
   solidJs.onCleanup(() => resizeObserver.disconnect());
@@ -5673,15 +5723,18 @@ const Manga = props => {
           [props.class ?? '']: !!props.class,
           ...props.classList
         },
-        _v$3 = boolDataVal(store$1.isMobile);
+        _v$3 = boolDataVal(store$1.isMobile),
+        _v$4 = boolDataVal(store$1.option.scrollMode);
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
       _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-mobile", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-scroll-mode", _p$._v$4 = _v$4);
       return _p$;
     }, {
       _v$: undefined,
       _v$2: undefined,
-      _v$3: undefined
+      _v$3: undefined,
+      _v$4: undefined
     });
     return _el$;
   })(), web.createComponent(CssVar, {})];
@@ -5725,7 +5778,7 @@ const useManga = async initProps => {
     }
 
     /* 防止其他扩展的元素显示到漫画上来 */
-    #comicRead[show] ~ * {
+    #comicRead[show] ~ :not(#fab, #toast) {
       display: none !important;
       pointer-events: none !important;
       visibility: hidden !important;
@@ -6054,10 +6107,10 @@ const useFab = async initProps => {
 };
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复放大后无法调出菜单的 bug </p></li><li><p>修复卷轴模式下缩放后无法正常拖动的 bug\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>优化简易模式加载速度 </p></li><li><p>在简易模式下提前预测页数\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>实现使用上下翻页快捷键在卷轴模式下滚动\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复泰拉记事社上/下话翻页失效的 bug </p></li><li><p>修复滚动条提示会超出屏幕范围的 bug </p></li><li><p>修复卷轴模式下滚动条图片色块长度异常的 bug </p></li><li><p>修复卷轴模式下缩放后无法滚动页面的 bug </p></li><li><p>修复在某些情况下简易模式无法正常加载所有图片的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6487,6 +6540,7 @@ exports.createFillImgList = createFillImgList;
 exports.dataToParams = dataToParams;
 exports.difference = difference;
 exports.eachApi = eachApi;
+exports.getImgSize = getImgSize;
 exports.getKeyboardCode = getKeyboardCode;
 exports.getMostItem = getMostItem;
 exports.ifNot = ifNot;
@@ -8015,8 +8069,8 @@ const fileType = {
           },
           SPA: {
             isMangaPage: () => window.location.href.includes('episode'),
-            getOnPrev: () => main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__prev a'),
-            getOnNext: () => main.querySelectorClick('footer .HG_GAME_JS_BRIDGE__buttonEp+.HG_GAME_JS_BRIDGE__buttonEp a')
+            getOnPrev: () => main.querySelectorClick('footer .HG_COMIC_READER_prev a'),
+            getOnNext: () => main.querySelectorClick('footer .HG_COMIC_READER_prev+.HG_COMIC_READER_buttonEp a')
           }
         };
         break;
@@ -8784,10 +8838,11 @@ function debounce (delay, callback, options) {
         const waitTime = mangaProps.show || mangaProps.imgList.length < 2 ? 300 : 0;
         if (await main.triggerEleLazyLoad(e, waitTime, oldSrcList[i])) handleTrigged(e);
       }
+      if (targetImgList.length !== 0) main.requestIdleCallback(triggerLazyLoad);
     });
     let imgEleList;
     /** 检查筛选符合标准的图片元素用于更新 imgList */
-    const updateImgList = throttle(500, async () => {
+    const updateImgList = throttle(500, main.singleThreaded(async () => {
       imgEleList = await main.wait(() => {
         const newImgList = getAllImg().filter(e => e.naturalHeight > 500 && e.naturalWidth > 500);
         return newImgList.length >= 2 && newImgList;
@@ -8816,9 +8871,8 @@ function debounce (delay, callback, options) {
 
       // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要在这里删掉多余的页数
       if (!expectCount && mangaProps.imgList.length !== _imgEleList.length) _setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
-      if (expectCount || imgEleList.some(e => !e.naturalWidth && !e.naturalHeight)) setTimeout(updateImgList);
-    });
-
+      if (isEdited || expectCount || imgEleList.some(e => !e.naturalWidth && !e.naturalHeight)) main.requestIdleCallback(updateImgList, 1000);
+    }));
     /** 判断指定元素子树下是否含有图片 */
     const hasImgNode = node => node.nodeName === 'IMG' || 'id' in node && !!node.getElementsByTagName('img').length;
 
