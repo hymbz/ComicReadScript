@@ -141,12 +141,13 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
 
 /** 卷轴模式下的滚动 */
 const scrollModeScroll = (dir: 'next' | 'prev') => {
-  if (!store.show.endPage)
+  if (!store.show.endPage) {
     refs.mangaFlow.scrollBy({
       top: refs.root.clientHeight * 0.8 * (dir === 'next' ? 1 : -1),
       behavior: 'instant',
     });
-  _setState('flag', 'scrollLock', true);
+    _setState('flag', 'scrollLock', true);
+  }
   closeScrollLock();
 };
 
