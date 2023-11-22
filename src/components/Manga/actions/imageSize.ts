@@ -19,7 +19,7 @@ export const updateImgType = (state: State, draftImg: ComicImg) => {
     draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
   }
 
-  if (type !== draftImg.type) updatePageData.debounce();
+  if (type !== draftImg.type) updatePageData.debounce(state);
 };
 
 /** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
@@ -125,6 +125,7 @@ export const { placeholderSize } = createRoot(() => {
           state.proportion.条漫比例 = state.proportion.单页比例 / 2;
 
           state.imgList.forEach((img) => updateImgType(state, img));
+          updatePageData(state);
         }),
     ),
   );

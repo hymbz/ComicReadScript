@@ -38,7 +38,7 @@ export const t = createRoot(() => {
       Object.entries(variables).forEach(([k, v]) => {
         text = text.replaceAll(`{{${k}}}`, `${v}`);
       });
-    if (!text) log.warn('unknown i18n key', keys);
+    if (isDevMode && !text) log.warn('unknown i18n key', keys);
     return text;
   };
 });

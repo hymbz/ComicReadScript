@@ -1,5 +1,3 @@
-declare const isDevMode: boolean;
-
 const gmApi = {
   GM,
   GM_addElement,

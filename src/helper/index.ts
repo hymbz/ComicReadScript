@@ -275,9 +275,9 @@ export const triggerEleLazyLoad = async (
 export const getImgSize = async (
   url: string,
 ): Promise<[number, number] | null> => {
+  let error = false;
+  const image = new Image();
   try {
-    let error = false;
-    const image = new Image();
     image.onerror = () => {
       error = true;
     };
@@ -288,6 +288,8 @@ export const getImgSize = async (
     return [image.naturalWidth, image.naturalHeight];
   } catch (_) {
     return null;
+  } finally {
+    image.src = '';
   }
 };
 

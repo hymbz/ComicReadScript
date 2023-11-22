@@ -3,6 +3,8 @@ import type { JSX, Component } from 'solid-js';
 import 'solid-js';
 
 declare global {
+  declare const isDevMode: boolean;
+
   type EventHandler<T = HTMLElement> = JSX.DOMAttributes<T>;
 
   type ClassList = {

@@ -5,6 +5,7 @@ import { updateImgLoadType, activePage } from './image';
 import { resetUI } from './helper';
 
 export const handleResize = (width: number, height: number) => {
+  if (!(width || height)) return;
   setState((state) => {
     state.memo.size = { width, height };
     state.isMobile = width < 800;
