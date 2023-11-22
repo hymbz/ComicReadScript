@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.2.0
+// @version         8.2.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -320,9 +320,9 @@ const triggerEleLazyLoad = async (e, time = 0, oldSrc = e.src) => {
 
 /** 获取图片尺寸 */
 const getImgSize = async url => {
+  let error = false;
+  const image = new Image();
   try {
-    let error = false;
-    const image = new Image();
     image.onerror = () => {
       error = true;
     };
@@ -332,6 +332,8 @@ const getImgSize = async url => {
     return [image.naturalWidth, image.naturalHeight];
   } catch (_) {
     return null;
+  } finally {
+    image.src = '';
   }
 };
 
@@ -1262,7 +1264,6 @@ const t = solidJs.createRoot(() => {
     if (variables) Object.entries(variables).forEach(([k, v]) => {
       text = text.replaceAll(\`{{\${k}}}\`, \`\${v}\`);
     });
-    if (!text) log.warn('unknown i18n key', keys);
     return text;
   };
 });
@@ -2522,7 +2523,7 @@ const updatePageData = state => {
   // 在图片排列改变后自动跳转回原先显示图片所在的页数
   if (lastActiveImgIndex !== activeImgIndex()) state.activePageIndex = state.pageList.findIndex(page => page.includes(lastActiveImgIndex));
 };
-updatePageData.debounce = debounce(100, () => setState(updatePageData));
+updatePageData.debounce = debounce(100, updatePageData);
 
 /** 图片加载出错的回调 */
 const handleImgError = (i, e) => {
@@ -2802,6 +2803,7 @@ const delHotkeys = code => {
 };
 
 const handleResize = (width, height) => {
+  if (!(width || height)) return;
   setState(state => {
     state.memo.size = {
       width,
@@ -3026,11 +3028,13 @@ const turnPageAnimation = dir => {
 
 /** 卷轴模式下的滚动 */
 const scrollModeScroll = dir => {
-  if (!store$1.show.endPage) refs.mangaFlow.scrollBy({
-    top: refs.root.clientHeight * 0.8 * (dir === 'next' ? 1 : -1),
-    behavior: 'instant'
-  });
-  _setState('flag', 'scrollLock', true);
+  if (!store$1.show.endPage) {
+    refs.mangaFlow.scrollBy({
+      top: refs.root.clientHeight * 0.8 * (dir === 'next' ? 1 : -1),
+      behavior: 'instant'
+    });
+    _setState('flag', 'scrollLock', true);
+  }
   closeScrollLock();
 };
 const handleWheel = e => {
@@ -3311,7 +3315,7 @@ const updateImgType = (state, draftImg) => {
   } else {
     draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
   }
-  if (type !== draftImg.type) updatePageData.debounce();
+  if (type !== draftImg.type) updatePageData.debounce(state);
 };
 
 /** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
@@ -3395,6 +3399,7 @@ const {
     state.proportion.横幅比例 = width / height;
     state.proportion.条漫比例 = state.proportion.单页比例 / 2;
     state.imgList.forEach(img => updateImgType(state, img));
+    updatePageData(state);
   })));
   const placeholderSizeMemo = solidJs.createMemo(() => ({
     width: getImgMedian(img => img.width, refs.root?.offsetWidth),
@@ -6107,10 +6112,8 @@ const useFab = async initProps => {
 };
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>实现使用上下翻页快捷键在卷轴模式下滚动\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复泰拉记事社上/下话翻页失效的 bug </p></li><li><p>修复滚动条提示会超出屏幕范围的 bug </p></li><li><p>修复卷轴模式下滚动条图片色块长度异常的 bug </p></li><li><p>修复卷轴模式下缩放后无法滚动页面的 bug </p></li><li><p>修复在某些情况下简易模式无法正常加载所有图片的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复百合会 记录阅读进度 功能会在某些楼层失效的 bug </p></li><li><p>修复卷轴模式下上下翻页快捷键无法触发结束动作的 bug </p></li><li><p>修复图片单双页判断错误的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6173,7 +6176,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -6932,7 +6935,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
           lastAnchor: trigger.target.id
         });
       }, {
-        threshold: 1.0
+        rootMargin: '-160px'
       });
       watchFloorList.forEach(e => observer.observe(e));
     }
