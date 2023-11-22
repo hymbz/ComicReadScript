@@ -344,7 +344,7 @@ interface History {
             lastAnchor: trigger.target.id,
           });
         },
-        { threshold: 1.0 },
+        { rootMargin: '-160px' },
       );
       watchFloorList.forEach((e) => observer.observe(e));
     }
