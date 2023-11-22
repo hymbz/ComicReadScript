@@ -1,6 +1,6 @@
 import { debounce } from 'throttle-debounce';
 
-import { getKeyboardCode, requestIdleCallback } from 'helper';
+import { getKeyboardCode } from 'helper';
 import type { State } from '../store';
 import { store, setState, refs, _setState } from '../store';
 import { zoom } from './zoom';
@@ -128,14 +128,14 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
       state.page.offset.y.pct += dir === 'next' ? 100 : -100;
     else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
 
-    requestIdleCallback(() => {
+    requestAnimationFrame(() => {
       setState((draftState) => {
         updateRenderPage(draftState, true);
         draftState.page.offset.x.px = 0;
         draftState.page.offset.y.px = 0;
         draftState.isDragMode = false;
       });
-    }, 50);
+    });
   });
 };
 

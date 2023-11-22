@@ -16,6 +16,7 @@ import {
   plimit,
   log,
   singleThreaded,
+  requestIdleCallback,
 } from 'main';
 import { debounce, throttle } from 'throttle-debounce';
 
@@ -209,6 +210,8 @@ import { debounce, throttle } from 'throttle-debounce';
         if (await triggerEleLazyLoad(e, waitTime, oldSrcList[i]))
           handleTrigged(e);
       }
+
+      if (targetImgList.length !== 0) requestIdleCallback(triggerLazyLoad);
     });
 
     let imgEleList: HTMLImageElement[];
@@ -256,10 +259,11 @@ import { debounce, throttle } from 'throttle-debounce';
           _setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
 
         if (
+          isEdited ||
           expectCount ||
           imgEleList.some((e) => !e.naturalWidth && !e.naturalHeight)
         )
-          setTimeout(updateImgList);
+          requestIdleCallback(updateImgList, 1000);
       }),
     );
     /** 判断指定元素子树下是否含有图片 */
