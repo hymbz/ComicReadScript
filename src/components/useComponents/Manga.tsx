@@ -8,15 +8,15 @@ import { createStore, produce } from 'solid-js/store';
 import { t } from 'helper/i18n';
 import { IconButton, IconButtonStyle } from '../IconButton';
 import type { MangaProps } from '../Manga';
-import { buttonListDivider, MangaStyle, Manga } from '../Manga';
+import { buttonListDivider, MangaStyle, Manga, store } from '../Manga';
 import { request } from '../../helper/request';
 import { saveAs } from '../../helper';
 import { mountComponents } from './helper';
 import { toast } from './Toast';
-import type { State } from '../Manga/store';
+
+export { store };
 
 let dom: HTMLDivElement;
-let store: State;
 
 /**
  * 显示漫画阅读窗口
@@ -64,9 +64,6 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   const [props, setProps] = createStore({
     imgList: [],
     show: false,
-    getStore: (val) => {
-      store = val;
-    },
     ...initProps,
   } as MangaProps);
 

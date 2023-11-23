@@ -1,6 +1,6 @@
 export const sleep = (ms: number) =>
   new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
+    setTimeout(resolve, ms);
   });
 
 export const clamp = (min: number, val: number, max: number) =>
@@ -266,9 +266,8 @@ export const triggerEleLazyLoad = async (
   e.scrollIntoView({ behavior: 'instant' });
   e.dispatchEvent(new Event('scroll', { bubbles: true }));
 
-  const res = await wait(() => e.src !== oldSrc, time);
+  if (time) await wait(() => e.src !== oldSrc, time);
   window.scroll({ top: nowScroll, behavior: 'auto' });
-  return res;
 };
 
 /** 获取图片尺寸 */

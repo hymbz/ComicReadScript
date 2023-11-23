@@ -1,5 +1,6 @@
 // 这个文件里不能含有 jsx 代码，否则会在打包时自动加入 import solidjs 的代码
 
+import { createEffect, on } from 'solid-js';
 import { getInitLang } from 'helper/languages';
 import {
   t,
@@ -16,9 +17,8 @@ import {
   plimit,
   log,
   singleThreaded,
-  requestIdleCallback,
+  store,
 } from 'main';
-import { debounce, throttle } from 'throttle-debounce';
 
 // 测试案例
 // https://www.177picyy.com/html/2023/03/5505307.html
@@ -145,15 +145,26 @@ import { debounce, throttle } from 'throttle-debounce';
         .sort((a, b) => a.offsetTop - b.offsetTop);
 
     // 使用 triggerEleLazyLoad 会导致正常的滚动在滚到一半时被打断，所以加个锁限制一下
-    let scrollLock = false;
-    const closeScrollLock = debounce(1000, () => {
-      scrollLock = false;
-    });
-    window.addEventListener('wheel', () => {
-      scrollLock = true;
-      closeScrollLock();
-    });
-    const getScrollLock = () => !scrollLock;
+    const scrollLock = {
+      enabled: false,
+      nextOpenTime: 0,
+      timeout: 0,
+    };
+    const closeScrollLock = (delay: number) => {
+      const time = Date.now() + delay;
+      if (time <= scrollLock.nextOpenTime) return;
+      scrollLock.nextOpenTime = time;
+      window.clearInterval(scrollLock.timeout);
+      scrollLock.timeout = window.setTimeout(() => {
+        scrollLock.enabled = false;
+        scrollLock.timeout = 0;
+      });
+    };
+    const openScrollLock = (time: number) => {
+      scrollLock.enabled = true;
+      closeScrollLock(time);
+    };
+    window.addEventListener('wheel', () => openScrollLock(1000));
 
     /** 监视图片是否被显示的 Observer */
     let imgShowObserver: IntersectionObserver;
@@ -174,7 +185,7 @@ import { debounce, throttle } from 'throttle-debounce';
         if (img.isIntersecting)
           return observerTimeoutMap.set(
             img.target,
-            window.setTimeout(handleTrigged, 300, img.target),
+            window.setTimeout(handleTrigged, 290, img.target),
           );
 
         const timeoutID = observerTimeoutMap.get(img.target);
@@ -198,7 +209,7 @@ import { debounce, throttle } from 'throttle-debounce';
       const oldSrcList = targetImgList.map((e) => e.src);
 
       for (let i = 0; i < targetImgList.length; i++) {
-        await wait(getScrollLock);
+        await wait(() => !scrollLock.enabled);
         const e = targetImgList[i];
         if (triggedImgList.has(e)) continue;
         tryCorrectUrl(e);
@@ -206,87 +217,71 @@ import { debounce, throttle } from 'throttle-debounce';
         // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时，
         // 才在触发懒加载时停留一段时间，避免用户看着页面跳来跳去操作不了
         const waitTime =
-          mangaProps.show || mangaProps.imgList.length < 2 ? 300 : 0;
-        if (await triggerEleLazyLoad(e, waitTime, oldSrcList[i]))
-          handleTrigged(e);
+          mangaProps.show || !mangaProps.imgList.length ? 300 : 0;
+        await triggerEleLazyLoad(e, waitTime, oldSrcList[i]);
       }
 
-      if (targetImgList.length !== 0) requestIdleCallback(triggerLazyLoad);
+      if (targetImgList.length !== 0) triggerLazyLoad();
     });
 
     let imgEleList: HTMLImageElement[];
+
+    let updateImgListTimeout: number;
     /** 检查筛选符合标准的图片元素用于更新 imgList */
-    const updateImgList = throttle(
-      500,
-      singleThreaded(async () => {
-        imgEleList = await wait(() => {
-          const newImgList = getAllImg().filter(
-            (e) => e.naturalHeight > 500 && e.naturalWidth > 500,
-          );
-          return newImgList.length >= 2 && newImgList;
-        });
-
-        if (imgEleList.length === 0) {
-          setFab({ show: false });
-          setManga({ show: false });
-          return;
-        }
-
-        /** 找出应该是漫画图片，且未触发过懒加载的图片个数 */
-        const expectCount = options.selector
-          ? querySelectorAll<HTMLImageElement>(options.selector).filter(
-              (e) => !imgEleList.includes(e) && !triggedImgList.has(e),
-            ).length
-          : 0;
-        const _imgEleList = expectCount
-          ? [...imgEleList, ...new Array<null>(expectCount)]
-          : imgEleList;
-
-        let isEdited = false;
-        await plimit(
-          _imgEleList.map((e, i) => async () => {
-            const newUrl = e ? await handleBlobImg(e) : '';
-            if (newUrl === mangaProps.imgList[i]) return;
-
-            if (!isEdited) isEdited = true;
-            _setManga('imgList', i, newUrl);
-          }),
+    const updateImgList = singleThreaded(async () => {
+      imgEleList = await wait(() => {
+        const newImgList = getAllImg().filter(
+          (e) => e.naturalHeight > 500 && e.naturalWidth > 500,
         );
-        if (isEdited) saveImgEleSelector(imgEleList);
+        return newImgList.length >= 2 && newImgList;
+      });
 
-        // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要在这里删掉多余的页数
-        if (!expectCount && mangaProps.imgList.length !== _imgEleList.length)
-          _setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
+      if (imgEleList.length === 0) {
+        setFab({ show: false });
+        setManga({ show: false });
+        return;
+      }
 
-        if (
-          isEdited ||
-          expectCount ||
-          imgEleList.some((e) => !e.naturalWidth && !e.naturalHeight)
-        )
-          requestIdleCallback(updateImgList, 1000);
-      }),
-    );
-    /** 判断指定元素子树下是否含有图片 */
-    const hasImgNode = (node: Element | Node) =>
-      node.nodeName === 'IMG' ||
-      ('id' in node && !!node.getElementsByTagName('img').length);
+      /** 找出应该是漫画图片，且未触发过懒加载的图片个数 */
+      const expectCount = options.selector
+        ? querySelectorAll<HTMLImageElement>(options.selector).filter(
+            (e) => !imgEleList.includes(e) && !triggedImgList.has(e),
+          ).length
+        : 0;
+      const _imgEleList = expectCount
+        ? [...imgEleList, ...new Array<null>(expectCount)]
+        : imgEleList;
 
-    /** 判断是否有图片元素受到影响 */
-    const isImgAffected = (mutation: MutationRecord) => {
+      let isEdited = false;
+      await plimit(
+        _imgEleList.map((e, i) => async () => {
+          const newUrl = e ? await handleBlobImg(e) : '';
+          if (newUrl === mangaProps.imgList[i]) return;
+
+          if (!isEdited) isEdited = true;
+          _setManga('imgList', i, newUrl);
+        }),
+      );
+      if (isEdited) saveImgEleSelector(imgEleList);
+
+      // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要在这里删掉多余的页数
+      if (!expectCount && mangaProps.imgList.length !== _imgEleList.length)
+        _setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
+
       if (
-        hasImgNode(mutation.target) ||
-        [...mutation.addedNodes].some(hasImgNode) ||
-        [...mutation.removedNodes].some(hasImgNode)
-      )
-        return true;
-      return false;
-    };
+        isEdited ||
+        expectCount ||
+        imgEleList.some((e) => !e.naturalWidth && !e.naturalHeight)
+      ) {
+        if (updateImgListTimeout) window.clearTimeout(updateImgListTimeout);
+        updateImgListTimeout = window.setTimeout(updateImgList, 1000);
+      }
+    });
 
-    /** 监视图片元素发生变化的 Observer */
-    const imgDomObserver = new MutationObserver((mutationsList) => {
-      if (!mutationsList.some(isImgAffected)) return;
-      triggerLazyLoad();
+    /** 监视页面元素发生变化的 Observer */
+    const imgDomObserver = new MutationObserver(() => {
       updateImgList();
+      triggerLazyLoad();
     });
 
     init(async () => {
@@ -304,6 +299,36 @@ import { debounce, throttle } from 'throttle-debounce';
       await wait(() => mangaProps.imgList.length);
       return mangaProps.imgList;
     });
+
+    // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
+    createEffect(
+      on(
+        () => store.memo.showImgList,
+        (showImgList) => {
+          if (!showImgList || !showImgList.length || !store.show) return;
+          imgEleList[
+            Math.min(+showImgList.at(-1)!.alt + 1, imgEleList.length - 1)
+          ]?.scrollIntoView({ behavior: 'instant', block: 'end' });
+          openScrollLock(500);
+        },
+        { defer: true },
+      ),
+    );
+
+    // 在退出阅读模式时跳回之前的滚动位置
+    let laseScroll = window.scrollY;
+    createEffect(
+      on(
+        () => store.show,
+        (show) => {
+          if (show) laseScroll = window.scrollY;
+          else {
+            openScrollLock(1000);
+            requestAnimationFrame(() => window.scrollTo(0, laseScroll));
+          }
+        },
+      ),
+    );
   };
 
   if ((await GM.getValue(window.location.hostname)) !== undefined)
