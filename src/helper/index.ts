@@ -1,6 +1,6 @@
 export const sleep = (ms: number) =>
   new Promise((resolve) => {
-    setTimeout(resolve, ms);
+    window.setTimeout(resolve, ms);
   });
 
 export const clamp = (min: number, val: number, max: number) =>
