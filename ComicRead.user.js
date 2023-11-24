@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.2.1
+// @version         8.2.2
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -47,7 +47,6 @@
 // @resource        solid-js https://unpkg.com/solid-js@1.8.5/dist/solid.cjs
 // @resource        solid-js/store https://unpkg.com/solid-js@1.8.5/store/dist/store.cjs
 // @resource        solid-js/web https://unpkg.com/solid-js@1.8.5/web/dist/web.cjs
-// @resource        panzoom https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js
 // @resource        fflate https://unpkg.com/fflate@0.8.1/umd/index.js
 // @resource        dmzjDecrypt https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199
 // @supportURL      https://github.com/hymbz/ComicReadScript/issues
@@ -89,7 +88,7 @@ const selfImportSync = name => {
   const code = name !== 'main' ? GM_getResourceText(name) :`
 const solidJs = require('solid-js');
 const web = require('solid-js/web');
-const store$3 = require('solid-js/store');
+const store$2 = require('solid-js/store');
 const fflate = require('fflate');
 const main = require('main');
 
@@ -302,7 +301,7 @@ const boolDataVal = val => val ? '' : undefined;
  *
  * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
  */
-const triggerEleLazyLoad = async (e, time = 0, oldSrc = e.src) => {
+const triggerEleLazyLoad = async (e, time, isLazyLoaded) => {
   const nowScroll = window.scrollY;
   e.scrollIntoView({
     behavior: 'instant'
@@ -310,12 +309,14 @@ const triggerEleLazyLoad = async (e, time = 0, oldSrc = e.src) => {
   e.dispatchEvent(new Event('scroll', {
     bubbles: true
   }));
-  const res = await wait(() => e.src !== oldSrc, time);
-  window.scroll({
-    top: nowScroll,
-    behavior: 'auto'
-  });
-  return res;
+  try {
+    if (isLazyLoaded && time) return await wait(isLazyLoaded, time);
+  } finally {
+    window.scroll({
+      top: nowScroll,
+      behavior: 'auto'
+    });
+  }
 };
 
 /** 获取图片尺寸 */
@@ -1294,17 +1295,17 @@ const mountComponents = (id, fc) => {
 var css$3 = ".index_module_root__d8c71ff0{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__d8c71ff0{align-items:center;animation:index_module_bounceInRight__d8c71ff0 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__d8c71ff0>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__d8c71ff0[data-exit]{animation:index_module_bounceOutRight__d8c71ff0 .5s 1}.index_module_schedule__d8c71ff0{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__d8c71ff0[data-schedule] .index_module_schedule__d8c71ff0{transition:transform .1s}.index_module_item__d8c71ff0:not([data-schedule]) .index_module_schedule__d8c71ff0{animation:index_module_schedule__d8c71ff0 linear 1 forwards}:is(.index_module_item__d8c71ff0:hover,.index_module_item__d8c71ff0[data-schedule],.index_module_root__d8c71ff0[data-paused]) .index_module_schedule__d8c71ff0{animation-play-state:paused}.index_module_msg__d8c71ff0{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__d8c71ff0 h2{margin:0}.index_module_msg__d8c71ff0 h3{margin:.7em 0}.index_module_msg__d8c71ff0 ul{margin:0;text-align:left}.index_module_msg__d8c71ff0 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__d8c71ff0 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__d8c71ff0{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__d8c71ff0{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__d8c71ff0{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
 var modules_c21c94f2$3 = {"root":"index_module_root__d8c71ff0","item":"index_module_item__d8c71ff0","bounceInRight":"index_module_bounceInRight__d8c71ff0","bounceOutRight":"index_module_bounceOutRight__d8c71ff0","schedule":"index_module_schedule__d8c71ff0","msg":"index_module_msg__d8c71ff0"};
 
-const [_state$1, _setState$1] = store$3.createStore({
+const [_state$1, _setState$1] = store$2.createStore({
   list: [],
   map: {}
 });
-const setState$1 = fn => _setState$1(store$3.produce(fn));
+const setState$1 = fn => _setState$1(store$2.produce(fn));
 
 // eslint-disable-next-line solid/reactivity
-const store$2 = _state$1;
+const store$1 = _state$1;
 const creatId = () => {
   let id = \`\${Date.now()}\`;
-  while (Reflect.has(store$2.map, id)) {
+  while (Reflect.has(store$1.map, id)) {
     id += '_';
   }
   return id;
@@ -1374,11 +1375,11 @@ const toast$2 = (msg, options) => {
   if (options?.throw && typeof msg === 'string') throw new Error(msg);
 };
 toast$2.dismiss = id => {
-  if (!Reflect.has(store$2.map, id)) return;
+  if (!Reflect.has(store$1.map, id)) return;
   _setState$1('map', id, 'exit', true);
 };
 toast$2.set = (id, options) => {
-  if (!Reflect.has(store$2.map, id)) return;
+  if (!Reflect.has(store$1.map, id)) return;
   setState$1(state => Object.assign(state.map[id], options));
 };
 toast$2.success = (msg, options) => toast$2(msg, {
@@ -1521,9 +1522,9 @@ const Toaster = () => {
     const _el$ = _tmpl$$N();
     web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
-        return store$2.list;
+        return store$1.list;
       },
-      children: id => web.createComponent(ToastItem, web.mergeProps(() => store$2.map[id]))
+      children: id => web.createComponent(ToastItem, web.mergeProps(() => store$1.map[id]))
     }));
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$3.root,
@@ -1830,11 +1831,11 @@ const MdClose = ((props = {}) => (() => {
 })());
 
 const useStore = initState => {
-  const [_state, _setState] = store$3.createStore(initState);
+  const [_state, _setState] = store$2.createStore(initState);
   return {
     _state,
     _setState,
-    setState: fn => _setState(store$3.produce(fn)),
+    setState: fn => _setState(store$2.produce(fn)),
     store: _state
   };
 };
@@ -2013,7 +2014,7 @@ const ShowState = {
 };
 
 const {
-  store: store$1,
+  store,
   setState,
   _state,
   _setState
@@ -2303,17 +2304,17 @@ const getImgTip = (state, i) => {
 
 /** 获取指定页面的提示文本 */
 const getPageTip = pageIndex => {
-  const page = store$1.pageList[pageIndex];
+  const page = store.pageList[pageIndex];
   if (!page) return 'null';
-  const pageIndexText = page.map(index => getImgTip(store$1, index));
-  if (store$1.option.dir === 'rtl') pageIndexText.reverse();
-  return pageIndexText.join(store$1.option.scrollMode ? '\\n' : ' | ');
+  const pageIndexText = page.map(index => getImgTip(store, index));
+  if (store.option.dir === 'rtl') pageIndexText.reverse();
+  return pageIndexText.join(store.option.scrollMode ? '\\n' : ' | ');
 };
 
 /** 获取滚动条位置 */
 const getScrollPosition = () => {
-  if (store$1.option.scrollbar.position === 'auto') return store$1.isMobile ? 'top' : 'right';
-  return store$1.option.scrollbar.position;
+  if (store.option.scrollbar.position === 'auto') return store.isMobile ? 'top' : 'right';
+  return store.option.scrollbar.position;
 };
 
 /** 判断点击位置在滚动条上的位置比率 */
@@ -2321,7 +2322,7 @@ const getClickTop = (x, y, e) => {
   switch (getScrollPosition()) {
     case 'bottom':
     case 'top':
-      return store$1.option.dir === 'rtl' ? 1 - x / e.offsetWidth : x / e.offsetWidth;
+      return store.option.dir === 'rtl' ? 1 - x / e.offsetWidth : x / e.offsetWidth;
     default:
       return y / e.offsetHeight;
   }
@@ -2332,7 +2333,7 @@ const getDragDist = ([x, y], [ix, iy], e) => {
   switch (getScrollPosition()) {
     case 'bottom':
     case 'top':
-      return store$1.option.dir === 'ltr' ? (x - ix) / e.offsetWidth : (1 - (x - ix)) / e.offsetWidth;
+      return store.option.dir === 'ltr' ? (x - ix) / e.offsetWidth : (1 - (x - ix)) / e.offsetWidth;
     default:
       return (y - iy) / e.offsetHeight;
   }
@@ -2355,7 +2356,7 @@ const handleScrollbarDrag = ({
   /** 点击位置在滚动条上的位置比率 */
   const clickTop = getClickTop(x, y, e.target);
   let top = clickTop;
-  if (store$1.option.scrollMode) {
+  if (store.option.scrollMode) {
     if (type === 'move') {
       top = startTop + getDragDist(xy, initial, scrollbarDom);
       // 处理超出范围的情况
@@ -2366,7 +2367,7 @@ const handleScrollbarDrag = ({
       });
     } else {
       // 确保滚动条的中心会在点击位置
-      top -= store$1.scrollbar.dragHeight / 2;
+      top -= store.scrollbar.dragHeight / 2;
       startTop = top;
       refs.mangaFlow.scrollTo({
         top: top * contentHeight(),
@@ -2374,21 +2375,21 @@ const handleScrollbarDrag = ({
       });
     }
   } else {
-    let newPageIndex = Math.floor(top * store$1.pageList.length);
+    let newPageIndex = Math.floor(top * store.pageList.length);
     // 处理超出范围的情况
-    if (newPageIndex < 0) newPageIndex = 0;else if (newPageIndex >= store$1.pageList.length) newPageIndex = store$1.pageList.length - 1;
-    if (newPageIndex !== store$1.activePageIndex) _setState('activePageIndex', newPageIndex);
+    if (newPageIndex < 0) newPageIndex = 0;else if (newPageIndex >= store.pageList.length) newPageIndex = store.pageList.length - 1;
+    if (newPageIndex !== store.activePageIndex) _setState('activePageIndex', newPageIndex);
   }
 };
 solidJs.createRoot(() => {
   // 更新 scrollLength
-  solidJs.createEffect(solidJs.on([getScrollPosition, () => store$1.memo.size], () => {
+  solidJs.createEffect(solidJs.on([getScrollPosition, () => store.memo.size], () => {
     _setState('memo', 'scrollLength', Math.max(refs.scrollbar?.clientWidth, refs.scrollbar?.clientHeight));
   }));
 });
 
 /** 触发 onOptionChange */
-const triggerOnOptionChange = () => setTimeout(() => store$1.prop.OptionChange?.(difference(store$1.option, defaultOption)));
+const triggerOnOptionChange = () => setTimeout(() => store.prop.OptionChange?.(difference(store.option, defaultOption)));
 
 /** 在 option 后手动触发 onOptionChange */
 const setOption = fn => {
@@ -2415,12 +2416,12 @@ const {
   activePage,
   preloadNum
 } = solidJs.createRoot(() => {
-  const activePageMemo = solidJs.createMemo(() => store$1.pageList[store$1.activePageIndex] ?? []);
+  const activePageMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex] ?? []);
   const activeImgIndexMemo = solidJs.createMemo(() => activePageMemo().find(i => i !== -1) ?? 0);
-  const nowFillIndexMemo = solidJs.createMemo(() => findFillIndex(activeImgIndexMemo(), store$1.fillEffect));
+  const nowFillIndexMemo = solidJs.createMemo(() => findFillIndex(activeImgIndexMemo(), store.fillEffect));
   const preloadNumMemo = solidJs.createMemo(() => ({
-    back: store$1.option.preloadPageNum,
-    front: Math.floor(store$1.option.preloadPageNum / 2)
+    back: store.option.preloadPageNum,
+    front: Math.floor(store.option.preloadPageNum / 2)
   }));
   return {
     /** 当前显示的第一张图片的 index */
@@ -2471,12 +2472,12 @@ const zoomScrollModeImg = (zoomLevel, set = false) => {
   setOption(draftOption => {
     const newVal = set ? zoomLevel :
     // 放大到整数再运算，避免精度丢失导致的奇怪的值
-    (store$1.option.scrollModeImgScale * 100 + zoomLevel * 100) / 100;
+    (store.option.scrollModeImgScale * 100 + zoomLevel * 100) / 100;
     draftOption.scrollModeImgScale = clamp(0.1, newVal, 3);
   });
   // 在调整图片缩放后使当前滚动进度保持不变
   refs.mangaFlow.scrollTo({
-    top: contentHeight() * store$1.scrollbar.dragTop,
+    top: contentHeight() * store.scrollbar.dragTop,
     behavior: 'instant'
   });
   setState(updateDrag);
@@ -2540,7 +2541,7 @@ const handleImgError = (i, e) => {
 };
 
 const touches = new Map();
-const scale = () => store$1.zoom.scale / 100;
+const scale = () => store.zoom.scale / 100;
 const width = () => refs.mangaFlow?.clientWidth ?? 0;
 const height = () => refs.mangaFlow?.clientHeight ?? 0;
 const bound = solidJs.createRoot(() => {
@@ -2558,7 +2559,7 @@ const checkBound = state => {
 const closeScrollLock$1 = debounce(200, () => _setState('flag', 'scrollLock', false));
 const zoom = (val, focal, animation = false) => {
   const newScale = clamp(100, val, 500);
-  if (newScale === store$1.zoom.scale) return;
+  if (newScale === store.zoom.scale) return;
 
   // 消除放大导致的偏移
   const {
@@ -2569,8 +2570,8 @@ const zoom = (val, focal, animation = false) => {
   const y = (focal?.y ?? height() / 2) - top;
 
   // 当前直接放大后的基准点坐标
-  const newX = x / (store$1.zoom.scale / 100) * (newScale / 100);
-  const newY = y / (store$1.zoom.scale / 100) * (newScale / 100);
+  const newX = x / (store.zoom.scale / 100) * (newScale / 100);
+  const newY = y / (store.zoom.scale / 100) * (newScale / 100);
 
   // 放大后基准点的偏移距离
   const dx = newX - x;
@@ -2644,7 +2645,7 @@ const handleSlideAnima = timestamp => {
 /** 逐帧根据鼠标坐标移动元素，并计算速率 */
 const handleDragAnima$1 = () => {
   // 当停着不动时退出循环
-  if (mouse.x === store$1.zoom.offset.x && mouse.y === store$1.zoom.offset.y) {
+  if (mouse.x === store.zoom.offset.x && mouse.y === store.zoom.offset.y) {
     animationId$1 = null;
     return;
   }
@@ -2669,12 +2670,12 @@ const handleZoomDrag = ({
   xy: [x, y],
   last: [lx, ly]
 }) => {
-  if (store$1.zoom.scale === 100) return;
+  if (store.zoom.scale === 100) return;
   switch (type) {
     case 'down':
       {
-        mouse.x = store$1.zoom.offset.x;
-        mouse.y = store$1.zoom.offset.y;
+        mouse.x = store.zoom.offset.x;
+        mouse.y = store.zoom.offset.y;
         if (animationId$1) cancelAnimation();
         break;
       }
@@ -2691,8 +2692,8 @@ const handleZoomDrag = ({
         // 当双指捏合结束，一个手指抬起时，将剩余的指针当作刚点击来处理
         if (pinchZoom) {
           pinchZoom = false;
-          mouse.x = store$1.zoom.offset.x;
-          mouse.y = store$1.zoom.offset.y;
+          mouse.x = store.zoom.offset.x;
+          mouse.y = store.zoom.offset.y;
           return;
         }
         if (animationId$1) cancelAnimationFrame(animationId$1);
@@ -2739,7 +2740,7 @@ const handlePinchZoom = ({
         pinchZoom = true;
         const [a, b] = [...touches.values()];
         initDistance = getDistance(a, b);
-        initScale = store$1.zoom.scale;
+        initScale = store.zoom.scale;
         break;
       }
     case 'up':
@@ -2779,12 +2780,12 @@ const defaultHotkeys = {
 };
 const setHotkeys = (...args) => {
   _setState(...['hotkeys', ...args]);
-  store$1.prop.HotkeysChange?.(Object.fromEntries(Object.entries(store$1.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]))));
+  store.prop.HotkeysChange?.(Object.fromEntries(Object.entries(store.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]))));
 };
 const {
   hotkeysMap
 } = solidJs.createRoot(() => {
-  const hotkeysMapMemo = solidJs.createMemo(() => Object.fromEntries(Object.entries(store$1.hotkeys).flatMap(([name, key]) => key.map(k => [k, name]))));
+  const hotkeysMapMemo = solidJs.createMemo(() => Object.fromEntries(Object.entries(store.hotkeys).flatMap(([name, key]) => key.map(k => [k, name]))));
   return {
     /** 快捷键配置 */
     hotkeysMap: hotkeysMapMemo
@@ -2793,10 +2794,10 @@ const {
 
 /** 删除指定快捷键 */
 const delHotkeys = code => {
-  Object.entries(store$1.hotkeys).forEach(([name, keys]) => {
+  Object.entries(store.hotkeys).forEach(([name, keys]) => {
     const i = keys.indexOf(code);
     if (i === -1) return;
-    const newKeys = [...store$1.hotkeys[name]];
+    const newKeys = [...store.hotkeys[name]];
     newKeys.splice(i, 1);
     setHotkeys(name, newKeys);
   });
@@ -2819,7 +2820,7 @@ const updateRenderPage = (state, animation = false) => {
   const i = state.memo.renderPageList.indexOf(state.pageList[state.activePageIndex]);
   state.page.offset.x.pct = 0;
   state.page.offset.y.pct = 0;
-  if (store$1.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
+  if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
   state.page.anima = animation ? 'page' : '';
 };
 const updateShowPageList = state => {
@@ -2835,12 +2836,12 @@ const handleObserver = entries => {
     }) => {
       if (isIntersecting) state.memo.showImgList.push(target);else state.memo.showImgList = state.memo.showImgList.filter(img => img !== target);
     });
-    if (!store$1.gridMode) updateShowPageList(state);
+    if (!store.gridMode) updateShowPageList(state);
   });
 };
 solidJs.createRoot(() => {
   // 页数发生变动时
-  solidJs.createEffect(solidJs.on(() => store$1.activePageIndex, () => {
+  solidJs.createEffect(solidJs.on(() => store.activePageIndex, () => {
     setState(state => {
       updateImgLoadType(state);
       if (state.show.endPage) state.show.endPage = undefined;
@@ -2850,16 +2851,16 @@ solidJs.createRoot(() => {
   }));
 
   // 在关闭工具栏的同时关掉滚动条的强制显示
-  solidJs.createEffect(solidJs.on(() => store$1.show.toolbar, () => {
-    if (store$1.show.scrollbar && !store$1.show.toolbar) _setState('show', 'scrollbar', false);
+  solidJs.createEffect(solidJs.on(() => store.show.toolbar, () => {
+    if (store.show.scrollbar && !store.show.toolbar) _setState('show', 'scrollbar', false);
   }, {
     defer: true
   }));
   solidJs.createEffect(solidJs.on(activePage, page => {
-    if (!store$1.option.scrollMode && !store$1.isDragMode) setState(updateRenderPage);
+    if (!store.option.scrollMode && !store.isDragMode) setState(updateRenderPage);
     // 如果当前显示页面有出错的图片，就重新加载一次
     page?.forEach(i => {
-      if (store$1.imgList[i]?.loadType !== 'error') return;
+      if (store.imgList[i]?.loadType !== 'error') return;
       _setState('imgList', i, 'loadType', 'wait');
     });
   }, {
@@ -2867,7 +2868,7 @@ solidJs.createRoot(() => {
   }));
 
   // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
-  solidJs.createEffect(solidJs.on(() => store$1.gridMode, () => setState(resetUI), {
+  solidJs.createEffect(solidJs.on(() => store.gridMode, () => setState(resetUI), {
     defer: true
   }));
 });
@@ -2892,7 +2893,7 @@ const switchScrollMode = () => {
   });
   setState(updateDrag);
   // 切换到卷轴模式后自动定位到对应页
-  if (store$1.option.scrollMode) refs.mangaFlow.children[store$1.activePageIndex]?.scrollIntoView();
+  if (store.option.scrollMode) refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
 };
 
 /** 切换单双页模式 */
@@ -2918,7 +2919,7 @@ const switchGridMode = () => {
     state.page.anima = '';
   });
   // 切换到网格模式后自动定位到当前页
-  if (store$1.gridMode) refs.mangaFlow.children[store$1.activePageIndex]?.scrollIntoView({
+  if (store.gridMode) refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView({
     block: 'center',
     inline: 'center'
   });
@@ -2928,7 +2929,7 @@ var css$1 = ".index_module_img__d1a5aaee{background-color:var(--hover-bg-color,#
 var modules_c21c94f2$1 = {"img":"index_module_img__d1a5aaee","show":"index_module_show__d1a5aaee","mangaFlow":"index_module_mangaFlow__d1a5aaee","root":"index_module_root__d1a5aaee","endPage":"index_module_endPage__d1a5aaee","jello":"index_module_jello__d1a5aaee","tip":"index_module_tip__d1a5aaee","comments":"index_module_comments__d1a5aaee","toolbar":"index_module_toolbar__d1a5aaee","toolbarPanel":"index_module_toolbarPanel__d1a5aaee","toolbarBg":"index_module_toolbarBg__d1a5aaee","SettingPanelPopper":"index_module_SettingPanelPopper__d1a5aaee","SettingPanel":"index_module_SettingPanel__d1a5aaee","SettingBlock":"index_module_SettingBlock__d1a5aaee","SettingBlockBody":"index_module_SettingBlockBody__d1a5aaee","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__d1a5aaee","SettingsItem":"index_module_SettingsItem__d1a5aaee","SettingsItemName":"index_module_SettingsItemName__d1a5aaee","SettingsItemSwitch":"index_module_SettingsItemSwitch__d1a5aaee","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__d1a5aaee","SettingsItemIconButton":"index_module_SettingsItemIconButton__d1a5aaee","SettingsItemSelect":"index_module_SettingsItemSelect__d1a5aaee","closeCover":"index_module_closeCover__d1a5aaee","SettingsShowItem":"index_module_SettingsShowItem__d1a5aaee","SettingsShowItemBody":"index_module_SettingsShowItemBody__d1a5aaee","hotkeys":"index_module_hotkeys__d1a5aaee","hotkeysItem":"index_module_hotkeysItem__d1a5aaee","hotkeysHeader":"index_module_hotkeysHeader__d1a5aaee","scrollbar":"index_module_scrollbar__d1a5aaee","scrollbarPage":"index_module_scrollbarPage__d1a5aaee","scrollbarDrag":"index_module_scrollbarDrag__d1a5aaee","scrollbarPoper":"index_module_scrollbarPoper__d1a5aaee","touchAreaRoot":"index_module_touchAreaRoot__d1a5aaee","touchArea":"index_module_touchArea__d1a5aaee","hidden":"index_module_hidden__d1a5aaee","invisible":"index_module_invisible__d1a5aaee","beautifyScrollbar":"index_module_beautifyScrollbar__d1a5aaee","page":"index_module_page__d1a5aaee"};
 
 const handleMouseDown = e => {
-  if (e.button !== 1 || store$1.option.scrollMode) return;
+  if (e.button !== 1 || store.option.scrollMode) return;
   e.stopPropagation();
   e.preventDefault();
   switchFillEffect();
@@ -2941,10 +2942,10 @@ const focus = () => requestAnimationFrame(() => {
 });
 
 /** 判断当前是否已经滚动到底部 */
-const isBottom = state => state.option.scrollMode ? store$1.scrollbar.dragHeight + store$1.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
+const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
 
 /** 判断当前是否已经滚动到顶部 */
-const isTop = state => state.option.scrollMode ? store$1.scrollbar.dragTop === 0 : state.activePageIndex === 0;
+const isTop = state => state.option.scrollMode ? store.scrollbar.dragTop === 0 : state.activePageIndex === 0;
 const closeScrollLock = debounce(200, () => _setState('flag', 'scrollLock', false));
 
 /** 翻页。返回是否成功改变了当前页数 */
@@ -3014,7 +3015,7 @@ const turnPageAnimation = dir => {
     }
     state.isDragMode = true;
     updateRenderPage(state);
-    if (store$1.page.vertical) state.page.offset.y.pct += dir === 'next' ? 100 : -100;else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
+    if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 100 : -100;else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
     requestAnimationFrame(() => {
       setState(draftState => {
         updateRenderPage(draftState, true);
@@ -3028,7 +3029,7 @@ const turnPageAnimation = dir => {
 
 /** 卷轴模式下的滚动 */
 const scrollModeScroll = dir => {
-  if (!store$1.show.endPage) {
+  if (!store.show.endPage) {
     refs.mangaFlow.scrollBy({
       top: refs.root.clientHeight * 0.8 * (dir === 'next' ? 1 : -1),
       behavior: 'instant'
@@ -3040,25 +3041,25 @@ const scrollModeScroll = dir => {
 const handleWheel = e => {
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
-  if (store$1.flag.scrollLock) return;
+  if (store.flag.scrollLock) return;
   const isWheelDown = e.deltaY > 0;
-  if (store$1.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
+  if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
 
   // 卷轴模式下的图片缩放
-  if ((e.ctrlKey || e.altKey) && store$1.option.scrollMode && store$1.zoom.scale === 100) {
+  if ((e.ctrlKey || e.altKey) && store.option.scrollMode && store.zoom.scale === 100) {
     e.preventDefault();
     return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
   }
-  if (e.ctrlKey || e.altKey || store$1.zoom.scale !== 100) {
+  if (e.ctrlKey || e.altKey || store.zoom.scale !== 100) {
     e.preventDefault();
-    return zoom(store$1.zoom.scale + (isWheelDown ? -25 : 25), e);
+    return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
   }
   return turnPage(isWheelDown ? 'next' : 'prev');
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
 const handleSwapPageTurnKey = nextPage => {
-  const next = store$1.option.swapPageTurnKey ? !nextPage : nextPage;
+  const next = store.option.swapPageTurnKey ? !nextPage : nextPage;
   return next ? 'next' : 'prev';
 };
 
@@ -3070,12 +3071,12 @@ const handleKeyDown = e => {
 
   // esc 在触发配置操作前，先用于退出一些界面
   if (e.key === 'Escape') {
-    if (store$1.gridMode) {
+    if (store.gridMode) {
       e.stopPropagation();
       e.preventDefault();
       return _setState('gridMode', false);
     }
-    if (store$1.show.endPage) {
+    if (store.show.endPage) {
       e.stopPropagation();
       e.preventDefault();
       return _setState('show', 'endPage', undefined);
@@ -3093,7 +3094,7 @@ const handleKeyDown = e => {
   }
 
   // 卷轴、网格模式下跳过用于移动的按键
-  if ((store$1.option.scrollMode || store$1.gridMode) && !store$1.show.endPage) {
+  if ((store.option.scrollMode || store.gridMode) && !store.show.endPage) {
     switch (e.key) {
       case 'Home':
       case 'End':
@@ -3102,11 +3103,11 @@ const handleKeyDown = e => {
         return;
       case 'ArrowUp':
       case 'PageUp':
-        return store$1.gridMode || turnPage('prev');
+        return store.gridMode || turnPage('prev');
       case 'ArrowDown':
       case 'PageDown':
       case ' ':
-        return store$1.gridMode || turnPage('next');
+        return store.gridMode || turnPage('next');
     }
   }
 
@@ -3118,22 +3119,22 @@ const handleKeyDown = e => {
   switch (hotkeysMap()[code]) {
     case 'turn_page_up':
       {
-        if (store$1.option.scrollMode) scrollModeScroll('prev');
+        if (store.option.scrollMode) scrollModeScroll('prev');
         return turnPage('prev');
       }
     case 'turn_page_down':
       {
-        if (store$1.option.scrollMode) scrollModeScroll('next');
+        if (store.option.scrollMode) scrollModeScroll('next');
         return turnPage('next');
       }
     case 'turn_page_right':
-      return turnPage(handleSwapPageTurnKey(store$1.option.dir !== 'rtl'));
+      return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
     case 'turn_page_left':
-      return turnPage(handleSwapPageTurnKey(store$1.option.dir === 'rtl'));
+      return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));
     case 'jump_to_home':
       return _setState('activePageIndex', 0);
     case 'jump_to_end':
-      return _setState('activePageIndex', store$1.pageList.length - 1);
+      return _setState('activePageIndex', store.pageList.length - 1);
     case 'switch_page_fill':
       return switchFillEffect();
     case 'switch_scroll_mode':
@@ -3149,7 +3150,7 @@ const handleKeyDown = e => {
         draftOption.disableZoom = !draftOption.disableZoom;
       });
     case 'exit':
-      return store$1.prop.Exit?.();
+      return store.prop.Exit?.();
   }
 };
 
@@ -3191,7 +3192,7 @@ const handlePageClick = e => {
     state.show.scrollbar = !state.show.scrollbar;
     state.show.toolbar = !state.show.toolbar;
   });
-  if (!store$1.option.clickPageTurn.enabled || store$1.zoom.scale !== 100) return;
+  if (!store.option.clickPageTurn.enabled || store.zoom.scale !== 100) return;
   setState(resetUI);
   turnPage(areaName.toLowerCase());
 };
@@ -3203,28 +3204,28 @@ const handleGridClick = e => {
   const pageNumText = target.parentElement?.getAttribute('data-index');
   if (!pageNumText) return;
   const pageNum = +pageNumText;
-  if (!Reflect.has(store$1.pageList, pageNum)) return;
+  if (!Reflect.has(store.pageList, pageNum)) return;
   setState(state => {
     state.activePageIndex = pageNum;
     state.gridMode = false;
   });
-  if (store$1.option.scrollMode) refs.mangaFlow.children[store$1.activePageIndex]?.scrollIntoView();
+  if (store.option.scrollMode) refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
 };
 
 /** 双击放大 */
-const doubleClickZoom = e => !store$1.gridMode && zoom(store$1.zoom.scale !== 100 ? 100 : 350, e, true);
-const handleClick = useDoubleClick(e => store$1.gridMode ? handleGridClick(e) : handlePageClick(e), doubleClickZoom);
+const doubleClickZoom = e => !store.gridMode && zoom(store.zoom.scale !== 100 ? 100 : 350, e, true);
+const handleClick = useDoubleClick(e => store.gridMode ? handleGridClick(e) : handlePageClick(e), doubleClickZoom);
 
 /** 判断翻页方向 */
 const getTurnPageDir = startTime => {
   let dir;
   let move;
   let total;
-  if (store$1.page.vertical) {
-    move = -store$1.page.offset.y.px;
+  if (store.page.vertical) {
+    move = -store.page.offset.y.px;
     total = refs.root.clientHeight;
   } else {
-    move = store$1.page.offset.x.px;
+    move = store.page.offset.x.px;
     total = refs.root.clientWidth;
   }
 
@@ -3243,7 +3244,7 @@ let dy = 0;
 let animationId = null;
 const handleDragAnima = () => {
   // 当停着不动时退出循环
-  if (dx === store$1.page.offset.x.px && dy === store$1.page.offset.y.px) {
+  if (dx === store.page.offset.x.px && dy === store.page.offset.y.px) {
     animationId = null;
     return;
   }
@@ -3261,9 +3262,9 @@ const handleMangaFlowDrag = ({
   switch (type) {
     case 'move':
       {
-        dx = store$1.option.dir === 'rtl' ? x - ix : ix - x;
+        dx = store.option.dir === 'rtl' ? x - ix : ix - x;
         dy = y - iy;
-        if (store$1.isDragMode) {
+        if (store.isDragMode) {
           if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
           return;
         }
@@ -3370,28 +3371,28 @@ const updateImgSize = (i, width, height) => {
 
 /** 更新所有图片的尺寸 */
 const updateAllImgSize = singleThreaded(async () => {
-  await plimit(store$1.imgList.map((img, i) => async () => {
+  await plimit(store.imgList.map((img, i) => async () => {
     if (img.loadType !== 'wait' || img.width || img.height || !img.src) return;
     const size = await getImgSize(img.src);
     if (!size) return handleImgError(i);
     return updateImgSize(i, ...size);
-  }), undefined, Math.max(store$1.option.preloadPageNum, 1));
+  }), undefined, Math.max(store.option.preloadPageNum, 1));
 });
 
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = (sizeFn, fallback) => {
-  if (!store$1.option.scrollMode) return 0;
-  const list = store$1.imgList.filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort();
+  if (!store.option.scrollMode) return 0;
+  const list = store.imgList.filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort();
   if (!list.length) return fallback;
   return list[Math.floor(list.length / 2)];
 };
 const {
   placeholderSize
 } = solidJs.createRoot(() => {
-  solidJs.createEffect(solidJs.on(() => store$1.imgList, updateAllImgSize));
+  solidJs.createEffect(solidJs.on(() => store.imgList, updateAllImgSize));
 
   /** 处理显示窗口的长宽变化 */
-  solidJs.createEffect(solidJs.on(() => store$1.memo.size, ({
+  solidJs.createEffect(solidJs.on(() => store.memo.size, ({
     width,
     height
   }) => setState(state => {
@@ -3532,22 +3533,22 @@ const handleImgLoaded = (i, e) => {
 const ComicImg = props => {
   let ref;
   solidJs.onMount(() => {
-    store$1.observer?.observe(ref);
+    store.observer?.observe(ref);
     solidJs.onCleanup(() => {
-      store$1.observer?.unobserve(ref);
+      store.observer?.unobserve(ref);
       setState(state => {
         state.memo.showImgList = state.memo.showImgList.filter(img => img !== ref);
       });
     });
   });
-  const img = () => store$1.imgList[props.index];
+  const img = () => store.imgList[props.index];
   const src = solidJs.createMemo(() => {
     if (!img() || img().loadType === 'wait') return '';
     if (img().translationType === 'show') return img().translationUrl;
     return img().src;
   });
   const style = solidJs.createMemo(() => {
-    if (!store$1.option.scrollMode) return undefined;
+    if (!store.option.scrollMode) return undefined;
     const size = img()?.width ? img() : placeholderSize();
     return {
       '--width': \`\${size.width}px\`,
@@ -3592,18 +3593,18 @@ const ComicImg = props => {
 const _tmpl$$D = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$b = /*#__PURE__*/web.template(\`<h1>NULL\`);
 const ComicPage = props => {
-  const show = solidJs.createMemo(() => store$1.gridMode || store$1.option.scrollMode || store$1.memo.renderPageList.some(page => isEqualArray(page, props.page)));
+  const show = solidJs.createMemo(() => store.gridMode || store.option.scrollMode || store.memo.renderPageList.some(page => isEqualArray(page, props.page)));
   const fill = solidJs.createMemo(() => {
     if (props.page.length === 1) return undefined;
 
     // 判断是否有填充页
     const fillIndex = props.page.indexOf(-1);
-    if (fillIndex !== -1) return store$1.option.dir !== 'rtl' ? ['right', 'left'] : ['left', 'right'];
+    if (fillIndex !== -1) return store.option.dir !== 'rtl' ? ['right', 'left'] : ['left', 'right'];
     return undefined;
   });
   const style = solidJs.createMemo(() => {
-    if (!store$1.gridMode) return {};
-    const highlight = props.index === store$1.activePageIndex;
+    if (!store.gridMode) return {};
+    const highlight = props.index === store.activePageIndex;
     const tip = getPageTip(props.index);
     return {
       '--tip': highlight ? \`">    \${tip}    <"\` : \`"\${tip}"\`,
@@ -3654,10 +3655,10 @@ const ComicImgFlow = () => {
     onMouseMove
   } = useHiddenMouse();
   const handleDrag = (state, e) => {
-    if (store$1.gridMode) return;
+    if (store.gridMode) return;
     if (touches.size > 1) return handlePinchZoom(state);
-    if (store$1.zoom.scale !== 100) return handleZoomDrag(state);
-    if (!store$1.option.scrollMode) return handleMangaFlowDrag(state);
+    if (store.zoom.scale !== 100) return handleZoomDrag(state);
+    if (!store.option.scrollMode) return handleMangaFlowDrag(state);
   };
   solidJs.onMount(() => {
     useDrag({
@@ -3680,33 +3681,33 @@ const ComicImgFlow = () => {
     });
   });
   const handleTransitionEnd = () => {
-    if (store$1.isDragMode) return;
+    if (store.isDragMode) return;
     setState(state => {
-      if (store$1.zoom.scale === 100) updateRenderPage(state, true);else state.page.anima = '';
+      if (store.zoom.scale === 100) updateRenderPage(state, true);else state.page.anima = '';
     });
   };
   const pageXY = solidJs.createMemo(() => {
-    const x = \`calc(\${store$1.page.offset.x.pct}% + \${store$1.page.offset.x.px}px)\`;
+    const x = \`calc(\${store.page.offset.x.pct}% + \${store.page.offset.x.px}px)\`;
     return {
-      '--page-x': store$1.option.dir === 'rtl' ? x : \`calc(\${x} * -1)\`,
-      '--page-y': \`calc(\${store$1.page.offset.y.pct}% + \${store$1.page.offset.y.px}px)\`
+      '--page-x': store.option.dir === 'rtl' ? x : \`calc(\${x} * -1)\`,
+      '--page-y': \`calc(\${store.page.offset.y.pct}% + \${store.page.offset.y.px}px)\`
     };
   });
   const zoom = solidJs.createMemo(() => ({
-    '--scale': store$1.zoom.scale / 100,
-    '--zoom-x': \`\${store$1.zoom.offset.x || 0}px\`,
-    '--zoom-y': \`\${store$1.zoom.offset.y || 0}px\`
+    '--scale': store.zoom.scale / 100,
+    '--zoom-x': \`\${store.zoom.offset.x || 0}px\`,
+    '--zoom-y': \`\${store.zoom.offset.y || 0}px\`
   }));
   const touchAction = solidJs.createMemo(() => {
-    if (store$1.gridMode) return 'auto';
-    if (store$1.zoom.scale !== 100) {
-      if (store$1.option.scrollMode) {
-        if (store$1.zoom.offset.y === 0) return 'pan-up';
-        if (store$1.zoom.offset.y === bound.y()) return 'pan-down';
+    if (store.gridMode) return 'auto';
+    if (store.zoom.scale !== 100) {
+      if (store.option.scrollMode) {
+        if (store.zoom.offset.y === 0) return 'pan-up';
+        if (store.zoom.offset.y === bound.y()) return 'pan-down';
       }
       return 'none';
     }
-    if (store$1.option.scrollMode) return 'pan-y';
+    if (store.option.scrollMode) return 'pan-y';
   });
   return (() => {
     const _el$ = _tmpl$$C();
@@ -3717,7 +3718,7 @@ const ComicImgFlow = () => {
     _el$.addEventListener("mousemove", onMouseMove);
     web.insert(_el$, web.createComponent(solidJs.Index, {
       get each() {
-        return store$1.pageList;
+        return store.pageList;
       },
       get fallback() {
         return _tmpl$2$a();
@@ -3731,14 +3732,14 @@ const ComicImgFlow = () => {
     }));
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.mangaFlow,
-        _v$2 = store$1.option.dir,
+        _v$2 = store.option.dir,
         _v$3 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
-        _v$4 = boolDataVal(store$1.option.disableZoom || store$1.option.scrollMode),
-        _v$5 = boolDataVal(store$1.gridMode),
-        _v$6 = boolDataVal(store$1.zoom.scale !== 100),
-        _v$7 = boolDataVal(store$1.page.vertical),
-        _v$8 = store$1.page.anima,
-        _v$9 = !store$1.gridMode && hiddenMouse(),
+        _v$4 = boolDataVal(store.option.disableZoom || store.option.scrollMode),
+        _v$5 = boolDataVal(store.gridMode),
+        _v$6 = boolDataVal(store.zoom.scale !== 100),
+        _v$7 = boolDataVal(store.page.vertical),
+        _v$8 = store.page.anima,
+        _v$9 = !store.gridMode && hiddenMouse(),
         _v$10 = {
           'touch-action': touchAction(),
           ...zoom(),
@@ -3926,7 +3927,7 @@ const MdAdd = ((props = {}) => (() => {
 const _tmpl$$n = /*#__PURE__*/web.template(\`<div tabindex=0>\`),
   _tmpl$2$9 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
 const KeyItem = props => {
-  const code = () => store$1.hotkeys[props.operateName][props.i];
+  const code = () => store.hotkeys[props.operateName][props.i];
   const del = () => delHotkeys(code());
   const handleKeyDown = e => {
     e.stopPropagation();
@@ -3959,7 +3960,7 @@ const KeyItem = props => {
 };
 const SettingHotkeys = () => web.createComponent(solidJs.For, {
   get each() {
-    return Object.entries(store$1.hotkeys);
+    return Object.entries(store.hotkeys);
   },
   children: ([name, keys]) => (() => {
     const _el$2 = _tmpl$2$9(),
@@ -3970,7 +3971,7 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
       _el$7 = _el$6.nextSibling;
     web.insert(_el$4, () => t(\`hotkeys.\${name}\`) || name);
     _el$5.style.setProperty("flex-grow", "1");
-    _el$6.addEventListener("click", () => setHotkeys(name, store$1.hotkeys[name].length, ''));
+    _el$6.addEventListener("click", () => setHotkeys(name, store.hotkeys[name].length, ''));
     web.insert(_el$6, web.createComponent(MdAdd, {}));
     _el$7.addEventListener("click", () => {
       const newKeys = defaultHotkeys[name] ?? [];
@@ -4078,20 +4079,20 @@ const createFormData = imgBlob => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('mime', file.type);
-  formData.append('size', store$1.option.translation.options.size);
-  formData.append('detector', store$1.option.translation.options.detector);
-  formData.append('direction', store$1.option.translation.options.direction);
-  formData.append('translator', store$1.option.translation.options.translator);
-  formData.append('tgt_lang', store$1.option.translation.options.targetLanguage);
-  formData.append('target_language', store$1.option.translation.options.targetLanguage);
-  formData.append('retry', \`\${store$1.option.translation.forceRetry}\`);
+  formData.append('size', store.option.translation.options.size);
+  formData.append('detector', store.option.translation.options.detector);
+  formData.append('direction', store.option.translation.options.direction);
+  formData.append('translator', store.option.translation.options.translator);
+  formData.append('tgt_lang', store.option.translation.options.targetLanguage);
+  formData.append('target_language', store.option.translation.options.targetLanguage);
+  formData.append('retry', \`\${store.option.translation.forceRetry}\`);
   return formData;
 };
 
 /** 将站点列表转为选择器中的选项 */
 const createOptions = list => list.map(name => [name, t(\`translation.translator.\${name}\`) || name]);
 
-const url = () => store$1.option.translation.localUrl || 'http://127.0.0.1:5003';
+const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
 
 /** 获取部署服务的可用翻译 */
 const getValidTranslators = async () => {
@@ -4110,7 +4111,7 @@ const getValidTranslators = async () => {
 /** 使用自部署服务器翻译指定图片 */
 const selfhostedTranslation = async i => {
   if (!(await getValidTranslators())) throw new Error(t('alert.server_connect_failed'));
-  const img = store$1.imgList[i];
+  const img = store.imgList[i];
   setMessage(i, t('translation.tip.img_downloading'));
   let imgBlob;
   try {
@@ -4231,7 +4232,7 @@ const resize = async (blob, w, h) => {
 
 /** 使用 cotrans 翻译指定图片 */
 const cotransTranslation = async i => {
-  const img = store$1.imgList[i];
+  const img = store.imgList[i];
   setMessage(i, t('translation.tip.img_downloading'));
   let imgBlob;
   try {
@@ -4280,12 +4281,12 @@ const translationImage = async i => {
       toast?.error(t('pwa.alert.userscript_not_installed'));
       throw new Error(t('pwa.alert.userscript_not_installed'));
     }
-    const img = store$1.imgList[i];
+    const img = store.imgList[i];
     if (!img?.src) return;
     if (img.translationType !== 'wait') return;
     if (img.translationUrl) return _setState('imgList', i, 'translationType', 'show');
     if (img.loadType !== 'loaded') return setMessage(i, t('translation.tip.img_not_fully_loaded'));
-    const translationUrl = await (store$1.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(i);
+    const translationUrl = await (store.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(i);
     setState(state => {
       state.imgList[i].translationUrl = translationUrl;
       state.imgList[i].translationMessage = t('translation.tip.translation_completed');
@@ -4303,7 +4304,7 @@ let running = false;
 /** 逐个翻译状态为等待翻译的图片 */
 const translationAll = async () => {
   if (running) return;
-  const i = store$1.imgList.findIndex(img => img.loadType === 'loaded' && img.translationType === 'wait');
+  const i = store.imgList.findIndex(img => img.loadType === 'loaded' && img.translationType === 'wait');
   if (i === -1) return;
   running = true;
   try {
@@ -4364,18 +4365,18 @@ const translatorOptions = solidJs.createRoot(() => {
   const [selfhostedOptions, setSelfOptions] = solidJs.createSignal([]);
 
   // 在切换翻译服务器的同时切换可用翻译的选项列表
-  solidJs.createEffect(solidJs.on([() => store$1.option.translation.server, () => store$1.option.translation.localUrl], async () => {
-    if (store$1.option.translation.server !== 'selfhosted') return;
+  solidJs.createEffect(solidJs.on([() => store.option.translation.server, () => store.option.translation.localUrl], async () => {
+    if (store.option.translation.server !== 'selfhosted') return;
     setSelfOptions((await getValidTranslators()) ?? []);
 
     // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
-    if (!selfhostedOptions().some(([val]) => val === store$1.option.translation.options.translator)) {
+    if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
       setOption(draftOption => {
         draftOption.translation.options.translator = 'google';
       });
     }
   }));
-  const options = solidJs.createMemo(solidJs.on([selfhostedOptions, lang], () => store$1.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
+  const options = solidJs.createMemo(solidJs.on([selfhostedOptions, lang], () => store.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
   return options;
 });
 
@@ -4406,10 +4407,10 @@ const _tmpl$$k = /*#__PURE__*/web.template(\`<blockquote>\`),
   _tmpl$2$7 = /*#__PURE__*/web.template(\`<input type=url>\`);
 const SettingTranslation = () => {
   /** 是否正在翻译全部图片 */
-  const isTranslationAll = solidJs.createMemo(() => store$1.imgList.every(img => img.translationType === 'show' || img.translationType === 'wait'));
+  const isTranslationAll = solidJs.createMemo(() => store.imgList.every(img => img.translationType === 'show' || img.translationType === 'wait'));
 
   /** 是否正在翻译当前页以后的全部图片 */
-  const isTranslationAfterCurrent = solidJs.createMemo(() => store$1.imgList.slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
+  const isTranslationAfterCurrent = solidJs.createMemo(() => store.imgList.slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
   return [web.createComponent(SettingsItemSelect, {
     get name() {
       return t('setting.translation.server');
@@ -4418,14 +4419,14 @@ const SettingTranslation = () => {
       return [['disable', t('other.disable')], ['selfhosted', t('setting.translation.server_selfhosted')], ['cotrans']];
     },
     get value() {
-      return store$1.option.translation.server;
+      return store.option.translation.server;
     },
     get onChange() {
       return createStateSetFn('translation.server');
     }
   }), web.createComponent(SettingsShowItem, {
     get when() {
-      return store$1.option.translation.server === 'cotrans';
+      return store.option.translation.server === 'cotrans';
     },
     get children() {
       const _el$ = _tmpl$$k();
@@ -4434,7 +4435,7 @@ const SettingTranslation = () => {
     }
   }), web.createComponent(SettingsShowItem, {
     get when() {
-      return store$1.option.translation.server !== 'disable';
+      return store.option.translation.server !== 'disable';
     },
     get children() {
       return [web.createComponent(SettingsItemSelect, {
@@ -4443,7 +4444,7 @@ const SettingTranslation = () => {
         },
         options: [['S', '1024px'], ['M', '1536px'], ['L', '2048px'], ['X', '2560px']],
         get value() {
-          return store$1.option.translation.options.size;
+          return store.option.translation.options.size;
         },
         get onChange() {
           return createStateSetFn('translation.options.size');
@@ -4454,7 +4455,7 @@ const SettingTranslation = () => {
         },
         options: [['default'], ['ctd', 'Comic Text Detector']],
         get value() {
-          return store$1.option.translation.options.detector;
+          return store.option.translation.options.detector;
         },
         get onChange() {
           return createStateSetFn('translation.options.detector');
@@ -4467,13 +4468,13 @@ const SettingTranslation = () => {
           return translatorOptions();
         },
         get value() {
-          return store$1.option.translation.options.translator;
+          return store.option.translation.options.translator;
         },
         get onChange() {
           return createStateSetFn('translation.options.translator');
         },
         onClick: () => {
-          if (store$1.option.translation.server !== 'selfhosted') return;
+          if (store.option.translation.server !== 'selfhosted') return;
           // 通过手动触发变更，以便在点击时再获取一下翻译列表
           setState(state => {
             state.option.translation.server = 'disable';
@@ -4488,7 +4489,7 @@ const SettingTranslation = () => {
           return [['auto', t('setting.translation.options.direction_auto')], ['h', t('setting.translation.options.direction_horizontal')], ['v', t('setting.translation.options.direction_vertical')]];
         },
         get value() {
-          return store$1.option.translation.options.direction;
+          return store.option.translation.options.direction;
         },
         get onChange() {
           return createStateSetFn('translation.options.direction');
@@ -4499,7 +4500,7 @@ const SettingTranslation = () => {
         },
         options: [['CHS', '简体中文'], ['CHT', '繁體中文'], ['JPN', '日本語'], ['ENG', 'English'], ['KOR', '한국어'], ['VIN', 'Tiếng Việt'], ['CSY', 'čeština'], ['NLD', 'Nederlands'], ['FRA', 'français'], ['DEU', 'Deutsch'], ['HUN', 'magyar nyelv'], ['ITA', 'italiano'], ['PLK', 'polski'], ['PTB', 'português'], ['ROM', 'limba română'], ['RUS', 'русский язык'], ['ESP', 'español'], ['TRK', 'Türk dili']],
         get value() {
-          return store$1.option.translation.options.targetLanguage;
+          return store.option.translation.options.targetLanguage;
         },
         get onChange() {
           return createStateSetFn('translation.options.targetLanguage');
@@ -4509,14 +4510,14 @@ const SettingTranslation = () => {
           return t('setting.translation.options.forceRetry');
         },
         get value() {
-          return store$1.option.translation.forceRetry;
+          return store.option.translation.forceRetry;
         },
         get onChange() {
           return createStateSetFn('translation.forceRetry');
         }
       }), web.createComponent(solidJs.Show, {
         get when() {
-          return store$1.option.translation.server === 'selfhosted';
+          return store.option.translation.server === 'selfhosted';
         },
         get children() {
           return [web.createComponent(SettingsItemSwitch, {
@@ -4527,7 +4528,7 @@ const SettingTranslation = () => {
               return isTranslationAll();
             },
             onChange: () => {
-              setImgTranslationEnbale(store$1.imgList.map((_, i) => i), !isTranslationAll());
+              setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll());
             }
           }), web.createComponent(SettingsItemSwitch, {
             get name() {
@@ -4537,14 +4538,14 @@ const SettingTranslation = () => {
               return isTranslationAfterCurrent();
             },
             onChange: () => {
-              setImgTranslationEnbale(store$1.pageList.slice(store$1.activePageIndex).flat(), !isTranslationAfterCurrent());
+              setImgTranslationEnbale(store.pageList.slice(store.activePageIndex).flat(), !isTranslationAfterCurrent());
             }
           }), web.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.options.localUrl');
             },
             get value() {
-              return store$1.option.translation.localUrl !== undefined;
+              return store.option.translation.localUrl !== undefined;
             },
             onChange: val => {
               setOption(draftOption => {
@@ -4553,7 +4554,7 @@ const SettingTranslation = () => {
             }
           }), web.createComponent(solidJs.Show, {
             get when() {
-              return store$1.option.translation.localUrl !== undefined;
+              return store.option.translation.localUrl !== undefined;
             },
             get children() {
               const _el$2 = _tmpl$2$7();
@@ -4565,7 +4566,7 @@ const SettingTranslation = () => {
                 });
               });
               web.effect(() => web.className(_el$2, modules_c21c94f2$1.SettingsItem));
-              web.effect(() => _el$2.value = store$1.option.translation.localUrl);
+              web.effect(() => _el$2.value = store.option.translation.localUrl);
               return _el$2;
             }
           })];
@@ -4633,12 +4634,12 @@ const areaArrayMap = {
 };
 const TouchArea = () => {
   const areaType = solidJs.createMemo(() => {
-    if (!store$1.option.clickPageTurn.enabled || !Reflect.has(areaArrayMap, store$1.option.clickPageTurn.area)) return store$1.isMobile ? 'up_down' : 'left_right';
-    return store$1.option.clickPageTurn.area;
+    if (!store.option.clickPageTurn.enabled || !Reflect.has(areaArrayMap, store.option.clickPageTurn.area)) return store.isMobile ? 'up_down' : 'left_right';
+    return store.option.clickPageTurn.area;
   });
   const dir = () => {
-    if (!store$1.option.clickPageTurn.reverse) return store$1.option.dir;
-    return store$1.option.dir === 'rtl' ? 'ltr' : 'rtl';
+    if (!store.option.clickPageTurn.reverse) return store.option.dir;
+    return store.option.dir === 'rtl' ? 'ltr' : 'rtl';
   };
   return (() => {
     const _el$ = _tmpl$$i();
@@ -4661,9 +4662,9 @@ const TouchArea = () => {
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.touchAreaRoot,
         _v$2 = dir(),
-        _v$3 = boolDataVal(store$1.show.touchArea),
+        _v$3 = boolDataVal(store.show.touchArea),
         _v$4 = areaType(),
-        _v$5 = boolDataVal(store$1.option.clickPageTurn.enabled && !store$1.option.scrollMode);
+        _v$5 = boolDataVal(store.option.clickPageTurn.enabled && !store.option.scrollMode);
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.setAttribute(_el$, "dir", _p$._v$2 = _v$2);
       _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-show", _p$._v$3 = _v$3);
@@ -4686,13 +4687,13 @@ const _tmpl$$h = /*#__PURE__*/web.template(\`<button type=button>\`),
 /** 默认菜单项 */
 const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
   get name() {
-    return web.memo(() => store$1.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
+    return web.memo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
   },
   get children() {
     const _el$ = _tmpl$$h();
     _el$.addEventListener("click", switchDir);
     web.insert(_el$, (() => {
-      const _c$ = web.memo(() => store$1.option.dir === 'rtl');
+      const _c$ = web.memo(() => store.option.dir === 'rtl');
       return () => _c$() ? web.createComponent(MdOutlineFormatTextdirectionRToL, {}) : web.createComponent(MdOutlineFormatTextdirectionLToR, {});
     })());
     web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
@@ -4706,19 +4707,19 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return [['auto', t('setting.option.scrollbar_position_auto')], ['right', t('setting.option.scrollbar_position_right')], ['top', t('setting.option.scrollbar_position_top')], ['bottom', t('setting.option.scrollbar_position_bottom')], ['hidden', t('setting.option.scrollbar_position_hidden')]];
   },
   get value() {
-    return store$1.option.scrollbar.position;
+    return store.option.scrollbar.position;
   },
   get onChange() {
     return createStateSetFn('scrollbar.position');
   }
 }), web.createComponent(SettingsShowItem, {
   get when() {
-    return store$1.option.scrollbar.position !== 'hidden';
+    return store.option.scrollbar.position !== 'hidden';
   },
   get children() {
     return [web.createComponent(solidJs.Show, {
       get when() {
-        return !store$1.isMobile;
+        return !store.isMobile;
       },
       get children() {
         return web.createComponent(SettingsItemSwitch, {
@@ -4726,7 +4727,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
             return t('setting.option.scrollbar_auto_hidden');
           },
           get value() {
-            return store$1.option.scrollbar.autoHidden;
+            return store.option.scrollbar.autoHidden;
           },
           get onChange() {
             return createStateSetFn('scrollbar.autoHidden');
@@ -4738,14 +4739,14 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         return t('setting.option.scrollbar_show_img_status');
       },
       get value() {
-        return store$1.option.scrollbar.showImgStatus;
+        return store.option.scrollbar.showImgStatus;
       },
       get onChange() {
         return createStateSetFn('scrollbar.showImgStatus');
       }
     }), web.createComponent(solidJs.Show, {
       get when() {
-        return store$1.option.scrollMode;
+        return store.option.scrollMode;
       },
       get children() {
         return web.createComponent(SettingsItemSwitch, {
@@ -4753,7 +4754,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
             return t('setting.option.scrollbar_easy_scroll');
           },
           get value() {
-            return store$1.option.scrollbar.easyScroll;
+            return store.option.scrollbar.easyScroll;
           },
           get onChange() {
             return createStateSetFn('scrollbar.easyScroll');
@@ -4767,7 +4768,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.jump_to_next_chapter');
   },
   get value() {
-    return store$1.option.jumpToNext;
+    return store.option.jumpToNext;
   },
   get onChange() {
     return createStateSetFn('jumpToNext');
@@ -4777,22 +4778,22 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.show_clickable_area');
   },
   get value() {
-    return store$1.show.touchArea;
+    return store.show.touchArea;
   },
-  onChange: () => _setState('show', 'touchArea', !store$1.show.touchArea)
+  onChange: () => _setState('show', 'touchArea', !store.show.touchArea)
 }), web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.click_page_turn_enabled');
   },
   get value() {
-    return store$1.option.clickPageTurn.enabled;
+    return store.option.clickPageTurn.enabled;
   },
   get onChange() {
     return createStateSetFn('clickPageTurn.enabled');
   }
 }), web.createComponent(SettingsShowItem, {
   get when() {
-    return store$1.option.clickPageTurn.enabled;
+    return store.option.clickPageTurn.enabled;
   },
   get children() {
     return [web.createComponent(SettingsItemSelect, {
@@ -4803,7 +4804,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         return [['', t('other.default')], ...Object.keys(areaArrayMap).map(key => [key, t(\`touch_area.type.\${key}\`)])];
       },
       get value() {
-        return store$1.option.clickPageTurn.area;
+        return store.option.clickPageTurn.area;
       },
       get onChange() {
         return createStateSetFn('clickPageTurn.area');
@@ -4813,7 +4814,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         return t('setting.option.click_page_turn_swap_area');
       },
       get value() {
-        return store$1.option.clickPageTurn.reverse;
+        return store.option.clickPageTurn.reverse;
       },
       get onChange() {
         return createStateSetFn('clickPageTurn.reverse');
@@ -4825,7 +4826,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.dark_mode');
   },
   get value() {
-    return store$1.option.darkMode;
+    return store.option.darkMode;
   },
   get onChange() {
     return createStateSetFn('darkMode');
@@ -4835,14 +4836,14 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.disable_auto_enlarge');
   },
   get value() {
-    return store$1.option.disableZoom;
+    return store.option.disableZoom;
   },
   get onChange() {
     return createStateSetFn('disableZoom');
   }
 }), web.createComponent(solidJs.Show, {
   get when() {
-    return store$1.option.scrollMode;
+    return store.option.scrollMode;
   },
   get children() {
     return [web.createComponent(SettingsItemNumber, {
@@ -4857,7 +4858,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         zoomScrollModeImg(val / 100, true);
       },
       get value() {
-        return Math.round(store$1.option.scrollModeImgScale * 100);
+        return Math.round(store.option.scrollModeImgScale * 100);
       }
     }), web.createComponent(SettingsItemNumber, {
       get name() {
@@ -4871,7 +4872,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         });
       },
       get value() {
-        return Math.round(store$1.option.scrollModeSpacing);
+        return Math.round(store.option.scrollModeSpacing);
       }
     })];
   }
@@ -4880,7 +4881,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.always_load_all_img');
   },
   get value() {
-    return store$1.option.alwaysLoadAllImg;
+    return store.option.alwaysLoadAllImg;
   },
   onChange: val => {
     setOption(draftOption => {
@@ -4893,7 +4894,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.first_page_fill');
   },
   get value() {
-    return store$1.option.firstPageFill;
+    return store.option.firstPageFill;
   },
   get onChange() {
     return createStateSetFn('firstPageFill');
@@ -4903,7 +4904,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.show_comments');
   },
   get value() {
-    return store$1.option.showComment;
+    return store.option.showComment;
   },
   get onChange() {
     return createStateSetFn('showComment');
@@ -4913,7 +4914,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.swap_page_turn_key');
   },
   get value() {
-    return store$1.option.swapPageTurnKey;
+    return store.option.swapPageTurnKey;
   },
   get onChange() {
     return createStateSetFn('swapPageTurnKey');
@@ -4930,7 +4931,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     });
   },
   get value() {
-    return store$1.option.preloadPageNum;
+    return store.option.preloadPageNum;
   }
 }), web.createComponent(SettingsItem, {
   get name() {
@@ -4948,7 +4949,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         if (draftOption.customBackground) draftOption.darkMode = needDarkMode(draftOption.customBackground);
       });
     }));
-    web.effect(() => _el$2.value = store$1.option.customBackground ?? (store$1.option.darkMode ? '#000000' : '#ffffff'));
+    web.effect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
     return _el$2;
   }
 }), web.createComponent(SettingsItemSelect, {
@@ -4979,7 +4980,7 @@ const _tmpl$$g = /*#__PURE__*/web.template(\`<div>\`),
 
 /** 菜单面板 */
 const SettingPanel = () => {
-  const settingList = solidJs.createMemo(() => store$1.prop.editSettingList(defaultSettingList()));
+  const settingList = solidJs.createMemo(() => store.prop.editSettingList(defaultSettingList()));
   return (() => {
     const _el$ = _tmpl$$g();
     web.addEventListener(_el$, "wheel", stopPropagation);
@@ -5050,14 +5051,14 @@ const defaultButtonList = [
 // 单双页模式
 () => web.createComponent(IconButton, {
   get tip() {
-    return web.memo(() => !!store$1.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
+    return web.memo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
   },
   get hidden() {
-    return store$1.isMobile || store$1.option.scrollMode;
+    return store.isMobile || store.option.scrollMode;
   },
   onClick: switchOnePageMode,
   get children() {
-    return web.memo(() => !!store$1.option.onePageMode)() ? web.createComponent(MdLooksOne, {}) : web.createComponent(MdLooksTwo, {});
+    return web.memo(() => !!store.option.onePageMode)() ? web.createComponent(MdLooksOne, {}) : web.createComponent(MdLooksTwo, {});
   }
 }),
 // 卷轴模式
@@ -5066,7 +5067,7 @@ const defaultButtonList = [
     return t('button.scroll_mode');
   },
   get enabled() {
-    return store$1.option.scrollMode;
+    return store.option.scrollMode;
   },
   onClick: switchScrollMode,
   get children() {
@@ -5079,10 +5080,10 @@ const defaultButtonList = [
     return t('button.page_fill');
   },
   get enabled() {
-    return store$1.fillEffect[nowFillIndex()];
+    return store.fillEffect[nowFillIndex()];
   },
   get hidden() {
-    return store$1.isMobile || store$1.option.onePageMode;
+    return store.isMobile || store.option.onePageMode;
   },
   onClick: switchFillEffect,
   get children() {
@@ -5095,7 +5096,7 @@ const defaultButtonList = [
     return t('button.grid_mode');
   },
   get enabled() {
-    return store$1.gridMode;
+    return store.gridMode;
   },
   onClick: switchGridMode,
   get children() {
@@ -5108,11 +5109,11 @@ const defaultButtonList = [
     return t('button.zoom_in');
   },
   get enabled() {
-    return store$1.zoom.scale !== 100 || store$1.option.scrollMode && store$1.option.scrollModeImgScale > 1;
+    return store.zoom.scale !== 100 || store.option.scrollMode && store.option.scrollModeImgScale > 1;
   },
   onClick: () => {
-    if (!store$1.option.scrollMode) return doubleClickZoom();
-    if (store$1.option.scrollModeImgScale >= 1 && store$1.option.scrollModeImgScale < 1.6) return zoomScrollModeImg(0.2);
+    if (!store.option.scrollMode) return doubleClickZoom();
+    if (store.option.scrollModeImgScale >= 1 && store.option.scrollModeImgScale < 1.6) return zoomScrollModeImg(0.2);
     return zoomScrollModeImg(1, true);
   },
   get children() {
@@ -5122,7 +5123,7 @@ const defaultButtonList = [
 // 翻译设置
 () => {
   /** 当前显示的图片是否正在翻译 */
-  const isTranslatingImage = solidJs.createMemo(() => activePage().some(i => store$1.imgList[i]?.translationType && store$1.imgList[i].translationType !== 'hide'));
+  const isTranslatingImage = solidJs.createMemo(() => activePage().some(i => store.imgList[i]?.translationType && store.imgList[i].translationType !== 'hide'));
   return web.createComponent(IconButton, {
     get tip() {
       return web.memo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
@@ -5131,7 +5132,7 @@ const defaultButtonList = [
       return isTranslatingImage();
     },
     get hidden() {
-      return store$1.option.translation.server === 'disable';
+      return store.option.translation.server === 'disable';
     },
     onClick: () => setImgTranslationEnbale(activePage(), !isTranslatingImage()),
     get children() {
@@ -5180,7 +5181,7 @@ const _tmpl$$e = /*#__PURE__*/web.template(\`<div role=toolbar><div><div>\`);
 
 /** 左侧工具栏 */
 const Toolbar = () => {
-  solidJs.createEffect(() => store$1.show.toolbar || focus());
+  solidJs.createEffect(() => store.show.toolbar || focus());
   return (() => {
     const _el$ = _tmpl$$e(),
       _el$2 = _el$.firstChild,
@@ -5188,15 +5189,15 @@ const Toolbar = () => {
     _el$2.addEventListener("click", focus);
     web.insert(_el$2, web.createComponent(solidJs.For, {
       get each() {
-        return store$1.prop.editButtonList(defaultButtonList);
+        return store.prop.editButtonList(defaultButtonList);
       },
       children: ButtonItem => web.createComponent(ButtonItem, {})
     }), null);
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.toolbar,
-        _v$2 = boolDataVal(store$1.show.toolbar),
-        _v$3 = boolDataVal(store$1.isMobile && store$1.gridMode),
-        _v$4 = store$1.isDragMode ? 'none' : undefined,
+        _v$2 = boolDataVal(store.show.toolbar),
+        _v$3 = boolDataVal(store.isMobile && store.gridMode),
+        _v$4 = store.isDragMode ? 'none' : undefined,
         _v$5 = modules_c21c94f2$1.toolbarPanel,
         _v$6 = modules_c21c94f2$1.toolbarBg;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
@@ -5222,7 +5223,7 @@ const _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`);
 
 /** 显示对应图片加载情况的元素 */
 const ScrollbarImg = props => {
-  const img = () => store$1.imgList[props.index];
+  const img = () => store.imgList[props.index];
   return (() => {
     const _el$ = _tmpl$$d();
     web.effect(_p$ => {
@@ -5251,8 +5252,8 @@ const ScrollbarImg = props => {
 /** 滚动条上用于显示对应页面下图片加载情况的元素 */
 const ScrollbarPage = props => {
   const flexBasis = solidJs.createMemo(() => {
-    if (!store$1.option.scrollMode) return undefined;
-    return \`\${(store$1.imgList[props.a]?.height || placeholderSize().height) / contentHeight() * store$1.option.scrollModeImgScale}%\`;
+    if (!store.option.scrollMode) return undefined;
+    return \`\${(store.imgList[props.a]?.height || placeholderSize().height) / contentHeight() * store.option.scrollModeImgScale}%\`;
   });
   return (() => {
     const _el$2 = _tmpl$$d();
@@ -5282,18 +5283,18 @@ const Scrollbar = () => {
     useDrag({
       ref: refs.scrollbar,
       handleDrag: handleScrollbarDrag,
-      easyMode: () => store$1.option.scrollMode && store$1.option.scrollbar.easyScroll
+      easyMode: () => store.option.scrollMode && store.option.scrollbar.easyScroll
     });
   });
 
   /** 滚动条高度 */
-  const height = solidJs.createMemo(() => store$1.option.scrollMode ? store$1.scrollbar.dragHeight : 1 / store$1.pageList.length);
+  const height = solidJs.createMemo(() => store.option.scrollMode ? store.scrollbar.dragHeight : 1 / store.pageList.length);
 
   /** 滚动条位置高度 */
-  const top = solidJs.createMemo(() => store$1.option.scrollMode ? store$1.scrollbar.dragTop : 1 / store$1.pageList.length * store$1.activePageIndex);
+  const top = solidJs.createMemo(() => store.option.scrollMode ? store.scrollbar.dragTop : 1 / store.pageList.length * store.activePageIndex);
 
   /** 滚动条滑块的中心点高度 */
-  const dragMidpoint = solidJs.createMemo(() => store$1.memo.scrollLength * (top() + height() / 2));
+  const dragMidpoint = solidJs.createMemo(() => store.memo.scrollLength * (top() + height() / 2));
 
   // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
   const [penetrate, setPenetrate] = solidJs.createSignal(false);
@@ -5304,13 +5305,13 @@ const Scrollbar = () => {
   };
 
   /** 是否强制显示滚动条 */
-  const showScrollbar = solidJs.createMemo(() => store$1.show.scrollbar || !!penetrate());
+  const showScrollbar = solidJs.createMemo(() => store.show.scrollbar || !!penetrate());
   const showTip = solidJs.createMemo(() => {
-    if (store$1.memo.showPageList.length === 0) return 'null';
-    if (store$1.memo.showPageList.length === 1) return getPageTip(store$1.memo.showPageList[0]);
-    const tipList = store$1.memo.showPageList.map(i => getPageTip(i));
-    if (store$1.option.scrollMode || store$1.page.vertical) return tipList.join('\\n');
-    if (store$1.option.dir === 'rtl') tipList.reverse();
+    if (store.memo.showPageList.length === 0) return 'null';
+    if (store.memo.showPageList.length === 1) return getPageTip(store.memo.showPageList[0]);
+    const tipList = store.memo.showPageList.map(i => getPageTip(i));
+    if (store.option.scrollMode || store.page.vertical) return tipList.join('\\n');
+    if (store.option.dir === 'rtl') tipList.reverse();
     return tipList.join('   ');
   });
   return (() => {
@@ -5323,12 +5324,12 @@ const Scrollbar = () => {
     web.insert(_el$3, showTip);
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
-        return store$1.option.scrollbar.showImgStatus;
+        return store.option.scrollbar.showImgStatus;
       },
       get children() {
         return web.createComponent(solidJs.For, {
           get each() {
-            return store$1.pageList;
+            return store.pageList;
           },
           children: ([a, b]) => web.createComponent(ScrollbarPage, {
             a: a,
@@ -5339,18 +5340,18 @@ const Scrollbar = () => {
     }), null);
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbar,
-        _v$2 = penetrate() || store$1.isDragMode || store$1.gridMode ? 'none' : 'auto',
+        _v$2 = penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
         _v$3 = \`\${dragMidpoint()}px\`,
-        _v$4 = \`\${store$1.memo.scrollLength}px\`,
+        _v$4 = \`\${store.memo.scrollLength}px\`,
         _v$5 = modules_c21c94f2$1.mangaFlow,
-        _v$6 = store$1.activePageIndex || -1,
-        _v$7 = boolDataVal(store$1.option.scrollbar.autoHidden),
+        _v$6 = store.activePageIndex || -1,
+        _v$7 = boolDataVal(store.option.scrollbar.autoHidden),
         _v$8 = boolDataVal(showScrollbar()),
-        _v$9 = store$1.option.dir,
+        _v$9 = store.option.dir,
         _v$10 = getScrollPosition(),
         _v$11 = modules_c21c94f2$1.scrollbarDrag,
         _v$12 = {
-          [modules_c21c94f2$1.hidden]: store$1.gridMode
+          [modules_c21c94f2$1.hidden]: store.gridMode
         },
         _v$13 = height(),
         _v$14 = top(),
@@ -5417,21 +5418,21 @@ const EndPage = () => {
   // 防止在动画效果结束前 tip 就消失或改变了位置
   const [delayType, setDelayType] = solidJs.createSignal();
   solidJs.createEffect(() => {
-    if (store$1.show.endPage) {
+    if (store.show.endPage) {
       window.clearTimeout(delayTypeTimer);
-      setDelayType(store$1.show.endPage);
+      setDelayType(store.show.endPage);
     } else {
-      delayTypeTimer = window.setTimeout(() => setDelayType(store$1.show.endPage), 500);
+      delayTypeTimer = window.setTimeout(() => setDelayType(store.show.endPage), 500);
     }
   });
   const tip = solidJs.createMemo(() => {
     switch (delayType()) {
       case 'start':
-        if (store$1.prop.Prev && store$1.option.jumpToNext) return t('end_page.tip.start_jump');
+        if (store.prop.Prev && store.option.jumpToNext) return t('end_page.tip.start_jump');
         break;
       case 'end':
-        if (store$1.prop.Next && store$1.option.jumpToNext) return t('end_page.tip.end_jump');
-        if (store$1.prop.Exit) return t('end_page.tip.exit');
+        if (store.prop.Next && store.option.jumpToNext) return t('end_page.tip.end_jump');
+        if (store.prop.Exit) return t('end_page.tip.exit');
         break;
     }
     return '';
@@ -5448,26 +5449,26 @@ const EndPage = () => {
     web.insert(_el$2, tip);
     const _ref$2 = bindRef('prev');
     typeof _ref$2 === "function" && web.use(_ref$2, _el$3);
-    _el$3.addEventListener("click", () => store$1.prop.Prev?.());
+    _el$3.addEventListener("click", () => store.prop.Prev?.());
     web.insert(_el$3, () => t('end_page.prev_button'));
     const _ref$3 = bindRef('exit');
     typeof _ref$3 === "function" && web.use(_ref$3, _el$4);
-    _el$4.addEventListener("click", () => store$1.prop.Exit?.(store$1.show.endPage === 'end'));
+    _el$4.addEventListener("click", () => store.prop.Exit?.(store.show.endPage === 'end'));
     web.insert(_el$4, () => t('button.exit'));
     const _ref$4 = bindRef('next');
     typeof _ref$4 === "function" && web.use(_ref$4, _el$5);
-    _el$5.addEventListener("click", () => store$1.prop.Next?.());
+    _el$5.addEventListener("click", () => store.prop.Next?.());
     web.insert(_el$5, () => t('end_page.next_button'));
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
-        return web.memo(() => !!store$1.option.showComment)() && delayType() === 'end';
+        return web.memo(() => !!store.option.showComment)() && delayType() === 'end';
       },
       get children() {
         const _el$6 = _tmpl$$b();
         web.addEventListener(_el$6, "wheel", stopPropagation);
         web.insert(_el$6, web.createComponent(solidJs.For, {
           get each() {
-            return store$1.commentList;
+            return store.commentList;
           },
           children: comment => (() => {
             const _el$7 = _tmpl$3$2();
@@ -5481,18 +5482,18 @@ const EndPage = () => {
     }), null);
     web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.endPage,
-        _v$2 = store$1.show.endPage,
+        _v$2 = store.show.endPage,
         _v$3 = delayType(),
         _v$4 = modules_c21c94f2$1.tip,
         _v$5 = {
-          [modules_c21c94f2$1.invisible]: !store$1.prop.Prev
+          [modules_c21c94f2$1.invisible]: !store.prop.Prev
         },
-        _v$6 = store$1.show.endPage ? 0 : -1,
-        _v$7 = store$1.show.endPage ? 0 : -1,
+        _v$6 = store.show.endPage ? 0 : -1,
+        _v$7 = store.show.endPage ? 0 : -1,
         _v$8 = {
-          [modules_c21c94f2$1.invisible]: !store$1.prop.Next
+          [modules_c21c94f2$1.invisible]: !store.prop.Next
         },
-        _v$9 = store$1.show.endPage ? 0 : -1;
+        _v$9 = store.show.endPage ? 0 : -1;
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
       _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
@@ -5566,7 +5567,7 @@ const MdCloudDownload$1 = \`M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.
 const MdPhoto = \`M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86-3 3.87L9 13.14 6 17h12l-3.86-5.14z\`;
 const CssVar = () => {
   const svg = solidJs.createMemo(() => {
-    const fill = store$1.option.darkMode ? 'rgb(156,156,156)' : 'rgb(110,110,110)';
+    const fill = store.option.darkMode ? 'rgb(156,156,156)' : 'rgb(110,110,110)';
     return \`
       --md-image-not-supported: \${createSvgIcon(fill, MdImageNotSupported)};
       --md-cloud-download: \${createSvgIcon(fill, MdCloudDownload$1)};
@@ -5579,11 +5580,11 @@ const CssVar = () => {
   return (() => {
     const _el$ = _tmpl$$a();
     web.insert(_el$, () => \`.\${modules_c21c94f2$1.root} {
-      \${store$1.option.darkMode ? dark : light}
+      \${store.option.darkMode ? dark : light}
 
-      --bg: \${store$1.option.customBackground ?? (store$1.option.darkMode ? '#000' : '#fff')};
-      --scroll-mode-img-scale: \${store$1.option.scrollModeImgScale};
-      --scroll-mode-spacing: \${store$1.option.scrollModeSpacing};
+      --bg: \${store.option.customBackground ?? (store.option.darkMode ? '#000' : '#fff')};
+      --scroll-mode-img-scale: \${store.option.scrollModeImgScale};
+      --scroll-mode-spacing: \${store.option.scrollModeSpacing};
 
       \${svg()}
       \${i18n()}
@@ -5696,7 +5697,6 @@ const useInit$1 = props => {
       if (state.activePageIndex > state.pageList.length - 1) state.activePageIndex = state.pageList.length - 1;
     });
   });
-  props.getStore?.(store$1);
   focus();
 };
 
@@ -5728,8 +5728,8 @@ const Manga = props => {
           [props.class ?? '']: !!props.class,
           ...props.classList
         },
-        _v$3 = boolDataVal(store$1.isMobile),
-        _v$4 = boolDataVal(store$1.option.scrollMode);
+        _v$3 = boolDataVal(store.isMobile),
+        _v$4 = boolDataVal(store.option.scrollMode);
       _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
       _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-mobile", _p$._v$3 = _v$3);
@@ -5747,7 +5747,6 @@ const Manga = props => {
 
 const _tmpl$$8 = /*#__PURE__*/web.template(\`<style type=text/css>\`);
 let dom;
-let store;
 
 /**
  * 显示漫画阅读窗口
@@ -5791,12 +5790,9 @@ const useManga = async initProps => {
       z-index: 1 !important;
     }
   \`);
-  const [props, setProps] = store$3.createStore({
+  const [props, setProps] = store$2.createStore({
     imgList: [],
     show: false,
-    getStore: val => {
-      store = val;
-    },
     ...initProps
   });
   const set = recipe => {
@@ -5812,7 +5808,7 @@ const useManga = async initProps => {
       })()]);
       dom.style.setProperty('z-index', '2147483647', 'important');
     }
-    setProps(typeof recipe === 'function' ? store$3.produce(recipe) : recipe);
+    setProps(typeof recipe === 'function' ? store$2.produce(recipe) : recipe);
     if (props.imgList.length && props.show) {
       dom.setAttribute('show', '');
       document.documentElement.style.overflow = 'hidden';
@@ -5887,6 +5883,11 @@ const useManga = async initProps => {
   });
   return [set, props, setProps];
 };
+function watchStore(deps, fn, options = {
+  defer: true
+}) {
+  solidJs.createEffect(solidJs.on(deps, fn, options));
+}
 
 const _tmpl$$7 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03z">\`);
 const MdMenuBook = ((props = {}) => (() => {
@@ -6068,7 +6069,7 @@ const useFab = async initProps => {
       font-size: clamp(12px, 1.5vw, 16px);
     }
   \`);
-  const [props, setProps] = store$3.createStore({
+  const [props, setProps] = store$2.createStore({
     ...initProps
   });
   const FabIcon = () => {
@@ -6106,14 +6107,14 @@ const useFab = async initProps => {
       dom.style.setProperty('z-index', '2147483646', 'important');
       mounted = true;
     }
-    if (recipe) setProps(typeof recipe === 'function' ? store$3.produce(recipe) : recipe);
+    if (recipe) setProps(typeof recipe === 'function' ? store$2.produce(recipe) : recipe);
   };
   return [set, props];
 };
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复百合会 记录阅读进度 功能会在某些楼层失效的 bug </p></li><li><p>修复卷轴模式下上下翻页快捷键无法触发结束动作的 bug </p></li><li><p>修复图片单双页判断错误的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在某些情况下简易模式无法正常加载所有图片的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6211,7 +6212,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     ...defaultOptions
   };
   const saveOptions = await GM.getValue(name);
-  const options = store$3.createMutable({
+  const options = store$2.createMutable({
     ..._defaultOptions,
     ...saveOptions
   });
@@ -6568,6 +6569,7 @@ exports.setInitLang = setInitLang;
 exports.setLang = setLang;
 exports.singleThreaded = singleThreaded;
 exports.sleep = sleep;
+exports.store = store;
 exports.t = t;
 exports.testImgUrl = testImgUrl;
 exports.toast = toast$1;
@@ -6582,6 +6584,7 @@ exports.useSpeedDial = useSpeedDial;
 exports.wait = wait;
 exports.waitDom = waitDom;
 exports.waitImgLoad = waitImgLoad;
+exports.watchStore = watchStore;
 `
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
@@ -7030,7 +7033,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
       main.querySelector('#autopbn')?.addEventListener('click', updateHistoryTag);
     }
   }
-})().catch(main.log.error);
+})().catch(e => main.log.error(e));
 web.delegateEvents(["click"]);
 
         break;
@@ -7387,7 +7390,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_ti
       getOnNext: () => checkButton('.display_right #next_chapter')
     }
   });
-})().catch(main.log.error);
+})().catch(e => main.log.error(e));
 
         break;
       }
@@ -7572,7 +7575,7 @@ const getViewpoint = async (comicId, chapterId) => {
         break;
       }
   }
-})().catch(main.log.error);
+})().catch(e => main.log.error(e));
 
         break;
       }
@@ -7622,7 +7625,7 @@ const turnPage = chapterId => {
       duration: Infinity
     });
   }
-})().catch(main.log.error);
+})().catch(e => main.log.error(e));
 
         break;
       }
@@ -7884,7 +7887,7 @@ const MdSettings = ((props = {}) => (() => {
       else raw_refresh_tagmenu_act(a);
     };
   }
-})().catch(main.log.error);
+})().catch(e => main.log.error(e));
 
         break;
       }
@@ -8025,7 +8028,7 @@ const fileType = {
       await loadNewComic();
     }
   }
-})().catch(main.log.error);
+})().catch(e => main.log.error(e));
 
         break;
       }
@@ -8178,7 +8181,7 @@ const main = require('main');
     if (num < 60 && state.imgList.some(url => !url)) setTimeout(retry, 1000 * 5, num + 1);
   });
   retry();
-})().catch(main.log.error);
+})().catch(e => main.log.error(e));
 
         break;
       }
@@ -8496,175 +8499,173 @@ const getInitLang = async () => {
   return lang;
 };
 
-/* eslint-disable no-undefined,no-param-reassign,no-shadow */
+const sleep = ms => new Promise(resolve => {
+  window.setTimeout(resolve, ms);
+});
+
+/** 等到传入的函数返回 true */
+const wait = async (fn, timeout = Infinity) => {
+  let res = await fn();
+  let _timeout = timeout;
+  while (_timeout > 0 && !res) {
+    await sleep(10);
+    _timeout -= 10;
+    res = await fn();
+  }
+  return res;
+};
 
 /**
- * Throttle execution of a function. Especially useful for rate limiting
- * execution of handlers on events like resize and scroll.
  *
- * @param {number} delay -                  A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher)
- *                                            are most useful.
- * @param {Function} callback -               A function to be executed after delay milliseconds. The `this` context and all arguments are passed through,
- *                                            as-is, to `callback` when the throttled-function is executed.
- * @param {object} [options] -              An object to configure options.
- * @param {boolean} [options.noTrailing] -   Optional, defaults to false. If noTrailing is true, callback will only execute every `delay` milliseconds
- *                                            while the throttled-function is being called. If noTrailing is false or unspecified, callback will be executed
- *                                            one final time after the last throttled-function call. (After the throttled-function has not been called for
- *                                            `delay` milliseconds, the internal counter is reset).
- * @param {boolean} [options.noLeading] -   Optional, defaults to false. If noLeading is false, the first throttled-function call will execute callback
- *                                            immediately. If noLeading is true, the first the callback execution will be skipped. It should be noted that
- *                                            callback will never executed if both noLeading = true and noTrailing = true.
- * @param {boolean} [options.debounceMode] - If `debounceMode` is true (at begin), schedule `clear` to execute after `delay` ms. If `debounceMode` is
- *                                            false (at end), schedule `callback` to execute after `delay` ms.
+ * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
  *
- * @returns {Function} A new, throttled, function.
+ * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
  */
-function throttle (delay, callback, options) {
-  var _ref = options || {},
-      _ref$noTrailing = _ref.noTrailing,
-      noTrailing = _ref$noTrailing === void 0 ? false : _ref$noTrailing,
-      _ref$noLeading = _ref.noLeading,
-      noLeading = _ref$noLeading === void 0 ? false : _ref$noLeading,
-      _ref$debounceMode = _ref.debounceMode,
-      debounceMode = _ref$debounceMode === void 0 ? undefined : _ref$debounceMode;
-  /*
-   * After wrapper has stopped being called, this timeout ensures that
-   * `callback` is executed at the proper times in `throttle` and `end`
-   * debounce modes.
-   */
-
-
-  var timeoutID;
-  var cancelled = false; // Keep track of the last time `callback` was executed.
-
-  var lastExec = 0; // Function to clear existing timeout
-
-  function clearExistingTimeout() {
-    if (timeoutID) {
-      clearTimeout(timeoutID);
-    }
-  } // Function to cancel next exec
-
-
-  function cancel(options) {
-    var _ref2 = options || {},
-        _ref2$upcomingOnly = _ref2.upcomingOnly,
-        upcomingOnly = _ref2$upcomingOnly === void 0 ? false : _ref2$upcomingOnly;
-
-    clearExistingTimeout();
-    cancelled = !upcomingOnly;
-  }
-  /*
-   * The `wrapper` function encapsulates all of the throttling / debouncing
-   * functionality and when executed will limit the rate at which `callback`
-   * is executed.
-   */
-
-
-  function wrapper() {
-    for (var _len = arguments.length, arguments_ = new Array(_len), _key = 0; _key < _len; _key++) {
-      arguments_[_key] = arguments[_key];
-    }
-
-    var self = this;
-    var elapsed = Date.now() - lastExec;
-
-    if (cancelled) {
-      return;
-    } // Execute `callback` and update the `lastExec` timestamp.
-
-
-    function exec() {
-      lastExec = Date.now();
-      callback.apply(self, arguments_);
-    }
-    /*
-     * If `debounceMode` is true (at begin) this is used to clear the flag
-     * to allow future `callback` executions.
-     */
-
-
-    function clear() {
-      timeoutID = undefined;
-    }
-
-    if (!noLeading && debounceMode && !timeoutID) {
-      /*
-       * Since `wrapper` is being called for the first time and
-       * `debounceMode` is true (at begin), execute `callback`
-       * and noLeading != true.
-       */
-      exec();
-    }
-
-    clearExistingTimeout();
-
-    if (debounceMode === undefined && elapsed > delay) {
-      if (noLeading) {
-        /*
-         * In throttle mode with noLeading, if `delay` time has
-         * been exceeded, update `lastExec` and schedule `callback`
-         * to execute after `delay` ms.
-         */
-        lastExec = Date.now();
-
-        if (!noTrailing) {
-          timeoutID = setTimeout(debounceMode ? clear : exec, delay);
-        }
-      } else {
-        /*
-         * In throttle mode without noLeading, if `delay` time has been exceeded, execute
-         * `callback`.
-         */
-        exec();
-      }
-    } else if (noTrailing !== true) {
-      /*
-       * In trailing throttle mode, since `delay` time has not been
-       * exceeded, schedule `callback` to execute `delay` ms after most
-       * recent execution.
-       *
-       * If `debounceMode` is true (at begin), schedule `clear` to execute
-       * after `delay` ms.
-       *
-       * If `debounceMode` is false (at end), schedule `callback` to
-       * execute after `delay` ms.
-       */
-      timeoutID = setTimeout(debounceMode ? clear : exec, debounceMode === undefined ? delay - elapsed : delay);
-    }
-  }
-
-  wrapper.cancel = cancel; // Return the wrapper function.
-
-  return wrapper;
-}
-
-/* eslint-disable no-undefined */
-/**
- * Debounce execution of a function. Debouncing, unlike throttling,
- * guarantees that a function is only executed a single time, either at the
- * very beginning of a series of calls, or at the very end.
- *
- * @param {number} delay -               A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher) are most useful.
- * @param {Function} callback -          A function to be executed after delay milliseconds. The `this` context and all arguments are passed through, as-is,
- *                                        to `callback` when the debounced-function is executed.
- * @param {object} [options] -           An object to configure options.
- * @param {boolean} [options.atBegin] -  Optional, defaults to false. If atBegin is false or unspecified, callback will only be executed `delay` milliseconds
- *                                        after the last debounced-function call. If atBegin is true, callback will be executed only at the first debounced-function call.
- *                                        (After the throttled-function has not been called for `delay` milliseconds, the internal counter is reset).
- *
- * @returns {Function} A new, debounced function.
- */
-
-function debounce (delay, callback, options) {
-  var _ref = options || {},
-      _ref$atBegin = _ref.atBegin,
-      atBegin = _ref$atBegin === void 0 ? false : _ref$atBegin;
-
-  return throttle(delay, callback, {
-    debounceMode: atBegin !== false
+const triggerEleLazyLoad = async (e, time, isLazyLoaded) => {
+  const nowScroll = window.scrollY;
+  e.scrollIntoView({
+    behavior: 'instant'
   });
-}
+  e.dispatchEvent(new Event('scroll', {
+    bubbles: true
+  }));
+  try {
+    if (isLazyLoaded && time) return await wait(isLazyLoaded, time);
+  } finally {
+    window.scroll({
+      top: nowScroll,
+      behavior: 'auto'
+    });
+  }
+};
+
+const createImgData = (oldSrc = '') => ({
+  triggedNum: 0,
+  observerTimeout: 0,
+  oldSrc
+});
+
+// 使用 triggerEleLazyLoad 会导致正常的滚动在滚到一半时被打断，所以加个锁限制一下
+const scrollLock = {
+  enabled: false,
+  nextOpenTime: 0,
+  timeout: 0
+};
+const closeScrollLock = delay => {
+  const time = Date.now() + delay;
+  if (time <= scrollLock.nextOpenTime) return;
+  scrollLock.nextOpenTime = time;
+  window.clearInterval(scrollLock.timeout);
+  scrollLock.timeout = window.setTimeout(() => {
+    scrollLock.enabled = false;
+    scrollLock.timeout = 0;
+  });
+};
+const openScrollLock = time => {
+  scrollLock.enabled = true;
+  closeScrollLock(time);
+};
+window.addEventListener('wheel', () => openScrollLock(1000));
+
+/** 用于判断是否是图片 url 的正则 */
+const isImgUrlRe = /^(((https?|ftp|file):)?\/)?\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#%=~_|]$/;
+
+/** 检查元素属性，将格式为图片 url 的属性值作为 src */
+const tryCorrectUrl = e => {
+  e.getAttributeNames().some(key => {
+    // 跳过白名单
+    switch (key) {
+      case 'src':
+      case 'alt':
+      case 'class':
+      case 'style':
+      case 'id':
+      case 'title':
+      case 'onload':
+      case 'onerror':
+        return false;
+    }
+    const val = e.getAttribute(key).trim();
+    if (!isImgUrlRe.test(val)) return false;
+    e.setAttribute('src', val);
+    return true;
+  });
+};
+
+/** 判断一个元素是否已经触发完懒加载 */
+const isLazyLoaded = (e, oldSrc) => {
+  if (!e.src) return false;
+  if (oldSrc !== undefined && e.src !== oldSrc) return true;
+  if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
+  return false;
+};
+const imgMap = new Map();
+let imgShowObserver;
+unsafeWindow.imgMap = imgMap;
+const getImg = e => imgMap.get(e) ?? createImgData();
+const MAX_TRIGGED_NUM = 5;
+
+/** 判断图片元素是否需要触发懒加载 */
+const needTrigged = e => !isLazyLoaded(e, imgMap.get(e)?.oldSrc) && (imgMap.get(e)?.triggedNum ?? 0) < MAX_TRIGGED_NUM;
+
+/** 图片懒加载触发完后调用 */
+const handleTrigged = e => {
+  const img = getImg(e);
+  img.observerTimeout = 0;
+  img.triggedNum += 1;
+  if (isLazyLoaded(e, img.oldSrc) && img.triggedNum < MAX_TRIGGED_NUM) img.triggedNum = MAX_TRIGGED_NUM;
+  imgMap.set(e, img);
+  if (!needTrigged(e)) imgShowObserver.unobserve(e);
+};
+
+/** 监视图片是否被显示的 Observer */
+imgShowObserver = new IntersectionObserver(entries => entries.forEach(img => {
+  const ele = img.target;
+  if (img.isIntersecting) {
+    imgMap.set(ele, {
+      ...getImg(ele),
+      observerTimeout: window.setTimeout(handleTrigged, 290, ele)
+    });
+  }
+  const timeoutID = imgMap.get(ele)?.observerTimeout;
+  if (timeoutID) window.clearTimeout(timeoutID);
+}));
+let timeoutId;
+/** 触发页面上所有图片元素的懒加载 */
+const triggerLazyLoad = async (getAllImg, getWaitTime) => {
+  const nowScroll = window.scrollY;
+  // 滚到底部再滚回来，触发可能存在的自动翻页脚本
+  window.scroll({
+    top: document.body.scrollHeight,
+    behavior: 'auto'
+  });
+  document.body.dispatchEvent(new Event('scroll', {
+    bubbles: true
+  }));
+  window.scroll({
+    top: nowScroll,
+    behavior: 'auto'
+  });
+
+  // 过滤掉已经被触发过懒加载的图片
+  const targetImgList = getAllImg().filter(needTrigged);
+  targetImgList.forEach(e => {
+    imgShowObserver.observe(e);
+    if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));
+  });
+  for (let i = 0; i < targetImgList.length; i++) {
+    await wait(() => !scrollLock.enabled);
+    const e = targetImgList[i];
+    if (!needTrigged(e)) continue;
+    tryCorrectUrl(e);
+    const waitTime = getWaitTime();
+    if ((await triggerEleLazyLoad(e, waitTime, () => isLazyLoaded(e, imgMap.get(e)?.oldSrc))) || waitTime) handleTrigged(e);
+  }
+  if (targetImgList.length !== 0) {
+    if (timeoutId) window.clearTimeout(timeoutId);
+    timeoutId = window.setTimeout(triggerLazyLoad, 500, getAllImg, getWaitTime);
+  }
+};
 
 
 // 测试案例
@@ -8728,31 +8729,6 @@ function debounce (delay, callback, options) {
         selector
       });
     };
-
-    /** 用于判断是否是图片 url 的正则 */
-    const isImgUrlRe = /^(((https?|ftp|file):)?\/)?\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#%=~_|]$/;
-
-    /** 检查元素属性，将格式为图片 url 的属性值作为 src */
-    const tryCorrectUrl = e => {
-      e.getAttributeNames().some(key => {
-        // 跳过白名单
-        switch (key) {
-          case 'src':
-          case 'alt':
-          case 'class':
-          case 'style':
-          case 'id':
-          case 'title':
-          case 'onload':
-          case 'onerror':
-            return false;
-        }
-        const val = e.getAttribute(key).trim();
-        if (!isImgUrlRe.test(val)) return false;
-        e.setAttribute('src', val);
-        return true;
-      });
-    };
     const blobUrlMap = new Map();
     // 处理那些 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片
     const handleBlobImg = async e => {
@@ -8777,75 +8753,10 @@ function debounce (delay, callback, options) {
     const getAllImg = () => main.querySelectorAll(`:not(${imgBlackList.join(',')}) > img`)
     // 根据位置从小到大排序
     .sort((a, b) => a.offsetTop - b.offsetTop);
-
-    // 使用 triggerEleLazyLoad 会导致正常的滚动在滚到一半时被打断，所以加个锁限制一下
-    let scrollLock = false;
-    const closeScrollLock = debounce(1000, () => {
-      scrollLock = false;
-    });
-    window.addEventListener('wheel', () => {
-      scrollLock = true;
-      closeScrollLock();
-    });
-    const getScrollLock = () => !scrollLock;
-
-    /** 监视图片是否被显示的 Observer */
-    let imgShowObserver;
-    const observerTimeoutMap = new Map();
-
-    /** 已经被触发过懒加载的图片 */
-    const triggedImgList = new Set();
-
-    /** 图片懒加载触发完后调用 */
-    const handleTrigged = e => {
-      triggedImgList.add(e);
-      observerTimeoutMap.delete(e);
-      imgShowObserver.unobserve(e);
-    };
-    imgShowObserver = new IntersectionObserver(entries => entries.forEach(img => {
-      if (img.isIntersecting) return observerTimeoutMap.set(img.target, window.setTimeout(handleTrigged, 300, img.target));
-      const timeoutID = observerTimeoutMap.get(img.target);
-      if (!timeoutID) return;
-      window.clearTimeout(timeoutID);
-    }));
-    getAllImg().forEach(e => imgShowObserver.observe(e));
-
-    /** 触发页面上所有图片元素的懒加载 */
-    const triggerLazyLoad = main.singleThreaded(async () => {
-      const nowScroll = window.scrollY;
-      // 滚到底部再滚回来，触发可能存在的自动翻页脚本
-      window.scroll({
-        top: document.body.scrollHeight,
-        behavior: 'auto'
-      });
-      document.body.dispatchEvent(new Event('scroll', {
-        bubbles: true
-      }));
-      window.scroll({
-        top: nowScroll,
-        behavior: 'auto'
-      });
-
-      // 过滤掉已经被触发过懒加载的图片
-      const targetImgList = getAllImg().filter(e => !triggedImgList.has(e));
-      targetImgList.forEach(e => imgShowObserver.observe(e));
-      const oldSrcList = targetImgList.map(e => e.src);
-      for (let i = 0; i < targetImgList.length; i++) {
-        await main.wait(getScrollLock);
-        const e = targetImgList[i];
-        if (triggedImgList.has(e)) continue;
-        tryCorrectUrl(e);
-
-        // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时，
-        // 才在触发懒加载时停留一段时间，避免用户看着页面跳来跳去操作不了
-        const waitTime = mangaProps.show || mangaProps.imgList.length < 2 ? 300 : 0;
-        if (await main.triggerEleLazyLoad(e, waitTime, oldSrcList[i])) handleTrigged(e);
-      }
-      if (targetImgList.length !== 0) main.requestIdleCallback(triggerLazyLoad);
-    });
     let imgEleList;
+    let updateImgListTimeout;
     /** 检查筛选符合标准的图片元素用于更新 imgList */
-    const updateImgList = throttle(500, main.singleThreaded(async () => {
+    const updateImgList = main.singleThreaded(async () => {
       imgEleList = await main.wait(() => {
         const newImgList = getAllImg().filter(e => e.naturalHeight > 500 && e.naturalWidth > 500);
         return newImgList.length >= 2 && newImgList;
@@ -8860,8 +8771,8 @@ function debounce (delay, callback, options) {
         return;
       }
 
-      /** 找出应该是漫画图片，且未触发过懒加载的图片个数 */
-      const expectCount = options.selector ? main.querySelectorAll(options.selector).filter(e => !imgEleList.includes(e) && !triggedImgList.has(e)).length : 0;
+      /** 找出应该是漫画图片，且还需要继续触发懒加载的图片个数 */
+      const expectCount = options.selector ? main.querySelectorAll(options.selector).filter(needTrigged).length : 0;
       const _imgEleList = expectCount ? [...imgEleList, ...new Array(expectCount)] : imgEleList;
       let isEdited = false;
       await main.plimit(_imgEleList.map((e, i) => async () => {
@@ -8872,24 +8783,21 @@ function debounce (delay, callback, options) {
       }));
       if (isEdited) saveImgEleSelector(imgEleList);
 
-      // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要在这里删掉多余的页数
-      if (!expectCount && mangaProps.imgList.length !== _imgEleList.length) _setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
-      if (isEdited || expectCount || imgEleList.some(e => !e.naturalWidth && !e.naturalHeight)) main.requestIdleCallback(updateImgList, 1000);
-    }));
-    /** 判断指定元素子树下是否含有图片 */
-    const hasImgNode = node => node.nodeName === 'IMG' || 'id' in node && !!node.getElementsByTagName('img').length;
+      // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要删掉多余的页数
+      if (mangaProps.imgList.length > _imgEleList.length) _setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
+      if (isEdited || expectCount || imgEleList.some(e => !e.naturalWidth && !e.naturalHeight)) {
+        if (updateImgListTimeout) window.clearTimeout(updateImgListTimeout);
+        updateImgListTimeout = window.setTimeout(updateImgList, 1000);
+      }
+    });
+    const triggerAllLazyLoad = main.singleThreaded(() => triggerLazyLoad(getAllImg, () =>
+    // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时停留一段时间
+    mangaProps.show || !mangaProps.imgList.length ? 300 : 0));
 
-    /** 判断是否有图片元素受到影响 */
-    const isImgAffected = mutation => {
-      if (hasImgNode(mutation.target) || [...mutation.addedNodes].some(hasImgNode) || [...mutation.removedNodes].some(hasImgNode)) return true;
-      return false;
-    };
-
-    /** 监视图片元素发生变化的 Observer */
-    const imgDomObserver = new MutationObserver(mutationsList => {
-      if (!mutationsList.some(isImgAffected)) return;
-      triggerLazyLoad();
+    /** 监视页面元素发生变化的 Observer */
+    const imgDomObserver = new MutationObserver(() => {
       updateImgList();
+      triggerAllLazyLoad();
     });
     init(async () => {
       if (!imgEleList) {
@@ -8901,10 +8809,31 @@ function debounce (delay, callback, options) {
           attributeFilter: ['src']
         });
         updateImgList();
-        triggerLazyLoad();
+        triggerAllLazyLoad();
       }
       await main.wait(() => mangaProps.imgList.length);
       return mangaProps.imgList;
+    });
+
+    // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
+    main.watchStore(() => main.store.memo.showImgList, showImgList => {
+      if (!showImgList || !showImgList.length || !main.store.show) return;
+      imgEleList[Math.min(+showImgList.at(-1).alt + 1, imgEleList.length - 1)]?.scrollIntoView({
+        behavior: 'instant',
+        block: 'end'
+      });
+      openScrollLock(500);
+    }, {
+      defer: true
+    });
+
+    // 在退出阅读模式时跳回之前的滚动位置
+    let laseScroll = window.scrollY;
+    main.watchStore(() => main.store.show, show => {
+      if (show) laseScroll = window.scrollY;else {
+        openScrollLock(1000);
+        requestAnimationFrame(() => window.scrollTo(0, laseScroll));
+      }
     });
   };
   if ((await GM.getValue(window.location.hostname)) !== undefined) return start();
@@ -8914,7 +8843,7 @@ function debounce (delay, callback, options) {
               default: return '使用简易阅读模式';
             }
           })(await getInitLang()), () => !start() && GM.unregisterMenuCommand(menuId));
-})().catch(main.log.error);
+})().catch(e => main.log.error(e));
 
       }
   }
