@@ -331,4 +331,4 @@ declare const selected_tagname: string;
       else raw_refresh_tagmenu_act(a) as unknown;
     };
   }
-})().catch(log.error);
+})().catch((e) => log.error(e));

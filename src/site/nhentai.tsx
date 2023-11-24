@@ -216,4 +216,4 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       await loadNewComic();
     }
   }
-})().catch(log.error);
+})().catch((e) => log.error(e));

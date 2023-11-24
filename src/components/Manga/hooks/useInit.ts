@@ -4,7 +4,7 @@ import { createEffect, onCleanup } from 'solid-js';
 
 import { assign, isEqualArray } from 'helper';
 import type { MangaProps } from '..';
-import { refs, setState, store } from '../store';
+import { refs, setState } from '../store';
 import {
   defaultHotkeys,
   focus,
@@ -155,7 +155,5 @@ export const useInit = (props: MangaProps) => {
         state.activePageIndex = state.pageList.length - 1;
     });
   });
-
-  props.getStore?.(store);
   focus();
 };

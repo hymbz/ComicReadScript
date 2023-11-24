@@ -202,4 +202,4 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
       break;
     }
   }
-})().catch(log.error);
+})().catch((e) => log.error(e));

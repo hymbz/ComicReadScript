@@ -26,7 +26,6 @@ const resourceList: Record<string, [string, string] | [string]> = {
     'https://unpkg.com/solid-js@1.8.5/web/dist/web.cjs',
     'https://unpkg.com/solid-js@1.8.5/web/dist/dev.cjs',
   ],
-  panzoom: ['https://unpkg.com/panzoom@9.4.3/dist/panzoom.min.js'],
   fflate: ['https://unpkg.com/fflate@0.8.1/umd/index.js'],
   dmzjDecrypt: [
     'https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199',

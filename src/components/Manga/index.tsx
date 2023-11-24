@@ -28,6 +28,8 @@ export { buttonListDivider } from './defaultButtonList';
 
 export const MangaStyle = style;
 
+export { store };
+
 enableScheduling();
 
 export interface MangaProps {
@@ -68,8 +70,6 @@ export interface MangaProps {
   editButtonList?: State['prop']['editButtonList'];
   /** 修改默认设置项列表 */
   editSettingList?: State['prop']['editSettingList'];
-
-  getStore?: (state: State) => void;
 }
 
 /** 漫画组件 */

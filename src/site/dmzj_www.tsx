@@ -38,4 +38,4 @@ const turnPage = (chapterId?: number) => {
   } catch (_) {
     toast.error('获取漫画数据失败', { duration: Infinity });
   }
-})().catch(log.error);
+})().catch((e) => log.error(e));

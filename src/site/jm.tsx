@@ -136,4 +136,4 @@ import {
         setTimeout(retry, 1000 * 5, num + 1);
     });
   retry();
-})().catch(log.error);
+})().catch((e) => log.error(e));

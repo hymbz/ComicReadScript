@@ -442,4 +442,4 @@ interface History {
       querySelector('#autopbn')?.addEventListener('click', updateHistoryTag);
     }
   }
-})().catch(log.error);
+})().catch((e) => log.error(e));

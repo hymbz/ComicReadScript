@@ -2,21 +2,28 @@ import MdFileDownload from '@material-design-icons/svg/round/file_download.svg';
 import MdClose from '@material-design-icons/svg/round/close.svg';
 
 import fflate from 'fflate';
-import { createMemo, createSignal } from 'solid-js';
+import type {
+  Accessor,
+  AccessorArray,
+  NoInfer,
+  OnEffectFunction,
+  OnOptions,
+} from 'solid-js';
+import { createEffect, createMemo, createSignal, on } from 'solid-js';
 import { createStore, produce } from 'solid-js/store';
 
 import { t } from 'helper/i18n';
 import { IconButton, IconButtonStyle } from '../IconButton';
 import type { MangaProps } from '../Manga';
-import { buttonListDivider, MangaStyle, Manga } from '../Manga';
+import { buttonListDivider, MangaStyle, Manga, store } from '../Manga';
 import { request } from '../../helper/request';
 import { saveAs } from '../../helper';
 import { mountComponents } from './helper';
 import { toast } from './Toast';
-import type { State } from '../Manga/store';
+
+export { store };
 
 let dom: HTMLDivElement;
-let store: State;
 
 /**
  * 显示漫画阅读窗口
@@ -64,9 +71,6 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   const [props, setProps] = createStore({
     imgList: [],
     show: false,
-    getStore: (val) => {
-      store = val;
-    },
     ...initProps,
   } as MangaProps);
 
@@ -169,3 +173,11 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
 
   return [set, props, setProps] as const;
 };
+
+export function watchStore<S, Next extends Prev, Prev = Next>(
+  deps: AccessorArray<S> | Accessor<S>,
+  fn: OnEffectFunction<S, undefined | NoInfer<Prev>, Next>,
+  options: OnOptions = { defer: true },
+) {
+  createEffect(on(deps, fn, options as any));
+}

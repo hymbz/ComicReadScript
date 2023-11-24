@@ -180,4 +180,4 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
       getOnNext: () => checkButton('.display_right #next_chapter'),
     },
   });
-})().catch(log.error);
+})().catch((e) => log.error(e));
