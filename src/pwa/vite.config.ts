@@ -6,6 +6,7 @@ import type { ManifestOptions } from 'vite-plugin-pwa';
 import { VitePWA } from 'vite-plugin-pwa';
 import solidPlugin from 'vite-plugin-solid';
 import markdown from '@jackfranklin/rollup-plugin-markdown';
+import replace from '@rollup/plugin-replace';
 import { solidSvg } from '../rollup-plugin/rollup-solid-svg';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -64,6 +65,11 @@ export default defineConfig({
     alias: { helper: resolve(__dirname, '../../src/helper') },
   },
   plugins: [
+    replace({
+      values: { isDevMode: 'false' },
+
+      preventAssignment: true,
+    }),
     {
       name: 'selfPlugin',
       enforce: 'pre',
