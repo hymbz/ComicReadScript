@@ -6117,7 +6117,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复 pwa 无法正常显示的 bug </p></li><li><p>修复在图片加载前就显示加载出错的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在图片加载前就显示加载出错的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
