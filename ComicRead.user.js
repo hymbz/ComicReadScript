@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.2.2
+// @version         8.2.3
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -192,28 +192,30 @@ const loop = async (fn, ms = 0) => {
 
 /** 使指定函数延迟运行期间的多次调用直到运行结束 */
 const singleThreaded = callback => {
-  let running = false;
-  let continueRun = false;
+  const state = {
+    running: false,
+    continueRun: false
+  };
   const fn = async (...args) => {
-    if (continueRun) return;
-    if (running) {
-      continueRun = true;
+    if (state.continueRun) return;
+    if (state.running) {
+      state.continueRun = true;
       return;
     }
     try {
-      running = true;
-      await callback(...args);
+      state.running = true;
+      await callback(state, ...args);
     } catch (error) {
-      continueRun = false;
+      state.continueRun = false;
       await sleep(100);
       throw error;
     } finally {
-      running = false;
+      state.running = false;
     }
-    if (continueRun) {
-      continueRun = false;
+    if (state.continueRun) {
+      state.continueRun = false;
       setTimeout(fn);
-    } else running = false;
+    } else state.running = false;
   };
   return fn;
 };
@@ -320,7 +322,7 @@ const triggerEleLazyLoad = async (e, time, isLazyLoaded) => {
 };
 
 /** 获取图片尺寸 */
-const getImgSize = async url => {
+const getImgSize = async (url, breakFn) => {
   let error = false;
   const image = new Image();
   try {
@@ -328,7 +330,7 @@ const getImgSize = async url => {
       error = true;
     };
     image.src = url;
-    await wait(() => !error && (image.naturalWidth || image.naturalHeight));
+    await wait(() => !error && (image.naturalWidth || image.naturalHeight) && (breakFn ? !breakFn() : true));
     if (error) return null;
     return [image.naturalWidth, image.naturalHeight];
   } catch (_) {
@@ -2524,7 +2526,6 @@ const updatePageData = state => {
   // 在图片排列改变后自动跳转回原先显示图片所在的页数
   if (lastActiveImgIndex !== activeImgIndex()) state.activePageIndex = state.pageList.findIndex(page => page.includes(lastActiveImgIndex));
 };
-updatePageData.debounce = debounce(100, updatePageData);
 
 /** 图片加载出错的回调 */
 const handleImgError = (i, e) => {
@@ -3302,21 +3303,21 @@ const handleMangaFlowDrag = ({
   }
 };
 
-/** 根据比例更新图片类型 */
+/** 根据比例更新图片类型。返回是否修改了图片类型 */
 const updateImgType = (state, draftImg) => {
   const {
     width,
     height,
     type
   } = draftImg;
-  if (!width || !height) return;
+  if (!width || !height) return false;
   const imgRatio = width / height;
   if (imgRatio <= state.proportion.单页比例) {
     draftImg.type = imgRatio < state.proportion.条漫比例 ? 'vertical' : '';
   } else {
     draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
   }
-  if (type !== draftImg.type) updatePageData.debounce(state);
+  return type !== draftImg.type;
 };
 
 /** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
@@ -3342,6 +3343,7 @@ const updateImgSize = (i, width, height) => {
     if (!img) return;
     img.width = width;
     img.height = height;
+    let isEdited = updateImgType(state, img);
     switch (img.type) {
       // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
       case 'long':
@@ -3352,6 +3354,7 @@ const updateImgSize = (i, width, height) => {
             if (comicImg.loadType === 'wait' && comicImg.type === '') state.imgList[index].type = 'wide';
           });
           state.flag.autoWide = false;
+          isEdited = true;
           break;
         }
 
@@ -3361,23 +3364,23 @@ const updateImgSize = (i, width, height) => {
           if (!state.flag.autoScrollMode || !checkImgTypeCount(state, image => image.type === 'vertical')) break;
           state.option.scrollMode = true;
           state.flag.autoScrollMode = false;
+          isEdited = true;
           break;
         }
     }
-    updateImgType(state, img);
+    if (isEdited) updatePageData(state);
     updateDrag(state);
   });
 };
 
 /** 更新所有图片的尺寸 */
-const updateAllImgSize = singleThreaded(async () => {
-  await plimit(store.imgList.map((img, i) => async () => {
-    if (img.loadType !== 'wait' || img.width || img.height || !img.src) return;
-    const size = await getImgSize(img.src);
-    if (!size) return handleImgError(i);
-    return updateImgSize(i, ...size);
-  }), undefined, Math.max(store.option.preloadPageNum, 1));
-});
+const updateAllImgSize = singleThreaded(state => plimit(store.imgList.map((img, i) => async () => {
+  if (state.continueRun) return;
+  if (img.loadType !== 'wait' || img.width || img.height || !img.src) return;
+  const size = await getImgSize(img.src, () => state.continueRun);
+  if (state.continueRun) return;
+  if (size) updateImgSize(i, ...size);
+}), undefined, Math.max(store.option.preloadPageNum, 1)));
 
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = (sizeFn, fallback) => {
@@ -6114,7 +6117,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在某些情况下简易模式无法正常加载所有图片的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复 pwa 无法正常显示的 bug </p></li><li><p>修复在图片加载前就显示加载出错的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
