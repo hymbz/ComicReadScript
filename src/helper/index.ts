@@ -126,33 +126,38 @@ export const loop = async (fn: () => unknown, ms = 0) => {
 
 /** 使指定函数延迟运行期间的多次调用直到运行结束 */
 export const singleThreaded = <T extends any[]>(
-  callback: (...args: T) => unknown,
+  callback: (
+    state: { running: boolean; continueRun: boolean },
+    ...args: T
+  ) => unknown,
 ) => {
-  let running = false;
-  let continueRun = false;
+  const state = {
+    running: false,
+    continueRun: false,
+  };
 
   const fn = async (...args: T) => {
-    if (continueRun) return;
-    if (running) {
-      continueRun = true;
+    if (state.continueRun) return;
+    if (state.running) {
+      state.continueRun = true;
       return;
     }
 
     try {
-      running = true;
-      await callback(...args);
+      state.running = true;
+      await callback(state, ...args);
     } catch (error) {
-      continueRun = false;
+      state.continueRun = false;
       await sleep(100);
       throw error;
     } finally {
-      running = false;
+      state.running = false;
     }
 
-    if (continueRun) {
-      continueRun = false;
+    if (state.continueRun) {
+      state.continueRun = false;
       setTimeout(fn);
-    } else running = false;
+    } else state.running = false;
   };
 
   return fn;
@@ -276,6 +281,7 @@ export const triggerEleLazyLoad = async (
 /** 获取图片尺寸 */
 export const getImgSize = async (
   url: string,
+  breakFn?: () => boolean,
 ): Promise<[number, number] | null> => {
   let error = false;
   const image = new Image();
@@ -285,7 +291,12 @@ export const getImgSize = async (
     };
     image.src = url;
 
-    await wait(() => !error && (image.naturalWidth || image.naturalHeight));
+    await wait(
+      () =>
+        !error &&
+        (image.naturalWidth || image.naturalHeight) &&
+        (breakFn ? !breakFn() : true),
+    );
     if (error) return null;
     return [image.naturalWidth, image.naturalHeight];
   } catch (_) {

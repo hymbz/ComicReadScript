@@ -141,7 +141,6 @@ export const updatePageData = (state: State) => {
       page.includes(lastActiveImgIndex),
     );
 };
-updatePageData.debounce = debounce(100, updatePageData);
 
 /** 图片加载出错的回调 */
 export const handleImgError = (i: number, e?: HTMLImageElement) => {

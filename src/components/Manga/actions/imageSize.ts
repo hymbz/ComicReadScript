@@ -4,13 +4,12 @@ import type { State } from '../store';
 import { refs, setState, store } from '../store';
 import { updateDrag } from './scrollbar';
 import { isWideImg } from '../handleComicData';
-import { handleImgError, updatePageData } from './image';
+import { updatePageData } from './image';
 
-/** 根据比例更新图片类型 */
-export const updateImgType = (state: State, draftImg: ComicImg) => {
+/** 根据比例更新图片类型。返回是否修改了图片类型 */
+const updateImgType = (state: State, draftImg: ComicImg) => {
   const { width, height, type } = draftImg;
-
-  if (!width || !height) return;
+  if (!width || !height) return false;
 
   const imgRatio = width / height;
   if (imgRatio <= state.proportion.单页比例) {
@@ -19,7 +18,7 @@ export const updateImgType = (state: State, draftImg: ComicImg) => {
     draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
   }
 
-  if (type !== draftImg.type) updatePageData.debounce(state);
+  return type !== draftImg.type;
 };
 
 /** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
@@ -49,6 +48,7 @@ export const updateImgSize = (i: number, width: number, height: number) => {
     if (!img) return;
     img.width = width;
     img.height = height;
+    let isEdited = updateImgType(state, img);
 
     switch (img.type) {
       // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
@@ -60,6 +60,7 @@ export const updateImgSize = (i: number, width: number, height: number) => {
             state.imgList[index].type = 'wide';
         });
         state.flag.autoWide = false;
+        isEdited = true;
         break;
       }
 
@@ -72,30 +73,32 @@ export const updateImgSize = (i: number, width: number, height: number) => {
           break;
         state.option.scrollMode = true;
         state.flag.autoScrollMode = false;
+        isEdited = true;
         break;
       }
     }
 
-    updateImgType(state, img);
+    if (isEdited) updatePageData(state);
     updateDrag(state);
   });
 };
 
 /** 更新所有图片的尺寸 */
-const updateAllImgSize = singleThreaded(async (): Promise<void> => {
-  await plimit(
+const updateAllImgSize = singleThreaded((state) =>
+  plimit(
     store.imgList.map((img, i) => async () => {
+      if (state.continueRun) return;
       if (img.loadType !== 'wait' || img.width || img.height || !img.src)
         return;
 
-      const size = await getImgSize(img.src);
-      if (!size) return handleImgError(i);
-      return updateImgSize(i, ...size);
+      const size = await getImgSize(img.src, () => state.continueRun);
+      if (state.continueRun) return;
+      if (size) updateImgSize(i, ...size);
     }),
     undefined,
     Math.max(store.option.preloadPageNum, 1),
-  );
-});
+  ),
+);
 
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = (
