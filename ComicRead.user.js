@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.2.3
+// @version         8.2.4
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -333,7 +333,7 @@ const getImgSize = async (url, breakFn) => {
     await wait(() => !error && (image.naturalWidth || image.naturalHeight) && (breakFn ? !breakFn() : true));
     if (error) return null;
     return [image.naturalWidth, image.naturalHeight];
-  } catch (_) {
+  } catch (e) {
     return null;
   } finally {
     image.src = '';
@@ -2527,20 +2527,6 @@ const updatePageData = state => {
   if (lastActiveImgIndex !== activeImgIndex()) state.activePageIndex = state.pageList.findIndex(page => page.includes(lastActiveImgIndex));
 };
 
-/** 图片加载出错的回调 */
-const handleImgError = (i, e) => {
-  // 跳过因为 src 为空导致的错误
-  if (e?.getAttribute('src') === '') return;
-  setState(state => {
-    const img = state.imgList[i];
-    if (!img) return;
-    img.loadType = 'error';
-    updateImgLoadType(state);
-    if (e) log.error(t('alert.img_load_failed'), e);
-    state.prop.Loading?.(state.imgList, img);
-  });
-};
-
 const touches = new Map();
 const scale = () => store.zoom.scale / 100;
 const width = () => refs.mangaFlow?.clientWidth ?? 0;
@@ -3517,6 +3503,7 @@ const useDrag = ({
 const _tmpl$$E = /*#__PURE__*/web.template(\`<img>\`);
 /** 图片加载完毕的回调 */
 const handleImgLoaded = (i, e) => {
+  if (!e.getAttribute('src')) return;
   setState(state => {
     const img = state.imgList[i];
     if (!img) return;
@@ -3529,6 +3516,23 @@ const handleImgLoaded = (i, e) => {
     // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
     // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
     e.decode();
+  });
+};
+const errorNumMap = new Map();
+
+/** 图片加载出错的回调 */
+const handleImgError = (i, e) => {
+  if (!e.getAttribute('src')) return;
+  setState(state => {
+    const img = state.imgList[i];
+    if (!img) return;
+    const errorNum = errorNumMap.get(img.src) ?? 0;
+    // 首次失败自动重试一次
+    img.loadType = errorNum === 0 ? 'loading' : 'error';
+    errorNumMap.set(img.src, errorNum + 1);
+    updateImgLoadType(state);
+    if (e) log.error(t('alert.img_load_failed'), e);
+    state.prop.Loading?.(state.imgList, img);
   });
 };
 
@@ -6117,7 +6121,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在图片加载前就显示加载出错的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复部分浏览器上会出现大部分图片都加载出错的情况\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
