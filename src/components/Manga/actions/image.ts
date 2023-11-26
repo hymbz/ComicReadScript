@@ -2,8 +2,6 @@ import { debounce } from 'throttle-debounce';
 import { createMemo, createRoot } from 'solid-js';
 
 import { clamp } from 'helper';
-import { t } from 'helper/i18n';
-import { log } from 'helper/logger';
 import { findFillIndex, handleComicData } from '../handleComicData';
 import type { State } from '../store';
 import { store, setState, refs } from '../store';
@@ -140,18 +138,4 @@ export const updatePageData = (state: State) => {
     state.activePageIndex = state.pageList.findIndex((page) =>
       page.includes(lastActiveImgIndex),
     );
-};
-
-/** 图片加载出错的回调 */
-export const handleImgError = (i: number, e?: HTMLImageElement) => {
-  // 跳过因为 src 为空导致的错误
-  if (e?.getAttribute('src') === '') return;
-  setState((state) => {
-    const img = state.imgList[i];
-    if (!img) return;
-    img.loadType = 'error';
-    updateImgLoadType(state);
-    if (e) log.error(t('alert.img_load_failed'), e);
-    state.prop.Loading?.(state.imgList, img);
-  });
 };

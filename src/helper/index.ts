@@ -299,7 +299,9 @@ export const getImgSize = async (
     );
     if (error) return null;
     return [image.naturalWidth, image.naturalHeight];
-  } catch (_) {
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    if (isDevMode) console.error('获取图片尺寸时出错', e);
     return null;
   } finally {
     image.src = '';
