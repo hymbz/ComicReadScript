@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.2.4
+// @version         8.2.5
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -3003,14 +3003,14 @@ const turnPageAnimation = dir => {
     state.isDragMode = true;
     updateRenderPage(state);
     if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 100 : -100;else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       setState(draftState => {
         updateRenderPage(draftState, true);
         draftState.page.offset.x.px = 0;
         draftState.page.offset.y.px = 0;
         draftState.isDragMode = false;
       });
-    });
+    }, 16);
   });
 };
 
@@ -5760,20 +5760,14 @@ let dom;
  */
 const useManga = async initProps => {
   await GM.addStyle(\`
-    @supports (height: 100dvh) {
-      #comicRead {
-        height: 100dvh !important;
-      }
-    }
-
     #comicRead {
       position: fixed;
       top: 0;
       left: 0;
       transform: scale(0);
 
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
 
       font-size: 16px;
 
@@ -6121,7 +6115,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复部分浏览器上会出现大部分图片都加载出错的情况\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复百合会移动端部分漫画获取图片失败的 bug </p></li><li><p>修复部分情况下界面未覆盖全屏的 bug </p></li><li><p>修复移动端拖拽翻页效果异常的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6791,7 +6785,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
       const isFirstPage = !main.querySelector('.pg > .prev');
       // 第一页以外不自动加载
       if (!isFirstPage) needAutoShow.val = false;
-      let imgList = main.querySelectorAll(':is(.t_fsz, .message) img');
+      let imgList = main.querySelectorAll('.plc img');
       const updateImgList = () => {
         let i = imgList.length;
         while (i--) {
