@@ -128,14 +128,14 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
       state.page.offset.y.pct += dir === 'next' ? 100 : -100;
     else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
 
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       setState((draftState) => {
         updateRenderPage(draftState, true);
         draftState.page.offset.x.px = 0;
         draftState.page.offset.y.px = 0;
         draftState.isDragMode = false;
       });
-    });
+    }, 16);
   });
 };
 
