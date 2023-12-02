@@ -30,20 +30,14 @@ let dom: HTMLDivElement;
  */
 export const useManga = async (initProps?: Partial<MangaProps>) => {
   await GM.addStyle(`
-    @supports (height: 100dvh) {
-      #comicRead {
-        height: 100dvh !important;
-      }
-    }
-
     #comicRead {
       position: fixed;
       top: 0;
       left: 0;
       transform: scale(0);
 
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
 
       font-size: 16px;
 
