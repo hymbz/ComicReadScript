@@ -248,7 +248,10 @@ try {
             // 只能通过 eval 获得数据
             // eslint-disable-next-line no-eval
             eval(
-              main.querySelectorAll('body > script')[1].innerHTML.slice(26),
+              main
+                .querySelectorAll('body > script')
+                .at(-1)!
+                .innerHTML.slice(26),
             ).slice(12, -12),
           );
           const sl = Object.entries(comicInfo.sl)
