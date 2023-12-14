@@ -1,6 +1,6 @@
-import { debounce } from 'throttle-debounce';
+import { debounce, throttle } from 'throttle-debounce';
 
-import { getKeyboardCode } from 'helper';
+import { getKeyboardCode, isEqual } from 'helper';
 import type { State } from '../store';
 import { store, setState, refs, _setState } from '../store';
 import { zoom } from './zoom';
@@ -151,6 +151,11 @@ const scrollModeScroll = (dir: 'next' | 'prev') => {
   closeScrollLock();
 };
 
+let wheelDeltaY = 0;
+const clearWheelDeltaY = debounce(1000, () => {
+  wheelDeltaY = 0;
+});
+
 export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
@@ -173,6 +178,11 @@ export const handleWheel = (e: WheelEvent) => {
     e.preventDefault();
     return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
   }
+
+  wheelDeltaY += e.deltaY;
+  clearWheelDeltaY();
+  if (Math.abs(wheelDeltaY) < 40) return;
+  wheelDeltaY = 0;
 
   return turnPage(isWheelDown ? 'next' : 'prev');
 };
