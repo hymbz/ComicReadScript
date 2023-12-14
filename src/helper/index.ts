@@ -171,7 +171,7 @@ export const singleThreaded = <T extends any[]>(
  * @returns 所有 Promise 的返回值
  */
 export const plimit = async <T>(
-  fnList: Array<() => Promise<T>>,
+  fnList: Array<() => Promise<T> | T>,
   callBack = undefined as
     | ((doneNum: number, totalNum: number, resList: T[], i: number) => void)
     | undefined,

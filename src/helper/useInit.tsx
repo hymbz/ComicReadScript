@@ -177,10 +177,13 @@ export const useInit = async <T extends Record<string, any>>(
       totalImgNum: number,
     ) => {
       const updateImgList = async () => {
-        setManga({ onLoading: undefined });
-        _setManga('imgList', Array(totalImgNum).fill(''));
+        const _onLoading = mangaProps.onLoading;
+        setManga({
+          onLoading: undefined,
+          imgList: Array(totalImgNum).fill(''),
+        });
         await work((i, imgUrl) => _setManga('imgList', i, imgUrl));
-        setManga({ onLoading });
+        setManga({ onLoading: _onLoading });
       };
 
       return async () => {

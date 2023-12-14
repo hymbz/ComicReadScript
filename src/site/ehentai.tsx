@@ -13,21 +13,29 @@ import {
   querySelectorAll,
   wait,
   log,
+  testImgUrl,
+  singleThreaded,
+  store,
 } from 'main';
 
 declare const selected_tagname: string;
 
 (async () => {
-  const { options, setFab, setManga, init, dynamicUpdate } = await useInit(
-    'ehentai',
-    {
-      /** 关联 nhentai */
-      associate_nhentai: true,
-      /** 快捷键翻页 */
-      hotkeys_page_turn: true,
-      autoShow: false,
-    },
-  );
+  const {
+    options,
+    init,
+    setFab,
+    setManga,
+    _setManga,
+    dynamicUpdate,
+    onLoading,
+  } = await useInit('ehentai', {
+    /** 关联 nhentai */
+    associate_nhentai: true,
+    /** 快捷键翻页 */
+    hotkeys_page_turn: true,
+    autoShow: false,
+  });
 
   if (Reflect.has(unsafeWindow, 'mpvkey')) {
     const imgEleList = querySelectorAll('.mi0[id]');
@@ -81,19 +89,14 @@ declare const selected_tagname: string;
     return;
   }
 
-  setManga({
-    onExit: (isEnd) => {
-      if (isEnd) scrollIntoView('#cdiv');
-      setManga({ show: false });
-    },
-  });
-
   // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
   insertNode(
     document.getElementById('gd5')!,
     '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>',
   );
   const comicReadModeDom = document.getElementById('comicReadMode')!;
+
+  const getImgFromImgPageRe = /id="img" src="(.+?)"/;
 
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async (url: string): Promise<string> => {
@@ -102,7 +105,7 @@ declare const selected_tagname: string;
     });
 
     try {
-      return res.responseText.split('id="img" src="')[1].split('"')[0];
+      return res.responseText.match(getImgFromImgPageRe)![1];
     } catch (error) {
       throw new Error(t('site.ehentai.fetch_img_url_failed'));
     }
@@ -154,6 +157,7 @@ declare const selected_tagname: string;
   const totalImgNum = await getImgNum();
 
   const ehImgList: string[] = [];
+  const ehImgPageList: string[] = [];
 
   const { loadImgList } = init(
     dynamicUpdate(async (setImg) => {
@@ -169,6 +173,7 @@ declare const selected_tagname: string;
             const imgUrl = await getImgFromImgPage(imgPageUrl);
             const index = startIndex + i;
             ehImgList[index] = imgUrl;
+            ehImgPageList[index] = imgPageUrl;
             setImg(index, imgUrl);
           }),
           (_doneNum) => {
@@ -186,6 +191,56 @@ declare const selected_tagname: string;
       }
     }, totalImgNum),
   );
+
+  /** 获取新的图片页地址 */
+  const getNewImgPageUrl = async (url: string) => {
+    const res = await request(url, {
+      errorText: t('site.ehentai.fetch_img_page_source_failed'),
+    });
+
+    const nl = res.responseText.match(/nl\('(.+?)'\)/)?.[1];
+    if (!nl) throw new Error(t('site.ehentai.fetch_img_url_failed'));
+    const newUrl = new URL(url);
+    newUrl.searchParams.set('nl', nl);
+    return newUrl.href;
+  };
+
+  /** 刷新指定图片 */
+  const reloadImg = async (i: number) => {
+    const pageUrl = await getNewImgPageUrl(ehImgPageList[i]);
+    let imgUrl = '';
+    while (!imgUrl || !(await testImgUrl(imgUrl)))
+      imgUrl = await getImgFromImgPage(pageUrl);
+    ehImgList[i] = imgUrl;
+    ehImgPageList[i] = pageUrl;
+    _setManga('imgList', i, imgUrl);
+  };
+
+  /** 判断当前显示的是否是 eh 源 */
+  const isShowEh = () => store.imgList[0]?.src === ehImgList[0];
+
+  /** 刷新所有错误图片 */
+  const reloadErrorImg = singleThreaded(() =>
+    plimit(
+      store.imgList.map(({ loadType }, i) => () => {
+        if (loadType !== 'error' || !isShowEh()) return;
+        return reloadImg(i);
+      }),
+    ),
+  );
+
+  setManga({
+    onExit: (isEnd) => {
+      if (isEnd) scrollIntoView('#cdiv');
+      setManga({ show: false });
+    },
+    // 在图片加载出错时刷新图片
+    onLoading: async (imgList, img) => {
+      onLoading(imgList);
+      if (img?.loadType !== 'error' || (await testImgUrl(img.src))) return;
+      return reloadErrorImg();
+    },
+  });
 
   setFab({ initialShow: options.autoShow });
   comicReadModeDom.addEventListener('click', () =>
