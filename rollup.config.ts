@@ -28,7 +28,7 @@ const isDevMode = process.env.NODE_ENV === 'development';
 
 const { meta, createMetaHeader } = getMetaData(isDevMode);
 
-const latestChangeHtml = (() => {
+const latestChangeHtml = await (() => {
   const md = fs
     .readFileSync(resolve(__dirname, `docs/LatestChange.md`))
     .toString();
@@ -163,7 +163,6 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
   // 创建一个 dist 文件夹的文件服务器，用于在浏览器获取最新的脚本代码
   const server = await createServer({
     root: resolve(__dirname, 'src'),
-    publicDir: resolve(__dirname, 'dist'),
     server: {
       host: true,
       port: DEV_PORT,
@@ -179,6 +178,7 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
         transform(code, id): null | string {
           if (id.includes('node_modules')) return null;
           let newCode = code;
+          newCode = newCode.replace('isDevMode', 'true');
           // 将 vite 不支持的 rollup-plugin-styles 相关 css 导出代码删除
           newCode = newCode.replace(', { css as style }', '');
           newCode = newCode.replace(/\n.+?Style = style;\n/, '');
