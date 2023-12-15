@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.2.6
+// @version         8.2.7
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -137,7 +137,7 @@ const insertNode = (node, textnode, referenceNode = null) => {
 
 /** 返回 Dom 的点击函数 */
 const querySelectorClick = selector => {
-  const getDom = () => typeof selector === 'string' ? querySelector(selector) : selector();
+  const getDom = () => querySelector(selector);
   if (getDom()) return () => getDom()?.click();
 };
 
@@ -427,21 +427,8 @@ const requestIdleCallback = (callback, timeout) => {
  * @param update 动态加载后的重新加载
  */
 const autoUpdate = update => {
-  let running = false;
-  const refresh = async () => {
-    running = true;
-    try {
-      await update();
-    } finally {
-      running = false;
-    }
-  };
-  ['click', 'popstate'].forEach(eventName => {
-    window.addEventListener(eventName, () => setTimeout(() => {
-      if (running) return;
-      refresh();
-    }, 100));
-  });
+  const refresh = singleThreaded(update);
+  ['click', 'popstate'].forEach(eventName => window.addEventListener(eventName, refresh));
   refresh();
 };
 
@@ -673,12 +660,12 @@ const zh = {
       fetch_img_page_source_failed: "获取图片页源码失败",
       fetch_img_page_url_failed: "从详情页获取图片页地址失败",
       fetch_img_url_failed: "从图片页获取图片地址失败",
-      html_changed_load_failed: "页面结构发生改变，无法加载漫画",
       html_changed_nhentai_failed: "页面结构发生改变，关联 nhentai 漫画功能无法正常生效",
       ip_banned: "IP地址被禁",
       nhentai_error: "nhentai 匹配出错",
       nhentai_failed: "匹配失败，请在确认登录 {{nhentai}} 后刷新"
     },
+    changed_load_failed: "网站发生变化，无法加载漫画",
     nhentai: {
       fetch_next_page_failed: "获取下一页漫画数据失败",
       tag_blacklist_fetch_failed: "标签黑名单获取失败"
@@ -920,12 +907,12 @@ const en = {
       fetch_img_page_source_failed: "Failed to get the source code of the image page",
       fetch_img_page_url_failed: "Failed to get the image page address from the detail page",
       fetch_img_url_failed: "Failed to get the image address from the image page",
-      html_changed_load_failed: "The web page structure has changed, unable to load comics",
       html_changed_nhentai_failed: "The web page structure has changed, the function to associate nhentai comics is not working properly",
       ip_banned: "IP address is banned",
       nhentai_error: "Error in nhentai matching",
       nhentai_failed: "Matching failed, please refresh after confirming login to {{nhentai}}"
     },
+    changed_load_failed: "The website has undergone changes, unable to load comics",
     nhentai: {
       fetch_next_page_failed: "Failed to get next page of comic data",
       tag_blacklist_fetch_failed: "Failed to fetch tag blacklist"
@@ -1167,12 +1154,12 @@ const ru = {
       fetch_img_page_source_failed: "Не удалось получить исходный код страницы с изображениями",
       fetch_img_page_url_failed: "Не удалось получить адрес страницы изображений из деталей",
       fetch_img_url_failed: "Не удалось получить адрес изображения",
-      html_changed_load_failed: "Структура страницы изменилась, невозможно загрузить комикс",
       html_changed_nhentai_failed: "Структура страницы изменилась, функция nhentai manga работает некорректно",
       ip_banned: "IP адрес забанен",
       nhentai_error: "Ошибка сопоставления с nhentai",
       nhentai_failed: "Ошибка сопостовления. Пожалуйста перезагрузите страницу после входа на {{nhentai}}"
     },
+    changed_load_failed: "Структура страницы изменилась, невозможно загрузить комикс",
     nhentai: {
       fetch_next_page_failed: "Не удалось получить следующую страницу",
       tag_blacklist_fetch_failed: "Не удалось получить заблокированные теги"
@@ -1313,28 +1300,28 @@ const creatId = () => {
   return id;
 };
 
-const _tmpl$$S = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0z">\`);
+const _tmpl$$S = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">\`);
 const MdCheckCircle = ((props = {}) => (() => {
   const _el$ = _tmpl$$S();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$R = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3zM12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const _tmpl$$R = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
 const MdWarning = ((props = {}) => (() => {
   const _el$ = _tmpl$$R();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$Q = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1 4h-2v-2h2v2z">\`);
+const _tmpl$$Q = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
 const MdError = ((props = {}) => (() => {
   const _el$ = _tmpl$$Q();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z">\`);
+const _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">\`);
 const MdInfo = ((props = {}) => (() => {
   const _el$ = _tmpl$$P();
   web.spread(_el$, props, true, true);
@@ -1593,7 +1580,7 @@ const request$1 = async (url, details, errorNum = 0) => {
       headers: {
         Referer: window.location.href
       },
-      fetch: url.includes(window.location.origin),
+      fetch: url.startsWith('/') || url.startsWith(window.location.origin),
       ...details
     });
     if (res.status !== 200) throw new Error(errorText);
@@ -1626,28 +1613,28 @@ const eachApi = async (url, baseUrlList, details) => {
   throw new Error(errorText);
 };
 
-const _tmpl$$L = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0zM8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0zm10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01zm-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41zm-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41-1.38 1.38z">\`);
+const _tmpl$$L = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">\`);
 const MdAutoFixHigh = ((props = {}) => (() => {
   const _el$ = _tmpl$$L();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$K = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9zm-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41 1.47-1.45zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42z">\`);
+const _tmpl$$K = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">\`);
 const MdAutoFixOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$K();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1z">\`);
+const _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">\`);
 const MdAutoFlashOn = ((props = {}) => (() => {
   const _el$ = _tmpl$$J();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28.45-.78zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13 3.15-6.29zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41z">\`);
+const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">\`);
 const MdAutoFlashOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$I();
   web.spread(_el$, props, true, true);
@@ -1818,14 +1805,14 @@ const useCache = (initSchema, version = 1) => {
   };
 };
 
-const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71zM5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1z">\`);
+const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">\`);
 const MdFileDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$G();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z">\`);
+const _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">\`);
 const MdClose = ((props = {}) => (() => {
   const _el$ = _tmpl$$F();
   web.spread(_el$, props, true, true);
@@ -1926,8 +1913,8 @@ const OtherState = {
   flag: {
     /** 是否需要自动判断开启卷轴模式 */
     autoScrollMode: true,
-    /** 是否需要自动将未加载图片类型设为跨页图 */
-    autoWide: true,
+    /** 是否需要自动判断开启单页模式 */
+    autoOnePageMode: true,
     /**
      * 用于防止滚轮连续滚动导致过快触发事件的锁
      *
@@ -2209,7 +2196,6 @@ function debounce (delay, callback, options) {
 }
 
 // 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
-// 2. 因为大部分用户都不会在意正确页序，所以应该尽量少加填充页
 /** 记录自动修改过页面填充的图片流 */
 const autoCloseFill = new Set();
 
@@ -3025,6 +3011,10 @@ const scrollModeScroll = dir => {
   }
   closeScrollLock();
 };
+let wheelDeltaY = 0;
+const clearWheelDeltaY = debounce(1000, () => {
+  wheelDeltaY = 0;
+});
 const handleWheel = e => {
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
@@ -3041,6 +3031,10 @@ const handleWheel = e => {
     e.preventDefault();
     return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
   }
+  wheelDeltaY += e.deltaY;
+  clearWheelDeltaY();
+  if (Math.abs(wheelDeltaY) < 40) return;
+  wheelDeltaY = 0;
   return turnPage(isWheelDown ? 'next' : 'prev');
 };
 
@@ -3331,15 +3325,13 @@ const updateImgSize = (i, width, height) => {
     img.height = height;
     let isEdited = updateImgType(state, img);
     switch (img.type) {
-      // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
+      // 连续出现多张跨页图后，自动开启单页模式
       case 'long':
       case 'wide':
         {
-          if (!state.flag.autoWide || !checkImgTypeCount(state, isWideImg)) break;
-          state.imgList.forEach((comicImg, index) => {
-            if (comicImg.loadType === 'wait' && comicImg.type === '') state.imgList[index].type = 'wide';
-          });
-          state.flag.autoWide = false;
+          if (!state.flag.autoOnePageMode || !checkImgTypeCount(state, isWideImg)) break;
+          state.option.onePageMode = true;
+          state.flag.autoOnePageMode = false;
           isEdited = true;
           break;
         }
@@ -3779,70 +3771,70 @@ const ComicImgFlow = () => {
   })();
 };
 
-const _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1z">\`);
+const _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">\`);
 const MdLooksOne = ((props = {}) => (() => {
   const _el$ = _tmpl$$B();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2v2z">\`);
+const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">\`);
 const MdLooksTwo = ((props = {}) => (() => {
   const _el$ = _tmpl$$A();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1zM20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zM2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1z">\`);
+const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">\`);
 const MdViewDay = ((props = {}) => (() => {
   const _el$ = _tmpl$$z();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1zm17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+const _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">\`);
 const MdQueue = ((props = {}) => (() => {
   const _el$ = _tmpl$$y();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">\`);
+const _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">\`);
 const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$$x();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">\`);
+const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14">\`);
 const MdSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$w();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35zM17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94zm-1.62 7 1.62-4.33L19.12 17h-3.24z">\`);
+const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">\`);
 const MdTranslate = ((props = {}) => (() => {
   const _el$ = _tmpl$$v();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1zM7 7h4v4H7V7zm0 10v-4h4v4H7zm10 0h-4v-4h4v4zm0-6h-4V7h4v4z">\`);
+const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">\`);
 const MdGrid = ((props = {}) => (() => {
   const _el$ = _tmpl$$u();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10zm11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7z">\`);
+const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">\`);
 const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
   const _el$ = _tmpl$$t();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10zm-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1H8z">\`);
+const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">\`);
 const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
   const _el$ = _tmpl$$s();
   web.spread(_el$, props, true, true);
@@ -3917,14 +3909,14 @@ const SettingsItemSwitch = props => {
   });
 };
 
-const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z">\`);
+const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">\`);
 const MdRefresh = ((props = {}) => (() => {
   const _el$ = _tmpl$$p();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1z">\`);
+const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">\`);
 const MdAdd = ((props = {}) => (() => {
   const _el$ = _tmpl$$o();
   web.spread(_el$, props, true, true);
@@ -4306,21 +4298,15 @@ const translationImage = async i => {
     });
   }
 };
-let running = false;
 
 /** 逐个翻译状态为等待翻译的图片 */
-const translationAll = async () => {
-  if (running) return;
-  const i = store.imgList.findIndex(img => img.loadType === 'loaded' && img.translationType === 'wait');
-  if (i === -1) return;
-  running = true;
-  try {
+const translationAll = singleThreaded(async () => {
+  for (let i = 0; i < store.imgList.length; i++) {
+    const img = store.imgList[i];
+    if (img.loadType !== 'loaded' || img.translationType !== 'wait') continue;
     await translationImage(i);
-  } finally {
-    running = false;
   }
-  return translationAll();
-};
+});
 
 /** 开启或关闭指定图片的翻译 */
 const setImgTranslationEnbale = (list, enbale) => {
@@ -5640,14 +5626,18 @@ const useInit$1 = props => {
         if (isEnd) state.activePageIndex = 0;
         state.show.endPage = undefined;
       } : undefined;
-      state.prop.Prev = props.onPrev ? () => {
+      state.prop.Prev = props.onPrev ? debounce(1000, () => {
         playAnimation(refs.prev);
         props.onPrev?.();
-      } : undefined;
-      state.prop.Next = props.onNext ? () => {
+      }, {
+        atBegin: true
+      }) : undefined;
+      state.prop.Next = props.onNext ? debounce(1000, () => {
         playAnimation(refs.next);
         props.onNext?.();
-      } : undefined;
+      }, {
+        atBegin: true
+      }) : undefined;
       if (props.editButtonList) state.prop.editButtonList = props.editButtonList;
       if (props.editSettingList) state.prop.editSettingList = props.editSettingList;
       state.prop.Loading = props.onLoading ? debounce(100, props.onLoading) : undefined;
@@ -5660,29 +5650,37 @@ const useInit$1 = props => {
   solidJs.createEffect(() => {
     setState(state => {
       if (props.fillEffect) state.fillEffect = props.fillEffect;
-
-      // 处理初始化
-      if (!state.imgList.length) {
-        state.flag.autoScrollMode = true;
-        state.flag.autoWide = true;
-        autoCloseFill.clear();
-        state.fillEffect[-1] = state.option.firstPageFill;
-        state.imgList = [...props.imgList].map(createComicImg);
-        updatePageData(state);
-        state.prop.Loading?.(state.imgList);
-        return;
-      }
       if (isEqualArray(props.imgList, state.imgList.map(({
         src
       }) => src))) return state.prop.Loading?.(state.imgList);
       state.show.endPage = undefined;
 
+      /** 判断是否是初始化 */
+      const isInit = !state.imgList.length || state.imgList.filter(({
+        src
+      }) => props.imgList.includes(src)).length <= 2;
+
+      // 处理初始化
+      if (isInit) {
+        state.flag.autoScrollMode = true;
+        state.flag.autoOnePageMode = true;
+        autoCloseFill.clear();
+        if (!state.option.firstPageFill || props.imgList.length <= 3) state.fillEffect[-1] = false;
+        state.imgList = [...props.imgList].map(createComicImg);
+        updatePageData(state);
+        state.prop.Loading?.(state.imgList);
+        state.activePageIndex = 0;
+        return;
+      }
+      for (let i = 0; i < state.imgList.length; i++) {
+        const img = state.imgList[i];
+        // 将被删除图片的 fillEffect 记录删掉
+        if (!props.imgList.includes(img.src)) Reflect.deleteProperty(state.fillEffect, i);
+      }
+
       /** 修改前的当前显示图片 */
       const oldActiveImg = state.pageList[state.activePageIndex]?.map(i => state.imgList?.[i]?.src) ?? [];
       state.imgList = [...props.imgList].map(imgUrl => state.imgList.find(img => img.src === imgUrl) ?? createComicImg(imgUrl));
-      state.fillEffect = {
-        '-1': true
-      };
       updatePageData(state);
       state.prop.Loading?.(state.imgList);
       if (state.pageList.length === 0) {
@@ -5890,28 +5888,28 @@ function watchStore(deps, fn, options = {
   solidJs.createEffect(solidJs.on(deps, fn, options));
 }
 
-const _tmpl$$7 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03zm0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03z">\`);
+const _tmpl$$7 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03">\`);
 const MdMenuBook = ((props = {}) => (() => {
   const _el$ = _tmpl$$7();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$6 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1zm-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79zm3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42l-2.41-2.4zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z">\`);
+const _tmpl$$6 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1m-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79m3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5">\`);
 const MdImageSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$6();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$5 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79zM21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98v9.47z">\`);
+const _tmpl$$5 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z">\`);
 const MdImportContacts = ((props = {}) => (() => {
   const _el$ = _tmpl$$5();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$4 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z">\`);
+const _tmpl$$4 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96M17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4z">\`);
 const MdCloudDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$4();
   web.spread(_el$, props, true, true);
@@ -6115,7 +6113,9 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复漫画柜上无法正常运行的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复 komiic 因改版导致无法正常运行的 bug </p></li><li><p>修复 PonpomuYuri 上/下一话跳转异常的 bug </p></li><li><p>修复在 ehentai 上超过一定时间后就无法加载图片的 bug\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>优化使用触摸板进行滚动的体验\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6178,7 +6178,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3()], {
+    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -6408,13 +6408,14 @@ const useInit = async (name, defaultOptions = {}) => {
     /** 使用动态更新来加载 imgList */
     dynamicUpdate: (work, totalImgNum) => {
       const updateImgList = async () => {
+        const _onLoading = mangaProps.onLoading;
         setManga({
-          onLoading: undefined
+          onLoading: undefined,
+          imgList: Array(totalImgNum).fill('')
         });
-        _setManga('imgList', Array(totalImgNum).fill(''));
         await work((i, imgUrl) => _setManga('imgList', i, imgUrl));
         setManga({
-          onLoading
+          onLoading: _onLoading
         });
       };
       return async () => {
@@ -6425,15 +6426,6 @@ const useInit = async (name, defaultOptions = {}) => {
       };
     }
   };
-};
-
-/** 处理延时出现的上/下一话的按钮 */
-const handleDelayPrevNext = async (fn, num = 0) => {
-  if (!fn || num >= 25) return;
-  const domClickFn = await fn();
-  if (domClickFn) return domClickFn;
-  await main.sleep(200);
-  return handleDelayPrevNext(fn, num + 1);
 };
 
 /** 对简单站点的通用解 */
@@ -6486,7 +6478,7 @@ const universalInit = async ({
   } = SPA;
   let lastUrl = '';
   main.autoUpdate(async () => {
-    if (window.location.href === lastUrl) return;
+    if (!(await main.wait(() => window.location.href !== lastUrl, 5000))) return;
     lastUrl = window.location.href;
     if (isMangaPage && !(await isMangaPage())) {
       setFab({
@@ -6499,20 +6491,19 @@ const universalInit = async ({
       return;
     }
     if (waitFn) await main.wait(waitFn);
-
-    // 先将 imgList 清空以便 activePageIndex 归零
     setManga({
-      imgList: []
+      onPrev: undefined,
+      onNext: undefined
     });
     needAutoShow.val = options.autoShow;
     await loadImgList();
-    await Promise.all([async () => getCommentList && setManga({
+    await Promise.all([(async () => getCommentList && setManga({
       commentList: await getCommentList()
-    }), async () => getOnPrev && setManga({
-      onPrev: await handleDelayPrevNext(getOnPrev)
-    }), async () => getOnNext && setManga({
-      onNext: await handleDelayPrevNext(getOnNext)
-    })].map(fn => fn()));
+    }))(), (async () => getOnPrev && setManga({
+      onPrev: await main.wait(getOnPrev, 5000)
+    }))(), (async () => getOnNext && setManga({
+      onNext: await main.wait(getOnNext, 5000)
+    }))()]);
   });
 };
 
@@ -6672,7 +6663,7 @@ const web = require('solid-js/web');
 const main = require('main');
 const solidJs = require('solid-js');
 
-const _tmpl$$1 = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">`);
+const _tmpl$$1 = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">`);
 const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$$1();
   web.spread(_el$, props, true, true);
@@ -7048,7 +7039,7 @@ web.delegateEvents(["click"]);
 
         /** 总页数 */
         const totalPageNum = +main.querySelector('section div:first-of-type div:last-of-type').innerHTML.split('：')[1];
-        if (Number.isNaN(totalPageNum)) throw new Error('页面结构发生改变，无法正常运行');
+        if (Number.isNaN(totalPageNum)) throw new Error(main.t('site.changed_load_failed'));
 
         /** 获取指定页数的图片 url */
         const getImg = async (i = 1) => {
@@ -7638,7 +7629,7 @@ const turnPage = chapterId => {
 const web = require('solid-js/web');
 const main = require('main');
 
-const _tmpl$ = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68zm-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">`);
+const _tmpl$ = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">`);
 const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$();
   web.spread(_el$, props, true, true);
@@ -7648,10 +7639,12 @@ const MdSettings = ((props = {}) => (() => {
 (async () => {
   const {
     options,
+    init,
     setFab,
     setManga,
-    init,
-    dynamicUpdate
+    _setManga,
+    dynamicUpdate,
+    onLoading
   } = await main.useInit('ehentai', {
     /** 关联 nhentai */
     associate_nhentai: true,
@@ -7699,18 +7692,11 @@ const MdSettings = ((props = {}) => (() => {
     }
     return;
   }
-  setManga({
-    onExit: isEnd => {
-      if (isEnd) main.scrollIntoView('#cdiv');
-      setManga({
-        show: false
-      });
-    }
-  });
 
   // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
   main.insertNode(document.getElementById('gd5'), '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>');
   const comicReadModeDom = document.getElementById('comicReadMode');
+  const getImgFromImgPageRe = /id="img" src="(.+?)"/;
 
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async url => {
@@ -7718,7 +7704,7 @@ const MdSettings = ((props = {}) => (() => {
       errorText: main.t('site.ehentai.fetch_img_page_source_failed')
     });
     try {
-      return res.responseText.split('id="img" src="')[1].split('"')[0];
+      return res.responseText.match(getImgFromImgPageRe)[1];
     } catch (error) {
       throw new Error(main.t('site.ehentai.fetch_img_url_failed'));
     }
@@ -7747,11 +7733,12 @@ const MdSettings = ((props = {}) => (() => {
     const res = await main.request(window.location.href);
     numText = res.responseText.match(/(?<=<td class="gdt2">)\d+(?= pages<\/td>)/)?.[0];
     if (numText) return +numText;
-    main.toast.error(main.t('site.ehentai.html_changed_load_failed'));
+    main.toast.error(main.t('site.changed_load_failed'));
     return 0;
   };
   const totalImgNum = await getImgNum();
   const ehImgList = [];
+  const ehImgPageList = [];
   const {
     loadImgList
   } = init(dynamicUpdate(async setImg => {
@@ -7764,6 +7751,7 @@ const MdSettings = ((props = {}) => (() => {
         const imgUrl = await getImgFromImgPage(imgPageUrl);
         const index = startIndex + i;
         ehImgList[index] = imgUrl;
+        ehImgPageList[index] = imgPageUrl;
         setImg(index, imgUrl);
       }), _doneNum => {
         const doneNum = startIndex + _doneNum;
@@ -7775,6 +7763,53 @@ const MdSettings = ((props = {}) => (() => {
       });
     }
   }, totalImgNum));
+
+  /** 获取新的图片页地址 */
+  const getNewImgPageUrl = async url => {
+    const res = await main.request(url, {
+      errorText: main.t('site.ehentai.fetch_img_page_source_failed')
+    });
+    const nl = res.responseText.match(/nl\('(.+?)'\)/)?.[1];
+    if (!nl) throw new Error(main.t('site.ehentai.fetch_img_url_failed'));
+    const newUrl = new URL(url);
+    newUrl.searchParams.set('nl', nl);
+    return newUrl.href;
+  };
+
+  /** 刷新指定图片 */
+  const reloadImg = async i => {
+    const pageUrl = await getNewImgPageUrl(ehImgPageList[i]);
+    let imgUrl = '';
+    while (!imgUrl || !(await main.testImgUrl(imgUrl))) imgUrl = await getImgFromImgPage(pageUrl);
+    ehImgList[i] = imgUrl;
+    ehImgPageList[i] = pageUrl;
+    _setManga('imgList', i, imgUrl);
+  };
+
+  /** 判断当前显示的是否是 eh 源 */
+  const isShowEh = () => main.store.imgList[0]?.src === ehImgList[0];
+
+  /** 刷新所有错误图片 */
+  const reloadErrorImg = main.singleThreaded(() => main.plimit(main.store.imgList.map(({
+    loadType
+  }, i) => () => {
+    if (loadType !== 'error' || !isShowEh()) return;
+    return reloadImg(i);
+  })));
+  setManga({
+    onExit: isEnd => {
+      if (isEnd) main.scrollIntoView('#cdiv');
+      setManga({
+        show: false
+      });
+    },
+    // 在图片加载出错时刷新图片
+    onLoading: async (imgList, img) => {
+      onLoading(imgList);
+      if (img?.loadType !== 'error' || (await main.testImgUrl(img.src))) return;
+      return reloadErrorImg();
+    }
+  });
   setFab({
     initialShow: options.autoShow
   });
@@ -8043,8 +8078,8 @@ const fileType = {
           getImgList: () => main.querySelectorAll('.comic-page-container img').map(e => e.getAttribute('data-srcset')),
           SPA: {
             isMangaPage: () => window.location.href.includes('/comic/'),
-            getOnPrev: () => main.querySelectorClick('.prev-btn a'),
-            getOnNext: () => main.querySelectorClick('.next-btn a')
+            getOnPrev: () => main.querySelectorClick('.prev-btn:not(.invisible) a'),
+            getOnNext: () => main.querySelectorClick('.next-btn:not(.invisible) a')
           }
         };
         break;
@@ -8382,28 +8417,45 @@ const main = require('main');
     // #komiic
     case 'komiic.com':
       {
-        const getImgList = async () => {
-          const imgList = main.querySelectorAll('.imageContainer > img').map(e => e.getAttribute('data-src') ?? '');
-          if (imgList.includes('')) {
-            await main.sleep(100);
-            return getImgList();
+        const query = `
+        query imagesByChapterId($chapterId: ID!) {
+          imagesByChapterId(chapterId: $chapterId) {
+            id
+            kid
+            height
+            width
+            __typename
           }
-          return imgList;
+        }`;
+        const getImgList = async () => {
+          const chapterId = window.location.pathname.match(/chapter\/(\d+)/)?.[1];
+          if (!chapterId) throw new Error(main.t('site.changed_load_failed'));
+          const res = await main.request('/api/query', {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json'
+            },
+            data: JSON.stringify({
+              operationName: 'imagesByChapterId',
+              variables: {
+                chapterId: `${chapterId}`
+              },
+              query
+            })
+          });
+          return JSON.parse(res.responseText).data.imagesByChapterId.map(({
+            kid
+          }) => `https://komiic.com/api/image/${kid}`);
         };
         const handlePrevNext = text => async () => {
-          // 点击唤出底栏
-          const id = window.setInterval(() => {
-            main.querySelector('.ComicImageContainer')?.click();
-          }, 500);
-          await main.waitDom('.ComicImage__bottom-menu-center');
-          window.clearInterval(id);
-          const buttonDom = main.querySelectorAll('.ComicImage__bottom-menu-center button:not([disabled])').find(e => e.innerText.includes(text));
-          return main.querySelectorClick(() => buttonDom);
+          await main.waitDom('.v-bottom-navigation__content');
+          const buttonDom = main.querySelectorAll('.v-bottom-navigation__content > button:not([disabled])').find(e => e.innerText.includes(text));
+          if (!buttonDom) return;
+          return () => buttonDom?.click();
         };
         const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
         options = {
           name: 'komiic',
-          wait: () => !!main.querySelector('.imageContainer > img'),
           getImgList,
           SPA: {
             isMangaPage: () => urlMatchRe.test(window.location.href),
