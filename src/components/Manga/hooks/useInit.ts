@@ -123,12 +123,20 @@ export const useInit = (props: MangaProps) => {
         state.flag.autoWide = true;
         autoCloseFill.clear();
 
-        state.fillEffect[-1] = state.option.firstPageFill;
+        if (!state.option.firstPageFill || props.imgList.length <= 3)
+          state.fillEffect[-1] = false;
         state.imgList = [...props.imgList].map(createComicImg);
         updatePageData(state);
         state.prop.Loading?.(state.imgList);
         state.activePageIndex = 0;
         return;
+      }
+
+      for (let i = 0; i < state.imgList.length; i++) {
+        const img = state.imgList[i];
+        // 将被删除图片的 fillEffect 记录删掉
+        if (!props.imgList.includes(img.src))
+          Reflect.deleteProperty(state.fillEffect, i);
       }
 
       /** 修改前的当前显示图片 */
@@ -142,7 +150,6 @@ export const useInit = (props: MangaProps) => {
           state.imgList.find((img) => img.src === imgUrl) ??
           createComicImg(imgUrl),
       );
-      state.fillEffect = { '-1': true };
       updatePageData(state);
       state.prop.Loading?.(state.imgList);
 
