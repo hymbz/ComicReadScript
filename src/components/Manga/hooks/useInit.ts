@@ -120,7 +120,7 @@ export const useInit = (props: MangaProps) => {
       // 处理初始化
       if (isInit) {
         state.flag.autoScrollMode = true;
-        state.flag.autoWide = true;
+        state.flag.autoOnePageMode = true;
         autoCloseFill.clear();
 
         if (!state.option.firstPageFill || props.imgList.length <= 3)
