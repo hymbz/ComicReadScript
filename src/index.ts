@@ -110,8 +110,10 @@ try {
             .map((e) => e.getAttribute('data-srcset')!),
         SPA: {
           isMangaPage: () => window.location.href.includes('/comic/'),
-          getOnPrev: () => main.querySelectorClick('.prev-btn a'),
-          getOnNext: () => main.querySelectorClick('.next-btn a'),
+          getOnPrev: () =>
+            main.querySelectorClick('.prev-btn:not(.invisible) a'),
+          getOnNext: () =>
+            main.querySelectorClick('.next-btn:not(.invisible) a'),
         },
       };
       break;
