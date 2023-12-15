@@ -1,5 +1,5 @@
 import type { SiteOptions } from 'main';
-import { autoUpdate, sleep, useInit, wait } from 'main';
+import { autoUpdate, useInit, wait } from 'main';
 import type { AsyncReturnType } from 'type-fest';
 import type { MangaProps } from '../components/Manga';
 
@@ -27,18 +27,6 @@ export interface InitOptions {
     getOnNext?: () => Promise<MangaProps['onNext']> | MangaProps['onNext'];
   };
 }
-
-/** 处理延时出现的上/下一话的按钮 */
-const handleDelayPrevNext = async (
-  fn?: () => Promise<MangaProps['onNext']> | MangaProps['onNext'],
-  num = 0,
-): Promise<Promise<MangaProps['onNext']> | MangaProps['onNext']> => {
-  if (!fn || num >= 25) return;
-  const domClickFn = await fn();
-  if (domClickFn) return domClickFn;
-  await sleep(200);
-  return handleDelayPrevNext(fn, num + 1);
-};
 
 /** 对简单站点的通用解 */
 export const universalInit = async ({
@@ -78,7 +66,7 @@ export const universalInit = async ({
 
   let lastUrl = '';
   autoUpdate(async () => {
-    if (window.location.href === lastUrl) return;
+    if (!(await wait(() => window.location.href !== lastUrl, 5000))) return;
     lastUrl = window.location.href;
 
     if (isMangaPage && !(await isMangaPage())) {
@@ -89,22 +77,17 @@ export const universalInit = async ({
 
     if (waitFn) await wait(waitFn);
 
-    // 先将 imgList 清空以便 activePageIndex 归零
-    setManga({ imgList: [] });
+    setManga({ onPrev: undefined, onNext: undefined });
     needAutoShow.val = options.autoShow;
     await loadImgList();
 
-    await Promise.all(
-      [
-        async () =>
-          getCommentList && setManga({ commentList: await getCommentList() }),
-        async () =>
-          getOnPrev &&
-          setManga({ onPrev: await handleDelayPrevNext(getOnPrev) }),
-        async () =>
-          getOnNext &&
-          setManga({ onNext: await handleDelayPrevNext(getOnNext) }),
-      ].map((fn) => fn()),
-    );
+    await Promise.all([
+      (async () =>
+        getCommentList && setManga({ commentList: await getCommentList() }))(),
+      (async () =>
+        getOnPrev && setManga({ onPrev: await wait(getOnPrev, 5000) }))(),
+      (async () =>
+        getOnNext && setManga({ onNext: await wait(getOnNext, 5000) }))(),
+    ]);
   });
 };

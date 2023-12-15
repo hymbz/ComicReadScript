@@ -151,7 +151,7 @@ declare const selected_tagname: string;
     )?.[0];
     if (numText) return +numText;
 
-    toast.error(t('site.ehentai.html_changed_load_failed'));
+    toast.error(t('site.changed_load_failed'));
     return 0;
   };
   const totalImgNum = await getImgNum();

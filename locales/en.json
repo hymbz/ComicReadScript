@@ -168,12 +168,12 @@
       "fetch_img_page_source_failed": "Failed to get the source code of the image page",
       "fetch_img_page_url_failed": "Failed to get the image page address from the detail page",
       "fetch_img_url_failed": "Failed to get the image address from the image page",
-      "html_changed_load_failed": "The web page structure has changed, unable to load comics",
       "html_changed_nhentai_failed": "The web page structure has changed, the function to associate nhentai comics is not working properly",
       "ip_banned": "IP address is banned",
       "nhentai_error": "Error in nhentai matching",
       "nhentai_failed": "Matching failed, please refresh after confirming login to {{nhentai}}"
     },
+    "changed_load_failed": "The website has undergone changes, unable to load comics",
     "nhentai": {
       "fetch_next_page_failed": "Failed to get next page of comic data",
       "tag_blacklist_fetch_failed": "Failed to fetch tag blacklist"

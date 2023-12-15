@@ -6,6 +6,7 @@ import {
   createMemo,
 } from 'solid-js';
 import { lang, t } from 'helper/i18n';
+import { singleThreaded } from 'helper';
 import { store, setState, _setState } from '../../store';
 import { createOptions, setMessage } from './helper';
 import { getValidTranslators, selfhostedTranslation } from './selfhosted';
@@ -54,25 +55,14 @@ export const translationImage = async (i: number) => {
   }
 };
 
-let running = false;
-
 /** 逐个翻译状态为等待翻译的图片 */
-const translationAll = async (): Promise<void> => {
-  if (running) return;
-
-  const i = store.imgList.findIndex(
-    (img) => img.loadType === 'loaded' && img.translationType === 'wait',
-  );
-  if (i === -1) return;
-
-  running = true;
-  try {
+const translationAll = singleThreaded(async (): Promise<void> => {
+  for (let i = 0; i < store.imgList.length; i++) {
+    const img = store.imgList[i];
+    if (img.loadType !== 'loaded' || img.translationType !== 'wait') continue;
     await translationImage(i);
-  } finally {
-    running = false;
   }
-  return translationAll();
-};
+});
 
 /** 开启或关闭指定图片的翻译 */
 export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {

@@ -35,7 +35,7 @@ try {
         .querySelector('section div:first-of-type div:last-of-type')!
         .innerHTML.split('：')[1];
       if (Number.isNaN(totalPageNum))
-        throw new Error('页面结构发生改变，无法正常运行');
+        throw new Error(main.t('site.changed_load_failed'));
 
       /** 获取指定页数的图片 url */
       const getImg = async (i = 1) => {
@@ -431,42 +431,53 @@ try {
 
     // #komiic
     case 'komiic.com': {
+      const query = `
+        query imagesByChapterId($chapterId: ID!) {
+          imagesByChapterId(chapterId: $chapterId) {
+            id
+            kid
+            height
+            width
+            __typename
+          }
+        }`;
+
       const getImgList = async (): Promise<string[]> => {
-        const imgList = main
-          .querySelectorAll('.imageContainer > img')
-          .map((e) => e.getAttribute('data-src') ?? '');
-        if (imgList.includes('')) {
-          await main.sleep(100);
-          return getImgList();
-        }
-        return imgList;
+        const chapterId = window.location.pathname.match(/chapter\/(\d+)/)?.[1];
+        if (!chapterId) throw new Error(main.t('site.changed_load_failed'));
+
+        const res = await main.request('/api/query', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          data: JSON.stringify({
+            operationName: 'imagesByChapterId',
+            variables: { chapterId: `${chapterId}` },
+            query,
+          }),
+        });
+        return (
+          JSON.parse(res.responseText).data.imagesByChapterId as {
+            kid: string;
+          }[]
+        ).map(({ kid }) => `https://komiic.com/api/image/${kid}`);
       };
 
       const handlePrevNext = (text: string) => async () => {
-        // 点击唤出底栏
-        const id = window.setInterval(() => {
-          main.querySelector('.ComicImageContainer')?.click();
-        }, 500);
-        await main.waitDom('.ComicImage__bottom-menu-center');
-        window.clearInterval(id);
-
+        await main.waitDom('.v-bottom-navigation__content');
         const buttonDom = main
           .querySelectorAll(
-            '.ComicImage__bottom-menu-center button:not([disabled])',
+            '.v-bottom-navigation__content > button:not([disabled])',
           )
           .find((e) => e.innerText.includes(text));
 
-        return main.querySelectorClick(() => buttonDom);
+        if (!buttonDom) return;
+        return () => buttonDom?.click();
       };
-
-      const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
 
       options = {
         name: 'komiic',
-        wait: () => !!main.querySelector('.imageContainer > img'),
         getImgList,
         SPA: {
-          isMangaPage: () => urlMatchRe.test(window.location.href),
           getOnPrev: handlePrevNext('上一'),
           getOnNext: handlePrevNext('下一'),
         },

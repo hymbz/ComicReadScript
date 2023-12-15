@@ -59,16 +59,24 @@ export const useInit = (props: MangaProps) => {
           }
         : undefined;
       state.prop.Prev = props.onPrev
-        ? () => {
-            playAnimation(refs.prev);
-            props.onPrev?.();
-          }
+        ? debounce(
+            1000,
+            () => {
+              playAnimation(refs.prev);
+              props.onPrev?.();
+            },
+            { atBegin: true },
+          )
         : undefined;
       state.prop.Next = props.onNext
-        ? () => {
-            playAnimation(refs.next);
-            props.onNext?.();
-          }
+        ? debounce(
+            1000,
+            () => {
+              playAnimation(refs.next);
+              props.onNext?.();
+            },
+            { atBegin: true },
+          )
         : undefined;
 
       if (props.editButtonList)
@@ -93,19 +101,6 @@ export const useInit = (props: MangaProps) => {
     setState((state) => {
       if (props.fillEffect) state.fillEffect = props.fillEffect;
 
-      // 处理初始化
-      if (!state.imgList.length) {
-        state.flag.autoScrollMode = true;
-        state.flag.autoWide = true;
-        autoCloseFill.clear();
-
-        state.fillEffect[-1] = state.option.firstPageFill;
-        state.imgList = [...props.imgList].map(createComicImg);
-        updatePageData(state);
-        state.prop.Loading?.(state.imgList);
-        return;
-      }
-
       if (
         isEqualArray(
           props.imgList,
@@ -115,6 +110,26 @@ export const useInit = (props: MangaProps) => {
         return state.prop.Loading?.(state.imgList);
 
       state.show.endPage = undefined;
+
+      /** 判断是否是初始化 */
+      const isInit =
+        !state.imgList.length ||
+        state.imgList.filter(({ src }) => props.imgList.includes(src)).length <=
+          2;
+
+      // 处理初始化
+      if (isInit) {
+        state.flag.autoScrollMode = true;
+        state.flag.autoWide = true;
+        autoCloseFill.clear();
+
+        state.fillEffect[-1] = state.option.firstPageFill;
+        state.imgList = [...props.imgList].map(createComicImg);
+        updatePageData(state);
+        state.prop.Loading?.(state.imgList);
+        state.activePageIndex = 0;
+        return;
+      }
 
       /** 修改前的当前显示图片 */
       const oldActiveImg =

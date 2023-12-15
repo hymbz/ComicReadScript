@@ -54,11 +54,8 @@ export const insertNode = (
 };
 
 /** 返回 Dom 的点击函数 */
-export const querySelectorClick = (
-  selector: string | (() => HTMLElement | undefined | null),
-) => {
-  const getDom = () =>
-    typeof selector === 'string' ? querySelector(selector) : selector();
+export const querySelectorClick = (selector: string) => {
+  const getDom = () => querySelector(selector);
   if (getDom()) return () => getDom()?.click();
 };
 
@@ -417,26 +414,10 @@ export const requestIdleCallback = (
  * @param update 动态加载后的重新加载
  */
 export const autoUpdate = (update: () => Promise<void>) => {
-  let running = false;
-
-  const refresh = async () => {
-    running = true;
-    try {
-      await update();
-    } finally {
-      running = false;
-    }
-  };
-
-  ['click', 'popstate'].forEach((eventName) => {
-    window.addEventListener(eventName, () =>
-      setTimeout(() => {
-        if (running) return;
-        refresh();
-      }, 100),
-    );
-  });
-
+  const refresh = singleThreaded(update);
+  ['click', 'popstate'].forEach((eventName) =>
+    window.addEventListener(eventName, refresh),
+  );
   refresh();
 };
 

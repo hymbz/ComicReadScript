@@ -1,6 +1,6 @@
-import { debounce, throttle } from 'throttle-debounce';
+import { debounce } from 'throttle-debounce';
 
-import { getKeyboardCode, isEqual } from 'helper';
+import { getKeyboardCode } from 'helper';
 import type { State } from '../store';
 import { store, setState, refs, _setState } from '../store';
 import { zoom } from './zoom';

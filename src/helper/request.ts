@@ -35,7 +35,7 @@ export const request = async <T = any>(
       method: 'GET',
       url,
       headers: { Referer: window.location.href },
-      fetch: url.includes(window.location.origin),
+      fetch: url.startsWith('/') || url.startsWith(window.location.origin),
       ...details,
     });
     if (res.status !== 200) throw new Error(errorText);

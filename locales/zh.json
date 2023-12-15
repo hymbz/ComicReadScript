@@ -168,12 +168,12 @@
       "fetch_img_page_source_failed": "获取图片页源码失败",
       "fetch_img_page_url_failed": "从详情页获取图片页地址失败",
       "fetch_img_url_failed": "从图片页获取图片地址失败",
-      "html_changed_load_failed": "页面结构发生改变，无法加载漫画",
       "html_changed_nhentai_failed": "页面结构发生改变，关联 nhentai 漫画功能无法正常生效",
       "ip_banned": "IP地址被禁",
       "nhentai_error": "nhentai 匹配出错",
       "nhentai_failed": "匹配失败，请在确认登录 {{nhentai}} 后刷新"
     },
+    "changed_load_failed": "网站发生变化，无法加载漫画",
     "nhentai": {
       "fetch_next_page_failed": "获取下一页漫画数据失败",
       "tag_blacklist_fetch_failed": "标签黑名单获取失败"
