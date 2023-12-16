@@ -4,7 +4,7 @@ import type { State } from '../store';
 import { refs, setState, store } from '../store';
 import { updateDrag } from './scrollbar';
 import { isWideImg } from '../handleComicData';
-import { updatePageData } from './image';
+import { resetImgState, updatePageData } from './image';
 
 /** 根据比例更新图片类型。返回是否修改了图片类型 */
 const updateImgType = (state: State, draftImg: ComicImg) => {
@@ -127,7 +127,13 @@ export const { placeholderSize } = createRoot(() => {
           state.proportion.横幅比例 = width / height;
           state.proportion.条漫比例 = state.proportion.单页比例 / 2;
 
-          state.imgList.forEach((img) => updateImgType(state, img));
+          let isEdited = false;
+          for (let i = 0; i < state.imgList.length; i++) {
+            if (!updateImgType(state, state.imgList[i])) continue;
+            Reflect.deleteProperty(state.fillEffect, i);
+            isEdited = true;
+          }
+          if (isEdited) resetImgState(state);
           updatePageData(state);
         }),
     ),

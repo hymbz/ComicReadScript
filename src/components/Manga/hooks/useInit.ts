@@ -9,10 +9,10 @@ import {
   defaultHotkeys,
   focus,
   handleResize,
+  resetImgState,
   updatePageData,
 } from '../actions';
 import type { Option } from '../store/option';
-import { autoCloseFill } from '../handleComicData';
 import { playAnimation } from '../helper';
 
 const createComicImg = (url: string): ComicImg => ({
@@ -119,24 +119,12 @@ export const useInit = (props: MangaProps) => {
 
       // 处理初始化
       if (isInit) {
-        state.flag.autoScrollMode = true;
-        state.flag.autoWide = false;
-        autoCloseFill.clear();
-
-        if (!state.option.firstPageFill || props.imgList.length <= 3)
-          state.fillEffect[-1] = false;
         state.imgList = [...props.imgList].map(createComicImg);
+        resetImgState(state);
         updatePageData(state);
         state.prop.Loading?.(state.imgList);
         state.activePageIndex = 0;
         return;
-      }
-
-      for (let i = 0; i < state.imgList.length; i++) {
-        const img = state.imgList[i];
-        // 将被删除图片的 fillEffect 记录删掉
-        if (!props.imgList.includes(img.src))
-          Reflect.deleteProperty(state.fillEffect, i);
       }
 
       /** 修改前的当前显示图片 */
@@ -150,6 +138,11 @@ export const useInit = (props: MangaProps) => {
           state.imgList.find((img) => img.src === imgUrl) ??
           createComicImg(imgUrl),
       );
+      // 如果有图片被删除了，就将相关变量恢复到初始状态
+      if (state.imgList.some(({ src }) => !props.imgList.includes(src))) {
+        state.fillEffect = {};
+        resetImgState(state);
+      }
       updatePageData(state);
       state.prop.Loading?.(state.imgList);
 

@@ -10,7 +10,7 @@ export const switchFillEffect = () => {
     // 如果当前页不是双页显示的就跳过，避免在显示跨页图的页面切换却没看到效果的疑惑
     if (state.pageList[state.activePageIndex].length !== 2) return;
 
-    state.fillEffect[nowFillIndex()] = !state.fillEffect[nowFillIndex()];
+    state.fillEffect[nowFillIndex()] = +!state.fillEffect[nowFillIndex()];
     updatePageData(state);
   });
 };

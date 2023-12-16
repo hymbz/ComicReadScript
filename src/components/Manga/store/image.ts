@@ -14,14 +14,13 @@ declare global {
   type PageList = Array<[number] | [number, number]>;
 }
 
-/** 页面填充数据 */
-export type FillEffect = Record<number, boolean>;
+/** 值为 boolean 表示是自动修改的，值为 number 表示是手动修改 */
+export type FillEffect = Record<number, boolean | number>;
 
 export const imgState = {
   imgList: [] as ComicImg[],
   pageList: [] as PageList,
 
-  /** 页面填充数据 */
   fillEffect: { '-1': true } as FillEffect,
 
   /** 比例 */

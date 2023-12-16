@@ -2,7 +2,11 @@ import { debounce } from 'throttle-debounce';
 import { createMemo, createRoot } from 'solid-js';
 
 import { clamp } from 'helper';
-import { findFillIndex, handleComicData } from '../handleComicData';
+import {
+  autoCloseFill,
+  findFillIndex,
+  handleComicData,
+} from '../handleComicData';
 import type { State } from '../store';
 import { store, setState, refs } from '../store';
 import { contentHeight, updateDrag } from './scrollbar';
@@ -138,4 +142,22 @@ export const updatePageData = (state: State) => {
     state.activePageIndex = state.pageList.findIndex((page) =>
       page.includes(lastActiveImgIndex),
     );
+};
+
+/**
+ * 将处理图片的相关变量恢复到初始状态
+ *
+ * 必须按照以下顺序调用
+ * 1. 修改 imgList
+ * 2. resetImgState
+ * 3. updatePageData
+ */
+export const resetImgState = (state: State) => {
+  state.flag.autoScrollMode = true;
+  state.flag.autoWide = false;
+  autoCloseFill.clear();
+  // 如果用户没有手动修改过首页填充，才将其恢复初始
+  if (typeof state.fillEffect['-1'] === 'boolean')
+    state.fillEffect['-1'] =
+      state.option.firstPageFill && state.imgList.length > 3;
 };
