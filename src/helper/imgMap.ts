@@ -1,3 +1,4 @@
+import { throttle } from 'throttle-debounce';
 import { triggerEleLazyLoad, wait } from '.';
 
 interface ImgData {
@@ -114,18 +115,20 @@ imgShowObserver = new IntersectionObserver((entries) =>
   }),
 );
 
+const triggerTurnPage = throttle(500, () => {
+  const nowScroll = window.scrollY;
+  // 滚到底部再滚回来，触发可能存在的自动翻页脚本
+  window.scroll({ top: document.body.scrollHeight, behavior: 'auto' });
+  document.body.dispatchEvent(new Event('scroll', { bubbles: true }));
+  window.scroll({ top: nowScroll, behavior: 'auto' });
+});
+
 let timeoutId: number;
 /** 触发页面上所有图片元素的懒加载 */
 export const triggerLazyLoad = async (
   getAllImg: () => HTMLImageElement[],
   getWaitTime: () => number,
 ) => {
-  const nowScroll = window.scrollY;
-  // 滚到底部再滚回来，触发可能存在的自动翻页脚本
-  window.scroll({ top: document.body.scrollHeight, behavior: 'auto' });
-  document.body.dispatchEvent(new Event('scroll', { bubbles: true }));
-  window.scroll({ top: nowScroll, behavior: 'auto' });
-
   // 过滤掉已经被触发过懒加载的图片
   const targetImgList = getAllImg().filter(needTrigged);
   targetImgList.forEach((e) => {
@@ -135,6 +138,7 @@ export const triggerLazyLoad = async (
 
   for (let i = 0; i < targetImgList.length; i++) {
     await wait(() => !scrollLock.enabled);
+    triggerTurnPage();
     const e = targetImgList[i];
     if (!needTrigged(e)) continue;
     tryCorrectUrl(e);

@@ -22,11 +22,11 @@ import {
 
 // 测试案例
 // https://www.177picyy.com/html/2023/03/5505307.html
-//  需要配合其他翻页脚本使用
+// 需要配合其他翻页脚本使用
 // https://www.colamanga.com/manga-za76213/1/5.html
-//  直接跳转到图片元素不会立刻触发，还需要停留20ms
+// 直接跳转到图片元素不会立刻触发，还需要停留20ms
 // https://www.colamanga.com/manga-kg45140/1/2.html
-//  使用 URL.createObjectURL 后马上 URL.revokeObjectURL 的 URL
+// 使用 URL.createObjectURL 后马上 URL.revokeObjectURL 的 URL
 
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
