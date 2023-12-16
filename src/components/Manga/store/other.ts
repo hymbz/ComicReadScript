@@ -20,7 +20,7 @@ export const OtherState = {
     /** 是否需要自动判断开启卷轴模式 */
     autoScrollMode: true,
     /** 是否需要自动将未加载图片类型设为跨页图 */
-    autoWide: true,
+    autoWide: false,
 
     /**
      * 用于防止滚轮连续滚动导致过快触发事件的锁

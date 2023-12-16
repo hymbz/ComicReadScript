@@ -54,7 +54,7 @@ export const updateImgSize = (i: number, width: number, height: number) => {
       // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
       case 'long':
       case 'wide': {
-        if (!state.flag.autoWide || !checkImgTypeCount(state, isWideImg)) break;
+        if (state.flag.autoWide || !checkImgTypeCount(state, isWideImg)) break;
         state.imgList.forEach((comicImg, index) => {
           if (comicImg.loadType === 'wait' && comicImg.type === '')
             state.imgList[index].type = 'wide';
