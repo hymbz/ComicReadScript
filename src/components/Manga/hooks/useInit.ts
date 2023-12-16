@@ -4,7 +4,7 @@ import { createEffect, onCleanup } from 'solid-js';
 
 import { assign, isEqualArray } from 'helper';
 import type { MangaProps } from '..';
-import { refs, setState } from '../store';
+import { refs, setState, store } from '../store';
 import {
   defaultHotkeys,
   focus,
@@ -16,7 +16,7 @@ import { autoCloseFill } from '../handleComicData';
 import { playAnimation } from '../helper';
 
 const createComicImg = (url: string): ComicImg => ({
-  type: '',
+  type: store.flag.autoWide ? 'wide' : '',
   src: url || '',
   loadType: 'wait',
 });
@@ -120,7 +120,7 @@ export const useInit = (props: MangaProps) => {
       // 处理初始化
       if (isInit) {
         state.flag.autoScrollMode = true;
-        state.flag.autoOnePageMode = true;
+        state.flag.autoWide = true;
         autoCloseFill.clear();
 
         if (!state.option.firstPageFill || props.imgList.length <= 3)

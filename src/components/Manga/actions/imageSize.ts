@@ -51,13 +51,15 @@ export const updateImgSize = (i: number, width: number, height: number) => {
     let isEdited = updateImgType(state, img);
 
     switch (img.type) {
-      // 连续出现多张跨页图后，自动开启单页模式
+      // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
       case 'long':
       case 'wide': {
-        if (!state.flag.autoOnePageMode || !checkImgTypeCount(state, isWideImg))
-          break;
-        state.option.onePageMode = true;
-        state.flag.autoOnePageMode = false;
+        if (!state.flag.autoWide || !checkImgTypeCount(state, isWideImg)) break;
+        state.imgList.forEach((comicImg, index) => {
+          if (comicImg.loadType === 'wait' && comicImg.type === '')
+            state.imgList[index].type = 'wide';
+        });
+        state.flag.autoWide = true;
         isEdited = true;
         break;
       }
@@ -66,7 +68,7 @@ export const updateImgSize = (i: number, width: number, height: number) => {
       case 'vertical': {
         if (
           !state.flag.autoScrollMode ||
-          !checkImgTypeCount(state, (image) => image.type === 'vertical')
+          !checkImgTypeCount(state, ({ type }) => type === 'vertical')
         )
           break;
         state.option.scrollMode = true;
