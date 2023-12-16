@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.2.7
+// @version         8.2.8
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -137,7 +137,7 @@ const insertNode = (node, textnode, referenceNode = null) => {
 
 /** 返回 Dom 的点击函数 */
 const querySelectorClick = selector => {
-  const getDom = () => querySelector(selector);
+  const getDom = () => typeof selector === 'string' ? querySelector(selector) : selector();
   if (getDom()) return () => getDom()?.click();
 };
 
@@ -1150,6 +1150,7 @@ const ru = {
       open_link_new_page: "Открывать ссылки в новой вкладке",
       remember_current_site: "Запомнить текущий сайт"
     },
+    changed_load_failed: "Структура страницы изменилась, невозможно загрузить комикс",
     ehentai: {
       fetch_img_page_source_failed: "Не удалось получить исходный код страницы с изображениями",
       fetch_img_page_url_failed: "Не удалось получить адрес страницы изображений из деталей",
@@ -1159,7 +1160,6 @@ const ru = {
       nhentai_error: "Ошибка сопоставления с nhentai",
       nhentai_failed: "Ошибка сопостовления. Пожалуйста перезагрузите страницу после входа на {{nhentai}}"
     },
-    changed_load_failed: "Структура страницы изменилась, невозможно загрузить комикс",
     nhentai: {
       fetch_next_page_failed: "Не удалось получить следующую страницу",
       tag_blacklist_fetch_failed: "Не удалось получить заблокированные теги"
@@ -1913,8 +1913,8 @@ const OtherState = {
   flag: {
     /** 是否需要自动判断开启卷轴模式 */
     autoScrollMode: true,
-    /** 是否需要自动判断开启单页模式 */
-    autoOnePageMode: true,
+    /** 是否需要自动将未加载图片类型设为跨页图 */
+    autoWide: true,
     /**
      * 用于防止滚轮连续滚动导致过快触发事件的锁
      *
@@ -3325,13 +3325,15 @@ const updateImgSize = (i, width, height) => {
     img.height = height;
     let isEdited = updateImgType(state, img);
     switch (img.type) {
-      // 连续出现多张跨页图后，自动开启单页模式
+      // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
       case 'long':
       case 'wide':
         {
-          if (!state.flag.autoOnePageMode || !checkImgTypeCount(state, isWideImg)) break;
-          state.option.onePageMode = true;
-          state.flag.autoOnePageMode = false;
+          if (!state.flag.autoWide || !checkImgTypeCount(state, isWideImg)) break;
+          state.imgList.forEach((comicImg, index) => {
+            if (comicImg.loadType === 'wait' && comicImg.type === '') state.imgList[index].type = 'wide';
+          });
+          state.flag.autoWide = true;
           isEdited = true;
           break;
         }
@@ -3339,7 +3341,9 @@ const updateImgSize = (i, width, height) => {
       // 连续出现多张长图后，自动开启卷轴模式
       case 'vertical':
         {
-          if (!state.flag.autoScrollMode || !checkImgTypeCount(state, image => image.type === 'vertical')) break;
+          if (!state.flag.autoScrollMode || !checkImgTypeCount(state, ({
+            type
+          }) => type === 'vertical')) break;
           state.option.scrollMode = true;
           state.flag.autoScrollMode = false;
           isEdited = true;
@@ -5588,7 +5592,7 @@ const CssVar = () => {
 
 /* eslint-disable solid/reactivity */
 const createComicImg = url => ({
-  type: '',
+  type: store.flag.autoWide ? 'wide' : '',
   src: url || '',
   loadType: 'wait'
 });
@@ -5663,7 +5667,7 @@ const useInit$1 = props => {
       // 处理初始化
       if (isInit) {
         state.flag.autoScrollMode = true;
-        state.flag.autoOnePageMode = true;
+        state.flag.autoWide = true;
         autoCloseFill.clear();
         if (!state.option.firstPageFill || props.imgList.length <= 3) state.fillEffect[-1] = false;
         state.imgList = [...props.imgList].map(createComicImg);
@@ -6113,9 +6117,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复 komiic 因改版导致无法正常运行的 bug </p></li><li><p>修复 PonpomuYuri 上/下一话跳转异常的 bug </p></li><li><p>修复在 ehentai 上超过一定时间后就无法加载图片的 bug\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>优化使用触摸板进行滚动的体验\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复部分情况下会自动切换至单页模式的 bug </p></li><li><p>修复在禁漫上无法正常工作的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6178,7 +6180,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -8449,9 +8451,7 @@ const main = require('main');
         };
         const handlePrevNext = text => async () => {
           await main.waitDom('.v-bottom-navigation__content');
-          const buttonDom = main.querySelectorAll('.v-bottom-navigation__content > button:not([disabled])').find(e => e.innerText.includes(text));
-          if (!buttonDom) return;
-          return () => buttonDom?.click();
+          return main.querySelectorClick(() => main.querySelectorAll('.v-bottom-navigation__content > button:not([disabled])').find(e => e.innerText.includes(text)));
         };
         const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
         options = {
