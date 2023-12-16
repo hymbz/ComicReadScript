@@ -79,7 +79,7 @@ export const Root: Component = () => (
   <div ref={(e) => handleDrag(e)} class={classes.root}>
     <div class={classes.main} data-drag={store.dragging}>
       <div class={classes.body}>
-        <div innerHTML={parseMd(t('pwa.tip_md'))} />
+        <div innerHTML={parseMd(t('pwa.tip_md')) as string} />
 
         <span style={{ 'margin-top': '1em' }}>
           <button type="button" on:click={handleSelectFiles}>
@@ -100,7 +100,7 @@ export const Root: Component = () => (
           class={classes.installTip}
           classList={{ [classes.hide]: !!store.hiddenInstallTip }}
         >
-          <div innerHTML={parseMd(t('pwa.install_md'))} />
+          <div innerHTML={parseMd(t('pwa.install_md')) as string} />
           <div style={{ 'text-align': 'center' }}>
             <button type="button" on:click={pwaInstallHandler.install}>
               {t('pwa.button.install')}

@@ -466,14 +466,13 @@ try {
 
       const handlePrevNext = (text: string) => async () => {
         await main.waitDom('.v-bottom-navigation__content');
-        const buttonDom = main
-          .querySelectorAll(
-            '.v-bottom-navigation__content > button:not([disabled])',
-          )
-          .find((e) => e.innerText.includes(text));
-
-        if (!buttonDom) return;
-        return () => buttonDom?.click();
+        return main.querySelectorClick(() =>
+          main
+            .querySelectorAll(
+              '.v-bottom-navigation__content > button:not([disabled])',
+            )
+            .find((e) => e.innerText.includes(text)),
+        );
       };
 
       const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;

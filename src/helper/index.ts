@@ -54,8 +54,11 @@ export const insertNode = (
 };
 
 /** 返回 Dom 的点击函数 */
-export const querySelectorClick = (selector: string) => {
-  const getDom = () => querySelector(selector);
+export const querySelectorClick = (
+  selector: string | (() => HTMLElement | undefined | null),
+) => {
+  const getDom = () =>
+    typeof selector === 'string' ? querySelector(selector) : selector();
   if (getDom()) return () => getDom()?.click();
 };
 
