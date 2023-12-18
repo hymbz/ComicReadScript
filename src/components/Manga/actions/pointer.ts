@@ -1,11 +1,12 @@
 import { isEqual } from 'helper';
+import { debounce } from 'throttle-debounce';
 import type { Area } from '../components/TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
 import type { UseDrag } from '../hooks/useDrag';
 import { store, setState, refs } from '../store';
 import { resetUI } from './helper';
 import { updateRenderPage } from './show';
-import { turnPage, turnPageAnimation } from './operate';
+import { turnPageFn, turnPageAnimation } from './turnPage';
 import { zoom } from './zoom';
 
 /** 根据坐标判断点击的元素 */
@@ -31,8 +32,10 @@ export const handlePageClick = (e: MouseEvent) => {
     });
 
   if (!store.option.clickPageTurn.enabled || store.zoom.scale !== 100) return;
-  setState(resetUI);
-  turnPage(areaName.toLowerCase() as 'prev' | 'next');
+  setState((state) => {
+    resetUI(state);
+    turnPageFn(state, areaName.toLowerCase() as 'prev' | 'next');
+  });
 };
 
 /** 网格模式下点击图片跳到对应页 */
@@ -61,7 +64,7 @@ export const handleClick = useDoubleClick(
 );
 
 /** 判断翻页方向 */
-const getTurnPageDir = (startTime: number): undefined | 'prev' | 'next' => {
+const getTurnPageDir = (startTime?: number): undefined | 'prev' | 'next' => {
   let dir: undefined | 'prev' | 'next';
   let move: number;
   let total: number;
@@ -72,6 +75,12 @@ const getTurnPageDir = (startTime: number): undefined | 'prev' | 'next' => {
   } else {
     move = store.page.offset.x.px;
     total = refs.root.clientWidth;
+  }
+
+  // 处理无关速度，不考虑时间，单纯根据当前滚动距离来判断的情况
+  if (!startTime) {
+    if (Math.abs(move) > total / 2) dir = move > 0 ? 'next' : 'prev';
+    return dir;
   }
 
   // 滑动距离超过总长度三分之一判定翻页
@@ -104,6 +113,27 @@ const handleDragAnima = () => {
   animationId = requestAnimationFrame(handleDragAnima);
 };
 
+const handleDragEnd = (startTime?: number) => {
+  dx = 0;
+  dy = 0;
+
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+  }
+
+  // 将拖动的页面移回正常位置
+  const dir = getTurnPageDir(startTime);
+  if (dir) return turnPageAnimation(dir);
+  setState((state) => {
+    state.page.offset.x.px = 0;
+    state.page.offset.y.px = 0;
+    state.page.anima = 'page';
+    state.isDragMode = false;
+  });
+};
+handleDragEnd.debounce = debounce(200, handleDragEnd);
+
 export const handleMangaFlowDrag: UseDrag = ({
   type,
   xy: [x, y],
@@ -134,21 +164,54 @@ export const handleMangaFlowDrag: UseDrag = ({
       });
       return;
     }
-    case 'up': {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-        animationId = null;
-      }
-
-      // 将拖动的页面移回正常位置
-      const dir = getTurnPageDir(startTime);
-      if (dir) return turnPageAnimation(dir);
-      setState((state) => {
-        state.page.offset.x.px = 0;
-        state.page.offset.y.px = 0;
-        state.page.anima = 'page';
-        state.isDragMode = false;
-      });
-    }
+    case 'up':
+      return handleDragEnd(startTime);
   }
+};
+
+let lastDeltaY = 0;
+let retardStartTime = 0;
+
+export const handleTrackpadWheel = (e: WheelEvent) => {
+  let deltaY = Math.floor(-e.deltaY * 0.8);
+  let absDeltaY = Math.abs(deltaY);
+  if (absDeltaY < 2) return;
+
+  // 加速度小于2后逐渐缩小滚动距离，实现减速效果
+  if (Math.abs(absDeltaY - lastDeltaY) <= 2) {
+    if (!retardStartTime) retardStartTime = Date.now();
+    deltaY *= 1 - Math.min(1, ((Date.now() - retardStartTime) / 10) * 0.1);
+    absDeltaY = Math.abs(deltaY);
+    if (absDeltaY < 2) return;
+  } else retardStartTime = 0;
+  lastDeltaY = absDeltaY;
+
+  dy += deltaY;
+
+  setState((state) => {
+    // 滚动至漫画头尾尽头时
+    if (
+      (store.activePageIndex === 0 && dy > 0) ||
+      (store.activePageIndex === store.pageList.length - 1 && dy < 0)
+    ) {
+      dy = 0;
+      // 为了避免被触摸板的滚动惯性触发上/下一话跳转，限定一下滚动距离
+      if (absDeltaY > 50)
+        turnPageFn(state, store.activePageIndex === 0 ? 'prev' : 'next');
+    }
+
+    // 滚动过一页时
+    if (dy <= -state.memo.size.height) {
+      if (turnPageFn(state, 'next')) dy += state.memo.size.height;
+    } else if (dy >= state.memo.size.height) {
+      if (turnPageFn(state, 'prev')) dy -= state.memo.size.height;
+    }
+
+    state.page.vertical = true;
+    state.isDragMode = true;
+    updateRenderPage(state);
+  });
+  if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
+
+  handleDragEnd.debounce();
 };

@@ -136,6 +136,7 @@ export const { placeholderSize } = createRoot(() => {
           if (isEdited) resetImgState(state);
           updatePageData(state);
         }),
+      { defer: true },
     ),
   );
 

@@ -1,13 +1,11 @@
-import { debounce } from 'throttle-debounce';
-
 import { getKeyboardCode } from 'helper';
-import type { State } from '../store';
-import { store, setState, refs, _setState } from '../store';
-import { zoom } from './zoom';
+import { store, refs, _setState, setState } from '../store';
+import { handleTrackpadWheel } from './pointer';
+import { zoomScrollModeImg } from './image';
 import { setOption } from './helper';
 import { hotkeysMap } from './hotkeys';
-import { zoomScrollModeImg } from './image';
-import { updateRenderPage } from './show';
+import { zoom } from './zoom';
+import { closeScrollLock, turnPage, turnPageFn } from './turnPage';
 import {
   switchFillEffect,
   switchScrollMode,
@@ -18,13 +16,6 @@ import {
 
 import classes from '../index.module.css';
 
-export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
-  if (e.button !== 1 || store.option.scrollMode) return;
-  e.stopPropagation();
-  e.preventDefault();
-  switchFillEffect();
-};
-
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 export const focus = () =>
   requestAnimationFrame(() => {
@@ -32,111 +23,11 @@ export const focus = () =>
     refs.mangaFlow?.focus();
   });
 
-/** 判断当前是否已经滚动到底部 */
-const isBottom = (state: State) =>
-  state.option.scrollMode
-    ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999
-    : state.activePageIndex === state.pageList.length - 1;
-
-/** 判断当前是否已经滚动到顶部 */
-const isTop = (state: State) =>
-  state.option.scrollMode
-    ? store.scrollbar.dragTop === 0
-    : state.activePageIndex === 0;
-
-const closeScrollLock = debounce(200, () =>
-  _setState('flag', 'scrollLock', false),
-);
-
-/** 翻页。返回是否成功改变了当前页数 */
-const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
-  if (state.gridMode) return false;
-
-  if (dir === 'prev') {
-    switch (state.show.endPage) {
-      case 'start':
-        if (!state.flag.scrollLock && state.option.jumpToNext)
-          state.prop.Prev?.();
-        return false;
-      case 'end':
-        state.show.endPage = undefined;
-        return false;
-
-      default:
-        // 弹出卷首结束页
-        if (isTop(state)) {
-          if (!state.prop.Exit) return false;
-          // 没有 onPrev 时不弹出
-          if (!state.prop.Prev || !state.option.jumpToNext) return false;
-
-          state.show.endPage = 'start';
-          state.flag.scrollLock = true;
-          closeScrollLock();
-          return false;
-        }
-        if (state.option.scrollMode) return false;
-        state.activePageIndex -= 1;
-        return true;
-    }
-  } else {
-    switch (state.show.endPage) {
-      case 'end':
-        if (state.flag.scrollLock) return false;
-        if (state.prop.Next && state.option.jumpToNext) {
-          state.prop.Next();
-          return false;
-        }
-        state.prop.Exit?.(true);
-        return false;
-      case 'start':
-        state.show.endPage = undefined;
-        return false;
-
-      default:
-        // 弹出卷尾结束页
-        if (isBottom(state)) {
-          if (!state.prop.Exit) return false;
-          state.show.endPage = 'end';
-          state.flag.scrollLock = true;
-          closeScrollLock();
-          return false;
-        }
-        if (state.option.scrollMode) return false;
-        state.activePageIndex += 1;
-        return true;
-    }
-  }
-};
-
-export const turnPage = (dir: 'next' | 'prev') =>
-  setState((state) => turnPageFn(state, dir));
-
-export const turnPageAnimation = (dir: 'next' | 'prev') => {
-  setState((state) => {
-    // 无法翻页就恢复原位
-    if (!turnPageFn(state, dir)) {
-      state.page.offset.x.px = 0;
-      state.page.offset.y.px = 0;
-      updateRenderPage(state, true);
-      state.isDragMode = false;
-      return;
-    }
-
-    state.isDragMode = true;
-    updateRenderPage(state);
-    if (store.page.vertical)
-      state.page.offset.y.pct += dir === 'next' ? 100 : -100;
-    else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
-
-    setTimeout(() => {
-      setState((draftState) => {
-        updateRenderPage(draftState, true);
-        draftState.page.offset.x.px = 0;
-        draftState.page.offset.y.px = 0;
-        draftState.isDragMode = false;
-      });
-    }, 16);
-  });
+export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
+  if (e.button !== 1 || store.option.scrollMode) return;
+  e.stopPropagation();
+  e.preventDefault();
+  switchFillEffect();
 };
 
 /** 卷轴模式下的滚动 */
@@ -149,42 +40,6 @@ const scrollModeScroll = (dir: 'next' | 'prev') => {
     _setState('flag', 'scrollLock', true);
   }
   closeScrollLock();
-};
-
-let wheelDeltaY = 0;
-const clearWheelDeltaY = debounce(1000, () => {
-  wheelDeltaY = 0;
-});
-
-export const handleWheel = (e: WheelEvent) => {
-  e.stopPropagation();
-  if (e.ctrlKey || e.altKey) e.preventDefault();
-  if (store.flag.scrollLock) return;
-  const isWheelDown = e.deltaY > 0;
-
-  if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
-
-  // 卷轴模式下的图片缩放
-  if (
-    (e.ctrlKey || e.altKey) &&
-    store.option.scrollMode &&
-    store.zoom.scale === 100
-  ) {
-    e.preventDefault();
-    return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
-  }
-
-  if (e.ctrlKey || e.altKey || store.zoom.scale !== 100) {
-    e.preventDefault();
-    return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
-  }
-
-  wheelDeltaY += e.deltaY;
-  clearWheelDeltaY();
-  if (Math.abs(wheelDeltaY) < 40) return;
-  wheelDeltaY = 0;
-
-  return turnPage(isWheelDown ? 'next' : 'prev');
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
@@ -294,4 +149,50 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     case 'exit':
       return store.prop.Exit?.();
   }
+};
+
+let lastDeltaY = 0;
+let lastTurnPageRes = false;
+let wheelType: undefined | 'trackpad' | 'mouse';
+
+export const handleWheel = (e: WheelEvent) => {
+  e.stopPropagation();
+  if (e.ctrlKey || e.altKey) e.preventDefault();
+  if (store.flag.scrollLock) return closeScrollLock();
+  const isWheelDown = e.deltaY > 0;
+
+  if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
+
+  // 卷轴模式下的图片缩放
+  if (
+    (e.ctrlKey || e.altKey) &&
+    store.option.scrollMode &&
+    store.zoom.scale === 100
+  ) {
+    e.preventDefault();
+    return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
+  }
+
+  if (e.ctrlKey || e.altKey || store.zoom.scale !== 100) {
+    e.preventDefault();
+    return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
+  }
+
+  if (lastDeltaY === 0) lastDeltaY = Math.abs(e.deltaY);
+  else if (wheelType === undefined) {
+    // 通过判断首次的两次滚动距离是否相同来判断用的是触摸板还是鼠标
+    if (lastDeltaY === Math.abs(e.deltaY)) wheelType = 'mouse';
+    else {
+      wheelType = 'trackpad';
+      // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
+      // 虽然这样偶尔会出现闪烁，但毕竟触摸板用的人少，相比给鼠标滚轮加延迟影响更小
+      if (lastTurnPageRes) turnPage(isWheelDown ? 'prev' : 'next');
+    }
+  }
+
+  if (wheelType === 'trackpad') return handleTrackpadWheel(e);
+
+  setState((state) => {
+    lastTurnPageRes = turnPageFn(state, isWheelDown ? 'next' : 'prev');
+  });
 };

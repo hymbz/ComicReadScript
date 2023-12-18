@@ -8,3 +8,4 @@ export * from './zoom';
 export * from './imageSize';
 export * from './switch';
 export * from './show';
+export * from './turnPage';
