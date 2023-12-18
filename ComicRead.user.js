@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.2.8
+// @version         8.2.9
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -999,7 +999,7 @@ const ru = {
     download_completed: "Загрузка завершена",
     downloading: "Скачивание",
     exit: "Выход",
-    grid_mode: "网格模式",
+    grid_mode: "Режим сетки",
     packaging: "Упаковка",
     page_fill: "Заполнить страницу",
     page_mode_double: "Двухчастичный режим",
@@ -1560,6 +1560,7 @@ const toast$1 = new Proxy(toast$2, {
     return fn(...args);
   }
 });
+unsafeWindow.toast = toast$1;
 
 // 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = details => new Promise((resolve, reject) => {
@@ -1832,7 +1833,6 @@ const useStore = initState => {
 const imgState = {
   imgList: [],
   pageList: [],
-  /** 页面填充数据 */
   fillEffect: {
     '-1': true
   },
@@ -1914,7 +1914,7 @@ const OtherState = {
     /** 是否需要自动判断开启卷轴模式 */
     autoScrollMode: true,
     /** 是否需要自动将未加载图片类型设为跨页图 */
-    autoWide: true,
+    autoWide: false,
     /**
      * 用于防止滚轮连续滚动导致过快触发事件的锁
      *
@@ -2513,6 +2513,197 @@ const updatePageData = state => {
   if (lastActiveImgIndex !== activeImgIndex()) state.activePageIndex = state.pageList.findIndex(page => page.includes(lastActiveImgIndex));
 };
 
+/**
+ * 将处理图片的相关变量恢复到初始状态
+ *
+ * 必须按照以下顺序调用
+ * 1. 修改 imgList
+ * 2. resetImgState
+ * 3. updatePageData
+ */
+const resetImgState = state => {
+  state.flag.autoScrollMode = true;
+  state.flag.autoWide = false;
+  autoCloseFill.clear();
+  // 如果用户没有手动修改过首页填充，才将其恢复初始
+  if (typeof state.fillEffect['-1'] === 'boolean') state.fillEffect['-1'] = state.option.firstPageFill && state.imgList.length > 3;
+};
+
+let clickTimeout = null;
+const useDoubleClick = (click, doubleClick, timeout = 200) => {
+  return event => {
+    // 如果点击触发时还有上次计时器的记录，说明这次是双击
+    if (clickTimeout) {
+      clearTimeout(clickTimeout);
+      clickTimeout = null;
+      doubleClick?.(event);
+      return;
+    }
+
+    // 单击事件延迟触发
+    clickTimeout = window.setTimeout(() => {
+      click(event);
+      clickTimeout = null;
+    }, timeout);
+  };
+};
+
+const handleResize = (width, height) => {
+  if (!(width || height)) return;
+  setState(state => {
+    state.memo.size = {
+      width,
+      height
+    };
+    state.isMobile = width < 800;
+  });
+};
+
+/** 更新渲染页面相关变量 */
+const updateRenderPage = (state, animation = false) => {
+  state.memo.renderPageList = state.pageList.slice(Math.max(0, state.activePageIndex - 1), Math.min(state.pageList.length, state.activePageIndex + 2));
+  const i = state.memo.renderPageList.indexOf(state.pageList[state.activePageIndex]);
+  state.page.offset.x.pct = 0;
+  state.page.offset.y.pct = 0;
+  if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
+  state.page.anima = animation ? 'page' : '';
+};
+const updateShowPageList = state => {
+  state.memo.showPageList = [...new Set(state.memo.showImgList.map(img => +img.parentElement.getAttribute('data-index')))];
+  state.memo.showPageList.sort();
+  if (state.option.scrollMode) state.activePageIndex = state.memo.showPageList[0] ?? 0;
+};
+const handleObserver = entries => {
+  setState(state => {
+    entries.forEach(({
+      isIntersecting,
+      target
+    }) => {
+      if (isIntersecting) state.memo.showImgList.push(target);else state.memo.showImgList = state.memo.showImgList.filter(img => img !== target);
+    });
+    if (!store.gridMode) updateShowPageList(state);
+  });
+};
+solidJs.createRoot(() => {
+  // 页数发生变动时
+  solidJs.createEffect(solidJs.on(() => store.activePageIndex, () => {
+    setState(state => {
+      updateImgLoadType(state);
+      if (state.show.endPage) state.show.endPage = undefined;
+    });
+  }, {
+    defer: true
+  }));
+
+  // 在关闭工具栏的同时关掉滚动条的强制显示
+  solidJs.createEffect(solidJs.on(() => store.show.toolbar, () => {
+    if (store.show.scrollbar && !store.show.toolbar) _setState('show', 'scrollbar', false);
+  }, {
+    defer: true
+  }));
+  solidJs.createEffect(solidJs.on(activePage, page => {
+    if (!store.option.scrollMode && !store.isDragMode) setState(updateRenderPage);
+    // 如果当前显示页面有出错的图片，就重新加载一次
+    page?.forEach(i => {
+      if (store.imgList[i]?.loadType !== 'error') return;
+      _setState('imgList', i, 'loadType', 'wait');
+    });
+  }, {
+    defer: true
+  }));
+
+  // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
+  solidJs.createEffect(solidJs.on(() => store.gridMode, () => setState(resetUI), {
+    defer: true
+  }));
+});
+
+/** 判断当前是否已经滚动到底部 */
+const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
+
+/** 判断当前是否已经滚动到顶部 */
+const isTop = state => state.option.scrollMode ? store.scrollbar.dragTop === 0 : state.activePageIndex === 0;
+const closeScrollLock$1 = debounce(200, () => _setState('flag', 'scrollLock', false));
+
+/** 翻页。返回是否成功改变了当前页数 */
+const turnPageFn = (state, dir) => {
+  if (state.gridMode) return false;
+  if (dir === 'prev') {
+    switch (state.show.endPage) {
+      case 'start':
+        if (!state.flag.scrollLock && state.option.jumpToNext) state.prop.Prev?.();
+        return false;
+      case 'end':
+        state.show.endPage = undefined;
+        return false;
+      default:
+        // 弹出卷首结束页
+        if (isTop(state)) {
+          if (!state.prop.Exit) return false;
+          // 没有 onPrev 时不弹出
+          if (!state.prop.Prev || !state.option.jumpToNext) return false;
+          state.show.endPage = 'start';
+          state.flag.scrollLock = true;
+          closeScrollLock$1();
+          return false;
+        }
+        if (state.option.scrollMode) return false;
+        state.activePageIndex -= 1;
+        return true;
+    }
+  } else {
+    switch (state.show.endPage) {
+      case 'end':
+        if (state.flag.scrollLock) return false;
+        if (state.prop.Next && state.option.jumpToNext) {
+          state.prop.Next();
+          return false;
+        }
+        state.prop.Exit?.(true);
+        return false;
+      case 'start':
+        state.show.endPage = undefined;
+        return false;
+      default:
+        // 弹出卷尾结束页
+        if (isBottom(state)) {
+          if (!state.prop.Exit) return false;
+          state.show.endPage = 'end';
+          state.flag.scrollLock = true;
+          closeScrollLock$1();
+          return false;
+        }
+        if (state.option.scrollMode) return false;
+        state.activePageIndex += 1;
+        return true;
+    }
+  }
+};
+const turnPage = dir => setState(state => turnPageFn(state, dir));
+const turnPageAnimation = dir => {
+  setState(state => {
+    // 无法翻页就恢复原位
+    if (!turnPageFn(state, dir)) {
+      state.page.offset.x.px = 0;
+      state.page.offset.y.px = 0;
+      updateRenderPage(state, true);
+      state.isDragMode = false;
+      return;
+    }
+    state.isDragMode = true;
+    updateRenderPage(state);
+    if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 100 : -100;else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
+    setTimeout(() => {
+      setState(draftState => {
+        updateRenderPage(draftState, true);
+        draftState.page.offset.x.px = 0;
+        draftState.page.offset.y.px = 0;
+        draftState.isDragMode = false;
+      });
+    }, 16);
+  });
+};
+
 const touches = new Map();
 const scale = () => store.zoom.scale / 100;
 const width = () => refs.mangaFlow?.clientWidth ?? 0;
@@ -2529,7 +2720,7 @@ const checkBound = state => {
   state.zoom.offset.x = clamp(bound.x(), state.zoom.offset.x, 0);
   state.zoom.offset.y = clamp(bound.y(), state.zoom.offset.y, 0);
 };
-const closeScrollLock$1 = debounce(200, () => _setState('flag', 'scrollLock', false));
+const closeScrollLock = debounce(200, () => _setState('flag', 'scrollLock', false));
 const zoom = (val, focal, animation = false) => {
   const newScale = clamp(100, val, 500);
   if (newScale === store.zoom.scale) return;
@@ -2559,7 +2750,7 @@ const zoom = (val, focal, animation = false) => {
     // 加一个延时锁防止在放大模式下通过滚轮缩小至原尺寸后就立刻跳到下一页
     if (newScale === 100) {
       state.flag.scrollLock = true;
-      closeScrollLock$1();
+      closeScrollLock();
     }
     resetUI(state);
   });
@@ -2736,6 +2927,184 @@ const handlePinchZoom = ({
   }
 };
 
+/** 根据坐标判断点击的元素 */
+const findClickEle = (eleList, {
+  x,
+  y
+}) => [...eleList].find(e => {
+  const rect = e.getBoundingClientRect();
+  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+});
+
+/** 触发 touchArea 操作 */
+const handlePageClick = e => {
+  const targetArea = findClickEle(refs.touchArea.children, e);
+  if (!targetArea) return;
+  const areaName = targetArea.getAttribute('data-area');
+  if (!areaName) return;
+  if (areaName === 'menu' || areaName === 'MENU') return setState(state => {
+    state.show.scrollbar = !state.show.scrollbar;
+    state.show.toolbar = !state.show.toolbar;
+  });
+  if (!store.option.clickPageTurn.enabled || store.zoom.scale !== 100) return;
+  setState(state => {
+    resetUI(state);
+    turnPageFn(state, areaName.toLowerCase());
+  });
+};
+
+/** 网格模式下点击图片跳到对应页 */
+const handleGridClick = e => {
+  const target = findClickEle(refs.root.getElementsByTagName('img'), e);
+  if (!target) return;
+  const pageNumText = target.parentElement?.getAttribute('data-index');
+  if (!pageNumText) return;
+  const pageNum = +pageNumText;
+  if (!Reflect.has(store.pageList, pageNum)) return;
+  setState(state => {
+    state.activePageIndex = pageNum;
+    state.gridMode = false;
+  });
+  if (store.option.scrollMode) refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
+};
+
+/** 双击放大 */
+const doubleClickZoom = e => !store.gridMode && zoom(store.zoom.scale !== 100 ? 100 : 350, e, true);
+const handleClick = useDoubleClick(e => store.gridMode ? handleGridClick(e) : handlePageClick(e), doubleClickZoom);
+
+/** 判断翻页方向 */
+const getTurnPageDir = startTime => {
+  let dir;
+  let move;
+  let total;
+  if (store.page.vertical) {
+    move = -store.page.offset.y.px;
+    total = refs.root.clientHeight;
+  } else {
+    move = store.page.offset.x.px;
+    total = refs.root.clientWidth;
+  }
+
+  // 处理无关速度，不考虑时间，单纯根据当前滚动距离来判断的情况
+  if (!startTime) {
+    if (Math.abs(move) > total / 2) dir = move > 0 ? 'next' : 'prev';
+    return dir;
+  }
+
+  // 滑动距离超过总长度三分之一判定翻页
+  if (Math.abs(move) > total / 3) dir = move > 0 ? 'next' : 'prev';
+  if (dir) return dir;
+
+  // 滑动速度超过 0.4 判定翻页
+  const velocity = move / (performance.now() - startTime);
+  if (velocity < -0.4) dir = 'prev';
+  if (velocity > 0.4) dir = 'next';
+  return dir;
+};
+let dx = 0;
+let dy = 0;
+let animationId = null;
+const handleDragAnima = () => {
+  // 当停着不动时退出循环
+  if (dx === store.page.offset.x.px && dy === store.page.offset.y.px) {
+    animationId = null;
+    return;
+  }
+  setState(state => {
+    if (state.page.vertical) state.page.offset.y.px = dy;else state.page.offset.x.px = dx;
+  });
+  animationId = requestAnimationFrame(handleDragAnima);
+};
+const handleDragEnd = startTime => {
+  dx = 0;
+  dy = 0;
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+    animationId = null;
+  }
+
+  // 将拖动的页面移回正常位置
+  const dir = getTurnPageDir(startTime);
+  if (dir) return turnPageAnimation(dir);
+  setState(state => {
+    state.page.offset.x.px = 0;
+    state.page.offset.y.px = 0;
+    state.page.anima = 'page';
+    state.isDragMode = false;
+  });
+};
+handleDragEnd.debounce = debounce(200, handleDragEnd);
+const handleMangaFlowDrag = ({
+  type,
+  xy: [x, y],
+  initial: [ix, iy],
+  startTime
+}) => {
+  switch (type) {
+    case 'move':
+      {
+        dx = store.option.dir === 'rtl' ? x - ix : ix - x;
+        dy = y - iy;
+        if (store.isDragMode) {
+          if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
+          return;
+        }
+
+        // 判断滑动方向
+        let slideDir;
+        if (Math.abs(dx) > 5 && isEqual(dy, 0, 5)) slideDir = 'horizontal';
+        if (Math.abs(dy) > 5 && isEqual(dx, 0, 5)) slideDir = 'vertical';
+        if (!slideDir) return;
+        setState(state => {
+          // 根据滑动方向自动切换排列模式
+          state.page.vertical = slideDir === 'vertical';
+          state.isDragMode = true;
+          updateRenderPage(state);
+        });
+        return;
+      }
+    case 'up':
+      return handleDragEnd(startTime);
+  }
+};
+let lastDeltaY$1 = 0;
+let retardStartTime = 0;
+const handleTrackpadWheel = e => {
+  let deltaY = Math.floor(-e.deltaY * 0.8);
+  let absDeltaY = Math.abs(deltaY);
+  if (absDeltaY < 2) return;
+
+  // 加速度小于2后逐渐缩小滚动距离，实现减速效果
+  if (Math.abs(absDeltaY - lastDeltaY$1) <= 2) {
+    if (!retardStartTime) retardStartTime = Date.now();
+    deltaY *= 1 - Math.min(1, (Date.now() - retardStartTime) / 10 * 0.1);
+    absDeltaY = Math.abs(deltaY);
+    if (absDeltaY < 2) return;
+  } else retardStartTime = 0;
+  lastDeltaY$1 = absDeltaY;
+  dy += deltaY;
+  setState(state => {
+    // 滚动至漫画头尾尽头时
+    if (store.activePageIndex === 0 && dy > 0 || store.activePageIndex === store.pageList.length - 1 && dy < 0) {
+      dy = 0;
+      // 为了避免被触摸板的滚动惯性触发上/下一话跳转，限定一下滚动距离
+      if (absDeltaY > 50) turnPageFn(state, store.activePageIndex === 0 ? 'prev' : 'next');
+    }
+
+    // 滚动过一页时
+    if (dy <= -state.memo.size.height) {
+      if (turnPageFn(state, 'next')) dy += state.memo.size.height;
+    } else if (dy >= state.memo.size.height) {
+      if (turnPageFn(state, 'prev')) dy -= state.memo.size.height;
+    }
+    state.page.vertical = true;
+    state.isDragMode = true;
+    updateRenderPage(state);
+  });
+  if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
+  handleDragEnd.debounce();
+};
+
 const defaultHotkeys = {
   turn_page_up: ['w', 'ArrowUp', 'PageUp', 'Shift + W'],
   turn_page_down: [' ', 's', 'ArrowDown', 'PageDown', 'Shift + S'],
@@ -2776,82 +3145,12 @@ const delHotkeys = code => {
   });
 };
 
-const handleResize = (width, height) => {
-  if (!(width || height)) return;
-  setState(state => {
-    state.memo.size = {
-      width,
-      height
-    };
-    state.isMobile = width < 800;
-  });
-};
-
-/** 更新渲染页面相关变量 */
-const updateRenderPage = (state, animation = false) => {
-  state.memo.renderPageList = state.pageList.slice(Math.max(0, state.activePageIndex - 1), Math.min(state.pageList.length, state.activePageIndex + 2));
-  const i = state.memo.renderPageList.indexOf(state.pageList[state.activePageIndex]);
-  state.page.offset.x.pct = 0;
-  state.page.offset.y.pct = 0;
-  if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
-  state.page.anima = animation ? 'page' : '';
-};
-const updateShowPageList = state => {
-  state.memo.showPageList = [...new Set(state.memo.showImgList.map(img => +img.parentElement.getAttribute('data-index')))];
-  state.memo.showPageList.sort();
-  if (state.option.scrollMode) state.activePageIndex = state.memo.showPageList[0] ?? 0;
-};
-const handleObserver = entries => {
-  setState(state => {
-    entries.forEach(({
-      isIntersecting,
-      target
-    }) => {
-      if (isIntersecting) state.memo.showImgList.push(target);else state.memo.showImgList = state.memo.showImgList.filter(img => img !== target);
-    });
-    if (!store.gridMode) updateShowPageList(state);
-  });
-};
-solidJs.createRoot(() => {
-  // 页数发生变动时
-  solidJs.createEffect(solidJs.on(() => store.activePageIndex, () => {
-    setState(state => {
-      updateImgLoadType(state);
-      if (state.show.endPage) state.show.endPage = undefined;
-    });
-  }, {
-    defer: true
-  }));
-
-  // 在关闭工具栏的同时关掉滚动条的强制显示
-  solidJs.createEffect(solidJs.on(() => store.show.toolbar, () => {
-    if (store.show.scrollbar && !store.show.toolbar) _setState('show', 'scrollbar', false);
-  }, {
-    defer: true
-  }));
-  solidJs.createEffect(solidJs.on(activePage, page => {
-    if (!store.option.scrollMode && !store.isDragMode) setState(updateRenderPage);
-    // 如果当前显示页面有出错的图片，就重新加载一次
-    page?.forEach(i => {
-      if (store.imgList[i]?.loadType !== 'error') return;
-      _setState('imgList', i, 'loadType', 'wait');
-    });
-  }, {
-    defer: true
-  }));
-
-  // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
-  solidJs.createEffect(solidJs.on(() => store.gridMode, () => setState(resetUI), {
-    defer: true
-  }));
-});
-
 /** 切换页面填充 */
 const switchFillEffect = () => {
   setState(state => {
     // 如果当前页不是双页显示的就跳过，避免在显示跨页图的页面切换却没看到效果的疑惑
     if (state.pageList[state.activePageIndex].length !== 2) return;
-    state.fillEffect[nowFillIndex()] = !state.fillEffect[nowFillIndex()];
+    state.fillEffect[nowFillIndex()] = +!state.fillEffect[nowFillIndex()];
     updatePageData(state);
   });
 };
@@ -2901,103 +3200,16 @@ const switchGridMode = () => {
 var css$1 = ".index_module_img__d1a5aaee{background-color:var(--hover-bg-color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d1a5aaee[data-fill=left]{transform:translate(50%)}.index_module_img__d1a5aaee[data-fill=right]{transform:translate(-50%)}.index_module_img__d1a5aaee[data-fill=page]{display:none}.index_module_img__d1a5aaee[data-type=long]{height:auto;width:100%}.index_module_img__d1a5aaee[data-load-type=loading]{animation:index_module_show__d1a5aaee 2s forwards;max-width:100vw!important;opacity:0}.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[data-load-type=wait],.index_module_img__d1a5aaee[src=\\"\\"]{aspect-ratio:3/4;height:100%;position:relative}:is(.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[src=\\"\\"]):before{opacity:0}:is(.index_module_img__d1a5aaee[data-load-type],.index_module_img__d1a5aaee[src=\\"\\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d1a5aaee[data-load-type=loading],.index_module_img__d1a5aaee[data-load-type=wait]):after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__d1a5aaee[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__d1a5aaee[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_page__d1a5aaee{align-items:center;content-visibility:hidden;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d1a5aaee[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d1a5aaee{grid-row-gap:0;backface-visibility:hidden;color:var(--text);display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;transition-duration:0ms;user-select:none;width:100%}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d1a5aaee[data-disable-zoom] .index_module_img__d1a5aaee{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d1a5aaee[dir=ltr] .index_module_page__d1a5aaee{flex-direction:row}.index_module_mangaFlow__d1a5aaee[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d1a5aaee[data-animation=page] .index_module_page__d1a5aaee,.index_module_mangaFlow__d1a5aaee[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d1a5aaee[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d1a5aaee[data-grid-mode]{grid-row-gap:1.5em;box-sizing:border-box;grid-auto-flow:row;grid-auto-rows:33.33333%;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;overflow:auto;padding-bottom:2em;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee{height:auto;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee:after{bottom:-1.4em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);white-space:pre;width:100%}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee .index_module_img__d1a5aaee{cursor:pointer}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee{grid-row-gap:calc(var(--scroll-mode-spacing)*.1em);grid-auto-flow:row;grid-auto-rows:auto;grid-template-rows:auto;overflow:auto}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_page__d1a5aaee{display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width, 100%)))}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=loading]{position:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=error]{height:20em;width:30em}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_img__d1a5aaee{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}@keyframes index_module_show__d1a5aaee{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d1a5aaee{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d1a5aaee>button{animation:index_module_jello__d1a5aaee .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d1a5aaee>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d1a5aaee>button:focus-visible{outline:none}.index_module_endPage__d1a5aaee>.index_module_tip__d1a5aaee{margin:auto;position:absolute}.index_module_endPage__d1a5aaee[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d1a5aaee[data-type=start]>.index_module_tip__d1a5aaee{transform:translateY(-10em)}.index_module_endPage__d1a5aaee[data-type=end]>.index_module_tip__d1a5aaee{transform:translateY(10em)}.index_module_root__d1a5aaee[data-mobile] .index_module_endPage__d1a5aaee>button{width:1em}.index_module_comments__d1a5aaee{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d1a5aaee>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d1a5aaee:hover{opacity:1}.index_module_root__d1a5aaee[data-mobile] .index_module_comments__d1a5aaee{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d1a5aaee{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d1a5aaee{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d1a5aaee{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d1a5aaee[data-show],.index_module_toolbar__d1a5aaee:hover) .index_module_toolbarPanel__d1a5aaee{transform:none}.index_module_toolbar__d1a5aaee[data-close] .index_module_toolbarPanel__d1a5aaee{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d1a5aaee{backdrop-filter:blur(24px);background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee{font-size:1.3em}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee:not([data-show]){pointer-events:none}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbarBg__d1a5aaee{filter:opacity(.8)}.index_module_SettingPanelPopper__d1a5aaee{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__d1a5aaee{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;user-select:text;z-index:1}.index_module_SettingPanel__d1a5aaee hr{color:#fff;margin:0}.index_module_SettingBlock__d1a5aaee{display:grid;grid-template-rows:max-content 1fr;padding:0 .5em 1em;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee{overflow:hidden;z-index:0}:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div+:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div{margin-top:1em}.index_module_SettingBlock__d1a5aaee[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlockSubtitle__d1a5aaee{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d1a5aaee{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d1a5aaee+.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_SettingsItemName__d1a5aaee{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d1a5aaee{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true] .index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d1a5aaee{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d1a5aaee{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6em;outline:none;padding:.3em}.index_module_closeCover__d1a5aaee{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d1a5aaee{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee{overflow:hidden}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee>.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_hotkeys__d1a5aaee{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d1a5aaee+.index_module_hotkeys__d1a5aaee{margin-top:.5em}.index_module_hotkeys__d1a5aaee:last-child{border-bottom:none}.index_module_hotkeysItem__d1a5aaee{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__d1a5aaee>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d1a5aaee>svg:hover{opacity:.9}.index_module_hotkeysItem__d1a5aaee:hover{padding:.2em .5em}.index_module_hotkeysItem__d1a5aaee:hover>svg{display:unset}.index_module_hotkeysItem__d1a5aaee:focus,.index_module_hotkeysItem__d1a5aaee:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d1a5aaee{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d1a5aaee>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d1a5aaee>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d1a5aaee>div[title]>svg{width:1.6em}.index_module_hotkeys__d1a5aaee:hover div[title]{transform:scale(1)}.index_module_scrollbar__d1a5aaee{border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d1a5aaee>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__d1a5aaee{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d1a5aaee[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d1a5aaee[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d1a5aaee[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d1a5aaee[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d1a5aaee[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d1a5aaee[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d1a5aaee[data-translation-type=error]{background-color:#f005}.index_module_scrollbarDrag__d1a5aaee{--top:calc(var(--top-ratio)*var(--scroll-length));--height:calc(var(--height-ratio)*var(--scroll-length));background-color:var(--scrollbar-drag);border-radius:1em;height:var(--height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__d1a5aaee{--poper-top:clamp(0%,calc(var(--drag-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__d1a5aaee:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--drag-midpoint) - 50%))}.index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover:before,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show]:before{opacity:1}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarDrag__d1a5aaee{opacity:0}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarDrag__d1a5aaee{opacity:1}.index_module_scrollbar__d1a5aaee[data-position=hidden]{display:none}.index_module_scrollbar__d1a5aaee[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--before-x),-120%)}.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{top:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--before-x),120%)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee{bottom:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom],.index_module_scrollbar__d1a5aaee[data-position=top]{--before-x:calc(var(--drag-midpoint)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before,.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarDrag__d1a5aaee{height:100%;transform:translateX(calc(var(--top)*-1));width:var(--height)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr],.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]{--before-x:calc(var(--drag-midpoint) - 50%);flex-direction:row}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee{transform:translateX(var(--top))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee{transform:translateX(var(--poper-top))}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee{transform:scaleX(1)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-type=loaded],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-translation-type],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-translation-type]{transform:scaleX(1)}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_scrollbar__d1a5aaee:before,.index_module_root__d1a5aaee[data-scroll-mode] :is(.index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbarPoper__d1a5aaee){transition:opacity .15s}.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover:before{opacity:0}.index_module_touchAreaRoot__d1a5aaee{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(40%,10em) 1fr;grid-template-rows:1fr min(30%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;user-select:none;width:100%}.index_module_touchAreaRoot__d1a5aaee[data-show]{opacity:1}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d1a5aaee[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=next],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d1a5aaee[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d1a5aaee[data-mobile] .index_module_touchAreaRoot__d1a5aaee{flex-direction:column!important;letter-spacing:0}.index_module_root__d1a5aaee[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d1a5aaee{display:none!important}.index_module_invisible__d1a5aaee{visibility:hidden!important}.index_module_root__d1a5aaee{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d1a5aaee a{color:var(--text-secondary)}.index_module_root__d1a5aaee[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d1a5aaee{scrollbar-color:var(--scrollbar-drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-thumb{background:var(--scrollbar-drag)}p{margin:0}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"index_module_img__d1a5aaee","show":"index_module_show__d1a5aaee","mangaFlow":"index_module_mangaFlow__d1a5aaee","root":"index_module_root__d1a5aaee","endPage":"index_module_endPage__d1a5aaee","jello":"index_module_jello__d1a5aaee","tip":"index_module_tip__d1a5aaee","comments":"index_module_comments__d1a5aaee","toolbar":"index_module_toolbar__d1a5aaee","toolbarPanel":"index_module_toolbarPanel__d1a5aaee","toolbarBg":"index_module_toolbarBg__d1a5aaee","SettingPanelPopper":"index_module_SettingPanelPopper__d1a5aaee","SettingPanel":"index_module_SettingPanel__d1a5aaee","SettingBlock":"index_module_SettingBlock__d1a5aaee","SettingBlockBody":"index_module_SettingBlockBody__d1a5aaee","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__d1a5aaee","SettingsItem":"index_module_SettingsItem__d1a5aaee","SettingsItemName":"index_module_SettingsItemName__d1a5aaee","SettingsItemSwitch":"index_module_SettingsItemSwitch__d1a5aaee","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__d1a5aaee","SettingsItemIconButton":"index_module_SettingsItemIconButton__d1a5aaee","SettingsItemSelect":"index_module_SettingsItemSelect__d1a5aaee","closeCover":"index_module_closeCover__d1a5aaee","SettingsShowItem":"index_module_SettingsShowItem__d1a5aaee","SettingsShowItemBody":"index_module_SettingsShowItemBody__d1a5aaee","hotkeys":"index_module_hotkeys__d1a5aaee","hotkeysItem":"index_module_hotkeysItem__d1a5aaee","hotkeysHeader":"index_module_hotkeysHeader__d1a5aaee","scrollbar":"index_module_scrollbar__d1a5aaee","scrollbarPage":"index_module_scrollbarPage__d1a5aaee","scrollbarDrag":"index_module_scrollbarDrag__d1a5aaee","scrollbarPoper":"index_module_scrollbarPoper__d1a5aaee","touchAreaRoot":"index_module_touchAreaRoot__d1a5aaee","touchArea":"index_module_touchArea__d1a5aaee","hidden":"index_module_hidden__d1a5aaee","invisible":"index_module_invisible__d1a5aaee","beautifyScrollbar":"index_module_beautifyScrollbar__d1a5aaee","page":"index_module_page__d1a5aaee"};
 
-const handleMouseDown = e => {
-  if (e.button !== 1 || store.option.scrollMode) return;
-  e.stopPropagation();
-  e.preventDefault();
-  switchFillEffect();
-};
-
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 const focus = () => requestAnimationFrame(() => {
   refs.mangaFlow?.click();
   refs.mangaFlow?.focus();
 });
-
-/** 判断当前是否已经滚动到底部 */
-const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
-
-/** 判断当前是否已经滚动到顶部 */
-const isTop = state => state.option.scrollMode ? store.scrollbar.dragTop === 0 : state.activePageIndex === 0;
-const closeScrollLock = debounce(200, () => _setState('flag', 'scrollLock', false));
-
-/** 翻页。返回是否成功改变了当前页数 */
-const turnPageFn = (state, dir) => {
-  if (state.gridMode) return false;
-  if (dir === 'prev') {
-    switch (state.show.endPage) {
-      case 'start':
-        if (!state.flag.scrollLock && state.option.jumpToNext) state.prop.Prev?.();
-        return false;
-      case 'end':
-        state.show.endPage = undefined;
-        return false;
-      default:
-        // 弹出卷首结束页
-        if (isTop(state)) {
-          if (!state.prop.Exit) return false;
-          // 没有 onPrev 时不弹出
-          if (!state.prop.Prev || !state.option.jumpToNext) return false;
-          state.show.endPage = 'start';
-          state.flag.scrollLock = true;
-          closeScrollLock();
-          return false;
-        }
-        if (state.option.scrollMode) return false;
-        state.activePageIndex -= 1;
-        return true;
-    }
-  } else {
-    switch (state.show.endPage) {
-      case 'end':
-        if (state.flag.scrollLock) return false;
-        if (state.prop.Next && state.option.jumpToNext) {
-          state.prop.Next();
-          return false;
-        }
-        state.prop.Exit?.(true);
-        return false;
-      case 'start':
-        state.show.endPage = undefined;
-        return false;
-      default:
-        // 弹出卷尾结束页
-        if (isBottom(state)) {
-          if (!state.prop.Exit) return false;
-          state.show.endPage = 'end';
-          state.flag.scrollLock = true;
-          closeScrollLock();
-          return false;
-        }
-        if (state.option.scrollMode) return false;
-        state.activePageIndex += 1;
-        return true;
-    }
-  }
-};
-const turnPage = dir => setState(state => turnPageFn(state, dir));
-const turnPageAnimation = dir => {
-  setState(state => {
-    // 无法翻页就恢复原位
-    if (!turnPageFn(state, dir)) {
-      state.page.offset.x.px = 0;
-      state.page.offset.y.px = 0;
-      updateRenderPage(state, true);
-      state.isDragMode = false;
-      return;
-    }
-    state.isDragMode = true;
-    updateRenderPage(state);
-    if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 100 : -100;else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
-    setTimeout(() => {
-      setState(draftState => {
-        updateRenderPage(draftState, true);
-        draftState.page.offset.x.px = 0;
-        draftState.page.offset.y.px = 0;
-        draftState.isDragMode = false;
-      });
-    }, 16);
-  });
+const handleMouseDown = e => {
+  if (e.button !== 1 || store.option.scrollMode) return;
+  e.stopPropagation();
+  e.preventDefault();
+  switchFillEffect();
 };
 
 /** 卷轴模式下的滚动 */
@@ -3009,33 +3221,7 @@ const scrollModeScroll = dir => {
     });
     _setState('flag', 'scrollLock', true);
   }
-  closeScrollLock();
-};
-let wheelDeltaY = 0;
-const clearWheelDeltaY = debounce(1000, () => {
-  wheelDeltaY = 0;
-});
-const handleWheel = e => {
-  e.stopPropagation();
-  if (e.ctrlKey || e.altKey) e.preventDefault();
-  if (store.flag.scrollLock) return;
-  const isWheelDown = e.deltaY > 0;
-  if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
-
-  // 卷轴模式下的图片缩放
-  if ((e.ctrlKey || e.altKey) && store.option.scrollMode && store.zoom.scale === 100) {
-    e.preventDefault();
-    return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
-  }
-  if (e.ctrlKey || e.altKey || store.zoom.scale !== 100) {
-    e.preventDefault();
-    return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
-  }
-  wheelDeltaY += e.deltaY;
-  clearWheelDeltaY();
-  if (Math.abs(wheelDeltaY) < 40) return;
-  wheelDeltaY = 0;
-  return turnPage(isWheelDown ? 'next' : 'prev');
+  closeScrollLock$1();
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
@@ -3134,153 +3320,38 @@ const handleKeyDown = e => {
       return store.prop.Exit?.();
   }
 };
+let lastDeltaY = 0;
+let lastTurnPageRes = false;
+let wheelType;
+const handleWheel = e => {
+  e.stopPropagation();
+  if (e.ctrlKey || e.altKey) e.preventDefault();
+  if (store.flag.scrollLock) return closeScrollLock$1();
+  const isWheelDown = e.deltaY > 0;
+  if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
 
-let clickTimeout = null;
-const useDoubleClick = (click, doubleClick, timeout = 200) => {
-  return event => {
-    // 如果点击触发时还有上次计时器的记录，说明这次是双击
-    if (clickTimeout) {
-      clearTimeout(clickTimeout);
-      clickTimeout = null;
-      doubleClick?.(event);
-      return;
+  // 卷轴模式下的图片缩放
+  if ((e.ctrlKey || e.altKey) && store.option.scrollMode && store.zoom.scale === 100) {
+    e.preventDefault();
+    return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
+  }
+  if (e.ctrlKey || e.altKey || store.zoom.scale !== 100) {
+    e.preventDefault();
+    return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
+  }
+  if (lastDeltaY === 0) lastDeltaY = Math.abs(e.deltaY);else if (wheelType === undefined) {
+    // 通过判断首次的两次滚动距离是否相同来判断用的是触摸板还是鼠标
+    if (lastDeltaY === Math.abs(e.deltaY)) wheelType = 'mouse';else {
+      wheelType = 'trackpad';
+      // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
+      // 虽然这样偶尔会出现闪烁，但毕竟触摸板用的人少，相比给鼠标滚轮加延迟影响更小
+      if (lastTurnPageRes) turnPage(isWheelDown ? 'prev' : 'next');
     }
-
-    // 单击事件延迟触发
-    clickTimeout = window.setTimeout(() => {
-      click(event);
-      clickTimeout = null;
-    }, timeout);
-  };
-};
-
-/** 根据坐标判断点击的元素 */
-const findClickEle = (eleList, {
-  x,
-  y
-}) => [...eleList].find(e => {
-  const rect = e.getBoundingClientRect();
-  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-});
-
-/** 触发 touchArea 操作 */
-const handlePageClick = e => {
-  const targetArea = findClickEle(refs.touchArea.children, e);
-  if (!targetArea) return;
-  const areaName = targetArea.getAttribute('data-area');
-  if (!areaName) return;
-  if (areaName === 'menu' || areaName === 'MENU') return setState(state => {
-    state.show.scrollbar = !state.show.scrollbar;
-    state.show.toolbar = !state.show.toolbar;
-  });
-  if (!store.option.clickPageTurn.enabled || store.zoom.scale !== 100) return;
-  setState(resetUI);
-  turnPage(areaName.toLowerCase());
-};
-
-/** 网格模式下点击图片跳到对应页 */
-const handleGridClick = e => {
-  const target = findClickEle(refs.root.getElementsByTagName('img'), e);
-  if (!target) return;
-  const pageNumText = target.parentElement?.getAttribute('data-index');
-  if (!pageNumText) return;
-  const pageNum = +pageNumText;
-  if (!Reflect.has(store.pageList, pageNum)) return;
+  }
+  if (wheelType === 'trackpad') return handleTrackpadWheel(e);
   setState(state => {
-    state.activePageIndex = pageNum;
-    state.gridMode = false;
+    lastTurnPageRes = turnPageFn(state, isWheelDown ? 'next' : 'prev');
   });
-  if (store.option.scrollMode) refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
-};
-
-/** 双击放大 */
-const doubleClickZoom = e => !store.gridMode && zoom(store.zoom.scale !== 100 ? 100 : 350, e, true);
-const handleClick = useDoubleClick(e => store.gridMode ? handleGridClick(e) : handlePageClick(e), doubleClickZoom);
-
-/** 判断翻页方向 */
-const getTurnPageDir = startTime => {
-  let dir;
-  let move;
-  let total;
-  if (store.page.vertical) {
-    move = -store.page.offset.y.px;
-    total = refs.root.clientHeight;
-  } else {
-    move = store.page.offset.x.px;
-    total = refs.root.clientWidth;
-  }
-
-  // 滑动距离超过总长度三分之一判定翻页
-  if (Math.abs(move) > total / 3) dir = move > 0 ? 'next' : 'prev';
-  if (dir) return dir;
-
-  // 滑动速度超过 0.4 判定翻页
-  const velocity = move / (performance.now() - startTime);
-  if (velocity < -0.4) dir = 'prev';
-  if (velocity > 0.4) dir = 'next';
-  return dir;
-};
-let dx = 0;
-let dy = 0;
-let animationId = null;
-const handleDragAnima = () => {
-  // 当停着不动时退出循环
-  if (dx === store.page.offset.x.px && dy === store.page.offset.y.px) {
-    animationId = null;
-    return;
-  }
-  setState(state => {
-    if (state.page.vertical) state.page.offset.y.px = dy;else state.page.offset.x.px = dx;
-  });
-  animationId = requestAnimationFrame(handleDragAnima);
-};
-const handleMangaFlowDrag = ({
-  type,
-  xy: [x, y],
-  initial: [ix, iy],
-  startTime
-}) => {
-  switch (type) {
-    case 'move':
-      {
-        dx = store.option.dir === 'rtl' ? x - ix : ix - x;
-        dy = y - iy;
-        if (store.isDragMode) {
-          if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
-          return;
-        }
-
-        // 判断滑动方向
-        let slideDir;
-        if (Math.abs(dx) > 5 && isEqual(dy, 0, 5)) slideDir = 'horizontal';
-        if (Math.abs(dy) > 5 && isEqual(dx, 0, 5)) slideDir = 'vertical';
-        if (!slideDir) return;
-        setState(state => {
-          // 根据滑动方向自动切换排列模式
-          state.page.vertical = slideDir === 'vertical';
-          state.isDragMode = true;
-          updateRenderPage(state);
-        });
-        return;
-      }
-    case 'up':
-      {
-        if (animationId) {
-          cancelAnimationFrame(animationId);
-          animationId = null;
-        }
-
-        // 将拖动的页面移回正常位置
-        const dir = getTurnPageDir(startTime);
-        if (dir) return turnPageAnimation(dir);
-        setState(state => {
-          state.page.offset.x.px = 0;
-          state.page.offset.y.px = 0;
-          state.page.anima = 'page';
-          state.isDragMode = false;
-        });
-      }
-  }
 };
 
 /** 根据比例更新图片类型。返回是否修改了图片类型 */
@@ -3329,7 +3400,7 @@ const updateImgSize = (i, width, height) => {
       case 'long':
       case 'wide':
         {
-          if (!state.flag.autoWide || !checkImgTypeCount(state, isWideImg)) break;
+          if (state.flag.autoWide || !checkImgTypeCount(state, isWideImg)) break;
           state.imgList.forEach((comicImg, index) => {
             if (comicImg.loadType === 'wait' && comicImg.type === '') state.imgList[index].type = 'wide';
           });
@@ -3384,9 +3455,17 @@ const {
     state.proportion.单页比例 = Math.min(width / 2 / height, 1);
     state.proportion.横幅比例 = width / height;
     state.proportion.条漫比例 = state.proportion.单页比例 / 2;
-    state.imgList.forEach(img => updateImgType(state, img));
+    let isEdited = false;
+    for (let i = 0; i < state.imgList.length; i++) {
+      if (!updateImgType(state, state.imgList[i])) continue;
+      Reflect.deleteProperty(state.fillEffect, i);
+      isEdited = true;
+    }
+    if (isEdited) resetImgState(state);
     updatePageData(state);
-  })));
+  }), {
+    defer: true
+  }));
   const placeholderSizeMemo = solidJs.createMemo(() => ({
     width: getImgMedian(img => img.width, refs.root?.offsetWidth),
     height: getImgMedian(img => img.height, refs.root?.offsetHeight)
@@ -5077,7 +5156,7 @@ const defaultButtonList = [
     return t('button.page_fill');
   },
   get enabled() {
-    return store.fillEffect[nowFillIndex()];
+    return !!store.fillEffect[nowFillIndex()];
   },
   get hidden() {
     return store.isMobile || store.option.onePageMode;
@@ -5666,25 +5745,24 @@ const useInit$1 = props => {
 
       // 处理初始化
       if (isInit) {
-        state.flag.autoScrollMode = true;
-        state.flag.autoWide = true;
-        autoCloseFill.clear();
-        if (!state.option.firstPageFill || props.imgList.length <= 3) state.fillEffect[-1] = false;
         state.imgList = [...props.imgList].map(createComicImg);
+        resetImgState(state);
         updatePageData(state);
         state.prop.Loading?.(state.imgList);
         state.activePageIndex = 0;
         return;
       }
-      for (let i = 0; i < state.imgList.length; i++) {
-        const img = state.imgList[i];
-        // 将被删除图片的 fillEffect 记录删掉
-        if (!props.imgList.includes(img.src)) Reflect.deleteProperty(state.fillEffect, i);
-      }
 
       /** 修改前的当前显示图片 */
       const oldActiveImg = state.pageList[state.activePageIndex]?.map(i => state.imgList?.[i]?.src) ?? [];
       state.imgList = [...props.imgList].map(imgUrl => state.imgList.find(img => img.src === imgUrl) ?? createComicImg(imgUrl));
+      // 如果有图片被删除了，就将相关变量恢复到初始状态
+      if (state.imgList.some(({
+        src
+      }) => !props.imgList.includes(src))) {
+        state.fillEffect = {};
+        resetImgState(state);
+      }
       updatePageData(state);
       state.prop.Loading?.(state.imgList);
       if (state.pageList.length === 0) {
@@ -6116,8 +6194,8 @@ const useFab = async initProps => {
 };
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复部分情况下会自动切换至单页模式的 bug </p></li><li><p>修复在禁漫上无法正常工作的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>优化\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>优化使用触摸板进行滚动的体验\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -8552,6 +8630,149 @@ const getInitLang = async () => {
   return lang;
 };
 
+/* eslint-disable no-undefined,no-param-reassign,no-shadow */
+
+/**
+ * Throttle execution of a function. Especially useful for rate limiting
+ * execution of handlers on events like resize and scroll.
+ *
+ * @param {number} delay -                  A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher)
+ *                                            are most useful.
+ * @param {Function} callback -               A function to be executed after delay milliseconds. The `this` context and all arguments are passed through,
+ *                                            as-is, to `callback` when the throttled-function is executed.
+ * @param {object} [options] -              An object to configure options.
+ * @param {boolean} [options.noTrailing] -   Optional, defaults to false. If noTrailing is true, callback will only execute every `delay` milliseconds
+ *                                            while the throttled-function is being called. If noTrailing is false or unspecified, callback will be executed
+ *                                            one final time after the last throttled-function call. (After the throttled-function has not been called for
+ *                                            `delay` milliseconds, the internal counter is reset).
+ * @param {boolean} [options.noLeading] -   Optional, defaults to false. If noLeading is false, the first throttled-function call will execute callback
+ *                                            immediately. If noLeading is true, the first the callback execution will be skipped. It should be noted that
+ *                                            callback will never executed if both noLeading = true and noTrailing = true.
+ * @param {boolean} [options.debounceMode] - If `debounceMode` is true (at begin), schedule `clear` to execute after `delay` ms. If `debounceMode` is
+ *                                            false (at end), schedule `callback` to execute after `delay` ms.
+ *
+ * @returns {Function} A new, throttled, function.
+ */
+function throttle (delay, callback, options) {
+  var _ref = options || {},
+      _ref$noTrailing = _ref.noTrailing,
+      noTrailing = _ref$noTrailing === void 0 ? false : _ref$noTrailing,
+      _ref$noLeading = _ref.noLeading,
+      noLeading = _ref$noLeading === void 0 ? false : _ref$noLeading,
+      _ref$debounceMode = _ref.debounceMode,
+      debounceMode = _ref$debounceMode === void 0 ? undefined : _ref$debounceMode;
+  /*
+   * After wrapper has stopped being called, this timeout ensures that
+   * `callback` is executed at the proper times in `throttle` and `end`
+   * debounce modes.
+   */
+
+
+  var timeoutID;
+  var cancelled = false; // Keep track of the last time `callback` was executed.
+
+  var lastExec = 0; // Function to clear existing timeout
+
+  function clearExistingTimeout() {
+    if (timeoutID) {
+      clearTimeout(timeoutID);
+    }
+  } // Function to cancel next exec
+
+
+  function cancel(options) {
+    var _ref2 = options || {},
+        _ref2$upcomingOnly = _ref2.upcomingOnly,
+        upcomingOnly = _ref2$upcomingOnly === void 0 ? false : _ref2$upcomingOnly;
+
+    clearExistingTimeout();
+    cancelled = !upcomingOnly;
+  }
+  /*
+   * The `wrapper` function encapsulates all of the throttling / debouncing
+   * functionality and when executed will limit the rate at which `callback`
+   * is executed.
+   */
+
+
+  function wrapper() {
+    for (var _len = arguments.length, arguments_ = new Array(_len), _key = 0; _key < _len; _key++) {
+      arguments_[_key] = arguments[_key];
+    }
+
+    var self = this;
+    var elapsed = Date.now() - lastExec;
+
+    if (cancelled) {
+      return;
+    } // Execute `callback` and update the `lastExec` timestamp.
+
+
+    function exec() {
+      lastExec = Date.now();
+      callback.apply(self, arguments_);
+    }
+    /*
+     * If `debounceMode` is true (at begin) this is used to clear the flag
+     * to allow future `callback` executions.
+     */
+
+
+    function clear() {
+      timeoutID = undefined;
+    }
+
+    if (!noLeading && debounceMode && !timeoutID) {
+      /*
+       * Since `wrapper` is being called for the first time and
+       * `debounceMode` is true (at begin), execute `callback`
+       * and noLeading != true.
+       */
+      exec();
+    }
+
+    clearExistingTimeout();
+
+    if (debounceMode === undefined && elapsed > delay) {
+      if (noLeading) {
+        /*
+         * In throttle mode with noLeading, if `delay` time has
+         * been exceeded, update `lastExec` and schedule `callback`
+         * to execute after `delay` ms.
+         */
+        lastExec = Date.now();
+
+        if (!noTrailing) {
+          timeoutID = setTimeout(debounceMode ? clear : exec, delay);
+        }
+      } else {
+        /*
+         * In throttle mode without noLeading, if `delay` time has been exceeded, execute
+         * `callback`.
+         */
+        exec();
+      }
+    } else if (noTrailing !== true) {
+      /*
+       * In trailing throttle mode, since `delay` time has not been
+       * exceeded, schedule `callback` to execute `delay` ms after most
+       * recent execution.
+       *
+       * If `debounceMode` is true (at begin), schedule `clear` to execute
+       * after `delay` ms.
+       *
+       * If `debounceMode` is false (at end), schedule `callback` to
+       * execute after `delay` ms.
+       */
+      timeoutID = setTimeout(debounceMode ? clear : exec, debounceMode === undefined ? delay - elapsed : delay);
+    }
+  }
+
+  wrapper.cancel = cancel; // Return the wrapper function.
+
+  return wrapper;
+}
+
 const sleep = ms => new Promise(resolve => {
   window.setTimeout(resolve, ms);
 });
@@ -8683,9 +8904,7 @@ imgShowObserver = new IntersectionObserver(entries => entries.forEach(img => {
   const timeoutID = imgMap.get(ele)?.observerTimeout;
   if (timeoutID) window.clearTimeout(timeoutID);
 }));
-let timeoutId;
-/** 触发页面上所有图片元素的懒加载 */
-const triggerLazyLoad = async (getAllImg, getWaitTime) => {
+const triggerTurnPage = throttle(500, () => {
   const nowScroll = window.scrollY;
   // 滚到底部再滚回来，触发可能存在的自动翻页脚本
   window.scroll({
@@ -8699,7 +8918,10 @@ const triggerLazyLoad = async (getAllImg, getWaitTime) => {
     top: nowScroll,
     behavior: 'auto'
   });
-
+});
+let timeoutId;
+/** 触发页面上所有图片元素的懒加载 */
+const triggerLazyLoad = async (getAllImg, getWaitTime) => {
   // 过滤掉已经被触发过懒加载的图片
   const targetImgList = getAllImg().filter(needTrigged);
   targetImgList.forEach(e => {
@@ -8708,6 +8930,7 @@ const triggerLazyLoad = async (getAllImg, getWaitTime) => {
   });
   for (let i = 0; i < targetImgList.length; i++) {
     await wait(() => !scrollLock.enabled);
+    triggerTurnPage();
     const e = targetImgList[i];
     if (!needTrigged(e)) continue;
     tryCorrectUrl(e);
@@ -8723,9 +8946,9 @@ const triggerLazyLoad = async (getAllImg, getWaitTime) => {
 
 // 测试案例
 // https://www.177picyy.com/html/2023/03/5505307.html
-//  需要配合其他翻页脚本使用
+// 需要配合其他翻页脚本使用
 // https://www.colamanga.com/manga-za76213/1/5.html
-//  直接跳转到图片元素不会立刻触发，还需要停留20ms
+// 直接跳转到图片元素不会立刻触发，还需要停留20ms
 // https://www.colamanga.com/manga-kg45140/1/2.html
 (async () => {
   /** 执行脚本操作。如果中途中断，将返回 true */
