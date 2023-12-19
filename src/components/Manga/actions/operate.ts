@@ -151,6 +151,17 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   }
 };
 
+/** 清除精度问题出现的奇怪小数 */
+const clearDecimalRe = /\d{4}\d*/;
+/** 判断两个数值是否成倍数关系 */
+const isMultipleOf = (a: number, b: number) => {
+  let decimal = `${a < b ? b / a : a / b}`.split('.')?.[1];
+  if (!decimal) return true;
+  if (clearDecimalRe.test(decimal))
+    decimal = decimal.replace(clearDecimalRe, '');
+  return decimal.length <= 4;
+};
+
 let lastDeltaY = -1;
 let timeoutId = 0;
 let lastTurnPageRes = false;
@@ -194,8 +205,14 @@ export const handleWheel = (e: WheelEvent) => {
     return;
   }
 
-  // 通过判断`两次滚动距离是否相同`和`滚动距离是否过小`来判断是否是触摸板
-  if (wheelType !== 'trackpad' && (lastDeltaY !== nowDeltaY || nowDeltaY < 2)) {
+  // 通过判断`两次滚动距离是否成倍数`和`滚动距离是否过小`来判断是否是触摸板
+  if (
+    wheelType !== 'trackpad' &&
+    (nowDeltaY < 2 ||
+      (!Number.isInteger(lastDeltaY) &&
+        !Number.isInteger(nowDeltaY) &&
+        !isMultipleOf(lastDeltaY, nowDeltaY)))
+  ) {
     wheelType = 'trackpad';
     if (timeoutId) clearTimeout(timeoutId);
     // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
