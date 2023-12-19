@@ -151,7 +151,8 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   }
 };
 
-let lastDeltaY = 0;
+let lastDeltaY = -1;
+let timeoutId = 0;
 let lastTurnPageRes = false;
 let wheelType: undefined | 'trackpad' | 'mouse';
 
@@ -178,21 +179,39 @@ export const handleWheel = (e: WheelEvent) => {
     return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
   }
 
-  if (lastDeltaY === 0) lastDeltaY = Math.abs(e.deltaY);
-  else if (wheelType === undefined) {
-    // 通过判断首次的两次滚动距离是否相同来判断用的是触摸板还是鼠标
-    if (lastDeltaY === Math.abs(e.deltaY)) wheelType = 'mouse';
-    else {
-      wheelType = 'trackpad';
-      // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
-      // 虽然这样偶尔会出现闪烁，但毕竟触摸板用的人少，相比给鼠标滚轮加延迟影响更小
-      if (lastTurnPageRes) turnPage(isWheelDown ? 'prev' : 'next');
-    }
+  const nowDeltaY = Math.abs(e.deltaY);
+
+  if (wheelType === undefined && lastDeltaY === -1) {
+    lastDeltaY = nowDeltaY;
+    // 第一次触发滚动没法判断类型，就当作滚轮来处理
+    // 但为了避免触摸板前两次滚动事件间隔大于帧生成时间导致得重新翻页回去的闪烁，加个延迟等待下
+    timeoutId = window.setTimeout(() => {
+      setState((state) => {
+        lastTurnPageRes = turnPageFn(state, isWheelDown ? 'next' : 'prev');
+      });
+      timeoutId = 0;
+    }, 16);
+    return;
   }
 
-  if (wheelType === 'trackpad') return handleTrackpadWheel(e);
+  // 通过判断`两次滚动距离是否相同`和`滚动距离是否过小`来判断是否是触摸板
+  if (wheelType !== 'trackpad' && (lastDeltaY !== nowDeltaY || nowDeltaY < 2)) {
+    wheelType = 'trackpad';
+    if (timeoutId) clearTimeout(timeoutId);
+    // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
+    if (lastTurnPageRes) turnPage(isWheelDown ? 'prev' : 'next');
+  }
+  lastDeltaY = nowDeltaY;
 
-  setState((state) => {
-    lastTurnPageRes = turnPageFn(state, isWheelDown ? 'next' : 'prev');
-  });
+  switch (wheelType) {
+    case undefined:
+      wheelType = 'mouse';
+    // falls through
+
+    case 'mouse':
+      return turnPage(isWheelDown ? 'next' : 'prev');
+
+    case 'trackpad':
+      return handleTrackpadWheel(e);
+  }
 };

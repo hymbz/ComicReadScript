@@ -33,5 +33,3 @@ export const toast = new Proxy(_toast, {
     return fn(...args) as unknown;
   },
 });
-
-unsafeWindow.toast = toast;

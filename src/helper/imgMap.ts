@@ -76,8 +76,6 @@ const isLazyLoaded = (e: HTMLImageElement, oldSrc?: string) => {
 export const imgMap = new Map<HTMLImageElement, ImgData>();
 let imgShowObserver: IntersectionObserver;
 
-unsafeWindow.imgMap = imgMap;
-
 const getImg = (e: HTMLImageElement) => imgMap.get(e) ?? createImgData();
 
 const MAX_TRIGGED_NUM = 5;
