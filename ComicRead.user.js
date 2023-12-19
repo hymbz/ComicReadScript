@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.2.9
+// @version         8.2.10
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -1560,7 +1560,6 @@ const toast$1 = new Proxy(toast$2, {
     return fn(...args);
   }
 });
-unsafeWindow.toast = toast$1;
 
 // 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = details => new Promise((resolve, reject) => {
@@ -3320,7 +3319,18 @@ const handleKeyDown = e => {
       return store.prop.Exit?.();
   }
 };
-let lastDeltaY = 0;
+
+/** 清除精度问题出现的奇怪小数 */
+const clearDecimalRe = /\\d{4}\\d*/;
+/** 判断两个数值是否成倍数关系 */
+const isMultipleOf = (a, b) => {
+  let decimal = \`\${a < b ? b / a : a / b}\`.split('.')?.[1];
+  if (!decimal) return true;
+  if (clearDecimalRe.test(decimal)) decimal = decimal.replace(clearDecimalRe, '');
+  return decimal.length <= 4;
+};
+let lastDeltaY = -1;
+let timeoutId = 0;
 let lastTurnPageRes = false;
 let wheelType;
 const handleWheel = e => {
@@ -3339,19 +3349,38 @@ const handleWheel = e => {
     e.preventDefault();
     return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
   }
-  if (lastDeltaY === 0) lastDeltaY = Math.abs(e.deltaY);else if (wheelType === undefined) {
-    // 通过判断首次的两次滚动距离是否相同来判断用的是触摸板还是鼠标
-    if (lastDeltaY === Math.abs(e.deltaY)) wheelType = 'mouse';else {
-      wheelType = 'trackpad';
-      // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
-      // 虽然这样偶尔会出现闪烁，但毕竟触摸板用的人少，相比给鼠标滚轮加延迟影响更小
-      if (lastTurnPageRes) turnPage(isWheelDown ? 'prev' : 'next');
-    }
+  const nowDeltaY = Math.abs(e.deltaY);
+  if (wheelType === undefined && lastDeltaY === -1) {
+    lastDeltaY = nowDeltaY;
+    // 第一次触发滚动没法判断类型，就当作滚轮来处理
+    // 但为了避免触摸板前两次滚动事件间隔大于帧生成时间导致得重新翻页回去的闪烁，加个延迟等待下
+    timeoutId = window.setTimeout(() => {
+      setState(state => {
+        lastTurnPageRes = turnPageFn(state, isWheelDown ? 'next' : 'prev');
+      });
+      timeoutId = 0;
+    }, 16);
+    return;
   }
-  if (wheelType === 'trackpad') return handleTrackpadWheel(e);
-  setState(state => {
-    lastTurnPageRes = turnPageFn(state, isWheelDown ? 'next' : 'prev');
-  });
+
+  // 通过判断\`两次滚动距离是否成倍数\`和\`滚动距离是否过小\`来判断是否是触摸板
+  if (wheelType !== 'trackpad' && (nowDeltaY < 2 || !Number.isInteger(lastDeltaY) && !Number.isInteger(nowDeltaY) && !isMultipleOf(lastDeltaY, nowDeltaY))) {
+    wheelType = 'trackpad';
+    if (timeoutId) clearTimeout(timeoutId);
+    // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
+    if (lastTurnPageRes) turnPage(isWheelDown ? 'prev' : 'next');
+  }
+  lastDeltaY = nowDeltaY;
+  switch (wheelType) {
+    case undefined:
+      wheelType = 'mouse';
+    // falls through
+
+    case 'mouse':
+      return turnPage(isWheelDown ? 'next' : 'prev');
+    case 'trackpad':
+      return handleTrackpadWheel(e);
+  }
 };
 
 /** 根据比例更新图片类型。返回是否修改了图片类型 */
@@ -6194,8 +6223,8 @@ const useFab = async initProps => {
 };
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>优化\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>优化使用触摸板进行滚动的体验\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复使用触摸板滚动时偶尔会出现页面闪烁的 bug </p></li><li><p>修复使用鼠标滚轮快速滚动后滚轮失效的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -8875,7 +8904,6 @@ const isLazyLoaded = (e, oldSrc) => {
 };
 const imgMap = new Map();
 let imgShowObserver;
-unsafeWindow.imgMap = imgMap;
 const getImg = e => imgMap.get(e) ?? createImgData();
 const MAX_TRIGGED_NUM = 5;
 
