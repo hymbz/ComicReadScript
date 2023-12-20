@@ -137,7 +137,7 @@ interface History {
       // 第一页以外不自动加载
       if (!isFirstPage) needAutoShow.val = false;
 
-      let imgList = querySelectorAll<HTMLImageElement>('.plc img');
+      let imgList = querySelectorAll<HTMLImageElement>('.plc:not(.plm) img');
 
       const updateImgList = () => {
         let i = imgList.length;
