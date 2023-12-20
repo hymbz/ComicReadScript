@@ -513,12 +513,13 @@ try {
     }
 
     // #kemono
+    case 'kemono.su':
     case 'kemono.party': {
       options = {
         name: 'kemono',
         getImgList: () =>
           main
-            .querySelectorAll<HTMLAnchorElement>('.post__thumbnail > a')
+            .querySelectorAll<HTMLAnchorElement>('.post__thumbnail a')
             .map((e) => e.href),
         initOptions: { autoShow: false, option: { onePageMode: true } },
       };
