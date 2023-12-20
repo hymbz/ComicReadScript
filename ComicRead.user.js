@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.2.10
+// @version         8.2.11
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -6224,7 +6224,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复使用触摸板滚动时偶尔会出现页面闪烁的 bug </p></li><li><p>修复使用鼠标滚轮快速滚动后滚轮失效的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复 kemono 改版后脚本失效的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6885,7 +6885,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
       const isFirstPage = !main.querySelector('.pg > .prev');
       // 第一页以外不自动加载
       if (!isFirstPage) needAutoShow.val = false;
-      let imgList = main.querySelectorAll('.plc img');
+      let imgList = main.querySelectorAll('.plc:not(.plm) img');
       const updateImgList = () => {
         let i = imgList.length;
         while (i--) {
@@ -8584,11 +8584,12 @@ const main = require('main');
       }
 
     // #kemono
+    case 'kemono.su':
     case 'kemono.party':
       {
         options = {
           name: 'kemono',
-          getImgList: () => main.querySelectorAll('.post__thumbnail > a').map(e => e.href),
+          getImgList: () => main.querySelectorAll('.post__thumbnail a').map(e => e.href),
           initOptions: {
             autoShow: false,
             option: {
