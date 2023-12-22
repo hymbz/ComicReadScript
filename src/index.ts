@@ -523,6 +523,24 @@ try {
             .map((e) => e.href),
         initOptions: { autoShow: false, option: { onePageMode: true } },
       };
+
+      const zipExtension = ['zip', 'rar', '7z', 'cbz', 'cbr', 'cb7'];
+      main
+        .querySelectorAll<HTMLAnchorElement>('.post__attachment a')
+        .forEach((e) => {
+          if (!zipExtension.includes(e.href.split('.').pop()!)) return;
+          const a = document.createElement('a');
+          a.href = `https://comic-read.pages.dev/?url=${encodeURIComponent(
+            e.href,
+          )}`;
+          a.textContent = e.textContent!.replace(
+            'Download ',
+            'ComicReadPWA - ',
+          );
+          a.className = e.className;
+          a.style.opacity = '.6';
+          e.parentNode!.insertBefore(a, e.nextElementSibling);
+        });
       break;
     }
 
