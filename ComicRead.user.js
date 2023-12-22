@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.2.11
+// @version         8.3.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史，体验优化」、百合会新站、动漫之家——「解锁隐藏漫画」、ehentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画，自动翻页」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、拷贝漫画(copymanga)、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -44,10 +44,10 @@
 // @grant           GM.unregisterMenuCommand
 // @grant           unsafeWindow
 // @icon            data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAACBUExURUxpcWB9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i////198il17idng49DY3PT297/K0MTP1M3X27rHzaCxupmstbTByK69xOfr7bfFy3WOmqi4wPz9/X+XomSBjqW1vZOmsN/l6GmFkomeqe7x8vn6+kv+1vUAAAAOdFJOUwDsAoYli9zV+lIqAZEDwV05SQAAAUZJREFUOMuFk+eWgjAUhGPBiLohjZACUqTp+z/gJkqJy4rzg3Nn+MjhwB0AANjv4BEtdITBHjhtQ4g+CIZbC4Qb9FGb0J4P0YrgCezQqgIA14EDGN8fYz+f3BGMASFkTJ+GDAYMUSONzrFL7SVvjNQIz4B9VERRmV0rbJWbrIwidnsd6ACMlEoip3uad3X2HJmqb3gCkkJELwk5DExRDxA6HnKaDEPSsBnAsZoANgJaoAkg12IJqBiPACImXQKF9IDULIHUkOk7kDpeAMykHqCEWACy8ACdSM7LGSg5F3HtAU1rrkaK9uGAshXS2lZ5QH/nVhmlD8rKlmbO3ZsZwLe8qnpdxJRnLaci1X1V5R32fjd5CndVkfYdGpy3D+htU952C/ypzPtdt3JflzZYBy7fi/O1euvl/XH1Pp+Cw3/1P1xOZwB+AWMcP/iw0AlKAAAAV3pUWHRSYXcgcHJvZmlsZSB0eXBlIGlwdGMAAHic4/IMCHFWKCjKT8vMSeVSAAMjCy5jCxMjE0uTFAMTIESANMNkAyOzVCDL2NTIxMzEHMQHy4BIoEouAOoXEXTyQjWVAAAAAElFTkSuQmCC
-// @resource        solid-js https://unpkg.com/solid-js@1.8.5/dist/solid.cjs
-// @resource        solid-js/store https://unpkg.com/solid-js@1.8.5/store/dist/store.cjs
-// @resource        solid-js/web https://unpkg.com/solid-js@1.8.5/web/dist/web.cjs
-// @resource        fflate https://unpkg.com/fflate@0.8.1/umd/index.js
+// @resource        solid-js https://registry.npmmirror.com/solid-js/1.8.5/files/dist/solid.cjs
+// @resource        solid-js/store https://registry.npmmirror.com/solid-js/1.8.5/files/store/dist/store.cjs
+// @resource        solid-js/web https://registry.npmmirror.com/solid-js/1.8.5/files/web/dist/web.cjs
+// @resource        fflate https://registry.npmmirror.com/fflate/0.8.1/files/umd/index.js
 // @resource        dmzjDecrypt https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199
 // @supportURL      https://github.com/hymbz/ComicReadScript/issues
 // @updateURL       https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
@@ -2984,7 +2984,7 @@ const getTurnPageDir = startTime => {
     total = refs.root.clientWidth;
   }
 
-  // 处理无关速度，不考虑时间，单纯根据当前滚动距离来判断的情况
+  // 处理无关速度不考虑时间单纯根据当前滚动距离来判断的情况
   if (!startTime) {
     if (Math.abs(move) > total / 2) dir = move > 0 ? 'next' : 'prev';
     return dir;
@@ -3069,14 +3069,14 @@ const handleMangaFlowDrag = ({
 let lastDeltaY$1 = 0;
 let retardStartTime = 0;
 const handleTrackpadWheel = e => {
-  let deltaY = Math.floor(-e.deltaY * 0.8);
+  let deltaY = Math.floor(-e.deltaY);
   let absDeltaY = Math.abs(deltaY);
   if (absDeltaY < 2) return;
 
   // 加速度小于2后逐渐缩小滚动距离，实现减速效果
-  if (Math.abs(absDeltaY - lastDeltaY$1) <= 2) {
+  if (Math.abs(absDeltaY - lastDeltaY$1) <= 20) {
     if (!retardStartTime) retardStartTime = Date.now();
-    deltaY *= 1 - Math.min(1, (Date.now() - retardStartTime) / 10 * 0.1);
+    deltaY *= 1 - Math.min(1, (Date.now() - retardStartTime) / 10 * 0.01);
     absDeltaY = Math.abs(deltaY);
     if (absDeltaY < 2) return;
   } else retardStartTime = 0;
@@ -3320,18 +3320,14 @@ const handleKeyDown = e => {
   }
 };
 
-/** 清除精度问题出现的奇怪小数 */
-const clearDecimalRe = /\\d{4}\\d*/;
-/** 判断两个数值是否成倍数关系 */
+/** 判断两个数值是否是整数倍的关系 */
 const isMultipleOf = (a, b) => {
-  let decimal = \`\${a < b ? b / a : a / b}\`.split('.')?.[1];
-  if (!decimal) return true;
-  if (clearDecimalRe.test(decimal)) decimal = decimal.replace(clearDecimalRe, '');
-  return decimal.length <= 4;
+  const decimal = \`\${a < b ? b / a : a / b}\`.split('.')?.[1];
+  return !decimal || decimal.startsWith('0000') || decimal.startsWith('9999');
 };
 let lastDeltaY = -1;
 let timeoutId = 0;
-let lastTurnPageRes = false;
+let lastPageNum = -1;
 let wheelType;
 const handleWheel = e => {
   e.stopPropagation();
@@ -3350,30 +3346,27 @@ const handleWheel = e => {
     return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
   }
   const nowDeltaY = Math.abs(e.deltaY);
-  if (wheelType === undefined && lastDeltaY === -1) {
-    lastDeltaY = nowDeltaY;
-    // 第一次触发滚动没法判断类型，就当作滚轮来处理
-    // 但为了避免触摸板前两次滚动事件间隔大于帧生成时间导致得重新翻页回去的闪烁，加个延迟等待下
-    timeoutId = window.setTimeout(() => {
-      setState(state => {
-        lastTurnPageRes = turnPageFn(state, isWheelDown ? 'next' : 'prev');
-      });
-      timeoutId = 0;
-    }, 16);
-    return;
-  }
 
   // 通过判断\`两次滚动距离是否成倍数\`和\`滚动距离是否过小\`来判断是否是触摸板
   if (wheelType !== 'trackpad' && (nowDeltaY < 2 || !Number.isInteger(lastDeltaY) && !Number.isInteger(nowDeltaY) && !isMultipleOf(lastDeltaY, nowDeltaY))) {
     wheelType = 'trackpad';
     if (timeoutId) clearTimeout(timeoutId);
     // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
-    if (lastTurnPageRes) turnPage(isWheelDown ? 'prev' : 'next');
+    if (lastPageNum !== -1) _setState('activePageIndex', lastPageNum);
   }
   lastDeltaY = nowDeltaY;
   switch (wheelType) {
     case undefined:
-      wheelType = 'mouse';
+      {
+        if (lastPageNum === -1) {
+          // 第一次触发滚动没法判断类型，就当作滚轮来处理
+          // 但为了避免触摸板前两次滚动事件间隔大于帧生成时间导致得重新翻页回去的闪烁，加个延迟等待下
+          lastPageNum = store.activePageIndex;
+          timeoutId = window.setTimeout(() => turnPage(isWheelDown ? 'next' : 'prev'), 16);
+          return;
+        }
+        wheelType = 'mouse';
+      }
     // falls through
 
     case 'mouse':
@@ -6223,8 +6216,10 @@ const useFab = async initProps => {
 };
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复 kemono 改版后脚本失效的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>在 kemono 上为漫画压缩包提供跳转到 ComicReadPWA 的快捷按钮\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>改用 npmmirror CDN，避免因网络问题无法安装脚本 </p></li><li><p>修复触摸板首次滚动异常的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6287,7 +6282,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3()], {
+    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -8597,6 +8592,16 @@ const main = require('main');
             }
           }
         };
+        const zipExtension = ['zip', 'rar', '7z', 'cbz', 'cbr', 'cb7'];
+        main.querySelectorAll('.post__attachment a').forEach(e => {
+          if (!zipExtension.includes(e.href.split('.').pop())) return;
+          const a = document.createElement('a');
+          a.href = `https://comic-read.pages.dev/?url=${encodeURIComponent(e.href)}`;
+          a.textContent = e.textContent.replace('Download ', 'ComicReadPWA - ');
+          a.className = e.className;
+          a.style.opacity = '.6';
+          e.parentNode.insertBefore(a, e.nextElementSibling);
+        });
         break;
       }
 
