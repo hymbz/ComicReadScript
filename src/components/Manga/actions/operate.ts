@@ -1,11 +1,11 @@
 import { getKeyboardCode } from 'helper';
-import { store, refs, _setState, setState } from '../store';
+import { store, refs, _setState } from '../store';
 import { handleTrackpadWheel } from './pointer';
 import { zoomScrollModeImg } from './image';
 import { setOption } from './helper';
 import { hotkeysMap } from './hotkeys';
 import { zoom } from './zoom';
-import { closeScrollLock, turnPage, turnPageFn } from './turnPage';
+import { closeScrollLock, turnPage } from './turnPage';
 import {
   switchFillEffect,
   switchScrollMode,
@@ -151,20 +151,15 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   }
 };
 
-/** 清除精度问题出现的奇怪小数 */
-const clearDecimalRe = /\d{4}\d*/;
-/** 判断两个数值是否成倍数关系 */
+/** 判断两个数值是否是整数倍的关系 */
 const isMultipleOf = (a: number, b: number) => {
-  let decimal = `${a < b ? b / a : a / b}`.split('.')?.[1];
-  if (!decimal) return true;
-  if (clearDecimalRe.test(decimal))
-    decimal = decimal.replace(clearDecimalRe, '');
-  return decimal.length <= 4;
+  const decimal = `${a < b ? b / a : a / b}`.split('.')?.[1];
+  return !decimal || decimal.startsWith('0000') || decimal.startsWith('9999');
 };
 
 let lastDeltaY = -1;
 let timeoutId = 0;
-let lastTurnPageRes = false;
+let lastPageNum = -1;
 let wheelType: undefined | 'trackpad' | 'mouse';
 
 export const handleWheel = (e: WheelEvent) => {
@@ -192,19 +187,6 @@ export const handleWheel = (e: WheelEvent) => {
 
   const nowDeltaY = Math.abs(e.deltaY);
 
-  if (wheelType === undefined && lastDeltaY === -1) {
-    lastDeltaY = nowDeltaY;
-    // 第一次触发滚动没法判断类型，就当作滚轮来处理
-    // 但为了避免触摸板前两次滚动事件间隔大于帧生成时间导致得重新翻页回去的闪烁，加个延迟等待下
-    timeoutId = window.setTimeout(() => {
-      setState((state) => {
-        lastTurnPageRes = turnPageFn(state, isWheelDown ? 'next' : 'prev');
-      });
-      timeoutId = 0;
-    }, 16);
-    return;
-  }
-
   // 通过判断`两次滚动距离是否成倍数`和`滚动距离是否过小`来判断是否是触摸板
   if (
     wheelType !== 'trackpad' &&
@@ -216,13 +198,24 @@ export const handleWheel = (e: WheelEvent) => {
     wheelType = 'trackpad';
     if (timeoutId) clearTimeout(timeoutId);
     // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
-    if (lastTurnPageRes) turnPage(isWheelDown ? 'prev' : 'next');
+    if (lastPageNum !== -1) _setState('activePageIndex', lastPageNum);
   }
   lastDeltaY = nowDeltaY;
 
   switch (wheelType) {
-    case undefined:
+    case undefined: {
+      if (lastPageNum === -1) {
+        // 第一次触发滚动没法判断类型，就当作滚轮来处理
+        // 但为了避免触摸板前两次滚动事件间隔大于帧生成时间导致得重新翻页回去的闪烁，加个延迟等待下
+        lastPageNum = store.activePageIndex;
+        timeoutId = window.setTimeout(
+          () => turnPage(isWheelDown ? 'next' : 'prev'),
+          16,
+        );
+        return;
+      }
       wheelType = 'mouse';
+    }
     // falls through
 
     case 'mouse':

@@ -77,7 +77,7 @@ const getTurnPageDir = (startTime?: number): undefined | 'prev' | 'next' => {
     total = refs.root.clientWidth;
   }
 
-  // 处理无关速度，不考虑时间，单纯根据当前滚动距离来判断的情况
+  // 处理无关速度不考虑时间单纯根据当前滚动距离来判断的情况
   if (!startTime) {
     if (Math.abs(move) > total / 2) dir = move > 0 ? 'next' : 'prev';
     return dir;
@@ -173,14 +173,14 @@ let lastDeltaY = 0;
 let retardStartTime = 0;
 
 export const handleTrackpadWheel = (e: WheelEvent) => {
-  let deltaY = Math.floor(-e.deltaY * 0.8);
+  let deltaY = Math.floor(-e.deltaY);
   let absDeltaY = Math.abs(deltaY);
   if (absDeltaY < 2) return;
 
   // 加速度小于2后逐渐缩小滚动距离，实现减速效果
-  if (Math.abs(absDeltaY - lastDeltaY) <= 2) {
+  if (Math.abs(absDeltaY - lastDeltaY) <= 20) {
     if (!retardStartTime) retardStartTime = Date.now();
-    deltaY *= 1 - Math.min(1, ((Date.now() - retardStartTime) / 10) * 0.1);
+    deltaY *= 1 - Math.min(1, ((Date.now() - retardStartTime) / 10) * 0.01);
     absDeltaY = Math.abs(deltaY);
     if (absDeltaY < 2) return;
   } else retardStartTime = 0;
