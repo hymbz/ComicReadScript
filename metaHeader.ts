@@ -15,18 +15,18 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  */
 const resourceList: Record<string, [string, string] | [string]> = {
   'solid-js': [
-    'https://unpkg.com/solid-js@1.8.5/dist/solid.cjs',
-    'https://unpkg.com/solid-js@1.8.5/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.5/files/dist/solid.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.5/files/dist/dev.cjs',
   ],
   'solid-js/store': [
-    'https://unpkg.com/solid-js@1.8.5/store/dist/store.cjs',
-    'https://unpkg.com/solid-js@1.8.5/store/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.5/files/store/dist/store.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.5/files/store/dist/dev.cjs',
   ],
   'solid-js/web': [
-    'https://unpkg.com/solid-js@1.8.5/web/dist/web.cjs',
-    'https://unpkg.com/solid-js@1.8.5/web/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.5/files/web/dist/web.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.5/files/web/dist/dev.cjs',
   ],
-  fflate: ['https://unpkg.com/fflate@0.8.1/umd/index.js'],
+  fflate: ['https://registry.npmmirror.com/fflate/0.8.1/files/umd/index.js'],
   dmzjDecrypt: [
     'https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199',
   ],
