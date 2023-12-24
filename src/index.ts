@@ -18,7 +18,7 @@ const main = require('main') as typeof import('./main');
 try {
   // 匹配站点
   switch (window.location.hostname) {
-    // #百合会——「记录阅读历史，体验优化」
+    // #百合会——「记录阅读历史、自动签到等」
     case 'bbs.yamibo.com': {
       inject('yamibo');
       break;
@@ -86,16 +86,22 @@ try {
       break;
     }
 
-    // #ehentai——「匹配 nhentai 漫画」
+    // #E-Hentai——「匹配 nhentai 漫画」
     case 'exhentai.org':
     case 'e-hentai.org': {
       inject('ehentai');
       break;
     }
 
-    // #nhentai——「彻底屏蔽漫画，自动翻页」
+    // #nhentai——「彻底屏蔽漫画、自动翻页」
     case 'nhentai.net': {
       inject('nhentai');
+      break;
+    }
+
+    // #Yurifans——「自动签到」
+    case 'yuri.website': {
+      inject('yurifans');
       break;
     }
 

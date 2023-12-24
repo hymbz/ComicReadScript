@@ -119,6 +119,8 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - [nhentai](#nhentai)
   - [彻底屏蔽漫画](#彻底屏蔽漫画)
   - [自动翻页](#自动翻页)
+- Yurifans
+  - 自动签到
 
 <!-- 根据 src/index.ts 自动生成 -->
 <!-- supportSiteList -->
