@@ -40,15 +40,13 @@
 .SettingBlock {
   display: grid;
   grid-template-rows: max-content 1fr;
-
-  padding: 0 0.5em;
-  padding-bottom: 1em;
-
   transition: grid-template-rows 200ms ease-out;
 
   & .SettingBlockBody {
     z-index: 0;
     overflow: hidden;
+    padding: 0 0.5em;
+    padding-bottom: 1em;
 
     & > div + & > div {
       margin-top: 1em;
@@ -58,6 +56,10 @@
   &[data-show="false"] {
     grid-template-rows: max-content 0fr;
     padding-bottom: unset;
+
+    & .SettingBlockBody {
+      padding: unset;
+    }
   }
 }
 

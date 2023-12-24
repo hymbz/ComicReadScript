@@ -35,9 +35,17 @@ p {
 
 button {
   position: relative;
+
   overflow: hidden;
+  overflow: visible;
+
   margin: 0.5em;
+
   white-space: nowrap;
+}
+
+select {
+  padding-right: 28px !important;
 }
 
 .root {
