@@ -8,11 +8,20 @@ import { toast } from '../../components/Toast';
 
 const [progress, setProgress] = createSignal<null | number>(null);
 
-const loadUrl = async (url: string | null) => {
+const isUrl = (text: string) => {
   try {
-    if (progress() !== null) return toast.warn(t('button.downloading'));
-    if (!url) return;
+    return !!new URL(text);
+  } catch (_) {
+    return false;
+  }
+};
 
+export const loadUrl = async (url: string | null | undefined) => {
+  try {
+    if (!url) return;
+    if (!isUrl(url)) return toast.warn(t('pwa.alert.not_valid_url'));
+
+    if (progress() !== null) return toast.warn(t('button.downloading'));
     setProgress(0);
 
     if (!(await wait(() => typeof GM_xmlhttpRequest !== 'undefined', 1000 * 3)))

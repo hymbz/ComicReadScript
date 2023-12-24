@@ -15,7 +15,7 @@ import { Toaster, toast } from '../../components/Toast';
 import { store, handleExit, loadNewImglist, _setState } from './store';
 import { FileSystemToFile, imgExtension } from './helper';
 import { handleDrag } from './handleDrag';
-import { DownloadButton } from './DownloadButton';
+import { DownloadButton, loadUrl } from './DownloadButton';
 
 import classes from './index.module.css';
 
@@ -63,6 +63,11 @@ const editButtonList: MangaProps['editButtonList'] = (list) => [
     </IconButton>
   ),
 ];
+
+// 支持粘贴 url
+window.addEventListener('paste', (event) =>
+  loadUrl(event.clipboardData?.getData('text/plain')),
+);
 
 const getSaveOption = (): MangaProps['option'] => {
   const saveJson = localStorage.getItem('option');

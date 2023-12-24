@@ -72,6 +72,7 @@
       "img_not_found": "找不到图片",
       "img_not_found_files": "请选择图片文件或含有图片文件的压缩包",
       "img_not_found_folder": "文件夹下没有图片文件或含有图片文件的压缩包",
+      "not_valid_url": "不是有效的 URL",
       "repeat_load": "正在加载其他文件中……",
       "unzip_error": "解压出错",
       "unzip_password_error": "解压密码错误",
@@ -91,7 +92,7 @@
       "unzipping": "解压缩中"
     },
     "tip_enter_url": "请输入压缩包 URL",
-    "tip_md": "# ComicRead PWA\n使用 [ComicRead](https://github.com/hymbz/ComicReadScript) 的阅读模式阅读**本地**漫画\n---\n### 将图片文件、文件夹、压缩包直接拖入即可开始阅读\n*也可以选择输入压缩包 URL 下载阅读*"
+    "tip_md": "# ComicRead PWA\n使用 [ComicRead](https://github.com/hymbz/ComicReadScript) 的阅读模式阅读**本地**漫画\n---\n### 将图片文件、文件夹、压缩包直接拖入即可开始阅读\n*也可以选择**直接粘贴**或**输入**压缩包 URL 下载阅读*"
   },
   "setting": {
     "hotkeys": {
@@ -164,6 +165,7 @@
       "open_link_new_page": "在新页面中打开链接",
       "remember_current_site": "记住当前站点"
     },
+    "changed_load_failed": "网站发生变化，无法加载漫画",
     "ehentai": {
       "fetch_img_page_source_failed": "获取图片页源码失败",
       "fetch_img_page_url_failed": "从详情页获取图片页地址失败",
@@ -173,7 +175,6 @@
       "nhentai_error": "nhentai 匹配出错",
       "nhentai_failed": "匹配失败，请在确认登录 {{nhentai}} 后刷新"
     },
-    "changed_load_failed": "网站发生变化，无法加载漫画",
     "nhentai": {
       "fetch_next_page_failed": "获取下一页漫画数据失败",
       "tag_blacklist_fetch_failed": "标签黑名单获取失败"

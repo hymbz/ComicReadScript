@@ -72,6 +72,7 @@
       "img_not_found": "Image not found",
       "img_not_found_files": "Please select an image file or a compressed file containing image files",
       "img_not_found_folder": "No image files or compressed files containing image files in the folder",
+      "not_valid_url": "Not a valid URL",
       "repeat_load": "Loading other files…",
       "unzip_error": "Decompression error",
       "unzip_password_error": "Decompression password error",
@@ -91,7 +92,7 @@
       "unzipping": "Unzipping"
     },
     "tip_enter_url": "Please enter the URL of the compressed file",
-    "tip_md": "# ComicRead PWA\nRead **local** comics using [ComicRead](https://github.com/hymbz/ComicReadScript) reading mode.\n---\n### Drag and drop image files, folders, or compressed files directly to start reading\n*You can also choose to enter the URL of the compressed file for downloading and reading*"
+    "tip_md": "# ComicRead PWA\nRead **local** comics using [ComicRead](https://github.com/hymbz/ComicReadScript) reading mode.\n---\n### Drag and drop image files, folders, or compressed files directly to start reading\n*You can also choose to **paste directly** or **enter** the URL of the compressed file for downloading and reading*"
   },
   "setting": {
     "hotkeys": {
@@ -164,6 +165,7 @@
       "open_link_new_page": "Open links in a new page",
       "remember_current_site": "Remember the current site"
     },
+    "changed_load_failed": "The website has undergone changes, unable to load comics",
     "ehentai": {
       "fetch_img_page_source_failed": "Failed to get the source code of the image page",
       "fetch_img_page_url_failed": "Failed to get the image page address from the detail page",
@@ -173,7 +175,6 @@
       "nhentai_error": "Error in nhentai matching",
       "nhentai_failed": "Matching failed, please refresh after confirming login to {{nhentai}}"
     },
-    "changed_load_failed": "The website has undergone changes, unable to load comics",
     "nhentai": {
       "fetch_next_page_failed": "Failed to get next page of comic data",
       "tag_blacklist_fetch_failed": "Failed to fetch tag blacklist"
