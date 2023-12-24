@@ -35,12 +35,8 @@ p {
 
 button {
   position: relative;
-
-  overflow: hidden;
   overflow: visible;
-
   margin: 0.5em;
-
   white-space: nowrap;
 }
 
@@ -130,19 +126,23 @@ select {
   display: none;
 }
 
-button[data-loading]::after {
-  content: "";
-
-  position: absolute;
-  inset: auto 0 0;
-
+button[data-loading] {
   overflow: hidden;
 
-  height: 2px;
+  &::after {
+    content: "";
 
-  background-color: var(--text-bright);
+    position: absolute;
+    inset: auto 0 0;
 
-  animation: loading 1s infinite linear;
+    overflow: hidden;
+
+    height: 2px;
+
+    background-color: var(--text-bright);
+
+    animation: loading 1s infinite linear;
+  }
 }
 
 @keyframes loading {
