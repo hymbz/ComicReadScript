@@ -15,16 +15,16 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  */
 const resourceList: Record<string, [string, string] | [string]> = {
   'solid-js': [
-    'https://registry.npmmirror.com/solid-js/1.8.5/files/dist/solid.cjs',
-    'https://registry.npmmirror.com/solid-js/1.8.5/files/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.7/files/dist/solid.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.7/files/dist/dev.cjs',
   ],
   'solid-js/store': [
-    'https://registry.npmmirror.com/solid-js/1.8.5/files/store/dist/store.cjs',
-    'https://registry.npmmirror.com/solid-js/1.8.5/files/store/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.7/files/store/dist/store.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.7/files/store/dist/dev.cjs',
   ],
   'solid-js/web': [
-    'https://registry.npmmirror.com/solid-js/1.8.5/files/web/dist/web.cjs',
-    'https://registry.npmmirror.com/solid-js/1.8.5/files/web/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.7/files/web/dist/web.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.7/files/web/dist/dev.cjs',
   ],
   fflate: ['https://registry.npmmirror.com/fflate/0.8.1/files/umd/index.js'],
   dmzjDecrypt: [
