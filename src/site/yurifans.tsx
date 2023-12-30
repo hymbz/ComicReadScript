@@ -33,7 +33,7 @@ declare const b2token: string;
         const data = JSON.parse(res.responseText);
 
         // 首次成功签到 或 重复签到
-        if (!(data?.mission?.credit === '10' || data === '10'))
+        if (!(data?.mission?.date || !Number.isNaN(+data)))
           throw new Error('签到失败');
 
         toast('自动签到成功');
