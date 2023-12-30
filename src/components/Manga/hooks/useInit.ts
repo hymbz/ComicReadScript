@@ -1,18 +1,20 @@
 /* eslint-disable solid/reactivity */
 import { debounce, throttle } from 'throttle-debounce';
-import { createEffect, onCleanup } from 'solid-js';
+import { createEffect, on, onCleanup } from 'solid-js';
 
-import { assign, isEqualArray } from 'helper';
+import { assign } from 'helper';
 import type { MangaProps } from '..';
+import type { State } from '../store';
 import { refs, setState, store } from '../store';
 import {
   defaultHotkeys,
   focus,
   handleResize,
   resetImgState,
+  updateImgLoadType,
   updatePageData,
 } from '../actions';
-import type { Option } from '../store/option';
+import { defaultOption, type Option } from '../store/option';
 import { playAnimation } from '../helper';
 
 const createComicImg = (url: string): ComicImg => ({
@@ -21,20 +23,95 @@ const createComicImg = (url: string): ComicImg => ({
   loadType: 'wait',
 });
 
-/** 初始化 */
 export const useInit = (props: MangaProps) => {
-  // 初始化配置
-  createEffect(() => {
-    setState((state) => {
-      if (props.option)
-        state.option = assign(state.option, props.option as Option);
+  const watchProps: Partial<
+    Record<keyof MangaProps, (state: State) => unknown>
+  > = {
+    option: (state) => {
+      state.option = props.option
+        ? assign(state.option, props.option as Option)
+        : (JSON.parse(JSON.stringify(defaultOption)) as Option);
+    },
+    fillEffect: (state) => {
+      state.fillEffect = props.fillEffect ?? { '-1': true };
+      updatePageData(state);
+    },
+    hotkeys: (state) => {
       state.hotkeys = {
         ...JSON.parse(JSON.stringify(defaultHotkeys)),
         ...props.hotkeys,
       };
+    },
+
+    onExit: (state) => {
+      state.prop.Exit = props.onExit
+        ? (isEnd?: boolean | Event) => {
+            playAnimation(refs.exit);
+            props.onExit?.(!!isEnd);
+            setState((draftState) => {
+              if (isEnd) draftState.activePageIndex = 0;
+              draftState.show.endPage = undefined;
+            });
+          }
+        : undefined;
+    },
+    onPrev: (state) => {
+      state.prop.Prev = props.onPrev
+        ? debounce(
+            1000,
+            () => {
+              playAnimation(refs.prev);
+              props.onPrev?.();
+            },
+            { atBegin: true },
+          )
+        : undefined;
+    },
+    onNext: (state) => {
+      state.prop.Next = props.onNext
+        ? debounce(
+            1000,
+            () => {
+              playAnimation(refs.next);
+              props.onNext?.();
+            },
+            { atBegin: true },
+          )
+        : undefined;
+    },
+    editButtonList: (state) => {
+      state.prop.editButtonList = props.editButtonList ?? ((list) => list);
+    },
+    editSettingList: (state) => {
+      state.prop.editSettingList = props.editSettingList ?? ((list) => list);
+    },
+    onLoading: (state) => {
+      state.prop.Loading = props.onLoading
+        ? debounce(100, props.onLoading)
+        : undefined;
+    },
+    onOptionChange: (state) => {
+      state.prop.OptionChange = props.onOptionChange
+        ? debounce(100, props.onOptionChange)
+        : undefined;
+    },
+    onHotkeysChange: (state) => {
+      state.prop.HotkeysChange = props.onHotkeysChange
+        ? debounce(100, props.onHotkeysChange)
+        : undefined;
+    },
+    commentList: (state) => {
       state.commentList = props.commentList;
-    });
-  });
+    },
+  };
+  Object.entries(watchProps).forEach(([key, fn]) =>
+    createEffect(
+      on(
+        () => props[key as keyof MangaProps],
+        () => setState(fn),
+      ),
+    ),
+  );
 
   // 初始化页面比例
   handleResize(refs.root.scrollWidth, refs.root.scrollHeight);
@@ -48,84 +125,9 @@ export const useInit = (props: MangaProps) => {
   resizeObserver.observe(refs.root);
   onCleanup(() => resizeObserver.disconnect());
 
-  createEffect(() => {
+  const handleImgList = () => {
     setState((state) => {
-      state.prop.Exit = props.onExit
-        ? (isEnd?: boolean | Event) => {
-            playAnimation(refs.exit);
-            props.onExit?.(!!isEnd);
-            if (isEnd) state.activePageIndex = 0;
-            state.show.endPage = undefined;
-          }
-        : undefined;
-      state.prop.Prev = props.onPrev
-        ? debounce(
-            1000,
-            () => {
-              playAnimation(refs.prev);
-              props.onPrev?.();
-            },
-            { atBegin: true },
-          )
-        : undefined;
-      state.prop.Next = props.onNext
-        ? debounce(
-            1000,
-            () => {
-              playAnimation(refs.next);
-              props.onNext?.();
-            },
-            { atBegin: true },
-          )
-        : undefined;
-
-      if (props.editButtonList)
-        state.prop.editButtonList = props.editButtonList;
-      if (props.editSettingList)
-        state.prop.editSettingList = props.editSettingList;
-
-      state.prop.Loading = props.onLoading
-        ? debounce(100, props.onLoading)
-        : undefined;
-      state.prop.OptionChange = props.onOptionChange
-        ? debounce(100, props.onOptionChange)
-        : undefined;
-      state.prop.HotkeysChange = props.onHotkeysChange
-        ? debounce(100, props.onHotkeysChange)
-        : undefined;
-    });
-  });
-
-  // 处理 imgList fillEffect 参数的初始化和修改
-  createEffect(() => {
-    setState((state) => {
-      if (props.fillEffect) state.fillEffect = props.fillEffect;
-
-      if (
-        isEqualArray(
-          props.imgList,
-          state.imgList.map(({ src }) => src),
-        )
-      )
-        return state.prop.Loading?.(state.imgList);
-
       state.show.endPage = undefined;
-
-      /** 判断是否是初始化 */
-      const isInit =
-        !state.imgList.length ||
-        state.imgList.filter(({ src }) => props.imgList.includes(src)).length <=
-          2;
-
-      // 处理初始化
-      if (isInit) {
-        state.imgList = [...props.imgList].map(createComicImg);
-        resetImgState(state);
-        updatePageData(state);
-        state.prop.Loading?.(state.imgList);
-        state.activePageIndex = 0;
-        return;
-      }
 
       /** 修改前的当前显示图片 */
       const oldActiveImg =
@@ -133,17 +135,27 @@ export const useInit = (props: MangaProps) => {
           (i) => state.imgList?.[i]?.src,
         ) ?? [];
 
-      state.imgList = [...props.imgList].map(
-        (imgUrl) =>
-          state.imgList.find((img) => img.src === imgUrl) ??
-          createComicImg(imgUrl),
-      );
-      // 如果有图片被删除了，就将相关变量恢复到初始状态
-      if (state.imgList.some(({ src }) => !props.imgList.includes(src))) {
-        state.fillEffect = {};
-        resetImgState(state);
+      /** 判断是否有影响到现有图片流的改动 */
+      let isChange = state.imgList.length !== props.imgList.length;
+
+      const imgMap = new Map(state.imgList.map((img) => [img.src, img]));
+      for (let i = 0; i < props.imgList.length; i++) {
+        const url = props.imgList[i];
+        const img = url && !isChange && state.imgList[i];
+        if (img && img.loadType !== 'wait' && img.src && img.src !== url)
+          isChange = true;
+        state.imgList[i] = imgMap.get(url) ?? createComicImg(url);
       }
-      updatePageData(state);
+      if (state.imgList.length > props.imgList.length) {
+        state.imgList.length = props.imgList.length;
+        isChange = true;
+      }
+
+      if (isChange) {
+        state.fillEffect = props.fillEffect ?? { '-1': true };
+        resetImgState(state);
+        updatePageData(state);
+      } else updateImgLoadType(state);
       state.prop.Loading?.(state.imgList);
 
       if (state.pageList.length === 0) {
@@ -152,12 +164,12 @@ export const useInit = (props: MangaProps) => {
       }
 
       // 尽量使当前显示的图片在修改后依然不变
-      oldActiveImg.some((imgUrl) => {
+      oldActiveImg.some((url) => {
         // 跳过填充页和已被删除的图片
-        if (!imgUrl || props.imgList.includes(imgUrl)) return false;
+        if (!url || props.imgList.includes(url)) return false;
 
         const newPageIndex = state.pageList.findIndex((page) =>
-          page.some((index) => state.imgList?.[index]?.src === imgUrl),
+          page.some((index) => state.imgList?.[index]?.src === url),
         );
         if (newPageIndex === -1) return false;
 
@@ -169,6 +181,10 @@ export const useInit = (props: MangaProps) => {
       if (state.activePageIndex > state.pageList.length - 1)
         state.activePageIndex = state.pageList.length - 1;
     });
-  });
+  };
+
+  // 处理 imgList 参数的初始化和修改
+  createEffect(on(() => props.imgList.join(), throttle(500, handleImgList)));
+
   focus();
 };

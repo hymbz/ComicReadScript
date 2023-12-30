@@ -587,6 +587,7 @@ try {
     // 为 pwa 版页面提供 api，以便翻译功能能正常运作
     case 'comic-read.pages.dev': {
       unsafeWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
+      unsafeWindow.toast = main.toast;
       break;
     }
 

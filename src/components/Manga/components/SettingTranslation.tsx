@@ -14,21 +14,32 @@ import classes from '../index.module.css';
 import { SettingsShowItem } from './SettingsShowItem';
 
 export const SettingTranslation = () => {
-  /** 是否正在翻译全部图片 */
-  const isTranslationAll = createMemo(() =>
-    store.imgList.every(
-      (img) => img.translationType === 'show' || img.translationType === 'wait',
-    ),
+  const isTranslationEnable = createMemo(
+    () =>
+      store.option.translation.server !== 'disable' &&
+      translatorOptions().length > 0,
   );
 
-  /** 是否正在翻译当前页以后的全部图片 */
-  const isTranslationAfterCurrent = createMemo(() =>
-    store.imgList
-      .slice(activeImgIndex())
-      .every(
+  /** 是否正在翻译全部图片 */
+  const isTranslationAll = createMemo(
+    () =>
+      isTranslationEnable() &&
+      store.imgList.every(
         (img) =>
           img.translationType === 'show' || img.translationType === 'wait',
       ),
+  );
+
+  /** 是否正在翻译当前页以后的全部图片 */
+  const isTranslationAfterCurrent = createMemo(
+    () =>
+      isTranslationEnable() &&
+      store.imgList
+        .slice(activeImgIndex())
+        .every(
+          (img) =>
+            img.translationType === 'show' || img.translationType === 'wait',
+        ),
   );
 
   return (

@@ -165,7 +165,7 @@ let wheelType: undefined | 'trackpad' | 'mouse';
 export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
-  if (store.flag.scrollLock) return closeScrollLock();
+  if (store.flag.scrollLock || e.deltaY === 0) return closeScrollLock();
   const isWheelDown = e.deltaY > 0;
 
   if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');

@@ -13,8 +13,8 @@ import { getValidTranslators, selfhostedTranslation } from './selfhosted';
 import { cotransTranslation, cotransTranslators } from './cotrans';
 import { setOption } from '../helper';
 
-declare const toast: // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-typeof import('components/Toast/toast').toast | undefined;
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+declare const toast: typeof import('components/Toast/toast').toast | undefined;
 
 /** 翻译指定图片 */
 export const translationImage = async (i: number) => {

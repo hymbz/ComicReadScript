@@ -8,6 +8,7 @@ import { handleVersionUpdate } from './version';
 import type { SiteOptions } from './useSiteOptions';
 import { useSiteOptions } from './useSiteOptions';
 import { useSpeedDial } from './useSpeedDial';
+import type { MangaProps } from '../components/Manga';
 
 /**
  * 对基础的初始化操作的封装
@@ -38,8 +39,8 @@ export const useInit = async <T extends Record<string, any>>(
   });
 
   /** 处理 Manga 组件的 onLoading 回调，将图片加载状态联动到 Fab 上 */
-  const onLoading = (list: ComicImg[]) => {
-    if (list.length === 0) return;
+  const onLoading: MangaProps['onLoading'] = (list, img) => {
+    if (list.length === 0 || !img) return;
 
     const loadNum = list.filter((image) => image.loadType === 'loaded').length;
 
@@ -172,28 +173,19 @@ export const useInit = async <T extends Record<string, any>>(
     },
 
     /** 使用动态更新来加载 imgList */
-    dynamicUpdate: (
-      work: (setImg: (i: number, imgUrl: string) => void) => Promise<unknown>,
-      totalImgNum: number,
-    ) => {
-      const updateImgList = async () => {
-        const _onLoading = mangaProps.onLoading;
-        setManga({
-          onLoading: undefined,
-          imgList: Array(totalImgNum).fill(''),
-        });
-        await work((i, imgUrl) => _setManga('imgList', i, imgUrl));
-        setManga({ onLoading: _onLoading });
-      };
-
-      return async () => {
+    dynamicUpdate:
+      (
+        work: (setImg: (i: number, url: string) => void) => Promise<unknown>,
+        totalImgNum: number,
+      ) =>
+      async () => {
         if (mangaProps.imgList.length === totalImgNum)
           return mangaProps.imgList;
 
-        setTimeout(updateImgList);
+        _setManga('imgList', Array(totalImgNum).fill(''));
+        window.setTimeout(() => work((i, url) => _setManga('imgList', i, url)));
         await wait(() => mangaProps.imgList.some(Boolean));
         return mangaProps.imgList;
-      };
-    },
+      },
   };
 };

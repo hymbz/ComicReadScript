@@ -157,7 +157,7 @@ import {
       );
       if (isEdited) saveImgEleSelector(imgEleList);
 
-      // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要删掉多余的页数
+      // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要再删掉多余的页数
       if (mangaProps.imgList.length > _imgEleList.length)
         _setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
 

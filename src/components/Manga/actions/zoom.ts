@@ -8,16 +8,21 @@ import { resetUI } from './helper';
 
 export const touches = new Map<number, PointerState>();
 
-const scale = () => store.zoom.scale / 100;
+export const { scale, width, height, bound } = createRoot(() => {
+  const scaleMemo = createMemo(() => store.zoom.scale / 100);
 
-const width = () => refs.mangaFlow?.clientWidth ?? 0;
-const height = () => refs.mangaFlow?.clientHeight ?? 0;
+  const widthMemo = createMemo(() => refs.mangaFlow?.clientWidth ?? 0);
+  const heightMemo = createMemo(() => refs.mangaFlow?.clientHeight ?? 0);
 
-export const bound = createRoot(() => {
-  const x = createMemo(() => -width() * (scale() - 1));
-  const y = createMemo(() => -height() * (scale() - 1));
+  const x = createMemo(() => -widthMemo() * (scaleMemo() - 1));
+  const y = createMemo(() => -heightMemo() * (scaleMemo() - 1));
 
-  return { x, y };
+  return {
+    scale: scaleMemo,
+    width: widthMemo,
+    height: heightMemo,
+    bound: { x, y },
+  };
 });
 
 const checkBound = (state: State) => {

@@ -1,14 +1,20 @@
 import { t } from 'helper/i18n';
-import { createEffect, createRoot, on } from 'solid-js';
+import { createEffect, createMemo, createRoot, on } from 'solid-js';
 import type { PointerState, UseDrag } from '../hooks/useDrag';
 import type { State } from '../store';
 import { store, refs, _setState } from '../store';
 
-/** 漫画流的总高度 */
-export const contentHeight = () => refs.mangaFlow.scrollHeight;
+export const { contentHeight, windowHeight } = createRoot(() => {
+  const contentHeightMemo = createMemo(() => refs.mangaFlow?.scrollHeight ?? 0);
+  const windowHeightMemo = createMemo(() => refs.root?.offsetHeight ?? 0);
 
-/** 能显示出漫画的高度 */
-export const windowHeight = () => refs.root.offsetHeight ?? 0;
+  return {
+    /** 漫画流的总高度 */
+    contentHeight: contentHeightMemo,
+    /** 能显示出漫画的高度 */
+    windowHeight: windowHeightMemo,
+  };
+});
 
 /** 更新滚动条滑块的高度和所处高度 */
 export const updateDrag = (state: State) => {

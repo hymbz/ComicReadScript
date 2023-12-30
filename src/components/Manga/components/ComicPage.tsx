@@ -1,5 +1,5 @@
 import { For, type Component, createMemo } from 'solid-js';
-import { boolDataVal, isEqualArray } from '../../../helper';
+import { boolDataVal } from '../../../helper';
 import { store } from '../store';
 import { getPageTip } from '../actions';
 import type { ComicImgProps } from './ComicImg';
@@ -17,7 +17,7 @@ export const ComicPage: Component<ComicPageProps> = (props) => {
     () =>
       store.gridMode ||
       store.option.scrollMode ||
-      store.memo.renderPageList.some((page) => isEqualArray(page, props.page)),
+      store.memo.renderPageList.some((page) => page === props.page),
   );
 
   const fill = createMemo<undefined | ComicImgProps['fill'][]>(() => {

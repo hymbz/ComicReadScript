@@ -36,6 +36,7 @@ export const request = async <T = any>(
       url,
       headers: { Referer: window.location.href },
       fetch: url.startsWith('/') || url.startsWith(window.location.origin),
+      timeout: 1000 * 10,
       ...details,
     });
     if (res.status !== 200) throw new Error(errorText);

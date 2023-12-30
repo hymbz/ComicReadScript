@@ -174,8 +174,9 @@ interface History {
 
       setManga({
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
-        onLoading: (_imgList) => {
+        onLoading: (_imgList, img) => {
           onLoading(_imgList);
+          if (!img) return;
           if (imgList.length !== updateImgList().length) return loadImgList();
         },
         onExit: (isEnd) => {

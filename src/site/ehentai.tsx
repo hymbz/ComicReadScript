@@ -141,7 +141,8 @@ declare const selected_tagname: string;
 
   const getImgNum = async () => {
     let numText = querySelector('.gtb .gpc')
-      ?.textContent?.match(/\d+/g)
+      ?.textContent?.replaceAll(',', '')
+      .match(/\d+/g)
       ?.at(-1);
     if (numText) return +numText;
 
@@ -237,7 +238,8 @@ declare const selected_tagname: string;
     // 在图片加载出错时刷新图片
     onLoading: async (imgList, img) => {
       onLoading(imgList);
-      if (img?.loadType !== 'error' || (await testImgUrl(img.src))) return;
+      if (!img) return;
+      if (img.loadType !== 'error' || (await testImgUrl(img.src))) return;
       return reloadErrorImg();
     },
   });

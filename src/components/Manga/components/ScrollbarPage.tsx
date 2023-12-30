@@ -9,7 +9,7 @@ import classes from '../index.module.css';
 
 /** 显示对应图片加载情况的元素 */
 const ScrollbarImg: Component<{ index: number }> = (props) => {
-  const img = () => store.imgList[props.index];
+  const img = createMemo(() => store.imgList[props.index]);
 
   return (
     <div
