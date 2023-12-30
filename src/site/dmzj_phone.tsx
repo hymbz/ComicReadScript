@@ -196,9 +196,7 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
         return [];
       });
 
-      setManga({
-        commentList: await getViewpoint(comicId, chapterId),
-      });
+      setManga('commentList', await getViewpoint(comicId, chapterId));
       break;
     }
   }

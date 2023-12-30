@@ -38,7 +38,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
     setManga({
       onExit: (isEnd) => {
         if (isEnd) scrollIntoView('#comment-container');
-        setManga({ show: false });
+        setManga('show', false);
       },
     });
 
@@ -54,7 +54,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
           `https://i.nhentai.net/galleries/${gallery.media_id}/${number}.${extension}`,
       ),
     );
-    setFab({ initialShow: options.autoShow });
+    setFab('initialShow', options.autoShow);
     comicReadModeDom.addEventListener('click', showComic);
 
     return;

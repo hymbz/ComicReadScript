@@ -2,23 +2,16 @@ import MdFileDownload from '@material-design-icons/svg/round/file_download.svg';
 import MdClose from '@material-design-icons/svg/round/close.svg';
 
 import fflate from 'fflate';
-import type {
-  Accessor,
-  AccessorArray,
-  NoInfer,
-  OnEffectFunction,
-  OnOptions,
-} from 'solid-js';
-import { createEffect, createMemo, createSignal, on } from 'solid-js';
-import { createStore, produce } from 'solid-js/store';
+import { createMemo, createSignal } from 'solid-js';
 
 import { t } from 'helper/i18n';
+import { createStore } from 'solid-js/store';
 import { IconButton, IconButtonStyle } from '../IconButton';
 import type { MangaProps } from '../Manga';
 import { buttonListDivider, MangaStyle, Manga, store } from '../Manga';
 import { request } from '../../helper/request';
 import { saveAs } from '../../helper';
-import { mountComponents } from './helper';
+import { mountComponents, watchStore } from './helper';
 import { toast } from './Toast';
 
 export { store };
@@ -62,15 +55,14 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
     }
   `);
 
-  const [props, setProps] = createStore({
+  const [props, setProps] = createStore<MangaProps>({
     imgList: [],
     show: false,
     ...initProps,
-  } as MangaProps);
+  });
 
-  const set = (
-    recipe: ((draftProps: MangaProps) => void) | Partial<MangaProps>,
-  ) => {
+  // eslint-disable-next-line solid/reactivity
+  watchStore([() => props.imgList.length, () => props.show], () => {
     if (!dom) {
       dom = mountComponents('comicRead', () => (
         <>
@@ -82,8 +74,6 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
       dom.style.setProperty('z-index', '2147483647', 'important');
     }
 
-    setProps(typeof recipe === 'function' ? produce(recipe) : recipe);
-
     if (props.imgList.length && props.show) {
       dom.setAttribute('show', '');
       document.documentElement.style.overflow = 'hidden';
@@ -91,7 +81,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
       dom.removeAttribute('show');
       document.documentElement.style.overflow = 'unset';
     }
-  };
+  });
 
   /** 下载按钮 */
   const DownloadButton = () => {
@@ -148,7 +138,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   };
 
   setProps({
-    onExit: () => set({ show: false }),
+    onExit: () => setProps('show', false),
     editButtonList: (list) => {
       // 在设置按钮上方放置下载按钮
       list.splice(-1, 0, DownloadButton);
@@ -165,13 +155,5 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
     },
   });
 
-  return [set, props, setProps] as const;
+  return [setProps, props] as const;
 };
-
-export function watchStore<S, Next extends Prev, Prev = Next>(
-  deps: AccessorArray<S> | Accessor<S>,
-  fn: OnEffectFunction<S, undefined | NoInfer<Prev>, Next>,
-  options: OnOptions = { defer: true },
-) {
-  createEffect(on(deps, fn, options as any));
-}

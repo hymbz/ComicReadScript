@@ -70,7 +70,7 @@ export const universalInit = async ({
     lastUrl = window.location.href;
 
     if (isMangaPage && !(await isMangaPage())) {
-      setFab({ show: false });
+      setFab('show', false);
       setManga({ show: false, imgList: [] });
       return;
     }

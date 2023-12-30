@@ -26,7 +26,8 @@ import {
   // 只在漫画页内运行
   if (!window.location.pathname.includes('/photo/')) return;
 
-  const { init, setManga, setFab, dynamicUpdate } = await useInit('jm');
+  const { init, setManga, setFab, dynamicUpdate, mangaProps } =
+    await useInit('jm');
 
   while (!unsafeWindow?.onImageLoaded) {
     if (document.readyState === 'complete') {
@@ -125,15 +126,14 @@ import {
     ),
   );
 
-  const retry = (num = 0) =>
-    setManga(async (state) => {
-      for (let i = 0; i < imgEleList.length; i++) {
-        if (state.imgList[i]) continue;
-        state.imgList[i] = await getImgUrl(imgEleList[i]);
-        await sleep(1000);
-      }
-      if (num < 60 && state.imgList.some((url) => !url))
-        setTimeout(retry, 1000 * 5, num + 1);
-    });
+  const retry = async (num = 0) => {
+    for (let i = 0; i < imgEleList.length; i++) {
+      if (mangaProps.imgList[i]) continue;
+      setManga('imgList', i, await getImgUrl(imgEleList[i]));
+      await sleep(1000);
+    }
+    if (num < 60 && mangaProps.imgList.some((url) => !url))
+      setTimeout(retry, 1000 * 5, num + 1);
+  };
   retry();
 })().catch((e) => log.error(e));

@@ -39,7 +39,6 @@ import {
       setOptions,
       isStored,
       mangaProps,
-      _setManga,
     } = await useInit(window.location.hostname, {
       remember_current_site: true,
       selector: '',
@@ -130,8 +129,8 @@ import {
       });
 
       if (imgEleList.length === 0) {
-        setFab({ show: false });
-        setManga({ show: false });
+        setFab('show', false);
+        setManga('show', false);
         return;
       }
 
@@ -152,14 +151,14 @@ import {
           if (newUrl === mangaProps.imgList[i]) return;
 
           if (!isEdited) isEdited = true;
-          _setManga('imgList', i, newUrl);
+          setManga('imgList', i, newUrl);
         }),
       );
       if (isEdited) saveImgEleSelector(imgEleList);
 
       // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要再删掉多余的页数
       if (mangaProps.imgList.length > _imgEleList.length)
-        _setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
+        setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
 
       if (
         isEdited ||

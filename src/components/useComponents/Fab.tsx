@@ -3,15 +3,14 @@ import MdImageSearch from '@material-design-icons/svg/round/image_search.svg';
 import MdImportContacts from '@material-design-icons/svg/round/import_contacts.svg';
 import MdCloudDownload from '@material-design-icons/svg/round/cloud_download.svg';
 
-import { createStore, produce } from 'solid-js/store';
 import { Dynamic } from 'solid-js/web';
+import { createRoot, createEffect } from 'solid-js';
+import { createStore } from 'solid-js/store';
 
 import type { FabProps } from '../Fab';
 import { Fab, FabStyle } from '../Fab';
 import { IconButtonStyle } from '../IconButton';
 import { mountComponents } from './helper';
-
-let mounted = false;
 
 export const useFab = async (initProps?: FabProps) => {
   await GM.addStyle(`
@@ -42,10 +41,8 @@ export const useFab = async (initProps?: FabProps) => {
     }
   };
 
-  const set = (
-    recipe?: ((draftProps: FabProps) => void) | Partial<FabProps>,
-  ) => {
-    if (!mounted) {
+  createRoot(() => {
+    createEffect(() => {
       const dom = mountComponents('fab', () => (
         <>
           <Fab {...props}>
@@ -56,11 +53,8 @@ export const useFab = async (initProps?: FabProps) => {
         </>
       ));
       dom.style.setProperty('z-index', '2147483646', 'important');
-      mounted = true;
-    }
-    if (recipe)
-      setProps(typeof recipe === 'function' ? produce(recipe) : recipe);
-  };
+    });
+  });
 
-  return [set, props] as const;
+  return [setProps, props] as const;
 };

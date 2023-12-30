@@ -57,7 +57,7 @@ export const useInit = async <T extends Record<string, any>>(
     }
   };
 
-  const [setManga, mangaProps, _setManga] = await useManga({
+  const [setManga, mangaProps] = await useManga({
     imgList: [],
     option: options.option,
     onOptionChange: (option) =>
@@ -75,9 +75,7 @@ export const useInit = async <T extends Record<string, any>>(
       options.hiddenFAB ? t('other.fab_show') : t('other.fab_hidden'),
       async () => {
         await setOptions({ ...options, hiddenFAB: !options.hiddenFAB });
-        setFab((state) => {
-          state.show = !options.hiddenFAB && undefined;
-        });
+        setFab('show', !options.hiddenFAB && undefined);
         await updateHideFabMenu();
       },
     );
@@ -91,7 +89,6 @@ export const useInit = async <T extends Record<string, any>>(
     setOptions,
     setFab,
     setManga,
-    _setManga,
     mangaProps,
     needAutoShow,
     isStored,
@@ -117,13 +114,11 @@ export const useInit = async <T extends Record<string, any>>(
           const newImgList = initImgList ?? (await getImgList());
           if (newImgList.length === 0)
             throw new Error(t('alert.fetch_comic_img_failed'));
-          setManga((state) => {
-            state.imgList = [...newImgList];
-            if (show || (needAutoShow.val && options.autoShow)) {
-              state.show = true;
-              needAutoShow.val = false;
-            }
-          });
+          setManga('imgList', newImgList);
+          if (show || (needAutoShow.val && options.autoShow)) {
+            setManga('show', true);
+            needAutoShow.val = false;
+          }
         } catch (e: any) {
           log.error(e);
           if (show) toast.error(e.message);
@@ -140,7 +135,7 @@ export const useInit = async <T extends Record<string, any>>(
 
         if (!mangaProps.imgList.length) return loadImgList(undefined, true);
 
-        setManga({ show: true });
+        setManga('show', true);
       };
 
       setFab({ onClick: showComic });
@@ -182,8 +177,8 @@ export const useInit = async <T extends Record<string, any>>(
         if (mangaProps.imgList.length === totalImgNum)
           return mangaProps.imgList;
 
-        _setManga('imgList', Array(totalImgNum).fill(''));
-        window.setTimeout(() => work((i, url) => _setManga('imgList', i, url)));
+        setManga('imgList', Array(totalImgNum).fill(''));
+        window.setTimeout(() => work((i, url) => setManga('imgList', i, url)));
         await wait(() => mangaProps.imgList.some(Boolean));
         return mangaProps.imgList;
       },

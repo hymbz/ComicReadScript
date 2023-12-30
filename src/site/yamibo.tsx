@@ -183,7 +183,7 @@ interface History {
           if (isEnd)
             scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
 
-          setManga({ show: false });
+          setManga('show', false);
         },
       });
 
@@ -211,15 +211,14 @@ interface History {
             if (id) return;
             id = window.setInterval(() => {
               imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
-              if (!imgList.length || !updateImgList().length) {
-                setFab({ progress: undefined });
-                return;
-              }
+              if (!imgList.length || !updateImgList().length)
+                return setFab('progress', undefined);
+
               setManga({
                 imgList: updateImgList(),
                 show: options.autoShow ?? undefined,
               });
-              setFab({ progress: 1 });
+              setFab('progress', 1);
               window.clearInterval(id);
             }, 100);
           });

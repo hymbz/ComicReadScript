@@ -21,21 +21,14 @@ import {
 declare const selected_tagname: string;
 
 (async () => {
-  const {
-    options,
-    init,
-    setFab,
-    setManga,
-    _setManga,
-    dynamicUpdate,
-    onLoading,
-  } = await useInit('ehentai', {
-    /** 关联 nhentai */
-    associate_nhentai: true,
-    /** 快捷键翻页 */
-    hotkeys_page_turn: true,
-    autoShow: false,
-  });
+  const { options, init, setFab, setManga, dynamicUpdate, onLoading } =
+    await useInit('ehentai', {
+      /** 关联 nhentai */
+      associate_nhentai: true,
+      /** 快捷键翻页 */
+      hotkeys_page_turn: true,
+      autoShow: false,
+    });
 
   if (Reflect.has(unsafeWindow, 'mpvkey')) {
     const imgEleList = querySelectorAll('.mi0[id]');
@@ -214,7 +207,7 @@ declare const selected_tagname: string;
       imgUrl = await getImgFromImgPage(pageUrl);
     ehImgList[i] = imgUrl;
     ehImgPageList[i] = pageUrl;
-    _setManga('imgList', i, imgUrl);
+    setManga('imgList', i, imgUrl);
   };
 
   /** 判断当前显示的是否是 eh 源 */
@@ -233,7 +226,7 @@ declare const selected_tagname: string;
   setManga({
     onExit: (isEnd) => {
       if (isEnd) scrollIntoView('#cdiv');
-      setManga({ show: false });
+      setManga('show', false);
     },
     // 在图片加载出错时刷新图片
     onLoading: async (imgList, img) => {
@@ -244,7 +237,7 @@ declare const selected_tagname: string;
     },
   });
 
-  setFab({ initialShow: options.autoShow });
+  setFab('initialShow', options.autoShow);
   comicReadModeDom.addEventListener('click', () =>
     loadImgList(ehImgList.length ? ehImgList : undefined, true),
   );
