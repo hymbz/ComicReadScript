@@ -54,7 +54,7 @@ export const updateReadme = () => {
   const newMd = readmeMd.replace(
     /(?<=<!-- supportSiteList -->\n\n).+(?=\n\n<!-- supportSiteList -->)/s,
     getSupportSiteList()
-      .slice(6)
+      .slice(7)
       .map((siteText) => `- ${siteText}`)
       .join('\n'),
   );

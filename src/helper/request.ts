@@ -16,7 +16,7 @@ const xmlHttpRequest = (
     });
   });
 
-type RequestDetails = Partial<Tampermonkey.Request<any>> & {
+export type RequestDetails = Partial<Tampermonkey.Request<any>> & {
   errorText?: string;
   noTip?: true;
 };

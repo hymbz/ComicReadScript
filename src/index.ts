@@ -105,6 +105,23 @@ try {
       break;
     }
 
+    // #拷贝漫画(copymanga)——「显示最后阅读记录」
+    case 'copymanga.site':
+    case 'copymanga.info':
+    case 'copymanga.net':
+    case 'copymanga.org':
+    case 'copymanga.tv':
+    case 'copymanga.com':
+    case 'www.copymanga.site':
+    case 'www.copymanga.info':
+    case 'www.copymanga.net':
+    case 'www.copymanga.org':
+    case 'www.copymanga.tv':
+    case 'www.copymanga.com': {
+      inject('copymanga');
+      break;
+    }
+
     // #PonpomuYuri
     case 'www.ponpomu.com': {
       options = {
@@ -180,63 +197,6 @@ try {
     case '18comic.org':
     case '18comic.vip': {
       inject('jm');
-      break;
-    }
-
-    // #拷贝漫画(copymanga)
-    case 'copymanga.site':
-    case 'copymanga.info':
-    case 'copymanga.net':
-    case 'copymanga.org':
-    case 'copymanga.tv':
-    case 'copymanga.com':
-    case 'www.copymanga.site':
-    case 'www.copymanga.info':
-    case 'www.copymanga.net':
-    case 'www.copymanga.org':
-    case 'www.copymanga.tv':
-    case 'www.copymanga.com': {
-      if (!window.location.href.includes('/chapter/')) break;
-
-      const apiList = [
-        'https://api.copymanga.info',
-        'https://api.copymanga.net',
-        'https://api.copymanga.org',
-        'https://api.copymanga.tv',
-        'https://api.xsskc.com',
-        'https://api.mangacopy.com',
-        'https://api.copymanga.site',
-      ];
-
-      options = {
-        name: 'copymanga',
-        getImgList: async () => {
-          const res = await main.eachApi(
-            window.location.href.replace(/.*?(?=\/comic\/)/, '/api/v3'),
-            apiList,
-          );
-          return (
-            JSON.parse(res.responseText).results.chapter.contents as {
-              url: string;
-            }[]
-          ).map(({ url }) => url);
-        },
-        onNext: main.querySelectorClick('.comicContent-next a:not(.prev-null)'),
-        onPrev: main.querySelectorClick(
-          '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
-        ),
-        getCommentList: async () => {
-          const chapter_id = window.location.pathname.split('/').at(-1);
-          const res = await main.eachApi(
-            `/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`,
-            apiList,
-            { errorText: '获取漫画评论失败' },
-          );
-          return JSON.parse(res.responseText).results.list.map(
-            ({ comment }) => comment as string,
-          ) as string[];
-        },
-      };
       break;
     }
 

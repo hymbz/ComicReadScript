@@ -121,6 +121,8 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
   - [自动翻页](#自动翻页)
 - Yurifans
   - 自动签到
+- 拷贝漫画
+  - 在目录页显示上次阅读记录
 
 <!-- 根据 src/index.ts 自动生成 -->
 <!-- supportSiteList -->
@@ -128,7 +130,6 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - PonpomuYuri
 - 明日方舟泰拉记事社
 - 禁漫天堂
-- 拷贝漫画(copymanga)
 - 漫画柜(manhuagui)
 - 漫画DB(manhuadb)
 - 动漫屋(dm5)
