@@ -30,7 +30,7 @@ const closeScrollLock = (delay: number) => {
   scrollLock.timeout = window.setTimeout(() => {
     scrollLock.enabled = false;
     scrollLock.timeout = 0;
-  });
+  }, delay);
 };
 export const openScrollLock = (time: number) => {
   scrollLock.enabled = true;

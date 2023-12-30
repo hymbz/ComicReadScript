@@ -110,9 +110,7 @@ import {
       'noscript',
     ];
     const getAllImg = () =>
-      querySelectorAll<HTMLImageElement>(
-        `:not(${imgBlackList.join(',')}) > img`,
-      )
+      querySelectorAll<HTMLImageElement>(`:not(${imgBlackList.join(',')}) img`)
         // 根据位置从小到大排序
         .sort((a, b) => a.offsetTop - b.offsetTop);
 
@@ -220,6 +218,7 @@ import {
         if (show) laseScroll = window.scrollY;
         else {
           openScrollLock(1000);
+          // 稍微延迟一下，等之前触发懒加载时的滚动都结束
           requestAnimationFrame(() => window.scrollTo(0, laseScroll));
         }
       },

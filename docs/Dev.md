@@ -38,6 +38,14 @@ Object.fromEntries(
 3. 如果有上下一话的按钮，就通过 `setManga` 修改 onNext、onPrev 两个参数。注意如果按钮存在但无法点击的话，应该传递空值或直接不传
 4. 向 `init` 函数传一个返回所有图片链接的函数
 
+## 循环 debugger 的应对方式
+
+```js
+// 使用 setInterval 来循环的话，直接取消所有 setInterval
+let id = setInterval(() => {}, 0);
+while (id--) clearInterval(id);
+```
+
 ---
 
 ## 动态导入外部库
