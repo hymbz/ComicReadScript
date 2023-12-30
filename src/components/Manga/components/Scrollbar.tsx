@@ -7,7 +7,7 @@ import { useDrag } from '../hooks/useDrag';
 import {
   bindRef,
   getPageTip,
-  getScrollPosition,
+  scrollPosition,
   handleScrollbarDrag,
 } from '../actions';
 
@@ -88,7 +88,7 @@ export const Scrollbar: Component = () => {
       data-auto-hidden={boolDataVal(store.option.scrollbar.autoHidden)}
       data-force-show={boolDataVal(showScrollbar())}
       data-dir={store.option.dir}
-      data-position={getScrollPosition()}
+      data-position={scrollPosition()}
       onWheel={handleWheel}
     >
       <div

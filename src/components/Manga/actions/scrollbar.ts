@@ -3,18 +3,37 @@ import { createEffect, createMemo, createRoot, on } from 'solid-js';
 import type { PointerState, UseDrag } from '../hooks/useDrag';
 import type { State } from '../store';
 import { store, refs, _setState } from '../store';
+import { checkImgTypeCount } from './helper';
 
-export const { contentHeight, windowHeight } = createRoot(() => {
-  const contentHeightMemo = createMemo(() => refs.mangaFlow?.scrollHeight ?? 0);
-  const windowHeightMemo = createMemo(() => refs.root?.offsetHeight ?? 0);
+export const { contentHeight, windowHeight, scrollPosition } = createRoot(
+  () => {
+    const contentHeightMemo = createMemo(
+      () => refs.mangaFlow?.scrollHeight ?? 0,
+    );
+    const windowHeightMemo = createMemo(() => refs.root?.offsetHeight ?? 0);
 
-  return {
-    /** 漫画流的总高度 */
-    contentHeight: contentHeightMemo,
-    /** 能显示出漫画的高度 */
-    windowHeight: windowHeightMemo,
-  };
-});
+    const scrollPositionMemo = createMemo(
+      (): State['option']['scrollbar']['position'] => {
+        if (store.option.scrollbar.position === 'auto') {
+          if (store.isMobile) return 'top';
+          return checkImgTypeCount(store, ({ type }) => type === 'long', 5)
+            ? 'bottom'
+            : 'right';
+        }
+        return store.option.scrollbar.position;
+      },
+    );
+
+    return {
+      /** 漫画流的总高度 */
+      contentHeight: contentHeightMemo,
+      /** 能显示出漫画的高度 */
+      windowHeight: windowHeightMemo,
+      /** 滚动条位置 */
+      scrollPosition: scrollPositionMemo,
+    };
+  },
+);
 
 /** 更新滚动条滑块的高度和所处高度 */
 export const updateDrag = (state: State) => {
@@ -58,17 +77,9 @@ export const getPageTip = (pageIndex: number): string => {
   return pageIndexText.join(store.option.scrollMode ? '\n' : ' | ');
 };
 
-/** 获取滚动条位置 */
-export const getScrollPosition =
-  (): State['option']['scrollbar']['position'] => {
-    if (store.option.scrollbar.position === 'auto')
-      return store.isMobile ? 'top' : 'right';
-    return store.option.scrollbar.position;
-  };
-
 /** 判断点击位置在滚动条上的位置比率 */
 const getClickTop = (x: number, y: number, e: HTMLElement): number => {
-  switch (getScrollPosition()) {
+  switch (scrollPosition()) {
     case 'bottom':
     case 'top':
       return store.option.dir === 'rtl'
@@ -86,7 +97,7 @@ const getDragDist = (
   [ix, iy]: PointerState['initial'],
   e: HTMLElement,
 ) => {
-  switch (getScrollPosition()) {
+  switch (scrollPosition()) {
     case 'bottom':
     case 'top':
       return store.option.dir === 'ltr'
@@ -148,7 +159,7 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
 createRoot(() => {
   // 更新 scrollLength
   createEffect(
-    on([getScrollPosition, () => store.memo.size], () => {
+    on([scrollPosition, () => store.memo.size], () => {
       _setState(
         'memo',
         'scrollLength',

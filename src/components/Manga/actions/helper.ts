@@ -35,3 +35,23 @@ export const resetUI = (state: State) => {
   state.show.scrollbar = false;
   state.show.touchArea = false;
 };
+
+/** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
+export const checkImgTypeCount = (
+  state: State,
+  fn: (img: ComicImg) => boolean,
+  maxNum = 3,
+) => {
+  let num = 0;
+  for (let i = 0; i < state.imgList.length; i++) {
+    const img = state.imgList[i];
+    if (img.loadType !== 'loaded') continue;
+    if (!fn(img)) {
+      num = 0;
+      continue;
+    }
+    num += 1;
+    if (num >= maxNum) return true;
+  }
+  return false;
+};
