@@ -32,6 +32,8 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
         return false;
       case 'end':
         state.show.endPage = undefined;
+        state.flag.scrollLock = true;
+        closeScrollLock();
         return false;
 
       default:
@@ -62,6 +64,8 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
         return false;
       case 'start':
         state.show.endPage = undefined;
+        state.flag.scrollLock = true;
+        closeScrollLock();
         return false;
 
       default:

@@ -177,10 +177,10 @@ export const handleTrackpadWheel = (e: WheelEvent) => {
   let absDeltaY = Math.abs(deltaY);
   if (absDeltaY < 2) return;
 
-  // 加速度小于2后逐渐缩小滚动距离，实现减速效果
-  if (Math.abs(absDeltaY - lastDeltaY) <= 20) {
+  // 加速度小于指定值后逐渐缩小滚动距离，实现减速效果
+  if (Math.abs(absDeltaY - lastDeltaY) <= 6) {
     if (!retardStartTime) retardStartTime = Date.now();
-    deltaY *= 1 - Math.min(1, ((Date.now() - retardStartTime) / 10) * 0.01);
+    deltaY *= 1 - Math.min(1, ((Date.now() - retardStartTime) / 10) * 0.002);
     absDeltaY = Math.abs(deltaY);
     if (absDeltaY < 2) return;
   } else retardStartTime = 0;

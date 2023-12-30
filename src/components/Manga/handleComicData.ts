@@ -53,7 +53,7 @@ export const handleComicData = (
         const nowFillIndex = findFillIndex(i, fillEffect);
 
         // 在除结尾外的位置出现了跨页图的话，那张跨页图大概率是页序的「正确答案」
-        // 如果这张跨页导致了缺页就说明在这之前的页面填充有误，应该调整之前的填充设置
+        // 如果这张跨页导致了上面一页缺页，就说明在这之前的填充有误，应该据此调整之前的填充
         // 排除结尾是防止被结尾汉化组图误导
         // 自动调整毕竟有可能误判，所以每个跨页都应该只调整一次，不能重复修改
         if (!autoCloseFill.has(i) && i < imgList.length - 2) {
