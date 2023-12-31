@@ -1,12 +1,12 @@
-## [8.3.0](https://github.com/hymbz/ComicReadScript/compare/v8.2.11...v8.3.0) (2023-12-22)
+## [8.4.0](https://github.com/hymbz/ComicReadScript/compare/v8.3.0...v8.4.0) (2023-12-31)
 
 
 ### Features
 
-* :sparkles: 在 kemono 上为漫画压缩包提供跳转到 ComicReadPWA 的快捷按钮 ([ef4d693](https://github.com/hymbz/ComicReadScript/commit/ef4d69321bedf2cdccd389e069e80992fd9f24af)), closes [#131](https://github.com/hymbz/ComicReadScript/issues/131)
+* :sparkles: 支持 Yurifans ([5d6ea1b](https://github.com/hymbz/ComicReadScript/commit/5d6ea1ba9bdc8a17958ef57975c68b8628016805))
+* :sparkles: 在拷贝漫画的目录页上显示上次阅读记录 ([dbe0d44](https://github.com/hymbz/ComicReadScript/commit/dbe0d44269c0167c3fc2b723db583c5c45e86e76))
 
 
-### Bug Fixes
+### Performance Improvements
 
-* :bug: 改用 npmmirror CDN，避免因网络问题无法安装脚本 ([2bbd2ff](https://github.com/hymbz/ComicReadScript/commit/2bbd2ff68ae53c3487e82e36dcf58199ad43506f)), closes [#131](https://github.com/hymbz/ComicReadScript/issues/131)
-* :bug: 修复触摸板首次滚动异常的 bug ([2473935](https://github.com/hymbz/ComicReadScript/commit/247393596cad344c306ef4ec8e4dad2029c704e4))
+* 在连续出现多张跨页宽图时，自动将滚动条移至底部，避免被漫画图片干扰看不清 ([fa4ecbf](https://github.com/hymbz/ComicReadScript/commit/fa4ecbf3b2f9b6ca8c658968389ca4a56074b5c5))
