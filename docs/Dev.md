@@ -40,6 +40,8 @@ Object.fromEntries(
 
 ## 循环 debugger 的应对方式
 
+如果有判断条件的话，可以直接在触发断点时通过修改变量来避免触发，甚至直接关掉循环。
+
 ```js
 // 使用 setInterval 来循环的话，直接取消所有 setInterval
 let id = setInterval(() => {}, 0);
