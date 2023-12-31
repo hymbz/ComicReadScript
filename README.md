@@ -73,7 +73,7 @@
 
 如果需要翻页的话，可以安装：
 
-1. 能够自动识别大部分网页的「[东方永页机](https://greasyfork.org/zh-CN/scripts/438684)」
+1. 能够自动识别大部分网页的「[东方永页机](https://greasyfork.org/zh-CN/scripts/438684)」（为了正确判断图片顺序不能启用 contentVisibility 功能）
 2. 目前已经手动支持了超多图站、漫画网站的「[圖片全載](https://sleazyfork.org/zh-CN/scripts/463305)」
 3. 等其他带有自动翻页、聚图功能的脚本
 

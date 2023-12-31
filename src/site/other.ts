@@ -1,5 +1,6 @@
 // 这个文件里不能含有 jsx 代码，否则会在打包时自动加入 import solidjs 的代码
 
+import { throttle } from 'throttle-debounce';
 import { getInitLang } from 'helper/languages';
 import { triggerLazyLoad, needTrigged, openScrollLock } from 'helper/imgMap';
 import {
@@ -110,7 +111,9 @@ import {
       'noscript',
     ];
     const getAllImg = () =>
-      querySelectorAll<HTMLImageElement>(`:not(${imgBlackList.join(',')}) img`)
+      querySelectorAll<HTMLImageElement>(
+        `:not(${imgBlackList.join(',')}) > img`,
+      )
         // 根据位置从小到大排序
         .sort((a, b) => a.offsetTop - b.offsetTop);
 
@@ -200,13 +203,13 @@ import {
     // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
     watchStore(
       () => store.memo.showImgList,
-      (showImgList) => {
+      throttle(1000, (showImgList) => {
         if (!showImgList || !showImgList.length || !store.show) return;
         imgEleList[
           Math.min(+showImgList.at(-1)!.alt + 1, imgEleList.length - 1)
         ]?.scrollIntoView({ behavior: 'instant', block: 'end' });
         openScrollLock(500);
-      },
+      }),
       { defer: true },
     );
 
