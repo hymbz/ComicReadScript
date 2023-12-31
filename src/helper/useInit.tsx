@@ -1,3 +1,5 @@
+import MdSettings from '@material-design-icons/svg/round/settings.svg';
+
 import { getKeyboardCode, wait } from '.';
 import { useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
@@ -35,7 +37,7 @@ export const useInit = async <T extends Record<string, any>>(
   const [setFab, fabProps] = await useFab({
     tip: t('other.read_mode'),
     speedDial: useSpeedDial(options, setOptions),
-    show: !options.hiddenFAB && undefined,
+    show: false,
   });
 
   /** 处理 Manga 组件的 onLoading 回调，将图片加载状态联动到 Fab 上 */
@@ -53,7 +55,11 @@ export const useInit = async <T extends Record<string, any>>(
       });
     } else {
       // 图片全部加载完成后恢复 Fab 状态
-      setFab({ progress, tip: t('other.read_mode'), show: undefined });
+      setFab({
+        progress,
+        tip: t('other.read_mode'),
+        show: !options.hiddenFAB && undefined,
+      });
     }
   };
 
@@ -80,6 +86,16 @@ export const useInit = async <T extends Record<string, any>>(
       },
     );
   };
+
+  await GM.registerMenuCommand(t('site.show_settings_menu'), () =>
+    setFab({
+      show: true,
+      focus: true,
+      tip: t('site.settings_tip'),
+      children: <MdSettings />,
+      onBackdropClick: () => setFab({ show: false, focus: false }),
+    }),
+  );
 
   /** 当前是否还需要判断 autoShow */
   const needAutoShow = { val: true };
@@ -138,7 +154,7 @@ export const useInit = async <T extends Record<string, any>>(
         setManga('show', true);
       };
 
-      setFab({ onClick: showComic });
+      setFab({ onClick: showComic, show: !options.hiddenFAB && undefined });
 
       if (needAutoShow.val && options.autoShow) showComic();
 

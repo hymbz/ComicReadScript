@@ -1,5 +1,3 @@
-import MdSettings from '@material-design-icons/svg/round/settings.svg';
-
 import {
   t,
   insertNode,
@@ -54,16 +52,6 @@ declare const selected_tagname: string;
 
   // 不是漫画页的话
   if (!Reflect.has(unsafeWindow, 'apikey')) {
-    await GM.registerMenuCommand(t('site.show_settings_menu'), () =>
-      setFab({
-        show: true,
-        focus: true,
-        tip: t('site.settings_tip'),
-        children: <MdSettings />,
-        onBackdropClick: () => setFab({ show: false, focus: false }),
-      }),
-    );
-
     if (options.hotkeys_page_turn) {
       linstenKeyup((e) => {
         switch (e.key) {
