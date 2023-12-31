@@ -1,4 +1,10 @@
 .scrollbar {
+  --arrow-y: clamp(
+    0.45em,
+    calc(var(--drag-midpoint)),
+    calc(var(--scroll-length) - 0.45em)
+  );
+
   touch-action: none;
   user-select: none;
 
@@ -130,7 +136,7 @@
 
   position: absolute;
   right: 2em;
-  transform: translate(140%, calc(var(--drag-midpoint) - 50%));
+  transform: translate(140%, calc(var(--arrow-y) - 50%));
 
   background-color: transparent;
   border: 0.4em solid transparent;
@@ -188,7 +194,7 @@
   &::before {
     top: 1.2em;
     right: 0;
-    transform: translate(var(--before-x), -120%);
+    transform: translate(var(--arrow-x), -120%);
     border-bottom: 0.5em solid #303030;
   }
 
@@ -207,7 +213,7 @@
   &::before {
     right: 0;
     bottom: 1.2em;
-    transform: translate(var(--before-x), 120%);
+    transform: translate(var(--arrow-x), 120%);
     border-top: 0.5em solid #303030;
   }
 
@@ -218,7 +224,7 @@
 
 .scrollbar[data-position="top"],
 .scrollbar[data-position="bottom"] {
-  --before-x: calc(var(--drag-midpoint) * -1 + 50%);
+  --arrow-x: calc(var(--arrow-y) * -1 + 50%);
 
   right: 1%;
 
@@ -247,7 +253,7 @@
   }
 
   &[data-dir="ltr"] {
-    --before-x: calc(var(--drag-midpoint) - 50%);
+    --arrow-x: calc(var(--arrow-y) - 50%);
 
     flex-direction: row;
 
