@@ -12,6 +12,8 @@ import { Fab, FabStyle } from '../Fab';
 import { IconButtonStyle } from '../IconButton';
 import { mountComponents } from './helper';
 
+let dom: HTMLDivElement;
+
 export const useFab = async (initProps?: FabProps) => {
   await GM.addStyle(`
     #fab {
@@ -43,7 +45,8 @@ export const useFab = async (initProps?: FabProps) => {
 
   createRoot(() => {
     createEffect(() => {
-      const dom = mountComponents('fab', () => (
+      if (dom) return;
+      dom = mountComponents('fab', () => (
         <>
           <Fab {...props}>
             {props.children ?? <Dynamic component={FabIcon()} />}
