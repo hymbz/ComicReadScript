@@ -10,7 +10,8 @@ import { checkImgTypeCount } from './helper';
 /** 根据比例更新图片类型。返回是否修改了图片类型 */
 const updateImgType = (state: State, draftImg: ComicImg) => {
   const { width, height, type } = draftImg;
-  if (!width || !height) return false;
+  if (!width || !height || !state.memo.size.width || !state.memo.size.height)
+    return false;
 
   const imgRatio = width / height;
   if (imgRatio <= state.proportion.单页比例) {
@@ -59,46 +60,37 @@ export const updateImgSize = (i: number, width: number, height: number) => {
       }
     }
 
-    if (isEdited) updatePageData(state);
-    else updateDrag(state);
+    if (!isEdited) return updateDrag(state);
+
+    Reflect.deleteProperty(state.fillEffect, i);
+    updatePageData(state);
   });
 };
 
-/** 更新所有图片的尺寸 */
-const updateAllImgSize = singleThreaded((state) =>
-  plimit(
-    store.imgList.map((img, i) => async () => {
-      if (state.continueRun) return;
-      if (img.loadType !== 'wait' || img.width || img.height || !img.src)
-        return;
-
-      const size = await getImgSize(img.src, () => state.continueRun);
-      if (state.continueRun) return;
-      if (size) updateImgSize(i, ...size);
-    }),
-    undefined,
-    Math.max(store.option.preloadPageNum, 1),
-  ),
-);
-
-/** 获取图片列表中指定属性的中位数 */
-const getImgMedian = (
-  sizeFn: (value: ComicImg) => number,
-  fallback: number,
-) => {
-  if (!store.option.scrollMode) return 0;
-  const list = store.imgList
-    .filter((img) => img.loadType === 'loaded' && img.width)
-    .map(sizeFn)
-    .sort();
-  if (!list.length) return fallback;
-  return list[Math.floor(list.length / 2)];
-};
-
 export const { placeholderSize } = createRoot(() => {
-  createEffect(on(() => store.imgList, updateAllImgSize));
+  // 预加载所有图片的尺寸
+  createEffect(
+    on(
+      () => store.imgList,
+      singleThreaded((state) =>
+        plimit(
+          store.imgList.map((img, i) => async () => {
+            if (state.continueRun) return;
+            if (img.loadType !== 'wait' || img.width || img.height || !img.src)
+              return;
 
-  /** 处理显示窗口的长宽变化 */
+            const size = await getImgSize(img.src, () => state.continueRun);
+            if (state.continueRun) return;
+            if (size) updateImgSize(i, ...size);
+          }),
+          undefined,
+          Math.max(store.option.preloadPageNum, 1),
+        ),
+      ),
+    ),
+  );
+
+  // 处理显示窗口的长宽变化
   createEffect(
     on(
       () => store.memo.size,
@@ -111,8 +103,8 @@ export const { placeholderSize } = createRoot(() => {
           let isEdited = false;
           for (let i = 0; i < state.imgList.length; i++) {
             if (!updateImgType(state, state.imgList[i])) continue;
-            Reflect.deleteProperty(state.fillEffect, i);
             isEdited = true;
+            Reflect.deleteProperty(state.fillEffect, i);
           }
           if (isEdited) resetImgState(state);
           updatePageData(state);
@@ -120,6 +112,20 @@ export const { placeholderSize } = createRoot(() => {
       { defer: true },
     ),
   );
+
+  /** 获取图片列表中指定属性的中位数 */
+  const getImgMedian = (
+    sizeFn: (value: ComicImg) => number,
+    fallback: number,
+  ) => {
+    if (!store.option.scrollMode) return 0;
+    const list = store.imgList
+      .filter((img) => img.loadType === 'loaded' && img.width)
+      .map(sizeFn)
+      .sort();
+    if (!list.length) return fallback;
+    return list[Math.floor(list.length / 2)];
+  };
 
   const placeholderSizeMemo = createMemo(() => ({
     width: getImgMedian((img) => img.width!, refs.root?.offsetWidth),

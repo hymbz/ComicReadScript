@@ -125,11 +125,11 @@ export const loop = async (fn: () => unknown, ms = 0) => {
 };
 
 /** 使指定函数延迟运行期间的多次调用直到运行结束 */
-export const singleThreaded = <T extends any[]>(
+export const singleThreaded = <T extends any[], R>(
   callback: (
     state: { running: boolean; continueRun: boolean },
     ...args: T
-  ) => unknown,
+  ) => R | Promise<R>,
 ) => {
   const state = {
     running: false,
@@ -143,9 +143,11 @@ export const singleThreaded = <T extends any[]>(
       return;
     }
 
+    let res: R | undefined;
+
     try {
       state.running = true;
-      await callback(state, ...args);
+      res = await callback(state, ...args);
     } catch (error) {
       state.continueRun = false;
       await sleep(100);
@@ -158,6 +160,8 @@ export const singleThreaded = <T extends any[]>(
       state.continueRun = false;
       setTimeout(fn);
     } else state.running = false;
+
+    return res;
   };
 
   return fn;
