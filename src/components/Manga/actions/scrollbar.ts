@@ -5,35 +5,31 @@ import type { State } from '../store';
 import { store, refs, _setState } from '../store';
 import { checkImgTypeCount } from './helper';
 
-export const { contentHeight, windowHeight, scrollPosition } = createRoot(
-  () => {
-    const contentHeightMemo = createMemo(
-      () => refs.mangaFlow?.scrollHeight ?? 0,
-    );
-    const windowHeightMemo = createMemo(() => refs.root?.offsetHeight ?? 0);
+/** 漫画流的总高度 */
+export const contentHeight = () => refs.mangaFlow.scrollHeight ?? 0;
 
-    const scrollPositionMemo = createMemo(
-      (): State['option']['scrollbar']['position'] => {
-        if (store.option.scrollbar.position === 'auto') {
-          if (store.isMobile) return 'top';
-          return checkImgTypeCount(store, ({ type }) => type === 'long', 5)
-            ? 'bottom'
-            : 'right';
-        }
-        return store.option.scrollbar.position;
-      },
-    );
+/** 能显示出漫画的高度 */
+export const windowHeight = () => refs.root.offsetHeight ?? 0;
 
-    return {
-      /** 漫画流的总高度 */
-      contentHeight: contentHeightMemo,
-      /** 能显示出漫画的高度 */
-      windowHeight: windowHeightMemo,
-      /** 滚动条位置 */
-      scrollPosition: scrollPositionMemo,
-    };
-  },
-);
+/** 滚动条长度 */
+export const scrollLength = () =>
+  Math.max(refs.scrollbar?.clientWidth, refs.scrollbar?.clientHeight);
+
+/** 滚动条位置 */
+export const scrollPosition = createRoot(() => {
+  const scrollPositionMemo = createMemo(
+    (): State['option']['scrollbar']['position'] => {
+      if (store.option.scrollbar.position === 'auto') {
+        if (store.isMobile) return 'top';
+        return checkImgTypeCount(store, ({ type }) => type === 'long', 5)
+          ? 'bottom'
+          : 'right';
+      }
+      return store.option.scrollbar.position;
+    },
+  );
+  return scrollPositionMemo;
+});
 
 /** 更新滚动条滑块的高度和所处高度 */
 export const updateDrag = (state: State) => {
@@ -156,15 +152,20 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
   }
 };
 
+const updateScrollLength = () =>
+  _setState(
+    'memo',
+    'scrollLength',
+    Math.max(refs.scrollbar?.clientWidth, refs.scrollbar?.clientHeight),
+  );
+
 createRoot(() => {
   // 更新 scrollLength
   createEffect(
     on([scrollPosition, () => store.memo.size], () => {
-      _setState(
-        'memo',
-        'scrollLength',
-        Math.max(refs.scrollbar?.clientWidth, refs.scrollbar?.clientHeight),
-      );
+      // 部分情况下，在窗口大小改变后滚动条大小不会立刻跟着修改，需要等待一帧渲染
+      // 比如打开后台标签页后等一会再切换过去
+      requestAnimationFrame(updateScrollLength);
     }),
   );
 });

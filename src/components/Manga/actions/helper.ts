@@ -13,7 +13,6 @@ export const triggerOnOptionChange = () =>
 /** 在 option 后手动触发 onOptionChange */
 export const setOption = (fn: (option: Option, state: State) => void) => {
   setState((state) => fn(state.option, state));
-
   triggerOnOptionChange();
 };
 

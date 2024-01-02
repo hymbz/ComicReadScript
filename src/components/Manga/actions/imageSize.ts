@@ -60,7 +60,7 @@ export const updateImgSize = (i: number, width: number, height: number) => {
     }
 
     if (isEdited) updatePageData(state);
-    updateDrag(state);
+    else updateDrag(state);
   });
 };
 
