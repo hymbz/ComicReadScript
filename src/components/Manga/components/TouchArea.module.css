@@ -6,8 +6,8 @@
   top: 0;
 
   display: grid;
-  grid-template-columns: 1fr min(40%, 10em) 1fr;
-  grid-template-rows: 1fr min(30%, 10em) 1fr;
+  grid-template-columns: 1fr min(30%, 10em) 1fr;
+  grid-template-rows: 1fr min(20%, 10em) 1fr;
 
   width: 100%;
   height: 100%;
