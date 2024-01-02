@@ -141,7 +141,7 @@ export const translatorOptions = createRoot(() => {
   );
 
   const options = createMemo(
-    on([selfhostedOptions, lang], () =>
+    on([selfhostedOptions, lang, () => store.option.translation.server], () =>
       store.option.translation.server === 'selfhosted'
         ? selfhostedOptions()
         : createOptions(cotransTranslators),
