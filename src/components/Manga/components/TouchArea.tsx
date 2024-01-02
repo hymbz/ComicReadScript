@@ -35,14 +35,11 @@ export const areaArrayMap = {
 };
 
 export const TouchArea: Component = () => {
-  const areaType = createMemo(() => {
-    if (
-      !store.option.clickPageTurn.enabled ||
-      !Reflect.has(areaArrayMap, store.option.clickPageTurn.area)
-    )
-      return store.isMobile ? 'up_down' : 'left_right';
-    return store.option.clickPageTurn.area as keyof typeof areaArrayMap;
-  });
+  const areaType = createMemo(() =>
+    Reflect.has(areaArrayMap, store.option.clickPageTurn.area)
+      ? (store.option.clickPageTurn.area as keyof typeof areaArrayMap)
+      : 'left_right',
+  );
 
   const dir = () => {
     if (!store.option.clickPageTurn.reverse) return store.option.dir;

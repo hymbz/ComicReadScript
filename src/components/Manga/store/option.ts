@@ -26,7 +26,7 @@ export interface Option {
     /** 左右反转点击区域 */
     reverse: boolean;
     /** 区域排列类型 */
-    area: '' | keyof typeof areaArrayMap;
+    area: keyof typeof areaArrayMap;
   };
   /** 默认启用首页填充 */
   firstPageFill: boolean;
@@ -85,7 +85,7 @@ export const defaultOption: Readonly<Option> = {
   clickPageTurn: {
     enabled: 'ontouchstart' in document.documentElement,
     reverse: false,
-    area: '',
+    area: 'left_right',
   },
   firstPageFill: true,
   disableZoom: false,

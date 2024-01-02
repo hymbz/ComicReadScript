@@ -120,12 +120,9 @@ export const defaultSettingList: () => SettingList = () => [
         <SettingsShowItem when={store.option.clickPageTurn.enabled}>
           <SettingsItemSelect
             name={t('setting.option.click_page_turn_area')}
-            options={[
-              ['', t('other.default')],
-              ...Object.keys(areaArrayMap).map(
-                (key) => [key, t(`touch_area.type.${key}`)] as [string, string],
-              ),
-            ]}
+            options={Object.keys(areaArrayMap).map(
+              (key) => [key, t(`touch_area.type.${key}`)] as [string, string],
+            )}
             value={store.option.clickPageTurn.area}
             onChange={createStateSetFn('clickPageTurn.area')}
           />
