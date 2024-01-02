@@ -1,12 +1,12 @@
-## [8.4.0](https://github.com/hymbz/ComicReadScript/compare/v8.3.0...v8.4.0) (2023-12-31)
+## [8.4.1](https://github.com/hymbz/ComicReadScript/compare/v8.4.0...v8.4.1) (2024-01-02)
 
 
-### Features
+### Bug Fixes
 
-* :sparkles: 支持 Yurifans ([5d6ea1b](https://github.com/hymbz/ComicReadScript/commit/5d6ea1ba9bdc8a17958ef57975c68b8628016805))
-* :sparkles: 在拷贝漫画的目录页上显示上次阅读记录 ([dbe0d44](https://github.com/hymbz/ComicReadScript/commit/dbe0d44269c0167c3fc2b723db583c5c45e86e76))
+* :bug: 修复滚动条在特定情况下的显示异常 ([1995d35](https://github.com/hymbz/ComicReadScript/commit/1995d35b7a9974e2117aca8b19ecec2b1bd499d4))
+* :bug: 修复缩放后无法拖拽的 bug ([0395bb1](https://github.com/hymbz/ComicReadScript/commit/0395bb144c718c9e17661ff9b69481560614e570))
 
 
 ### Performance Improvements
 
-* 在连续出现多张跨页宽图时，自动将滚动条移至底部，避免被漫画图片干扰看不清 ([fa4ecbf](https://github.com/hymbz/ComicReadScript/commit/fa4ecbf3b2f9b6ca8c658968389ca4a56074b5c5))
+* 移动端默认翻页区域改为左右布局 ([665826f](https://github.com/hymbz/ComicReadScript/commit/665826f434f4b4f18900a1ad17ba964868b0c0a0))
