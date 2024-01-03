@@ -30,7 +30,7 @@ const { meta, createMetaHeader } = getMetaData(isDevMode);
 
 const latestChangeHtml = await (() => {
   const md = fs
-    .readFileSync(resolve(__dirname, `docs/LatestChange.md`))
+    .readFileSync(resolve(__dirname, `docs/.other/LatestChange.md`))
     .toString();
 
   const newMd = md

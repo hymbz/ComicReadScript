@@ -1,0 +1,10 @@
+.vp-doc h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: unset;
+}
+
+a > img {
+  display: inline;
+  margin: 0 .1em;
+}

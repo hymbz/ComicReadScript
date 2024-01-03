@@ -60,12 +60,12 @@ export const updateReadme = () => {
   );
   if (newMd !== readmeMd) fs.writeFileSync(readmePath, newMd);
 
-  // 生成 README-out.md 文件，把相对链接改成 jsdelivr cdn 的链接，方便在其他站点显示图片
-  const outMdPath = resolve(__dirname, 'docs/README-out.md');
+  // 生成一个用于 greasyfork 介绍的 md 文件，把相对链接改成文档外链，以便正常显示图片
+  const outMdPath = resolve(__dirname, 'docs/index.md');
   const outMd = fs.readFileSync(outMdPath, 'utf8');
   const newOutMd = newMd.replaceAll(
-    /(?<=]\()\/.+\.(md)?.+\)/g,
-    'https://cdn.jsdelivr.net/gh/hymbz/ComicReadScript$&',
+    '/docs/public/',
+    'https://comic-read-docs.pages.dev/',
   );
   if (newOutMd !== outMd) fs.writeFileSync(outMdPath, newOutMd);
 };

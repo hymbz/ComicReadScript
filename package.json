@@ -13,9 +13,12 @@
     "test": "vitest",
     "check": "tsc -noEmit && eslint .",
     "pwa-assets-generator": "pwa-assets-generator",
-    "dev:pwa": "vite serve src/pwa",
-    "build:pwa": "vite build src/pwa",
-    "preview:pwa": "vite preview src/pwa"
+    "pwa:dev": "vite serve src/pwa",
+    "pwa:build": "vite build src/pwa",
+    "pwa:preview": "vite preview src/pwa",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@material-design-icons/svg": "^0.14.13",
@@ -93,6 +96,7 @@
     "vite": "^5.0.10",
     "vite-plugin-pwa": "^0.17.4",
     "vite-plugin-solid": "^2.8.0",
+    "vitepress": "1.0.0-rc.34",
     "vitest": "^1.1.1"
   }
 }

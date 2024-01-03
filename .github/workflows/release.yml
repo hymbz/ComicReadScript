@@ -18,6 +18,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          body_path: docs/LatestChange.md
+          body_path: docs/.other/LatestChange.md
           files: |
             ComicRead.user.js

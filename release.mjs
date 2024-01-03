@@ -41,6 +41,7 @@ const exec = (...commands) => {
 
   // 测试
   exec('pnpm test run');
+  exec('pnpm check');
 
   // 使用 release-it 更新版本，并获得更新日志
   const { changelog } = await release({
@@ -54,11 +55,11 @@ const exec = (...commands) => {
     plugins: {
       '@release-it/conventional-changelog': {
         preset: 'conventionalcommits',
-        infile: 'docs/CHANGELOG.md',
+        infile: 'docs/.other/CHANGELOG.md',
       },
     },
   });
 
   // 将最新的更改日志写入 LatestChange.md
-  shell.echo(changelog).to('docs/LatestChange.md');
+  shell.echo(changelog).to('docs/.other/LatestChange.md');
 })();

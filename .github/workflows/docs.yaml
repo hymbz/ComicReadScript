@@ -1,6 +1,9 @@
 name: updatePage
 
-on: [push]
+on:
+  push:
+    paths:
+      - '**.md'
 
 jobs:
   deploy:
@@ -43,13 +46,13 @@ jobs:
         run: pnpm install --no-frozen-lockfile
 
       - name: Build
-        run: pnpm run pwa:build
+        run: pnpm run docs:build
 
       - name: Publish
         uses: cloudflare/pages-action@1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: "comic-read"
-          directory: "src/pwa/dist"
+          projectName: 'comic-read-docs'
+          directory: 'docs/.vitepress/dist'
           branch: main
