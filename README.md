@@ -116,6 +116,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
   - 解锁隐藏漫画
 - [ehentai](#ehentai)
   - [关联 nhentai](#关联-nhentai)
+  - [快捷键翻页](#快捷键翻页)
 - [nhentai](#nhentai)
   - [彻底屏蔽漫画](#彻底屏蔽漫画)
   - [自动翻页](#自动翻页)
