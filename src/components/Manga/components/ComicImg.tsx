@@ -98,6 +98,7 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
       }
       onLoad={(e) => handleImgLoaded(props.index, e.currentTarget)}
       onError={(e) => handleImgError(props.index, e.currentTarget)}
+      draggable="false"
     />
   );
 };
