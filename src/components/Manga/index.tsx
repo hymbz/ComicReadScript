@@ -64,7 +64,7 @@ export interface MangaProps {
    *
    * 当 imgList 发生改变时也会触发，此时 img 参数将为空
    */
-  onLoading?: (imgList: ComicImg[], img?: ComicImg) => void | Promise<void>;
+  onLoading?: (imgList: ComicImg[], img?: ComicImg) => unknown;
 
   /** 修改默认工具栏按钮列表 */
   editButtonList?: State['prop']['editButtonList'];

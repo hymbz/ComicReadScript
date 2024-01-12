@@ -1,6 +1,7 @@
 const gmApi = {
   GM,
-  GM_addElement,
+  GM_addElement:
+    typeof GM_addElement === 'undefined' ? undefined : GM_addElement,
   GM_getResourceText,
   GM_xmlhttpRequest,
   unsafeWindow,
@@ -14,6 +15,16 @@ const crsLib: Window['crsLib'] = {
 };
 
 const tempName = Math.random().toString(36).slice(2);
+
+const evalCode = (code: string) => {
+  try {
+    // eslint-disable-next-line no-eval
+    eval.call(unsafeWindow, code);
+  } catch (_) {
+    // 一些网站比如推特会触发 CSP，无法使用 eval 来执行，只能改用 GM_addElement
+    GM_addElement('script', { textContent: code })?.remove();
+  }
+};
 
 /**
  * 通过 Resource 导入外部模块
@@ -51,8 +62,7 @@ const selfImportSync = (name: string) => {
 
   Reflect.deleteProperty(unsafeWindow, tempName);
   unsafeWindow[tempName] = crsLib;
-  // 因为在一些网站比如推特会触发CSP，所以不能使用 eval 来执行
-  GM_addElement('script', { textContent: runCode })?.remove();
+  evalCode(runCode);
   Reflect.deleteProperty(unsafeWindow, tempName);
 };
 
