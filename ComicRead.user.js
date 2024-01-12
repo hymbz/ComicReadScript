@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.4.1
+// @version         8.4.2
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -63,7 +63,7 @@
 
 const gmApi = {
   GM,
-  GM_addElement,
+  GM_addElement: typeof GM_addElement === 'undefined' ? undefined : GM_addElement,
   GM_getResourceText,
   GM_xmlhttpRequest,
   unsafeWindow
@@ -79,6 +79,17 @@ const crsLib = {
   ...gmApi
 };
 const tempName = Math.random().toString(36).slice(2);
+const evalCode = code => {
+  try {
+    // eslint-disable-next-line no-eval
+    eval.call(unsafeWindow, code);
+  } catch (_) {
+    // 一些网站比如推特会触发 CSP，无法使用 eval 来执行，只能改用 GM_addElement
+    GM_addElement('script', {
+      textContent: code
+    })?.remove();
+  }
+};
 
 /**
  * 通过 Resource 导入外部模块
@@ -3636,7 +3647,7 @@ const useDrag = ({
   });
 };
 
-const _tmpl$$D = /*#__PURE__*/web.template(\`<img>\`);
+const _tmpl$$D = /*#__PURE__*/web.template(\`<img draggable=false>\`);
 /** 图片加载完毕的回调 */
 const handleImgLoaded = (i, e) => {
   if (!e.getAttribute('src')) return;
@@ -6257,9 +6268,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复滚动条在特定情况下的显示异常 </p></li><li><p>修复缩放后无法拖拽的 bug\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>移动端默认翻页区域改为左右布局\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复与 ios 油猴扩展的兼容性问题\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6322,7 +6331,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -6740,10 +6749,7 @@ exports.watchStore = watchStore;
     `;
   Reflect.deleteProperty(unsafeWindow, tempName);
   unsafeWindow[tempName] = crsLib;
-  // 因为在一些网站比如推特会触发CSP，所以不能使用 eval 来执行
-  GM_addElement('script', {
-    textContent: runCode
-  })?.remove();
+  evalCode(runCode);
   Reflect.deleteProperty(unsafeWindow, tempName);
 };
 /**
@@ -11498,7 +11504,7 @@ const useDrag = ({
   });
 };
 
-const _tmpl$$C = /*#__PURE__*/web.template(`<img>`);
+const _tmpl$$C = /*#__PURE__*/web.template(`<img draggable=false>`);
 /** 图片加载完毕的回调 */
 const handleImgLoaded = (i, e) => {
   if (!e.getAttribute('src')) return;
@@ -14119,9 +14125,7 @@ const useFab = async initProps => {
 
 const _tmpl$ = /*#__PURE__*/web.template(`<h2>🥳 ComicRead 已更新到 v`),
   _tmpl$2 = /*#__PURE__*/web.template(`<h3>修复`),
-  _tmpl$3 = /*#__PURE__*/web.template(`<ul><li><p>修复滚动条在特定情况下的显示异常 </p></li><li><p>修复缩放后无法拖拽的 bug`),
-  _tmpl$4 = /*#__PURE__*/web.template(`<h3>优化`),
-  _tmpl$5 = /*#__PURE__*/web.template(`<ul><li>移动端默认翻页区域改为左右布局`);
+  _tmpl$3 = /*#__PURE__*/web.template(`<ul><li>修复与 ios 油猴扩展的兼容性问题`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -14184,7 +14188,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
