@@ -31,34 +31,37 @@ const evalCode = (code: string) => {
  * @param name \@resource 引用的资源名
  */
 const selfImportSync = (name: string) => {
-  const code = name !== 'main' ? GM_getResourceText(name) : inject('main');
+  const code =
+    name !== 'main'
+      ? GM_getResourceText(name.replaceAll('/', '|'))
+      : inject('main');
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
   // 将模块导出变量放到 crsLib 对象里，防止污染全局作用域和网站自身的模块产生冲突
   const runCode = `
-      window['${tempName}']['${name}'] = {};
-      ${isDevMode ? `console.time('导入 ${name}');` : ''}
-      (function (process, require, exports, module, ${gmApiList.join(', ')}) {
-        ${code}
-      })(
-        window['${tempName}'].process,
-        window['${tempName}'].require,
-        window['${tempName}']['${name}'],
-        {
-          set exports(value) {
-            window['${tempName}']['${name}'] = value;
-          },
-          get exports() {
-            return window['${tempName}']['${name}'];
-          },
+    window['${tempName}']['${name}'] = {};
+    ${isDevMode ? `console.time('导入 ${name}');` : ''}
+    (function (process, require, exports, module, ${gmApiList.join(', ')}) {
+      ${code}
+    })(
+      window['${tempName}'].process,
+      window['${tempName}'].require,
+      window['${tempName}']['${name}'],
+      {
+        set exports(value) {
+          window['${tempName}']['${name}'] = value;
         },
-        ${gmApiList
-          .map((apiName) => `window['${tempName}'].${apiName}`)
-          .join(', ')}
-      );
-      ${isDevMode ? `console.timeEnd('导入 ${name}');` : ''}
-    `;
+        get exports() {
+          return window['${tempName}']['${name}'];
+        },
+      },
+      ${gmApiList
+        .map((apiName) => `window['${tempName}'].${apiName}`)
+        .join(', ')}
+    );
+    ${isDevMode ? `console.timeEnd('导入 ${name}');` : ''}
+  `;
 
   Reflect.deleteProperty(unsafeWindow, tempName);
   unsafeWindow[tempName] = crsLib;

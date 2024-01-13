@@ -93,6 +93,7 @@ export const Manga: Component<MangaProps> = (props) => {
         oncapture:keydown={handleKeyDown}
         oncapture:keypress={stopPropagation}
         oncapture:keyup={stopPropagation}
+        on:click={stopPropagation}
         data-mobile={boolDataVal(store.isMobile)}
         data-scroll-mode={boolDataVal(store.option.scrollMode)}
       >

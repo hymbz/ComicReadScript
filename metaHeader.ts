@@ -31,14 +31,16 @@ const resourceList: Record<string, [string, string] | [string]> = {
     'https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199',
   ],
 };
+
 const resource = {
-  prod: Object.fromEntries(
-    Object.entries(resourceList).map(([k, v]) => [k, v.at(0)]),
-  ),
-  dev: Object.fromEntries(
-    Object.entries(resourceList).map(([k, v]) => [k, v.at(-1)]),
-  ),
+  dev: {} as Record<string, string | undefined>,
+  prod: {} as Record<string, string | undefined>,
 };
+Object.entries(resourceList).forEach(([k, v]) => {
+  const name = k.replaceAll('/', '|');
+  resource.prod[name] = v.at(0);
+  resource.dev[name] = v.at(-1);
+});
 
 /** 根据 index.ts 的注释获取支持站点列表 */
 const getSupportSiteList = () => {
