@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.4.2
+// @version         8.4.3
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -45,8 +45,8 @@
 // @grant           unsafeWindow
 // @icon            data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAACBUExURUxpcWB9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i////198il17idng49DY3PT297/K0MTP1M3X27rHzaCxupmstbTByK69xOfr7bfFy3WOmqi4wPz9/X+XomSBjqW1vZOmsN/l6GmFkomeqe7x8vn6+kv+1vUAAAAOdFJOUwDsAoYli9zV+lIqAZEDwV05SQAAAUZJREFUOMuFk+eWgjAUhGPBiLohjZACUqTp+z/gJkqJy4rzg3Nn+MjhwB0AANjv4BEtdITBHjhtQ4g+CIZbC4Qb9FGb0J4P0YrgCezQqgIA14EDGN8fYz+f3BGMASFkTJ+GDAYMUSONzrFL7SVvjNQIz4B9VERRmV0rbJWbrIwidnsd6ACMlEoip3uad3X2HJmqb3gCkkJELwk5DExRDxA6HnKaDEPSsBnAsZoANgJaoAkg12IJqBiPACImXQKF9IDULIHUkOk7kDpeAMykHqCEWACy8ACdSM7LGSg5F3HtAU1rrkaK9uGAshXS2lZ5QH/nVhmlD8rKlmbO3ZsZwLe8qnpdxJRnLaci1X1V5R32fjd5CndVkfYdGpy3D+htU952C/ypzPtdt3JflzZYBy7fi/O1euvl/XH1Pp+Cw3/1P1xOZwB+AWMcP/iw0AlKAAAAV3pUWHRSYXcgcHJvZmlsZSB0eXBlIGlwdGMAAHic4/IMCHFWKCjKT8vMSeVSAAMjCy5jCxMjE0uTFAMTIESANMNkAyOzVCDL2NTIxMzEHMQHy4BIoEouAOoXEXTyQjWVAAAAAElFTkSuQmCC
 // @resource        solid-js https://registry.npmmirror.com/solid-js/1.8.7/files/dist/solid.cjs
-// @resource        solid-js/store https://registry.npmmirror.com/solid-js/1.8.7/files/store/dist/store.cjs
-// @resource        solid-js/web https://registry.npmmirror.com/solid-js/1.8.7/files/web/dist/web.cjs
+// @resource        solid-js|store https://registry.npmmirror.com/solid-js/1.8.7/files/store/dist/store.cjs
+// @resource        solid-js|web https://registry.npmmirror.com/solid-js/1.8.7/files/web/dist/web.cjs
 // @resource        fflate https://registry.npmmirror.com/fflate/0.8.1/files/umd/index.js
 // @resource        dmzjDecrypt https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199
 // @supportURL      https://github.com/hymbz/ComicReadScript/issues
@@ -96,10 +96,8 @@ const evalCode = code => {
  * @param name \@resource 引用的资源名
  */
 const selfImportSync = name => {
-  const code = name !== 'main' ? GM_getResourceText(name) :`
+  const code = name !== 'main' ? GM_getResourceText(name.replaceAll('/', '|')) :`
 const solidJs = require('solid-js');
-const web = require('solid-js/web');
-const store$2 = require('solid-js/store');
 const fflate = require('fflate');
 const main = require('main');
 
@@ -387,13 +385,13 @@ const difference = (a, b) => {
  *
  * 不会修改参数对象，返回的是新对象
  */
-const assign = (a, b) => {
+const assign$1 = (a, b) => {
   const res = JSON.parse(JSON.stringify(a));
   const keys = Object.keys(b);
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
     if (res[key] === undefined) res[key] = b[key];else if (typeof b[key] === 'object') {
-      const _res = assign(res[key], b[key]);
+      const _res = assign$1(res[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
     } else if (res[key] !== b[key]) res[key] = b[key];
   }
@@ -1274,6 +1272,633 @@ const t = solidJs.createRoot(() => {
   };
 });
 
+const booleans = [
+  "allowfullscreen",
+  "async",
+  "autofocus",
+  "autoplay",
+  "checked",
+  "controls",
+  "default",
+  "disabled",
+  "formnovalidate",
+  "hidden",
+  "indeterminate",
+  "inert",
+  "ismap",
+  "loop",
+  "multiple",
+  "muted",
+  "nomodule",
+  "novalidate",
+  "open",
+  "playsinline",
+  "readonly",
+  "required",
+  "reversed",
+  "seamless",
+  "selected"
+];
+const Properties = /*#__PURE__*/ new Set([
+  "className",
+  "value",
+  "readOnly",
+  "formNoValidate",
+  "isMap",
+  "noModule",
+  "playsInline",
+  ...booleans
+]);
+const ChildProperties = /*#__PURE__*/ new Set([
+  "innerHTML",
+  "textContent",
+  "innerText",
+  "children"
+]);
+const Aliases = /*#__PURE__*/ Object.assign(Object.create(null), {
+  className: "class",
+  htmlFor: "for"
+});
+const PropAliases = /*#__PURE__*/ Object.assign(Object.create(null), {
+  class: "className",
+  formnovalidate: {
+    $: "formNoValidate",
+    BUTTON: 1,
+    INPUT: 1
+  },
+  ismap: {
+    $: "isMap",
+    IMG: 1
+  },
+  nomodule: {
+    $: "noModule",
+    SCRIPT: 1
+  },
+  playsinline: {
+    $: "playsInline",
+    VIDEO: 1
+  },
+  readonly: {
+    $: "readOnly",
+    INPUT: 1,
+    TEXTAREA: 1
+  }
+});
+function getPropAlias(prop, tagName) {
+  const a = PropAliases[prop];
+  return typeof a === "object" ? (a[tagName] ? a["$"] : undefined) : a;
+}
+const DelegatedEvents = /*#__PURE__*/ new Set([
+  "beforeinput",
+  "click",
+  "dblclick",
+  "contextmenu",
+  "focusin",
+  "focusout",
+  "input",
+  "keydown",
+  "keyup",
+  "mousedown",
+  "mousemove",
+  "mouseout",
+  "mouseover",
+  "mouseup",
+  "pointerdown",
+  "pointermove",
+  "pointerout",
+  "pointerover",
+  "pointerup",
+  "touchend",
+  "touchmove",
+  "touchstart"
+]);
+const SVGElements = /*#__PURE__*/ new Set([
+  "altGlyph",
+  "altGlyphDef",
+  "altGlyphItem",
+  "animate",
+  "animateColor",
+  "animateMotion",
+  "animateTransform",
+  "circle",
+  "clipPath",
+  "color-profile",
+  "cursor",
+  "defs",
+  "desc",
+  "ellipse",
+  "feBlend",
+  "feColorMatrix",
+  "feComponentTransfer",
+  "feComposite",
+  "feConvolveMatrix",
+  "feDiffuseLighting",
+  "feDisplacementMap",
+  "feDistantLight",
+  "feFlood",
+  "feFuncA",
+  "feFuncB",
+  "feFuncG",
+  "feFuncR",
+  "feGaussianBlur",
+  "feImage",
+  "feMerge",
+  "feMergeNode",
+  "feMorphology",
+  "feOffset",
+  "fePointLight",
+  "feSpecularLighting",
+  "feSpotLight",
+  "feTile",
+  "feTurbulence",
+  "filter",
+  "font",
+  "font-face",
+  "font-face-format",
+  "font-face-name",
+  "font-face-src",
+  "font-face-uri",
+  "foreignObject",
+  "g",
+  "glyph",
+  "glyphRef",
+  "hkern",
+  "image",
+  "line",
+  "linearGradient",
+  "marker",
+  "mask",
+  "metadata",
+  "missing-glyph",
+  "mpath",
+  "path",
+  "pattern",
+  "polygon",
+  "polyline",
+  "radialGradient",
+  "rect",
+  "set",
+  "stop",
+  "svg",
+  "switch",
+  "symbol",
+  "text",
+  "textPath",
+  "tref",
+  "tspan",
+  "use",
+  "view",
+  "vkern"
+]);
+const SVGNamespace = {
+  xlink: "http://www.w3.org/1999/xlink",
+  xml: "http://www.w3.org/XML/1998/namespace"
+};
+
+function reconcileArrays(parentNode, a, b) {
+  let bLength = b.length,
+    aEnd = a.length,
+    bEnd = bLength,
+    aStart = 0,
+    bStart = 0,
+    after = a[aEnd - 1].nextSibling,
+    map = null;
+  while (aStart < aEnd || bStart < bEnd) {
+    if (a[aStart] === b[bStart]) {
+      aStart++;
+      bStart++;
+      continue;
+    }
+    while (a[aEnd - 1] === b[bEnd - 1]) {
+      aEnd--;
+      bEnd--;
+    }
+    if (aEnd === aStart) {
+      const node = bEnd < bLength ? (bStart ? b[bStart - 1].nextSibling : b[bEnd - bStart]) : after;
+      while (bStart < bEnd) parentNode.insertBefore(b[bStart++], node);
+    } else if (bEnd === bStart) {
+      while (aStart < aEnd) {
+        if (!map || !map.has(a[aStart])) a[aStart].remove();
+        aStart++;
+      }
+    } else if (a[aStart] === b[bEnd - 1] && b[bStart] === a[aEnd - 1]) {
+      const node = a[--aEnd].nextSibling;
+      parentNode.insertBefore(b[bStart++], a[aStart++].nextSibling);
+      parentNode.insertBefore(b[--bEnd], node);
+      a[aEnd] = b[bEnd];
+    } else {
+      if (!map) {
+        map = new Map();
+        let i = bStart;
+        while (i < bEnd) map.set(b[i], i++);
+      }
+      const index = map.get(a[aStart]);
+      if (index != null) {
+        if (bStart < index && index < bEnd) {
+          let i = aStart,
+            sequence = 1,
+            t;
+          while (++i < aEnd && i < bEnd) {
+            if ((t = map.get(a[i])) == null || t !== index + sequence) break;
+            sequence++;
+          }
+          if (sequence > index - bStart) {
+            const node = a[aStart];
+            while (bStart < index) parentNode.insertBefore(b[bStart++], node);
+          } else parentNode.replaceChild(b[bStart++], a[aStart++]);
+        } else aStart++;
+      } else a[aStart++].remove();
+    }
+  }
+}
+
+const $$EVENTS = "_$DX_DELEGATE";
+function render(code, element, init, options = {}) {
+  let disposer;
+  solidJs.createRoot(dispose => {
+    disposer = dispose;
+    element === document
+      ? code()
+      : insert(element, code(), element.firstChild ? null : undefined, init);
+  }, options.owner);
+  return () => {
+    disposer();
+    element.textContent = "";
+  };
+}
+function template(html, isCE, isSVG) {
+  let node;
+  const create = () => {
+    const t = document.createElement("template");
+    t.innerHTML = html;
+    return isSVG ? t.content.firstChild.firstChild : t.content.firstChild;
+  };
+  const fn = isCE
+    ? () => solidJs.untrack(() => document.importNode(node || (node = create()), true))
+    : () => (node || (node = create())).cloneNode(true);
+  fn.cloneNode = fn;
+  return fn;
+}
+function delegateEvents(eventNames, document = window.document) {
+  const e = document[$$EVENTS] || (document[$$EVENTS] = new Set());
+  for (let i = 0, l = eventNames.length; i < l; i++) {
+    const name = eventNames[i];
+    if (!e.has(name)) {
+      e.add(name);
+      document.addEventListener(name, eventHandler);
+    }
+  }
+}
+function setAttribute(node, name, value) {
+  if (solidJs.sharedConfig.context) return;
+  if (value == null) node.removeAttribute(name);
+  else node.setAttribute(name, value);
+}
+function setAttributeNS(node, namespace, name, value) {
+  if (solidJs.sharedConfig.context) return;
+  if (value == null) node.removeAttributeNS(namespace, name);
+  else node.setAttributeNS(namespace, name, value);
+}
+function className(node, value) {
+  if (solidJs.sharedConfig.context) return;
+  if (value == null) node.removeAttribute("class");
+  else node.className = value;
+}
+function addEventListener(node, name, handler, delegate) {
+  if (delegate) {
+    if (Array.isArray(handler)) {
+      node[\`$$\${name}\`] = handler[0];
+      node[\`$$\${name}Data\`] = handler[1];
+    } else node[\`$$\${name}\`] = handler;
+  } else if (Array.isArray(handler)) {
+    const handlerFn = handler[0];
+    node.addEventListener(name, (handler[0] = e => handlerFn.call(node, handler[1], e)));
+  } else node.addEventListener(name, handler);
+}
+function classList(node, value, prev = {}) {
+  const classKeys = Object.keys(value || {}),
+    prevKeys = Object.keys(prev);
+  let i, len;
+  for (i = 0, len = prevKeys.length; i < len; i++) {
+    const key = prevKeys[i];
+    if (!key || key === "undefined" || value[key]) continue;
+    toggleClassKey(node, key, false);
+    delete prev[key];
+  }
+  for (i = 0, len = classKeys.length; i < len; i++) {
+    const key = classKeys[i],
+      classValue = !!value[key];
+    if (!key || key === "undefined" || prev[key] === classValue || !classValue) continue;
+    toggleClassKey(node, key, true);
+    prev[key] = classValue;
+  }
+  return prev;
+}
+function style(node, value, prev) {
+  if (!value) return prev ? setAttribute(node, "style") : value;
+  const nodeStyle = node.style;
+  if (typeof value === "string") return (nodeStyle.cssText = value);
+  typeof prev === "string" && (nodeStyle.cssText = prev = undefined);
+  prev || (prev = {});
+  value || (value = {});
+  let v, s;
+  for (s in prev) {
+    value[s] == null && nodeStyle.removeProperty(s);
+    delete prev[s];
+  }
+  for (s in value) {
+    v = value[s];
+    if (v !== prev[s]) {
+      nodeStyle.setProperty(s, v);
+      prev[s] = v;
+    }
+  }
+  return prev;
+}
+function spread(node, props = {}, isSVG, skipChildren) {
+  const prevProps = {};
+  if (!skipChildren) {
+    solidJs.createRenderEffect(
+      () => (prevProps.children = insertExpression(node, props.children, prevProps.children))
+    );
+  }
+  solidJs.createRenderEffect(() => props.ref && props.ref(node));
+  solidJs.createRenderEffect(() => assign(node, props, isSVG, true, prevProps, true));
+  return prevProps;
+}
+function use(fn, element, arg) {
+  return solidJs.untrack(() => fn(element, arg));
+}
+function insert(parent, accessor, marker, initial) {
+  if (marker !== undefined && !initial) initial = [];
+  if (typeof accessor !== "function") return insertExpression(parent, accessor, initial, marker);
+  solidJs.createRenderEffect(current => insertExpression(parent, accessor(), current, marker), initial);
+}
+function assign(node, props, isSVG, skipChildren, prevProps = {}, skipRef = false) {
+  props || (props = {});
+  for (const prop in prevProps) {
+    if (!(prop in props)) {
+      if (prop === "children") continue;
+      prevProps[prop] = assignProp(node, prop, null, prevProps[prop], isSVG, skipRef);
+    }
+  }
+  for (const prop in props) {
+    if (prop === "children") {
+      if (!skipChildren) insertExpression(node, props.children);
+      continue;
+    }
+    const value = props[prop];
+    prevProps[prop] = assignProp(node, prop, value, prevProps[prop], isSVG, skipRef);
+  }
+}
+function getNextElement(template) {
+  let node, key;
+  if (!solidJs.sharedConfig.context || !(node = solidJs.sharedConfig.registry.get((key = getHydrationKey())))) {
+    return template();
+  }
+  if (solidJs.sharedConfig.completed) solidJs.sharedConfig.completed.add(node);
+  solidJs.sharedConfig.registry.delete(key);
+  return node;
+}
+function toPropertyName(name) {
+  return name.toLowerCase().replace(/-([a-z])/g, (_, w) => w.toUpperCase());
+}
+function toggleClassKey(node, key, value) {
+  const classNames = key.trim().split(/\\s+/);
+  for (let i = 0, nameLen = classNames.length; i < nameLen; i++)
+    node.classList.toggle(classNames[i], value);
+}
+function assignProp(node, prop, value, prev, isSVG, skipRef) {
+  let isCE, isProp, isChildProp, propAlias, forceProp;
+  if (prop === "style") return style(node, value, prev);
+  if (prop === "classList") return classList(node, value, prev);
+  if (value === prev) return prev;
+  if (prop === "ref") {
+    if (!skipRef) value(node);
+  } else if (prop.slice(0, 3) === "on:") {
+    const e = prop.slice(3);
+    prev && node.removeEventListener(e, prev);
+    value && node.addEventListener(e, value);
+  } else if (prop.slice(0, 10) === "oncapture:") {
+    const e = prop.slice(10);
+    prev && node.removeEventListener(e, prev, true);
+    value && node.addEventListener(e, value, true);
+  } else if (prop.slice(0, 2) === "on") {
+    const name = prop.slice(2).toLowerCase();
+    const delegate = DelegatedEvents.has(name);
+    if (!delegate && prev) {
+      const h = Array.isArray(prev) ? prev[0] : prev;
+      node.removeEventListener(name, h);
+    }
+    if (delegate || value) {
+      addEventListener(node, name, value, delegate);
+      delegate && delegateEvents([name]);
+    }
+  } else if (prop.slice(0, 5) === "attr:") {
+    setAttribute(node, prop.slice(5), value);
+  } else if (
+    (forceProp = prop.slice(0, 5) === "prop:") ||
+    (isChildProp = ChildProperties.has(prop)) ||
+    (!isSVG &&
+      ((propAlias = getPropAlias(prop, node.tagName)) || (isProp = Properties.has(prop)))) ||
+    (isCE = node.nodeName.includes("-"))
+  ) {
+    if (forceProp) {
+      prop = prop.slice(5);
+      isProp = true;
+    } else if (solidJs.sharedConfig.context) return value;
+    if (prop === "class" || prop === "className") className(node, value);
+    else if (isCE && !isProp && !isChildProp) node[toPropertyName(prop)] = value;
+    else node[propAlias || prop] = value;
+  } else {
+    const ns = isSVG && prop.indexOf(":") > -1 && SVGNamespace[prop.split(":")[0]];
+    if (ns) setAttributeNS(node, ns, prop, value);
+    else setAttribute(node, Aliases[prop] || prop, value);
+  }
+  return value;
+}
+function eventHandler(e) {
+  const key = \`$$\${e.type}\`;
+  let node = (e.composedPath && e.composedPath()[0]) || e.target;
+  if (e.target !== node) {
+    Object.defineProperty(e, "target", {
+      configurable: true,
+      value: node
+    });
+  }
+  Object.defineProperty(e, "currentTarget", {
+    configurable: true,
+    get() {
+      return node || document;
+    }
+  });
+  if (solidJs.sharedConfig.registry && !solidJs.sharedConfig.done) solidJs.sharedConfig.done = _$HY.done = true;
+  while (node) {
+    const handler = node[key];
+    if (handler && !node.disabled) {
+      const data = node[\`\${key}Data\`];
+      data !== undefined ? handler.call(node, data, e) : handler.call(node, e);
+      if (e.cancelBubble) return;
+    }
+    node = node._$host || node.parentNode || node.host;
+  }
+}
+function insertExpression(parent, value, current, marker, unwrapArray) {
+  if (solidJs.sharedConfig.context) {
+    !current && (current = [...parent.childNodes]);
+    let cleaned = [];
+    for (let i = 0; i < current.length; i++) {
+      const node = current[i];
+      if (node.nodeType === 8 && node.data.slice(0, 2) === "!$") node.remove();
+      else cleaned.push(node);
+    }
+    current = cleaned;
+  }
+  while (typeof current === "function") current = current();
+  if (value === current) return current;
+  const t = typeof value,
+    multi = marker !== undefined;
+  parent = (multi && current[0] && current[0].parentNode) || parent;
+  if (t === "string" || t === "number") {
+    if (solidJs.sharedConfig.context) return current;
+    if (t === "number") value = value.toString();
+    if (multi) {
+      let node = current[0];
+      if (node && node.nodeType === 3) {
+        node.data = value;
+      } else node = document.createTextNode(value);
+      current = cleanChildren(parent, current, marker, node);
+    } else {
+      if (current !== "" && typeof current === "string") {
+        current = parent.firstChild.data = value;
+      } else current = parent.textContent = value;
+    }
+  } else if (value == null || t === "boolean") {
+    if (solidJs.sharedConfig.context) return current;
+    current = cleanChildren(parent, current, marker);
+  } else if (t === "function") {
+    solidJs.createRenderEffect(() => {
+      let v = value();
+      while (typeof v === "function") v = v();
+      current = insertExpression(parent, v, current, marker);
+    });
+    return () => current;
+  } else if (Array.isArray(value)) {
+    const array = [];
+    const currentArray = current && Array.isArray(current);
+    if (normalizeIncomingArray(array, value, current, unwrapArray)) {
+      solidJs.createRenderEffect(() => (current = insertExpression(parent, array, current, marker, true)));
+      return () => current;
+    }
+    if (solidJs.sharedConfig.context) {
+      if (!array.length) return current;
+      if (marker === undefined) return [...parent.childNodes];
+      let node = array[0];
+      let nodes = [node];
+      while ((node = node.nextSibling) !== marker) nodes.push(node);
+      return (current = nodes);
+    }
+    if (array.length === 0) {
+      current = cleanChildren(parent, current, marker);
+      if (multi) return current;
+    } else if (currentArray) {
+      if (current.length === 0) {
+        appendNodes(parent, array, marker);
+      } else reconcileArrays(parent, current, array);
+    } else {
+      current && cleanChildren(parent);
+      appendNodes(parent, array);
+    }
+    current = array;
+  } else if (value.nodeType) {
+    if (solidJs.sharedConfig.context && value.parentNode) return (current = multi ? [value] : value);
+    if (Array.isArray(current)) {
+      if (multi) return (current = cleanChildren(parent, current, marker, value));
+      cleanChildren(parent, current, null, value);
+    } else if (current == null || current === "" || !parent.firstChild) {
+      parent.appendChild(value);
+    } else parent.replaceChild(value, parent.firstChild);
+    current = value;
+  } else;
+  return current;
+}
+function normalizeIncomingArray(normalized, array, current, unwrap) {
+  let dynamic = false;
+  for (let i = 0, len = array.length; i < len; i++) {
+    let item = array[i],
+      prev = current && current[i],
+      t;
+    if (item == null || item === true || item === false);
+    else if ((t = typeof item) === "object" && item.nodeType) {
+      normalized.push(item);
+    } else if (Array.isArray(item)) {
+      dynamic = normalizeIncomingArray(normalized, item, prev) || dynamic;
+    } else if (t === "function") {
+      if (unwrap) {
+        while (typeof item === "function") item = item();
+        dynamic =
+          normalizeIncomingArray(
+            normalized,
+            Array.isArray(item) ? item : [item],
+            Array.isArray(prev) ? prev : [prev]
+          ) || dynamic;
+      } else {
+        normalized.push(item);
+        dynamic = true;
+      }
+    } else {
+      const value = String(item);
+      if (prev && prev.nodeType === 3 && prev.data === value) normalized.push(prev);
+      else normalized.push(document.createTextNode(value));
+    }
+  }
+  return dynamic;
+}
+function appendNodes(parent, array, marker = null) {
+  for (let i = 0, len = array.length; i < len; i++) parent.insertBefore(array[i], marker);
+}
+function cleanChildren(parent, current, marker, replacement) {
+  if (marker === undefined) return (parent.textContent = "");
+  const node = replacement || document.createTextNode("");
+  if (current.length) {
+    let inserted = false;
+    for (let i = current.length - 1; i >= 0; i--) {
+      const el = current[i];
+      if (node !== el) {
+        const isParent = el.parentNode === parent;
+        if (!inserted && !i)
+          isParent ? parent.replaceChild(node, el) : parent.insertBefore(node, marker);
+        else isParent && el.remove();
+      } else inserted = true;
+    }
+  } else parent.insertBefore(node, marker);
+  return [node];
+}
+function getHydrationKey() {
+  const hydrate = solidJs.sharedConfig.context;
+  return \`\${hydrate.id}\${hydrate.count++}\`;
+}
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+function createElement(tagName, isSVG = false) {
+  return isSVG ? document.createElementNS(SVG_NAMESPACE, tagName) : document.createElement(tagName);
+}
+function Dynamic(props) {
+  const [p, others] = solidJs.splitProps(props, ["component"]);
+  const cached = solidJs.createMemo(() => p.component);
+  return solidJs.createMemo(() => {
+    const component = cached();
+    switch (typeof component) {
+      case "function":
+        return solidJs.untrack(() => component(others));
+      case "string":
+        const isSvg = SVGElements.has(component);
+        const el = solidJs.sharedConfig.context ? getNextElement() : createElement(component, isSvg);
+        spread(el, others, isSvg);
+        return el;
+    }
+  });
+}
+
 const getDom = id => {
   let dom = document.getElementById(id);
   if (dom) {
@@ -1293,7 +1918,7 @@ const mountComponents = (id, fc) => {
   const shadowDom = dom.attachShadow({
     mode: 'closed'
   });
-  web.render(fc, shadowDom);
+  render(fc, shadowDom);
   return dom;
 };
 const watchStore = (deps, fn, options = {
@@ -1303,11 +1928,376 @@ const watchStore = (deps, fn, options = {
 var css$3 = ".index_module_root__d8c71ff0{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__d8c71ff0{align-items:center;animation:index_module_bounceInRight__d8c71ff0 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__d8c71ff0>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__d8c71ff0[data-exit]{animation:index_module_bounceOutRight__d8c71ff0 .5s 1}.index_module_schedule__d8c71ff0{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__d8c71ff0[data-schedule] .index_module_schedule__d8c71ff0{transition:transform .1s}.index_module_item__d8c71ff0:not([data-schedule]) .index_module_schedule__d8c71ff0{animation:index_module_schedule__d8c71ff0 linear 1 forwards}:is(.index_module_item__d8c71ff0:hover,.index_module_item__d8c71ff0[data-schedule],.index_module_root__d8c71ff0[data-paused]) .index_module_schedule__d8c71ff0{animation-play-state:paused}.index_module_msg__d8c71ff0{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__d8c71ff0 h2{margin:0}.index_module_msg__d8c71ff0 h3{margin:.7em 0}.index_module_msg__d8c71ff0 ul{margin:0;text-align:left}.index_module_msg__d8c71ff0 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__d8c71ff0 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__d8c71ff0{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__d8c71ff0{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__d8c71ff0{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
 var modules_c21c94f2$3 = {"root":"index_module_root__d8c71ff0","item":"index_module_item__d8c71ff0","bounceInRight":"index_module_bounceInRight__d8c71ff0","bounceOutRight":"index_module_bounceOutRight__d8c71ff0","schedule":"index_module_schedule__d8c71ff0","msg":"index_module_msg__d8c71ff0"};
 
-const [_state$1, _setState$1] = store$2.createStore({
+const $RAW = Symbol("store-raw"),
+  $NODE = Symbol("store-node"),
+  $HAS = Symbol("store-has"),
+  $SELF = Symbol("store-self");
+function wrap$1(value) {
+  let p = value[solidJs.$PROXY];
+  if (!p) {
+    Object.defineProperty(value, solidJs.$PROXY, {
+      value: (p = new Proxy(value, proxyTraps$1))
+    });
+    if (!Array.isArray(value)) {
+      const keys = Object.keys(value),
+        desc = Object.getOwnPropertyDescriptors(value);
+      for (let i = 0, l = keys.length; i < l; i++) {
+        const prop = keys[i];
+        if (desc[prop].get) {
+          Object.defineProperty(value, prop, {
+            enumerable: desc[prop].enumerable,
+            get: desc[prop].get.bind(p)
+          });
+        }
+      }
+    }
+  }
+  return p;
+}
+function isWrappable(obj) {
+  let proto;
+  return (
+    obj != null &&
+    typeof obj === "object" &&
+    (obj[solidJs.$PROXY] ||
+      !(proto = Object.getPrototypeOf(obj)) ||
+      proto === Object.prototype ||
+      Array.isArray(obj))
+  );
+}
+function unwrap(item, set = new Set()) {
+  let result, unwrapped, v, prop;
+  if ((result = item != null && item[$RAW])) return result;
+  if (!isWrappable(item) || set.has(item)) return item;
+  if (Array.isArray(item)) {
+    if (Object.isFrozen(item)) item = item.slice(0);
+    else set.add(item);
+    for (let i = 0, l = item.length; i < l; i++) {
+      v = item[i];
+      if ((unwrapped = unwrap(v, set)) !== v) item[i] = unwrapped;
+    }
+  } else {
+    if (Object.isFrozen(item)) item = Object.assign({}, item);
+    else set.add(item);
+    const keys = Object.keys(item),
+      desc = Object.getOwnPropertyDescriptors(item);
+    for (let i = 0, l = keys.length; i < l; i++) {
+      prop = keys[i];
+      if (desc[prop].get) continue;
+      v = item[prop];
+      if ((unwrapped = unwrap(v, set)) !== v) item[prop] = unwrapped;
+    }
+  }
+  return item;
+}
+function getNodes(target, symbol) {
+  let nodes = target[symbol];
+  if (!nodes)
+    Object.defineProperty(target, symbol, {
+      value: (nodes = Object.create(null))
+    });
+  return nodes;
+}
+function getNode(nodes, property, value) {
+  if (nodes[property]) return nodes[property];
+  const [s, set] = solidJs.createSignal(value, {
+    equals: false,
+    internal: true
+  });
+  s.$ = set;
+  return (nodes[property] = s);
+}
+function proxyDescriptor$1(target, property) {
+  const desc = Reflect.getOwnPropertyDescriptor(target, property);
+  if (!desc || desc.get || !desc.configurable || property === solidJs.$PROXY || property === $NODE)
+    return desc;
+  delete desc.value;
+  delete desc.writable;
+  desc.get = () => target[solidJs.$PROXY][property];
+  return desc;
+}
+function trackSelf(target) {
+  solidJs.getListener() && getNode(getNodes(target, $NODE), $SELF)();
+}
+function ownKeys(target) {
+  trackSelf(target);
+  return Reflect.ownKeys(target);
+}
+const proxyTraps$1 = {
+  get(target, property, receiver) {
+    if (property === $RAW) return target;
+    if (property === solidJs.$PROXY) return receiver;
+    if (property === solidJs.$TRACK) {
+      trackSelf(target);
+      return receiver;
+    }
+    const nodes = getNodes(target, $NODE);
+    const tracked = nodes[property];
+    let value = tracked ? tracked() : target[property];
+    if (property === $NODE || property === $HAS || property === "__proto__") return value;
+    if (!tracked) {
+      const desc = Object.getOwnPropertyDescriptor(target, property);
+      if (
+        solidJs.getListener() &&
+        (typeof value !== "function" || target.hasOwnProperty(property)) &&
+        !(desc && desc.get)
+      )
+        value = getNode(nodes, property, value)();
+    }
+    return isWrappable(value) ? wrap$1(value) : value;
+  },
+  has(target, property) {
+    if (
+      property === $RAW ||
+      property === solidJs.$PROXY ||
+      property === solidJs.$TRACK ||
+      property === $NODE ||
+      property === $HAS ||
+      property === "__proto__"
+    )
+      return true;
+    solidJs.getListener() && getNode(getNodes(target, $HAS), property)();
+    return property in target;
+  },
+  set() {
+    return true;
+  },
+  deleteProperty() {
+    return true;
+  },
+  ownKeys: ownKeys,
+  getOwnPropertyDescriptor: proxyDescriptor$1
+};
+function setProperty(state, property, value, deleting = false) {
+  if (!deleting && state[property] === value) return;
+  const prev = state[property],
+    len = state.length;
+  if (value === undefined) {
+    delete state[property];
+    if (state[$HAS] && state[$HAS][property] && prev !== undefined) state[$HAS][property].$();
+  } else {
+    state[property] = value;
+    if (state[$HAS] && state[$HAS][property] && prev === undefined) state[$HAS][property].$();
+  }
+  let nodes = getNodes(state, $NODE),
+    node;
+  if ((node = getNode(nodes, property, prev))) node.$(() => value);
+  if (Array.isArray(state) && state.length !== len) {
+    for (let i = state.length; i < len; i++) (node = nodes[i]) && node.$();
+    (node = getNode(nodes, "length", len)) && node.$(state.length);
+  }
+  (node = nodes[$SELF]) && node.$();
+}
+function mergeStoreNode(state, value) {
+  const keys = Object.keys(value);
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    setProperty(state, key, value[key]);
+  }
+}
+function updateArray(current, next) {
+  if (typeof next === "function") next = next(current);
+  next = unwrap(next);
+  if (Array.isArray(next)) {
+    if (current === next) return;
+    let i = 0,
+      len = next.length;
+    for (; i < len; i++) {
+      const value = next[i];
+      if (current[i] !== value) setProperty(current, i, value);
+    }
+    setProperty(current, "length", len);
+  } else mergeStoreNode(current, next);
+}
+function updatePath(current, path, traversed = []) {
+  let part,
+    prev = current;
+  if (path.length > 1) {
+    part = path.shift();
+    const partType = typeof part,
+      isArray = Array.isArray(current);
+    if (Array.isArray(part)) {
+      for (let i = 0; i < part.length; i++) {
+        updatePath(current, [part[i]].concat(path), traversed);
+      }
+      return;
+    } else if (isArray && partType === "function") {
+      for (let i = 0; i < current.length; i++) {
+        if (part(current[i], i)) updatePath(current, [i].concat(path), traversed);
+      }
+      return;
+    } else if (isArray && partType === "object") {
+      const { from = 0, to = current.length - 1, by = 1 } = part;
+      for (let i = from; i <= to; i += by) {
+        updatePath(current, [i].concat(path), traversed);
+      }
+      return;
+    } else if (path.length > 1) {
+      updatePath(current[part], path, [part].concat(traversed));
+      return;
+    }
+    prev = current[part];
+    traversed = [part].concat(traversed);
+  }
+  let value = path[0];
+  if (typeof value === "function") {
+    value = value(prev, traversed);
+    if (value === prev) return;
+  }
+  if (part === undefined && value == undefined) return;
+  value = unwrap(value);
+  if (part === undefined || (isWrappable(prev) && isWrappable(value) && !Array.isArray(value))) {
+    mergeStoreNode(prev, value);
+  } else setProperty(current, part, value);
+}
+function createStore(...[store, options]) {
+  const unwrappedStore = unwrap(store || {});
+  const isArray = Array.isArray(unwrappedStore);
+  const wrappedStore = wrap$1(unwrappedStore);
+  function setStore(...args) {
+    solidJs.batch(() => {
+      isArray && args.length === 1
+        ? updateArray(unwrappedStore, args[0])
+        : updatePath(unwrappedStore, args);
+    });
+  }
+  return [wrappedStore, setStore];
+}
+
+function proxyDescriptor(target, property) {
+  const desc = Reflect.getOwnPropertyDescriptor(target, property);
+  if (
+    !desc ||
+    desc.get ||
+    desc.set ||
+    !desc.configurable ||
+    property === solidJs.$PROXY ||
+    property === $NODE
+  )
+    return desc;
+  delete desc.value;
+  delete desc.writable;
+  desc.get = () => target[solidJs.$PROXY][property];
+  desc.set = v => (target[solidJs.$PROXY][property] = v);
+  return desc;
+}
+const proxyTraps = {
+  get(target, property, receiver) {
+    if (property === $RAW) return target;
+    if (property === solidJs.$PROXY) return receiver;
+    if (property === solidJs.$TRACK) {
+      trackSelf(target);
+      return receiver;
+    }
+    const nodes = getNodes(target, $NODE);
+    const tracked = nodes[property];
+    let value = tracked ? tracked() : target[property];
+    if (property === $NODE || property === $HAS || property === "__proto__") return value;
+    if (!tracked) {
+      const desc = Object.getOwnPropertyDescriptor(target, property);
+      const isFunction = typeof value === "function";
+      if (solidJs.getListener() && (!isFunction || target.hasOwnProperty(property)) && !(desc && desc.get))
+        value = getNode(nodes, property, value)();
+      else if (value != null && isFunction && value === Array.prototype[property]) {
+        return (...args) => solidJs.batch(() => Array.prototype[property].apply(receiver, args));
+      }
+    }
+    return isWrappable(value) ? wrap(value) : value;
+  },
+  has(target, property) {
+    if (
+      property === $RAW ||
+      property === solidJs.$PROXY ||
+      property === solidJs.$TRACK ||
+      property === $NODE ||
+      property === $HAS ||
+      property === "__proto__"
+    )
+      return true;
+    solidJs.getListener() && getNode(getNodes(target, $HAS), property)();
+    return property in target;
+  },
+  set(target, property, value) {
+    solidJs.batch(() => setProperty(target, property, unwrap(value)));
+    return true;
+  },
+  deleteProperty(target, property) {
+    solidJs.batch(() => setProperty(target, property, undefined, true));
+    return true;
+  },
+  ownKeys: ownKeys,
+  getOwnPropertyDescriptor: proxyDescriptor
+};
+function wrap(value) {
+  let p = value[solidJs.$PROXY];
+  if (!p) {
+    Object.defineProperty(value, solidJs.$PROXY, {
+      value: (p = new Proxy(value, proxyTraps))
+    });
+    const keys = Object.keys(value),
+      desc = Object.getOwnPropertyDescriptors(value);
+    for (let i = 0, l = keys.length; i < l; i++) {
+      const prop = keys[i];
+      if (desc[prop].get) {
+        const get = desc[prop].get.bind(p);
+        Object.defineProperty(value, prop, {
+          get
+        });
+      }
+      if (desc[prop].set) {
+        const og = desc[prop].set,
+          set = v => solidJs.batch(() => og.call(p, v));
+        Object.defineProperty(value, prop, {
+          set
+        });
+      }
+    }
+  }
+  return p;
+}
+function createMutable(state, options) {
+  const unwrappedStore = unwrap(state || {});
+  const wrappedStore = wrap(unwrappedStore);
+  return wrappedStore;
+}
+const producers = new WeakMap();
+const setterTraps = {
+  get(target, property) {
+    if (property === $RAW) return target;
+    const value = target[property];
+    let proxy;
+    return isWrappable(value)
+      ? producers.get(value) ||
+          (producers.set(value, (proxy = new Proxy(value, setterTraps))), proxy)
+      : value;
+  },
+  set(target, property, value) {
+    setProperty(target, property, unwrap(value));
+    return true;
+  },
+  deleteProperty(target, property) {
+    setProperty(target, property, undefined, true);
+    return true;
+  }
+};
+function produce(fn) {
+  return state => {
+    if (isWrappable(state)) {
+      let proxy;
+      if (!(proxy = producers.get(state))) {
+        producers.set(state, (proxy = new Proxy(state, setterTraps)));
+      }
+      fn(proxy);
+    }
+    return state;
+  };
+}
+
+const [_state$1, _setState$1] = createStore({
   list: [],
   map: {}
 });
-const setState$1 = fn => _setState$1(store$2.produce(fn));
+const setState$1 = fn => _setState$1(produce(fn));
 
 // eslint-disable-next-line solid/reactivity
 const store$1 = _state$1;
@@ -1319,31 +2309,31 @@ const creatId = () => {
   return id;
 };
 
-const _tmpl$$S = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">\`);
+const _tmpl$$S = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">\`);
 const MdCheckCircle = ((props = {}) => (() => {
   const _el$ = _tmpl$$S();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$R = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
+const _tmpl$$R = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
 const MdWarning = ((props = {}) => (() => {
   const _el$ = _tmpl$$R();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$Q = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
+const _tmpl$$Q = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
 const MdError = ((props = {}) => (() => {
   const _el$ = _tmpl$$Q();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">\`);
+const _tmpl$$P = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">\`);
 const MdInfo = ((props = {}) => (() => {
   const _el$ = _tmpl$$P();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
@@ -1403,8 +2393,8 @@ toast$2.error = (msg, options) => toast$2(msg, {
   type: 'error'
 });
 
-const _tmpl$$O = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$d = /*#__PURE__*/web.template(\`<div><div>\`);
+const _tmpl$$O = /*#__PURE__*/template(\`<div>\`),
+  _tmpl$2$d = /*#__PURE__*/template(\`<div><div>\`);
 const iconMap = {
   info: MdInfo,
   success: MdCheckCircle,
@@ -1459,16 +2449,16 @@ const ToastItem = props => {
       _el$2 = _el$.firstChild;
     _el$.addEventListener("animationend", handleAnimationEnd);
     _el$.addEventListener("click", dismiss);
-    web.insert(_el$, web.createComponent(web.Dynamic, {
+    insert(_el$, solidJs.createComponent(Dynamic, {
       get component() {
         return iconMap[props.type];
       }
     }), _el$2);
-    web.insert(_el$2, (() => {
-      const _c$ = web.memo(() => typeof props.msg === 'string');
-      return () => _c$() ? props.msg : web.createComponent(props.msg, {});
+    insert(_el$2, (() => {
+      const _c$ = solidJs.createMemo(() => typeof props.msg === 'string');
+      return () => _c$() ? props.msg : solidJs.createComponent(props.msg, {});
     })());
-    web.insert(_el$, web.createComponent(solidJs.Show, {
+    insert(_el$, solidJs.createComponent(solidJs.Show, {
       get when() {
         return props.duration !== Infinity || props.schedule !== undefined;
       },
@@ -1476,12 +2466,12 @@ const ToastItem = props => {
         const _el$3 = _tmpl$$O();
         _el$3.addEventListener("animationend", dismiss);
         const _ref$ = scheduleRef;
-        typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
-        web.effect(_p$ => {
+        typeof _ref$ === "function" ? use(_ref$, _el$3) : scheduleRef = _el$3;
+        solidJs.createRenderEffect(_p$ => {
           const _v$ = modules_c21c94f2$3.schedule,
             _v$2 = \`\${props.duration}ms\`,
             _v$3 = showSchedule() ? \`scaleX(\${props.schedule})\` : undefined;
-          _v$ !== _p$._v$ && web.className(_el$3, _p$._v$ = _v$);
+          _v$ !== _p$._v$ && className(_el$3, _p$._v$ = _v$);
           _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$3.style.setProperty("animation-duration", _v$2) : _el$3.style.removeProperty("animation-duration"));
           _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$3.style.setProperty("transform", _v$3) : _el$3.style.removeProperty("transform"));
           return _p$;
@@ -1493,17 +2483,17 @@ const ToastItem = props => {
         return _el$3;
       }
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$4 = modules_c21c94f2$3.item,
         _v$5 = colorMap[props.type],
         _v$6 = showSchedule(),
         _v$7 = props.exit,
         _v$8 = modules_c21c94f2$3.msg;
-      _v$4 !== _p$._v$4 && web.className(_el$, _p$._v$4 = _v$4);
+      _v$4 !== _p$._v$4 && className(_el$, _p$._v$4 = _v$4);
       _v$5 !== _p$._v$5 && ((_p$._v$5 = _v$5) != null ? _el$.style.setProperty("--theme", _v$5) : _el$.style.removeProperty("--theme"));
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-schedule", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-exit", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.className(_el$2, _p$._v$8 = _v$8);
+      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-schedule", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-exit", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && className(_el$2, _p$._v$8 = _v$8);
       return _p$;
     }, {
       _v$4: undefined,
@@ -1516,7 +2506,7 @@ const ToastItem = props => {
   })();
 };
 
-const _tmpl$$N = /*#__PURE__*/web.template(\`<div>\`);
+const _tmpl$$N = /*#__PURE__*/template(\`<div>\`);
 const Toaster = () => {
   const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
   solidJs.onMount(() => {
@@ -1528,17 +2518,17 @@ const Toaster = () => {
   });
   return (() => {
     const _el$ = _tmpl$$N();
-    web.insert(_el$, web.createComponent(solidJs.For, {
+    insert(_el$, solidJs.createComponent(solidJs.For, {
       get each() {
         return store$1.list;
       },
-      children: id => web.createComponent(ToastItem, web.mergeProps(() => store$1.map[id]))
+      children: id => solidJs.createComponent(ToastItem, solidJs.mergeProps(() => store$1.map[id]))
     }));
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$3.root,
         _v$2 = visible() ? undefined : '';
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-paused", _p$._v$2 = _v$2);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-paused", _p$._v$2 = _v$2);
       return _p$;
     }, {
       _v$: undefined,
@@ -1550,7 +2540,7 @@ const Toaster = () => {
 
 const ToastStyle = css$3;
 
-const _tmpl$$M = /*#__PURE__*/web.template(\`<style type=text/css>\`);
+const _tmpl$$M = /*#__PURE__*/template(\`<style type=text/css>\`);
 let dom$2;
 const init = () => {
   if (dom$2) return;
@@ -1561,9 +2551,9 @@ const init = () => {
     _dom.id = 'comicRead';
     document.body.appendChild(_dom);
   }
-  dom$2 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
+  dom$2 = mountComponents('toast', () => [solidJs.createComponent(Toaster, {}), (() => {
     const _el$ = _tmpl$$M();
-    web.insert(_el$, ToastStyle);
+    insert(_el$, ToastStyle);
     return _el$;
   })()]);
   dom$2.style.setProperty('z-index', '2147483647', 'important');
@@ -1633,39 +2623,39 @@ const eachApi = async (url, baseUrlList, details) => {
   throw new Error(errorText);
 };
 
-const _tmpl$$L = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">\`);
+const _tmpl$$L = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">\`);
 const MdAutoFixHigh = ((props = {}) => (() => {
   const _el$ = _tmpl$$L();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$K = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">\`);
+const _tmpl$$K = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">\`);
 const MdAutoFixOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$K();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">\`);
+const _tmpl$$J = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">\`);
 const MdAutoFlashOn = ((props = {}) => (() => {
   const _el$ = _tmpl$$J();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">\`);
+const _tmpl$$I = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">\`);
 const MdAutoFlashOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$I();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-var css$2 = ".index_module_iconButtonItem__58f56840{align-items:center;display:flex;position:relative}.index_module_iconButton__58f56840{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__58f56840:focus,.index_module_iconButton__58f56840:hover{background-color:var(--hover-bg-color,#fff3)}.index_module_iconButton__58f56840.index_module_enabled__58f56840{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.index_module_iconButton__58f56840.index_module_enabled__58f56840:focus,.index_module_iconButton__58f56840.index_module_enabled__58f56840:hover{background-color:var(--hover-bg-color-enable,#fffa)}.index_module_iconButton__58f56840>svg{width:1em}.index_module_iconButtonPopper__58f56840{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);user-select:none;white-space:nowrap}.index_module_iconButtonPopper__58f56840[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840:before{background-color:initial;border:.4em solid #0000;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.index_module_iconButtonItem__58f56840:focus .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840:hover .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840[data-show=true] .index_module_iconButtonPopper__58f56840{opacity:1}.index_module_hidden__58f56840{display:none}";
+var css$2 = ".index_module_iconButtonItem__58f56840{align-items:center;display:flex;position:relative}.index_module_iconButton__58f56840{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__58f56840:focus,.index_module_iconButton__58f56840:hover{background-color:var(--hover-bg-color,#fff3)}.index_module_iconButton__58f56840.index_module_enabled__58f56840{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.index_module_iconButton__58f56840.index_module_enabled__58f56840:focus,.index_module_iconButton__58f56840.index_module_enabled__58f56840:hover{background-color:var(--hover-bg-color-enable,#fffa)}.index_module_iconButton__58f56840>svg{width:1em}.index_module_iconButtonPopper__58f56840{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.index_module_iconButtonPopper__58f56840[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840:before{background-color:initial;border:.4em solid #0000;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.index_module_iconButtonItem__58f56840:focus .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840:hover .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840[data-show=true] .index_module_iconButtonPopper__58f56840{opacity:1}.index_module_hidden__58f56840{display:none}";
 var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__58f56840","iconButton":"index_module_iconButton__58f56840","enabled":"index_module_enabled__58f56840","iconButtonPopper":"index_module_iconButtonPopper__58f56840","hidden":"index_module_hidden__58f56840"};
 
-const _tmpl$$H = /*#__PURE__*/web.template(\`<div><button type=button tabindex=0>\`),
-  _tmpl$2$c = /*#__PURE__*/web.template(\`<div>\`);
+const _tmpl$$H = /*#__PURE__*/template(\`<div><button type=button tabindex=0>\`),
+  _tmpl$2$c = /*#__PURE__*/template(\`<div>\`);
 const IconButtonStyle = css$2;
 /** 图标按钮 */
 const IconButton = _props => {
@@ -1682,19 +2672,19 @@ const IconButton = _props => {
     const _el$ = _tmpl$$H(),
       _el$2 = _el$.firstChild;
     const _ref$ = buttonRef;
-    typeof _ref$ === "function" ? web.use(_ref$, _el$2) : buttonRef = _el$2;
+    typeof _ref$ === "function" ? use(_ref$, _el$2) : buttonRef = _el$2;
     _el$2.addEventListener("click", handleClick);
-    web.insert(_el$2, () => props.children);
-    web.insert(_el$, (() => {
-      const _c$ = web.memo(() => !!(props.popper || props.tip));
+    insert(_el$2, () => props.children);
+    insert(_el$, (() => {
+      const _c$ = solidJs.createMemo(() => !!(props.popper || props.tip));
       return () => _c$() ? (() => {
         const _el$3 = _tmpl$2$c();
-        web.insert(_el$3, () => props.popper || props.tip);
-        web.effect(_p$ => {
+        insert(_el$3, () => props.popper || props.tip);
+        solidJs.createRenderEffect(_p$ => {
           const _v$6 = [modules_c21c94f2$2.iconButtonPopper, props.popperClassName].join(' '),
             _v$7 = props.placement;
-          _v$6 !== _p$._v$6 && web.className(_el$3, _p$._v$6 = _v$6);
-          _v$7 !== _p$._v$7 && web.setAttribute(_el$3, "data-placement", _p$._v$7 = _v$7);
+          _v$6 !== _p$._v$6 && className(_el$3, _p$._v$6 = _v$6);
+          _v$7 !== _p$._v$7 && setAttribute(_el$3, "data-placement", _p$._v$7 = _v$7);
           return _p$;
         }, {
           _v$6: undefined,
@@ -1703,7 +2693,7 @@ const IconButton = _props => {
         return _el$3;
       })() : null;
     })(), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$2.iconButtonItem,
         _v$2 = props.showTip,
         _v$3 = props.tip,
@@ -1712,11 +2702,11 @@ const IconButton = _props => {
           [modules_c21c94f2$2.hidden]: props.hidden,
           [modules_c21c94f2$2.enabled]: props.enabled
         };
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$2, "aria-label", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
-      _p$._v$5 = web.classList(_el$2, _v$5, _p$._v$5);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$2, "aria-label", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
+      _p$._v$5 = classList(_el$2, _v$5, _p$._v$5);
       return _p$;
     }, {
       _v$: undefined,
@@ -1730,7 +2720,7 @@ const IconButton = _props => {
 };
 
 const useSpeedDial = (options, setOptions) => {
-  const DefaultButton = props => web.createComponent(IconButton, {
+  const DefaultButton = props => solidJs.createComponent(IconButton, {
     get tip() {
       return props.showName ?? (t(\`site.add_feature.\${props.optionName}\`) || props.optionName);
     },
@@ -1740,7 +2730,7 @@ const useSpeedDial = (options, setOptions) => {
       [props.optionName]: !options[props.optionName]
     }),
     get children() {
-      return props.children ?? (options[props.optionName] ? web.createComponent(MdAutoFixHigh, {}) : web.createComponent(MdAutoFixOff, {}));
+      return props.children ?? (options[props.optionName] ? solidJs.createComponent(MdAutoFixHigh, {}) : solidJs.createComponent(MdAutoFixOff, {}));
     }
   });
   const list = Object.keys(options).map(optionName => {
@@ -1750,18 +2740,18 @@ const useSpeedDial = (options, setOptions) => {
       case 'hotkeys':
         return null;
       case 'autoShow':
-        return () => web.createComponent(DefaultButton, {
+        return () => solidJs.createComponent(DefaultButton, {
           optionName: "autoShow",
           get showName() {
             return t('other.auto_enter_read_mode');
           },
           get children() {
-            return web.memo(() => !!options.autoShow)() ? web.createComponent(MdAutoFlashOn, {}) : web.createComponent(MdAutoFlashOff, {});
+            return solidJs.createMemo(() => !!options.autoShow)() ? solidJs.createComponent(MdAutoFlashOn, {}) : solidJs.createComponent(MdAutoFlashOff, {});
           }
         });
       default:
         if (typeof options[optionName] !== 'boolean') return null;
-        return () => web.createComponent(DefaultButton, {
+        return () => solidJs.createComponent(DefaultButton, {
           optionName: optionName
         });
     }
@@ -1825,33 +2815,33 @@ const useCache = (initSchema, version = 1) => {
   };
 };
 
-const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">\`);
+const _tmpl$$G = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">\`);
 const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$$G();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">\`);
+const _tmpl$$F = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">\`);
 const MdFileDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$F();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">\`);
+const _tmpl$$E = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">\`);
 const MdClose = ((props = {}) => (() => {
   const _el$ = _tmpl$$E();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
 const useStore = initState => {
-  const [_state, _setState] = store$2.createStore(initState);
+  const [_state, _setState] = createStore(initState);
   return {
     _state,
     _setState,
-    setState: fn => _setState(store$2.produce(fn)),
+    setState: fn => _setState(produce(fn)),
     store: _state
   };
 };
@@ -3254,7 +4244,7 @@ const switchGridMode = () => {
   });
 };
 
-var css$1 = ".index_module_img__d1a5aaee{background-color:var(--hover-bg-color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d1a5aaee[data-fill=left]{transform:translate(50%)}.index_module_img__d1a5aaee[data-fill=right]{transform:translate(-50%)}.index_module_img__d1a5aaee[data-fill=page]{display:none}.index_module_img__d1a5aaee[data-type=long]{height:auto;width:100%}.index_module_img__d1a5aaee[data-load-type=loading]{animation:index_module_show__d1a5aaee 2s forwards;max-width:100vw!important;opacity:0}.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[data-load-type=wait],.index_module_img__d1a5aaee[src=\\"\\"]{aspect-ratio:3/4;height:100%;position:relative}:is(.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[src=\\"\\"]):before{opacity:0}:is(.index_module_img__d1a5aaee[data-load-type],.index_module_img__d1a5aaee[src=\\"\\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d1a5aaee[data-load-type=loading],.index_module_img__d1a5aaee[data-load-type=wait]):after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__d1a5aaee[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__d1a5aaee[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_page__d1a5aaee{content-visibility:hidden;align-items:center;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d1a5aaee[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d1a5aaee{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;transition-duration:0ms;width:100%}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d1a5aaee[data-disable-zoom] .index_module_img__d1a5aaee{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d1a5aaee[dir=ltr] .index_module_page__d1a5aaee{flex-direction:row}.index_module_mangaFlow__d1a5aaee[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d1a5aaee[data-animation=page] .index_module_page__d1a5aaee,.index_module_mangaFlow__d1a5aaee[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d1a5aaee[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d1a5aaee[data-grid-mode]{grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;padding-bottom:2em}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee{height:auto;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee:after{bottom:-1.4em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);white-space:pre;width:100%}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee .index_module_img__d1a5aaee{cursor:pointer}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee{grid-auto-flow:row;grid-auto-rows:auto;overflow:auto;grid-row-gap:calc(var(--scroll-mode-spacing)*.1em);grid-template-rows:auto}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_page__d1a5aaee{display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width, 100%)))}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=loading]{position:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=error]{height:20em;width:30em}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_img__d1a5aaee{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}@keyframes index_module_show__d1a5aaee{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d1a5aaee{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d1a5aaee>button{animation:index_module_jello__d1a5aaee .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d1a5aaee>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d1a5aaee>button:focus-visible{outline:none}.index_module_endPage__d1a5aaee>.index_module_tip__d1a5aaee{margin:auto;position:absolute}.index_module_endPage__d1a5aaee[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d1a5aaee[data-type=start]>.index_module_tip__d1a5aaee{transform:translateY(-10em)}.index_module_endPage__d1a5aaee[data-type=end]>.index_module_tip__d1a5aaee{transform:translateY(10em)}.index_module_root__d1a5aaee[data-mobile] .index_module_endPage__d1a5aaee>button{width:1em}.index_module_comments__d1a5aaee{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d1a5aaee>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d1a5aaee:hover{opacity:1}.index_module_root__d1a5aaee[data-mobile] .index_module_comments__d1a5aaee{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d1a5aaee{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d1a5aaee{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d1a5aaee{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d1a5aaee[data-show],.index_module_toolbar__d1a5aaee:hover) .index_module_toolbarPanel__d1a5aaee{transform:none}.index_module_toolbar__d1a5aaee[data-close] .index_module_toolbarPanel__d1a5aaee{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d1a5aaee{backdrop-filter:blur(24px);background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee{font-size:1.3em}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee:not([data-show]){pointer-events:none}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbarBg__d1a5aaee{filter:opacity(.8)}.index_module_SettingPanelPopper__d1a5aaee{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__d1a5aaee{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;user-select:text;z-index:1}.index_module_SettingPanel__d1a5aaee hr{color:#fff;margin:0}.index_module_SettingBlock__d1a5aaee{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div+:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div{margin-top:1em}.index_module_SettingBlock__d1a5aaee[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__d1a5aaee[data-show=false] .index_module_SettingBlockBody__d1a5aaee{padding:unset}.index_module_SettingBlockSubtitle__d1a5aaee{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d1a5aaee{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d1a5aaee+.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_SettingsItemName__d1a5aaee{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d1a5aaee{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true] .index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d1a5aaee{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d1a5aaee{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__d1a5aaee{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d1a5aaee{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee{overflow:hidden}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee>.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_hotkeys__d1a5aaee{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d1a5aaee+.index_module_hotkeys__d1a5aaee{margin-top:.5em}.index_module_hotkeys__d1a5aaee:last-child{border-bottom:none}.index_module_hotkeysItem__d1a5aaee{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__d1a5aaee>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d1a5aaee>svg:hover{opacity:.9}.index_module_hotkeysItem__d1a5aaee:hover{padding:.2em .5em}.index_module_hotkeysItem__d1a5aaee:hover>svg{display:unset}.index_module_hotkeysItem__d1a5aaee:focus,.index_module_hotkeysItem__d1a5aaee:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d1a5aaee{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d1a5aaee>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d1a5aaee>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d1a5aaee>div[title]>svg{width:1.6em}.index_module_hotkeys__d1a5aaee:hover div[title]{transform:scale(1)}.index_module_scrollbar__d1a5aaee{--arrow-y:clamp(0.45em,calc(var(--drag-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d1a5aaee>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__d1a5aaee{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d1a5aaee[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d1a5aaee[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d1a5aaee[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d1a5aaee[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d1a5aaee[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d1a5aaee[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d1a5aaee[data-translation-type=error]{background-color:#f005}.index_module_scrollbarDrag__d1a5aaee{--top:calc(var(--top-ratio)*var(--scroll-length));--height:calc(var(--height-ratio)*var(--scroll-length));background-color:var(--scrollbar-drag);border-radius:1em;height:var(--height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__d1a5aaee{--poper-top:clamp(0%,calc(var(--drag-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__d1a5aaee:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover:before,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show]:before{opacity:1}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarDrag__d1a5aaee{opacity:0}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarDrag__d1a5aaee{opacity:1}.index_module_scrollbar__d1a5aaee[data-position=hidden]{display:none}.index_module_scrollbar__d1a5aaee[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{top:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee{bottom:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom],.index_module_scrollbar__d1a5aaee[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before,.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarDrag__d1a5aaee{height:100%;transform:translateX(calc(var(--top)*-1));width:var(--height)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr],.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee{transform:translateX(var(--top))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee{transform:translateX(var(--poper-top))}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee{transform:scaleX(1)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-type=loaded],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-translation-type],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-translation-type]{transform:scaleX(1)}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_scrollbar__d1a5aaee:before,.index_module_root__d1a5aaee[data-scroll-mode] :is(.index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbarPoper__d1a5aaee){transition:opacity .15s}.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover:before{opacity:0}.index_module_touchAreaRoot__d1a5aaee{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;user-select:none;width:100%}.index_module_touchAreaRoot__d1a5aaee[data-show]{opacity:1}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d1a5aaee[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=next],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d1a5aaee[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d1a5aaee[data-mobile] .index_module_touchAreaRoot__d1a5aaee{flex-direction:column!important;letter-spacing:0}.index_module_root__d1a5aaee[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d1a5aaee{display:none!important}.index_module_invisible__d1a5aaee{visibility:hidden!important}.index_module_root__d1a5aaee{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d1a5aaee a{color:var(--text-secondary)}.index_module_root__d1a5aaee[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d1a5aaee{scrollbar-color:var(--scrollbar-drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-thumb{background:var(--scrollbar-drag)}p{margin:0}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".index_module_img__d1a5aaee{background-color:var(--hover-bg-color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d1a5aaee[data-fill=left]{transform:translate(50%)}.index_module_img__d1a5aaee[data-fill=right]{transform:translate(-50%)}.index_module_img__d1a5aaee[data-fill=page]{display:none}.index_module_img__d1a5aaee[data-type=long]{height:auto;width:100%}.index_module_img__d1a5aaee[data-load-type=loading]{animation:index_module_show__d1a5aaee 2s forwards;max-width:100vw!important;opacity:0}.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[data-load-type=wait],.index_module_img__d1a5aaee[src=\\"\\"]{aspect-ratio:3/4;height:100%;position:relative}:is(.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[src=\\"\\"]):before{opacity:0}:is(.index_module_img__d1a5aaee[data-load-type],.index_module_img__d1a5aaee[src=\\"\\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d1a5aaee[data-load-type=loading],.index_module_img__d1a5aaee[data-load-type=wait]):after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__d1a5aaee[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__d1a5aaee[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_page__d1a5aaee{content-visibility:hidden;align-items:center;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d1a5aaee[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d1a5aaee{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;transition-duration:0ms;width:100%}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d1a5aaee[data-disable-zoom] .index_module_img__d1a5aaee{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d1a5aaee[dir=ltr] .index_module_page__d1a5aaee{flex-direction:row}.index_module_mangaFlow__d1a5aaee[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d1a5aaee[data-animation=page] .index_module_page__d1a5aaee,.index_module_mangaFlow__d1a5aaee[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d1a5aaee[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d1a5aaee[data-grid-mode]{grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;padding-bottom:2em}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee{height:auto;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee:after{bottom:-1.4em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);white-space:pre;width:100%}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee .index_module_img__d1a5aaee{cursor:pointer}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee{grid-auto-flow:row;grid-auto-rows:auto;overflow:auto;grid-row-gap:calc(var(--scroll-mode-spacing)*.1em);grid-template-rows:auto}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_page__d1a5aaee{display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width, 100%)))}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=loading]{position:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=error]{height:20em;width:30em}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_img__d1a5aaee{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}@keyframes index_module_show__d1a5aaee{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d1a5aaee{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d1a5aaee>button{animation:index_module_jello__d1a5aaee .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d1a5aaee>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d1a5aaee>button:focus-visible{outline:none}.index_module_endPage__d1a5aaee>.index_module_tip__d1a5aaee{margin:auto;position:absolute}.index_module_endPage__d1a5aaee[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d1a5aaee[data-type=start]>.index_module_tip__d1a5aaee{transform:translateY(-10em)}.index_module_endPage__d1a5aaee[data-type=end]>.index_module_tip__d1a5aaee{transform:translateY(10em)}.index_module_root__d1a5aaee[data-mobile] .index_module_endPage__d1a5aaee>button{width:1em}.index_module_comments__d1a5aaee{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d1a5aaee>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d1a5aaee:hover{opacity:1}.index_module_root__d1a5aaee[data-mobile] .index_module_comments__d1a5aaee{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d1a5aaee{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d1a5aaee{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d1a5aaee{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d1a5aaee[data-show],.index_module_toolbar__d1a5aaee:hover) .index_module_toolbarPanel__d1a5aaee{transform:none}.index_module_toolbar__d1a5aaee[data-close] .index_module_toolbarPanel__d1a5aaee{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d1a5aaee{-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee{font-size:1.3em}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee:not([data-show]){pointer-events:none}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbarBg__d1a5aaee{filter:opacity(.8)}.index_module_SettingPanelPopper__d1a5aaee{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__d1a5aaee{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.index_module_SettingPanel__d1a5aaee hr{color:#fff;margin:0}.index_module_SettingBlock__d1a5aaee{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div+:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div{margin-top:1em}.index_module_SettingBlock__d1a5aaee[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__d1a5aaee[data-show=false] .index_module_SettingBlockBody__d1a5aaee{padding:unset}.index_module_SettingBlockSubtitle__d1a5aaee{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d1a5aaee{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d1a5aaee+.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_SettingsItemName__d1a5aaee{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d1a5aaee{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true] .index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d1a5aaee{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d1a5aaee{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__d1a5aaee{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d1a5aaee{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee{overflow:hidden}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee>.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_hotkeys__d1a5aaee{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d1a5aaee+.index_module_hotkeys__d1a5aaee{margin-top:.5em}.index_module_hotkeys__d1a5aaee:last-child{border-bottom:none}.index_module_hotkeysItem__d1a5aaee{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__d1a5aaee>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d1a5aaee>svg:hover{opacity:.9}.index_module_hotkeysItem__d1a5aaee:hover{padding:.2em .5em}.index_module_hotkeysItem__d1a5aaee:hover>svg{display:unset}.index_module_hotkeysItem__d1a5aaee:focus,.index_module_hotkeysItem__d1a5aaee:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d1a5aaee{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d1a5aaee>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d1a5aaee>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d1a5aaee>div[title]>svg{width:1.6em}.index_module_hotkeys__d1a5aaee:hover div[title]{transform:scale(1)}.index_module_scrollbar__d1a5aaee{--arrow-y:clamp(0.45em,calc(var(--drag-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d1a5aaee>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__d1a5aaee{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d1a5aaee[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d1a5aaee[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d1a5aaee[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d1a5aaee[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d1a5aaee[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d1a5aaee[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d1a5aaee[data-translation-type=error]{background-color:#f005}.index_module_scrollbarDrag__d1a5aaee{--top:calc(var(--top-ratio)*var(--scroll-length));--height:calc(var(--height-ratio)*var(--scroll-length));background-color:var(--scrollbar-drag);border-radius:1em;height:var(--height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__d1a5aaee{--poper-top:clamp(0%,calc(var(--drag-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__d1a5aaee:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover:before,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show]:before{opacity:1}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarDrag__d1a5aaee{opacity:0}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarDrag__d1a5aaee{opacity:1}.index_module_scrollbar__d1a5aaee[data-position=hidden]{display:none}.index_module_scrollbar__d1a5aaee[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{top:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee{bottom:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom],.index_module_scrollbar__d1a5aaee[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before,.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarDrag__d1a5aaee{height:100%;transform:translateX(calc(var(--top)*-1));width:var(--height)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr],.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee{transform:translateX(var(--top))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee{transform:translateX(var(--poper-top))}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee{transform:scaleX(1)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-type=loaded],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-translation-type],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-translation-type]{transform:scaleX(1)}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_scrollbar__d1a5aaee:before,.index_module_root__d1a5aaee[data-scroll-mode] :is(.index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbarPoper__d1a5aaee){transition:opacity .15s}.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover:before{opacity:0}.index_module_touchAreaRoot__d1a5aaee{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.index_module_touchAreaRoot__d1a5aaee[data-show]{opacity:1}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d1a5aaee[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=next],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d1a5aaee[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d1a5aaee[data-mobile] .index_module_touchAreaRoot__d1a5aaee{flex-direction:column!important;letter-spacing:0}.index_module_root__d1a5aaee[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d1a5aaee{display:none!important}.index_module_invisible__d1a5aaee{visibility:hidden!important}.index_module_root__d1a5aaee{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d1a5aaee a{color:var(--text-secondary)}.index_module_root__d1a5aaee[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d1a5aaee{scrollbar-color:var(--scrollbar-drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-thumb{background:var(--scrollbar-drag)}p{margin:0}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"index_module_img__d1a5aaee","show":"index_module_show__d1a5aaee","page":"index_module_page__d1a5aaee","mangaFlow":"index_module_mangaFlow__d1a5aaee","root":"index_module_root__d1a5aaee","endPage":"index_module_endPage__d1a5aaee","jello":"index_module_jello__d1a5aaee","tip":"index_module_tip__d1a5aaee","comments":"index_module_comments__d1a5aaee","toolbar":"index_module_toolbar__d1a5aaee","toolbarPanel":"index_module_toolbarPanel__d1a5aaee","toolbarBg":"index_module_toolbarBg__d1a5aaee","SettingPanelPopper":"index_module_SettingPanelPopper__d1a5aaee","SettingPanel":"index_module_SettingPanel__d1a5aaee","SettingBlock":"index_module_SettingBlock__d1a5aaee","SettingBlockBody":"index_module_SettingBlockBody__d1a5aaee","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__d1a5aaee","SettingsItem":"index_module_SettingsItem__d1a5aaee","SettingsItemName":"index_module_SettingsItemName__d1a5aaee","SettingsItemSwitch":"index_module_SettingsItemSwitch__d1a5aaee","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__d1a5aaee","SettingsItemIconButton":"index_module_SettingsItemIconButton__d1a5aaee","SettingsItemSelect":"index_module_SettingsItemSelect__d1a5aaee","closeCover":"index_module_closeCover__d1a5aaee","SettingsShowItem":"index_module_SettingsShowItem__d1a5aaee","SettingsShowItemBody":"index_module_SettingsShowItemBody__d1a5aaee","hotkeys":"index_module_hotkeys__d1a5aaee","hotkeysItem":"index_module_hotkeysItem__d1a5aaee","hotkeysHeader":"index_module_hotkeysHeader__d1a5aaee","scrollbar":"index_module_scrollbar__d1a5aaee","scrollbarPage":"index_module_scrollbarPage__d1a5aaee","scrollbarDrag":"index_module_scrollbarDrag__d1a5aaee","scrollbarPoper":"index_module_scrollbarPoper__d1a5aaee","touchAreaRoot":"index_module_touchAreaRoot__d1a5aaee","touchArea":"index_module_touchArea__d1a5aaee","hidden":"index_module_hidden__d1a5aaee","invisible":"index_module_invisible__d1a5aaee","beautifyScrollbar":"index_module_beautifyScrollbar__d1a5aaee"};
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
@@ -3647,7 +4637,7 @@ const useDrag = ({
   });
 };
 
-const _tmpl$$D = /*#__PURE__*/web.template(\`<img draggable=false>\`);
+const _tmpl$$D = /*#__PURE__*/template(\`<img draggable=false>\`);
 /** 图片加载完毕的回调 */
 const handleImgLoaded = (i, e) => {
   if (!e.getAttribute('src')) return;
@@ -3701,7 +4691,7 @@ const ComicImg = props => {
     if (img().translationType === 'show') return img().translationUrl;
     return img().src;
   });
-  const style = solidJs.createMemo(() => {
+  const style$1 = solidJs.createMemo(() => {
     if (!store.option.scrollMode) return undefined;
     const size = img()?.width ? img() : placeholderSize();
     return {
@@ -3714,22 +4704,22 @@ const ComicImg = props => {
     _el$.addEventListener("error", e => handleImgError(props.index, e.currentTarget));
     _el$.addEventListener("load", e => handleImgLoaded(props.index, e.currentTarget));
     const _ref$ = ref;
-    typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
-    web.effect(_p$ => {
+    typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.img,
-        _v$2 = style(),
+        _v$2 = style$1(),
         _v$3 = src(),
         _v$4 = \`\${props.index + 1}\`,
         _v$5 = props.index === -1 ? 'page' : props.fill,
         _v$6 = img()?.type || undefined,
         _v$7 = img()?.loadType === 'loaded' ? undefined : img()?.loadType;
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _p$._v$2 = web.style(_el$, _v$2, _p$._v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "src", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "alt", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-fill", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-type", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-load-type", _p$._v$7 = _v$7);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _p$._v$2 = style(_el$, _v$2, _p$._v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "src", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$, "alt", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-fill", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-type", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-load-type", _p$._v$7 = _v$7);
       return _p$;
     }, {
       _v$: undefined,
@@ -3744,8 +4734,8 @@ const ComicImg = props => {
   })();
 };
 
-const _tmpl$$C = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$b = /*#__PURE__*/web.template(\`<h1>NULL\`);
+const _tmpl$$C = /*#__PURE__*/template(\`<div>\`),
+  _tmpl$2$b = /*#__PURE__*/template(\`<h1>NULL\`);
 const ComicPage = props => {
   const show = solidJs.createMemo(() => store.gridMode || store.option.scrollMode || store.memo.renderPageList.some(page => page === props.page));
   const fill = solidJs.createMemo(() => {
@@ -3756,7 +4746,7 @@ const ComicPage = props => {
     if (fillIndex !== -1) return store.option.dir !== 'rtl' ? ['right', 'left'] : ['left', 'right'];
     return undefined;
   });
-  const style = solidJs.createMemo(() => {
+  const style$1 = solidJs.createMemo(() => {
     if (!store.gridMode) return {};
     const highlight = props.index === store.activePageIndex;
     const tip = getPageTip(props.index);
@@ -3767,29 +4757,29 @@ const ComicPage = props => {
   });
   return (() => {
     const _el$ = _tmpl$$C();
-    web.insert(_el$, web.createComponent(solidJs.For, {
+    insert(_el$, solidJs.createComponent(solidJs.For, {
       get each() {
         return props.page;
       },
       get fallback() {
         return _tmpl$2$b();
       },
-      children: (imgIndex, i) => web.createComponent(ComicImg, {
+      children: (imgIndex, i) => solidJs.createComponent(ComicImg, {
         index: imgIndex,
         get fill() {
           return fill()?.[i()];
         }
       })
     }));
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.page,
         _v$2 = boolDataVal(show()),
         _v$3 = props.index,
-        _v$4 = style();
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-index", _p$._v$3 = _v$3);
-      _p$._v$4 = web.style(_el$, _v$4, _p$._v$4);
+        _v$4 = style$1();
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-index", _p$._v$3 = _v$3);
+      _p$._v$4 = style(_el$, _v$4, _p$._v$4);
       return _p$;
     }, {
       _v$: undefined,
@@ -3801,8 +4791,8 @@ const ComicPage = props => {
   })();
 };
 
-const _tmpl$$B = /*#__PURE__*/web.template(\`<div tabindex=-1>\`),
-  _tmpl$2$a = /*#__PURE__*/web.template(\`<h1>NULL\`);
+const _tmpl$$B = /*#__PURE__*/template(\`<div tabindex=-1>\`),
+  _tmpl$2$a = /*#__PURE__*/template(\`<h1>NULL\`);
 const ComicImgFlow = () => {
   const {
     hiddenMouse,
@@ -3868,23 +4858,23 @@ const ComicImgFlow = () => {
     _el$.addEventListener("scroll", () => setState(updateDrag));
     _el$.addEventListener("transitionend", handleTransitionEnd);
     const _ref$ = bindRef('mangaFlow');
-    typeof _ref$ === "function" && web.use(_ref$, _el$);
+    typeof _ref$ === "function" && use(_ref$, _el$);
     _el$.addEventListener("mousemove", onMouseMove);
-    web.insert(_el$, web.createComponent(solidJs.Index, {
+    insert(_el$, solidJs.createComponent(solidJs.Index, {
       get each() {
         return store.pageList;
       },
       get fallback() {
         return _tmpl$2$a();
       },
-      children: (page, i) => web.createComponent(ComicPage, {
+      children: (page, i) => solidJs.createComponent(ComicPage, {
         get page() {
           return page();
         },
         index: i
       })
     }));
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.mangaFlow,
         _v$2 = store.option.dir,
         _v$3 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
@@ -3899,16 +4889,16 @@ const ComicImgFlow = () => {
           ...zoom(),
           ...pageXY()
         };
-      _v$ !== _p$._v$ && web.setAttribute(_el$, "id", _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "dir", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.className(_el$, _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-disable-zoom", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-grid-mode", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-scale-mode", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-vertical", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-animation", _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && web.setAttribute(_el$, "data-hidden-mouse", _p$._v$9 = _v$9);
-      _p$._v$10 = web.style(_el$, _v$10, _p$._v$10);
+      _v$ !== _p$._v$ && setAttribute(_el$, "id", _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "dir", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && className(_el$, _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-disable-zoom", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-grid-mode", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-scale-mode", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-vertical", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && setAttribute(_el$, "data-animation", _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && setAttribute(_el$, "data-hidden-mouse", _p$._v$9 = _v$9);
+      _p$._v$10 = style(_el$, _v$10, _p$._v$10);
       return _p$;
     }, {
       _v$: undefined,
@@ -3926,70 +4916,70 @@ const ComicImgFlow = () => {
   })();
 };
 
-const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">\`);
+const _tmpl$$A = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">\`);
 const MdLooksOne = ((props = {}) => (() => {
   const _el$ = _tmpl$$A();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">\`);
+const _tmpl$$z = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">\`);
 const MdLooksTwo = ((props = {}) => (() => {
   const _el$ = _tmpl$$z();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">\`);
+const _tmpl$$y = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">\`);
 const MdViewDay = ((props = {}) => (() => {
   const _el$ = _tmpl$$y();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">\`);
+const _tmpl$$x = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">\`);
 const MdQueue = ((props = {}) => (() => {
   const _el$ = _tmpl$$x();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14">\`);
+const _tmpl$$w = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14">\`);
 const MdSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$w();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">\`);
+const _tmpl$$v = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">\`);
 const MdTranslate = ((props = {}) => (() => {
   const _el$ = _tmpl$$v();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">\`);
+const _tmpl$$u = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">\`);
 const MdGrid = ((props = {}) => (() => {
   const _el$ = _tmpl$$u();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">\`);
+const _tmpl$$t = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">\`);
 const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
   const _el$ = _tmpl$$t();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">\`);
+const _tmpl$$s = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">\`);
 const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
   const _el$ = _tmpl$$s();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$r = /*#__PURE__*/web.template(\`<div><div> <!> \`);
+const _tmpl$$r = /*#__PURE__*/template(\`<div><div> <!> \`);
 /** 设置菜单项 */
 const SettingsItem = props => (() => {
   const _el$ = _tmpl$$r(),
@@ -3997,9 +4987,9 @@ const SettingsItem = props => (() => {
     _el$3 = _el$2.firstChild,
     _el$5 = _el$3.nextSibling;
     _el$5.nextSibling;
-  web.insert(_el$2, () => props.name, _el$5);
-  web.insert(_el$, () => props.children, null);
-  web.effect(_p$ => {
+  insert(_el$2, () => props.name, _el$5);
+  insert(_el$, () => props.children, null);
+  solidJs.createRenderEffect(_p$ => {
     const _v$ = props.class ? \`\${modules_c21c94f2$1.SettingsItem} \${props.class}\` : modules_c21c94f2$1.SettingsItem,
       _v$2 = {
         [props.class ?? '']: !!props.class?.length,
@@ -4007,10 +4997,10 @@ const SettingsItem = props => (() => {
       },
       _v$3 = props.style,
       _v$4 = modules_c21c94f2$1.SettingsItemName;
-    _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-    _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
-    _p$._v$3 = web.style(_el$, _v$3, _p$._v$3);
-    _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
+    _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+    _p$._v$2 = classList(_el$, _v$2, _p$._v$2);
+    _p$._v$3 = style(_el$, _v$3, _p$._v$3);
+    _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
     return _p$;
   }, {
     _v$: undefined,
@@ -4021,11 +5011,11 @@ const SettingsItem = props => (() => {
   return _el$;
 })();
 
-const _tmpl$$q = /*#__PURE__*/web.template(\`<button type=button><div>\`);
+const _tmpl$$q = /*#__PURE__*/template(\`<button type=button><div>\`);
 /** 开关式菜单项 */
 const SettingsItemSwitch = props => {
   const handleClick = () => props.onChange(!props.value);
-  return web.createComponent(SettingsItem, {
+  return solidJs.createComponent(SettingsItem, {
     get name() {
       return props.name;
     },
@@ -4039,13 +5029,13 @@ const SettingsItemSwitch = props => {
       const _el$ = _tmpl$$q(),
         _el$2 = _el$.firstChild;
       _el$.addEventListener("click", handleClick);
-      web.effect(_p$ => {
+      solidJs.createRenderEffect(_p$ => {
         const _v$ = modules_c21c94f2$1.SettingsItemSwitch,
           _v$2 = props.value,
           _v$3 = modules_c21c94f2$1.SettingsItemSwitchRound;
-        _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-        _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-checked", _p$._v$2 = _v$2);
-        _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
+        _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+        _v$2 !== _p$._v$2 && setAttribute(_el$, "data-checked", _p$._v$2 = _v$2);
+        _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
         return _p$;
       }, {
         _v$: undefined,
@@ -4057,22 +5047,22 @@ const SettingsItemSwitch = props => {
   });
 };
 
-const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">\`);
+const _tmpl$$p = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">\`);
 const MdRefresh = ((props = {}) => (() => {
   const _el$ = _tmpl$$p();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">\`);
+const _tmpl$$o = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">\`);
 const MdAdd = ((props = {}) => (() => {
   const _el$ = _tmpl$$o();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$n = /*#__PURE__*/web.template(\`<div tabindex=0>\`),
-  _tmpl$2$9 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
+const _tmpl$$n = /*#__PURE__*/template(\`<div tabindex=0>\`),
+  _tmpl$2$9 = /*#__PURE__*/template(\`<div><div><p></p><span></span><div></div><div>\`);
 const KeyItem = props => {
   const code = () => store.hotkeys[props.operateName][props.i];
   const del = () => delHotkeys(code());
@@ -4095,17 +5085,17 @@ const KeyItem = props => {
   return (() => {
     const _el$ = _tmpl$$n();
     _el$.addEventListener("blur", () => code() || del());
-    web.use(ref => code() || setTimeout(() => ref.focus()), _el$);
+    use(ref => code() || setTimeout(() => ref.focus()), _el$);
     _el$.addEventListener("keydown", handleKeyDown);
-    web.insert(_el$, () => keyboardCodeToText(code()), null);
-    web.insert(_el$, web.createComponent(MdClose, {
+    insert(_el$, () => keyboardCodeToText(code()), null);
+    insert(_el$, solidJs.createComponent(MdClose, {
       "on:click": del
     }), null);
-    web.effect(() => web.className(_el$, modules_c21c94f2$1.hotkeysItem));
+    solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.hotkeysItem));
     return _el$;
   })();
 };
-const SettingHotkeys = () => web.createComponent(solidJs.For, {
+const SettingHotkeys = () => solidJs.createComponent(solidJs.For, {
   get each() {
     return Object.entries(store.hotkeys);
   },
@@ -4116,32 +5106,32 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
       _el$5 = _el$4.nextSibling,
       _el$6 = _el$5.nextSibling,
       _el$7 = _el$6.nextSibling;
-    web.insert(_el$4, () => t(\`hotkeys.\${name}\`) || name);
+    insert(_el$4, () => t(\`hotkeys.\${name}\`) || name);
     _el$5.style.setProperty("flex-grow", "1");
     _el$6.addEventListener("click", () => setHotkeys(name, store.hotkeys[name].length, ''));
-    web.insert(_el$6, web.createComponent(MdAdd, {}));
+    insert(_el$6, solidJs.createComponent(MdAdd, {}));
     _el$7.addEventListener("click", () => {
       const newKeys = defaultHotkeys[name] ?? [];
       newKeys.forEach(delHotkeys);
       setHotkeys(name, newKeys);
     });
-    web.insert(_el$7, web.createComponent(MdRefresh, {}));
-    web.insert(_el$2, web.createComponent(solidJs.Index, {
+    insert(_el$7, solidJs.createComponent(MdRefresh, {}));
+    insert(_el$2, solidJs.createComponent(solidJs.Index, {
       each: keys,
-      children: (_, i) => web.createComponent(KeyItem, {
+      children: (_, i) => solidJs.createComponent(KeyItem, {
         operateName: name,
         i: i
       })
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.hotkeys,
         _v$2 = modules_c21c94f2$1.hotkeysHeader,
         _v$3 = t('setting.hotkeys.add'),
         _v$4 = t('setting.hotkeys.restore');
-      _v$ !== _p$._v$ && web.className(_el$2, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.className(_el$3, _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$6, "title", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$7, "title", _p$._v$4 = _v$4);
+      _v$ !== _p$._v$ && className(_el$2, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && className(_el$3, _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$6, "title", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$7, "title", _p$._v$4 = _v$4);
       return _p$;
     }, {
       _v$: undefined,
@@ -4153,15 +5143,15 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
   })()
 });
 
-const _tmpl$$m = /*#__PURE__*/web.template(\`<select>\`),
-  _tmpl$2$8 = /*#__PURE__*/web.template(\`<option>\`);
+const _tmpl$$m = /*#__PURE__*/template(\`<select>\`),
+  _tmpl$2$8 = /*#__PURE__*/template(\`<option>\`);
 /** 选择器式菜单项 */
 const SettingsItemSelect = props => {
   let ref;
   solidJs.createEffect(() => {
     ref.value = props.options?.some(([val]) => val === props.value) ? props.value : '';
   });
-  return web.createComponent(SettingsItem, {
+  return solidJs.createComponent(SettingsItem, {
     get name() {
       return props.name;
     },
@@ -4175,20 +5165,20 @@ const SettingsItemSelect = props => {
       const _el$ = _tmpl$$m();
       _el$.addEventListener("change", e => props.onChange(e.target.value));
       const _ref$ = ref;
-      typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
+      typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
       _el$.addEventListener("click", () => props.onClick?.());
-      web.insert(_el$, web.createComponent(solidJs.For, {
+      insert(_el$, solidJs.createComponent(solidJs.For, {
         get each() {
           return props.options;
         },
         children: ([val, label]) => (() => {
           const _el$2 = _tmpl$2$8();
           _el$2.value = val;
-          web.insert(_el$2, label ?? val);
+          insert(_el$2, label ?? val);
           return _el$2;
         })()
       }));
-      web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemSelect));
+      solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.SettingsItemSelect));
       return _el$;
     }
   });
@@ -4521,20 +5511,20 @@ const translatorOptions = solidJs.createRoot(() => {
   return options;
 });
 
-const _tmpl$$l = /*#__PURE__*/web.template(\`<div><div>\`);
+const _tmpl$$l = /*#__PURE__*/template(\`<div><div>\`);
 
 /** 带有动画过渡的切换显示设置项 */
 const SettingsShowItem = props => (() => {
   const _el$ = _tmpl$$l(),
     _el$2 = _el$.firstChild;
-  web.insert(_el$2, () => props.children);
-  web.effect(_p$ => {
+  insert(_el$2, () => props.children);
+  solidJs.createRenderEffect(_p$ => {
     const _v$ = modules_c21c94f2$1.SettingsShowItem,
       _v$2 = props.when ? '1fr' : '0fr',
       _v$3 = modules_c21c94f2$1.SettingsShowItemBody;
-    _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+    _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
     _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("grid-template-rows", _v$2) : _el$.style.removeProperty("grid-template-rows"));
-    _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
+    _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
     return _p$;
   }, {
     _v$: undefined,
@@ -4544,8 +5534,8 @@ const SettingsShowItem = props => (() => {
   return _el$;
 })();
 
-const _tmpl$$k = /*#__PURE__*/web.template(\`<blockquote>\`),
-  _tmpl$2$7 = /*#__PURE__*/web.template(\`<input type=url>\`);
+const _tmpl$$k = /*#__PURE__*/template(\`<blockquote>\`),
+  _tmpl$2$7 = /*#__PURE__*/template(\`<input type=url>\`);
 const SettingTranslation = () => {
   const isTranslationEnable = solidJs.createMemo(() => store.option.translation.server !== 'disable' && translatorOptions().length > 0);
 
@@ -4554,7 +5544,7 @@ const SettingTranslation = () => {
 
   /** 是否正在翻译当前页以后的全部图片 */
   const isTranslationAfterCurrent = solidJs.createMemo(() => isTranslationEnable() && store.imgList.slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
-  return [web.createComponent(SettingsItemSelect, {
+  return [solidJs.createComponent(SettingsItemSelect, {
     get name() {
       return t('setting.translation.server');
     },
@@ -4567,21 +5557,21 @@ const SettingTranslation = () => {
     get onChange() {
       return createStateSetFn('translation.server');
     }
-  }), web.createComponent(SettingsShowItem, {
+  }), solidJs.createComponent(SettingsShowItem, {
     get when() {
       return store.option.translation.server === 'cotrans';
     },
     get children() {
       const _el$ = _tmpl$$k();
-      web.effect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
+      solidJs.createRenderEffect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
       return _el$;
     }
-  }), web.createComponent(SettingsShowItem, {
+  }), solidJs.createComponent(SettingsShowItem, {
     get when() {
       return store.option.translation.server !== 'disable';
     },
     get children() {
-      return [web.createComponent(SettingsItemSelect, {
+      return [solidJs.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.detection_resolution');
         },
@@ -4592,7 +5582,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.size');
         }
-      }), web.createComponent(SettingsItemSelect, {
+      }), solidJs.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.text_detector');
         },
@@ -4603,7 +5593,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.detector');
         }
-      }), web.createComponent(SettingsItemSelect, {
+      }), solidJs.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.translator');
         },
@@ -4624,7 +5614,7 @@ const SettingTranslation = () => {
             state.option.translation.server = 'selfhosted';
           });
         }
-      }), web.createComponent(SettingsItemSelect, {
+      }), solidJs.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.direction');
         },
@@ -4637,7 +5627,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.direction');
         }
-      }), web.createComponent(SettingsItemSelect, {
+      }), solidJs.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.target_language');
         },
@@ -4648,7 +5638,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.targetLanguage');
         }
-      }), web.createComponent(SettingsItemSwitch, {
+      }), solidJs.createComponent(SettingsItemSwitch, {
         get name() {
           return t('setting.translation.options.forceRetry');
         },
@@ -4658,12 +5648,12 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.forceRetry');
         }
-      }), web.createComponent(solidJs.Show, {
+      }), solidJs.createComponent(solidJs.Show, {
         get when() {
           return store.option.translation.server === 'selfhosted';
         },
         get children() {
-          return [web.createComponent(SettingsItemSwitch, {
+          return [solidJs.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.translate_all_img');
             },
@@ -4673,7 +5663,7 @@ const SettingTranslation = () => {
             onChange: () => {
               setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll());
             }
-          }), web.createComponent(SettingsItemSwitch, {
+          }), solidJs.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.translate_after_current');
             },
@@ -4683,7 +5673,7 @@ const SettingTranslation = () => {
             onChange: () => {
               setImgTranslationEnbale(store.pageList.slice(store.activePageIndex).flat(), !isTranslationAfterCurrent());
             }
-          }), web.createComponent(SettingsItemSwitch, {
+          }), solidJs.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.options.localUrl');
             },
@@ -4695,7 +5685,7 @@ const SettingTranslation = () => {
                 draftOption.translation.localUrl = val ? '' : undefined;
               });
             }
-          }), web.createComponent(solidJs.Show, {
+          }), solidJs.createComponent(solidJs.Show, {
             get when() {
               return store.option.translation.localUrl !== undefined;
             },
@@ -4708,8 +5698,8 @@ const SettingTranslation = () => {
                   draftOption.translation.localUrl = url;
                 });
               });
-              web.effect(() => web.className(_el$2, modules_c21c94f2$1.SettingsItem));
-              web.effect(() => _el$2.value = store.option.translation.localUrl);
+              solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.SettingsItem));
+              solidJs.createRenderEffect(() => _el$2.value = store.option.translation.localUrl);
               return _el$2;
             }
           })];
@@ -4719,7 +5709,7 @@ const SettingTranslation = () => {
   })];
 };
 
-const _tmpl$$j = /*#__PURE__*/web.template(\`<div><span contenteditable data-only-number></span><span>\`);
+const _tmpl$$j = /*#__PURE__*/template(\`<div><span contenteditable data-only-number></span><span>\`);
 /** 数值输入框菜单项 */
 const SettingsItemNumber = props => {
   const handleInput = e => {
@@ -4733,7 +5723,7 @@ const SettingsItemNumber = props => {
         return props.onChange(+e.target.textContent - (props.step ?? 1));
     }
   };
-  return web.createComponent(SettingsItem, {
+  return solidJs.createComponent(SettingsItem, {
     get name() {
       return props.name;
     },
@@ -4757,17 +5747,17 @@ const SettingsItemNumber = props => {
       });
       _el$2.addEventListener("input", handleInput);
       _el$2.addEventListener("keydown", handleKeyDown);
-      web.insert(_el$2, () => props.value);
+      insert(_el$2, () => props.value);
       _el$3.style.setProperty("margin-left", ".1em");
-      web.insert(_el$3, () => props.suffix ?? '');
-      web.effect(() => (props.suffix ? '.3em' : '.6em') != null ? _el$.style.setProperty("margin-right", props.suffix ? '.3em' : '.6em') : _el$.style.removeProperty("margin-right"));
+      insert(_el$3, () => props.suffix ?? '');
+      solidJs.createRenderEffect(() => (props.suffix ? '.3em' : '.6em') != null ? _el$.style.setProperty("margin-right", props.suffix ? '.3em' : '.6em') : _el$.style.removeProperty("margin-right"));
       return _el$;
     }
   });
 };
 
-const _tmpl$$i = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$6 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
+const _tmpl$$i = /*#__PURE__*/template(\`<div>\`),
+  _tmpl$2$6 = /*#__PURE__*/template(\`<div role=button tabindex=-1>\`);
 
 const areaArrayMap = {
   left_right: [['prev', 'menu', 'next'], ['PREV', 'MENU', 'NEXT'], ['prev', 'menu', 'next']],
@@ -4784,32 +5774,32 @@ const TouchArea = () => {
   return (() => {
     const _el$ = _tmpl$$i();
     const _ref$ = bindRef('touchArea');
-    typeof _ref$ === "function" && web.use(_ref$, _el$);
-    web.insert(_el$, web.createComponent(solidJs.For, {
+    typeof _ref$ === "function" && use(_ref$, _el$);
+    insert(_el$, solidJs.createComponent(solidJs.For, {
       get each() {
         return areaArrayMap[areaType()];
       },
-      children: rows => web.createComponent(solidJs.For, {
+      children: rows => solidJs.createComponent(solidJs.For, {
         each: rows,
         children: area => (() => {
           const _el$2 = _tmpl$2$6();
-          web.setAttribute(_el$2, "data-area", area);
-          web.effect(() => web.className(_el$2, modules_c21c94f2$1.touchArea));
+          setAttribute(_el$2, "data-area", area);
+          solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.touchArea));
           return _el$2;
         })()
       })
     }));
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.touchAreaRoot,
         _v$2 = dir(),
         _v$3 = boolDataVal(store.show.touchArea),
         _v$4 = areaType(),
         _v$5 = boolDataVal(store.option.clickPageTurn.enabled && !store.option.scrollMode);
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "dir", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-show", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-area", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-turn-page", _p$._v$5 = _v$5);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "dir", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-show", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-area", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-turn-page", _p$._v$5 = _v$5);
       return _p$;
     }, {
       _v$: undefined,
@@ -4822,24 +5812,24 @@ const TouchArea = () => {
   })();
 };
 
-const _tmpl$$h = /*#__PURE__*/web.template(\`<button type=button>\`),
-  _tmpl$2$5 = /*#__PURE__*/web.template(\`<input type=color>\`);
+const _tmpl$$h = /*#__PURE__*/template(\`<button type=button>\`),
+  _tmpl$2$5 = /*#__PURE__*/template(\`<input type=color>\`);
 /** 默认菜单项 */
-const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
+const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => solidJs.createComponent(SettingsItem, {
   get name() {
-    return web.memo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
+    return solidJs.createMemo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
   },
   get children() {
     const _el$ = _tmpl$$h();
     _el$.addEventListener("click", switchDir);
-    web.insert(_el$, (() => {
-      const _c$ = web.memo(() => store.option.dir === 'rtl');
-      return () => _c$() ? web.createComponent(MdOutlineFormatTextdirectionRToL, {}) : web.createComponent(MdOutlineFormatTextdirectionLToR, {});
+    insert(_el$, (() => {
+      const _c$ = solidJs.createMemo(() => store.option.dir === 'rtl');
+      return () => _c$() ? solidJs.createComponent(MdOutlineFormatTextdirectionRToL, {}) : solidJs.createComponent(MdOutlineFormatTextdirectionLToR, {});
     })());
-    web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
+    solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
     return _el$;
   }
-})], [t('setting.option.paragraph_scrollbar'), () => [web.createComponent(SettingsItemSelect, {
+})], [t('setting.option.paragraph_scrollbar'), () => [solidJs.createComponent(SettingsItemSelect, {
   get name() {
     return t('setting.option.scrollbar_position');
   },
@@ -4852,17 +5842,17 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('scrollbar.position');
   }
-}), web.createComponent(SettingsShowItem, {
+}), solidJs.createComponent(SettingsShowItem, {
   get when() {
     return store.option.scrollbar.position !== 'hidden';
   },
   get children() {
-    return [web.createComponent(solidJs.Show, {
+    return [solidJs.createComponent(solidJs.Show, {
       get when() {
         return !store.isMobile;
       },
       get children() {
-        return web.createComponent(SettingsItemSwitch, {
+        return solidJs.createComponent(SettingsItemSwitch, {
           get name() {
             return t('setting.option.scrollbar_auto_hidden');
           },
@@ -4874,7 +5864,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
           }
         });
       }
-    }), web.createComponent(SettingsItemSwitch, {
+    }), solidJs.createComponent(SettingsItemSwitch, {
       get name() {
         return t('setting.option.scrollbar_show_img_status');
       },
@@ -4884,12 +5874,12 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       get onChange() {
         return createStateSetFn('scrollbar.showImgStatus');
       }
-    }), web.createComponent(solidJs.Show, {
+    }), solidJs.createComponent(solidJs.Show, {
       get when() {
         return store.option.scrollMode;
       },
       get children() {
-        return web.createComponent(SettingsItemSwitch, {
+        return solidJs.createComponent(SettingsItemSwitch, {
           get name() {
             return t('setting.option.scrollbar_easy_scroll');
           },
@@ -4903,7 +5893,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       }
     })];
   }
-})]], [t('setting.option.paragraph_operation'), () => [web.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_operation'), () => [solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.jump_to_next_chapter');
   },
@@ -4913,7 +5903,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('jumpToNext');
   }
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.show_clickable_area');
   },
@@ -4921,7 +5911,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return store.show.touchArea;
   },
   onChange: () => _setState('show', 'touchArea', !store.show.touchArea)
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.click_page_turn_enabled');
   },
@@ -4931,12 +5921,12 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('clickPageTurn.enabled');
   }
-}), web.createComponent(SettingsShowItem, {
+}), solidJs.createComponent(SettingsShowItem, {
   get when() {
     return store.option.clickPageTurn.enabled;
   },
   get children() {
-    return [web.createComponent(SettingsItemSelect, {
+    return [solidJs.createComponent(SettingsItemSelect, {
       get name() {
         return t('setting.option.click_page_turn_area');
       },
@@ -4949,7 +5939,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       get onChange() {
         return createStateSetFn('clickPageTurn.area');
       }
-    }), web.createComponent(SettingsItemSwitch, {
+    }), solidJs.createComponent(SettingsItemSwitch, {
       get name() {
         return t('setting.option.click_page_turn_swap_area');
       },
@@ -4961,7 +5951,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       }
     })];
   }
-})]], [t('setting.option.paragraph_display'), () => [web.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_display'), () => [solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.dark_mode');
   },
@@ -4971,7 +5961,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('darkMode');
   }
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.disable_auto_enlarge');
   },
@@ -4981,12 +5971,12 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('disableZoom');
   }
-}), web.createComponent(solidJs.Show, {
+}), solidJs.createComponent(solidJs.Show, {
   get when() {
     return store.option.scrollMode;
   },
   get children() {
-    return [web.createComponent(SettingsItemNumber, {
+    return [solidJs.createComponent(SettingsItemNumber, {
       get name() {
         return t('setting.option.scroll_mode_img_scale');
       },
@@ -5000,7 +5990,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       get value() {
         return Math.round(store.option.scrollModeImgScale * 100);
       }
-    }), web.createComponent(SettingsItemNumber, {
+    }), solidJs.createComponent(SettingsItemNumber, {
       get name() {
         return t('setting.option.scroll_mode_img_spacing');
       },
@@ -5016,7 +6006,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       }
     })];
   }
-})]], [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [t('setting.option.paragraph_translation'), SettingTranslation, true], [t('setting.option.paragraph_other'), () => [web.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [t('setting.option.paragraph_translation'), SettingTranslation, true], [t('setting.option.paragraph_other'), () => [solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.always_load_all_img');
   },
@@ -5029,7 +6019,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     });
     setState(updateImgLoadType);
   }
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.first_page_fill');
   },
@@ -5039,7 +6029,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('firstPageFill');
   }
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.show_comments');
   },
@@ -5049,7 +6039,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('showComment');
   }
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.swap_page_turn_key');
   },
@@ -5059,7 +6049,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('swapPageTurnKey');
   }
-}), web.createComponent(SettingsItemNumber, {
+}), solidJs.createComponent(SettingsItemNumber, {
   get name() {
     return t('setting.option.preload_page_num');
   },
@@ -5073,7 +6063,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get value() {
     return store.option.preloadPageNum;
   }
-}), web.createComponent(SettingsItem, {
+}), solidJs.createComponent(SettingsItem, {
   get name() {
     return t('setting.option.background_color');
   },
@@ -5089,10 +6079,10 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         if (draftOption.customBackground) draftOption.darkMode = needDarkMode(draftOption.customBackground);
       });
     }));
-    web.effect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
+    solidJs.createRenderEffect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
     return _el$2;
   }
-}), web.createComponent(SettingsItemSelect, {
+}), solidJs.createComponent(SettingsItemSelect, {
   get name() {
     return t('setting.language');
   },
@@ -5114,44 +6104,44 @@ const playAnimation = e => e?.getAnimations().forEach(animation => {
   animation.play();
 });
 
-const _tmpl$$g = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
-  _tmpl$3$3 = /*#__PURE__*/web.template(\`<hr>\`);
+const _tmpl$$g = /*#__PURE__*/template(\`<div>\`),
+  _tmpl$2$4 = /*#__PURE__*/template(\`<div><div></div><div>\`),
+  _tmpl$3$3 = /*#__PURE__*/template(\`<hr>\`);
 
 /** 菜单面板 */
 const SettingPanel = () => {
   const settingList = solidJs.createMemo(() => store.prop.editSettingList(defaultSettingList()));
   return (() => {
     const _el$ = _tmpl$$g();
-    web.addEventListener(_el$, "wheel", stopPropagation);
-    web.addEventListener(_el$, "scroll", stopPropagation);
+    addEventListener(_el$, "wheel", stopPropagation);
+    addEventListener(_el$, "scroll", stopPropagation);
     _el$.addEventListener("click", stopPropagation);
-    web.insert(_el$, web.createComponent(solidJs.For, {
+    insert(_el$, solidJs.createComponent(solidJs.For, {
       get each() {
         return settingList();
       },
       children: ([name, SettingItem, hidden], i) => {
         const [show, setShwo] = solidJs.createSignal(!hidden);
-        return [web.memo((() => {
-          const _c$ = web.memo(() => !!i());
+        return [solidJs.createMemo((() => {
+          const _c$ = solidJs.createMemo(() => !!i());
           return () => _c$() ? _tmpl$3$3() : null;
         })()), (() => {
           const _el$2 = _tmpl$2$4(),
             _el$3 = _el$2.firstChild,
             _el$4 = _el$3.nextSibling;
           _el$3.addEventListener("click", () => setShwo(prev => !prev));
-          web.insert(_el$3, name, null);
-          web.insert(_el$3, () => show() ? null : ' …', null);
-          web.insert(_el$4, web.createComponent(SettingItem, {}));
-          web.effect(_p$ => {
+          insert(_el$3, name, null);
+          insert(_el$3, () => show() ? null : ' …', null);
+          insert(_el$4, solidJs.createComponent(SettingItem, {}));
+          solidJs.createRenderEffect(_p$ => {
             const _v$3 = modules_c21c94f2$1.SettingBlock,
               _v$4 = show(),
               _v$5 = modules_c21c94f2$1.SettingBlockSubtitle,
               _v$6 = modules_c21c94f2$1.SettingBlockBody;
-            _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
-            _v$4 !== _p$._v$4 && web.setAttribute(_el$2, "data-show", _p$._v$4 = _v$4);
-            _v$5 !== _p$._v$5 && web.className(_el$3, _p$._v$5 = _v$5);
-            _v$6 !== _p$._v$6 && web.className(_el$4, _p$._v$6 = _v$6);
+            _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
+            _v$4 !== _p$._v$4 && setAttribute(_el$2, "data-show", _p$._v$4 = _v$4);
+            _v$5 !== _p$._v$5 && className(_el$3, _p$._v$5 = _v$5);
+            _v$6 !== _p$._v$6 && className(_el$4, _p$._v$6 = _v$6);
             return _p$;
           }, {
             _v$3: undefined,
@@ -5163,10 +6153,10 @@ const SettingPanel = () => {
         })()];
       }
     }));
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = \`\${modules_c21c94f2$1.SettingPanel} \${modules_c21c94f2$1.beautifyScrollbar}\`,
         _v$2 = lang() !== 'zh' ? '20em' : '15em';
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("width", _v$2) : _el$.style.removeProperty("width"));
       return _p$;
     }, {
@@ -5177,8 +6167,8 @@ const SettingPanel = () => {
   })();
 };
 
-const _tmpl$$f = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
+const _tmpl$$f = /*#__PURE__*/template(\`<div>\`),
+  _tmpl$2$3 = /*#__PURE__*/template(\`<div role=button tabindex=-1>\`);
 /** 工具栏按钮分隔栏 */
 const buttonListDivider = () => (() => {
   const _el$ = _tmpl$$f();
@@ -5189,20 +6179,20 @@ const buttonListDivider = () => (() => {
 /** 工具栏的默认按钮列表 */
 const defaultButtonList = [
 // 单双页模式
-() => web.createComponent(IconButton, {
+() => solidJs.createComponent(IconButton, {
   get tip() {
-    return web.memo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
+    return solidJs.createMemo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
   },
   get hidden() {
     return store.isMobile || store.option.scrollMode;
   },
   onClick: switchOnePageMode,
   get children() {
-    return web.memo(() => !!store.option.onePageMode)() ? web.createComponent(MdLooksOne, {}) : web.createComponent(MdLooksTwo, {});
+    return solidJs.createMemo(() => !!store.option.onePageMode)() ? solidJs.createComponent(MdLooksOne, {}) : solidJs.createComponent(MdLooksTwo, {});
   }
 }),
 // 卷轴模式
-() => web.createComponent(IconButton, {
+() => solidJs.createComponent(IconButton, {
   get tip() {
     return t('button.scroll_mode');
   },
@@ -5211,11 +6201,11 @@ const defaultButtonList = [
   },
   onClick: switchScrollMode,
   get children() {
-    return web.createComponent(MdViewDay, {});
+    return solidJs.createComponent(MdViewDay, {});
   }
 }),
 // 页面填充
-() => web.createComponent(IconButton, {
+() => solidJs.createComponent(IconButton, {
   get tip() {
     return t('button.page_fill');
   },
@@ -5227,11 +6217,11 @@ const defaultButtonList = [
   },
   onClick: switchFillEffect,
   get children() {
-    return web.createComponent(MdQueue, {});
+    return solidJs.createComponent(MdQueue, {});
   }
 }),
 // 网格模式
-() => web.createComponent(IconButton, {
+() => solidJs.createComponent(IconButton, {
   get tip() {
     return t('button.grid_mode');
   },
@@ -5240,11 +6230,11 @@ const defaultButtonList = [
   },
   onClick: switchGridMode,
   get children() {
-    return web.createComponent(MdGrid, {});
+    return solidJs.createComponent(MdGrid, {});
   }
 }), buttonListDivider,
 // 放大模式
-() => web.createComponent(IconButton, {
+() => solidJs.createComponent(IconButton, {
   get tip() {
     return t('button.zoom_in');
   },
@@ -5257,16 +6247,16 @@ const defaultButtonList = [
     return zoomScrollModeImg(1, true);
   },
   get children() {
-    return web.createComponent(MdSearch, {});
+    return solidJs.createComponent(MdSearch, {});
   }
 }),
 // 翻译设置
 () => {
   /** 当前显示的图片是否正在翻译 */
   const isTranslatingImage = solidJs.createMemo(() => activePage().some(i => store.imgList[i]?.translationType && store.imgList[i].translationType !== 'hide'));
-  return web.createComponent(IconButton, {
+  return solidJs.createComponent(IconButton, {
     get tip() {
-      return web.memo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
+      return solidJs.createMemo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
     },
     get enabled() {
       return isTranslatingImage();
@@ -5276,7 +6266,7 @@ const defaultButtonList = [
     },
     onClick: () => setImgTranslationEnbale(activePage(), !isTranslatingImage()),
     get children() {
-      return web.createComponent(MdTranslate, {});
+      return solidJs.createComponent(MdTranslate, {});
     }
   });
 },
@@ -5288,13 +6278,13 @@ const defaultButtonList = [
     _setState('show', 'toolbar', _showPanel);
     setShowPanel(_showPanel);
   };
-  const popper = solidJs.createMemo(() => [web.createComponent(SettingPanel, {}), (() => {
+  const popper = solidJs.createMemo(() => [solidJs.createComponent(SettingPanel, {}), (() => {
     const _el$2 = _tmpl$2$3();
     _el$2.addEventListener("click", handleClick);
-    web.effect(() => web.className(_el$2, modules_c21c94f2$1.closeCover));
+    solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.closeCover));
     return _el$2;
   })()]);
-  return web.createComponent(IconButton, {
+  return solidJs.createComponent(IconButton, {
     get tip() {
       return t('button.setting');
     },
@@ -5309,15 +6299,15 @@ const defaultButtonList = [
       return showPanel() && modules_c21c94f2$1.SettingPanelPopper;
     },
     get popper() {
-      return web.memo(() => !!showPanel())() && popper();
+      return solidJs.createMemo(() => !!showPanel())() && popper();
     },
     get children() {
-      return web.createComponent(MdSettings, {});
+      return solidJs.createComponent(MdSettings, {});
     }
   });
 }];
 
-const _tmpl$$e = /*#__PURE__*/web.template(\`<div role=toolbar><div><div>\`);
+const _tmpl$$e = /*#__PURE__*/template(\`<div role=toolbar><div><div>\`);
 
 /** 左侧工具栏 */
 const Toolbar = () => {
@@ -5327,25 +6317,25 @@ const Toolbar = () => {
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
     _el$2.addEventListener("click", focus);
-    web.insert(_el$2, web.createComponent(solidJs.For, {
+    insert(_el$2, solidJs.createComponent(solidJs.For, {
       get each() {
         return store.prop.editButtonList(defaultButtonList);
       },
-      children: ButtonItem => web.createComponent(ButtonItem, {})
+      children: ButtonItem => solidJs.createComponent(ButtonItem, {})
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.toolbar,
         _v$2 = boolDataVal(store.show.toolbar),
         _v$3 = boolDataVal(store.isMobile && store.gridMode),
         _v$4 = store.isDragMode ? 'none' : undefined,
         _v$5 = modules_c21c94f2$1.toolbarPanel,
         _v$6 = modules_c21c94f2$1.toolbarBg;
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-close", _p$._v$3 = _v$3);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-close", _p$._v$3 = _v$3);
       _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("pointer-events", _v$4) : _el$.style.removeProperty("pointer-events"));
-      _v$5 !== _p$._v$5 && web.className(_el$2, _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.className(_el$3, _p$._v$6 = _v$6);
+      _v$5 !== _p$._v$5 && className(_el$2, _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && className(_el$3, _p$._v$6 = _v$6);
       return _p$;
     }, {
       _v$: undefined,
@@ -5359,24 +6349,24 @@ const Toolbar = () => {
   })();
 };
 
-const _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`);
+const _tmpl$$d = /*#__PURE__*/template(\`<div>\`);
 
 /** 显示对应图片加载情况的元素 */
 const ScrollbarImg = props => {
   const img = solidJs.createMemo(() => store.imgList[props.index]);
   return (() => {
     const _el$ = _tmpl$$d();
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbarPage,
         _v$2 = props.index,
         _v$3 = img()?.loadType,
         _v$4 = boolDataVal(!img()?.src),
         _v$5 = img()?.translationType;
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-index", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-null", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-translation-type", _p$._v$5 = _v$5);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-index", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-null", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-translation-type", _p$._v$5 = _v$5);
       return _p$;
     }, {
       _v$: undefined,
@@ -5397,25 +6387,25 @@ const ScrollbarPage = props => {
   });
   return (() => {
     const _el$2 = _tmpl$$d();
-    web.insert(_el$2, web.createComponent(ScrollbarImg, {
+    insert(_el$2, solidJs.createComponent(ScrollbarImg, {
       get index() {
         return props.a !== -1 ? props.a : props.b;
       }
     }), null);
-    web.insert(_el$2, (() => {
-      const _c$ = web.memo(() => !!props.b);
-      return () => _c$() ? web.createComponent(ScrollbarImg, {
+    insert(_el$2, (() => {
+      const _c$ = solidJs.createMemo(() => !!props.b);
+      return () => _c$() ? solidJs.createComponent(ScrollbarImg, {
         get index() {
           return props.b !== -1 ? props.b : props.a;
         }
       }) : null;
     })(), null);
-    web.effect(() => flexBasis() != null ? _el$2.style.setProperty("flex-basis", flexBasis()) : _el$2.style.removeProperty("flex-basis"));
+    solidJs.createRenderEffect(() => flexBasis() != null ? _el$2.style.setProperty("flex-basis", flexBasis()) : _el$2.style.removeProperty("flex-basis"));
     return _el$2;
   })();
 };
 
-const _tmpl$$c = /*#__PURE__*/web.template(\`<div role=scrollbar tabindex=-1><div></div><div>\`);
+const _tmpl$$c = /*#__PURE__*/template(\`<div role=scrollbar tabindex=-1><div></div><div>\`);
 
 /** 滚动条 */
 const Scrollbar = () => {
@@ -5460,25 +6450,25 @@ const Scrollbar = () => {
       _el$3 = _el$2.nextSibling;
     _el$.addEventListener("wheel", handleWheel);
     const _ref$ = bindRef('scrollbar');
-    typeof _ref$ === "function" && web.use(_ref$, _el$);
-    web.insert(_el$3, showTip);
-    web.insert(_el$, web.createComponent(solidJs.Show, {
+    typeof _ref$ === "function" && use(_ref$, _el$);
+    insert(_el$3, showTip);
+    insert(_el$, solidJs.createComponent(solidJs.Show, {
       get when() {
         return store.option.scrollbar.showImgStatus;
       },
       get children() {
-        return web.createComponent(solidJs.For, {
+        return solidJs.createComponent(solidJs.For, {
           get each() {
             return store.pageList;
           },
-          children: ([a, b]) => web.createComponent(ScrollbarPage, {
+          children: ([a, b]) => solidJs.createComponent(ScrollbarPage, {
             a: a,
             b: b
           })
         });
       }
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbar,
         _v$2 = penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
         _v$3 = \`\${dragMidpoint()}px\`,
@@ -5496,21 +6486,21 @@ const Scrollbar = () => {
         _v$13 = height(),
         _v$14 = top(),
         _v$15 = modules_c21c94f2$1.scrollbarPoper;
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("pointer-events", _v$2) : _el$.style.removeProperty("pointer-events"));
       _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$.style.setProperty("--drag-midpoint", _v$3) : _el$.style.removeProperty("--drag-midpoint"));
       _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("--scroll-length", _v$4) : _el$.style.removeProperty("--scroll-length"));
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "aria-controls", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "aria-valuenow", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-auto-hidden", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-force-show", _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && web.setAttribute(_el$, "data-dir", _p$._v$9 = _v$9);
-      _v$10 !== _p$._v$10 && web.setAttribute(_el$, "data-position", _p$._v$10 = _v$10);
-      _v$11 !== _p$._v$11 && web.className(_el$2, _p$._v$11 = _v$11);
-      _p$._v$12 = web.classList(_el$2, _v$12, _p$._v$12);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "aria-controls", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && setAttribute(_el$, "aria-valuenow", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-auto-hidden", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && setAttribute(_el$, "data-force-show", _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && setAttribute(_el$, "data-dir", _p$._v$9 = _v$9);
+      _v$10 !== _p$._v$10 && setAttribute(_el$, "data-position", _p$._v$10 = _v$10);
+      _v$11 !== _p$._v$11 && className(_el$2, _p$._v$11 = _v$11);
+      _p$._v$12 = classList(_el$2, _v$12, _p$._v$12);
       _v$13 !== _p$._v$13 && ((_p$._v$13 = _v$13) != null ? _el$2.style.setProperty("--height-ratio", _v$13) : _el$2.style.removeProperty("--height-ratio"));
       _v$14 !== _p$._v$14 && ((_p$._v$14 = _v$14) != null ? _el$2.style.setProperty("--top-ratio", _v$14) : _el$2.style.removeProperty("--top-ratio"));
-      _v$15 !== _p$._v$15 && web.className(_el$3, _p$._v$15 = _v$15);
+      _v$15 !== _p$._v$15 && className(_el$3, _p$._v$15 = _v$15);
       return _p$;
     }, {
       _v$: undefined,
@@ -5533,9 +6523,9 @@ const Scrollbar = () => {
   })();
 };
 
-const _tmpl$$b = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$2 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1><p></p><button type=button></button><button type=button data-is-end></button><button type=button>\`),
-  _tmpl$3$2 = /*#__PURE__*/web.template(\`<p>\`);
+const _tmpl$$b = /*#__PURE__*/template(\`<div>\`),
+  _tmpl$2$2 = /*#__PURE__*/template(\`<div role=button tabindex=-1><p></p><button type=button></button><button type=button data-is-end></button><button type=button>\`),
+  _tmpl$3$2 = /*#__PURE__*/template(\`<p>\`);
 let delayTypeTimer = 0;
 const EndPage = () => {
   const handleClick = e => {
@@ -5584,43 +6574,43 @@ const EndPage = () => {
       _el$4 = _el$3.nextSibling,
       _el$5 = _el$4.nextSibling;
     const _ref$ = ref;
-    typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
+    typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
     _el$.addEventListener("click", handleClick);
-    web.insert(_el$2, tip);
+    insert(_el$2, tip);
     const _ref$2 = bindRef('prev');
-    typeof _ref$2 === "function" && web.use(_ref$2, _el$3);
+    typeof _ref$2 === "function" && use(_ref$2, _el$3);
     _el$3.addEventListener("click", () => store.prop.Prev?.());
-    web.insert(_el$3, () => t('end_page.prev_button'));
+    insert(_el$3, () => t('end_page.prev_button'));
     const _ref$3 = bindRef('exit');
-    typeof _ref$3 === "function" && web.use(_ref$3, _el$4);
+    typeof _ref$3 === "function" && use(_ref$3, _el$4);
     _el$4.addEventListener("click", () => store.prop.Exit?.(store.show.endPage === 'end'));
-    web.insert(_el$4, () => t('button.exit'));
+    insert(_el$4, () => t('button.exit'));
     const _ref$4 = bindRef('next');
-    typeof _ref$4 === "function" && web.use(_ref$4, _el$5);
+    typeof _ref$4 === "function" && use(_ref$4, _el$5);
     _el$5.addEventListener("click", () => store.prop.Next?.());
-    web.insert(_el$5, () => t('end_page.next_button'));
-    web.insert(_el$, web.createComponent(solidJs.Show, {
+    insert(_el$5, () => t('end_page.next_button'));
+    insert(_el$, solidJs.createComponent(solidJs.Show, {
       get when() {
-        return web.memo(() => !!store.option.showComment)() && delayType() === 'end';
+        return solidJs.createMemo(() => !!store.option.showComment)() && delayType() === 'end';
       },
       get children() {
         const _el$6 = _tmpl$$b();
-        web.addEventListener(_el$6, "wheel", stopPropagation);
-        web.insert(_el$6, web.createComponent(solidJs.For, {
+        addEventListener(_el$6, "wheel", stopPropagation);
+        insert(_el$6, solidJs.createComponent(solidJs.For, {
           get each() {
             return store.commentList;
           },
           children: comment => (() => {
             const _el$7 = _tmpl$3$2();
-            web.insert(_el$7, comment);
+            insert(_el$7, comment);
             return _el$7;
           })()
         }));
-        web.effect(() => web.className(_el$6, \`\${modules_c21c94f2$1.comments} \${modules_c21c94f2$1.beautifyScrollbar}\`));
+        solidJs.createRenderEffect(() => className(_el$6, \`\${modules_c21c94f2$1.comments} \${modules_c21c94f2$1.beautifyScrollbar}\`));
         return _el$6;
       }
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.endPage,
         _v$2 = store.show.endPage,
         _v$3 = delayType(),
@@ -5634,15 +6624,15 @@ const EndPage = () => {
           [modules_c21c94f2$1.invisible]: !store.prop.Next
         },
         _v$9 = store.show.endPage ? 0 : -1;
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
-      _p$._v$5 = web.classList(_el$3, _v$5, _p$._v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$3, "tabindex", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$4, "tabindex", _p$._v$7 = _v$7);
-      _p$._v$8 = web.classList(_el$5, _v$8, _p$._v$8);
-      _v$9 !== _p$._v$9 && web.setAttribute(_el$5, "tabindex", _p$._v$9 = _v$9);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
+      _p$._v$5 = classList(_el$3, _v$5, _p$._v$5);
+      _v$6 !== _p$._v$6 && setAttribute(_el$3, "tabindex", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$4, "tabindex", _p$._v$7 = _v$7);
+      _p$._v$8 = classList(_el$5, _v$8, _p$._v$8);
+      _v$9 !== _p$._v$9 && setAttribute(_el$5, "tabindex", _p$._v$9 = _v$9);
       return _p$;
     }, {
       _v$: undefined,
@@ -5659,7 +6649,7 @@ const EndPage = () => {
   })();
 };
 
-const _tmpl$$a = /*#__PURE__*/web.template(\`<style type=text/css>\`);
+const _tmpl$$a = /*#__PURE__*/template(\`<style type=text/css>\`);
 /** 深色模式 */
 const dark = \`
 --hover-bg-color: #FFF3;
@@ -5719,7 +6709,7 @@ const CssVar = () => {
       --i18n-touch-area-menu: "\${t('touch_area.menu')}";\`);
   return (() => {
     const _el$ = _tmpl$$a();
-    web.insert(_el$, () => \`.\${modules_c21c94f2$1.root} {
+    insert(_el$, () => \`.\${modules_c21c94f2$1.root} {
       \${store.option.darkMode ? dark : light}
 
       --bg: \${store.option.customBackground ?? (store.option.darkMode ? '#000' : '#fff')};
@@ -5742,7 +6732,7 @@ const createComicImg = url => ({
 const useInit$1 = props => {
   const watchProps = {
     option: state => {
-      state.option = props.option ? assign(state.option, props.option) : JSON.parse(JSON.stringify(defaultOption));
+      state.option = props.option ? assign$1(state.option, props.option) : JSON.parse(JSON.stringify(defaultOption));
     },
     fillEffect: state => {
       state.fillEffect = props.fillEffect ?? {
@@ -5867,7 +6857,7 @@ const useInit$1 = props => {
   focus();
 };
 
-const _tmpl$$9 = /*#__PURE__*/web.template(\`<div>\`);
+const _tmpl$$9 = /*#__PURE__*/template(\`<div>\`);
 const MangaStyle = css$1;
 solidJs.enableScheduling();
 /** 漫画组件 */
@@ -5876,19 +6866,20 @@ const Manga = props => {
   solidJs.createEffect(() => props.show && focus());
   return [(() => {
     const _el$ = _tmpl$$9();
-    web.addEventListener(_el$, "wheel", handleWheel);
+    addEventListener(_el$, "wheel", handleWheel);
     const _ref$ = bindRef('root');
-    typeof _ref$ === "function" && web.use(_ref$, _el$);
+    typeof _ref$ === "function" && use(_ref$, _el$);
     _el$.addEventListener("mousedown", handleMouseDown);
     _el$.addEventListener("keydown", handleKeyDown, true);
     _el$.addEventListener("keypress", stopPropagation, true);
     _el$.addEventListener("keyup", stopPropagation, true);
-    web.insert(_el$, web.createComponent(ComicImgFlow, {}), null);
-    web.insert(_el$, web.createComponent(Toolbar, {}), null);
-    web.insert(_el$, web.createComponent(Scrollbar, {}), null);
-    web.insert(_el$, web.createComponent(TouchArea, {}), null);
-    web.insert(_el$, web.createComponent(EndPage, {}), null);
-    web.effect(_p$ => {
+    _el$.addEventListener("click", stopPropagation);
+    insert(_el$, solidJs.createComponent(ComicImgFlow, {}), null);
+    insert(_el$, solidJs.createComponent(Toolbar, {}), null);
+    insert(_el$, solidJs.createComponent(Scrollbar, {}), null);
+    insert(_el$, solidJs.createComponent(TouchArea, {}), null);
+    insert(_el$, solidJs.createComponent(EndPage, {}), null);
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.root,
         _v$2 = {
           [modules_c21c94f2$1.hidden]: props.show === false,
@@ -5897,10 +6888,10 @@ const Manga = props => {
         },
         _v$3 = boolDataVal(store.isMobile),
         _v$4 = boolDataVal(store.option.scrollMode);
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-mobile", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-scroll-mode", _p$._v$4 = _v$4);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _p$._v$2 = classList(_el$, _v$2, _p$._v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-mobile", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-scroll-mode", _p$._v$4 = _v$4);
       return _p$;
     }, {
       _v$: undefined,
@@ -5909,10 +6900,10 @@ const Manga = props => {
       _v$4: undefined
     });
     return _el$;
-  })(), web.createComponent(CssVar, {})];
+  })(), solidJs.createComponent(CssVar, {})];
 };
 
-const _tmpl$$8 = /*#__PURE__*/web.template(\`<style type=text/css>\`);
+const _tmpl$$8 = /*#__PURE__*/template(\`<style type=text/css>\`);
 let dom$1;
 
 /**
@@ -5951,7 +6942,7 @@ const useManga = async initProps => {
       z-index: 1 !important;
     }
   \`);
-  const [props, setProps] = store$2.createStore({
+  const [props, setProps] = createStore({
     imgList: [],
     show: false,
     ...initProps
@@ -5960,13 +6951,13 @@ const useManga = async initProps => {
   // eslint-disable-next-line solid/reactivity
   watchStore([() => props.imgList.length, () => props.show], () => {
     if (!dom$1) {
-      dom$1 = mountComponents('comicRead', () => [web.createComponent(Manga, props), (() => {
+      dom$1 = mountComponents('comicRead', () => [solidJs.createComponent(Manga, props), (() => {
         const _el$ = _tmpl$$8();
-        web.insert(_el$, IconButtonStyle);
+        insert(_el$, IconButtonStyle);
         return _el$;
       })(), (() => {
         const _el$2 = _tmpl$$8();
-        web.insert(_el$2, MangaStyle);
+        insert(_el$2, MangaStyle);
         return _el$2;
       })()]);
       dom$1.style.setProperty('z-index', '2147483647', 'important');
@@ -6013,13 +7004,13 @@ const useManga = async initProps => {
       toast$1.success(t('button.download_completed'));
     };
     const tip = solidJs.createMemo(() => t(statu()) || \`\${t('button.downloading')} - \${statu()}\`);
-    return web.createComponent(IconButton, {
+    return solidJs.createComponent(IconButton, {
       get tip() {
         return tip();
       },
       onClick: handleDownload,
       get children() {
-        return web.createComponent(MdFileDownload, {});
+        return solidJs.createComponent(MdFileDownload, {});
       }
     });
   };
@@ -6030,13 +7021,13 @@ const useManga = async initProps => {
       list.splice(-1, 0, DownloadButton);
       return [...list,
       // 再在最下面添加分隔栏和退出按钮
-      buttonListDivider, () => web.createComponent(IconButton, {
+      buttonListDivider, () => solidJs.createComponent(IconButton, {
         get tip() {
           return t('button.exit');
         },
         onClick: () => props.onExit?.(),
         get children() {
-          return web.createComponent(MdClose, {});
+          return solidJs.createComponent(MdClose, {});
         }
       })];
     }
@@ -6044,40 +7035,40 @@ const useManga = async initProps => {
   return [setProps, props];
 };
 
-const _tmpl$$7 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03">\`);
+const _tmpl$$7 = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03">\`);
 const MdMenuBook = ((props = {}) => (() => {
   const _el$ = _tmpl$$7();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$6 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1m-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79m3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5">\`);
+const _tmpl$$6 = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1m-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79m3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5">\`);
 const MdImageSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$6();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$5 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z">\`);
+const _tmpl$$5 = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z">\`);
 const MdImportContacts = ((props = {}) => (() => {
   const _el$ = _tmpl$$5();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$4 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96M17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4z">\`);
+const _tmpl$$4 = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96M17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4z">\`);
 const MdCloudDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$4();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
 var css = ".index_module_fabRoot__f35e0ac6{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__f35e0ac6[data-show=false]{pointer-events:none}.index_module_fabRoot__f35e0ac6[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__f35e0ac6[data-trans=true]{opacity:.8}.index_module_fabRoot__f35e0ac6[data-trans=true]:focus,.index_module_fabRoot__f35e0ac6[data-trans=true]:focus-visible,.index_module_fabRoot__f35e0ac6[data-trans=true]:hover{opacity:1}.index_module_fab__f35e0ac6{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.index_module_fab__f35e0ac6>svg{font-size:1.5em;width:1em}.index_module_fab__f35e0ac6:hover{background-color:var(fab-hover,#78909c)}.index_module_fab__f35e0ac6:focus,.index_module_fab__f35e0ac6:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.index_module_progress__f35e0ac6{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__f35e0ac6>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__f35e0ac6:hover{color:#cfd8dc}.index_module_progress__f35e0ac6[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__f35e0ac6{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__f35e0ac6:hover,.index_module_fabRoot__f35e0ac6[data-focus=true]) .index_module_popper__f35e0ac6{display:flex}.index_module_speedDial__f35e0ac6{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__f35e0ac6{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__f35e0ac6:hover,:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6{pointer-events:all}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6>.index_module_speedDialItem__f35e0ac6{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__f35e0ac6{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__f35e0ac6[data-focus=true] .index_module_backdrop__f35e0ac6{pointer-events:unset}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true],.index_module_speedDial__f35e0ac6:hover) .index_module_backdrop__f35e0ac6{opacity:.4}";
 var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__f35e0ac6","fab":"index_module_fab__f35e0ac6","progress":"index_module_progress__f35e0ac6","popper":"index_module_popper__f35e0ac6","speedDial":"index_module_speedDial__f35e0ac6","speedDialItem":"index_module_speedDialItem__f35e0ac6","backdrop":"index_module_backdrop__f35e0ac6"};
 
-const _tmpl$$3 = /*#__PURE__*/web.template(\`<div><div>\`),
-  _tmpl$2$1 = /*#__PURE__*/web.template(\`<div><button type=button tabindex=-1><span role=progressbar><svg viewBox="22 22 44 44"><circle cx=44 cy=44 r=20.2 fill=none stroke-width=3.6>\`),
-  _tmpl$3$1 = /*#__PURE__*/web.template(\`<div>\`);
+const _tmpl$$3 = /*#__PURE__*/template(\`<div><div>\`),
+  _tmpl$2$1 = /*#__PURE__*/template(\`<div><button type=button tabindex=-1><span role=progressbar><svg viewBox="22 22 44 44"><circle cx=44 cy=44 r=20.2 fill=none stroke-width=3.6>\`),
+  _tmpl$3$1 = /*#__PURE__*/template(\`<div>\`);
 const FabStyle = css;
 /**
  * Fab 按钮
@@ -6118,17 +7109,17 @@ const Fab = _props => {
       _el$3 = _el$2.firstChild,
       _el$4 = _el$3.firstChild;
     _el$2.addEventListener("click", () => props.onClick?.());
-    web.insert(_el$2, () => props.children ?? web.createComponent(MdMenuBook, {}), _el$3);
-    web.insert(_el$2, (() => {
-      const _c$ = web.memo(() => !!props.tip);
+    insert(_el$2, () => props.children ?? solidJs.createComponent(MdMenuBook, {}), _el$3);
+    insert(_el$2, (() => {
+      const _c$ = solidJs.createMemo(() => !!props.tip);
       return () => _c$() ? (() => {
         const _el$7 = _tmpl$3$1();
-        web.insert(_el$7, () => props.tip);
-        web.effect(() => web.className(_el$7, modules_c21c94f2.popper));
+        insert(_el$7, () => props.tip);
+        solidJs.createRenderEffect(() => className(_el$7, modules_c21c94f2.popper));
         return _el$7;
       })() : null;
     })(), null);
-    web.insert(_el$, web.createComponent(solidJs.Show, {
+    insert(_el$, solidJs.createComponent(solidJs.Show, {
       get when() {
         return props.speedDial?.length;
       },
@@ -6136,23 +7127,23 @@ const Fab = _props => {
         const _el$5 = _tmpl$$3(),
           _el$6 = _el$5.firstChild;
         _el$6.addEventListener("click", () => props.onBackdropClick?.());
-        web.insert(_el$5, web.createComponent(solidJs.For, {
+        insert(_el$5, solidJs.createComponent(solidJs.For, {
           get each() {
             return props.speedDial;
           },
           children: (SpeedDialItem, i) => (() => {
             const _el$8 = _tmpl$3$1();
-            web.insert(_el$8, web.createComponent(SpeedDialItem, {}));
-            web.effect(_p$ => {
+            insert(_el$8, solidJs.createComponent(SpeedDialItem, {}));
+            solidJs.createRenderEffect(_p$ => {
               const _v$12 = modules_c21c94f2.speedDialItem,
                 _v$13 = {
                   '--show-delay': \`\${i() * 30}ms\`,
                   '--hide-delay': \`\${(props.speedDial.length - 1 - i()) * 50}ms\`
                 },
                 _v$14 = i() * 30;
-              _v$12 !== _p$._v$12 && web.className(_el$8, _p$._v$12 = _v$12);
-              _p$._v$13 = web.style(_el$8, _v$13, _p$._v$13);
-              _v$14 !== _p$._v$14 && web.setAttribute(_el$8, "data-i", _p$._v$14 = _v$14);
+              _v$12 !== _p$._v$12 && className(_el$8, _p$._v$12 = _v$12);
+              _p$._v$13 = style(_el$8, _v$13, _p$._v$13);
+              _v$14 !== _p$._v$14 && setAttribute(_el$8, "data-i", _p$._v$14 = _v$14);
               return _p$;
             }, {
               _v$12: undefined,
@@ -6162,11 +7153,11 @@ const Fab = _props => {
             return _el$8;
           })()
         }), null);
-        web.effect(_p$ => {
+        solidJs.createRenderEffect(_p$ => {
           const _v$ = modules_c21c94f2.speedDial,
             _v$2 = modules_c21c94f2.backdrop;
-          _v$ !== _p$._v$ && web.className(_el$5, _p$._v$ = _v$);
-          _v$2 !== _p$._v$2 && web.className(_el$6, _p$._v$2 = _v$2);
+          _v$ !== _p$._v$ && className(_el$5, _p$._v$ = _v$);
+          _v$2 !== _p$._v$2 && className(_el$6, _p$._v$2 = _v$2);
           return _p$;
         }, {
           _v$: undefined,
@@ -6175,7 +7166,7 @@ const Fab = _props => {
         return _el$5;
       }
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$3 = modules_c21c94f2.fabRoot,
         _v$4 = props.style,
         _v$5 = props.show ?? show(),
@@ -6185,14 +7176,14 @@ const Fab = _props => {
         _v$9 = modules_c21c94f2.progress,
         _v$10 = props.progress,
         _v$11 = \`\${(1 - props.progress) * 290}%\`;
-      _v$3 !== _p$._v$3 && web.className(_el$, _p$._v$3 = _v$3);
-      _p$._v$4 = web.style(_el$, _v$4, _p$._v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-show", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-trans", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-focus", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.className(_el$2, _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && web.className(_el$3, _p$._v$9 = _v$9);
-      _v$10 !== _p$._v$10 && web.setAttribute(_el$3, "aria-valuenow", _p$._v$10 = _v$10);
+      _v$3 !== _p$._v$3 && className(_el$, _p$._v$3 = _v$3);
+      _p$._v$4 = style(_el$, _v$4, _p$._v$4);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-show", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-trans", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-focus", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && className(_el$2, _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && className(_el$3, _p$._v$9 = _v$9);
+      _v$10 !== _p$._v$10 && setAttribute(_el$3, "aria-valuenow", _p$._v$10 = _v$10);
       _v$11 !== _p$._v$11 && ((_p$._v$11 = _v$11) != null ? _el$4.style.setProperty("stroke-dashoffset", _v$11) : _el$4.style.removeProperty("stroke-dashoffset"));
       return _p$;
     }, {
@@ -6210,7 +7201,7 @@ const Fab = _props => {
   })();
 };
 
-const _tmpl$$2 = /*#__PURE__*/web.template(\`<style type=text/css>\`);
+const _tmpl$$2 = /*#__PURE__*/template(\`<style type=text/css>\`);
 let dom;
 const useFab = async initProps => {
   await GM.addStyle(\`
@@ -6224,7 +7215,7 @@ const useFab = async initProps => {
       font-size: clamp(12px, 1.5vw, 16px);
     }
   \`);
-  const [props, setProps] = store$2.createStore({
+  const [props, setProps] = createStore({
     ...initProps
   });
   const FabIcon = () => {
@@ -6243,9 +7234,9 @@ const useFab = async initProps => {
   solidJs.createRoot(() => {
     solidJs.createEffect(() => {
       if (dom) return;
-      dom = mountComponents('fab', () => [web.createComponent(Fab, web.mergeProps(props, {
+      dom = mountComponents('fab', () => [solidJs.createComponent(Fab, solidJs.mergeProps(props, {
         get children() {
-          return props.children ?? web.createComponent(web.Dynamic, {
+          return props.children ?? solidJs.createComponent(Dynamic, {
             get component() {
               return FabIcon();
             }
@@ -6253,11 +7244,11 @@ const useFab = async initProps => {
         }
       })), (() => {
         const _el$ = _tmpl$$2();
-        web.insert(_el$, IconButtonStyle);
+        insert(_el$, IconButtonStyle);
         return _el$;
       })(), (() => {
         const _el$2 = _tmpl$$2();
-        web.insert(_el$2, FabStyle);
+        insert(_el$2, FabStyle);
         return _el$2;
       })()]);
       dom.style.setProperty('z-index', '2147483646', 'important');
@@ -6266,9 +7257,9 @@ const useFab = async initProps => {
   return [setProps, props];
 };
 
-const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复与 ios 油猴扩展的兼容性问题\`);
+const _tmpl$$1 = /*#__PURE__*/template(\`<h2>🥳 ComicRead 已更新到 v\`),
+  _tmpl$2 = /*#__PURE__*/template(\`<h3>修复\`),
+  _tmpl$3 = /*#__PURE__*/template(\`<ul><li>修复与 ios 油猴扩展的兼容性问题\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6329,7 +7320,7 @@ const handleVersionUpdate = async () => {
     toast$1(() => [(() => {
       const _el$ = _tmpl$$1();
         _el$.firstChild;
-      web.insert(_el$, () => GM.info.script.version, null);
+      insert(_el$, () => GM.info.script.version, null);
       return _el$;
     })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
@@ -6366,7 +7357,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     ...defaultOptions
   };
   const saveOptions = await GM.getValue(name);
-  const options = store$2.createMutable({
+  const options = createMutable({
     ..._defaultOptions,
     ...saveOptions
   });
@@ -6472,7 +7463,7 @@ const useInit = async (name, defaultOptions = {}) => {
     show: true,
     focus: true,
     tip: t('site.settings_tip'),
-    children: web.createComponent(MdSettings, {}),
+    children: solidJs.createComponent(MdSettings, {}),
     onBackdropClick: () => setFab({
       show: false,
       focus: false
@@ -6650,7 +7641,7 @@ const universalInit = async ({
   });
 };
 
-const _tmpl$ = /*#__PURE__*/web.template(\`<div><button>\`);
+const _tmpl$ = /*#__PURE__*/template(\`<div><button>\`);
 /**
  * 提示当前开启了自动进入阅读模式的弹窗
  *
@@ -6660,15 +7651,15 @@ const _tmpl$ = /*#__PURE__*/web.template(\`<div><button>\`);
 const autoReadModeMessage = setOptions => () => (() => {
   const _el$ = _tmpl$(),
     _el$2 = _el$.firstChild;
-  web.insert(_el$, () => main.t('site.simple.auto_read_mode_message'), _el$2);
+  insert(_el$, () => main.t('site.simple.auto_read_mode_message'), _el$2);
   _el$2.addEventListener("click", () => setOptions({
     autoShow: false
   }));
-  web.insert(_el$2, () => main.t('other.disable'));
+  insert(_el$2, () => main.t('other.disable'));
   return _el$;
 })();
 
-exports.assign = assign;
+exports.assign = assign$1;
 exports.autoReadModeMessage = autoReadModeMessage;
 exports.autoUpdate = autoUpdate;
 exports.boolDataVal = boolDataVal;
@@ -6727,26 +7718,26 @@ exports.watchStore = watchStore;
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
   // 将模块导出变量放到 crsLib 对象里，防止污染全局作用域和网站自身的模块产生冲突
   const runCode = `
-      window['${tempName}']['${name}'] = {};
-      ${''}
-      (function (process, require, exports, module, ${gmApiList.join(', ')}) {
-        ${code}
-      })(
-        window['${tempName}'].process,
-        window['${tempName}'].require,
-        window['${tempName}']['${name}'],
-        {
-          set exports(value) {
-            window['${tempName}']['${name}'] = value;
-          },
-          get exports() {
-            return window['${tempName}']['${name}'];
-          },
+    window['${tempName}']['${name}'] = {};
+    ${''}
+    (function (process, require, exports, module, ${gmApiList.join(', ')}) {
+      ${code}
+    })(
+      window['${tempName}'].process,
+      window['${tempName}'].require,
+      window['${tempName}']['${name}'],
+      {
+        set exports(value) {
+          window['${tempName}']['${name}'] = value;
         },
-        ${gmApiList.map(apiName => `window['${tempName}'].${apiName}`).join(', ')}
-      );
-      ${''}
-    `;
+        get exports() {
+          return window['${tempName}']['${name}'];
+        },
+      },
+      ${gmApiList.map(apiName => `window['${tempName}'].${apiName}`).join(', ')}
+    );
+    ${''}
+  `;
   Reflect.deleteProperty(unsafeWindow, tempName);
   unsafeWindow[tempName] = crsLib;
   evalCode(runCode);
@@ -6800,13 +7791,285 @@ try {
     // #百合会——「记录阅读历史、自动签到等」
     case 'bbs.yamibo.com':
       {
-const web = require('solid-js/web');
-const main = require('main');
 const solidJs = require('solid-js');
+const main = require('main');
 
-const _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
-  _tmpl$2 = /*#__PURE__*/web.template(`<div class=historyTag>+`),
-  _tmpl$3 = /*#__PURE__*/web.template(`<li><a>回第<!>页`);
+function reconcileArrays(parentNode, a, b) {
+  let bLength = b.length,
+    aEnd = a.length,
+    bEnd = bLength,
+    aStart = 0,
+    bStart = 0,
+    after = a[aEnd - 1].nextSibling,
+    map = null;
+  while (aStart < aEnd || bStart < bEnd) {
+    if (a[aStart] === b[bStart]) {
+      aStart++;
+      bStart++;
+      continue;
+    }
+    while (a[aEnd - 1] === b[bEnd - 1]) {
+      aEnd--;
+      bEnd--;
+    }
+    if (aEnd === aStart) {
+      const node = bEnd < bLength ? (bStart ? b[bStart - 1].nextSibling : b[bEnd - bStart]) : after;
+      while (bStart < bEnd) parentNode.insertBefore(b[bStart++], node);
+    } else if (bEnd === bStart) {
+      while (aStart < aEnd) {
+        if (!map || !map.has(a[aStart])) a[aStart].remove();
+        aStart++;
+      }
+    } else if (a[aStart] === b[bEnd - 1] && b[bStart] === a[aEnd - 1]) {
+      const node = a[--aEnd].nextSibling;
+      parentNode.insertBefore(b[bStart++], a[aStart++].nextSibling);
+      parentNode.insertBefore(b[--bEnd], node);
+      a[aEnd] = b[bEnd];
+    } else {
+      if (!map) {
+        map = new Map();
+        let i = bStart;
+        while (i < bEnd) map.set(b[i], i++);
+      }
+      const index = map.get(a[aStart]);
+      if (index != null) {
+        if (bStart < index && index < bEnd) {
+          let i = aStart,
+            sequence = 1,
+            t;
+          while (++i < aEnd && i < bEnd) {
+            if ((t = map.get(a[i])) == null || t !== index + sequence) break;
+            sequence++;
+          }
+          if (sequence > index - bStart) {
+            const node = a[aStart];
+            while (bStart < index) parentNode.insertBefore(b[bStart++], node);
+          } else parentNode.replaceChild(b[bStart++], a[aStart++]);
+        } else aStart++;
+      } else a[aStart++].remove();
+    }
+  }
+}
+
+const $$EVENTS = "_$DX_DELEGATE";
+function render(code, element, init, options = {}) {
+  let disposer;
+  solidJs.createRoot(dispose => {
+    disposer = dispose;
+    element === document
+      ? code()
+      : insert(element, code(), element.firstChild ? null : undefined, init);
+  }, options.owner);
+  return () => {
+    disposer();
+    element.textContent = "";
+  };
+}
+function template(html, isCE, isSVG) {
+  let node;
+  const create = () => {
+    const t = document.createElement("template");
+    t.innerHTML = html;
+    return isSVG ? t.content.firstChild.firstChild : t.content.firstChild;
+  };
+  const fn = isCE
+    ? () => solidJs.untrack(() => document.importNode(node || (node = create()), true))
+    : () => (node || (node = create())).cloneNode(true);
+  fn.cloneNode = fn;
+  return fn;
+}
+function delegateEvents(eventNames, document = window.document) {
+  const e = document[$$EVENTS] || (document[$$EVENTS] = new Set());
+  for (let i = 0, l = eventNames.length; i < l; i++) {
+    const name = eventNames[i];
+    if (!e.has(name)) {
+      e.add(name);
+      document.addEventListener(name, eventHandler);
+    }
+  }
+}
+function setAttribute(node, name, value) {
+  if (solidJs.sharedConfig.context) return;
+  if (value == null) node.removeAttribute(name);
+  else node.setAttribute(name, value);
+}
+function addEventListener(node, name, handler, delegate) {
+  if (delegate) {
+    if (Array.isArray(handler)) {
+      node[`$$${name}`] = handler[0];
+      node[`$$${name}Data`] = handler[1];
+    } else node[`$$${name}`] = handler;
+  } else if (Array.isArray(handler)) {
+    const handlerFn = handler[0];
+    node.addEventListener(name, (handler[0] = e => handlerFn.call(node, handler[1], e)));
+  } else node.addEventListener(name, handler);
+}
+function insert(parent, accessor, marker, initial) {
+  if (marker !== undefined && !initial) initial = [];
+  if (typeof accessor !== "function") return insertExpression(parent, accessor, initial, marker);
+  solidJs.createRenderEffect(current => insertExpression(parent, accessor(), current, marker), initial);
+}
+function eventHandler(e) {
+  const key = `$$${e.type}`;
+  let node = (e.composedPath && e.composedPath()[0]) || e.target;
+  if (e.target !== node) {
+    Object.defineProperty(e, "target", {
+      configurable: true,
+      value: node
+    });
+  }
+  Object.defineProperty(e, "currentTarget", {
+    configurable: true,
+    get() {
+      return node || document;
+    }
+  });
+  if (solidJs.sharedConfig.registry && !solidJs.sharedConfig.done) solidJs.sharedConfig.done = _$HY.done = true;
+  while (node) {
+    const handler = node[key];
+    if (handler && !node.disabled) {
+      const data = node[`${key}Data`];
+      data !== undefined ? handler.call(node, data, e) : handler.call(node, e);
+      if (e.cancelBubble) return;
+    }
+    node = node._$host || node.parentNode || node.host;
+  }
+}
+function insertExpression(parent, value, current, marker, unwrapArray) {
+  if (solidJs.sharedConfig.context) {
+    !current && (current = [...parent.childNodes]);
+    let cleaned = [];
+    for (let i = 0; i < current.length; i++) {
+      const node = current[i];
+      if (node.nodeType === 8 && node.data.slice(0, 2) === "!$") node.remove();
+      else cleaned.push(node);
+    }
+    current = cleaned;
+  }
+  while (typeof current === "function") current = current();
+  if (value === current) return current;
+  const t = typeof value,
+    multi = marker !== undefined;
+  parent = (multi && current[0] && current[0].parentNode) || parent;
+  if (t === "string" || t === "number") {
+    if (solidJs.sharedConfig.context) return current;
+    if (t === "number") value = value.toString();
+    if (multi) {
+      let node = current[0];
+      if (node && node.nodeType === 3) {
+        node.data = value;
+      } else node = document.createTextNode(value);
+      current = cleanChildren(parent, current, marker, node);
+    } else {
+      if (current !== "" && typeof current === "string") {
+        current = parent.firstChild.data = value;
+      } else current = parent.textContent = value;
+    }
+  } else if (value == null || t === "boolean") {
+    if (solidJs.sharedConfig.context) return current;
+    current = cleanChildren(parent, current, marker);
+  } else if (t === "function") {
+    solidJs.createRenderEffect(() => {
+      let v = value();
+      while (typeof v === "function") v = v();
+      current = insertExpression(parent, v, current, marker);
+    });
+    return () => current;
+  } else if (Array.isArray(value)) {
+    const array = [];
+    const currentArray = current && Array.isArray(current);
+    if (normalizeIncomingArray(array, value, current, unwrapArray)) {
+      solidJs.createRenderEffect(() => (current = insertExpression(parent, array, current, marker, true)));
+      return () => current;
+    }
+    if (solidJs.sharedConfig.context) {
+      if (!array.length) return current;
+      if (marker === undefined) return [...parent.childNodes];
+      let node = array[0];
+      let nodes = [node];
+      while ((node = node.nextSibling) !== marker) nodes.push(node);
+      return (current = nodes);
+    }
+    if (array.length === 0) {
+      current = cleanChildren(parent, current, marker);
+      if (multi) return current;
+    } else if (currentArray) {
+      if (current.length === 0) {
+        appendNodes(parent, array, marker);
+      } else reconcileArrays(parent, current, array);
+    } else {
+      current && cleanChildren(parent);
+      appendNodes(parent, array);
+    }
+    current = array;
+  } else if (value.nodeType) {
+    if (solidJs.sharedConfig.context && value.parentNode) return (current = multi ? [value] : value);
+    if (Array.isArray(current)) {
+      if (multi) return (current = cleanChildren(parent, current, marker, value));
+      cleanChildren(parent, current, null, value);
+    } else if (current == null || current === "" || !parent.firstChild) {
+      parent.appendChild(value);
+    } else parent.replaceChild(value, parent.firstChild);
+    current = value;
+  } else;
+  return current;
+}
+function normalizeIncomingArray(normalized, array, current, unwrap) {
+  let dynamic = false;
+  for (let i = 0, len = array.length; i < len; i++) {
+    let item = array[i],
+      prev = current && current[i],
+      t;
+    if (item == null || item === true || item === false);
+    else if ((t = typeof item) === "object" && item.nodeType) {
+      normalized.push(item);
+    } else if (Array.isArray(item)) {
+      dynamic = normalizeIncomingArray(normalized, item, prev) || dynamic;
+    } else if (t === "function") {
+      if (unwrap) {
+        while (typeof item === "function") item = item();
+        dynamic =
+          normalizeIncomingArray(
+            normalized,
+            Array.isArray(item) ? item : [item],
+            Array.isArray(prev) ? prev : [prev]
+          ) || dynamic;
+      } else {
+        normalized.push(item);
+        dynamic = true;
+      }
+    } else {
+      const value = String(item);
+      if (prev && prev.nodeType === 3 && prev.data === value) normalized.push(prev);
+      else normalized.push(document.createTextNode(value));
+    }
+  }
+  return dynamic;
+}
+function appendNodes(parent, array, marker = null) {
+  for (let i = 0, len = array.length; i < len; i++) parent.insertBefore(array[i], marker);
+}
+function cleanChildren(parent, current, marker, replacement) {
+  if (marker === undefined) return (parent.textContent = "");
+  const node = replacement || document.createTextNode("");
+  if (current.length) {
+    let inserted = false;
+    for (let i = current.length - 1; i >= 0; i--) {
+      const el = current[i];
+      if (node !== el) {
+        const isParent = el.parentNode === parent;
+        if (!inserted && !i)
+          isParent ? parent.replaceChild(node, el) : parent.insertBefore(node, marker);
+        else isParent && el.remove();
+      } else inserted = true;
+    }
+  } else parent.insertBefore(node, marker);
+  return [node];
+}
+
+const _tmpl$ = /*#__PURE__*/template(`<a class=historyTag>回第<!>页 `),
+  _tmpl$2 = /*#__PURE__*/template(`<div class=historyTag>+`),
+  _tmpl$3 = /*#__PURE__*/template(`<li><a>回第<!>页`);
 (async () => {
   const {
     options,
@@ -7077,7 +8340,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
       }
       main.querySelectorAll(listSelector).forEach(e => {
         const tid = getTid(e);
-        web.render(() => {
+        render(() => {
           const [data, setData] = solidJs.createSignal();
           solidJs.createEffect(solidJs.on(updateFlag, () => cache.get('history', tid).then(setData)));
           const url = solidJs.createMemo(() => data() ? getUrl(data(), tid) : '');
@@ -7087,18 +8350,18 @@ const _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
               _el$2 = _el$.firstChild,
               _el$4 = _el$2.nextSibling;
               _el$4.nextSibling;
-            web.addEventListener(_el$, "click", window.atarget, true);
-            web.insert(_el$, () => data()?.lastPageNum, _el$4);
-            web.effect(() => web.setAttribute(_el$, "href", url()));
+            addEventListener(_el$, "click", window.atarget, true);
+            insert(_el$, () => data()?.lastPageNum, _el$4);
+            solidJs.createRenderEffect(() => setAttribute(_el$, "href", url()));
             return _el$;
-          })(), web.createComponent(solidJs.Show, {
+          })(), solidJs.createComponent(solidJs.Show, {
             get when() {
               return lastReplies() > 0;
             },
             get children() {
               const _el$5 = _tmpl$2();
                 _el$5.firstChild;
-              web.insert(_el$5, lastReplies, null);
+              insert(_el$5, lastReplies, null);
               return _el$5;
             }
           })];
@@ -7108,18 +8371,18 @@ const _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
               _el$9 = _el$8.firstChild,
               _el$11 = _el$9.nextSibling;
               _el$11.nextSibling;
-            web.addEventListener(_el$8, "click", window.atarget, true);
+            addEventListener(_el$8, "click", window.atarget, true);
             _el$8.style.setProperty("color", "unset");
-            web.insert(_el$8, () => data()?.lastPageNum, _el$11);
-            web.effect(() => web.setAttribute(_el$8, "href", url()));
+            insert(_el$8, () => data()?.lastPageNum, _el$11);
+            solidJs.createRenderEffect(() => setAttribute(_el$8, "href", url()));
             return _el$7;
           })();
-          return web.createComponent(solidJs.Show, {
+          return solidJs.createComponent(solidJs.Show, {
             get when() {
               return !!data();
             },
             get children() {
-              return web.createComponent(solidJs.Show, {
+              return solidJs.createComponent(solidJs.Show, {
                 when: isMobile,
                 get children() {
                   return mobile();
@@ -7140,7 +8403,7 @@ const _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
     }
   }
 })().catch(e => main.log.error(e));
-web.delegateEvents(["click"]);
+delegateEvents(["click"]);
 
         break;
       }
@@ -7181,11 +8444,415 @@ web.delegateEvents(["click"]);
     case 'manhua.idmzj.com':
     case 'manhua.dmzj.com':
       {
-const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const main = require('main');
-const store = require('solid-js/store');
 const dmzjDecrypt = require('dmzjDecrypt');
+
+function reconcileArrays(parentNode, a, b) {
+  let bLength = b.length,
+    aEnd = a.length,
+    bEnd = bLength,
+    aStart = 0,
+    bStart = 0,
+    after = a[aEnd - 1].nextSibling,
+    map = null;
+  while (aStart < aEnd || bStart < bEnd) {
+    if (a[aStart] === b[bStart]) {
+      aStart++;
+      bStart++;
+      continue;
+    }
+    while (a[aEnd - 1] === b[bEnd - 1]) {
+      aEnd--;
+      bEnd--;
+    }
+    if (aEnd === aStart) {
+      const node = bEnd < bLength ? (bStart ? b[bStart - 1].nextSibling : b[bEnd - bStart]) : after;
+      while (bStart < bEnd) parentNode.insertBefore(b[bStart++], node);
+    } else if (bEnd === bStart) {
+      while (aStart < aEnd) {
+        if (!map || !map.has(a[aStart])) a[aStart].remove();
+        aStart++;
+      }
+    } else if (a[aStart] === b[bEnd - 1] && b[bStart] === a[aEnd - 1]) {
+      const node = a[--aEnd].nextSibling;
+      parentNode.insertBefore(b[bStart++], a[aStart++].nextSibling);
+      parentNode.insertBefore(b[--bEnd], node);
+      a[aEnd] = b[bEnd];
+    } else {
+      if (!map) {
+        map = new Map();
+        let i = bStart;
+        while (i < bEnd) map.set(b[i], i++);
+      }
+      const index = map.get(a[aStart]);
+      if (index != null) {
+        if (bStart < index && index < bEnd) {
+          let i = aStart,
+            sequence = 1,
+            t;
+          while (++i < aEnd && i < bEnd) {
+            if ((t = map.get(a[i])) == null || t !== index + sequence) break;
+            sequence++;
+          }
+          if (sequence > index - bStart) {
+            const node = a[aStart];
+            while (bStart < index) parentNode.insertBefore(b[bStart++], node);
+          } else parentNode.replaceChild(b[bStart++], a[aStart++]);
+        } else aStart++;
+      } else a[aStart++].remove();
+    }
+  }
+}
+function render(code, element, init, options = {}) {
+  let disposer;
+  solidJs.createRoot(dispose => {
+    disposer = dispose;
+    element === document
+      ? code()
+      : insert(element, code(), element.firstChild ? null : undefined, init);
+  }, options.owner);
+  return () => {
+    disposer();
+    element.textContent = "";
+  };
+}
+function template(html, isCE, isSVG) {
+  let node;
+  const create = () => {
+    const t = document.createElement("template");
+    t.innerHTML = html;
+    return isSVG ? t.content.firstChild.firstChild : t.content.firstChild;
+  };
+  const fn = isCE
+    ? () => solidJs.untrack(() => document.importNode(node || (node = create()), true))
+    : () => (node || (node = create())).cloneNode(true);
+  fn.cloneNode = fn;
+  return fn;
+}
+function setAttribute(node, name, value) {
+  if (solidJs.sharedConfig.context) return;
+  if (value == null) node.removeAttribute(name);
+  else node.setAttribute(name, value);
+}
+function insert(parent, accessor, marker, initial) {
+  if (marker !== undefined && !initial) initial = [];
+  if (typeof accessor !== "function") return insertExpression(parent, accessor, initial, marker);
+  solidJs.createRenderEffect(current => insertExpression(parent, accessor(), current, marker), initial);
+}
+function insertExpression(parent, value, current, marker, unwrapArray) {
+  if (solidJs.sharedConfig.context) {
+    !current && (current = [...parent.childNodes]);
+    let cleaned = [];
+    for (let i = 0; i < current.length; i++) {
+      const node = current[i];
+      if (node.nodeType === 8 && node.data.slice(0, 2) === "!$") node.remove();
+      else cleaned.push(node);
+    }
+    current = cleaned;
+  }
+  while (typeof current === "function") current = current();
+  if (value === current) return current;
+  const t = typeof value,
+    multi = marker !== undefined;
+  parent = (multi && current[0] && current[0].parentNode) || parent;
+  if (t === "string" || t === "number") {
+    if (solidJs.sharedConfig.context) return current;
+    if (t === "number") value = value.toString();
+    if (multi) {
+      let node = current[0];
+      if (node && node.nodeType === 3) {
+        node.data = value;
+      } else node = document.createTextNode(value);
+      current = cleanChildren(parent, current, marker, node);
+    } else {
+      if (current !== "" && typeof current === "string") {
+        current = parent.firstChild.data = value;
+      } else current = parent.textContent = value;
+    }
+  } else if (value == null || t === "boolean") {
+    if (solidJs.sharedConfig.context) return current;
+    current = cleanChildren(parent, current, marker);
+  } else if (t === "function") {
+    solidJs.createRenderEffect(() => {
+      let v = value();
+      while (typeof v === "function") v = v();
+      current = insertExpression(parent, v, current, marker);
+    });
+    return () => current;
+  } else if (Array.isArray(value)) {
+    const array = [];
+    const currentArray = current && Array.isArray(current);
+    if (normalizeIncomingArray(array, value, current, unwrapArray)) {
+      solidJs.createRenderEffect(() => (current = insertExpression(parent, array, current, marker, true)));
+      return () => current;
+    }
+    if (solidJs.sharedConfig.context) {
+      if (!array.length) return current;
+      if (marker === undefined) return [...parent.childNodes];
+      let node = array[0];
+      let nodes = [node];
+      while ((node = node.nextSibling) !== marker) nodes.push(node);
+      return (current = nodes);
+    }
+    if (array.length === 0) {
+      current = cleanChildren(parent, current, marker);
+      if (multi) return current;
+    } else if (currentArray) {
+      if (current.length === 0) {
+        appendNodes(parent, array, marker);
+      } else reconcileArrays(parent, current, array);
+    } else {
+      current && cleanChildren(parent);
+      appendNodes(parent, array);
+    }
+    current = array;
+  } else if (value.nodeType) {
+    if (solidJs.sharedConfig.context && value.parentNode) return (current = multi ? [value] : value);
+    if (Array.isArray(current)) {
+      if (multi) return (current = cleanChildren(parent, current, marker, value));
+      cleanChildren(parent, current, null, value);
+    } else if (current == null || current === "" || !parent.firstChild) {
+      parent.appendChild(value);
+    } else parent.replaceChild(value, parent.firstChild);
+    current = value;
+  } else;
+  return current;
+}
+function normalizeIncomingArray(normalized, array, current, unwrap) {
+  let dynamic = false;
+  for (let i = 0, len = array.length; i < len; i++) {
+    let item = array[i],
+      prev = current && current[i],
+      t;
+    if (item == null || item === true || item === false);
+    else if ((t = typeof item) === "object" && item.nodeType) {
+      normalized.push(item);
+    } else if (Array.isArray(item)) {
+      dynamic = normalizeIncomingArray(normalized, item, prev) || dynamic;
+    } else if (t === "function") {
+      if (unwrap) {
+        while (typeof item === "function") item = item();
+        dynamic =
+          normalizeIncomingArray(
+            normalized,
+            Array.isArray(item) ? item : [item],
+            Array.isArray(prev) ? prev : [prev]
+          ) || dynamic;
+      } else {
+        normalized.push(item);
+        dynamic = true;
+      }
+    } else {
+      const value = String(item);
+      if (prev && prev.nodeType === 3 && prev.data === value) normalized.push(prev);
+      else normalized.push(document.createTextNode(value));
+    }
+  }
+  return dynamic;
+}
+function appendNodes(parent, array, marker = null) {
+  for (let i = 0, len = array.length; i < len; i++) parent.insertBefore(array[i], marker);
+}
+function cleanChildren(parent, current, marker, replacement) {
+  if (marker === undefined) return (parent.textContent = "");
+  const node = replacement || document.createTextNode("");
+  if (current.length) {
+    let inserted = false;
+    for (let i = current.length - 1; i >= 0; i--) {
+      const el = current[i];
+      if (node !== el) {
+        const isParent = el.parentNode === parent;
+        if (!inserted && !i)
+          isParent ? parent.replaceChild(node, el) : parent.insertBefore(node, marker);
+        else isParent && el.remove();
+      } else inserted = true;
+    }
+  } else parent.insertBefore(node, marker);
+  return [node];
+}
+
+const $RAW = Symbol("store-raw"),
+  $NODE = Symbol("store-node"),
+  $HAS = Symbol("store-has"),
+  $SELF = Symbol("store-self");
+function isWrappable(obj) {
+  let proto;
+  return (
+    obj != null &&
+    typeof obj === "object" &&
+    (obj[solidJs.$PROXY] ||
+      !(proto = Object.getPrototypeOf(obj)) ||
+      proto === Object.prototype ||
+      Array.isArray(obj))
+  );
+}
+function unwrap(item, set = new Set()) {
+  let result, unwrapped, v, prop;
+  if ((result = item != null && item[$RAW])) return result;
+  if (!isWrappable(item) || set.has(item)) return item;
+  if (Array.isArray(item)) {
+    if (Object.isFrozen(item)) item = item.slice(0);
+    else set.add(item);
+    for (let i = 0, l = item.length; i < l; i++) {
+      v = item[i];
+      if ((unwrapped = unwrap(v, set)) !== v) item[i] = unwrapped;
+    }
+  } else {
+    if (Object.isFrozen(item)) item = Object.assign({}, item);
+    else set.add(item);
+    const keys = Object.keys(item),
+      desc = Object.getOwnPropertyDescriptors(item);
+    for (let i = 0, l = keys.length; i < l; i++) {
+      prop = keys[i];
+      if (desc[prop].get) continue;
+      v = item[prop];
+      if ((unwrapped = unwrap(v, set)) !== v) item[prop] = unwrapped;
+    }
+  }
+  return item;
+}
+function getNodes(target, symbol) {
+  let nodes = target[symbol];
+  if (!nodes)
+    Object.defineProperty(target, symbol, {
+      value: (nodes = Object.create(null))
+    });
+  return nodes;
+}
+function getNode(nodes, property, value) {
+  if (nodes[property]) return nodes[property];
+  const [s, set] = solidJs.createSignal(value, {
+    equals: false,
+    internal: true
+  });
+  s.$ = set;
+  return (nodes[property] = s);
+}
+function trackSelf(target) {
+  solidJs.getListener() && getNode(getNodes(target, $NODE), $SELF)();
+}
+function ownKeys(target) {
+  trackSelf(target);
+  return Reflect.ownKeys(target);
+}
+function setProperty(state, property, value, deleting = false) {
+  if (!deleting && state[property] === value) return;
+  const prev = state[property],
+    len = state.length;
+  if (value === undefined) {
+    delete state[property];
+    if (state[$HAS] && state[$HAS][property] && prev !== undefined) state[$HAS][property].$();
+  } else {
+    state[property] = value;
+    if (state[$HAS] && state[$HAS][property] && prev === undefined) state[$HAS][property].$();
+  }
+  let nodes = getNodes(state, $NODE),
+    node;
+  if ((node = getNode(nodes, property, prev))) node.$(() => value);
+  if (Array.isArray(state) && state.length !== len) {
+    for (let i = state.length; i < len; i++) (node = nodes[i]) && node.$();
+    (node = getNode(nodes, "length", len)) && node.$(state.length);
+  }
+  (node = nodes[$SELF]) && node.$();
+}
+
+function proxyDescriptor(target, property) {
+  const desc = Reflect.getOwnPropertyDescriptor(target, property);
+  if (
+    !desc ||
+    desc.get ||
+    desc.set ||
+    !desc.configurable ||
+    property === solidJs.$PROXY ||
+    property === $NODE
+  )
+    return desc;
+  delete desc.value;
+  delete desc.writable;
+  desc.get = () => target[solidJs.$PROXY][property];
+  desc.set = v => (target[solidJs.$PROXY][property] = v);
+  return desc;
+}
+const proxyTraps = {
+  get(target, property, receiver) {
+    if (property === $RAW) return target;
+    if (property === solidJs.$PROXY) return receiver;
+    if (property === solidJs.$TRACK) {
+      trackSelf(target);
+      return receiver;
+    }
+    const nodes = getNodes(target, $NODE);
+    const tracked = nodes[property];
+    let value = tracked ? tracked() : target[property];
+    if (property === $NODE || property === $HAS || property === "__proto__") return value;
+    if (!tracked) {
+      const desc = Object.getOwnPropertyDescriptor(target, property);
+      const isFunction = typeof value === "function";
+      if (solidJs.getListener() && (!isFunction || target.hasOwnProperty(property)) && !(desc && desc.get))
+        value = getNode(nodes, property, value)();
+      else if (value != null && isFunction && value === Array.prototype[property]) {
+        return (...args) => solidJs.batch(() => Array.prototype[property].apply(receiver, args));
+      }
+    }
+    return isWrappable(value) ? wrap(value) : value;
+  },
+  has(target, property) {
+    if (
+      property === $RAW ||
+      property === solidJs.$PROXY ||
+      property === solidJs.$TRACK ||
+      property === $NODE ||
+      property === $HAS ||
+      property === "__proto__"
+    )
+      return true;
+    solidJs.getListener() && getNode(getNodes(target, $HAS), property)();
+    return property in target;
+  },
+  set(target, property, value) {
+    solidJs.batch(() => setProperty(target, property, unwrap(value)));
+    return true;
+  },
+  deleteProperty(target, property) {
+    solidJs.batch(() => setProperty(target, property, undefined, true));
+    return true;
+  },
+  ownKeys: ownKeys,
+  getOwnPropertyDescriptor: proxyDescriptor
+};
+function wrap(value) {
+  let p = value[solidJs.$PROXY];
+  if (!p) {
+    Object.defineProperty(value, solidJs.$PROXY, {
+      value: (p = new Proxy(value, proxyTraps))
+    });
+    const keys = Object.keys(value),
+      desc = Object.getOwnPropertyDescriptors(value);
+    for (let i = 0, l = keys.length; i < l; i++) {
+      const prop = keys[i];
+      if (desc[prop].get) {
+        const get = desc[prop].get.bind(p);
+        Object.defineProperty(value, prop, {
+          get
+        });
+      }
+      if (desc[prop].set) {
+        const og = desc[prop].set,
+          set = v => solidJs.batch(() => og.call(p, v));
+        Object.defineProperty(value, prop, {
+          set
+        });
+      }
+    }
+  }
+  return p;
+}
+function createMutable(state, options) {
+  const unwrappedStore = unwrap(state || {});
+  const wrappedStore = wrap(unwrappedStore);
+  return wrappedStore;
+}
 
 const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
 const log = (...args) =>
@@ -7321,7 +8988,7 @@ const getComicDetail_traversal = async (comicId, draftData) => {
 
 /** 返回可变 store 类型的漫画数据 */
 const useComicDetail = comicId => {
-  const data = store.createMutable({});
+  const data = createMutable({});
   const apiFn = [getComicDetail_v4Api, getComicDetail_base, getComicDetail_traversal];
   solidJs.onMount(async () => {
     for (let i = 0; i < apiFn.length; i++) {
@@ -7350,9 +9017,9 @@ const getComicId = async py => {
   return JSON.parse(res.responseText).data?.comicInfo?.id;
 };
 
-const _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_title2><span class="h2_icon h2_icon22"></span><h2> `),
-  _tmpl$2 = /*#__PURE__*/web.template(`<div class=cartoon_online_border_other><ul></ul><div class=clearfix>`),
-  _tmpl$3 = /*#__PURE__*/web.template(`<li><a target=_blank>`);
+const _tmpl$ = /*#__PURE__*/template(`<div class=photo_part><div class=h2_title2><span class="h2_icon h2_icon22"></span><h2> `),
+  _tmpl$2 = /*#__PURE__*/template(`<div class=cartoon_online_border_other><ul></ul><div class=clearfix>`),
+  _tmpl$3 = /*#__PURE__*/template(`<li><a target=_blank>`);
 (async () => {
   // 通过 rss 链接，在作者作品页里添加上隐藏漫画的链接
   if (window.location.pathname.includes('/tags/')) {
@@ -7411,9 +9078,9 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_ti
     const {
       comicId
     } = await getId();
-    web.render(() => {
+    render(() => {
       const comicDetail = useComicDetail(comicId);
-      return web.createComponent(solidJs.For, {
+      return solidJs.createComponent(solidJs.For, {
         get each() {
           return comicDetail.chapters;
         },
@@ -7426,14 +9093,14 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_ti
             _el$3 = _el$2.firstChild,
             _el$4 = _el$3.nextSibling,
             _el$5 = _el$4.firstChild;
-          web.insert(_el$4, () => comicDetail.title, _el$5);
-          web.insert(_el$4, name === '连载' ? '在线漫画全集' : `漫画其它版本：${name}`, null);
+          insert(_el$4, () => comicDetail.title, _el$5);
+          insert(_el$4, name === '连载' ? '在线漫画全集' : `漫画其它版本：${name}`, null);
           return _el$;
         })(), (() => {
           const _el$6 = _tmpl$2(),
             _el$7 = _el$6.firstChild;
           _el$6.style.setProperty("margin-top", "-8px");
-          web.insert(_el$7, web.createComponent(solidJs.For, {
+          insert(_el$7, solidJs.createComponent(solidJs.For, {
             each: list,
             children: ({
               title,
@@ -7442,10 +9109,10 @@ const _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_ti
             }) => (() => {
               const _el$8 = _tmpl$3(),
                 _el$9 = _el$8.firstChild;
-              web.setAttribute(_el$9, "title", title);
-              web.setAttribute(_el$9, "href", `https://m.dmzj.com/view/${comicId}/${id}.html`);
-              web.insert(_el$9, title);
-              web.effect(() => _el$9.classList.toggle("color_red", !!(updatetime === comicDetail.last_updatetime)));
+              setAttribute(_el$9, "title", title);
+              setAttribute(_el$9, "href", `https://m.dmzj.com/view/${comicId}/${id}.html`);
+              insert(_el$9, title);
+              solidJs.createRenderEffect(() => _el$9.classList.toggle("color_red", !!(updatetime === comicDetail.last_updatetime)));
               return _el$8;
             })()
           }));
@@ -8159,8 +9826,6 @@ const fileType = {
     case 'yuri.website':
       {
 const solidJs = require('solid-js');
-const web = require('solid-js/web');
-const store$2 = require('solid-js/store');
 const fflate = require('fflate');
 
 const sleep = ms => new Promise(resolve => {
@@ -8333,13 +9998,13 @@ const difference = (a, b) => {
  *
  * 不会修改参数对象，返回的是新对象
  */
-const assign = (a, b) => {
+const assign$1 = (a, b) => {
   const res = JSON.parse(JSON.stringify(a));
   const keys = Object.keys(b);
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
     if (res[key] === undefined) res[key] = b[key];else if (typeof b[key] === 'object') {
-      const _res = assign(res[key], b[key]);
+      const _res = assign$1(res[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
     } else if (res[key] !== b[key]) res[key] = b[key];
   }
@@ -9204,6 +10869,633 @@ const t = solidJs.createRoot(() => {
   };
 });
 
+const booleans = [
+  "allowfullscreen",
+  "async",
+  "autofocus",
+  "autoplay",
+  "checked",
+  "controls",
+  "default",
+  "disabled",
+  "formnovalidate",
+  "hidden",
+  "indeterminate",
+  "inert",
+  "ismap",
+  "loop",
+  "multiple",
+  "muted",
+  "nomodule",
+  "novalidate",
+  "open",
+  "playsinline",
+  "readonly",
+  "required",
+  "reversed",
+  "seamless",
+  "selected"
+];
+const Properties = /*#__PURE__*/ new Set([
+  "className",
+  "value",
+  "readOnly",
+  "formNoValidate",
+  "isMap",
+  "noModule",
+  "playsInline",
+  ...booleans
+]);
+const ChildProperties = /*#__PURE__*/ new Set([
+  "innerHTML",
+  "textContent",
+  "innerText",
+  "children"
+]);
+const Aliases = /*#__PURE__*/ Object.assign(Object.create(null), {
+  className: "class",
+  htmlFor: "for"
+});
+const PropAliases = /*#__PURE__*/ Object.assign(Object.create(null), {
+  class: "className",
+  formnovalidate: {
+    $: "formNoValidate",
+    BUTTON: 1,
+    INPUT: 1
+  },
+  ismap: {
+    $: "isMap",
+    IMG: 1
+  },
+  nomodule: {
+    $: "noModule",
+    SCRIPT: 1
+  },
+  playsinline: {
+    $: "playsInline",
+    VIDEO: 1
+  },
+  readonly: {
+    $: "readOnly",
+    INPUT: 1,
+    TEXTAREA: 1
+  }
+});
+function getPropAlias(prop, tagName) {
+  const a = PropAliases[prop];
+  return typeof a === "object" ? (a[tagName] ? a["$"] : undefined) : a;
+}
+const DelegatedEvents = /*#__PURE__*/ new Set([
+  "beforeinput",
+  "click",
+  "dblclick",
+  "contextmenu",
+  "focusin",
+  "focusout",
+  "input",
+  "keydown",
+  "keyup",
+  "mousedown",
+  "mousemove",
+  "mouseout",
+  "mouseover",
+  "mouseup",
+  "pointerdown",
+  "pointermove",
+  "pointerout",
+  "pointerover",
+  "pointerup",
+  "touchend",
+  "touchmove",
+  "touchstart"
+]);
+const SVGElements = /*#__PURE__*/ new Set([
+  "altGlyph",
+  "altGlyphDef",
+  "altGlyphItem",
+  "animate",
+  "animateColor",
+  "animateMotion",
+  "animateTransform",
+  "circle",
+  "clipPath",
+  "color-profile",
+  "cursor",
+  "defs",
+  "desc",
+  "ellipse",
+  "feBlend",
+  "feColorMatrix",
+  "feComponentTransfer",
+  "feComposite",
+  "feConvolveMatrix",
+  "feDiffuseLighting",
+  "feDisplacementMap",
+  "feDistantLight",
+  "feFlood",
+  "feFuncA",
+  "feFuncB",
+  "feFuncG",
+  "feFuncR",
+  "feGaussianBlur",
+  "feImage",
+  "feMerge",
+  "feMergeNode",
+  "feMorphology",
+  "feOffset",
+  "fePointLight",
+  "feSpecularLighting",
+  "feSpotLight",
+  "feTile",
+  "feTurbulence",
+  "filter",
+  "font",
+  "font-face",
+  "font-face-format",
+  "font-face-name",
+  "font-face-src",
+  "font-face-uri",
+  "foreignObject",
+  "g",
+  "glyph",
+  "glyphRef",
+  "hkern",
+  "image",
+  "line",
+  "linearGradient",
+  "marker",
+  "mask",
+  "metadata",
+  "missing-glyph",
+  "mpath",
+  "path",
+  "pattern",
+  "polygon",
+  "polyline",
+  "radialGradient",
+  "rect",
+  "set",
+  "stop",
+  "svg",
+  "switch",
+  "symbol",
+  "text",
+  "textPath",
+  "tref",
+  "tspan",
+  "use",
+  "view",
+  "vkern"
+]);
+const SVGNamespace = {
+  xlink: "http://www.w3.org/1999/xlink",
+  xml: "http://www.w3.org/XML/1998/namespace"
+};
+
+function reconcileArrays(parentNode, a, b) {
+  let bLength = b.length,
+    aEnd = a.length,
+    bEnd = bLength,
+    aStart = 0,
+    bStart = 0,
+    after = a[aEnd - 1].nextSibling,
+    map = null;
+  while (aStart < aEnd || bStart < bEnd) {
+    if (a[aStart] === b[bStart]) {
+      aStart++;
+      bStart++;
+      continue;
+    }
+    while (a[aEnd - 1] === b[bEnd - 1]) {
+      aEnd--;
+      bEnd--;
+    }
+    if (aEnd === aStart) {
+      const node = bEnd < bLength ? (bStart ? b[bStart - 1].nextSibling : b[bEnd - bStart]) : after;
+      while (bStart < bEnd) parentNode.insertBefore(b[bStart++], node);
+    } else if (bEnd === bStart) {
+      while (aStart < aEnd) {
+        if (!map || !map.has(a[aStart])) a[aStart].remove();
+        aStart++;
+      }
+    } else if (a[aStart] === b[bEnd - 1] && b[bStart] === a[aEnd - 1]) {
+      const node = a[--aEnd].nextSibling;
+      parentNode.insertBefore(b[bStart++], a[aStart++].nextSibling);
+      parentNode.insertBefore(b[--bEnd], node);
+      a[aEnd] = b[bEnd];
+    } else {
+      if (!map) {
+        map = new Map();
+        let i = bStart;
+        while (i < bEnd) map.set(b[i], i++);
+      }
+      const index = map.get(a[aStart]);
+      if (index != null) {
+        if (bStart < index && index < bEnd) {
+          let i = aStart,
+            sequence = 1,
+            t;
+          while (++i < aEnd && i < bEnd) {
+            if ((t = map.get(a[i])) == null || t !== index + sequence) break;
+            sequence++;
+          }
+          if (sequence > index - bStart) {
+            const node = a[aStart];
+            while (bStart < index) parentNode.insertBefore(b[bStart++], node);
+          } else parentNode.replaceChild(b[bStart++], a[aStart++]);
+        } else aStart++;
+      } else a[aStart++].remove();
+    }
+  }
+}
+
+const $$EVENTS = "_$DX_DELEGATE";
+function render(code, element, init, options = {}) {
+  let disposer;
+  solidJs.createRoot(dispose => {
+    disposer = dispose;
+    element === document
+      ? code()
+      : insert(element, code(), element.firstChild ? null : undefined, init);
+  }, options.owner);
+  return () => {
+    disposer();
+    element.textContent = "";
+  };
+}
+function template(html, isCE, isSVG) {
+  let node;
+  const create = () => {
+    const t = document.createElement("template");
+    t.innerHTML = html;
+    return isSVG ? t.content.firstChild.firstChild : t.content.firstChild;
+  };
+  const fn = isCE
+    ? () => solidJs.untrack(() => document.importNode(node || (node = create()), true))
+    : () => (node || (node = create())).cloneNode(true);
+  fn.cloneNode = fn;
+  return fn;
+}
+function delegateEvents(eventNames, document = window.document) {
+  const e = document[$$EVENTS] || (document[$$EVENTS] = new Set());
+  for (let i = 0, l = eventNames.length; i < l; i++) {
+    const name = eventNames[i];
+    if (!e.has(name)) {
+      e.add(name);
+      document.addEventListener(name, eventHandler);
+    }
+  }
+}
+function setAttribute(node, name, value) {
+  if (solidJs.sharedConfig.context) return;
+  if (value == null) node.removeAttribute(name);
+  else node.setAttribute(name, value);
+}
+function setAttributeNS(node, namespace, name, value) {
+  if (solidJs.sharedConfig.context) return;
+  if (value == null) node.removeAttributeNS(namespace, name);
+  else node.setAttributeNS(namespace, name, value);
+}
+function className(node, value) {
+  if (solidJs.sharedConfig.context) return;
+  if (value == null) node.removeAttribute("class");
+  else node.className = value;
+}
+function addEventListener(node, name, handler, delegate) {
+  if (delegate) {
+    if (Array.isArray(handler)) {
+      node[`$$${name}`] = handler[0];
+      node[`$$${name}Data`] = handler[1];
+    } else node[`$$${name}`] = handler;
+  } else if (Array.isArray(handler)) {
+    const handlerFn = handler[0];
+    node.addEventListener(name, (handler[0] = e => handlerFn.call(node, handler[1], e)));
+  } else node.addEventListener(name, handler);
+}
+function classList(node, value, prev = {}) {
+  const classKeys = Object.keys(value || {}),
+    prevKeys = Object.keys(prev);
+  let i, len;
+  for (i = 0, len = prevKeys.length; i < len; i++) {
+    const key = prevKeys[i];
+    if (!key || key === "undefined" || value[key]) continue;
+    toggleClassKey(node, key, false);
+    delete prev[key];
+  }
+  for (i = 0, len = classKeys.length; i < len; i++) {
+    const key = classKeys[i],
+      classValue = !!value[key];
+    if (!key || key === "undefined" || prev[key] === classValue || !classValue) continue;
+    toggleClassKey(node, key, true);
+    prev[key] = classValue;
+  }
+  return prev;
+}
+function style(node, value, prev) {
+  if (!value) return prev ? setAttribute(node, "style") : value;
+  const nodeStyle = node.style;
+  if (typeof value === "string") return (nodeStyle.cssText = value);
+  typeof prev === "string" && (nodeStyle.cssText = prev = undefined);
+  prev || (prev = {});
+  value || (value = {});
+  let v, s;
+  for (s in prev) {
+    value[s] == null && nodeStyle.removeProperty(s);
+    delete prev[s];
+  }
+  for (s in value) {
+    v = value[s];
+    if (v !== prev[s]) {
+      nodeStyle.setProperty(s, v);
+      prev[s] = v;
+    }
+  }
+  return prev;
+}
+function spread(node, props = {}, isSVG, skipChildren) {
+  const prevProps = {};
+  if (!skipChildren) {
+    solidJs.createRenderEffect(
+      () => (prevProps.children = insertExpression(node, props.children, prevProps.children))
+    );
+  }
+  solidJs.createRenderEffect(() => props.ref && props.ref(node));
+  solidJs.createRenderEffect(() => assign(node, props, isSVG, true, prevProps, true));
+  return prevProps;
+}
+function use(fn, element, arg) {
+  return solidJs.untrack(() => fn(element, arg));
+}
+function insert(parent, accessor, marker, initial) {
+  if (marker !== undefined && !initial) initial = [];
+  if (typeof accessor !== "function") return insertExpression(parent, accessor, initial, marker);
+  solidJs.createRenderEffect(current => insertExpression(parent, accessor(), current, marker), initial);
+}
+function assign(node, props, isSVG, skipChildren, prevProps = {}, skipRef = false) {
+  props || (props = {});
+  for (const prop in prevProps) {
+    if (!(prop in props)) {
+      if (prop === "children") continue;
+      prevProps[prop] = assignProp(node, prop, null, prevProps[prop], isSVG, skipRef);
+    }
+  }
+  for (const prop in props) {
+    if (prop === "children") {
+      if (!skipChildren) insertExpression(node, props.children);
+      continue;
+    }
+    const value = props[prop];
+    prevProps[prop] = assignProp(node, prop, value, prevProps[prop], isSVG, skipRef);
+  }
+}
+function getNextElement(template) {
+  let node, key;
+  if (!solidJs.sharedConfig.context || !(node = solidJs.sharedConfig.registry.get((key = getHydrationKey())))) {
+    return template();
+  }
+  if (solidJs.sharedConfig.completed) solidJs.sharedConfig.completed.add(node);
+  solidJs.sharedConfig.registry.delete(key);
+  return node;
+}
+function toPropertyName(name) {
+  return name.toLowerCase().replace(/-([a-z])/g, (_, w) => w.toUpperCase());
+}
+function toggleClassKey(node, key, value) {
+  const classNames = key.trim().split(/\s+/);
+  for (let i = 0, nameLen = classNames.length; i < nameLen; i++)
+    node.classList.toggle(classNames[i], value);
+}
+function assignProp(node, prop, value, prev, isSVG, skipRef) {
+  let isCE, isProp, isChildProp, propAlias, forceProp;
+  if (prop === "style") return style(node, value, prev);
+  if (prop === "classList") return classList(node, value, prev);
+  if (value === prev) return prev;
+  if (prop === "ref") {
+    if (!skipRef) value(node);
+  } else if (prop.slice(0, 3) === "on:") {
+    const e = prop.slice(3);
+    prev && node.removeEventListener(e, prev);
+    value && node.addEventListener(e, value);
+  } else if (prop.slice(0, 10) === "oncapture:") {
+    const e = prop.slice(10);
+    prev && node.removeEventListener(e, prev, true);
+    value && node.addEventListener(e, value, true);
+  } else if (prop.slice(0, 2) === "on") {
+    const name = prop.slice(2).toLowerCase();
+    const delegate = DelegatedEvents.has(name);
+    if (!delegate && prev) {
+      const h = Array.isArray(prev) ? prev[0] : prev;
+      node.removeEventListener(name, h);
+    }
+    if (delegate || value) {
+      addEventListener(node, name, value, delegate);
+      delegate && delegateEvents([name]);
+    }
+  } else if (prop.slice(0, 5) === "attr:") {
+    setAttribute(node, prop.slice(5), value);
+  } else if (
+    (forceProp = prop.slice(0, 5) === "prop:") ||
+    (isChildProp = ChildProperties.has(prop)) ||
+    (!isSVG &&
+      ((propAlias = getPropAlias(prop, node.tagName)) || (isProp = Properties.has(prop)))) ||
+    (isCE = node.nodeName.includes("-"))
+  ) {
+    if (forceProp) {
+      prop = prop.slice(5);
+      isProp = true;
+    } else if (solidJs.sharedConfig.context) return value;
+    if (prop === "class" || prop === "className") className(node, value);
+    else if (isCE && !isProp && !isChildProp) node[toPropertyName(prop)] = value;
+    else node[propAlias || prop] = value;
+  } else {
+    const ns = isSVG && prop.indexOf(":") > -1 && SVGNamespace[prop.split(":")[0]];
+    if (ns) setAttributeNS(node, ns, prop, value);
+    else setAttribute(node, Aliases[prop] || prop, value);
+  }
+  return value;
+}
+function eventHandler(e) {
+  const key = `$$${e.type}`;
+  let node = (e.composedPath && e.composedPath()[0]) || e.target;
+  if (e.target !== node) {
+    Object.defineProperty(e, "target", {
+      configurable: true,
+      value: node
+    });
+  }
+  Object.defineProperty(e, "currentTarget", {
+    configurable: true,
+    get() {
+      return node || document;
+    }
+  });
+  if (solidJs.sharedConfig.registry && !solidJs.sharedConfig.done) solidJs.sharedConfig.done = _$HY.done = true;
+  while (node) {
+    const handler = node[key];
+    if (handler && !node.disabled) {
+      const data = node[`${key}Data`];
+      data !== undefined ? handler.call(node, data, e) : handler.call(node, e);
+      if (e.cancelBubble) return;
+    }
+    node = node._$host || node.parentNode || node.host;
+  }
+}
+function insertExpression(parent, value, current, marker, unwrapArray) {
+  if (solidJs.sharedConfig.context) {
+    !current && (current = [...parent.childNodes]);
+    let cleaned = [];
+    for (let i = 0; i < current.length; i++) {
+      const node = current[i];
+      if (node.nodeType === 8 && node.data.slice(0, 2) === "!$") node.remove();
+      else cleaned.push(node);
+    }
+    current = cleaned;
+  }
+  while (typeof current === "function") current = current();
+  if (value === current) return current;
+  const t = typeof value,
+    multi = marker !== undefined;
+  parent = (multi && current[0] && current[0].parentNode) || parent;
+  if (t === "string" || t === "number") {
+    if (solidJs.sharedConfig.context) return current;
+    if (t === "number") value = value.toString();
+    if (multi) {
+      let node = current[0];
+      if (node && node.nodeType === 3) {
+        node.data = value;
+      } else node = document.createTextNode(value);
+      current = cleanChildren(parent, current, marker, node);
+    } else {
+      if (current !== "" && typeof current === "string") {
+        current = parent.firstChild.data = value;
+      } else current = parent.textContent = value;
+    }
+  } else if (value == null || t === "boolean") {
+    if (solidJs.sharedConfig.context) return current;
+    current = cleanChildren(parent, current, marker);
+  } else if (t === "function") {
+    solidJs.createRenderEffect(() => {
+      let v = value();
+      while (typeof v === "function") v = v();
+      current = insertExpression(parent, v, current, marker);
+    });
+    return () => current;
+  } else if (Array.isArray(value)) {
+    const array = [];
+    const currentArray = current && Array.isArray(current);
+    if (normalizeIncomingArray(array, value, current, unwrapArray)) {
+      solidJs.createRenderEffect(() => (current = insertExpression(parent, array, current, marker, true)));
+      return () => current;
+    }
+    if (solidJs.sharedConfig.context) {
+      if (!array.length) return current;
+      if (marker === undefined) return [...parent.childNodes];
+      let node = array[0];
+      let nodes = [node];
+      while ((node = node.nextSibling) !== marker) nodes.push(node);
+      return (current = nodes);
+    }
+    if (array.length === 0) {
+      current = cleanChildren(parent, current, marker);
+      if (multi) return current;
+    } else if (currentArray) {
+      if (current.length === 0) {
+        appendNodes(parent, array, marker);
+      } else reconcileArrays(parent, current, array);
+    } else {
+      current && cleanChildren(parent);
+      appendNodes(parent, array);
+    }
+    current = array;
+  } else if (value.nodeType) {
+    if (solidJs.sharedConfig.context && value.parentNode) return (current = multi ? [value] : value);
+    if (Array.isArray(current)) {
+      if (multi) return (current = cleanChildren(parent, current, marker, value));
+      cleanChildren(parent, current, null, value);
+    } else if (current == null || current === "" || !parent.firstChild) {
+      parent.appendChild(value);
+    } else parent.replaceChild(value, parent.firstChild);
+    current = value;
+  } else;
+  return current;
+}
+function normalizeIncomingArray(normalized, array, current, unwrap) {
+  let dynamic = false;
+  for (let i = 0, len = array.length; i < len; i++) {
+    let item = array[i],
+      prev = current && current[i],
+      t;
+    if (item == null || item === true || item === false);
+    else if ((t = typeof item) === "object" && item.nodeType) {
+      normalized.push(item);
+    } else if (Array.isArray(item)) {
+      dynamic = normalizeIncomingArray(normalized, item, prev) || dynamic;
+    } else if (t === "function") {
+      if (unwrap) {
+        while (typeof item === "function") item = item();
+        dynamic =
+          normalizeIncomingArray(
+            normalized,
+            Array.isArray(item) ? item : [item],
+            Array.isArray(prev) ? prev : [prev]
+          ) || dynamic;
+      } else {
+        normalized.push(item);
+        dynamic = true;
+      }
+    } else {
+      const value = String(item);
+      if (prev && prev.nodeType === 3 && prev.data === value) normalized.push(prev);
+      else normalized.push(document.createTextNode(value));
+    }
+  }
+  return dynamic;
+}
+function appendNodes(parent, array, marker = null) {
+  for (let i = 0, len = array.length; i < len; i++) parent.insertBefore(array[i], marker);
+}
+function cleanChildren(parent, current, marker, replacement) {
+  if (marker === undefined) return (parent.textContent = "");
+  const node = replacement || document.createTextNode("");
+  if (current.length) {
+    let inserted = false;
+    for (let i = current.length - 1; i >= 0; i--) {
+      const el = current[i];
+      if (node !== el) {
+        const isParent = el.parentNode === parent;
+        if (!inserted && !i)
+          isParent ? parent.replaceChild(node, el) : parent.insertBefore(node, marker);
+        else isParent && el.remove();
+      } else inserted = true;
+    }
+  } else parent.insertBefore(node, marker);
+  return [node];
+}
+function getHydrationKey() {
+  const hydrate = solidJs.sharedConfig.context;
+  return `${hydrate.id}${hydrate.count++}`;
+}
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+function createElement(tagName, isSVG = false) {
+  return isSVG ? document.createElementNS(SVG_NAMESPACE, tagName) : document.createElement(tagName);
+}
+function Dynamic(props) {
+  const [p, others] = solidJs.splitProps(props, ["component"]);
+  const cached = solidJs.createMemo(() => p.component);
+  return solidJs.createMemo(() => {
+    const component = cached();
+    switch (typeof component) {
+      case "function":
+        return solidJs.untrack(() => component(others));
+      case "string":
+        const isSvg = SVGElements.has(component);
+        const el = solidJs.sharedConfig.context ? getNextElement() : createElement(component, isSvg);
+        spread(el, others, isSvg);
+        return el;
+    }
+  });
+}
+
 const getDom = id => {
   let dom = document.getElementById(id);
   if (dom) {
@@ -9223,7 +11515,7 @@ const mountComponents = (id, fc) => {
   const shadowDom = dom.attachShadow({
     mode: 'closed'
   });
-  web.render(fc, shadowDom);
+  render(fc, shadowDom);
   return dom;
 };
 const watchStore = (deps, fn, options = {
@@ -9233,11 +11525,376 @@ const watchStore = (deps, fn, options = {
 var css$3 = ".index_module_root__d8c71ff0{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__d8c71ff0{align-items:center;animation:index_module_bounceInRight__d8c71ff0 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__d8c71ff0>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__d8c71ff0[data-exit]{animation:index_module_bounceOutRight__d8c71ff0 .5s 1}.index_module_schedule__d8c71ff0{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__d8c71ff0[data-schedule] .index_module_schedule__d8c71ff0{transition:transform .1s}.index_module_item__d8c71ff0:not([data-schedule]) .index_module_schedule__d8c71ff0{animation:index_module_schedule__d8c71ff0 linear 1 forwards}:is(.index_module_item__d8c71ff0:hover,.index_module_item__d8c71ff0[data-schedule],.index_module_root__d8c71ff0[data-paused]) .index_module_schedule__d8c71ff0{animation-play-state:paused}.index_module_msg__d8c71ff0{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__d8c71ff0 h2{margin:0}.index_module_msg__d8c71ff0 h3{margin:.7em 0}.index_module_msg__d8c71ff0 ul{margin:0;text-align:left}.index_module_msg__d8c71ff0 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__d8c71ff0 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__d8c71ff0{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__d8c71ff0{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__d8c71ff0{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
 var modules_c21c94f2$3 = {"root":"index_module_root__d8c71ff0","item":"index_module_item__d8c71ff0","bounceInRight":"index_module_bounceInRight__d8c71ff0","bounceOutRight":"index_module_bounceOutRight__d8c71ff0","schedule":"index_module_schedule__d8c71ff0","msg":"index_module_msg__d8c71ff0"};
 
-const [_state$1, _setState$1] = store$2.createStore({
+const $RAW = Symbol("store-raw"),
+  $NODE = Symbol("store-node"),
+  $HAS = Symbol("store-has"),
+  $SELF = Symbol("store-self");
+function wrap$1(value) {
+  let p = value[solidJs.$PROXY];
+  if (!p) {
+    Object.defineProperty(value, solidJs.$PROXY, {
+      value: (p = new Proxy(value, proxyTraps$1))
+    });
+    if (!Array.isArray(value)) {
+      const keys = Object.keys(value),
+        desc = Object.getOwnPropertyDescriptors(value);
+      for (let i = 0, l = keys.length; i < l; i++) {
+        const prop = keys[i];
+        if (desc[prop].get) {
+          Object.defineProperty(value, prop, {
+            enumerable: desc[prop].enumerable,
+            get: desc[prop].get.bind(p)
+          });
+        }
+      }
+    }
+  }
+  return p;
+}
+function isWrappable(obj) {
+  let proto;
+  return (
+    obj != null &&
+    typeof obj === "object" &&
+    (obj[solidJs.$PROXY] ||
+      !(proto = Object.getPrototypeOf(obj)) ||
+      proto === Object.prototype ||
+      Array.isArray(obj))
+  );
+}
+function unwrap(item, set = new Set()) {
+  let result, unwrapped, v, prop;
+  if ((result = item != null && item[$RAW])) return result;
+  if (!isWrappable(item) || set.has(item)) return item;
+  if (Array.isArray(item)) {
+    if (Object.isFrozen(item)) item = item.slice(0);
+    else set.add(item);
+    for (let i = 0, l = item.length; i < l; i++) {
+      v = item[i];
+      if ((unwrapped = unwrap(v, set)) !== v) item[i] = unwrapped;
+    }
+  } else {
+    if (Object.isFrozen(item)) item = Object.assign({}, item);
+    else set.add(item);
+    const keys = Object.keys(item),
+      desc = Object.getOwnPropertyDescriptors(item);
+    for (let i = 0, l = keys.length; i < l; i++) {
+      prop = keys[i];
+      if (desc[prop].get) continue;
+      v = item[prop];
+      if ((unwrapped = unwrap(v, set)) !== v) item[prop] = unwrapped;
+    }
+  }
+  return item;
+}
+function getNodes(target, symbol) {
+  let nodes = target[symbol];
+  if (!nodes)
+    Object.defineProperty(target, symbol, {
+      value: (nodes = Object.create(null))
+    });
+  return nodes;
+}
+function getNode(nodes, property, value) {
+  if (nodes[property]) return nodes[property];
+  const [s, set] = solidJs.createSignal(value, {
+    equals: false,
+    internal: true
+  });
+  s.$ = set;
+  return (nodes[property] = s);
+}
+function proxyDescriptor$1(target, property) {
+  const desc = Reflect.getOwnPropertyDescriptor(target, property);
+  if (!desc || desc.get || !desc.configurable || property === solidJs.$PROXY || property === $NODE)
+    return desc;
+  delete desc.value;
+  delete desc.writable;
+  desc.get = () => target[solidJs.$PROXY][property];
+  return desc;
+}
+function trackSelf(target) {
+  solidJs.getListener() && getNode(getNodes(target, $NODE), $SELF)();
+}
+function ownKeys(target) {
+  trackSelf(target);
+  return Reflect.ownKeys(target);
+}
+const proxyTraps$1 = {
+  get(target, property, receiver) {
+    if (property === $RAW) return target;
+    if (property === solidJs.$PROXY) return receiver;
+    if (property === solidJs.$TRACK) {
+      trackSelf(target);
+      return receiver;
+    }
+    const nodes = getNodes(target, $NODE);
+    const tracked = nodes[property];
+    let value = tracked ? tracked() : target[property];
+    if (property === $NODE || property === $HAS || property === "__proto__") return value;
+    if (!tracked) {
+      const desc = Object.getOwnPropertyDescriptor(target, property);
+      if (
+        solidJs.getListener() &&
+        (typeof value !== "function" || target.hasOwnProperty(property)) &&
+        !(desc && desc.get)
+      )
+        value = getNode(nodes, property, value)();
+    }
+    return isWrappable(value) ? wrap$1(value) : value;
+  },
+  has(target, property) {
+    if (
+      property === $RAW ||
+      property === solidJs.$PROXY ||
+      property === solidJs.$TRACK ||
+      property === $NODE ||
+      property === $HAS ||
+      property === "__proto__"
+    )
+      return true;
+    solidJs.getListener() && getNode(getNodes(target, $HAS), property)();
+    return property in target;
+  },
+  set() {
+    return true;
+  },
+  deleteProperty() {
+    return true;
+  },
+  ownKeys: ownKeys,
+  getOwnPropertyDescriptor: proxyDescriptor$1
+};
+function setProperty(state, property, value, deleting = false) {
+  if (!deleting && state[property] === value) return;
+  const prev = state[property],
+    len = state.length;
+  if (value === undefined) {
+    delete state[property];
+    if (state[$HAS] && state[$HAS][property] && prev !== undefined) state[$HAS][property].$();
+  } else {
+    state[property] = value;
+    if (state[$HAS] && state[$HAS][property] && prev === undefined) state[$HAS][property].$();
+  }
+  let nodes = getNodes(state, $NODE),
+    node;
+  if ((node = getNode(nodes, property, prev))) node.$(() => value);
+  if (Array.isArray(state) && state.length !== len) {
+    for (let i = state.length; i < len; i++) (node = nodes[i]) && node.$();
+    (node = getNode(nodes, "length", len)) && node.$(state.length);
+  }
+  (node = nodes[$SELF]) && node.$();
+}
+function mergeStoreNode(state, value) {
+  const keys = Object.keys(value);
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    setProperty(state, key, value[key]);
+  }
+}
+function updateArray(current, next) {
+  if (typeof next === "function") next = next(current);
+  next = unwrap(next);
+  if (Array.isArray(next)) {
+    if (current === next) return;
+    let i = 0,
+      len = next.length;
+    for (; i < len; i++) {
+      const value = next[i];
+      if (current[i] !== value) setProperty(current, i, value);
+    }
+    setProperty(current, "length", len);
+  } else mergeStoreNode(current, next);
+}
+function updatePath(current, path, traversed = []) {
+  let part,
+    prev = current;
+  if (path.length > 1) {
+    part = path.shift();
+    const partType = typeof part,
+      isArray = Array.isArray(current);
+    if (Array.isArray(part)) {
+      for (let i = 0; i < part.length; i++) {
+        updatePath(current, [part[i]].concat(path), traversed);
+      }
+      return;
+    } else if (isArray && partType === "function") {
+      for (let i = 0; i < current.length; i++) {
+        if (part(current[i], i)) updatePath(current, [i].concat(path), traversed);
+      }
+      return;
+    } else if (isArray && partType === "object") {
+      const { from = 0, to = current.length - 1, by = 1 } = part;
+      for (let i = from; i <= to; i += by) {
+        updatePath(current, [i].concat(path), traversed);
+      }
+      return;
+    } else if (path.length > 1) {
+      updatePath(current[part], path, [part].concat(traversed));
+      return;
+    }
+    prev = current[part];
+    traversed = [part].concat(traversed);
+  }
+  let value = path[0];
+  if (typeof value === "function") {
+    value = value(prev, traversed);
+    if (value === prev) return;
+  }
+  if (part === undefined && value == undefined) return;
+  value = unwrap(value);
+  if (part === undefined || (isWrappable(prev) && isWrappable(value) && !Array.isArray(value))) {
+    mergeStoreNode(prev, value);
+  } else setProperty(current, part, value);
+}
+function createStore(...[store, options]) {
+  const unwrappedStore = unwrap(store || {});
+  const isArray = Array.isArray(unwrappedStore);
+  const wrappedStore = wrap$1(unwrappedStore);
+  function setStore(...args) {
+    solidJs.batch(() => {
+      isArray && args.length === 1
+        ? updateArray(unwrappedStore, args[0])
+        : updatePath(unwrappedStore, args);
+    });
+  }
+  return [wrappedStore, setStore];
+}
+
+function proxyDescriptor(target, property) {
+  const desc = Reflect.getOwnPropertyDescriptor(target, property);
+  if (
+    !desc ||
+    desc.get ||
+    desc.set ||
+    !desc.configurable ||
+    property === solidJs.$PROXY ||
+    property === $NODE
+  )
+    return desc;
+  delete desc.value;
+  delete desc.writable;
+  desc.get = () => target[solidJs.$PROXY][property];
+  desc.set = v => (target[solidJs.$PROXY][property] = v);
+  return desc;
+}
+const proxyTraps = {
+  get(target, property, receiver) {
+    if (property === $RAW) return target;
+    if (property === solidJs.$PROXY) return receiver;
+    if (property === solidJs.$TRACK) {
+      trackSelf(target);
+      return receiver;
+    }
+    const nodes = getNodes(target, $NODE);
+    const tracked = nodes[property];
+    let value = tracked ? tracked() : target[property];
+    if (property === $NODE || property === $HAS || property === "__proto__") return value;
+    if (!tracked) {
+      const desc = Object.getOwnPropertyDescriptor(target, property);
+      const isFunction = typeof value === "function";
+      if (solidJs.getListener() && (!isFunction || target.hasOwnProperty(property)) && !(desc && desc.get))
+        value = getNode(nodes, property, value)();
+      else if (value != null && isFunction && value === Array.prototype[property]) {
+        return (...args) => solidJs.batch(() => Array.prototype[property].apply(receiver, args));
+      }
+    }
+    return isWrappable(value) ? wrap(value) : value;
+  },
+  has(target, property) {
+    if (
+      property === $RAW ||
+      property === solidJs.$PROXY ||
+      property === solidJs.$TRACK ||
+      property === $NODE ||
+      property === $HAS ||
+      property === "__proto__"
+    )
+      return true;
+    solidJs.getListener() && getNode(getNodes(target, $HAS), property)();
+    return property in target;
+  },
+  set(target, property, value) {
+    solidJs.batch(() => setProperty(target, property, unwrap(value)));
+    return true;
+  },
+  deleteProperty(target, property) {
+    solidJs.batch(() => setProperty(target, property, undefined, true));
+    return true;
+  },
+  ownKeys: ownKeys,
+  getOwnPropertyDescriptor: proxyDescriptor
+};
+function wrap(value) {
+  let p = value[solidJs.$PROXY];
+  if (!p) {
+    Object.defineProperty(value, solidJs.$PROXY, {
+      value: (p = new Proxy(value, proxyTraps))
+    });
+    const keys = Object.keys(value),
+      desc = Object.getOwnPropertyDescriptors(value);
+    for (let i = 0, l = keys.length; i < l; i++) {
+      const prop = keys[i];
+      if (desc[prop].get) {
+        const get = desc[prop].get.bind(p);
+        Object.defineProperty(value, prop, {
+          get
+        });
+      }
+      if (desc[prop].set) {
+        const og = desc[prop].set,
+          set = v => solidJs.batch(() => og.call(p, v));
+        Object.defineProperty(value, prop, {
+          set
+        });
+      }
+    }
+  }
+  return p;
+}
+function createMutable(state, options) {
+  const unwrappedStore = unwrap(state || {});
+  const wrappedStore = wrap(unwrappedStore);
+  return wrappedStore;
+}
+const producers = new WeakMap();
+const setterTraps = {
+  get(target, property) {
+    if (property === $RAW) return target;
+    const value = target[property];
+    let proxy;
+    return isWrappable(value)
+      ? producers.get(value) ||
+          (producers.set(value, (proxy = new Proxy(value, setterTraps))), proxy)
+      : value;
+  },
+  set(target, property, value) {
+    setProperty(target, property, unwrap(value));
+    return true;
+  },
+  deleteProperty(target, property) {
+    setProperty(target, property, undefined, true);
+    return true;
+  }
+};
+function produce(fn) {
+  return state => {
+    if (isWrappable(state)) {
+      let proxy;
+      if (!(proxy = producers.get(state))) {
+        producers.set(state, (proxy = new Proxy(state, setterTraps)));
+      }
+      fn(proxy);
+    }
+    return state;
+  };
+}
+
+const [_state$1, _setState$1] = createStore({
   list: [],
   map: {}
 });
-const setState$1 = fn => _setState$1(store$2.produce(fn));
+const setState$1 = fn => _setState$1(produce(fn));
 
 // eslint-disable-next-line solid/reactivity
 const store$1 = _state$1;
@@ -9249,31 +11906,31 @@ const creatId = () => {
   return id;
 };
 
-const _tmpl$$R = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">`);
+const _tmpl$$R = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">`);
 const MdCheckCircle = ((props = {}) => (() => {
   const _el$ = _tmpl$$R();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$Q = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">`);
+const _tmpl$$Q = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">`);
 const MdWarning = ((props = {}) => (() => {
   const _el$ = _tmpl$$Q();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$P = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">`);
+const _tmpl$$P = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">`);
 const MdError = ((props = {}) => (() => {
   const _el$ = _tmpl$$P();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$O = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">`);
+const _tmpl$$O = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">`);
 const MdInfo = ((props = {}) => (() => {
   const _el$ = _tmpl$$O();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
@@ -9333,8 +11990,8 @@ toast$2.error = (msg, options) => toast$2(msg, {
   type: 'error'
 });
 
-const _tmpl$$N = /*#__PURE__*/web.template(`<div>`),
-  _tmpl$2$d = /*#__PURE__*/web.template(`<div><div>`);
+const _tmpl$$N = /*#__PURE__*/template(`<div>`),
+  _tmpl$2$d = /*#__PURE__*/template(`<div><div>`);
 const iconMap = {
   info: MdInfo,
   success: MdCheckCircle,
@@ -9389,16 +12046,16 @@ const ToastItem = props => {
       _el$2 = _el$.firstChild;
     _el$.addEventListener("animationend", handleAnimationEnd);
     _el$.addEventListener("click", dismiss);
-    web.insert(_el$, web.createComponent(web.Dynamic, {
+    insert(_el$, solidJs.createComponent(Dynamic, {
       get component() {
         return iconMap[props.type];
       }
     }), _el$2);
-    web.insert(_el$2, (() => {
-      const _c$ = web.memo(() => typeof props.msg === 'string');
-      return () => _c$() ? props.msg : web.createComponent(props.msg, {});
+    insert(_el$2, (() => {
+      const _c$ = solidJs.createMemo(() => typeof props.msg === 'string');
+      return () => _c$() ? props.msg : solidJs.createComponent(props.msg, {});
     })());
-    web.insert(_el$, web.createComponent(solidJs.Show, {
+    insert(_el$, solidJs.createComponent(solidJs.Show, {
       get when() {
         return props.duration !== Infinity || props.schedule !== undefined;
       },
@@ -9406,12 +12063,12 @@ const ToastItem = props => {
         const _el$3 = _tmpl$$N();
         _el$3.addEventListener("animationend", dismiss);
         const _ref$ = scheduleRef;
-        typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
-        web.effect(_p$ => {
+        typeof _ref$ === "function" ? use(_ref$, _el$3) : scheduleRef = _el$3;
+        solidJs.createRenderEffect(_p$ => {
           const _v$ = modules_c21c94f2$3.schedule,
             _v$2 = `${props.duration}ms`,
             _v$3 = showSchedule() ? `scaleX(${props.schedule})` : undefined;
-          _v$ !== _p$._v$ && web.className(_el$3, _p$._v$ = _v$);
+          _v$ !== _p$._v$ && className(_el$3, _p$._v$ = _v$);
           _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$3.style.setProperty("animation-duration", _v$2) : _el$3.style.removeProperty("animation-duration"));
           _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$3.style.setProperty("transform", _v$3) : _el$3.style.removeProperty("transform"));
           return _p$;
@@ -9423,17 +12080,17 @@ const ToastItem = props => {
         return _el$3;
       }
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$4 = modules_c21c94f2$3.item,
         _v$5 = colorMap[props.type],
         _v$6 = showSchedule(),
         _v$7 = props.exit,
         _v$8 = modules_c21c94f2$3.msg;
-      _v$4 !== _p$._v$4 && web.className(_el$, _p$._v$4 = _v$4);
+      _v$4 !== _p$._v$4 && className(_el$, _p$._v$4 = _v$4);
       _v$5 !== _p$._v$5 && ((_p$._v$5 = _v$5) != null ? _el$.style.setProperty("--theme", _v$5) : _el$.style.removeProperty("--theme"));
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-schedule", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-exit", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.className(_el$2, _p$._v$8 = _v$8);
+      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-schedule", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-exit", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && className(_el$2, _p$._v$8 = _v$8);
       return _p$;
     }, {
       _v$4: undefined,
@@ -9446,7 +12103,7 @@ const ToastItem = props => {
   })();
 };
 
-const _tmpl$$M = /*#__PURE__*/web.template(`<div>`);
+const _tmpl$$M = /*#__PURE__*/template(`<div>`);
 const Toaster = () => {
   const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
   solidJs.onMount(() => {
@@ -9458,17 +12115,17 @@ const Toaster = () => {
   });
   return (() => {
     const _el$ = _tmpl$$M();
-    web.insert(_el$, web.createComponent(solidJs.For, {
+    insert(_el$, solidJs.createComponent(solidJs.For, {
       get each() {
         return store$1.list;
       },
-      children: id => web.createComponent(ToastItem, web.mergeProps(() => store$1.map[id]))
+      children: id => solidJs.createComponent(ToastItem, solidJs.mergeProps(() => store$1.map[id]))
     }));
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$3.root,
         _v$2 = visible() ? undefined : '';
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-paused", _p$._v$2 = _v$2);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-paused", _p$._v$2 = _v$2);
       return _p$;
     }, {
       _v$: undefined,
@@ -9480,7 +12137,7 @@ const Toaster = () => {
 
 const ToastStyle = css$3;
 
-const _tmpl$$L = /*#__PURE__*/web.template(`<style type=text/css>`);
+const _tmpl$$L = /*#__PURE__*/template(`<style type=text/css>`);
 let dom$2;
 const init = () => {
   if (dom$2) return;
@@ -9491,9 +12148,9 @@ const init = () => {
     _dom.id = 'comicRead';
     document.body.appendChild(_dom);
   }
-  dom$2 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
+  dom$2 = mountComponents('toast', () => [solidJs.createComponent(Toaster, {}), (() => {
     const _el$ = _tmpl$$L();
-    web.insert(_el$, ToastStyle);
+    insert(_el$, ToastStyle);
     return _el$;
   })()]);
   dom$2.style.setProperty('z-index', '2147483647', 'important');
@@ -9546,39 +12203,39 @@ const request$1 = async (url, details, errorNum = 0) => {
   }
 };
 
-const _tmpl$$K = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">`);
+const _tmpl$$K = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">`);
 const MdAutoFixHigh = ((props = {}) => (() => {
   const _el$ = _tmpl$$K();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$J = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">`);
+const _tmpl$$J = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">`);
 const MdAutoFixOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$J();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$I = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">`);
+const _tmpl$$I = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">`);
 const MdAutoFlashOn = ((props = {}) => (() => {
   const _el$ = _tmpl$$I();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$H = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">`);
+const _tmpl$$H = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">`);
 const MdAutoFlashOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$H();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-var css$2 = ".index_module_iconButtonItem__58f56840{align-items:center;display:flex;position:relative}.index_module_iconButton__58f56840{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__58f56840:focus,.index_module_iconButton__58f56840:hover{background-color:var(--hover-bg-color,#fff3)}.index_module_iconButton__58f56840.index_module_enabled__58f56840{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.index_module_iconButton__58f56840.index_module_enabled__58f56840:focus,.index_module_iconButton__58f56840.index_module_enabled__58f56840:hover{background-color:var(--hover-bg-color-enable,#fffa)}.index_module_iconButton__58f56840>svg{width:1em}.index_module_iconButtonPopper__58f56840{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);user-select:none;white-space:nowrap}.index_module_iconButtonPopper__58f56840[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840:before{background-color:initial;border:.4em solid #0000;content:\"\";pointer-events:none;position:absolute;transition:opacity .15s}.index_module_iconButtonItem__58f56840:focus .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840:hover .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840[data-show=true] .index_module_iconButtonPopper__58f56840{opacity:1}.index_module_hidden__58f56840{display:none}";
+var css$2 = ".index_module_iconButtonItem__58f56840{align-items:center;display:flex;position:relative}.index_module_iconButton__58f56840{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__58f56840:focus,.index_module_iconButton__58f56840:hover{background-color:var(--hover-bg-color,#fff3)}.index_module_iconButton__58f56840.index_module_enabled__58f56840{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.index_module_iconButton__58f56840.index_module_enabled__58f56840:focus,.index_module_iconButton__58f56840.index_module_enabled__58f56840:hover{background-color:var(--hover-bg-color-enable,#fffa)}.index_module_iconButton__58f56840>svg{width:1em}.index_module_iconButtonPopper__58f56840{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.index_module_iconButtonPopper__58f56840[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840:before{background-color:initial;border:.4em solid #0000;content:\"\";pointer-events:none;position:absolute;transition:opacity .15s}.index_module_iconButtonItem__58f56840:focus .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840:hover .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840[data-show=true] .index_module_iconButtonPopper__58f56840{opacity:1}.index_module_hidden__58f56840{display:none}";
 var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__58f56840","iconButton":"index_module_iconButton__58f56840","enabled":"index_module_enabled__58f56840","iconButtonPopper":"index_module_iconButtonPopper__58f56840","hidden":"index_module_hidden__58f56840"};
 
-const _tmpl$$G = /*#__PURE__*/web.template(`<div><button type=button tabindex=0>`),
-  _tmpl$2$c = /*#__PURE__*/web.template(`<div>`);
+const _tmpl$$G = /*#__PURE__*/template(`<div><button type=button tabindex=0>`),
+  _tmpl$2$c = /*#__PURE__*/template(`<div>`);
 const IconButtonStyle = css$2;
 /** 图标按钮 */
 const IconButton = _props => {
@@ -9595,19 +12252,19 @@ const IconButton = _props => {
     const _el$ = _tmpl$$G(),
       _el$2 = _el$.firstChild;
     const _ref$ = buttonRef;
-    typeof _ref$ === "function" ? web.use(_ref$, _el$2) : buttonRef = _el$2;
+    typeof _ref$ === "function" ? use(_ref$, _el$2) : buttonRef = _el$2;
     _el$2.addEventListener("click", handleClick);
-    web.insert(_el$2, () => props.children);
-    web.insert(_el$, (() => {
-      const _c$ = web.memo(() => !!(props.popper || props.tip));
+    insert(_el$2, () => props.children);
+    insert(_el$, (() => {
+      const _c$ = solidJs.createMemo(() => !!(props.popper || props.tip));
       return () => _c$() ? (() => {
         const _el$3 = _tmpl$2$c();
-        web.insert(_el$3, () => props.popper || props.tip);
-        web.effect(_p$ => {
+        insert(_el$3, () => props.popper || props.tip);
+        solidJs.createRenderEffect(_p$ => {
           const _v$6 = [modules_c21c94f2$2.iconButtonPopper, props.popperClassName].join(' '),
             _v$7 = props.placement;
-          _v$6 !== _p$._v$6 && web.className(_el$3, _p$._v$6 = _v$6);
-          _v$7 !== _p$._v$7 && web.setAttribute(_el$3, "data-placement", _p$._v$7 = _v$7);
+          _v$6 !== _p$._v$6 && className(_el$3, _p$._v$6 = _v$6);
+          _v$7 !== _p$._v$7 && setAttribute(_el$3, "data-placement", _p$._v$7 = _v$7);
           return _p$;
         }, {
           _v$6: undefined,
@@ -9616,7 +12273,7 @@ const IconButton = _props => {
         return _el$3;
       })() : null;
     })(), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$2.iconButtonItem,
         _v$2 = props.showTip,
         _v$3 = props.tip,
@@ -9625,11 +12282,11 @@ const IconButton = _props => {
           [modules_c21c94f2$2.hidden]: props.hidden,
           [modules_c21c94f2$2.enabled]: props.enabled
         };
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$2, "aria-label", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
-      _p$._v$5 = web.classList(_el$2, _v$5, _p$._v$5);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$2, "aria-label", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
+      _p$._v$5 = classList(_el$2, _v$5, _p$._v$5);
       return _p$;
     }, {
       _v$: undefined,
@@ -9643,7 +12300,7 @@ const IconButton = _props => {
 };
 
 const useSpeedDial = (options, setOptions) => {
-  const DefaultButton = props => web.createComponent(IconButton, {
+  const DefaultButton = props => solidJs.createComponent(IconButton, {
     get tip() {
       return props.showName ?? (t(`site.add_feature.${props.optionName}`) || props.optionName);
     },
@@ -9653,7 +12310,7 @@ const useSpeedDial = (options, setOptions) => {
       [props.optionName]: !options[props.optionName]
     }),
     get children() {
-      return props.children ?? (options[props.optionName] ? web.createComponent(MdAutoFixHigh, {}) : web.createComponent(MdAutoFixOff, {}));
+      return props.children ?? (options[props.optionName] ? solidJs.createComponent(MdAutoFixHigh, {}) : solidJs.createComponent(MdAutoFixOff, {}));
     }
   });
   const list = Object.keys(options).map(optionName => {
@@ -9663,18 +12320,18 @@ const useSpeedDial = (options, setOptions) => {
       case 'hotkeys':
         return null;
       case 'autoShow':
-        return () => web.createComponent(DefaultButton, {
+        return () => solidJs.createComponent(DefaultButton, {
           optionName: "autoShow",
           get showName() {
             return t('other.auto_enter_read_mode');
           },
           get children() {
-            return web.memo(() => !!options.autoShow)() ? web.createComponent(MdAutoFlashOn, {}) : web.createComponent(MdAutoFlashOff, {});
+            return solidJs.createMemo(() => !!options.autoShow)() ? solidJs.createComponent(MdAutoFlashOn, {}) : solidJs.createComponent(MdAutoFlashOff, {});
           }
         });
       default:
         if (typeof options[optionName] !== 'boolean') return null;
-        return () => web.createComponent(DefaultButton, {
+        return () => solidJs.createComponent(DefaultButton, {
           optionName: optionName
         });
     }
@@ -9682,33 +12339,33 @@ const useSpeedDial = (options, setOptions) => {
   return list;
 };
 
-const _tmpl$$F = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">`);
+const _tmpl$$F = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">`);
 const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$$F();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$E = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">`);
+const _tmpl$$E = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">`);
 const MdFileDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$E();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$D = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">`);
+const _tmpl$$D = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">`);
 const MdClose = ((props = {}) => (() => {
   const _el$ = _tmpl$$D();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
 const useStore = initState => {
-  const [_state, _setState] = store$2.createStore(initState);
+  const [_state, _setState] = createStore(initState);
   return {
     _state,
     _setState,
-    setState: fn => _setState(store$2.produce(fn)),
+    setState: fn => _setState(produce(fn)),
     store: _state
   };
 };
@@ -11111,7 +13768,7 @@ const switchGridMode = () => {
   });
 };
 
-var css$1 = ".index_module_img__d1a5aaee{background-color:var(--hover-bg-color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d1a5aaee[data-fill=left]{transform:translate(50%)}.index_module_img__d1a5aaee[data-fill=right]{transform:translate(-50%)}.index_module_img__d1a5aaee[data-fill=page]{display:none}.index_module_img__d1a5aaee[data-type=long]{height:auto;width:100%}.index_module_img__d1a5aaee[data-load-type=loading]{animation:index_module_show__d1a5aaee 2s forwards;max-width:100vw!important;opacity:0}.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[data-load-type=wait],.index_module_img__d1a5aaee[src=\"\"]{aspect-ratio:3/4;height:100%;position:relative}:is(.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[src=\"\"]):before{opacity:0}:is(.index_module_img__d1a5aaee[data-load-type],.index_module_img__d1a5aaee[src=\"\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d1a5aaee[data-load-type=loading],.index_module_img__d1a5aaee[data-load-type=wait]):after{background-image:var(--md-cloud-download);content:\"\"}.index_module_img__d1a5aaee[src=\"\"]:after{background-image:var(--md-photo);content:\"\"}.index_module_img__d1a5aaee[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\"\"}.index_module_page__d1a5aaee{content-visibility:hidden;align-items:center;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d1a5aaee[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d1a5aaee{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;transition-duration:0ms;width:100%}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d1a5aaee[data-disable-zoom] .index_module_img__d1a5aaee{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d1a5aaee[dir=ltr] .index_module_page__d1a5aaee{flex-direction:row}.index_module_mangaFlow__d1a5aaee[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d1a5aaee[data-animation=page] .index_module_page__d1a5aaee,.index_module_mangaFlow__d1a5aaee[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d1a5aaee[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d1a5aaee[data-grid-mode]{grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;padding-bottom:2em}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee{height:auto;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee:after{bottom:-1.4em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);white-space:pre;width:100%}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee .index_module_img__d1a5aaee{cursor:pointer}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee{grid-auto-flow:row;grid-auto-rows:auto;overflow:auto;grid-row-gap:calc(var(--scroll-mode-spacing)*.1em);grid-template-rows:auto}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_page__d1a5aaee{display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width, 100%)))}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=loading]{position:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=error]{height:20em;width:30em}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_img__d1a5aaee{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}@keyframes index_module_show__d1a5aaee{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d1a5aaee{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d1a5aaee>button{animation:index_module_jello__d1a5aaee .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d1a5aaee>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d1a5aaee>button:focus-visible{outline:none}.index_module_endPage__d1a5aaee>.index_module_tip__d1a5aaee{margin:auto;position:absolute}.index_module_endPage__d1a5aaee[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d1a5aaee[data-type=start]>.index_module_tip__d1a5aaee{transform:translateY(-10em)}.index_module_endPage__d1a5aaee[data-type=end]>.index_module_tip__d1a5aaee{transform:translateY(10em)}.index_module_root__d1a5aaee[data-mobile] .index_module_endPage__d1a5aaee>button{width:1em}.index_module_comments__d1a5aaee{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d1a5aaee>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d1a5aaee:hover{opacity:1}.index_module_root__d1a5aaee[data-mobile] .index_module_comments__d1a5aaee{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d1a5aaee{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d1a5aaee{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d1a5aaee{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d1a5aaee[data-show],.index_module_toolbar__d1a5aaee:hover) .index_module_toolbarPanel__d1a5aaee{transform:none}.index_module_toolbar__d1a5aaee[data-close] .index_module_toolbarPanel__d1a5aaee{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d1a5aaee{backdrop-filter:blur(24px);background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee{font-size:1.3em}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee:not([data-show]){pointer-events:none}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbarBg__d1a5aaee{filter:opacity(.8)}.index_module_SettingPanelPopper__d1a5aaee{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__d1a5aaee{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;user-select:text;z-index:1}.index_module_SettingPanel__d1a5aaee hr{color:#fff;margin:0}.index_module_SettingBlock__d1a5aaee{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div+:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div{margin-top:1em}.index_module_SettingBlock__d1a5aaee[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__d1a5aaee[data-show=false] .index_module_SettingBlockBody__d1a5aaee{padding:unset}.index_module_SettingBlockSubtitle__d1a5aaee{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d1a5aaee{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d1a5aaee+.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_SettingsItemName__d1a5aaee{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d1a5aaee{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true] .index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d1a5aaee{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d1a5aaee{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__d1a5aaee{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d1a5aaee{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee{overflow:hidden}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee>.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_hotkeys__d1a5aaee{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d1a5aaee+.index_module_hotkeys__d1a5aaee{margin-top:.5em}.index_module_hotkeys__d1a5aaee:last-child{border-bottom:none}.index_module_hotkeysItem__d1a5aaee{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__d1a5aaee>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d1a5aaee>svg:hover{opacity:.9}.index_module_hotkeysItem__d1a5aaee:hover{padding:.2em .5em}.index_module_hotkeysItem__d1a5aaee:hover>svg{display:unset}.index_module_hotkeysItem__d1a5aaee:focus,.index_module_hotkeysItem__d1a5aaee:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d1a5aaee{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d1a5aaee>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d1a5aaee>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d1a5aaee>div[title]>svg{width:1.6em}.index_module_hotkeys__d1a5aaee:hover div[title]{transform:scale(1)}.index_module_scrollbar__d1a5aaee{--arrow-y:clamp(0.45em,calc(var(--drag-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d1a5aaee>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__d1a5aaee{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d1a5aaee[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d1a5aaee[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d1a5aaee[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d1a5aaee[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d1a5aaee[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d1a5aaee[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d1a5aaee[data-translation-type=error]{background-color:#f005}.index_module_scrollbarDrag__d1a5aaee{--top:calc(var(--top-ratio)*var(--scroll-length));--height:calc(var(--height-ratio)*var(--scroll-length));background-color:var(--scrollbar-drag);border-radius:1em;height:var(--height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__d1a5aaee{--poper-top:clamp(0%,calc(var(--drag-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__d1a5aaee:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\"\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover:before,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show]:before{opacity:1}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarDrag__d1a5aaee{opacity:0}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarDrag__d1a5aaee{opacity:1}.index_module_scrollbar__d1a5aaee[data-position=hidden]{display:none}.index_module_scrollbar__d1a5aaee[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{top:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee{bottom:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom],.index_module_scrollbar__d1a5aaee[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before,.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarDrag__d1a5aaee{height:100%;transform:translateX(calc(var(--top)*-1));width:var(--height)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr],.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee{transform:translateX(var(--top))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee{transform:translateX(var(--poper-top))}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee{transform:scaleX(1)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-type=loaded],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-translation-type],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-translation-type]{transform:scaleX(1)}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_scrollbar__d1a5aaee:before,.index_module_root__d1a5aaee[data-scroll-mode] :is(.index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbarPoper__d1a5aaee){transition:opacity .15s}.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover:before{opacity:0}.index_module_touchAreaRoot__d1a5aaee{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;user-select:none;width:100%}.index_module_touchAreaRoot__d1a5aaee[data-show]{opacity:1}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d1a5aaee[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=next],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d1a5aaee[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d1a5aaee[data-mobile] .index_module_touchAreaRoot__d1a5aaee{flex-direction:column!important;letter-spacing:0}.index_module_root__d1a5aaee[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d1a5aaee{display:none!important}.index_module_invisible__d1a5aaee{visibility:hidden!important}.index_module_root__d1a5aaee{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d1a5aaee a{color:var(--text-secondary)}.index_module_root__d1a5aaee[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d1a5aaee{scrollbar-color:var(--scrollbar-drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-thumb{background:var(--scrollbar-drag)}p{margin:0}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".index_module_img__d1a5aaee{background-color:var(--hover-bg-color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d1a5aaee[data-fill=left]{transform:translate(50%)}.index_module_img__d1a5aaee[data-fill=right]{transform:translate(-50%)}.index_module_img__d1a5aaee[data-fill=page]{display:none}.index_module_img__d1a5aaee[data-type=long]{height:auto;width:100%}.index_module_img__d1a5aaee[data-load-type=loading]{animation:index_module_show__d1a5aaee 2s forwards;max-width:100vw!important;opacity:0}.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[data-load-type=wait],.index_module_img__d1a5aaee[src=\"\"]{aspect-ratio:3/4;height:100%;position:relative}:is(.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[src=\"\"]):before{opacity:0}:is(.index_module_img__d1a5aaee[data-load-type],.index_module_img__d1a5aaee[src=\"\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d1a5aaee[data-load-type=loading],.index_module_img__d1a5aaee[data-load-type=wait]):after{background-image:var(--md-cloud-download);content:\"\"}.index_module_img__d1a5aaee[src=\"\"]:after{background-image:var(--md-photo);content:\"\"}.index_module_img__d1a5aaee[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\"\"}.index_module_page__d1a5aaee{content-visibility:hidden;align-items:center;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d1a5aaee[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d1a5aaee{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;transition-duration:0ms;width:100%}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d1a5aaee[data-disable-zoom] .index_module_img__d1a5aaee{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d1a5aaee[dir=ltr] .index_module_page__d1a5aaee{flex-direction:row}.index_module_mangaFlow__d1a5aaee[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d1a5aaee[data-animation=page] .index_module_page__d1a5aaee,.index_module_mangaFlow__d1a5aaee[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d1a5aaee[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d1a5aaee[data-grid-mode]{grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;padding-bottom:2em}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee{height:auto;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee:after{bottom:-1.4em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);white-space:pre;width:100%}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee .index_module_img__d1a5aaee{cursor:pointer}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee{grid-auto-flow:row;grid-auto-rows:auto;overflow:auto;grid-row-gap:calc(var(--scroll-mode-spacing)*.1em);grid-template-rows:auto}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_page__d1a5aaee{display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width, 100%)))}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=loading]{position:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=error]{height:20em;width:30em}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_img__d1a5aaee{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}@keyframes index_module_show__d1a5aaee{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d1a5aaee{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d1a5aaee>button{animation:index_module_jello__d1a5aaee .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d1a5aaee>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d1a5aaee>button:focus-visible{outline:none}.index_module_endPage__d1a5aaee>.index_module_tip__d1a5aaee{margin:auto;position:absolute}.index_module_endPage__d1a5aaee[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d1a5aaee[data-type=start]>.index_module_tip__d1a5aaee{transform:translateY(-10em)}.index_module_endPage__d1a5aaee[data-type=end]>.index_module_tip__d1a5aaee{transform:translateY(10em)}.index_module_root__d1a5aaee[data-mobile] .index_module_endPage__d1a5aaee>button{width:1em}.index_module_comments__d1a5aaee{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d1a5aaee>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d1a5aaee:hover{opacity:1}.index_module_root__d1a5aaee[data-mobile] .index_module_comments__d1a5aaee{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d1a5aaee{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d1a5aaee{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d1a5aaee{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d1a5aaee[data-show],.index_module_toolbar__d1a5aaee:hover) .index_module_toolbarPanel__d1a5aaee{transform:none}.index_module_toolbar__d1a5aaee[data-close] .index_module_toolbarPanel__d1a5aaee{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d1a5aaee{-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee{font-size:1.3em}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee:not([data-show]){pointer-events:none}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbarBg__d1a5aaee{filter:opacity(.8)}.index_module_SettingPanelPopper__d1a5aaee{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__d1a5aaee{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.index_module_SettingPanel__d1a5aaee hr{color:#fff;margin:0}.index_module_SettingBlock__d1a5aaee{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div+:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div{margin-top:1em}.index_module_SettingBlock__d1a5aaee[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__d1a5aaee[data-show=false] .index_module_SettingBlockBody__d1a5aaee{padding:unset}.index_module_SettingBlockSubtitle__d1a5aaee{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d1a5aaee{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d1a5aaee+.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_SettingsItemName__d1a5aaee{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d1a5aaee{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true] .index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d1a5aaee{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d1a5aaee{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__d1a5aaee{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d1a5aaee{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee{overflow:hidden}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee>.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_hotkeys__d1a5aaee{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d1a5aaee+.index_module_hotkeys__d1a5aaee{margin-top:.5em}.index_module_hotkeys__d1a5aaee:last-child{border-bottom:none}.index_module_hotkeysItem__d1a5aaee{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__d1a5aaee>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d1a5aaee>svg:hover{opacity:.9}.index_module_hotkeysItem__d1a5aaee:hover{padding:.2em .5em}.index_module_hotkeysItem__d1a5aaee:hover>svg{display:unset}.index_module_hotkeysItem__d1a5aaee:focus,.index_module_hotkeysItem__d1a5aaee:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d1a5aaee{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d1a5aaee>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d1a5aaee>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d1a5aaee>div[title]>svg{width:1.6em}.index_module_hotkeys__d1a5aaee:hover div[title]{transform:scale(1)}.index_module_scrollbar__d1a5aaee{--arrow-y:clamp(0.45em,calc(var(--drag-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d1a5aaee>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__d1a5aaee{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d1a5aaee[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d1a5aaee[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d1a5aaee[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d1a5aaee[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d1a5aaee[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d1a5aaee[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d1a5aaee[data-translation-type=error]{background-color:#f005}.index_module_scrollbarDrag__d1a5aaee{--top:calc(var(--top-ratio)*var(--scroll-length));--height:calc(var(--height-ratio)*var(--scroll-length));background-color:var(--scrollbar-drag);border-radius:1em;height:var(--height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__d1a5aaee{--poper-top:clamp(0%,calc(var(--drag-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__d1a5aaee:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\"\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover:before,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show]:before{opacity:1}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarDrag__d1a5aaee{opacity:0}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarDrag__d1a5aaee{opacity:1}.index_module_scrollbar__d1a5aaee[data-position=hidden]{display:none}.index_module_scrollbar__d1a5aaee[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{top:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee{bottom:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom],.index_module_scrollbar__d1a5aaee[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before,.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarDrag__d1a5aaee{height:100%;transform:translateX(calc(var(--top)*-1));width:var(--height)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr],.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee{transform:translateX(var(--top))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee{transform:translateX(var(--poper-top))}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee{transform:scaleX(1)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-type=loaded],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-translation-type],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-translation-type]{transform:scaleX(1)}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_scrollbar__d1a5aaee:before,.index_module_root__d1a5aaee[data-scroll-mode] :is(.index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbarPoper__d1a5aaee){transition:opacity .15s}.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover:before{opacity:0}.index_module_touchAreaRoot__d1a5aaee{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.index_module_touchAreaRoot__d1a5aaee[data-show]{opacity:1}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d1a5aaee[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=next],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d1a5aaee[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d1a5aaee[data-mobile] .index_module_touchAreaRoot__d1a5aaee{flex-direction:column!important;letter-spacing:0}.index_module_root__d1a5aaee[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d1a5aaee{display:none!important}.index_module_invisible__d1a5aaee{visibility:hidden!important}.index_module_root__d1a5aaee{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d1a5aaee a{color:var(--text-secondary)}.index_module_root__d1a5aaee[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d1a5aaee{scrollbar-color:var(--scrollbar-drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-thumb{background:var(--scrollbar-drag)}p{margin:0}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"index_module_img__d1a5aaee","show":"index_module_show__d1a5aaee","page":"index_module_page__d1a5aaee","mangaFlow":"index_module_mangaFlow__d1a5aaee","root":"index_module_root__d1a5aaee","endPage":"index_module_endPage__d1a5aaee","jello":"index_module_jello__d1a5aaee","tip":"index_module_tip__d1a5aaee","comments":"index_module_comments__d1a5aaee","toolbar":"index_module_toolbar__d1a5aaee","toolbarPanel":"index_module_toolbarPanel__d1a5aaee","toolbarBg":"index_module_toolbarBg__d1a5aaee","SettingPanelPopper":"index_module_SettingPanelPopper__d1a5aaee","SettingPanel":"index_module_SettingPanel__d1a5aaee","SettingBlock":"index_module_SettingBlock__d1a5aaee","SettingBlockBody":"index_module_SettingBlockBody__d1a5aaee","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__d1a5aaee","SettingsItem":"index_module_SettingsItem__d1a5aaee","SettingsItemName":"index_module_SettingsItemName__d1a5aaee","SettingsItemSwitch":"index_module_SettingsItemSwitch__d1a5aaee","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__d1a5aaee","SettingsItemIconButton":"index_module_SettingsItemIconButton__d1a5aaee","SettingsItemSelect":"index_module_SettingsItemSelect__d1a5aaee","closeCover":"index_module_closeCover__d1a5aaee","SettingsShowItem":"index_module_SettingsShowItem__d1a5aaee","SettingsShowItemBody":"index_module_SettingsShowItemBody__d1a5aaee","hotkeys":"index_module_hotkeys__d1a5aaee","hotkeysItem":"index_module_hotkeysItem__d1a5aaee","hotkeysHeader":"index_module_hotkeysHeader__d1a5aaee","scrollbar":"index_module_scrollbar__d1a5aaee","scrollbarPage":"index_module_scrollbarPage__d1a5aaee","scrollbarDrag":"index_module_scrollbarDrag__d1a5aaee","scrollbarPoper":"index_module_scrollbarPoper__d1a5aaee","touchAreaRoot":"index_module_touchAreaRoot__d1a5aaee","touchArea":"index_module_touchArea__d1a5aaee","hidden":"index_module_hidden__d1a5aaee","invisible":"index_module_invisible__d1a5aaee","beautifyScrollbar":"index_module_beautifyScrollbar__d1a5aaee"};
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
@@ -11504,7 +14161,7 @@ const useDrag = ({
   });
 };
 
-const _tmpl$$C = /*#__PURE__*/web.template(`<img draggable=false>`);
+const _tmpl$$C = /*#__PURE__*/template(`<img draggable=false>`);
 /** 图片加载完毕的回调 */
 const handleImgLoaded = (i, e) => {
   if (!e.getAttribute('src')) return;
@@ -11558,7 +14215,7 @@ const ComicImg = props => {
     if (img().translationType === 'show') return img().translationUrl;
     return img().src;
   });
-  const style = solidJs.createMemo(() => {
+  const style$1 = solidJs.createMemo(() => {
     if (!store.option.scrollMode) return undefined;
     const size = img()?.width ? img() : placeholderSize();
     return {
@@ -11571,22 +14228,22 @@ const ComicImg = props => {
     _el$.addEventListener("error", e => handleImgError(props.index, e.currentTarget));
     _el$.addEventListener("load", e => handleImgLoaded(props.index, e.currentTarget));
     const _ref$ = ref;
-    typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
-    web.effect(_p$ => {
+    typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.img,
-        _v$2 = style(),
+        _v$2 = style$1(),
         _v$3 = src(),
         _v$4 = `${props.index + 1}`,
         _v$5 = props.index === -1 ? 'page' : props.fill,
         _v$6 = img()?.type || undefined,
         _v$7 = img()?.loadType === 'loaded' ? undefined : img()?.loadType;
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _p$._v$2 = web.style(_el$, _v$2, _p$._v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "src", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "alt", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-fill", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-type", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-load-type", _p$._v$7 = _v$7);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _p$._v$2 = style(_el$, _v$2, _p$._v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "src", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$, "alt", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-fill", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-type", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-load-type", _p$._v$7 = _v$7);
       return _p$;
     }, {
       _v$: undefined,
@@ -11601,8 +14258,8 @@ const ComicImg = props => {
   })();
 };
 
-const _tmpl$$B = /*#__PURE__*/web.template(`<div>`),
-  _tmpl$2$b = /*#__PURE__*/web.template(`<h1>NULL`);
+const _tmpl$$B = /*#__PURE__*/template(`<div>`),
+  _tmpl$2$b = /*#__PURE__*/template(`<h1>NULL`);
 const ComicPage = props => {
   const show = solidJs.createMemo(() => store.gridMode || store.option.scrollMode || store.memo.renderPageList.some(page => page === props.page));
   const fill = solidJs.createMemo(() => {
@@ -11613,7 +14270,7 @@ const ComicPage = props => {
     if (fillIndex !== -1) return store.option.dir !== 'rtl' ? ['right', 'left'] : ['left', 'right'];
     return undefined;
   });
-  const style = solidJs.createMemo(() => {
+  const style$1 = solidJs.createMemo(() => {
     if (!store.gridMode) return {};
     const highlight = props.index === store.activePageIndex;
     const tip = getPageTip(props.index);
@@ -11624,29 +14281,29 @@ const ComicPage = props => {
   });
   return (() => {
     const _el$ = _tmpl$$B();
-    web.insert(_el$, web.createComponent(solidJs.For, {
+    insert(_el$, solidJs.createComponent(solidJs.For, {
       get each() {
         return props.page;
       },
       get fallback() {
         return _tmpl$2$b();
       },
-      children: (imgIndex, i) => web.createComponent(ComicImg, {
+      children: (imgIndex, i) => solidJs.createComponent(ComicImg, {
         index: imgIndex,
         get fill() {
           return fill()?.[i()];
         }
       })
     }));
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.page,
         _v$2 = boolDataVal(show()),
         _v$3 = props.index,
-        _v$4 = style();
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-index", _p$._v$3 = _v$3);
-      _p$._v$4 = web.style(_el$, _v$4, _p$._v$4);
+        _v$4 = style$1();
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-index", _p$._v$3 = _v$3);
+      _p$._v$4 = style(_el$, _v$4, _p$._v$4);
       return _p$;
     }, {
       _v$: undefined,
@@ -11658,8 +14315,8 @@ const ComicPage = props => {
   })();
 };
 
-const _tmpl$$A = /*#__PURE__*/web.template(`<div tabindex=-1>`),
-  _tmpl$2$a = /*#__PURE__*/web.template(`<h1>NULL`);
+const _tmpl$$A = /*#__PURE__*/template(`<div tabindex=-1>`),
+  _tmpl$2$a = /*#__PURE__*/template(`<h1>NULL`);
 const ComicImgFlow = () => {
   const {
     hiddenMouse,
@@ -11725,23 +14382,23 @@ const ComicImgFlow = () => {
     _el$.addEventListener("scroll", () => setState(updateDrag));
     _el$.addEventListener("transitionend", handleTransitionEnd);
     const _ref$ = bindRef('mangaFlow');
-    typeof _ref$ === "function" && web.use(_ref$, _el$);
+    typeof _ref$ === "function" && use(_ref$, _el$);
     _el$.addEventListener("mousemove", onMouseMove);
-    web.insert(_el$, web.createComponent(solidJs.Index, {
+    insert(_el$, solidJs.createComponent(solidJs.Index, {
       get each() {
         return store.pageList;
       },
       get fallback() {
         return _tmpl$2$a();
       },
-      children: (page, i) => web.createComponent(ComicPage, {
+      children: (page, i) => solidJs.createComponent(ComicPage, {
         get page() {
           return page();
         },
         index: i
       })
     }));
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.mangaFlow,
         _v$2 = store.option.dir,
         _v$3 = `${modules_c21c94f2$1.mangaFlow} ${modules_c21c94f2$1.beautifyScrollbar}`,
@@ -11756,16 +14413,16 @@ const ComicImgFlow = () => {
           ...zoom(),
           ...pageXY()
         };
-      _v$ !== _p$._v$ && web.setAttribute(_el$, "id", _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "dir", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.className(_el$, _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-disable-zoom", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-grid-mode", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-scale-mode", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-vertical", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-animation", _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && web.setAttribute(_el$, "data-hidden-mouse", _p$._v$9 = _v$9);
-      _p$._v$10 = web.style(_el$, _v$10, _p$._v$10);
+      _v$ !== _p$._v$ && setAttribute(_el$, "id", _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "dir", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && className(_el$, _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-disable-zoom", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-grid-mode", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-scale-mode", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-vertical", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && setAttribute(_el$, "data-animation", _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && setAttribute(_el$, "data-hidden-mouse", _p$._v$9 = _v$9);
+      _p$._v$10 = style(_el$, _v$10, _p$._v$10);
       return _p$;
     }, {
       _v$: undefined,
@@ -11783,70 +14440,70 @@ const ComicImgFlow = () => {
   })();
 };
 
-const _tmpl$$z = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">`);
+const _tmpl$$z = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">`);
 const MdLooksOne = ((props = {}) => (() => {
   const _el$ = _tmpl$$z();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$y = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">`);
+const _tmpl$$y = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">`);
 const MdLooksTwo = ((props = {}) => (() => {
   const _el$ = _tmpl$$y();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$x = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">`);
+const _tmpl$$x = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">`);
 const MdViewDay = ((props = {}) => (() => {
   const _el$ = _tmpl$$x();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$w = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">`);
+const _tmpl$$w = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">`);
 const MdQueue = ((props = {}) => (() => {
   const _el$ = _tmpl$$w();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$v = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14">`);
+const _tmpl$$v = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14">`);
 const MdSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$v();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$u = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">`);
+const _tmpl$$u = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">`);
 const MdTranslate = ((props = {}) => (() => {
   const _el$ = _tmpl$$u();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$t = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">`);
+const _tmpl$$t = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">`);
 const MdGrid = ((props = {}) => (() => {
   const _el$ = _tmpl$$t();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$s = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">`);
+const _tmpl$$s = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">`);
 const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
   const _el$ = _tmpl$$s();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$r = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">`);
+const _tmpl$$r = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">`);
 const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
   const _el$ = _tmpl$$r();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$q = /*#__PURE__*/web.template(`<div><div> <!> `);
+const _tmpl$$q = /*#__PURE__*/template(`<div><div> <!> `);
 /** 设置菜单项 */
 const SettingsItem = props => (() => {
   const _el$ = _tmpl$$q(),
@@ -11854,9 +14511,9 @@ const SettingsItem = props => (() => {
     _el$3 = _el$2.firstChild,
     _el$5 = _el$3.nextSibling;
     _el$5.nextSibling;
-  web.insert(_el$2, () => props.name, _el$5);
-  web.insert(_el$, () => props.children, null);
-  web.effect(_p$ => {
+  insert(_el$2, () => props.name, _el$5);
+  insert(_el$, () => props.children, null);
+  solidJs.createRenderEffect(_p$ => {
     const _v$ = props.class ? `${modules_c21c94f2$1.SettingsItem} ${props.class}` : modules_c21c94f2$1.SettingsItem,
       _v$2 = {
         [props.class ?? '']: !!props.class?.length,
@@ -11864,10 +14521,10 @@ const SettingsItem = props => (() => {
       },
       _v$3 = props.style,
       _v$4 = modules_c21c94f2$1.SettingsItemName;
-    _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-    _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
-    _p$._v$3 = web.style(_el$, _v$3, _p$._v$3);
-    _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
+    _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+    _p$._v$2 = classList(_el$, _v$2, _p$._v$2);
+    _p$._v$3 = style(_el$, _v$3, _p$._v$3);
+    _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
     return _p$;
   }, {
     _v$: undefined,
@@ -11878,11 +14535,11 @@ const SettingsItem = props => (() => {
   return _el$;
 })();
 
-const _tmpl$$p = /*#__PURE__*/web.template(`<button type=button><div>`);
+const _tmpl$$p = /*#__PURE__*/template(`<button type=button><div>`);
 /** 开关式菜单项 */
 const SettingsItemSwitch = props => {
   const handleClick = () => props.onChange(!props.value);
-  return web.createComponent(SettingsItem, {
+  return solidJs.createComponent(SettingsItem, {
     get name() {
       return props.name;
     },
@@ -11896,13 +14553,13 @@ const SettingsItemSwitch = props => {
       const _el$ = _tmpl$$p(),
         _el$2 = _el$.firstChild;
       _el$.addEventListener("click", handleClick);
-      web.effect(_p$ => {
+      solidJs.createRenderEffect(_p$ => {
         const _v$ = modules_c21c94f2$1.SettingsItemSwitch,
           _v$2 = props.value,
           _v$3 = modules_c21c94f2$1.SettingsItemSwitchRound;
-        _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-        _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-checked", _p$._v$2 = _v$2);
-        _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
+        _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+        _v$2 !== _p$._v$2 && setAttribute(_el$, "data-checked", _p$._v$2 = _v$2);
+        _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
         return _p$;
       }, {
         _v$: undefined,
@@ -11914,22 +14571,22 @@ const SettingsItemSwitch = props => {
   });
 };
 
-const _tmpl$$o = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">`);
+const _tmpl$$o = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">`);
 const MdRefresh = ((props = {}) => (() => {
   const _el$ = _tmpl$$o();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$n = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">`);
+const _tmpl$$n = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">`);
 const MdAdd = ((props = {}) => (() => {
   const _el$ = _tmpl$$n();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$m = /*#__PURE__*/web.template(`<div tabindex=0>`),
-  _tmpl$2$9 = /*#__PURE__*/web.template(`<div><div><p></p><span></span><div></div><div>`);
+const _tmpl$$m = /*#__PURE__*/template(`<div tabindex=0>`),
+  _tmpl$2$9 = /*#__PURE__*/template(`<div><div><p></p><span></span><div></div><div>`);
 const KeyItem = props => {
   const code = () => store.hotkeys[props.operateName][props.i];
   const del = () => delHotkeys(code());
@@ -11952,17 +14609,17 @@ const KeyItem = props => {
   return (() => {
     const _el$ = _tmpl$$m();
     _el$.addEventListener("blur", () => code() || del());
-    web.use(ref => code() || setTimeout(() => ref.focus()), _el$);
+    use(ref => code() || setTimeout(() => ref.focus()), _el$);
     _el$.addEventListener("keydown", handleKeyDown);
-    web.insert(_el$, () => keyboardCodeToText(code()), null);
-    web.insert(_el$, web.createComponent(MdClose, {
+    insert(_el$, () => keyboardCodeToText(code()), null);
+    insert(_el$, solidJs.createComponent(MdClose, {
       "on:click": del
     }), null);
-    web.effect(() => web.className(_el$, modules_c21c94f2$1.hotkeysItem));
+    solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.hotkeysItem));
     return _el$;
   })();
 };
-const SettingHotkeys = () => web.createComponent(solidJs.For, {
+const SettingHotkeys = () => solidJs.createComponent(solidJs.For, {
   get each() {
     return Object.entries(store.hotkeys);
   },
@@ -11973,32 +14630,32 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
       _el$5 = _el$4.nextSibling,
       _el$6 = _el$5.nextSibling,
       _el$7 = _el$6.nextSibling;
-    web.insert(_el$4, () => t(`hotkeys.${name}`) || name);
+    insert(_el$4, () => t(`hotkeys.${name}`) || name);
     _el$5.style.setProperty("flex-grow", "1");
     _el$6.addEventListener("click", () => setHotkeys(name, store.hotkeys[name].length, ''));
-    web.insert(_el$6, web.createComponent(MdAdd, {}));
+    insert(_el$6, solidJs.createComponent(MdAdd, {}));
     _el$7.addEventListener("click", () => {
       const newKeys = defaultHotkeys[name] ?? [];
       newKeys.forEach(delHotkeys);
       setHotkeys(name, newKeys);
     });
-    web.insert(_el$7, web.createComponent(MdRefresh, {}));
-    web.insert(_el$2, web.createComponent(solidJs.Index, {
+    insert(_el$7, solidJs.createComponent(MdRefresh, {}));
+    insert(_el$2, solidJs.createComponent(solidJs.Index, {
       each: keys,
-      children: (_, i) => web.createComponent(KeyItem, {
+      children: (_, i) => solidJs.createComponent(KeyItem, {
         operateName: name,
         i: i
       })
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.hotkeys,
         _v$2 = modules_c21c94f2$1.hotkeysHeader,
         _v$3 = t('setting.hotkeys.add'),
         _v$4 = t('setting.hotkeys.restore');
-      _v$ !== _p$._v$ && web.className(_el$2, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.className(_el$3, _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$6, "title", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$7, "title", _p$._v$4 = _v$4);
+      _v$ !== _p$._v$ && className(_el$2, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && className(_el$3, _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$6, "title", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$7, "title", _p$._v$4 = _v$4);
       return _p$;
     }, {
       _v$: undefined,
@@ -12010,15 +14667,15 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
   })()
 });
 
-const _tmpl$$l = /*#__PURE__*/web.template(`<select>`),
-  _tmpl$2$8 = /*#__PURE__*/web.template(`<option>`);
+const _tmpl$$l = /*#__PURE__*/template(`<select>`),
+  _tmpl$2$8 = /*#__PURE__*/template(`<option>`);
 /** 选择器式菜单项 */
 const SettingsItemSelect = props => {
   let ref;
   solidJs.createEffect(() => {
     ref.value = props.options?.some(([val]) => val === props.value) ? props.value : '';
   });
-  return web.createComponent(SettingsItem, {
+  return solidJs.createComponent(SettingsItem, {
     get name() {
       return props.name;
     },
@@ -12032,20 +14689,20 @@ const SettingsItemSelect = props => {
       const _el$ = _tmpl$$l();
       _el$.addEventListener("change", e => props.onChange(e.target.value));
       const _ref$ = ref;
-      typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
+      typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
       _el$.addEventListener("click", () => props.onClick?.());
-      web.insert(_el$, web.createComponent(solidJs.For, {
+      insert(_el$, solidJs.createComponent(solidJs.For, {
         get each() {
           return props.options;
         },
         children: ([val, label]) => (() => {
           const _el$2 = _tmpl$2$8();
           _el$2.value = val;
-          web.insert(_el$2, label ?? val);
+          insert(_el$2, label ?? val);
           return _el$2;
         })()
       }));
-      web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemSelect));
+      solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.SettingsItemSelect));
       return _el$;
     }
   });
@@ -12378,20 +15035,20 @@ const translatorOptions = solidJs.createRoot(() => {
   return options;
 });
 
-const _tmpl$$k = /*#__PURE__*/web.template(`<div><div>`);
+const _tmpl$$k = /*#__PURE__*/template(`<div><div>`);
 
 /** 带有动画过渡的切换显示设置项 */
 const SettingsShowItem = props => (() => {
   const _el$ = _tmpl$$k(),
     _el$2 = _el$.firstChild;
-  web.insert(_el$2, () => props.children);
-  web.effect(_p$ => {
+  insert(_el$2, () => props.children);
+  solidJs.createRenderEffect(_p$ => {
     const _v$ = modules_c21c94f2$1.SettingsShowItem,
       _v$2 = props.when ? '1fr' : '0fr',
       _v$3 = modules_c21c94f2$1.SettingsShowItemBody;
-    _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+    _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
     _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("grid-template-rows", _v$2) : _el$.style.removeProperty("grid-template-rows"));
-    _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
+    _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
     return _p$;
   }, {
     _v$: undefined,
@@ -12401,8 +15058,8 @@ const SettingsShowItem = props => (() => {
   return _el$;
 })();
 
-const _tmpl$$j = /*#__PURE__*/web.template(`<blockquote>`),
-  _tmpl$2$7 = /*#__PURE__*/web.template(`<input type=url>`);
+const _tmpl$$j = /*#__PURE__*/template(`<blockquote>`),
+  _tmpl$2$7 = /*#__PURE__*/template(`<input type=url>`);
 const SettingTranslation = () => {
   const isTranslationEnable = solidJs.createMemo(() => store.option.translation.server !== 'disable' && translatorOptions().length > 0);
 
@@ -12411,7 +15068,7 @@ const SettingTranslation = () => {
 
   /** 是否正在翻译当前页以后的全部图片 */
   const isTranslationAfterCurrent = solidJs.createMemo(() => isTranslationEnable() && store.imgList.slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
-  return [web.createComponent(SettingsItemSelect, {
+  return [solidJs.createComponent(SettingsItemSelect, {
     get name() {
       return t('setting.translation.server');
     },
@@ -12424,21 +15081,21 @@ const SettingTranslation = () => {
     get onChange() {
       return createStateSetFn('translation.server');
     }
-  }), web.createComponent(SettingsShowItem, {
+  }), solidJs.createComponent(SettingsShowItem, {
     get when() {
       return store.option.translation.server === 'cotrans';
     },
     get children() {
       const _el$ = _tmpl$$j();
-      web.effect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
+      solidJs.createRenderEffect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
       return _el$;
     }
-  }), web.createComponent(SettingsShowItem, {
+  }), solidJs.createComponent(SettingsShowItem, {
     get when() {
       return store.option.translation.server !== 'disable';
     },
     get children() {
-      return [web.createComponent(SettingsItemSelect, {
+      return [solidJs.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.detection_resolution');
         },
@@ -12449,7 +15106,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.size');
         }
-      }), web.createComponent(SettingsItemSelect, {
+      }), solidJs.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.text_detector');
         },
@@ -12460,7 +15117,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.detector');
         }
-      }), web.createComponent(SettingsItemSelect, {
+      }), solidJs.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.translator');
         },
@@ -12481,7 +15138,7 @@ const SettingTranslation = () => {
             state.option.translation.server = 'selfhosted';
           });
         }
-      }), web.createComponent(SettingsItemSelect, {
+      }), solidJs.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.direction');
         },
@@ -12494,7 +15151,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.direction');
         }
-      }), web.createComponent(SettingsItemSelect, {
+      }), solidJs.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.target_language');
         },
@@ -12505,7 +15162,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.targetLanguage');
         }
-      }), web.createComponent(SettingsItemSwitch, {
+      }), solidJs.createComponent(SettingsItemSwitch, {
         get name() {
           return t('setting.translation.options.forceRetry');
         },
@@ -12515,12 +15172,12 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.forceRetry');
         }
-      }), web.createComponent(solidJs.Show, {
+      }), solidJs.createComponent(solidJs.Show, {
         get when() {
           return store.option.translation.server === 'selfhosted';
         },
         get children() {
-          return [web.createComponent(SettingsItemSwitch, {
+          return [solidJs.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.translate_all_img');
             },
@@ -12530,7 +15187,7 @@ const SettingTranslation = () => {
             onChange: () => {
               setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll());
             }
-          }), web.createComponent(SettingsItemSwitch, {
+          }), solidJs.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.translate_after_current');
             },
@@ -12540,7 +15197,7 @@ const SettingTranslation = () => {
             onChange: () => {
               setImgTranslationEnbale(store.pageList.slice(store.activePageIndex).flat(), !isTranslationAfterCurrent());
             }
-          }), web.createComponent(SettingsItemSwitch, {
+          }), solidJs.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.options.localUrl');
             },
@@ -12552,7 +15209,7 @@ const SettingTranslation = () => {
                 draftOption.translation.localUrl = val ? '' : undefined;
               });
             }
-          }), web.createComponent(solidJs.Show, {
+          }), solidJs.createComponent(solidJs.Show, {
             get when() {
               return store.option.translation.localUrl !== undefined;
             },
@@ -12565,8 +15222,8 @@ const SettingTranslation = () => {
                   draftOption.translation.localUrl = url;
                 });
               });
-              web.effect(() => web.className(_el$2, modules_c21c94f2$1.SettingsItem));
-              web.effect(() => _el$2.value = store.option.translation.localUrl);
+              solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.SettingsItem));
+              solidJs.createRenderEffect(() => _el$2.value = store.option.translation.localUrl);
               return _el$2;
             }
           })];
@@ -12576,7 +15233,7 @@ const SettingTranslation = () => {
   })];
 };
 
-const _tmpl$$i = /*#__PURE__*/web.template(`<div><span contenteditable data-only-number></span><span>`);
+const _tmpl$$i = /*#__PURE__*/template(`<div><span contenteditable data-only-number></span><span>`);
 /** 数值输入框菜单项 */
 const SettingsItemNumber = props => {
   const handleInput = e => {
@@ -12590,7 +15247,7 @@ const SettingsItemNumber = props => {
         return props.onChange(+e.target.textContent - (props.step ?? 1));
     }
   };
-  return web.createComponent(SettingsItem, {
+  return solidJs.createComponent(SettingsItem, {
     get name() {
       return props.name;
     },
@@ -12614,17 +15271,17 @@ const SettingsItemNumber = props => {
       });
       _el$2.addEventListener("input", handleInput);
       _el$2.addEventListener("keydown", handleKeyDown);
-      web.insert(_el$2, () => props.value);
+      insert(_el$2, () => props.value);
       _el$3.style.setProperty("margin-left", ".1em");
-      web.insert(_el$3, () => props.suffix ?? '');
-      web.effect(() => (props.suffix ? '.3em' : '.6em') != null ? _el$.style.setProperty("margin-right", props.suffix ? '.3em' : '.6em') : _el$.style.removeProperty("margin-right"));
+      insert(_el$3, () => props.suffix ?? '');
+      solidJs.createRenderEffect(() => (props.suffix ? '.3em' : '.6em') != null ? _el$.style.setProperty("margin-right", props.suffix ? '.3em' : '.6em') : _el$.style.removeProperty("margin-right"));
       return _el$;
     }
   });
 };
 
-const _tmpl$$h = /*#__PURE__*/web.template(`<div>`),
-  _tmpl$2$6 = /*#__PURE__*/web.template(`<div role=button tabindex=-1>`);
+const _tmpl$$h = /*#__PURE__*/template(`<div>`),
+  _tmpl$2$6 = /*#__PURE__*/template(`<div role=button tabindex=-1>`);
 
 const areaArrayMap = {
   left_right: [['prev', 'menu', 'next'], ['PREV', 'MENU', 'NEXT'], ['prev', 'menu', 'next']],
@@ -12641,32 +15298,32 @@ const TouchArea = () => {
   return (() => {
     const _el$ = _tmpl$$h();
     const _ref$ = bindRef('touchArea');
-    typeof _ref$ === "function" && web.use(_ref$, _el$);
-    web.insert(_el$, web.createComponent(solidJs.For, {
+    typeof _ref$ === "function" && use(_ref$, _el$);
+    insert(_el$, solidJs.createComponent(solidJs.For, {
       get each() {
         return areaArrayMap[areaType()];
       },
-      children: rows => web.createComponent(solidJs.For, {
+      children: rows => solidJs.createComponent(solidJs.For, {
         each: rows,
         children: area => (() => {
           const _el$2 = _tmpl$2$6();
-          web.setAttribute(_el$2, "data-area", area);
-          web.effect(() => web.className(_el$2, modules_c21c94f2$1.touchArea));
+          setAttribute(_el$2, "data-area", area);
+          solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.touchArea));
           return _el$2;
         })()
       })
     }));
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.touchAreaRoot,
         _v$2 = dir(),
         _v$3 = boolDataVal(store.show.touchArea),
         _v$4 = areaType(),
         _v$5 = boolDataVal(store.option.clickPageTurn.enabled && !store.option.scrollMode);
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "dir", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-show", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-area", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-turn-page", _p$._v$5 = _v$5);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "dir", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-show", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-area", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-turn-page", _p$._v$5 = _v$5);
       return _p$;
     }, {
       _v$: undefined,
@@ -12679,24 +15336,24 @@ const TouchArea = () => {
   })();
 };
 
-const _tmpl$$g = /*#__PURE__*/web.template(`<button type=button>`),
-  _tmpl$2$5 = /*#__PURE__*/web.template(`<input type=color>`);
+const _tmpl$$g = /*#__PURE__*/template(`<button type=button>`),
+  _tmpl$2$5 = /*#__PURE__*/template(`<input type=color>`);
 /** 默认菜单项 */
-const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
+const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => solidJs.createComponent(SettingsItem, {
   get name() {
-    return web.memo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
+    return solidJs.createMemo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
   },
   get children() {
     const _el$ = _tmpl$$g();
     _el$.addEventListener("click", switchDir);
-    web.insert(_el$, (() => {
-      const _c$ = web.memo(() => store.option.dir === 'rtl');
-      return () => _c$() ? web.createComponent(MdOutlineFormatTextdirectionRToL, {}) : web.createComponent(MdOutlineFormatTextdirectionLToR, {});
+    insert(_el$, (() => {
+      const _c$ = solidJs.createMemo(() => store.option.dir === 'rtl');
+      return () => _c$() ? solidJs.createComponent(MdOutlineFormatTextdirectionRToL, {}) : solidJs.createComponent(MdOutlineFormatTextdirectionLToR, {});
     })());
-    web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
+    solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
     return _el$;
   }
-})], [t('setting.option.paragraph_scrollbar'), () => [web.createComponent(SettingsItemSelect, {
+})], [t('setting.option.paragraph_scrollbar'), () => [solidJs.createComponent(SettingsItemSelect, {
   get name() {
     return t('setting.option.scrollbar_position');
   },
@@ -12709,17 +15366,17 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('scrollbar.position');
   }
-}), web.createComponent(SettingsShowItem, {
+}), solidJs.createComponent(SettingsShowItem, {
   get when() {
     return store.option.scrollbar.position !== 'hidden';
   },
   get children() {
-    return [web.createComponent(solidJs.Show, {
+    return [solidJs.createComponent(solidJs.Show, {
       get when() {
         return !store.isMobile;
       },
       get children() {
-        return web.createComponent(SettingsItemSwitch, {
+        return solidJs.createComponent(SettingsItemSwitch, {
           get name() {
             return t('setting.option.scrollbar_auto_hidden');
           },
@@ -12731,7 +15388,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
           }
         });
       }
-    }), web.createComponent(SettingsItemSwitch, {
+    }), solidJs.createComponent(SettingsItemSwitch, {
       get name() {
         return t('setting.option.scrollbar_show_img_status');
       },
@@ -12741,12 +15398,12 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       get onChange() {
         return createStateSetFn('scrollbar.showImgStatus');
       }
-    }), web.createComponent(solidJs.Show, {
+    }), solidJs.createComponent(solidJs.Show, {
       get when() {
         return store.option.scrollMode;
       },
       get children() {
-        return web.createComponent(SettingsItemSwitch, {
+        return solidJs.createComponent(SettingsItemSwitch, {
           get name() {
             return t('setting.option.scrollbar_easy_scroll');
           },
@@ -12760,7 +15417,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       }
     })];
   }
-})]], [t('setting.option.paragraph_operation'), () => [web.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_operation'), () => [solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.jump_to_next_chapter');
   },
@@ -12770,7 +15427,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('jumpToNext');
   }
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.show_clickable_area');
   },
@@ -12778,7 +15435,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return store.show.touchArea;
   },
   onChange: () => _setState('show', 'touchArea', !store.show.touchArea)
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.click_page_turn_enabled');
   },
@@ -12788,12 +15445,12 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('clickPageTurn.enabled');
   }
-}), web.createComponent(SettingsShowItem, {
+}), solidJs.createComponent(SettingsShowItem, {
   get when() {
     return store.option.clickPageTurn.enabled;
   },
   get children() {
-    return [web.createComponent(SettingsItemSelect, {
+    return [solidJs.createComponent(SettingsItemSelect, {
       get name() {
         return t('setting.option.click_page_turn_area');
       },
@@ -12806,7 +15463,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       get onChange() {
         return createStateSetFn('clickPageTurn.area');
       }
-    }), web.createComponent(SettingsItemSwitch, {
+    }), solidJs.createComponent(SettingsItemSwitch, {
       get name() {
         return t('setting.option.click_page_turn_swap_area');
       },
@@ -12818,7 +15475,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       }
     })];
   }
-})]], [t('setting.option.paragraph_display'), () => [web.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_display'), () => [solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.dark_mode');
   },
@@ -12828,7 +15485,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('darkMode');
   }
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.disable_auto_enlarge');
   },
@@ -12838,12 +15495,12 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('disableZoom');
   }
-}), web.createComponent(solidJs.Show, {
+}), solidJs.createComponent(solidJs.Show, {
   get when() {
     return store.option.scrollMode;
   },
   get children() {
-    return [web.createComponent(SettingsItemNumber, {
+    return [solidJs.createComponent(SettingsItemNumber, {
       get name() {
         return t('setting.option.scroll_mode_img_scale');
       },
@@ -12857,7 +15514,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       get value() {
         return Math.round(store.option.scrollModeImgScale * 100);
       }
-    }), web.createComponent(SettingsItemNumber, {
+    }), solidJs.createComponent(SettingsItemNumber, {
       get name() {
         return t('setting.option.scroll_mode_img_spacing');
       },
@@ -12873,7 +15530,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       }
     })];
   }
-})]], [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [t('setting.option.paragraph_translation'), SettingTranslation, true], [t('setting.option.paragraph_other'), () => [web.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [t('setting.option.paragraph_translation'), SettingTranslation, true], [t('setting.option.paragraph_other'), () => [solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.always_load_all_img');
   },
@@ -12886,7 +15543,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     });
     setState(updateImgLoadType);
   }
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.first_page_fill');
   },
@@ -12896,7 +15553,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('firstPageFill');
   }
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.show_comments');
   },
@@ -12906,7 +15563,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('showComment');
   }
-}), web.createComponent(SettingsItemSwitch, {
+}), solidJs.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.swap_page_turn_key');
   },
@@ -12916,7 +15573,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get onChange() {
     return createStateSetFn('swapPageTurnKey');
   }
-}), web.createComponent(SettingsItemNumber, {
+}), solidJs.createComponent(SettingsItemNumber, {
   get name() {
     return t('setting.option.preload_page_num');
   },
@@ -12930,7 +15587,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   get value() {
     return store.option.preloadPageNum;
   }
-}), web.createComponent(SettingsItem, {
+}), solidJs.createComponent(SettingsItem, {
   get name() {
     return t('setting.option.background_color');
   },
@@ -12946,10 +15603,10 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
         if (draftOption.customBackground) draftOption.darkMode = needDarkMode(draftOption.customBackground);
       });
     }));
-    web.effect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
+    solidJs.createRenderEffect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
     return _el$2;
   }
-}), web.createComponent(SettingsItemSelect, {
+}), solidJs.createComponent(SettingsItemSelect, {
   get name() {
     return t('setting.language');
   },
@@ -12971,44 +15628,44 @@ const playAnimation = e => e?.getAnimations().forEach(animation => {
   animation.play();
 });
 
-const _tmpl$$f = /*#__PURE__*/web.template(`<div>`),
-  _tmpl$2$4 = /*#__PURE__*/web.template(`<div><div></div><div>`),
-  _tmpl$3$3 = /*#__PURE__*/web.template(`<hr>`);
+const _tmpl$$f = /*#__PURE__*/template(`<div>`),
+  _tmpl$2$4 = /*#__PURE__*/template(`<div><div></div><div>`),
+  _tmpl$3$3 = /*#__PURE__*/template(`<hr>`);
 
 /** 菜单面板 */
 const SettingPanel = () => {
   const settingList = solidJs.createMemo(() => store.prop.editSettingList(defaultSettingList()));
   return (() => {
     const _el$ = _tmpl$$f();
-    web.addEventListener(_el$, "wheel", stopPropagation);
-    web.addEventListener(_el$, "scroll", stopPropagation);
+    addEventListener(_el$, "wheel", stopPropagation);
+    addEventListener(_el$, "scroll", stopPropagation);
     _el$.addEventListener("click", stopPropagation);
-    web.insert(_el$, web.createComponent(solidJs.For, {
+    insert(_el$, solidJs.createComponent(solidJs.For, {
       get each() {
         return settingList();
       },
       children: ([name, SettingItem, hidden], i) => {
         const [show, setShwo] = solidJs.createSignal(!hidden);
-        return [web.memo((() => {
-          const _c$ = web.memo(() => !!i());
+        return [solidJs.createMemo((() => {
+          const _c$ = solidJs.createMemo(() => !!i());
           return () => _c$() ? _tmpl$3$3() : null;
         })()), (() => {
           const _el$2 = _tmpl$2$4(),
             _el$3 = _el$2.firstChild,
             _el$4 = _el$3.nextSibling;
           _el$3.addEventListener("click", () => setShwo(prev => !prev));
-          web.insert(_el$3, name, null);
-          web.insert(_el$3, () => show() ? null : ' …', null);
-          web.insert(_el$4, web.createComponent(SettingItem, {}));
-          web.effect(_p$ => {
+          insert(_el$3, name, null);
+          insert(_el$3, () => show() ? null : ' …', null);
+          insert(_el$4, solidJs.createComponent(SettingItem, {}));
+          solidJs.createRenderEffect(_p$ => {
             const _v$3 = modules_c21c94f2$1.SettingBlock,
               _v$4 = show(),
               _v$5 = modules_c21c94f2$1.SettingBlockSubtitle,
               _v$6 = modules_c21c94f2$1.SettingBlockBody;
-            _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
-            _v$4 !== _p$._v$4 && web.setAttribute(_el$2, "data-show", _p$._v$4 = _v$4);
-            _v$5 !== _p$._v$5 && web.className(_el$3, _p$._v$5 = _v$5);
-            _v$6 !== _p$._v$6 && web.className(_el$4, _p$._v$6 = _v$6);
+            _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
+            _v$4 !== _p$._v$4 && setAttribute(_el$2, "data-show", _p$._v$4 = _v$4);
+            _v$5 !== _p$._v$5 && className(_el$3, _p$._v$5 = _v$5);
+            _v$6 !== _p$._v$6 && className(_el$4, _p$._v$6 = _v$6);
             return _p$;
           }, {
             _v$3: undefined,
@@ -13020,10 +15677,10 @@ const SettingPanel = () => {
         })()];
       }
     }));
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = `${modules_c21c94f2$1.SettingPanel} ${modules_c21c94f2$1.beautifyScrollbar}`,
         _v$2 = lang() !== 'zh' ? '20em' : '15em';
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("width", _v$2) : _el$.style.removeProperty("width"));
       return _p$;
     }, {
@@ -13034,8 +15691,8 @@ const SettingPanel = () => {
   })();
 };
 
-const _tmpl$$e = /*#__PURE__*/web.template(`<div>`),
-  _tmpl$2$3 = /*#__PURE__*/web.template(`<div role=button tabindex=-1>`);
+const _tmpl$$e = /*#__PURE__*/template(`<div>`),
+  _tmpl$2$3 = /*#__PURE__*/template(`<div role=button tabindex=-1>`);
 /** 工具栏按钮分隔栏 */
 const buttonListDivider = () => (() => {
   const _el$ = _tmpl$$e();
@@ -13046,20 +15703,20 @@ const buttonListDivider = () => (() => {
 /** 工具栏的默认按钮列表 */
 const defaultButtonList = [
 // 单双页模式
-() => web.createComponent(IconButton, {
+() => solidJs.createComponent(IconButton, {
   get tip() {
-    return web.memo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
+    return solidJs.createMemo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
   },
   get hidden() {
     return store.isMobile || store.option.scrollMode;
   },
   onClick: switchOnePageMode,
   get children() {
-    return web.memo(() => !!store.option.onePageMode)() ? web.createComponent(MdLooksOne, {}) : web.createComponent(MdLooksTwo, {});
+    return solidJs.createMemo(() => !!store.option.onePageMode)() ? solidJs.createComponent(MdLooksOne, {}) : solidJs.createComponent(MdLooksTwo, {});
   }
 }),
 // 卷轴模式
-() => web.createComponent(IconButton, {
+() => solidJs.createComponent(IconButton, {
   get tip() {
     return t('button.scroll_mode');
   },
@@ -13068,11 +15725,11 @@ const defaultButtonList = [
   },
   onClick: switchScrollMode,
   get children() {
-    return web.createComponent(MdViewDay, {});
+    return solidJs.createComponent(MdViewDay, {});
   }
 }),
 // 页面填充
-() => web.createComponent(IconButton, {
+() => solidJs.createComponent(IconButton, {
   get tip() {
     return t('button.page_fill');
   },
@@ -13084,11 +15741,11 @@ const defaultButtonList = [
   },
   onClick: switchFillEffect,
   get children() {
-    return web.createComponent(MdQueue, {});
+    return solidJs.createComponent(MdQueue, {});
   }
 }),
 // 网格模式
-() => web.createComponent(IconButton, {
+() => solidJs.createComponent(IconButton, {
   get tip() {
     return t('button.grid_mode');
   },
@@ -13097,11 +15754,11 @@ const defaultButtonList = [
   },
   onClick: switchGridMode,
   get children() {
-    return web.createComponent(MdGrid, {});
+    return solidJs.createComponent(MdGrid, {});
   }
 }), buttonListDivider,
 // 放大模式
-() => web.createComponent(IconButton, {
+() => solidJs.createComponent(IconButton, {
   get tip() {
     return t('button.zoom_in');
   },
@@ -13114,16 +15771,16 @@ const defaultButtonList = [
     return zoomScrollModeImg(1, true);
   },
   get children() {
-    return web.createComponent(MdSearch, {});
+    return solidJs.createComponent(MdSearch, {});
   }
 }),
 // 翻译设置
 () => {
   /** 当前显示的图片是否正在翻译 */
   const isTranslatingImage = solidJs.createMemo(() => activePage().some(i => store.imgList[i]?.translationType && store.imgList[i].translationType !== 'hide'));
-  return web.createComponent(IconButton, {
+  return solidJs.createComponent(IconButton, {
     get tip() {
-      return web.memo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
+      return solidJs.createMemo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
     },
     get enabled() {
       return isTranslatingImage();
@@ -13133,7 +15790,7 @@ const defaultButtonList = [
     },
     onClick: () => setImgTranslationEnbale(activePage(), !isTranslatingImage()),
     get children() {
-      return web.createComponent(MdTranslate, {});
+      return solidJs.createComponent(MdTranslate, {});
     }
   });
 },
@@ -13145,13 +15802,13 @@ const defaultButtonList = [
     _setState('show', 'toolbar', _showPanel);
     setShowPanel(_showPanel);
   };
-  const popper = solidJs.createMemo(() => [web.createComponent(SettingPanel, {}), (() => {
+  const popper = solidJs.createMemo(() => [solidJs.createComponent(SettingPanel, {}), (() => {
     const _el$2 = _tmpl$2$3();
     _el$2.addEventListener("click", handleClick);
-    web.effect(() => web.className(_el$2, modules_c21c94f2$1.closeCover));
+    solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.closeCover));
     return _el$2;
   })()]);
-  return web.createComponent(IconButton, {
+  return solidJs.createComponent(IconButton, {
     get tip() {
       return t('button.setting');
     },
@@ -13166,15 +15823,15 @@ const defaultButtonList = [
       return showPanel() && modules_c21c94f2$1.SettingPanelPopper;
     },
     get popper() {
-      return web.memo(() => !!showPanel())() && popper();
+      return solidJs.createMemo(() => !!showPanel())() && popper();
     },
     get children() {
-      return web.createComponent(MdSettings, {});
+      return solidJs.createComponent(MdSettings, {});
     }
   });
 }];
 
-const _tmpl$$d = /*#__PURE__*/web.template(`<div role=toolbar><div><div>`);
+const _tmpl$$d = /*#__PURE__*/template(`<div role=toolbar><div><div>`);
 
 /** 左侧工具栏 */
 const Toolbar = () => {
@@ -13184,25 +15841,25 @@ const Toolbar = () => {
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
     _el$2.addEventListener("click", focus);
-    web.insert(_el$2, web.createComponent(solidJs.For, {
+    insert(_el$2, solidJs.createComponent(solidJs.For, {
       get each() {
         return store.prop.editButtonList(defaultButtonList);
       },
-      children: ButtonItem => web.createComponent(ButtonItem, {})
+      children: ButtonItem => solidJs.createComponent(ButtonItem, {})
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.toolbar,
         _v$2 = boolDataVal(store.show.toolbar),
         _v$3 = boolDataVal(store.isMobile && store.gridMode),
         _v$4 = store.isDragMode ? 'none' : undefined,
         _v$5 = modules_c21c94f2$1.toolbarPanel,
         _v$6 = modules_c21c94f2$1.toolbarBg;
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-close", _p$._v$3 = _v$3);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-close", _p$._v$3 = _v$3);
       _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("pointer-events", _v$4) : _el$.style.removeProperty("pointer-events"));
-      _v$5 !== _p$._v$5 && web.className(_el$2, _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.className(_el$3, _p$._v$6 = _v$6);
+      _v$5 !== _p$._v$5 && className(_el$2, _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && className(_el$3, _p$._v$6 = _v$6);
       return _p$;
     }, {
       _v$: undefined,
@@ -13216,24 +15873,24 @@ const Toolbar = () => {
   })();
 };
 
-const _tmpl$$c = /*#__PURE__*/web.template(`<div>`);
+const _tmpl$$c = /*#__PURE__*/template(`<div>`);
 
 /** 显示对应图片加载情况的元素 */
 const ScrollbarImg = props => {
   const img = solidJs.createMemo(() => store.imgList[props.index]);
   return (() => {
     const _el$ = _tmpl$$c();
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbarPage,
         _v$2 = props.index,
         _v$3 = img()?.loadType,
         _v$4 = boolDataVal(!img()?.src),
         _v$5 = img()?.translationType;
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-index", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-null", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-translation-type", _p$._v$5 = _v$5);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-index", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-null", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-translation-type", _p$._v$5 = _v$5);
       return _p$;
     }, {
       _v$: undefined,
@@ -13254,25 +15911,25 @@ const ScrollbarPage = props => {
   });
   return (() => {
     const _el$2 = _tmpl$$c();
-    web.insert(_el$2, web.createComponent(ScrollbarImg, {
+    insert(_el$2, solidJs.createComponent(ScrollbarImg, {
       get index() {
         return props.a !== -1 ? props.a : props.b;
       }
     }), null);
-    web.insert(_el$2, (() => {
-      const _c$ = web.memo(() => !!props.b);
-      return () => _c$() ? web.createComponent(ScrollbarImg, {
+    insert(_el$2, (() => {
+      const _c$ = solidJs.createMemo(() => !!props.b);
+      return () => _c$() ? solidJs.createComponent(ScrollbarImg, {
         get index() {
           return props.b !== -1 ? props.b : props.a;
         }
       }) : null;
     })(), null);
-    web.effect(() => flexBasis() != null ? _el$2.style.setProperty("flex-basis", flexBasis()) : _el$2.style.removeProperty("flex-basis"));
+    solidJs.createRenderEffect(() => flexBasis() != null ? _el$2.style.setProperty("flex-basis", flexBasis()) : _el$2.style.removeProperty("flex-basis"));
     return _el$2;
   })();
 };
 
-const _tmpl$$b = /*#__PURE__*/web.template(`<div role=scrollbar tabindex=-1><div></div><div>`);
+const _tmpl$$b = /*#__PURE__*/template(`<div role=scrollbar tabindex=-1><div></div><div>`);
 
 /** 滚动条 */
 const Scrollbar = () => {
@@ -13317,25 +15974,25 @@ const Scrollbar = () => {
       _el$3 = _el$2.nextSibling;
     _el$.addEventListener("wheel", handleWheel);
     const _ref$ = bindRef('scrollbar');
-    typeof _ref$ === "function" && web.use(_ref$, _el$);
-    web.insert(_el$3, showTip);
-    web.insert(_el$, web.createComponent(solidJs.Show, {
+    typeof _ref$ === "function" && use(_ref$, _el$);
+    insert(_el$3, showTip);
+    insert(_el$, solidJs.createComponent(solidJs.Show, {
       get when() {
         return store.option.scrollbar.showImgStatus;
       },
       get children() {
-        return web.createComponent(solidJs.For, {
+        return solidJs.createComponent(solidJs.For, {
           get each() {
             return store.pageList;
           },
-          children: ([a, b]) => web.createComponent(ScrollbarPage, {
+          children: ([a, b]) => solidJs.createComponent(ScrollbarPage, {
             a: a,
             b: b
           })
         });
       }
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbar,
         _v$2 = penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
         _v$3 = `${dragMidpoint()}px`,
@@ -13353,21 +16010,21 @@ const Scrollbar = () => {
         _v$13 = height(),
         _v$14 = top(),
         _v$15 = modules_c21c94f2$1.scrollbarPoper;
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("pointer-events", _v$2) : _el$.style.removeProperty("pointer-events"));
       _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$.style.setProperty("--drag-midpoint", _v$3) : _el$.style.removeProperty("--drag-midpoint"));
       _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("--scroll-length", _v$4) : _el$.style.removeProperty("--scroll-length"));
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "aria-controls", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "aria-valuenow", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-auto-hidden", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-force-show", _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && web.setAttribute(_el$, "data-dir", _p$._v$9 = _v$9);
-      _v$10 !== _p$._v$10 && web.setAttribute(_el$, "data-position", _p$._v$10 = _v$10);
-      _v$11 !== _p$._v$11 && web.className(_el$2, _p$._v$11 = _v$11);
-      _p$._v$12 = web.classList(_el$2, _v$12, _p$._v$12);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "aria-controls", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && setAttribute(_el$, "aria-valuenow", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-auto-hidden", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && setAttribute(_el$, "data-force-show", _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && setAttribute(_el$, "data-dir", _p$._v$9 = _v$9);
+      _v$10 !== _p$._v$10 && setAttribute(_el$, "data-position", _p$._v$10 = _v$10);
+      _v$11 !== _p$._v$11 && className(_el$2, _p$._v$11 = _v$11);
+      _p$._v$12 = classList(_el$2, _v$12, _p$._v$12);
       _v$13 !== _p$._v$13 && ((_p$._v$13 = _v$13) != null ? _el$2.style.setProperty("--height-ratio", _v$13) : _el$2.style.removeProperty("--height-ratio"));
       _v$14 !== _p$._v$14 && ((_p$._v$14 = _v$14) != null ? _el$2.style.setProperty("--top-ratio", _v$14) : _el$2.style.removeProperty("--top-ratio"));
-      _v$15 !== _p$._v$15 && web.className(_el$3, _p$._v$15 = _v$15);
+      _v$15 !== _p$._v$15 && className(_el$3, _p$._v$15 = _v$15);
       return _p$;
     }, {
       _v$: undefined,
@@ -13390,9 +16047,9 @@ const Scrollbar = () => {
   })();
 };
 
-const _tmpl$$a = /*#__PURE__*/web.template(`<div>`),
-  _tmpl$2$2 = /*#__PURE__*/web.template(`<div role=button tabindex=-1><p></p><button type=button></button><button type=button data-is-end></button><button type=button>`),
-  _tmpl$3$2 = /*#__PURE__*/web.template(`<p>`);
+const _tmpl$$a = /*#__PURE__*/template(`<div>`),
+  _tmpl$2$2 = /*#__PURE__*/template(`<div role=button tabindex=-1><p></p><button type=button></button><button type=button data-is-end></button><button type=button>`),
+  _tmpl$3$2 = /*#__PURE__*/template(`<p>`);
 let delayTypeTimer = 0;
 const EndPage = () => {
   const handleClick = e => {
@@ -13441,43 +16098,43 @@ const EndPage = () => {
       _el$4 = _el$3.nextSibling,
       _el$5 = _el$4.nextSibling;
     const _ref$ = ref;
-    typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
+    typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
     _el$.addEventListener("click", handleClick);
-    web.insert(_el$2, tip);
+    insert(_el$2, tip);
     const _ref$2 = bindRef('prev');
-    typeof _ref$2 === "function" && web.use(_ref$2, _el$3);
+    typeof _ref$2 === "function" && use(_ref$2, _el$3);
     _el$3.addEventListener("click", () => store.prop.Prev?.());
-    web.insert(_el$3, () => t('end_page.prev_button'));
+    insert(_el$3, () => t('end_page.prev_button'));
     const _ref$3 = bindRef('exit');
-    typeof _ref$3 === "function" && web.use(_ref$3, _el$4);
+    typeof _ref$3 === "function" && use(_ref$3, _el$4);
     _el$4.addEventListener("click", () => store.prop.Exit?.(store.show.endPage === 'end'));
-    web.insert(_el$4, () => t('button.exit'));
+    insert(_el$4, () => t('button.exit'));
     const _ref$4 = bindRef('next');
-    typeof _ref$4 === "function" && web.use(_ref$4, _el$5);
+    typeof _ref$4 === "function" && use(_ref$4, _el$5);
     _el$5.addEventListener("click", () => store.prop.Next?.());
-    web.insert(_el$5, () => t('end_page.next_button'));
-    web.insert(_el$, web.createComponent(solidJs.Show, {
+    insert(_el$5, () => t('end_page.next_button'));
+    insert(_el$, solidJs.createComponent(solidJs.Show, {
       get when() {
-        return web.memo(() => !!store.option.showComment)() && delayType() === 'end';
+        return solidJs.createMemo(() => !!store.option.showComment)() && delayType() === 'end';
       },
       get children() {
         const _el$6 = _tmpl$$a();
-        web.addEventListener(_el$6, "wheel", stopPropagation);
-        web.insert(_el$6, web.createComponent(solidJs.For, {
+        addEventListener(_el$6, "wheel", stopPropagation);
+        insert(_el$6, solidJs.createComponent(solidJs.For, {
           get each() {
             return store.commentList;
           },
           children: comment => (() => {
             const _el$7 = _tmpl$3$2();
-            web.insert(_el$7, comment);
+            insert(_el$7, comment);
             return _el$7;
           })()
         }));
-        web.effect(() => web.className(_el$6, `${modules_c21c94f2$1.comments} ${modules_c21c94f2$1.beautifyScrollbar}`));
+        solidJs.createRenderEffect(() => className(_el$6, `${modules_c21c94f2$1.comments} ${modules_c21c94f2$1.beautifyScrollbar}`));
         return _el$6;
       }
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.endPage,
         _v$2 = store.show.endPage,
         _v$3 = delayType(),
@@ -13491,15 +16148,15 @@ const EndPage = () => {
           [modules_c21c94f2$1.invisible]: !store.prop.Next
         },
         _v$9 = store.show.endPage ? 0 : -1;
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
-      _p$._v$5 = web.classList(_el$3, _v$5, _p$._v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$3, "tabindex", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$4, "tabindex", _p$._v$7 = _v$7);
-      _p$._v$8 = web.classList(_el$5, _v$8, _p$._v$8);
-      _v$9 !== _p$._v$9 && web.setAttribute(_el$5, "tabindex", _p$._v$9 = _v$9);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
+      _p$._v$5 = classList(_el$3, _v$5, _p$._v$5);
+      _v$6 !== _p$._v$6 && setAttribute(_el$3, "tabindex", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$4, "tabindex", _p$._v$7 = _v$7);
+      _p$._v$8 = classList(_el$5, _v$8, _p$._v$8);
+      _v$9 !== _p$._v$9 && setAttribute(_el$5, "tabindex", _p$._v$9 = _v$9);
       return _p$;
     }, {
       _v$: undefined,
@@ -13516,7 +16173,7 @@ const EndPage = () => {
   })();
 };
 
-const _tmpl$$9 = /*#__PURE__*/web.template(`<style type=text/css>`);
+const _tmpl$$9 = /*#__PURE__*/template(`<style type=text/css>`);
 /** 深色模式 */
 const dark = `
 --hover-bg-color: #FFF3;
@@ -13576,7 +16233,7 @@ const CssVar = () => {
       --i18n-touch-area-menu: "${t('touch_area.menu')}";`);
   return (() => {
     const _el$ = _tmpl$$9();
-    web.insert(_el$, () => `.${modules_c21c94f2$1.root} {
+    insert(_el$, () => `.${modules_c21c94f2$1.root} {
       ${store.option.darkMode ? dark : light}
 
       --bg: ${store.option.customBackground ?? (store.option.darkMode ? '#000' : '#fff')};
@@ -13599,7 +16256,7 @@ const createComicImg = url => ({
 const useInit$1 = props => {
   const watchProps = {
     option: state => {
-      state.option = props.option ? assign(state.option, props.option) : JSON.parse(JSON.stringify(defaultOption));
+      state.option = props.option ? assign$1(state.option, props.option) : JSON.parse(JSON.stringify(defaultOption));
     },
     fillEffect: state => {
       state.fillEffect = props.fillEffect ?? {
@@ -13724,7 +16381,7 @@ const useInit$1 = props => {
   focus();
 };
 
-const _tmpl$$8 = /*#__PURE__*/web.template(`<div>`);
+const _tmpl$$8 = /*#__PURE__*/template(`<div>`);
 const MangaStyle = css$1;
 solidJs.enableScheduling();
 /** 漫画组件 */
@@ -13733,19 +16390,20 @@ const Manga = props => {
   solidJs.createEffect(() => props.show && focus());
   return [(() => {
     const _el$ = _tmpl$$8();
-    web.addEventListener(_el$, "wheel", handleWheel);
+    addEventListener(_el$, "wheel", handleWheel);
     const _ref$ = bindRef('root');
-    typeof _ref$ === "function" && web.use(_ref$, _el$);
+    typeof _ref$ === "function" && use(_ref$, _el$);
     _el$.addEventListener("mousedown", handleMouseDown);
     _el$.addEventListener("keydown", handleKeyDown, true);
     _el$.addEventListener("keypress", stopPropagation, true);
     _el$.addEventListener("keyup", stopPropagation, true);
-    web.insert(_el$, web.createComponent(ComicImgFlow, {}), null);
-    web.insert(_el$, web.createComponent(Toolbar, {}), null);
-    web.insert(_el$, web.createComponent(Scrollbar, {}), null);
-    web.insert(_el$, web.createComponent(TouchArea, {}), null);
-    web.insert(_el$, web.createComponent(EndPage, {}), null);
-    web.effect(_p$ => {
+    _el$.addEventListener("click", stopPropagation);
+    insert(_el$, solidJs.createComponent(ComicImgFlow, {}), null);
+    insert(_el$, solidJs.createComponent(Toolbar, {}), null);
+    insert(_el$, solidJs.createComponent(Scrollbar, {}), null);
+    insert(_el$, solidJs.createComponent(TouchArea, {}), null);
+    insert(_el$, solidJs.createComponent(EndPage, {}), null);
+    solidJs.createRenderEffect(_p$ => {
       const _v$ = modules_c21c94f2$1.root,
         _v$2 = {
           [modules_c21c94f2$1.hidden]: props.show === false,
@@ -13754,10 +16412,10 @@ const Manga = props => {
         },
         _v$3 = boolDataVal(store.isMobile),
         _v$4 = boolDataVal(store.option.scrollMode);
-      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
-      _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
-      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-mobile", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-scroll-mode", _p$._v$4 = _v$4);
+      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _p$._v$2 = classList(_el$, _v$2, _p$._v$2);
+      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-mobile", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-scroll-mode", _p$._v$4 = _v$4);
       return _p$;
     }, {
       _v$: undefined,
@@ -13766,10 +16424,10 @@ const Manga = props => {
       _v$4: undefined
     });
     return _el$;
-  })(), web.createComponent(CssVar, {})];
+  })(), solidJs.createComponent(CssVar, {})];
 };
 
-const _tmpl$$7 = /*#__PURE__*/web.template(`<style type=text/css>`);
+const _tmpl$$7 = /*#__PURE__*/template(`<style type=text/css>`);
 let dom$1;
 
 /**
@@ -13808,7 +16466,7 @@ const useManga = async initProps => {
       z-index: 1 !important;
     }
   `);
-  const [props, setProps] = store$2.createStore({
+  const [props, setProps] = createStore({
     imgList: [],
     show: false,
     ...initProps
@@ -13817,13 +16475,13 @@ const useManga = async initProps => {
   // eslint-disable-next-line solid/reactivity
   watchStore([() => props.imgList.length, () => props.show], () => {
     if (!dom$1) {
-      dom$1 = mountComponents('comicRead', () => [web.createComponent(Manga, props), (() => {
+      dom$1 = mountComponents('comicRead', () => [solidJs.createComponent(Manga, props), (() => {
         const _el$ = _tmpl$$7();
-        web.insert(_el$, IconButtonStyle);
+        insert(_el$, IconButtonStyle);
         return _el$;
       })(), (() => {
         const _el$2 = _tmpl$$7();
-        web.insert(_el$2, MangaStyle);
+        insert(_el$2, MangaStyle);
         return _el$2;
       })()]);
       dom$1.style.setProperty('z-index', '2147483647', 'important');
@@ -13870,13 +16528,13 @@ const useManga = async initProps => {
       toast$1.success(t('button.download_completed'));
     };
     const tip = solidJs.createMemo(() => t(statu()) || `${t('button.downloading')} - ${statu()}`);
-    return web.createComponent(IconButton, {
+    return solidJs.createComponent(IconButton, {
       get tip() {
         return tip();
       },
       onClick: handleDownload,
       get children() {
-        return web.createComponent(MdFileDownload, {});
+        return solidJs.createComponent(MdFileDownload, {});
       }
     });
   };
@@ -13887,13 +16545,13 @@ const useManga = async initProps => {
       list.splice(-1, 0, DownloadButton);
       return [...list,
       // 再在最下面添加分隔栏和退出按钮
-      buttonListDivider, () => web.createComponent(IconButton, {
+      buttonListDivider, () => solidJs.createComponent(IconButton, {
         get tip() {
           return t('button.exit');
         },
         onClick: () => props.onExit?.(),
         get children() {
-          return web.createComponent(MdClose, {});
+          return solidJs.createComponent(MdClose, {});
         }
       })];
     }
@@ -13901,40 +16559,40 @@ const useManga = async initProps => {
   return [setProps, props];
 };
 
-const _tmpl$$6 = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03">`);
+const _tmpl$$6 = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03">`);
 const MdMenuBook = ((props = {}) => (() => {
   const _el$ = _tmpl$$6();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$5 = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1m-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79m3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5">`);
+const _tmpl$$5 = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1m-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79m3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5">`);
 const MdImageSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$5();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$4 = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z">`);
+const _tmpl$$4 = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z">`);
 const MdImportContacts = ((props = {}) => (() => {
   const _el$ = _tmpl$$4();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$3 = /*#__PURE__*/web.template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96M17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4z">`);
+const _tmpl$$3 = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96M17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4z">`);
 const MdCloudDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$3();
-  web.spread(_el$, props, true, true);
+  spread(_el$, props, true, true);
   return _el$;
 })());
 
 var css = ".index_module_fabRoot__f35e0ac6{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__f35e0ac6[data-show=false]{pointer-events:none}.index_module_fabRoot__f35e0ac6[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__f35e0ac6[data-trans=true]{opacity:.8}.index_module_fabRoot__f35e0ac6[data-trans=true]:focus,.index_module_fabRoot__f35e0ac6[data-trans=true]:focus-visible,.index_module_fabRoot__f35e0ac6[data-trans=true]:hover{opacity:1}.index_module_fab__f35e0ac6{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.index_module_fab__f35e0ac6>svg{font-size:1.5em;width:1em}.index_module_fab__f35e0ac6:hover{background-color:var(fab-hover,#78909c)}.index_module_fab__f35e0ac6:focus,.index_module_fab__f35e0ac6:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.index_module_progress__f35e0ac6{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__f35e0ac6>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__f35e0ac6:hover{color:#cfd8dc}.index_module_progress__f35e0ac6[aria-valuenow=\"1\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__f35e0ac6{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__f35e0ac6:hover,.index_module_fabRoot__f35e0ac6[data-focus=true]) .index_module_popper__f35e0ac6{display:flex}.index_module_speedDial__f35e0ac6{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__f35e0ac6{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__f35e0ac6:hover,:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6{pointer-events:all}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6>.index_module_speedDialItem__f35e0ac6{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__f35e0ac6{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__f35e0ac6[data-focus=true] .index_module_backdrop__f35e0ac6{pointer-events:unset}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true],.index_module_speedDial__f35e0ac6:hover) .index_module_backdrop__f35e0ac6{opacity:.4}";
 var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__f35e0ac6","fab":"index_module_fab__f35e0ac6","progress":"index_module_progress__f35e0ac6","popper":"index_module_popper__f35e0ac6","speedDial":"index_module_speedDial__f35e0ac6","speedDialItem":"index_module_speedDialItem__f35e0ac6","backdrop":"index_module_backdrop__f35e0ac6"};
 
-const _tmpl$$2 = /*#__PURE__*/web.template(`<div><div>`),
-  _tmpl$2$1 = /*#__PURE__*/web.template(`<div><button type=button tabindex=-1><span role=progressbar><svg viewBox="22 22 44 44"><circle cx=44 cy=44 r=20.2 fill=none stroke-width=3.6>`),
-  _tmpl$3$1 = /*#__PURE__*/web.template(`<div>`);
+const _tmpl$$2 = /*#__PURE__*/template(`<div><div>`),
+  _tmpl$2$1 = /*#__PURE__*/template(`<div><button type=button tabindex=-1><span role=progressbar><svg viewBox="22 22 44 44"><circle cx=44 cy=44 r=20.2 fill=none stroke-width=3.6>`),
+  _tmpl$3$1 = /*#__PURE__*/template(`<div>`);
 const FabStyle = css;
 /**
  * Fab 按钮
@@ -13975,17 +16633,17 @@ const Fab = _props => {
       _el$3 = _el$2.firstChild,
       _el$4 = _el$3.firstChild;
     _el$2.addEventListener("click", () => props.onClick?.());
-    web.insert(_el$2, () => props.children ?? web.createComponent(MdMenuBook, {}), _el$3);
-    web.insert(_el$2, (() => {
-      const _c$ = web.memo(() => !!props.tip);
+    insert(_el$2, () => props.children ?? solidJs.createComponent(MdMenuBook, {}), _el$3);
+    insert(_el$2, (() => {
+      const _c$ = solidJs.createMemo(() => !!props.tip);
       return () => _c$() ? (() => {
         const _el$7 = _tmpl$3$1();
-        web.insert(_el$7, () => props.tip);
-        web.effect(() => web.className(_el$7, modules_c21c94f2.popper));
+        insert(_el$7, () => props.tip);
+        solidJs.createRenderEffect(() => className(_el$7, modules_c21c94f2.popper));
         return _el$7;
       })() : null;
     })(), null);
-    web.insert(_el$, web.createComponent(solidJs.Show, {
+    insert(_el$, solidJs.createComponent(solidJs.Show, {
       get when() {
         return props.speedDial?.length;
       },
@@ -13993,23 +16651,23 @@ const Fab = _props => {
         const _el$5 = _tmpl$$2(),
           _el$6 = _el$5.firstChild;
         _el$6.addEventListener("click", () => props.onBackdropClick?.());
-        web.insert(_el$5, web.createComponent(solidJs.For, {
+        insert(_el$5, solidJs.createComponent(solidJs.For, {
           get each() {
             return props.speedDial;
           },
           children: (SpeedDialItem, i) => (() => {
             const _el$8 = _tmpl$3$1();
-            web.insert(_el$8, web.createComponent(SpeedDialItem, {}));
-            web.effect(_p$ => {
+            insert(_el$8, solidJs.createComponent(SpeedDialItem, {}));
+            solidJs.createRenderEffect(_p$ => {
               const _v$12 = modules_c21c94f2.speedDialItem,
                 _v$13 = {
                   '--show-delay': `${i() * 30}ms`,
                   '--hide-delay': `${(props.speedDial.length - 1 - i()) * 50}ms`
                 },
                 _v$14 = i() * 30;
-              _v$12 !== _p$._v$12 && web.className(_el$8, _p$._v$12 = _v$12);
-              _p$._v$13 = web.style(_el$8, _v$13, _p$._v$13);
-              _v$14 !== _p$._v$14 && web.setAttribute(_el$8, "data-i", _p$._v$14 = _v$14);
+              _v$12 !== _p$._v$12 && className(_el$8, _p$._v$12 = _v$12);
+              _p$._v$13 = style(_el$8, _v$13, _p$._v$13);
+              _v$14 !== _p$._v$14 && setAttribute(_el$8, "data-i", _p$._v$14 = _v$14);
               return _p$;
             }, {
               _v$12: undefined,
@@ -14019,11 +16677,11 @@ const Fab = _props => {
             return _el$8;
           })()
         }), null);
-        web.effect(_p$ => {
+        solidJs.createRenderEffect(_p$ => {
           const _v$ = modules_c21c94f2.speedDial,
             _v$2 = modules_c21c94f2.backdrop;
-          _v$ !== _p$._v$ && web.className(_el$5, _p$._v$ = _v$);
-          _v$2 !== _p$._v$2 && web.className(_el$6, _p$._v$2 = _v$2);
+          _v$ !== _p$._v$ && className(_el$5, _p$._v$ = _v$);
+          _v$2 !== _p$._v$2 && className(_el$6, _p$._v$2 = _v$2);
           return _p$;
         }, {
           _v$: undefined,
@@ -14032,7 +16690,7 @@ const Fab = _props => {
         return _el$5;
       }
     }), null);
-    web.effect(_p$ => {
+    solidJs.createRenderEffect(_p$ => {
       const _v$3 = modules_c21c94f2.fabRoot,
         _v$4 = props.style,
         _v$5 = props.show ?? show(),
@@ -14042,14 +16700,14 @@ const Fab = _props => {
         _v$9 = modules_c21c94f2.progress,
         _v$10 = props.progress,
         _v$11 = `${(1 - props.progress) * 290}%`;
-      _v$3 !== _p$._v$3 && web.className(_el$, _p$._v$3 = _v$3);
-      _p$._v$4 = web.style(_el$, _v$4, _p$._v$4);
-      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-show", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-trans", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-focus", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && web.className(_el$2, _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && web.className(_el$3, _p$._v$9 = _v$9);
-      _v$10 !== _p$._v$10 && web.setAttribute(_el$3, "aria-valuenow", _p$._v$10 = _v$10);
+      _v$3 !== _p$._v$3 && className(_el$, _p$._v$3 = _v$3);
+      _p$._v$4 = style(_el$, _v$4, _p$._v$4);
+      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-show", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-trans", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-focus", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && className(_el$2, _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && className(_el$3, _p$._v$9 = _v$9);
+      _v$10 !== _p$._v$10 && setAttribute(_el$3, "aria-valuenow", _p$._v$10 = _v$10);
       _v$11 !== _p$._v$11 && ((_p$._v$11 = _v$11) != null ? _el$4.style.setProperty("stroke-dashoffset", _v$11) : _el$4.style.removeProperty("stroke-dashoffset"));
       return _p$;
     }, {
@@ -14067,7 +16725,7 @@ const Fab = _props => {
   })();
 };
 
-const _tmpl$$1 = /*#__PURE__*/web.template(`<style type=text/css>`);
+const _tmpl$$1 = /*#__PURE__*/template(`<style type=text/css>`);
 let dom;
 const useFab = async initProps => {
   await GM.addStyle(`
@@ -14081,7 +16739,7 @@ const useFab = async initProps => {
       font-size: clamp(12px, 1.5vw, 16px);
     }
   `);
-  const [props, setProps] = store$2.createStore({
+  const [props, setProps] = createStore({
     ...initProps
   });
   const FabIcon = () => {
@@ -14100,9 +16758,9 @@ const useFab = async initProps => {
   solidJs.createRoot(() => {
     solidJs.createEffect(() => {
       if (dom) return;
-      dom = mountComponents('fab', () => [web.createComponent(Fab, web.mergeProps(props, {
+      dom = mountComponents('fab', () => [solidJs.createComponent(Fab, solidJs.mergeProps(props, {
         get children() {
-          return props.children ?? web.createComponent(web.Dynamic, {
+          return props.children ?? solidJs.createComponent(Dynamic, {
             get component() {
               return FabIcon();
             }
@@ -14110,11 +16768,11 @@ const useFab = async initProps => {
         }
       })), (() => {
         const _el$ = _tmpl$$1();
-        web.insert(_el$, IconButtonStyle);
+        insert(_el$, IconButtonStyle);
         return _el$;
       })(), (() => {
         const _el$2 = _tmpl$$1();
-        web.insert(_el$2, FabStyle);
+        insert(_el$2, FabStyle);
         return _el$2;
       })()]);
       dom.style.setProperty('z-index', '2147483646', 'important');
@@ -14123,9 +16781,9 @@ const useFab = async initProps => {
   return [setProps, props];
 };
 
-const _tmpl$ = /*#__PURE__*/web.template(`<h2>🥳 ComicRead 已更新到 v`),
-  _tmpl$2 = /*#__PURE__*/web.template(`<h3>修复`),
-  _tmpl$3 = /*#__PURE__*/web.template(`<ul><li>修复与 ios 油猴扩展的兼容性问题`);
+const _tmpl$ = /*#__PURE__*/template(`<h2>🥳 ComicRead 已更新到 v`),
+  _tmpl$2 = /*#__PURE__*/template(`<h3>修复`),
+  _tmpl$3 = /*#__PURE__*/template(`<ul><li>修复与 ios 油猴扩展的兼容性问题`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -14186,7 +16844,7 @@ const handleVersionUpdate = async () => {
     toast$1(() => [(() => {
       const _el$ = _tmpl$();
         _el$.firstChild;
-      web.insert(_el$, () => GM.info.script.version, null);
+      insert(_el$, () => GM.info.script.version, null);
       return _el$;
     })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
@@ -14223,7 +16881,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     ...defaultOptions
   };
   const saveOptions = await GM.getValue(name);
-  const options = store$2.createMutable({
+  const options = createMutable({
     ..._defaultOptions,
     ...saveOptions
   });
@@ -14329,7 +16987,7 @@ const useInit = async (name, defaultOptions = {}) => {
     show: true,
     focus: true,
     tip: t('site.settings_tip'),
-    children: web.createComponent(MdSettings, {}),
+    children: solidJs.createComponent(MdSettings, {}),
     onBackdropClick: () => setFab({
       show: false,
       focus: false
