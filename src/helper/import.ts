@@ -17,13 +17,13 @@ const crsLib: Window['crsLib'] = {
 const tempName = Math.random().toString(36).slice(2);
 
 const evalCode = (code: string) => {
-  try {
-    // eslint-disable-next-line no-eval
-    eval.call(unsafeWindow, code);
-  } catch (_) {
-    // 一些网站比如推特会触发 CSP，无法使用 eval 来执行，只能改用 GM_addElement
-    GM_addElement('script', { textContent: code })?.remove();
-  }
+  // 因为部分网站会对 eval 进行限制，比如推特（CSP）、hitomi（代理 window.eval 进行拦截）
+  // 所以优先使用最通用的 GM_addElement 来加载
+  if (gmApi.GM_addElement)
+    return GM_addElement('script', { textContent: code })?.remove();
+
+  // eslint-disable-next-line no-eval
+  eval.call(unsafeWindow, code);
 };
 
 /**
