@@ -186,10 +186,24 @@ import {
       }
     });
 
+    let timeout = false;
+    setTimeout(() => {
+      timeout = true;
+      if (mangaProps.imgList.length) return;
+      toast.warn(t('site.simple.no_img'), {
+        id: 'no_img',
+        duration: Infinity,
+        onDismiss: async () => {
+          await setOptions({ remember_current_site: false });
+          window.location.reload();
+        },
+      });
+    }, 3000);
+
     const triggerAllLazyLoad = singleThreaded(() =>
       triggerLazyLoad(getAllImg, () =>
         // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时停留一段时间
-        mangaProps.show || !mangaProps.imgList.length ? 300 : 0,
+        mangaProps.show || (!timeout && !mangaProps.imgList.length) ? 300 : 0,
       ),
     );
 
@@ -212,6 +226,7 @@ import {
         triggerAllLazyLoad();
       }
       await wait(() => mangaProps.imgList.length);
+      toast.dismiss('no_img');
       return mangaProps.imgList;
     });
 

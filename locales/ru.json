@@ -183,6 +183,7 @@
     "show_settings_menu": "Показать меню настроек",
     "simple": {
       "auto_read_mode_message": "\"Автоматически включать режим чтения\" по умолчанию",
+      "no_img": "No suitable comic images were found. If necessary, you can click here to close the simple reading mode.",
       "simple_read_mode": "Включить простой режим чтения"
     }
   },

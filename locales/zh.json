@@ -183,6 +183,7 @@
     "show_settings_menu": "显示设置菜单",
     "simple": {
       "auto_read_mode_message": "已默认开启「自动进入阅读模式」",
+      "no_img": "未找到合适的漫画图片，如有需要可点此关闭简易阅读模式",
       "simple_read_mode": "使用简易阅读模式"
     }
   },

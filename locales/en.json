@@ -183,6 +183,7 @@
     "show_settings_menu": "Show settings menu",
     "simple": {
       "auto_read_mode_message": "\"Auto enter reading mode\" is enabled by default",
+      "no_img": "No suitable comic images were found. If necessary, you can click here to close the simple reading mode.",
       "simple_read_mode": "Enter simple reading mode"
     }
   },
