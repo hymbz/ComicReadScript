@@ -11,6 +11,7 @@ import {
   focus,
   initResizeObserver,
   resetImgState,
+  scrollTo,
   updateImgLoadType,
   updatePageData,
 } from '../actions';
@@ -119,10 +120,13 @@ export const useInit = (props: MangaProps) => {
 
       /** 判断是否有影响到现有图片流的改动 */
       let isChange = state.imgList.length !== props.imgList.length;
+      /** 传入的是否是新漫画 */
+      let isNew = true;
 
       const imgMap = new Map(state.imgList.map((img) => [img.src, img]));
       for (let i = 0; i < props.imgList.length; i++) {
         const url = props.imgList[i];
+        if (isNew && imgMap.has(url)) isNew = false;
         const img = url && !isChange && state.imgList[i];
         if (img && img.loadType !== 'wait' && img.src && img.src !== url)
           isChange = true;
@@ -140,8 +144,9 @@ export const useInit = (props: MangaProps) => {
       } else updateImgLoadType(state);
       state.prop.Loading?.(state.imgList);
 
-      if (state.pageList.length === 0) {
+      if (isNew || state.pageList.length === 0) {
         state.activePageIndex = 0;
+        scrollTo(0);
         return;
       }
 

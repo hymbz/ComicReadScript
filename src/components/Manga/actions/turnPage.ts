@@ -5,10 +5,11 @@ import { contentHeight, rootSize, scrollTop } from './memo';
 import { resetPage } from './show';
 
 /** 判断当前是否已经滚动到底部 */
-const isBottom = (state: State) =>
-  state.option.scrollMode
-    ? scrollTop() + rootSize().height >= contentHeight()
+const isBottom = (state: State) => {
+  return state.option.scrollMode
+    ? Math.ceil(scrollTop() + rootSize().height) >= contentHeight()
     : state.activePageIndex === state.pageList.length - 1;
+};
 
 /** 判断当前是否已经滚动到顶部 */
 const isTop = (state: State) =>
