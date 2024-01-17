@@ -2,6 +2,7 @@
 
 import { getInitLang } from 'helper/languages';
 import { triggerLazyLoad, needTrigged, openScrollLock } from 'helper/imgMap';
+import { getEleSelector, isEleSelector } from 'helper/eleSelector';
 import {
   t,
   getMostItem,
@@ -66,34 +67,11 @@ import {
 
     await GM.unregisterMenuCommand(menuId);
 
-    /** 获取元素仅记录了层级结构关系的选择器 */
-    const getEleSelector = (ele: HTMLElement) => {
-      const parents: string[] = [ele.nodeName];
-      const root = ele.getRootNode();
-      let e = ele;
-      while (e.parentNode && e.parentNode !== root) {
-        e = e.parentNode as HTMLElement;
-        parents.push(e.nodeName);
-      }
-      return parents.reverse().join('>');
-    };
-
     /** 记录传入的图片元素中最常见的那个 selector */
     const saveImgEleSelector = (imgEleList: HTMLElement[]) => {
       if (imgEleList.length < 7) return;
       const selector = getMostItem(imgEleList.map(getEleSelector));
       if (selector !== options.selector) setOptions({ selector });
-    };
-
-    /** 判断指定元素是否符合选择器 */
-    const isEleSelector = (ele: HTMLElement, selector: string) => {
-      const parents = selector.split('>').reverse();
-      let e = ele;
-      for (let i = 0; e && i < parents.length; i++) {
-        if (e.nodeName !== parents[i]) return false;
-        e = e.parentNode as HTMLElement;
-      }
-      return e === e.getRootNode();
     };
 
     const blobUrlMap = new Map<string, string>();
