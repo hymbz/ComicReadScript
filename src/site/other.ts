@@ -66,7 +66,7 @@ import {
 
     await GM.unregisterMenuCommand(menuId);
 
-    /** 获取元素仅记录了层级结构关系的 selector */
+    /** 获取元素仅记录了层级结构关系的选择器 */
     const getEleSelector = (ele: HTMLElement) => {
       const parents: string[] = [ele.nodeName];
       const root = ele.getRootNode();
@@ -83,6 +83,17 @@ import {
       if (imgEleList.length < 7) return;
       const selector = getMostItem(imgEleList.map(getEleSelector));
       if (selector !== options.selector) setOptions({ selector });
+    };
+
+    /** 判断指定元素是否符合选择器 */
+    const isEleSelector = (ele: HTMLElement, selector: string) => {
+      const parents = selector.split('>').reverse();
+      let e = ele;
+      for (let i = 0; e && i < parents.length; i++) {
+        if (e.nodeName !== parents[i]) return false;
+        e = e.parentNode as HTMLElement;
+      }
+      return e === e.getRootNode();
     };
 
     const blobUrlMap = new Map<string, string>();
@@ -125,7 +136,10 @@ import {
     const updateImgList = singleThreaded(async () => {
       imgEleList = await wait(() => {
         const newImgList = getAllImg().filter(
-          (e) => e.naturalHeight > 500 && e.naturalWidth > 500,
+          (e) =>
+            (e.naturalHeight > 500 && e.naturalWidth > 500) ||
+            (isEleSelector(e, options.selector) &&
+              (e.naturalHeight > 500 || e.naturalWidth > 500)),
         );
         return newImgList.length >= 2 && newImgList;
       });
