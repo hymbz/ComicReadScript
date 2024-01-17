@@ -1,10 +1,4 @@
-import {
-  createRoot,
-  createEffect,
-  on,
-  createSignal,
-  createMemo,
-} from 'solid-js';
+import { createRoot, on, createSignal, createMemo } from 'solid-js';
 import { lang, t } from 'helper/i18n';
 import { singleThreaded } from 'helper';
 import { store, setState, _setState } from '../../store';
@@ -12,6 +6,7 @@ import { createOptions, setMessage } from './helper';
 import { getValidTranslators, selfhostedTranslation } from './selfhosted';
 import { cotransTranslation, cotransTranslators } from './cotrans';
 import { setOption } from '../helper';
+import { createEffectOn } from '../../helper';
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 declare const toast: typeof import('components/Toast/toast').toast | undefined;
@@ -115,29 +110,27 @@ export const translatorOptions = createRoot(() => {
   );
 
   // 在切换翻译服务器的同时切换可用翻译的选项列表
-  createEffect(
-    on(
-      [
-        () => store.option.translation.server,
-        () => store.option.translation.localUrl,
-      ],
-      async () => {
-        if (store.option.translation.server !== 'selfhosted') return;
+  createEffectOn(
+    [
+      () => store.option.translation.server,
+      () => store.option.translation.localUrl,
+    ],
+    async () => {
+      if (store.option.translation.server !== 'selfhosted') return;
 
-        setSelfOptions((await getValidTranslators()) ?? []);
+      setSelfOptions((await getValidTranslators()) ?? []);
 
-        // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
-        if (
-          !selfhostedOptions().some(
-            ([val]) => val === store.option.translation.options.translator,
-          )
-        ) {
-          setOption((draftOption) => {
-            draftOption.translation.options.translator = 'google';
-          });
-        }
-      },
-    ),
+      // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
+      if (
+        !selfhostedOptions().some(
+          ([val]) => val === store.option.translation.options.translator,
+        )
+      ) {
+        setOption((draftOption) => {
+          draftOption.translation.options.translator = 'google';
+        });
+      }
+    },
   );
 
   const options = createMemo(

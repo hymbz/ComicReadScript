@@ -96,6 +96,7 @@ export const Manga: Component<MangaProps> = (props) => {
         on:click={stopPropagation}
         data-mobile={boolDataVal(store.isMobile)}
         data-scroll-mode={boolDataVal(store.option.scrollMode)}
+        data-grid-mode={boolDataVal(store.gridMode)}
       >
         <ComicImgFlow />
         <Toolbar />

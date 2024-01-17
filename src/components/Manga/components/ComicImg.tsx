@@ -1,10 +1,15 @@
 import type { Component, JSX } from 'solid-js';
-import { createMemo, onCleanup, onMount } from 'solid-js';
+import { createEffect, createMemo, onCleanup, onMount } from 'solid-js';
 
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
 import { setState, store } from '../store';
-import { placeholderSize, updateImgLoadType, updateImgSize } from '../actions';
+import {
+  placeholderSize,
+  showImgList,
+  updateImgLoadType,
+  updateImgSize,
+} from '../actions';
 
 import classes from '../index.module.css';
 
@@ -25,10 +30,6 @@ const handleImgLoaded = (i: number, e: HTMLImageElement) => {
     img.loadType = 'loaded';
     updateImgLoadType(state);
     state.prop.Loading?.(state.imgList, img);
-
-    // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
-    // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
-    e.decode();
   });
 };
 
@@ -54,17 +55,10 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
 export const ComicImg: Component<ComicImgProps> = (props) => {
   let ref: HTMLImageElement;
 
-  onMount(() => {
-    store.observer?.observe(ref);
-
-    onCleanup(() => {
-      store.observer?.unobserve(ref);
-      setState((state) => {
-        state.memo.showImgList = state.memo.showImgList.filter(
-          (img) => img !== ref,
-        );
-      });
-    });
+  onMount(() => store.observer?.observe(ref));
+  onCleanup(() => {
+    store.observer?.unobserve(ref);
+    showImgList.delete(ref);
   });
 
   const img = createMemo(() => store.imgList[props.index]);
@@ -82,6 +76,13 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
       '--width': `${size.width}px`,
       'aspect-ratio': `${size.width} / ${size.height}`,
     };
+  });
+
+  createEffect(() => {
+    if (!src() || img().loadType !== 'loaded') return;
+    // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
+    // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
+    ref.decode();
   });
 
   return (

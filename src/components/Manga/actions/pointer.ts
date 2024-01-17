@@ -1,13 +1,13 @@
-import { isEqual } from 'helper';
-import { debounce } from 'throttle-debounce';
+import { approx, debounce } from 'helper';
 import type { Area } from '../components/TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
 import type { UseDrag } from '../hooks/useDrag';
 import { store, setState, refs } from '../store';
-import { resetUI } from './helper';
-import { updateRenderPage } from './show';
+import { resetUI, scrollTo } from './helper';
+import { resetPage } from './show';
 import { turnPageFn, turnPageAnimation } from './turnPage';
 import { zoom } from './zoom';
+import { imgTopList, rootSize } from './memo';
 
 /** 根据坐标判断点击的元素 */
 const findClickEle = (eleList: HTMLCollection, { x, y }: MouseEvent) =>
@@ -50,8 +50,7 @@ export const handleGridClick = (e: MouseEvent) => {
     state.activePageIndex = pageNum;
     state.gridMode = false;
   });
-  if (store.option.scrollMode)
-    refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
+  if (store.option.scrollMode) scrollTo(imgTopList()[pageNum]);
 };
 
 /** 双击放大 */
@@ -132,7 +131,7 @@ const handleDragEnd = (startTime?: number) => {
     state.isDragMode = false;
   });
 };
-handleDragEnd.debounce = debounce(200, handleDragEnd);
+handleDragEnd.debounce = debounce(handleDragEnd, 200);
 
 export const handleMangaFlowDrag: UseDrag = ({
   type,
@@ -152,15 +151,15 @@ export const handleMangaFlowDrag: UseDrag = ({
 
       // 判断滑动方向
       let slideDir: 'vertical' | 'horizontal' | undefined;
-      if (Math.abs(dx) > 5 && isEqual(dy, 0, 5)) slideDir = 'horizontal';
-      if (Math.abs(dy) > 5 && isEqual(dx, 0, 5)) slideDir = 'vertical';
+      if (Math.abs(dx) > 5 && approx(dy, 0, 5)) slideDir = 'horizontal';
+      if (Math.abs(dy) > 5 && approx(dx, 0, 5)) slideDir = 'vertical';
       if (!slideDir) return;
 
       setState((state) => {
         // 根据滑动方向自动切换排列模式
         state.page.vertical = slideDir === 'vertical';
         state.isDragMode = true;
-        updateRenderPage(state);
+        resetPage(state);
       });
       return;
     }
@@ -201,15 +200,15 @@ export const handleTrackpadWheel = (e: WheelEvent) => {
     }
 
     // 滚动过一页时
-    if (dy <= -state.memo.size.height) {
-      if (turnPageFn(state, 'next')) dy += state.memo.size.height;
-    } else if (dy >= state.memo.size.height) {
-      if (turnPageFn(state, 'prev')) dy -= state.memo.size.height;
+    if (dy <= -rootSize().height) {
+      if (turnPageFn(state, 'next')) dy += rootSize().height;
+    } else if (dy >= rootSize().height) {
+      if (turnPageFn(state, 'prev')) dy -= rootSize().height;
     }
 
     state.page.vertical = true;
     state.isDragMode = true;
-    updateRenderPage(state);
+    resetPage(state);
   });
   if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
 

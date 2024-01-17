@@ -1,6 +1,6 @@
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
 
-import { getKeyboardCode, wait } from '.';
+import { getKeyboardCode } from '.';
 import { useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
 import { toast } from '../components/useComponents/Toast';
@@ -193,9 +193,10 @@ export const useInit = async <T extends Record<string, any>>(
         if (mangaProps.imgList.length === totalImgNum)
           return mangaProps.imgList;
 
-        setManga('imgList', Array(totalImgNum).fill(''));
-        window.setTimeout(() => work((i, url) => setManga('imgList', i, url)));
-        await wait(() => mangaProps.imgList.some(Boolean));
+        await new Promise((resolve) => {
+          setManga('imgList', Array(totalImgNum).fill(''));
+          work((i, url) => resolve(setManga('imgList', i, url)));
+        });
         return mangaProps.imgList;
       },
   };

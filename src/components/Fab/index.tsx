@@ -1,4 +1,5 @@
 import type { Component, JSX } from 'solid-js';
+import { throttle } from 'helper';
 import {
   For,
   onCleanup,
@@ -8,7 +9,6 @@ import {
   mergeProps,
   Show,
 } from 'solid-js';
-import { throttle } from 'throttle-debounce';
 
 import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 import classes, { css as style } from './index.module.css';
@@ -51,7 +51,7 @@ export const Fab: Component<FabProps> = (_props) => {
   const [show, setShow] = createSignal(props.initialShow);
 
   // 绑定滚动事件
-  const handleScroll = throttle(200, (e: Event) => {
+  const handleScroll = throttle((e: Event) => {
     // 跳过非用户操作的滚动
     if (e.isTrusted === false) return;
     if (window.scrollY === lastY) return;
@@ -62,7 +62,7 @@ export const Fab: Component<FabProps> = (_props) => {
         window.scrollY - lastY < 0,
     );
     lastY = window.scrollY;
-  });
+  }, 200);
   onMount(() => window.addEventListener('scroll', handleScroll));
   onCleanup(() => window.removeEventListener('scroll', handleScroll));
 

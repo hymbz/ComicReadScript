@@ -1,11 +1,11 @@
 module.exports = {
   ignoreFiles: ['**/node_modules/**/*.css', '**/dist/**/*.css'],
-  extends: ['stylelint-config-standard', 'stylelint-config-clean-order'],
-  plugins: [
-    'stylelint-prettier',
-    'stylelint-order',
-    'stylelint-high-performance-animation',
+  extends: [
+    'stylelint-config-standard',
+    'stylelint-prettier/recommended',
+    'stylelint-config-clean-order',
   ],
+  plugins: ['stylelint-order', 'stylelint-high-performance-animation'],
   rules: {
     // 允许 css 变量使用任意命名方式
     'custom-property-pattern': null,

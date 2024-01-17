@@ -91,15 +91,18 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       case 'End':
       case 'ArrowRight':
       case 'ArrowLeft':
+        e.stopPropagation();
         return;
 
       case 'ArrowUp':
       case 'PageUp':
+        e.stopPropagation();
         return store.gridMode || turnPage('prev');
 
       case 'ArrowDown':
       case 'PageDown':
       case ' ':
+        e.stopPropagation();
         return store.gridMode || turnPage('next');
     }
   }

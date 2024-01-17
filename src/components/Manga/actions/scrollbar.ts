@@ -1,77 +1,45 @@
-import { t } from 'helper/i18n';
-import { createEffect, createMemo, createRoot, on } from 'solid-js';
+import { createRoot, createSignal } from 'solid-js';
+import { clamp } from 'helper';
 import type { PointerState, UseDrag } from '../hooks/useDrag';
 import type { State } from '../store';
 import { store, refs, _setState } from '../store';
-import { checkImgTypeCount } from './helper';
+import { createEffectOn, createRootMemo } from '../helper';
+import { contentHeight, rootSize, scrollTop } from './memo';
+import { scrollTo } from './helper';
 
-/** 漫画流的总高度 */
-export const contentHeight = () => refs.mangaFlow.scrollHeight ?? 0;
+const [_scrollLength, setScrollLength] = createSignal(0);
+/** 滚动条元素的长度 */
+export const scrollLength = _scrollLength;
 
-/** 能显示出漫画的高度 */
-export const windowHeight = () => refs.root.offsetHeight ?? 0;
+/** 滚动条滑块长度 */
+export const sliderHeight = createRootMemo(() =>
+  store.option.scrollMode
+    ? rootSize().height / contentHeight()
+    : 1 / store.pageList.length,
+);
 
-/** 滚动条长度 */
-export const scrollLength = () =>
-  Math.max(refs.scrollbar?.clientWidth, refs.scrollbar?.clientHeight);
+/** 滚动条滑块高度 */
+export const sliderTop = createRootMemo(() =>
+  store.option.scrollMode
+    ? scrollTop() / contentHeight()
+    : (1 / store.pageList.length) * store.activePageIndex,
+);
+
+/** 滚动条滑块的中心点高度 */
+export const sliderMidpoint = createRootMemo(
+  () => scrollLength() * (sliderTop() + sliderHeight() / 2),
+);
 
 /** 滚动条位置 */
-export const scrollPosition = createRoot(() => {
-  const scrollPositionMemo = createMemo(
-    (): State['option']['scrollbar']['position'] => {
-      if (store.option.scrollbar.position === 'auto') {
-        if (store.isMobile) return 'top';
-        return checkImgTypeCount(store, ({ type }) => type === 'long', 5)
-          ? 'bottom'
-          : 'right';
-      }
-      return store.option.scrollbar.position;
-    },
-  );
-  return scrollPositionMemo;
-});
-
-/** 更新滚动条滑块的高度和所处高度 */
-export const updateDrag = (state: State) => {
-  if (!state.option.scrollMode) {
-    state.scrollbar.dragHeight = 0;
-    state.scrollbar.dragTop = 0;
-    return;
-  }
-  state.scrollbar.dragTop = refs.mangaFlow.scrollTop / contentHeight();
-  state.scrollbar.dragHeight =
-    windowHeight() / (contentHeight() || windowHeight());
-};
-
-/** 获取指定图片的提示文本 */
-export const getImgTip = (state: State, i: number) => {
-  if (i === -1) return t('other.fill_page');
-  const img = state.imgList[i];
-
-  // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-  if (img.loadType !== 'loaded')
-    return `${i + 1} (${t(`img_status.${img.loadType}`)})`;
-
-  if (
-    img.translationType &&
-    img.translationType !== 'hide' &&
-    img.translationMessage
-  )
-    return `${i + 1}：${img.translationMessage}`;
-
-  return `${i + 1}`;
-};
-
-/** 获取指定页面的提示文本 */
-export const getPageTip = (pageIndex: number): string => {
-  const page = store.pageList[pageIndex];
-  if (!page) return 'null';
-  const pageIndexText = page.map((index) => getImgTip(store, index)) as
-    | [string]
-    | [string, string];
-  if (store.option.dir === 'rtl') pageIndexText.reverse();
-  return pageIndexText.join(store.option.scrollMode ? '\n' : ' | ');
-};
+export const scrollPosition = createRootMemo(
+  (): State['option']['scrollbar']['position'] => {
+    if (store.option.scrollbar.position === 'auto') {
+      if (store.isMobile) return 'top';
+      return store.flag.autoLong ? 'bottom' : 'right';
+    }
+    return store.option.scrollbar.position;
+  },
+);
 
 /** 判断点击位置在滚动条上的位置比率 */
 const getClickTop = (x: number, y: number, e: HTMLElement): number => {
@@ -88,7 +56,7 @@ const getClickTop = (x: number, y: number, e: HTMLElement): number => {
 };
 
 /** 计算在滚动条上的拖动距离 */
-const getDragDist = (
+const getSliderDist = (
   [x, y]: PointerState['xy'],
   [ix, iy]: PointerState['initial'],
   e: HTMLElement,
@@ -105,9 +73,9 @@ const getDragDist = (
   }
 };
 
-/** 开始拖拽时的 dragTop 值 */
+/** 开始拖拽时的 sliderTop 值 */
 let startTop = 0;
-export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
+export const handlescrollbarSlider: UseDrag = ({ type, xy, initial }, e) => {
   const [x, y] = xy;
 
   // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
@@ -119,29 +87,20 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
 
   /** 点击位置在滚动条上的位置比率 */
   const clickTop = getClickTop(x, y, e.target as HTMLElement);
-  let top = clickTop;
 
   if (store.option.scrollMode) {
     if (type === 'move') {
-      top = startTop + getDragDist(xy, initial, scrollbarDom);
-      // 处理超出范围的情况
-      if (top < 0) top = 0;
-      else if (top > 1) top = 1;
-      refs.mangaFlow.scrollTo({
-        top: top * contentHeight(),
-        behavior: 'instant',
-      });
+      scrollTo(
+        clamp(0, startTop + getSliderDist(xy, initial, scrollbarDom), 1) *
+          contentHeight(),
+      );
     } else {
       // 确保滚动条的中心会在点击位置
-      top -= store.scrollbar.dragHeight / 2;
-      startTop = top;
-      refs.mangaFlow.scrollTo({
-        top: top * contentHeight(),
-        behavior: 'smooth',
-      });
+      startTop = clickTop - sliderHeight() / 2;
+      scrollTo(startTop * contentHeight(), true);
     }
   } else {
-    let newPageIndex = Math.floor(top * store.pageList.length);
+    let newPageIndex = Math.floor(clickTop * store.pageList.length);
     // 处理超出范围的情况
     if (newPageIndex < 0) newPageIndex = 0;
     else if (newPageIndex >= store.pageList.length)
@@ -152,20 +111,27 @@ export const handleScrollbarDrag: UseDrag = ({ type, xy, initial }, e) => {
   }
 };
 
-const updateScrollLength = () =>
-  _setState(
-    'memo',
-    'scrollLength',
-    Math.max(refs.scrollbar?.clientWidth, refs.scrollbar?.clientHeight),
-  );
-
 createRoot(() => {
   // 更新 scrollLength
-  createEffect(
-    on([scrollPosition, () => store.memo.size], () => {
-      // 部分情况下，在窗口大小改变后滚动条大小不会立刻跟着修改，需要等待一帧渲染
-      // 比如打开后台标签页后等一会再切换过去
-      requestAnimationFrame(updateScrollLength);
-    }),
+  createEffectOn([scrollPosition, rootSize], () => {
+    if (!refs.scrollbar) return;
+    // 部分情况下，在窗口大小改变后滚动条大小不会立刻跟着修改，需要等待一帧渲染
+    // 比如打开后台标签页后等一会再切换过去
+    requestAnimationFrame(() =>
+      setScrollLength(
+        Math.max(refs.scrollbar.clientWidth, refs.scrollbar.clientHeight),
+      ),
+    );
+  });
+
+  // 在卷轴模式下缩放时保持滚动进度不变
+  createEffectOn(
+    [contentHeight, scrollTop, () => store.option.scrollModeImgScale],
+    ([newHeight, , newScale], prev) => {
+      if (!prev) return;
+      const [oldHeight, oldScrollTop, oldScale] = prev;
+      if (newScale === oldScale) return;
+      scrollTo(oldScrollTop ? (oldScrollTop / oldHeight) * newHeight : 0);
+    },
   );
 });

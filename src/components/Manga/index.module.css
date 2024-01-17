@@ -38,7 +38,7 @@
 
 .beautifyScrollbar {
   /* 火狐的滚动条样式 */
-  scrollbar-color: var(--scrollbar-drag) transparent;
+  scrollbar-color: var(--scrollbar-slider) transparent;
   scrollbar-width: thin;
 
   /* chrome 的滚动条样式 */
@@ -52,7 +52,7 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-drag);
+    background: var(--scrollbar-slider);
   }
 }
 

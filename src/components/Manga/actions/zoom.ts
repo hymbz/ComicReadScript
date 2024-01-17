@@ -1,10 +1,10 @@
 import { createRoot, createMemo } from 'solid-js';
-import { clamp, isEqual } from 'helper';
-import { debounce } from 'throttle-debounce';
+import { clamp, approx } from 'helper';
 import type { PointerState, UseDrag } from '../hooks/useDrag';
 import type { State } from '../store';
-import { store, setState, refs, _setState } from '../store';
+import { store, setState, refs } from '../store';
 import { resetUI } from './helper';
+import { closeScrollLock } from './turnPage';
 
 export const touches = new Map<number, PointerState>();
 
@@ -24,10 +24,6 @@ const checkBound = (state: State) => {
   state.zoom.offset.x = clamp(bound.x(), state.zoom.offset.x, 0);
   state.zoom.offset.y = clamp(bound.y(), state.zoom.offset.y, 0);
 };
-
-const closeScrollLock = debounce(200, () =>
-  _setState('flag', 'scrollLock', false),
-);
 
 export const zoom = (
   val: number,
@@ -91,7 +87,7 @@ let lastTime: DOMHighResTimeStamp = 0;
 /** 逐帧计算惯性滑动 */
 const handleSlideAnima = (timestamp: DOMHighResTimeStamp) => {
   // 当速率足够小时停止计算动画
-  if (isEqual(velocity.x, 0, 1) && isEqual(velocity.y, 0, 1)) {
+  if (approx(velocity.x, 0, 1) && approx(velocity.y, 0, 1)) {
     animationId = null;
     return;
   }

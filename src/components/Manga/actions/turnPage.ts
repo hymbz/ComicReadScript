@@ -1,23 +1,22 @@
-import { debounce } from 'throttle-debounce';
-
+import { debounce } from 'helper';
 import type { State } from '../store';
 import { store, setState, _setState } from '../store';
-import { updateRenderPage } from './show';
+import { contentHeight, rootSize, scrollTop } from './memo';
+import { resetPage } from './show';
 
 /** 判断当前是否已经滚动到底部 */
 const isBottom = (state: State) =>
   state.option.scrollMode
-    ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999
+    ? scrollTop() + rootSize().height >= contentHeight()
     : state.activePageIndex === state.pageList.length - 1;
 
 /** 判断当前是否已经滚动到顶部 */
 const isTop = (state: State) =>
-  state.option.scrollMode
-    ? store.scrollbar.dragTop === 0
-    : state.activePageIndex === 0;
+  state.option.scrollMode ? scrollTop() === 0 : state.activePageIndex === 0;
 
-export const closeScrollLock = debounce(200, () =>
-  _setState('flag', 'scrollLock', false),
+export const closeScrollLock = debounce(
+  () => _setState('flag', 'scrollLock', false),
+  200,
 );
 
 /** 翻页。返回是否成功改变了当前页数 */
@@ -93,20 +92,20 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
     if (!turnPageFn(state, dir)) {
       state.page.offset.x.px = 0;
       state.page.offset.y.px = 0;
-      updateRenderPage(state, true);
+      resetPage(state, true);
       state.isDragMode = false;
       return;
     }
 
     state.isDragMode = true;
-    updateRenderPage(state);
+    resetPage(state);
     if (store.page.vertical)
       state.page.offset.y.pct += dir === 'next' ? 100 : -100;
     else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
 
     setTimeout(() => {
       setState((draftState) => {
-        updateRenderPage(draftState, true);
+        resetPage(draftState, true);
         draftState.page.offset.x.px = 0;
         draftState.page.offset.y.px = 0;
         draftState.isDragMode = false;

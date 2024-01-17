@@ -1,7 +1,7 @@
 .scrollbar {
   --arrow-y: clamp(
     0.45em,
-    calc(var(--drag-midpoint)),
+    calc(var(--slider-midpoint)),
     calc(var(--scroll-length) - 0.45em)
   );
 
@@ -82,22 +82,19 @@
   }
 }
 
-/* 滚动条块 */
-.scrollbarDrag {
-  --top: calc(var(--top-ratio) * var(--scroll-length));
-  --height: calc(var(--height-ratio) * var(--scroll-length));
-
+/* 滚动条滑块 */
+.scrollbarSlider {
   position: absolute;
   z-index: 1;
-  transform: translateY(var(--top));
+  transform: translateY(var(--slider-top));
 
   justify-content: center;
 
   width: 100%;
-  height: var(--height);
+  height: var(--slider-height);
 
   opacity: 1;
-  background-color: var(--scrollbar-drag);
+  background-color: var(--scrollbar-slider);
   border-radius: 1em;
 
   transition:
@@ -109,7 +106,7 @@
 .scrollbarPoper {
   --poper-top: clamp(
     0%,
-    calc(var(--drag-midpoint) - 50%),
+    calc(var(--slider-midpoint) - 50%),
     calc(var(--scroll-length) - 100%)
   );
 
@@ -118,6 +115,8 @@
   transform: translateY(var(--poper-top));
 
   width: fit-content;
+  min-width: 1em;
+  min-height: 1.5em;
   padding: 0.2em 0.5em;
 
   font-size: 0.8em;
@@ -160,7 +159,7 @@
 .scrollbar:hover,
 .scrollbar[data-force-show] {
   & .scrollbarPoper,
-  & .scrollbarDrag,
+  & .scrollbarSlider,
   &::before {
     opacity: 1;
   }
@@ -168,11 +167,11 @@
 
 /* 实现自动隐藏 */
 .scrollbar[data-auto-hidden]:not([data-force-show]) {
-  & .scrollbarDrag {
+  & .scrollbarSlider {
     opacity: 0;
   }
 
-  &:hover .scrollbarDrag {
+  &:hover .scrollbarSlider {
     opacity: 1;
   }
 }
@@ -240,9 +239,9 @@
   }
 
   /* stylelint-disable-next-line no-descending-specificity */
-  & .scrollbarDrag {
-    transform: translateX(calc(var(--top) * -1));
-    width: var(--height);
+  & .scrollbarSlider {
+    transform: translateX(calc(var(--slider-top) * -1));
+    width: var(--slider-height);
     height: 100%;
   }
 
@@ -263,7 +262,7 @@
     }
 
     /* stylelint-disable-next-line no-descending-specificity */
-    & .scrollbarDrag {
+    & .scrollbarSlider {
       transform: translateX(var(--top));
     }
 
@@ -288,7 +287,7 @@
 
 /* 卷轴模式下取消滚动条的位移动画 */
 .root[data-scroll-mode] .scrollbar::before,
-.root[data-scroll-mode] :is(.scrollbarDrag, .scrollbarPoper) {
+.root[data-scroll-mode] :is(.scrollbarSlider, .scrollbarPoper) {
   transition: opacity 150ms;
 }
 

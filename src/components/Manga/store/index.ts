@@ -17,6 +17,7 @@ export type State = typeof _state;
 
 export const refs = {
   root: undefined as unknown as HTMLElement,
+  mangaBox: undefined as unknown as HTMLElement,
   mangaFlow: undefined as unknown as HTMLElement,
   touchArea: undefined as unknown as HTMLElement,
   scrollbar: undefined as unknown as HTMLElement,

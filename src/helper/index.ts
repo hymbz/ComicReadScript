@@ -1,3 +1,18 @@
+import type { ScheduleCallback } from '@solid-primitives/scheduled';
+import {
+  leadingAndTrailing,
+  throttle as _throttle,
+  debounce as _debounce,
+} from '@solid-primitives/scheduled';
+
+export { default as isEqual } from 'fast-deep-equal/es6/index.js';
+
+export const throttle: ScheduleCallback = (fn, wait = 100) =>
+  leadingAndTrailing(_throttle, fn, wait);
+
+export const debounce: ScheduleCallback = (fn, wait = 100) =>
+  _debounce(fn, wait);
+
 export const sleep = (ms: number) =>
   new Promise((resolve) => {
     window.setTimeout(resolve, ms);
@@ -6,8 +21,11 @@ export const sleep = (ms: number) =>
 export const clamp = (min: number, val: number, max: number) =>
   Math.max(Math.min(max, val), min);
 
+export const inRange = (min: number, val: number, max: number) =>
+  val >= min && val <= max;
+
 /** 判断两个数是否在指定误差范围内相等 */
-export const isEqual = (val: number, target: number, range: number) =>
+export const approx = (val: number, target: number, range: number) =>
   Math.abs(target - val) <= range;
 
 /** 根据传入的条件列表的真假，对 val 进行取反 */
@@ -61,10 +79,6 @@ export const querySelectorClick = (
     typeof selector === 'string' ? querySelector(selector) : selector();
   if (getDom()) return () => getDom()?.click();
 };
-
-/** 判断两个列表中包含的值是否相同 */
-export const isEqualArray = <T>(a: T[], b: T[]): boolean =>
-  a.length === b.length && !a.some((t) => !b.includes(t));
 
 /** 找出数组中出现最多次的元素 */
 export const getMostItem = <T>(list: T[]) => {

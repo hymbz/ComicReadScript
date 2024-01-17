@@ -1,7 +1,7 @@
-import { For, type Component, createMemo } from 'solid-js';
-import { boolDataVal } from '../../../helper';
+import { type Component, createMemo, Index } from 'solid-js';
+import { boolDataVal, inRange } from 'helper';
 import { store } from '../store';
-import { getPageTip } from '../actions';
+import { getPageTip, renderRange } from '../actions';
 import type { ComicImgProps } from './ComicImg';
 import { ComicImg } from './ComicImg';
 
@@ -16,8 +16,7 @@ export const ComicPage: Component<ComicPageProps> = (props) => {
   const show = createMemo(
     () =>
       store.gridMode ||
-      store.option.scrollMode ||
-      store.memo.renderPageList.some((page) => page === props.page),
+      inRange(renderRange.start(), props.index, renderRange.end()),
   );
 
   const fill = createMemo<undefined | ComicImgProps['fill'][]>(() => {
@@ -48,9 +47,9 @@ export const ComicPage: Component<ComicPageProps> = (props) => {
       data-index={props.index}
       style={style()}
     >
-      <For each={props.page} fallback={<h1>NULL</h1>}>
-        {(imgIndex, i) => <ComicImg index={imgIndex} fill={fill()?.[i()]} />}
-      </For>
+      <Index each={props.page} fallback={<h1>NULL</h1>}>
+        {(imgIndex, i) => <ComicImg index={imgIndex()} fill={fill()?.[i]} />}
+      </Index>
     </div>
   );
 };

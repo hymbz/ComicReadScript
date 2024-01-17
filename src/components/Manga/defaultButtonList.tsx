@@ -64,7 +64,9 @@ export const defaultButtonList: ToolbarButtonList = [
     <IconButton
       tip={t('button.page_fill')}
       enabled={!!store.fillEffect[nowFillIndex()]}
-      hidden={store.isMobile || store.option.onePageMode}
+      hidden={
+        store.isMobile || store.option.onePageMode || store.option.scrollMode
+      }
       onClick={switchFillEffect}
       children={<MdQueue />}
     />

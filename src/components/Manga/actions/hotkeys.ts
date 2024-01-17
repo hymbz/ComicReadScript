@@ -1,5 +1,5 @@
-import { createMemo, createRoot } from 'solid-js';
-import { isEqualArray } from 'helper';
+import { isEqual } from 'helper';
+import { createRootMemo } from '../helper';
 import { _setState, store } from '../store';
 
 export const defaultHotkeys: Readonly<Record<string, string[]>> = {
@@ -24,26 +24,20 @@ export const setHotkeys = (...args: any[]) => {
     Object.fromEntries(
       Object.entries(store.hotkeys).filter(
         ([name, keys]) =>
-          !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]),
+          !defaultHotkeys[name] || !isEqual(keys, defaultHotkeys[name]),
       ),
     ),
   );
 };
 
-export const { hotkeysMap } = createRoot(() => {
-  const hotkeysMapMemo = createMemo(() =>
-    Object.fromEntries(
-      Object.entries(store.hotkeys).flatMap(([name, key]) =>
-        key.map((k) => [k, name]),
-      ),
+/** 快捷键配置 */
+export const hotkeysMap = createRootMemo(() =>
+  Object.fromEntries(
+    Object.entries(store.hotkeys).flatMap(([name, key]) =>
+      key.map((k) => [k, name]),
     ),
-  );
-
-  return {
-    /** 快捷键配置 */
-    hotkeysMap: hotkeysMapMemo,
-  };
-});
+  ),
+);
 
 /** 删除指定快捷键 */
 export const delHotkeys = (code: string) => {

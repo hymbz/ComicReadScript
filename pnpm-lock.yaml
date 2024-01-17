@@ -11,9 +11,15 @@ dependencies:
   '@placemarkio/flat-drop-files':
     specifier: ^1.0.2
     version: 1.0.2
+  '@solid-primitives/scheduled':
+    specifier: ^1.4.1
+    version: 1.4.1(solid-js@1.8.7)
   browser-fs-access:
     specifier: ^0.35.0
     version: 0.35.0
+  fast-deep-equal:
+    specifier: ^3.1.3
+    version: 3.1.3
   fflate:
     specifier: ^0.8.1
     version: 0.8.1
@@ -44,9 +50,6 @@ dependencies:
   solid-js:
     specifier: ^1.8.7
     version: 1.8.7
-  throttle-debounce:
-    specifier: ^5.0.0
-    version: 5.0.0
   water.css:
     specifier: ^2.1.1
     version: 2.1.1
@@ -103,9 +106,6 @@ devDependencies:
   '@types/shelljs':
     specifier: ^0.8.15
     version: 0.8.15
-  '@types/throttle-debounce':
-    specifier: ^5.0.2
-    version: 5.0.2
   '@types/wicg-file-system-access':
     specifier: ^2023.10.4
     version: 2023.10.4
@@ -2635,6 +2635,14 @@ packages:
     engines: {node: '>=18'}
     dev: true
 
+  /@solid-primitives/scheduled@1.4.1(solid-js@1.8.7):
+    resolution: {integrity: sha512-OLcNXwYpX7HUOEqNPcmR31dkyI1E2imkMDBRlqsGT0ZhJV1L2g0TEREpo4nm/kUhh8LVQzkfnxS+GONx9kh90A==}
+    peerDependencies:
+      solid-js: ^1.6.12
+    dependencies:
+      solid-js: 1.8.7
+    dev: false
+
   /@solidjs/router@0.10.5(solid-js@1.8.7):
     resolution: {integrity: sha512-gxDeiyc97j8/UqzuuasZsQYA7jpmlwjkfpcay11Q2xfzoKR50eBM1AaxAPtf0MlBAdPsdPV3h/k8t5/XQCuebA==}
     peerDependencies:
@@ -2800,10 +2808,6 @@ packages:
 
   /@types/showdown@2.0.4:
     resolution: {integrity: sha512-cSXSKOpTSr2HTdlGq8WskyZwNyxKhM7M/zJeLVdWjlUQmQ4d8TdtPrwz4JejglZdzIzSgU5loi5QUaEJF9JD8w==}
-    dev: true
-
-  /@types/throttle-debounce@5.0.2:
-    resolution: {integrity: sha512-pDzSNulqooSKvSNcksnV72nk8p7gRqN8As71Sp28nov1IgmPKWbOEIwAWvBME5pPTtaXJAvG3O4oc76HlQ4kqQ==}
     dev: true
 
   /@types/trusted-types@2.0.6:
@@ -5290,7 +5294,6 @@ packages:
 
   /fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
-    dev: true
 
   /fast-diff@1.3.0:
     resolution: {integrity: sha512-VxPP4NqbUjj6MaAOafWeUn2cXWLcCtljklUtZf0Ind4XQ+QPtmA0b18zZy0jIQx+ExRVCR/ZQpBmik5lXshNsw==}
@@ -9707,11 +9710,6 @@ packages:
   /text-table@0.2.0:
     resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
     dev: true
-
-  /throttle-debounce@5.0.0:
-    resolution: {integrity: sha512-2iQTSgkkc1Zyk0MeVrt/3BvuOXYPl/R8Z0U2xxo9rjwNciaHDG3R+Lm6dh4EeUci49DanvBnuqI6jshoQQRGEg==}
-    engines: {node: '>=12.22'}
-    dev: false
 
   /through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}

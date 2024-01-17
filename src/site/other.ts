@@ -1,6 +1,5 @@
 // 这个文件里不能含有 jsx 代码，否则会在打包时自动加入 import solidjs 的代码
 
-import { throttle } from 'throttle-debounce';
 import { getInitLang } from 'helper/languages';
 import { triggerLazyLoad, needTrigged, openScrollLock } from 'helper/imgMap';
 import {
@@ -19,6 +18,8 @@ import {
   singleThreaded,
   store,
   watchStore,
+  throttle,
+  showPageList,
 } from 'main';
 
 // 测试案例
@@ -202,14 +203,19 @@ import {
 
     // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
     watchStore(
-      () => store.memo.showImgList,
-      throttle(1000, (showImgList) => {
-        if (!showImgList || !showImgList.length || !store.show) return;
-        imgEleList[
-          Math.min(+showImgList.at(-1)!.alt + 1, imgEleList.length - 1)
-        ]?.scrollIntoView({ behavior: 'instant', block: 'end' });
+      showPageList,
+      throttle(() => {
+        if (!showPageList().length || !store.show) return;
+        const lastImgIndex = store.pageList[showPageList().at(-1)!].findLast(
+          (i) => i !== -1,
+        );
+        if (lastImgIndex === undefined) return;
+        imgEleList[lastImgIndex]?.scrollIntoView({
+          behavior: 'instant',
+          block: 'end',
+        });
         openScrollLock(500);
-      }),
+      }, 1000),
       { defer: true },
     );
 
@@ -221,7 +227,7 @@ import {
         if (show) laseScroll = window.scrollY;
         else {
           openScrollLock(1000);
-          // 稍微延迟一下，等之前触发懒加载时的滚动都结束
+          // 稍微延迟一下，等之前触发懒加载时的滚动结束
           requestAnimationFrame(() => window.scrollTo(0, laseScroll));
         }
       },

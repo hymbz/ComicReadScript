@@ -15,6 +15,7 @@ import { mountComponents, watchStore } from './helper';
 import { toast } from './Toast';
 
 export { store };
+export { showPageList } from '../Manga/actions';
 
 let dom: HTMLDivElement;
 

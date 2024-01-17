@@ -10,14 +10,6 @@ export const ShowState = {
   /** 网格模式 */
   gridMode: false,
 
-  /** 滚动条 */
-  scrollbar: {
-    /** 滚动条高度比率 */
-    dragHeight: 0,
-    /** 滚动条所处高度比率 */
-    dragTop: 0,
-  },
-
   show: {
     /** 是否强制显示工具栏 */
     toolbar: false,

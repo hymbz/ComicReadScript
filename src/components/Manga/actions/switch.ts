@@ -1,8 +1,8 @@
 import { refs, setState, store } from '../store';
-import { updateDrag } from './scrollbar';
 import { zoom } from './zoom';
 import { setOption } from './helper';
-import { nowFillIndex, updatePageData } from './image';
+import { updatePageData } from './image';
+import { nowFillIndex } from './memo';
 
 /** 切换页面填充 */
 export const switchFillEffect = () => {
@@ -23,7 +23,6 @@ export const switchScrollMode = () => {
     draftOption.onePageMode = draftOption.scrollMode;
     updatePageData(state);
   });
-  setState(updateDrag);
   // 切换到卷轴模式后自动定位到对应页
   if (store.option.scrollMode)
     refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();

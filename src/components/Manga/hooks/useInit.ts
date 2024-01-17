@@ -1,29 +1,31 @@
 /* eslint-disable solid/reactivity */
-import { debounce, throttle } from 'throttle-debounce';
-import { createEffect, on, onCleanup } from 'solid-js';
+import { createEffect, on } from 'solid-js';
 
-import { assign } from 'helper';
+import { assign, debounce, throttle } from 'helper';
 import type { MangaProps } from '..';
 import type { State } from '../store';
-import { refs, setState, store } from '../store';
+import { refs, setState } from '../store';
 import {
   defaultHotkeys,
+  defaultImgType,
   focus,
-  handleResize,
+  initResizeObserver,
   resetImgState,
   updateImgLoadType,
   updatePageData,
 } from '../actions';
 import { defaultOption, type Option } from '../store/option';
-import { playAnimation } from '../helper';
+import { createEffectOn, playAnimation } from '../helper';
 
 const createComicImg = (url: string): ComicImg => ({
-  type: store.flag.autoWide ? 'wide' : '',
+  type: defaultImgType(),
   src: url || '',
   loadType: 'wait',
 });
 
 export const useInit = (props: MangaProps) => {
+  initResizeObserver(refs.root);
+
   const watchProps: Partial<
     Record<keyof MangaProps, (state: State) => unknown>
   > = {
@@ -57,26 +59,18 @@ export const useInit = (props: MangaProps) => {
     },
     onPrev: (state) => {
       state.prop.Prev = props.onPrev
-        ? debounce(
-            1000,
-            () => {
-              playAnimation(refs.prev);
-              props.onPrev?.();
-            },
-            { atBegin: true },
-          )
+        ? throttle(() => {
+            playAnimation(refs.prev);
+            props.onPrev?.();
+          }, 1000)
         : undefined;
     },
     onNext: (state) => {
       state.prop.Next = props.onNext
-        ? debounce(
-            1000,
-            () => {
-              playAnimation(refs.next);
-              props.onNext?.();
-            },
-            { atBegin: true },
-          )
+        ? throttle(() => {
+            playAnimation(refs.next);
+            props.onNext?.();
+          }, 1000)
         : undefined;
     },
     editButtonList: (state) => {
@@ -87,17 +81,17 @@ export const useInit = (props: MangaProps) => {
     },
     onLoading: (state) => {
       state.prop.Loading = props.onLoading
-        ? debounce(100, props.onLoading)
+        ? debounce(props.onLoading)
         : undefined;
     },
     onOptionChange: (state) => {
       state.prop.OptionChange = props.onOptionChange
-        ? debounce(100, props.onOptionChange)
+        ? debounce(props.onOptionChange)
         : undefined;
     },
     onHotkeysChange: (state) => {
       state.prop.HotkeysChange = props.onHotkeysChange
-        ? debounce(100, props.onHotkeysChange)
+        ? debounce(props.onHotkeysChange)
         : undefined;
     },
     commentList: (state) => {
@@ -112,18 +106,6 @@ export const useInit = (props: MangaProps) => {
       ),
     ),
   );
-
-  // 初始化页面比例
-  handleResize(refs.root.scrollWidth, refs.root.scrollHeight);
-  // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
-  const resizeObserver = new ResizeObserver(
-    throttle<ResizeObserverCallback>(100, ([{ contentRect }]) => {
-      handleResize(contentRect.width, contentRect.height);
-    }),
-  );
-  resizeObserver.disconnect();
-  resizeObserver.observe(refs.root);
-  onCleanup(() => resizeObserver.disconnect());
 
   const handleImgList = () => {
     setState((state) => {
@@ -184,7 +166,7 @@ export const useInit = (props: MangaProps) => {
   };
 
   // 处理 imgList 参数的初始化和修改
-  createEffect(on(() => props.imgList.join(), throttle(500, handleImgList)));
+  createEffectOn(() => props.imgList.join(), throttle(handleImgList, 500));
 
   focus();
 };

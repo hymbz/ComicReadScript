@@ -10,7 +10,7 @@ const dark = `
 
 --switch: #BDBDBD;
 --switch-bg: #6E6E6E;
---scrollbar-drag: #FFF6;
+--scrollbar-slider: #FFF6;
 
 --page-bg: #303030;
 
@@ -31,7 +31,7 @@ const light = `
 
 --switch: #FAFAFA;
 --switch-bg: #9C9C9C;
---scrollbar-drag: #0006;
+--scrollbar-slider: #0006;
 
 --page-bg: white;
 

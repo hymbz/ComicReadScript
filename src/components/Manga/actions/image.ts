@@ -1,47 +1,9 @@
-import { debounce } from 'throttle-debounce';
-import { createMemo, createRoot } from 'solid-js';
-
-import { clamp } from 'helper';
-import {
-  autoCloseFill,
-  findFillIndex,
-  handleComicData,
-} from '../handleComicData';
+import { clamp, isEqual, debounce } from 'helper';
+import { autoCloseFill, handleComicData } from '../handleComicData';
 import type { State } from '../store';
-import { store, setState, refs } from '../store';
-import { contentHeight, updateDrag } from './scrollbar';
+import { store } from '../store';
 import { setOption } from './helper';
-
-export const { activeImgIndex, nowFillIndex, activePage, preloadNum } =
-  createRoot(() => {
-    const activePageMemo = createMemo(
-      () => store.pageList[store.activePageIndex] ?? [],
-    );
-
-    const activeImgIndexMemo = createMemo(
-      () => activePageMemo().find((i) => i !== -1) ?? 0,
-    );
-
-    const nowFillIndexMemo = createMemo(() =>
-      findFillIndex(activeImgIndexMemo(), store.fillEffect),
-    );
-
-    const preloadNumMemo = createMemo(() => ({
-      back: store.option.preloadPageNum,
-      front: Math.floor(store.option.preloadPageNum / 2),
-    }));
-
-    return {
-      /** 当前显示的第一张图片的 index */
-      activeImgIndex: activeImgIndexMemo,
-      /** 当前所处的图片流 */
-      nowFillIndex: nowFillIndexMemo,
-      /** 当前显示页面 */
-      activePage: activePageMemo,
-      /** 预加载页数 */
-      preloadNum: preloadNumMemo,
-    };
-  });
+import { activeImgIndex, preloadNum } from './memo';
 
 type LoadImgDraft = { editNum: number; loadNum: number };
 const loadImg = (state: State, index: number, draft: LoadImgDraft) => {
@@ -85,25 +47,19 @@ export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
   setOption((draftOption) => {
     const newVal = set
       ? zoomLevel
-      : // 放大到整数再运算，避免精度丢失导致的奇怪的值
-        (store.option.scrollModeImgScale * 100 + zoomLevel * 100) / 100;
-
-    draftOption.scrollModeImgScale = clamp(0.1, newVal, 3);
+      : store.option.scrollModeImgScale + zoomLevel;
+    draftOption.scrollModeImgScale = clamp(0.1, +newVal.toFixed(2), 3);
   });
-  // 在调整图片缩放后使当前滚动进度保持不变
-  refs.mangaFlow.scrollTo({
-    top: contentHeight() * store.scrollbar.dragTop,
-    behavior: 'instant',
-  });
-  setState(updateDrag);
 };
 
 /** 根据当前页数更新所有图片的加载状态 */
-export const updateImgLoadType = debounce(100, (state: State) => {
+export const updateImgLoadType = debounce((state: State) => {
   // 先将所有加载中的图片状态改为暂停
-  state.imgList.forEach((img, i) => {
-    if (img.loadType === 'loading') state.imgList[i].loadType = 'wait';
-  });
+  let i = state.imgList.length;
+  while (i--) {
+    if (state.imgList[i].loadType === 'loading')
+      state.imgList[i].loadType = 'wait';
+  }
 
   return (
     // 优先加载当前显示页
@@ -131,10 +87,12 @@ export const updatePageData = (state: State) => {
     isMobile,
   } = state;
 
+  let newPageList: PageList = [];
   if (onePageMode || scrollMode || isMobile || imgList.length <= 1)
-    state.pageList = imgList.map((_, i) => [i]);
-  else state.pageList = handleComicData(imgList, fillEffect);
-  updateDrag(state);
+    newPageList = imgList.map((_, i) => [i]);
+  else newPageList = handleComicData(imgList, fillEffect);
+  if (!isEqual(state.pageList, newPageList)) state.pageList = newPageList;
+
   updateImgLoadType(state);
 
   // 在图片排列改变后自动跳转回原先显示图片所在的页数
@@ -153,8 +111,9 @@ export const updatePageData = (state: State) => {
  * 3. updatePageData
  */
 export const resetImgState = (state: State) => {
-  state.flag.autoScrollMode = true;
+  state.flag.autoScrollMode = false;
   state.flag.autoWide = false;
+  state.flag.autoLong = false;
   autoCloseFill.clear();
   // 如果用户没有手动修改过首页填充，才将其恢复初始
   if (typeof state.fillEffect['-1'] === 'boolean')

@@ -24,10 +24,9 @@ export const Toolbar: Component = () => {
     >
       <div class={classes.toolbarPanel} on:click={focus}>
         <div class={classes.toolbarBg} />
-        <For
-          each={store.prop.editButtonList(defaultButtonList)}
-          children={(ButtonItem) => <ButtonItem />}
-        />
+        <For each={store.prop.editButtonList(defaultButtonList)}>
+          {(ButtonItem) => <ButtonItem />}
+        </For>
       </div>
     </div>
   );

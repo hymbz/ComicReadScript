@@ -148,8 +148,14 @@ export default function DisplayManga() {
   };
 
   const option: MangaProps['option'] = {
-    // scrollMode: true,
+    scrollMode: true,
   };
 
-  return <Manga imgList={imgList[0]} onExit={onExit} option={option} />;
+  // const duplicateArray = (arr: string[], count: number) =>
+  //   [].concat(...new Array(count).fill(arr));
+
+  // const _imgList = duplicateArray(imgList[1], 30);
+  // log.warn('个数', _imgList.length);
+
+  return <Manga imgList={imgList[1]} onExit={onExit} option={option} />;
 }

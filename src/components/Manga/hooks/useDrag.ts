@@ -1,6 +1,6 @@
 import { onCleanup, onMount } from 'solid-js';
 
-import { isEqual } from 'helper';
+import { approx } from 'helper';
 import { focus } from '../actions';
 
 export interface PointerState {
@@ -98,8 +98,8 @@ export const useDrag = ({
       if (
         handleClick &&
         touches.size === 0 &&
-        isEqual(state.xy[0] - state.initial[0], 0, 5) &&
-        isEqual(state.xy[1] - state.initial[1], 0, 5) &&
+        approx(state.xy[0] - state.initial[0], 0, 5) &&
+        approx(state.xy[1] - state.initial[1], 0, 5) &&
         performance.now() - state.startTime < 200
       )
         handleClick(e);

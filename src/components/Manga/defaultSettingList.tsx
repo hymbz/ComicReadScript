@@ -3,9 +3,8 @@ import MdOutlineFormatTextdirectionRToL from '@material-design-icons/svg/round/f
 
 import { Show, type Component } from 'solid-js';
 
-import { throttle } from 'throttle-debounce';
 import { lang, setLang, t } from 'helper/i18n';
-import { needDarkMode, clamp } from 'helper';
+import { needDarkMode, clamp, throttle } from 'helper';
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
 import { SettingHotkeys } from './components/SettingHotkeys';
@@ -233,7 +232,7 @@ export const defaultSettingList: () => SettingList = () => [
               store.option.customBackground ??
               (store.option.darkMode ? '#000000' : '#ffffff')
             }
-            on:input={throttle(20, (e) => {
+            on:input={throttle((e) => {
               if (!e.target.value) return;
               setOption((draftOption) => {
                 // 在拉到纯黑或纯白时改回初始值
@@ -246,7 +245,7 @@ export const defaultSettingList: () => SettingList = () => [
                     draftOption.customBackground,
                   );
               });
-            })}
+            }, 20)}
           />
         </SettingsItem>
 

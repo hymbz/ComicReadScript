@@ -1,114 +1,107 @@
-import { createRoot, createEffect, on } from 'solid-js';
+import { createRoot } from 'solid-js';
+import { t } from 'helper/i18n';
+import { inRange } from 'helper';
 import type { State } from '../store';
 import { _setState, setState, store } from '../store';
-import { updateImgLoadType, activePage } from './image';
+import { updateImgLoadType } from './image';
 import { resetUI } from './helper';
+import { activePage, renderRange, updateRenderRange } from './memo';
+import { createEffectOn } from '../helper';
 
-export const handleResize = (width: number, height: number) => {
-  if (!(width || height)) return;
-  setState((state) => {
-    state.memo.size = { width, height };
-    state.isMobile = width < 800;
-  });
-};
-
-/** 更新渲染页面相关变量 */
-export const updateRenderPage = (state: State, animation = false) => {
-  state.memo.renderPageList = state.pageList.slice(
-    Math.max(0, state.activePageIndex - 1),
-    Math.min(state.pageList.length, state.activePageIndex + 2),
-  );
-
-  const i = state.memo.renderPageList.indexOf(
-    state.pageList[state.activePageIndex],
-  );
+/** 将页面移回原位 */
+export const resetPage = (state: State, animation = false) => {
+  updateRenderRange(state);
+  if (state.option.scrollMode) {
+    state.page.anima = '';
+    return;
+  }
 
   state.page.offset.x.pct = 0;
   state.page.offset.y.pct = 0;
+  let i = -1;
+  if (inRange(renderRange.start(), state.activePageIndex, renderRange.end()))
+    i = state.activePageIndex - renderRange.start();
   if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;
   else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
 
   state.page.anima = animation ? 'page' : '';
 };
 
-const updateShowPageList = (state: State) => {
-  state.memo.showPageList = [
-    ...new Set(
-      state.memo.showImgList.map(
-        (img) => +img.parentElement!.getAttribute('data-index')!,
-      ),
-    ),
-  ];
-  state.memo.showPageList.sort();
+/** 获取指定图片的提示文本 */
+const getImgTip = (state: State, i: number) => {
+  if (i === -1) return t('other.fill_page');
+  const img = state.imgList[i];
 
-  if (state.option.scrollMode)
-    state.activePageIndex = state.memo.showPageList[0] ?? 0;
+  // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
+  if (img.loadType !== 'loaded')
+    return `${i + 1} (${t(`img_status.${img.loadType}`)})`;
+
+  if (
+    img.translationType &&
+    img.translationType !== 'hide' &&
+    img.translationMessage
+  )
+    return `${i + 1}：${img.translationMessage}`;
+
+  return `${i + 1}`;
 };
 
-export const handleObserver: IntersectionObserverCallback = (entries) => {
-  setState((state) => {
-    entries.forEach(({ isIntersecting, target }) => {
-      if (isIntersecting)
-        state.memo.showImgList.push(target as HTMLImageElement);
-      else
-        state.memo.showImgList = state.memo.showImgList.filter(
-          (img) => img !== target,
-        );
-    });
-
-    if (!store.gridMode) updateShowPageList(state);
-  });
+/** 获取指定页面的提示文本 */
+export const getPageTip = (pageIndex: number): string => {
+  const page = store.pageList[pageIndex];
+  if (!page) return 'null';
+  const pageIndexText = page.map((index) => getImgTip(store, index)) as
+    | [string]
+    | [string, string];
+  if (store.option.dir === 'rtl') pageIndexText.reverse();
+  return pageIndexText.join(store.option.scrollMode ? '\n' : ' | ');
 };
 
 createRoot(() => {
   // 页数发生变动时
-  createEffect(
-    on(
-      () => store.activePageIndex,
-      () => {
-        setState((state) => {
-          updateImgLoadType(state);
-          if (state.show.endPage) state.show.endPage = undefined;
-        });
-      },
-      { defer: true },
-    ),
+  createEffectOn(
+    () => store.activePageIndex,
+    () => {
+      setState((state) => {
+        updateImgLoadType(state);
+        if (state.show.endPage) state.show.endPage = undefined;
+      });
+    },
+    { defer: true },
+  );
+
+  createEffectOn(
+    activePage,
+    (page) => {
+      if (!store.isDragMode) setState(resetPage);
+      // 如果当前显示页面有出错的图片，就重新加载一次
+      page?.forEach((i) => {
+        if (store.imgList[i]?.loadType !== 'error') return;
+        _setState('imgList', i, 'loadType', 'wait');
+      });
+    },
+    { defer: true },
   );
 
   // 在关闭工具栏的同时关掉滚动条的强制显示
-  createEffect(
-    on(
-      () => store.show.toolbar,
-      () => {
-        if (store.show.scrollbar && !store.show.toolbar)
-          _setState('show', 'scrollbar', false);
-      },
-      { defer: true },
-    ),
-  );
-
-  createEffect(
-    on(
-      activePage,
-      (page) => {
-        if (!store.option.scrollMode && !store.isDragMode)
-          setState(updateRenderPage);
-        // 如果当前显示页面有出错的图片，就重新加载一次
-        page?.forEach((i) => {
-          if (store.imgList[i]?.loadType !== 'error') return;
-          _setState('imgList', i, 'loadType', 'wait');
-        });
-      },
-      { defer: true },
-    ),
+  createEffectOn(
+    () => store.show.toolbar,
+    () =>
+      store.show.scrollbar &&
+      !store.show.toolbar &&
+      _setState('show', 'scrollbar', false),
+    { defer: true },
   );
 
   // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
-  createEffect(
-    on(
-      () => store.gridMode,
-      () => setState(resetUI),
-      { defer: true },
-    ),
+  createEffectOn(
+    () => store.gridMode,
+    () => setState(resetUI),
+    { defer: true },
+  );
+
+  createEffectOn(
+    () => store.option.scrollModeImgScale,
+    () => setState(updateRenderRange),
   );
 });
