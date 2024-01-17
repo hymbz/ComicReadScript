@@ -112,6 +112,7 @@ try {
     case 'copymanga.org':
     case 'copymanga.tv':
     case 'copymanga.com':
+    case 'www.mangacopy.com':
     case 'www.copymanga.site':
     case 'www.copymanga.info':
     case 'www.copymanga.net':
