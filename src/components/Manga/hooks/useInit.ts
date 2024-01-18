@@ -17,6 +17,7 @@ import {
 } from '../actions';
 import { defaultOption, type Option } from '../store/option';
 import { createEffectOn, playAnimation } from '../helper';
+import { autoCloseFill } from '../handleComicData';
 
 const createComicImg = (url: string): ComicImg => ({
   type: defaultImgType(),
@@ -118,8 +119,20 @@ export const useInit = (props: MangaProps) => {
           (i) => state.imgList?.[i]?.src,
         ) ?? [];
 
-      /** 判断是否有影响到现有图片流的改动 */
-      let isChange = state.imgList.length !== props.imgList.length;
+      /** 是否需要重置页面填充 */
+      let needResetFillEffect = false;
+      const fillEffectList = Object.keys(state.fillEffect).map((k) => +k);
+      for (let i = 0; i < fillEffectList.length; i++) {
+        const pageIndex = fillEffectList[i];
+        if (pageIndex === -1) continue;
+        if (state.imgList[pageIndex].src === props.imgList[pageIndex]) continue;
+        needResetFillEffect = true;
+        break;
+      }
+
+      /** 是否需要更新页面 */
+      let needUpdatePageData =
+        needResetFillEffect || state.imgList.length !== props.imgList.length;
       /** 传入的是否是新漫画 */
       let isNew = true;
 
@@ -127,24 +140,28 @@ export const useInit = (props: MangaProps) => {
       for (let i = 0; i < props.imgList.length; i++) {
         const url = props.imgList[i];
         if (isNew && imgMap.has(url)) isNew = false;
-        const img = url && !isChange && state.imgList[i];
+        const img = url && !needUpdatePageData && state.imgList[i];
         if (img && img.loadType !== 'wait' && img.src && img.src !== url)
-          isChange = true;
+          needUpdatePageData = true;
         state.imgList[i] = imgMap.get(url) ?? createComicImg(url);
       }
       if (state.imgList.length > props.imgList.length) {
         state.imgList.length = props.imgList.length;
-        isChange = true;
+        needUpdatePageData = true;
       }
 
-      if (isChange) {
-        state.fillEffect = props.fillEffect ?? { '-1': true };
-        resetImgState(state);
-        updatePageData(state);
-      } else updateImgLoadType(state);
       state.prop.Loading?.(state.imgList);
 
+      if (isNew || needResetFillEffect) {
+        state.fillEffect = props.fillEffect ?? { '-1': true };
+        autoCloseFill.clear();
+      }
+
+      if (isNew || needUpdatePageData) updatePageData(state);
+      else updateImgLoadType(state);
+
       if (isNew || state.pageList.length === 0) {
+        resetImgState(state);
         state.activePageIndex = 0;
         scrollTo(0);
         return;
