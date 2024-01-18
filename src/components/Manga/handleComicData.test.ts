@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { beforeEach, expect, it } from 'vitest';
 import { handleComicData, autoCloseFill } from './handleComicData';
 import type { FillEffect } from './store/image';

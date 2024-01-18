@@ -164,7 +164,7 @@ module.exports = {
       },
     }),
     buildConfig({
-      files: ['*.*js'],
+      files: ['*.*js', '*.test.*'],
       parser: '@typescript-eslint/parser',
       extends: [
         'eslint:recommended',
@@ -174,6 +174,8 @@ module.exports = {
       rules: {
         // 禁止提醒使用了 dev 的包
         'import/no-extraneous-dependencies': 'off',
+
+        'no-undef': 'off',
       },
     }),
     buildConfig({

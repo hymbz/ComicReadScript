@@ -14,6 +14,8 @@ import {
   testImgUrl,
   singleThreaded,
   store,
+  requestIdleCallback,
+  getAdPage,
 } from 'main';
 
 declare const selected_tagname: string;
@@ -25,6 +27,8 @@ declare const selected_tagname: string;
       associate_nhentai: true,
       /** 快捷键翻页 */
       hotkeys_page_turn: true,
+      /** 识别广告 */
+      detect_ad: true,
       autoShow: false,
     });
 
@@ -94,20 +98,20 @@ declare const selected_tagname: string;
 
   /** 从详情页获取图片页的地址的正则 */
   const getImgFromDetailsPageRe =
-    /(?<=<a href=").{20,50}(?="><img alt="\d+")/gm;
+    /<a href="(.{20,50})"><img alt=.+?title=".+?: (.+?)"/gm;
 
   /** 从详情页获取图片页的地址 */
-  const getImgFromDetailsPage = async (pageNum = 0): Promise<string[]> => {
+  const getImgFromDetailsPage = async (
+    pageNum = 0,
+  ): Promise<[string, string][]> => {
     const res = await request(
       `${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
       { errorText: t('site.ehentai.fetch_img_page_url_failed') },
     );
 
     // 从详情页获取图片页的地址
-    const imgPageList = res.responseText.match(
-      getImgFromDetailsPageRe,
-    ) as string[];
-    if (imgPageList === null) {
+    const reRes = res.responseText.matchAll(getImgFromDetailsPageRe);
+    if (reRes === null) {
       if (
         res.responseText.includes(
           'Your IP address has been temporarily banned for excessive',
@@ -117,7 +121,7 @@ declare const selected_tagname: string;
       throw new Error(t('site.ehentai.fetch_img_page_url_failed'));
     }
 
-    return imgPageList;
+    return [...reRes].map(([, url, fileName]) => [url, fileName]);
   };
 
   const getImgNum = async () => {
@@ -140,6 +144,18 @@ declare const selected_tagname: string;
 
   const ehImgList: string[] = [];
   const ehImgPageList: string[] = [];
+  const ehImgFileNameList: string[] = [];
+
+  const removeAdPage = () => {
+    const adPageList = getAdPage(ehImgFileNameList);
+    if (!adPageList.size) return;
+    Object.assign(
+      ehImgList,
+      ehImgList.filter((_, i) => !adPageList.has(i)),
+    );
+    ehImgList.length -= adPageList.size;
+    setManga('imgList', ehImgList);
+  };
 
   const { loadImgList } = init(
     dynamicUpdate(async (setImg) => {
@@ -151,11 +167,12 @@ declare const selected_tagname: string;
         const startIndex = ehImgList.length;
         const imgPageUrlList = await getImgFromDetailsPage(pageNum);
         await plimit(
-          imgPageUrlList.map((imgPageUrl, i) => async () => {
+          imgPageUrlList.map(([imgPageUrl, fileName], i) => async () => {
             const imgUrl = await getImgFromImgPage(imgPageUrl);
             const index = startIndex + i;
             ehImgList[index] = imgUrl;
             ehImgPageList[index] = imgPageUrl;
+            ehImgFileNameList[index] = fileName;
             setImg(index, imgUrl);
           }),
           (_doneNum) => {
@@ -164,10 +181,16 @@ declare const selected_tagname: string;
               progress: doneNum / totalImgNum,
               tip: `${t('other.loading_img')} - ${doneNum}/${totalImgNum}`,
             });
-            comicReadModeDom.innerHTML =
-              doneNum !== totalImgNum
-                ? ` loading - ${doneNum}/${totalImgNum}`
-                : ` Read`;
+            comicReadModeDom.innerHTML = ` loading - ${doneNum}/${totalImgNum}`;
+
+            if (doneNum === totalImgNum) {
+              comicReadModeDom.innerHTML = ` Read`;
+              if (
+                options.detect_ad &&
+                document.getElementById('ta_other:extraneous_ads')
+              )
+                requestIdleCallback(removeAdPage);
+            }
           },
         );
       }

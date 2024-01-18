@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { describe, expect, it } from 'vitest';
 import { byPath } from '.';
 
