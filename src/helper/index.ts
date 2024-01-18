@@ -172,7 +172,7 @@ export const singleThreaded = <T extends any[], R>(
 
     if (state.continueRun) {
       state.continueRun = false;
-      setTimeout(fn);
+      setTimeout(fn, 0, ...args);
     } else state.running = false;
 
     return res;

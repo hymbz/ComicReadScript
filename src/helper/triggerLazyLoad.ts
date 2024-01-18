@@ -1,4 +1,6 @@
-import { triggerEleLazyLoad, wait, throttle } from '.';
+import { createScheduled } from '@solid-primitives/scheduled';
+import { singleThreaded } from 'main';
+import { triggerEleLazyLoad, wait, throttle, sleep } from '.';
 
 interface ImgData {
   /** 触发次数 */
@@ -67,6 +69,7 @@ const tryCorrectUrl = (e: Element) => {
 /** 判断一个元素是否已经触发完懒加载 */
 const isLazyLoaded = (e: HTMLImageElement, oldSrc?: string) => {
   if (!e.src) return false;
+  if (!e.offsetParent) return false;
   if (oldSrc !== undefined && e.src !== oldSrc) return true;
   if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
   return false;
@@ -112,47 +115,55 @@ imgShowObserver = new IntersectionObserver((entries) =>
   }),
 );
 
-const triggerTurnPage = throttle(() => {
+const turnPageScheduled = createScheduled((fn) => throttle(fn, 1000));
+/** 触发翻页 */
+const triggerTurnPage = async (waitTime = 0) => {
+  if (!turnPageScheduled()) return;
   const nowScroll = window.scrollY;
   // 滚到底部再滚回来，触发可能存在的自动翻页脚本
   window.scroll({ top: document.body.scrollHeight, behavior: 'auto' });
   document.body.dispatchEvent(new Event('scroll', { bubbles: true }));
+  if (waitTime) await sleep(waitTime);
   window.scroll({ top: nowScroll, behavior: 'auto' });
-}, 500);
-
-let timeoutId: number;
-/** 触发页面上所有图片元素的懒加载 */
-export const triggerLazyLoad = async (
-  getAllImg: () => HTMLImageElement[],
-  getWaitTime: () => number,
-) => {
-  // 过滤掉已经被触发过懒加载的图片
-  const targetImgList = getAllImg().filter(needTrigged);
-  targetImgList.forEach((e) => {
-    imgShowObserver.observe(e);
-    if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));
-  });
-
-  for (let i = 0; i < targetImgList.length; i++) {
-    await wait(() => !scrollLock.enabled);
-    triggerTurnPage();
-    const e = targetImgList[i];
-    if (!needTrigged(e)) continue;
-    tryCorrectUrl(e);
-
-    const waitTime = getWaitTime();
-
-    if (
-      (await triggerEleLazyLoad(e, waitTime, () =>
-        isLazyLoaded(e, imgMap.get(e)?.oldSrc),
-      )) ||
-      waitTime
-    )
-      handleTrigged(e);
-  }
-
-  if (targetImgList.length !== 0) {
-    if (timeoutId) window.clearTimeout(timeoutId);
-    timeoutId = window.setTimeout(triggerLazyLoad, 500, getAllImg, getWaitTime);
-  }
 };
+
+/** 触发页面上所有图片元素的懒加载 */
+export const triggerLazyLoad = singleThreaded(
+  async (
+    state,
+    getAllImg: () => HTMLImageElement[],
+    getWaitTime: () => number,
+  ) => {
+    // 过滤掉已经被触发过懒加载的图片
+    const targetImgList = getAllImg()
+      .filter(needTrigged)
+      .sort((a, b) => a.offsetTop - b.offsetTop);
+    targetImgList.forEach((e) => {
+      imgShowObserver.observe(e);
+      if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));
+    });
+
+    for (let i = 0; i < targetImgList.length; i++) {
+      await wait(() => !scrollLock.enabled);
+      const waitTime = getWaitTime();
+
+      await triggerTurnPage(waitTime);
+
+      const e = targetImgList[i];
+      if (!needTrigged(e)) continue;
+      tryCorrectUrl(e);
+
+      if (
+        (await triggerEleLazyLoad(e, waitTime, () =>
+          isLazyLoaded(e, imgMap.get(e)?.oldSrc),
+        )) ||
+        waitTime
+      )
+        handleTrigged(e);
+    }
+
+    await triggerTurnPage();
+
+    if (targetImgList.length !== 0) state.continueRun = true;
+  },
+);

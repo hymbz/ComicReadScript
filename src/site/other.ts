@@ -1,7 +1,11 @@
 // 这个文件里不能含有 jsx 代码，否则会在打包时自动加入 import solidjs 的代码
 
 import { getInitLang } from 'helper/languages';
-import { triggerLazyLoad, needTrigged, openScrollLock } from 'helper/imgMap';
+import {
+  triggerLazyLoad,
+  needTrigged,
+  openScrollLock,
+} from 'helper/triggerLazyLoad';
 import { getEleSelector, isEleSelector } from 'helper/eleSelector';
 import {
   t,
@@ -103,9 +107,7 @@ import {
     const getAllImg = () =>
       querySelectorAll<HTMLImageElement>(
         `:not(${imgBlackList.join(',')}) > img`,
-      )
-        // 根据位置从小到大排序
-        .sort((a, b) => a.offsetTop - b.offsetTop);
+      );
 
     let imgEleList: HTMLImageElement[];
 
@@ -113,12 +115,16 @@ import {
     /** 检查筛选符合标准的图片元素用于更新 imgList */
     const updateImgList = singleThreaded(async () => {
       imgEleList = await wait(() => {
-        const newImgList = getAllImg().filter(
-          (e) =>
-            (e.naturalHeight > 500 && e.naturalWidth > 500) ||
-            (isEleSelector(e, options.selector) &&
-              (e.naturalHeight > 500 || e.naturalWidth > 500)),
-        );
+        const newImgList = getAllImg()
+          .filter(
+            (e) =>
+              (e.offsetParent &&
+                e.naturalHeight > 500 &&
+                e.naturalWidth > 500) ||
+              (isEleSelector(e, options.selector) &&
+                (e.naturalHeight > 500 || e.naturalWidth > 500)),
+          )
+          .sort((a, b) => a.offsetTop - b.offsetTop);
         return newImgList.length >= 2 && newImgList;
       });
 
@@ -178,12 +184,11 @@ import {
       });
     }, 3000);
 
-    const triggerAllLazyLoad = singleThreaded(() =>
+    const triggerAllLazyLoad = () =>
       triggerLazyLoad(getAllImg, () =>
         // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时停留一段时间
         mangaProps.show || (!timeout && !mangaProps.imgList.length) ? 300 : 0,
-      ),
-    );
+      );
 
     /** 监视页面元素发生变化的 Observer */
     const imgDomObserver = new MutationObserver(() => {
