@@ -16,6 +16,7 @@ import {
   store,
   requestIdleCallback,
   getAdPage,
+  createStyle,
 } from 'main';
 
 declare const selected_tagname: string;
@@ -146,6 +147,7 @@ declare const selected_tagname: string;
   const ehImgPageList: string[] = [];
   const ehImgFileNameList: string[] = [];
 
+  const setStyle = createStyle();
   const removeAdPage = () => {
     const adPageList = getAdPage(ehImgFileNameList);
     if (!adPageList.size) return;
@@ -155,6 +157,16 @@ declare const selected_tagname: string;
     );
     ehImgList.length -= adPageList.size;
     setManga('imgList', ehImgList);
+    setStyle(
+      [...adPageList]
+        .map(
+          (i) =>
+            `img[alt="${
+              i + 1
+            }"]:not(:hover) { filter: blur(8px); clip-path: border-box; }`,
+        )
+        .join('\n'),
+    );
   };
 
   const { loadImgList } = init(

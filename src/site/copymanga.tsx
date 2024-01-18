@@ -1,5 +1,11 @@
 import type { InitOptions, RequestDetails } from 'main';
-import { eachApi, querySelectorClick, wait, querySelector } from 'main';
+import {
+  eachApi,
+  querySelectorClick,
+  wait,
+  querySelector,
+  createStyle,
+} from 'main';
 
 const apiList = [
   'https://api.copymanga.info',
@@ -64,7 +70,8 @@ const api = (url: string, details?: RequestDetails) =>
     if (!comicName || !token) return;
 
     let a: HTMLAnchorElement;
-    let style: HTMLStyleElement;
+
+    const setStyle = createStyle();
 
     const updateLastChapter = async () => {
       // 因为拷贝漫画的目录是动态加载的，所以要等目录加载出来再往上添加
@@ -98,12 +105,10 @@ const api = (url: string, details?: RequestDetails) =>
         return;
       }
 
-      const css = `ul a[href*="${lastChapterId}"] {
+      setStyle(`ul a[href*="${lastChapterId}"] {
         color: #fff !important;
         background: #1790E6;
-      }`;
-      if (style) style.textContent = css;
-      else style = await GM.addStyle(css);
+      }`);
 
       a.href = `${window.location.pathname}/chapter/${lastChapterId}`;
       a.textContent = data?.results?.browse?.chapter_name as string;
