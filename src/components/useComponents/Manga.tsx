@@ -6,12 +6,13 @@ import { createMemo, createSignal } from 'solid-js';
 
 import { t } from 'helper/i18n';
 import { createStore } from 'solid-js/store';
+import { createEffectOn } from 'helper/solidJs';
 import { IconButton, IconButtonStyle } from '../IconButton';
 import type { MangaProps } from '../Manga';
 import { buttonListDivider, MangaStyle, Manga, store } from '../Manga';
 import { request } from '../../helper/request';
 import { saveAs } from '../../helper';
-import { mountComponents, watchStore } from './helper';
+import { mountComponents } from './helper';
 import { toast } from './Toast';
 
 export { store };
@@ -62,8 +63,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
     ...initProps,
   });
 
-  // eslint-disable-next-line solid/reactivity
-  watchStore([() => props.imgList.length, () => props.show], () => {
+  createEffectOn([() => props.imgList.length, () => props.show], () => {
     if (!dom) {
       dom = mountComponents('comicRead', () => (
         <>

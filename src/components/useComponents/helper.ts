@@ -1,4 +1,4 @@
-import { type JSX, createEffect, createRoot, on } from 'solid-js';
+import type { JSX } from 'solid-js';
 import { render } from 'solid-js/web';
 
 const getDom = (id: string) => {
@@ -22,6 +22,3 @@ export const mountComponents = (id: string, fc: () => JSX.Element) => {
   render(fc, shadowDom);
   return dom;
 };
-
-export const watchStore = ((deps: any, fn: any, options = { defer: true }) =>
-  createRoot(() => createEffect(on(deps, fn, options)))) as typeof on;

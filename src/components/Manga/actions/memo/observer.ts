@@ -1,14 +1,12 @@
 import { createRoot, createSignal, onCleanup } from 'solid-js';
-import { inRange, isEqual, throttle } from 'helper';
-import { createEffectOn } from '../../helper';
+import { inRange, throttle } from 'helper';
+import { createEffectOn, createEqualsSignal } from 'helper/solidJs';
 import { store, _setState, setState } from '../../store';
 
 /** 当前显示的图片 */
 export const showImgList = new Set<HTMLImageElement>();
 
-const [_showPageList, setShowPageList] = createSignal([] as number[], {
-  equals: isEqual,
-});
+const [_showPageList, setShowPageList] = createEqualsSignal<number[]>([]);
 /** 当前显示的页面 */
 export const showPageList = _showPageList;
 const updateShowPageList = throttle(() => {

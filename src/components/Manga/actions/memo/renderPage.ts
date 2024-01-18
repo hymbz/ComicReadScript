@@ -1,10 +1,10 @@
 import { createRoot, createSignal } from 'solid-js';
 import { inRange } from 'helper';
+import { createEffectOn } from 'helper/solidJs';
 import type { State } from '../../store';
 import { setState, store } from '../../store';
 import { contentHeight, imgTopList } from './common';
 import { rootSize, scrollTop } from './observer';
-import { createEffectOn } from '../../helper';
 
 const [renderRangeStart, setRenderRangeStart] = createSignal(0);
 const [renderRangeEnd, setRenderRangeEnd] = createSignal(0);

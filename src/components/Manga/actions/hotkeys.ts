@@ -1,5 +1,5 @@
 import { isEqual } from 'helper';
-import { createRootMemo } from '../helper';
+import { createRootMemo } from 'helper/solidJs';
 import { _setState, store } from '../store';
 
 export const defaultHotkeys: Readonly<Record<string, string[]>> = {

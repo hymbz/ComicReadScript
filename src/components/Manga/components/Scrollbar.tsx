@@ -1,7 +1,7 @@
 import type { Component, JSX } from 'solid-js';
 import { createSignal, createMemo, Show, onMount } from 'solid-js';
 import { boolDataVal, debounce } from 'helper';
-import { createMemoMap, createThrottleMemo } from '../helper';
+import { createMemoMap, createThrottleMemo } from 'helper/solidJs';
 import { refs, store } from '../store';
 import { useDrag } from '../hooks/useDrag';
 import {

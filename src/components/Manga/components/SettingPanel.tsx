@@ -1,7 +1,7 @@
 import type { Component } from 'solid-js';
-import { For, createMemo, createSignal } from 'solid-js';
-
+import { For, createSignal } from 'solid-js';
 import { lang } from 'helper/i18n';
+import { createRootMemo } from 'helper/solidJs';
 import { defaultSettingList } from '../defaultSettingList';
 import { store } from '../store';
 import { stopPropagation } from '../helper';
@@ -10,7 +10,7 @@ import classes from '../index.module.css';
 
 /** 菜单面板 */
 export const SettingPanel: Component = () => {
-  const settingList = createMemo(() =>
+  const settingList = createRootMemo(() =>
     store.prop.editSettingList(defaultSettingList()),
   );
 

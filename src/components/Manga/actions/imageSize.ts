@@ -1,11 +1,11 @@
 import { createRoot } from 'solid-js';
 import { getImgSize, plimit, singleThreaded } from 'helper';
+import { createEffectOn } from 'helper/solidJs';
 import type { State } from '../store';
 import { setState, store } from '../store';
 import { isWideImg } from '../handleComicData';
 import { resetImgState, updatePageData } from './image';
 import { rootSize } from './memo';
-import { createEffectOn } from '../helper';
 
 /** 根据比例更新图片类型。返回是否修改了图片类型 */
 const updateImgType = (state: State, draftImg: ComicImg) => {

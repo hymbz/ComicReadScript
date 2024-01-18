@@ -427,7 +427,7 @@ export const requestIdleCallback = (
 ) => {
   if (Reflect.has(window, 'requestIdleCallback'))
     return window.requestIdleCallback(callback, { timeout });
-  return window.setTimeout(callback, 1);
+  return window.setTimeout(callback, 16);
 };
 
 /**

@@ -1,7 +1,7 @@
 /* eslint-disable solid/reactivity */
 import { createEffect, on } from 'solid-js';
-
 import { assign, debounce, throttle } from 'helper';
+import { createEffectOn } from 'helper/solidJs';
 import type { MangaProps } from '..';
 import type { State } from '../store';
 import { refs, setState } from '../store';
@@ -16,7 +16,7 @@ import {
   updatePageData,
 } from '../actions';
 import { defaultOption, type Option } from '../store/option';
-import { createEffectOn, playAnimation } from '../helper';
+import { playAnimation } from '../helper';
 import { autoCloseFill } from '../handleComicData';
 
 const createComicImg = (url: string): ComicImg => ({

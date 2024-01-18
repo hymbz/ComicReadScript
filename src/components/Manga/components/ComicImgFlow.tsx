@@ -1,8 +1,8 @@
 import type { Component, JSX } from 'solid-js';
 import { For, Show, createMemo, onMount } from 'solid-js';
 import { boolDataVal } from 'helper';
+import { createEffectOn, createMemoMap } from 'helper/solidJs';
 import { refs, setState, store } from '../store';
-import { createEffectOn, createMemoMap } from '../helper';
 import {
   bindRef,
   handleClick,

@@ -22,9 +22,9 @@ import {
   log,
   singleThreaded,
   store,
-  watchStore,
   throttle,
   showPageList,
+  createEffectOn,
 } from 'main';
 
 // 测试案例
@@ -214,7 +214,7 @@ import {
     });
 
     // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
-    watchStore(
+    createEffectOn(
       showPageList,
       throttle(() => {
         if (!showPageList().length || !store.show) return;
@@ -233,7 +233,7 @@ import {
 
     // 在退出阅读模式时跳回之前的滚动位置
     let laseScroll = window.scrollY;
-    watchStore(
+    createEffectOn(
       () => store.show,
       (show) => {
         if (show) laseScroll = window.scrollY;

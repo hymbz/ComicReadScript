@@ -1,12 +1,12 @@
 import { createRoot } from 'solid-js';
 import { t } from 'helper/i18n';
 import { inRange } from 'helper';
+import { createEffectOn } from 'helper/solidJs';
 import type { State } from '../store';
 import { _setState, setState, store } from '../store';
 import { updateImgLoadType } from './image';
 import { resetUI } from './helper';
 import { activePage, renderRange, updateRenderRange } from './memo';
-import { createEffectOn } from '../helper';
 
 /** 将页面移回原位 */
 export const resetPage = (state: State, animation = false) => {

@@ -2,11 +2,11 @@ import type { Component } from 'solid-js';
 import { For, createMemo } from 'solid-js';
 
 import { boolDataVal } from 'helper';
+import { createThrottleMemo } from 'helper/solidJs';
 import { store } from '../store';
 import { contentHeight, imgHeightList } from '../actions';
 
 import classes from '../index.module.css';
-import { createThrottleMemo } from '../helper';
 
 interface ScrollbarPageItem {
   /** 图片数量 */
