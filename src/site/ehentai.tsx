@@ -14,24 +14,31 @@ import {
   testImgUrl,
   singleThreaded,
   store,
-  requestIdleCallback,
   getAdPage,
   createStyle,
+  createEffectOn,
 } from 'main';
 
 declare const selected_tagname: string;
 
 (async () => {
-  const { options, init, setFab, setManga, dynamicUpdate, onLoading } =
-    await useInit('ehentai', {
-      /** 关联 nhentai */
-      associate_nhentai: true,
-      /** 快捷键翻页 */
-      hotkeys_page_turn: true,
-      /** 识别广告 */
-      detect_ad: true,
-      autoShow: false,
-    });
+  const {
+    options,
+    init,
+    setFab,
+    setManga,
+    dynamicUpdate,
+    onLoading,
+    mangaProps,
+  } = await useInit('ehentai', {
+    /** 关联 nhentai */
+    associate_nhentai: true,
+    /** 快捷键翻页 */
+    hotkeys_page_turn: true,
+    /** 识别广告 */
+    detect_ad: true,
+    autoShow: false,
+  });
 
   if (Reflect.has(unsafeWindow, 'mpvkey')) {
     const imgEleList = querySelectorAll('.mi0[id]');
@@ -142,32 +149,39 @@ declare const selected_tagname: string;
     return 0;
   };
   const totalImgNum = await getImgNum();
+  const placeValueNum = `${totalImgNum}`.length;
 
   const ehImgList: string[] = [];
   const ehImgPageList: string[] = [];
   const ehImgFileNameList: string[] = [];
 
   const setStyle = createStyle();
-  const removeAdPage = () => {
-    const adPageList = getAdPage(ehImgFileNameList);
-    if (!adPageList.size) return;
-    Object.assign(
-      ehImgList,
-      ehImgList.filter((_, i) => !adPageList.has(i)),
-    );
-    ehImgList.length -= adPageList.size;
-    setManga('imgList', ehImgList);
-    setStyle(
-      [...adPageList]
-        .map(
-          (i) =>
-            `img[alt="${
-              i + 1
-            }"]:not(:hover) { filter: blur(8px); clip-path: border-box; }`,
-        )
-        .join('\n'),
-    );
-  };
+  createEffectOn(
+    () => mangaProps.adList,
+    () => {
+      if (!mangaProps.adList?.size) return;
+      setStyle(
+        [...mangaProps.adList]
+          .map((i) => {
+            const alt = `${i + 1}`.padStart(placeValueNum, '0');
+            return `img[alt="${alt}"]:not(:hover) { filter: blur(8px); clip-path: border-box; }`;
+          })
+          .join('\n'),
+      );
+    },
+  );
+
+  const enableDetectAd =
+    options.detect_ad && document.getElementById('ta_other:extraneous_ads');
+  if (enableDetectAd) {
+    // 根据当前显示的图片获取一部分临时文件名
+    querySelectorAll<HTMLImageElement>('.gdtl img').forEach((e) => {
+      const index = +e.alt - 1;
+      if (Number.isNaN(index)) return;
+      [, ehImgFileNameList[index]] = e.title.split(/：|: /);
+    });
+    setManga('adList', getAdPage(ehImgFileNameList));
+  }
 
   const { loadImgList } = init(
     dynamicUpdate(async (setImg) => {
@@ -197,11 +211,8 @@ declare const selected_tagname: string;
 
             if (doneNum === totalImgNum) {
               comicReadModeDom.innerHTML = ` Read`;
-              if (
-                options.detect_ad &&
-                document.getElementById('ta_other:extraneous_ads')
-              )
-                requestIdleCallback(removeAdPage);
+              if (enableDetectAd)
+                setManga('adList', getAdPage(ehImgFileNameList));
             }
           },
         );

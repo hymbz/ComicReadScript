@@ -1,7 +1,7 @@
 const beforeTextRe = /^\D+(?=\d)/;
 const hasNum = /\d/;
 
-export const getAdPage = (fileNameList: string[]) => {
+export const getAdPage = (fileNameList: Array<string | undefined>) => {
   const adIndexList = new Set<number>();
 
   /** 根据前戳对所有文件名进行分组 */
@@ -9,9 +9,9 @@ export const getAdPage = (fileNameList: string[]) => {
 
   fileNameList.forEach((fileName, i) => {
     // 没有数字的肯定是广告图
-    if (!hasNum.test(fileName)) return adIndexList.add(i);
+    if (fileName && !hasNum.test(fileName)) return adIndexList.add(i);
 
-    const beforeText = fileName.match(beforeTextRe)?.[0] ?? '';
+    const beforeText = fileName?.match(beforeTextRe)?.[0] ?? '';
     if (!beforeTextMap[beforeText]) beforeTextMap[beforeText] = new Set();
     beforeTextMap[beforeText].add(i);
   });

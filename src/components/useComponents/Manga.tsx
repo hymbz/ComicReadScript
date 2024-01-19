@@ -20,10 +20,12 @@ export { showPageList } from '../Manga/actions';
 
 let dom: HTMLDivElement;
 
+type UseMangaProps = MangaProps & { adList?: Set<number> };
+
 /**
  * 显示漫画阅读窗口
  */
-export const useManga = async (initProps?: Partial<MangaProps>) => {
+export const useManga = async (initProps?: Partial<UseMangaProps>) => {
   await GM.addStyle(`
     #comicRead {
       position: fixed;
@@ -57,17 +59,23 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
     }
   `);
 
-  const [props, setProps] = createStore<MangaProps>({
+  const [props, setProps] = createStore<UseMangaProps>({
     imgList: [],
     show: false,
     ...initProps,
   });
 
-  createEffectOn([() => props.imgList.length, () => props.show], () => {
+  const imgList = createMemo(() =>
+    props.adList
+      ? props.imgList.filter((_, i) => !props.adList!.has(i))
+      : props.imgList,
+  );
+
+  createEffectOn([() => imgList().length, () => props.show], () => {
     if (!dom) {
       dom = mountComponents('comicRead', () => (
         <>
-          <Manga {...props} />
+          <Manga {...props} imgList={imgList()} />
           <style type="text/css">{IconButtonStyle}</style>
           <style type="text/css">{MangaStyle}</style>
         </>
@@ -75,7 +83,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
       dom.style.setProperty('z-index', '2147483647', 'important');
     }
 
-    if (props.imgList.length && props.show) {
+    if (imgList().length && props.show) {
       dom.setAttribute('show', '');
       document.documentElement.style.overflow = 'hidden';
     } else {
@@ -92,21 +100,21 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
 
     const handleDownload = async () => {
       const fileData: fflate.Zippable = {};
-      const imgIndexNum = `${props.imgList.length}`.length;
 
-      const imgList = store.imgList.map((img) =>
+      const downImgList = store.imgList.map((img) =>
         img.translationType === 'show'
           ? `${img.translationUrl!}#.${getFileExt(img.src)}`
           : img.src,
       );
+      const imgIndexNum = `${downImgList.length}`.length;
 
-      for (let i = 0; i < imgList.length; i += 1) {
-        setStatu(`${i}/${imgList.length}`);
+      for (let i = 0; i < downImgList.length; i += 1) {
+        setStatu(`${i}/${downImgList.length}`);
         const index = `${i}`.padStart(imgIndexNum, '0');
-        const fileExt = getFileExt(imgList[i]) ?? 'jpg';
+        const fileExt = getFileExt(downImgList[i]) ?? 'jpg';
         const fileName = `${index}.${fileExt}`;
         try {
-          const res = await request<ArrayBuffer>(imgList[i], {
+          const res = await request<ArrayBuffer>(downImgList[i], {
             responseType: 'arraybuffer',
           });
           fileData[fileName] = new Uint8Array(res.response);
