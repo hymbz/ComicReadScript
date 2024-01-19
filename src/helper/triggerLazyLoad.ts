@@ -1,6 +1,11 @@
 import { createScheduled } from '@solid-primitives/scheduled';
-import { singleThreaded } from 'main';
-import { triggerEleLazyLoad, wait, throttle, sleep } from '.';
+import {
+  singleThreaded,
+  triggerEleLazyLoad,
+  wait,
+  throttle,
+  sleep,
+} from 'main';
 
 interface ImgData {
   /** 触发次数 */

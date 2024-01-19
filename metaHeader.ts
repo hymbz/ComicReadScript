@@ -37,9 +37,8 @@ const resource = {
   prod: {} as Record<string, string | undefined>,
 };
 Object.entries(resourceList).forEach(([k, v]) => {
-  const name = k.replaceAll('/', '|');
-  resource.prod[name] = v.at(0);
-  resource.dev[name] = v.at(-1);
+  resource.prod[k] = v.at(0);
+  resource.dev[k] = v.at(-1);
 });
 
 /** 根据 index.ts 的注释获取支持站点列表 */
@@ -54,7 +53,7 @@ export const updateReadme = () => {
   const readmePath = resolve(__dirname, 'README.md');
   const readmeMd = fs.readFileSync(readmePath, 'utf8');
   const newMd = readmeMd.replace(
-    /(?<=<!-- supportSiteList -->\n\n).+(?=\n\n<!-- supportSiteList -->)/s,
+    /(?<=<!-- supportSiteList -->\n\n).*(?=\n\n<!-- supportSiteList -->)/s,
     getSupportSiteList()
       .slice(7)
       .map((siteText) => `- ${siteText}`)
@@ -135,7 +134,16 @@ export const getMetaData = (isDevMode: boolean) => {
   const keyLength = Math.max(...Object.keys(meta).map((key) => key.length)) + 1;
 
   const createMetaHeader = (metaData: Record<string, any>) => {
-    const metaText = Object.entries(metaData)
+    const _metaData: typeof metaData = JSON.parse(JSON.stringify(metaData));
+
+    // 将 @resource 中的 / 替换为 |，以兼容 ios 的油猴扩展
+    Object.keys(_metaData.resource).forEach((key) => {
+      if (!key.includes('/')) return;
+      _metaData.resource[key.replaceAll('/', '|')] = _metaData.resource[key];
+      Reflect.deleteProperty(_metaData.resource, key);
+    });
+
+    const metaText = Object.entries(_metaData)
       .filter(([, val]) => val)
       .map(([key, val]) => {
         switch (typeof val) {

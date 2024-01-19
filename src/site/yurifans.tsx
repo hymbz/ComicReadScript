@@ -5,7 +5,7 @@ import {
   toast,
   useInit,
   wait,
-} from '../main';
+} from 'main';
 
 declare const b2token: string;
 
