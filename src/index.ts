@@ -460,21 +460,18 @@ try {
     case 'hitomi.la': {
       options = {
         name: 'hitomi',
+        wait: () => !!unsafeWindow.galleryinfo?.files,
         getImgList: () =>
-          main
-            .wait(() => unsafeWindow.galleryinfo?.files as object[])
-            .then((files) =>
-              files.map(
-                (img) =>
-                  unsafeWindow.url_from_url_from_hash(
-                    unsafeWindow.galleryinfo.id,
-                    img,
-                    'webp',
-                    undefined,
-                    'a',
-                  ) as string,
-              ),
-            ),
+          (unsafeWindow.galleryinfo?.files as object[]).map(
+            (img) =>
+              unsafeWindow.url_from_url_from_hash(
+                unsafeWindow.galleryinfo.id,
+                img,
+                'webp',
+                undefined,
+                'a',
+              ) as string,
+          ),
       };
       break;
     }
