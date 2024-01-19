@@ -123,15 +123,4 @@ createRoot(() => {
       ),
     );
   });
-
-  // 在卷轴模式下缩放时保持滚动进度不变
-  createEffectOn(
-    [contentHeight, scrollTop, () => store.option.scrollModeImgScale],
-    ([newHeight, , newScale], prev) => {
-      if (!prev) return;
-      const [oldHeight, oldScrollTop, oldScale] = prev;
-      if (newScale === oldScale) return;
-      scrollTo(oldScrollTop ? (oldScrollTop / oldHeight) * newHeight : 0);
-    },
-  );
 });

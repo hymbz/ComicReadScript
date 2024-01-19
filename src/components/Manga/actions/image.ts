@@ -2,8 +2,8 @@ import { clamp, isEqual, debounce } from 'helper';
 import { autoCloseFill, handleComicData } from '../handleComicData';
 import type { State } from '../store';
 import { store } from '../store';
-import { setOption } from './helper';
-import { activeImgIndex, preloadNum } from './memo';
+import { scrollTo, setOption } from './helper';
+import { activeImgIndex, contentHeight, preloadNum, scrollTop } from './memo';
 
 type LoadImgDraft = { editNum: number; loadNum: number };
 const loadImg = (state: State, index: number, draft: LoadImgDraft) => {
@@ -44,12 +44,18 @@ const loadPageImg = (state: State, loadPageNum = Infinity, loadNum = 2) => {
 };
 
 export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
+  const oldHeight = contentHeight();
+  const oldScrollTop = scrollTop();
+
   setOption((draftOption) => {
     const newVal = set
       ? zoomLevel
       : store.option.scrollModeImgScale + zoomLevel;
     draftOption.scrollModeImgScale = clamp(0.1, +newVal.toFixed(2), 3);
   });
+
+  // 在卷轴模式下缩放时保持滚动进度不变
+  scrollTo(oldScrollTop ? (oldScrollTop / oldHeight) * contentHeight() : 0);
 };
 
 /** 根据当前页数更新所有图片的加载状态 */
