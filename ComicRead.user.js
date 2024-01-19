@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.4.3
+// @version         8.5.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -45,10 +45,10 @@
 // @grant           unsafeWindow
 // @icon            data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAACBUExURUxpcWB9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i////198il17idng49DY3PT297/K0MTP1M3X27rHzaCxupmstbTByK69xOfr7bfFy3WOmqi4wPz9/X+XomSBjqW1vZOmsN/l6GmFkomeqe7x8vn6+kv+1vUAAAAOdFJOUwDsAoYli9zV+lIqAZEDwV05SQAAAUZJREFUOMuFk+eWgjAUhGPBiLohjZACUqTp+z/gJkqJy4rzg3Nn+MjhwB0AANjv4BEtdITBHjhtQ4g+CIZbC4Qb9FGb0J4P0YrgCezQqgIA14EDGN8fYz+f3BGMASFkTJ+GDAYMUSONzrFL7SVvjNQIz4B9VERRmV0rbJWbrIwidnsd6ACMlEoip3uad3X2HJmqb3gCkkJELwk5DExRDxA6HnKaDEPSsBnAsZoANgJaoAkg12IJqBiPACImXQKF9IDULIHUkOk7kDpeAMykHqCEWACy8ACdSM7LGSg5F3HtAU1rrkaK9uGAshXS2lZ5QH/nVhmlD8rKlmbO3ZsZwLe8qnpdxJRnLaci1X1V5R32fjd5CndVkfYdGpy3D+htU952C/ypzPtdt3JflzZYBy7fi/O1euvl/XH1Pp+Cw3/1P1xOZwB+AWMcP/iw0AlKAAAAV3pUWHRSYXcgcHJvZmlsZSB0eXBlIGlwdGMAAHic4/IMCHFWKCjKT8vMSeVSAAMjCy5jCxMjE0uTFAMTIESANMNkAyOzVCDL2NTIxMzEHMQHy4BIoEouAOoXEXTyQjWVAAAAAElFTkSuQmCC
 // @resource        solid-js https://registry.npmmirror.com/solid-js/1.8.7/files/dist/solid.cjs
-// @resource        solid-js|store https://registry.npmmirror.com/solid-js/1.8.7/files/store/dist/store.cjs
-// @resource        solid-js|web https://registry.npmmirror.com/solid-js/1.8.7/files/web/dist/web.cjs
 // @resource        fflate https://registry.npmmirror.com/fflate/0.8.1/files/umd/index.js
 // @resource        dmzjDecrypt https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199
+// @resource        solid-js|store https://registry.npmmirror.com/solid-js/1.8.7/files/store/dist/store.cjs
+// @resource        solid-js|web https://registry.npmmirror.com/solid-js/1.8.7/files/web/dist/web.cjs
 // @supportURL      https://github.com/hymbz/ComicReadScript/issues
 // @updateURL       https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
 // @downloadURL     https://github.com/hymbz/ComicReadScript/raw/master/ComicRead.user.js
@@ -80,15 +80,14 @@ const crsLib = {
 };
 const tempName = Math.random().toString(36).slice(2);
 const evalCode = code => {
-  try {
-    // eslint-disable-next-line no-eval
-    eval.call(unsafeWindow, code);
-  } catch (_) {
-    // 一些网站比如推特会触发 CSP，无法使用 eval 来执行，只能改用 GM_addElement
-    GM_addElement('script', {
-      textContent: code
-    })?.remove();
-  }
+  // 因为部分网站会对 eval 进行限制，比如推特（CSP）、hitomi（代理 window.eval 进行拦截）
+  // 所以优先使用最通用的 GM_addElement 来加载
+  if (gmApi.GM_addElement) return GM_addElement('script', {
+    textContent: code
+  })?.remove();
+
+  // eslint-disable-next-line no-eval
+  eval.call(unsafeWindow, code);
 };
 
 /**
@@ -98,16 +97,221 @@ const evalCode = code => {
 const selfImportSync = name => {
   const code = name !== 'main' ? GM_getResourceText(name.replaceAll('/', '|')) :`
 const solidJs = require('solid-js');
+const web = require('solid-js/web');
+const store$2 = require('solid-js/store');
 const fflate = require('fflate');
 const main = require('main');
 
+// src/index.ts
+var debounce$1 = (callback, wait) => {
+  if (web.isServer) {
+    return Object.assign(() => void 0, { clear: () => void 0 });
+  }
+  let timeoutId;
+  const clear = () => clearTimeout(timeoutId);
+  if (solidJs.getOwner())
+    solidJs.onCleanup(clear);
+  const debounced = (...args) => {
+    if (timeoutId !== void 0)
+      clear();
+    timeoutId = setTimeout(() => callback(...args), wait);
+  };
+  return Object.assign(debounced, { clear });
+};
+var throttle$1 = (callback, wait) => {
+  if (web.isServer) {
+    return Object.assign(() => void 0, { clear: () => void 0 });
+  }
+  let isThrottled = false, timeoutId, lastArgs;
+  const throttled = (...args) => {
+    lastArgs = args;
+    if (isThrottled)
+      return;
+    isThrottled = true;
+    timeoutId = setTimeout(() => {
+      callback(...lastArgs);
+      isThrottled = false;
+    }, wait);
+  };
+  const clear = () => {
+    clearTimeout(timeoutId);
+    isThrottled = false;
+  };
+  if (solidJs.getOwner())
+    solidJs.onCleanup(clear);
+  return Object.assign(throttled, { clear });
+};
+var scheduleIdle = web.isServer ? () => Object.assign(() => void 0, { clear: () => void 0 }) : (
+  // requestIdleCallback is not supported in Safari
+  window.requestIdleCallback ? (callback, maxWait) => {
+    let isDeferred = false, id, lastArgs;
+    const deferred = (...args) => {
+      lastArgs = args;
+      if (isDeferred)
+        return;
+      isDeferred = true;
+      id = requestIdleCallback(
+        () => {
+          callback(...lastArgs);
+          isDeferred = false;
+        },
+        { timeout: maxWait }
+      );
+    };
+    const clear = () => {
+      cancelIdleCallback(id);
+      isDeferred = false;
+    };
+    if (solidJs.getOwner())
+      solidJs.onCleanup(clear);
+    return Object.assign(deferred, { clear });
+  } : (
+    // fallback to setTimeout (throttle)
+    (callback) => throttle$1(callback)
+  )
+);
+function leadingAndTrailing(schedule, callback, wait) {
+  if (web.isServer) {
+    let called = false;
+    const scheduled2 = (...args) => {
+      if (called)
+        return;
+      called = true;
+      callback(...args);
+    };
+    return Object.assign(scheduled2, { clear: () => void 0 });
+  }
+  let State;
+  ((State2) => {
+    State2[State2["Ready"] = 0] = "Ready";
+    State2[State2["Leading"] = 1] = "Leading";
+    State2[State2["Trailing"] = 2] = "Trailing";
+  })(State || (State = {}));
+  let state = 0 /* Ready */;
+  const scheduled = schedule((args) => {
+    state === 2 /* Trailing */ && callback(...args);
+    state = 0 /* Ready */;
+  }, wait);
+  const fn = (...args) => {
+    if (state !== 2 /* Trailing */) {
+      if (state === 0 /* Ready */)
+        callback(...args);
+      state += 1;
+    }
+    scheduled(args);
+  };
+  const clear = () => {
+    state = 0 /* Ready */;
+    scheduled.clear();
+  };
+  if (solidJs.getOwner())
+    solidJs.onCleanup(clear);
+  return Object.assign(fn, { clear });
+}
+function createScheduled(schedule) {
+  let listeners = 0;
+  let isDirty = false;
+  const [track, dirty] = solidJs.createSignal(void 0, { equals: false });
+  const call = schedule(() => {
+    isDirty = true;
+    dirty();
+  });
+  return () => {
+    if (!isDirty)
+      call(), track();
+    if (isDirty) {
+      isDirty = !!listeners;
+      return true;
+    }
+    if (solidJs.getListener()) {
+      listeners++;
+      solidJs.onCleanup(() => listeners--);
+    }
+    return false;
+  };
+}
+
+function getDefaultExportFromCjs (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+var es6 = function equal(a, b) {
+  if (a === b) return true;
+
+  if (a && b && typeof a == 'object' && typeof b == 'object') {
+    if (a.constructor !== b.constructor) return false;
+
+    var length, i, keys;
+    if (Array.isArray(a)) {
+      length = a.length;
+      if (length != b.length) return false;
+      for (i = length; i-- !== 0;)
+        if (!equal(a[i], b[i])) return false;
+      return true;
+    }
+
+
+    if ((a instanceof Map) && (b instanceof Map)) {
+      if (a.size !== b.size) return false;
+      for (i of a.entries())
+        if (!b.has(i[0])) return false;
+      for (i of a.entries())
+        if (!equal(i[1], b.get(i[0]))) return false;
+      return true;
+    }
+
+    if ((a instanceof Set) && (b instanceof Set)) {
+      if (a.size !== b.size) return false;
+      for (i of a.entries())
+        if (!b.has(i[0])) return false;
+      return true;
+    }
+
+    if (ArrayBuffer.isView(a) && ArrayBuffer.isView(b)) {
+      length = a.length;
+      if (length != b.length) return false;
+      for (i = length; i-- !== 0;)
+        if (a[i] !== b[i]) return false;
+      return true;
+    }
+
+
+    if (a.constructor === RegExp) return a.source === b.source && a.flags === b.flags;
+    if (a.valueOf !== Object.prototype.valueOf) return a.valueOf() === b.valueOf();
+    if (a.toString !== Object.prototype.toString) return a.toString() === b.toString();
+
+    keys = Object.keys(a);
+    length = keys.length;
+    if (length !== Object.keys(b).length) return false;
+
+    for (i = length; i-- !== 0;)
+      if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false;
+
+    for (i = length; i-- !== 0;) {
+      var key = keys[i];
+
+      if (!equal(a[key], b[key])) return false;
+    }
+
+    return true;
+  }
+
+  // true if both NaN, false otherwise
+  return a!==a && b!==b;
+};
+
+const isEqual = /*@__PURE__*/getDefaultExportFromCjs(es6);
+
+const throttle = (fn, wait = 100) => leadingAndTrailing(throttle$1, fn, wait);
+const debounce = (fn, wait = 100) => debounce$1(fn, wait);
 const sleep = ms => new Promise(resolve => {
   window.setTimeout(resolve, ms);
 });
 const clamp = (min, val, max) => Math.max(Math.min(max, val), min);
+const inRange = (min, val, max) => val >= min && val <= max;
 
 /** 判断两个数是否在指定误差范围内相等 */
-const isEqual = (val, target, range) => Math.abs(target - val) <= range;
+const approx = (val, target, range) => Math.abs(target - val) <= range;
 
 /** 根据传入的条件列表的真假，对 val 进行取反 */
 const ifNot = (val, ...conditions) => {
@@ -149,9 +353,6 @@ const querySelectorClick = selector => {
   const getDom = () => typeof selector === 'string' ? querySelector(selector) : selector();
   if (getDom()) return () => getDom()?.click();
 };
-
-/** 判断两个列表中包含的值是否相同 */
-const isEqualArray = (a, b) => a.length === b.length && !a.some(t => !b.includes(t));
 
 /** 找出数组中出现最多次的元素 */
 const getMostItem = list => {
@@ -224,7 +425,7 @@ const singleThreaded = callback => {
     }
     if (state.continueRun) {
       state.continueRun = false;
-      setTimeout(fn);
+      setTimeout(fn, 0, ...args);
     } else state.running = false;
     return res;
   };
@@ -385,13 +586,13 @@ const difference = (a, b) => {
  *
  * 不会修改参数对象，返回的是新对象
  */
-const assign$1 = (a, b) => {
+const assign = (a, b) => {
   const res = JSON.parse(JSON.stringify(a));
   const keys = Object.keys(b);
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
     if (res[key] === undefined) res[key] = b[key];else if (typeof b[key] === 'object') {
-      const _res = assign$1(res[key], b[key]);
+      const _res = assign(res[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
     } else if (res[key] !== b[key]) res[key] = b[key];
   }
@@ -426,11 +627,11 @@ const byPath = (obj, path, handleVal) => {
   if (target === obj) return null;
   return target;
 };
-const requestIdleCallback = (callback, timeout) => {
+const requestIdleCallback$1 = (callback, timeout) => {
   if (Reflect.has(window, 'requestIdleCallback')) return window.requestIdleCallback(callback, {
     timeout
   });
-  return window.setTimeout(callback, 1);
+  return window.setTimeout(callback, 16);
 };
 
 /**
@@ -462,6 +663,14 @@ const getKeyboardCode = e => {
 
 /** 将快捷键的编码转换成更易读的形式 */
 const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\\s$/, 'Space');
+
+/** 创建一个可以不断更新的 style 元素 */
+const createStyle = () => {
+  let style;
+  return async css => {
+    if (style) style.textContent = css;else style = await GM.addStyle(css);
+  };
+};
 
 const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
 const log = (...args) =>
@@ -664,6 +873,7 @@ const zh = {
       associate_nhentai: "关联nhentai",
       auto_page_turn: "自动翻页",
       block_totally: "彻底屏蔽漫画",
+      detect_ad: "识别广告页",
       hotkeys_page_turn: "快捷键翻页",
       open_link_new_page: "在新页面中打开链接",
       remember_current_site: "记住当前站点"
@@ -686,6 +896,7 @@ const zh = {
     show_settings_menu: "显示设置菜单",
     simple: {
       auto_read_mode_message: "已默认开启「自动进入阅读模式」",
+      no_img: "未找到合适的漫画图片，如有需要可点此关闭简易阅读模式",
       simple_read_mode: "使用简易阅读模式"
     }
   },
@@ -912,6 +1123,7 @@ const en = {
       associate_nhentai: "Associate nhentai",
       auto_page_turn: "Auto page turning",
       block_totally: "Totally block comics",
+      detect_ad: "Detect advertise page",
       hotkeys_page_turn: "Page turning with hotkeys",
       open_link_new_page: "Open links in a new page",
       remember_current_site: "Remember the current site"
@@ -934,6 +1146,7 @@ const en = {
     show_settings_menu: "Show settings menu",
     simple: {
       auto_read_mode_message: "\\"Auto enter reading mode\\" is enabled by default",
+      no_img: "No suitable comic images were found. If necessary, you can click here to close the simple reading mode.",
       simple_read_mode: "Enter simple reading mode"
     }
   },
@@ -1160,6 +1373,7 @@ const ru = {
       associate_nhentai: "Ассоциация с nhentai",
       auto_page_turn: "Автопереворот страниц",
       block_totally: "Глобально заблокировать комиксы",
+      detect_ad: "Detect advertise page",
       hotkeys_page_turn: "Переворот страниц горячими клавишами",
       open_link_new_page: "Открывать ссылки в новой вкладке",
       remember_current_site: "Запомнить текущий сайт"
@@ -1182,6 +1396,7 @@ const ru = {
     show_settings_menu: "Показать меню настроек",
     simple: {
       auto_read_mode_message: "\\"Автоматически включать режим чтения\\" по умолчанию",
+      no_img: "No suitable comic images were found. If necessary, you can click here to close the simple reading mode.",
       simple_read_mode: "Включить простой режим чтения"
     }
   },
@@ -1272,633 +1487,6 @@ const t = solidJs.createRoot(() => {
   };
 });
 
-const booleans = [
-  "allowfullscreen",
-  "async",
-  "autofocus",
-  "autoplay",
-  "checked",
-  "controls",
-  "default",
-  "disabled",
-  "formnovalidate",
-  "hidden",
-  "indeterminate",
-  "inert",
-  "ismap",
-  "loop",
-  "multiple",
-  "muted",
-  "nomodule",
-  "novalidate",
-  "open",
-  "playsinline",
-  "readonly",
-  "required",
-  "reversed",
-  "seamless",
-  "selected"
-];
-const Properties = /*#__PURE__*/ new Set([
-  "className",
-  "value",
-  "readOnly",
-  "formNoValidate",
-  "isMap",
-  "noModule",
-  "playsInline",
-  ...booleans
-]);
-const ChildProperties = /*#__PURE__*/ new Set([
-  "innerHTML",
-  "textContent",
-  "innerText",
-  "children"
-]);
-const Aliases = /*#__PURE__*/ Object.assign(Object.create(null), {
-  className: "class",
-  htmlFor: "for"
-});
-const PropAliases = /*#__PURE__*/ Object.assign(Object.create(null), {
-  class: "className",
-  formnovalidate: {
-    $: "formNoValidate",
-    BUTTON: 1,
-    INPUT: 1
-  },
-  ismap: {
-    $: "isMap",
-    IMG: 1
-  },
-  nomodule: {
-    $: "noModule",
-    SCRIPT: 1
-  },
-  playsinline: {
-    $: "playsInline",
-    VIDEO: 1
-  },
-  readonly: {
-    $: "readOnly",
-    INPUT: 1,
-    TEXTAREA: 1
-  }
-});
-function getPropAlias(prop, tagName) {
-  const a = PropAliases[prop];
-  return typeof a === "object" ? (a[tagName] ? a["$"] : undefined) : a;
-}
-const DelegatedEvents = /*#__PURE__*/ new Set([
-  "beforeinput",
-  "click",
-  "dblclick",
-  "contextmenu",
-  "focusin",
-  "focusout",
-  "input",
-  "keydown",
-  "keyup",
-  "mousedown",
-  "mousemove",
-  "mouseout",
-  "mouseover",
-  "mouseup",
-  "pointerdown",
-  "pointermove",
-  "pointerout",
-  "pointerover",
-  "pointerup",
-  "touchend",
-  "touchmove",
-  "touchstart"
-]);
-const SVGElements = /*#__PURE__*/ new Set([
-  "altGlyph",
-  "altGlyphDef",
-  "altGlyphItem",
-  "animate",
-  "animateColor",
-  "animateMotion",
-  "animateTransform",
-  "circle",
-  "clipPath",
-  "color-profile",
-  "cursor",
-  "defs",
-  "desc",
-  "ellipse",
-  "feBlend",
-  "feColorMatrix",
-  "feComponentTransfer",
-  "feComposite",
-  "feConvolveMatrix",
-  "feDiffuseLighting",
-  "feDisplacementMap",
-  "feDistantLight",
-  "feFlood",
-  "feFuncA",
-  "feFuncB",
-  "feFuncG",
-  "feFuncR",
-  "feGaussianBlur",
-  "feImage",
-  "feMerge",
-  "feMergeNode",
-  "feMorphology",
-  "feOffset",
-  "fePointLight",
-  "feSpecularLighting",
-  "feSpotLight",
-  "feTile",
-  "feTurbulence",
-  "filter",
-  "font",
-  "font-face",
-  "font-face-format",
-  "font-face-name",
-  "font-face-src",
-  "font-face-uri",
-  "foreignObject",
-  "g",
-  "glyph",
-  "glyphRef",
-  "hkern",
-  "image",
-  "line",
-  "linearGradient",
-  "marker",
-  "mask",
-  "metadata",
-  "missing-glyph",
-  "mpath",
-  "path",
-  "pattern",
-  "polygon",
-  "polyline",
-  "radialGradient",
-  "rect",
-  "set",
-  "stop",
-  "svg",
-  "switch",
-  "symbol",
-  "text",
-  "textPath",
-  "tref",
-  "tspan",
-  "use",
-  "view",
-  "vkern"
-]);
-const SVGNamespace = {
-  xlink: "http://www.w3.org/1999/xlink",
-  xml: "http://www.w3.org/XML/1998/namespace"
-};
-
-function reconcileArrays(parentNode, a, b) {
-  let bLength = b.length,
-    aEnd = a.length,
-    bEnd = bLength,
-    aStart = 0,
-    bStart = 0,
-    after = a[aEnd - 1].nextSibling,
-    map = null;
-  while (aStart < aEnd || bStart < bEnd) {
-    if (a[aStart] === b[bStart]) {
-      aStart++;
-      bStart++;
-      continue;
-    }
-    while (a[aEnd - 1] === b[bEnd - 1]) {
-      aEnd--;
-      bEnd--;
-    }
-    if (aEnd === aStart) {
-      const node = bEnd < bLength ? (bStart ? b[bStart - 1].nextSibling : b[bEnd - bStart]) : after;
-      while (bStart < bEnd) parentNode.insertBefore(b[bStart++], node);
-    } else if (bEnd === bStart) {
-      while (aStart < aEnd) {
-        if (!map || !map.has(a[aStart])) a[aStart].remove();
-        aStart++;
-      }
-    } else if (a[aStart] === b[bEnd - 1] && b[bStart] === a[aEnd - 1]) {
-      const node = a[--aEnd].nextSibling;
-      parentNode.insertBefore(b[bStart++], a[aStart++].nextSibling);
-      parentNode.insertBefore(b[--bEnd], node);
-      a[aEnd] = b[bEnd];
-    } else {
-      if (!map) {
-        map = new Map();
-        let i = bStart;
-        while (i < bEnd) map.set(b[i], i++);
-      }
-      const index = map.get(a[aStart]);
-      if (index != null) {
-        if (bStart < index && index < bEnd) {
-          let i = aStart,
-            sequence = 1,
-            t;
-          while (++i < aEnd && i < bEnd) {
-            if ((t = map.get(a[i])) == null || t !== index + sequence) break;
-            sequence++;
-          }
-          if (sequence > index - bStart) {
-            const node = a[aStart];
-            while (bStart < index) parentNode.insertBefore(b[bStart++], node);
-          } else parentNode.replaceChild(b[bStart++], a[aStart++]);
-        } else aStart++;
-      } else a[aStart++].remove();
-    }
-  }
-}
-
-const $$EVENTS = "_$DX_DELEGATE";
-function render(code, element, init, options = {}) {
-  let disposer;
-  solidJs.createRoot(dispose => {
-    disposer = dispose;
-    element === document
-      ? code()
-      : insert(element, code(), element.firstChild ? null : undefined, init);
-  }, options.owner);
-  return () => {
-    disposer();
-    element.textContent = "";
-  };
-}
-function template(html, isCE, isSVG) {
-  let node;
-  const create = () => {
-    const t = document.createElement("template");
-    t.innerHTML = html;
-    return isSVG ? t.content.firstChild.firstChild : t.content.firstChild;
-  };
-  const fn = isCE
-    ? () => solidJs.untrack(() => document.importNode(node || (node = create()), true))
-    : () => (node || (node = create())).cloneNode(true);
-  fn.cloneNode = fn;
-  return fn;
-}
-function delegateEvents(eventNames, document = window.document) {
-  const e = document[$$EVENTS] || (document[$$EVENTS] = new Set());
-  for (let i = 0, l = eventNames.length; i < l; i++) {
-    const name = eventNames[i];
-    if (!e.has(name)) {
-      e.add(name);
-      document.addEventListener(name, eventHandler);
-    }
-  }
-}
-function setAttribute(node, name, value) {
-  if (solidJs.sharedConfig.context) return;
-  if (value == null) node.removeAttribute(name);
-  else node.setAttribute(name, value);
-}
-function setAttributeNS(node, namespace, name, value) {
-  if (solidJs.sharedConfig.context) return;
-  if (value == null) node.removeAttributeNS(namespace, name);
-  else node.setAttributeNS(namespace, name, value);
-}
-function className(node, value) {
-  if (solidJs.sharedConfig.context) return;
-  if (value == null) node.removeAttribute("class");
-  else node.className = value;
-}
-function addEventListener(node, name, handler, delegate) {
-  if (delegate) {
-    if (Array.isArray(handler)) {
-      node[\`$$\${name}\`] = handler[0];
-      node[\`$$\${name}Data\`] = handler[1];
-    } else node[\`$$\${name}\`] = handler;
-  } else if (Array.isArray(handler)) {
-    const handlerFn = handler[0];
-    node.addEventListener(name, (handler[0] = e => handlerFn.call(node, handler[1], e)));
-  } else node.addEventListener(name, handler);
-}
-function classList(node, value, prev = {}) {
-  const classKeys = Object.keys(value || {}),
-    prevKeys = Object.keys(prev);
-  let i, len;
-  for (i = 0, len = prevKeys.length; i < len; i++) {
-    const key = prevKeys[i];
-    if (!key || key === "undefined" || value[key]) continue;
-    toggleClassKey(node, key, false);
-    delete prev[key];
-  }
-  for (i = 0, len = classKeys.length; i < len; i++) {
-    const key = classKeys[i],
-      classValue = !!value[key];
-    if (!key || key === "undefined" || prev[key] === classValue || !classValue) continue;
-    toggleClassKey(node, key, true);
-    prev[key] = classValue;
-  }
-  return prev;
-}
-function style(node, value, prev) {
-  if (!value) return prev ? setAttribute(node, "style") : value;
-  const nodeStyle = node.style;
-  if (typeof value === "string") return (nodeStyle.cssText = value);
-  typeof prev === "string" && (nodeStyle.cssText = prev = undefined);
-  prev || (prev = {});
-  value || (value = {});
-  let v, s;
-  for (s in prev) {
-    value[s] == null && nodeStyle.removeProperty(s);
-    delete prev[s];
-  }
-  for (s in value) {
-    v = value[s];
-    if (v !== prev[s]) {
-      nodeStyle.setProperty(s, v);
-      prev[s] = v;
-    }
-  }
-  return prev;
-}
-function spread(node, props = {}, isSVG, skipChildren) {
-  const prevProps = {};
-  if (!skipChildren) {
-    solidJs.createRenderEffect(
-      () => (prevProps.children = insertExpression(node, props.children, prevProps.children))
-    );
-  }
-  solidJs.createRenderEffect(() => props.ref && props.ref(node));
-  solidJs.createRenderEffect(() => assign(node, props, isSVG, true, prevProps, true));
-  return prevProps;
-}
-function use(fn, element, arg) {
-  return solidJs.untrack(() => fn(element, arg));
-}
-function insert(parent, accessor, marker, initial) {
-  if (marker !== undefined && !initial) initial = [];
-  if (typeof accessor !== "function") return insertExpression(parent, accessor, initial, marker);
-  solidJs.createRenderEffect(current => insertExpression(parent, accessor(), current, marker), initial);
-}
-function assign(node, props, isSVG, skipChildren, prevProps = {}, skipRef = false) {
-  props || (props = {});
-  for (const prop in prevProps) {
-    if (!(prop in props)) {
-      if (prop === "children") continue;
-      prevProps[prop] = assignProp(node, prop, null, prevProps[prop], isSVG, skipRef);
-    }
-  }
-  for (const prop in props) {
-    if (prop === "children") {
-      if (!skipChildren) insertExpression(node, props.children);
-      continue;
-    }
-    const value = props[prop];
-    prevProps[prop] = assignProp(node, prop, value, prevProps[prop], isSVG, skipRef);
-  }
-}
-function getNextElement(template) {
-  let node, key;
-  if (!solidJs.sharedConfig.context || !(node = solidJs.sharedConfig.registry.get((key = getHydrationKey())))) {
-    return template();
-  }
-  if (solidJs.sharedConfig.completed) solidJs.sharedConfig.completed.add(node);
-  solidJs.sharedConfig.registry.delete(key);
-  return node;
-}
-function toPropertyName(name) {
-  return name.toLowerCase().replace(/-([a-z])/g, (_, w) => w.toUpperCase());
-}
-function toggleClassKey(node, key, value) {
-  const classNames = key.trim().split(/\\s+/);
-  for (let i = 0, nameLen = classNames.length; i < nameLen; i++)
-    node.classList.toggle(classNames[i], value);
-}
-function assignProp(node, prop, value, prev, isSVG, skipRef) {
-  let isCE, isProp, isChildProp, propAlias, forceProp;
-  if (prop === "style") return style(node, value, prev);
-  if (prop === "classList") return classList(node, value, prev);
-  if (value === prev) return prev;
-  if (prop === "ref") {
-    if (!skipRef) value(node);
-  } else if (prop.slice(0, 3) === "on:") {
-    const e = prop.slice(3);
-    prev && node.removeEventListener(e, prev);
-    value && node.addEventListener(e, value);
-  } else if (prop.slice(0, 10) === "oncapture:") {
-    const e = prop.slice(10);
-    prev && node.removeEventListener(e, prev, true);
-    value && node.addEventListener(e, value, true);
-  } else if (prop.slice(0, 2) === "on") {
-    const name = prop.slice(2).toLowerCase();
-    const delegate = DelegatedEvents.has(name);
-    if (!delegate && prev) {
-      const h = Array.isArray(prev) ? prev[0] : prev;
-      node.removeEventListener(name, h);
-    }
-    if (delegate || value) {
-      addEventListener(node, name, value, delegate);
-      delegate && delegateEvents([name]);
-    }
-  } else if (prop.slice(0, 5) === "attr:") {
-    setAttribute(node, prop.slice(5), value);
-  } else if (
-    (forceProp = prop.slice(0, 5) === "prop:") ||
-    (isChildProp = ChildProperties.has(prop)) ||
-    (!isSVG &&
-      ((propAlias = getPropAlias(prop, node.tagName)) || (isProp = Properties.has(prop)))) ||
-    (isCE = node.nodeName.includes("-"))
-  ) {
-    if (forceProp) {
-      prop = prop.slice(5);
-      isProp = true;
-    } else if (solidJs.sharedConfig.context) return value;
-    if (prop === "class" || prop === "className") className(node, value);
-    else if (isCE && !isProp && !isChildProp) node[toPropertyName(prop)] = value;
-    else node[propAlias || prop] = value;
-  } else {
-    const ns = isSVG && prop.indexOf(":") > -1 && SVGNamespace[prop.split(":")[0]];
-    if (ns) setAttributeNS(node, ns, prop, value);
-    else setAttribute(node, Aliases[prop] || prop, value);
-  }
-  return value;
-}
-function eventHandler(e) {
-  const key = \`$$\${e.type}\`;
-  let node = (e.composedPath && e.composedPath()[0]) || e.target;
-  if (e.target !== node) {
-    Object.defineProperty(e, "target", {
-      configurable: true,
-      value: node
-    });
-  }
-  Object.defineProperty(e, "currentTarget", {
-    configurable: true,
-    get() {
-      return node || document;
-    }
-  });
-  if (solidJs.sharedConfig.registry && !solidJs.sharedConfig.done) solidJs.sharedConfig.done = _$HY.done = true;
-  while (node) {
-    const handler = node[key];
-    if (handler && !node.disabled) {
-      const data = node[\`\${key}Data\`];
-      data !== undefined ? handler.call(node, data, e) : handler.call(node, e);
-      if (e.cancelBubble) return;
-    }
-    node = node._$host || node.parentNode || node.host;
-  }
-}
-function insertExpression(parent, value, current, marker, unwrapArray) {
-  if (solidJs.sharedConfig.context) {
-    !current && (current = [...parent.childNodes]);
-    let cleaned = [];
-    for (let i = 0; i < current.length; i++) {
-      const node = current[i];
-      if (node.nodeType === 8 && node.data.slice(0, 2) === "!$") node.remove();
-      else cleaned.push(node);
-    }
-    current = cleaned;
-  }
-  while (typeof current === "function") current = current();
-  if (value === current) return current;
-  const t = typeof value,
-    multi = marker !== undefined;
-  parent = (multi && current[0] && current[0].parentNode) || parent;
-  if (t === "string" || t === "number") {
-    if (solidJs.sharedConfig.context) return current;
-    if (t === "number") value = value.toString();
-    if (multi) {
-      let node = current[0];
-      if (node && node.nodeType === 3) {
-        node.data = value;
-      } else node = document.createTextNode(value);
-      current = cleanChildren(parent, current, marker, node);
-    } else {
-      if (current !== "" && typeof current === "string") {
-        current = parent.firstChild.data = value;
-      } else current = parent.textContent = value;
-    }
-  } else if (value == null || t === "boolean") {
-    if (solidJs.sharedConfig.context) return current;
-    current = cleanChildren(parent, current, marker);
-  } else if (t === "function") {
-    solidJs.createRenderEffect(() => {
-      let v = value();
-      while (typeof v === "function") v = v();
-      current = insertExpression(parent, v, current, marker);
-    });
-    return () => current;
-  } else if (Array.isArray(value)) {
-    const array = [];
-    const currentArray = current && Array.isArray(current);
-    if (normalizeIncomingArray(array, value, current, unwrapArray)) {
-      solidJs.createRenderEffect(() => (current = insertExpression(parent, array, current, marker, true)));
-      return () => current;
-    }
-    if (solidJs.sharedConfig.context) {
-      if (!array.length) return current;
-      if (marker === undefined) return [...parent.childNodes];
-      let node = array[0];
-      let nodes = [node];
-      while ((node = node.nextSibling) !== marker) nodes.push(node);
-      return (current = nodes);
-    }
-    if (array.length === 0) {
-      current = cleanChildren(parent, current, marker);
-      if (multi) return current;
-    } else if (currentArray) {
-      if (current.length === 0) {
-        appendNodes(parent, array, marker);
-      } else reconcileArrays(parent, current, array);
-    } else {
-      current && cleanChildren(parent);
-      appendNodes(parent, array);
-    }
-    current = array;
-  } else if (value.nodeType) {
-    if (solidJs.sharedConfig.context && value.parentNode) return (current = multi ? [value] : value);
-    if (Array.isArray(current)) {
-      if (multi) return (current = cleanChildren(parent, current, marker, value));
-      cleanChildren(parent, current, null, value);
-    } else if (current == null || current === "" || !parent.firstChild) {
-      parent.appendChild(value);
-    } else parent.replaceChild(value, parent.firstChild);
-    current = value;
-  } else;
-  return current;
-}
-function normalizeIncomingArray(normalized, array, current, unwrap) {
-  let dynamic = false;
-  for (let i = 0, len = array.length; i < len; i++) {
-    let item = array[i],
-      prev = current && current[i],
-      t;
-    if (item == null || item === true || item === false);
-    else if ((t = typeof item) === "object" && item.nodeType) {
-      normalized.push(item);
-    } else if (Array.isArray(item)) {
-      dynamic = normalizeIncomingArray(normalized, item, prev) || dynamic;
-    } else if (t === "function") {
-      if (unwrap) {
-        while (typeof item === "function") item = item();
-        dynamic =
-          normalizeIncomingArray(
-            normalized,
-            Array.isArray(item) ? item : [item],
-            Array.isArray(prev) ? prev : [prev]
-          ) || dynamic;
-      } else {
-        normalized.push(item);
-        dynamic = true;
-      }
-    } else {
-      const value = String(item);
-      if (prev && prev.nodeType === 3 && prev.data === value) normalized.push(prev);
-      else normalized.push(document.createTextNode(value));
-    }
-  }
-  return dynamic;
-}
-function appendNodes(parent, array, marker = null) {
-  for (let i = 0, len = array.length; i < len; i++) parent.insertBefore(array[i], marker);
-}
-function cleanChildren(parent, current, marker, replacement) {
-  if (marker === undefined) return (parent.textContent = "");
-  const node = replacement || document.createTextNode("");
-  if (current.length) {
-    let inserted = false;
-    for (let i = current.length - 1; i >= 0; i--) {
-      const el = current[i];
-      if (node !== el) {
-        const isParent = el.parentNode === parent;
-        if (!inserted && !i)
-          isParent ? parent.replaceChild(node, el) : parent.insertBefore(node, marker);
-        else isParent && el.remove();
-      } else inserted = true;
-    }
-  } else parent.insertBefore(node, marker);
-  return [node];
-}
-function getHydrationKey() {
-  const hydrate = solidJs.sharedConfig.context;
-  return \`\${hydrate.id}\${hydrate.count++}\`;
-}
-const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
-function createElement(tagName, isSVG = false) {
-  return isSVG ? document.createElementNS(SVG_NAMESPACE, tagName) : document.createElement(tagName);
-}
-function Dynamic(props) {
-  const [p, others] = solidJs.splitProps(props, ["component"]);
-  const cached = solidJs.createMemo(() => p.component);
-  return solidJs.createMemo(() => {
-    const component = cached();
-    switch (typeof component) {
-      case "function":
-        return solidJs.untrack(() => component(others));
-      case "string":
-        const isSvg = SVGElements.has(component);
-        const el = solidJs.sharedConfig.context ? getNextElement() : createElement(component, isSvg);
-        spread(el, others, isSvg);
-        return el;
-    }
-  });
-}
-
 const getDom = id => {
   let dom = document.getElementById(id);
   if (dom) {
@@ -1918,386 +1506,18 @@ const mountComponents = (id, fc) => {
   const shadowDom = dom.attachShadow({
     mode: 'closed'
   });
-  render(fc, shadowDom);
+  web.render(fc, shadowDom);
   return dom;
 };
-const watchStore = (deps, fn, options = {
-  defer: true
-}) => solidJs.createRoot(() => solidJs.createEffect(solidJs.on(deps, fn, options)));
 
 var css$3 = ".index_module_root__d8c71ff0{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__d8c71ff0{align-items:center;animation:index_module_bounceInRight__d8c71ff0 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__d8c71ff0>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__d8c71ff0[data-exit]{animation:index_module_bounceOutRight__d8c71ff0 .5s 1}.index_module_schedule__d8c71ff0{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__d8c71ff0[data-schedule] .index_module_schedule__d8c71ff0{transition:transform .1s}.index_module_item__d8c71ff0:not([data-schedule]) .index_module_schedule__d8c71ff0{animation:index_module_schedule__d8c71ff0 linear 1 forwards}:is(.index_module_item__d8c71ff0:hover,.index_module_item__d8c71ff0[data-schedule],.index_module_root__d8c71ff0[data-paused]) .index_module_schedule__d8c71ff0{animation-play-state:paused}.index_module_msg__d8c71ff0{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__d8c71ff0 h2{margin:0}.index_module_msg__d8c71ff0 h3{margin:.7em 0}.index_module_msg__d8c71ff0 ul{margin:0;text-align:left}.index_module_msg__d8c71ff0 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__d8c71ff0 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__d8c71ff0{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__d8c71ff0{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__d8c71ff0{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
 var modules_c21c94f2$3 = {"root":"index_module_root__d8c71ff0","item":"index_module_item__d8c71ff0","bounceInRight":"index_module_bounceInRight__d8c71ff0","bounceOutRight":"index_module_bounceOutRight__d8c71ff0","schedule":"index_module_schedule__d8c71ff0","msg":"index_module_msg__d8c71ff0"};
 
-const $RAW = Symbol("store-raw"),
-  $NODE = Symbol("store-node"),
-  $HAS = Symbol("store-has"),
-  $SELF = Symbol("store-self");
-function wrap$1(value) {
-  let p = value[solidJs.$PROXY];
-  if (!p) {
-    Object.defineProperty(value, solidJs.$PROXY, {
-      value: (p = new Proxy(value, proxyTraps$1))
-    });
-    if (!Array.isArray(value)) {
-      const keys = Object.keys(value),
-        desc = Object.getOwnPropertyDescriptors(value);
-      for (let i = 0, l = keys.length; i < l; i++) {
-        const prop = keys[i];
-        if (desc[prop].get) {
-          Object.defineProperty(value, prop, {
-            enumerable: desc[prop].enumerable,
-            get: desc[prop].get.bind(p)
-          });
-        }
-      }
-    }
-  }
-  return p;
-}
-function isWrappable(obj) {
-  let proto;
-  return (
-    obj != null &&
-    typeof obj === "object" &&
-    (obj[solidJs.$PROXY] ||
-      !(proto = Object.getPrototypeOf(obj)) ||
-      proto === Object.prototype ||
-      Array.isArray(obj))
-  );
-}
-function unwrap(item, set = new Set()) {
-  let result, unwrapped, v, prop;
-  if ((result = item != null && item[$RAW])) return result;
-  if (!isWrappable(item) || set.has(item)) return item;
-  if (Array.isArray(item)) {
-    if (Object.isFrozen(item)) item = item.slice(0);
-    else set.add(item);
-    for (let i = 0, l = item.length; i < l; i++) {
-      v = item[i];
-      if ((unwrapped = unwrap(v, set)) !== v) item[i] = unwrapped;
-    }
-  } else {
-    if (Object.isFrozen(item)) item = Object.assign({}, item);
-    else set.add(item);
-    const keys = Object.keys(item),
-      desc = Object.getOwnPropertyDescriptors(item);
-    for (let i = 0, l = keys.length; i < l; i++) {
-      prop = keys[i];
-      if (desc[prop].get) continue;
-      v = item[prop];
-      if ((unwrapped = unwrap(v, set)) !== v) item[prop] = unwrapped;
-    }
-  }
-  return item;
-}
-function getNodes(target, symbol) {
-  let nodes = target[symbol];
-  if (!nodes)
-    Object.defineProperty(target, symbol, {
-      value: (nodes = Object.create(null))
-    });
-  return nodes;
-}
-function getNode(nodes, property, value) {
-  if (nodes[property]) return nodes[property];
-  const [s, set] = solidJs.createSignal(value, {
-    equals: false,
-    internal: true
-  });
-  s.$ = set;
-  return (nodes[property] = s);
-}
-function proxyDescriptor$1(target, property) {
-  const desc = Reflect.getOwnPropertyDescriptor(target, property);
-  if (!desc || desc.get || !desc.configurable || property === solidJs.$PROXY || property === $NODE)
-    return desc;
-  delete desc.value;
-  delete desc.writable;
-  desc.get = () => target[solidJs.$PROXY][property];
-  return desc;
-}
-function trackSelf(target) {
-  solidJs.getListener() && getNode(getNodes(target, $NODE), $SELF)();
-}
-function ownKeys(target) {
-  trackSelf(target);
-  return Reflect.ownKeys(target);
-}
-const proxyTraps$1 = {
-  get(target, property, receiver) {
-    if (property === $RAW) return target;
-    if (property === solidJs.$PROXY) return receiver;
-    if (property === solidJs.$TRACK) {
-      trackSelf(target);
-      return receiver;
-    }
-    const nodes = getNodes(target, $NODE);
-    const tracked = nodes[property];
-    let value = tracked ? tracked() : target[property];
-    if (property === $NODE || property === $HAS || property === "__proto__") return value;
-    if (!tracked) {
-      const desc = Object.getOwnPropertyDescriptor(target, property);
-      if (
-        solidJs.getListener() &&
-        (typeof value !== "function" || target.hasOwnProperty(property)) &&
-        !(desc && desc.get)
-      )
-        value = getNode(nodes, property, value)();
-    }
-    return isWrappable(value) ? wrap$1(value) : value;
-  },
-  has(target, property) {
-    if (
-      property === $RAW ||
-      property === solidJs.$PROXY ||
-      property === solidJs.$TRACK ||
-      property === $NODE ||
-      property === $HAS ||
-      property === "__proto__"
-    )
-      return true;
-    solidJs.getListener() && getNode(getNodes(target, $HAS), property)();
-    return property in target;
-  },
-  set() {
-    return true;
-  },
-  deleteProperty() {
-    return true;
-  },
-  ownKeys: ownKeys,
-  getOwnPropertyDescriptor: proxyDescriptor$1
-};
-function setProperty(state, property, value, deleting = false) {
-  if (!deleting && state[property] === value) return;
-  const prev = state[property],
-    len = state.length;
-  if (value === undefined) {
-    delete state[property];
-    if (state[$HAS] && state[$HAS][property] && prev !== undefined) state[$HAS][property].$();
-  } else {
-    state[property] = value;
-    if (state[$HAS] && state[$HAS][property] && prev === undefined) state[$HAS][property].$();
-  }
-  let nodes = getNodes(state, $NODE),
-    node;
-  if ((node = getNode(nodes, property, prev))) node.$(() => value);
-  if (Array.isArray(state) && state.length !== len) {
-    for (let i = state.length; i < len; i++) (node = nodes[i]) && node.$();
-    (node = getNode(nodes, "length", len)) && node.$(state.length);
-  }
-  (node = nodes[$SELF]) && node.$();
-}
-function mergeStoreNode(state, value) {
-  const keys = Object.keys(value);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
-    setProperty(state, key, value[key]);
-  }
-}
-function updateArray(current, next) {
-  if (typeof next === "function") next = next(current);
-  next = unwrap(next);
-  if (Array.isArray(next)) {
-    if (current === next) return;
-    let i = 0,
-      len = next.length;
-    for (; i < len; i++) {
-      const value = next[i];
-      if (current[i] !== value) setProperty(current, i, value);
-    }
-    setProperty(current, "length", len);
-  } else mergeStoreNode(current, next);
-}
-function updatePath(current, path, traversed = []) {
-  let part,
-    prev = current;
-  if (path.length > 1) {
-    part = path.shift();
-    const partType = typeof part,
-      isArray = Array.isArray(current);
-    if (Array.isArray(part)) {
-      for (let i = 0; i < part.length; i++) {
-        updatePath(current, [part[i]].concat(path), traversed);
-      }
-      return;
-    } else if (isArray && partType === "function") {
-      for (let i = 0; i < current.length; i++) {
-        if (part(current[i], i)) updatePath(current, [i].concat(path), traversed);
-      }
-      return;
-    } else if (isArray && partType === "object") {
-      const { from = 0, to = current.length - 1, by = 1 } = part;
-      for (let i = from; i <= to; i += by) {
-        updatePath(current, [i].concat(path), traversed);
-      }
-      return;
-    } else if (path.length > 1) {
-      updatePath(current[part], path, [part].concat(traversed));
-      return;
-    }
-    prev = current[part];
-    traversed = [part].concat(traversed);
-  }
-  let value = path[0];
-  if (typeof value === "function") {
-    value = value(prev, traversed);
-    if (value === prev) return;
-  }
-  if (part === undefined && value == undefined) return;
-  value = unwrap(value);
-  if (part === undefined || (isWrappable(prev) && isWrappable(value) && !Array.isArray(value))) {
-    mergeStoreNode(prev, value);
-  } else setProperty(current, part, value);
-}
-function createStore(...[store, options]) {
-  const unwrappedStore = unwrap(store || {});
-  const isArray = Array.isArray(unwrappedStore);
-  const wrappedStore = wrap$1(unwrappedStore);
-  function setStore(...args) {
-    solidJs.batch(() => {
-      isArray && args.length === 1
-        ? updateArray(unwrappedStore, args[0])
-        : updatePath(unwrappedStore, args);
-    });
-  }
-  return [wrappedStore, setStore];
-}
-
-function proxyDescriptor(target, property) {
-  const desc = Reflect.getOwnPropertyDescriptor(target, property);
-  if (
-    !desc ||
-    desc.get ||
-    desc.set ||
-    !desc.configurable ||
-    property === solidJs.$PROXY ||
-    property === $NODE
-  )
-    return desc;
-  delete desc.value;
-  delete desc.writable;
-  desc.get = () => target[solidJs.$PROXY][property];
-  desc.set = v => (target[solidJs.$PROXY][property] = v);
-  return desc;
-}
-const proxyTraps = {
-  get(target, property, receiver) {
-    if (property === $RAW) return target;
-    if (property === solidJs.$PROXY) return receiver;
-    if (property === solidJs.$TRACK) {
-      trackSelf(target);
-      return receiver;
-    }
-    const nodes = getNodes(target, $NODE);
-    const tracked = nodes[property];
-    let value = tracked ? tracked() : target[property];
-    if (property === $NODE || property === $HAS || property === "__proto__") return value;
-    if (!tracked) {
-      const desc = Object.getOwnPropertyDescriptor(target, property);
-      const isFunction = typeof value === "function";
-      if (solidJs.getListener() && (!isFunction || target.hasOwnProperty(property)) && !(desc && desc.get))
-        value = getNode(nodes, property, value)();
-      else if (value != null && isFunction && value === Array.prototype[property]) {
-        return (...args) => solidJs.batch(() => Array.prototype[property].apply(receiver, args));
-      }
-    }
-    return isWrappable(value) ? wrap(value) : value;
-  },
-  has(target, property) {
-    if (
-      property === $RAW ||
-      property === solidJs.$PROXY ||
-      property === solidJs.$TRACK ||
-      property === $NODE ||
-      property === $HAS ||
-      property === "__proto__"
-    )
-      return true;
-    solidJs.getListener() && getNode(getNodes(target, $HAS), property)();
-    return property in target;
-  },
-  set(target, property, value) {
-    solidJs.batch(() => setProperty(target, property, unwrap(value)));
-    return true;
-  },
-  deleteProperty(target, property) {
-    solidJs.batch(() => setProperty(target, property, undefined, true));
-    return true;
-  },
-  ownKeys: ownKeys,
-  getOwnPropertyDescriptor: proxyDescriptor
-};
-function wrap(value) {
-  let p = value[solidJs.$PROXY];
-  if (!p) {
-    Object.defineProperty(value, solidJs.$PROXY, {
-      value: (p = new Proxy(value, proxyTraps))
-    });
-    const keys = Object.keys(value),
-      desc = Object.getOwnPropertyDescriptors(value);
-    for (let i = 0, l = keys.length; i < l; i++) {
-      const prop = keys[i];
-      if (desc[prop].get) {
-        const get = desc[prop].get.bind(p);
-        Object.defineProperty(value, prop, {
-          get
-        });
-      }
-      if (desc[prop].set) {
-        const og = desc[prop].set,
-          set = v => solidJs.batch(() => og.call(p, v));
-        Object.defineProperty(value, prop, {
-          set
-        });
-      }
-    }
-  }
-  return p;
-}
-function createMutable(state, options) {
-  const unwrappedStore = unwrap(state || {});
-  const wrappedStore = wrap(unwrappedStore);
-  return wrappedStore;
-}
-const producers = new WeakMap();
-const setterTraps = {
-  get(target, property) {
-    if (property === $RAW) return target;
-    const value = target[property];
-    let proxy;
-    return isWrappable(value)
-      ? producers.get(value) ||
-          (producers.set(value, (proxy = new Proxy(value, setterTraps))), proxy)
-      : value;
-  },
-  set(target, property, value) {
-    setProperty(target, property, unwrap(value));
-    return true;
-  },
-  deleteProperty(target, property) {
-    setProperty(target, property, undefined, true);
-    return true;
-  }
-};
-function produce(fn) {
-  return state => {
-    if (isWrappable(state)) {
-      let proxy;
-      if (!(proxy = producers.get(state))) {
-        producers.set(state, (proxy = new Proxy(state, setterTraps)));
-      }
-      fn(proxy);
-    }
-    return state;
-  };
-}
-
-const [_state$1, _setState$1] = createStore({
+const [_state$1, _setState$1] = store$2.createStore({
   list: [],
   map: {}
 });
-const setState$1 = fn => _setState$1(produce(fn));
+const setState$1 = fn => _setState$1(store$2.produce(fn));
 
 // eslint-disable-next-line solid/reactivity
 const store$1 = _state$1;
@@ -2309,31 +1529,31 @@ const creatId = () => {
   return id;
 };
 
-const _tmpl$$S = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">\`);
+const _tmpl$$S = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">\`);
 const MdCheckCircle = ((props = {}) => (() => {
   const _el$ = _tmpl$$S();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$R = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
+const _tmpl$$R = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
 const MdWarning = ((props = {}) => (() => {
   const _el$ = _tmpl$$R();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$Q = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
+const _tmpl$$Q = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
 const MdError = ((props = {}) => (() => {
   const _el$ = _tmpl$$Q();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$P = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">\`);
+const _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">\`);
 const MdInfo = ((props = {}) => (() => {
   const _el$ = _tmpl$$P();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
@@ -2393,8 +1613,8 @@ toast$2.error = (msg, options) => toast$2(msg, {
   type: 'error'
 });
 
-const _tmpl$$O = /*#__PURE__*/template(\`<div>\`),
-  _tmpl$2$d = /*#__PURE__*/template(\`<div><div>\`);
+const _tmpl$$O = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$d = /*#__PURE__*/web.template(\`<div><div>\`);
 const iconMap = {
   info: MdInfo,
   success: MdCheckCircle,
@@ -2449,16 +1669,16 @@ const ToastItem = props => {
       _el$2 = _el$.firstChild;
     _el$.addEventListener("animationend", handleAnimationEnd);
     _el$.addEventListener("click", dismiss);
-    insert(_el$, solidJs.createComponent(Dynamic, {
+    web.insert(_el$, web.createComponent(web.Dynamic, {
       get component() {
         return iconMap[props.type];
       }
     }), _el$2);
-    insert(_el$2, (() => {
-      const _c$ = solidJs.createMemo(() => typeof props.msg === 'string');
-      return () => _c$() ? props.msg : solidJs.createComponent(props.msg, {});
+    web.insert(_el$2, (() => {
+      const _c$ = web.memo(() => typeof props.msg === 'string');
+      return () => _c$() ? props.msg : web.createComponent(props.msg, {});
     })());
-    insert(_el$, solidJs.createComponent(solidJs.Show, {
+    web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
         return props.duration !== Infinity || props.schedule !== undefined;
       },
@@ -2466,12 +1686,12 @@ const ToastItem = props => {
         const _el$3 = _tmpl$$O();
         _el$3.addEventListener("animationend", dismiss);
         const _ref$ = scheduleRef;
-        typeof _ref$ === "function" ? use(_ref$, _el$3) : scheduleRef = _el$3;
-        solidJs.createRenderEffect(_p$ => {
+        typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
+        web.effect(_p$ => {
           const _v$ = modules_c21c94f2$3.schedule,
             _v$2 = \`\${props.duration}ms\`,
             _v$3 = showSchedule() ? \`scaleX(\${props.schedule})\` : undefined;
-          _v$ !== _p$._v$ && className(_el$3, _p$._v$ = _v$);
+          _v$ !== _p$._v$ && web.className(_el$3, _p$._v$ = _v$);
           _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$3.style.setProperty("animation-duration", _v$2) : _el$3.style.removeProperty("animation-duration"));
           _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$3.style.setProperty("transform", _v$3) : _el$3.style.removeProperty("transform"));
           return _p$;
@@ -2483,17 +1703,17 @@ const ToastItem = props => {
         return _el$3;
       }
     }), null);
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$4 = modules_c21c94f2$3.item,
         _v$5 = colorMap[props.type],
         _v$6 = showSchedule(),
         _v$7 = props.exit,
         _v$8 = modules_c21c94f2$3.msg;
-      _v$4 !== _p$._v$4 && className(_el$, _p$._v$4 = _v$4);
+      _v$4 !== _p$._v$4 && web.className(_el$, _p$._v$4 = _v$4);
       _v$5 !== _p$._v$5 && ((_p$._v$5 = _v$5) != null ? _el$.style.setProperty("--theme", _v$5) : _el$.style.removeProperty("--theme"));
-      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-schedule", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-exit", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && className(_el$2, _p$._v$8 = _v$8);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-schedule", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-exit", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && web.className(_el$2, _p$._v$8 = _v$8);
       return _p$;
     }, {
       _v$4: undefined,
@@ -2506,7 +1726,7 @@ const ToastItem = props => {
   })();
 };
 
-const _tmpl$$N = /*#__PURE__*/template(\`<div>\`);
+const _tmpl$$N = /*#__PURE__*/web.template(\`<div>\`);
 const Toaster = () => {
   const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
   solidJs.onMount(() => {
@@ -2518,17 +1738,17 @@ const Toaster = () => {
   });
   return (() => {
     const _el$ = _tmpl$$N();
-    insert(_el$, solidJs.createComponent(solidJs.For, {
+    web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
         return store$1.list;
       },
-      children: id => solidJs.createComponent(ToastItem, solidJs.mergeProps(() => store$1.map[id]))
+      children: id => web.createComponent(ToastItem, web.mergeProps(() => store$1.map[id]))
     }));
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$ = modules_c21c94f2$3.root,
         _v$2 = visible() ? undefined : '';
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-paused", _p$._v$2 = _v$2);
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-paused", _p$._v$2 = _v$2);
       return _p$;
     }, {
       _v$: undefined,
@@ -2540,7 +1760,7 @@ const Toaster = () => {
 
 const ToastStyle = css$3;
 
-const _tmpl$$M = /*#__PURE__*/template(\`<style type=text/css>\`);
+const _tmpl$$M = /*#__PURE__*/web.template(\`<style type=text/css>\`);
 let dom$2;
 const init = () => {
   if (dom$2) return;
@@ -2551,9 +1771,9 @@ const init = () => {
     _dom.id = 'comicRead';
     document.body.appendChild(_dom);
   }
-  dom$2 = mountComponents('toast', () => [solidJs.createComponent(Toaster, {}), (() => {
+  dom$2 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
     const _el$ = _tmpl$$M();
-    insert(_el$, ToastStyle);
+    web.insert(_el$, ToastStyle);
     return _el$;
   })()]);
   dom$2.style.setProperty('z-index', '2147483647', 'important');
@@ -2623,39 +1843,39 @@ const eachApi = async (url, baseUrlList, details) => {
   throw new Error(errorText);
 };
 
-const _tmpl$$L = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">\`);
+const _tmpl$$L = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">\`);
 const MdAutoFixHigh = ((props = {}) => (() => {
   const _el$ = _tmpl$$L();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$K = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">\`);
+const _tmpl$$K = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">\`);
 const MdAutoFixOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$K();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$J = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">\`);
+const _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">\`);
 const MdAutoFlashOn = ((props = {}) => (() => {
   const _el$ = _tmpl$$J();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$I = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">\`);
+const _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">\`);
 const MdAutoFlashOff = ((props = {}) => (() => {
   const _el$ = _tmpl$$I();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
 var css$2 = ".index_module_iconButtonItem__58f56840{align-items:center;display:flex;position:relative}.index_module_iconButton__58f56840{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__58f56840:focus,.index_module_iconButton__58f56840:hover{background-color:var(--hover-bg-color,#fff3)}.index_module_iconButton__58f56840.index_module_enabled__58f56840{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.index_module_iconButton__58f56840.index_module_enabled__58f56840:focus,.index_module_iconButton__58f56840.index_module_enabled__58f56840:hover{background-color:var(--hover-bg-color-enable,#fffa)}.index_module_iconButton__58f56840>svg{width:1em}.index_module_iconButtonPopper__58f56840{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.index_module_iconButtonPopper__58f56840[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840:before{background-color:initial;border:.4em solid #0000;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.index_module_iconButtonItem__58f56840:focus .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840:hover .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840[data-show=true] .index_module_iconButtonPopper__58f56840{opacity:1}.index_module_hidden__58f56840{display:none}";
 var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__58f56840","iconButton":"index_module_iconButton__58f56840","enabled":"index_module_enabled__58f56840","iconButtonPopper":"index_module_iconButtonPopper__58f56840","hidden":"index_module_hidden__58f56840"};
 
-const _tmpl$$H = /*#__PURE__*/template(\`<div><button type=button tabindex=0>\`),
-  _tmpl$2$c = /*#__PURE__*/template(\`<div>\`);
+const _tmpl$$H = /*#__PURE__*/web.template(\`<div><button type=button tabindex=0>\`),
+  _tmpl$2$c = /*#__PURE__*/web.template(\`<div>\`);
 const IconButtonStyle = css$2;
 /** 图标按钮 */
 const IconButton = _props => {
@@ -2672,19 +1892,19 @@ const IconButton = _props => {
     const _el$ = _tmpl$$H(),
       _el$2 = _el$.firstChild;
     const _ref$ = buttonRef;
-    typeof _ref$ === "function" ? use(_ref$, _el$2) : buttonRef = _el$2;
+    typeof _ref$ === "function" ? web.use(_ref$, _el$2) : buttonRef = _el$2;
     _el$2.addEventListener("click", handleClick);
-    insert(_el$2, () => props.children);
-    insert(_el$, (() => {
-      const _c$ = solidJs.createMemo(() => !!(props.popper || props.tip));
+    web.insert(_el$2, () => props.children);
+    web.insert(_el$, (() => {
+      const _c$ = web.memo(() => !!(props.popper || props.tip));
       return () => _c$() ? (() => {
         const _el$3 = _tmpl$2$c();
-        insert(_el$3, () => props.popper || props.tip);
-        solidJs.createRenderEffect(_p$ => {
+        web.insert(_el$3, () => props.popper || props.tip);
+        web.effect(_p$ => {
           const _v$6 = [modules_c21c94f2$2.iconButtonPopper, props.popperClassName].join(' '),
             _v$7 = props.placement;
-          _v$6 !== _p$._v$6 && className(_el$3, _p$._v$6 = _v$6);
-          _v$7 !== _p$._v$7 && setAttribute(_el$3, "data-placement", _p$._v$7 = _v$7);
+          _v$6 !== _p$._v$6 && web.className(_el$3, _p$._v$6 = _v$6);
+          _v$7 !== _p$._v$7 && web.setAttribute(_el$3, "data-placement", _p$._v$7 = _v$7);
           return _p$;
         }, {
           _v$6: undefined,
@@ -2693,7 +1913,7 @@ const IconButton = _props => {
         return _el$3;
       })() : null;
     })(), null);
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$ = modules_c21c94f2$2.iconButtonItem,
         _v$2 = props.showTip,
         _v$3 = props.tip,
@@ -2702,11 +1922,11 @@ const IconButton = _props => {
           [modules_c21c94f2$2.hidden]: props.hidden,
           [modules_c21c94f2$2.enabled]: props.enabled
         };
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$2, "aria-label", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
-      _p$._v$5 = classList(_el$2, _v$5, _p$._v$5);
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$2, "aria-label", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
+      _p$._v$5 = web.classList(_el$2, _v$5, _p$._v$5);
       return _p$;
     }, {
       _v$: undefined,
@@ -2720,7 +1940,7 @@ const IconButton = _props => {
 };
 
 const useSpeedDial = (options, setOptions) => {
-  const DefaultButton = props => solidJs.createComponent(IconButton, {
+  const DefaultButton = props => web.createComponent(IconButton, {
     get tip() {
       return props.showName ?? (t(\`site.add_feature.\${props.optionName}\`) || props.optionName);
     },
@@ -2730,7 +1950,7 @@ const useSpeedDial = (options, setOptions) => {
       [props.optionName]: !options[props.optionName]
     }),
     get children() {
-      return props.children ?? (options[props.optionName] ? solidJs.createComponent(MdAutoFixHigh, {}) : solidJs.createComponent(MdAutoFixOff, {}));
+      return props.children ?? (options[props.optionName] ? web.createComponent(MdAutoFixHigh, {}) : web.createComponent(MdAutoFixOff, {}));
     }
   });
   const list = Object.keys(options).map(optionName => {
@@ -2740,18 +1960,18 @@ const useSpeedDial = (options, setOptions) => {
       case 'hotkeys':
         return null;
       case 'autoShow':
-        return () => solidJs.createComponent(DefaultButton, {
+        return () => web.createComponent(DefaultButton, {
           optionName: "autoShow",
           get showName() {
             return t('other.auto_enter_read_mode');
           },
           get children() {
-            return solidJs.createMemo(() => !!options.autoShow)() ? solidJs.createComponent(MdAutoFlashOn, {}) : solidJs.createComponent(MdAutoFlashOff, {});
+            return web.memo(() => !!options.autoShow)() ? web.createComponent(MdAutoFlashOn, {}) : web.createComponent(MdAutoFlashOff, {});
           }
         });
       default:
         if (typeof options[optionName] !== 'boolean') return null;
-        return () => solidJs.createComponent(DefaultButton, {
+        return () => web.createComponent(DefaultButton, {
           optionName: optionName
         });
     }
@@ -2815,33 +2035,77 @@ const useCache = (initSchema, version = 1) => {
   };
 };
 
-const _tmpl$$G = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">\`);
+const _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">\`);
 const MdSettings = ((props = {}) => (() => {
   const _el$ = _tmpl$$G();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$F = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">\`);
+const _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">\`);
 const MdFileDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$F();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$E = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">\`);
+const _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">\`);
 const MdClose = ((props = {}) => (() => {
   const _el$ = _tmpl$$E();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
+/** 会自动设置 equals 的 createSignal */
+const createEqualsSignal = (init, options) =>
+// eslint-disable-next-line solid/reactivity
+solidJs.createSignal(init, {
+  equals: isEqual,
+  ...options
+});
+
+/** 会自动设置 equals 和 createRoot 的 createMemo */
+const createRootMemo = (fn, init, options) => {
+  const _init = init ?? fn(undefined);
+  // 自动为对象类型设置 equals
+  const _options = options?.equals === undefined && typeof init === 'object' ? {
+    ...options,
+    equals: isEqual
+  } : options;
+  return solidJs.getOwner() ?
+  // eslint-disable-next-line solid/reactivity
+  solidJs.createMemo(fn, _init, _options) :
+  // eslint-disable-next-line solid/reactivity
+  solidJs.createRoot(() => solidJs.createMemo(fn, _init, _options));
+};
+
+/** 节流的 createMemo */
+const createThrottleMemo = (fn, wait = 100, init = fn(undefined), options = undefined) => {
+  const scheduled = createScheduled(_fn => throttle(_fn, wait));
+  return createRootMemo(prev => scheduled() ? fn(prev) : prev, init, options);
+};
+const createMemoMap = fnMap => {
+  const memoMap = Object.fromEntries(Object.entries(fnMap).map(([key, fn]) => {
+    // 如果函数已经是 createMemo 创建的，就直接使用
+    if (fn.name === 'bound readSignal') return [key, fn];
+    // eslint-disable-next-line solid/reactivity
+    return [key, createRootMemo(fn, undefined)];
+  }));
+  const map = createRootMemo(() => {
+    const obj = {};
+    Object.keys(memoMap).forEach(key => Reflect.set(obj, key, memoMap[key]()));
+    return obj;
+  });
+  return map;
+};
+const createEffectOn = (deps, fn, options) => solidJs.getOwner() ? solidJs.createEffect(solidJs.on(deps, fn, options)) : solidJs.createRoot(() => solidJs.createEffect(solidJs.on(deps, fn, options)));
+
 const useStore = initState => {
-  const [_state, _setState] = createStore(initState);
+  const [_state, _setState] = store$2.createStore(initState);
   return {
     _state,
     _setState,
-    setState: fn => _setState(produce(fn)),
+    setState: fn => _setState(store$2.produce(fn)),
     store: _state
   };
 };
@@ -2910,27 +2174,13 @@ const OptionState = {
 const OtherState = {
   /** 监视图片是否出现的 observer */
   observer: null,
-  /** 自动更新不能手动修改的变量 */
-  memo: {
-    /** 显示窗口的尺寸 */
-    size: {
-      width: 0,
-      height: 0
-    },
-    /** 当前显示的图片 */
-    showImgList: [],
-    /** 当前显示的页面 */
-    showPageList: [],
-    /** 要渲染的页面 */
-    renderPageList: [],
-    /** 滚动条长度 */
-    scrollLength: 0
-  },
   flag: {
-    /** 是否需要自动判断开启卷轴模式 */
-    autoScrollMode: true,
+    /** 是否需要自动开启卷轴模式 */
+    autoScrollMode: false,
     /** 是否需要自动将未加载图片类型设为跨页图 */
     autoWide: false,
+    /** 是否需要将滚动条移至底部 */
+    autoLong: false,
     /**
      * 用于防止滚轮连续滚动导致过快触发事件的锁
      *
@@ -2973,13 +2223,6 @@ const ShowState = {
   activePageIndex: 0,
   /** 网格模式 */
   gridMode: false,
-  /** 滚动条 */
-  scrollbar: {
-    /** 滚动条高度比率 */
-    dragHeight: 0,
-    /** 滚动条所处高度比率 */
-    dragTop: 0
-  },
   show: {
     /** 是否强制显示工具栏 */
     toolbar: false,
@@ -3032,6 +2275,7 @@ const {
 });
 const refs = {
   root: undefined,
+  mangaBox: undefined,
   mangaFlow: undefined,
   touchArea: undefined,
   scrollbar: undefined,
@@ -3041,175 +2285,65 @@ const refs = {
   exit: undefined
 };
 
-/* eslint-disable no-undefined,no-param-reassign,no-shadow */
+/** 触发 onOptionChange */
+const triggerOnOptionChange = scheduleIdle(() => store.prop.OptionChange?.(difference(store.option, defaultOption)), 1000);
 
-/**
- * Throttle execution of a function. Especially useful for rate limiting
- * execution of handlers on events like resize and scroll.
- *
- * @param {number} delay -                  A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher)
- *                                            are most useful.
- * @param {Function} callback -               A function to be executed after delay milliseconds. The \`this\` context and all arguments are passed through,
- *                                            as-is, to \`callback\` when the throttled-function is executed.
- * @param {object} [options] -              An object to configure options.
- * @param {boolean} [options.noTrailing] -   Optional, defaults to false. If noTrailing is true, callback will only execute every \`delay\` milliseconds
- *                                            while the throttled-function is being called. If noTrailing is false or unspecified, callback will be executed
- *                                            one final time after the last throttled-function call. (After the throttled-function has not been called for
- *                                            \`delay\` milliseconds, the internal counter is reset).
- * @param {boolean} [options.noLeading] -   Optional, defaults to false. If noLeading is false, the first throttled-function call will execute callback
- *                                            immediately. If noLeading is true, the first the callback execution will be skipped. It should be noted that
- *                                            callback will never executed if both noLeading = true and noTrailing = true.
- * @param {boolean} [options.debounceMode] - If \`debounceMode\` is true (at begin), schedule \`clear\` to execute after \`delay\` ms. If \`debounceMode\` is
- *                                            false (at end), schedule \`callback\` to execute after \`delay\` ms.
- *
- * @returns {Function} A new, throttled, function.
- */
-function throttle (delay, callback, options) {
-  var _ref = options || {},
-      _ref$noTrailing = _ref.noTrailing,
-      noTrailing = _ref$noTrailing === void 0 ? false : _ref$noTrailing,
-      _ref$noLeading = _ref.noLeading,
-      noLeading = _ref$noLeading === void 0 ? false : _ref$noLeading,
-      _ref$debounceMode = _ref.debounceMode,
-      debounceMode = _ref$debounceMode === void 0 ? undefined : _ref$debounceMode;
-  /*
-   * After wrapper has stopped being called, this timeout ensures that
-   * \`callback\` is executed at the proper times in \`throttle\` and \`end\`
-   * debounce modes.
-   */
+/** 在 option 后手动触发 onOptionChange */
+const setOption = fn => {
+  setState(state => fn(state.option, state));
+  triggerOnOptionChange();
+};
 
+/** 创建一个专门用于修改指定配置项的函数 */
+const createStateSetFn = name => val => setOption(draftOption => byPath(draftOption, name, () => val));
 
-  var timeoutID;
-  var cancelled = false; // Keep track of the last time \`callback\` was executed.
+/** 创建用于将 ref 绑定到对应 state 上的工具函数 */
+const bindRef = name => e => Reflect.set(refs, name, e);
 
-  var lastExec = 0; // Function to clear existing timeout
+/** 将界面恢复到正常状态 */
+const resetUI = state => {
+  state.show.toolbar = false;
+  state.show.scrollbar = false;
+  state.show.touchArea = false;
+};
+const scrollTo = (top, smooth = false) => refs.mangaBox.scrollTo({
+  top,
+  behavior: smooth ? 'smooth' : 'instant'
+});
 
-  function clearExistingTimeout() {
-    if (timeoutID) {
-      clearTimeout(timeoutID);
-    }
-  } // Function to cancel next exec
+const defaultHotkeys = {
+  turn_page_up: ['w', 'ArrowUp', 'PageUp', 'Shift + W'],
+  turn_page_down: [' ', 's', 'ArrowDown', 'PageDown', 'Shift + S'],
+  turn_page_right: ['d', '.', 'ArrowRight'],
+  turn_page_left: ['a', ',', 'ArrowLeft'],
+  jump_to_home: ['Home'],
+  jump_to_end: ['End'],
+  exit: ['Escape'],
+  switch_page_fill: ['/', 'm', 'z'],
+  switch_scroll_mode: [],
+  switch_grid_mode: [],
+  switch_single_double_page_mode: [],
+  switch_dir: [],
+  switch_auto_enlarge: []
+};
+const setHotkeys = (...args) => {
+  _setState(...['hotkeys', ...args]);
+  store.prop.HotkeysChange?.(Object.fromEntries(Object.entries(store.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqual(keys, defaultHotkeys[name]))));
+};
 
+/** 快捷键配置 */
+const hotkeysMap = createRootMemo(() => Object.fromEntries(Object.entries(store.hotkeys).flatMap(([name, key]) => key.map(k => [k, name]))));
 
-  function cancel(options) {
-    var _ref2 = options || {},
-        _ref2$upcomingOnly = _ref2.upcomingOnly,
-        upcomingOnly = _ref2$upcomingOnly === void 0 ? false : _ref2$upcomingOnly;
-
-    clearExistingTimeout();
-    cancelled = !upcomingOnly;
-  }
-  /*
-   * The \`wrapper\` function encapsulates all of the throttling / debouncing
-   * functionality and when executed will limit the rate at which \`callback\`
-   * is executed.
-   */
-
-
-  function wrapper() {
-    for (var _len = arguments.length, arguments_ = new Array(_len), _key = 0; _key < _len; _key++) {
-      arguments_[_key] = arguments[_key];
-    }
-
-    var self = this;
-    var elapsed = Date.now() - lastExec;
-
-    if (cancelled) {
-      return;
-    } // Execute \`callback\` and update the \`lastExec\` timestamp.
-
-
-    function exec() {
-      lastExec = Date.now();
-      callback.apply(self, arguments_);
-    }
-    /*
-     * If \`debounceMode\` is true (at begin) this is used to clear the flag
-     * to allow future \`callback\` executions.
-     */
-
-
-    function clear() {
-      timeoutID = undefined;
-    }
-
-    if (!noLeading && debounceMode && !timeoutID) {
-      /*
-       * Since \`wrapper\` is being called for the first time and
-       * \`debounceMode\` is true (at begin), execute \`callback\`
-       * and noLeading != true.
-       */
-      exec();
-    }
-
-    clearExistingTimeout();
-
-    if (debounceMode === undefined && elapsed > delay) {
-      if (noLeading) {
-        /*
-         * In throttle mode with noLeading, if \`delay\` time has
-         * been exceeded, update \`lastExec\` and schedule \`callback\`
-         * to execute after \`delay\` ms.
-         */
-        lastExec = Date.now();
-
-        if (!noTrailing) {
-          timeoutID = setTimeout(debounceMode ? clear : exec, delay);
-        }
-      } else {
-        /*
-         * In throttle mode without noLeading, if \`delay\` time has been exceeded, execute
-         * \`callback\`.
-         */
-        exec();
-      }
-    } else if (noTrailing !== true) {
-      /*
-       * In trailing throttle mode, since \`delay\` time has not been
-       * exceeded, schedule \`callback\` to execute \`delay\` ms after most
-       * recent execution.
-       *
-       * If \`debounceMode\` is true (at begin), schedule \`clear\` to execute
-       * after \`delay\` ms.
-       *
-       * If \`debounceMode\` is false (at end), schedule \`callback\` to
-       * execute after \`delay\` ms.
-       */
-      timeoutID = setTimeout(debounceMode ? clear : exec, debounceMode === undefined ? delay - elapsed : delay);
-    }
-  }
-
-  wrapper.cancel = cancel; // Return the wrapper function.
-
-  return wrapper;
-}
-
-/* eslint-disable no-undefined */
-/**
- * Debounce execution of a function. Debouncing, unlike throttling,
- * guarantees that a function is only executed a single time, either at the
- * very beginning of a series of calls, or at the very end.
- *
- * @param {number} delay -               A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher) are most useful.
- * @param {Function} callback -          A function to be executed after delay milliseconds. The \`this\` context and all arguments are passed through, as-is,
- *                                        to \`callback\` when the debounced-function is executed.
- * @param {object} [options] -           An object to configure options.
- * @param {boolean} [options.atBegin] -  Optional, defaults to false. If atBegin is false or unspecified, callback will only be executed \`delay\` milliseconds
- *                                        after the last debounced-function call. If atBegin is true, callback will be executed only at the first debounced-function call.
- *                                        (After the throttled-function has not been called for \`delay\` milliseconds, the internal counter is reset).
- *
- * @returns {Function} A new, debounced function.
- */
-
-function debounce (delay, callback, options) {
-  var _ref = options || {},
-      _ref$atBegin = _ref.atBegin,
-      atBegin = _ref$atBegin === void 0 ? false : _ref$atBegin;
-
-  return throttle(delay, callback, {
-    debounceMode: atBegin !== false
+/** 删除指定快捷键 */
+const delHotkeys = code => {
+  Object.entries(store.hotkeys).forEach(([name, keys]) => {
+    const i = keys.indexOf(code);
+    if (i === -1) return;
+    const newKeys = [...store.hotkeys[name]];
+    newKeys.splice(i, 1);
+    setHotkeys(name, newKeys);
   });
-}
+};
 
 // 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
 /** 记录自动修改过页面填充的图片流 */
@@ -3278,193 +2412,191 @@ const handleComicData = (imgList, fillEffect) => {
   return pageList;
 };
 
-/** 触发 onOptionChange */
-const triggerOnOptionChange = () => setTimeout(() => store.prop.OptionChange?.(difference(store.option, defaultOption)));
+/** 当前显示的图片 */
+const showImgList = new Set();
+const [_showPageList, setShowPageList] = createEqualsSignal([]);
+/** 当前显示的页面 */
+const showPageList = _showPageList;
+const updateShowPageList = throttle(() => {
+  const newShowPageList = new Set();
+  showImgList.forEach(img => newShowPageList.add(+img.parentElement.getAttribute('data-index')));
+  setShowPageList([...newShowPageList].sort((a, b) => a - b));
+});
+const initIntersectionObserver = root => {
+  const handleObserver = entries => {
+    if (!entries.length) return;
+    entries.forEach(({
+      isIntersecting,
+      target
+    }) => {
+      if (isIntersecting) showImgList.add(target);else showImgList.delete(target);
+    });
+    updateShowPageList();
+  };
+  _setState('observer', new IntersectionObserver(handleObserver, {
+    root,
+    threshold: 0.01
+  }));
+  solidJs.onCleanup(() => {
+    setState(state => {
+      state.observer?.disconnect();
+      state.observer = null;
+    });
+  });
+};
+const [_rootSize, setRootSize] = solidJs.createSignal({
+  width: 0,
+  height: 0
+},
+// 宽高为零时不触发变更
+{
+  equals: (_, {
+    width,
+    height
+  }) => !width || !height
+});
+/** 容器尺寸 */
+const rootSize = _rootSize;
+const initResizeObserver = dom => {
+  setRootSize({
+    width: dom.scrollWidth,
+    height: dom.scrollHeight
+  });
+  // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
+  const resizeObserver = new ResizeObserver(throttle(([{
+    contentRect
+  }]) => setRootSize({
+    width: contentRect.width,
+    height: contentRect.height
+  })));
+  resizeObserver.disconnect();
+  resizeObserver.observe(dom);
+  solidJs.onCleanup(() => resizeObserver.disconnect());
+};
+const [_scrollTop, setScrollTop] = solidJs.createSignal(0);
+/** 滚动距离 */
+const scrollTop = _scrollTop;
+const bindScrollTop = dom => {
+  dom.addEventListener('scroll', () => setScrollTop(dom.scrollTop), {
+    passive: true
+  });
+};
+solidJs.createRoot(() => {
+  // 卷轴模式下，将当前显示的第一页作为当前页
+  createEffectOn(showPageList, ([firstPage]) => {
+    if (!store.gridMode && store.option.scrollMode) _setState('activePageIndex', firstPage ?? 0);
+  });
 
-/** 在 option 后手动触发 onOptionChange */
-const setOption = fn => {
-  setState(state => fn(state.option, state));
-  triggerOnOptionChange();
+  // 窗口宽度小于800像素时，标记为移动端
+  createEffectOn(rootSize, ({
+    width
+  }) => inRange(1, width, 800) && _setState('isMobile', true));
+});
+
+/** 当前显示页面 */
+const activePage = createRootMemo(() => store.pageList[store.activePageIndex] ?? []);
+
+/** 当前显示的第一张图片的 index */
+const activeImgIndex = createRootMemo(() => activePage().find(i => i !== -1) ?? 0);
+
+/** 当前所处的图片流 */
+const nowFillIndex = createRootMemo(() => findFillIndex(activeImgIndex(), store.fillEffect));
+
+/** 预加载页数 */
+const preloadNum = createRootMemo(() => ({
+  back: store.option.preloadPageNum,
+  front: Math.floor(store.option.preloadPageNum / 2)
+}));
+
+/** 默认图片类型 */
+const defaultImgType = createRootMemo(() => {
+  if (store.flag.autoWide) return 'wide';
+  if (store.flag.autoScrollMode) return 'vertical';
+  return '';
+});
+
+/** 获取图片列表中指定属性的中位数 */
+const getImgMedian = sizeFn => {
+  if (!store.option.scrollMode) return 0;
+  const list = store.imgList.filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort();
+  if (!list.length) return null;
+  return list[Math.floor(list.length / 2)];
 };
 
-/** 创建一个专门用于修改指定配置项的函数 */
-const createStateSetFn = name => val => setOption(draftOption => byPath(draftOption, name, () => val));
+/** 图片占位尺寸 */
+const placeholderSize = createThrottleMemo(() => ({
+  width: getImgMedian(img => img.width) ?? refs.root?.offsetWidth,
+  height: getImgMedian(img => img.height) ?? refs.root?.offsetHeight
+}), 500);
 
-/** 创建用于将 ref 绑定到对应 state 上的工具函数 */
-const bindRef = name => e => Reflect.set(refs, name, e);
+/** 每张图片的高度 */
+const imgHeightList = createRootMemo(() => store.option.scrollMode ? store.imgList.map(img => (img.height ?? placeholderSize().height) * store.option.scrollModeImgScale) : []);
 
-/** 将界面恢复到正常状态 */
-const resetUI = state => {
-  state.show.toolbar = false;
-  state.show.scrollbar = false;
-  state.show.touchArea = false;
-};
-
-/** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
-const checkImgTypeCount = (state, fn, maxNum = 3) => {
-  let num = 0;
-  for (let i = 0; i < state.imgList.length; i++) {
-    const img = state.imgList[i];
-    if (img.loadType !== 'loaded') continue;
-    if (!fn(img)) {
-      num = 0;
-      continue;
-    }
-    num += 1;
-    if (num >= maxNum) return true;
+/** 卷轴模式下每张图片的位置 */
+const imgTopList = createRootMemo(() => {
+  if (!store.option.scrollMode) return [];
+  const list = new Array(imgHeightList().length);
+  let top = 0;
+  for (let i = 0; i < imgHeightList().length; i++) {
+    list[i] = top;
+    top += imgHeightList()[i] + store.option.scrollModeSpacing * 7;
   }
-  return false;
-};
+  return list;
+});
 
 /** 漫画流的总高度 */
-const contentHeight = () => refs.mangaFlow.scrollHeight ?? 0;
+const contentHeight = createRootMemo(() => (imgTopList().at(-1) ?? 0) + (imgHeightList().at(-1) ?? 0));
 
-/** 能显示出漫画的高度 */
-const windowHeight = () => refs.root.offsetHeight ?? 0;
+const [renderRangeStart, setRenderRangeStart] = solidJs.createSignal(0);
+const [renderRangeEnd, setRenderRangeEnd] = solidJs.createSignal(0);
 
-/** 滚动条位置 */
-const scrollPosition = solidJs.createRoot(() => {
-  const scrollPositionMemo = solidJs.createMemo(() => {
-    if (store.option.scrollbar.position === 'auto') {
-      if (store.isMobile) return 'top';
-      return checkImgTypeCount(store, ({
-        type
-      }) => type === 'long', 5) ? 'bottom' : 'right';
-    }
-    return store.option.scrollbar.position;
-  });
-  return scrollPositionMemo;
-});
-
-/** 更新滚动条滑块的高度和所处高度 */
-const updateDrag = state => {
-  if (!state.option.scrollMode) {
-    state.scrollbar.dragHeight = 0;
-    state.scrollbar.dragTop = 0;
-    return;
-  }
-  state.scrollbar.dragTop = refs.mangaFlow.scrollTop / contentHeight();
-  state.scrollbar.dragHeight = windowHeight() / (contentHeight() || windowHeight());
+/** 渲染范围 */
+const renderRange = {
+  start: renderRangeStart,
+  end: renderRangeEnd
+};
+const findTopImg = (initIndex, top) => {
+  let i = initIndex || 1;
+  for (; i < imgTopList().length; i++) if (imgTopList()[i] > top) return i - 1;
+  return imgTopList().length - 1;
 };
 
-/** 获取指定图片的提示文本 */
-const getImgTip = (state, i) => {
-  if (i === -1) return t('other.fill_page');
-  const img = state.imgList[i];
-
-  // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-  if (img.loadType !== 'loaded') return \`\${i + 1} (\${t(\`img_status.\${img.loadType}\`)})\`;
-  if (img.translationType && img.translationType !== 'hide' && img.translationMessage) return \`\${i + 1}：\${img.translationMessage}\`;
-  return \`\${i + 1}\`;
-};
-
-/** 获取指定页面的提示文本 */
-const getPageTip = pageIndex => {
-  const page = store.pageList[pageIndex];
-  if (!page) return 'null';
-  const pageIndexText = page.map(index => getImgTip(store, index));
-  if (store.option.dir === 'rtl') pageIndexText.reverse();
-  return pageIndexText.join(store.option.scrollMode ? '\\n' : ' | ');
-};
-
-/** 判断点击位置在滚动条上的位置比率 */
-const getClickTop = (x, y, e) => {
-  switch (scrollPosition()) {
-    case 'bottom':
-    case 'top':
-      return store.option.dir === 'rtl' ? 1 - x / e.offsetWidth : x / e.offsetWidth;
-    default:
-      return y / e.offsetHeight;
-  }
-};
-
-/** 计算在滚动条上的拖动距离 */
-const getDragDist = ([x, y], [ix, iy], e) => {
-  switch (scrollPosition()) {
-    case 'bottom':
-    case 'top':
-      return store.option.dir === 'ltr' ? (x - ix) / e.offsetWidth : (1 - (x - ix)) / e.offsetWidth;
-    default:
-      return (y - iy) / e.offsetHeight;
-  }
-};
-
-/** 开始拖拽时的 dragTop 值 */
-let startTop = 0;
-const handleScrollbarDrag = ({
-  type,
-  xy,
-  initial
-}, e) => {
-  const [x, y] = xy;
-
-  // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
-  if (type === 'up') return;
-  if (!refs.mangaFlow) return;
-  const scrollbarDom = e.target;
-
-  /** 点击位置在滚动条上的位置比率 */
-  const clickTop = getClickTop(x, y, e.target);
-  let top = clickTop;
-  if (store.option.scrollMode) {
-    if (type === 'move') {
-      top = startTop + getDragDist(xy, initial, scrollbarDom);
-      // 处理超出范围的情况
-      if (top < 0) top = 0;else if (top > 1) top = 1;
-      refs.mangaFlow.scrollTo({
-        top: top * contentHeight(),
-        behavior: 'instant'
-      });
+/** 计算渲染页面 */
+const updateRenderRange = state => {
+  let startPage;
+  let endPage;
+  if (state.option.scrollMode) {
+    if (contentHeight() === 0) {
+      startPage = 0;
+      endPage = 1;
     } else {
-      // 确保滚动条的中心会在点击位置
-      top -= store.scrollbar.dragHeight / 2;
-      startTop = top;
-      refs.mangaFlow.scrollTo({
-        top: top * contentHeight(),
-        behavior: 'smooth'
-      });
+      const top = scrollTop() - rootSize().height * 4;
+      startPage = top < 0 ? 0 : findTopImg(0, top);
+      const bottom = scrollTop() + rootSize().height * 5;
+      endPage = bottom > contentHeight() ? imgTopList().length - 1 : findTopImg(startPage, bottom);
     }
   } else {
-    let newPageIndex = Math.floor(top * store.pageList.length);
-    // 处理超出范围的情况
-    if (newPageIndex < 0) newPageIndex = 0;else if (newPageIndex >= store.pageList.length) newPageIndex = store.pageList.length - 1;
-    if (newPageIndex !== store.activePageIndex) _setState('activePageIndex', newPageIndex);
+    startPage = Math.max(0, state.activePageIndex - 1);
+    endPage = Math.min(state.pageList.length, state.activePageIndex + 2);
   }
+  if (!startPage) startPage = 0;
+  if (!endPage) endPage = startPage + 1;
+  setRenderRangeStart(startPage);
+  setRenderRangeEnd(endPage);
 };
-const updateScrollLength = () => _setState('memo', 'scrollLength', Math.max(refs.scrollbar?.clientWidth, refs.scrollbar?.clientHeight));
 solidJs.createRoot(() => {
-  // 更新 scrollLength
-  solidJs.createEffect(solidJs.on([scrollPosition, () => store.memo.size], () => {
-    // 部分情况下，在窗口大小改变后滚动条大小不会立刻跟着修改，需要等待一帧渲染
-    // 比如打开后台标签页后等一会再切换过去
-    requestAnimationFrame(updateScrollLength);
-  }));
+  createEffectOn(() => store.option.scrollModeImgScale, () => setState(updateRenderRange));
+  const getImgBottom = i => i === imgTopList().length - 1 ? contentHeight() : imgTopList()[i + 1];
+  let startImgBootom = 0;
+  let endImgTop = 0;
+  createEffectOn(scrollTop, top => {
+    if (inRange(startImgBootom, top, endImgTop)) return;
+    setState(updateRenderRange);
+    startImgBootom = getImgBottom(renderRangeStart());
+    endImgTop = imgTopList()[renderRangeEnd()];
+  });
 });
 
-const {
-  activeImgIndex,
-  nowFillIndex,
-  activePage,
-  preloadNum
-} = solidJs.createRoot(() => {
-  const activePageMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex] ?? []);
-  const activeImgIndexMemo = solidJs.createMemo(() => activePageMemo().find(i => i !== -1) ?? 0);
-  const nowFillIndexMemo = solidJs.createMemo(() => findFillIndex(activeImgIndexMemo(), store.fillEffect));
-  const preloadNumMemo = solidJs.createMemo(() => ({
-    back: store.option.preloadPageNum,
-    front: Math.floor(store.option.preloadPageNum / 2)
-  }));
-  return {
-    /** 当前显示的第一张图片的 index */
-    activeImgIndex: activeImgIndexMemo,
-    /** 当前所处的图片流 */
-    nowFillIndex: nowFillIndexMemo,
-    /** 当前显示页面 */
-    activePage: activePageMemo,
-    /** 预加载页数 */
-    preloadNum: preloadNumMemo
-  };
-});
 const loadImg = (state, index, draft) => {
   if (index === -1) return false;
   const img = state.imgList[index];
@@ -3500,26 +2632,24 @@ const loadPageImg = (state, loadPageNum = Infinity, loadNum = 2) => {
   return draft.editNum > 0;
 };
 const zoomScrollModeImg = (zoomLevel, set = false) => {
+  const oldHeight = contentHeight();
+  const oldScrollTop = scrollTop();
   setOption(draftOption => {
-    const newVal = set ? zoomLevel :
-    // 放大到整数再运算，避免精度丢失导致的奇怪的值
-    (store.option.scrollModeImgScale * 100 + zoomLevel * 100) / 100;
-    draftOption.scrollModeImgScale = clamp(0.1, newVal, 3);
+    const newVal = set ? zoomLevel : store.option.scrollModeImgScale + zoomLevel;
+    draftOption.scrollModeImgScale = clamp(0.1, +newVal.toFixed(2), 3);
   });
-  // 在调整图片缩放后使当前滚动进度保持不变
-  refs.mangaFlow.scrollTo({
-    top: contentHeight() * store.scrollbar.dragTop,
-    behavior: 'instant'
-  });
-  setState(updateDrag);
+
+  // 在卷轴模式下缩放时保持滚动进度不变
+  scrollTo(oldScrollTop ? oldScrollTop / oldHeight * contentHeight() : 0);
 };
 
 /** 根据当前页数更新所有图片的加载状态 */
-const updateImgLoadType = debounce(100, state => {
+const updateImgLoadType = debounce(state => {
   // 先将所有加载中的图片状态改为暂停
-  state.imgList.forEach((img, i) => {
-    if (img.loadType === 'loading') state.imgList[i].loadType = 'wait';
-  });
+  let i = state.imgList.length;
+  while (i--) {
+    if (state.imgList[i].loadType === 'loading') state.imgList[i].loadType = 'wait';
+  }
   return (
     // 优先加载当前显示页
     loadPageImg(state, 1) ||
@@ -3548,8 +2678,9 @@ const updatePageData = state => {
     },
     isMobile
   } = state;
-  if (onePageMode || scrollMode || isMobile || imgList.length <= 1) state.pageList = imgList.map((_, i) => [i]);else state.pageList = handleComicData(imgList, fillEffect);
-  updateDrag(state);
+  let newPageList = [];
+  if (onePageMode || scrollMode || isMobile || imgList.length <= 1) newPageList = imgList.map((_, i) => [i]);else newPageList = handleComicData(imgList, fillEffect);
+  if (!isEqual(state.pageList, newPageList)) state.pageList = newPageList;
   updateImgLoadType(state);
 
   // 在图片排列改变后自动跳转回原先显示图片所在的页数
@@ -3565,12 +2696,130 @@ const updatePageData = state => {
  * 3. updatePageData
  */
 const resetImgState = state => {
-  state.flag.autoScrollMode = true;
+  state.flag.autoScrollMode = false;
   state.flag.autoWide = false;
+  state.flag.autoLong = false;
   autoCloseFill.clear();
   // 如果用户没有手动修改过首页填充，才将其恢复初始
   if (typeof state.fillEffect['-1'] === 'boolean') state.fillEffect['-1'] = state.option.firstPageFill && state.imgList.length > 3;
 };
+
+/** 根据比例更新图片类型。返回是否修改了图片类型 */
+const updateImgType = (state, draftImg) => {
+  const {
+    width,
+    height,
+    type
+  } = draftImg;
+  if (!width || !height || !rootSize().width || !rootSize().height) return false;
+  const imgRatio = width / height;
+  if (imgRatio <= state.proportion.单页比例) {
+    draftImg.type = imgRatio < state.proportion.条漫比例 ? 'vertical' : '';
+  } else {
+    draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
+  }
+  return type !== draftImg.type;
+};
+
+/** 检查指定图片周围包括自己在内，是否有足够数量的**连续**的符合条件的图片 */
+const checkImgTypeCount = (state, index, maxNum, fn = (other, target) => other.type === target.type) => {
+  let num = 1;
+  const targetImg = state.imgList[index];
+  let i = index;
+  while (i--) {
+    const img = state.imgList[i];
+    if (img.loadType !== 'loaded') continue;
+    if (fn(img, targetImg)) {
+      num += 1;
+      if (num >= maxNum) return true;
+    } else break;
+  }
+  for (i = index; i < state.imgList.length; i++) {
+    const img = state.imgList[i];
+    if (img.loadType !== 'loaded') continue;
+    if (fn(img, targetImg)) {
+      num += 1;
+      if (num >= maxNum) return true;
+    } else break;
+  }
+  return false;
+};
+
+/** 更新图片尺寸 */
+const updateImgSize = (i, width, height) => {
+  setState(state => {
+    const img = state.imgList[i];
+    if (!img) return;
+    img.width = width;
+    img.height = height;
+    let isEdited = updateImgType(state, img);
+    switch (img.type) {
+      // 连续出现多张宽图后，自动将滚动条移至底部
+      case 'long':
+        {
+          if (!state.flag.autoLong && checkImgTypeCount(store, i, 5)) state.flag.autoLong = true;
+          // fall through
+        }
+      // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
+      case 'wide':
+        {
+          if (state.flag.autoWide || !checkImgTypeCount(state, i, 3, isWideImg)) break;
+          state.imgList.forEach((comicImg, index) => {
+            if (comicImg.loadType === 'wait' && comicImg.type === '') state.imgList[index].type = 'wide';
+          });
+          state.flag.autoWide = true;
+          isEdited = true;
+          break;
+        }
+
+      // 连续出现多张长图后，自动开启卷轴模式
+      case 'vertical':
+        {
+          if (state.flag.autoScrollMode || !checkImgTypeCount(state, i, 3)) break;
+          state.imgList.forEach((comicImg, index) => {
+            if (comicImg.loadType === 'wait' && comicImg.type === '') state.imgList[index].type = 'vertical';
+          });
+          state.option.scrollMode = true;
+          state.flag.autoScrollMode = true;
+          isEdited = true;
+          break;
+        }
+    }
+    if (!isEdited) return;
+    Reflect.deleteProperty(state.fillEffect, i);
+    updatePageData(state);
+  });
+};
+solidJs.createRoot(() => {
+  // 预加载所有图片的尺寸
+  createEffectOn(() => store.imgList, singleThreaded(state => plimit(store.imgList.map((img, i) => async () => {
+    if (state.continueRun) return;
+    if (img.loadType !== 'wait' || img.width || img.height || !img.src) return;
+    const size = await getImgSize(img.src, () => state.continueRun);
+    if (state.continueRun) return;
+    if (size) updateImgSize(i, ...size);
+  }), undefined, Math.max(store.option.preloadPageNum, 1))));
+
+  // 处理显示窗口的长宽变化
+  createEffectOn(rootSize, ({
+    width,
+    height
+  }) => setState(state => {
+    state.proportion.单页比例 = Math.min(width / 2 / height, 1);
+    state.proportion.横幅比例 = width / height;
+    state.proportion.条漫比例 = state.proportion.单页比例 / 2;
+    let isEdited = false;
+    for (let i = 0; i < state.imgList.length; i++) {
+      if (!updateImgType(state, state.imgList[i])) continue;
+      isEdited = true;
+      Reflect.deleteProperty(state.fillEffect, i);
+    }
+    if (isEdited) resetImgState(state);
+    updatePageData(state);
+  }), {
+    defer: true
+  });
+});
 
 let clickTimeout = null;
 const useDoubleClick = (click, doubleClick, timeout = 200) => {
@@ -3591,61 +2840,52 @@ const useDoubleClick = (click, doubleClick, timeout = 200) => {
   };
 };
 
-const handleResize = (width, height) => {
-  if (!(width || height)) return;
-  setState(state => {
-    state.memo.size = {
-      width,
-      height
-    };
-    state.isMobile = width < 800;
-  });
-};
-
-/** 更新渲染页面相关变量 */
-const updateRenderPage = (state, animation = false) => {
-  state.memo.renderPageList = state.pageList.slice(Math.max(0, state.activePageIndex - 1), Math.min(state.pageList.length, state.activePageIndex + 2));
-  const i = state.memo.renderPageList.indexOf(state.pageList[state.activePageIndex]);
+/** 将页面移回原位 */
+const resetPage = (state, animation = false) => {
+  updateRenderRange(state);
+  if (state.option.scrollMode) {
+    state.page.anima = '';
+    return;
+  }
   state.page.offset.x.pct = 0;
   state.page.offset.y.pct = 0;
+  let i = -1;
+  if (inRange(renderRange.start(), state.activePageIndex, renderRange.end())) i = state.activePageIndex - renderRange.start();
   if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
   state.page.anima = animation ? 'page' : '';
 };
-const updateShowPageList = state => {
-  state.memo.showPageList = [...new Set(state.memo.showImgList.map(img => +img.parentElement.getAttribute('data-index')))];
-  state.memo.showPageList.sort();
-  if (state.option.scrollMode) state.activePageIndex = state.memo.showPageList[0] ?? 0;
+
+/** 获取指定图片的提示文本 */
+const getImgTip = (state, i) => {
+  if (i === -1) return t('other.fill_page');
+  const img = state.imgList[i];
+
+  // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
+  if (img.loadType !== 'loaded') return \`\${i + 1} (\${t(\`img_status.\${img.loadType}\`)})\`;
+  if (img.translationType && img.translationType !== 'hide' && img.translationMessage) return \`\${i + 1}：\${img.translationMessage}\`;
+  return \`\${i + 1}\`;
 };
-const handleObserver = entries => {
-  setState(state => {
-    entries.forEach(({
-      isIntersecting,
-      target
-    }) => {
-      if (isIntersecting) state.memo.showImgList.push(target);else state.memo.showImgList = state.memo.showImgList.filter(img => img !== target);
-    });
-    if (!store.gridMode) updateShowPageList(state);
-  });
+
+/** 获取指定页面的提示文本 */
+const getPageTip = pageIndex => {
+  const page = store.pageList[pageIndex];
+  if (!page) return 'null';
+  const pageIndexText = page.map(index => getImgTip(store, index));
+  if (store.option.dir === 'rtl') pageIndexText.reverse();
+  return pageIndexText.join(store.option.scrollMode ? '\\n' : ' | ');
 };
 solidJs.createRoot(() => {
   // 页数发生变动时
-  solidJs.createEffect(solidJs.on(() => store.activePageIndex, () => {
+  createEffectOn(() => store.activePageIndex, () => {
     setState(state => {
       updateImgLoadType(state);
       if (state.show.endPage) state.show.endPage = undefined;
     });
   }, {
     defer: true
-  }));
-
-  // 在关闭工具栏的同时关掉滚动条的强制显示
-  solidJs.createEffect(solidJs.on(() => store.show.toolbar, () => {
-    if (store.show.scrollbar && !store.show.toolbar) _setState('show', 'scrollbar', false);
-  }, {
-    defer: true
-  }));
-  solidJs.createEffect(solidJs.on(activePage, page => {
-    if (!store.option.scrollMode && !store.isDragMode) setState(updateRenderPage);
+  });
+  createEffectOn(activePage, page => {
+    if (!store.isDragMode) setState(resetPage);
     // 如果当前显示页面有出错的图片，就重新加载一次
     page?.forEach(i => {
       if (store.imgList[i]?.loadType !== 'error') return;
@@ -3653,20 +2893,28 @@ solidJs.createRoot(() => {
     });
   }, {
     defer: true
-  }));
+  });
+
+  // 在关闭工具栏的同时关掉滚动条的强制显示
+  createEffectOn(() => store.show.toolbar, () => store.show.scrollbar && !store.show.toolbar && _setState('show', 'scrollbar', false), {
+    defer: true
+  });
 
   // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
-  solidJs.createEffect(solidJs.on(() => store.gridMode, () => setState(resetUI), {
+  createEffectOn(() => store.gridMode, () => setState(resetUI), {
     defer: true
-  }));
+  });
+  createEffectOn(() => store.option.scrollModeImgScale, () => setState(updateRenderRange));
 });
 
 /** 判断当前是否已经滚动到底部 */
-const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
+const isBottom = state => {
+  return state.option.scrollMode ? Math.ceil(scrollTop() + rootSize().height) >= contentHeight() : state.activePageIndex === state.pageList.length - 1;
+};
 
 /** 判断当前是否已经滚动到顶部 */
-const isTop = state => state.option.scrollMode ? store.scrollbar.dragTop === 0 : state.activePageIndex === 0;
-const closeScrollLock$1 = debounce(200, () => _setState('flag', 'scrollLock', false));
+const isTop = state => state.option.scrollMode ? scrollTop() === 0 : state.activePageIndex === 0;
+const closeScrollLock = debounce(() => _setState('flag', 'scrollLock', false), 200);
 
 /** 翻页。返回是否成功改变了当前页数 */
 const turnPageFn = (state, dir) => {
@@ -3679,7 +2927,7 @@ const turnPageFn = (state, dir) => {
       case 'end':
         state.show.endPage = undefined;
         state.flag.scrollLock = true;
-        closeScrollLock$1();
+        closeScrollLock();
         return false;
       default:
         // 弹出卷首结束页
@@ -3689,7 +2937,7 @@ const turnPageFn = (state, dir) => {
           if (!state.prop.Prev || !state.option.jumpToNext) return false;
           state.show.endPage = 'start';
           state.flag.scrollLock = true;
-          closeScrollLock$1();
+          closeScrollLock();
           return false;
         }
         if (state.option.scrollMode) return false;
@@ -3709,7 +2957,7 @@ const turnPageFn = (state, dir) => {
       case 'start':
         state.show.endPage = undefined;
         state.flag.scrollLock = true;
-        closeScrollLock$1();
+        closeScrollLock();
         return false;
       default:
         // 弹出卷尾结束页
@@ -3717,7 +2965,7 @@ const turnPageFn = (state, dir) => {
           if (!state.prop.Exit) return false;
           state.show.endPage = 'end';
           state.flag.scrollLock = true;
-          closeScrollLock$1();
+          closeScrollLock();
           return false;
         }
         if (state.option.scrollMode) return false;
@@ -3733,16 +2981,16 @@ const turnPageAnimation = dir => {
     if (!turnPageFn(state, dir)) {
       state.page.offset.x.px = 0;
       state.page.offset.y.px = 0;
-      updateRenderPage(state, true);
+      resetPage(state, true);
       state.isDragMode = false;
       return;
     }
     state.isDragMode = true;
-    updateRenderPage(state);
+    resetPage(state);
     if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 100 : -100;else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
     setTimeout(() => {
       setState(draftState => {
-        updateRenderPage(draftState, true);
+        resetPage(draftState, true);
         draftState.page.offset.x.px = 0;
         draftState.page.offset.y.px = 0;
         draftState.isDragMode = false;
@@ -3767,7 +3015,6 @@ const checkBound = state => {
   state.zoom.offset.x = clamp(bound.x(), state.zoom.offset.x, 0);
   state.zoom.offset.y = clamp(bound.y(), state.zoom.offset.y, 0);
 };
-const closeScrollLock = debounce(200, () => _setState('flag', 'scrollLock', false));
 const zoom = (val, focal, animation = false) => {
   const newScale = clamp(100, val, 500);
   if (newScale === store.zoom.scale) return;
@@ -3832,7 +3079,7 @@ let lastTime = 0;
 /** 逐帧计算惯性滑动 */
 const handleSlideAnima = timestamp => {
   // 当速率足够小时停止计算动画
-  if (isEqual(velocity.x, 0, 1) && isEqual(velocity.y, 0, 1)) {
+  if (approx(velocity.x, 0, 1) && approx(velocity.y, 0, 1)) {
     animationId$1 = null;
     return;
   }
@@ -4012,7 +3259,7 @@ const handleGridClick = e => {
     state.activePageIndex = pageNum;
     state.gridMode = false;
   });
-  if (store.option.scrollMode) refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
+  if (store.option.scrollMode) scrollTo(imgTopList()[pageNum]);
 };
 
 /** 双击放大 */
@@ -4080,7 +3327,7 @@ const handleDragEnd = startTime => {
     state.isDragMode = false;
   });
 };
-handleDragEnd.debounce = debounce(200, handleDragEnd);
+handleDragEnd.debounce = debounce(handleDragEnd, 200);
 const handleMangaFlowDrag = ({
   type,
   xy: [x, y],
@@ -4099,14 +3346,14 @@ const handleMangaFlowDrag = ({
 
         // 判断滑动方向
         let slideDir;
-        if (Math.abs(dx) > 5 && isEqual(dy, 0, 5)) slideDir = 'horizontal';
-        if (Math.abs(dy) > 5 && isEqual(dx, 0, 5)) slideDir = 'vertical';
+        if (Math.abs(dx) > 5 && approx(dy, 0, 5)) slideDir = 'horizontal';
+        if (Math.abs(dy) > 5 && approx(dx, 0, 5)) slideDir = 'vertical';
         if (!slideDir) return;
         setState(state => {
           // 根据滑动方向自动切换排列模式
           state.page.vertical = slideDir === 'vertical';
           state.isDragMode = true;
-          updateRenderPage(state);
+          resetPage(state);
         });
         return;
       }
@@ -4139,57 +3386,17 @@ const handleTrackpadWheel = e => {
     }
 
     // 滚动过一页时
-    if (dy <= -state.memo.size.height) {
-      if (turnPageFn(state, 'next')) dy += state.memo.size.height;
-    } else if (dy >= state.memo.size.height) {
-      if (turnPageFn(state, 'prev')) dy -= state.memo.size.height;
+    if (dy <= -rootSize().height) {
+      if (turnPageFn(state, 'next')) dy += rootSize().height;
+    } else if (dy >= rootSize().height) {
+      if (turnPageFn(state, 'prev')) dy -= rootSize().height;
     }
     state.page.vertical = true;
     state.isDragMode = true;
-    updateRenderPage(state);
+    resetPage(state);
   });
   if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
   handleDragEnd.debounce();
-};
-
-const defaultHotkeys = {
-  turn_page_up: ['w', 'ArrowUp', 'PageUp', 'Shift + W'],
-  turn_page_down: [' ', 's', 'ArrowDown', 'PageDown', 'Shift + S'],
-  turn_page_right: ['d', '.', 'ArrowRight'],
-  turn_page_left: ['a', ',', 'ArrowLeft'],
-  jump_to_home: ['Home'],
-  jump_to_end: ['End'],
-  exit: ['Escape'],
-  switch_page_fill: ['/', 'm', 'z'],
-  switch_scroll_mode: [],
-  switch_grid_mode: [],
-  switch_single_double_page_mode: [],
-  switch_dir: [],
-  switch_auto_enlarge: []
-};
-const setHotkeys = (...args) => {
-  _setState(...['hotkeys', ...args]);
-  store.prop.HotkeysChange?.(Object.fromEntries(Object.entries(store.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]))));
-};
-const {
-  hotkeysMap
-} = solidJs.createRoot(() => {
-  const hotkeysMapMemo = solidJs.createMemo(() => Object.fromEntries(Object.entries(store.hotkeys).flatMap(([name, key]) => key.map(k => [k, name]))));
-  return {
-    /** 快捷键配置 */
-    hotkeysMap: hotkeysMapMemo
-  };
-});
-
-/** 删除指定快捷键 */
-const delHotkeys = code => {
-  Object.entries(store.hotkeys).forEach(([name, keys]) => {
-    const i = keys.indexOf(code);
-    if (i === -1) return;
-    const newKeys = [...store.hotkeys[name]];
-    newKeys.splice(i, 1);
-    setHotkeys(name, newKeys);
-  });
 };
 
 /** 切换页面填充 */
@@ -4210,7 +3417,6 @@ const switchScrollMode = () => {
     draftOption.onePageMode = draftOption.scrollMode;
     updatePageData(state);
   });
-  setState(updateDrag);
   // 切换到卷轴模式后自动定位到对应页
   if (store.option.scrollMode) refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
 };
@@ -4244,8 +3450,8 @@ const switchGridMode = () => {
   });
 };
 
-var css$1 = ".index_module_img__d1a5aaee{background-color:var(--hover-bg-color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d1a5aaee[data-fill=left]{transform:translate(50%)}.index_module_img__d1a5aaee[data-fill=right]{transform:translate(-50%)}.index_module_img__d1a5aaee[data-fill=page]{display:none}.index_module_img__d1a5aaee[data-type=long]{height:auto;width:100%}.index_module_img__d1a5aaee[data-load-type=loading]{animation:index_module_show__d1a5aaee 2s forwards;max-width:100vw!important;opacity:0}.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[data-load-type=wait],.index_module_img__d1a5aaee[src=\\"\\"]{aspect-ratio:3/4;height:100%;position:relative}:is(.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[src=\\"\\"]):before{opacity:0}:is(.index_module_img__d1a5aaee[data-load-type],.index_module_img__d1a5aaee[src=\\"\\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d1a5aaee[data-load-type=loading],.index_module_img__d1a5aaee[data-load-type=wait]):after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__d1a5aaee[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__d1a5aaee[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_page__d1a5aaee{content-visibility:hidden;align-items:center;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d1a5aaee[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d1a5aaee{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;transition-duration:0ms;width:100%}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d1a5aaee[data-disable-zoom] .index_module_img__d1a5aaee{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d1a5aaee[dir=ltr] .index_module_page__d1a5aaee{flex-direction:row}.index_module_mangaFlow__d1a5aaee[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d1a5aaee[data-animation=page] .index_module_page__d1a5aaee,.index_module_mangaFlow__d1a5aaee[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d1a5aaee[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d1a5aaee[data-grid-mode]{grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;padding-bottom:2em}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee{height:auto;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee:after{bottom:-1.4em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);white-space:pre;width:100%}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee .index_module_img__d1a5aaee{cursor:pointer}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee{grid-auto-flow:row;grid-auto-rows:auto;overflow:auto;grid-row-gap:calc(var(--scroll-mode-spacing)*.1em);grid-template-rows:auto}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_page__d1a5aaee{display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width, 100%)))}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=loading]{position:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=error]{height:20em;width:30em}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_img__d1a5aaee{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}@keyframes index_module_show__d1a5aaee{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d1a5aaee{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d1a5aaee>button{animation:index_module_jello__d1a5aaee .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d1a5aaee>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d1a5aaee>button:focus-visible{outline:none}.index_module_endPage__d1a5aaee>.index_module_tip__d1a5aaee{margin:auto;position:absolute}.index_module_endPage__d1a5aaee[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d1a5aaee[data-type=start]>.index_module_tip__d1a5aaee{transform:translateY(-10em)}.index_module_endPage__d1a5aaee[data-type=end]>.index_module_tip__d1a5aaee{transform:translateY(10em)}.index_module_root__d1a5aaee[data-mobile] .index_module_endPage__d1a5aaee>button{width:1em}.index_module_comments__d1a5aaee{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d1a5aaee>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d1a5aaee:hover{opacity:1}.index_module_root__d1a5aaee[data-mobile] .index_module_comments__d1a5aaee{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d1a5aaee{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d1a5aaee{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d1a5aaee{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d1a5aaee[data-show],.index_module_toolbar__d1a5aaee:hover) .index_module_toolbarPanel__d1a5aaee{transform:none}.index_module_toolbar__d1a5aaee[data-close] .index_module_toolbarPanel__d1a5aaee{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d1a5aaee{-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee{font-size:1.3em}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee:not([data-show]){pointer-events:none}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbarBg__d1a5aaee{filter:opacity(.8)}.index_module_SettingPanelPopper__d1a5aaee{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__d1a5aaee{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.index_module_SettingPanel__d1a5aaee hr{color:#fff;margin:0}.index_module_SettingBlock__d1a5aaee{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div+:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div{margin-top:1em}.index_module_SettingBlock__d1a5aaee[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__d1a5aaee[data-show=false] .index_module_SettingBlockBody__d1a5aaee{padding:unset}.index_module_SettingBlockSubtitle__d1a5aaee{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d1a5aaee{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d1a5aaee+.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_SettingsItemName__d1a5aaee{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d1a5aaee{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true] .index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d1a5aaee{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d1a5aaee{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__d1a5aaee{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d1a5aaee{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee{overflow:hidden}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee>.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_hotkeys__d1a5aaee{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d1a5aaee+.index_module_hotkeys__d1a5aaee{margin-top:.5em}.index_module_hotkeys__d1a5aaee:last-child{border-bottom:none}.index_module_hotkeysItem__d1a5aaee{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__d1a5aaee>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d1a5aaee>svg:hover{opacity:.9}.index_module_hotkeysItem__d1a5aaee:hover{padding:.2em .5em}.index_module_hotkeysItem__d1a5aaee:hover>svg{display:unset}.index_module_hotkeysItem__d1a5aaee:focus,.index_module_hotkeysItem__d1a5aaee:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d1a5aaee{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d1a5aaee>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d1a5aaee>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d1a5aaee>div[title]>svg{width:1.6em}.index_module_hotkeys__d1a5aaee:hover div[title]{transform:scale(1)}.index_module_scrollbar__d1a5aaee{--arrow-y:clamp(0.45em,calc(var(--drag-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d1a5aaee>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__d1a5aaee{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d1a5aaee[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d1a5aaee[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d1a5aaee[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d1a5aaee[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d1a5aaee[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d1a5aaee[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d1a5aaee[data-translation-type=error]{background-color:#f005}.index_module_scrollbarDrag__d1a5aaee{--top:calc(var(--top-ratio)*var(--scroll-length));--height:calc(var(--height-ratio)*var(--scroll-length));background-color:var(--scrollbar-drag);border-radius:1em;height:var(--height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__d1a5aaee{--poper-top:clamp(0%,calc(var(--drag-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__d1a5aaee:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover:before,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show]:before{opacity:1}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarDrag__d1a5aaee{opacity:0}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarDrag__d1a5aaee{opacity:1}.index_module_scrollbar__d1a5aaee[data-position=hidden]{display:none}.index_module_scrollbar__d1a5aaee[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{top:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee{bottom:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom],.index_module_scrollbar__d1a5aaee[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before,.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarDrag__d1a5aaee{height:100%;transform:translateX(calc(var(--top)*-1));width:var(--height)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr],.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee{transform:translateX(var(--top))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee{transform:translateX(var(--poper-top))}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee{transform:scaleX(1)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-type=loaded],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-translation-type],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-translation-type]{transform:scaleX(1)}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_scrollbar__d1a5aaee:before,.index_module_root__d1a5aaee[data-scroll-mode] :is(.index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbarPoper__d1a5aaee){transition:opacity .15s}.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover:before{opacity:0}.index_module_touchAreaRoot__d1a5aaee{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.index_module_touchAreaRoot__d1a5aaee[data-show]{opacity:1}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d1a5aaee[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=next],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d1a5aaee[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d1a5aaee[data-mobile] .index_module_touchAreaRoot__d1a5aaee{flex-direction:column!important;letter-spacing:0}.index_module_root__d1a5aaee[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d1a5aaee{display:none!important}.index_module_invisible__d1a5aaee{visibility:hidden!important}.index_module_root__d1a5aaee{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d1a5aaee a{color:var(--text-secondary)}.index_module_root__d1a5aaee[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d1a5aaee{scrollbar-color:var(--scrollbar-drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-thumb{background:var(--scrollbar-drag)}p{margin:0}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
-var modules_c21c94f2$1 = {"img":"index_module_img__d1a5aaee","show":"index_module_show__d1a5aaee","page":"index_module_page__d1a5aaee","mangaFlow":"index_module_mangaFlow__d1a5aaee","root":"index_module_root__d1a5aaee","endPage":"index_module_endPage__d1a5aaee","jello":"index_module_jello__d1a5aaee","tip":"index_module_tip__d1a5aaee","comments":"index_module_comments__d1a5aaee","toolbar":"index_module_toolbar__d1a5aaee","toolbarPanel":"index_module_toolbarPanel__d1a5aaee","toolbarBg":"index_module_toolbarBg__d1a5aaee","SettingPanelPopper":"index_module_SettingPanelPopper__d1a5aaee","SettingPanel":"index_module_SettingPanel__d1a5aaee","SettingBlock":"index_module_SettingBlock__d1a5aaee","SettingBlockBody":"index_module_SettingBlockBody__d1a5aaee","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__d1a5aaee","SettingsItem":"index_module_SettingsItem__d1a5aaee","SettingsItemName":"index_module_SettingsItemName__d1a5aaee","SettingsItemSwitch":"index_module_SettingsItemSwitch__d1a5aaee","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__d1a5aaee","SettingsItemIconButton":"index_module_SettingsItemIconButton__d1a5aaee","SettingsItemSelect":"index_module_SettingsItemSelect__d1a5aaee","closeCover":"index_module_closeCover__d1a5aaee","SettingsShowItem":"index_module_SettingsShowItem__d1a5aaee","SettingsShowItemBody":"index_module_SettingsShowItemBody__d1a5aaee","hotkeys":"index_module_hotkeys__d1a5aaee","hotkeysItem":"index_module_hotkeysItem__d1a5aaee","hotkeysHeader":"index_module_hotkeysHeader__d1a5aaee","scrollbar":"index_module_scrollbar__d1a5aaee","scrollbarPage":"index_module_scrollbarPage__d1a5aaee","scrollbarDrag":"index_module_scrollbarDrag__d1a5aaee","scrollbarPoper":"index_module_scrollbarPoper__d1a5aaee","touchAreaRoot":"index_module_touchAreaRoot__d1a5aaee","touchArea":"index_module_touchArea__d1a5aaee","hidden":"index_module_hidden__d1a5aaee","invisible":"index_module_invisible__d1a5aaee","beautifyScrollbar":"index_module_beautifyScrollbar__d1a5aaee"};
+var css$1 = ".index_module_img__2a8b4908{background-color:var(--hover-bg-color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__2a8b4908[data-fill=left]{transform:translate(50%)}.index_module_img__2a8b4908[data-fill=right]{transform:translate(-50%)}.index_module_img__2a8b4908[data-fill=page]{display:none}.index_module_img__2a8b4908[data-type=long]{height:auto;width:100%}.index_module_img__2a8b4908[data-load-type=loading]{animation:index_module_show__2a8b4908 2s forwards;max-width:100vw!important;opacity:0}.index_module_img__2a8b4908[data-load-type=error],.index_module_img__2a8b4908[data-load-type=wait],.index_module_img__2a8b4908[src=\\"\\"]{aspect-ratio:3/4;height:100%;position:relative}:is(.index_module_img__2a8b4908[data-load-type=error],.index_module_img__2a8b4908[src=\\"\\"]):before{opacity:0}:is(.index_module_img__2a8b4908[data-load-type],.index_module_img__2a8b4908[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__2a8b4908[data-load-type=loading],.index_module_img__2a8b4908[data-load-type=wait]):after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__2a8b4908[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__2a8b4908[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_page__2a8b4908{content-visibility:hidden;align-items:center;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__2a8b4908[data-show]{content-visibility:visible;display:flex}.index_module_mangaBox__2a8b4908{height:100%;width:100%}.index_module_root__2a8b4908:not([data-grid-mode]) .index_module_mangaBox__2a8b4908{scrollbar-width:none}.index_module_root__2a8b4908:not([data-grid-mode]) .index_module_mangaBox__2a8b4908::-webkit-scrollbar{display:none}.index_module_mangaFlow__2a8b4908{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;transition-duration:0ms;width:100%}.index_module_mangaFlow__2a8b4908[data-disable-zoom] .index_module_img__2a8b4908{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__2a8b4908[dir=ltr] .index_module_page__2a8b4908{flex-direction:row}.index_module_mangaFlow__2a8b4908[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__2a8b4908[data-animation=page] .index_module_page__2a8b4908,.index_module_mangaFlow__2a8b4908[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__2a8b4908[data-vertical]{grid-auto-flow:row}.index_module_root__2a8b4908[data-grid-mode] .index_module_mangaFlow__2a8b4908{grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;padding-bottom:2em}.index_module_root__2a8b4908[data-grid-mode] .index_module_mangaFlow__2a8b4908 .index_module_page__2a8b4908{height:auto;transform:none}.index_module_root__2a8b4908[data-grid-mode] .index_module_mangaFlow__2a8b4908 .index_module_page__2a8b4908:after{bottom:-1.4em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);white-space:pre;width:100%}.index_module_root__2a8b4908[data-grid-mode] .index_module_mangaFlow__2a8b4908 .index_module_page__2a8b4908 .index_module_img__2a8b4908{cursor:pointer}.index_module_root__2a8b4908[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__2a8b4908{overflow:auto}.index_module_root__2a8b4908[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__2a8b4908 .index_module_mangaFlow__2a8b4908{display:flex;flex-direction:column;height:-moz-fit-content;height:fit-content}.index_module_root__2a8b4908[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__2a8b4908 .index_module_mangaFlow__2a8b4908 .index_module_page__2a8b4908{height:-moz-fit-content;height:fit-content;width:unset}.index_module_root__2a8b4908[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__2a8b4908 .index_module_mangaFlow__2a8b4908 .index_module_page__2a8b4908:not(:first-of-type){margin-top:calc(var(--scroll-mode-spacing)*7px)}.index_module_root__2a8b4908[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__2a8b4908 .index_module_mangaFlow__2a8b4908 .index_module_img__2a8b4908{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width)))}.index_module_root__2a8b4908[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__2a8b4908 .index_module_mangaFlow__2a8b4908 .index_module_img__2a8b4908[data-load-type=loading]{position:unset}.index_module_root__2a8b4908[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__2a8b4908 .index_module_mangaFlow__2a8b4908[data-grid-mode] .index_module_img__2a8b4908{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}@keyframes index_module_show__2a8b4908{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__2a8b4908{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__2a8b4908>button{animation:index_module_jello__2a8b4908 .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__2a8b4908>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__2a8b4908>button:focus-visible{outline:none}.index_module_endPage__2a8b4908>.index_module_tip__2a8b4908{margin:auto;position:absolute}.index_module_endPage__2a8b4908[data-show]{opacity:1;pointer-events:all}.index_module_endPage__2a8b4908[data-type=start]>.index_module_tip__2a8b4908{transform:translateY(-10em)}.index_module_endPage__2a8b4908[data-type=end]>.index_module_tip__2a8b4908{transform:translateY(10em)}.index_module_root__2a8b4908[data-mobile] .index_module_endPage__2a8b4908>button{width:1em}.index_module_comments__2a8b4908{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__2a8b4908>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__2a8b4908:hover{opacity:1}.index_module_root__2a8b4908[data-mobile] .index_module_comments__2a8b4908{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__2a8b4908{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__2a8b4908{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__2a8b4908{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__2a8b4908[data-show],.index_module_toolbar__2a8b4908:hover) .index_module_toolbarPanel__2a8b4908{transform:none}.index_module_toolbar__2a8b4908[data-close] .index_module_toolbarPanel__2a8b4908{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__2a8b4908{-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__2a8b4908[data-mobile] .index_module_toolbar__2a8b4908{font-size:1.3em}.index_module_root__2a8b4908[data-mobile] .index_module_toolbar__2a8b4908:not([data-show]){pointer-events:none}.index_module_root__2a8b4908[data-mobile] .index_module_toolbarBg__2a8b4908{filter:opacity(.8)}.index_module_SettingPanelPopper__2a8b4908{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__2a8b4908{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.index_module_SettingPanel__2a8b4908 hr{color:#fff;margin:0}.index_module_SettingBlock__2a8b4908{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__2a8b4908 .index_module_SettingBlockBody__2a8b4908{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__2a8b4908 .index_module_SettingBlockBody__2a8b4908)>div+:is(.index_module_SettingBlock__2a8b4908 .index_module_SettingBlockBody__2a8b4908)>div{margin-top:1em}.index_module_SettingBlock__2a8b4908[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__2a8b4908[data-show=false] .index_module_SettingBlockBody__2a8b4908{padding:unset}.index_module_SettingBlockSubtitle__2a8b4908{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__2a8b4908{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__2a8b4908+.index_module_SettingsItem__2a8b4908{margin-top:1em}.index_module_SettingsItemName__2a8b4908{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__2a8b4908{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__2a8b4908{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__2a8b4908[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__2a8b4908[data-checked=true] .index_module_SettingsItemSwitchRound__2a8b4908{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__2a8b4908{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__2a8b4908{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__2a8b4908{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__2a8b4908{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__2a8b4908>.index_module_SettingsShowItemBody__2a8b4908{overflow:hidden}.index_module_SettingsShowItem__2a8b4908>.index_module_SettingsShowItemBody__2a8b4908>.index_module_SettingsItem__2a8b4908{margin-top:1em}.index_module_hotkeys__2a8b4908{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__2a8b4908+.index_module_hotkeys__2a8b4908{margin-top:.5em}.index_module_hotkeys__2a8b4908:last-child{border-bottom:none}.index_module_hotkeysItem__2a8b4908{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__2a8b4908>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__2a8b4908>svg:hover{opacity:.9}.index_module_hotkeysItem__2a8b4908:hover{padding:.2em .5em}.index_module_hotkeysItem__2a8b4908:hover>svg{display:unset}.index_module_hotkeysItem__2a8b4908:focus,.index_module_hotkeysItem__2a8b4908:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__2a8b4908{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__2a8b4908>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__2a8b4908>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__2a8b4908>div[title]>svg{width:1.6em}.index_module_hotkeys__2a8b4908:hover div[title]{transform:scale(1)}.index_module_scrollbar__2a8b4908{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__2a8b4908>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__2a8b4908{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__2a8b4908[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__2a8b4908[data-type=wait]{opacity:.5}.index_module_scrollbarPage__2a8b4908[data-type=error]{background-color:#f005}.index_module_scrollbarPage__2a8b4908[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__2a8b4908[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__2a8b4908[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__2a8b4908[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__2a8b4908[data-translation-type=error]{background-color:#f005}.index_module_scrollbarSlider__2a8b4908{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__2a8b4908{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__2a8b4908:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__2a8b4908,.index_module_scrollbar__2a8b4908:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__2a8b4908:hover .index_module_scrollbarPoper__2a8b4908,.index_module_scrollbar__2a8b4908:hover .index_module_scrollbarSlider__2a8b4908,.index_module_scrollbar__2a8b4908:hover:before,.index_module_scrollbar__2a8b4908[data-force-show] .index_module_scrollbarPoper__2a8b4908,.index_module_scrollbar__2a8b4908[data-force-show] .index_module_scrollbarSlider__2a8b4908,.index_module_scrollbar__2a8b4908[data-force-show]:before{opacity:1}.index_module_scrollbar__2a8b4908[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarSlider__2a8b4908{opacity:0}.index_module_scrollbar__2a8b4908[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarSlider__2a8b4908{opacity:1}.index_module_scrollbar__2a8b4908[data-position=hidden]{display:none}.index_module_scrollbar__2a8b4908[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__2a8b4908[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__2a8b4908[data-position=top] .index_module_scrollbarPoper__2a8b4908{top:1.2em}.index_module_scrollbar__2a8b4908[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__2a8b4908[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__2a8b4908[data-position=bottom] .index_module_scrollbarPoper__2a8b4908{bottom:1.2em}.index_module_scrollbar__2a8b4908[data-position=bottom],.index_module_scrollbar__2a8b4908[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__2a8b4908[data-position=bottom]:before,.index_module_scrollbar__2a8b4908[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__2a8b4908[data-position=bottom] .index_module_scrollbarSlider__2a8b4908,.index_module_scrollbar__2a8b4908[data-position=top] .index_module_scrollbarSlider__2a8b4908{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.index_module_scrollbar__2a8b4908[data-position=bottom] .index_module_scrollbarPoper__2a8b4908,.index_module_scrollbar__2a8b4908[data-position=top] .index_module_scrollbarPoper__2a8b4908{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__2a8b4908[data-position=bottom][data-dir=ltr],.index_module_scrollbar__2a8b4908[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__2a8b4908[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__2a8b4908[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__2a8b4908[data-position=bottom][data-dir=ltr] .index_module_scrollbarSlider__2a8b4908,.index_module_scrollbar__2a8b4908[data-position=top][data-dir=ltr] .index_module_scrollbarSlider__2a8b4908{transform:translateX(var(--top))}.index_module_scrollbar__2a8b4908[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__2a8b4908,.index_module_scrollbar__2a8b4908[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__2a8b4908{transform:translateX(var(--poper-top))}.index_module_scrollbar__2a8b4908[data-position=bottom] .index_module_scrollbarPage__2a8b4908,.index_module_scrollbar__2a8b4908[data-position=top] .index_module_scrollbarPage__2a8b4908{transform:scaleX(1)}.index_module_scrollbar__2a8b4908[data-position=bottom] .index_module_scrollbarPage__2a8b4908[data-type=loaded],.index_module_scrollbar__2a8b4908[data-position=top] .index_module_scrollbarPage__2a8b4908[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__2a8b4908[data-position=bottom] .index_module_scrollbarPage__2a8b4908[data-translation-type],.index_module_scrollbar__2a8b4908[data-position=top] .index_module_scrollbarPage__2a8b4908[data-translation-type]{transform:scaleX(1)}.index_module_root__2a8b4908[data-scroll-mode] .index_module_scrollbar__2a8b4908:before,.index_module_root__2a8b4908[data-scroll-mode] :is(.index_module_scrollbarSlider__2a8b4908,.index_module_scrollbarPoper__2a8b4908){transition:opacity .15s}.index_module_root__2a8b4908[data-mobile] .index_module_scrollbar__2a8b4908:hover .index_module_scrollbarPoper__2a8b4908,.index_module_root__2a8b4908[data-mobile] .index_module_scrollbar__2a8b4908:hover:before{opacity:0}.index_module_touchAreaRoot__2a8b4908{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.index_module_touchAreaRoot__2a8b4908[data-show]{opacity:1}.index_module_touchAreaRoot__2a8b4908 .index_module_touchArea__2a8b4908{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__2a8b4908 .index_module_touchArea__2a8b4908[data-area=PREV],.index_module_touchAreaRoot__2a8b4908 .index_module_touchArea__2a8b4908[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__2a8b4908 .index_module_touchArea__2a8b4908[data-area=MENU],.index_module_touchAreaRoot__2a8b4908 .index_module_touchArea__2a8b4908[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__2a8b4908 .index_module_touchArea__2a8b4908[data-area=NEXT],.index_module_touchAreaRoot__2a8b4908 .index_module_touchArea__2a8b4908[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__2a8b4908 .index_module_touchArea__2a8b4908[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__2a8b4908 .index_module_touchArea__2a8b4908[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__2a8b4908 .index_module_touchArea__2a8b4908[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__2a8b4908[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__2a8b4908:not([data-turn-page]) .index_module_touchArea__2a8b4908[data-area=NEXT],.index_module_touchAreaRoot__2a8b4908:not([data-turn-page]) .index_module_touchArea__2a8b4908[data-area=PREV],.index_module_touchAreaRoot__2a8b4908:not([data-turn-page]) .index_module_touchArea__2a8b4908[data-area=next],.index_module_touchAreaRoot__2a8b4908:not([data-turn-page]) .index_module_touchArea__2a8b4908[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__2a8b4908[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__2a8b4908[data-mobile] .index_module_touchAreaRoot__2a8b4908{flex-direction:column!important;letter-spacing:0}.index_module_root__2a8b4908[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__2a8b4908{display:none!important}.index_module_invisible__2a8b4908{visibility:hidden!important}.index_module_root__2a8b4908{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__2a8b4908 a{color:var(--text-secondary)}.index_module_root__2a8b4908[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__2a8b4908{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__2a8b4908::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__2a8b4908::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__2a8b4908::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}p{margin:0}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var modules_c21c94f2$1 = {"img":"index_module_img__2a8b4908","show":"index_module_show__2a8b4908","page":"index_module_page__2a8b4908","mangaBox":"index_module_mangaBox__2a8b4908","root":"index_module_root__2a8b4908","mangaFlow":"index_module_mangaFlow__2a8b4908","endPage":"index_module_endPage__2a8b4908","jello":"index_module_jello__2a8b4908","tip":"index_module_tip__2a8b4908","comments":"index_module_comments__2a8b4908","toolbar":"index_module_toolbar__2a8b4908","toolbarPanel":"index_module_toolbarPanel__2a8b4908","toolbarBg":"index_module_toolbarBg__2a8b4908","SettingPanelPopper":"index_module_SettingPanelPopper__2a8b4908","SettingPanel":"index_module_SettingPanel__2a8b4908","SettingBlock":"index_module_SettingBlock__2a8b4908","SettingBlockBody":"index_module_SettingBlockBody__2a8b4908","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__2a8b4908","SettingsItem":"index_module_SettingsItem__2a8b4908","SettingsItemName":"index_module_SettingsItemName__2a8b4908","SettingsItemSwitch":"index_module_SettingsItemSwitch__2a8b4908","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__2a8b4908","SettingsItemIconButton":"index_module_SettingsItemIconButton__2a8b4908","SettingsItemSelect":"index_module_SettingsItemSelect__2a8b4908","closeCover":"index_module_closeCover__2a8b4908","SettingsShowItem":"index_module_SettingsShowItem__2a8b4908","SettingsShowItemBody":"index_module_SettingsShowItemBody__2a8b4908","hotkeys":"index_module_hotkeys__2a8b4908","hotkeysItem":"index_module_hotkeysItem__2a8b4908","hotkeysHeader":"index_module_hotkeysHeader__2a8b4908","scrollbar":"index_module_scrollbar__2a8b4908","scrollbarPage":"index_module_scrollbarPage__2a8b4908","scrollbarSlider":"index_module_scrollbarSlider__2a8b4908","scrollbarPoper":"index_module_scrollbarPoper__2a8b4908","touchAreaRoot":"index_module_touchAreaRoot__2a8b4908","touchArea":"index_module_touchArea__2a8b4908","hidden":"index_module_hidden__2a8b4908","invisible":"index_module_invisible__2a8b4908","beautifyScrollbar":"index_module_beautifyScrollbar__2a8b4908"};
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 const focus = () => requestAnimationFrame(() => {
@@ -4268,7 +3474,7 @@ const scrollModeScroll = dir => {
     });
     _setState('flag', 'scrollLock', true);
   }
-  closeScrollLock$1();
+  closeScrollLock();
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
@@ -4314,13 +3520,16 @@ const handleKeyDown = e => {
       case 'End':
       case 'ArrowRight':
       case 'ArrowLeft':
+        e.stopPropagation();
         return;
       case 'ArrowUp':
       case 'PageUp':
+        e.stopPropagation();
         return store.gridMode || turnPage('prev');
       case 'ArrowDown':
       case 'PageDown':
       case ' ':
+        e.stopPropagation();
         return store.gridMode || turnPage('next');
     }
   }
@@ -4381,7 +3590,7 @@ let equalNum = 0;
 const handleWheel = e => {
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
-  if (store.flag.scrollLock || e.deltaY === 0) return closeScrollLock$1();
+  if (store.flag.scrollLock || e.deltaY === 0) return closeScrollLock();
   const isWheelDown = e.deltaY > 0;
   if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
 
@@ -4433,115 +3642,95 @@ const handleWheel = e => {
   }
 };
 
-/** 根据比例更新图片类型。返回是否修改了图片类型 */
-const updateImgType = (state, draftImg) => {
-  const {
-    width,
-    height,
-    type
-  } = draftImg;
-  if (!width || !height || !state.memo.size.width || !state.memo.size.height) return false;
-  const imgRatio = width / height;
-  if (imgRatio <= state.proportion.单页比例) {
-    draftImg.type = imgRatio < state.proportion.条漫比例 ? 'vertical' : '';
-  } else {
-    draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
+const [_scrollLength, setScrollLength] = solidJs.createSignal(0);
+/** 滚动条元素的长度 */
+const scrollLength = _scrollLength;
+
+/** 滚动条滑块长度 */
+const sliderHeight = createRootMemo(() => store.option.scrollMode ? rootSize().height / contentHeight() : 1 / store.pageList.length);
+
+/** 滚动条滑块高度 */
+const sliderTop = createRootMemo(() => store.option.scrollMode ? scrollTop() / contentHeight() : 1 / store.pageList.length * store.activePageIndex);
+
+/** 滚动条滑块的中心点高度 */
+const sliderMidpoint = createRootMemo(() => scrollLength() * (sliderTop() + sliderHeight() / 2));
+
+/** 滚动条位置 */
+const scrollPosition = createRootMemo(() => {
+  if (store.option.scrollbar.position === 'auto') {
+    if (store.isMobile) return 'top';
+    return store.flag.autoLong ? 'bottom' : 'right';
   }
-  return type !== draftImg.type;
+  return store.option.scrollbar.position;
+});
+
+/** 判断点击位置在滚动条上的位置比率 */
+const getClickTop = (x, y, e) => {
+  switch (scrollPosition()) {
+    case 'bottom':
+    case 'top':
+      return store.option.dir === 'rtl' ? 1 - x / e.offsetWidth : x / e.offsetWidth;
+    default:
+      return y / e.offsetHeight;
+  }
 };
 
-/** 更新图片尺寸 */
-const updateImgSize = (i, width, height) => {
-  setState(state => {
-    const img = state.imgList[i];
-    if (!img) return;
-    img.width = width;
-    img.height = height;
-    let isEdited = updateImgType(state, img);
-    switch (img.type) {
-      // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
-      case 'long':
-      case 'wide':
-        {
-          if (state.flag.autoWide || !checkImgTypeCount(state, isWideImg)) break;
-          state.imgList.forEach((comicImg, index) => {
-            if (comicImg.loadType === 'wait' && comicImg.type === '') state.imgList[index].type = 'wide';
-          });
-          state.flag.autoWide = true;
-          isEdited = true;
-          break;
-        }
+/** 计算在滚动条上的拖动距离 */
+const getSliderDist = ([x, y], [ix, iy], e) => {
+  switch (scrollPosition()) {
+    case 'bottom':
+    case 'top':
+      return store.option.dir === 'ltr' ? (x - ix) / e.offsetWidth : (1 - (x - ix)) / e.offsetWidth;
+    default:
+      return (y - iy) / e.offsetHeight;
+  }
+};
 
-      // 连续出现多张长图后，自动开启卷轴模式
-      case 'vertical':
-        {
-          if (!state.flag.autoScrollMode || !checkImgTypeCount(state, ({
-            type
-          }) => type === 'vertical')) break;
-          state.option.scrollMode = true;
-          state.flag.autoScrollMode = false;
-          isEdited = true;
-          break;
-        }
+/** 开始拖拽时的 sliderTop 值 */
+let startTop = 0;
+const handlescrollbarSlider = ({
+  type,
+  xy,
+  initial
+}, e) => {
+  const [x, y] = xy;
+
+  // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
+  if (type === 'up') return;
+  if (!refs.mangaFlow) return;
+  const scrollbarDom = e.target;
+
+  /** 点击位置在滚动条上的位置比率 */
+  const clickTop = getClickTop(x, y, e.target);
+  if (store.option.scrollMode) {
+    if (type === 'move') {
+      scrollTo(clamp(0, startTop + getSliderDist(xy, initial, scrollbarDom), 1) * contentHeight());
+    } else {
+      // 确保滚动条的中心会在点击位置
+      startTop = clickTop - sliderHeight() / 2;
+      scrollTo(startTop * contentHeight(), true);
     }
-    if (!isEdited) return updateDrag(state);
-    Reflect.deleteProperty(state.fillEffect, i);
-    updatePageData(state);
+  } else {
+    let newPageIndex = Math.floor(clickTop * store.pageList.length);
+    // 处理超出范围的情况
+    if (newPageIndex < 0) newPageIndex = 0;else if (newPageIndex >= store.pageList.length) newPageIndex = store.pageList.length - 1;
+    if (newPageIndex !== store.activePageIndex) _setState('activePageIndex', newPageIndex);
+  }
+};
+solidJs.createRoot(() => {
+  // 更新 scrollLength
+  createEffectOn([scrollPosition, rootSize], () => {
+    if (!refs.scrollbar) return;
+    // 部分情况下，在窗口大小改变后滚动条大小不会立刻跟着修改，需要等待一帧渲染
+    // 比如打开后台标签页后等一会再切换过去
+    requestAnimationFrame(() => setScrollLength(Math.max(refs.scrollbar.clientWidth, refs.scrollbar.clientHeight)));
   });
-};
-const {
-  placeholderSize
-} = solidJs.createRoot(() => {
-  // 预加载所有图片的尺寸
-  solidJs.createEffect(solidJs.on(() => store.imgList, singleThreaded(state => plimit(store.imgList.map((img, i) => async () => {
-    if (state.continueRun) return;
-    if (img.loadType !== 'wait' || img.width || img.height || !img.src) return;
-    const size = await getImgSize(img.src, () => state.continueRun);
-    if (state.continueRun) return;
-    if (size) updateImgSize(i, ...size);
-  }), undefined, Math.max(store.option.preloadPageNum, 1)))));
-
-  // 处理显示窗口的长宽变化
-  solidJs.createEffect(solidJs.on(() => store.memo.size, ({
-    width,
-    height
-  }) => setState(state => {
-    state.proportion.单页比例 = Math.min(width / 2 / height, 1);
-    state.proportion.横幅比例 = width / height;
-    state.proportion.条漫比例 = state.proportion.单页比例 / 2;
-    let isEdited = false;
-    for (let i = 0; i < state.imgList.length; i++) {
-      if (!updateImgType(state, state.imgList[i])) continue;
-      isEdited = true;
-      Reflect.deleteProperty(state.fillEffect, i);
-    }
-    if (isEdited) resetImgState(state);
-    updatePageData(state);
-  }), {
-    defer: true
-  }));
-
-  /** 获取图片列表中指定属性的中位数 */
-  const getImgMedian = (sizeFn, fallback) => {
-    if (!store.option.scrollMode) return 0;
-    const list = store.imgList.filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort();
-    if (!list.length) return fallback;
-    return list[Math.floor(list.length / 2)];
-  };
-  const placeholderSizeMemo = solidJs.createMemo(() => ({
-    width: getImgMedian(img => img.width, refs.root?.offsetWidth),
-    height: getImgMedian(img => img.height, refs.root?.offsetHeight)
-  }));
-  return {
-    /** 图片占位尺寸 */
-    placeholderSize: placeholderSizeMemo
-  };
 });
 
 /** 在鼠标静止一段时间后自动隐藏 */
 const useHiddenMouse = () => {
   const [hiddenMouse, setHiddenMouse] = solidJs.createSignal(true);
-  const hidden = debounce(1000, () => setHiddenMouse(true));
+  const hidden = debounce(() => setHiddenMouse(true), 1000);
   return {
     hiddenMouse,
     /** 鼠标移动 */
@@ -4606,7 +3795,7 @@ const useDrag = ({
       state.xy = [e.clientX, e.clientY];
 
       // 判断单击
-      if (handleClick && touches.size === 0 && isEqual(state.xy[0] - state.initial[0], 0, 5) && isEqual(state.xy[1] - state.initial[1], 0, 5) && performance.now() - state.startTime < 200) handleClick(e);
+      if (handleClick && touches.size === 0 && approx(state.xy[0] - state.initial[0], 0, 5) && approx(state.xy[1] - state.initial[1], 0, 5) && performance.now() - state.startTime < 200) handleClick(e);
       handleDrag(state, e);
       focus();
     };
@@ -4637,7 +3826,7 @@ const useDrag = ({
   });
 };
 
-const _tmpl$$D = /*#__PURE__*/template(\`<img draggable=false>\`);
+const _tmpl$$D = /*#__PURE__*/web.template(\`<img draggable=false>\`);
 /** 图片加载完毕的回调 */
 const handleImgLoaded = (i, e) => {
   if (!e.getAttribute('src')) return;
@@ -4649,10 +3838,6 @@ const handleImgLoaded = (i, e) => {
     img.loadType = 'loaded';
     updateImgLoadType(state);
     state.prop.Loading?.(state.imgList, img);
-
-    // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
-    // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
-    e.decode();
   });
 };
 const errorNumMap = new Map();
@@ -4676,14 +3861,10 @@ const handleImgError = (i, e) => {
 /** 漫画图片 */
 const ComicImg = props => {
   let ref;
-  solidJs.onMount(() => {
-    store.observer?.observe(ref);
-    solidJs.onCleanup(() => {
-      store.observer?.unobserve(ref);
-      setState(state => {
-        state.memo.showImgList = state.memo.showImgList.filter(img => img !== ref);
-      });
-    });
+  solidJs.onMount(() => store.observer?.observe(ref));
+  solidJs.onCleanup(() => {
+    store.observer?.unobserve(ref);
+    showImgList.delete(ref);
   });
   const img = solidJs.createMemo(() => store.imgList[props.index]);
   const src = solidJs.createMemo(() => {
@@ -4691,7 +3872,7 @@ const ComicImg = props => {
     if (img().translationType === 'show') return img().translationUrl;
     return img().src;
   });
-  const style$1 = solidJs.createMemo(() => {
+  const style = solidJs.createMemo(() => {
     if (!store.option.scrollMode) return undefined;
     const size = img()?.width ? img() : placeholderSize();
     return {
@@ -4699,27 +3880,33 @@ const ComicImg = props => {
       'aspect-ratio': \`\${size.width} / \${size.height}\`
     };
   });
+  solidJs.createEffect(() => {
+    if (!src() || img().loadType !== 'loaded') return;
+    // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
+    // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
+    ref.decode();
+  });
   return (() => {
     const _el$ = _tmpl$$D();
     _el$.addEventListener("error", e => handleImgError(props.index, e.currentTarget));
     _el$.addEventListener("load", e => handleImgLoaded(props.index, e.currentTarget));
     const _ref$ = ref;
-    typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
-    solidJs.createRenderEffect(_p$ => {
+    typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
+    web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.img,
-        _v$2 = style$1(),
+        _v$2 = style(),
         _v$3 = src(),
         _v$4 = \`\${props.index + 1}\`,
         _v$5 = props.index === -1 ? 'page' : props.fill,
         _v$6 = img()?.type || undefined,
         _v$7 = img()?.loadType === 'loaded' ? undefined : img()?.loadType;
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _p$._v$2 = style(_el$, _v$2, _p$._v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "src", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$, "alt", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-fill", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-type", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-load-type", _p$._v$7 = _v$7);
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _p$._v$2 = web.style(_el$, _v$2, _p$._v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "src", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "alt", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-fill", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-type", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-load-type", _p$._v$7 = _v$7);
       return _p$;
     }, {
       _v$: undefined,
@@ -4734,10 +3921,10 @@ const ComicImg = props => {
   })();
 };
 
-const _tmpl$$C = /*#__PURE__*/template(\`<div>\`),
-  _tmpl$2$b = /*#__PURE__*/template(\`<h1>NULL\`);
+const _tmpl$$C = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$b = /*#__PURE__*/web.template(\`<h1>NULL\`);
 const ComicPage = props => {
-  const show = solidJs.createMemo(() => store.gridMode || store.option.scrollMode || store.memo.renderPageList.some(page => page === props.page));
+  const show = solidJs.createMemo(() => store.gridMode || inRange(renderRange.start(), props.index, renderRange.end()));
   const fill = solidJs.createMemo(() => {
     if (props.page.length === 1) return undefined;
 
@@ -4746,7 +3933,7 @@ const ComicPage = props => {
     if (fillIndex !== -1) return store.option.dir !== 'rtl' ? ['right', 'left'] : ['left', 'right'];
     return undefined;
   });
-  const style$1 = solidJs.createMemo(() => {
+  const style = solidJs.createMemo(() => {
     if (!store.gridMode) return {};
     const highlight = props.index === store.activePageIndex;
     const tip = getPageTip(props.index);
@@ -4757,29 +3944,31 @@ const ComicPage = props => {
   });
   return (() => {
     const _el$ = _tmpl$$C();
-    insert(_el$, solidJs.createComponent(solidJs.For, {
+    web.insert(_el$, web.createComponent(solidJs.Index, {
       get each() {
         return props.page;
       },
       get fallback() {
         return _tmpl$2$b();
       },
-      children: (imgIndex, i) => solidJs.createComponent(ComicImg, {
-        index: imgIndex,
+      children: (imgIndex, i) => web.createComponent(ComicImg, {
+        get index() {
+          return imgIndex();
+        },
         get fill() {
-          return fill()?.[i()];
+          return fill()?.[i];
         }
       })
     }));
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.page,
         _v$2 = boolDataVal(show()),
         _v$3 = props.index,
-        _v$4 = style$1();
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-index", _p$._v$3 = _v$3);
-      _p$._v$4 = style(_el$, _v$4, _p$._v$4);
+        _v$4 = style();
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-index", _p$._v$3 = _v$3);
+      _p$._v$4 = web.style(_el$, _v$4, _p$._v$4);
       return _p$;
     }, {
       _v$: undefined,
@@ -4791,8 +3980,9 @@ const ComicPage = props => {
   })();
 };
 
-const _tmpl$$B = /*#__PURE__*/template(\`<div tabindex=-1>\`),
-  _tmpl$2$a = /*#__PURE__*/template(\`<h1>NULL\`);
+const _tmpl$$B = /*#__PURE__*/web.template(\`<span>\`),
+  _tmpl$2$a = /*#__PURE__*/web.template(\`<div><div tabindex=-1>\`),
+  _tmpl$3$4 = /*#__PURE__*/web.template(\`<h1>NULL\`);
 const ComicImgFlow = () => {
   const {
     hiddenMouse,
@@ -4806,99 +3996,108 @@ const ComicImgFlow = () => {
   };
   solidJs.onMount(() => {
     useDrag({
-      ref: refs.mangaFlow,
+      ref: refs.mangaBox,
       handleDrag,
       handleClick,
       touches
     });
-    setState(state => {
-      state.observer = new IntersectionObserver(handleObserver, {
-        root: refs.mangaFlow,
-        threshold: 0.01
-      });
-    });
-    solidJs.onCleanup(() => {
-      setState(state => {
-        state.observer?.disconnect();
-        state.observer = null;
-      });
-    });
+    bindScrollTop(refs.mangaBox);
+    initIntersectionObserver(refs.mangaBox);
   });
   const handleTransitionEnd = () => {
     if (store.isDragMode) return;
     setState(state => {
-      if (store.zoom.scale === 100) updateRenderPage(state, true);else state.page.anima = '';
+      if (store.zoom.scale === 100) resetPage(state, true);else state.page.anima = '';
     });
   };
-  const pageXY = solidJs.createMemo(() => {
-    const x = \`calc(\${store.page.offset.x.pct}% + \${store.page.offset.x.px}px)\`;
-    return {
-      '--page-x': store.option.dir === 'rtl' ? x : \`calc(\${x} * -1)\`,
-      '--page-y': \`calc(\${store.page.offset.y.pct}% + \${store.page.offset.y.px}px)\`
-    };
+
+  /** 卷轴模式下当前显示页之前未渲染页的总高度 */
+  const scrollModeFill = solidJs.createMemo(() => imgTopList()[renderRange.start()] ?? 0);
+
+  /** 在当前页之前有图片被加载出来，导致内容高度发生变化后，重新滚动页面，确保当前显示位置不变 */
+  createEffectOn([scrollModeFill, imgTopList], ([height, topList], prev) => {
+    if (!prev || !height) return;
+    const [prevHeight, prevTopList] = prev;
+    if (prevTopList === topList || prevHeight === height) return;
+    scrollTo(scrollTop() + height - prevHeight);
+    // 目前还是会有轻微偏移，但考虑到大部分情况下都是顺序阅读，本身出现概率就低，就不继续排查优化了
   });
-  const zoom = solidJs.createMemo(() => ({
-    '--scale': store.zoom.scale / 100,
-    '--zoom-x': \`\${store.zoom.offset.x || 0}px\`,
-    '--zoom-y': \`\${store.zoom.offset.y || 0}px\`
-  }));
-  const touchAction = solidJs.createMemo(() => {
-    if (store.gridMode) return 'auto';
-    if (store.zoom.scale !== 100) {
-      if (store.option.scrollMode) {
+  const style = createMemoMap({
+    '--scale': () => store.zoom.scale / 100,
+    '--zoom-x': () => \`\${store.zoom.offset.x || 0}px\`,
+    '--zoom-y': () => \`\${store.zoom.offset.y || 0}px\`,
+    '--page-x': () => {
+      if (store.option.scrollMode) return '0px';
+      const x = \`calc(\${store.page.offset.x.pct}% + \${store.page.offset.x.px}px)\`;
+      return store.option.dir === 'rtl' ? x : \`calc(\${x} * -1)\`;
+    },
+    '--page-y': () => \`calc(\${store.page.offset.y.pct}% + \${store.page.offset.y.px}px)\`,
+    'touch-action': () => {
+      if (store.gridMode) return 'auto';
+      if (store.zoom.scale !== 100) {
+        if (!store.option.scrollMode) return 'none';
         if (store.zoom.offset.y === 0) return 'pan-up';
         if (store.zoom.offset.y === bound.y()) return 'pan-down';
       }
-      return 'none';
-    }
-    if (store.option.scrollMode) return 'pan-y';
+      if (store.option.scrollMode) return 'pan-y';
+    },
+    height: () => !store.gridMode && store.option.scrollMode ? \`\${contentHeight()}px\` : undefined
   });
   return (() => {
-    const _el$ = _tmpl$$B();
-    _el$.addEventListener("scroll", () => setState(updateDrag));
-    _el$.addEventListener("transitionend", handleTransitionEnd);
-    const _ref$ = bindRef('mangaFlow');
-    typeof _ref$ === "function" && use(_ref$, _el$);
-    _el$.addEventListener("mousemove", onMouseMove);
-    insert(_el$, solidJs.createComponent(solidJs.Index, {
+    const _el$ = _tmpl$2$a(),
+      _el$2 = _el$.firstChild;
+    const _ref$ = bindRef('mangaBox');
+    typeof _ref$ === "function" && web.use(_ref$, _el$);
+    _el$2.addEventListener("transitionend", handleTransitionEnd);
+    const _ref$2 = bindRef('mangaFlow');
+    typeof _ref$2 === "function" && web.use(_ref$2, _el$2);
+    _el$2.addEventListener("mousemove", onMouseMove);
+    web.insert(_el$2, web.createComponent(solidJs.Show, {
+      get when() {
+        return store.option.scrollMode;
+      },
+      get children() {
+        const _el$3 = _tmpl$$B();
+        _el$3.style.setProperty("flex-shrink", "0");
+        web.effect(() => \`\${scrollModeFill()}px\` != null ? _el$3.style.setProperty("height", \`\${scrollModeFill()}px\`) : _el$3.style.removeProperty("height"));
+        return _el$3;
+      }
+    }), null);
+    web.insert(_el$2, web.createComponent(solidJs.For, {
       get each() {
         return store.pageList;
       },
       get fallback() {
-        return _tmpl$2$a();
+        return _tmpl$3$4();
       },
-      children: (page, i) => solidJs.createComponent(ComicPage, {
-        get page() {
-          return page();
-        },
-        index: i
+      children: (page, i) => web.createComponent(ComicPage, {
+        page: page,
+        get index() {
+          return i();
+        }
       })
-    }));
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$1.mangaFlow,
-        _v$2 = store.option.dir,
-        _v$3 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
-        _v$4 = boolDataVal(store.option.disableZoom || store.option.scrollMode),
-        _v$5 = boolDataVal(store.gridMode),
+    }), null);
+    web.effect(_p$ => {
+      const _v$ = \`\${modules_c21c94f2$1.mangaBox} \${modules_c21c94f2$1.beautifyScrollbar}\`,
+        _v$2 = modules_c21c94f2$1.mangaFlow,
+        _v$3 = store.option.dir,
+        _v$4 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
+        _v$5 = boolDataVal(store.option.disableZoom || !store.gridMode && store.option.scrollMode),
         _v$6 = boolDataVal(store.zoom.scale !== 100),
         _v$7 = boolDataVal(store.page.vertical),
         _v$8 = store.page.anima,
         _v$9 = !store.gridMode && hiddenMouse(),
-        _v$10 = {
-          'touch-action': touchAction(),
-          ...zoom(),
-          ...pageXY()
-        };
-      _v$ !== _p$._v$ && setAttribute(_el$, "id", _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "dir", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && className(_el$, _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-disable-zoom", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-grid-mode", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-scale-mode", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-vertical", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && setAttribute(_el$, "data-animation", _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && setAttribute(_el$, "data-hidden-mouse", _p$._v$9 = _v$9);
-      _p$._v$10 = style(_el$, _v$10, _p$._v$10);
+        _v$10 = style();
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.setAttribute(_el$2, "id", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$2, "dir", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$2, "data-disable-zoom", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$2, "data-scale-mode", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$2, "data-vertical", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && web.setAttribute(_el$2, "data-animation", _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && web.setAttribute(_el$2, "data-hidden-mouse", _p$._v$9 = _v$9);
+      _p$._v$10 = web.style(_el$2, _v$10, _p$._v$10);
       return _p$;
     }, {
       _v$: undefined,
@@ -4916,70 +4115,70 @@ const ComicImgFlow = () => {
   })();
 };
 
-const _tmpl$$A = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">\`);
+const _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">\`);
 const MdLooksOne = ((props = {}) => (() => {
   const _el$ = _tmpl$$A();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$z = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">\`);
+const _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">\`);
 const MdLooksTwo = ((props = {}) => (() => {
   const _el$ = _tmpl$$z();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$y = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">\`);
+const _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">\`);
 const MdViewDay = ((props = {}) => (() => {
   const _el$ = _tmpl$$y();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$x = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">\`);
+const _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">\`);
 const MdQueue = ((props = {}) => (() => {
   const _el$ = _tmpl$$x();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$w = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14">\`);
+const _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14">\`);
 const MdSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$w();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$v = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">\`);
+const _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">\`);
 const MdTranslate = ((props = {}) => (() => {
   const _el$ = _tmpl$$v();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$u = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">\`);
+const _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">\`);
 const MdGrid = ((props = {}) => (() => {
   const _el$ = _tmpl$$u();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$t = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">\`);
+const _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">\`);
 const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
   const _el$ = _tmpl$$t();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$s = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">\`);
+const _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">\`);
 const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
   const _el$ = _tmpl$$s();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$r = /*#__PURE__*/template(\`<div><div> <!> \`);
+const _tmpl$$r = /*#__PURE__*/web.template(\`<div><div> <!> \`);
 /** 设置菜单项 */
 const SettingsItem = props => (() => {
   const _el$ = _tmpl$$r(),
@@ -4987,9 +4186,9 @@ const SettingsItem = props => (() => {
     _el$3 = _el$2.firstChild,
     _el$5 = _el$3.nextSibling;
     _el$5.nextSibling;
-  insert(_el$2, () => props.name, _el$5);
-  insert(_el$, () => props.children, null);
-  solidJs.createRenderEffect(_p$ => {
+  web.insert(_el$2, () => props.name, _el$5);
+  web.insert(_el$, () => props.children, null);
+  web.effect(_p$ => {
     const _v$ = props.class ? \`\${modules_c21c94f2$1.SettingsItem} \${props.class}\` : modules_c21c94f2$1.SettingsItem,
       _v$2 = {
         [props.class ?? '']: !!props.class?.length,
@@ -4997,10 +4196,10 @@ const SettingsItem = props => (() => {
       },
       _v$3 = props.style,
       _v$4 = modules_c21c94f2$1.SettingsItemName;
-    _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-    _p$._v$2 = classList(_el$, _v$2, _p$._v$2);
-    _p$._v$3 = style(_el$, _v$3, _p$._v$3);
-    _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
+    _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+    _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
+    _p$._v$3 = web.style(_el$, _v$3, _p$._v$3);
+    _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
     return _p$;
   }, {
     _v$: undefined,
@@ -5011,11 +4210,11 @@ const SettingsItem = props => (() => {
   return _el$;
 })();
 
-const _tmpl$$q = /*#__PURE__*/template(\`<button type=button><div>\`);
+const _tmpl$$q = /*#__PURE__*/web.template(\`<button type=button><div>\`);
 /** 开关式菜单项 */
 const SettingsItemSwitch = props => {
   const handleClick = () => props.onChange(!props.value);
-  return solidJs.createComponent(SettingsItem, {
+  return web.createComponent(SettingsItem, {
     get name() {
       return props.name;
     },
@@ -5029,13 +4228,13 @@ const SettingsItemSwitch = props => {
       const _el$ = _tmpl$$q(),
         _el$2 = _el$.firstChild;
       _el$.addEventListener("click", handleClick);
-      solidJs.createRenderEffect(_p$ => {
+      web.effect(_p$ => {
         const _v$ = modules_c21c94f2$1.SettingsItemSwitch,
           _v$2 = props.value,
           _v$3 = modules_c21c94f2$1.SettingsItemSwitchRound;
-        _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-        _v$2 !== _p$._v$2 && setAttribute(_el$, "data-checked", _p$._v$2 = _v$2);
-        _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
+        _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+        _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-checked", _p$._v$2 = _v$2);
+        _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
         return _p$;
       }, {
         _v$: undefined,
@@ -5047,22 +4246,22 @@ const SettingsItemSwitch = props => {
   });
 };
 
-const _tmpl$$p = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">\`);
+const _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">\`);
 const MdRefresh = ((props = {}) => (() => {
   const _el$ = _tmpl$$p();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$o = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">\`);
+const _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">\`);
 const MdAdd = ((props = {}) => (() => {
   const _el$ = _tmpl$$o();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$n = /*#__PURE__*/template(\`<div tabindex=0>\`),
-  _tmpl$2$9 = /*#__PURE__*/template(\`<div><div><p></p><span></span><div></div><div>\`);
+const _tmpl$$n = /*#__PURE__*/web.template(\`<div tabindex=0>\`),
+  _tmpl$2$9 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
 const KeyItem = props => {
   const code = () => store.hotkeys[props.operateName][props.i];
   const del = () => delHotkeys(code());
@@ -5085,17 +4284,17 @@ const KeyItem = props => {
   return (() => {
     const _el$ = _tmpl$$n();
     _el$.addEventListener("blur", () => code() || del());
-    use(ref => code() || setTimeout(() => ref.focus()), _el$);
+    web.use(ref => code() || setTimeout(() => ref.focus()), _el$);
     _el$.addEventListener("keydown", handleKeyDown);
-    insert(_el$, () => keyboardCodeToText(code()), null);
-    insert(_el$, solidJs.createComponent(MdClose, {
+    web.insert(_el$, () => keyboardCodeToText(code()), null);
+    web.insert(_el$, web.createComponent(MdClose, {
       "on:click": del
     }), null);
-    solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.hotkeysItem));
+    web.effect(() => web.className(_el$, modules_c21c94f2$1.hotkeysItem));
     return _el$;
   })();
 };
-const SettingHotkeys = () => solidJs.createComponent(solidJs.For, {
+const SettingHotkeys = () => web.createComponent(solidJs.For, {
   get each() {
     return Object.entries(store.hotkeys);
   },
@@ -5106,32 +4305,32 @@ const SettingHotkeys = () => solidJs.createComponent(solidJs.For, {
       _el$5 = _el$4.nextSibling,
       _el$6 = _el$5.nextSibling,
       _el$7 = _el$6.nextSibling;
-    insert(_el$4, () => t(\`hotkeys.\${name}\`) || name);
+    web.insert(_el$4, () => t(\`hotkeys.\${name}\`) || name);
     _el$5.style.setProperty("flex-grow", "1");
     _el$6.addEventListener("click", () => setHotkeys(name, store.hotkeys[name].length, ''));
-    insert(_el$6, solidJs.createComponent(MdAdd, {}));
+    web.insert(_el$6, web.createComponent(MdAdd, {}));
     _el$7.addEventListener("click", () => {
       const newKeys = defaultHotkeys[name] ?? [];
       newKeys.forEach(delHotkeys);
       setHotkeys(name, newKeys);
     });
-    insert(_el$7, solidJs.createComponent(MdRefresh, {}));
-    insert(_el$2, solidJs.createComponent(solidJs.Index, {
+    web.insert(_el$7, web.createComponent(MdRefresh, {}));
+    web.insert(_el$2, web.createComponent(solidJs.Index, {
       each: keys,
-      children: (_, i) => solidJs.createComponent(KeyItem, {
+      children: (_, i) => web.createComponent(KeyItem, {
         operateName: name,
         i: i
       })
     }), null);
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.hotkeys,
         _v$2 = modules_c21c94f2$1.hotkeysHeader,
         _v$3 = t('setting.hotkeys.add'),
         _v$4 = t('setting.hotkeys.restore');
-      _v$ !== _p$._v$ && className(_el$2, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && className(_el$3, _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$6, "title", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$7, "title", _p$._v$4 = _v$4);
+      _v$ !== _p$._v$ && web.className(_el$2, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.className(_el$3, _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$6, "title", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$7, "title", _p$._v$4 = _v$4);
       return _p$;
     }, {
       _v$: undefined,
@@ -5143,15 +4342,15 @@ const SettingHotkeys = () => solidJs.createComponent(solidJs.For, {
   })()
 });
 
-const _tmpl$$m = /*#__PURE__*/template(\`<select>\`),
-  _tmpl$2$8 = /*#__PURE__*/template(\`<option>\`);
+const _tmpl$$m = /*#__PURE__*/web.template(\`<select>\`),
+  _tmpl$2$8 = /*#__PURE__*/web.template(\`<option>\`);
 /** 选择器式菜单项 */
 const SettingsItemSelect = props => {
   let ref;
   solidJs.createEffect(() => {
     ref.value = props.options?.some(([val]) => val === props.value) ? props.value : '';
   });
-  return solidJs.createComponent(SettingsItem, {
+  return web.createComponent(SettingsItem, {
     get name() {
       return props.name;
     },
@@ -5165,20 +4364,20 @@ const SettingsItemSelect = props => {
       const _el$ = _tmpl$$m();
       _el$.addEventListener("change", e => props.onChange(e.target.value));
       const _ref$ = ref;
-      typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
+      typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
       _el$.addEventListener("click", () => props.onClick?.());
-      insert(_el$, solidJs.createComponent(solidJs.For, {
+      web.insert(_el$, web.createComponent(solidJs.For, {
         get each() {
           return props.options;
         },
         children: ([val, label]) => (() => {
           const _el$2 = _tmpl$2$8();
           _el$2.value = val;
-          insert(_el$2, label ?? val);
+          web.insert(_el$2, label ?? val);
           return _el$2;
         })()
       }));
-      solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.SettingsItemSelect));
+      web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemSelect));
       return _el$;
     }
   });
@@ -5492,39 +4691,36 @@ const setImgTranslationEnbale = (list, enbale) => {
   });
   return translationAll();
 };
-const translatorOptions = solidJs.createRoot(() => {
-  const [selfhostedOptions, setSelfOptions] = solidJs.createSignal([]);
+const [selfhostedOptions, setSelfOptions] = createEqualsSignal([]);
 
-  // 在切换翻译服务器的同时切换可用翻译的选项列表
-  solidJs.createEffect(solidJs.on([() => store.option.translation.server, () => store.option.translation.localUrl], async () => {
-    if (store.option.translation.server !== 'selfhosted') return;
-    setSelfOptions((await getValidTranslators()) ?? []);
+// 在切换翻译服务器的同时切换可用翻译的选项列表
+createEffectOn([() => store.option.translation.server, () => store.option.translation.localUrl], async () => {
+  if (store.option.translation.server !== 'selfhosted') return;
+  setSelfOptions((await getValidTranslators()) ?? []);
 
-    // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
-    if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
-      setOption(draftOption => {
-        draftOption.translation.options.translator = 'google';
-      });
-    }
-  }));
-  const options = solidJs.createMemo(solidJs.on([selfhostedOptions, lang, () => store.option.translation.server], () => store.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
-  return options;
+  // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
+  if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
+    setOption(draftOption => {
+      draftOption.translation.options.translator = 'google';
+    });
+  }
 });
+const translatorOptions = createRootMemo(solidJs.on([selfhostedOptions, lang, () => store.option.translation.server], () => store.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
 
-const _tmpl$$l = /*#__PURE__*/template(\`<div><div>\`);
+const _tmpl$$l = /*#__PURE__*/web.template(\`<div><div>\`);
 
 /** 带有动画过渡的切换显示设置项 */
 const SettingsShowItem = props => (() => {
   const _el$ = _tmpl$$l(),
     _el$2 = _el$.firstChild;
-  insert(_el$2, () => props.children);
-  solidJs.createRenderEffect(_p$ => {
+  web.insert(_el$2, () => props.children);
+  web.effect(_p$ => {
     const _v$ = modules_c21c94f2$1.SettingsShowItem,
       _v$2 = props.when ? '1fr' : '0fr',
       _v$3 = modules_c21c94f2$1.SettingsShowItemBody;
-    _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+    _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
     _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("grid-template-rows", _v$2) : _el$.style.removeProperty("grid-template-rows"));
-    _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
+    _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
     return _p$;
   }, {
     _v$: undefined,
@@ -5534,8 +4730,8 @@ const SettingsShowItem = props => (() => {
   return _el$;
 })();
 
-const _tmpl$$k = /*#__PURE__*/template(\`<blockquote>\`),
-  _tmpl$2$7 = /*#__PURE__*/template(\`<input type=url>\`);
+const _tmpl$$k = /*#__PURE__*/web.template(\`<blockquote>\`),
+  _tmpl$2$7 = /*#__PURE__*/web.template(\`<input type=url>\`);
 const SettingTranslation = () => {
   const isTranslationEnable = solidJs.createMemo(() => store.option.translation.server !== 'disable' && translatorOptions().length > 0);
 
@@ -5544,7 +4740,7 @@ const SettingTranslation = () => {
 
   /** 是否正在翻译当前页以后的全部图片 */
   const isTranslationAfterCurrent = solidJs.createMemo(() => isTranslationEnable() && store.imgList.slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
-  return [solidJs.createComponent(SettingsItemSelect, {
+  return [web.createComponent(SettingsItemSelect, {
     get name() {
       return t('setting.translation.server');
     },
@@ -5557,21 +4753,21 @@ const SettingTranslation = () => {
     get onChange() {
       return createStateSetFn('translation.server');
     }
-  }), solidJs.createComponent(SettingsShowItem, {
+  }), web.createComponent(SettingsShowItem, {
     get when() {
       return store.option.translation.server === 'cotrans';
     },
     get children() {
       const _el$ = _tmpl$$k();
-      solidJs.createRenderEffect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
+      web.effect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
       return _el$;
     }
-  }), solidJs.createComponent(SettingsShowItem, {
+  }), web.createComponent(SettingsShowItem, {
     get when() {
       return store.option.translation.server !== 'disable';
     },
     get children() {
-      return [solidJs.createComponent(SettingsItemSelect, {
+      return [web.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.detection_resolution');
         },
@@ -5582,7 +4778,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.size');
         }
-      }), solidJs.createComponent(SettingsItemSelect, {
+      }), web.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.text_detector');
         },
@@ -5593,7 +4789,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.detector');
         }
-      }), solidJs.createComponent(SettingsItemSelect, {
+      }), web.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.translator');
         },
@@ -5614,7 +4810,7 @@ const SettingTranslation = () => {
             state.option.translation.server = 'selfhosted';
           });
         }
-      }), solidJs.createComponent(SettingsItemSelect, {
+      }), web.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.direction');
         },
@@ -5627,7 +4823,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.direction');
         }
-      }), solidJs.createComponent(SettingsItemSelect, {
+      }), web.createComponent(SettingsItemSelect, {
         get name() {
           return t('setting.translation.options.target_language');
         },
@@ -5638,7 +4834,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.targetLanguage');
         }
-      }), solidJs.createComponent(SettingsItemSwitch, {
+      }), web.createComponent(SettingsItemSwitch, {
         get name() {
           return t('setting.translation.options.forceRetry');
         },
@@ -5648,12 +4844,12 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.forceRetry');
         }
-      }), solidJs.createComponent(solidJs.Show, {
+      }), web.createComponent(solidJs.Show, {
         get when() {
           return store.option.translation.server === 'selfhosted';
         },
         get children() {
-          return [solidJs.createComponent(SettingsItemSwitch, {
+          return [web.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.translate_all_img');
             },
@@ -5663,7 +4859,7 @@ const SettingTranslation = () => {
             onChange: () => {
               setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll());
             }
-          }), solidJs.createComponent(SettingsItemSwitch, {
+          }), web.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.translate_after_current');
             },
@@ -5673,7 +4869,7 @@ const SettingTranslation = () => {
             onChange: () => {
               setImgTranslationEnbale(store.pageList.slice(store.activePageIndex).flat(), !isTranslationAfterCurrent());
             }
-          }), solidJs.createComponent(SettingsItemSwitch, {
+          }), web.createComponent(SettingsItemSwitch, {
             get name() {
               return t('setting.translation.options.localUrl');
             },
@@ -5685,7 +4881,7 @@ const SettingTranslation = () => {
                 draftOption.translation.localUrl = val ? '' : undefined;
               });
             }
-          }), solidJs.createComponent(solidJs.Show, {
+          }), web.createComponent(solidJs.Show, {
             get when() {
               return store.option.translation.localUrl !== undefined;
             },
@@ -5698,8 +4894,8 @@ const SettingTranslation = () => {
                   draftOption.translation.localUrl = url;
                 });
               });
-              solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.SettingsItem));
-              solidJs.createRenderEffect(() => _el$2.value = store.option.translation.localUrl);
+              web.effect(() => web.className(_el$2, modules_c21c94f2$1.SettingsItem));
+              web.effect(() => _el$2.value = store.option.translation.localUrl);
               return _el$2;
             }
           })];
@@ -5709,7 +4905,7 @@ const SettingTranslation = () => {
   })];
 };
 
-const _tmpl$$j = /*#__PURE__*/template(\`<div><span contenteditable data-only-number></span><span>\`);
+const _tmpl$$j = /*#__PURE__*/web.template(\`<div><span contenteditable data-only-number></span><span>\`);
 /** 数值输入框菜单项 */
 const SettingsItemNumber = props => {
   const handleInput = e => {
@@ -5723,7 +4919,7 @@ const SettingsItemNumber = props => {
         return props.onChange(+e.target.textContent - (props.step ?? 1));
     }
   };
-  return solidJs.createComponent(SettingsItem, {
+  return web.createComponent(SettingsItem, {
     get name() {
       return props.name;
     },
@@ -5747,17 +4943,17 @@ const SettingsItemNumber = props => {
       });
       _el$2.addEventListener("input", handleInput);
       _el$2.addEventListener("keydown", handleKeyDown);
-      insert(_el$2, () => props.value);
+      web.insert(_el$2, () => props.value);
       _el$3.style.setProperty("margin-left", ".1em");
-      insert(_el$3, () => props.suffix ?? '');
-      solidJs.createRenderEffect(() => (props.suffix ? '.3em' : '.6em') != null ? _el$.style.setProperty("margin-right", props.suffix ? '.3em' : '.6em') : _el$.style.removeProperty("margin-right"));
+      web.insert(_el$3, () => props.suffix ?? '');
+      web.effect(() => (props.suffix ? '.3em' : '.6em') != null ? _el$.style.setProperty("margin-right", props.suffix ? '.3em' : '.6em') : _el$.style.removeProperty("margin-right"));
       return _el$;
     }
   });
 };
 
-const _tmpl$$i = /*#__PURE__*/template(\`<div>\`),
-  _tmpl$2$6 = /*#__PURE__*/template(\`<div role=button tabindex=-1>\`);
+const _tmpl$$i = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$6 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
 
 const areaArrayMap = {
   left_right: [['prev', 'menu', 'next'], ['PREV', 'MENU', 'NEXT'], ['prev', 'menu', 'next']],
@@ -5774,32 +4970,32 @@ const TouchArea = () => {
   return (() => {
     const _el$ = _tmpl$$i();
     const _ref$ = bindRef('touchArea');
-    typeof _ref$ === "function" && use(_ref$, _el$);
-    insert(_el$, solidJs.createComponent(solidJs.For, {
+    typeof _ref$ === "function" && web.use(_ref$, _el$);
+    web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
         return areaArrayMap[areaType()];
       },
-      children: rows => solidJs.createComponent(solidJs.For, {
+      children: rows => web.createComponent(solidJs.For, {
         each: rows,
         children: area => (() => {
           const _el$2 = _tmpl$2$6();
-          setAttribute(_el$2, "data-area", area);
-          solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.touchArea));
+          web.setAttribute(_el$2, "data-area", area);
+          web.effect(() => web.className(_el$2, modules_c21c94f2$1.touchArea));
           return _el$2;
         })()
       })
     }));
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.touchAreaRoot,
         _v$2 = dir(),
         _v$3 = boolDataVal(store.show.touchArea),
         _v$4 = areaType(),
         _v$5 = boolDataVal(store.option.clickPageTurn.enabled && !store.option.scrollMode);
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "dir", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-show", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-area", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-turn-page", _p$._v$5 = _v$5);
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "dir", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-show", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-area", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-turn-page", _p$._v$5 = _v$5);
       return _p$;
     }, {
       _v$: undefined,
@@ -5812,24 +5008,24 @@ const TouchArea = () => {
   })();
 };
 
-const _tmpl$$h = /*#__PURE__*/template(\`<button type=button>\`),
-  _tmpl$2$5 = /*#__PURE__*/template(\`<input type=color>\`);
+const _tmpl$$h = /*#__PURE__*/web.template(\`<button type=button>\`),
+  _tmpl$2$5 = /*#__PURE__*/web.template(\`<input type=color>\`);
 /** 默认菜单项 */
-const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => solidJs.createComponent(SettingsItem, {
+const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
   get name() {
-    return solidJs.createMemo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
+    return web.memo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
   },
   get children() {
     const _el$ = _tmpl$$h();
     _el$.addEventListener("click", switchDir);
-    insert(_el$, (() => {
-      const _c$ = solidJs.createMemo(() => store.option.dir === 'rtl');
-      return () => _c$() ? solidJs.createComponent(MdOutlineFormatTextdirectionRToL, {}) : solidJs.createComponent(MdOutlineFormatTextdirectionLToR, {});
+    web.insert(_el$, (() => {
+      const _c$ = web.memo(() => store.option.dir === 'rtl');
+      return () => _c$() ? web.createComponent(MdOutlineFormatTextdirectionRToL, {}) : web.createComponent(MdOutlineFormatTextdirectionLToR, {});
     })());
-    solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
+    web.effect(() => web.className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
     return _el$;
   }
-})], [t('setting.option.paragraph_scrollbar'), () => [solidJs.createComponent(SettingsItemSelect, {
+})], [t('setting.option.paragraph_scrollbar'), () => [web.createComponent(SettingsItemSelect, {
   get name() {
     return t('setting.option.scrollbar_position');
   },
@@ -5842,17 +5038,17 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
   get onChange() {
     return createStateSetFn('scrollbar.position');
   }
-}), solidJs.createComponent(SettingsShowItem, {
+}), web.createComponent(SettingsShowItem, {
   get when() {
     return store.option.scrollbar.position !== 'hidden';
   },
   get children() {
-    return [solidJs.createComponent(solidJs.Show, {
+    return [web.createComponent(solidJs.Show, {
       get when() {
         return !store.isMobile;
       },
       get children() {
-        return solidJs.createComponent(SettingsItemSwitch, {
+        return web.createComponent(SettingsItemSwitch, {
           get name() {
             return t('setting.option.scrollbar_auto_hidden');
           },
@@ -5864,7 +5060,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
           }
         });
       }
-    }), solidJs.createComponent(SettingsItemSwitch, {
+    }), web.createComponent(SettingsItemSwitch, {
       get name() {
         return t('setting.option.scrollbar_show_img_status');
       },
@@ -5874,12 +5070,12 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
       get onChange() {
         return createStateSetFn('scrollbar.showImgStatus');
       }
-    }), solidJs.createComponent(solidJs.Show, {
+    }), web.createComponent(solidJs.Show, {
       get when() {
         return store.option.scrollMode;
       },
       get children() {
-        return solidJs.createComponent(SettingsItemSwitch, {
+        return web.createComponent(SettingsItemSwitch, {
           get name() {
             return t('setting.option.scrollbar_easy_scroll');
           },
@@ -5893,7 +5089,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
       }
     })];
   }
-})]], [t('setting.option.paragraph_operation'), () => [solidJs.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_operation'), () => [web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.jump_to_next_chapter');
   },
@@ -5903,7 +5099,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
   get onChange() {
     return createStateSetFn('jumpToNext');
   }
-}), solidJs.createComponent(SettingsItemSwitch, {
+}), web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.show_clickable_area');
   },
@@ -5911,7 +5107,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
     return store.show.touchArea;
   },
   onChange: () => _setState('show', 'touchArea', !store.show.touchArea)
-}), solidJs.createComponent(SettingsItemSwitch, {
+}), web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.click_page_turn_enabled');
   },
@@ -5921,12 +5117,12 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
   get onChange() {
     return createStateSetFn('clickPageTurn.enabled');
   }
-}), solidJs.createComponent(SettingsShowItem, {
+}), web.createComponent(SettingsShowItem, {
   get when() {
     return store.option.clickPageTurn.enabled;
   },
   get children() {
-    return [solidJs.createComponent(SettingsItemSelect, {
+    return [web.createComponent(SettingsItemSelect, {
       get name() {
         return t('setting.option.click_page_turn_area');
       },
@@ -5939,7 +5135,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
       get onChange() {
         return createStateSetFn('clickPageTurn.area');
       }
-    }), solidJs.createComponent(SettingsItemSwitch, {
+    }), web.createComponent(SettingsItemSwitch, {
       get name() {
         return t('setting.option.click_page_turn_swap_area');
       },
@@ -5951,7 +5147,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
       }
     })];
   }
-})]], [t('setting.option.paragraph_display'), () => [solidJs.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_display'), () => [web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.dark_mode');
   },
@@ -5961,7 +5157,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
   get onChange() {
     return createStateSetFn('darkMode');
   }
-}), solidJs.createComponent(SettingsItemSwitch, {
+}), web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.disable_auto_enlarge');
   },
@@ -5971,12 +5167,12 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
   get onChange() {
     return createStateSetFn('disableZoom');
   }
-}), solidJs.createComponent(solidJs.Show, {
+}), web.createComponent(solidJs.Show, {
   get when() {
     return store.option.scrollMode;
   },
   get children() {
-    return [solidJs.createComponent(SettingsItemNumber, {
+    return [web.createComponent(SettingsItemNumber, {
       get name() {
         return t('setting.option.scroll_mode_img_scale');
       },
@@ -5990,7 +5186,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
       get value() {
         return Math.round(store.option.scrollModeImgScale * 100);
       }
-    }), solidJs.createComponent(SettingsItemNumber, {
+    }), web.createComponent(SettingsItemNumber, {
       get name() {
         return t('setting.option.scroll_mode_img_spacing');
       },
@@ -6006,7 +5202,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
       }
     })];
   }
-})]], [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [t('setting.option.paragraph_translation'), SettingTranslation, true], [t('setting.option.paragraph_other'), () => [solidJs.createComponent(SettingsItemSwitch, {
+})]], [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [t('setting.option.paragraph_translation'), SettingTranslation, true], [t('setting.option.paragraph_other'), () => [web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.always_load_all_img');
   },
@@ -6019,7 +5215,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
     });
     setState(updateImgLoadType);
   }
-}), solidJs.createComponent(SettingsItemSwitch, {
+}), web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.first_page_fill');
   },
@@ -6029,7 +5225,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
   get onChange() {
     return createStateSetFn('firstPageFill');
   }
-}), solidJs.createComponent(SettingsItemSwitch, {
+}), web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.show_comments');
   },
@@ -6039,7 +5235,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
   get onChange() {
     return createStateSetFn('showComment');
   }
-}), solidJs.createComponent(SettingsItemSwitch, {
+}), web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.swap_page_turn_key');
   },
@@ -6049,7 +5245,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
   get onChange() {
     return createStateSetFn('swapPageTurnKey');
   }
-}), solidJs.createComponent(SettingsItemNumber, {
+}), web.createComponent(SettingsItemNumber, {
   get name() {
     return t('setting.option.preload_page_num');
   },
@@ -6063,7 +5259,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
   get value() {
     return store.option.preloadPageNum;
   }
-}), solidJs.createComponent(SettingsItem, {
+}), web.createComponent(SettingsItem, {
   get name() {
     return t('setting.option.background_color');
   },
@@ -6071,18 +5267,18 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => soli
     const _el$2 = _tmpl$2$5();
     _el$2.style.setProperty("width", "2em");
     _el$2.style.setProperty("margin-right", ".4em");
-    _el$2.addEventListener("input", throttle(20, e => {
+    _el$2.addEventListener("input", throttle(e => {
       if (!e.target.value) return;
       setOption(draftOption => {
         // 在拉到纯黑或纯白时改回初始值
         draftOption.customBackground = e.target.value === '#000000' || e.target.value === '#ffffff' ? undefined : e.target.value;
         if (draftOption.customBackground) draftOption.darkMode = needDarkMode(draftOption.customBackground);
       });
-    }));
-    solidJs.createRenderEffect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
+    }, 20));
+    web.effect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
     return _el$2;
   }
-}), solidJs.createComponent(SettingsItemSelect, {
+}), web.createComponent(SettingsItemSelect, {
   get name() {
     return t('setting.language');
   },
@@ -6104,44 +5300,44 @@ const playAnimation = e => e?.getAnimations().forEach(animation => {
   animation.play();
 });
 
-const _tmpl$$g = /*#__PURE__*/template(\`<div>\`),
-  _tmpl$2$4 = /*#__PURE__*/template(\`<div><div></div><div>\`),
-  _tmpl$3$3 = /*#__PURE__*/template(\`<hr>\`);
+const _tmpl$$g = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
+  _tmpl$3$3 = /*#__PURE__*/web.template(\`<hr>\`);
 
 /** 菜单面板 */
 const SettingPanel = () => {
-  const settingList = solidJs.createMemo(() => store.prop.editSettingList(defaultSettingList()));
+  const settingList = createRootMemo(() => store.prop.editSettingList(defaultSettingList()));
   return (() => {
     const _el$ = _tmpl$$g();
-    addEventListener(_el$, "wheel", stopPropagation);
-    addEventListener(_el$, "scroll", stopPropagation);
+    web.addEventListener(_el$, "wheel", stopPropagation);
+    web.addEventListener(_el$, "scroll", stopPropagation);
     _el$.addEventListener("click", stopPropagation);
-    insert(_el$, solidJs.createComponent(solidJs.For, {
+    web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
         return settingList();
       },
       children: ([name, SettingItem, hidden], i) => {
         const [show, setShwo] = solidJs.createSignal(!hidden);
-        return [solidJs.createMemo((() => {
-          const _c$ = solidJs.createMemo(() => !!i());
+        return [web.memo((() => {
+          const _c$ = web.memo(() => !!i());
           return () => _c$() ? _tmpl$3$3() : null;
         })()), (() => {
           const _el$2 = _tmpl$2$4(),
             _el$3 = _el$2.firstChild,
             _el$4 = _el$3.nextSibling;
           _el$3.addEventListener("click", () => setShwo(prev => !prev));
-          insert(_el$3, name, null);
-          insert(_el$3, () => show() ? null : ' …', null);
-          insert(_el$4, solidJs.createComponent(SettingItem, {}));
-          solidJs.createRenderEffect(_p$ => {
+          web.insert(_el$3, name, null);
+          web.insert(_el$3, () => show() ? null : ' …', null);
+          web.insert(_el$4, web.createComponent(SettingItem, {}));
+          web.effect(_p$ => {
             const _v$3 = modules_c21c94f2$1.SettingBlock,
               _v$4 = show(),
               _v$5 = modules_c21c94f2$1.SettingBlockSubtitle,
               _v$6 = modules_c21c94f2$1.SettingBlockBody;
-            _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
-            _v$4 !== _p$._v$4 && setAttribute(_el$2, "data-show", _p$._v$4 = _v$4);
-            _v$5 !== _p$._v$5 && className(_el$3, _p$._v$5 = _v$5);
-            _v$6 !== _p$._v$6 && className(_el$4, _p$._v$6 = _v$6);
+            _v$3 !== _p$._v$3 && web.className(_el$2, _p$._v$3 = _v$3);
+            _v$4 !== _p$._v$4 && web.setAttribute(_el$2, "data-show", _p$._v$4 = _v$4);
+            _v$5 !== _p$._v$5 && web.className(_el$3, _p$._v$5 = _v$5);
+            _v$6 !== _p$._v$6 && web.className(_el$4, _p$._v$6 = _v$6);
             return _p$;
           }, {
             _v$3: undefined,
@@ -6153,10 +5349,10 @@ const SettingPanel = () => {
         })()];
       }
     }));
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$ = \`\${modules_c21c94f2$1.SettingPanel} \${modules_c21c94f2$1.beautifyScrollbar}\`,
         _v$2 = lang() !== 'zh' ? '20em' : '15em';
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
       _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("width", _v$2) : _el$.style.removeProperty("width"));
       return _p$;
     }, {
@@ -6167,8 +5363,8 @@ const SettingPanel = () => {
   })();
 };
 
-const _tmpl$$f = /*#__PURE__*/template(\`<div>\`),
-  _tmpl$2$3 = /*#__PURE__*/template(\`<div role=button tabindex=-1>\`);
+const _tmpl$$f = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
 /** 工具栏按钮分隔栏 */
 const buttonListDivider = () => (() => {
   const _el$ = _tmpl$$f();
@@ -6179,20 +5375,20 @@ const buttonListDivider = () => (() => {
 /** 工具栏的默认按钮列表 */
 const defaultButtonList = [
 // 单双页模式
-() => solidJs.createComponent(IconButton, {
+() => web.createComponent(IconButton, {
   get tip() {
-    return solidJs.createMemo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
+    return web.memo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
   },
   get hidden() {
     return store.isMobile || store.option.scrollMode;
   },
   onClick: switchOnePageMode,
   get children() {
-    return solidJs.createMemo(() => !!store.option.onePageMode)() ? solidJs.createComponent(MdLooksOne, {}) : solidJs.createComponent(MdLooksTwo, {});
+    return web.memo(() => !!store.option.onePageMode)() ? web.createComponent(MdLooksOne, {}) : web.createComponent(MdLooksTwo, {});
   }
 }),
 // 卷轴模式
-() => solidJs.createComponent(IconButton, {
+() => web.createComponent(IconButton, {
   get tip() {
     return t('button.scroll_mode');
   },
@@ -6201,11 +5397,11 @@ const defaultButtonList = [
   },
   onClick: switchScrollMode,
   get children() {
-    return solidJs.createComponent(MdViewDay, {});
+    return web.createComponent(MdViewDay, {});
   }
 }),
 // 页面填充
-() => solidJs.createComponent(IconButton, {
+() => web.createComponent(IconButton, {
   get tip() {
     return t('button.page_fill');
   },
@@ -6213,15 +5409,15 @@ const defaultButtonList = [
     return !!store.fillEffect[nowFillIndex()];
   },
   get hidden() {
-    return store.isMobile || store.option.onePageMode;
+    return store.isMobile || store.option.onePageMode || store.option.scrollMode;
   },
   onClick: switchFillEffect,
   get children() {
-    return solidJs.createComponent(MdQueue, {});
+    return web.createComponent(MdQueue, {});
   }
 }),
 // 网格模式
-() => solidJs.createComponent(IconButton, {
+() => web.createComponent(IconButton, {
   get tip() {
     return t('button.grid_mode');
   },
@@ -6230,11 +5426,11 @@ const defaultButtonList = [
   },
   onClick: switchGridMode,
   get children() {
-    return solidJs.createComponent(MdGrid, {});
+    return web.createComponent(MdGrid, {});
   }
 }), buttonListDivider,
 // 放大模式
-() => solidJs.createComponent(IconButton, {
+() => web.createComponent(IconButton, {
   get tip() {
     return t('button.zoom_in');
   },
@@ -6247,16 +5443,16 @@ const defaultButtonList = [
     return zoomScrollModeImg(1, true);
   },
   get children() {
-    return solidJs.createComponent(MdSearch, {});
+    return web.createComponent(MdSearch, {});
   }
 }),
 // 翻译设置
 () => {
   /** 当前显示的图片是否正在翻译 */
   const isTranslatingImage = solidJs.createMemo(() => activePage().some(i => store.imgList[i]?.translationType && store.imgList[i].translationType !== 'hide'));
-  return solidJs.createComponent(IconButton, {
+  return web.createComponent(IconButton, {
     get tip() {
-      return solidJs.createMemo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
+      return web.memo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
     },
     get enabled() {
       return isTranslatingImage();
@@ -6266,7 +5462,7 @@ const defaultButtonList = [
     },
     onClick: () => setImgTranslationEnbale(activePage(), !isTranslatingImage()),
     get children() {
-      return solidJs.createComponent(MdTranslate, {});
+      return web.createComponent(MdTranslate, {});
     }
   });
 },
@@ -6278,13 +5474,13 @@ const defaultButtonList = [
     _setState('show', 'toolbar', _showPanel);
     setShowPanel(_showPanel);
   };
-  const popper = solidJs.createMemo(() => [solidJs.createComponent(SettingPanel, {}), (() => {
+  const popper = solidJs.createMemo(() => [web.createComponent(SettingPanel, {}), (() => {
     const _el$2 = _tmpl$2$3();
     _el$2.addEventListener("click", handleClick);
-    solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.closeCover));
+    web.effect(() => web.className(_el$2, modules_c21c94f2$1.closeCover));
     return _el$2;
   })()]);
-  return solidJs.createComponent(IconButton, {
+  return web.createComponent(IconButton, {
     get tip() {
       return t('button.setting');
     },
@@ -6299,15 +5495,15 @@ const defaultButtonList = [
       return showPanel() && modules_c21c94f2$1.SettingPanelPopper;
     },
     get popper() {
-      return solidJs.createMemo(() => !!showPanel())() && popper();
+      return web.memo(() => !!showPanel())() && popper();
     },
     get children() {
-      return solidJs.createComponent(MdSettings, {});
+      return web.createComponent(MdSettings, {});
     }
   });
 }];
 
-const _tmpl$$e = /*#__PURE__*/template(\`<div role=toolbar><div><div>\`);
+const _tmpl$$e = /*#__PURE__*/web.template(\`<div role=toolbar><div><div>\`);
 
 /** 左侧工具栏 */
 const Toolbar = () => {
@@ -6317,25 +5513,25 @@ const Toolbar = () => {
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
     _el$2.addEventListener("click", focus);
-    insert(_el$2, solidJs.createComponent(solidJs.For, {
+    web.insert(_el$2, web.createComponent(solidJs.For, {
       get each() {
         return store.prop.editButtonList(defaultButtonList);
       },
-      children: ButtonItem => solidJs.createComponent(ButtonItem, {})
+      children: ButtonItem => web.createComponent(ButtonItem, {})
     }), null);
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.toolbar,
         _v$2 = boolDataVal(store.show.toolbar),
         _v$3 = boolDataVal(store.isMobile && store.gridMode),
         _v$4 = store.isDragMode ? 'none' : undefined,
         _v$5 = modules_c21c94f2$1.toolbarPanel,
         _v$6 = modules_c21c94f2$1.toolbarBg;
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-close", _p$._v$3 = _v$3);
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-close", _p$._v$3 = _v$3);
       _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("pointer-events", _v$4) : _el$.style.removeProperty("pointer-events"));
-      _v$5 !== _p$._v$5 && className(_el$2, _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && className(_el$3, _p$._v$6 = _v$6);
+      _v$5 !== _p$._v$5 && web.className(_el$2, _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.className(_el$3, _p$._v$6 = _v$6);
       return _p$;
     }, {
       _v$: undefined,
@@ -6349,24 +5545,29 @@ const Toolbar = () => {
   })();
 };
 
-const _tmpl$$d = /*#__PURE__*/template(\`<div>\`);
-
-/** 显示对应图片加载情况的元素 */
-const ScrollbarImg = props => {
-  const img = solidJs.createMemo(() => store.imgList[props.index]);
+const _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`);
+const getScrollbarPage = (img, i) => ({
+  num: 1,
+  length: imgHeightList()[i],
+  loadType: img.loadType,
+  isNull: !img.src,
+  translationType: img.translationType
+});
+const ScrollbarPage = props => {
+  const flexBasis = solidJs.createMemo(() => store.option.scrollMode ? props.length / contentHeight() : props.num / store.imgList.length);
   return (() => {
     const _el$ = _tmpl$$d();
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbarPage,
-        _v$2 = props.index,
-        _v$3 = img()?.loadType,
-        _v$4 = boolDataVal(!img()?.src),
-        _v$5 = img()?.translationType;
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-index", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-null", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-translation-type", _p$._v$5 = _v$5);
+        _v$2 = \`\${flexBasis() * 100}%\`,
+        _v$3 = props.loadType,
+        _v$4 = boolDataVal(props.isNull),
+        _v$5 = props.translationType;
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("flex-basis", _v$2) : _el$.style.removeProperty("flex-basis"));
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-null", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-translation-type", _p$._v$5 = _v$5);
       return _p$;
     }, {
       _v$: undefined,
@@ -6379,56 +5580,66 @@ const ScrollbarImg = props => {
   })();
 };
 
-/** 滚动条上用于显示对应页面下图片加载情况的元素 */
-const ScrollbarPage = props => {
-  const flexBasis = solidJs.createMemo(() => {
-    if (!store.option.scrollMode) return undefined;
-    return \`\${(store.imgList[props.a]?.height || placeholderSize().height) / contentHeight() * store.option.scrollModeImgScale}%\`;
-  });
-  return (() => {
-    const _el$2 = _tmpl$$d();
-    insert(_el$2, solidJs.createComponent(ScrollbarImg, {
-      get index() {
-        return props.a !== -1 ? props.a : props.b;
+/** 显示对应图片加载情况的元素 */
+const ScrollbarPageStatus = () => {
+  // 将相同类型的页面合并显示
+  const scrollbarPageList = createThrottleMemo(() => {
+    if (!store.pageList.length) return [];
+    const list = [];
+    let item;
+    const handleImg = i => {
+      const img = store.imgList[i];
+      if (!item) {
+        item = getScrollbarPage(img, i);
+        return;
       }
-    }), null);
-    insert(_el$2, (() => {
-      const _c$ = solidJs.createMemo(() => !!props.b);
-      return () => _c$() ? solidJs.createComponent(ScrollbarImg, {
-        get index() {
-          return props.b !== -1 ? props.b : props.a;
-        }
-      }) : null;
-    })(), null);
-    solidJs.createRenderEffect(() => flexBasis() != null ? _el$2.style.setProperty("flex-basis", flexBasis()) : _el$2.style.removeProperty("flex-basis"));
-    return _el$2;
-  })();
+      if (img.loadType === item.loadType && !img.src === item.isNull && img.translationType === item.translationType) {
+        item.num += 1;
+        item.length += imgHeightList()[i];
+      } else {
+        list.push(item);
+        item = getScrollbarPage(img, i);
+      }
+    };
+    for (let i = 0; i < store.pageList.length; i++) {
+      const [a, b] = store.pageList[i];
+      if (b === undefined) handleImg(a);else if (a === -1) {
+        handleImg(b);
+        handleImg(b);
+      } else if (b === -1) {
+        handleImg(a);
+        handleImg(a);
+      } else {
+        handleImg(a);
+        handleImg(b);
+      }
+    }
+    if (item) list.push(item);
+    return list;
+  }, 100);
+  return web.createComponent(solidJs.For, {
+    get each() {
+      return scrollbarPageList();
+    },
+    children: page => web.createComponent(ScrollbarPage, page)
+  });
 };
 
-const _tmpl$$c = /*#__PURE__*/template(\`<div role=scrollbar tabindex=-1><div></div><div>\`);
+const _tmpl$$c = /*#__PURE__*/web.template(\`<div role=scrollbar tabindex=-1><div></div><div>\`);
 
 /** 滚动条 */
 const Scrollbar = () => {
   solidJs.onMount(() => {
     useDrag({
       ref: refs.scrollbar,
-      handleDrag: handleScrollbarDrag,
+      handleDrag: handlescrollbarSlider,
       easyMode: () => store.option.scrollMode && store.option.scrollbar.easyScroll
     });
   });
 
-  /** 滚动条高度 */
-  const height = solidJs.createMemo(() => store.option.scrollMode ? store.scrollbar.dragHeight : 1 / store.pageList.length);
-
-  /** 滚动条位置高度 */
-  const top = solidJs.createMemo(() => store.option.scrollMode ? store.scrollbar.dragTop : 1 / store.pageList.length * store.activePageIndex);
-
-  /** 滚动条滑块的中心点高度 */
-  const dragMidpoint = solidJs.createMemo(() => store.memo.scrollLength * (top() + height() / 2));
-
   // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
   const [penetrate, setPenetrate] = solidJs.createSignal(false);
-  const resetPenetrate = debounce(100, () => setPenetrate(false));
+  const resetPenetrate = debounce(() => setPenetrate(false));
   const handleWheel = () => {
     setPenetrate(true);
     resetPenetrate();
@@ -6436,13 +5647,26 @@ const Scrollbar = () => {
 
   /** 是否强制显示滚动条 */
   const showScrollbar = solidJs.createMemo(() => store.show.scrollbar || !!penetrate());
-  const showTip = solidJs.createMemo(() => {
-    if (store.memo.showPageList.length === 0) return 'null';
-    if (store.memo.showPageList.length === 1) return getPageTip(store.memo.showPageList[0]);
-    const tipList = store.memo.showPageList.map(i => getPageTip(i));
+
+  /** 滚动条提示文本 */
+  const tipText = createThrottleMemo(() => {
+    switch (showPageList().length) {
+      case 0:
+        return '';
+      case 1:
+        return getPageTip(showPageList()[0]);
+    }
+    const tipList = showPageList().map(i => getPageTip(i));
     if (store.option.scrollMode || store.page.vertical) return tipList.join('\\n');
     if (store.option.dir === 'rtl') tipList.reverse();
     return tipList.join('   ');
+  });
+  const style = createMemoMap({
+    'pointer-events': () => penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
+    '--scroll-length': () => \`\${scrollLength()}px\`,
+    '--slider-midpoint': () => \`\${sliderMidpoint()}px\`,
+    '--slider-height': () => \`\${sliderHeight() * scrollLength()}px\`,
+    '--slider-top': () => \`\${sliderTop() * scrollLength()}px\`
   });
   return (() => {
     const _el$ = _tmpl$$c(),
@@ -6450,57 +5674,41 @@ const Scrollbar = () => {
       _el$3 = _el$2.nextSibling;
     _el$.addEventListener("wheel", handleWheel);
     const _ref$ = bindRef('scrollbar');
-    typeof _ref$ === "function" && use(_ref$, _el$);
-    insert(_el$3, showTip);
-    insert(_el$, solidJs.createComponent(solidJs.Show, {
+    typeof _ref$ === "function" && web.use(_ref$, _el$);
+    web.insert(_el$3, tipText);
+    web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
         return store.option.scrollbar.showImgStatus;
       },
       get children() {
-        return solidJs.createComponent(solidJs.For, {
-          get each() {
-            return store.pageList;
-          },
-          children: ([a, b]) => solidJs.createComponent(ScrollbarPage, {
-            a: a,
-            b: b
-          })
-        });
+        return web.createComponent(ScrollbarPageStatus, {});
       }
     }), null);
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.scrollbar,
-        _v$2 = penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
-        _v$3 = \`\${dragMidpoint()}px\`,
-        _v$4 = \`\${store.memo.scrollLength}px\`,
-        _v$5 = modules_c21c94f2$1.mangaFlow,
-        _v$6 = store.activePageIndex || -1,
-        _v$7 = boolDataVal(store.option.scrollbar.autoHidden),
-        _v$8 = boolDataVal(showScrollbar()),
-        _v$9 = store.option.dir,
-        _v$10 = scrollPosition(),
-        _v$11 = modules_c21c94f2$1.scrollbarDrag,
-        _v$12 = {
+        _v$2 = style(),
+        _v$3 = modules_c21c94f2$1.mangaFlow,
+        _v$4 = store.activePageIndex || -1,
+        _v$5 = boolDataVal(store.option.scrollbar.autoHidden),
+        _v$6 = boolDataVal(showScrollbar()),
+        _v$7 = store.option.dir,
+        _v$8 = scrollPosition(),
+        _v$9 = modules_c21c94f2$1.scrollbarSlider,
+        _v$10 = {
           [modules_c21c94f2$1.hidden]: store.gridMode
         },
-        _v$13 = height(),
-        _v$14 = top(),
-        _v$15 = modules_c21c94f2$1.scrollbarPoper;
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("pointer-events", _v$2) : _el$.style.removeProperty("pointer-events"));
-      _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$.style.setProperty("--drag-midpoint", _v$3) : _el$.style.removeProperty("--drag-midpoint"));
-      _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("--scroll-length", _v$4) : _el$.style.removeProperty("--scroll-length"));
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "aria-controls", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && setAttribute(_el$, "aria-valuenow", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-auto-hidden", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && setAttribute(_el$, "data-force-show", _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && setAttribute(_el$, "data-dir", _p$._v$9 = _v$9);
-      _v$10 !== _p$._v$10 && setAttribute(_el$, "data-position", _p$._v$10 = _v$10);
-      _v$11 !== _p$._v$11 && className(_el$2, _p$._v$11 = _v$11);
-      _p$._v$12 = classList(_el$2, _v$12, _p$._v$12);
-      _v$13 !== _p$._v$13 && ((_p$._v$13 = _v$13) != null ? _el$2.style.setProperty("--height-ratio", _v$13) : _el$2.style.removeProperty("--height-ratio"));
-      _v$14 !== _p$._v$14 && ((_p$._v$14 = _v$14) != null ? _el$2.style.setProperty("--top-ratio", _v$14) : _el$2.style.removeProperty("--top-ratio"));
-      _v$15 !== _p$._v$15 && className(_el$3, _p$._v$15 = _v$15);
+        _v$11 = modules_c21c94f2$1.scrollbarPoper;
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _p$._v$2 = web.style(_el$, _v$2, _p$._v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "aria-controls", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "aria-valuenow", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-auto-hidden", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-force-show", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-dir", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && web.setAttribute(_el$, "data-position", _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && web.className(_el$2, _p$._v$9 = _v$9);
+      _p$._v$10 = web.classList(_el$2, _v$10, _p$._v$10);
+      _v$11 !== _p$._v$11 && web.className(_el$3, _p$._v$11 = _v$11);
       return _p$;
     }, {
       _v$: undefined,
@@ -6513,19 +5721,15 @@ const Scrollbar = () => {
       _v$8: undefined,
       _v$9: undefined,
       _v$10: undefined,
-      _v$11: undefined,
-      _v$12: undefined,
-      _v$13: undefined,
-      _v$14: undefined,
-      _v$15: undefined
+      _v$11: undefined
     });
     return _el$;
   })();
 };
 
-const _tmpl$$b = /*#__PURE__*/template(\`<div>\`),
-  _tmpl$2$2 = /*#__PURE__*/template(\`<div role=button tabindex=-1><p></p><button type=button></button><button type=button data-is-end></button><button type=button>\`),
-  _tmpl$3$2 = /*#__PURE__*/template(\`<p>\`);
+const _tmpl$$b = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$2 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1><p></p><button type=button></button><button type=button data-is-end></button><button type=button>\`),
+  _tmpl$3$2 = /*#__PURE__*/web.template(\`<p>\`);
 let delayTypeTimer = 0;
 const EndPage = () => {
   const handleClick = e => {
@@ -6574,43 +5778,43 @@ const EndPage = () => {
       _el$4 = _el$3.nextSibling,
       _el$5 = _el$4.nextSibling;
     const _ref$ = ref;
-    typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
+    typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
     _el$.addEventListener("click", handleClick);
-    insert(_el$2, tip);
+    web.insert(_el$2, tip);
     const _ref$2 = bindRef('prev');
-    typeof _ref$2 === "function" && use(_ref$2, _el$3);
+    typeof _ref$2 === "function" && web.use(_ref$2, _el$3);
     _el$3.addEventListener("click", () => store.prop.Prev?.());
-    insert(_el$3, () => t('end_page.prev_button'));
+    web.insert(_el$3, () => t('end_page.prev_button'));
     const _ref$3 = bindRef('exit');
-    typeof _ref$3 === "function" && use(_ref$3, _el$4);
+    typeof _ref$3 === "function" && web.use(_ref$3, _el$4);
     _el$4.addEventListener("click", () => store.prop.Exit?.(store.show.endPage === 'end'));
-    insert(_el$4, () => t('button.exit'));
+    web.insert(_el$4, () => t('button.exit'));
     const _ref$4 = bindRef('next');
-    typeof _ref$4 === "function" && use(_ref$4, _el$5);
+    typeof _ref$4 === "function" && web.use(_ref$4, _el$5);
     _el$5.addEventListener("click", () => store.prop.Next?.());
-    insert(_el$5, () => t('end_page.next_button'));
-    insert(_el$, solidJs.createComponent(solidJs.Show, {
+    web.insert(_el$5, () => t('end_page.next_button'));
+    web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
-        return solidJs.createMemo(() => !!store.option.showComment)() && delayType() === 'end';
+        return web.memo(() => !!store.option.showComment)() && delayType() === 'end';
       },
       get children() {
         const _el$6 = _tmpl$$b();
-        addEventListener(_el$6, "wheel", stopPropagation);
-        insert(_el$6, solidJs.createComponent(solidJs.For, {
+        web.addEventListener(_el$6, "wheel", stopPropagation);
+        web.insert(_el$6, web.createComponent(solidJs.For, {
           get each() {
             return store.commentList;
           },
           children: comment => (() => {
             const _el$7 = _tmpl$3$2();
-            insert(_el$7, comment);
+            web.insert(_el$7, comment);
             return _el$7;
           })()
         }));
-        solidJs.createRenderEffect(() => className(_el$6, \`\${modules_c21c94f2$1.comments} \${modules_c21c94f2$1.beautifyScrollbar}\`));
+        web.effect(() => web.className(_el$6, \`\${modules_c21c94f2$1.comments} \${modules_c21c94f2$1.beautifyScrollbar}\`));
         return _el$6;
       }
     }), null);
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.endPage,
         _v$2 = store.show.endPage,
         _v$3 = delayType(),
@@ -6624,15 +5828,15 @@ const EndPage = () => {
           [modules_c21c94f2$1.invisible]: !store.prop.Next
         },
         _v$9 = store.show.endPage ? 0 : -1;
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
-      _p$._v$5 = classList(_el$3, _v$5, _p$._v$5);
-      _v$6 !== _p$._v$6 && setAttribute(_el$3, "tabindex", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$4, "tabindex", _p$._v$7 = _v$7);
-      _p$._v$8 = classList(_el$5, _v$8, _p$._v$8);
-      _v$9 !== _p$._v$9 && setAttribute(_el$5, "tabindex", _p$._v$9 = _v$9);
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _v$2 !== _p$._v$2 && web.setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.className(_el$2, _p$._v$4 = _v$4);
+      _p$._v$5 = web.classList(_el$3, _v$5, _p$._v$5);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$3, "tabindex", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$4, "tabindex", _p$._v$7 = _v$7);
+      _p$._v$8 = web.classList(_el$5, _v$8, _p$._v$8);
+      _v$9 !== _p$._v$9 && web.setAttribute(_el$5, "tabindex", _p$._v$9 = _v$9);
       return _p$;
     }, {
       _v$: undefined,
@@ -6649,7 +5853,7 @@ const EndPage = () => {
   })();
 };
 
-const _tmpl$$a = /*#__PURE__*/template(\`<style type=text/css>\`);
+const _tmpl$$a = /*#__PURE__*/web.template(\`<style type=text/css>\`);
 /** 深色模式 */
 const dark = \`
 --hover-bg-color: #FFF3;
@@ -6657,7 +5861,7 @@ const dark = \`
 
 --switch: #BDBDBD;
 --switch-bg: #6E6E6E;
---scrollbar-drag: #FFF6;
+--scrollbar-slider: #FFF6;
 
 --page-bg: #303030;
 
@@ -6678,7 +5882,7 @@ const light = \`
 
 --switch: #FAFAFA;
 --switch-bg: #9C9C9C;
---scrollbar-drag: #0006;
+--scrollbar-slider: #0006;
 
 --page-bg: white;
 
@@ -6709,7 +5913,7 @@ const CssVar = () => {
       --i18n-touch-area-menu: "\${t('touch_area.menu')}";\`);
   return (() => {
     const _el$ = _tmpl$$a();
-    insert(_el$, () => \`.\${modules_c21c94f2$1.root} {
+    web.insert(_el$, () => \`.\${modules_c21c94f2$1.root} {
       \${store.option.darkMode ? dark : light}
 
       --bg: \${store.option.customBackground ?? (store.option.darkMode ? '#000' : '#fff')};
@@ -6725,14 +5929,15 @@ const CssVar = () => {
 
 /* eslint-disable solid/reactivity */
 const createComicImg = url => ({
-  type: store.flag.autoWide ? 'wide' : '',
+  type: defaultImgType(),
   src: url || '',
   loadType: 'wait'
 });
 const useInit$1 = props => {
+  initResizeObserver(refs.root);
   const watchProps = {
     option: state => {
-      state.option = props.option ? assign$1(state.option, props.option) : JSON.parse(JSON.stringify(defaultOption));
+      state.option = props.option ? assign(state.option, props.option) : JSON.parse(JSON.stringify(defaultOption));
     },
     fillEffect: state => {
       state.fillEffect = props.fillEffect ?? {
@@ -6757,20 +5962,16 @@ const useInit$1 = props => {
       } : undefined;
     },
     onPrev: state => {
-      state.prop.Prev = props.onPrev ? debounce(1000, () => {
+      state.prop.Prev = props.onPrev ? throttle(() => {
         playAnimation(refs.prev);
         props.onPrev?.();
-      }, {
-        atBegin: true
-      }) : undefined;
+      }, 1000) : undefined;
     },
     onNext: state => {
-      state.prop.Next = props.onNext ? debounce(1000, () => {
+      state.prop.Next = props.onNext ? throttle(() => {
         playAnimation(refs.next);
         props.onNext?.();
-      }, {
-        atBegin: true
-      }) : undefined;
+      }, 1000) : undefined;
     },
     editButtonList: state => {
       state.prop.editButtonList = props.editButtonList ?? (list => list);
@@ -6779,31 +5980,19 @@ const useInit$1 = props => {
       state.prop.editSettingList = props.editSettingList ?? (list => list);
     },
     onLoading: state => {
-      state.prop.Loading = props.onLoading ? debounce(100, props.onLoading) : undefined;
+      state.prop.Loading = props.onLoading ? debounce(props.onLoading) : undefined;
     },
     onOptionChange: state => {
-      state.prop.OptionChange = props.onOptionChange ? debounce(100, props.onOptionChange) : undefined;
+      state.prop.OptionChange = props.onOptionChange ? debounce(props.onOptionChange) : undefined;
     },
     onHotkeysChange: state => {
-      state.prop.HotkeysChange = props.onHotkeysChange ? debounce(100, props.onHotkeysChange) : undefined;
+      state.prop.HotkeysChange = props.onHotkeysChange ? debounce(props.onHotkeysChange) : undefined;
     },
     commentList: state => {
       state.commentList = props.commentList;
     }
   };
   Object.entries(watchProps).forEach(([key, fn]) => solidJs.createEffect(solidJs.on(() => props[key], () => setState(fn))));
-
-  // 初始化页面比例
-  handleResize(refs.root.scrollWidth, refs.root.scrollHeight);
-  // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
-  const resizeObserver = new ResizeObserver(throttle(100, ([{
-    contentRect
-  }]) => {
-    handleResize(contentRect.width, contentRect.height);
-  }));
-  resizeObserver.disconnect();
-  resizeObserver.observe(refs.root);
-  solidJs.onCleanup(() => resizeObserver.disconnect());
   const handleImgList = () => {
     setState(state => {
       state.show.endPage = undefined;
@@ -6811,29 +6000,45 @@ const useInit$1 = props => {
       /** 修改前的当前显示图片 */
       const oldActiveImg = state.pageList[state.activePageIndex]?.map(i => state.imgList?.[i]?.src) ?? [];
 
-      /** 判断是否有影响到现有图片流的改动 */
-      let isChange = state.imgList.length !== props.imgList.length;
+      /** 是否需要重置页面填充 */
+      let needResetFillEffect = false;
+      const fillEffectList = Object.keys(state.fillEffect).map(k => +k);
+      for (let i = 0; i < fillEffectList.length; i++) {
+        const pageIndex = fillEffectList[i];
+        if (pageIndex === -1) continue;
+        if (state.imgList[pageIndex].src === props.imgList[pageIndex]) continue;
+        needResetFillEffect = true;
+        break;
+      }
+
+      /** 是否需要更新页面 */
+      let needUpdatePageData = needResetFillEffect || state.imgList.length !== props.imgList.length;
+      /** 传入的是否是新漫画 */
+      let isNew = true;
       const imgMap = new Map(state.imgList.map(img => [img.src, img]));
       for (let i = 0; i < props.imgList.length; i++) {
         const url = props.imgList[i];
-        const img = url && !isChange && state.imgList[i];
-        if (img && img.loadType !== 'wait' && img.src && img.src !== url) isChange = true;
+        if (isNew && imgMap.has(url)) isNew = false;
+        const img = url && !needUpdatePageData && state.imgList[i];
+        if (img && img.loadType !== 'wait' && img.src && img.src !== url) needUpdatePageData = true;
         state.imgList[i] = imgMap.get(url) ?? createComicImg(url);
       }
       if (state.imgList.length > props.imgList.length) {
         state.imgList.length = props.imgList.length;
-        isChange = true;
+        needUpdatePageData = true;
       }
-      if (isChange) {
+      state.prop.Loading?.(state.imgList);
+      if (isNew || needResetFillEffect) {
         state.fillEffect = props.fillEffect ?? {
           '-1': true
         };
+        autoCloseFill.clear();
+      }
+      if (isNew || needUpdatePageData) updatePageData(state);else updateImgLoadType(state);
+      if (isNew || state.pageList.length === 0) {
         resetImgState(state);
-        updatePageData(state);
-      } else updateImgLoadType(state);
-      state.prop.Loading?.(state.imgList);
-      if (state.pageList.length === 0) {
         state.activePageIndex = 0;
+        scrollTo(0);
         return;
       }
 
@@ -6853,11 +6058,11 @@ const useInit$1 = props => {
   };
 
   // 处理 imgList 参数的初始化和修改
-  solidJs.createEffect(solidJs.on(() => props.imgList.join(), throttle(500, handleImgList)));
+  createEffectOn(() => props.imgList.join(), throttle(handleImgList, 500));
   focus();
 };
 
-const _tmpl$$9 = /*#__PURE__*/template(\`<div>\`);
+const _tmpl$$9 = /*#__PURE__*/web.template(\`<div>\`);
 const MangaStyle = css$1;
 solidJs.enableScheduling();
 /** 漫画组件 */
@@ -6866,20 +6071,20 @@ const Manga = props => {
   solidJs.createEffect(() => props.show && focus());
   return [(() => {
     const _el$ = _tmpl$$9();
-    addEventListener(_el$, "wheel", handleWheel);
+    web.addEventListener(_el$, "wheel", handleWheel);
     const _ref$ = bindRef('root');
-    typeof _ref$ === "function" && use(_ref$, _el$);
+    typeof _ref$ === "function" && web.use(_ref$, _el$);
     _el$.addEventListener("mousedown", handleMouseDown);
     _el$.addEventListener("keydown", handleKeyDown, true);
     _el$.addEventListener("keypress", stopPropagation, true);
     _el$.addEventListener("keyup", stopPropagation, true);
     _el$.addEventListener("click", stopPropagation);
-    insert(_el$, solidJs.createComponent(ComicImgFlow, {}), null);
-    insert(_el$, solidJs.createComponent(Toolbar, {}), null);
-    insert(_el$, solidJs.createComponent(Scrollbar, {}), null);
-    insert(_el$, solidJs.createComponent(TouchArea, {}), null);
-    insert(_el$, solidJs.createComponent(EndPage, {}), null);
-    solidJs.createRenderEffect(_p$ => {
+    web.insert(_el$, web.createComponent(ComicImgFlow, {}), null);
+    web.insert(_el$, web.createComponent(Toolbar, {}), null);
+    web.insert(_el$, web.createComponent(Scrollbar, {}), null);
+    web.insert(_el$, web.createComponent(TouchArea, {}), null);
+    web.insert(_el$, web.createComponent(EndPage, {}), null);
+    web.effect(_p$ => {
       const _v$ = modules_c21c94f2$1.root,
         _v$2 = {
           [modules_c21c94f2$1.hidden]: props.show === false,
@@ -6887,25 +6092,27 @@ const Manga = props => {
           ...props.classList
         },
         _v$3 = boolDataVal(store.isMobile),
-        _v$4 = boolDataVal(store.option.scrollMode);
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _p$._v$2 = classList(_el$, _v$2, _p$._v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-mobile", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-scroll-mode", _p$._v$4 = _v$4);
+        _v$4 = boolDataVal(store.option.scrollMode),
+        _v$5 = boolDataVal(store.gridMode);
+      _v$ !== _p$._v$ && web.className(_el$, _p$._v$ = _v$);
+      _p$._v$2 = web.classList(_el$, _v$2, _p$._v$2);
+      _v$3 !== _p$._v$3 && web.setAttribute(_el$, "data-mobile", _p$._v$3 = _v$3);
+      _v$4 !== _p$._v$4 && web.setAttribute(_el$, "data-scroll-mode", _p$._v$4 = _v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-grid-mode", _p$._v$5 = _v$5);
       return _p$;
     }, {
       _v$: undefined,
       _v$2: undefined,
       _v$3: undefined,
-      _v$4: undefined
+      _v$4: undefined,
+      _v$5: undefined
     });
     return _el$;
-  })(), solidJs.createComponent(CssVar, {})];
+  })(), web.createComponent(CssVar, {})];
 };
 
-const _tmpl$$8 = /*#__PURE__*/template(\`<style type=text/css>\`);
+const _tmpl$$8 = /*#__PURE__*/web.template(\`<style type=text/css>\`);
 let dom$1;
-
 /**
  * 显示漫画阅读窗口
  */
@@ -6942,27 +6149,30 @@ const useManga = async initProps => {
       z-index: 1 !important;
     }
   \`);
-  const [props, setProps] = createStore({
+  const [props, setProps] = store$2.createStore({
     imgList: [],
     show: false,
     ...initProps
   });
-
-  // eslint-disable-next-line solid/reactivity
-  watchStore([() => props.imgList.length, () => props.show], () => {
+  const imgList = solidJs.createMemo(() => props.adList ? props.imgList.filter((_, i) => !props.adList.has(i)) : props.imgList);
+  createEffectOn([() => imgList().length, () => props.show], () => {
     if (!dom$1) {
-      dom$1 = mountComponents('comicRead', () => [solidJs.createComponent(Manga, props), (() => {
+      dom$1 = mountComponents('comicRead', () => [web.createComponent(Manga, web.mergeProps(props, {
+        get imgList() {
+          return imgList();
+        }
+      })), (() => {
         const _el$ = _tmpl$$8();
-        insert(_el$, IconButtonStyle);
+        web.insert(_el$, IconButtonStyle);
         return _el$;
       })(), (() => {
         const _el$2 = _tmpl$$8();
-        insert(_el$2, MangaStyle);
+        web.insert(_el$2, MangaStyle);
         return _el$2;
       })()]);
       dom$1.style.setProperty('z-index', '2147483647', 'important');
     }
-    if (props.imgList.length && props.show) {
+    if (imgList().length && props.show) {
       dom$1.setAttribute('show', '');
       document.documentElement.style.overflow = 'hidden';
     } else {
@@ -6977,15 +6187,15 @@ const useManga = async initProps => {
     const getFileExt = url => url.split('.').pop();
     const handleDownload = async () => {
       const fileData = {};
-      const imgIndexNum = \`\${props.imgList.length}\`.length;
-      const imgList = store.imgList.map(img => img.translationType === 'show' ? \`\${img.translationUrl}#.\${getFileExt(img.src)}\` : img.src);
-      for (let i = 0; i < imgList.length; i += 1) {
-        setStatu(\`\${i}/\${imgList.length}\`);
+      const downImgList = store.imgList.map(img => img.translationType === 'show' ? \`\${img.translationUrl}#.\${getFileExt(img.src)}\` : img.src);
+      const imgIndexNum = \`\${downImgList.length}\`.length;
+      for (let i = 0; i < downImgList.length; i += 1) {
+        setStatu(\`\${i}/\${downImgList.length}\`);
         const index = \`\${i}\`.padStart(imgIndexNum, '0');
-        const fileExt = getFileExt(imgList[i]) ?? 'jpg';
+        const fileExt = getFileExt(downImgList[i]) ?? 'jpg';
         const fileName = \`\${index}.\${fileExt}\`;
         try {
-          const res = await request$1(imgList[i], {
+          const res = await request$1(downImgList[i], {
             responseType: 'arraybuffer'
           });
           fileData[fileName] = new Uint8Array(res.response);
@@ -7004,13 +6214,13 @@ const useManga = async initProps => {
       toast$1.success(t('button.download_completed'));
     };
     const tip = solidJs.createMemo(() => t(statu()) || \`\${t('button.downloading')} - \${statu()}\`);
-    return solidJs.createComponent(IconButton, {
+    return web.createComponent(IconButton, {
       get tip() {
         return tip();
       },
       onClick: handleDownload,
       get children() {
-        return solidJs.createComponent(MdFileDownload, {});
+        return web.createComponent(MdFileDownload, {});
       }
     });
   };
@@ -7021,13 +6231,13 @@ const useManga = async initProps => {
       list.splice(-1, 0, DownloadButton);
       return [...list,
       // 再在最下面添加分隔栏和退出按钮
-      buttonListDivider, () => solidJs.createComponent(IconButton, {
+      buttonListDivider, () => web.createComponent(IconButton, {
         get tip() {
           return t('button.exit');
         },
         onClick: () => props.onExit?.(),
         get children() {
-          return solidJs.createComponent(MdClose, {});
+          return web.createComponent(MdClose, {});
         }
       })];
     }
@@ -7035,40 +6245,40 @@ const useManga = async initProps => {
   return [setProps, props];
 };
 
-const _tmpl$$7 = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03">\`);
+const _tmpl$$7 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03">\`);
 const MdMenuBook = ((props = {}) => (() => {
   const _el$ = _tmpl$$7();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$6 = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1m-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79m3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5">\`);
+const _tmpl$$6 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1m-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79m3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5">\`);
 const MdImageSearch = ((props = {}) => (() => {
   const _el$ = _tmpl$$6();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$5 = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z">\`);
+const _tmpl$$5 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z">\`);
 const MdImportContacts = ((props = {}) => (() => {
   const _el$ = _tmpl$$5();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const _tmpl$$4 = /*#__PURE__*/template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96M17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4z">\`);
+const _tmpl$$4 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96M17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4z">\`);
 const MdCloudDownload = ((props = {}) => (() => {
   const _el$ = _tmpl$$4();
-  spread(_el$, props, true, true);
+  web.spread(_el$, props, true, true);
   return _el$;
 })());
 
 var css = ".index_module_fabRoot__f35e0ac6{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__f35e0ac6[data-show=false]{pointer-events:none}.index_module_fabRoot__f35e0ac6[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__f35e0ac6[data-trans=true]{opacity:.8}.index_module_fabRoot__f35e0ac6[data-trans=true]:focus,.index_module_fabRoot__f35e0ac6[data-trans=true]:focus-visible,.index_module_fabRoot__f35e0ac6[data-trans=true]:hover{opacity:1}.index_module_fab__f35e0ac6{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.index_module_fab__f35e0ac6>svg{font-size:1.5em;width:1em}.index_module_fab__f35e0ac6:hover{background-color:var(fab-hover,#78909c)}.index_module_fab__f35e0ac6:focus,.index_module_fab__f35e0ac6:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.index_module_progress__f35e0ac6{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__f35e0ac6>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__f35e0ac6:hover{color:#cfd8dc}.index_module_progress__f35e0ac6[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__f35e0ac6{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__f35e0ac6:hover,.index_module_fabRoot__f35e0ac6[data-focus=true]) .index_module_popper__f35e0ac6{display:flex}.index_module_speedDial__f35e0ac6{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__f35e0ac6{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__f35e0ac6:hover,:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6{pointer-events:all}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6>.index_module_speedDialItem__f35e0ac6{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__f35e0ac6{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__f35e0ac6[data-focus=true] .index_module_backdrop__f35e0ac6{pointer-events:unset}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true],.index_module_speedDial__f35e0ac6:hover) .index_module_backdrop__f35e0ac6{opacity:.4}";
 var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__f35e0ac6","fab":"index_module_fab__f35e0ac6","progress":"index_module_progress__f35e0ac6","popper":"index_module_popper__f35e0ac6","speedDial":"index_module_speedDial__f35e0ac6","speedDialItem":"index_module_speedDialItem__f35e0ac6","backdrop":"index_module_backdrop__f35e0ac6"};
 
-const _tmpl$$3 = /*#__PURE__*/template(\`<div><div>\`),
-  _tmpl$2$1 = /*#__PURE__*/template(\`<div><button type=button tabindex=-1><span role=progressbar><svg viewBox="22 22 44 44"><circle cx=44 cy=44 r=20.2 fill=none stroke-width=3.6>\`),
-  _tmpl$3$1 = /*#__PURE__*/template(\`<div>\`);
+const _tmpl$$3 = /*#__PURE__*/web.template(\`<div><div>\`),
+  _tmpl$2$1 = /*#__PURE__*/web.template(\`<div><button type=button tabindex=-1><span role=progressbar><svg viewBox="22 22 44 44"><circle cx=44 cy=44 r=20.2 fill=none stroke-width=3.6>\`),
+  _tmpl$3$1 = /*#__PURE__*/web.template(\`<div>\`);
 const FabStyle = css;
 /**
  * Fab 按钮
@@ -7085,7 +6295,7 @@ const Fab = _props => {
   const [show, setShow] = solidJs.createSignal(props.initialShow);
 
   // 绑定滚动事件
-  const handleScroll = throttle(200, e => {
+  const handleScroll = throttle(e => {
     // 跳过非用户操作的滚动
     if (e.isTrusted === false) return;
     if (window.scrollY === lastY) return;
@@ -7095,7 +6305,7 @@ const Fab = _props => {
     // 向上滚动时显示，反之隐藏
     window.scrollY - lastY < 0);
     lastY = window.scrollY;
-  });
+  }, 200);
   solidJs.onMount(() => window.addEventListener('scroll', handleScroll));
   solidJs.onCleanup(() => window.removeEventListener('scroll', handleScroll));
 
@@ -7109,17 +6319,17 @@ const Fab = _props => {
       _el$3 = _el$2.firstChild,
       _el$4 = _el$3.firstChild;
     _el$2.addEventListener("click", () => props.onClick?.());
-    insert(_el$2, () => props.children ?? solidJs.createComponent(MdMenuBook, {}), _el$3);
-    insert(_el$2, (() => {
-      const _c$ = solidJs.createMemo(() => !!props.tip);
+    web.insert(_el$2, () => props.children ?? web.createComponent(MdMenuBook, {}), _el$3);
+    web.insert(_el$2, (() => {
+      const _c$ = web.memo(() => !!props.tip);
       return () => _c$() ? (() => {
         const _el$7 = _tmpl$3$1();
-        insert(_el$7, () => props.tip);
-        solidJs.createRenderEffect(() => className(_el$7, modules_c21c94f2.popper));
+        web.insert(_el$7, () => props.tip);
+        web.effect(() => web.className(_el$7, modules_c21c94f2.popper));
         return _el$7;
       })() : null;
     })(), null);
-    insert(_el$, solidJs.createComponent(solidJs.Show, {
+    web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
         return props.speedDial?.length;
       },
@@ -7127,23 +6337,23 @@ const Fab = _props => {
         const _el$5 = _tmpl$$3(),
           _el$6 = _el$5.firstChild;
         _el$6.addEventListener("click", () => props.onBackdropClick?.());
-        insert(_el$5, solidJs.createComponent(solidJs.For, {
+        web.insert(_el$5, web.createComponent(solidJs.For, {
           get each() {
             return props.speedDial;
           },
           children: (SpeedDialItem, i) => (() => {
             const _el$8 = _tmpl$3$1();
-            insert(_el$8, solidJs.createComponent(SpeedDialItem, {}));
-            solidJs.createRenderEffect(_p$ => {
+            web.insert(_el$8, web.createComponent(SpeedDialItem, {}));
+            web.effect(_p$ => {
               const _v$12 = modules_c21c94f2.speedDialItem,
                 _v$13 = {
                   '--show-delay': \`\${i() * 30}ms\`,
                   '--hide-delay': \`\${(props.speedDial.length - 1 - i()) * 50}ms\`
                 },
                 _v$14 = i() * 30;
-              _v$12 !== _p$._v$12 && className(_el$8, _p$._v$12 = _v$12);
-              _p$._v$13 = style(_el$8, _v$13, _p$._v$13);
-              _v$14 !== _p$._v$14 && setAttribute(_el$8, "data-i", _p$._v$14 = _v$14);
+              _v$12 !== _p$._v$12 && web.className(_el$8, _p$._v$12 = _v$12);
+              _p$._v$13 = web.style(_el$8, _v$13, _p$._v$13);
+              _v$14 !== _p$._v$14 && web.setAttribute(_el$8, "data-i", _p$._v$14 = _v$14);
               return _p$;
             }, {
               _v$12: undefined,
@@ -7153,11 +6363,11 @@ const Fab = _props => {
             return _el$8;
           })()
         }), null);
-        solidJs.createRenderEffect(_p$ => {
+        web.effect(_p$ => {
           const _v$ = modules_c21c94f2.speedDial,
             _v$2 = modules_c21c94f2.backdrop;
-          _v$ !== _p$._v$ && className(_el$5, _p$._v$ = _v$);
-          _v$2 !== _p$._v$2 && className(_el$6, _p$._v$2 = _v$2);
+          _v$ !== _p$._v$ && web.className(_el$5, _p$._v$ = _v$);
+          _v$2 !== _p$._v$2 && web.className(_el$6, _p$._v$2 = _v$2);
           return _p$;
         }, {
           _v$: undefined,
@@ -7166,7 +6376,7 @@ const Fab = _props => {
         return _el$5;
       }
     }), null);
-    solidJs.createRenderEffect(_p$ => {
+    web.effect(_p$ => {
       const _v$3 = modules_c21c94f2.fabRoot,
         _v$4 = props.style,
         _v$5 = props.show ?? show(),
@@ -7176,14 +6386,14 @@ const Fab = _props => {
         _v$9 = modules_c21c94f2.progress,
         _v$10 = props.progress,
         _v$11 = \`\${(1 - props.progress) * 290}%\`;
-      _v$3 !== _p$._v$3 && className(_el$, _p$._v$3 = _v$3);
-      _p$._v$4 = style(_el$, _v$4, _p$._v$4);
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-show", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-trans", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-focus", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && className(_el$2, _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && className(_el$3, _p$._v$9 = _v$9);
-      _v$10 !== _p$._v$10 && setAttribute(_el$3, "aria-valuenow", _p$._v$10 = _v$10);
+      _v$3 !== _p$._v$3 && web.className(_el$, _p$._v$3 = _v$3);
+      _p$._v$4 = web.style(_el$, _v$4, _p$._v$4);
+      _v$5 !== _p$._v$5 && web.setAttribute(_el$, "data-show", _p$._v$5 = _v$5);
+      _v$6 !== _p$._v$6 && web.setAttribute(_el$, "data-trans", _p$._v$6 = _v$6);
+      _v$7 !== _p$._v$7 && web.setAttribute(_el$, "data-focus", _p$._v$7 = _v$7);
+      _v$8 !== _p$._v$8 && web.className(_el$2, _p$._v$8 = _v$8);
+      _v$9 !== _p$._v$9 && web.className(_el$3, _p$._v$9 = _v$9);
+      _v$10 !== _p$._v$10 && web.setAttribute(_el$3, "aria-valuenow", _p$._v$10 = _v$10);
       _v$11 !== _p$._v$11 && ((_p$._v$11 = _v$11) != null ? _el$4.style.setProperty("stroke-dashoffset", _v$11) : _el$4.style.removeProperty("stroke-dashoffset"));
       return _p$;
     }, {
@@ -7201,7 +6411,7 @@ const Fab = _props => {
   })();
 };
 
-const _tmpl$$2 = /*#__PURE__*/template(\`<style type=text/css>\`);
+const _tmpl$$2 = /*#__PURE__*/web.template(\`<style type=text/css>\`);
 let dom;
 const useFab = async initProps => {
   await GM.addStyle(\`
@@ -7215,7 +6425,7 @@ const useFab = async initProps => {
       font-size: clamp(12px, 1.5vw, 16px);
     }
   \`);
-  const [props, setProps] = createStore({
+  const [props, setProps] = store$2.createStore({
     ...initProps
   });
   const FabIcon = () => {
@@ -7234,9 +6444,9 @@ const useFab = async initProps => {
   solidJs.createRoot(() => {
     solidJs.createEffect(() => {
       if (dom) return;
-      dom = mountComponents('fab', () => [solidJs.createComponent(Fab, solidJs.mergeProps(props, {
+      dom = mountComponents('fab', () => [web.createComponent(Fab, web.mergeProps(props, {
         get children() {
-          return props.children ?? solidJs.createComponent(Dynamic, {
+          return props.children ?? web.createComponent(web.Dynamic, {
             get component() {
               return FabIcon();
             }
@@ -7244,11 +6454,11 @@ const useFab = async initProps => {
         }
       })), (() => {
         const _el$ = _tmpl$$2();
-        insert(_el$, IconButtonStyle);
+        web.insert(_el$, IconButtonStyle);
         return _el$;
       })(), (() => {
         const _el$2 = _tmpl$$2();
-        insert(_el$2, FabStyle);
+        web.insert(_el$2, FabStyle);
         return _el$2;
       })()]);
       dom.style.setProperty('z-index', '2147483646', 'important');
@@ -7257,9 +6467,11 @@ const useFab = async initProps => {
   return [setProps, props];
 };
 
-const _tmpl$$1 = /*#__PURE__*/template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/template(\`<ul><li>修复与 ios 油猴扩展的兼容性问题\`);
+const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>在 ehentai 上自动识别并排除广告页\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复简易模式下部分条漫因为图切太碎而未正确加载的 bug </p></li><li><p>修复简易模式在部分网站上未正确识别漫画页的 bug </p></li><li><p>支持拷贝漫画新网址\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -7320,9 +6532,9 @@ const handleVersionUpdate = async () => {
     toast$1(() => [(() => {
       const _el$ = _tmpl$$1();
         _el$.firstChild;
-      insert(_el$, () => GM.info.script.version, null);
+      web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3()], {
+    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -7357,7 +6569,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     ...defaultOptions
   };
   const saveOptions = await GM.getValue(name);
-  const options = createMutable({
+  const options = store$2.createMutable({
     ..._defaultOptions,
     ...saveOptions
   });
@@ -7463,7 +6675,7 @@ const useInit = async (name, defaultOptions = {}) => {
     show: true,
     focus: true,
     tip: t('site.settings_tip'),
-    children: solidJs.createComponent(MdSettings, {}),
+    children: web.createComponent(MdSettings, {}),
     onBackdropClick: () => setFab({
       show: false,
       focus: false
@@ -7556,9 +6768,10 @@ const useInit = async (name, defaultOptions = {}) => {
     /** 使用动态更新来加载 imgList */
     dynamicUpdate: (work, totalImgNum) => async () => {
       if (mangaProps.imgList.length === totalImgNum) return mangaProps.imgList;
-      setManga('imgList', Array(totalImgNum).fill(''));
-      window.setTimeout(() => work((i, url) => setManga('imgList', i, url)));
-      await wait(() => mangaProps.imgList.some(Boolean));
+      await new Promise(resolve => {
+        setManga('imgList', Array(totalImgNum).fill(''));
+        work((i, url) => resolve(setManga('imgList', i, url)));
+      });
       return mangaProps.imgList;
     }
   };
@@ -7641,7 +6854,7 @@ const universalInit = async ({
   });
 };
 
-const _tmpl$ = /*#__PURE__*/template(\`<div><button>\`);
+const _tmpl$ = /*#__PURE__*/web.template(\`<div><button>\`);
 /**
  * 提示当前开启了自动进入阅读模式的弹窗
  *
@@ -7651,54 +6864,95 @@ const _tmpl$ = /*#__PURE__*/template(\`<div><button>\`);
 const autoReadModeMessage = setOptions => () => (() => {
   const _el$ = _tmpl$(),
     _el$2 = _el$.firstChild;
-  insert(_el$, () => main.t('site.simple.auto_read_mode_message'), _el$2);
+  web.insert(_el$, () => main.t('site.simple.auto_read_mode_message'), _el$2);
   _el$2.addEventListener("click", () => setOptions({
     autoShow: false
   }));
-  insert(_el$2, () => main.t('other.disable'));
+  web.insert(_el$2, () => main.t('other.disable'));
   return _el$;
 })();
 
-exports.assign = assign$1;
+const beforeTextRe = /^\\D+(?=\\d)/;
+const hasNum = /\\d/;
+const getAdPage = fileNameList => {
+  const adIndexList = new Set();
+
+  /** 根据前戳对所有文件名进行分组 */
+  const beforeTextMap = {};
+  fileNameList.forEach((fileName, i) => {
+    // 没有数字的肯定是广告图
+    if (fileName && !hasNum.test(fileName)) return adIndexList.add(i);
+    const beforeText = fileName?.match(beforeTextRe)?.[0] ?? '';
+    if (!beforeTextMap[beforeText]) beforeTextMap[beforeText] = new Set();
+    beforeTextMap[beforeText].add(i);
+  });
+  const mostLength = Math.max(...Object.values(beforeTextMap).map(list => list.size));
+  const lastIndex = fileNameList.length - 1;
+  Object.values(beforeTextMap).forEach(indexList => {
+    if (
+    // 应该不至于上来就是广告吧
+    indexList.has(0) ||
+    // 不会有广告插在中间吧
+    !indexList.has(lastIndex) ||
+    // 出现最多的前戳肯定(?)不是广告
+    indexList.size === mostLength ||
+    // 不至于有十张广告吧
+    indexList.size > 10) return;
+    indexList.forEach(index => adIndexList.add(index));
+  });
+  return adIndexList;
+};
+
+exports.approx = approx;
+exports.assign = assign;
 exports.autoReadModeMessage = autoReadModeMessage;
 exports.autoUpdate = autoUpdate;
 exports.boolDataVal = boolDataVal;
 exports.byPath = byPath;
 exports.canvasToBlob = canvasToBlob;
 exports.clamp = clamp;
+exports.createEffectOn = createEffectOn;
+exports.createEqualsSignal = createEqualsSignal;
 exports.createFillImgList = createFillImgList;
+exports.createMemoMap = createMemoMap;
+exports.createRootMemo = createRootMemo;
+exports.createStyle = createStyle;
+exports.createThrottleMemo = createThrottleMemo;
 exports.dataToParams = dataToParams;
+exports.debounce = debounce;
 exports.difference = difference;
 exports.eachApi = eachApi;
+exports.getAdPage = getAdPage;
 exports.getImgSize = getImgSize;
 exports.getKeyboardCode = getKeyboardCode;
 exports.getMostItem = getMostItem;
 exports.ifNot = ifNot;
+exports.inRange = inRange;
 exports.insertNode = insertNode;
 exports.isEqual = isEqual;
-exports.isEqualArray = isEqualArray;
 exports.keyboardCodeToText = keyboardCodeToText;
 exports.lang = lang;
 exports.linstenKeyup = linstenKeyup;
 exports.log = log;
 exports.loop = loop;
-exports.mountComponents = mountComponents;
 exports.needDarkMode = needDarkMode;
 exports.plimit = plimit;
 exports.querySelector = querySelector;
 exports.querySelectorAll = querySelectorAll;
 exports.querySelectorClick = querySelectorClick;
 exports.request = request$1;
-exports.requestIdleCallback = requestIdleCallback;
+exports.requestIdleCallback = requestIdleCallback$1;
 exports.saveAs = saveAs;
 exports.scrollIntoView = scrollIntoView;
 exports.setInitLang = setInitLang;
 exports.setLang = setLang;
+exports.showPageList = showPageList;
 exports.singleThreaded = singleThreaded;
 exports.sleep = sleep;
 exports.store = store;
 exports.t = t;
 exports.testImgUrl = testImgUrl;
+exports.throttle = throttle;
 exports.toast = toast$1;
 exports.triggerEleLazyLoad = triggerEleLazyLoad;
 exports.universalInit = universalInit;
@@ -7711,7 +6965,6 @@ exports.useSpeedDial = useSpeedDial;
 exports.wait = wait;
 exports.waitDom = waitDom;
 exports.waitImgLoad = waitImgLoad;
-exports.watchStore = watchStore;
 `
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
@@ -7791,285 +7044,13 @@ try {
     // #百合会——「记录阅读历史、自动签到等」
     case 'bbs.yamibo.com':
       {
-const solidJs = require('solid-js');
+const web = require('solid-js/web');
 const main = require('main');
+const solidJs = require('solid-js');
 
-function reconcileArrays(parentNode, a, b) {
-  let bLength = b.length,
-    aEnd = a.length,
-    bEnd = bLength,
-    aStart = 0,
-    bStart = 0,
-    after = a[aEnd - 1].nextSibling,
-    map = null;
-  while (aStart < aEnd || bStart < bEnd) {
-    if (a[aStart] === b[bStart]) {
-      aStart++;
-      bStart++;
-      continue;
-    }
-    while (a[aEnd - 1] === b[bEnd - 1]) {
-      aEnd--;
-      bEnd--;
-    }
-    if (aEnd === aStart) {
-      const node = bEnd < bLength ? (bStart ? b[bStart - 1].nextSibling : b[bEnd - bStart]) : after;
-      while (bStart < bEnd) parentNode.insertBefore(b[bStart++], node);
-    } else if (bEnd === bStart) {
-      while (aStart < aEnd) {
-        if (!map || !map.has(a[aStart])) a[aStart].remove();
-        aStart++;
-      }
-    } else if (a[aStart] === b[bEnd - 1] && b[bStart] === a[aEnd - 1]) {
-      const node = a[--aEnd].nextSibling;
-      parentNode.insertBefore(b[bStart++], a[aStart++].nextSibling);
-      parentNode.insertBefore(b[--bEnd], node);
-      a[aEnd] = b[bEnd];
-    } else {
-      if (!map) {
-        map = new Map();
-        let i = bStart;
-        while (i < bEnd) map.set(b[i], i++);
-      }
-      const index = map.get(a[aStart]);
-      if (index != null) {
-        if (bStart < index && index < bEnd) {
-          let i = aStart,
-            sequence = 1,
-            t;
-          while (++i < aEnd && i < bEnd) {
-            if ((t = map.get(a[i])) == null || t !== index + sequence) break;
-            sequence++;
-          }
-          if (sequence > index - bStart) {
-            const node = a[aStart];
-            while (bStart < index) parentNode.insertBefore(b[bStart++], node);
-          } else parentNode.replaceChild(b[bStart++], a[aStart++]);
-        } else aStart++;
-      } else a[aStart++].remove();
-    }
-  }
-}
-
-const $$EVENTS = "_$DX_DELEGATE";
-function render(code, element, init, options = {}) {
-  let disposer;
-  solidJs.createRoot(dispose => {
-    disposer = dispose;
-    element === document
-      ? code()
-      : insert(element, code(), element.firstChild ? null : undefined, init);
-  }, options.owner);
-  return () => {
-    disposer();
-    element.textContent = "";
-  };
-}
-function template(html, isCE, isSVG) {
-  let node;
-  const create = () => {
-    const t = document.createElement("template");
-    t.innerHTML = html;
-    return isSVG ? t.content.firstChild.firstChild : t.content.firstChild;
-  };
-  const fn = isCE
-    ? () => solidJs.untrack(() => document.importNode(node || (node = create()), true))
-    : () => (node || (node = create())).cloneNode(true);
-  fn.cloneNode = fn;
-  return fn;
-}
-function delegateEvents(eventNames, document = window.document) {
-  const e = document[$$EVENTS] || (document[$$EVENTS] = new Set());
-  for (let i = 0, l = eventNames.length; i < l; i++) {
-    const name = eventNames[i];
-    if (!e.has(name)) {
-      e.add(name);
-      document.addEventListener(name, eventHandler);
-    }
-  }
-}
-function setAttribute(node, name, value) {
-  if (solidJs.sharedConfig.context) return;
-  if (value == null) node.removeAttribute(name);
-  else node.setAttribute(name, value);
-}
-function addEventListener(node, name, handler, delegate) {
-  if (delegate) {
-    if (Array.isArray(handler)) {
-      node[`$$${name}`] = handler[0];
-      node[`$$${name}Data`] = handler[1];
-    } else node[`$$${name}`] = handler;
-  } else if (Array.isArray(handler)) {
-    const handlerFn = handler[0];
-    node.addEventListener(name, (handler[0] = e => handlerFn.call(node, handler[1], e)));
-  } else node.addEventListener(name, handler);
-}
-function insert(parent, accessor, marker, initial) {
-  if (marker !== undefined && !initial) initial = [];
-  if (typeof accessor !== "function") return insertExpression(parent, accessor, initial, marker);
-  solidJs.createRenderEffect(current => insertExpression(parent, accessor(), current, marker), initial);
-}
-function eventHandler(e) {
-  const key = `$$${e.type}`;
-  let node = (e.composedPath && e.composedPath()[0]) || e.target;
-  if (e.target !== node) {
-    Object.defineProperty(e, "target", {
-      configurable: true,
-      value: node
-    });
-  }
-  Object.defineProperty(e, "currentTarget", {
-    configurable: true,
-    get() {
-      return node || document;
-    }
-  });
-  if (solidJs.sharedConfig.registry && !solidJs.sharedConfig.done) solidJs.sharedConfig.done = _$HY.done = true;
-  while (node) {
-    const handler = node[key];
-    if (handler && !node.disabled) {
-      const data = node[`${key}Data`];
-      data !== undefined ? handler.call(node, data, e) : handler.call(node, e);
-      if (e.cancelBubble) return;
-    }
-    node = node._$host || node.parentNode || node.host;
-  }
-}
-function insertExpression(parent, value, current, marker, unwrapArray) {
-  if (solidJs.sharedConfig.context) {
-    !current && (current = [...parent.childNodes]);
-    let cleaned = [];
-    for (let i = 0; i < current.length; i++) {
-      const node = current[i];
-      if (node.nodeType === 8 && node.data.slice(0, 2) === "!$") node.remove();
-      else cleaned.push(node);
-    }
-    current = cleaned;
-  }
-  while (typeof current === "function") current = current();
-  if (value === current) return current;
-  const t = typeof value,
-    multi = marker !== undefined;
-  parent = (multi && current[0] && current[0].parentNode) || parent;
-  if (t === "string" || t === "number") {
-    if (solidJs.sharedConfig.context) return current;
-    if (t === "number") value = value.toString();
-    if (multi) {
-      let node = current[0];
-      if (node && node.nodeType === 3) {
-        node.data = value;
-      } else node = document.createTextNode(value);
-      current = cleanChildren(parent, current, marker, node);
-    } else {
-      if (current !== "" && typeof current === "string") {
-        current = parent.firstChild.data = value;
-      } else current = parent.textContent = value;
-    }
-  } else if (value == null || t === "boolean") {
-    if (solidJs.sharedConfig.context) return current;
-    current = cleanChildren(parent, current, marker);
-  } else if (t === "function") {
-    solidJs.createRenderEffect(() => {
-      let v = value();
-      while (typeof v === "function") v = v();
-      current = insertExpression(parent, v, current, marker);
-    });
-    return () => current;
-  } else if (Array.isArray(value)) {
-    const array = [];
-    const currentArray = current && Array.isArray(current);
-    if (normalizeIncomingArray(array, value, current, unwrapArray)) {
-      solidJs.createRenderEffect(() => (current = insertExpression(parent, array, current, marker, true)));
-      return () => current;
-    }
-    if (solidJs.sharedConfig.context) {
-      if (!array.length) return current;
-      if (marker === undefined) return [...parent.childNodes];
-      let node = array[0];
-      let nodes = [node];
-      while ((node = node.nextSibling) !== marker) nodes.push(node);
-      return (current = nodes);
-    }
-    if (array.length === 0) {
-      current = cleanChildren(parent, current, marker);
-      if (multi) return current;
-    } else if (currentArray) {
-      if (current.length === 0) {
-        appendNodes(parent, array, marker);
-      } else reconcileArrays(parent, current, array);
-    } else {
-      current && cleanChildren(parent);
-      appendNodes(parent, array);
-    }
-    current = array;
-  } else if (value.nodeType) {
-    if (solidJs.sharedConfig.context && value.parentNode) return (current = multi ? [value] : value);
-    if (Array.isArray(current)) {
-      if (multi) return (current = cleanChildren(parent, current, marker, value));
-      cleanChildren(parent, current, null, value);
-    } else if (current == null || current === "" || !parent.firstChild) {
-      parent.appendChild(value);
-    } else parent.replaceChild(value, parent.firstChild);
-    current = value;
-  } else;
-  return current;
-}
-function normalizeIncomingArray(normalized, array, current, unwrap) {
-  let dynamic = false;
-  for (let i = 0, len = array.length; i < len; i++) {
-    let item = array[i],
-      prev = current && current[i],
-      t;
-    if (item == null || item === true || item === false);
-    else if ((t = typeof item) === "object" && item.nodeType) {
-      normalized.push(item);
-    } else if (Array.isArray(item)) {
-      dynamic = normalizeIncomingArray(normalized, item, prev) || dynamic;
-    } else if (t === "function") {
-      if (unwrap) {
-        while (typeof item === "function") item = item();
-        dynamic =
-          normalizeIncomingArray(
-            normalized,
-            Array.isArray(item) ? item : [item],
-            Array.isArray(prev) ? prev : [prev]
-          ) || dynamic;
-      } else {
-        normalized.push(item);
-        dynamic = true;
-      }
-    } else {
-      const value = String(item);
-      if (prev && prev.nodeType === 3 && prev.data === value) normalized.push(prev);
-      else normalized.push(document.createTextNode(value));
-    }
-  }
-  return dynamic;
-}
-function appendNodes(parent, array, marker = null) {
-  for (let i = 0, len = array.length; i < len; i++) parent.insertBefore(array[i], marker);
-}
-function cleanChildren(parent, current, marker, replacement) {
-  if (marker === undefined) return (parent.textContent = "");
-  const node = replacement || document.createTextNode("");
-  if (current.length) {
-    let inserted = false;
-    for (let i = current.length - 1; i >= 0; i--) {
-      const el = current[i];
-      if (node !== el) {
-        const isParent = el.parentNode === parent;
-        if (!inserted && !i)
-          isParent ? parent.replaceChild(node, el) : parent.insertBefore(node, marker);
-        else isParent && el.remove();
-      } else inserted = true;
-    }
-  } else parent.insertBefore(node, marker);
-  return [node];
-}
-
-const _tmpl$ = /*#__PURE__*/template(`<a class=historyTag>回第<!>页 `),
-  _tmpl$2 = /*#__PURE__*/template(`<div class=historyTag>+`),
-  _tmpl$3 = /*#__PURE__*/template(`<li><a>回第<!>页`);
+const _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
+  _tmpl$2 = /*#__PURE__*/web.template(`<div class=historyTag>+`),
+  _tmpl$3 = /*#__PURE__*/web.template(`<li><a>回第<!>页`);
 (async () => {
   const {
     options,
@@ -8340,7 +7321,7 @@ const _tmpl$ = /*#__PURE__*/template(`<a class=historyTag>回第<!>页 `),
       }
       main.querySelectorAll(listSelector).forEach(e => {
         const tid = getTid(e);
-        render(() => {
+        web.render(() => {
           const [data, setData] = solidJs.createSignal();
           solidJs.createEffect(solidJs.on(updateFlag, () => cache.get('history', tid).then(setData)));
           const url = solidJs.createMemo(() => data() ? getUrl(data(), tid) : '');
@@ -8350,18 +7331,18 @@ const _tmpl$ = /*#__PURE__*/template(`<a class=historyTag>回第<!>页 `),
               _el$2 = _el$.firstChild,
               _el$4 = _el$2.nextSibling;
               _el$4.nextSibling;
-            addEventListener(_el$, "click", window.atarget, true);
-            insert(_el$, () => data()?.lastPageNum, _el$4);
-            solidJs.createRenderEffect(() => setAttribute(_el$, "href", url()));
+            web.addEventListener(_el$, "click", window.atarget, true);
+            web.insert(_el$, () => data()?.lastPageNum, _el$4);
+            web.effect(() => web.setAttribute(_el$, "href", url()));
             return _el$;
-          })(), solidJs.createComponent(solidJs.Show, {
+          })(), web.createComponent(solidJs.Show, {
             get when() {
               return lastReplies() > 0;
             },
             get children() {
               const _el$5 = _tmpl$2();
                 _el$5.firstChild;
-              insert(_el$5, lastReplies, null);
+              web.insert(_el$5, lastReplies, null);
               return _el$5;
             }
           })];
@@ -8371,18 +7352,18 @@ const _tmpl$ = /*#__PURE__*/template(`<a class=historyTag>回第<!>页 `),
               _el$9 = _el$8.firstChild,
               _el$11 = _el$9.nextSibling;
               _el$11.nextSibling;
-            addEventListener(_el$8, "click", window.atarget, true);
+            web.addEventListener(_el$8, "click", window.atarget, true);
             _el$8.style.setProperty("color", "unset");
-            insert(_el$8, () => data()?.lastPageNum, _el$11);
-            solidJs.createRenderEffect(() => setAttribute(_el$8, "href", url()));
+            web.insert(_el$8, () => data()?.lastPageNum, _el$11);
+            web.effect(() => web.setAttribute(_el$8, "href", url()));
             return _el$7;
           })();
-          return solidJs.createComponent(solidJs.Show, {
+          return web.createComponent(solidJs.Show, {
             get when() {
               return !!data();
             },
             get children() {
-              return solidJs.createComponent(solidJs.Show, {
+              return web.createComponent(solidJs.Show, {
                 when: isMobile,
                 get children() {
                   return mobile();
@@ -8403,7 +7384,7 @@ const _tmpl$ = /*#__PURE__*/template(`<a class=historyTag>回第<!>页 `),
     }
   }
 })().catch(e => main.log.error(e));
-delegateEvents(["click"]);
+web.delegateEvents(["click"]);
 
         break;
       }
@@ -8444,426 +7425,11 @@ delegateEvents(["click"]);
     case 'manhua.idmzj.com':
     case 'manhua.dmzj.com':
       {
+const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const main = require('main');
+const store = require('solid-js/store');
 const dmzjDecrypt = require('dmzjDecrypt');
-
-function reconcileArrays(parentNode, a, b) {
-  let bLength = b.length,
-    aEnd = a.length,
-    bEnd = bLength,
-    aStart = 0,
-    bStart = 0,
-    after = a[aEnd - 1].nextSibling,
-    map = null;
-  while (aStart < aEnd || bStart < bEnd) {
-    if (a[aStart] === b[bStart]) {
-      aStart++;
-      bStart++;
-      continue;
-    }
-    while (a[aEnd - 1] === b[bEnd - 1]) {
-      aEnd--;
-      bEnd--;
-    }
-    if (aEnd === aStart) {
-      const node = bEnd < bLength ? (bStart ? b[bStart - 1].nextSibling : b[bEnd - bStart]) : after;
-      while (bStart < bEnd) parentNode.insertBefore(b[bStart++], node);
-    } else if (bEnd === bStart) {
-      while (aStart < aEnd) {
-        if (!map || !map.has(a[aStart])) a[aStart].remove();
-        aStart++;
-      }
-    } else if (a[aStart] === b[bEnd - 1] && b[bStart] === a[aEnd - 1]) {
-      const node = a[--aEnd].nextSibling;
-      parentNode.insertBefore(b[bStart++], a[aStart++].nextSibling);
-      parentNode.insertBefore(b[--bEnd], node);
-      a[aEnd] = b[bEnd];
-    } else {
-      if (!map) {
-        map = new Map();
-        let i = bStart;
-        while (i < bEnd) map.set(b[i], i++);
-      }
-      const index = map.get(a[aStart]);
-      if (index != null) {
-        if (bStart < index && index < bEnd) {
-          let i = aStart,
-            sequence = 1,
-            t;
-          while (++i < aEnd && i < bEnd) {
-            if ((t = map.get(a[i])) == null || t !== index + sequence) break;
-            sequence++;
-          }
-          if (sequence > index - bStart) {
-            const node = a[aStart];
-            while (bStart < index) parentNode.insertBefore(b[bStart++], node);
-          } else parentNode.replaceChild(b[bStart++], a[aStart++]);
-        } else aStart++;
-      } else a[aStart++].remove();
-    }
-  }
-}
-function render(code, element, init, options = {}) {
-  let disposer;
-  solidJs.createRoot(dispose => {
-    disposer = dispose;
-    element === document
-      ? code()
-      : insert(element, code(), element.firstChild ? null : undefined, init);
-  }, options.owner);
-  return () => {
-    disposer();
-    element.textContent = "";
-  };
-}
-function template(html, isCE, isSVG) {
-  let node;
-  const create = () => {
-    const t = document.createElement("template");
-    t.innerHTML = html;
-    return isSVG ? t.content.firstChild.firstChild : t.content.firstChild;
-  };
-  const fn = isCE
-    ? () => solidJs.untrack(() => document.importNode(node || (node = create()), true))
-    : () => (node || (node = create())).cloneNode(true);
-  fn.cloneNode = fn;
-  return fn;
-}
-function setAttribute(node, name, value) {
-  if (solidJs.sharedConfig.context) return;
-  if (value == null) node.removeAttribute(name);
-  else node.setAttribute(name, value);
-}
-function insert(parent, accessor, marker, initial) {
-  if (marker !== undefined && !initial) initial = [];
-  if (typeof accessor !== "function") return insertExpression(parent, accessor, initial, marker);
-  solidJs.createRenderEffect(current => insertExpression(parent, accessor(), current, marker), initial);
-}
-function insertExpression(parent, value, current, marker, unwrapArray) {
-  if (solidJs.sharedConfig.context) {
-    !current && (current = [...parent.childNodes]);
-    let cleaned = [];
-    for (let i = 0; i < current.length; i++) {
-      const node = current[i];
-      if (node.nodeType === 8 && node.data.slice(0, 2) === "!$") node.remove();
-      else cleaned.push(node);
-    }
-    current = cleaned;
-  }
-  while (typeof current === "function") current = current();
-  if (value === current) return current;
-  const t = typeof value,
-    multi = marker !== undefined;
-  parent = (multi && current[0] && current[0].parentNode) || parent;
-  if (t === "string" || t === "number") {
-    if (solidJs.sharedConfig.context) return current;
-    if (t === "number") value = value.toString();
-    if (multi) {
-      let node = current[0];
-      if (node && node.nodeType === 3) {
-        node.data = value;
-      } else node = document.createTextNode(value);
-      current = cleanChildren(parent, current, marker, node);
-    } else {
-      if (current !== "" && typeof current === "string") {
-        current = parent.firstChild.data = value;
-      } else current = parent.textContent = value;
-    }
-  } else if (value == null || t === "boolean") {
-    if (solidJs.sharedConfig.context) return current;
-    current = cleanChildren(parent, current, marker);
-  } else if (t === "function") {
-    solidJs.createRenderEffect(() => {
-      let v = value();
-      while (typeof v === "function") v = v();
-      current = insertExpression(parent, v, current, marker);
-    });
-    return () => current;
-  } else if (Array.isArray(value)) {
-    const array = [];
-    const currentArray = current && Array.isArray(current);
-    if (normalizeIncomingArray(array, value, current, unwrapArray)) {
-      solidJs.createRenderEffect(() => (current = insertExpression(parent, array, current, marker, true)));
-      return () => current;
-    }
-    if (solidJs.sharedConfig.context) {
-      if (!array.length) return current;
-      if (marker === undefined) return [...parent.childNodes];
-      let node = array[0];
-      let nodes = [node];
-      while ((node = node.nextSibling) !== marker) nodes.push(node);
-      return (current = nodes);
-    }
-    if (array.length === 0) {
-      current = cleanChildren(parent, current, marker);
-      if (multi) return current;
-    } else if (currentArray) {
-      if (current.length === 0) {
-        appendNodes(parent, array, marker);
-      } else reconcileArrays(parent, current, array);
-    } else {
-      current && cleanChildren(parent);
-      appendNodes(parent, array);
-    }
-    current = array;
-  } else if (value.nodeType) {
-    if (solidJs.sharedConfig.context && value.parentNode) return (current = multi ? [value] : value);
-    if (Array.isArray(current)) {
-      if (multi) return (current = cleanChildren(parent, current, marker, value));
-      cleanChildren(parent, current, null, value);
-    } else if (current == null || current === "" || !parent.firstChild) {
-      parent.appendChild(value);
-    } else parent.replaceChild(value, parent.firstChild);
-    current = value;
-  } else;
-  return current;
-}
-function normalizeIncomingArray(normalized, array, current, unwrap) {
-  let dynamic = false;
-  for (let i = 0, len = array.length; i < len; i++) {
-    let item = array[i],
-      prev = current && current[i],
-      t;
-    if (item == null || item === true || item === false);
-    else if ((t = typeof item) === "object" && item.nodeType) {
-      normalized.push(item);
-    } else if (Array.isArray(item)) {
-      dynamic = normalizeIncomingArray(normalized, item, prev) || dynamic;
-    } else if (t === "function") {
-      if (unwrap) {
-        while (typeof item === "function") item = item();
-        dynamic =
-          normalizeIncomingArray(
-            normalized,
-            Array.isArray(item) ? item : [item],
-            Array.isArray(prev) ? prev : [prev]
-          ) || dynamic;
-      } else {
-        normalized.push(item);
-        dynamic = true;
-      }
-    } else {
-      const value = String(item);
-      if (prev && prev.nodeType === 3 && prev.data === value) normalized.push(prev);
-      else normalized.push(document.createTextNode(value));
-    }
-  }
-  return dynamic;
-}
-function appendNodes(parent, array, marker = null) {
-  for (let i = 0, len = array.length; i < len; i++) parent.insertBefore(array[i], marker);
-}
-function cleanChildren(parent, current, marker, replacement) {
-  if (marker === undefined) return (parent.textContent = "");
-  const node = replacement || document.createTextNode("");
-  if (current.length) {
-    let inserted = false;
-    for (let i = current.length - 1; i >= 0; i--) {
-      const el = current[i];
-      if (node !== el) {
-        const isParent = el.parentNode === parent;
-        if (!inserted && !i)
-          isParent ? parent.replaceChild(node, el) : parent.insertBefore(node, marker);
-        else isParent && el.remove();
-      } else inserted = true;
-    }
-  } else parent.insertBefore(node, marker);
-  return [node];
-}
-
-const $RAW = Symbol("store-raw"),
-  $NODE = Symbol("store-node"),
-  $HAS = Symbol("store-has"),
-  $SELF = Symbol("store-self");
-function isWrappable(obj) {
-  let proto;
-  return (
-    obj != null &&
-    typeof obj === "object" &&
-    (obj[solidJs.$PROXY] ||
-      !(proto = Object.getPrototypeOf(obj)) ||
-      proto === Object.prototype ||
-      Array.isArray(obj))
-  );
-}
-function unwrap(item, set = new Set()) {
-  let result, unwrapped, v, prop;
-  if ((result = item != null && item[$RAW])) return result;
-  if (!isWrappable(item) || set.has(item)) return item;
-  if (Array.isArray(item)) {
-    if (Object.isFrozen(item)) item = item.slice(0);
-    else set.add(item);
-    for (let i = 0, l = item.length; i < l; i++) {
-      v = item[i];
-      if ((unwrapped = unwrap(v, set)) !== v) item[i] = unwrapped;
-    }
-  } else {
-    if (Object.isFrozen(item)) item = Object.assign({}, item);
-    else set.add(item);
-    const keys = Object.keys(item),
-      desc = Object.getOwnPropertyDescriptors(item);
-    for (let i = 0, l = keys.length; i < l; i++) {
-      prop = keys[i];
-      if (desc[prop].get) continue;
-      v = item[prop];
-      if ((unwrapped = unwrap(v, set)) !== v) item[prop] = unwrapped;
-    }
-  }
-  return item;
-}
-function getNodes(target, symbol) {
-  let nodes = target[symbol];
-  if (!nodes)
-    Object.defineProperty(target, symbol, {
-      value: (nodes = Object.create(null))
-    });
-  return nodes;
-}
-function getNode(nodes, property, value) {
-  if (nodes[property]) return nodes[property];
-  const [s, set] = solidJs.createSignal(value, {
-    equals: false,
-    internal: true
-  });
-  s.$ = set;
-  return (nodes[property] = s);
-}
-function trackSelf(target) {
-  solidJs.getListener() && getNode(getNodes(target, $NODE), $SELF)();
-}
-function ownKeys(target) {
-  trackSelf(target);
-  return Reflect.ownKeys(target);
-}
-function setProperty(state, property, value, deleting = false) {
-  if (!deleting && state[property] === value) return;
-  const prev = state[property],
-    len = state.length;
-  if (value === undefined) {
-    delete state[property];
-    if (state[$HAS] && state[$HAS][property] && prev !== undefined) state[$HAS][property].$();
-  } else {
-    state[property] = value;
-    if (state[$HAS] && state[$HAS][property] && prev === undefined) state[$HAS][property].$();
-  }
-  let nodes = getNodes(state, $NODE),
-    node;
-  if ((node = getNode(nodes, property, prev))) node.$(() => value);
-  if (Array.isArray(state) && state.length !== len) {
-    for (let i = state.length; i < len; i++) (node = nodes[i]) && node.$();
-    (node = getNode(nodes, "length", len)) && node.$(state.length);
-  }
-  (node = nodes[$SELF]) && node.$();
-}
-
-function proxyDescriptor(target, property) {
-  const desc = Reflect.getOwnPropertyDescriptor(target, property);
-  if (
-    !desc ||
-    desc.get ||
-    desc.set ||
-    !desc.configurable ||
-    property === solidJs.$PROXY ||
-    property === $NODE
-  )
-    return desc;
-  delete desc.value;
-  delete desc.writable;
-  desc.get = () => target[solidJs.$PROXY][property];
-  desc.set = v => (target[solidJs.$PROXY][property] = v);
-  return desc;
-}
-const proxyTraps = {
-  get(target, property, receiver) {
-    if (property === $RAW) return target;
-    if (property === solidJs.$PROXY) return receiver;
-    if (property === solidJs.$TRACK) {
-      trackSelf(target);
-      return receiver;
-    }
-    const nodes = getNodes(target, $NODE);
-    const tracked = nodes[property];
-    let value = tracked ? tracked() : target[property];
-    if (property === $NODE || property === $HAS || property === "__proto__") return value;
-    if (!tracked) {
-      const desc = Object.getOwnPropertyDescriptor(target, property);
-      const isFunction = typeof value === "function";
-      if (solidJs.getListener() && (!isFunction || target.hasOwnProperty(property)) && !(desc && desc.get))
-        value = getNode(nodes, property, value)();
-      else if (value != null && isFunction && value === Array.prototype[property]) {
-        return (...args) => solidJs.batch(() => Array.prototype[property].apply(receiver, args));
-      }
-    }
-    return isWrappable(value) ? wrap(value) : value;
-  },
-  has(target, property) {
-    if (
-      property === $RAW ||
-      property === solidJs.$PROXY ||
-      property === solidJs.$TRACK ||
-      property === $NODE ||
-      property === $HAS ||
-      property === "__proto__"
-    )
-      return true;
-    solidJs.getListener() && getNode(getNodes(target, $HAS), property)();
-    return property in target;
-  },
-  set(target, property, value) {
-    solidJs.batch(() => setProperty(target, property, unwrap(value)));
-    return true;
-  },
-  deleteProperty(target, property) {
-    solidJs.batch(() => setProperty(target, property, undefined, true));
-    return true;
-  },
-  ownKeys: ownKeys,
-  getOwnPropertyDescriptor: proxyDescriptor
-};
-function wrap(value) {
-  let p = value[solidJs.$PROXY];
-  if (!p) {
-    Object.defineProperty(value, solidJs.$PROXY, {
-      value: (p = new Proxy(value, proxyTraps))
-    });
-    const keys = Object.keys(value),
-      desc = Object.getOwnPropertyDescriptors(value);
-    for (let i = 0, l = keys.length; i < l; i++) {
-      const prop = keys[i];
-      if (desc[prop].get) {
-        const get = desc[prop].get.bind(p);
-        Object.defineProperty(value, prop, {
-          get
-        });
-      }
-      if (desc[prop].set) {
-        const og = desc[prop].set,
-          set = v => solidJs.batch(() => og.call(p, v));
-        Object.defineProperty(value, prop, {
-          set
-        });
-      }
-    }
-  }
-  return p;
-}
-function createMutable(state, options) {
-  const unwrappedStore = unwrap(state || {});
-  const wrappedStore = wrap(unwrappedStore);
-  return wrappedStore;
-}
-
-const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
-const log = (...args) =>
-// eslint-disable-next-line no-console
-console.log.apply(null, [...prefix, ...args]);
-log.warn = (...args) =>
-// eslint-disable-next-line no-console
-console.warn.apply(null, [...prefix, ...args]);
-log.error = (...args) =>
-// eslint-disable-next-line no-console
-console.error.apply(null, [...prefix, ...args]);
 
 /** 根据漫画 id 和章节 id 获取章节数据 */
 const getChapterInfo = async (comicId, chapterId) => {
@@ -8955,7 +7521,7 @@ const getComicDetail_v4Api = async comicId => {
 const getComicDetail_traversal = async (comicId, draftData) => {
   let nextId = draftData.last_update_chapter_id;
   if (!nextId) {
-    log.warn('last_update_chapter_id 为空，无法通过遍历获取章节');
+    main.log.warn('last_update_chapter_id 为空，无法通过遍历获取章节');
     return;
   }
   draftData.chapters[0] = {
@@ -8988,7 +7554,7 @@ const getComicDetail_traversal = async (comicId, draftData) => {
 
 /** 返回可变 store 类型的漫画数据 */
 const useComicDetail = comicId => {
-  const data = createMutable({});
+  const data = store.createMutable({});
   const apiFn = [getComicDetail_v4Api, getComicDetail_base, getComicDetail_traversal];
   solidJs.onMount(async () => {
     for (let i = 0; i < apiFn.length; i++) {
@@ -9017,9 +7583,9 @@ const getComicId = async py => {
   return JSON.parse(res.responseText).data?.comicInfo?.id;
 };
 
-const _tmpl$ = /*#__PURE__*/template(`<div class=photo_part><div class=h2_title2><span class="h2_icon h2_icon22"></span><h2> `),
-  _tmpl$2 = /*#__PURE__*/template(`<div class=cartoon_online_border_other><ul></ul><div class=clearfix>`),
-  _tmpl$3 = /*#__PURE__*/template(`<li><a target=_blank>`);
+const _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_title2><span class="h2_icon h2_icon22"></span><h2> `),
+  _tmpl$2 = /*#__PURE__*/web.template(`<div class=cartoon_online_border_other><ul></ul><div class=clearfix>`),
+  _tmpl$3 = /*#__PURE__*/web.template(`<li><a target=_blank>`);
 (async () => {
   // 通过 rss 链接，在作者作品页里添加上隐藏漫画的链接
   if (window.location.pathname.includes('/tags/')) {
@@ -9078,9 +7644,9 @@ const _tmpl$ = /*#__PURE__*/template(`<div class=photo_part><div class=h2_title2
     const {
       comicId
     } = await getId();
-    render(() => {
+    web.render(() => {
       const comicDetail = useComicDetail(comicId);
-      return solidJs.createComponent(solidJs.For, {
+      return web.createComponent(solidJs.For, {
         get each() {
           return comicDetail.chapters;
         },
@@ -9093,14 +7659,14 @@ const _tmpl$ = /*#__PURE__*/template(`<div class=photo_part><div class=h2_title2
             _el$3 = _el$2.firstChild,
             _el$4 = _el$3.nextSibling,
             _el$5 = _el$4.firstChild;
-          insert(_el$4, () => comicDetail.title, _el$5);
-          insert(_el$4, name === '连载' ? '在线漫画全集' : `漫画其它版本：${name}`, null);
+          web.insert(_el$4, () => comicDetail.title, _el$5);
+          web.insert(_el$4, name === '连载' ? '在线漫画全集' : `漫画其它版本：${name}`, null);
           return _el$;
         })(), (() => {
           const _el$6 = _tmpl$2(),
             _el$7 = _el$6.firstChild;
           _el$6.style.setProperty("margin-top", "-8px");
-          insert(_el$7, solidJs.createComponent(solidJs.For, {
+          web.insert(_el$7, web.createComponent(solidJs.For, {
             each: list,
             children: ({
               title,
@@ -9109,10 +7675,10 @@ const _tmpl$ = /*#__PURE__*/template(`<div class=photo_part><div class=h2_title2
             }) => (() => {
               const _el$8 = _tmpl$3(),
                 _el$9 = _el$8.firstChild;
-              setAttribute(_el$9, "title", title);
-              setAttribute(_el$9, "href", `https://m.dmzj.com/view/${comicId}/${id}.html`);
-              insert(_el$9, title);
-              solidJs.createRenderEffect(() => _el$9.classList.toggle("color_red", !!(updatetime === comicDetail.last_updatetime)));
+              web.setAttribute(_el$9, "title", title);
+              web.setAttribute(_el$9, "href", `https://m.dmzj.com/view/${comicId}/${id}.html`);
+              web.insert(_el$9, title);
+              web.effect(() => _el$9.classList.toggle("color_red", !!(updatetime === comicDetail.last_updatetime)));
               return _el$8;
             })()
           }));
@@ -9414,12 +7980,15 @@ const main = require('main');
     setFab,
     setManga,
     dynamicUpdate,
-    onLoading
+    onLoading,
+    mangaProps
   } = await main.useInit('ehentai', {
     /** 关联 nhentai */
     associate_nhentai: true,
     /** 快捷键翻页 */
     hotkeys_page_turn: true,
+    /** 识别广告 */
+    detect_ad: true,
     autoShow: false
   });
   if (Reflect.has(unsafeWindow, 'mpvkey')) {
@@ -9471,7 +8040,7 @@ const main = require('main');
   };
 
   /** 从详情页获取图片页的地址的正则 */
-  const getImgFromDetailsPageRe = /(?<=<a href=").{20,50}(?="><img alt="\d+")/gm;
+  const getImgFromDetailsPageRe = /<a href="(.{20,50})"><img alt=.+?title=".+?: (.+?)"/gm;
 
   /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (pageNum = 0) => {
@@ -9480,12 +8049,12 @@ const main = require('main');
     });
 
     // 从详情页获取图片页的地址
-    const imgPageList = res.responseText.match(getImgFromDetailsPageRe);
-    if (imgPageList === null) {
+    const reRes = res.responseText.matchAll(getImgFromDetailsPageRe);
+    if (reRes === null) {
       if (res.responseText.includes('Your IP address has been temporarily banned for excessive')) throw new Error(main.t('site.ehentai.ip_banned'));
       throw new Error(main.t('site.ehentai.fetch_img_page_url_failed'));
     }
-    return imgPageList;
+    return [...reRes].map(([, url, fileName]) => [url, fileName]);
   };
   const getImgNum = async () => {
     let numText = main.querySelector('.gtb .gpc')?.textContent?.replaceAll(',', '').match(/\d+/g)?.at(-1);
@@ -9497,8 +8066,28 @@ const main = require('main');
     return 0;
   };
   const totalImgNum = await getImgNum();
+  const placeValueNum = `${totalImgNum}`.length;
   const ehImgList = [];
   const ehImgPageList = [];
+  const ehImgFileNameList = [];
+  const setStyle = main.createStyle();
+  main.createEffectOn(() => mangaProps.adList, () => {
+    if (!mangaProps.adList?.size) return;
+    setStyle([...mangaProps.adList].map(i => {
+      const alt = `${i + 1}`.padStart(placeValueNum, '0');
+      return `img[alt="${alt}"]:not(:hover) { filter: blur(8px); clip-path: border-box; }`;
+    }).join('\n'));
+  });
+  const enableDetectAd = options.detect_ad && document.getElementById('ta_other:extraneous_ads');
+  if (enableDetectAd) {
+    // 根据当前显示的图片获取一部分临时文件名
+    main.querySelectorAll('.gdtl img').forEach(e => {
+      const index = +e.alt - 1;
+      if (Number.isNaN(index)) return;
+      [, ehImgFileNameList[index]] = e.title.split(/：|: /);
+    });
+    setManga('adList', main.getAdPage(ehImgFileNameList));
+  }
   const {
     loadImgList
   } = init(dynamicUpdate(async setImg => {
@@ -9507,11 +8096,12 @@ const main = require('main');
     for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
       const startIndex = ehImgList.length;
       const imgPageUrlList = await getImgFromDetailsPage(pageNum);
-      await main.plimit(imgPageUrlList.map((imgPageUrl, i) => async () => {
+      await main.plimit(imgPageUrlList.map(([imgPageUrl, fileName], i) => async () => {
         const imgUrl = await getImgFromImgPage(imgPageUrl);
         const index = startIndex + i;
         ehImgList[index] = imgUrl;
         ehImgPageList[index] = imgPageUrl;
+        ehImgFileNameList[index] = fileName;
         setImg(index, imgUrl);
       }), _doneNum => {
         const doneNum = startIndex + _doneNum;
@@ -9519,7 +8109,11 @@ const main = require('main');
           progress: doneNum / totalImgNum,
           tip: `${main.t('other.loading_img')} - ${doneNum}/${totalImgNum}`
         });
-        comicReadModeDom.innerHTML = doneNum !== totalImgNum ? ` loading - ${doneNum}/${totalImgNum}` : ` Read`;
+        comicReadModeDom.innerHTML = ` loading - ${doneNum}/${totalImgNum}`;
+        if (doneNum === totalImgNum) {
+          comicReadModeDom.innerHTML = ` Read`;
+          if (enableDetectAd) setManga('adList', main.getAdPage(ehImgFileNameList));
+        }
       });
     }
   }, totalImgNum));
@@ -9825,7268 +8419,7 @@ const fileType = {
     // #Yurifans——「自动签到」
     case 'yuri.website':
       {
-const solidJs = require('solid-js');
-const fflate = require('fflate');
-
-const sleep = ms => new Promise(resolve => {
-  window.setTimeout(resolve, ms);
-});
-const clamp = (min, val, max) => Math.max(Math.min(max, val), min);
-
-/** 判断两个数是否在指定误差范围内相等 */
-const isEqual = (val, target, range) => Math.abs(target - val) <= range;
-
-/**
- * 对 document.querySelector 的封装
- * 将默认返回类型改为 HTMLElement
- */
-const querySelector = selector => document.querySelector(selector);
-
-/**
- * 对 document.querySelector 的封装
- * 将默认返回类型改为 HTMLElement
- */
-const querySelectorAll = selector => [...document.querySelectorAll(selector)];
-
-/** 判断两个列表中包含的值是否相同 */
-const isEqualArray = (a, b) => a.length === b.length && !a.some(t => !b.includes(t));
-
-/** 将 blob 数据作为文件保存至本地 */
-const saveAs = (blob, name = 'download') => {
-  const a = document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
-  a.download = name;
-  a.rel = 'noopener';
-  a.href = URL.createObjectURL(blob);
-  setTimeout(() => a.dispatchEvent(new MouseEvent('click')));
-};
-
-/** 使指定函数延迟运行期间的多次调用直到运行结束 */
-const singleThreaded = callback => {
-  const state = {
-    running: false,
-    continueRun: false
-  };
-  const fn = async (...args) => {
-    if (state.continueRun) return;
-    if (state.running) {
-      state.continueRun = true;
-      return;
-    }
-    let res;
-    try {
-      state.running = true;
-      res = await callback(state, ...args);
-    } catch (error) {
-      state.continueRun = false;
-      await sleep(100);
-      throw error;
-    } finally {
-      state.running = false;
-    }
-    if (state.continueRun) {
-      state.continueRun = false;
-      setTimeout(fn);
-    } else state.running = false;
-    return res;
-  };
-  return fn;
-};
-
-/**
- * 限制 Promise 并发
- * @param fnList 任务函数列表
- * @param callBack 成功执行一个 Promise 后调用，主要用于显示进度
- * @param limit 限制数
- * @returns 所有 Promise 的返回值
- */
-const plimit = async (fnList, callBack = undefined, limit = 10) => {
-  let doneNum = 0;
-  const totalNum = fnList.length;
-  const resList = [];
-  const execPool = new Set();
-  const taskList = fnList.map((fn, i) => {
-    let p;
-    return () => {
-      p = (async () => {
-        resList[i] = await fn();
-        doneNum += 1;
-        execPool.delete(p);
-        callBack?.(doneNum, totalNum, resList, i);
-      })();
-      execPool.add(p);
-    };
-  });
-  while (doneNum !== totalNum) {
-    while (taskList.length && execPool.size < limit) {
-      taskList.shift()();
-    }
-    await Promise.race(execPool);
-  }
-  return resList;
-};
-
-/**
- * 判断使用参数颜色作为默认值时是否需要切换为黑暗模式
- * @param hexColor 十六进制颜色。例如 #112233
- */
-const needDarkMode = hexColor => {
-  // by: https://24ways.org/2010/calculating-color-contrast
-  const r = parseInt(hexColor.substring(1, 3), 16);
-  const g = parseInt(hexColor.substring(3, 5), 16);
-  const b = parseInt(hexColor.substring(5, 7), 16);
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq < 128;
-};
-
-/** 等到传入的函数返回 true */
-const wait = async (fn, timeout = Infinity) => {
-  let res = await fn();
-  let _timeout = timeout;
-  while (_timeout > 0 && !res) {
-    await sleep(10);
-    _timeout -= 10;
-    res = await fn();
-  }
-  return res;
-};
-
-/** 将指定的布尔值转换为字符串或未定义 */
-const boolDataVal = val => val ? '' : undefined;
-
-/** 获取图片尺寸 */
-const getImgSize = async (url, breakFn) => {
-  let error = false;
-  const image = new Image();
-  try {
-    image.onerror = () => {
-      error = true;
-    };
-    image.src = url;
-    await wait(() => !error && (image.naturalWidth || image.naturalHeight) && (breakFn ? !breakFn() : true));
-    if (error) return null;
-    return [image.naturalWidth, image.naturalHeight];
-  } catch (e) {
-    return null;
-  } finally {
-    image.src = '';
-  }
-};
-const canvasToBlob = (canvas, type, quality = 1) => new Promise((resolve, reject) => {
-  canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')), type, quality);
-});
-
-/**
- * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
- *
- * 不会修改参数对象，返回的是新对象
- */
-const difference = (a, b) => {
-  const res = {};
-  const keys = Object.keys(a);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
-    if (typeof a[key] === 'object' && typeof b[key] === 'object') {
-      const _res = difference(a[key], b[key]);
-      if (Object.keys(_res).length) res[key] = _res;
-    } else if (a[key] !== b?.[key]) res[key] = a[key];
-  }
-  return res;
-};
-
-/**
- * Object.assign 的深拷贝版，不会导致 a 子对象属性的缺失
- *
- * 不会修改参数对象，返回的是新对象
- */
-const assign$1 = (a, b) => {
-  const res = JSON.parse(JSON.stringify(a));
-  const keys = Object.keys(b);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
-    if (res[key] === undefined) res[key] = b[key];else if (typeof b[key] === 'object') {
-      const _res = assign$1(res[key], b[key]);
-      if (Object.keys(_res).length) res[key] = _res;
-    } else if (res[key] !== b[key]) res[key] = b[key];
-  }
-  return res;
-};
-
-/** 根据路径获取对象下的指定值 */
-const byPath = (obj, path, handleVal) => {
-  const keys = path.split('.');
-  let target = obj;
-  for (let i = 0; i < keys.length; i++) {
-    let key = keys[i];
-
-    // 兼容含有「.」的 key
-    while (!Reflect.has(target, key) && i < keys.length) {
-      i += 1;
-      if (keys[i] === undefined) break;
-      key += `.${keys[i]}`;
-    }
-    if (handleVal && i > keys.length - 2 && Reflect.has(target, key)) {
-      const res = handleVal(target, key);
-      while (i < keys.length - 1) {
-        target = target[key];
-        i += 1;
-        key = keys[i];
-      }
-      if (res !== undefined) target[key] = res;
-      break;
-    }
-    target = target[key];
-  }
-  if (target === obj) return null;
-  return target;
-};
-
-/** 获取键盘事件的编码 */
-const getKeyboardCode = e => {
-  let {
-    key
-  } = e;
-  switch (key) {
-    case 'Shift':
-    case 'Control':
-    case 'Alt':
-      return key;
-  }
-  if (e.ctrlKey) key = `Ctrl + ${key}`;
-  if (e.altKey) key = `Alt + ${key}`;
-  if (e.shiftKey) key = `Shift + ${key}`;
-  return key;
-};
-
-/** 将快捷键的编码转换成更易读的形式 */
-const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\s$/, 'Space');
-
-const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
-const log = (...args) =>
-// eslint-disable-next-line no-console
-console.log.apply(null, [...prefix, ...args]);
-log.warn = (...args) =>
-// eslint-disable-next-line no-console
-console.warn.apply(null, [...prefix, ...args]);
-log.error = (...args) =>
-// eslint-disable-next-line no-console
-console.error.apply(null, [...prefix, ...args]);
-
-const langList = ['zh', 'en', 'ru'];
-/** 判断传入的字符串是否是支持的语言类型代码 */
-const isLanguages = lang => !!lang && langList.includes(lang);
-
-/** 返回浏览器偏好语言 */
-const getBrowserLang = () => {
-  let newLang;
-  for (let i = 0; i < navigator.languages.length; i++) {
-    const language = navigator.languages[i];
-    const matchLang = langList.find(l => l === language || l === language.split('-')[0]);
-    if (matchLang) {
-      newLang = matchLang;
-      break;
-    }
-  }
-  return newLang;
-};
-const getSaveLang = () => typeof GM !== 'undefined' ? GM.getValue('Languages') : localStorage.getItem('Languages');
-const setSaveLang = val => typeof GM !== 'undefined' ? GM.setValue('Languages', val) : localStorage.setItem('Languages', val);
-const getInitLang = async () => {
-  const saveLang = await getSaveLang();
-  if (isLanguages(saveLang)) return saveLang;
-  const lang = getBrowserLang() ?? 'zh';
-  setSaveLang(lang);
-  return lang;
-};
-
-const zh = {
-  alert: {
-    comic_load_error: "漫画加载出错",
-    download_failed: "下载失败",
-    fetch_comic_img_failed: "获取漫画图片失败",
-    img_load_failed: "图片加载失败",
-    repeat_load: "加载图片中，请稍候",
-    server_connect_failed: "无法连接到服务器"
-  },
-  button: {
-    close_current_page_translation: "关闭当前页的翻译",
-    download: "下载",
-    download_completed: "下载完成",
-    downloading: "下载中",
-    exit: "退出",
-    grid_mode: "网格模式",
-    packaging: "打包中",
-    page_fill: "页面填充",
-    page_mode_double: "双页模式",
-    page_mode_single: "单页模式",
-    scroll_mode: "卷轴模式",
-    setting: "设置",
-    translate_current_page: "翻译当前页",
-    zoom_in: "放大"
-  },
-  description: "为漫画站增加双页阅读、翻译等优化体验的增强功能。",
-  end_page: {
-    next_button: "下一话",
-    prev_button: "上一话",
-    tip: {
-      end_jump: "已到结尾，继续向下翻页将跳至下一话",
-      exit: "已到结尾，继续翻页将退出",
-      start_jump: "已到开头，继续向上翻页将跳至上一话"
-    }
-  },
-  hotkeys: {
-    enter_read_mode: "进入阅读模式",
-    exit: "退出",
-    jump_to_end: "跳至尾页",
-    jump_to_home: "跳至首页",
-    switch_auto_enlarge: "切换图片自动放大选项",
-    switch_dir: "切换阅读方向",
-    switch_grid_mode: "切换网格模式",
-    switch_page_fill: "切换页面填充",
-    switch_scroll_mode: "切换卷轴模式",
-    switch_single_double_page_mode: "切换单双页模式",
-    turn_page_down: "向下翻页",
-    turn_page_left: "向左翻页",
-    turn_page_right: "向右翻页",
-    turn_page_up: "向上翻页"
-  },
-  img_status: {
-    error: "加载出错",
-    loading: "正在加载",
-    wait: "等待加载"
-  },
-  other: {
-    auto_enter_read_mode: "自动进入阅读模式",
-    "default": "默认",
-    disable: "禁用",
-    enter_comic_read_mode: "进入漫画阅读模式",
-    fab_hidden: "隐藏悬浮按钮",
-    fab_show: "显示悬浮按钮",
-    fill_page: "填充页",
-    img_loading: "图片加载中",
-    loading_img: "加载图片中",
-    read_mode: "阅读模式"
-  },
-  pwa: {
-    alert: {
-      img_data_error: "图片数据错误",
-      img_not_found: "找不到图片",
-      img_not_found_files: "请选择图片文件或含有图片文件的压缩包",
-      img_not_found_folder: "文件夹下没有图片文件或含有图片文件的压缩包",
-      not_valid_url: "不是有效的 URL",
-      repeat_load: "正在加载其他文件中……",
-      unzip_error: "解压出错",
-      unzip_password_error: "解压密码错误",
-      userscript_not_installed: "未安装 ComicRead 脚本"
-    },
-    button: {
-      enter_url: "输入 URL",
-      install: "安装",
-      no_more_prompt: "不再提示",
-      resume_read: "恢复阅读",
-      select_files: "选择文件",
-      select_folder: "选择文件夹"
-    },
-    install_md: "### 每次都要打开这个网页很麻烦？\n如果你希望\n1. 能有独立的窗口，像是在使用本地软件一样\n1. 加入本地压缩文件的打开方式之中，方便直接打开\n1. 离线使用~~（主要是担心国内网络抽风无法访问这个网页~~\n### 欢迎将本页面作为 PWA 应用安装到电脑上😃👍",
-    message: {
-      enter_password: "请输入密码",
-      unzipping: "解压缩中"
-    },
-    tip_enter_url: "请输入压缩包 URL",
-    tip_md: "# ComicRead PWA\n使用 [ComicRead](https://github.com/hymbz/ComicReadScript) 的阅读模式阅读**本地**漫画\n---\n### 将图片文件、文件夹、压缩包直接拖入即可开始阅读\n*也可以选择**直接粘贴**或**输入**压缩包 URL 下载阅读*"
-  },
-  setting: {
-    hotkeys: {
-      add: "添加新快捷键",
-      restore: "恢复默认快捷键"
-    },
-    language: "语言",
-    option: {
-      always_load_all_img: "始终加载所有图片",
-      background_color: "背景颜色",
-      click_page_turn_area: "点击区域",
-      click_page_turn_enabled: "点击翻页",
-      click_page_turn_swap_area: "左右点击区域交换",
-      click_page_turn_vertical: "上下翻页",
-      dark_mode: "夜间模式",
-      dir_ltr: "从左到右（美漫）",
-      dir_rtl: "从右到左（日漫）",
-      disable_auto_enlarge: "禁止图片自动放大",
-      first_page_fill: "默认启用首页填充",
-      jump_to_next_chapter: "翻页至上/下一话",
-      paragraph_dir: "阅读方向",
-      paragraph_display: "显示",
-      paragraph_hotkeys: "快捷键",
-      paragraph_operation: "操作",
-      paragraph_other: "其他",
-      paragraph_scrollbar: "滚动条",
-      paragraph_translation: "翻译",
-      preload_page_num: "预加载页数",
-      scroll_mode_img_scale: "卷轴图片缩放",
-      scroll_mode_img_spacing: "卷轴图片间距",
-      scrollbar_auto_hidden: "自动隐藏",
-      scrollbar_easy_scroll: "快捷滚动",
-      scrollbar_position: "位置",
-      scrollbar_position_auto: "自动",
-      scrollbar_position_bottom: "底部",
-      scrollbar_position_hidden: "隐藏",
-      scrollbar_position_right: "右侧",
-      scrollbar_position_top: "顶部",
-      scrollbar_show_img_status: "显示图片加载状态",
-      show_clickable_area: "显示点击区域",
-      show_comments: "在结束页显示评论",
-      swap_page_turn_key: "左右翻页键交换"
-    },
-    translation: {
-      cotrans_tip: "<p>将使用 <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> 提供的接口翻译图片，该服务器由其维护者用爱发电自费维护</p>\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\n<p>所以还请 <b>注意用量</b></p>\n<p>更推荐使用自己本地部署的项目，既不占用服务器资源也不需要排队</p>",
-      options: {
-        detection_resolution: "文本扫描清晰度",
-        direction: "渲染字体方向",
-        direction_auto: "原文一致",
-        direction_horizontal: "仅限水平",
-        direction_vertical: "仅限垂直",
-        forceRetry: "忽略缓存强制重试",
-        localUrl: "自定义服务器 URL",
-        target_language: "目标语言",
-        text_detector: "文本扫描器",
-        translator: "翻译服务"
-      },
-      server: "翻译服务器",
-      server_selfhosted: "本地部署",
-      translate_after_current: "翻译当前页至结尾",
-      translate_all_img: "翻译全部图片"
-    }
-  },
-  site: {
-    add_feature: {
-      associate_nhentai: "关联nhentai",
-      auto_page_turn: "自动翻页",
-      block_totally: "彻底屏蔽漫画",
-      hotkeys_page_turn: "快捷键翻页",
-      open_link_new_page: "在新页面中打开链接",
-      remember_current_site: "记住当前站点"
-    },
-    changed_load_failed: "网站发生变化，无法加载漫画",
-    ehentai: {
-      fetch_img_page_source_failed: "获取图片页源码失败",
-      fetch_img_page_url_failed: "从详情页获取图片页地址失败",
-      fetch_img_url_failed: "从图片页获取图片地址失败",
-      html_changed_nhentai_failed: "页面结构发生改变，关联 nhentai 漫画功能无法正常生效",
-      ip_banned: "IP地址被禁",
-      nhentai_error: "nhentai 匹配出错",
-      nhentai_failed: "匹配失败，请在确认登录 {{nhentai}} 后刷新"
-    },
-    nhentai: {
-      fetch_next_page_failed: "获取下一页漫画数据失败",
-      tag_blacklist_fetch_failed: "标签黑名单获取失败"
-    },
-    settings_tip: "设置",
-    show_settings_menu: "显示设置菜单",
-    simple: {
-      auto_read_mode_message: "已默认开启「自动进入阅读模式」",
-      simple_read_mode: "使用简易阅读模式"
-    }
-  },
-  touch_area: {
-    menu: "菜单",
-    next: "下页",
-    prev: "上页",
-    type: {
-      edge: "边缘",
-      l: "L",
-      left_right: "左右",
-      up_down: "上下"
-    }
-  },
-  translation: {
-    status: {
-      "default": "未知状态",
-      detection: "正在检测文本",
-      downscaling: "正在缩小图片",
-      error: "翻译出错",
-      "error-lang": "你选择的翻译服务不支持你选择的语言",
-      "error-translating": "翻译服务没有返回任何文本",
-      "error-with-id": "翻译出错",
-      finished: "正在整理结果",
-      inpainting: "正在修补图片",
-      "mask-generation": "正在生成文本掩码",
-      ocr: "正在识别文本",
-      pending: "正在等待",
-      "pending-pos": "正在等待",
-      rendering: "正在渲染",
-      saved: "保存结果",
-      textline_merge: "正在整合文本",
-      translating: "正在翻译文本",
-      upscaling: "正在放大图片"
-    },
-    tip: {
-      check_img_status_failed: "检查图片状态失败",
-      download_img_failed: "下载图片失败",
-      error: "翻译出错",
-      get_translator_list_error: "获取可用翻译服务列表时出错",
-      id_not_returned: "未返回 id",
-      img_downloading: "正在下载图片",
-      img_not_fully_loaded: "图片未加载完毕",
-      pending: "正在等待，列队还有 {{pos}} 张图片",
-      resize_img_failed: "缩放图片失败",
-      translation_completed: "翻译完成",
-      upload_error: "图片上传出错",
-      upload_return_error: "服务器翻译出错",
-      wait_translation: "等待翻译"
-    },
-    translator: {
-      baidu: "百度",
-      deepl: "DeepL",
-      google: "谷歌",
-      "gpt3.5": "GPT-3.5",
-      none: "删除文本",
-      offline: "离线模型",
-      original: "原文",
-      youdao: "有道"
-    }
-  }
-};
-
-const en = {
-  alert: {
-    comic_load_error: "Comic loading error",
-    download_failed: "Download failed",
-    fetch_comic_img_failed: "Failed to fetch comic images",
-    img_load_failed: "Image loading failed",
-    repeat_load: "Loading image, please wait",
-    server_connect_failed: "Unable to connect to the server"
-  },
-  button: {
-    close_current_page_translation: "Close translation of the current page",
-    download: "Download",
-    download_completed: "Download completed",
-    downloading: "Downloading",
-    exit: "Exit",
-    grid_mode: "Grid mode",
-    packaging: "Packaging",
-    page_fill: "Page fill",
-    page_mode_double: "Double page mode",
-    page_mode_single: "Single page mode",
-    scroll_mode: "Scroll mode",
-    setting: "Settings",
-    translate_current_page: "Translate current page",
-    zoom_in: "Zoom in"
-  },
-  description: "Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.",
-  end_page: {
-    next_button: "Next chapter",
-    prev_button: "Prev chapter",
-    tip: {
-      end_jump: "Reached the last page, scrolling down will jump to the next chapter",
-      exit: "Reached the last page, scrolling down will exit",
-      start_jump: "Reached the first page, scrolling up will jump to the previous chapter"
-    }
-  },
-  hotkeys: {
-    enter_read_mode: "Enter reading mode",
-    exit: "Exit",
-    jump_to_end: "Jump to the last page",
-    jump_to_home: "Jump to the first page",
-    switch_auto_enlarge: "Switch auto image enlarge option",
-    switch_dir: "Switch reading direction",
-    switch_grid_mode: "Switch grid mode",
-    switch_page_fill: "Switch page fill",
-    switch_scroll_mode: "Switch scroll mode",
-    switch_single_double_page_mode: "Switch single/double page mode",
-    turn_page_down: "Turn the page to the down",
-    turn_page_left: "Turn the page to the left",
-    turn_page_right: "Turn the page to the right",
-    turn_page_up: "Turn the page to the up"
-  },
-  img_status: {
-    error: "Load Error",
-    loading: "Loading",
-    wait: "Waiting for load"
-  },
-  other: {
-    auto_enter_read_mode: "Auto enter reading mode",
-    "default": "Default",
-    disable: "Disable",
-    enter_comic_read_mode: "Enter comic reading mode",
-    fab_hidden: "Hide floating button",
-    fab_show: "Show floating button",
-    fill_page: "Fill Page",
-    img_loading: "Image loading",
-    loading_img: "Loading image",
-    read_mode: "Reading mode"
-  },
-  pwa: {
-    alert: {
-      img_data_error: "Image data error",
-      img_not_found: "Image not found",
-      img_not_found_files: "Please select an image file or a compressed file containing image files",
-      img_not_found_folder: "No image files or compressed files containing image files in the folder",
-      not_valid_url: "Not a valid URL",
-      repeat_load: "Loading other files…",
-      unzip_error: "Decompression error",
-      unzip_password_error: "Decompression password error",
-      userscript_not_installed: "ComicRead userscript not installed"
-    },
-    button: {
-      enter_url: "Enter URL",
-      install: "Install",
-      no_more_prompt: "Do not prompt again",
-      resume_read: "Restore reading",
-      select_files: "Select File",
-      select_folder: "Select folder"
-    },
-    install_md: "### Tired of opening this webpage every time?\nIf you wish to:\n1. Have an independent window, as if using local software\n1. Add to the local compressed file opening method for easy direct opening\n1. Use offline\n### Welcome to install this page as a PWA app on your computer😃👍",
-    message: {
-      enter_password: "Please enter your password",
-      unzipping: "Unzipping"
-    },
-    tip_enter_url: "Please enter the URL of the compressed file",
-    tip_md: "# ComicRead PWA\nRead **local** comics using [ComicRead](https://github.com/hymbz/ComicReadScript) reading mode.\n---\n### Drag and drop image files, folders, or compressed files directly to start reading\n*You can also choose to **paste directly** or **enter** the URL of the compressed file for downloading and reading*"
-  },
-  setting: {
-    hotkeys: {
-      add: "Add new hotkeys",
-      restore: "Restore default hotkeys"
-    },
-    language: "Language",
-    option: {
-      always_load_all_img: "Always load all images",
-      background_color: "Background Color",
-      click_page_turn_area: "Touch area",
-      click_page_turn_enabled: "Click to turn page",
-      click_page_turn_swap_area: "Swap LR clickable areas",
-      click_page_turn_vertical: "Vertically arranged clickable areas",
-      dark_mode: "Dark mode",
-      dir_ltr: "LTR (American comics)",
-      dir_rtl: "RTL (Japanese manga)",
-      disable_auto_enlarge: "Disable automatic image enlarge",
-      first_page_fill: "Enable first page fill by default",
-      jump_to_next_chapter: "Turn to the next/previous chapter",
-      paragraph_dir: "Reading direction",
-      paragraph_display: "Display",
-      paragraph_hotkeys: "Hotkeys",
-      paragraph_operation: "Operation",
-      paragraph_other: "Other",
-      paragraph_scrollbar: "Scrollbar",
-      paragraph_translation: "Translation",
-      preload_page_num: "Preload page number",
-      scroll_mode_img_scale: "Scroll mode image zoom ratio",
-      scroll_mode_img_spacing: "Scroll mode image spacing",
-      scrollbar_auto_hidden: "Auto hide",
-      scrollbar_easy_scroll: "Easy scroll",
-      scrollbar_position: "position",
-      scrollbar_position_auto: "Auto",
-      scrollbar_position_bottom: "Bottom",
-      scrollbar_position_hidden: "Hidden",
-      scrollbar_position_right: "Right",
-      scrollbar_position_top: "Top",
-      scrollbar_show_img_status: "Show image loading status",
-      show_clickable_area: "Show clickable areas",
-      show_comments: "Show comments on the end page",
-      swap_page_turn_key: "Swap LR page-turning keys"
-    },
-    translation: {
-      cotrans_tip: "<p>Using the interface provided by <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\n<p>So please <b>mind the frequency of use</b>.</p>\n<p>It is highly recommended to use your own locally deployed project, as it does not consume server resources and does not require queuing.</p>",
-      options: {
-        detection_resolution: "Text detection resolution",
-        direction: "Render text orientation",
-        direction_auto: "Follow source",
-        direction_horizontal: "Horizontal only",
-        direction_vertical: "Vertical only",
-        forceRetry: "Force retry (ignore cache)",
-        localUrl: "customize server URL",
-        target_language: "Target language",
-        text_detector: "Text detector",
-        translator: "Translator"
-      },
-      server: "Translation server",
-      server_selfhosted: "Selfhosted",
-      translate_after_current: "Translate the current page to the end",
-      translate_all_img: "Translate all images"
-    }
-  },
-  site: {
-    add_feature: {
-      associate_nhentai: "Associate nhentai",
-      auto_page_turn: "Auto page turning",
-      block_totally: "Totally block comics",
-      hotkeys_page_turn: "Page turning with hotkeys",
-      open_link_new_page: "Open links in a new page",
-      remember_current_site: "Remember the current site"
-    },
-    changed_load_failed: "The website has undergone changes, unable to load comics",
-    ehentai: {
-      fetch_img_page_source_failed: "Failed to get the source code of the image page",
-      fetch_img_page_url_failed: "Failed to get the image page address from the detail page",
-      fetch_img_url_failed: "Failed to get the image address from the image page",
-      html_changed_nhentai_failed: "The web page structure has changed, the function to associate nhentai comics is not working properly",
-      ip_banned: "IP address is banned",
-      nhentai_error: "Error in nhentai matching",
-      nhentai_failed: "Matching failed, please refresh after confirming login to {{nhentai}}"
-    },
-    nhentai: {
-      fetch_next_page_failed: "Failed to get next page of comic data",
-      tag_blacklist_fetch_failed: "Failed to fetch tag blacklist"
-    },
-    settings_tip: "Settings",
-    show_settings_menu: "Show settings menu",
-    simple: {
-      auto_read_mode_message: "\"Auto enter reading mode\" is enabled by default",
-      simple_read_mode: "Enter simple reading mode"
-    }
-  },
-  touch_area: {
-    menu: "Menu",
-    next: "Next Page",
-    prev: "Prev Page",
-    type: {
-      edge: "Edge",
-      l: "L",
-      left_right: "Left Right",
-      up_down: "Up Down"
-    }
-  },
-  translation: {
-    status: {
-      "default": "Unknown status",
-      detection: "Detecting text",
-      downscaling: "Downscaling",
-      error: "Error during translation",
-      "error-lang": "The target language is not supported by the chosen translator",
-      "error-translating": "Did not get any text back from the text translation service",
-      "error-with-id": "Error during translation",
-      finished: "Finishing",
-      inpainting: "Inpainting",
-      "mask-generation": "Generating mask",
-      ocr: "Scanning text",
-      pending: "Pending",
-      "pending-pos": "Pending",
-      rendering: "Rendering",
-      saved: "Saved",
-      textline_merge: "Merging text lines",
-      translating: "Translating",
-      upscaling: "Upscaling"
-    },
-    tip: {
-      check_img_status_failed: "Failed to check image status",
-      download_img_failed: "Failed to download image",
-      error: "Translation error",
-      get_translator_list_error: "Error occurred while getting the list of available translation services",
-      id_not_returned: "No id returned",
-      img_downloading: "Downloading images",
-      img_not_fully_loaded: "Image has not finished loading",
-      pending: "Pending, {{pos}} in queue",
-      resize_img_failed: "Failed to resize image",
-      translation_completed: "Translation completed",
-      upload_error: "Image upload error",
-      upload_return_error: "Error during server translation",
-      wait_translation: "Waiting for translation"
-    },
-    translator: {
-      baidu: "baidu",
-      deepl: "DeepL",
-      google: "Google",
-      "gpt3.5": "GPT-3.5",
-      none: "Remove texts",
-      offline: "offline translator",
-      original: "Original",
-      youdao: "youdao"
-    }
-  }
-};
-
-const ru = {
-  alert: {
-    comic_load_error: "Ошибка загрузки комикса",
-    download_failed: "Ошибка загрузки",
-    fetch_comic_img_failed: "Не удалось загрузить изображения",
-    img_load_failed: "Не удалось загрузить изображение",
-    repeat_load: "Загрузка изображения, пожалуйста подождите",
-    server_connect_failed: "Не удалось подключиться к серверу"
-  },
-  button: {
-    close_current_page_translation: "Скрыть перевод текущей страницы",
-    download: "Скачать",
-    download_completed: "Загрузка завершена",
-    downloading: "Скачивание",
-    exit: "Выход",
-    grid_mode: "Режим сетки",
-    packaging: "Упаковка",
-    page_fill: "Заполнить страницу",
-    page_mode_double: "Двухчастичный режим",
-    page_mode_single: "Одностраничный режим",
-    scroll_mode: "Режим прокрутки",
-    setting: "Настройки",
-    translate_current_page: "Перевести текущую страницу",
-    zoom_in: "Приблизить"
-  },
-  description: "Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.",
-  end_page: {
-    next_button: "Следующая глава",
-    prev_button: "Предыдущая глава",
-    tip: {
-      end_jump: "Последняя страница, ниже будет загружена следующая глава",
-      exit: "Последняя страница, ниже комикс будет закрыт",
-      start_jump: "Это первая страница, выше будет загружена предыдущая глава"
-    }
-  },
-  hotkeys: {
-    enter_read_mode: "Перейти в режим чтения",
-    exit: "Выход",
-    jump_to_end: "Перейти к последней странице",
-    jump_to_home: "Перейти к первой странице",
-    switch_auto_enlarge: "Автоматическое приближение изображения",
-    switch_dir: "Переключить направление чтения",
-    switch_grid_mode: "切换网格模式",
-    switch_page_fill: "Переключить заполнение страницы",
-    switch_scroll_mode: "Переключить режим прокрутки",
-    switch_single_double_page_mode: "Одностраничный/Двухстраничный режим",
-    turn_page_down: "Перелистнуть страницу вниз",
-    turn_page_left: "Перелистнуть страницу влево",
-    turn_page_right: "Перелистнуть страницу вправо",
-    turn_page_up: "Перелистнуть страницу вверх"
-  },
-  img_status: {
-    error: "Ошибка загрузки",
-    loading: "Загрузка",
-    wait: "Ожидание загрузки"
-  },
-  other: {
-    auto_enter_read_mode: "Автоматически включать режим чтения",
-    "default": "默认",
-    disable: "Отключить",
-    enter_comic_read_mode: "Режим чтения комиксов",
-    fab_hidden: "Скрыть плавающую кнопку",
-    fab_show: "Показать плавающую кнопку",
-    fill_page: "Заполнить страницу",
-    img_loading: "Изображение загружается",
-    loading_img: "Загрузка изображения",
-    read_mode: "Режим чтения"
-  },
-  pwa: {
-    alert: {
-      img_data_error: "Ошибка данных изображения",
-      img_not_found: "Изображение не найдено",
-      img_not_found_files: "Пожалуйста выберите файл изображения или архив с изображениями",
-      img_not_found_folder: "В папке не найдены изображения или архивы с изображениями",
-      not_valid_url: "不是有效的 URL",
-      repeat_load: "Загрузка других файлов…",
-      unzip_error: "Ошибка распаковки",
-      unzip_password_error: "Неверный пароль от архива",
-      userscript_not_installed: "ComicRead не установлен"
-    },
-    button: {
-      enter_url: "Ввести URL",
-      install: "Установить",
-      no_more_prompt: "Больше не показывать",
-      resume_read: "Продолжить чтение",
-      select_files: "Выбрать файл",
-      select_folder: "Выбрать папку"
-    },
-    install_md: "### Устали открывать эту страницу каждый раз?\nЕсли вы хотите:\n1. Иметь отдельное окно, как если бы вы использовали обычное программное обеспечение\n1. Открывать архивы напрямую\n1. Пользоваться оффлайн\n### Установите эту страницу в качестве [PWA](https://ru.wikipedia.org/wiki/%D0%9F%D1%80%D0%BE%D0%B3%D1%80%D0%B5%D1%81%D1%81%D0%B8%D0%B2%D0%BD%D0%BE%D0%B5_%D0%B2%D0%B5%D0%B1-%D0%BF%D1%80%D0%B8%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5) на свой компьютер 🐺☝️",
-    message: {
-      enter_password: "Пожалуйста введите пароль",
-      unzipping: "Распаковка"
-    },
-    tip_enter_url: "Введите URL архива",
-    tip_md: "# ComicRead PWA\nИспользуйте [ComicRead](https://github.com/hymbz/ComicReadScript) для чтения комиксов локально.\n---\n### Перетащите изображения, папки или архивы чтобы начать читать\n*Вы так же можете открыть архив по URL напрямую*"
-  },
-  setting: {
-    hotkeys: {
-      add: "Добавить горячие клавиши",
-      restore: "Восстановить горячие клавиши по умолчанию"
-    },
-    language: "Язык",
-    option: {
-      always_load_all_img: "Всегда загружать все изображения",
-      background_color: "Цвет фона",
-      click_page_turn_area: "点击区域",
-      click_page_turn_enabled: "Включить перелистывание страниц по клику",
-      click_page_turn_swap_area: "Поменять местами правую и левую области переключения страниц",
-      click_page_turn_vertical: "Вертикальная область переключения страниц",
-      dark_mode: "Тёмная тема",
-      dir_ltr: "Чтение слева направо (Американские комиксы)",
-      dir_rtl: "Чтение справа налево (Японская манга)",
-      disable_auto_enlarge: "Отключить автоматическое масштабирование изображений",
-      first_page_fill: "Включить заполнение первой страницы по умолчанию",
-      jump_to_next_chapter: "Перелистнуть главу",
-      paragraph_dir: "Направление чтения",
-      paragraph_display: "Отображение",
-      paragraph_hotkeys: "Горячие клавиши",
-      paragraph_operation: "Управление",
-      paragraph_other: "Другое",
-      paragraph_scrollbar: "Полоса прокрутки",
-      paragraph_translation: "Перевод",
-      preload_page_num: "Предзагружать страниц",
-      scroll_mode_img_scale: "卷轴图片缩放",
-      scroll_mode_img_spacing: "卷轴图片间距",
-      scrollbar_auto_hidden: "Автоматически скрывать полосу прокрутки",
-      scrollbar_easy_scroll: "快捷滚动",
-      scrollbar_position: "位置",
-      scrollbar_position_auto: "自动",
-      scrollbar_position_bottom: "底部",
-      scrollbar_position_hidden: "隐藏",
-      scrollbar_position_right: "右侧",
-      scrollbar_position_top: "顶部",
-      scrollbar_show_img_status: "Показывать статус загрузки изображения",
-      show_clickable_area: "Показывать кликабельные области",
-      show_comments: "Показывать комментарии на последней странице",
-      swap_page_turn_key: "Поменять местами клавиши переключения страниц"
-    },
-    translation: {
-      cotrans_tip: "<p>Использует для перевода <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans API</a>, работающий исключительно за счёт своего создателя.</p>\n<p>Запросы обрабатываются по одному в порядке синхронной очереди. Когда очередь превышает лимит новые запросы будут приводить к ошибке. Если такое случилось попробуйте позже.</p>\n<p>Так что пожалуйста <b>учитывайте загруженность при выборе</b></p>\n<p>Настоятельно рекомендовано использовать проект развёрнутый локально т.к. это не потребляет серверные ресурсы и вы не ограничены очередью.</p>",
-      options: {
-        detection_resolution: "Разрешение распознавания текста",
-        direction: "Ориетнация текста",
-        direction_auto: "Следование оригиналу",
-        direction_horizontal: "Только горизонтально",
-        direction_vertical: "Только вертикально",
-        forceRetry: "Принудительный повтор(Игнорировать кэш)",
-        localUrl: "Настроить URL сервера",
-        target_language: "Целевой язык",
-        text_detector: "Детектор текста",
-        translator: "Переводчик"
-      },
-      server: "Сервер",
-      server_selfhosted: "Свой",
-      translate_after_current: "翻译当前页至结尾",
-      translate_all_img: "Перевести все изображения"
-    }
-  },
-  site: {
-    add_feature: {
-      associate_nhentai: "Ассоциация с nhentai",
-      auto_page_turn: "Автопереворот страниц",
-      block_totally: "Глобально заблокировать комиксы",
-      hotkeys_page_turn: "Переворот страниц горячими клавишами",
-      open_link_new_page: "Открывать ссылки в новой вкладке",
-      remember_current_site: "Запомнить текущий сайт"
-    },
-    changed_load_failed: "Структура страницы изменилась, невозможно загрузить комикс",
-    ehentai: {
-      fetch_img_page_source_failed: "Не удалось получить исходный код страницы с изображениями",
-      fetch_img_page_url_failed: "Не удалось получить адрес страницы изображений из деталей",
-      fetch_img_url_failed: "Не удалось получить адрес изображения",
-      html_changed_nhentai_failed: "Структура страницы изменилась, функция nhentai manga работает некорректно",
-      ip_banned: "IP адрес забанен",
-      nhentai_error: "Ошибка сопоставления с nhentai",
-      nhentai_failed: "Ошибка сопостовления. Пожалуйста перезагрузите страницу после входа на {{nhentai}}"
-    },
-    nhentai: {
-      fetch_next_page_failed: "Не удалось получить следующую страницу",
-      tag_blacklist_fetch_failed: "Не удалось получить заблокированные теги"
-    },
-    settings_tip: "Настройки",
-    show_settings_menu: "Показать меню настроек",
-    simple: {
-      auto_read_mode_message: "\"Автоматически включать режим чтения\" по умолчанию",
-      simple_read_mode: "Включить простой режим чтения"
-    }
-  },
-  touch_area: {
-    menu: "Меню",
-    next: "Следующая страница",
-    prev: "Предыдущая страница",
-    type: {
-      edge: "边缘",
-      l: "L",
-      left_right: "左右",
-      up_down: "上下"
-    }
-  },
-  translation: {
-    status: {
-      "default": "Неизвестный статус",
-      detection: "Распознавание текста",
-      downscaling: "Уменьшение масштаба",
-      error: "Ошибка перевода",
-      "error-lang": "Целевой язык не поддерживается выбранным переводчиком",
-      "error-translating": "Ошибка перевода(пустой ответ)",
-      "error-with-id": "Ошибка во время перевода",
-      finished: "Завершение",
-      inpainting: "Наложение",
-      "mask-generation": "Генерация маски",
-      ocr: "Распознавание текста",
-      pending: "Ожидание",
-      "pending-pos": "Ожидание",
-      rendering: "Отрисовка",
-      saved: "Сохранено",
-      textline_merge: "Обьединение текста",
-      translating: "Переводится",
-      upscaling: "Увеличение изображения"
-    },
-    tip: {
-      check_img_status_failed: "Не удалось проверить статус изображения",
-      download_img_failed: "Не удалось скачать изображение",
-      error: "Ошибка перевода",
-      get_translator_list_error: "Произошла ошибка во время получения списка доступных переводчиков",
-      id_not_returned: "ID не вернули(",
-      img_downloading: "Скачивание изображений",
-      img_not_fully_loaded: "Изображение всё ещё загружается",
-      pending: "Ожидение, позиция в очереди {{pos}}",
-      resize_img_failed: "Не удалось изменить размер изображения",
-      translation_completed: "Перевод завершён",
-      upload_error: "Ошибка загрузки изображения",
-      upload_return_error: "Ошибка перевода на сервере",
-      wait_translation: "Ожидание перевода"
-    },
-    translator: {
-      baidu: "baidu",
-      deepl: "DeepL",
-      google: "Google",
-      "gpt3.5": "GPT-3.5",
-      none: "Убрать текст",
-      offline: "Оффлайн переводчик",
-      original: "Оригинал",
-      youdao: "youdao"
-    }
-  }
-};
-
-const [lang, setLang] = solidJs.createSignal('zh');
-const setInitLang = async () => setLang(await getInitLang());
-const t = solidJs.createRoot(() => {
-  solidJs.createEffect(solidJs.on(lang, () => setSaveLang(lang()), {
-    defer: true
-  }));
-  const locales = solidJs.createMemo(() => {
-    switch (lang()) {
-      case 'en':
-        return en;
-      case 'ru':
-        return ru;
-      default:
-        return zh;
-    }
-  });
-
-  // eslint-disable-next-line solid/reactivity
-  return (keys, variables) => {
-    let text = byPath(locales(), keys) ?? '';
-    if (variables) Object.entries(variables).forEach(([k, v]) => {
-      text = text.replaceAll(`{{${k}}}`, `${v}`);
-    });
-    return text;
-  };
-});
-
-const booleans = [
-  "allowfullscreen",
-  "async",
-  "autofocus",
-  "autoplay",
-  "checked",
-  "controls",
-  "default",
-  "disabled",
-  "formnovalidate",
-  "hidden",
-  "indeterminate",
-  "inert",
-  "ismap",
-  "loop",
-  "multiple",
-  "muted",
-  "nomodule",
-  "novalidate",
-  "open",
-  "playsinline",
-  "readonly",
-  "required",
-  "reversed",
-  "seamless",
-  "selected"
-];
-const Properties = /*#__PURE__*/ new Set([
-  "className",
-  "value",
-  "readOnly",
-  "formNoValidate",
-  "isMap",
-  "noModule",
-  "playsInline",
-  ...booleans
-]);
-const ChildProperties = /*#__PURE__*/ new Set([
-  "innerHTML",
-  "textContent",
-  "innerText",
-  "children"
-]);
-const Aliases = /*#__PURE__*/ Object.assign(Object.create(null), {
-  className: "class",
-  htmlFor: "for"
-});
-const PropAliases = /*#__PURE__*/ Object.assign(Object.create(null), {
-  class: "className",
-  formnovalidate: {
-    $: "formNoValidate",
-    BUTTON: 1,
-    INPUT: 1
-  },
-  ismap: {
-    $: "isMap",
-    IMG: 1
-  },
-  nomodule: {
-    $: "noModule",
-    SCRIPT: 1
-  },
-  playsinline: {
-    $: "playsInline",
-    VIDEO: 1
-  },
-  readonly: {
-    $: "readOnly",
-    INPUT: 1,
-    TEXTAREA: 1
-  }
-});
-function getPropAlias(prop, tagName) {
-  const a = PropAliases[prop];
-  return typeof a === "object" ? (a[tagName] ? a["$"] : undefined) : a;
-}
-const DelegatedEvents = /*#__PURE__*/ new Set([
-  "beforeinput",
-  "click",
-  "dblclick",
-  "contextmenu",
-  "focusin",
-  "focusout",
-  "input",
-  "keydown",
-  "keyup",
-  "mousedown",
-  "mousemove",
-  "mouseout",
-  "mouseover",
-  "mouseup",
-  "pointerdown",
-  "pointermove",
-  "pointerout",
-  "pointerover",
-  "pointerup",
-  "touchend",
-  "touchmove",
-  "touchstart"
-]);
-const SVGElements = /*#__PURE__*/ new Set([
-  "altGlyph",
-  "altGlyphDef",
-  "altGlyphItem",
-  "animate",
-  "animateColor",
-  "animateMotion",
-  "animateTransform",
-  "circle",
-  "clipPath",
-  "color-profile",
-  "cursor",
-  "defs",
-  "desc",
-  "ellipse",
-  "feBlend",
-  "feColorMatrix",
-  "feComponentTransfer",
-  "feComposite",
-  "feConvolveMatrix",
-  "feDiffuseLighting",
-  "feDisplacementMap",
-  "feDistantLight",
-  "feFlood",
-  "feFuncA",
-  "feFuncB",
-  "feFuncG",
-  "feFuncR",
-  "feGaussianBlur",
-  "feImage",
-  "feMerge",
-  "feMergeNode",
-  "feMorphology",
-  "feOffset",
-  "fePointLight",
-  "feSpecularLighting",
-  "feSpotLight",
-  "feTile",
-  "feTurbulence",
-  "filter",
-  "font",
-  "font-face",
-  "font-face-format",
-  "font-face-name",
-  "font-face-src",
-  "font-face-uri",
-  "foreignObject",
-  "g",
-  "glyph",
-  "glyphRef",
-  "hkern",
-  "image",
-  "line",
-  "linearGradient",
-  "marker",
-  "mask",
-  "metadata",
-  "missing-glyph",
-  "mpath",
-  "path",
-  "pattern",
-  "polygon",
-  "polyline",
-  "radialGradient",
-  "rect",
-  "set",
-  "stop",
-  "svg",
-  "switch",
-  "symbol",
-  "text",
-  "textPath",
-  "tref",
-  "tspan",
-  "use",
-  "view",
-  "vkern"
-]);
-const SVGNamespace = {
-  xlink: "http://www.w3.org/1999/xlink",
-  xml: "http://www.w3.org/XML/1998/namespace"
-};
-
-function reconcileArrays(parentNode, a, b) {
-  let bLength = b.length,
-    aEnd = a.length,
-    bEnd = bLength,
-    aStart = 0,
-    bStart = 0,
-    after = a[aEnd - 1].nextSibling,
-    map = null;
-  while (aStart < aEnd || bStart < bEnd) {
-    if (a[aStart] === b[bStart]) {
-      aStart++;
-      bStart++;
-      continue;
-    }
-    while (a[aEnd - 1] === b[bEnd - 1]) {
-      aEnd--;
-      bEnd--;
-    }
-    if (aEnd === aStart) {
-      const node = bEnd < bLength ? (bStart ? b[bStart - 1].nextSibling : b[bEnd - bStart]) : after;
-      while (bStart < bEnd) parentNode.insertBefore(b[bStart++], node);
-    } else if (bEnd === bStart) {
-      while (aStart < aEnd) {
-        if (!map || !map.has(a[aStart])) a[aStart].remove();
-        aStart++;
-      }
-    } else if (a[aStart] === b[bEnd - 1] && b[bStart] === a[aEnd - 1]) {
-      const node = a[--aEnd].nextSibling;
-      parentNode.insertBefore(b[bStart++], a[aStart++].nextSibling);
-      parentNode.insertBefore(b[--bEnd], node);
-      a[aEnd] = b[bEnd];
-    } else {
-      if (!map) {
-        map = new Map();
-        let i = bStart;
-        while (i < bEnd) map.set(b[i], i++);
-      }
-      const index = map.get(a[aStart]);
-      if (index != null) {
-        if (bStart < index && index < bEnd) {
-          let i = aStart,
-            sequence = 1,
-            t;
-          while (++i < aEnd && i < bEnd) {
-            if ((t = map.get(a[i])) == null || t !== index + sequence) break;
-            sequence++;
-          }
-          if (sequence > index - bStart) {
-            const node = a[aStart];
-            while (bStart < index) parentNode.insertBefore(b[bStart++], node);
-          } else parentNode.replaceChild(b[bStart++], a[aStart++]);
-        } else aStart++;
-      } else a[aStart++].remove();
-    }
-  }
-}
-
-const $$EVENTS = "_$DX_DELEGATE";
-function render(code, element, init, options = {}) {
-  let disposer;
-  solidJs.createRoot(dispose => {
-    disposer = dispose;
-    element === document
-      ? code()
-      : insert(element, code(), element.firstChild ? null : undefined, init);
-  }, options.owner);
-  return () => {
-    disposer();
-    element.textContent = "";
-  };
-}
-function template(html, isCE, isSVG) {
-  let node;
-  const create = () => {
-    const t = document.createElement("template");
-    t.innerHTML = html;
-    return isSVG ? t.content.firstChild.firstChild : t.content.firstChild;
-  };
-  const fn = isCE
-    ? () => solidJs.untrack(() => document.importNode(node || (node = create()), true))
-    : () => (node || (node = create())).cloneNode(true);
-  fn.cloneNode = fn;
-  return fn;
-}
-function delegateEvents(eventNames, document = window.document) {
-  const e = document[$$EVENTS] || (document[$$EVENTS] = new Set());
-  for (let i = 0, l = eventNames.length; i < l; i++) {
-    const name = eventNames[i];
-    if (!e.has(name)) {
-      e.add(name);
-      document.addEventListener(name, eventHandler);
-    }
-  }
-}
-function setAttribute(node, name, value) {
-  if (solidJs.sharedConfig.context) return;
-  if (value == null) node.removeAttribute(name);
-  else node.setAttribute(name, value);
-}
-function setAttributeNS(node, namespace, name, value) {
-  if (solidJs.sharedConfig.context) return;
-  if (value == null) node.removeAttributeNS(namespace, name);
-  else node.setAttributeNS(namespace, name, value);
-}
-function className(node, value) {
-  if (solidJs.sharedConfig.context) return;
-  if (value == null) node.removeAttribute("class");
-  else node.className = value;
-}
-function addEventListener(node, name, handler, delegate) {
-  if (delegate) {
-    if (Array.isArray(handler)) {
-      node[`$$${name}`] = handler[0];
-      node[`$$${name}Data`] = handler[1];
-    } else node[`$$${name}`] = handler;
-  } else if (Array.isArray(handler)) {
-    const handlerFn = handler[0];
-    node.addEventListener(name, (handler[0] = e => handlerFn.call(node, handler[1], e)));
-  } else node.addEventListener(name, handler);
-}
-function classList(node, value, prev = {}) {
-  const classKeys = Object.keys(value || {}),
-    prevKeys = Object.keys(prev);
-  let i, len;
-  for (i = 0, len = prevKeys.length; i < len; i++) {
-    const key = prevKeys[i];
-    if (!key || key === "undefined" || value[key]) continue;
-    toggleClassKey(node, key, false);
-    delete prev[key];
-  }
-  for (i = 0, len = classKeys.length; i < len; i++) {
-    const key = classKeys[i],
-      classValue = !!value[key];
-    if (!key || key === "undefined" || prev[key] === classValue || !classValue) continue;
-    toggleClassKey(node, key, true);
-    prev[key] = classValue;
-  }
-  return prev;
-}
-function style(node, value, prev) {
-  if (!value) return prev ? setAttribute(node, "style") : value;
-  const nodeStyle = node.style;
-  if (typeof value === "string") return (nodeStyle.cssText = value);
-  typeof prev === "string" && (nodeStyle.cssText = prev = undefined);
-  prev || (prev = {});
-  value || (value = {});
-  let v, s;
-  for (s in prev) {
-    value[s] == null && nodeStyle.removeProperty(s);
-    delete prev[s];
-  }
-  for (s in value) {
-    v = value[s];
-    if (v !== prev[s]) {
-      nodeStyle.setProperty(s, v);
-      prev[s] = v;
-    }
-  }
-  return prev;
-}
-function spread(node, props = {}, isSVG, skipChildren) {
-  const prevProps = {};
-  if (!skipChildren) {
-    solidJs.createRenderEffect(
-      () => (prevProps.children = insertExpression(node, props.children, prevProps.children))
-    );
-  }
-  solidJs.createRenderEffect(() => props.ref && props.ref(node));
-  solidJs.createRenderEffect(() => assign(node, props, isSVG, true, prevProps, true));
-  return prevProps;
-}
-function use(fn, element, arg) {
-  return solidJs.untrack(() => fn(element, arg));
-}
-function insert(parent, accessor, marker, initial) {
-  if (marker !== undefined && !initial) initial = [];
-  if (typeof accessor !== "function") return insertExpression(parent, accessor, initial, marker);
-  solidJs.createRenderEffect(current => insertExpression(parent, accessor(), current, marker), initial);
-}
-function assign(node, props, isSVG, skipChildren, prevProps = {}, skipRef = false) {
-  props || (props = {});
-  for (const prop in prevProps) {
-    if (!(prop in props)) {
-      if (prop === "children") continue;
-      prevProps[prop] = assignProp(node, prop, null, prevProps[prop], isSVG, skipRef);
-    }
-  }
-  for (const prop in props) {
-    if (prop === "children") {
-      if (!skipChildren) insertExpression(node, props.children);
-      continue;
-    }
-    const value = props[prop];
-    prevProps[prop] = assignProp(node, prop, value, prevProps[prop], isSVG, skipRef);
-  }
-}
-function getNextElement(template) {
-  let node, key;
-  if (!solidJs.sharedConfig.context || !(node = solidJs.sharedConfig.registry.get((key = getHydrationKey())))) {
-    return template();
-  }
-  if (solidJs.sharedConfig.completed) solidJs.sharedConfig.completed.add(node);
-  solidJs.sharedConfig.registry.delete(key);
-  return node;
-}
-function toPropertyName(name) {
-  return name.toLowerCase().replace(/-([a-z])/g, (_, w) => w.toUpperCase());
-}
-function toggleClassKey(node, key, value) {
-  const classNames = key.trim().split(/\s+/);
-  for (let i = 0, nameLen = classNames.length; i < nameLen; i++)
-    node.classList.toggle(classNames[i], value);
-}
-function assignProp(node, prop, value, prev, isSVG, skipRef) {
-  let isCE, isProp, isChildProp, propAlias, forceProp;
-  if (prop === "style") return style(node, value, prev);
-  if (prop === "classList") return classList(node, value, prev);
-  if (value === prev) return prev;
-  if (prop === "ref") {
-    if (!skipRef) value(node);
-  } else if (prop.slice(0, 3) === "on:") {
-    const e = prop.slice(3);
-    prev && node.removeEventListener(e, prev);
-    value && node.addEventListener(e, value);
-  } else if (prop.slice(0, 10) === "oncapture:") {
-    const e = prop.slice(10);
-    prev && node.removeEventListener(e, prev, true);
-    value && node.addEventListener(e, value, true);
-  } else if (prop.slice(0, 2) === "on") {
-    const name = prop.slice(2).toLowerCase();
-    const delegate = DelegatedEvents.has(name);
-    if (!delegate && prev) {
-      const h = Array.isArray(prev) ? prev[0] : prev;
-      node.removeEventListener(name, h);
-    }
-    if (delegate || value) {
-      addEventListener(node, name, value, delegate);
-      delegate && delegateEvents([name]);
-    }
-  } else if (prop.slice(0, 5) === "attr:") {
-    setAttribute(node, prop.slice(5), value);
-  } else if (
-    (forceProp = prop.slice(0, 5) === "prop:") ||
-    (isChildProp = ChildProperties.has(prop)) ||
-    (!isSVG &&
-      ((propAlias = getPropAlias(prop, node.tagName)) || (isProp = Properties.has(prop)))) ||
-    (isCE = node.nodeName.includes("-"))
-  ) {
-    if (forceProp) {
-      prop = prop.slice(5);
-      isProp = true;
-    } else if (solidJs.sharedConfig.context) return value;
-    if (prop === "class" || prop === "className") className(node, value);
-    else if (isCE && !isProp && !isChildProp) node[toPropertyName(prop)] = value;
-    else node[propAlias || prop] = value;
-  } else {
-    const ns = isSVG && prop.indexOf(":") > -1 && SVGNamespace[prop.split(":")[0]];
-    if (ns) setAttributeNS(node, ns, prop, value);
-    else setAttribute(node, Aliases[prop] || prop, value);
-  }
-  return value;
-}
-function eventHandler(e) {
-  const key = `$$${e.type}`;
-  let node = (e.composedPath && e.composedPath()[0]) || e.target;
-  if (e.target !== node) {
-    Object.defineProperty(e, "target", {
-      configurable: true,
-      value: node
-    });
-  }
-  Object.defineProperty(e, "currentTarget", {
-    configurable: true,
-    get() {
-      return node || document;
-    }
-  });
-  if (solidJs.sharedConfig.registry && !solidJs.sharedConfig.done) solidJs.sharedConfig.done = _$HY.done = true;
-  while (node) {
-    const handler = node[key];
-    if (handler && !node.disabled) {
-      const data = node[`${key}Data`];
-      data !== undefined ? handler.call(node, data, e) : handler.call(node, e);
-      if (e.cancelBubble) return;
-    }
-    node = node._$host || node.parentNode || node.host;
-  }
-}
-function insertExpression(parent, value, current, marker, unwrapArray) {
-  if (solidJs.sharedConfig.context) {
-    !current && (current = [...parent.childNodes]);
-    let cleaned = [];
-    for (let i = 0; i < current.length; i++) {
-      const node = current[i];
-      if (node.nodeType === 8 && node.data.slice(0, 2) === "!$") node.remove();
-      else cleaned.push(node);
-    }
-    current = cleaned;
-  }
-  while (typeof current === "function") current = current();
-  if (value === current) return current;
-  const t = typeof value,
-    multi = marker !== undefined;
-  parent = (multi && current[0] && current[0].parentNode) || parent;
-  if (t === "string" || t === "number") {
-    if (solidJs.sharedConfig.context) return current;
-    if (t === "number") value = value.toString();
-    if (multi) {
-      let node = current[0];
-      if (node && node.nodeType === 3) {
-        node.data = value;
-      } else node = document.createTextNode(value);
-      current = cleanChildren(parent, current, marker, node);
-    } else {
-      if (current !== "" && typeof current === "string") {
-        current = parent.firstChild.data = value;
-      } else current = parent.textContent = value;
-    }
-  } else if (value == null || t === "boolean") {
-    if (solidJs.sharedConfig.context) return current;
-    current = cleanChildren(parent, current, marker);
-  } else if (t === "function") {
-    solidJs.createRenderEffect(() => {
-      let v = value();
-      while (typeof v === "function") v = v();
-      current = insertExpression(parent, v, current, marker);
-    });
-    return () => current;
-  } else if (Array.isArray(value)) {
-    const array = [];
-    const currentArray = current && Array.isArray(current);
-    if (normalizeIncomingArray(array, value, current, unwrapArray)) {
-      solidJs.createRenderEffect(() => (current = insertExpression(parent, array, current, marker, true)));
-      return () => current;
-    }
-    if (solidJs.sharedConfig.context) {
-      if (!array.length) return current;
-      if (marker === undefined) return [...parent.childNodes];
-      let node = array[0];
-      let nodes = [node];
-      while ((node = node.nextSibling) !== marker) nodes.push(node);
-      return (current = nodes);
-    }
-    if (array.length === 0) {
-      current = cleanChildren(parent, current, marker);
-      if (multi) return current;
-    } else if (currentArray) {
-      if (current.length === 0) {
-        appendNodes(parent, array, marker);
-      } else reconcileArrays(parent, current, array);
-    } else {
-      current && cleanChildren(parent);
-      appendNodes(parent, array);
-    }
-    current = array;
-  } else if (value.nodeType) {
-    if (solidJs.sharedConfig.context && value.parentNode) return (current = multi ? [value] : value);
-    if (Array.isArray(current)) {
-      if (multi) return (current = cleanChildren(parent, current, marker, value));
-      cleanChildren(parent, current, null, value);
-    } else if (current == null || current === "" || !parent.firstChild) {
-      parent.appendChild(value);
-    } else parent.replaceChild(value, parent.firstChild);
-    current = value;
-  } else;
-  return current;
-}
-function normalizeIncomingArray(normalized, array, current, unwrap) {
-  let dynamic = false;
-  for (let i = 0, len = array.length; i < len; i++) {
-    let item = array[i],
-      prev = current && current[i],
-      t;
-    if (item == null || item === true || item === false);
-    else if ((t = typeof item) === "object" && item.nodeType) {
-      normalized.push(item);
-    } else if (Array.isArray(item)) {
-      dynamic = normalizeIncomingArray(normalized, item, prev) || dynamic;
-    } else if (t === "function") {
-      if (unwrap) {
-        while (typeof item === "function") item = item();
-        dynamic =
-          normalizeIncomingArray(
-            normalized,
-            Array.isArray(item) ? item : [item],
-            Array.isArray(prev) ? prev : [prev]
-          ) || dynamic;
-      } else {
-        normalized.push(item);
-        dynamic = true;
-      }
-    } else {
-      const value = String(item);
-      if (prev && prev.nodeType === 3 && prev.data === value) normalized.push(prev);
-      else normalized.push(document.createTextNode(value));
-    }
-  }
-  return dynamic;
-}
-function appendNodes(parent, array, marker = null) {
-  for (let i = 0, len = array.length; i < len; i++) parent.insertBefore(array[i], marker);
-}
-function cleanChildren(parent, current, marker, replacement) {
-  if (marker === undefined) return (parent.textContent = "");
-  const node = replacement || document.createTextNode("");
-  if (current.length) {
-    let inserted = false;
-    for (let i = current.length - 1; i >= 0; i--) {
-      const el = current[i];
-      if (node !== el) {
-        const isParent = el.parentNode === parent;
-        if (!inserted && !i)
-          isParent ? parent.replaceChild(node, el) : parent.insertBefore(node, marker);
-        else isParent && el.remove();
-      } else inserted = true;
-    }
-  } else parent.insertBefore(node, marker);
-  return [node];
-}
-function getHydrationKey() {
-  const hydrate = solidJs.sharedConfig.context;
-  return `${hydrate.id}${hydrate.count++}`;
-}
-const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
-function createElement(tagName, isSVG = false) {
-  return isSVG ? document.createElementNS(SVG_NAMESPACE, tagName) : document.createElement(tagName);
-}
-function Dynamic(props) {
-  const [p, others] = solidJs.splitProps(props, ["component"]);
-  const cached = solidJs.createMemo(() => p.component);
-  return solidJs.createMemo(() => {
-    const component = cached();
-    switch (typeof component) {
-      case "function":
-        return solidJs.untrack(() => component(others));
-      case "string":
-        const isSvg = SVGElements.has(component);
-        const el = solidJs.sharedConfig.context ? getNextElement() : createElement(component, isSvg);
-        spread(el, others, isSvg);
-        return el;
-    }
-  });
-}
-
-const getDom = id => {
-  let dom = document.getElementById(id);
-  if (dom) {
-    dom.innerHTML = '';
-    return dom;
-  }
-  dom = document.createElement('div');
-  dom.id = id;
-  document.body.appendChild(dom);
-  return dom;
-};
-
-/** 挂载 solid-js 组件 */
-const mountComponents = (id, fc) => {
-  const dom = getDom(id);
-  dom.style.setProperty('display', 'unset', 'important');
-  const shadowDom = dom.attachShadow({
-    mode: 'closed'
-  });
-  render(fc, shadowDom);
-  return dom;
-};
-const watchStore = (deps, fn, options = {
-  defer: true
-}) => solidJs.createRoot(() => solidJs.createEffect(solidJs.on(deps, fn, options)));
-
-var css$3 = ".index_module_root__d8c71ff0{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__d8c71ff0{align-items:center;animation:index_module_bounceInRight__d8c71ff0 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__d8c71ff0>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__d8c71ff0[data-exit]{animation:index_module_bounceOutRight__d8c71ff0 .5s 1}.index_module_schedule__d8c71ff0{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__d8c71ff0[data-schedule] .index_module_schedule__d8c71ff0{transition:transform .1s}.index_module_item__d8c71ff0:not([data-schedule]) .index_module_schedule__d8c71ff0{animation:index_module_schedule__d8c71ff0 linear 1 forwards}:is(.index_module_item__d8c71ff0:hover,.index_module_item__d8c71ff0[data-schedule],.index_module_root__d8c71ff0[data-paused]) .index_module_schedule__d8c71ff0{animation-play-state:paused}.index_module_msg__d8c71ff0{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__d8c71ff0 h2{margin:0}.index_module_msg__d8c71ff0 h3{margin:.7em 0}.index_module_msg__d8c71ff0 ul{margin:0;text-align:left}.index_module_msg__d8c71ff0 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__d8c71ff0 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__d8c71ff0{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__d8c71ff0{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__d8c71ff0{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__d8c71ff0","item":"index_module_item__d8c71ff0","bounceInRight":"index_module_bounceInRight__d8c71ff0","bounceOutRight":"index_module_bounceOutRight__d8c71ff0","schedule":"index_module_schedule__d8c71ff0","msg":"index_module_msg__d8c71ff0"};
-
-const $RAW = Symbol("store-raw"),
-  $NODE = Symbol("store-node"),
-  $HAS = Symbol("store-has"),
-  $SELF = Symbol("store-self");
-function wrap$1(value) {
-  let p = value[solidJs.$PROXY];
-  if (!p) {
-    Object.defineProperty(value, solidJs.$PROXY, {
-      value: (p = new Proxy(value, proxyTraps$1))
-    });
-    if (!Array.isArray(value)) {
-      const keys = Object.keys(value),
-        desc = Object.getOwnPropertyDescriptors(value);
-      for (let i = 0, l = keys.length; i < l; i++) {
-        const prop = keys[i];
-        if (desc[prop].get) {
-          Object.defineProperty(value, prop, {
-            enumerable: desc[prop].enumerable,
-            get: desc[prop].get.bind(p)
-          });
-        }
-      }
-    }
-  }
-  return p;
-}
-function isWrappable(obj) {
-  let proto;
-  return (
-    obj != null &&
-    typeof obj === "object" &&
-    (obj[solidJs.$PROXY] ||
-      !(proto = Object.getPrototypeOf(obj)) ||
-      proto === Object.prototype ||
-      Array.isArray(obj))
-  );
-}
-function unwrap(item, set = new Set()) {
-  let result, unwrapped, v, prop;
-  if ((result = item != null && item[$RAW])) return result;
-  if (!isWrappable(item) || set.has(item)) return item;
-  if (Array.isArray(item)) {
-    if (Object.isFrozen(item)) item = item.slice(0);
-    else set.add(item);
-    for (let i = 0, l = item.length; i < l; i++) {
-      v = item[i];
-      if ((unwrapped = unwrap(v, set)) !== v) item[i] = unwrapped;
-    }
-  } else {
-    if (Object.isFrozen(item)) item = Object.assign({}, item);
-    else set.add(item);
-    const keys = Object.keys(item),
-      desc = Object.getOwnPropertyDescriptors(item);
-    for (let i = 0, l = keys.length; i < l; i++) {
-      prop = keys[i];
-      if (desc[prop].get) continue;
-      v = item[prop];
-      if ((unwrapped = unwrap(v, set)) !== v) item[prop] = unwrapped;
-    }
-  }
-  return item;
-}
-function getNodes(target, symbol) {
-  let nodes = target[symbol];
-  if (!nodes)
-    Object.defineProperty(target, symbol, {
-      value: (nodes = Object.create(null))
-    });
-  return nodes;
-}
-function getNode(nodes, property, value) {
-  if (nodes[property]) return nodes[property];
-  const [s, set] = solidJs.createSignal(value, {
-    equals: false,
-    internal: true
-  });
-  s.$ = set;
-  return (nodes[property] = s);
-}
-function proxyDescriptor$1(target, property) {
-  const desc = Reflect.getOwnPropertyDescriptor(target, property);
-  if (!desc || desc.get || !desc.configurable || property === solidJs.$PROXY || property === $NODE)
-    return desc;
-  delete desc.value;
-  delete desc.writable;
-  desc.get = () => target[solidJs.$PROXY][property];
-  return desc;
-}
-function trackSelf(target) {
-  solidJs.getListener() && getNode(getNodes(target, $NODE), $SELF)();
-}
-function ownKeys(target) {
-  trackSelf(target);
-  return Reflect.ownKeys(target);
-}
-const proxyTraps$1 = {
-  get(target, property, receiver) {
-    if (property === $RAW) return target;
-    if (property === solidJs.$PROXY) return receiver;
-    if (property === solidJs.$TRACK) {
-      trackSelf(target);
-      return receiver;
-    }
-    const nodes = getNodes(target, $NODE);
-    const tracked = nodes[property];
-    let value = tracked ? tracked() : target[property];
-    if (property === $NODE || property === $HAS || property === "__proto__") return value;
-    if (!tracked) {
-      const desc = Object.getOwnPropertyDescriptor(target, property);
-      if (
-        solidJs.getListener() &&
-        (typeof value !== "function" || target.hasOwnProperty(property)) &&
-        !(desc && desc.get)
-      )
-        value = getNode(nodes, property, value)();
-    }
-    return isWrappable(value) ? wrap$1(value) : value;
-  },
-  has(target, property) {
-    if (
-      property === $RAW ||
-      property === solidJs.$PROXY ||
-      property === solidJs.$TRACK ||
-      property === $NODE ||
-      property === $HAS ||
-      property === "__proto__"
-    )
-      return true;
-    solidJs.getListener() && getNode(getNodes(target, $HAS), property)();
-    return property in target;
-  },
-  set() {
-    return true;
-  },
-  deleteProperty() {
-    return true;
-  },
-  ownKeys: ownKeys,
-  getOwnPropertyDescriptor: proxyDescriptor$1
-};
-function setProperty(state, property, value, deleting = false) {
-  if (!deleting && state[property] === value) return;
-  const prev = state[property],
-    len = state.length;
-  if (value === undefined) {
-    delete state[property];
-    if (state[$HAS] && state[$HAS][property] && prev !== undefined) state[$HAS][property].$();
-  } else {
-    state[property] = value;
-    if (state[$HAS] && state[$HAS][property] && prev === undefined) state[$HAS][property].$();
-  }
-  let nodes = getNodes(state, $NODE),
-    node;
-  if ((node = getNode(nodes, property, prev))) node.$(() => value);
-  if (Array.isArray(state) && state.length !== len) {
-    for (let i = state.length; i < len; i++) (node = nodes[i]) && node.$();
-    (node = getNode(nodes, "length", len)) && node.$(state.length);
-  }
-  (node = nodes[$SELF]) && node.$();
-}
-function mergeStoreNode(state, value) {
-  const keys = Object.keys(value);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
-    setProperty(state, key, value[key]);
-  }
-}
-function updateArray(current, next) {
-  if (typeof next === "function") next = next(current);
-  next = unwrap(next);
-  if (Array.isArray(next)) {
-    if (current === next) return;
-    let i = 0,
-      len = next.length;
-    for (; i < len; i++) {
-      const value = next[i];
-      if (current[i] !== value) setProperty(current, i, value);
-    }
-    setProperty(current, "length", len);
-  } else mergeStoreNode(current, next);
-}
-function updatePath(current, path, traversed = []) {
-  let part,
-    prev = current;
-  if (path.length > 1) {
-    part = path.shift();
-    const partType = typeof part,
-      isArray = Array.isArray(current);
-    if (Array.isArray(part)) {
-      for (let i = 0; i < part.length; i++) {
-        updatePath(current, [part[i]].concat(path), traversed);
-      }
-      return;
-    } else if (isArray && partType === "function") {
-      for (let i = 0; i < current.length; i++) {
-        if (part(current[i], i)) updatePath(current, [i].concat(path), traversed);
-      }
-      return;
-    } else if (isArray && partType === "object") {
-      const { from = 0, to = current.length - 1, by = 1 } = part;
-      for (let i = from; i <= to; i += by) {
-        updatePath(current, [i].concat(path), traversed);
-      }
-      return;
-    } else if (path.length > 1) {
-      updatePath(current[part], path, [part].concat(traversed));
-      return;
-    }
-    prev = current[part];
-    traversed = [part].concat(traversed);
-  }
-  let value = path[0];
-  if (typeof value === "function") {
-    value = value(prev, traversed);
-    if (value === prev) return;
-  }
-  if (part === undefined && value == undefined) return;
-  value = unwrap(value);
-  if (part === undefined || (isWrappable(prev) && isWrappable(value) && !Array.isArray(value))) {
-    mergeStoreNode(prev, value);
-  } else setProperty(current, part, value);
-}
-function createStore(...[store, options]) {
-  const unwrappedStore = unwrap(store || {});
-  const isArray = Array.isArray(unwrappedStore);
-  const wrappedStore = wrap$1(unwrappedStore);
-  function setStore(...args) {
-    solidJs.batch(() => {
-      isArray && args.length === 1
-        ? updateArray(unwrappedStore, args[0])
-        : updatePath(unwrappedStore, args);
-    });
-  }
-  return [wrappedStore, setStore];
-}
-
-function proxyDescriptor(target, property) {
-  const desc = Reflect.getOwnPropertyDescriptor(target, property);
-  if (
-    !desc ||
-    desc.get ||
-    desc.set ||
-    !desc.configurable ||
-    property === solidJs.$PROXY ||
-    property === $NODE
-  )
-    return desc;
-  delete desc.value;
-  delete desc.writable;
-  desc.get = () => target[solidJs.$PROXY][property];
-  desc.set = v => (target[solidJs.$PROXY][property] = v);
-  return desc;
-}
-const proxyTraps = {
-  get(target, property, receiver) {
-    if (property === $RAW) return target;
-    if (property === solidJs.$PROXY) return receiver;
-    if (property === solidJs.$TRACK) {
-      trackSelf(target);
-      return receiver;
-    }
-    const nodes = getNodes(target, $NODE);
-    const tracked = nodes[property];
-    let value = tracked ? tracked() : target[property];
-    if (property === $NODE || property === $HAS || property === "__proto__") return value;
-    if (!tracked) {
-      const desc = Object.getOwnPropertyDescriptor(target, property);
-      const isFunction = typeof value === "function";
-      if (solidJs.getListener() && (!isFunction || target.hasOwnProperty(property)) && !(desc && desc.get))
-        value = getNode(nodes, property, value)();
-      else if (value != null && isFunction && value === Array.prototype[property]) {
-        return (...args) => solidJs.batch(() => Array.prototype[property].apply(receiver, args));
-      }
-    }
-    return isWrappable(value) ? wrap(value) : value;
-  },
-  has(target, property) {
-    if (
-      property === $RAW ||
-      property === solidJs.$PROXY ||
-      property === solidJs.$TRACK ||
-      property === $NODE ||
-      property === $HAS ||
-      property === "__proto__"
-    )
-      return true;
-    solidJs.getListener() && getNode(getNodes(target, $HAS), property)();
-    return property in target;
-  },
-  set(target, property, value) {
-    solidJs.batch(() => setProperty(target, property, unwrap(value)));
-    return true;
-  },
-  deleteProperty(target, property) {
-    solidJs.batch(() => setProperty(target, property, undefined, true));
-    return true;
-  },
-  ownKeys: ownKeys,
-  getOwnPropertyDescriptor: proxyDescriptor
-};
-function wrap(value) {
-  let p = value[solidJs.$PROXY];
-  if (!p) {
-    Object.defineProperty(value, solidJs.$PROXY, {
-      value: (p = new Proxy(value, proxyTraps))
-    });
-    const keys = Object.keys(value),
-      desc = Object.getOwnPropertyDescriptors(value);
-    for (let i = 0, l = keys.length; i < l; i++) {
-      const prop = keys[i];
-      if (desc[prop].get) {
-        const get = desc[prop].get.bind(p);
-        Object.defineProperty(value, prop, {
-          get
-        });
-      }
-      if (desc[prop].set) {
-        const og = desc[prop].set,
-          set = v => solidJs.batch(() => og.call(p, v));
-        Object.defineProperty(value, prop, {
-          set
-        });
-      }
-    }
-  }
-  return p;
-}
-function createMutable(state, options) {
-  const unwrappedStore = unwrap(state || {});
-  const wrappedStore = wrap(unwrappedStore);
-  return wrappedStore;
-}
-const producers = new WeakMap();
-const setterTraps = {
-  get(target, property) {
-    if (property === $RAW) return target;
-    const value = target[property];
-    let proxy;
-    return isWrappable(value)
-      ? producers.get(value) ||
-          (producers.set(value, (proxy = new Proxy(value, setterTraps))), proxy)
-      : value;
-  },
-  set(target, property, value) {
-    setProperty(target, property, unwrap(value));
-    return true;
-  },
-  deleteProperty(target, property) {
-    setProperty(target, property, undefined, true);
-    return true;
-  }
-};
-function produce(fn) {
-  return state => {
-    if (isWrappable(state)) {
-      let proxy;
-      if (!(proxy = producers.get(state))) {
-        producers.set(state, (proxy = new Proxy(state, setterTraps)));
-      }
-      fn(proxy);
-    }
-    return state;
-  };
-}
-
-const [_state$1, _setState$1] = createStore({
-  list: [],
-  map: {}
-});
-const setState$1 = fn => _setState$1(produce(fn));
-
-// eslint-disable-next-line solid/reactivity
-const store$1 = _state$1;
-const creatId = () => {
-  let id = `${Date.now()}`;
-  while (Reflect.has(store$1.map, id)) {
-    id += '_';
-  }
-  return id;
-};
-
-const _tmpl$$R = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">`);
-const MdCheckCircle = ((props = {}) => (() => {
-  const _el$ = _tmpl$$R();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$Q = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">`);
-const MdWarning = ((props = {}) => (() => {
-  const _el$ = _tmpl$$Q();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$P = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">`);
-const MdError = ((props = {}) => (() => {
-  const _el$ = _tmpl$$P();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$O = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">`);
-const MdInfo = ((props = {}) => (() => {
-  const _el$ = _tmpl$$O();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const toast$2 = (msg, options) => {
-  if (!msg) return;
-  const id = options?.id ?? (typeof msg === 'string' ? msg : creatId());
-  setState$1(state => {
-    if (Reflect.has(state.map, id)) {
-      Object.assign(state.map[id], {
-        msg,
-        ...options,
-        update: true
-      });
-      return;
-    }
-    state.map[id] = {
-      id,
-      type: 'info',
-      duration: 3000,
-      msg,
-      ...options
-    };
-    state.list.push(id);
-  });
-
-  /** 弹窗后记录一下 */
-  let fn = log;
-  switch (options?.type) {
-    case 'warn':
-      fn = log.warn;
-      break;
-    case 'error':
-      fn = log.error;
-      break;
-  }
-  fn.call(null, 'Toast:', msg);
-  if (options?.throw && typeof msg === 'string') throw new Error(msg);
-};
-toast$2.dismiss = id => {
-  if (!Reflect.has(store$1.map, id)) return;
-  _setState$1('map', id, 'exit', true);
-};
-toast$2.set = (id, options) => {
-  if (!Reflect.has(store$1.map, id)) return;
-  setState$1(state => Object.assign(state.map[id], options));
-};
-toast$2.success = (msg, options) => toast$2(msg, {
-  ...options,
-  type: 'success'
-});
-toast$2.warn = (msg, options) => toast$2(msg, {
-  ...options,
-  type: 'warn'
-});
-toast$2.error = (msg, options) => toast$2(msg, {
-  ...options,
-  type: 'error'
-});
-
-const _tmpl$$N = /*#__PURE__*/template(`<div>`),
-  _tmpl$2$d = /*#__PURE__*/template(`<div><div>`);
-const iconMap = {
-  info: MdInfo,
-  success: MdCheckCircle,
-  warn: MdWarning,
-  error: MdError
-};
-const colorMap = {
-  info: '#3a97d7',
-  success: '#23bb35',
-  warn: '#f0c53e',
-  error: '#e45042',
-  custom: '#1f2936'
-};
-
-/** 删除 toast */
-const dismissToast = id => setState$1(state => {
-  state.map[id].onDismiss?.({
-    ...state.map[id]
-  });
-  const i = state.list.findIndex(t => t === id);
-  if (i !== -1) state.list.splice(i, 1);
-  Reflect.deleteProperty(state.map, id);
-});
-
-/** 重置 toast 的 update 属性 */
-const resetToastUpdate = id => _setState$1('map', id, 'update', undefined);
-const ToastItem = props => {
-  /** 是否要显示进度 */
-  const showSchedule = solidJs.createMemo(() => props.duration === Infinity && props.schedule ? true : undefined);
-  const dismiss = e => {
-    e.stopPropagation();
-    if (showSchedule() && 'animationName' in e) return;
-    toast$2.dismiss(props.id);
-  };
-
-  // 在退出动画结束后才真的删除
-  const handleAnimationEnd = () => {
-    if (!props.exit) return;
-    dismissToast(props.id);
-  };
-  let scheduleRef;
-  solidJs.createEffect(() => {
-    if (!props.update) return;
-    resetToastUpdate(props.id);
-    scheduleRef?.getAnimations().forEach(animation => {
-      animation.cancel();
-      animation.play();
-    });
-  });
-  return (() => {
-    const _el$ = _tmpl$2$d(),
-      _el$2 = _el$.firstChild;
-    _el$.addEventListener("animationend", handleAnimationEnd);
-    _el$.addEventListener("click", dismiss);
-    insert(_el$, solidJs.createComponent(Dynamic, {
-      get component() {
-        return iconMap[props.type];
-      }
-    }), _el$2);
-    insert(_el$2, (() => {
-      const _c$ = solidJs.createMemo(() => typeof props.msg === 'string');
-      return () => _c$() ? props.msg : solidJs.createComponent(props.msg, {});
-    })());
-    insert(_el$, solidJs.createComponent(solidJs.Show, {
-      get when() {
-        return props.duration !== Infinity || props.schedule !== undefined;
-      },
-      get children() {
-        const _el$3 = _tmpl$$N();
-        _el$3.addEventListener("animationend", dismiss);
-        const _ref$ = scheduleRef;
-        typeof _ref$ === "function" ? use(_ref$, _el$3) : scheduleRef = _el$3;
-        solidJs.createRenderEffect(_p$ => {
-          const _v$ = modules_c21c94f2$3.schedule,
-            _v$2 = `${props.duration}ms`,
-            _v$3 = showSchedule() ? `scaleX(${props.schedule})` : undefined;
-          _v$ !== _p$._v$ && className(_el$3, _p$._v$ = _v$);
-          _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$3.style.setProperty("animation-duration", _v$2) : _el$3.style.removeProperty("animation-duration"));
-          _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$3.style.setProperty("transform", _v$3) : _el$3.style.removeProperty("transform"));
-          return _p$;
-        }, {
-          _v$: undefined,
-          _v$2: undefined,
-          _v$3: undefined
-        });
-        return _el$3;
-      }
-    }), null);
-    solidJs.createRenderEffect(_p$ => {
-      const _v$4 = modules_c21c94f2$3.item,
-        _v$5 = colorMap[props.type],
-        _v$6 = showSchedule(),
-        _v$7 = props.exit,
-        _v$8 = modules_c21c94f2$3.msg;
-      _v$4 !== _p$._v$4 && className(_el$, _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && ((_p$._v$5 = _v$5) != null ? _el$.style.setProperty("--theme", _v$5) : _el$.style.removeProperty("--theme"));
-      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-schedule", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-exit", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && className(_el$2, _p$._v$8 = _v$8);
-      return _p$;
-    }, {
-      _v$4: undefined,
-      _v$5: undefined,
-      _v$6: undefined,
-      _v$7: undefined,
-      _v$8: undefined
-    });
-    return _el$;
-  })();
-};
-
-const _tmpl$$M = /*#__PURE__*/template(`<div>`);
-const Toaster = () => {
-  const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
-  solidJs.onMount(() => {
-    const handleVisibilityChange = () => {
-      setVisible(document.visibilityState === 'visible');
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    solidJs.onCleanup(() => document.removeEventListener('visibilitychange', handleVisibilityChange));
-  });
-  return (() => {
-    const _el$ = _tmpl$$M();
-    insert(_el$, solidJs.createComponent(solidJs.For, {
-      get each() {
-        return store$1.list;
-      },
-      children: id => solidJs.createComponent(ToastItem, solidJs.mergeProps(() => store$1.map[id]))
-    }));
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$3.root,
-        _v$2 = visible() ? undefined : '';
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-paused", _p$._v$2 = _v$2);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined
-    });
-    return _el$;
-  })();
-};
-
-const ToastStyle = css$3;
-
-const _tmpl$$L = /*#__PURE__*/template(`<style type=text/css>`);
-let dom$2;
-const init = () => {
-  if (dom$2) return;
-
-  // 提前挂载漫画节点，防止 toast 没法显示在漫画上层
-  if (!document.getElementById('comicRead')) {
-    const _dom = document.createElement('div');
-    _dom.id = 'comicRead';
-    document.body.appendChild(_dom);
-  }
-  dom$2 = mountComponents('toast', () => [solidJs.createComponent(Toaster, {}), (() => {
-    const _el$ = _tmpl$$L();
-    insert(_el$, ToastStyle);
-    return _el$;
-  })()]);
-  dom$2.style.setProperty('z-index', '2147483647', 'important');
-};
-const toast$1 = new Proxy(toast$2, {
-  get(target, propKey) {
-    init();
-    return target[propKey];
-  },
-  apply(target, propKey, args) {
-    init();
-    const fn = propKey in target ? target[propKey] : target;
-    return fn(...args);
-  }
-});
-
-// 将 xmlHttpRequest 包装为 Promise
-const xmlHttpRequest = details => new Promise((resolve, reject) => {
-  GM_xmlhttpRequest({
-    ...details,
-    onload: resolve,
-    onerror: reject,
-    ontimeout: reject
-  });
-});
-/** 发起请求 */
-const request$1 = async (url, details, errorNum = 0) => {
-  const errorText = `${details?.errorText ?? t('alert.comic_load_error')} - ${url}`;
-  try {
-    const res = await xmlHttpRequest({
-      method: 'GET',
-      url,
-      headers: {
-        Referer: window.location.href
-      },
-      fetch: url.startsWith('/') || url.startsWith(window.location.origin),
-      timeout: 1000 * 10,
-      ...details
-    });
-    if (res.status !== 200) throw new Error(errorText);
-    return res;
-  } catch (error) {
-    if (errorNum >= 0) {
-      if (!details?.noTip) toast$1.error(errorText);
-      throw new Error(errorText);
-    }
-    log.error(errorText, error);
-    await sleep(1000);
-    return request$1(url, details, errorNum + 1);
-  }
-};
-
-const _tmpl$$K = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">`);
-const MdAutoFixHigh = ((props = {}) => (() => {
-  const _el$ = _tmpl$$K();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$J = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">`);
-const MdAutoFixOff = ((props = {}) => (() => {
-  const _el$ = _tmpl$$J();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$I = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">`);
-const MdAutoFlashOn = ((props = {}) => (() => {
-  const _el$ = _tmpl$$I();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$H = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">`);
-const MdAutoFlashOff = ((props = {}) => (() => {
-  const _el$ = _tmpl$$H();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-var css$2 = ".index_module_iconButtonItem__58f56840{align-items:center;display:flex;position:relative}.index_module_iconButton__58f56840{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__58f56840:focus,.index_module_iconButton__58f56840:hover{background-color:var(--hover-bg-color,#fff3)}.index_module_iconButton__58f56840.index_module_enabled__58f56840{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.index_module_iconButton__58f56840.index_module_enabled__58f56840:focus,.index_module_iconButton__58f56840.index_module_enabled__58f56840:hover{background-color:var(--hover-bg-color-enable,#fffa)}.index_module_iconButton__58f56840>svg{width:1em}.index_module_iconButtonPopper__58f56840{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.index_module_iconButtonPopper__58f56840[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840:before{background-color:initial;border:.4em solid #0000;content:\"\";pointer-events:none;position:absolute;transition:opacity .15s}.index_module_iconButtonItem__58f56840:focus .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840:hover .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840[data-show=true] .index_module_iconButtonPopper__58f56840{opacity:1}.index_module_hidden__58f56840{display:none}";
-var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__58f56840","iconButton":"index_module_iconButton__58f56840","enabled":"index_module_enabled__58f56840","iconButtonPopper":"index_module_iconButtonPopper__58f56840","hidden":"index_module_hidden__58f56840"};
-
-const _tmpl$$G = /*#__PURE__*/template(`<div><button type=button tabindex=0>`),
-  _tmpl$2$c = /*#__PURE__*/template(`<div>`);
-const IconButtonStyle = css$2;
-/** 图标按钮 */
-const IconButton = _props => {
-  const props = solidJs.mergeProps({
-    placement: 'right'
-  }, _props);
-  let buttonRef;
-  const handleClick = e => {
-    props.onClick?.(e);
-    // 在每次点击后取消焦点
-    buttonRef?.blur();
-  };
-  return (() => {
-    const _el$ = _tmpl$$G(),
-      _el$2 = _el$.firstChild;
-    const _ref$ = buttonRef;
-    typeof _ref$ === "function" ? use(_ref$, _el$2) : buttonRef = _el$2;
-    _el$2.addEventListener("click", handleClick);
-    insert(_el$2, () => props.children);
-    insert(_el$, (() => {
-      const _c$ = solidJs.createMemo(() => !!(props.popper || props.tip));
-      return () => _c$() ? (() => {
-        const _el$3 = _tmpl$2$c();
-        insert(_el$3, () => props.popper || props.tip);
-        solidJs.createRenderEffect(_p$ => {
-          const _v$6 = [modules_c21c94f2$2.iconButtonPopper, props.popperClassName].join(' '),
-            _v$7 = props.placement;
-          _v$6 !== _p$._v$6 && className(_el$3, _p$._v$6 = _v$6);
-          _v$7 !== _p$._v$7 && setAttribute(_el$3, "data-placement", _p$._v$7 = _v$7);
-          return _p$;
-        }, {
-          _v$6: undefined,
-          _v$7: undefined
-        });
-        return _el$3;
-      })() : null;
-    })(), null);
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$2.iconButtonItem,
-        _v$2 = props.showTip,
-        _v$3 = props.tip,
-        _v$4 = modules_c21c94f2$2.iconButton,
-        _v$5 = {
-          [modules_c21c94f2$2.hidden]: props.hidden,
-          [modules_c21c94f2$2.enabled]: props.enabled
-        };
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$2, "aria-label", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
-      _p$._v$5 = classList(_el$2, _v$5, _p$._v$5);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined,
-      _v$5: undefined
-    });
-    return _el$;
-  })();
-};
-
-const useSpeedDial = (options, setOptions) => {
-  const DefaultButton = props => solidJs.createComponent(IconButton, {
-    get tip() {
-      return props.showName ?? (t(`site.add_feature.${props.optionName}`) || props.optionName);
-    },
-    placement: "left",
-    onClick: () => setOptions({
-      ...options,
-      [props.optionName]: !options[props.optionName]
-    }),
-    get children() {
-      return props.children ?? (options[props.optionName] ? solidJs.createComponent(MdAutoFixHigh, {}) : solidJs.createComponent(MdAutoFixOff, {}));
-    }
-  });
-  const list = Object.keys(options).map(optionName => {
-    switch (optionName) {
-      case 'hiddenFAB':
-      case 'option':
-      case 'hotkeys':
-        return null;
-      case 'autoShow':
-        return () => solidJs.createComponent(DefaultButton, {
-          optionName: "autoShow",
-          get showName() {
-            return t('other.auto_enter_read_mode');
-          },
-          get children() {
-            return solidJs.createMemo(() => !!options.autoShow)() ? solidJs.createComponent(MdAutoFlashOn, {}) : solidJs.createComponent(MdAutoFlashOff, {});
-          }
-        });
-      default:
-        if (typeof options[optionName] !== 'boolean') return null;
-        return () => solidJs.createComponent(DefaultButton, {
-          optionName: optionName
-        });
-    }
-  }).filter(Boolean);
-  return list;
-};
-
-const _tmpl$$F = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.343 7.343 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">`);
-const MdSettings = ((props = {}) => (() => {
-  const _el$ = _tmpl$$F();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$E = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">`);
-const MdFileDownload = ((props = {}) => (() => {
-  const _el$ = _tmpl$$E();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$D = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">`);
-const MdClose = ((props = {}) => (() => {
-  const _el$ = _tmpl$$D();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const useStore = initState => {
-  const [_state, _setState] = createStore(initState);
-  return {
-    _state,
-    _setState,
-    setState: fn => _setState(produce(fn)),
-    store: _state
-  };
-};
-
-const imgState = {
-  imgList: [],
-  pageList: [],
-  fillEffect: {
-    '-1': true
-  },
-  /** 比例 */
-  proportion: {
-    单页比例: 0,
-    横幅比例: 0,
-    条漫比例: 0
-  }
-};
-
-const LanguageMap = {
-  zh: 'CHS',
-  en: 'ENG'
-};
-const targetLanguage = LanguageMap[lang()] ?? 'CHS';
-const defaultOption = {
-  dir: 'rtl',
-  scrollbar: {
-    position: 'auto',
-    autoHidden: false,
-    showImgStatus: true,
-    easyScroll: false
-  },
-  onePageMode: false,
-  scrollMode: false,
-  scrollModeSpacing: 0,
-  clickPageTurn: {
-    enabled: 'ontouchstart' in document.documentElement,
-    reverse: false,
-    area: 'left_right'
-  },
-  firstPageFill: true,
-  disableZoom: false,
-  darkMode: false,
-  swapPageTurnKey: false,
-  jumpToNext: true,
-  alwaysLoadAllImg: false,
-  scrollModeImgScale: 1,
-  showComment: true,
-  preloadPageNum: 20,
-  translation: {
-    server: 'disable',
-    localUrl: undefined,
-    forceRetry: false,
-    options: {
-      size: 'M',
-      detector: 'default',
-      translator: 'gpt3.5',
-      direction: 'auto',
-      targetLanguage
-    }
-  }
-};
-const OptionState = {
-  option: JSON.parse(JSON.stringify(defaultOption))
-};
-
-const OtherState = {
-  /** 监视图片是否出现的 observer */
-  observer: null,
-  /** 自动更新不能手动修改的变量 */
-  memo: {
-    /** 显示窗口的尺寸 */
-    size: {
-      width: 0,
-      height: 0
-    },
-    /** 当前显示的图片 */
-    showImgList: [],
-    /** 当前显示的页面 */
-    showPageList: [],
-    /** 要渲染的页面 */
-    renderPageList: [],
-    /** 滚动条长度 */
-    scrollLength: 0
-  },
-  flag: {
-    /** 是否需要自动判断开启卷轴模式 */
-    autoScrollMode: true,
-    /** 是否需要自动将未加载图片类型设为跨页图 */
-    autoWide: false,
-    /**
-     * 用于防止滚轮连续滚动导致过快触发事件的锁
-     *
-     * - 在缩放时开启，结束缩放一段时间后关闭。开启时禁止翻页。
-     * - 在首次触发结束页时开启，一段时间关闭。开启时禁止触发结束页的上下话切换功能。
-     */
-    scrollLock: false
-  }
-};
-
-const PropState = {
-  /** 评论列表 */
-  commentList: undefined,
-  /** 快捷键配置 */
-  hotkeys: {},
-  prop: {
-    /** 点击结束页按钮时触发的回调 */
-    Exit: undefined,
-    /** 点击上一话按钮时触发的回调 */
-    Prev: undefined,
-    /** 点击下一话按钮时触发的回调 */
-    Next: undefined,
-    /** 图片加载状态发生变化时触发的回调 */
-    Loading: undefined,
-    /** 配置发生变化时触发的回调 */
-    OptionChange: undefined,
-    /** 快捷键配置发生变化时触发的回调 */
-    HotkeysChange: undefined,
-    editButtonList: list => list,
-    editSettingList: list => list
-  }
-};
-
-const ShowState = {
-  /** 当前设备是否是移动端 */
-  isMobile: false,
-  /** 是否处于拖拽模式 */
-  isDragMode: false,
-  /** 当前页数 */
-  activePageIndex: 0,
-  /** 网格模式 */
-  gridMode: false,
-  /** 滚动条 */
-  scrollbar: {
-    /** 滚动条高度比率 */
-    dragHeight: 0,
-    /** 滚动条所处高度比率 */
-    dragTop: 0
-  },
-  show: {
-    /** 是否强制显示工具栏 */
-    toolbar: false,
-    /** 是否强制显示滚动条 */
-    scrollbar: false,
-    /** 是否显示点击区域 */
-    touchArea: false,
-    /** 结束页状态 */
-    endPage: undefined
-  },
-  page: {
-    /** 动画效果 */
-    anima: '',
-    /** 竖向排列 */
-    vertical: false,
-    /** 正常显示页面所需的偏移量 */
-    offset: {
-      x: {
-        pct: 0,
-        px: 0
-      },
-      y: {
-        pct: 0,
-        px: 0
-      }
-    }
-  },
-  zoom: {
-    /** 缩放大小 */
-    scale: 100,
-    /** 确保缩放前后基准点不变所需的偏移量 */
-    offset: {
-      x: 0,
-      y: 0
-    }
-  }
-};
-
-const {
-  store,
-  setState,
-  _state,
-  _setState
-} = useStore({
-  ...imgState,
-  ...ShowState,
-  ...PropState,
-  ...OptionState,
-  ...OtherState
-});
-const refs = {
-  root: undefined,
-  mangaFlow: undefined,
-  touchArea: undefined,
-  scrollbar: undefined,
-  // 结束页上的按钮
-  prev: undefined,
-  next: undefined,
-  exit: undefined
-};
-
-/* eslint-disable no-undefined,no-param-reassign,no-shadow */
-
-/**
- * Throttle execution of a function. Especially useful for rate limiting
- * execution of handlers on events like resize and scroll.
- *
- * @param {number} delay -                  A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher)
- *                                            are most useful.
- * @param {Function} callback -               A function to be executed after delay milliseconds. The `this` context and all arguments are passed through,
- *                                            as-is, to `callback` when the throttled-function is executed.
- * @param {object} [options] -              An object to configure options.
- * @param {boolean} [options.noTrailing] -   Optional, defaults to false. If noTrailing is true, callback will only execute every `delay` milliseconds
- *                                            while the throttled-function is being called. If noTrailing is false or unspecified, callback will be executed
- *                                            one final time after the last throttled-function call. (After the throttled-function has not been called for
- *                                            `delay` milliseconds, the internal counter is reset).
- * @param {boolean} [options.noLeading] -   Optional, defaults to false. If noLeading is false, the first throttled-function call will execute callback
- *                                            immediately. If noLeading is true, the first the callback execution will be skipped. It should be noted that
- *                                            callback will never executed if both noLeading = true and noTrailing = true.
- * @param {boolean} [options.debounceMode] - If `debounceMode` is true (at begin), schedule `clear` to execute after `delay` ms. If `debounceMode` is
- *                                            false (at end), schedule `callback` to execute after `delay` ms.
- *
- * @returns {Function} A new, throttled, function.
- */
-function throttle (delay, callback, options) {
-  var _ref = options || {},
-      _ref$noTrailing = _ref.noTrailing,
-      noTrailing = _ref$noTrailing === void 0 ? false : _ref$noTrailing,
-      _ref$noLeading = _ref.noLeading,
-      noLeading = _ref$noLeading === void 0 ? false : _ref$noLeading,
-      _ref$debounceMode = _ref.debounceMode,
-      debounceMode = _ref$debounceMode === void 0 ? undefined : _ref$debounceMode;
-  /*
-   * After wrapper has stopped being called, this timeout ensures that
-   * `callback` is executed at the proper times in `throttle` and `end`
-   * debounce modes.
-   */
-
-
-  var timeoutID;
-  var cancelled = false; // Keep track of the last time `callback` was executed.
-
-  var lastExec = 0; // Function to clear existing timeout
-
-  function clearExistingTimeout() {
-    if (timeoutID) {
-      clearTimeout(timeoutID);
-    }
-  } // Function to cancel next exec
-
-
-  function cancel(options) {
-    var _ref2 = options || {},
-        _ref2$upcomingOnly = _ref2.upcomingOnly,
-        upcomingOnly = _ref2$upcomingOnly === void 0 ? false : _ref2$upcomingOnly;
-
-    clearExistingTimeout();
-    cancelled = !upcomingOnly;
-  }
-  /*
-   * The `wrapper` function encapsulates all of the throttling / debouncing
-   * functionality and when executed will limit the rate at which `callback`
-   * is executed.
-   */
-
-
-  function wrapper() {
-    for (var _len = arguments.length, arguments_ = new Array(_len), _key = 0; _key < _len; _key++) {
-      arguments_[_key] = arguments[_key];
-    }
-
-    var self = this;
-    var elapsed = Date.now() - lastExec;
-
-    if (cancelled) {
-      return;
-    } // Execute `callback` and update the `lastExec` timestamp.
-
-
-    function exec() {
-      lastExec = Date.now();
-      callback.apply(self, arguments_);
-    }
-    /*
-     * If `debounceMode` is true (at begin) this is used to clear the flag
-     * to allow future `callback` executions.
-     */
-
-
-    function clear() {
-      timeoutID = undefined;
-    }
-
-    if (!noLeading && debounceMode && !timeoutID) {
-      /*
-       * Since `wrapper` is being called for the first time and
-       * `debounceMode` is true (at begin), execute `callback`
-       * and noLeading != true.
-       */
-      exec();
-    }
-
-    clearExistingTimeout();
-
-    if (debounceMode === undefined && elapsed > delay) {
-      if (noLeading) {
-        /*
-         * In throttle mode with noLeading, if `delay` time has
-         * been exceeded, update `lastExec` and schedule `callback`
-         * to execute after `delay` ms.
-         */
-        lastExec = Date.now();
-
-        if (!noTrailing) {
-          timeoutID = setTimeout(debounceMode ? clear : exec, delay);
-        }
-      } else {
-        /*
-         * In throttle mode without noLeading, if `delay` time has been exceeded, execute
-         * `callback`.
-         */
-        exec();
-      }
-    } else if (noTrailing !== true) {
-      /*
-       * In trailing throttle mode, since `delay` time has not been
-       * exceeded, schedule `callback` to execute `delay` ms after most
-       * recent execution.
-       *
-       * If `debounceMode` is true (at begin), schedule `clear` to execute
-       * after `delay` ms.
-       *
-       * If `debounceMode` is false (at end), schedule `callback` to
-       * execute after `delay` ms.
-       */
-      timeoutID = setTimeout(debounceMode ? clear : exec, debounceMode === undefined ? delay - elapsed : delay);
-    }
-  }
-
-  wrapper.cancel = cancel; // Return the wrapper function.
-
-  return wrapper;
-}
-
-/* eslint-disable no-undefined */
-/**
- * Debounce execution of a function. Debouncing, unlike throttling,
- * guarantees that a function is only executed a single time, either at the
- * very beginning of a series of calls, or at the very end.
- *
- * @param {number} delay -               A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher) are most useful.
- * @param {Function} callback -          A function to be executed after delay milliseconds. The `this` context and all arguments are passed through, as-is,
- *                                        to `callback` when the debounced-function is executed.
- * @param {object} [options] -           An object to configure options.
- * @param {boolean} [options.atBegin] -  Optional, defaults to false. If atBegin is false or unspecified, callback will only be executed `delay` milliseconds
- *                                        after the last debounced-function call. If atBegin is true, callback will be executed only at the first debounced-function call.
- *                                        (After the throttled-function has not been called for `delay` milliseconds, the internal counter is reset).
- *
- * @returns {Function} A new, debounced function.
- */
-
-function debounce (delay, callback, options) {
-  var _ref = options || {},
-      _ref$atBegin = _ref.atBegin,
-      atBegin = _ref$atBegin === void 0 ? false : _ref$atBegin;
-
-  return throttle(delay, callback, {
-    debounceMode: atBegin !== false
-  });
-}
-
-// 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
-/** 记录自动修改过页面填充的图片流 */
-const autoCloseFill = new Set();
-
-/** 找到指定页面所处的图片流 */
-const findFillIndex = (pageIndex, fillEffect) => {
-  let nowFillIndex = pageIndex;
-  while (!Reflect.has(fillEffect, nowFillIndex)) nowFillIndex -= 1;
-  return nowFillIndex;
-};
-
-/** 判断图片是否是跨页图 */
-const isWideImg = img => {
-  switch (img.type) {
-    case 'long':
-    case 'wide':
-      return true;
-    default:
-      return false;
-  }
-};
-
-/** 根据图片比例和填充页设置对漫画图片进行排列 */
-const handleComicData = (imgList, fillEffect) => {
-  const pageList = [];
-  let imgCache = null;
-  for (let i = 0; i < imgList.length; i += 1) {
-    const img = imgList[i];
-    if (fillEffect[i - 1]) {
-      if (imgCache !== null) pageList.push([imgCache]);
-      imgCache = -1;
-    }
-    if (!isWideImg(img)) {
-      if (imgCache !== null) {
-        pageList.push([imgCache, i]);
-        imgCache = null;
-      } else {
-        imgCache = i;
-      }
-      if (Reflect.has(fillEffect, i)) Reflect.deleteProperty(fillEffect, i);
-    } else {
-      if (imgCache !== null) {
-        const nowFillIndex = findFillIndex(i, fillEffect);
-
-        // 在除结尾外的位置出现了跨页图的话，那张跨页图大概率是页序的「正确答案」
-        // 如果这张跨页导致了上面一页缺页，就说明在这之前的填充有误，应该据此调整之前的填充
-        // 排除结尾是防止被结尾汉化组图误导
-        // 自动调整毕竟有可能误判，所以每个跨页都应该只调整一次，不能重复修改
-        if (!autoCloseFill.has(i) && i < imgList.length - 2) {
-          autoCloseFill.add(i);
-          fillEffect[nowFillIndex] = !fillEffect[nowFillIndex];
-          return handleComicData(imgList, fillEffect);
-        }
-        if (imgCache !== -1) pageList.push([imgCache, -1]);
-        imgCache = null;
-      }
-      if (fillEffect[i] === undefined && img.loadType !== 'loading') fillEffect[i] = false;
-      pageList.push([i]);
-    }
-  }
-  if (imgCache !== null && imgCache !== -1) {
-    pageList.push([imgCache, -1]);
-    imgCache = null;
-  }
-  return pageList;
-};
-
-/** 触发 onOptionChange */
-const triggerOnOptionChange = () => setTimeout(() => store.prop.OptionChange?.(difference(store.option, defaultOption)));
-
-/** 在 option 后手动触发 onOptionChange */
-const setOption = fn => {
-  setState(state => fn(state.option, state));
-  triggerOnOptionChange();
-};
-
-/** 创建一个专门用于修改指定配置项的函数 */
-const createStateSetFn = name => val => setOption(draftOption => byPath(draftOption, name, () => val));
-
-/** 创建用于将 ref 绑定到对应 state 上的工具函数 */
-const bindRef = name => e => Reflect.set(refs, name, e);
-
-/** 将界面恢复到正常状态 */
-const resetUI = state => {
-  state.show.toolbar = false;
-  state.show.scrollbar = false;
-  state.show.touchArea = false;
-};
-
-/** 检查已加载图片中是否**连续**出现了多个指定类型的图片 */
-const checkImgTypeCount = (state, fn, maxNum = 3) => {
-  let num = 0;
-  for (let i = 0; i < state.imgList.length; i++) {
-    const img = state.imgList[i];
-    if (img.loadType !== 'loaded') continue;
-    if (!fn(img)) {
-      num = 0;
-      continue;
-    }
-    num += 1;
-    if (num >= maxNum) return true;
-  }
-  return false;
-};
-
-/** 漫画流的总高度 */
-const contentHeight = () => refs.mangaFlow.scrollHeight ?? 0;
-
-/** 能显示出漫画的高度 */
-const windowHeight = () => refs.root.offsetHeight ?? 0;
-
-/** 滚动条位置 */
-const scrollPosition = solidJs.createRoot(() => {
-  const scrollPositionMemo = solidJs.createMemo(() => {
-    if (store.option.scrollbar.position === 'auto') {
-      if (store.isMobile) return 'top';
-      return checkImgTypeCount(store, ({
-        type
-      }) => type === 'long', 5) ? 'bottom' : 'right';
-    }
-    return store.option.scrollbar.position;
-  });
-  return scrollPositionMemo;
-});
-
-/** 更新滚动条滑块的高度和所处高度 */
-const updateDrag = state => {
-  if (!state.option.scrollMode) {
-    state.scrollbar.dragHeight = 0;
-    state.scrollbar.dragTop = 0;
-    return;
-  }
-  state.scrollbar.dragTop = refs.mangaFlow.scrollTop / contentHeight();
-  state.scrollbar.dragHeight = windowHeight() / (contentHeight() || windowHeight());
-};
-
-/** 获取指定图片的提示文本 */
-const getImgTip = (state, i) => {
-  if (i === -1) return t('other.fill_page');
-  const img = state.imgList[i];
-
-  // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-  if (img.loadType !== 'loaded') return `${i + 1} (${t(`img_status.${img.loadType}`)})`;
-  if (img.translationType && img.translationType !== 'hide' && img.translationMessage) return `${i + 1}：${img.translationMessage}`;
-  return `${i + 1}`;
-};
-
-/** 获取指定页面的提示文本 */
-const getPageTip = pageIndex => {
-  const page = store.pageList[pageIndex];
-  if (!page) return 'null';
-  const pageIndexText = page.map(index => getImgTip(store, index));
-  if (store.option.dir === 'rtl') pageIndexText.reverse();
-  return pageIndexText.join(store.option.scrollMode ? '\n' : ' | ');
-};
-
-/** 判断点击位置在滚动条上的位置比率 */
-const getClickTop = (x, y, e) => {
-  switch (scrollPosition()) {
-    case 'bottom':
-    case 'top':
-      return store.option.dir === 'rtl' ? 1 - x / e.offsetWidth : x / e.offsetWidth;
-    default:
-      return y / e.offsetHeight;
-  }
-};
-
-/** 计算在滚动条上的拖动距离 */
-const getDragDist = ([x, y], [ix, iy], e) => {
-  switch (scrollPosition()) {
-    case 'bottom':
-    case 'top':
-      return store.option.dir === 'ltr' ? (x - ix) / e.offsetWidth : (1 - (x - ix)) / e.offsetWidth;
-    default:
-      return (y - iy) / e.offsetHeight;
-  }
-};
-
-/** 开始拖拽时的 dragTop 值 */
-let startTop = 0;
-const handleScrollbarDrag = ({
-  type,
-  xy,
-  initial
-}, e) => {
-  const [x, y] = xy;
-
-  // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
-  if (type === 'up') return;
-  if (!refs.mangaFlow) return;
-  const scrollbarDom = e.target;
-
-  /** 点击位置在滚动条上的位置比率 */
-  const clickTop = getClickTop(x, y, e.target);
-  let top = clickTop;
-  if (store.option.scrollMode) {
-    if (type === 'move') {
-      top = startTop + getDragDist(xy, initial, scrollbarDom);
-      // 处理超出范围的情况
-      if (top < 0) top = 0;else if (top > 1) top = 1;
-      refs.mangaFlow.scrollTo({
-        top: top * contentHeight(),
-        behavior: 'instant'
-      });
-    } else {
-      // 确保滚动条的中心会在点击位置
-      top -= store.scrollbar.dragHeight / 2;
-      startTop = top;
-      refs.mangaFlow.scrollTo({
-        top: top * contentHeight(),
-        behavior: 'smooth'
-      });
-    }
-  } else {
-    let newPageIndex = Math.floor(top * store.pageList.length);
-    // 处理超出范围的情况
-    if (newPageIndex < 0) newPageIndex = 0;else if (newPageIndex >= store.pageList.length) newPageIndex = store.pageList.length - 1;
-    if (newPageIndex !== store.activePageIndex) _setState('activePageIndex', newPageIndex);
-  }
-};
-const updateScrollLength = () => _setState('memo', 'scrollLength', Math.max(refs.scrollbar?.clientWidth, refs.scrollbar?.clientHeight));
-solidJs.createRoot(() => {
-  // 更新 scrollLength
-  solidJs.createEffect(solidJs.on([scrollPosition, () => store.memo.size], () => {
-    // 部分情况下，在窗口大小改变后滚动条大小不会立刻跟着修改，需要等待一帧渲染
-    // 比如打开后台标签页后等一会再切换过去
-    requestAnimationFrame(updateScrollLength);
-  }));
-});
-
-const {
-  activeImgIndex,
-  nowFillIndex,
-  activePage,
-  preloadNum
-} = solidJs.createRoot(() => {
-  const activePageMemo = solidJs.createMemo(() => store.pageList[store.activePageIndex] ?? []);
-  const activeImgIndexMemo = solidJs.createMemo(() => activePageMemo().find(i => i !== -1) ?? 0);
-  const nowFillIndexMemo = solidJs.createMemo(() => findFillIndex(activeImgIndexMemo(), store.fillEffect));
-  const preloadNumMemo = solidJs.createMemo(() => ({
-    back: store.option.preloadPageNum,
-    front: Math.floor(store.option.preloadPageNum / 2)
-  }));
-  return {
-    /** 当前显示的第一张图片的 index */
-    activeImgIndex: activeImgIndexMemo,
-    /** 当前所处的图片流 */
-    nowFillIndex: nowFillIndexMemo,
-    /** 当前显示页面 */
-    activePage: activePageMemo,
-    /** 预加载页数 */
-    preloadNum: preloadNumMemo
-  };
-});
-const loadImg = (state, index, draft) => {
-  if (index === -1) return false;
-  const img = state.imgList[index];
-  if (!img?.src) return false;
-  if (img.loadType === 'wait') {
-    img.loadType = 'loading';
-    draft.editNum += 1;
-  }
-  return draft.editNum >= draft.loadNum;
-};
-const loadPage = (state, index, draft) => state.pageList[index]?.some(i => loadImg(state, i, draft));
-
-/**
- * 以当前显示页为基准，预加载附近指定页数的图片，并取消其他预加载的图片
- * @param state state
- * @param loadPageNum 加载页数
- * @param loadNum 加载图片的数量
- * @returns 返回是否成功加载了未加载图片
- */
-const loadPageImg = (state, loadPageNum = Infinity, loadNum = 2) => {
-  const draft = {
-    editNum: 0,
-    loadNum
-  };
-  const targetPage = state.activePageIndex + loadPageNum;
-  if (targetPage < state.activePageIndex) {
-    const end = Math.max(0, targetPage);
-    for (let i = state.activePageIndex; i >= end; i--) if (loadPage(state, i, draft)) break;
-  } else {
-    const end = Math.min(state.pageList.length, targetPage);
-    for (let i = state.activePageIndex; i < end; i++) if (loadPage(state, i, draft)) break;
-  }
-  return draft.editNum > 0;
-};
-const zoomScrollModeImg = (zoomLevel, set = false) => {
-  setOption(draftOption => {
-    const newVal = set ? zoomLevel :
-    // 放大到整数再运算，避免精度丢失导致的奇怪的值
-    (store.option.scrollModeImgScale * 100 + zoomLevel * 100) / 100;
-    draftOption.scrollModeImgScale = clamp(0.1, newVal, 3);
-  });
-  // 在调整图片缩放后使当前滚动进度保持不变
-  refs.mangaFlow.scrollTo({
-    top: contentHeight() * store.scrollbar.dragTop,
-    behavior: 'instant'
-  });
-  setState(updateDrag);
-};
-
-/** 根据当前页数更新所有图片的加载状态 */
-const updateImgLoadType = debounce(100, state => {
-  // 先将所有加载中的图片状态改为暂停
-  state.imgList.forEach((img, i) => {
-    if (img.loadType === 'loading') state.imgList[i].loadType = 'wait';
-  });
-  return (
-    // 优先加载当前显示页
-    loadPageImg(state, 1) ||
-    // 再加载后面几页
-    loadPageImg(state, preloadNum().back) ||
-    // 再加载前面几页
-    loadPageImg(state, -preloadNum().front) ||
-    // 根据设置决定是否要继续加载其余图片
-    !state.option.alwaysLoadAllImg && state.imgList.length > 60 ||
-    // 加载当前页后面的图片
-    loadPageImg(state, Infinity, 5) ||
-    // 加载当前页前面的图片
-    loadPageImg(state, -Infinity, 5)
-  );
-});
-
-/** 重新计算 PageData */
-const updatePageData = state => {
-  const lastActiveImgIndex = activeImgIndex();
-  const {
-    imgList,
-    fillEffect,
-    option: {
-      onePageMode,
-      scrollMode
-    },
-    isMobile
-  } = state;
-  if (onePageMode || scrollMode || isMobile || imgList.length <= 1) state.pageList = imgList.map((_, i) => [i]);else state.pageList = handleComicData(imgList, fillEffect);
-  updateDrag(state);
-  updateImgLoadType(state);
-
-  // 在图片排列改变后自动跳转回原先显示图片所在的页数
-  if (lastActiveImgIndex !== activeImgIndex()) state.activePageIndex = state.pageList.findIndex(page => page.includes(lastActiveImgIndex));
-};
-
-/**
- * 将处理图片的相关变量恢复到初始状态
- *
- * 必须按照以下顺序调用
- * 1. 修改 imgList
- * 2. resetImgState
- * 3. updatePageData
- */
-const resetImgState = state => {
-  state.flag.autoScrollMode = true;
-  state.flag.autoWide = false;
-  autoCloseFill.clear();
-  // 如果用户没有手动修改过首页填充，才将其恢复初始
-  if (typeof state.fillEffect['-1'] === 'boolean') state.fillEffect['-1'] = state.option.firstPageFill && state.imgList.length > 3;
-};
-
-let clickTimeout = null;
-const useDoubleClick = (click, doubleClick, timeout = 200) => {
-  return event => {
-    // 如果点击触发时还有上次计时器的记录，说明这次是双击
-    if (clickTimeout) {
-      clearTimeout(clickTimeout);
-      clickTimeout = null;
-      doubleClick?.(event);
-      return;
-    }
-
-    // 单击事件延迟触发
-    clickTimeout = window.setTimeout(() => {
-      click(event);
-      clickTimeout = null;
-    }, timeout);
-  };
-};
-
-const handleResize = (width, height) => {
-  if (!(width || height)) return;
-  setState(state => {
-    state.memo.size = {
-      width,
-      height
-    };
-    state.isMobile = width < 800;
-  });
-};
-
-/** 更新渲染页面相关变量 */
-const updateRenderPage = (state, animation = false) => {
-  state.memo.renderPageList = state.pageList.slice(Math.max(0, state.activePageIndex - 1), Math.min(state.pageList.length, state.activePageIndex + 2));
-  const i = state.memo.renderPageList.indexOf(state.pageList[state.activePageIndex]);
-  state.page.offset.x.pct = 0;
-  state.page.offset.y.pct = 0;
-  if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
-  state.page.anima = animation ? 'page' : '';
-};
-const updateShowPageList = state => {
-  state.memo.showPageList = [...new Set(state.memo.showImgList.map(img => +img.parentElement.getAttribute('data-index')))];
-  state.memo.showPageList.sort();
-  if (state.option.scrollMode) state.activePageIndex = state.memo.showPageList[0] ?? 0;
-};
-const handleObserver = entries => {
-  setState(state => {
-    entries.forEach(({
-      isIntersecting,
-      target
-    }) => {
-      if (isIntersecting) state.memo.showImgList.push(target);else state.memo.showImgList = state.memo.showImgList.filter(img => img !== target);
-    });
-    if (!store.gridMode) updateShowPageList(state);
-  });
-};
-solidJs.createRoot(() => {
-  // 页数发生变动时
-  solidJs.createEffect(solidJs.on(() => store.activePageIndex, () => {
-    setState(state => {
-      updateImgLoadType(state);
-      if (state.show.endPage) state.show.endPage = undefined;
-    });
-  }, {
-    defer: true
-  }));
-
-  // 在关闭工具栏的同时关掉滚动条的强制显示
-  solidJs.createEffect(solidJs.on(() => store.show.toolbar, () => {
-    if (store.show.scrollbar && !store.show.toolbar) _setState('show', 'scrollbar', false);
-  }, {
-    defer: true
-  }));
-  solidJs.createEffect(solidJs.on(activePage, page => {
-    if (!store.option.scrollMode && !store.isDragMode) setState(updateRenderPage);
-    // 如果当前显示页面有出错的图片，就重新加载一次
-    page?.forEach(i => {
-      if (store.imgList[i]?.loadType !== 'error') return;
-      _setState('imgList', i, 'loadType', 'wait');
-    });
-  }, {
-    defer: true
-  }));
-
-  // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
-  solidJs.createEffect(solidJs.on(() => store.gridMode, () => setState(resetUI), {
-    defer: true
-  }));
-});
-
-/** 判断当前是否已经滚动到底部 */
-const isBottom = state => state.option.scrollMode ? store.scrollbar.dragHeight + store.scrollbar.dragTop >= 0.999 : state.activePageIndex === state.pageList.length - 1;
-
-/** 判断当前是否已经滚动到顶部 */
-const isTop = state => state.option.scrollMode ? store.scrollbar.dragTop === 0 : state.activePageIndex === 0;
-const closeScrollLock$1 = debounce(200, () => _setState('flag', 'scrollLock', false));
-
-/** 翻页。返回是否成功改变了当前页数 */
-const turnPageFn = (state, dir) => {
-  if (state.gridMode) return false;
-  if (dir === 'prev') {
-    switch (state.show.endPage) {
-      case 'start':
-        if (!state.flag.scrollLock && state.option.jumpToNext) state.prop.Prev?.();
-        return false;
-      case 'end':
-        state.show.endPage = undefined;
-        state.flag.scrollLock = true;
-        closeScrollLock$1();
-        return false;
-      default:
-        // 弹出卷首结束页
-        if (isTop(state)) {
-          if (!state.prop.Exit) return false;
-          // 没有 onPrev 时不弹出
-          if (!state.prop.Prev || !state.option.jumpToNext) return false;
-          state.show.endPage = 'start';
-          state.flag.scrollLock = true;
-          closeScrollLock$1();
-          return false;
-        }
-        if (state.option.scrollMode) return false;
-        state.activePageIndex -= 1;
-        return true;
-    }
-  } else {
-    switch (state.show.endPage) {
-      case 'end':
-        if (state.flag.scrollLock) return false;
-        if (state.prop.Next && state.option.jumpToNext) {
-          state.prop.Next();
-          return false;
-        }
-        state.prop.Exit?.(true);
-        return false;
-      case 'start':
-        state.show.endPage = undefined;
-        state.flag.scrollLock = true;
-        closeScrollLock$1();
-        return false;
-      default:
-        // 弹出卷尾结束页
-        if (isBottom(state)) {
-          if (!state.prop.Exit) return false;
-          state.show.endPage = 'end';
-          state.flag.scrollLock = true;
-          closeScrollLock$1();
-          return false;
-        }
-        if (state.option.scrollMode) return false;
-        state.activePageIndex += 1;
-        return true;
-    }
-  }
-};
-const turnPage = dir => setState(state => turnPageFn(state, dir));
-const turnPageAnimation = dir => {
-  setState(state => {
-    // 无法翻页就恢复原位
-    if (!turnPageFn(state, dir)) {
-      state.page.offset.x.px = 0;
-      state.page.offset.y.px = 0;
-      updateRenderPage(state, true);
-      state.isDragMode = false;
-      return;
-    }
-    state.isDragMode = true;
-    updateRenderPage(state);
-    if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 100 : -100;else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
-    setTimeout(() => {
-      setState(draftState => {
-        updateRenderPage(draftState, true);
-        draftState.page.offset.x.px = 0;
-        draftState.page.offset.y.px = 0;
-        draftState.isDragMode = false;
-      });
-    }, 16);
-  });
-};
-
-const touches = new Map();
-const scale = () => store.zoom.scale / 100;
-const width = () => refs.mangaFlow?.clientWidth ?? 0;
-const height = () => refs.mangaFlow?.clientHeight ?? 0;
-const bound = solidJs.createRoot(() => {
-  const x = solidJs.createMemo(() => -width() * (scale() - 1));
-  const y = solidJs.createMemo(() => -height() * (scale() - 1));
-  return {
-    x,
-    y
-  };
-});
-const checkBound = state => {
-  state.zoom.offset.x = clamp(bound.x(), state.zoom.offset.x, 0);
-  state.zoom.offset.y = clamp(bound.y(), state.zoom.offset.y, 0);
-};
-const closeScrollLock = debounce(200, () => _setState('flag', 'scrollLock', false));
-const zoom = (val, focal, animation = false) => {
-  const newScale = clamp(100, val, 500);
-  if (newScale === store.zoom.scale) return;
-
-  // 消除放大导致的偏移
-  const {
-    left,
-    top
-  } = refs.mangaFlow.getBoundingClientRect();
-  const x = (focal?.x ?? width() / 2) - left;
-  const y = (focal?.y ?? height() / 2) - top;
-
-  // 当前直接放大后的基准点坐标
-  const newX = x / (store.zoom.scale / 100) * (newScale / 100);
-  const newY = y / (store.zoom.scale / 100) * (newScale / 100);
-
-  // 放大后基准点的偏移距离
-  const dx = newX - x;
-  const dy = newY - y;
-  setState(state => {
-    state.zoom.scale = newScale;
-    state.zoom.offset.x -= dx;
-    state.zoom.offset.y -= dy;
-    checkBound(state);
-    if (animation) state.page.anima = 'zoom';
-
-    // 加一个延时锁防止在放大模式下通过滚轮缩小至原尺寸后就立刻跳到下一页
-    if (newScale === 100) {
-      state.flag.scrollLock = true;
-      closeScrollLock();
-    }
-    resetUI(state);
-  });
-};
-
-//
-// 惯性滑动
-//
-
-/** 摩擦系数 */
-const FRICTION_COEFF = 0.91;
-const mouse = {
-  x: 0,
-  y: 0
-};
-const last = {
-  x: 0,
-  y: 0
-};
-const velocity = {
-  x: 0,
-  y: 0
-};
-let animationId$1 = null;
-const cancelAnimation = () => {
-  if (!animationId$1) return;
-  cancelAnimationFrame(animationId$1);
-  animationId$1 = null;
-};
-let lastTime = 0;
-
-/** 逐帧计算惯性滑动 */
-const handleSlideAnima = timestamp => {
-  // 当速率足够小时停止计算动画
-  if (isEqual(velocity.x, 0, 1) && isEqual(velocity.y, 0, 1)) {
-    animationId$1 = null;
-    return;
-  }
-
-  // 在拖拽后模拟惯性滑动
-  setState(state => {
-    state.zoom.offset.x += velocity.x;
-    state.zoom.offset.y += velocity.y;
-    checkBound(state);
-
-    // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
-    if (timestamp - lastTime > 16) {
-      velocity.x *= FRICTION_COEFF;
-      velocity.y *= FRICTION_COEFF;
-      lastTime = timestamp;
-    }
-  });
-  animationId$1 = requestAnimationFrame(handleSlideAnima);
-};
-
-/** 逐帧根据鼠标坐标移动元素，并计算速率 */
-const handleDragAnima$1 = () => {
-  // 当停着不动时退出循环
-  if (mouse.x === store.zoom.offset.x && mouse.y === store.zoom.offset.y) {
-    animationId$1 = null;
-    return;
-  }
-  setState(state => {
-    last.x = state.zoom.offset.x;
-    last.y = state.zoom.offset.y;
-    state.zoom.offset.x = mouse.x;
-    state.zoom.offset.y = mouse.y;
-    checkBound(state);
-    velocity.x = state.zoom.offset.x - last.x;
-    velocity.y = state.zoom.offset.y - last.y;
-  });
-  animationId$1 = requestAnimationFrame(handleDragAnima$1);
-};
-
-/** 是否正在双指捏合缩放中 */
-let pinchZoom = false;
-
-/** 处理放大后的拖拽移动 */
-const handleZoomDrag = ({
-  type,
-  xy: [x, y],
-  last: [lx, ly]
-}) => {
-  if (store.zoom.scale === 100) return;
-  switch (type) {
-    case 'down':
-      {
-        mouse.x = store.zoom.offset.x;
-        mouse.y = store.zoom.offset.y;
-        if (animationId$1) cancelAnimation();
-        break;
-      }
-    case 'move':
-      {
-        if (animationId$1) cancelAnimation();
-        mouse.x += x - lx;
-        mouse.y += y - ly;
-        if (animationId$1 === null) animationId$1 = requestAnimationFrame(handleDragAnima$1);
-        break;
-      }
-    case 'up':
-      {
-        // 当双指捏合结束，一个手指抬起时，将剩余的指针当作刚点击来处理
-        if (pinchZoom) {
-          pinchZoom = false;
-          mouse.x = store.zoom.offset.x;
-          mouse.y = store.zoom.offset.y;
-          return;
-        }
-        if (animationId$1) cancelAnimationFrame(animationId$1);
-        animationId$1 = requestAnimationFrame(handleSlideAnima);
-      }
-  }
-};
-
-//
-// 双指捏合缩放
-//
-
-/** 初始双指距离 */
-let initDistance = 0;
-/** 初始缩放比例 */
-let initScale = 100;
-
-/** 获取两个指针之间的距离 */
-const getDistance = (a, b) => Math.hypot(b.xy[0] - a.xy[0], b.xy[1] - a.xy[1]);
-
-/** 逐帧计算当前屏幕上两点之间的距离，并换算成缩放比例 */
-const handlePinchZoomAnima = () => {
-  if (touches.size < 2) {
-    animationId$1 = null;
-    return;
-  }
-  const [a, b] = [...touches.values()];
-  const distance = getDistance(a, b);
-  zoom(distance / initDistance * initScale, {
-    x: (a.xy[0] + b.xy[0]) / 2,
-    y: (a.xy[1] + b.xy[1]) / 2
-  });
-  animationId$1 = requestAnimationFrame(handlePinchZoomAnima);
-};
-
-/** 处理双指捏合缩放 */
-const handlePinchZoom = ({
-  type
-}) => {
-  if (touches.size < 2) return;
-  switch (type) {
-    case 'down':
-      {
-        pinchZoom = true;
-        const [a, b] = [...touches.values()];
-        initDistance = getDistance(a, b);
-        initScale = store.zoom.scale;
-        break;
-      }
-    case 'up':
-      {
-        const [a, b] = [...touches.values()];
-        initDistance = getDistance(a, b);
-        break;
-      }
-    case 'move':
-      {
-        if (animationId$1 === null) animationId$1 = requestAnimationFrame(handlePinchZoomAnima);
-        break;
-      }
-    case 'cancel':
-      {
-        const [a, b] = [...touches.values()];
-        initDistance = getDistance(a, b);
-        break;
-      }
-  }
-};
-
-/** 根据坐标判断点击的元素 */
-const findClickEle = (eleList, {
-  x,
-  y
-}) => [...eleList].find(e => {
-  const rect = e.getBoundingClientRect();
-  return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-});
-
-/** 触发 touchArea 操作 */
-const handlePageClick = e => {
-  const targetArea = findClickEle(refs.touchArea.children, e);
-  if (!targetArea) return;
-  const areaName = targetArea.getAttribute('data-area');
-  if (!areaName) return;
-  if (areaName === 'menu' || areaName === 'MENU') return setState(state => {
-    state.show.scrollbar = !state.show.scrollbar;
-    state.show.toolbar = !state.show.toolbar;
-  });
-  if (!store.option.clickPageTurn.enabled || store.zoom.scale !== 100) return;
-  setState(state => {
-    resetUI(state);
-    turnPageFn(state, areaName.toLowerCase());
-  });
-};
-
-/** 网格模式下点击图片跳到对应页 */
-const handleGridClick = e => {
-  const target = findClickEle(refs.root.getElementsByTagName('img'), e);
-  if (!target) return;
-  const pageNumText = target.parentElement?.getAttribute('data-index');
-  if (!pageNumText) return;
-  const pageNum = +pageNumText;
-  if (!Reflect.has(store.pageList, pageNum)) return;
-  setState(state => {
-    state.activePageIndex = pageNum;
-    state.gridMode = false;
-  });
-  if (store.option.scrollMode) refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
-};
-
-/** 双击放大 */
-const doubleClickZoom = e => !store.gridMode && zoom(store.zoom.scale !== 100 ? 100 : 350, e, true);
-const handleClick = useDoubleClick(e => store.gridMode ? handleGridClick(e) : handlePageClick(e), doubleClickZoom);
-
-/** 判断翻页方向 */
-const getTurnPageDir = startTime => {
-  let dir;
-  let move;
-  let total;
-  if (store.page.vertical) {
-    move = -store.page.offset.y.px;
-    total = refs.root.clientHeight;
-  } else {
-    move = store.page.offset.x.px;
-    total = refs.root.clientWidth;
-  }
-
-  // 处理无关速度不考虑时间单纯根据当前滚动距离来判断的情况
-  if (!startTime) {
-    if (Math.abs(move) > total / 2) dir = move > 0 ? 'next' : 'prev';
-    return dir;
-  }
-
-  // 滑动距离超过总长度三分之一判定翻页
-  if (Math.abs(move) > total / 3) dir = move > 0 ? 'next' : 'prev';
-  if (dir) return dir;
-
-  // 滑动速度超过 0.4 判定翻页
-  const velocity = move / (performance.now() - startTime);
-  if (velocity < -0.4) dir = 'prev';
-  if (velocity > 0.4) dir = 'next';
-  return dir;
-};
-let dx = 0;
-let dy = 0;
-let animationId = null;
-const handleDragAnima = () => {
-  // 当停着不动时退出循环
-  if (dx === store.page.offset.x.px && dy === store.page.offset.y.px) {
-    animationId = null;
-    return;
-  }
-  setState(state => {
-    if (state.page.vertical) state.page.offset.y.px = dy;else state.page.offset.x.px = dx;
-  });
-  animationId = requestAnimationFrame(handleDragAnima);
-};
-const handleDragEnd = startTime => {
-  dx = 0;
-  dy = 0;
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
-
-  // 将拖动的页面移回正常位置
-  const dir = getTurnPageDir(startTime);
-  if (dir) return turnPageAnimation(dir);
-  setState(state => {
-    state.page.offset.x.px = 0;
-    state.page.offset.y.px = 0;
-    state.page.anima = 'page';
-    state.isDragMode = false;
-  });
-};
-handleDragEnd.debounce = debounce(200, handleDragEnd);
-const handleMangaFlowDrag = ({
-  type,
-  xy: [x, y],
-  initial: [ix, iy],
-  startTime
-}) => {
-  switch (type) {
-    case 'move':
-      {
-        dx = store.option.dir === 'rtl' ? x - ix : ix - x;
-        dy = y - iy;
-        if (store.isDragMode) {
-          if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
-          return;
-        }
-
-        // 判断滑动方向
-        let slideDir;
-        if (Math.abs(dx) > 5 && isEqual(dy, 0, 5)) slideDir = 'horizontal';
-        if (Math.abs(dy) > 5 && isEqual(dx, 0, 5)) slideDir = 'vertical';
-        if (!slideDir) return;
-        setState(state => {
-          // 根据滑动方向自动切换排列模式
-          state.page.vertical = slideDir === 'vertical';
-          state.isDragMode = true;
-          updateRenderPage(state);
-        });
-        return;
-      }
-    case 'up':
-      return handleDragEnd(startTime);
-  }
-};
-let lastDeltaY$1 = 0;
-let retardStartTime = 0;
-const handleTrackpadWheel = e => {
-  let deltaY = Math.floor(-e.deltaY);
-  let absDeltaY = Math.abs(deltaY);
-  if (absDeltaY < 2) return;
-
-  // 加速度小于指定值后逐渐缩小滚动距离，实现减速效果
-  if (Math.abs(absDeltaY - lastDeltaY$1) <= 6) {
-    if (!retardStartTime) retardStartTime = Date.now();
-    deltaY *= 1 - Math.min(1, (Date.now() - retardStartTime) / 10 * 0.002);
-    absDeltaY = Math.abs(deltaY);
-    if (absDeltaY < 2) return;
-  } else retardStartTime = 0;
-  lastDeltaY$1 = absDeltaY;
-  dy += deltaY;
-  setState(state => {
-    // 滚动至漫画头尾尽头时
-    if (store.activePageIndex === 0 && dy > 0 || store.activePageIndex === store.pageList.length - 1 && dy < 0) {
-      dy = 0;
-      // 为了避免被触摸板的滚动惯性触发上/下一话跳转，限定一下滚动距离
-      if (absDeltaY > 50) turnPageFn(state, store.activePageIndex === 0 ? 'prev' : 'next');
-    }
-
-    // 滚动过一页时
-    if (dy <= -state.memo.size.height) {
-      if (turnPageFn(state, 'next')) dy += state.memo.size.height;
-    } else if (dy >= state.memo.size.height) {
-      if (turnPageFn(state, 'prev')) dy -= state.memo.size.height;
-    }
-    state.page.vertical = true;
-    state.isDragMode = true;
-    updateRenderPage(state);
-  });
-  if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
-  handleDragEnd.debounce();
-};
-
-const defaultHotkeys = {
-  turn_page_up: ['w', 'ArrowUp', 'PageUp', 'Shift + W'],
-  turn_page_down: [' ', 's', 'ArrowDown', 'PageDown', 'Shift + S'],
-  turn_page_right: ['d', '.', 'ArrowRight'],
-  turn_page_left: ['a', ',', 'ArrowLeft'],
-  jump_to_home: ['Home'],
-  jump_to_end: ['End'],
-  exit: ['Escape'],
-  switch_page_fill: ['/', 'm', 'z'],
-  switch_scroll_mode: [],
-  switch_grid_mode: [],
-  switch_single_double_page_mode: [],
-  switch_dir: [],
-  switch_auto_enlarge: []
-};
-const setHotkeys = (...args) => {
-  _setState(...['hotkeys', ...args]);
-  store.prop.HotkeysChange?.(Object.fromEntries(Object.entries(store.hotkeys).filter(([name, keys]) => !defaultHotkeys[name] || !isEqualArray(keys, defaultHotkeys[name]))));
-};
-const {
-  hotkeysMap
-} = solidJs.createRoot(() => {
-  const hotkeysMapMemo = solidJs.createMemo(() => Object.fromEntries(Object.entries(store.hotkeys).flatMap(([name, key]) => key.map(k => [k, name]))));
-  return {
-    /** 快捷键配置 */
-    hotkeysMap: hotkeysMapMemo
-  };
-});
-
-/** 删除指定快捷键 */
-const delHotkeys = code => {
-  Object.entries(store.hotkeys).forEach(([name, keys]) => {
-    const i = keys.indexOf(code);
-    if (i === -1) return;
-    const newKeys = [...store.hotkeys[name]];
-    newKeys.splice(i, 1);
-    setHotkeys(name, newKeys);
-  });
-};
-
-/** 切换页面填充 */
-const switchFillEffect = () => {
-  setState(state => {
-    // 如果当前页不是双页显示的就跳过，避免在显示跨页图的页面切换却没看到效果的疑惑
-    if (state.pageList[state.activePageIndex].length !== 2) return;
-    state.fillEffect[nowFillIndex()] = +!state.fillEffect[nowFillIndex()];
-    updatePageData(state);
-  });
-};
-
-/** 切换卷轴模式 */
-const switchScrollMode = () => {
-  zoom(100);
-  setOption((draftOption, state) => {
-    draftOption.scrollMode = !draftOption.scrollMode;
-    draftOption.onePageMode = draftOption.scrollMode;
-    updatePageData(state);
-  });
-  setState(updateDrag);
-  // 切换到卷轴模式后自动定位到对应页
-  if (store.option.scrollMode) refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
-};
-
-/** 切换单双页模式 */
-const switchOnePageMode = () => {
-  setOption((draftOption, state) => {
-    draftOption.onePageMode = !draftOption.onePageMode;
-    updatePageData(state);
-  });
-};
-
-/** 切换阅读方向 */
-const switchDir = () => {
-  setOption(draftOption => {
-    draftOption.dir = draftOption.dir !== 'rtl' ? 'rtl' : 'ltr';
-  });
-};
-
-/** 切换网格模式 */
-const switchGridMode = () => {
-  setState(state => {
-    state.gridMode = !state.gridMode;
-    if (state.zoom.scale !== 100) zoom(100);
-    state.page.anima = '';
-  });
-  // 切换到网格模式后自动定位到当前页
-  if (store.gridMode) refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView({
-    block: 'center',
-    inline: 'center'
-  });
-};
-
-var css$1 = ".index_module_img__d1a5aaee{background-color:var(--hover-bg-color,#fff3);height:100%;max-height:100%;max-width:100%;object-fit:contain}.index_module_img__d1a5aaee[data-fill=left]{transform:translate(50%)}.index_module_img__d1a5aaee[data-fill=right]{transform:translate(-50%)}.index_module_img__d1a5aaee[data-fill=page]{display:none}.index_module_img__d1a5aaee[data-type=long]{height:auto;width:100%}.index_module_img__d1a5aaee[data-load-type=loading]{animation:index_module_show__d1a5aaee 2s forwards;max-width:100vw!important;opacity:0}.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[data-load-type=wait],.index_module_img__d1a5aaee[src=\"\"]{aspect-ratio:3/4;height:100%;position:relative}:is(.index_module_img__d1a5aaee[data-load-type=error],.index_module_img__d1a5aaee[src=\"\"]):before{opacity:0}:is(.index_module_img__d1a5aaee[data-load-type],.index_module_img__d1a5aaee[src=\"\"]):after{background-color:var(--bg);background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__d1a5aaee[data-load-type=loading],.index_module_img__d1a5aaee[data-load-type=wait]):after{background-image:var(--md-cloud-download);content:\"\"}.index_module_img__d1a5aaee[src=\"\"]:after{background-image:var(--md-photo);content:\"\"}.index_module_img__d1a5aaee[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\"\"}.index_module_page__d1a5aaee{content-visibility:hidden;align-items:center;display:none;flex-shrink:0;height:100%;justify-content:center;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0);transition-duration:0ms;width:100%;z-index:1}.index_module_page__d1a5aaee[data-show]{content-visibility:visible;display:flex}.index_module_mangaFlow__d1a5aaee{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);grid-template-columns:100%;grid-template-rows:100%;height:100%;outline:none;transition-duration:0ms;width:100%}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode]){scrollbar-width:none}.index_module_mangaFlow__d1a5aaee:not([data-grid-mode])::-webkit-scrollbar{display:none}.index_module_mangaFlow__d1a5aaee[data-disable-zoom] .index_module_img__d1a5aaee{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__d1a5aaee[dir=ltr] .index_module_page__d1a5aaee{flex-direction:row}.index_module_mangaFlow__d1a5aaee[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__d1a5aaee[data-animation=page] .index_module_page__d1a5aaee,.index_module_mangaFlow__d1a5aaee[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__d1a5aaee[data-vertical]{grid-auto-flow:row}.index_module_mangaFlow__d1a5aaee[data-grid-mode]{grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-columns:repeat(3,1fr);grid-template-rows:unset;padding-bottom:2em}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee{height:auto;transform:none}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee:after{bottom:-1.4em;content:var(--tip);direction:ltr;left:0;opacity:.5;position:absolute;text-align:center;transform:scale(.8);white-space:pre;width:100%}.index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_page__d1a5aaee .index_module_img__d1a5aaee{cursor:pointer}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee{grid-auto-flow:row;grid-auto-rows:auto;overflow:auto;grid-row-gap:calc(var(--scroll-mode-spacing)*.1em);grid-template-rows:auto}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_page__d1a5aaee{display:flex;height:-moz-fit-content;height:fit-content;transform:none;width:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width, 100%)))}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=loading]{position:unset}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee .index_module_img__d1a5aaee[data-load-type=error]{height:20em;width:30em}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_mangaFlow__d1a5aaee[data-grid-mode] .index_module_img__d1a5aaee{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}@keyframes index_module_show__d1a5aaee{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__d1a5aaee{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__d1a5aaee>button{animation:index_module_jello__d1a5aaee .3s forwards;background-color:initial;border:0;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__d1a5aaee>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__d1a5aaee>button:focus-visible{outline:none}.index_module_endPage__d1a5aaee>.index_module_tip__d1a5aaee{margin:auto;position:absolute}.index_module_endPage__d1a5aaee[data-show]{opacity:1;pointer-events:all}.index_module_endPage__d1a5aaee[data-type=start]>.index_module_tip__d1a5aaee{transform:translateY(-10em)}.index_module_endPage__d1a5aaee[data-type=end]>.index_module_tip__d1a5aaee{transform:translateY(10em)}.index_module_root__d1a5aaee[data-mobile] .index_module_endPage__d1a5aaee>button{width:1em}.index_module_comments__d1a5aaee{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__d1a5aaee>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__d1a5aaee:hover{opacity:1}.index_module_root__d1a5aaee[data-mobile] .index_module_comments__d1a5aaee{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__d1a5aaee{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__d1a5aaee{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__d1a5aaee{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__d1a5aaee[data-show],.index_module_toolbar__d1a5aaee:hover) .index_module_toolbarPanel__d1a5aaee{transform:none}.index_module_toolbar__d1a5aaee[data-close] .index_module_toolbarPanel__d1a5aaee{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__d1a5aaee{-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.6);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee{font-size:1.3em}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbar__d1a5aaee:not([data-show]){pointer-events:none}.index_module_root__d1a5aaee[data-mobile] .index_module_toolbarBg__d1a5aaee{filter:opacity(.8)}.index_module_SettingPanelPopper__d1a5aaee{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__d1a5aaee{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.index_module_SettingPanel__d1a5aaee hr{color:#fff;margin:0}.index_module_SettingBlock__d1a5aaee{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div+:is(.index_module_SettingBlock__d1a5aaee .index_module_SettingBlockBody__d1a5aaee)>div{margin-top:1em}.index_module_SettingBlock__d1a5aaee[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__d1a5aaee[data-show=false] .index_module_SettingBlockBody__d1a5aaee{padding:unset}.index_module_SettingBlockSubtitle__d1a5aaee{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__d1a5aaee{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__d1a5aaee+.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_SettingsItemName__d1a5aaee{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__d1a5aaee{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__d1a5aaee[data-checked=true] .index_module_SettingsItemSwitchRound__d1a5aaee{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__d1a5aaee{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__d1a5aaee{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__d1a5aaee{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__d1a5aaee{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee{overflow:hidden}.index_module_SettingsShowItem__d1a5aaee>.index_module_SettingsShowItemBody__d1a5aaee>.index_module_SettingsItem__d1a5aaee{margin-top:1em}.index_module_hotkeys__d1a5aaee{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__d1a5aaee+.index_module_hotkeys__d1a5aaee{margin-top:.5em}.index_module_hotkeys__d1a5aaee:last-child{border-bottom:none}.index_module_hotkeysItem__d1a5aaee{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__d1a5aaee>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__d1a5aaee>svg:hover{opacity:.9}.index_module_hotkeysItem__d1a5aaee:hover{padding:.2em .5em}.index_module_hotkeysItem__d1a5aaee:hover>svg{display:unset}.index_module_hotkeysItem__d1a5aaee:focus,.index_module_hotkeysItem__d1a5aaee:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__d1a5aaee{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__d1a5aaee>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__d1a5aaee>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__d1a5aaee>div[title]>svg{width:1.6em}.index_module_hotkeys__d1a5aaee:hover div[title]{transform:scale(1)}.index_module_scrollbar__d1a5aaee{--arrow-y:clamp(0.45em,calc(var(--drag-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;outline:none;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__d1a5aaee>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__d1a5aaee{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__d1a5aaee[data-type=wait]{opacity:.5}.index_module_scrollbarPage__d1a5aaee[data-type=error]{background-color:#f005}.index_module_scrollbarPage__d1a5aaee[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__d1a5aaee[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__d1a5aaee[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__d1a5aaee[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__d1a5aaee[data-translation-type=error]{background-color:#f005}.index_module_scrollbarDrag__d1a5aaee{--top:calc(var(--top-ratio)*var(--scroll-length));--height:calc(var(--height-ratio)*var(--scroll-length));background-color:var(--scrollbar-drag);border-radius:1em;height:var(--height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__d1a5aaee{--poper-top:clamp(0%,calc(var(--drag-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__d1a5aaee:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\"\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee:hover:before,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-force-show]:before{opacity:1}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarDrag__d1a5aaee{opacity:0}.index_module_scrollbar__d1a5aaee[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarDrag__d1a5aaee{opacity:1}.index_module_scrollbar__d1a5aaee[data-position=hidden]{display:none}.index_module_scrollbar__d1a5aaee[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{top:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee{bottom:1.2em}.index_module_scrollbar__d1a5aaee[data-position=bottom],.index_module_scrollbar__d1a5aaee[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__d1a5aaee[data-position=bottom]:before,.index_module_scrollbar__d1a5aaee[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarDrag__d1a5aaee{height:100%;transform:translateX(calc(var(--top)*-1));width:var(--height)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPoper__d1a5aaee{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr],.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarDrag__d1a5aaee{transform:translateX(var(--top))}.index_module_scrollbar__d1a5aaee[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__d1a5aaee{transform:translateX(var(--poper-top))}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee,.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee{transform:scaleX(1)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-type=loaded],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__d1a5aaee[data-position=bottom] .index_module_scrollbarPage__d1a5aaee[data-translation-type],.index_module_scrollbar__d1a5aaee[data-position=top] .index_module_scrollbarPage__d1a5aaee[data-translation-type]{transform:scaleX(1)}.index_module_root__d1a5aaee[data-scroll-mode] .index_module_scrollbar__d1a5aaee:before,.index_module_root__d1a5aaee[data-scroll-mode] :is(.index_module_scrollbarDrag__d1a5aaee,.index_module_scrollbarPoper__d1a5aaee){transition:opacity .15s}.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover .index_module_scrollbarPoper__d1a5aaee,.index_module_root__d1a5aaee[data-mobile] .index_module_scrollbar__d1a5aaee:hover:before{opacity:0}.index_module_touchAreaRoot__d1a5aaee{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.index_module_touchAreaRoot__d1a5aaee[data-show]{opacity:1}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__d1a5aaee .index_module_touchArea__d1a5aaee[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__d1a5aaee[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=NEXT],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=PREV],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=next],.index_module_touchAreaRoot__d1a5aaee:not([data-turn-page]) .index_module_touchArea__d1a5aaee[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__d1a5aaee[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__d1a5aaee[data-mobile] .index_module_touchAreaRoot__d1a5aaee{flex-direction:column!important;letter-spacing:0}.index_module_root__d1a5aaee[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__d1a5aaee{display:none!important}.index_module_invisible__d1a5aaee{visibility:hidden!important}.index_module_root__d1a5aaee{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__d1a5aaee a{color:var(--text-secondary)}.index_module_root__d1a5aaee[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__d1a5aaee{scrollbar-color:var(--scrollbar-drag) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__d1a5aaee::-webkit-scrollbar-thumb{background:var(--scrollbar-drag)}p{margin:0}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
-var modules_c21c94f2$1 = {"img":"index_module_img__d1a5aaee","show":"index_module_show__d1a5aaee","page":"index_module_page__d1a5aaee","mangaFlow":"index_module_mangaFlow__d1a5aaee","root":"index_module_root__d1a5aaee","endPage":"index_module_endPage__d1a5aaee","jello":"index_module_jello__d1a5aaee","tip":"index_module_tip__d1a5aaee","comments":"index_module_comments__d1a5aaee","toolbar":"index_module_toolbar__d1a5aaee","toolbarPanel":"index_module_toolbarPanel__d1a5aaee","toolbarBg":"index_module_toolbarBg__d1a5aaee","SettingPanelPopper":"index_module_SettingPanelPopper__d1a5aaee","SettingPanel":"index_module_SettingPanel__d1a5aaee","SettingBlock":"index_module_SettingBlock__d1a5aaee","SettingBlockBody":"index_module_SettingBlockBody__d1a5aaee","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__d1a5aaee","SettingsItem":"index_module_SettingsItem__d1a5aaee","SettingsItemName":"index_module_SettingsItemName__d1a5aaee","SettingsItemSwitch":"index_module_SettingsItemSwitch__d1a5aaee","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__d1a5aaee","SettingsItemIconButton":"index_module_SettingsItemIconButton__d1a5aaee","SettingsItemSelect":"index_module_SettingsItemSelect__d1a5aaee","closeCover":"index_module_closeCover__d1a5aaee","SettingsShowItem":"index_module_SettingsShowItem__d1a5aaee","SettingsShowItemBody":"index_module_SettingsShowItemBody__d1a5aaee","hotkeys":"index_module_hotkeys__d1a5aaee","hotkeysItem":"index_module_hotkeysItem__d1a5aaee","hotkeysHeader":"index_module_hotkeysHeader__d1a5aaee","scrollbar":"index_module_scrollbar__d1a5aaee","scrollbarPage":"index_module_scrollbarPage__d1a5aaee","scrollbarDrag":"index_module_scrollbarDrag__d1a5aaee","scrollbarPoper":"index_module_scrollbarPoper__d1a5aaee","touchAreaRoot":"index_module_touchAreaRoot__d1a5aaee","touchArea":"index_module_touchArea__d1a5aaee","hidden":"index_module_hidden__d1a5aaee","invisible":"index_module_invisible__d1a5aaee","beautifyScrollbar":"index_module_beautifyScrollbar__d1a5aaee"};
-
-// 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
-const focus = () => requestAnimationFrame(() => {
-  refs.mangaFlow?.click();
-  refs.mangaFlow?.focus();
-});
-const handleMouseDown = e => {
-  if (e.button !== 1 || store.option.scrollMode) return;
-  e.stopPropagation();
-  e.preventDefault();
-  switchFillEffect();
-};
-
-/** 卷轴模式下的滚动 */
-const scrollModeScroll = dir => {
-  if (!store.show.endPage) {
-    refs.mangaFlow.scrollBy({
-      top: refs.root.clientHeight * 0.8 * (dir === 'next' ? 1 : -1),
-      behavior: 'instant'
-    });
-    _setState('flag', 'scrollLock', true);
-  }
-  closeScrollLock$1();
-};
-
-/** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
-const handleSwapPageTurnKey = nextPage => {
-  const next = store.option.swapPageTurnKey ? !nextPage : nextPage;
-  return next ? 'next' : 'prev';
-};
-
-/** 判断按键代码是否可以输入字母 */
-const isAlphabetKey = /^(Shift \+ )?[a-zA-Z]$/;
-const handleKeyDown = e => {
-  if (e.target.tagName === 'INPUT' || e.target.className === modules_c21c94f2$1.hotkeysItem) return;
-  const code = getKeyboardCode(e);
-
-  // esc 在触发配置操作前，先用于退出一些界面
-  if (e.key === 'Escape') {
-    if (store.gridMode) {
-      e.stopPropagation();
-      e.preventDefault();
-      return _setState('gridMode', false);
-    }
-    if (store.show.endPage) {
-      e.stopPropagation();
-      e.preventDefault();
-      return _setState('show', 'endPage', undefined);
-    }
-  }
-
-  // 处理标注了 data-only-number 的元素
-  if (e.target.getAttribute('data-only-number') !== null) {
-    // 拦截能输入数字外的按键
-    if (isAlphabetKey.test(code)) {
-      e.stopPropagation();
-      e.preventDefault();
-    } else if (code.includes('Enter')) e.target.blur();
-    return;
-  }
-
-  // 卷轴、网格模式下跳过用于移动的按键
-  if ((store.option.scrollMode || store.gridMode) && !store.show.endPage) {
-    switch (e.key) {
-      case 'Home':
-      case 'End':
-      case 'ArrowRight':
-      case 'ArrowLeft':
-        return;
-      case 'ArrowUp':
-      case 'PageUp':
-        return store.gridMode || turnPage('prev');
-      case 'ArrowDown':
-      case 'PageDown':
-      case ' ':
-        return store.gridMode || turnPage('next');
-    }
-  }
-
-  // 拦截已注册的快捷键
-  if (Reflect.has(hotkeysMap(), code)) {
-    e.stopPropagation();
-    e.preventDefault();
-  }
-  switch (hotkeysMap()[code]) {
-    case 'turn_page_up':
-      {
-        if (store.option.scrollMode) scrollModeScroll('prev');
-        return turnPage('prev');
-      }
-    case 'turn_page_down':
-      {
-        if (store.option.scrollMode) scrollModeScroll('next');
-        return turnPage('next');
-      }
-    case 'turn_page_right':
-      return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
-    case 'turn_page_left':
-      return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));
-    case 'jump_to_home':
-      return _setState('activePageIndex', 0);
-    case 'jump_to_end':
-      return _setState('activePageIndex', store.pageList.length - 1);
-    case 'switch_page_fill':
-      return switchFillEffect();
-    case 'switch_scroll_mode':
-      return switchScrollMode();
-    case 'switch_single_double_page_mode':
-      return switchOnePageMode();
-    case 'switch_dir':
-      return switchDir();
-    case 'switch_grid_mode':
-      return switchGridMode();
-    case 'switch_auto_enlarge':
-      return setOption(draftOption => {
-        draftOption.disableZoom = !draftOption.disableZoom;
-      });
-    case 'exit':
-      return store.prop.Exit?.();
-  }
-};
-
-/** 判断两个数值是否是整数倍的关系 */
-const isMultipleOf = (a, b) => {
-  const decimal = `${a < b ? b / a : a / b}`.split('.')?.[1];
-  return !decimal || decimal.startsWith('0000') || decimal.startsWith('9999');
-};
-let lastDeltaY = -1;
-let timeoutId = 0;
-let lastPageNum = -1;
-let wheelType;
-let equalNum = 0;
-const handleWheel = e => {
-  e.stopPropagation();
-  if (e.ctrlKey || e.altKey) e.preventDefault();
-  if (store.flag.scrollLock || e.deltaY === 0) return closeScrollLock$1();
-  const isWheelDown = e.deltaY > 0;
-  if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
-
-  // 卷轴模式下的图片缩放
-  if ((e.ctrlKey || e.altKey) && store.option.scrollMode && store.zoom.scale === 100) {
-    e.preventDefault();
-    return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
-  }
-  if (e.ctrlKey || e.altKey || store.zoom.scale !== 100) {
-    e.preventDefault();
-    return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
-  }
-  const nowDeltaY = Math.abs(e.deltaY);
-
-  // 通过判断`两次滚动距离是否成倍数`和`滚动距离是否过小`来判断是否是触摸板
-  if (wheelType !== 'trackpad' && (nowDeltaY < 2 || !Number.isInteger(lastDeltaY) && !Number.isInteger(nowDeltaY) && !isMultipleOf(lastDeltaY, nowDeltaY))) {
-    wheelType = 'trackpad';
-    if (timeoutId) clearTimeout(timeoutId);
-    // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
-    if (lastPageNum !== -1) _setState('activePageIndex', lastPageNum);
-  }
-
-  // 为了避免因临时卡顿而误判为触摸板
-  // 在连续几次滚动量均相同的情况下，将 wheelType 相关变量重置回初始状态
-  if (lastDeltaY === nowDeltaY && nowDeltaY > 5) equalNum += 1;else equalNum = 0;
-  if (equalNum >= 3) {
-    wheelType = undefined;
-    lastPageNum = -1;
-  }
-  lastDeltaY = nowDeltaY;
-  switch (wheelType) {
-    case undefined:
-      {
-        if (lastPageNum === -1) {
-          // 第一次触发滚动没法判断类型，就当作滚轮来处理
-          // 但为了避免触摸板前两次滚动事件间隔大于帧生成时间导致得重新翻页回去的闪烁，加个延迟等待下
-          lastPageNum = store.activePageIndex;
-          timeoutId = window.setTimeout(() => turnPage(isWheelDown ? 'next' : 'prev'), 16);
-          return;
-        }
-        wheelType = 'mouse';
-      }
-    // falls through
-
-    case 'mouse':
-      return turnPage(isWheelDown ? 'next' : 'prev');
-    case 'trackpad':
-      return handleTrackpadWheel(e);
-  }
-};
-
-/** 根据比例更新图片类型。返回是否修改了图片类型 */
-const updateImgType = (state, draftImg) => {
-  const {
-    width,
-    height,
-    type
-  } = draftImg;
-  if (!width || !height || !state.memo.size.width || !state.memo.size.height) return false;
-  const imgRatio = width / height;
-  if (imgRatio <= state.proportion.单页比例) {
-    draftImg.type = imgRatio < state.proportion.条漫比例 ? 'vertical' : '';
-  } else {
-    draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
-  }
-  return type !== draftImg.type;
-};
-
-/** 更新图片尺寸 */
-const updateImgSize = (i, width, height) => {
-  setState(state => {
-    const img = state.imgList[i];
-    if (!img) return;
-    img.width = width;
-    img.height = height;
-    let isEdited = updateImgType(state, img);
-    switch (img.type) {
-      // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
-      case 'long':
-      case 'wide':
-        {
-          if (state.flag.autoWide || !checkImgTypeCount(state, isWideImg)) break;
-          state.imgList.forEach((comicImg, index) => {
-            if (comicImg.loadType === 'wait' && comicImg.type === '') state.imgList[index].type = 'wide';
-          });
-          state.flag.autoWide = true;
-          isEdited = true;
-          break;
-        }
-
-      // 连续出现多张长图后，自动开启卷轴模式
-      case 'vertical':
-        {
-          if (!state.flag.autoScrollMode || !checkImgTypeCount(state, ({
-            type
-          }) => type === 'vertical')) break;
-          state.option.scrollMode = true;
-          state.flag.autoScrollMode = false;
-          isEdited = true;
-          break;
-        }
-    }
-    if (!isEdited) return updateDrag(state);
-    Reflect.deleteProperty(state.fillEffect, i);
-    updatePageData(state);
-  });
-};
-const {
-  placeholderSize
-} = solidJs.createRoot(() => {
-  // 预加载所有图片的尺寸
-  solidJs.createEffect(solidJs.on(() => store.imgList, singleThreaded(state => plimit(store.imgList.map((img, i) => async () => {
-    if (state.continueRun) return;
-    if (img.loadType !== 'wait' || img.width || img.height || !img.src) return;
-    const size = await getImgSize(img.src, () => state.continueRun);
-    if (state.continueRun) return;
-    if (size) updateImgSize(i, ...size);
-  }), undefined, Math.max(store.option.preloadPageNum, 1)))));
-
-  // 处理显示窗口的长宽变化
-  solidJs.createEffect(solidJs.on(() => store.memo.size, ({
-    width,
-    height
-  }) => setState(state => {
-    state.proportion.单页比例 = Math.min(width / 2 / height, 1);
-    state.proportion.横幅比例 = width / height;
-    state.proportion.条漫比例 = state.proportion.单页比例 / 2;
-    let isEdited = false;
-    for (let i = 0; i < state.imgList.length; i++) {
-      if (!updateImgType(state, state.imgList[i])) continue;
-      isEdited = true;
-      Reflect.deleteProperty(state.fillEffect, i);
-    }
-    if (isEdited) resetImgState(state);
-    updatePageData(state);
-  }), {
-    defer: true
-  }));
-
-  /** 获取图片列表中指定属性的中位数 */
-  const getImgMedian = (sizeFn, fallback) => {
-    if (!store.option.scrollMode) return 0;
-    const list = store.imgList.filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort();
-    if (!list.length) return fallback;
-    return list[Math.floor(list.length / 2)];
-  };
-  const placeholderSizeMemo = solidJs.createMemo(() => ({
-    width: getImgMedian(img => img.width, refs.root?.offsetWidth),
-    height: getImgMedian(img => img.height, refs.root?.offsetHeight)
-  }));
-  return {
-    /** 图片占位尺寸 */
-    placeholderSize: placeholderSizeMemo
-  };
-});
-
-/** 在鼠标静止一段时间后自动隐藏 */
-const useHiddenMouse = () => {
-  const [hiddenMouse, setHiddenMouse] = solidJs.createSignal(true);
-  const hidden = debounce(1000, () => setHiddenMouse(true));
-  return {
-    hiddenMouse,
-    /** 鼠标移动 */
-    onMouseMove: () => {
-      setHiddenMouse(false);
-      hidden();
-    }
-  };
-};
-
-const createPointerState = (e, type = 'down') => {
-  const xy = [e.clientX, e.clientY];
-  return {
-    id: e.pointerId,
-    type,
-    xy,
-    initial: xy,
-    last: xy,
-    startTime: performance.now()
-  };
-};
-const useDrag = ({
-  ref,
-  handleDrag,
-  easyMode,
-  handleClick,
-  touches = new Map()
-}) => {
-  solidJs.onMount(() => {
-    const controller = new AbortController();
-    const options = {
-      capture: false,
-      passive: true,
-      signal: controller.signal
-    };
-    const handleDown = e => {
-      e.stopPropagation();
-      ref.setPointerCapture(e.pointerId);
-      if (!easyMode?.() && e.buttons !== 1) return;
-      const state = createPointerState(e);
-      touches.set(e.pointerId, state);
-      handleDrag(state, e);
-    };
-    const handleMove = e => {
-      e.stopPropagation();
-      e.preventDefault();
-      if (!easyMode?.() && e.buttons !== 1) return;
-      const state = touches.get(e.pointerId);
-      if (!state) return;
-      state.type = 'move';
-      state.xy = [e.clientX, e.clientY];
-      handleDrag(state, e);
-      state.last = state.xy;
-    };
-    const handleUp = e => {
-      e.stopPropagation();
-      ref.releasePointerCapture(e.pointerId);
-      const state = touches.get(e.pointerId);
-      if (!state) return;
-      touches.delete(e.pointerId);
-      state.type = 'up';
-      state.xy = [e.clientX, e.clientY];
-
-      // 判断单击
-      if (handleClick && touches.size === 0 && isEqual(state.xy[0] - state.initial[0], 0, 5) && isEqual(state.xy[1] - state.initial[1], 0, 5) && performance.now() - state.startTime < 200) handleClick(e);
-      handleDrag(state, e);
-      focus();
-    };
-    ref.addEventListener('pointerdown', handleDown, options);
-    ref.addEventListener('pointermove', handleMove, {
-      ...options,
-      passive: false
-    });
-    ref.addEventListener('pointerup', handleUp, options);
-    ref.addEventListener('pointercancel', e => {
-      e.stopPropagation();
-      const state = touches.get(e.pointerId);
-      if (!state) return;
-      state.type = 'cancel';
-      handleDrag(state, e);
-      touches.clear();
-      focus();
-    }, {
-      capture: false,
-      passive: true,
-      signal: controller.signal
-    });
-    if (easyMode) {
-      ref.addEventListener('pointerover', handleDown, options);
-      ref.addEventListener('pointerout', handleUp, options);
-    }
-    solidJs.onCleanup(() => controller.abort());
-  });
-};
-
-const _tmpl$$C = /*#__PURE__*/template(`<img draggable=false>`);
-/** 图片加载完毕的回调 */
-const handleImgLoaded = (i, e) => {
-  if (!e.getAttribute('src')) return;
-  setState(state => {
-    const img = state.imgList[i];
-    if (!img) return;
-    if (img.loadType === 'error' && e.src !== img.src) return;
-    if (img.width !== e.naturalWidth || img.height !== e.naturalHeight) updateImgSize(i, e.naturalWidth, e.naturalHeight);
-    img.loadType = 'loaded';
-    updateImgLoadType(state);
-    state.prop.Loading?.(state.imgList, img);
-
-    // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
-    // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
-    e.decode();
-  });
-};
-const errorNumMap = new Map();
-
-/** 图片加载出错的回调 */
-const handleImgError = (i, e) => {
-  if (!e.getAttribute('src')) return;
-  setState(state => {
-    const img = state.imgList[i];
-    if (!img) return;
-    const errorNum = errorNumMap.get(img.src) ?? 0;
-    // 首次失败自动重试一次
-    img.loadType = errorNum === 0 ? 'loading' : 'error';
-    errorNumMap.set(img.src, errorNum + 1);
-    updateImgLoadType(state);
-    if (e) log.error(t('alert.img_load_failed'), e);
-    state.prop.Loading?.(state.imgList, img);
-  });
-};
-
-/** 漫画图片 */
-const ComicImg = props => {
-  let ref;
-  solidJs.onMount(() => {
-    store.observer?.observe(ref);
-    solidJs.onCleanup(() => {
-      store.observer?.unobserve(ref);
-      setState(state => {
-        state.memo.showImgList = state.memo.showImgList.filter(img => img !== ref);
-      });
-    });
-  });
-  const img = solidJs.createMemo(() => store.imgList[props.index]);
-  const src = solidJs.createMemo(() => {
-    if (!img() || img().loadType === 'wait') return '';
-    if (img().translationType === 'show') return img().translationUrl;
-    return img().src;
-  });
-  const style$1 = solidJs.createMemo(() => {
-    if (!store.option.scrollMode) return undefined;
-    const size = img()?.width ? img() : placeholderSize();
-    return {
-      '--width': `${size.width}px`,
-      'aspect-ratio': `${size.width} / ${size.height}`
-    };
-  });
-  return (() => {
-    const _el$ = _tmpl$$C();
-    _el$.addEventListener("error", e => handleImgError(props.index, e.currentTarget));
-    _el$.addEventListener("load", e => handleImgLoaded(props.index, e.currentTarget));
-    const _ref$ = ref;
-    typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$1.img,
-        _v$2 = style$1(),
-        _v$3 = src(),
-        _v$4 = `${props.index + 1}`,
-        _v$5 = props.index === -1 ? 'page' : props.fill,
-        _v$6 = img()?.type || undefined,
-        _v$7 = img()?.loadType === 'loaded' ? undefined : img()?.loadType;
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _p$._v$2 = style(_el$, _v$2, _p$._v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "src", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$, "alt", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-fill", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-type", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-load-type", _p$._v$7 = _v$7);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined,
-      _v$5: undefined,
-      _v$6: undefined,
-      _v$7: undefined
-    });
-    return _el$;
-  })();
-};
-
-const _tmpl$$B = /*#__PURE__*/template(`<div>`),
-  _tmpl$2$b = /*#__PURE__*/template(`<h1>NULL`);
-const ComicPage = props => {
-  const show = solidJs.createMemo(() => store.gridMode || store.option.scrollMode || store.memo.renderPageList.some(page => page === props.page));
-  const fill = solidJs.createMemo(() => {
-    if (props.page.length === 1) return undefined;
-
-    // 判断是否有填充页
-    const fillIndex = props.page.indexOf(-1);
-    if (fillIndex !== -1) return store.option.dir !== 'rtl' ? ['right', 'left'] : ['left', 'right'];
-    return undefined;
-  });
-  const style$1 = solidJs.createMemo(() => {
-    if (!store.gridMode) return {};
-    const highlight = props.index === store.activePageIndex;
-    const tip = getPageTip(props.index);
-    return {
-      '--tip': highlight ? `">    ${tip}    <"` : `"${tip}"`,
-      'box-shadow': highlight ? 'var(--text-secondary) 0 0 1em' : undefined
-    };
-  });
-  return (() => {
-    const _el$ = _tmpl$$B();
-    insert(_el$, solidJs.createComponent(solidJs.For, {
-      get each() {
-        return props.page;
-      },
-      get fallback() {
-        return _tmpl$2$b();
-      },
-      children: (imgIndex, i) => solidJs.createComponent(ComicImg, {
-        index: imgIndex,
-        get fill() {
-          return fill()?.[i()];
-        }
-      })
-    }));
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$1.page,
-        _v$2 = boolDataVal(show()),
-        _v$3 = props.index,
-        _v$4 = style$1();
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-index", _p$._v$3 = _v$3);
-      _p$._v$4 = style(_el$, _v$4, _p$._v$4);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined
-    });
-    return _el$;
-  })();
-};
-
-const _tmpl$$A = /*#__PURE__*/template(`<div tabindex=-1>`),
-  _tmpl$2$a = /*#__PURE__*/template(`<h1>NULL`);
-const ComicImgFlow = () => {
-  const {
-    hiddenMouse,
-    onMouseMove
-  } = useHiddenMouse();
-  const handleDrag = (state, e) => {
-    if (store.gridMode) return;
-    if (touches.size > 1) return handlePinchZoom(state);
-    if (store.zoom.scale !== 100) return handleZoomDrag(state);
-    if (!store.option.scrollMode) return handleMangaFlowDrag(state);
-  };
-  solidJs.onMount(() => {
-    useDrag({
-      ref: refs.mangaFlow,
-      handleDrag,
-      handleClick,
-      touches
-    });
-    setState(state => {
-      state.observer = new IntersectionObserver(handleObserver, {
-        root: refs.mangaFlow,
-        threshold: 0.01
-      });
-    });
-    solidJs.onCleanup(() => {
-      setState(state => {
-        state.observer?.disconnect();
-        state.observer = null;
-      });
-    });
-  });
-  const handleTransitionEnd = () => {
-    if (store.isDragMode) return;
-    setState(state => {
-      if (store.zoom.scale === 100) updateRenderPage(state, true);else state.page.anima = '';
-    });
-  };
-  const pageXY = solidJs.createMemo(() => {
-    const x = `calc(${store.page.offset.x.pct}% + ${store.page.offset.x.px}px)`;
-    return {
-      '--page-x': store.option.dir === 'rtl' ? x : `calc(${x} * -1)`,
-      '--page-y': `calc(${store.page.offset.y.pct}% + ${store.page.offset.y.px}px)`
-    };
-  });
-  const zoom = solidJs.createMemo(() => ({
-    '--scale': store.zoom.scale / 100,
-    '--zoom-x': `${store.zoom.offset.x || 0}px`,
-    '--zoom-y': `${store.zoom.offset.y || 0}px`
-  }));
-  const touchAction = solidJs.createMemo(() => {
-    if (store.gridMode) return 'auto';
-    if (store.zoom.scale !== 100) {
-      if (store.option.scrollMode) {
-        if (store.zoom.offset.y === 0) return 'pan-up';
-        if (store.zoom.offset.y === bound.y()) return 'pan-down';
-      }
-      return 'none';
-    }
-    if (store.option.scrollMode) return 'pan-y';
-  });
-  return (() => {
-    const _el$ = _tmpl$$A();
-    _el$.addEventListener("scroll", () => setState(updateDrag));
-    _el$.addEventListener("transitionend", handleTransitionEnd);
-    const _ref$ = bindRef('mangaFlow');
-    typeof _ref$ === "function" && use(_ref$, _el$);
-    _el$.addEventListener("mousemove", onMouseMove);
-    insert(_el$, solidJs.createComponent(solidJs.Index, {
-      get each() {
-        return store.pageList;
-      },
-      get fallback() {
-        return _tmpl$2$a();
-      },
-      children: (page, i) => solidJs.createComponent(ComicPage, {
-        get page() {
-          return page();
-        },
-        index: i
-      })
-    }));
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$1.mangaFlow,
-        _v$2 = store.option.dir,
-        _v$3 = `${modules_c21c94f2$1.mangaFlow} ${modules_c21c94f2$1.beautifyScrollbar}`,
-        _v$4 = boolDataVal(store.option.disableZoom || store.option.scrollMode),
-        _v$5 = boolDataVal(store.gridMode),
-        _v$6 = boolDataVal(store.zoom.scale !== 100),
-        _v$7 = boolDataVal(store.page.vertical),
-        _v$8 = store.page.anima,
-        _v$9 = !store.gridMode && hiddenMouse(),
-        _v$10 = {
-          'touch-action': touchAction(),
-          ...zoom(),
-          ...pageXY()
-        };
-      _v$ !== _p$._v$ && setAttribute(_el$, "id", _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "dir", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && className(_el$, _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-disable-zoom", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-grid-mode", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-scale-mode", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-vertical", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && setAttribute(_el$, "data-animation", _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && setAttribute(_el$, "data-hidden-mouse", _p$._v$9 = _v$9);
-      _p$._v$10 = style(_el$, _v$10, _p$._v$10);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined,
-      _v$5: undefined,
-      _v$6: undefined,
-      _v$7: undefined,
-      _v$8: undefined,
-      _v$9: undefined,
-      _v$10: undefined
-    });
-    return _el$;
-  })();
-};
-
-const _tmpl$$z = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">`);
-const MdLooksOne = ((props = {}) => (() => {
-  const _el$ = _tmpl$$z();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$y = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">`);
-const MdLooksTwo = ((props = {}) => (() => {
-  const _el$ = _tmpl$$y();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$x = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">`);
-const MdViewDay = ((props = {}) => (() => {
-  const _el$ = _tmpl$$x();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$w = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">`);
-const MdQueue = ((props = {}) => (() => {
-  const _el$ = _tmpl$$w();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$v = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14">`);
-const MdSearch = ((props = {}) => (() => {
-  const _el$ = _tmpl$$v();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$u = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.52 17.52 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.66 15.66 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.885.885 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">`);
-const MdTranslate = ((props = {}) => (() => {
-  const _el$ = _tmpl$$u();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$t = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">`);
-const MdGrid = ((props = {}) => (() => {
-  const _el$ = _tmpl$$t();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$s = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A3.998 3.998 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">`);
-const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
-  const _el$ = _tmpl$$s();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$r = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A3.998 3.998 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">`);
-const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
-  const _el$ = _tmpl$$r();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$q = /*#__PURE__*/template(`<div><div> <!> `);
-/** 设置菜单项 */
-const SettingsItem = props => (() => {
-  const _el$ = _tmpl$$q(),
-    _el$2 = _el$.firstChild,
-    _el$3 = _el$2.firstChild,
-    _el$5 = _el$3.nextSibling;
-    _el$5.nextSibling;
-  insert(_el$2, () => props.name, _el$5);
-  insert(_el$, () => props.children, null);
-  solidJs.createRenderEffect(_p$ => {
-    const _v$ = props.class ? `${modules_c21c94f2$1.SettingsItem} ${props.class}` : modules_c21c94f2$1.SettingsItem,
-      _v$2 = {
-        [props.class ?? '']: !!props.class?.length,
-        ...props.classList
-      },
-      _v$3 = props.style,
-      _v$4 = modules_c21c94f2$1.SettingsItemName;
-    _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-    _p$._v$2 = classList(_el$, _v$2, _p$._v$2);
-    _p$._v$3 = style(_el$, _v$3, _p$._v$3);
-    _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
-    return _p$;
-  }, {
-    _v$: undefined,
-    _v$2: undefined,
-    _v$3: undefined,
-    _v$4: undefined
-  });
-  return _el$;
-})();
-
-const _tmpl$$p = /*#__PURE__*/template(`<button type=button><div>`);
-/** 开关式菜单项 */
-const SettingsItemSwitch = props => {
-  const handleClick = () => props.onChange(!props.value);
-  return solidJs.createComponent(SettingsItem, {
-    get name() {
-      return props.name;
-    },
-    get ["class"]() {
-      return props.class;
-    },
-    get classList() {
-      return props.classList;
-    },
-    get children() {
-      const _el$ = _tmpl$$p(),
-        _el$2 = _el$.firstChild;
-      _el$.addEventListener("click", handleClick);
-      solidJs.createRenderEffect(_p$ => {
-        const _v$ = modules_c21c94f2$1.SettingsItemSwitch,
-          _v$2 = props.value,
-          _v$3 = modules_c21c94f2$1.SettingsItemSwitchRound;
-        _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-        _v$2 !== _p$._v$2 && setAttribute(_el$, "data-checked", _p$._v$2 = _v$2);
-        _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
-        return _p$;
-      }, {
-        _v$: undefined,
-        _v$2: undefined,
-        _v$3: undefined
-      });
-      return _el$;
-    }
-  });
-};
-
-const _tmpl$$o = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">`);
-const MdRefresh = ((props = {}) => (() => {
-  const _el$ = _tmpl$$o();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$n = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">`);
-const MdAdd = ((props = {}) => (() => {
-  const _el$ = _tmpl$$n();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$m = /*#__PURE__*/template(`<div tabindex=0>`),
-  _tmpl$2$9 = /*#__PURE__*/template(`<div><div><p></p><span></span><div></div><div>`);
-const KeyItem = props => {
-  const code = () => store.hotkeys[props.operateName][props.i];
-  const del = () => delHotkeys(code());
-  const handleKeyDown = e => {
-    e.stopPropagation();
-    e.preventDefault();
-    switch (e.key) {
-      case 'Tab':
-      case 'Enter':
-      case 'Escape':
-        focus();
-        return;
-      case 'Backspace':
-        setHotkeys(props.operateName, props.i, '');
-        return;
-    }
-    const newCode = getKeyboardCode(e);
-    if (!Reflect.has(hotkeysMap(), newCode)) setHotkeys(props.operateName, props.i, newCode);
-  };
-  return (() => {
-    const _el$ = _tmpl$$m();
-    _el$.addEventListener("blur", () => code() || del());
-    use(ref => code() || setTimeout(() => ref.focus()), _el$);
-    _el$.addEventListener("keydown", handleKeyDown);
-    insert(_el$, () => keyboardCodeToText(code()), null);
-    insert(_el$, solidJs.createComponent(MdClose, {
-      "on:click": del
-    }), null);
-    solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.hotkeysItem));
-    return _el$;
-  })();
-};
-const SettingHotkeys = () => solidJs.createComponent(solidJs.For, {
-  get each() {
-    return Object.entries(store.hotkeys);
-  },
-  children: ([name, keys]) => (() => {
-    const _el$2 = _tmpl$2$9(),
-      _el$3 = _el$2.firstChild,
-      _el$4 = _el$3.firstChild,
-      _el$5 = _el$4.nextSibling,
-      _el$6 = _el$5.nextSibling,
-      _el$7 = _el$6.nextSibling;
-    insert(_el$4, () => t(`hotkeys.${name}`) || name);
-    _el$5.style.setProperty("flex-grow", "1");
-    _el$6.addEventListener("click", () => setHotkeys(name, store.hotkeys[name].length, ''));
-    insert(_el$6, solidJs.createComponent(MdAdd, {}));
-    _el$7.addEventListener("click", () => {
-      const newKeys = defaultHotkeys[name] ?? [];
-      newKeys.forEach(delHotkeys);
-      setHotkeys(name, newKeys);
-    });
-    insert(_el$7, solidJs.createComponent(MdRefresh, {}));
-    insert(_el$2, solidJs.createComponent(solidJs.Index, {
-      each: keys,
-      children: (_, i) => solidJs.createComponent(KeyItem, {
-        operateName: name,
-        i: i
-      })
-    }), null);
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$1.hotkeys,
-        _v$2 = modules_c21c94f2$1.hotkeysHeader,
-        _v$3 = t('setting.hotkeys.add'),
-        _v$4 = t('setting.hotkeys.restore');
-      _v$ !== _p$._v$ && className(_el$2, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && className(_el$3, _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$6, "title", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$7, "title", _p$._v$4 = _v$4);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined
-    });
-    return _el$2;
-  })()
-});
-
-const _tmpl$$l = /*#__PURE__*/template(`<select>`),
-  _tmpl$2$8 = /*#__PURE__*/template(`<option>`);
-/** 选择器式菜单项 */
-const SettingsItemSelect = props => {
-  let ref;
-  solidJs.createEffect(() => {
-    ref.value = props.options?.some(([val]) => val === props.value) ? props.value : '';
-  });
-  return solidJs.createComponent(SettingsItem, {
-    get name() {
-      return props.name;
-    },
-    get ["class"]() {
-      return props.class;
-    },
-    get classList() {
-      return props.classList;
-    },
-    get children() {
-      const _el$ = _tmpl$$l();
-      _el$.addEventListener("change", e => props.onChange(e.target.value));
-      const _ref$ = ref;
-      typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
-      _el$.addEventListener("click", () => props.onClick?.());
-      insert(_el$, solidJs.createComponent(solidJs.For, {
-        get each() {
-          return props.options;
-        },
-        children: ([val, label]) => (() => {
-          const _el$2 = _tmpl$2$8();
-          _el$2.value = val;
-          insert(_el$2, label ?? val);
-          return _el$2;
-        })()
-      }));
-      solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.SettingsItemSelect));
-      return _el$;
-    }
-  });
-};
-
-const setMessage = (i, msg) => _setState('imgList', i, 'translationMessage', msg);
-const request = (url, details) => new Promise((resolve, reject) => {
-  if (typeof GM_xmlhttpRequest === 'undefined') reject(new Error(t('pwa.alert.userscript_not_installed')));
-  GM_xmlhttpRequest({
-    method: 'GET',
-    url,
-    headers: {
-      Referer: window.location.href
-    },
-    ...details,
-    onload: resolve,
-    onerror: reject,
-    ontimeout: reject
-  });
-});
-const download = async url => {
-  if (url.startsWith('blob:')) {
-    const res = await fetch(url);
-    return res.blob();
-  }
-  const res = await request(url, {
-    responseType: 'blob'
-  });
-  return res.response;
-};
-const createFormData = imgBlob => {
-  const file = new File([imgBlob], `image.${imgBlob.type.split('/').at(-1)}`, {
-    type: imgBlob.type
-  });
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('mime', file.type);
-  formData.append('size', store.option.translation.options.size);
-  formData.append('detector', store.option.translation.options.detector);
-  formData.append('direction', store.option.translation.options.direction);
-  formData.append('translator', store.option.translation.options.translator);
-  formData.append('tgt_lang', store.option.translation.options.targetLanguage);
-  formData.append('target_language', store.option.translation.options.targetLanguage);
-  formData.append('retry', `${store.option.translation.forceRetry}`);
-  return formData;
-};
-
-/** 将站点列表转为选择器中的选项 */
-const createOptions = list => list.map(name => [name, t(`translation.translator.${name}`) || name]);
-
-const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
-
-/** 获取部署服务的可用翻译 */
-const getValidTranslators = async () => {
-  try {
-    const res = await request(`${url()}`);
-    const translatorsText = res.responseText.match(/(?<=validTranslators: ).+?(?=,\n)/)?.[0];
-    if (!translatorsText) return undefined;
-    const list = JSON.parse(translatorsText.replaceAll(`'`, `"`));
-    return createOptions(list);
-  } catch (e) {
-    log.error(t('translation.tip.get_translator_list_error'), e);
-    return undefined;
-  }
-};
-
-/** 使用自部署服务器翻译指定图片 */
-const selfhostedTranslation = async i => {
-  if (!(await getValidTranslators())) throw new Error(t('alert.server_connect_failed'));
-  const img = store.imgList[i];
-  setMessage(i, t('translation.tip.img_downloading'));
-  let imgBlob;
-  try {
-    imgBlob = await download(img.src);
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.download_img_failed'));
-  }
-  let task_id;
-  // 上传图片取得任务 id
-  try {
-    const res = await request(`${url()}/submit`, {
-      method: 'POST',
-      data: createFormData(imgBlob)
-    });
-    const resData = JSON.parse(res.responseText);
-    task_id = resData.task_id;
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.upload_error'));
-  }
-  let errorNum = 0;
-  let taskState;
-  // 等待翻译完成
-  while (!taskState?.finished) {
-    try {
-      await sleep(200);
-      const res = await request(`${url()}/task-state?taskid=${task_id}`);
-      taskState = JSON.parse(res.responseText);
-      setMessage(i, `${t(`translation.status.${taskState.state}`) || taskState.state}`);
-    } catch (error) {
-      log.error(error);
-      if (errorNum > 5) throw new Error(t('translation.tip.check_img_status_failed'));
-      errorNum += 1;
-    }
-  }
-  return URL.createObjectURL(await download(`${url()}/result/${task_id}`));
-};
-
-/** 等待翻译完成 */
-const waitTranslation = (id, i) => {
-  const ws = new WebSocket(`wss://api.cotrans.touhou.ai/task/${id}/event/v1`);
-  return new Promise((resolve, reject) => {
-    ws.onmessage = e => {
-      const msg = JSON.parse(e.data);
-      switch (msg.type) {
-        case 'result':
-          resolve(msg.result.translation_mask);
-          break;
-        case 'pending':
-          setMessage(i, t('translation.tip.pending', {
-            pos: msg.pos
-          }));
-          break;
-        case 'status':
-          setMessage(i, t(`translation.status.${msg.status}`) || msg.status);
-          break;
-        case 'error':
-          reject(new Error(`${t('translation.tip.error')}：id ${msg.error_id}`));
-          break;
-        case 'not_found':
-          reject(new Error(`${t('translation.tip.error')}：Not Found`));
-          break;
-      }
-    };
-  });
-};
-
-/** 将翻译后的内容覆盖到原图上 */
-const mergeImage = async (rawImage, maskUri) => {
-  const canvas = document.createElement('canvas');
-  const canvasCtx = canvas.getContext('2d');
-  const img = new Image();
-  img.src = URL.createObjectURL(rawImage);
-  await new Promise((resolve, reject) => {
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      canvasCtx.drawImage(img, 0, 0);
-      resolve(null);
-    };
-    img.onerror = reject;
-  });
-  const img2 = new Image();
-  img2.src = maskUri;
-  img2.crossOrigin = 'anonymous';
-  await new Promise(resolve => {
-    img2.onload = () => {
-      canvasCtx.drawImage(img2, 0, 0);
-      resolve(null);
-    };
-  });
-  return URL.createObjectURL(await canvasToBlob(canvas));
-};
-
-/** 缩小过大的图片 */
-const resize = async (blob, w, h) => {
-  if (w <= 4096 && h <= 4096) return blob;
-  const img = new Image();
-  img.src = URL.createObjectURL(blob);
-  await new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
-  });
-  if (w <= 4096 && h <= 4096) return blob;
-  const scale = Math.min(4096 / w, 4096 / h);
-  const width = Math.floor(w * scale);
-  const height = Math.floor(h * scale);
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, 0, 0, width, height);
-  URL.revokeObjectURL(img.src);
-  return canvasToBlob(canvas);
-};
-
-/** 使用 cotrans 翻译指定图片 */
-const cotransTranslation = async i => {
-  const img = store.imgList[i];
-  setMessage(i, t('translation.tip.img_downloading'));
-  let imgBlob;
-  try {
-    imgBlob = await download(img.src);
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.download_img_failed'));
-  }
-  try {
-    imgBlob = await resize(imgBlob, img.width, img.height);
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.resize_img_failed'));
-  }
-  let res;
-  try {
-    res = await request('https://api.cotrans.touhou.ai/task/upload/v1', {
-      method: 'POST',
-      data: createFormData(imgBlob),
-      headers: {
-        Origin: 'https://cotrans.touhou.ai',
-        Referer: 'https://cotrans.touhou.ai/'
-      }
-    });
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.upload_error'));
-  }
-  let resData;
-  try {
-    resData = JSON.parse(res.responseText);
-  } catch (_) {
-    throw new Error(`${t('translation.tip.upload_return_error')}：${res.responseText}`);
-  }
-  if ('error_id' in resData) throw new Error(`${t('translation.tip.upload_return_error')}：${resData.error_id}`);
-  if (!resData.id) throw new Error(t('translation.tip.id_not_returned'));
-  const translation_mask = resData.result?.translation_mask || (await waitTranslation(resData.id, i));
-  return mergeImage(imgBlob, translation_mask);
-};
-const cotransTranslators = ['google', 'youdao', 'baidu', 'deepl', 'gpt3.5', 'offline', 'none'];
-
-/** 翻译指定图片 */
-const translationImage = async i => {
-  try {
-    if (typeof GM_xmlhttpRequest === 'undefined') {
-      toast?.error(t('pwa.alert.userscript_not_installed'));
-      throw new Error(t('pwa.alert.userscript_not_installed'));
-    }
-    const img = store.imgList[i];
-    if (!img?.src) return;
-    if (img.translationType !== 'wait') return;
-    if (img.translationUrl) return _setState('imgList', i, 'translationType', 'show');
-    if (img.loadType !== 'loaded') return setMessage(i, t('translation.tip.img_not_fully_loaded'));
-    const translationUrl = await (store.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(i);
-    setState(state => {
-      state.imgList[i].translationUrl = translationUrl;
-      state.imgList[i].translationMessage = t('translation.tip.translation_completed');
-      state.imgList[i].translationType = 'show';
-    });
-  } catch (error) {
-    setState(state => {
-      state.imgList[i].translationType = 'error';
-      if (error.message) state.imgList[i].translationMessage = error.message;
-    });
-  }
-};
-
-/** 逐个翻译状态为等待翻译的图片 */
-const translationAll = singleThreaded(async () => {
-  for (let i = 0; i < store.imgList.length; i++) {
-    const img = store.imgList[i];
-    if (img.loadType !== 'loaded' || img.translationType !== 'wait') continue;
-    await translationImage(i);
-  }
-});
-
-/** 开启或关闭指定图片的翻译 */
-const setImgTranslationEnbale = (list, enbale) => {
-  setState(state => {
-    list.forEach(i => {
-      const img = state.imgList[i];
-      if (!img) return;
-      if (enbale) {
-        if (state.option.translation.forceRetry) {
-          img.translationType = 'wait';
-          img.translationUrl = undefined;
-          setMessage(i, t('translation.tip.wait_translation'));
-        } else {
-          switch (img.translationType) {
-            case 'hide':
-              {
-                img.translationType = 'show';
-                break;
-              }
-            case 'error':
-            case undefined:
-              {
-                img.translationType = 'wait';
-                setMessage(i, t('translation.tip.wait_translation'));
-                break;
-              }
-          }
-        }
-      } else {
-        switch (img.translationType) {
-          case 'show':
-            {
-              img.translationType = 'hide';
-              break;
-            }
-          case 'error':
-          case 'wait':
-            {
-              img.translationType = undefined;
-              break;
-            }
-        }
-      }
-    });
-  });
-  return translationAll();
-};
-const translatorOptions = solidJs.createRoot(() => {
-  const [selfhostedOptions, setSelfOptions] = solidJs.createSignal([]);
-
-  // 在切换翻译服务器的同时切换可用翻译的选项列表
-  solidJs.createEffect(solidJs.on([() => store.option.translation.server, () => store.option.translation.localUrl], async () => {
-    if (store.option.translation.server !== 'selfhosted') return;
-    setSelfOptions((await getValidTranslators()) ?? []);
-
-    // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
-    if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
-      setOption(draftOption => {
-        draftOption.translation.options.translator = 'google';
-      });
-    }
-  }));
-  const options = solidJs.createMemo(solidJs.on([selfhostedOptions, lang, () => store.option.translation.server], () => store.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
-  return options;
-});
-
-const _tmpl$$k = /*#__PURE__*/template(`<div><div>`);
-
-/** 带有动画过渡的切换显示设置项 */
-const SettingsShowItem = props => (() => {
-  const _el$ = _tmpl$$k(),
-    _el$2 = _el$.firstChild;
-  insert(_el$2, () => props.children);
-  solidJs.createRenderEffect(_p$ => {
-    const _v$ = modules_c21c94f2$1.SettingsShowItem,
-      _v$2 = props.when ? '1fr' : '0fr',
-      _v$3 = modules_c21c94f2$1.SettingsShowItemBody;
-    _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-    _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("grid-template-rows", _v$2) : _el$.style.removeProperty("grid-template-rows"));
-    _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
-    return _p$;
-  }, {
-    _v$: undefined,
-    _v$2: undefined,
-    _v$3: undefined
-  });
-  return _el$;
-})();
-
-const _tmpl$$j = /*#__PURE__*/template(`<blockquote>`),
-  _tmpl$2$7 = /*#__PURE__*/template(`<input type=url>`);
-const SettingTranslation = () => {
-  const isTranslationEnable = solidJs.createMemo(() => store.option.translation.server !== 'disable' && translatorOptions().length > 0);
-
-  /** 是否正在翻译全部图片 */
-  const isTranslationAll = solidJs.createMemo(() => isTranslationEnable() && store.imgList.every(img => img.translationType === 'show' || img.translationType === 'wait'));
-
-  /** 是否正在翻译当前页以后的全部图片 */
-  const isTranslationAfterCurrent = solidJs.createMemo(() => isTranslationEnable() && store.imgList.slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
-  return [solidJs.createComponent(SettingsItemSelect, {
-    get name() {
-      return t('setting.translation.server');
-    },
-    get options() {
-      return [['disable', t('other.disable')], ['selfhosted', t('setting.translation.server_selfhosted')], ['cotrans']];
-    },
-    get value() {
-      return store.option.translation.server;
-    },
-    get onChange() {
-      return createStateSetFn('translation.server');
-    }
-  }), solidJs.createComponent(SettingsShowItem, {
-    get when() {
-      return store.option.translation.server === 'cotrans';
-    },
-    get children() {
-      const _el$ = _tmpl$$j();
-      solidJs.createRenderEffect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
-      return _el$;
-    }
-  }), solidJs.createComponent(SettingsShowItem, {
-    get when() {
-      return store.option.translation.server !== 'disable';
-    },
-    get children() {
-      return [solidJs.createComponent(SettingsItemSelect, {
-        get name() {
-          return t('setting.translation.options.detection_resolution');
-        },
-        options: [['S', '1024px'], ['M', '1536px'], ['L', '2048px'], ['X', '2560px']],
-        get value() {
-          return store.option.translation.options.size;
-        },
-        get onChange() {
-          return createStateSetFn('translation.options.size');
-        }
-      }), solidJs.createComponent(SettingsItemSelect, {
-        get name() {
-          return t('setting.translation.options.text_detector');
-        },
-        options: [['default'], ['ctd', 'Comic Text Detector']],
-        get value() {
-          return store.option.translation.options.detector;
-        },
-        get onChange() {
-          return createStateSetFn('translation.options.detector');
-        }
-      }), solidJs.createComponent(SettingsItemSelect, {
-        get name() {
-          return t('setting.translation.options.translator');
-        },
-        get options() {
-          return translatorOptions();
-        },
-        get value() {
-          return store.option.translation.options.translator;
-        },
-        get onChange() {
-          return createStateSetFn('translation.options.translator');
-        },
-        onClick: () => {
-          if (store.option.translation.server !== 'selfhosted') return;
-          // 通过手动触发变更，以便在点击时再获取一下翻译列表
-          setState(state => {
-            state.option.translation.server = 'disable';
-            state.option.translation.server = 'selfhosted';
-          });
-        }
-      }), solidJs.createComponent(SettingsItemSelect, {
-        get name() {
-          return t('setting.translation.options.direction');
-        },
-        get options() {
-          return [['auto', t('setting.translation.options.direction_auto')], ['h', t('setting.translation.options.direction_horizontal')], ['v', t('setting.translation.options.direction_vertical')]];
-        },
-        get value() {
-          return store.option.translation.options.direction;
-        },
-        get onChange() {
-          return createStateSetFn('translation.options.direction');
-        }
-      }), solidJs.createComponent(SettingsItemSelect, {
-        get name() {
-          return t('setting.translation.options.target_language');
-        },
-        options: [['CHS', '简体中文'], ['CHT', '繁體中文'], ['JPN', '日本語'], ['ENG', 'English'], ['KOR', '한국어'], ['VIN', 'Tiếng Việt'], ['CSY', 'čeština'], ['NLD', 'Nederlands'], ['FRA', 'français'], ['DEU', 'Deutsch'], ['HUN', 'magyar nyelv'], ['ITA', 'italiano'], ['PLK', 'polski'], ['PTB', 'português'], ['ROM', 'limba română'], ['RUS', 'русский язык'], ['ESP', 'español'], ['TRK', 'Türk dili']],
-        get value() {
-          return store.option.translation.options.targetLanguage;
-        },
-        get onChange() {
-          return createStateSetFn('translation.options.targetLanguage');
-        }
-      }), solidJs.createComponent(SettingsItemSwitch, {
-        get name() {
-          return t('setting.translation.options.forceRetry');
-        },
-        get value() {
-          return store.option.translation.forceRetry;
-        },
-        get onChange() {
-          return createStateSetFn('translation.forceRetry');
-        }
-      }), solidJs.createComponent(solidJs.Show, {
-        get when() {
-          return store.option.translation.server === 'selfhosted';
-        },
-        get children() {
-          return [solidJs.createComponent(SettingsItemSwitch, {
-            get name() {
-              return t('setting.translation.translate_all_img');
-            },
-            get value() {
-              return isTranslationAll();
-            },
-            onChange: () => {
-              setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll());
-            }
-          }), solidJs.createComponent(SettingsItemSwitch, {
-            get name() {
-              return t('setting.translation.translate_after_current');
-            },
-            get value() {
-              return isTranslationAfterCurrent();
-            },
-            onChange: () => {
-              setImgTranslationEnbale(store.pageList.slice(store.activePageIndex).flat(), !isTranslationAfterCurrent());
-            }
-          }), solidJs.createComponent(SettingsItemSwitch, {
-            get name() {
-              return t('setting.translation.options.localUrl');
-            },
-            get value() {
-              return store.option.translation.localUrl !== undefined;
-            },
-            onChange: val => {
-              setOption(draftOption => {
-                draftOption.translation.localUrl = val ? '' : undefined;
-              });
-            }
-          }), solidJs.createComponent(solidJs.Show, {
-            get when() {
-              return store.option.translation.localUrl !== undefined;
-            },
-            get children() {
-              const _el$2 = _tmpl$2$7();
-              _el$2.addEventListener("change", e => {
-                setOption(draftOption => {
-                  // 删掉末尾的斜杠
-                  const url = e.target.value.replace(/\/$/, '');
-                  draftOption.translation.localUrl = url;
-                });
-              });
-              solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.SettingsItem));
-              solidJs.createRenderEffect(() => _el$2.value = store.option.translation.localUrl);
-              return _el$2;
-            }
-          })];
-        }
-      })];
-    }
-  })];
-};
-
-const _tmpl$$i = /*#__PURE__*/template(`<div><span contenteditable data-only-number></span><span>`);
-/** 数值输入框菜单项 */
-const SettingsItemNumber = props => {
-  const handleInput = e => {
-    if (e.currentTarget.textContent.length > props.maxLength) e.currentTarget.blur();
-  };
-  const handleKeyDown = e => {
-    switch (e.key) {
-      case 'ArrowUp':
-        return props.onChange(+e.target.textContent + (props.step ?? 1));
-      case 'ArrowDown':
-        return props.onChange(+e.target.textContent - (props.step ?? 1));
-    }
-  };
-  return solidJs.createComponent(SettingsItem, {
-    get name() {
-      return props.name;
-    },
-    get ["class"]() {
-      return props.class;
-    },
-    get classList() {
-      return props.classList;
-    },
-    get children() {
-      const _el$ = _tmpl$$i(),
-        _el$2 = _el$.firstChild,
-        _el$3 = _el$2.nextSibling;
-      _el$2.addEventListener("blur", e => {
-        try {
-          props.onChange(+e.currentTarget.textContent);
-        } finally {
-          // eslint-disable-next-line no-param-reassign
-          e.currentTarget.textContent = `${props.value}`;
-        }
-      });
-      _el$2.addEventListener("input", handleInput);
-      _el$2.addEventListener("keydown", handleKeyDown);
-      insert(_el$2, () => props.value);
-      _el$3.style.setProperty("margin-left", ".1em");
-      insert(_el$3, () => props.suffix ?? '');
-      solidJs.createRenderEffect(() => (props.suffix ? '.3em' : '.6em') != null ? _el$.style.setProperty("margin-right", props.suffix ? '.3em' : '.6em') : _el$.style.removeProperty("margin-right"));
-      return _el$;
-    }
-  });
-};
-
-const _tmpl$$h = /*#__PURE__*/template(`<div>`),
-  _tmpl$2$6 = /*#__PURE__*/template(`<div role=button tabindex=-1>`);
-
-const areaArrayMap = {
-  left_right: [['prev', 'menu', 'next'], ['PREV', 'MENU', 'NEXT'], ['prev', 'menu', 'next']],
-  up_down: [['prev', 'PREV', 'prev'], ['menu', 'MENU', 'menu'], ['next', 'NEXT', 'next']],
-  edge: [['next', 'menu', 'next'], ['NEXT', 'MENU', 'NEXT'], ['next', 'PREV', 'next']],
-  l: [['PREV', 'prev', 'prev'], ['prev', 'MENU', 'next'], ['next', 'next', 'NEXT']]
-};
-const TouchArea = () => {
-  const areaType = solidJs.createMemo(() => Reflect.has(areaArrayMap, store.option.clickPageTurn.area) ? store.option.clickPageTurn.area : 'left_right');
-  const dir = () => {
-    if (!store.option.clickPageTurn.reverse) return store.option.dir;
-    return store.option.dir === 'rtl' ? 'ltr' : 'rtl';
-  };
-  return (() => {
-    const _el$ = _tmpl$$h();
-    const _ref$ = bindRef('touchArea');
-    typeof _ref$ === "function" && use(_ref$, _el$);
-    insert(_el$, solidJs.createComponent(solidJs.For, {
-      get each() {
-        return areaArrayMap[areaType()];
-      },
-      children: rows => solidJs.createComponent(solidJs.For, {
-        each: rows,
-        children: area => (() => {
-          const _el$2 = _tmpl$2$6();
-          setAttribute(_el$2, "data-area", area);
-          solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.touchArea));
-          return _el$2;
-        })()
-      })
-    }));
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$1.touchAreaRoot,
-        _v$2 = dir(),
-        _v$3 = boolDataVal(store.show.touchArea),
-        _v$4 = areaType(),
-        _v$5 = boolDataVal(store.option.clickPageTurn.enabled && !store.option.scrollMode);
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "dir", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-show", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-area", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-turn-page", _p$._v$5 = _v$5);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined,
-      _v$5: undefined
-    });
-    return _el$;
-  })();
-};
-
-const _tmpl$$g = /*#__PURE__*/template(`<button type=button>`),
-  _tmpl$2$5 = /*#__PURE__*/template(`<input type=color>`);
-/** 默认菜单项 */
-const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => solidJs.createComponent(SettingsItem, {
-  get name() {
-    return solidJs.createMemo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
-  },
-  get children() {
-    const _el$ = _tmpl$$g();
-    _el$.addEventListener("click", switchDir);
-    insert(_el$, (() => {
-      const _c$ = solidJs.createMemo(() => store.option.dir === 'rtl');
-      return () => _c$() ? solidJs.createComponent(MdOutlineFormatTextdirectionRToL, {}) : solidJs.createComponent(MdOutlineFormatTextdirectionLToR, {});
-    })());
-    solidJs.createRenderEffect(() => className(_el$, modules_c21c94f2$1.SettingsItemIconButton));
-    return _el$;
-  }
-})], [t('setting.option.paragraph_scrollbar'), () => [solidJs.createComponent(SettingsItemSelect, {
-  get name() {
-    return t('setting.option.scrollbar_position');
-  },
-  get options() {
-    return [['auto', t('setting.option.scrollbar_position_auto')], ['right', t('setting.option.scrollbar_position_right')], ['top', t('setting.option.scrollbar_position_top')], ['bottom', t('setting.option.scrollbar_position_bottom')], ['hidden', t('setting.option.scrollbar_position_hidden')]];
-  },
-  get value() {
-    return store.option.scrollbar.position;
-  },
-  get onChange() {
-    return createStateSetFn('scrollbar.position');
-  }
-}), solidJs.createComponent(SettingsShowItem, {
-  get when() {
-    return store.option.scrollbar.position !== 'hidden';
-  },
-  get children() {
-    return [solidJs.createComponent(solidJs.Show, {
-      get when() {
-        return !store.isMobile;
-      },
-      get children() {
-        return solidJs.createComponent(SettingsItemSwitch, {
-          get name() {
-            return t('setting.option.scrollbar_auto_hidden');
-          },
-          get value() {
-            return store.option.scrollbar.autoHidden;
-          },
-          get onChange() {
-            return createStateSetFn('scrollbar.autoHidden');
-          }
-        });
-      }
-    }), solidJs.createComponent(SettingsItemSwitch, {
-      get name() {
-        return t('setting.option.scrollbar_show_img_status');
-      },
-      get value() {
-        return store.option.scrollbar.showImgStatus;
-      },
-      get onChange() {
-        return createStateSetFn('scrollbar.showImgStatus');
-      }
-    }), solidJs.createComponent(solidJs.Show, {
-      get when() {
-        return store.option.scrollMode;
-      },
-      get children() {
-        return solidJs.createComponent(SettingsItemSwitch, {
-          get name() {
-            return t('setting.option.scrollbar_easy_scroll');
-          },
-          get value() {
-            return store.option.scrollbar.easyScroll;
-          },
-          get onChange() {
-            return createStateSetFn('scrollbar.easyScroll');
-          }
-        });
-      }
-    })];
-  }
-})]], [t('setting.option.paragraph_operation'), () => [solidJs.createComponent(SettingsItemSwitch, {
-  get name() {
-    return t('setting.option.jump_to_next_chapter');
-  },
-  get value() {
-    return store.option.jumpToNext;
-  },
-  get onChange() {
-    return createStateSetFn('jumpToNext');
-  }
-}), solidJs.createComponent(SettingsItemSwitch, {
-  get name() {
-    return t('setting.option.show_clickable_area');
-  },
-  get value() {
-    return store.show.touchArea;
-  },
-  onChange: () => _setState('show', 'touchArea', !store.show.touchArea)
-}), solidJs.createComponent(SettingsItemSwitch, {
-  get name() {
-    return t('setting.option.click_page_turn_enabled');
-  },
-  get value() {
-    return store.option.clickPageTurn.enabled;
-  },
-  get onChange() {
-    return createStateSetFn('clickPageTurn.enabled');
-  }
-}), solidJs.createComponent(SettingsShowItem, {
-  get when() {
-    return store.option.clickPageTurn.enabled;
-  },
-  get children() {
-    return [solidJs.createComponent(SettingsItemSelect, {
-      get name() {
-        return t('setting.option.click_page_turn_area');
-      },
-      get options() {
-        return Object.keys(areaArrayMap).map(key => [key, t(`touch_area.type.${key}`)]);
-      },
-      get value() {
-        return store.option.clickPageTurn.area;
-      },
-      get onChange() {
-        return createStateSetFn('clickPageTurn.area');
-      }
-    }), solidJs.createComponent(SettingsItemSwitch, {
-      get name() {
-        return t('setting.option.click_page_turn_swap_area');
-      },
-      get value() {
-        return store.option.clickPageTurn.reverse;
-      },
-      get onChange() {
-        return createStateSetFn('clickPageTurn.reverse');
-      }
-    })];
-  }
-})]], [t('setting.option.paragraph_display'), () => [solidJs.createComponent(SettingsItemSwitch, {
-  get name() {
-    return t('setting.option.dark_mode');
-  },
-  get value() {
-    return store.option.darkMode;
-  },
-  get onChange() {
-    return createStateSetFn('darkMode');
-  }
-}), solidJs.createComponent(SettingsItemSwitch, {
-  get name() {
-    return t('setting.option.disable_auto_enlarge');
-  },
-  get value() {
-    return store.option.disableZoom;
-  },
-  get onChange() {
-    return createStateSetFn('disableZoom');
-  }
-}), solidJs.createComponent(solidJs.Show, {
-  get when() {
-    return store.option.scrollMode;
-  },
-  get children() {
-    return [solidJs.createComponent(SettingsItemNumber, {
-      get name() {
-        return t('setting.option.scroll_mode_img_scale');
-      },
-      maxLength: 3,
-      suffix: "%",
-      step: 5,
-      onChange: val => {
-        if (Number.isNaN(val)) return;
-        zoomScrollModeImg(val / 100, true);
-      },
-      get value() {
-        return Math.round(store.option.scrollModeImgScale * 100);
-      }
-    }), solidJs.createComponent(SettingsItemNumber, {
-      get name() {
-        return t('setting.option.scroll_mode_img_spacing');
-      },
-      maxLength: 5,
-      onChange: val => {
-        if (Number.isNaN(val)) return;
-        setOption(draftOption => {
-          draftOption.scrollModeSpacing = clamp(0, val, Infinity);
-        });
-      },
-      get value() {
-        return Math.round(store.option.scrollModeSpacing);
-      }
-    })];
-  }
-})]], [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [t('setting.option.paragraph_translation'), SettingTranslation, true], [t('setting.option.paragraph_other'), () => [solidJs.createComponent(SettingsItemSwitch, {
-  get name() {
-    return t('setting.option.always_load_all_img');
-  },
-  get value() {
-    return store.option.alwaysLoadAllImg;
-  },
-  onChange: val => {
-    setOption(draftOption => {
-      draftOption.alwaysLoadAllImg = val;
-    });
-    setState(updateImgLoadType);
-  }
-}), solidJs.createComponent(SettingsItemSwitch, {
-  get name() {
-    return t('setting.option.first_page_fill');
-  },
-  get value() {
-    return store.option.firstPageFill;
-  },
-  get onChange() {
-    return createStateSetFn('firstPageFill');
-  }
-}), solidJs.createComponent(SettingsItemSwitch, {
-  get name() {
-    return t('setting.option.show_comments');
-  },
-  get value() {
-    return store.option.showComment;
-  },
-  get onChange() {
-    return createStateSetFn('showComment');
-  }
-}), solidJs.createComponent(SettingsItemSwitch, {
-  get name() {
-    return t('setting.option.swap_page_turn_key');
-  },
-  get value() {
-    return store.option.swapPageTurnKey;
-  },
-  get onChange() {
-    return createStateSetFn('swapPageTurnKey');
-  }
-}), solidJs.createComponent(SettingsItemNumber, {
-  get name() {
-    return t('setting.option.preload_page_num');
-  },
-  maxLength: 5,
-  onChange: val => {
-    if (Number.isNaN(val)) return;
-    setOption(draftOption => {
-      draftOption.preloadPageNum = clamp(0, val, 99999);
-    });
-  },
-  get value() {
-    return store.option.preloadPageNum;
-  }
-}), solidJs.createComponent(SettingsItem, {
-  get name() {
-    return t('setting.option.background_color');
-  },
-  get children() {
-    const _el$2 = _tmpl$2$5();
-    _el$2.style.setProperty("width", "2em");
-    _el$2.style.setProperty("margin-right", ".4em");
-    _el$2.addEventListener("input", throttle(20, e => {
-      if (!e.target.value) return;
-      setOption(draftOption => {
-        // 在拉到纯黑或纯白时改回初始值
-        draftOption.customBackground = e.target.value === '#000000' || e.target.value === '#ffffff' ? undefined : e.target.value;
-        if (draftOption.customBackground) draftOption.darkMode = needDarkMode(draftOption.customBackground);
-      });
-    }));
-    solidJs.createRenderEffect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
-    return _el$2;
-  }
-}), solidJs.createComponent(SettingsItemSelect, {
-  get name() {
-    return t('setting.language');
-  },
-  options: [['zh', '中文'], ['en', 'English'], ['ru', 'Русский']],
-  get value() {
-    return lang();
-  },
-  onChange: setLang
-})], true]];
-
-/** 阻止事件冒泡 */
-const stopPropagation = e => {
-  e.stopPropagation();
-};
-
-/** 从头开始播放元素的动画 */
-const playAnimation = e => e?.getAnimations().forEach(animation => {
-  animation.cancel();
-  animation.play();
-});
-
-const _tmpl$$f = /*#__PURE__*/template(`<div>`),
-  _tmpl$2$4 = /*#__PURE__*/template(`<div><div></div><div>`),
-  _tmpl$3$3 = /*#__PURE__*/template(`<hr>`);
-
-/** 菜单面板 */
-const SettingPanel = () => {
-  const settingList = solidJs.createMemo(() => store.prop.editSettingList(defaultSettingList()));
-  return (() => {
-    const _el$ = _tmpl$$f();
-    addEventListener(_el$, "wheel", stopPropagation);
-    addEventListener(_el$, "scroll", stopPropagation);
-    _el$.addEventListener("click", stopPropagation);
-    insert(_el$, solidJs.createComponent(solidJs.For, {
-      get each() {
-        return settingList();
-      },
-      children: ([name, SettingItem, hidden], i) => {
-        const [show, setShwo] = solidJs.createSignal(!hidden);
-        return [solidJs.createMemo((() => {
-          const _c$ = solidJs.createMemo(() => !!i());
-          return () => _c$() ? _tmpl$3$3() : null;
-        })()), (() => {
-          const _el$2 = _tmpl$2$4(),
-            _el$3 = _el$2.firstChild,
-            _el$4 = _el$3.nextSibling;
-          _el$3.addEventListener("click", () => setShwo(prev => !prev));
-          insert(_el$3, name, null);
-          insert(_el$3, () => show() ? null : ' …', null);
-          insert(_el$4, solidJs.createComponent(SettingItem, {}));
-          solidJs.createRenderEffect(_p$ => {
-            const _v$3 = modules_c21c94f2$1.SettingBlock,
-              _v$4 = show(),
-              _v$5 = modules_c21c94f2$1.SettingBlockSubtitle,
-              _v$6 = modules_c21c94f2$1.SettingBlockBody;
-            _v$3 !== _p$._v$3 && className(_el$2, _p$._v$3 = _v$3);
-            _v$4 !== _p$._v$4 && setAttribute(_el$2, "data-show", _p$._v$4 = _v$4);
-            _v$5 !== _p$._v$5 && className(_el$3, _p$._v$5 = _v$5);
-            _v$6 !== _p$._v$6 && className(_el$4, _p$._v$6 = _v$6);
-            return _p$;
-          }, {
-            _v$3: undefined,
-            _v$4: undefined,
-            _v$5: undefined,
-            _v$6: undefined
-          });
-          return _el$2;
-        })()];
-      }
-    }));
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = `${modules_c21c94f2$1.SettingPanel} ${modules_c21c94f2$1.beautifyScrollbar}`,
-        _v$2 = lang() !== 'zh' ? '20em' : '15em';
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("width", _v$2) : _el$.style.removeProperty("width"));
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined
-    });
-    return _el$;
-  })();
-};
-
-const _tmpl$$e = /*#__PURE__*/template(`<div>`),
-  _tmpl$2$3 = /*#__PURE__*/template(`<div role=button tabindex=-1>`);
-/** 工具栏按钮分隔栏 */
-const buttonListDivider = () => (() => {
-  const _el$ = _tmpl$$e();
-  _el$.style.setProperty("height", "1em");
-  return _el$;
-})();
-
-/** 工具栏的默认按钮列表 */
-const defaultButtonList = [
-// 单双页模式
-() => solidJs.createComponent(IconButton, {
-  get tip() {
-    return solidJs.createMemo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
-  },
-  get hidden() {
-    return store.isMobile || store.option.scrollMode;
-  },
-  onClick: switchOnePageMode,
-  get children() {
-    return solidJs.createMemo(() => !!store.option.onePageMode)() ? solidJs.createComponent(MdLooksOne, {}) : solidJs.createComponent(MdLooksTwo, {});
-  }
-}),
-// 卷轴模式
-() => solidJs.createComponent(IconButton, {
-  get tip() {
-    return t('button.scroll_mode');
-  },
-  get enabled() {
-    return store.option.scrollMode;
-  },
-  onClick: switchScrollMode,
-  get children() {
-    return solidJs.createComponent(MdViewDay, {});
-  }
-}),
-// 页面填充
-() => solidJs.createComponent(IconButton, {
-  get tip() {
-    return t('button.page_fill');
-  },
-  get enabled() {
-    return !!store.fillEffect[nowFillIndex()];
-  },
-  get hidden() {
-    return store.isMobile || store.option.onePageMode;
-  },
-  onClick: switchFillEffect,
-  get children() {
-    return solidJs.createComponent(MdQueue, {});
-  }
-}),
-// 网格模式
-() => solidJs.createComponent(IconButton, {
-  get tip() {
-    return t('button.grid_mode');
-  },
-  get enabled() {
-    return store.gridMode;
-  },
-  onClick: switchGridMode,
-  get children() {
-    return solidJs.createComponent(MdGrid, {});
-  }
-}), buttonListDivider,
-// 放大模式
-() => solidJs.createComponent(IconButton, {
-  get tip() {
-    return t('button.zoom_in');
-  },
-  get enabled() {
-    return store.zoom.scale !== 100 || store.option.scrollMode && store.option.scrollModeImgScale > 1;
-  },
-  onClick: () => {
-    if (!store.option.scrollMode) return doubleClickZoom();
-    if (store.option.scrollModeImgScale >= 1 && store.option.scrollModeImgScale < 1.6) return zoomScrollModeImg(0.2);
-    return zoomScrollModeImg(1, true);
-  },
-  get children() {
-    return solidJs.createComponent(MdSearch, {});
-  }
-}),
-// 翻译设置
-() => {
-  /** 当前显示的图片是否正在翻译 */
-  const isTranslatingImage = solidJs.createMemo(() => activePage().some(i => store.imgList[i]?.translationType && store.imgList[i].translationType !== 'hide'));
-  return solidJs.createComponent(IconButton, {
-    get tip() {
-      return solidJs.createMemo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
-    },
-    get enabled() {
-      return isTranslatingImage();
-    },
-    get hidden() {
-      return store.option.translation.server === 'disable';
-    },
-    onClick: () => setImgTranslationEnbale(activePage(), !isTranslatingImage()),
-    get children() {
-      return solidJs.createComponent(MdTranslate, {});
-    }
-  });
-},
-// 设置
-() => {
-  const [showPanel, setShowPanel] = solidJs.createSignal(false);
-  const handleClick = () => {
-    const _showPanel = !showPanel();
-    _setState('show', 'toolbar', _showPanel);
-    setShowPanel(_showPanel);
-  };
-  const popper = solidJs.createMemo(() => [solidJs.createComponent(SettingPanel, {}), (() => {
-    const _el$2 = _tmpl$2$3();
-    _el$2.addEventListener("click", handleClick);
-    solidJs.createRenderEffect(() => className(_el$2, modules_c21c94f2$1.closeCover));
-    return _el$2;
-  })()]);
-  return solidJs.createComponent(IconButton, {
-    get tip() {
-      return t('button.setting');
-    },
-    get enabled() {
-      return showPanel();
-    },
-    get showTip() {
-      return showPanel();
-    },
-    onClick: handleClick,
-    get popperClassName() {
-      return showPanel() && modules_c21c94f2$1.SettingPanelPopper;
-    },
-    get popper() {
-      return solidJs.createMemo(() => !!showPanel())() && popper();
-    },
-    get children() {
-      return solidJs.createComponent(MdSettings, {});
-    }
-  });
-}];
-
-const _tmpl$$d = /*#__PURE__*/template(`<div role=toolbar><div><div>`);
-
-/** 左侧工具栏 */
-const Toolbar = () => {
-  solidJs.createEffect(() => store.show.toolbar || focus());
-  return (() => {
-    const _el$ = _tmpl$$d(),
-      _el$2 = _el$.firstChild,
-      _el$3 = _el$2.firstChild;
-    _el$2.addEventListener("click", focus);
-    insert(_el$2, solidJs.createComponent(solidJs.For, {
-      get each() {
-        return store.prop.editButtonList(defaultButtonList);
-      },
-      children: ButtonItem => solidJs.createComponent(ButtonItem, {})
-    }), null);
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$1.toolbar,
-        _v$2 = boolDataVal(store.show.toolbar),
-        _v$3 = boolDataVal(store.isMobile && store.gridMode),
-        _v$4 = store.isDragMode ? 'none' : undefined,
-        _v$5 = modules_c21c94f2$1.toolbarPanel,
-        _v$6 = modules_c21c94f2$1.toolbarBg;
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-close", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("pointer-events", _v$4) : _el$.style.removeProperty("pointer-events"));
-      _v$5 !== _p$._v$5 && className(_el$2, _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && className(_el$3, _p$._v$6 = _v$6);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined,
-      _v$5: undefined,
-      _v$6: undefined
-    });
-    return _el$;
-  })();
-};
-
-const _tmpl$$c = /*#__PURE__*/template(`<div>`);
-
-/** 显示对应图片加载情况的元素 */
-const ScrollbarImg = props => {
-  const img = solidJs.createMemo(() => store.imgList[props.index]);
-  return (() => {
-    const _el$ = _tmpl$$c();
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$1.scrollbarPage,
-        _v$2 = props.index,
-        _v$3 = img()?.loadType,
-        _v$4 = boolDataVal(!img()?.src),
-        _v$5 = img()?.translationType;
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-index", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-null", _p$._v$4 = _v$4);
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-translation-type", _p$._v$5 = _v$5);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined,
-      _v$5: undefined
-    });
-    return _el$;
-  })();
-};
-
-/** 滚动条上用于显示对应页面下图片加载情况的元素 */
-const ScrollbarPage = props => {
-  const flexBasis = solidJs.createMemo(() => {
-    if (!store.option.scrollMode) return undefined;
-    return `${(store.imgList[props.a]?.height || placeholderSize().height) / contentHeight() * store.option.scrollModeImgScale}%`;
-  });
-  return (() => {
-    const _el$2 = _tmpl$$c();
-    insert(_el$2, solidJs.createComponent(ScrollbarImg, {
-      get index() {
-        return props.a !== -1 ? props.a : props.b;
-      }
-    }), null);
-    insert(_el$2, (() => {
-      const _c$ = solidJs.createMemo(() => !!props.b);
-      return () => _c$() ? solidJs.createComponent(ScrollbarImg, {
-        get index() {
-          return props.b !== -1 ? props.b : props.a;
-        }
-      }) : null;
-    })(), null);
-    solidJs.createRenderEffect(() => flexBasis() != null ? _el$2.style.setProperty("flex-basis", flexBasis()) : _el$2.style.removeProperty("flex-basis"));
-    return _el$2;
-  })();
-};
-
-const _tmpl$$b = /*#__PURE__*/template(`<div role=scrollbar tabindex=-1><div></div><div>`);
-
-/** 滚动条 */
-const Scrollbar = () => {
-  solidJs.onMount(() => {
-    useDrag({
-      ref: refs.scrollbar,
-      handleDrag: handleScrollbarDrag,
-      easyMode: () => store.option.scrollMode && store.option.scrollbar.easyScroll
-    });
-  });
-
-  /** 滚动条高度 */
-  const height = solidJs.createMemo(() => store.option.scrollMode ? store.scrollbar.dragHeight : 1 / store.pageList.length);
-
-  /** 滚动条位置高度 */
-  const top = solidJs.createMemo(() => store.option.scrollMode ? store.scrollbar.dragTop : 1 / store.pageList.length * store.activePageIndex);
-
-  /** 滚动条滑块的中心点高度 */
-  const dragMidpoint = solidJs.createMemo(() => store.memo.scrollLength * (top() + height() / 2));
-
-  // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
-  const [penetrate, setPenetrate] = solidJs.createSignal(false);
-  const resetPenetrate = debounce(100, () => setPenetrate(false));
-  const handleWheel = () => {
-    setPenetrate(true);
-    resetPenetrate();
-  };
-
-  /** 是否强制显示滚动条 */
-  const showScrollbar = solidJs.createMemo(() => store.show.scrollbar || !!penetrate());
-  const showTip = solidJs.createMemo(() => {
-    if (store.memo.showPageList.length === 0) return 'null';
-    if (store.memo.showPageList.length === 1) return getPageTip(store.memo.showPageList[0]);
-    const tipList = store.memo.showPageList.map(i => getPageTip(i));
-    if (store.option.scrollMode || store.page.vertical) return tipList.join('\n');
-    if (store.option.dir === 'rtl') tipList.reverse();
-    return tipList.join('   ');
-  });
-  return (() => {
-    const _el$ = _tmpl$$b(),
-      _el$2 = _el$.firstChild,
-      _el$3 = _el$2.nextSibling;
-    _el$.addEventListener("wheel", handleWheel);
-    const _ref$ = bindRef('scrollbar');
-    typeof _ref$ === "function" && use(_ref$, _el$);
-    insert(_el$3, showTip);
-    insert(_el$, solidJs.createComponent(solidJs.Show, {
-      get when() {
-        return store.option.scrollbar.showImgStatus;
-      },
-      get children() {
-        return solidJs.createComponent(solidJs.For, {
-          get each() {
-            return store.pageList;
-          },
-          children: ([a, b]) => solidJs.createComponent(ScrollbarPage, {
-            a: a,
-            b: b
-          })
-        });
-      }
-    }), null);
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$1.scrollbar,
-        _v$2 = penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
-        _v$3 = `${dragMidpoint()}px`,
-        _v$4 = `${store.memo.scrollLength}px`,
-        _v$5 = modules_c21c94f2$1.mangaFlow,
-        _v$6 = store.activePageIndex || -1,
-        _v$7 = boolDataVal(store.option.scrollbar.autoHidden),
-        _v$8 = boolDataVal(showScrollbar()),
-        _v$9 = store.option.dir,
-        _v$10 = scrollPosition(),
-        _v$11 = modules_c21c94f2$1.scrollbarDrag,
-        _v$12 = {
-          [modules_c21c94f2$1.hidden]: store.gridMode
-        },
-        _v$13 = height(),
-        _v$14 = top(),
-        _v$15 = modules_c21c94f2$1.scrollbarPoper;
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && ((_p$._v$2 = _v$2) != null ? _el$.style.setProperty("pointer-events", _v$2) : _el$.style.removeProperty("pointer-events"));
-      _v$3 !== _p$._v$3 && ((_p$._v$3 = _v$3) != null ? _el$.style.setProperty("--drag-midpoint", _v$3) : _el$.style.removeProperty("--drag-midpoint"));
-      _v$4 !== _p$._v$4 && ((_p$._v$4 = _v$4) != null ? _el$.style.setProperty("--scroll-length", _v$4) : _el$.style.removeProperty("--scroll-length"));
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "aria-controls", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && setAttribute(_el$, "aria-valuenow", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-auto-hidden", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && setAttribute(_el$, "data-force-show", _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && setAttribute(_el$, "data-dir", _p$._v$9 = _v$9);
-      _v$10 !== _p$._v$10 && setAttribute(_el$, "data-position", _p$._v$10 = _v$10);
-      _v$11 !== _p$._v$11 && className(_el$2, _p$._v$11 = _v$11);
-      _p$._v$12 = classList(_el$2, _v$12, _p$._v$12);
-      _v$13 !== _p$._v$13 && ((_p$._v$13 = _v$13) != null ? _el$2.style.setProperty("--height-ratio", _v$13) : _el$2.style.removeProperty("--height-ratio"));
-      _v$14 !== _p$._v$14 && ((_p$._v$14 = _v$14) != null ? _el$2.style.setProperty("--top-ratio", _v$14) : _el$2.style.removeProperty("--top-ratio"));
-      _v$15 !== _p$._v$15 && className(_el$3, _p$._v$15 = _v$15);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined,
-      _v$5: undefined,
-      _v$6: undefined,
-      _v$7: undefined,
-      _v$8: undefined,
-      _v$9: undefined,
-      _v$10: undefined,
-      _v$11: undefined,
-      _v$12: undefined,
-      _v$13: undefined,
-      _v$14: undefined,
-      _v$15: undefined
-    });
-    return _el$;
-  })();
-};
-
-const _tmpl$$a = /*#__PURE__*/template(`<div>`),
-  _tmpl$2$2 = /*#__PURE__*/template(`<div role=button tabindex=-1><p></p><button type=button></button><button type=button data-is-end></button><button type=button>`),
-  _tmpl$3$2 = /*#__PURE__*/template(`<p>`);
-let delayTypeTimer = 0;
-const EndPage = () => {
-  const handleClick = e => {
-    e.stopPropagation();
-    if (e.target?.nodeName !== 'BUTTON') _setState('show', 'endPage', undefined);
-    focus();
-  };
-  let ref;
-  solidJs.onMount(() => {
-    ref.addEventListener('wheel', e => {
-      e.preventDefault();
-      e.stopPropagation();
-      turnPage(e.deltaY > 0 ? 'next' : 'prev');
-    }, {
-      passive: false
-    });
-  });
-
-  // state.show.endPage 变量的延时版本，在隐藏的动画效果结束之后才会真正改变
-  // 防止在动画效果结束前 tip 就消失或改变了位置
-  const [delayType, setDelayType] = solidJs.createSignal();
-  solidJs.createEffect(() => {
-    if (store.show.endPage) {
-      window.clearTimeout(delayTypeTimer);
-      setDelayType(store.show.endPage);
-    } else {
-      delayTypeTimer = window.setTimeout(() => setDelayType(store.show.endPage), 500);
-    }
-  });
-  const tip = solidJs.createMemo(() => {
-    switch (delayType()) {
-      case 'start':
-        if (store.prop.Prev && store.option.jumpToNext) return t('end_page.tip.start_jump');
-        break;
-      case 'end':
-        if (store.prop.Next && store.option.jumpToNext) return t('end_page.tip.end_jump');
-        if (store.prop.Exit) return t('end_page.tip.exit');
-        break;
-    }
-    return '';
-  });
-  return (() => {
-    const _el$ = _tmpl$2$2(),
-      _el$2 = _el$.firstChild,
-      _el$3 = _el$2.nextSibling,
-      _el$4 = _el$3.nextSibling,
-      _el$5 = _el$4.nextSibling;
-    const _ref$ = ref;
-    typeof _ref$ === "function" ? use(_ref$, _el$) : ref = _el$;
-    _el$.addEventListener("click", handleClick);
-    insert(_el$2, tip);
-    const _ref$2 = bindRef('prev');
-    typeof _ref$2 === "function" && use(_ref$2, _el$3);
-    _el$3.addEventListener("click", () => store.prop.Prev?.());
-    insert(_el$3, () => t('end_page.prev_button'));
-    const _ref$3 = bindRef('exit');
-    typeof _ref$3 === "function" && use(_ref$3, _el$4);
-    _el$4.addEventListener("click", () => store.prop.Exit?.(store.show.endPage === 'end'));
-    insert(_el$4, () => t('button.exit'));
-    const _ref$4 = bindRef('next');
-    typeof _ref$4 === "function" && use(_ref$4, _el$5);
-    _el$5.addEventListener("click", () => store.prop.Next?.());
-    insert(_el$5, () => t('end_page.next_button'));
-    insert(_el$, solidJs.createComponent(solidJs.Show, {
-      get when() {
-        return solidJs.createMemo(() => !!store.option.showComment)() && delayType() === 'end';
-      },
-      get children() {
-        const _el$6 = _tmpl$$a();
-        addEventListener(_el$6, "wheel", stopPropagation);
-        insert(_el$6, solidJs.createComponent(solidJs.For, {
-          get each() {
-            return store.commentList;
-          },
-          children: comment => (() => {
-            const _el$7 = _tmpl$3$2();
-            insert(_el$7, comment);
-            return _el$7;
-          })()
-        }));
-        solidJs.createRenderEffect(() => className(_el$6, `${modules_c21c94f2$1.comments} ${modules_c21c94f2$1.beautifyScrollbar}`));
-        return _el$6;
-      }
-    }), null);
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$1.endPage,
-        _v$2 = store.show.endPage,
-        _v$3 = delayType(),
-        _v$4 = modules_c21c94f2$1.tip,
-        _v$5 = {
-          [modules_c21c94f2$1.invisible]: !store.prop.Prev
-        },
-        _v$6 = store.show.endPage ? 0 : -1,
-        _v$7 = store.show.endPage ? 0 : -1,
-        _v$8 = {
-          [modules_c21c94f2$1.invisible]: !store.prop.Next
-        },
-        _v$9 = store.show.endPage ? 0 : -1;
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _v$2 !== _p$._v$2 && setAttribute(_el$, "data-show", _p$._v$2 = _v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-type", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && className(_el$2, _p$._v$4 = _v$4);
-      _p$._v$5 = classList(_el$3, _v$5, _p$._v$5);
-      _v$6 !== _p$._v$6 && setAttribute(_el$3, "tabindex", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$4, "tabindex", _p$._v$7 = _v$7);
-      _p$._v$8 = classList(_el$5, _v$8, _p$._v$8);
-      _v$9 !== _p$._v$9 && setAttribute(_el$5, "tabindex", _p$._v$9 = _v$9);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined,
-      _v$5: undefined,
-      _v$6: undefined,
-      _v$7: undefined,
-      _v$8: undefined,
-      _v$9: undefined
-    });
-    return _el$;
-  })();
-};
-
-const _tmpl$$9 = /*#__PURE__*/template(`<style type=text/css>`);
-/** 深色模式 */
-const dark = `
---hover-bg-color: #FFF3;
---hover-bg-color-enable: #FFFa;
-
---switch: #BDBDBD;
---switch-bg: #6E6E6E;
---scrollbar-drag: #FFF6;
-
---page-bg: #303030;
-
---secondary: #7A909A;
---secondary-bg: #556065;
-
---text: white;
---text-secondary: #FFFC;
---text-bg: #121212;
-
-color-scheme: dark;
-`;
-
-/** 浅色模式 */
-const light = `
---hover-bg-color: #0001;
---hover-bg-color-enable: #0009;
-
---switch: #FAFAFA;
---switch-bg: #9C9C9C;
---scrollbar-drag: #0006;
-
---page-bg: white;
-
---secondary: #7A909A;
---secondary-bg: #BAC5CA;
-
---text: black;
---text-secondary: #0008;
---text-bg: #FAFAFA;
-
-color-scheme: light;
-`;
-const createSvgIcon = (fill, d) => `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='${fill}' viewBox='0 0 24 24'%3E%3Cpath d='${d}'/%3E%3C/svg%3E")`;
-const MdImageNotSupported = `m21.9 21.9-8.49-8.49-9.82-9.82L2.1 2.1.69 3.51 3 5.83V19c0 1.1.9 2 2 2h13.17l2.31 2.31 1.42-1.41zM5 18l3.5-4.5 2.5 3.01L12.17 15l3 3H5zm16 .17L5.83 3H19c1.1 0 2 .9 2 2v13.17z`;
-const MdCloudDownload$1 = `M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4h3z`;
-const MdPhoto = `M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86-3 3.87L9 13.14 6 17h12l-3.86-5.14z`;
-const CssVar = () => {
-  const svg = solidJs.createMemo(() => {
-    const fill = store.option.darkMode ? 'rgb(156,156,156)' : 'rgb(110,110,110)';
-    return `
-      --md-image-not-supported: ${createSvgIcon(fill, MdImageNotSupported)};
-      --md-cloud-download: ${createSvgIcon(fill, MdCloudDownload$1)};
-      --md-photo: ${createSvgIcon(fill, MdPhoto)};`;
-  });
-  const i18n = solidJs.createMemo(() => `
-      --i18n-touch-area-prev: "${t('touch_area.prev')}";
-      --i18n-touch-area-next: "${t('touch_area.next')}";
-      --i18n-touch-area-menu: "${t('touch_area.menu')}";`);
-  return (() => {
-    const _el$ = _tmpl$$9();
-    insert(_el$, () => `.${modules_c21c94f2$1.root} {
-      ${store.option.darkMode ? dark : light}
-
-      --bg: ${store.option.customBackground ?? (store.option.darkMode ? '#000' : '#fff')};
-      --scroll-mode-img-scale: ${store.option.scrollModeImgScale};
-      --scroll-mode-spacing: ${store.option.scrollModeSpacing};
-
-      ${svg()}
-      ${i18n()}
-      }`);
-    return _el$;
-  })();
-};
-
-/* eslint-disable solid/reactivity */
-const createComicImg = url => ({
-  type: store.flag.autoWide ? 'wide' : '',
-  src: url || '',
-  loadType: 'wait'
-});
-const useInit$1 = props => {
-  const watchProps = {
-    option: state => {
-      state.option = props.option ? assign$1(state.option, props.option) : JSON.parse(JSON.stringify(defaultOption));
-    },
-    fillEffect: state => {
-      state.fillEffect = props.fillEffect ?? {
-        '-1': true
-      };
-      updatePageData(state);
-    },
-    hotkeys: state => {
-      state.hotkeys = {
-        ...JSON.parse(JSON.stringify(defaultHotkeys)),
-        ...props.hotkeys
-      };
-    },
-    onExit: state => {
-      state.prop.Exit = props.onExit ? isEnd => {
-        playAnimation(refs.exit);
-        props.onExit?.(!!isEnd);
-        setState(draftState => {
-          if (isEnd) draftState.activePageIndex = 0;
-          draftState.show.endPage = undefined;
-        });
-      } : undefined;
-    },
-    onPrev: state => {
-      state.prop.Prev = props.onPrev ? debounce(1000, () => {
-        playAnimation(refs.prev);
-        props.onPrev?.();
-      }, {
-        atBegin: true
-      }) : undefined;
-    },
-    onNext: state => {
-      state.prop.Next = props.onNext ? debounce(1000, () => {
-        playAnimation(refs.next);
-        props.onNext?.();
-      }, {
-        atBegin: true
-      }) : undefined;
-    },
-    editButtonList: state => {
-      state.prop.editButtonList = props.editButtonList ?? (list => list);
-    },
-    editSettingList: state => {
-      state.prop.editSettingList = props.editSettingList ?? (list => list);
-    },
-    onLoading: state => {
-      state.prop.Loading = props.onLoading ? debounce(100, props.onLoading) : undefined;
-    },
-    onOptionChange: state => {
-      state.prop.OptionChange = props.onOptionChange ? debounce(100, props.onOptionChange) : undefined;
-    },
-    onHotkeysChange: state => {
-      state.prop.HotkeysChange = props.onHotkeysChange ? debounce(100, props.onHotkeysChange) : undefined;
-    },
-    commentList: state => {
-      state.commentList = props.commentList;
-    }
-  };
-  Object.entries(watchProps).forEach(([key, fn]) => solidJs.createEffect(solidJs.on(() => props[key], () => setState(fn))));
-
-  // 初始化页面比例
-  handleResize(refs.root.scrollWidth, refs.root.scrollHeight);
-  // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
-  const resizeObserver = new ResizeObserver(throttle(100, ([{
-    contentRect
-  }]) => {
-    handleResize(contentRect.width, contentRect.height);
-  }));
-  resizeObserver.disconnect();
-  resizeObserver.observe(refs.root);
-  solidJs.onCleanup(() => resizeObserver.disconnect());
-  const handleImgList = () => {
-    setState(state => {
-      state.show.endPage = undefined;
-
-      /** 修改前的当前显示图片 */
-      const oldActiveImg = state.pageList[state.activePageIndex]?.map(i => state.imgList?.[i]?.src) ?? [];
-
-      /** 判断是否有影响到现有图片流的改动 */
-      let isChange = state.imgList.length !== props.imgList.length;
-      const imgMap = new Map(state.imgList.map(img => [img.src, img]));
-      for (let i = 0; i < props.imgList.length; i++) {
-        const url = props.imgList[i];
-        const img = url && !isChange && state.imgList[i];
-        if (img && img.loadType !== 'wait' && img.src && img.src !== url) isChange = true;
-        state.imgList[i] = imgMap.get(url) ?? createComicImg(url);
-      }
-      if (state.imgList.length > props.imgList.length) {
-        state.imgList.length = props.imgList.length;
-        isChange = true;
-      }
-      if (isChange) {
-        state.fillEffect = props.fillEffect ?? {
-          '-1': true
-        };
-        resetImgState(state);
-        updatePageData(state);
-      } else updateImgLoadType(state);
-      state.prop.Loading?.(state.imgList);
-      if (state.pageList.length === 0) {
-        state.activePageIndex = 0;
-        return;
-      }
-
-      // 尽量使当前显示的图片在修改后依然不变
-      oldActiveImg.some(url => {
-        // 跳过填充页和已被删除的图片
-        if (!url || props.imgList.includes(url)) return false;
-        const newPageIndex = state.pageList.findIndex(page => page.some(index => state.imgList?.[index]?.src === url));
-        if (newPageIndex === -1) return false;
-        state.activePageIndex = newPageIndex;
-        return true;
-      });
-
-      // 如果已经翻到了最后一页，且最后一页的图片被删掉了，那就保持在末页显示
-      if (state.activePageIndex > state.pageList.length - 1) state.activePageIndex = state.pageList.length - 1;
-    });
-  };
-
-  // 处理 imgList 参数的初始化和修改
-  solidJs.createEffect(solidJs.on(() => props.imgList.join(), throttle(500, handleImgList)));
-  focus();
-};
-
-const _tmpl$$8 = /*#__PURE__*/template(`<div>`);
-const MangaStyle = css$1;
-solidJs.enableScheduling();
-/** 漫画组件 */
-const Manga = props => {
-  solidJs.onMount(() => useInit$1(props));
-  solidJs.createEffect(() => props.show && focus());
-  return [(() => {
-    const _el$ = _tmpl$$8();
-    addEventListener(_el$, "wheel", handleWheel);
-    const _ref$ = bindRef('root');
-    typeof _ref$ === "function" && use(_ref$, _el$);
-    _el$.addEventListener("mousedown", handleMouseDown);
-    _el$.addEventListener("keydown", handleKeyDown, true);
-    _el$.addEventListener("keypress", stopPropagation, true);
-    _el$.addEventListener("keyup", stopPropagation, true);
-    _el$.addEventListener("click", stopPropagation);
-    insert(_el$, solidJs.createComponent(ComicImgFlow, {}), null);
-    insert(_el$, solidJs.createComponent(Toolbar, {}), null);
-    insert(_el$, solidJs.createComponent(Scrollbar, {}), null);
-    insert(_el$, solidJs.createComponent(TouchArea, {}), null);
-    insert(_el$, solidJs.createComponent(EndPage, {}), null);
-    solidJs.createRenderEffect(_p$ => {
-      const _v$ = modules_c21c94f2$1.root,
-        _v$2 = {
-          [modules_c21c94f2$1.hidden]: props.show === false,
-          [props.class ?? '']: !!props.class,
-          ...props.classList
-        },
-        _v$3 = boolDataVal(store.isMobile),
-        _v$4 = boolDataVal(store.option.scrollMode);
-      _v$ !== _p$._v$ && className(_el$, _p$._v$ = _v$);
-      _p$._v$2 = classList(_el$, _v$2, _p$._v$2);
-      _v$3 !== _p$._v$3 && setAttribute(_el$, "data-mobile", _p$._v$3 = _v$3);
-      _v$4 !== _p$._v$4 && setAttribute(_el$, "data-scroll-mode", _p$._v$4 = _v$4);
-      return _p$;
-    }, {
-      _v$: undefined,
-      _v$2: undefined,
-      _v$3: undefined,
-      _v$4: undefined
-    });
-    return _el$;
-  })(), solidJs.createComponent(CssVar, {})];
-};
-
-const _tmpl$$7 = /*#__PURE__*/template(`<style type=text/css>`);
-let dom$1;
-
-/**
- * 显示漫画阅读窗口
- */
-const useManga = async initProps => {
-  await GM.addStyle(`
-    #comicRead {
-      position: fixed;
-      top: 0;
-      left: 0;
-      transform: scale(0);
-
-      width: 100%;
-      height: 100%;
-
-      font-size: 16px;
-
-      opacity: 0;
-
-      transition: opacity 300ms, transform 0s 300ms;
-    }
-
-    #comicRead[show] {
-      transform: scale(1);
-      opacity: 1;
-      transition: opacity 300ms, transform 100ms;
-    }
-
-    /* 防止其他扩展的元素显示到漫画上来 */
-    #comicRead[show] ~ :not(#fab, #toast) {
-      display: none !important;
-      pointer-events: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      z-index: 1 !important;
-    }
-  `);
-  const [props, setProps] = createStore({
-    imgList: [],
-    show: false,
-    ...initProps
-  });
-
-  // eslint-disable-next-line solid/reactivity
-  watchStore([() => props.imgList.length, () => props.show], () => {
-    if (!dom$1) {
-      dom$1 = mountComponents('comicRead', () => [solidJs.createComponent(Manga, props), (() => {
-        const _el$ = _tmpl$$7();
-        insert(_el$, IconButtonStyle);
-        return _el$;
-      })(), (() => {
-        const _el$2 = _tmpl$$7();
-        insert(_el$2, MangaStyle);
-        return _el$2;
-      })()]);
-      dom$1.style.setProperty('z-index', '2147483647', 'important');
-    }
-    if (props.imgList.length && props.show) {
-      dom$1.setAttribute('show', '');
-      document.documentElement.style.overflow = 'hidden';
-    } else {
-      dom$1.removeAttribute('show');
-      document.documentElement.style.overflow = 'unset';
-    }
-  });
-
-  /** 下载按钮 */
-  const DownloadButton = () => {
-    const [statu, setStatu] = solidJs.createSignal('button.download');
-    const getFileExt = url => url.split('.').pop();
-    const handleDownload = async () => {
-      const fileData = {};
-      const imgIndexNum = `${props.imgList.length}`.length;
-      const imgList = store.imgList.map(img => img.translationType === 'show' ? `${img.translationUrl}#.${getFileExt(img.src)}` : img.src);
-      for (let i = 0; i < imgList.length; i += 1) {
-        setStatu(`${i}/${imgList.length}`);
-        const index = `${i}`.padStart(imgIndexNum, '0');
-        const fileExt = getFileExt(imgList[i]) ?? 'jpg';
-        const fileName = `${index}.${fileExt}`;
-        try {
-          const res = await request$1(imgList[i], {
-            responseType: 'arraybuffer'
-          });
-          fileData[fileName] = new Uint8Array(res.response);
-        } catch (error) {
-          toast$1.error(`${fileName} ${t('alert.download_failed')}`);
-          fileData[`${index} - ${t('alert.download_failed')}.${fileExt}`] = new Uint8Array();
-        }
-      }
-      setStatu('button.packaging');
-      const zipped = fflate.zipSync(fileData, {
-        level: 0,
-        comment: window.location.href
-      });
-      saveAs(new Blob([zipped]), `${document.title}.zip`);
-      setStatu('button.download_completed');
-      toast$1.success(t('button.download_completed'));
-    };
-    const tip = solidJs.createMemo(() => t(statu()) || `${t('button.downloading')} - ${statu()}`);
-    return solidJs.createComponent(IconButton, {
-      get tip() {
-        return tip();
-      },
-      onClick: handleDownload,
-      get children() {
-        return solidJs.createComponent(MdFileDownload, {});
-      }
-    });
-  };
-  setProps({
-    onExit: () => setProps('show', false),
-    editButtonList: list => {
-      // 在设置按钮上方放置下载按钮
-      list.splice(-1, 0, DownloadButton);
-      return [...list,
-      // 再在最下面添加分隔栏和退出按钮
-      buttonListDivider, () => solidJs.createComponent(IconButton, {
-        get tip() {
-          return t('button.exit');
-        },
-        onClick: () => props.onExit?.(),
-        get children() {
-          return solidJs.createComponent(MdClose, {});
-        }
-      })];
-    }
-  });
-  return [setProps, props];
-};
-
-const _tmpl$$6 = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z"></path><path d="M13.98 11.01c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.54-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39-.08.01-.16.03-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.71-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03m0 2.66c-.32 0-.61-.2-.71-.52-.13-.39.09-.82.48-.94 1.53-.5 3.53-.66 5.36-.45.41.05.71.42.66.83-.05.41-.42.7-.83.66-1.62-.19-3.39-.04-4.73.39a.97.97 0 0 1-.23.03">`);
-const MdMenuBook = ((props = {}) => (() => {
-  const _el$ = _tmpl$$6();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$5 = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 15v4c0 .55-.45 1-1 1H5c-.55 0-1-.45-1-1V7c0-.55.45-1 1-1h3.02c.55 0 1-.45 1-1s-.45-1-1-1H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5c0-.55-.45-1-1-1s-1 .45-1 1m-2.5 3H6.52c-.42 0-.65-.48-.39-.81l1.74-2.23a.5.5 0 0 1 .78-.01l1.56 1.88 2.35-3.02c.2-.26.6-.26.79.01l2.55 3.39c.25.32.01.79-.4.79m3.8-9.11c.48-.77.75-1.67.69-2.66-.13-2.15-1.84-3.97-3.97-4.2A4.5 4.5 0 0 0 11 6.5c0 2.49 2.01 4.5 4.49 4.5.88 0 1.7-.26 2.39-.7l2.41 2.41c.39.39 1.03.39 1.42 0 .39-.39.39-1.03 0-1.42zM15.5 9a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5">`);
-const MdImageSearch = ((props = {}) => (() => {
-  const _el$ = _tmpl$$5();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$4 = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.5 4.5c-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5-1.45 0-2.99.22-4.28.79C1.49 5.62 1 6.33 1 7.14v11.28c0 1.3 1.22 2.26 2.48 1.94.98-.25 2.02-.36 3.02-.36 1.56 0 3.22.26 4.56.92.6.3 1.28.3 1.87 0 1.34-.67 3-.92 4.56-.92 1 0 2.04.11 3.02.36 1.26.33 2.48-.63 2.48-1.94V7.14c0-.81-.49-1.52-1.22-1.85-1.28-.57-2.82-.79-4.27-.79M21 17.23c0 .63-.58 1.09-1.2.98-.75-.14-1.53-.2-2.3-.2-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5.92 0 1.83.09 2.7.28.46.1.8.51.8.98z">`);
-const MdImportContacts = ((props = {}) => (() => {
-  const _el$ = _tmpl$$4();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-const _tmpl$$3 = /*#__PURE__*/template(`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96M17 13l-4.65 4.65c-.2.2-.51.2-.71 0L7 13h3V9h4v4z">`);
-const MdCloudDownload = ((props = {}) => (() => {
-  const _el$ = _tmpl$$3();
-  spread(_el$, props, true, true);
-  return _el$;
-})());
-
-var css = ".index_module_fabRoot__f35e0ac6{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__f35e0ac6[data-show=false]{pointer-events:none}.index_module_fabRoot__f35e0ac6[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__f35e0ac6[data-trans=true]{opacity:.8}.index_module_fabRoot__f35e0ac6[data-trans=true]:focus,.index_module_fabRoot__f35e0ac6[data-trans=true]:focus-visible,.index_module_fabRoot__f35e0ac6[data-trans=true]:hover{opacity:1}.index_module_fab__f35e0ac6{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.index_module_fab__f35e0ac6>svg{font-size:1.5em;width:1em}.index_module_fab__f35e0ac6:hover{background-color:var(fab-hover,#78909c)}.index_module_fab__f35e0ac6:focus,.index_module_fab__f35e0ac6:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.index_module_progress__f35e0ac6{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__f35e0ac6>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__f35e0ac6:hover{color:#cfd8dc}.index_module_progress__f35e0ac6[aria-valuenow=\"1\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__f35e0ac6{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__f35e0ac6:hover,.index_module_fabRoot__f35e0ac6[data-focus=true]) .index_module_popper__f35e0ac6{display:flex}.index_module_speedDial__f35e0ac6{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__f35e0ac6{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__f35e0ac6:hover,:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6{pointer-events:all}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6>.index_module_speedDialItem__f35e0ac6{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__f35e0ac6{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__f35e0ac6[data-focus=true] .index_module_backdrop__f35e0ac6{pointer-events:unset}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true],.index_module_speedDial__f35e0ac6:hover) .index_module_backdrop__f35e0ac6{opacity:.4}";
-var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__f35e0ac6","fab":"index_module_fab__f35e0ac6","progress":"index_module_progress__f35e0ac6","popper":"index_module_popper__f35e0ac6","speedDial":"index_module_speedDial__f35e0ac6","speedDialItem":"index_module_speedDialItem__f35e0ac6","backdrop":"index_module_backdrop__f35e0ac6"};
-
-const _tmpl$$2 = /*#__PURE__*/template(`<div><div>`),
-  _tmpl$2$1 = /*#__PURE__*/template(`<div><button type=button tabindex=-1><span role=progressbar><svg viewBox="22 22 44 44"><circle cx=44 cy=44 r=20.2 fill=none stroke-width=3.6>`),
-  _tmpl$3$1 = /*#__PURE__*/template(`<div>`);
-const FabStyle = css;
-/**
- * Fab 按钮
- */
-const Fab = _props => {
-  const props = solidJs.mergeProps({
-    progress: 0,
-    initialShow: true,
-    autoTrans: false
-  }, _props);
-
-  // 上次滚动位置
-  let lastY = window.scrollY;
-  const [show, setShow] = solidJs.createSignal(props.initialShow);
-
-  // 绑定滚动事件
-  const handleScroll = throttle(200, e => {
-    // 跳过非用户操作的滚动
-    if (e.isTrusted === false) return;
-    if (window.scrollY === lastY) return;
-    setShow(
-    // 滚动到底部时显示
-    window.scrollY + window.innerHeight >= document.body.scrollHeight ||
-    // 向上滚动时显示，反之隐藏
-    window.scrollY - lastY < 0);
-    lastY = window.scrollY;
-  });
-  solidJs.onMount(() => window.addEventListener('scroll', handleScroll));
-  solidJs.onCleanup(() => window.removeEventListener('scroll', handleScroll));
-
-  // 将 forceShow 的变化同步到 show 上
-  solidJs.createEffect(() => {
-    if (props.show) setShow(props.show);
-  });
-  return (() => {
-    const _el$ = _tmpl$2$1(),
-      _el$2 = _el$.firstChild,
-      _el$3 = _el$2.firstChild,
-      _el$4 = _el$3.firstChild;
-    _el$2.addEventListener("click", () => props.onClick?.());
-    insert(_el$2, () => props.children ?? solidJs.createComponent(MdMenuBook, {}), _el$3);
-    insert(_el$2, (() => {
-      const _c$ = solidJs.createMemo(() => !!props.tip);
-      return () => _c$() ? (() => {
-        const _el$7 = _tmpl$3$1();
-        insert(_el$7, () => props.tip);
-        solidJs.createRenderEffect(() => className(_el$7, modules_c21c94f2.popper));
-        return _el$7;
-      })() : null;
-    })(), null);
-    insert(_el$, solidJs.createComponent(solidJs.Show, {
-      get when() {
-        return props.speedDial?.length;
-      },
-      get children() {
-        const _el$5 = _tmpl$$2(),
-          _el$6 = _el$5.firstChild;
-        _el$6.addEventListener("click", () => props.onBackdropClick?.());
-        insert(_el$5, solidJs.createComponent(solidJs.For, {
-          get each() {
-            return props.speedDial;
-          },
-          children: (SpeedDialItem, i) => (() => {
-            const _el$8 = _tmpl$3$1();
-            insert(_el$8, solidJs.createComponent(SpeedDialItem, {}));
-            solidJs.createRenderEffect(_p$ => {
-              const _v$12 = modules_c21c94f2.speedDialItem,
-                _v$13 = {
-                  '--show-delay': `${i() * 30}ms`,
-                  '--hide-delay': `${(props.speedDial.length - 1 - i()) * 50}ms`
-                },
-                _v$14 = i() * 30;
-              _v$12 !== _p$._v$12 && className(_el$8, _p$._v$12 = _v$12);
-              _p$._v$13 = style(_el$8, _v$13, _p$._v$13);
-              _v$14 !== _p$._v$14 && setAttribute(_el$8, "data-i", _p$._v$14 = _v$14);
-              return _p$;
-            }, {
-              _v$12: undefined,
-              _v$13: undefined,
-              _v$14: undefined
-            });
-            return _el$8;
-          })()
-        }), null);
-        solidJs.createRenderEffect(_p$ => {
-          const _v$ = modules_c21c94f2.speedDial,
-            _v$2 = modules_c21c94f2.backdrop;
-          _v$ !== _p$._v$ && className(_el$5, _p$._v$ = _v$);
-          _v$2 !== _p$._v$2 && className(_el$6, _p$._v$2 = _v$2);
-          return _p$;
-        }, {
-          _v$: undefined,
-          _v$2: undefined
-        });
-        return _el$5;
-      }
-    }), null);
-    solidJs.createRenderEffect(_p$ => {
-      const _v$3 = modules_c21c94f2.fabRoot,
-        _v$4 = props.style,
-        _v$5 = props.show ?? show(),
-        _v$6 = props.autoTrans,
-        _v$7 = props.focus,
-        _v$8 = modules_c21c94f2.fab,
-        _v$9 = modules_c21c94f2.progress,
-        _v$10 = props.progress,
-        _v$11 = `${(1 - props.progress) * 290}%`;
-      _v$3 !== _p$._v$3 && className(_el$, _p$._v$3 = _v$3);
-      _p$._v$4 = style(_el$, _v$4, _p$._v$4);
-      _v$5 !== _p$._v$5 && setAttribute(_el$, "data-show", _p$._v$5 = _v$5);
-      _v$6 !== _p$._v$6 && setAttribute(_el$, "data-trans", _p$._v$6 = _v$6);
-      _v$7 !== _p$._v$7 && setAttribute(_el$, "data-focus", _p$._v$7 = _v$7);
-      _v$8 !== _p$._v$8 && className(_el$2, _p$._v$8 = _v$8);
-      _v$9 !== _p$._v$9 && className(_el$3, _p$._v$9 = _v$9);
-      _v$10 !== _p$._v$10 && setAttribute(_el$3, "aria-valuenow", _p$._v$10 = _v$10);
-      _v$11 !== _p$._v$11 && ((_p$._v$11 = _v$11) != null ? _el$4.style.setProperty("stroke-dashoffset", _v$11) : _el$4.style.removeProperty("stroke-dashoffset"));
-      return _p$;
-    }, {
-      _v$3: undefined,
-      _v$4: undefined,
-      _v$5: undefined,
-      _v$6: undefined,
-      _v$7: undefined,
-      _v$8: undefined,
-      _v$9: undefined,
-      _v$10: undefined,
-      _v$11: undefined
-    });
-    return _el$;
-  })();
-};
-
-const _tmpl$$1 = /*#__PURE__*/template(`<style type=text/css>`);
-let dom;
-const useFab = async initProps => {
-  await GM.addStyle(`
-    #fab {
-      --text-bg: transparent;
-
-      position: fixed;
-      right: 3vw;
-      bottom: 6vh;
-
-      font-size: clamp(12px, 1.5vw, 16px);
-    }
-  `);
-  const [props, setProps] = createStore({
-    ...initProps
-  });
-  const FabIcon = () => {
-    switch (props.progress) {
-      case undefined:
-        // 没有内容的书
-        return MdImportContacts;
-      case 1:
-      case 2:
-        // 有内容的书
-        return MdMenuBook;
-      default:
-        return props.progress > 1 ? MdCloudDownload : MdImageSearch;
-    }
-  };
-  solidJs.createRoot(() => {
-    solidJs.createEffect(() => {
-      if (dom) return;
-      dom = mountComponents('fab', () => [solidJs.createComponent(Fab, solidJs.mergeProps(props, {
-        get children() {
-          return props.children ?? solidJs.createComponent(Dynamic, {
-            get component() {
-              return FabIcon();
-            }
-          });
-        }
-      })), (() => {
-        const _el$ = _tmpl$$1();
-        insert(_el$, IconButtonStyle);
-        return _el$;
-      })(), (() => {
-        const _el$2 = _tmpl$$1();
-        insert(_el$2, FabStyle);
-        return _el$2;
-      })()]);
-      dom.style.setProperty('z-index', '2147483646', 'important');
-    });
-  });
-  return [setProps, props];
-};
-
-const _tmpl$ = /*#__PURE__*/template(`<h2>🥳 ComicRead 已更新到 v`),
-  _tmpl$2 = /*#__PURE__*/template(`<h3>修复`),
-  _tmpl$3 = /*#__PURE__*/template(`<ul><li>修复与 ios 油猴扩展的兼容性问题`);
-
-/** 重命名配置项 */
-const renameOption = async (name, list) => {
-  try {
-    const option = await GM.getValue(name);
-    if (!option) throw new Error(`GM.getValue Error: not found ${name}`);
-    for (let i = list.length - 1; i; i--) {
-      const [path, newName] = list[i].split(' => ');
-      byPath(option, path, (parent, key) => {
-        log('rename Option', list[i]);
-        Reflect.set(parent, newName, parent[key]);
-        Reflect.deleteProperty(parent, key);
-      });
-    }
-    await GM.setValue(name, option);
-  } catch (error) {
-    log.error(`migration ${name} option error:`, error);
-  }
-};
-
-/** 旧版本配置迁移 */
-const migration = async () => {
-  const values = await GM.listValues();
-
-  // 6 => 7
-  for (let i = 0; i < values.length; i++) {
-    const key = values[i];
-    switch (key) {
-      case 'Version':
-      case 'Languages':
-        continue;
-      case 'HotKeys':
-        {
-          await renameOption(key, ['向上翻页 => turn_page_up', '向下翻页 => turn_page_down', '向右翻页 => turn_page_right', '向左翻页 => turn_page_left', '跳至首页 => jump_to_home', '跳至尾页 => jump_to_end', '退出 => exit', '切换页面填充 => switch_page_fill', '切换卷轴模式 => switch_scroll_mode', '切换单双页模式 => switch_single_double_page_mode', '切换阅读方向 => switch_dir', '进入阅读模式 => enter_read_mode']);
-          break;
-        }
-      default:
-        await renameOption(key, ['option.scrollbar.showProgress => showImgStatus', 'option.clickPage => clickPageTurn', 'option.clickPage.overturn => reverse', 'option.swapTurnPage => swapPageTurnKey', 'option.flipToNext => jumpToNext',
-        // ehentai
-        '匹配nhentai => associate_nhentai', '快捷键翻页 => hotkeys_page_turn',
-        // nhentai
-        '自动翻页 => auto_page_turn', '彻底屏蔽漫画 => block_totally', '在新页面中打开链接 => open_link_new_page',
-        // other
-        '记住当前站点 => remember_current_site']);
-    }
-  }
-};
-
-/** 处理版本更新相关 */
-const handleVersionUpdate = async () => {
-  const version = await GM.getValue('Version');
-  if (!version) return GM.setValue('Version', GM.info.script.version);
-  if (version === GM.info.script.version) return;
-  if (version.split('.')[0] !== GM.info.script.version.split('.')[0]) await migration();
-
-  // 只在语言为中文时弹窗提示最新更新内容
-  if (lang() === 'zh') {
-    toast$1(() => [(() => {
-      const _el$ = _tmpl$();
-        _el$.firstChild;
-      insert(_el$, () => GM.info.script.version, null);
-      return _el$;
-    })(), _tmpl$2(), _tmpl$3()], {
-      id: 'Version Tip',
-      type: 'custom',
-      duration: Infinity,
-      // 手动点击关掉通知后才不会再次弹出
-      onDismiss: () => GM.setValue('Version', GM.info.script.version)
-    });
-
-    // 监听储存的版本数据的变动，如果和当前版本一致就关掉弹窗
-    // 防止在更新版本后一次性打开多个页面，不得不一个一个关过去
-    const listenerId = await GM.addValueChangeListener('Version', async (_, __, newVersion) => {
-      if (newVersion !== GM.info.script.version) return;
-      toast$1.dismiss('Version Tip');
-      await GM.removeValueChangeListener(listenerId);
-    });
-  } else await GM.setValue('Version', GM.info.script.version);
-};
-
-const getHotkeys = async () => ({
-  enter_read_mode: ['v'],
-  ...(await GM.getValue('Hotkeys', {}))
-});
-
-/**
- * 对修改站点配置的相关方法的封装
- * @param name 站点名
- * @param defaultOptions 默认配置
- */
-const useSiteOptions = async (name, defaultOptions = {}) => {
-  const _defaultOptions = {
-    autoShow: true,
-    hiddenFAB: false,
-    ...defaultOptions
-  };
-  const saveOptions = await GM.getValue(name);
-  const options = createMutable({
-    ..._defaultOptions,
-    ...saveOptions
-  });
-  const setOptions = async newValue => {
-    Object.assign(options, newValue);
-
-    // 只保存和默认设置不同的部分
-    return GM.setValue(name, difference(options, _defaultOptions));
-  };
-  const [hotkeys, setHotkeys] = solidJs.createSignal(await getHotkeys());
-  const isStored = saveOptions !== undefined;
-  // 如果当前站点没有存储配置，就补充上去
-  if (!isStored) GM.setValue(name, options);
-  return {
-    /** 站点配置 */
-    options,
-    /** 修改站点配置 */
-    setOptions,
-    /** 是否存过配置 */
-    isStored,
-    /** 快捷键配置 */
-    hotkeys,
-    /** 处理快捷键配置的变动 */
-    onHotkeysChange: newValue => {
-      GM.setValue('Hotkeys', newValue);
-      setHotkeys(newValue);
-    },
-    /** 进入阅读模式的快捷键 */
-    readModeHotkeys: solidJs.createRoot(() => {
-      const readModeHotkeysMemo = solidJs.createMemo(() => new Set(Object.assign([], hotkeys().enter_read_mode)));
-      return readModeHotkeysMemo;
-    })
-  };
-};
-
-/**
- * 对基础的初始化操作的封装
- * @param name 站点名
- * @param defaultOptions 默认配置
- */
-const useInit = async (name, defaultOptions = {}) => {
-  await setInitLang();
-  await handleVersionUpdate();
-  const {
-    options,
-    setOptions,
-    readModeHotkeys,
-    hotkeys,
-    onHotkeysChange,
-    isStored
-  } = await useSiteOptions(name, defaultOptions);
-  const [setFab, fabProps] = await useFab({
-    tip: t('other.read_mode'),
-    speedDial: useSpeedDial(options, setOptions),
-    show: false
-  });
-
-  /** 处理 Manga 组件的 onLoading 回调，将图片加载状态联动到 Fab 上 */
-  const onLoading = (list, img) => {
-    if (list.length === 0 || !img) return;
-    const loadNum = list.filter(image => image.loadType === 'loaded').length;
-
-    /** 图片加载进度 */
-    const progress = 1 + loadNum / list.length;
-    if (progress !== 2) {
-      setFab({
-        progress,
-        tip: `${t('other.img_loading')} - ${loadNum}/${list.length}`
-      });
-    } else {
-      // 图片全部加载完成后恢复 Fab 状态
-      setFab({
-        progress,
-        tip: t('other.read_mode'),
-        show: !options.hiddenFAB && undefined
-      });
-    }
-  };
-  const [setManga, mangaProps] = await useManga({
-    imgList: [],
-    option: options.option,
-    onOptionChange: option => setOptions({
-      option
-    }),
-    hotkeys: hotkeys(),
-    onHotkeysChange,
-    onLoading
-  });
-  let menuId;
-  /** 更新显示/隐藏悬浮按钮的菜单项 */
-  const updateHideFabMenu = async () => {
-    await GM.unregisterMenuCommand(menuId);
-    menuId = await GM.registerMenuCommand(options.hiddenFAB ? t('other.fab_show') : t('other.fab_hidden'), async () => {
-      await setOptions({
-        ...options,
-        hiddenFAB: !options.hiddenFAB
-      });
-      setFab('show', !options.hiddenFAB && undefined);
-      await updateHideFabMenu();
-    });
-  };
-  await GM.registerMenuCommand(t('site.show_settings_menu'), () => setFab({
-    show: true,
-    focus: true,
-    tip: t('site.settings_tip'),
-    children: solidJs.createComponent(MdSettings, {}),
-    onBackdropClick: () => setFab({
-      show: false,
-      focus: false
-    })
-  }));
-
-  /** 当前是否还需要判断 autoShow */
-  const needAutoShow = {
-    val: true
-  };
-  return {
-    options,
-    setOptions,
-    setFab,
-    setManga,
-    mangaProps,
-    needAutoShow,
-    isStored,
-    /** Manga 组件的默认 onLoading */
-    onLoading,
-    /**
-     * 对 加载图片 和 进入阅读模式 相关初始化的封装
-     * @param getImgList 返回图片列表的函数
-     * @returns 自动加载图片并进入阅读模式的函数
-     */
-    init: getImgList => {
-      const firstRun = menuId === undefined;
-
-      /** 是否正在加载图片中 */
-      let loading = false;
-
-      /** 加载 imgList */
-      const loadImgList = async (initImgList, show) => {
-        loading = true;
-        try {
-          if (!initImgList) setFab({
-            progress: 0,
-            show: true
-          });
-          const newImgList = initImgList ?? (await getImgList());
-          if (newImgList.length === 0) throw new Error(t('alert.fetch_comic_img_failed'));
-          setManga('imgList', newImgList);
-          if (show || needAutoShow.val && options.autoShow) {
-            setManga('show', true);
-            needAutoShow.val = false;
-          }
-        } catch (e) {
-          log.error(e);
-          if (show) toast$1.error(e.message);
-          setFab({
-            progress: undefined
-          });
-        } finally {
-          loading = false;
-        }
-      };
-
-      /** 进入阅读模式 */
-      const showComic = async () => {
-        if (loading) return toast$1.warn(t('alert.repeat_load'), {
-          duration: 1500
-        });
-        if (!mangaProps.imgList.length) return loadImgList(undefined, true);
-        setManga('show', true);
-      };
-      setFab({
-        onClick: showComic,
-        show: !options.hiddenFAB && undefined
-      });
-      if (needAutoShow.val && options.autoShow) showComic();
-      if (firstRun) {
-        GM.registerMenuCommand(t('other.enter_comic_read_mode'), fabProps.onClick);
-        updateHideFabMenu();
-        window.addEventListener('keydown', e => {
-          if (e.target.tagName === 'INPUT') return;
-          const code = getKeyboardCode(e);
-          if (!readModeHotkeys().has(code)) return;
-          e.stopPropagation();
-          e.preventDefault();
-          fabProps.onClick?.();
-        });
-      }
-      return {
-        /** 进入阅读模式 */
-        showComic,
-        /** 加载 imgList */
-        loadImgList
-      };
-    },
-    /** 使用动态更新来加载 imgList */
-    dynamicUpdate: (work, totalImgNum) => async () => {
-      if (mangaProps.imgList.length === totalImgNum) return mangaProps.imgList;
-      setManga('imgList', Array(totalImgNum).fill(''));
-      window.setTimeout(() => work((i, url) => setManga('imgList', i, url)));
-      await wait(() => mangaProps.imgList.some(Boolean));
-      return mangaProps.imgList;
-    }
-  };
-};
+const main = require('main');
 
 (async () => {
   const {
@@ -17094,7 +8427,7 @@ const useInit = async (name, defaultOptions = {}) => {
     setManga,
     init,
     needAutoShow
-  } = await useInit('yurifans', {
+  } = await main.useInit('yurifans', {
     自动签到: true
   });
 
@@ -17106,7 +8439,7 @@ const useInit = async (name, defaultOptions = {}) => {
     // 判断当前日期与上次成功签到日期是否相同
     if (todayString === localStorage.getItem('signDate')) return;
     try {
-      const res = await request$1('/wp-json/b2/v1/userMission', {
+      const res = await main.request('/wp-json/b2/v1/userMission', {
         method: 'POST',
         noTip: true,
         headers: {
@@ -17117,26 +8450,26 @@ const useInit = async (name, defaultOptions = {}) => {
 
       // 首次成功签到 或 重复签到
       if (!(data?.mission?.date || !Number.isNaN(+data))) throw new Error('签到失败');
-      toast$1('自动签到成功');
+      main.toast('自动签到成功');
       localStorage.setItem('signDate', todayString);
     } catch (e) {
-      toast$1.error('自动签到失败');
+      main.toast.error('自动签到失败');
     }
   })();
 
   // 跳过漫画区外的页面
-  if (!querySelector('a.post-list-cat-item[title="在线区-漫画"]')) return;
+  if (!main.querySelector('a.post-list-cat-item[title="在线区-漫画"]')) return;
 
   // 需要购买的漫画
-  if (querySelector('.content-hidden')) {
-    const imgBody = querySelector('.content-hidden');
+  if (main.querySelector('.content-hidden')) {
+    const imgBody = main.querySelector('.content-hidden');
     const imgList = imgBody.getElementsByTagName('img');
-    if (await wait(() => imgList.length, 1000)) init(() => [...imgList].map(e => e.src));
+    if (await main.wait(() => imgList.length, 1000)) init(() => [...imgList].map(e => e.src));
     return;
   }
 
   // 有折叠内容的漫画
-  if (querySelector('.xControl')) {
+  if (main.querySelector('.xControl')) {
     needAutoShow.val = false;
     const {
       loadImgList
@@ -17150,7 +8483,7 @@ const useInit = async (name, defaultOptions = {}) => {
         onNext: i === imgListMap.length - 1 ? undefined : () => loadChapterImg(i + 1)
       });
     };
-    querySelectorAll('.xControl > a').forEach((a, i) => {
+    main.querySelectorAll('.xControl > a').forEach((a, i) => {
       const imgRoot = a.parentElement.nextElementSibling;
       imgListMap.push(imgRoot.getElementsByTagName('img'));
       a.addEventListener('click', () => {
@@ -17162,8 +8495,8 @@ const useInit = async (name, defaultOptions = {}) => {
   }
 
   // 没有折叠的单篇漫画
-  await wait(() => querySelectorAll('.entry-content img').length);
-  return init(() => querySelectorAll('.entry-content img').map(e => e.src));
+  await main.wait(() => main.querySelectorAll('.entry-content img').length);
+  return init(() => main.querySelectorAll('.entry-content img').map(e => e.src));
 })();
 
         break;
@@ -17176,6 +8509,7 @@ const useInit = async (name, defaultOptions = {}) => {
     case 'copymanga.org':
     case 'copymanga.tv':
     case 'copymanga.com':
+    case 'www.mangacopy.com':
     case 'www.copymanga.site':
     case 'www.copymanga.info':
     case 'www.copymanga.net':
@@ -17220,7 +8554,7 @@ const api = (url, details) => main.eachApi(url, apiList, details);
     const token = document.cookie.split('; ').find(cookie => cookie.startsWith('token='))?.replace('token=', '');
     if (!comicName || !token) return;
     let a;
-    let style;
+    const setStyle = main.createStyle();
     const updateLastChapter = async () => {
       // 因为拷贝漫画的目录是动态加载的，所以要等目录加载出来再往上添加
       if (!a) (async () => {
@@ -17249,11 +8583,10 @@ const api = (url, details) => main.eachApi(url, apiList, details);
         a.textContent = '接口異常';
         return;
       }
-      const css = `ul a[href*="${lastChapterId}"] {
+      setStyle(`ul a[href*="${lastChapterId}"] {
         color: #fff !important;
         background: #1790E6;
-      }`;
-      if (style) style.textContent = css;else style = await GM.addStyle(css);
+      }`);
       a.href = `${window.location.pathname}/chapter/${lastChapterId}`;
       a.textContent = data?.results?.browse?.chapter_name;
     };
@@ -17691,150 +9024,8 @@ const main = require('main');
       }
     default:
       {
+const solidJs = require('solid-js');
 const main = require('main');
-
-/* eslint-disable no-undefined,no-param-reassign,no-shadow */
-
-/**
- * Throttle execution of a function. Especially useful for rate limiting
- * execution of handlers on events like resize and scroll.
- *
- * @param {number} delay -                  A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher)
- *                                            are most useful.
- * @param {Function} callback -               A function to be executed after delay milliseconds. The `this` context and all arguments are passed through,
- *                                            as-is, to `callback` when the throttled-function is executed.
- * @param {object} [options] -              An object to configure options.
- * @param {boolean} [options.noTrailing] -   Optional, defaults to false. If noTrailing is true, callback will only execute every `delay` milliseconds
- *                                            while the throttled-function is being called. If noTrailing is false or unspecified, callback will be executed
- *                                            one final time after the last throttled-function call. (After the throttled-function has not been called for
- *                                            `delay` milliseconds, the internal counter is reset).
- * @param {boolean} [options.noLeading] -   Optional, defaults to false. If noLeading is false, the first throttled-function call will execute callback
- *                                            immediately. If noLeading is true, the first the callback execution will be skipped. It should be noted that
- *                                            callback will never executed if both noLeading = true and noTrailing = true.
- * @param {boolean} [options.debounceMode] - If `debounceMode` is true (at begin), schedule `clear` to execute after `delay` ms. If `debounceMode` is
- *                                            false (at end), schedule `callback` to execute after `delay` ms.
- *
- * @returns {Function} A new, throttled, function.
- */
-function throttle (delay, callback, options) {
-  var _ref = options || {},
-      _ref$noTrailing = _ref.noTrailing,
-      noTrailing = _ref$noTrailing === void 0 ? false : _ref$noTrailing,
-      _ref$noLeading = _ref.noLeading,
-      noLeading = _ref$noLeading === void 0 ? false : _ref$noLeading,
-      _ref$debounceMode = _ref.debounceMode,
-      debounceMode = _ref$debounceMode === void 0 ? undefined : _ref$debounceMode;
-  /*
-   * After wrapper has stopped being called, this timeout ensures that
-   * `callback` is executed at the proper times in `throttle` and `end`
-   * debounce modes.
-   */
-
-
-  var timeoutID;
-  var cancelled = false; // Keep track of the last time `callback` was executed.
-
-  var lastExec = 0; // Function to clear existing timeout
-
-  function clearExistingTimeout() {
-    if (timeoutID) {
-      clearTimeout(timeoutID);
-    }
-  } // Function to cancel next exec
-
-
-  function cancel(options) {
-    var _ref2 = options || {},
-        _ref2$upcomingOnly = _ref2.upcomingOnly,
-        upcomingOnly = _ref2$upcomingOnly === void 0 ? false : _ref2$upcomingOnly;
-
-    clearExistingTimeout();
-    cancelled = !upcomingOnly;
-  }
-  /*
-   * The `wrapper` function encapsulates all of the throttling / debouncing
-   * functionality and when executed will limit the rate at which `callback`
-   * is executed.
-   */
-
-
-  function wrapper() {
-    for (var _len = arguments.length, arguments_ = new Array(_len), _key = 0; _key < _len; _key++) {
-      arguments_[_key] = arguments[_key];
-    }
-
-    var self = this;
-    var elapsed = Date.now() - lastExec;
-
-    if (cancelled) {
-      return;
-    } // Execute `callback` and update the `lastExec` timestamp.
-
-
-    function exec() {
-      lastExec = Date.now();
-      callback.apply(self, arguments_);
-    }
-    /*
-     * If `debounceMode` is true (at begin) this is used to clear the flag
-     * to allow future `callback` executions.
-     */
-
-
-    function clear() {
-      timeoutID = undefined;
-    }
-
-    if (!noLeading && debounceMode && !timeoutID) {
-      /*
-       * Since `wrapper` is being called for the first time and
-       * `debounceMode` is true (at begin), execute `callback`
-       * and noLeading != true.
-       */
-      exec();
-    }
-
-    clearExistingTimeout();
-
-    if (debounceMode === undefined && elapsed > delay) {
-      if (noLeading) {
-        /*
-         * In throttle mode with noLeading, if `delay` time has
-         * been exceeded, update `lastExec` and schedule `callback`
-         * to execute after `delay` ms.
-         */
-        lastExec = Date.now();
-
-        if (!noTrailing) {
-          timeoutID = setTimeout(debounceMode ? clear : exec, delay);
-        }
-      } else {
-        /*
-         * In throttle mode without noLeading, if `delay` time has been exceeded, execute
-         * `callback`.
-         */
-        exec();
-      }
-    } else if (noTrailing !== true) {
-      /*
-       * In trailing throttle mode, since `delay` time has not been
-       * exceeded, schedule `callback` to execute `delay` ms after most
-       * recent execution.
-       *
-       * If `debounceMode` is true (at begin), schedule `clear` to execute
-       * after `delay` ms.
-       *
-       * If `debounceMode` is false (at end), schedule `callback` to
-       * execute after `delay` ms.
-       */
-      timeoutID = setTimeout(debounceMode ? clear : exec, debounceMode === undefined ? delay - elapsed : delay);
-    }
-  }
-
-  wrapper.cancel = cancel; // Return the wrapper function.
-
-  return wrapper;
-}
 
 const langList = ['zh', 'en', 'ru'];
 /** 判断传入的字符串是否是支持的语言类型代码 */
@@ -17863,45 +9054,28 @@ const getInitLang = async () => {
   return lang;
 };
 
-const sleep = ms => new Promise(resolve => {
-  window.setTimeout(resolve, ms);
-});
-
-/** 等到传入的函数返回 true */
-const wait = async (fn, timeout = Infinity) => {
-  let res = await fn();
-  let _timeout = timeout;
-  while (_timeout > 0 && !res) {
-    await sleep(10);
-    _timeout -= 10;
-    res = await fn();
-  }
-  return res;
-};
-
-/**
- *
- * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
- *
- * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
- */
-const triggerEleLazyLoad = async (e, time, isLazyLoaded) => {
-  const nowScroll = window.scrollY;
-  e.scrollIntoView({
-    behavior: 'instant'
+function createScheduled(schedule) {
+  let listeners = 0;
+  let isDirty = false;
+  const [track, dirty] = solidJs.createSignal(void 0, { equals: false });
+  const call = schedule(() => {
+    isDirty = true;
+    dirty();
   });
-  e.dispatchEvent(new Event('scroll', {
-    bubbles: true
-  }));
-  try {
-    if (isLazyLoaded && time) return await wait(isLazyLoaded, time);
-  } finally {
-    window.scroll({
-      top: nowScroll,
-      behavior: 'auto'
-    });
-  }
-};
+  return () => {
+    if (!isDirty)
+      call(), track();
+    if (isDirty) {
+      isDirty = !!listeners;
+      return true;
+    }
+    if (solidJs.getListener()) {
+      listeners++;
+      solidJs.onCleanup(() => listeners--);
+    }
+    return false;
+  };
+}
 
 const createImgData = (oldSrc = '') => ({
   triggedNum: 0,
@@ -17959,6 +9133,7 @@ const tryCorrectUrl = e => {
 /** 判断一个元素是否已经触发完懒加载 */
 const isLazyLoaded = (e, oldSrc) => {
   if (!e.src) return false;
+  if (!e.offsetParent) return false;
   if (oldSrc !== undefined && e.src !== oldSrc) return true;
   if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
   return false;
@@ -17993,7 +9168,10 @@ imgShowObserver = new IntersectionObserver(entries => entries.forEach(img => {
   const timeoutID = imgMap.get(ele)?.observerTimeout;
   if (timeoutID) window.clearTimeout(timeoutID);
 }));
-const triggerTurnPage = throttle(500, () => {
+const turnPageScheduled = createScheduled(fn => main.throttle(fn, 1000));
+/** 触发翻页 */
+const triggerTurnPage = async (waitTime = 0) => {
+  if (!turnPageScheduled()) return;
   const nowScroll = window.scrollY;
   // 滚到底部再滚回来，触发可能存在的自动翻页脚本
   window.scroll({
@@ -18003,33 +9181,61 @@ const triggerTurnPage = throttle(500, () => {
   document.body.dispatchEvent(new Event('scroll', {
     bubbles: true
   }));
+  if (waitTime) await main.sleep(waitTime);
   window.scroll({
     top: nowScroll,
     behavior: 'auto'
   });
-});
-let timeoutId;
+};
+
 /** 触发页面上所有图片元素的懒加载 */
-const triggerLazyLoad = async (getAllImg, getWaitTime) => {
+const triggerLazyLoad = main.singleThreaded(async (state, getAllImg, getWaitTime) => {
   // 过滤掉已经被触发过懒加载的图片
-  const targetImgList = getAllImg().filter(needTrigged);
+  const targetImgList = getAllImg().filter(needTrigged).sort((a, b) => a.offsetTop - b.offsetTop);
   targetImgList.forEach(e => {
     imgShowObserver.observe(e);
     if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));
   });
   for (let i = 0; i < targetImgList.length; i++) {
-    await wait(() => !scrollLock.enabled);
-    triggerTurnPage();
+    await main.wait(() => !scrollLock.enabled);
+    const waitTime = getWaitTime();
+    await triggerTurnPage(waitTime);
     const e = targetImgList[i];
     if (!needTrigged(e)) continue;
     tryCorrectUrl(e);
-    const waitTime = getWaitTime();
-    if ((await triggerEleLazyLoad(e, waitTime, () => isLazyLoaded(e, imgMap.get(e)?.oldSrc))) || waitTime) handleTrigged(e);
+    if ((await main.triggerEleLazyLoad(e, waitTime, () => isLazyLoaded(e, imgMap.get(e)?.oldSrc))) || waitTime) handleTrigged(e);
   }
-  if (targetImgList.length !== 0) {
-    if (timeoutId) window.clearTimeout(timeoutId);
-    timeoutId = window.setTimeout(triggerLazyLoad, 500, getAllImg, getWaitTime);
+  await triggerTurnPage();
+  if (targetImgList.length !== 0) state.continueRun = true;
+});
+
+const getTagText = ele => {
+  let text = ele.nodeName;
+  if (ele.id) text += `#${ele.id}`;
+  return text;
+};
+
+/** 获取元素仅记录了层级结构关系的选择器 */
+const getEleSelector = ele => {
+  const parents = [ele.nodeName];
+  const root = ele.getRootNode();
+  let e = ele;
+  while (e.parentNode && e.parentNode !== root) {
+    e = e.parentNode;
+    parents.push(getTagText(e));
   }
+  return parents.reverse().join('>');
+};
+
+/** 判断指定元素是否符合选择器 */
+const isEleSelector = (ele, selector) => {
+  const parents = selector.split('>').reverse();
+  let e = ele;
+  for (let i = 0; e && i < parents.length; i++) {
+    if (getTagText(e) !== parents[i]) return false;
+    e = e.parentNode;
+  }
+  return e === e.getRootNode();
 };
 
 
@@ -18073,18 +9279,6 @@ const triggerLazyLoad = async (getAllImg, getWaitTime) => {
     await main.wait(() => !options.selector || main.querySelector(options.selector));
     await GM.unregisterMenuCommand(menuId);
 
-    /** 获取元素仅记录了层级结构关系的 selector */
-    const getEleSelector = ele => {
-      const parents = [ele.nodeName];
-      const root = ele.getRootNode();
-      let e = ele;
-      while (e.parentNode && e.parentNode !== root) {
-        e = e.parentNode;
-        parents.push(e.nodeName);
-      }
-      return parents.reverse().join('>');
-    };
-
     /** 记录传入的图片元素中最常见的那个 selector */
     const saveImgEleSelector = imgEleList => {
       if (imgEleList.length < 7) return;
@@ -18114,15 +9308,13 @@ const triggerLazyLoad = async (getAllImg, getWaitTime) => {
     // 177picyy 上会在图片下加一个 noscript
     // 本来只是图片元素的 html 代码，但经过东方永夜机加载后就会变成真的图片元素，导致重复
     'noscript'];
-    const getAllImg = () => main.querySelectorAll(`:not(${imgBlackList.join(',')}) > img`)
-    // 根据位置从小到大排序
-    .sort((a, b) => a.offsetTop - b.offsetTop);
+    const getAllImg = () => main.querySelectorAll(`:not(${imgBlackList.join(',')}) > img`);
     let imgEleList;
     let updateImgListTimeout;
     /** 检查筛选符合标准的图片元素用于更新 imgList */
     const updateImgList = main.singleThreaded(async () => {
       imgEleList = await main.wait(() => {
-        const newImgList = getAllImg().filter(e => e.naturalHeight > 500 && e.naturalWidth > 500);
+        const newImgList = getAllImg().filter(e => e.offsetParent && e.naturalHeight > 500 && e.naturalWidth > 500 || isEleSelector(e, options.selector) && (e.naturalHeight > 500 || e.naturalWidth > 500)).sort((a, b) => a.offsetTop - b.offsetTop);
         return newImgList.length >= 2 && newImgList;
       });
       if (imgEleList.length === 0) {
@@ -18150,9 +9342,24 @@ const triggerLazyLoad = async (getAllImg, getWaitTime) => {
         updateImgListTimeout = window.setTimeout(updateImgList, 1000);
       }
     });
-    const triggerAllLazyLoad = main.singleThreaded(() => triggerLazyLoad(getAllImg, () =>
+    let timeout = false;
+    setTimeout(() => {
+      timeout = true;
+      if (mangaProps.imgList.length) return;
+      main.toast.warn(main.t('site.simple.no_img'), {
+        id: 'no_img',
+        duration: Infinity,
+        onDismiss: async () => {
+          await setOptions({
+            remember_current_site: false
+          });
+          window.location.reload();
+        }
+      });
+    }, 3000);
+    const triggerAllLazyLoad = () => triggerLazyLoad(getAllImg, () =>
     // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时停留一段时间
-    mangaProps.show || !mangaProps.imgList.length ? 300 : 0));
+    mangaProps.show || !timeout && !mangaProps.imgList.length ? 300 : 0);
 
     /** 监视页面元素发生变化的 Observer */
     const imgDomObserver = new MutationObserver(() => {
@@ -18172,27 +9379,30 @@ const triggerLazyLoad = async (getAllImg, getWaitTime) => {
         triggerAllLazyLoad();
       }
       await main.wait(() => mangaProps.imgList.length);
+      main.toast.dismiss('no_img');
       return mangaProps.imgList;
     });
 
     // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
-    main.watchStore(() => main.store.memo.showImgList, throttle(1000, showImgList => {
-      if (!showImgList || !showImgList.length || !main.store.show) return;
-      imgEleList[Math.min(+showImgList.at(-1).alt + 1, imgEleList.length - 1)]?.scrollIntoView({
+    main.createEffectOn(main.showPageList, main.throttle(() => {
+      if (!main.showPageList().length || !main.store.show) return;
+      const lastImgIndex = main.store.pageList[main.showPageList().at(-1)].findLast(i => i !== -1);
+      if (lastImgIndex === undefined) return;
+      imgEleList[lastImgIndex]?.scrollIntoView({
         behavior: 'instant',
         block: 'end'
       });
       openScrollLock(500);
-    }), {
+    }, 1000), {
       defer: true
     });
 
     // 在退出阅读模式时跳回之前的滚动位置
     let laseScroll = window.scrollY;
-    main.watchStore(() => main.store.show, show => {
+    main.createEffectOn(() => main.store.show, show => {
       if (show) laseScroll = window.scrollY;else {
         openScrollLock(1000);
-        // 稍微延迟一下，等之前触发懒加载时的滚动都结束
+        // 稍微延迟一下，等之前触发懒加载时的滚动结束
         requestAnimationFrame(() => window.scrollTo(0, laseScroll));
       }
     });
