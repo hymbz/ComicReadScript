@@ -211,7 +211,9 @@ nhentai 的屏蔽机制是在被屏蔽漫画封面加上一层半透明遮罩，
 
 ### 识别广告
 
-简单识别下广告页并自动排除，只会在有`extraneous ads(外部广告)`标签时启用。如有误杀还请先反馈，然后可以先在右下角的悬浮按钮菜单里关闭该功能，等脚本更新修复后再开启。
+简单识别下广告页并自动排除，只会在有`extraneous ads(外部广告)`标签时启用。识别率堪忧，只对偷懒的广告组有用。
+
+如有误杀还请先反馈，然后可以先在右下角的悬浮按钮菜单里关闭该功能，等脚本更新修复后再开启。
 
 ## i18n
 
@@ -223,4 +225,3 @@ nhentai 的屏蔽机制是在被屏蔽漫画封面加上一层半透明遮罩，
 
 <a href="https://hosted.weblate.org/engage/comic_read_script/" align="left"><img src="https://hosted.weblate.org/widget/comic_read_script/main/287x66-grey.png" alt="翻译状态" /></a>
 <a href="https://hosted.weblate.org/engage/comic_read_script/" align="right"><img src="https://hosted.weblate.org/widget/comic_read_script/main/multi-auto.svg" alt="翻译状态" /></a>
-
