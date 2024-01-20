@@ -2,7 +2,7 @@ import { getKeyboardCode } from 'helper';
 import { store, refs, _setState } from '../store';
 import { handleTrackpadWheel } from './pointer';
 import { zoomScrollModeImg } from './image';
-import { setOption } from './helper';
+import { scrollTo, setOption } from './helper';
 import { hotkeysMap } from './hotkeys';
 import { zoom } from './zoom';
 import { closeScrollLock, turnPage } from './turnPage';
@@ -15,6 +15,7 @@ import {
 } from './switch';
 
 import classes from '../index.module.css';
+import { rootSize, scrollTop } from './memo';
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 export const focus = () =>
@@ -33,10 +34,7 @@ export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
 /** 卷轴模式下的滚动 */
 const scrollModeScroll = (dir: 'next' | 'prev') => {
   if (!store.show.endPage) {
-    refs.mangaFlow.scrollBy({
-      top: refs.root.clientHeight * 0.8 * (dir === 'next' ? 1 : -1),
-      behavior: 'instant',
-    });
+    scrollTo(scrollTop() + rootSize().height * 0.8 * (dir === 'next' ? 1 : -1));
     _setState('flag', 'scrollLock', true);
   }
   closeScrollLock();
