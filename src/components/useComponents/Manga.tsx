@@ -6,7 +6,7 @@ import { createMemo, createSignal } from 'solid-js';
 
 import { t } from 'helper/i18n';
 import { createStore } from 'solid-js/store';
-import { createEffectOn } from 'helper/solidJs';
+import { createEffectOn, createRootMemo } from 'helper/solidJs';
 import { IconButton, IconButtonStyle } from '../IconButton';
 import type { MangaProps } from '../Manga';
 import { buttonListDivider, MangaStyle, Manga, store } from '../Manga';
@@ -65,7 +65,7 @@ export const useManga = async (initProps?: Partial<UseMangaProps>) => {
     ...initProps,
   });
 
-  const imgList = createMemo(() =>
+  const imgList = createRootMemo(() =>
     props.adList
       ? props.imgList.filter((_, i) => !props.adList!.has(i))
       : props.imgList,

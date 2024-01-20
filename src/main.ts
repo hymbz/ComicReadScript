@@ -4,6 +4,8 @@
  * 在使用的时候用和外部模块一样的方式进行导入并使用
  */
 
+export { ReactiveSet } from '@solid-primitives/set';
+
 export * from './helper';
 export * from './helper/logger';
 export * from './helper/i18n';

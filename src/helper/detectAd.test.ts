@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getAdPage } from './detectAd';
+import { getAdPageByFileName } from './detectAd';
 
 describe('可以通过文件名判断的', () => {
   // https://exhentai.org/g/2789069/3e6809f891/
@@ -37,7 +37,7 @@ describe('可以通过文件名判断的', () => {
       'zzz4.3.jpg',
       'zzz8.jpg',
     ];
-    expect([...getAdPage(fileNameList)]).toStrictEqual([
+    expect([...getAdPageByFileName(fileNameList)]).toStrictEqual([
       25, 26, 27, 28, 29, 30,
     ]);
   });
@@ -103,7 +103,7 @@ describe('可以通过文件名判断的', () => {
       'Image56.jpg',
       'ZZZZZ_2024.jpg',
     ];
-    expect([...getAdPage(fileNameList)]).toStrictEqual([56]);
+    expect([...getAdPageByFileName(fileNameList)]).toStrictEqual([56]);
   });
 
   // https://exhentai.org/g/2787874/7f9bf5431f/
@@ -178,7 +178,7 @@ describe('可以通过文件名判断的', () => {
       'ZZZZ2..jpg',
       'ZZZZ7.jpg',
     ];
-    expect([...getAdPage(fileNameList)]).toStrictEqual([
+    expect([...getAdPageByFileName(fileNameList)]).toStrictEqual([
       61, 62, 63, 64, 65, 66, 67,
     ]);
   });
@@ -256,7 +256,9 @@ describe('可以通过文件名判断的', () => {
       'zzz2.jpg',
       'zzz8.jpg',
     ];
-    expect([...getAdPage(fileNameList)]).toStrictEqual([64, 65, 66, 67, 68]);
+    expect([...getAdPageByFileName(fileNameList)]).toStrictEqual([
+      64, 65, 66, 67, 68,
+    ]);
   });
 
   // https://exhentai.org/g/2603192/c41d68c542/
@@ -326,7 +328,7 @@ describe('可以通过文件名判断的', () => {
       '08.jpg',
       'title.jpg',
     ];
-    expect([...getAdPage(fileNameList)]).toStrictEqual([62]);
+    expect([...getAdPageByFileName(fileNameList)]).toStrictEqual([62]);
   });
 
   it('相同前戳的文件数一样', () => {
@@ -341,7 +343,7 @@ describe('可以通过文件名判断的', () => {
       'ZZZZZ_2.jpg',
       'ZZZZZ_3.jpg',
     ];
-    expect([...getAdPage(fileNameList)]).toStrictEqual([]);
+    expect([...getAdPageByFileName(fileNameList)]).toStrictEqual([]);
   });
 
   it('广告比正片多', () => {
@@ -351,7 +353,7 @@ describe('可以通过文件名判断的', () => {
       'ZZZZZ_2.jpg',
       'ZZZZZ_3.jpg',
     ];
-    expect([...getAdPage(fileNameList)]).toStrictEqual([]);
+    expect([...getAdPageByFileName(fileNameList)]).toStrictEqual([]);
   });
 
   it('正常编号', () => {
@@ -366,17 +368,12 @@ describe('可以通过文件名判断的', () => {
       '08.jpg',
       '09.jpg',
     ];
-    expect([...getAdPage(fileNameList)]).toStrictEqual([]);
+    expect([...getAdPageByFileName(fileNameList)]).toStrictEqual([]);
   });
 });
 
-// 正常数字编号，无法通过文件名排除的：
-// https://exhentai.org/g/2091919/177dbd301e/
-// https://exhentai.org/g/1764059/5d2ea5b179/
-//
-// 考虑到全彩漫画的存在，感觉只能使用黑名单的方式来排除
-// 用 [browser-image-hash](https://www.npmjs.com/package/browser-image-hash)
-// 计算出图片哈希，再和黑名单中进行比较来找出广告图
-// 黑名单可以上传为 greasyfork 的外部库脚本，方便单独更新
-//
-// 但这样需要额外增加外部库依赖，黑名单数量变大后也会影响到性能，这真的值得吗？
+describe('只能通过图片内容判断的', () => {
+  // TODO: 补充测试
+  // https://exhentai.org/g/2091919/177dbd301e/
+  // https://exhentai.org/g/1764059/5d2ea5b179/
+});

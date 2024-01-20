@@ -27,6 +27,9 @@ const resourceList: Record<string, [string, string] | [string]> = {
     'https://registry.npmmirror.com/solid-js/1.8.7/files/web/dist/dev.cjs',
   ],
   fflate: ['https://registry.npmmirror.com/fflate/0.8.1/files/umd/index.js'],
+  'qr-scanner': [
+    'https://registry.npmmirror.com/qr-scanner/1.4.2/files/qr-scanner.legacy.min.js',
+  ],
   dmzjDecrypt: [
     'https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199',
   ],

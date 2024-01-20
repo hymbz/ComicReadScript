@@ -14,9 +14,12 @@ import {
   testImgUrl,
   singleThreaded,
   store,
-  getAdPage,
   createStyle,
   createEffectOn,
+  getAdPageByFileName,
+  getAdPageByContent,
+  requestIdleCallback,
+  ReactiveSet,
 } from 'main';
 
 declare const selected_tagname: string;
@@ -157,7 +160,7 @@ declare const selected_tagname: string;
 
   const setStyle = createStyle();
   createEffectOn(
-    () => mangaProps.adList,
+    () => [...(mangaProps.adList ?? [])],
     () => {
       if (!mangaProps.adList?.size) return;
       setStyle(
@@ -174,13 +177,22 @@ declare const selected_tagname: string;
   const enableDetectAd =
     options.detect_ad && document.getElementById('ta_other:extraneous_ads');
   if (enableDetectAd) {
-    // 根据当前显示的图片获取一部分临时文件名
+    setManga('adList', new ReactiveSet());
+    /** 缩略图元素列表 */
+    const thumbnailEleList: HTMLImageElement[] = [];
+
     querySelectorAll<HTMLImageElement>('.gdtl img').forEach((e) => {
       const index = +e.alt - 1;
       if (Number.isNaN(index)) return;
+      thumbnailEleList[index] = e;
+      // 根据当前显示的图片获取一部分文件名
       [, ehImgFileNameList[index]] = e.title.split(/：|: /);
     });
-    setManga('adList', getAdPage(ehImgFileNameList));
+    // 先根据文件名判断一次
+    getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
+    // 不行的话再用缩略图识别
+    if (!mangaProps.adList!.size)
+      getAdPageByContent(thumbnailEleList, mangaProps.adList);
   }
 
   const { loadImgList } = init(
@@ -211,8 +223,13 @@ declare const selected_tagname: string;
 
             if (doneNum === totalImgNum) {
               comicReadModeDom.innerHTML = ` Read`;
-              if (enableDetectAd)
-                setManga('adList', getAdPage(ehImgFileNameList));
+              if (enableDetectAd) {
+                getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
+                requestIdleCallback(
+                  () => getAdPageByContent(ehImgList, mangaProps.adList),
+                  3 * 1000,
+                );
+              }
             }
           },
         );
