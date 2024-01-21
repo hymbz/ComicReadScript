@@ -28,21 +28,21 @@
     "next_button": "Следующая глава",
     "prev_button": "Предыдущая глава",
     "tip": {
-      "end_jump": "Последняя страница, ниже будет загружена следующая глава",
+      "end_jump": "Последняя страница, следующая глава ниже",
       "exit": "Последняя страница, ниже комикс будет закрыт",
-      "start_jump": "Это первая страница, выше будет загружена предыдущая глава"
+      "start_jump": "Первая страница, выше будет загружена предыдущая глава"
     }
   },
   "hotkeys": {
-    "enter_read_mode": "Перейти в режим чтения",
+    "enter_read_mode": "Режим чтения",
     "exit": "Выход",
     "jump_to_end": "Перейти к последней странице",
     "jump_to_home": "Перейти к первой странице",
-    "switch_auto_enlarge": "Автоматическое приближение изображения",
-    "switch_dir": "Переключить направление чтения",
-    "switch_grid_mode": "切换网格模式",
-    "switch_page_fill": "Переключить заполнение страницы",
-    "switch_scroll_mode": "Переключить режим прокрутки",
+    "switch_auto_enlarge": "Автоматическое приближение",
+    "switch_dir": "Направление чтения",
+    "switch_grid_mode": "Режим сетки",
+    "switch_page_fill": "Заполнение страницы",
+    "switch_scroll_mode": "Режим прокрутки",
     "switch_single_double_page_mode": "Одностраничный/Двухстраничный режим",
     "turn_page_down": "Перелистнуть страницу вниз",
     "turn_page_left": "Перелистнуть страницу влево",
@@ -56,7 +56,7 @@
   },
   "other": {
     "auto_enter_read_mode": "Автоматически включать режим чтения",
-    "default": "默认",
+    "default": "Дефолт",
     "disable": "Отключить",
     "enter_comic_read_mode": "Режим чтения комиксов",
     "fab_hidden": "Скрыть плавающую кнопку",
@@ -70,9 +70,9 @@
     "alert": {
       "img_data_error": "Ошибка данных изображения",
       "img_not_found": "Изображение не найдено",
-      "img_not_found_files": "Пожалуйста выберите файл изображения или архив с изображениями",
+      "img_not_found_files": "Пожалуйста выберите файл или архив с изображениями",
       "img_not_found_folder": "В папке не найдены изображения или архивы с изображениями",
-      "not_valid_url": "不是有效的 URL",
+      "not_valid_url": "Невалидный URL",
       "repeat_load": "Загрузка других файлов…",
       "unzip_error": "Ошибка распаковки",
       "unzip_password_error": "Неверный пароль от архива",
@@ -92,7 +92,7 @@
       "unzipping": "Распаковка"
     },
     "tip_enter_url": "Введите URL архива",
-    "tip_md": "# ComicRead PWA\nИспользуйте [ComicRead](https://github.com/hymbz/ComicReadScript) для чтения комиксов локально.\n---\n### Перетащите изображения, папки или архивы чтобы начать читать\n*Вы так же можете открыть архив по URL напрямую*"
+    "tip_md": "# ComicRead PWA\nИспользуйте [ComicRead](https://github.com/hymbz/ComicReadScript) для чтения комиксов **локально**.\n---\n### Перетащите изображения, папки или архивы чтобы начать читать\n*Вы так же можете **открыть** или **вставить** URL архива на напрямую*"
   },
   "setting": {
     "hotkeys": {
@@ -103,11 +103,11 @@
     "option": {
       "always_load_all_img": "Всегда загружать все изображения",
       "background_color": "Цвет фона",
-      "click_page_turn_area": "点击区域",
-      "click_page_turn_enabled": "Включить перелистывание страниц по клику",
+      "click_page_turn_area": "Область нажатия",
+      "click_page_turn_enabled": "Перелистывать по клику",
       "click_page_turn_swap_area": "Поменять местами правую и левую области переключения страниц",
       "click_page_turn_vertical": "Вертикальная область переключения страниц",
-      "dark_mode": "Тёмная тема",
+      "dark_mode": "Ночная тема",
       "dir_ltr": "Чтение слева направо (Американские комиксы)",
       "dir_rtl": "Чтение справа налево (Японская манга)",
       "disable_auto_enlarge": "Отключить автоматическое масштабирование изображений",
@@ -121,16 +121,16 @@
       "paragraph_scrollbar": "Полоса прокрутки",
       "paragraph_translation": "Перевод",
       "preload_page_num": "Предзагружать страниц",
-      "scroll_mode_img_scale": "卷轴图片缩放",
-      "scroll_mode_img_spacing": "卷轴图片间距",
-      "scrollbar_auto_hidden": "Автоматически скрывать полосу прокрутки",
-      "scrollbar_easy_scroll": "快捷滚动",
-      "scrollbar_position": "位置",
-      "scrollbar_position_auto": "自动",
-      "scrollbar_position_bottom": "底部",
-      "scrollbar_position_hidden": "隐藏",
-      "scrollbar_position_right": "右侧",
-      "scrollbar_position_top": "顶部",
+      "scroll_mode_img_scale": "Режим скроллинга коэффициент масштабирования изображения",
+      "scroll_mode_img_spacing": "Режим скроллинга расстояние между страницами",
+      "scrollbar_auto_hidden": "Автоматически скрывать",
+      "scrollbar_easy_scroll": "Лёгкая прокрутка",
+      "scrollbar_position": "Позиция",
+      "scrollbar_position_auto": "Авто",
+      "scrollbar_position_bottom": "Снизу",
+      "scrollbar_position_hidden": "Спрятано",
+      "scrollbar_position_right": "Справа",
+      "scrollbar_position_top": "Сверху",
       "scrollbar_show_img_status": "Показывать статус загрузки изображения",
       "show_clickable_area": "Показывать кликабельные области",
       "show_comments": "Показывать комментарии на последней странице",
@@ -152,7 +152,7 @@
       },
       "server": "Сервер",
       "server_selfhosted": "Свой",
-      "translate_after_current": "翻译当前页至结尾",
+      "translate_after_current": "Перевести страницу до конца",
       "translate_all_img": "Перевести все изображения"
     }
   },
@@ -166,7 +166,7 @@
       "open_link_new_page": "Открывать ссылки в новой вкладке",
       "remember_current_site": "Запомнить текущий сайт"
     },
-    "changed_load_failed": "Структура страницы изменилась, невозможно загрузить комикс",
+    "changed_load_failed": "Страница изменилась, невозможно загрузить комикс",
     "ehentai": {
       "fetch_img_page_source_failed": "Не удалось получить исходный код страницы с изображениями",
       "fetch_img_page_url_failed": "Не удалось получить адрес страницы изображений из деталей",
@@ -184,7 +184,7 @@
     "show_settings_menu": "Показать меню настроек",
     "simple": {
       "auto_read_mode_message": "\"Автоматически включать режим чтения\" по умолчанию",
-      "no_img": "No suitable comic images were found. If necessary, you can click here to close the simple reading mode.",
+      "no_img": "Не найдено подходящих изображений. Можно нажать тут что бы выключить режим простого чтения.",
       "simple_read_mode": "Включить простой режим чтения"
     }
   },
@@ -193,10 +193,10 @@
     "next": "Следующая страница",
     "prev": "Предыдущая страница",
     "type": {
-      "edge": "边缘",
+      "edge": "Грань",
       "l": "L",
-      "left_right": "左右",
-      "up_down": "上下"
+      "left_right": "Лево Право",
+      "up_down": "Верх Низ"
     }
   },
   "translation": {
