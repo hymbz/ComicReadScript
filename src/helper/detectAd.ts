@@ -1,4 +1,4 @@
-import { request, wait } from 'main';
+import { log, request, wait } from 'main';
 import QrScanner from 'qr-scanner';
 import type { AsyncReturnType } from 'type-fest';
 
@@ -56,6 +56,17 @@ const imgToCanvas = async (img: HTMLImageElement) => {
   return canvas;
 };
 
+/** 二维码白名单 */
+const qrCodeWhiteList = [
+  // fanbox
+  /^https:\/\/[^.]+\.fanbox\.cc/,
+  // twitter
+  /^https:\/\/twitter\.com/,
+  /^https:\/\/x\.com/,
+  // fantia
+  /^https:\/\/fantia\.jp/,
+];
+
 const isAdImg = async (
   imgCanvas: HTMLCanvasElement,
   qrEngine?: AsyncReturnType<typeof QrScanner.createQrEngine>,
@@ -65,7 +76,9 @@ const isAdImg = async (
   if (!isColorImg(imgCanvas)) return false;
   try {
     const { data } = await QrScanner.scanImage(imgCanvas, { qrEngine, canvas });
-    return !!data;
+    if (!data) return false;
+    log(`检测到二维码： ${data}`);
+    return qrCodeWhiteList.every((reg) => !reg.test(data));
   } catch (_) {
     return false;
   }

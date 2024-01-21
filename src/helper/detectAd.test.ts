@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { getAdPageByFileName } from './detectAd';
+
+vi.mock('main', () => ({}));
 
 describe('可以通过文件名判断的', () => {
   // https://exhentai.org/g/2789069/3e6809f891/
@@ -372,8 +374,13 @@ describe('可以通过文件名判断的', () => {
   });
 });
 
-describe('只能通过图片内容判断的', () => {
-  // TODO: 补充测试
-  // https://exhentai.org/g/2091919/177dbd301e/
-  // https://exhentai.org/g/1764059/5d2ea5b179/
-});
+// QrScanner 要在 node 环境下测试太折腾了，暂且手动测试
+
+// 正常含有广告的
+// https://exhentai.org/g/2091919/177dbd301e/
+// https://exhentai.org/g/2794568/da8216a0f7/
+
+// 自带二维码的
+// https://exhentai.org/g/2803287/5190dbcdcc/
+// https://exhentai.org/g/2780710/383706a3ca/
+// https://exhentai.org/g/2804668/e584aa403b/
