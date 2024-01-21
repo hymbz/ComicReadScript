@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.5.0
+// @version         8.5.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -46,6 +46,7 @@
 // @icon            data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAACBUExURUxpcWB9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i////198il17idng49DY3PT297/K0MTP1M3X27rHzaCxupmstbTByK69xOfr7bfFy3WOmqi4wPz9/X+XomSBjqW1vZOmsN/l6GmFkomeqe7x8vn6+kv+1vUAAAAOdFJOUwDsAoYli9zV+lIqAZEDwV05SQAAAUZJREFUOMuFk+eWgjAUhGPBiLohjZACUqTp+z/gJkqJy4rzg3Nn+MjhwB0AANjv4BEtdITBHjhtQ4g+CIZbC4Qb9FGb0J4P0YrgCezQqgIA14EDGN8fYz+f3BGMASFkTJ+GDAYMUSONzrFL7SVvjNQIz4B9VERRmV0rbJWbrIwidnsd6ACMlEoip3uad3X2HJmqb3gCkkJELwk5DExRDxA6HnKaDEPSsBnAsZoANgJaoAkg12IJqBiPACImXQKF9IDULIHUkOk7kDpeAMykHqCEWACy8ACdSM7LGSg5F3HtAU1rrkaK9uGAshXS2lZ5QH/nVhmlD8rKlmbO3ZsZwLe8qnpdxJRnLaci1X1V5R32fjd5CndVkfYdGpy3D+htU952C/ypzPtdt3JflzZYBy7fi/O1euvl/XH1Pp+Cw3/1P1xOZwB+AWMcP/iw0AlKAAAAV3pUWHRSYXcgcHJvZmlsZSB0eXBlIGlwdGMAAHic4/IMCHFWKCjKT8vMSeVSAAMjCy5jCxMjE0uTFAMTIESANMNkAyOzVCDL2NTIxMzEHMQHy4BIoEouAOoXEXTyQjWVAAAAAElFTkSuQmCC
 // @resource        solid-js https://registry.npmmirror.com/solid-js/1.8.7/files/dist/solid.cjs
 // @resource        fflate https://registry.npmmirror.com/fflate/0.8.1/files/umd/index.js
+// @resource        qr-scanner https://registry.npmmirror.com/qr-scanner/1.4.2/files/qr-scanner.legacy.min.js
 // @resource        dmzjDecrypt https://greasyfork.org/scripts/467177-dmzjdecrypt/code/dmzjDecrypt.js?version=1207199
 // @resource        solid-js|store https://registry.npmmirror.com/solid-js/1.8.7/files/store/dist/store.cjs
 // @resource        solid-js|web https://registry.npmmirror.com/solid-js/1.8.7/files/web/dist/web.cjs
@@ -101,6 +102,113 @@ const web = require('solid-js/web');
 const store$2 = require('solid-js/store');
 const fflate = require('fflate');
 const main = require('main');
+const QrScanner = require('qr-scanner');
+
+// src/index.ts
+var triggerOptions = !web.isServer && solidJs.DEV ? { equals: false, name: "trigger" } : { equals: false };
+var triggerCacheOptions = !web.isServer && solidJs.DEV ? { equals: false, internal: true } : triggerOptions;
+var TriggerCache = class {
+  #map;
+  constructor(mapConstructor = Map) {
+    this.#map = new mapConstructor();
+  }
+  dirty(key) {
+    if (web.isServer)
+      return;
+    this.#map.get(key)?.$$();
+  }
+  track(key) {
+    if (!solidJs.getListener())
+      return;
+    let trigger = this.#map.get(key);
+    if (!trigger) {
+      const [$, $$] = solidJs.createSignal(void 0, triggerCacheOptions);
+      this.#map.set(key, trigger = { $, $$, n: 1 });
+    } else
+      trigger.n++;
+    solidJs.onCleanup(() => {
+      if (trigger.n-- === 1)
+        queueMicrotask(() => trigger.n === 0 && this.#map.delete(key));
+    });
+    trigger.$();
+  }
+};
+
+// src/index.ts
+var $KEYS = Symbol("track-keys");
+var ReactiveSet = class extends Set {
+  #triggers = new TriggerCache();
+  constructor(values) {
+    super();
+    if (values)
+      for (const v of values)
+        super.add(v);
+  }
+  // reads
+  get size() {
+    this.#triggers.track($KEYS);
+    return super.size;
+  }
+  has(v) {
+    this.#triggers.track(v);
+    return super.has(v);
+  }
+  *keys() {
+    for (const key of super.keys()) {
+      this.#triggers.track(key);
+      yield key;
+    }
+    this.#triggers.track($KEYS);
+  }
+  values() {
+    return this.keys();
+  }
+  *entries() {
+    for (const key of super.keys()) {
+      this.#triggers.track(key);
+      yield [key, key];
+    }
+    this.#triggers.track($KEYS);
+  }
+  [Symbol.iterator]() {
+    return this.values();
+  }
+  forEach(callbackfn) {
+    this.#triggers.track($KEYS);
+    super.forEach(callbackfn);
+  }
+  // writes
+  add(v) {
+    if (!super.has(v)) {
+      super.add(v);
+      solidJs.batch(() => {
+        this.#triggers.dirty(v);
+        this.#triggers.dirty($KEYS);
+      });
+    }
+    return this;
+  }
+  delete(v) {
+    const r = super.delete(v);
+    if (r) {
+      solidJs.batch(() => {
+        this.#triggers.dirty(v);
+        this.#triggers.dirty($KEYS);
+      });
+    }
+    return r;
+  }
+  clear() {
+    if (super.size) {
+      solidJs.batch(() => {
+        for (const v of super.keys())
+          this.#triggers.dirty(v);
+        super.clear();
+        this.#triggers.dirty($KEYS);
+      });
+    }
+  }
+};
 
 // src/index.ts
 var debounce$1 = (callback, wait) => {
@@ -3468,10 +3576,7 @@ const handleMouseDown = e => {
 /** 卷轴模式下的滚动 */
 const scrollModeScroll = dir => {
   if (!store.show.endPage) {
-    refs.mangaFlow.scrollBy({
-      top: refs.root.clientHeight * 0.8 * (dir === 'next' ? 1 : -1),
-      behavior: 'instant'
-    });
+    scrollTo(scrollTop() + rootSize().height * 0.8 * (dir === 'next' ? 1 : -1));
     _setState('flag', 'scrollLock', true);
   }
   closeScrollLock();
@@ -6154,7 +6259,7 @@ const useManga = async initProps => {
     show: false,
     ...initProps
   });
-  const imgList = solidJs.createMemo(() => props.adList ? props.imgList.filter((_, i) => !props.adList.has(i)) : props.imgList);
+  const imgList = createRootMemo(() => props.adList ? props.imgList.filter((_, i) => !props.adList.has(i)) : props.imgList);
   createEffectOn([() => imgList().length, () => props.show], () => {
     if (!dom$1) {
       dom$1 = mountComponents('comicRead', () => [web.createComponent(Manga, web.mergeProps(props, {
@@ -6468,10 +6573,10 @@ const useFab = async initProps => {
 };
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>在 ehentai 上自动识别并排除广告页\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复简易模式下部分条漫因为图切太碎而未正确加载的 bug </p></li><li><p>修复简易模式在部分网站上未正确识别漫画页的 bug </p></li><li><p>支持拷贝漫画新网址\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复卷轴模式下翻页快捷键失效的 bug\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>增强 ehentai 识别广告页的能力\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6872,16 +6977,128 @@ const autoReadModeMessage = setOptions => () => (() => {
   return _el$;
 })();
 
-const beforeTextRe = /^\\D+(?=\\d)/;
-const hasNum = /\\d/;
-const getAdPage = fileNameList => {
-  const adIndexList = new Set();
+/** 判断像素点是否是灰阶 */
+const isGrayscalePixel = (r, g, b) => r === g && r === b;
 
-  /** 根据前戳对所有文件名进行分组 */
+/** 判断一张图是否是彩图 */
+const isColorImg = imgCanvas => {
+  const canvas = document.createElement('canvas');
+  // 缩小尺寸放弃细节，避免被黑白图上的小段彩色文字干扰
+  canvas.width = 3;
+  canvas.height = 3;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(imgCanvas, 0, 0, canvas.width, canvas.height);
+  const {
+    data
+  } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    if (!isGrayscalePixel(r, g, b)) return true;
+  }
+  return false;
+};
+const imgToCanvas = async img => {
+  await main.wait(() => img.naturalHeight && img.naturalWidth);
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    // 没被 CORS 污染就直接使用这个 canvas
+    if (ctx.getImageData(0, 0, 1, 1)) return canvas;
+  } catch (_) {}
+  const res = await main.request(img.src, {
+    responseType: 'blob'
+  });
+  const image = new Image();
+  await new Promise((resolve, reject) => {
+    image.onload = resolve;
+    image.onerror = reject;
+    image.src = URL.createObjectURL(res.response);
+  });
+  const canvas = document.createElement('canvas');
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(image, 0, 0);
+  return canvas;
+};
+
+/** 二维码白名单 */
+const qrCodeWhiteList = [
+// fanbox
+/^https:\\/\\/[^.]+\\.fanbox\\.cc/,
+// twitter
+/^https:\\/\\/twitter\\.com/, /^https:\\/\\/x\\.com/,
+// fantia
+/^https:\\/\\/fantia\\.jp/];
+const isAdImg = async (imgCanvas, qrEngine, canvas) => {
+  // 黑白图肯定不是广告
+  if (!isColorImg(imgCanvas)) return false;
+  try {
+    const {
+      data
+    } = await QrScanner.scanImage(imgCanvas, {
+      qrEngine,
+      canvas
+    });
+    if (!data) return false;
+    main.log(\`检测到二维码： \${data}\`);
+    return qrCodeWhiteList.every(reg => !reg.test(data));
+  } catch (_) {
+    return false;
+  }
+};
+
+/** 通过图片内容判断是否是广告 */
+const getAdPageByContent = async (imgList, adList = new Set()) => {
+  const qrEngine = await QrScanner.createQrEngine();
+  const canvas = document.createElement('canvas');
+  let i = imgList.length - 1;
+  let normalNum = 0;
+  // 只检查最后十张
+  for (; i >= imgList.length - 10; i--) {
+    // 开头肯定不会是广告
+    if (i <= 2) break;
+    if (adList.has(i)) continue;
+    const img = imgList[i];
+    if (!img) break;
+    let imgEle;
+    if (typeof img === 'string') {
+      imgEle = new Image();
+      imgEle.src = img;
+    } else imgEle = img;
+    const imgCanvas = await imgToCanvas(imgEle);
+    if (await isAdImg(imgCanvas, qrEngine, canvas)) adList.add(i);
+    // 找到连续两张正常漫画页后中断
+    else if (normalNum) break;else normalNum += 1;
+  }
+  let adNum = 0;
+  for (i = Math.min(...adList); i < imgList.length; i++) {
+    if (adList.has(i)) {
+      adNum += 1;
+      continue;
+    }
+    // 连续两张广告后面的肯定也都是广告
+    if (adNum >= 2) adList.add(i);
+    // 夹在两张广告中间的肯定也是广告
+    else if (adList.has(i - 1) && adList.has(i + 1)) adList.add(i);else adNum = 0;
+  }
+  return adList;
+};
+const beforeTextRe = /^\\D+(?=\\d)/;
+const hasNumRe = /\\d/;
+
+/** 通过文件名判断是否是广告 */
+const getAdPageByFileName = (fileNameList, adList = new Set()) => {
+  /** 根据前缀对所有文件名进行分组 */
   const beforeTextMap = {};
   fileNameList.forEach((fileName, i) => {
-    // 没有数字的肯定是广告图
-    if (fileName && !hasNum.test(fileName)) return adIndexList.add(i);
+    // 没有数字的肯定是广告
+    if (fileName && !hasNumRe.test(fileName)) return adList.add(i);
     const beforeText = fileName?.match(beforeTextRe)?.[0] ?? '';
     if (!beforeTextMap[beforeText]) beforeTextMap[beforeText] = new Set();
     beforeTextMap[beforeText].add(i);
@@ -6894,15 +7111,16 @@ const getAdPage = fileNameList => {
     indexList.has(0) ||
     // 不会有广告插在中间吧
     !indexList.has(lastIndex) ||
-    // 出现最多的前戳肯定(?)不是广告
+    // 出现最多的前缀肯定(?)不是广告
     indexList.size === mostLength ||
     // 不至于有十张广告吧
     indexList.size > 10) return;
-    indexList.forEach(index => adIndexList.add(index));
+    indexList.forEach(index => adList.add(index));
   });
-  return adIndexList;
+  return adList;
 };
 
+exports.ReactiveSet = ReactiveSet;
 exports.approx = approx;
 exports.assign = assign;
 exports.autoReadModeMessage = autoReadModeMessage;
@@ -6922,7 +7140,8 @@ exports.dataToParams = dataToParams;
 exports.debounce = debounce;
 exports.difference = difference;
 exports.eachApi = eachApi;
-exports.getAdPage = getAdPage;
+exports.getAdPageByContent = getAdPageByContent;
+exports.getAdPageByFileName = getAdPageByFileName;
 exports.getImgSize = getImgSize;
 exports.getKeyboardCode = getKeyboardCode;
 exports.getMostItem = getMostItem;
@@ -8071,7 +8290,7 @@ const main = require('main');
   const ehImgPageList = [];
   const ehImgFileNameList = [];
   const setStyle = main.createStyle();
-  main.createEffectOn(() => mangaProps.adList, () => {
+  main.createEffectOn(() => [...(mangaProps.adList ?? [])], () => {
     if (!mangaProps.adList?.size) return;
     setStyle([...mangaProps.adList].map(i => {
       const alt = `${i + 1}`.padStart(placeValueNum, '0');
@@ -8080,13 +8299,20 @@ const main = require('main');
   });
   const enableDetectAd = options.detect_ad && document.getElementById('ta_other:extraneous_ads');
   if (enableDetectAd) {
-    // 根据当前显示的图片获取一部分临时文件名
+    setManga('adList', new main.ReactiveSet());
+    /** 缩略图元素列表 */
+    const thumbnailEleList = [];
     main.querySelectorAll('.gdtl img').forEach(e => {
       const index = +e.alt - 1;
       if (Number.isNaN(index)) return;
+      thumbnailEleList[index] = e;
+      // 根据当前显示的图片获取一部分文件名
       [, ehImgFileNameList[index]] = e.title.split(/：|: /);
     });
-    setManga('adList', main.getAdPage(ehImgFileNameList));
+    // 先根据文件名判断一次
+    main.getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
+    // 不行的话再用缩略图识别
+    if (!mangaProps.adList.size) main.getAdPageByContent(thumbnailEleList, mangaProps.adList);
   }
   const {
     loadImgList
@@ -8112,7 +8338,10 @@ const main = require('main');
         comicReadModeDom.innerHTML = ` loading - ${doneNum}/${totalImgNum}`;
         if (doneNum === totalImgNum) {
           comicReadModeDom.innerHTML = ` Read`;
-          if (enableDetectAd) setManga('adList', main.getAdPage(ehImgFileNameList));
+          if (enableDetectAd) {
+            main.getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
+            main.requestIdleCallback(() => main.getAdPageByContent(ehImgList, mangaProps.adList), 3 * 1000);
+          }
         }
       });
     }
@@ -8960,7 +9189,8 @@ const main = require('main');
       {
         options = {
           name: 'hitomi',
-          getImgList: () => main.wait(() => unsafeWindow.galleryinfo?.files).then(files => files.map(img => unsafeWindow.url_from_url_from_hash(unsafeWindow.galleryinfo.id, img, 'webp', undefined, 'a')))
+          wait: () => !!unsafeWindow.galleryinfo?.files,
+          getImgList: () => (unsafeWindow.galleryinfo?.files).map(img => unsafeWindow.url_from_url_from_hash(unsafeWindow.galleryinfo.id, img, 'webp', undefined, 'a'))
         };
         break;
       }
