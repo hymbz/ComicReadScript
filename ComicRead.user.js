@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.5.1
+// @version         8.5.2
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -1348,21 +1348,21 @@ const ru = {
     next_button: "Следующая глава",
     prev_button: "Предыдущая глава",
     tip: {
-      end_jump: "Последняя страница, ниже будет загружена следующая глава",
+      end_jump: "Последняя страница, следующая глава ниже",
       exit: "Последняя страница, ниже комикс будет закрыт",
-      start_jump: "Это первая страница, выше будет загружена предыдущая глава"
+      start_jump: "Первая страница, выше будет загружена предыдущая глава"
     }
   },
   hotkeys: {
-    enter_read_mode: "Перейти в режим чтения",
+    enter_read_mode: "Режим чтения",
     exit: "Выход",
     jump_to_end: "Перейти к последней странице",
     jump_to_home: "Перейти к первой странице",
-    switch_auto_enlarge: "Автоматическое приближение изображения",
-    switch_dir: "Переключить направление чтения",
-    switch_grid_mode: "切换网格模式",
-    switch_page_fill: "Переключить заполнение страницы",
-    switch_scroll_mode: "Переключить режим прокрутки",
+    switch_auto_enlarge: "Автоматическое приближение",
+    switch_dir: "Направление чтения",
+    switch_grid_mode: "Режим сетки",
+    switch_page_fill: "Заполнение страницы",
+    switch_scroll_mode: "Режим прокрутки",
     switch_single_double_page_mode: "Одностраничный/Двухстраничный режим",
     turn_page_down: "Перелистнуть страницу вниз",
     turn_page_left: "Перелистнуть страницу влево",
@@ -1376,7 +1376,7 @@ const ru = {
   },
   other: {
     auto_enter_read_mode: "Автоматически включать режим чтения",
-    "default": "默认",
+    "default": "Дефолт",
     disable: "Отключить",
     enter_comic_read_mode: "Режим чтения комиксов",
     fab_hidden: "Скрыть плавающую кнопку",
@@ -1390,9 +1390,9 @@ const ru = {
     alert: {
       img_data_error: "Ошибка данных изображения",
       img_not_found: "Изображение не найдено",
-      img_not_found_files: "Пожалуйста выберите файл изображения или архив с изображениями",
+      img_not_found_files: "Пожалуйста выберите файл или архив с изображениями",
       img_not_found_folder: "В папке не найдены изображения или архивы с изображениями",
-      not_valid_url: "不是有效的 URL",
+      not_valid_url: "Невалидный URL",
       repeat_load: "Загрузка других файлов…",
       unzip_error: "Ошибка распаковки",
       unzip_password_error: "Неверный пароль от архива",
@@ -1412,7 +1412,7 @@ const ru = {
       unzipping: "Распаковка"
     },
     tip_enter_url: "Введите URL архива",
-    tip_md: "# ComicRead PWA\\nИспользуйте [ComicRead](https://github.com/hymbz/ComicReadScript) для чтения комиксов локально.\\n---\\n### Перетащите изображения, папки или архивы чтобы начать читать\\n*Вы так же можете открыть архив по URL напрямую*"
+    tip_md: "# ComicRead PWA\\nИспользуйте [ComicRead](https://github.com/hymbz/ComicReadScript) для чтения комиксов **локально**.\\n---\\n### Перетащите изображения, папки или архивы чтобы начать читать\\n*Вы так же можете **открыть** или **вставить** URL архива на напрямую*"
   },
   setting: {
     hotkeys: {
@@ -1423,11 +1423,11 @@ const ru = {
     option: {
       always_load_all_img: "Всегда загружать все изображения",
       background_color: "Цвет фона",
-      click_page_turn_area: "点击区域",
-      click_page_turn_enabled: "Включить перелистывание страниц по клику",
+      click_page_turn_area: "Область нажатия",
+      click_page_turn_enabled: "Перелистывать по клику",
       click_page_turn_swap_area: "Поменять местами правую и левую области переключения страниц",
       click_page_turn_vertical: "Вертикальная область переключения страниц",
-      dark_mode: "Тёмная тема",
+      dark_mode: "Ночная тема",
       dir_ltr: "Чтение слева направо (Американские комиксы)",
       dir_rtl: "Чтение справа налево (Японская манга)",
       disable_auto_enlarge: "Отключить автоматическое масштабирование изображений",
@@ -1441,16 +1441,16 @@ const ru = {
       paragraph_scrollbar: "Полоса прокрутки",
       paragraph_translation: "Перевод",
       preload_page_num: "Предзагружать страниц",
-      scroll_mode_img_scale: "卷轴图片缩放",
-      scroll_mode_img_spacing: "卷轴图片间距",
-      scrollbar_auto_hidden: "Автоматически скрывать полосу прокрутки",
-      scrollbar_easy_scroll: "快捷滚动",
-      scrollbar_position: "位置",
-      scrollbar_position_auto: "自动",
-      scrollbar_position_bottom: "底部",
-      scrollbar_position_hidden: "隐藏",
-      scrollbar_position_right: "右侧",
-      scrollbar_position_top: "顶部",
+      scroll_mode_img_scale: "Режим скроллинга коэффициент масштабирования изображения",
+      scroll_mode_img_spacing: "Режим скроллинга расстояние между страницами",
+      scrollbar_auto_hidden: "Автоматически скрывать",
+      scrollbar_easy_scroll: "Лёгкая прокрутка",
+      scrollbar_position: "Позиция",
+      scrollbar_position_auto: "Авто",
+      scrollbar_position_bottom: "Снизу",
+      scrollbar_position_hidden: "Спрятано",
+      scrollbar_position_right: "Справа",
+      scrollbar_position_top: "Сверху",
       scrollbar_show_img_status: "Показывать статус загрузки изображения",
       show_clickable_area: "Показывать кликабельные области",
       show_comments: "Показывать комментарии на последней странице",
@@ -1472,7 +1472,7 @@ const ru = {
       },
       server: "Сервер",
       server_selfhosted: "Свой",
-      translate_after_current: "翻译当前页至结尾",
+      translate_after_current: "Перевести страницу до конца",
       translate_all_img: "Перевести все изображения"
     }
   },
@@ -1486,7 +1486,7 @@ const ru = {
       open_link_new_page: "Открывать ссылки в новой вкладке",
       remember_current_site: "Запомнить текущий сайт"
     },
-    changed_load_failed: "Структура страницы изменилась, невозможно загрузить комикс",
+    changed_load_failed: "Страница изменилась, невозможно загрузить комикс",
     ehentai: {
       fetch_img_page_source_failed: "Не удалось получить исходный код страницы с изображениями",
       fetch_img_page_url_failed: "Не удалось получить адрес страницы изображений из деталей",
@@ -1504,7 +1504,7 @@ const ru = {
     show_settings_menu: "Показать меню настроек",
     simple: {
       auto_read_mode_message: "\\"Автоматически включать режим чтения\\" по умолчанию",
-      no_img: "No suitable comic images were found. If necessary, you can click here to close the simple reading mode.",
+      no_img: "Не найдено подходящих изображений. Можно нажать тут что бы выключить режим простого чтения.",
       simple_read_mode: "Включить простой режим чтения"
     }
   },
@@ -1513,10 +1513,10 @@ const ru = {
     next: "Следующая страница",
     prev: "Предыдущая страница",
     type: {
-      edge: "边缘",
+      edge: "Грань",
       l: "L",
-      left_right: "左右",
-      up_down: "上下"
+      left_right: "Лево Право",
+      up_down: "Верх Низ"
     }
   },
   translation: {
@@ -6574,9 +6574,9 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复卷轴模式下翻页快捷键失效的 bug\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复部分网站简易模式失效的 bug\`),
   _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>增强 ehentai 识别广告页的能力\`);
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>减少 ehentai 广告误杀率\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6960,12 +6960,8 @@ const universalInit = async ({
 };
 
 const _tmpl$ = /*#__PURE__*/web.template(\`<div><button>\`);
-/**
- * 提示当前开启了自动进入阅读模式的弹窗
- *
- * 因为直接放到 site/other 里会导致打包时自动加入 import solidjs 的代码，
- * 所以只能单独放这好打包进 main 里
- */
+// 因为直接放到 site/other 里会导致打包时自动加入 import solidjs 的代码，
+/** 提示当前开启了自动进入阅读模式的弹窗 */
 const autoReadModeMessage = setOptions => () => (() => {
   const _el$ = _tmpl$(),
     _el$2 = _el$.firstChild;
@@ -6976,6 +6972,34 @@ const autoReadModeMessage = setOptions => () => (() => {
   web.insert(_el$2, () => main.t('other.disable'));
   return _el$;
 })();
+
+const getAdPage = async (list, isAdPage, adList = new Set()) => {
+  let i = list.length - 1;
+  let normalNum = 0;
+  // 只检查最后十张
+  for (; i >= list.length - 10; i--) {
+    // 开头肯定不会是广告
+    if (i <= 2) break;
+    if (adList.has(i)) continue;
+    const item = list[i];
+    if (!item) break;
+    if (await isAdPage(item)) adList.add(i);
+    // 找到连续两张正常漫画页后中断
+    else if (normalNum) break;else normalNum += 1;
+  }
+  let adNum = 0;
+  for (i = Math.min(...adList); i < list.length; i++) {
+    if (adList.has(i)) {
+      adNum += 1;
+      continue;
+    }
+    // 连续两张广告后面的肯定也都是广告
+    if (adNum >= 2) adList.add(i);
+    // 夹在两张广告中间的肯定也是广告
+    else if (adList.has(i - 1) && adList.has(i + 1)) adList.add(i);else adNum = 0;
+  }
+  return adList;
+};
 
 /** 判断像素点是否是灰阶 */
 const isGrayscalePixel = (r, g, b) => r === g && r === b;
@@ -7052,73 +7076,26 @@ const isAdImg = async (imgCanvas, qrEngine, canvas) => {
     return false;
   }
 };
+const byContent = (qrEngine, canvas) => async img => {
+  let imgEle;
+  if (typeof img === 'string') {
+    imgEle = new Image();
+    imgEle.src = img;
+  } else imgEle = img;
+  const imgCanvas = await imgToCanvas(imgEle);
+  return isAdImg(imgCanvas, qrEngine, canvas);
+};
 
 /** 通过图片内容判断是否是广告 */
 const getAdPageByContent = async (imgList, adList = new Set()) => {
   const qrEngine = await QrScanner.createQrEngine();
   const canvas = document.createElement('canvas');
-  let i = imgList.length - 1;
-  let normalNum = 0;
-  // 只检查最后十张
-  for (; i >= imgList.length - 10; i--) {
-    // 开头肯定不会是广告
-    if (i <= 2) break;
-    if (adList.has(i)) continue;
-    const img = imgList[i];
-    if (!img) break;
-    let imgEle;
-    if (typeof img === 'string') {
-      imgEle = new Image();
-      imgEle.src = img;
-    } else imgEle = img;
-    const imgCanvas = await imgToCanvas(imgEle);
-    if (await isAdImg(imgCanvas, qrEngine, canvas)) adList.add(i);
-    // 找到连续两张正常漫画页后中断
-    else if (normalNum) break;else normalNum += 1;
-  }
-  let adNum = 0;
-  for (i = Math.min(...adList); i < imgList.length; i++) {
-    if (adList.has(i)) {
-      adNum += 1;
-      continue;
-    }
-    // 连续两张广告后面的肯定也都是广告
-    if (adNum >= 2) adList.add(i);
-    // 夹在两张广告中间的肯定也是广告
-    else if (adList.has(i - 1) && adList.has(i + 1)) adList.add(i);else adNum = 0;
-  }
-  return adList;
+  return getAdPage(imgList, byContent(qrEngine, canvas), adList);
 };
-const beforeTextRe = /^\\D+(?=\\d)/;
-const hasNumRe = /\\d/;
+const adFileNameRe = /^[zZ]+/;
 
 /** 通过文件名判断是否是广告 */
-const getAdPageByFileName = (fileNameList, adList = new Set()) => {
-  /** 根据前缀对所有文件名进行分组 */
-  const beforeTextMap = {};
-  fileNameList.forEach((fileName, i) => {
-    // 没有数字的肯定是广告
-    if (fileName && !hasNumRe.test(fileName)) return adList.add(i);
-    const beforeText = fileName?.match(beforeTextRe)?.[0] ?? '';
-    if (!beforeTextMap[beforeText]) beforeTextMap[beforeText] = new Set();
-    beforeTextMap[beforeText].add(i);
-  });
-  const mostLength = Math.max(...Object.values(beforeTextMap).map(list => list.size));
-  const lastIndex = fileNameList.length - 1;
-  Object.values(beforeTextMap).forEach(indexList => {
-    if (
-    // 应该不至于上来就是广告吧
-    indexList.has(0) ||
-    // 不会有广告插在中间吧
-    !indexList.has(lastIndex) ||
-    // 出现最多的前缀肯定(?)不是广告
-    indexList.size === mostLength ||
-    // 不至于有十张广告吧
-    indexList.size > 10) return;
-    indexList.forEach(index => adList.add(index));
-  });
-  return adList;
-};
+const getAdPageByFileName = (fileNameList, adList = new Set()) => getAdPage(fileNameList, fileName => adFileNameRe.test(fileName), adList);
 
 exports.ReactiveSet = ReactiveSet;
 exports.approx = approx;
@@ -9439,9 +9416,10 @@ const triggerLazyLoad = main.singleThreaded(async (state, getAllImg, getWaitTime
   if (targetImgList.length !== 0) state.continueRun = true;
 });
 
+const hasNumRe = /\d/;
 const getTagText = ele => {
   let text = ele.nodeName;
-  if (ele.id) text += `#${ele.id}`;
+  if (ele.id && !hasNumRe.test(ele.id)) text += `#${ele.id}`;
   return text;
 };
 
@@ -9468,6 +9446,9 @@ const isEleSelector = (ele, selector) => {
   return e === e.getRootNode();
 };
 
+// 目录页和漫画页的图片层级相同
+// https://www.biliplus.com/manga/
+// 图片路径上有 id 元素并且 id 含有漫画 id，不同话数 id 也不同
 
 // 测试案例
 // https://www.177picyy.com/html/2023/03/5505307.html
@@ -9506,7 +9487,7 @@ const isEleSelector = (ele, selector) => {
     }));
 
     // 等待 selector 匹配到目标后再继续执行，避免在漫画页外的其他地方运行
-    await main.wait(() => !options.selector || main.querySelector(options.selector));
+    await main.wait(() => !options.selector || main.querySelectorAll(options.selector).length >= 2);
     await GM.unregisterMenuCommand(menuId);
 
     /** 记录传入的图片元素中最常见的那个 selector */
