@@ -178,7 +178,7 @@ import {
       toast.warn(t('site.simple.no_img'), {
         id: 'no_img',
         duration: Infinity,
-        onDismiss: async () => {
+        onClick: async () => {
           await setOptions({ remember_current_site: false });
           window.location.reload();
         },

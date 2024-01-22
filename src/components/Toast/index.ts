@@ -17,6 +17,7 @@ export interface Toast {
   /** 弹窗完报错 */
   throw?: true | Error;
   onDismiss?: (t: Toast) => void;
+  onClick?: () => void;
   exit?: true;
   update?: true;
 }

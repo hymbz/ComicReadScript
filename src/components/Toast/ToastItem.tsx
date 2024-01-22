@@ -70,13 +70,18 @@ export const ToastItem: Component<Toast> = (props) => {
     });
   });
 
+  const handleClick: EventHandler['on:click'] = (e) => {
+    props.onClick?.();
+    dismiss(e);
+  };
+
   return (
     <div
       class={classes.item}
       style={{ '--theme': colorMap[props.type] }}
       data-schedule={showSchedule()}
       data-exit={props.exit}
-      on:click={dismiss}
+      on:click={handleClick}
       onAnimationEnd={handleAnimationEnd}
     >
       <Dynamic component={iconMap[props.type]} />
