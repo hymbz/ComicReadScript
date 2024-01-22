@@ -1,6 +1,8 @@
+const hasNumRe = /\d/;
+
 const getTagText = (ele: HTMLElement) => {
   let text = ele.nodeName;
-  if (ele.id) text += `#${ele.id}`;
+  if (ele.id && !hasNumRe.test(ele.id)) text += `#${ele.id}`;
   return text;
 };
 
@@ -26,3 +28,8 @@ export const isEleSelector = (ele: HTMLElement, selector: string) => {
   }
   return e === e.getRootNode();
 };
+
+// 目录页和漫画页的图片层级相同
+// https://www.biliplus.com/manga/
+// 图片路径上有 id 元素并且 id 含有漫画 id，不同话数 id 也不同
+// https://rawkuma.com/manga/shokei-shoujo-no-ikiru-michi/

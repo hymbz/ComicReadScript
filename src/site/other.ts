@@ -10,7 +10,6 @@ import { getEleSelector, isEleSelector } from 'helper/eleSelector';
 import {
   t,
   getMostItem,
-  querySelector,
   querySelectorAll,
   useInit,
   wait,
@@ -67,7 +66,9 @@ import {
     );
 
     // 等待 selector 匹配到目标后再继续执行，避免在漫画页外的其他地方运行
-    await wait(() => !options.selector || querySelector(options.selector));
+    await wait(
+      () => !options.selector || querySelectorAll(options.selector).length >= 2,
+    );
 
     await GM.unregisterMenuCommand(menuId);
 
