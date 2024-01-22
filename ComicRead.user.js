@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.5.2
+// @version         8.5.3
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -1772,11 +1772,15 @@ const ToastItem = props => {
       animation.play();
     });
   });
+  const handleClick = e => {
+    props.onClick?.();
+    dismiss(e);
+  };
   return (() => {
     const _el$ = _tmpl$2$d(),
       _el$2 = _el$.firstChild;
     _el$.addEventListener("animationend", handleAnimationEnd);
-    _el$.addEventListener("click", dismiss);
+    _el$.addEventListener("click", handleClick);
     web.insert(_el$, web.createComponent(web.Dynamic, {
       get component() {
         return iconMap[props.type];
@@ -6574,9 +6578,7 @@ const useFab = async initProps => {
 
 const _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复部分网站简易模式失效的 bug\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>减少 ehentai 广告误杀率\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复会在网页加载过慢时关闭简易模式的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6639,7 +6641,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -9560,7 +9562,7 @@ const isEleSelector = (ele, selector) => {
       main.toast.warn(main.t('site.simple.no_img'), {
         id: 'no_img',
         duration: Infinity,
-        onDismiss: async () => {
+        onClick: async () => {
           await setOptions({
             remember_current_site: false
           });
