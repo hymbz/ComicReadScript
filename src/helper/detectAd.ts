@@ -2,6 +2,44 @@ import { log, request, wait } from 'main';
 import QrScanner from 'qr-scanner';
 import type { AsyncReturnType } from 'type-fest';
 
+const getAdPage = async <T>(
+  list: Array<T | undefined>,
+  isAdPage: (item: T) => boolean | Promise<boolean>,
+  adList = new Set<number>(),
+) => {
+  let i = list.length - 1;
+  let normalNum = 0;
+  // 只检查最后十张
+  for (; i >= list.length - 10; i--) {
+    // 开头肯定不会是广告
+    if (i <= 2) break;
+    if (adList.has(i)) continue;
+
+    const item = list[i];
+    if (!item) break;
+
+    if (await isAdPage(item)) adList.add(i);
+    // 找到连续两张正常漫画页后中断
+    else if (normalNum) break;
+    else normalNum += 1;
+  }
+
+  let adNum = 0;
+  for (i = Math.min(...adList); i < list.length; i++) {
+    if (adList.has(i)) {
+      adNum += 1;
+      continue;
+    }
+    // 连续两张广告后面的肯定也都是广告
+    if (adNum >= 2) adList.add(i);
+    // 夹在两张广告中间的肯定也是广告
+    else if (adList.has(i - 1) && adList.has(i + 1)) adList.add(i);
+    else adNum = 0;
+  }
+
+  return adList;
+};
+
 /** 判断像素点是否是灰阶 */
 const isGrayscalePixel = (r: number, g: number, b: number) =>
   r === g && r === b;
@@ -84,25 +122,12 @@ const isAdImg = async (
   }
 };
 
-/** 通过图片内容判断是否是广告 */
-export const getAdPageByContent = async (
-  imgList: Array<HTMLImageElement | string | null>,
-  adList = new Set<number>(),
-) => {
-  const qrEngine = await QrScanner.createQrEngine();
-  const canvas = document.createElement('canvas');
-
-  let i = imgList.length - 1;
-  let normalNum = 0;
-  // 只检查最后十张
-  for (; i >= imgList.length - 10; i--) {
-    // 开头肯定不会是广告
-    if (i <= 2) break;
-    if (adList.has(i)) continue;
-
-    const img = imgList[i];
-    if (!img) break;
-
+const byContent =
+  (
+    qrEngine: AsyncReturnType<typeof QrScanner.createQrEngine>,
+    canvas: HTMLCanvasElement,
+  ) =>
+  async (img: HTMLImageElement | string) => {
     let imgEle: HTMLImageElement;
     if (typeof img === 'string') {
       imgEle = new Image();
@@ -110,68 +135,28 @@ export const getAdPageByContent = async (
     } else imgEle = img;
     const imgCanvas = await imgToCanvas(imgEle);
 
-    if (await isAdImg(imgCanvas, qrEngine, canvas)) adList.add(i);
-    // 找到连续两张正常漫画页后中断
-    else if (normalNum) break;
-    else normalNum += 1;
-  }
+    return isAdImg(imgCanvas, qrEngine, canvas);
+  };
 
-  let adNum = 0;
-  for (i = Math.min(...adList); i < imgList.length; i++) {
-    if (adList.has(i)) {
-      adNum += 1;
-      continue;
-    }
-    // 连续两张广告后面的肯定也都是广告
-    if (adNum >= 2) adList.add(i);
-    // 夹在两张广告中间的肯定也是广告
-    else if (adList.has(i - 1) && adList.has(i + 1)) adList.add(i);
-    else adNum = 0;
-  }
-
-  return adList;
+/** 通过图片内容判断是否是广告 */
+export const getAdPageByContent = async (
+  imgList: Array<HTMLImageElement | string | undefined>,
+  adList = new Set<number>(),
+) => {
+  const qrEngine = await QrScanner.createQrEngine();
+  const canvas = document.createElement('canvas');
+  return getAdPage(imgList, byContent(qrEngine, canvas), adList);
 };
 
-const beforeTextRe = /^\D+(?=\d)/;
-const hasNumRe = /\d/;
+const adFileNameRe = /^[zZ]+/;
 
 /** 通过文件名判断是否是广告 */
 export const getAdPageByFileName = (
   fileNameList: Array<string | undefined>,
   adList = new Set<number>(),
-) => {
-  /** 根据前缀对所有文件名进行分组 */
-  const beforeTextMap: Record<string, Set<number>> = {};
-
-  fileNameList.forEach((fileName, i) => {
-    // 没有数字的肯定是广告
-    if (fileName && !hasNumRe.test(fileName)) return adList.add(i);
-
-    const beforeText = fileName?.match(beforeTextRe)?.[0] ?? '';
-    if (!beforeTextMap[beforeText]) beforeTextMap[beforeText] = new Set();
-    beforeTextMap[beforeText].add(i);
-  });
-
-  const mostLength = Math.max(
-    ...Object.values(beforeTextMap).map((list) => list.size),
+) =>
+  getAdPage(
+    fileNameList,
+    (fileName: string) => adFileNameRe.test(fileName),
+    adList,
   );
-
-  const lastIndex = fileNameList.length - 1;
-
-  Object.values(beforeTextMap).forEach((indexList) => {
-    if (
-      // 应该不至于上来就是广告吧
-      indexList.has(0) ||
-      // 不会有广告插在中间吧
-      !indexList.has(lastIndex) ||
-      // 出现最多的前缀肯定(?)不是广告
-      indexList.size === mostLength ||
-      // 不至于有十张广告吧
-      indexList.size > 10
-    )
-      return;
-    indexList.forEach((index) => adList.add(index));
-  });
-
-  return adList;
-};
