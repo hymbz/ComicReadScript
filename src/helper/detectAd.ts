@@ -103,6 +103,8 @@ const qrCodeWhiteList = [
   /^https:\/\/x\.com/,
   // fantia
   /^https:\/\/fantia\.jp/,
+  // 棉花糖
+  /^https:\/\/marshmallow-qa\.com/,
 ];
 
 const isAdImg = async (
