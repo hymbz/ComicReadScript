@@ -18,6 +18,7 @@ export * from './helper/universalInit';
 export * from './helper/other';
 export * from './helper/detectAd';
 export * from './helper/solidJs';
+export * from './helper/triggerLazyLoad';
 export * from './components/useComponents/Fab';
 export * from './components/useComponents/Manga';
 export * from './components/useComponents/Toast';

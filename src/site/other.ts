@@ -1,11 +1,6 @@
 // 这个文件里不能含有 jsx 代码，否则会在打包时自动加入 import solidjs 的代码
 
 import { getInitLang } from 'helper/languages';
-import {
-  triggerLazyLoad,
-  needTrigged,
-  openScrollLock,
-} from 'helper/triggerLazyLoad';
 import { getEleSelector, isEleSelector } from 'helper/eleSelector';
 import {
   t,
@@ -24,6 +19,9 @@ import {
   throttle,
   showPageList,
   createEffectOn,
+  triggerLazyLoad,
+  needTrigged,
+  openScrollLock,
 } from 'main';
 
 // 测试案例
