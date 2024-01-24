@@ -77,8 +77,7 @@ createRoot(() => {
   });
 
   // 窗口宽度小于800像素时，标记为移动端
-  createEffectOn(
-    rootSize,
-    ({ width }) => inRange(1, width, 800) && _setState('isMobile', true),
+  createEffectOn(rootSize, ({ width }) =>
+    _setState('isMobile', inRange(1, width, 800)),
   );
 });
