@@ -163,6 +163,7 @@ let timeoutId = 0;
 let lastPageNum = -1;
 let wheelType: undefined | 'trackpad' | 'mouse';
 let equalNum = 0;
+let diffNum = 0;
 
 export const handleWheel = (e: WheelEvent) => {
   e.stopPropagation();
@@ -205,11 +206,16 @@ export const handleWheel = (e: WheelEvent) => {
 
   // 为了避免因临时卡顿而误判为触摸板
   // 在连续几次滚动量均相同的情况下，将 wheelType 相关变量重置回初始状态
-  if (lastDeltaY === nowDeltaY && nowDeltaY > 5) equalNum += 1;
-  else equalNum = 0;
-  if (equalNum >= 3) {
-    wheelType = undefined;
-    lastPageNum = -1;
+  if (diffNum < 10) {
+    if (lastDeltaY === nowDeltaY && nowDeltaY > 5) equalNum += 1;
+    else {
+      diffNum += 1;
+      equalNum = 0;
+    }
+    if (equalNum >= 3) {
+      wheelType = undefined;
+      lastPageNum = -1;
+    }
   }
 
   lastDeltaY = nowDeltaY;

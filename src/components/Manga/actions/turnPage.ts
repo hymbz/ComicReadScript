@@ -5,14 +5,14 @@ import { contentHeight, rootSize, scrollTop } from './memo';
 import { resetPage } from './show';
 
 /** 判断当前是否已经滚动到底部 */
-const isBottom = (state: State) => {
+export const isBottom = (state: State) => {
   return state.option.scrollMode
     ? Math.ceil(scrollTop() + rootSize().height) >= contentHeight()
     : state.activePageIndex === state.pageList.length - 1;
 };
 
 /** 判断当前是否已经滚动到顶部 */
-const isTop = (state: State) =>
+export const isTop = (state: State) =>
   state.option.scrollMode ? scrollTop() === 0 : state.activePageIndex === 0;
 
 export const closeScrollLock = debounce(

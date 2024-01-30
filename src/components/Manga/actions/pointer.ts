@@ -5,7 +5,13 @@ import type { UseDrag } from '../hooks/useDrag';
 import { store, setState, refs } from '../store';
 import { resetUI, scrollTo } from './helper';
 import { resetPage } from './show';
-import { turnPageFn, turnPageAnimation } from './turnPage';
+import {
+  turnPageFn,
+  turnPageAnimation,
+  turnPage,
+  isBottom,
+  isTop,
+} from './turnPage';
 import { zoom } from './zoom';
 import { imgTopList, rootSize } from './memo';
 
@@ -171,10 +177,30 @@ export const handleMangaFlowDrag: UseDrag = ({
 let lastDeltaY = 0;
 let retardStartTime = 0;
 
+let lastWheel = 0;
+
 export const handleTrackpadWheel = (e: WheelEvent) => {
   let deltaY = Math.floor(-e.deltaY);
   let absDeltaY = Math.abs(deltaY);
   if (absDeltaY < 2) return;
+
+  let time = 0;
+  let now = 0;
+  // 为了避免被触摸板的滚动惯性触发，限定一下滚动距离
+  if (absDeltaY > 50) {
+    now = performance.now();
+    time = now - lastWheel;
+    lastWheel = now;
+  }
+
+  if (store.option.scrollMode) {
+    if (
+      time > 200 &&
+      ((isTop(store) && e.deltaY < 0) || (isBottom(store) && e.deltaY > 0))
+    )
+      turnPage(e.deltaY > 0 ? 'next' : 'prev');
+    return;
+  }
 
   // 加速度小于指定值后逐渐缩小滚动距离，实现减速效果
   if (Math.abs(absDeltaY - lastDeltaY) <= 6) {
@@ -189,14 +215,9 @@ export const handleTrackpadWheel = (e: WheelEvent) => {
 
   setState((state) => {
     // 滚动至漫画头尾尽头时
-    if (
-      (store.activePageIndex === 0 && dy > 0) ||
-      (store.activePageIndex === store.pageList.length - 1 && dy < 0)
-    ) {
+    if ((isTop(state) && dy > 0) || (isBottom(state) && dy < 0)) {
+      if (time > 200) turnPageFn(state, dy < 0 ? 'next' : 'prev');
       dy = 0;
-      // 为了避免被触摸板的滚动惯性触发上/下一话跳转，限定一下滚动距离
-      if (absDeltaY > 50)
-        turnPageFn(state, store.activePageIndex === 0 ? 'prev' : 'next');
     }
 
     // 滚动过一页时
