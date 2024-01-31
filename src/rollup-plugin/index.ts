@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import { byPath } from '../helper';
 import { langList } from '../helper/languages';
+import { siteUrl } from './siteUrl';
 
 export { solidSvg } from './rollup-solid-svg';
 
@@ -24,6 +25,34 @@ const langMap = langList.reduce(
   },
   {} as Record<string, object>,
 );
+const extractI18n: OutputPluginOption = {
+  name: 'self-extractI18n',
+  renderChunk(rawCode) {
+    let code = rawCode;
+    // 实现 extractI18n 函数
+    if (code.includes('extractI18n')) {
+      code = code.replaceAll(
+        /extractI18n\('(.+)'\)/g,
+        (_, key) => `((lang) => {
+            switch (lang) {
+              ${langList
+                .filter((l) => l !== 'zh')
+                .map(
+                  (langName) =>
+                    `case '${langName}': return '${byPath(
+                      langMap[langName],
+                      key,
+                    )}';`,
+                )
+                .join('')}
+              default: return '${byPath(langMap.zh, key)}';
+            }
+          })`,
+      );
+    }
+    return code;
+  },
+};
 
 export const selfPlugins: OutputPluginOption[] = [
   {
@@ -71,32 +100,6 @@ export const selfPlugins: OutputPluginOption[] = [
       return code;
     },
   },
-  {
-    name: 'self-extractI18n',
-    renderChunk(rawCode) {
-      let code = rawCode;
-      // 实现 extractI18n 函数
-      if (code.includes('extractI18n')) {
-        code = code.replaceAll(
-          /extractI18n\('(.+)'\)/g,
-          (_, key) => `((lang) => {
-            switch (lang) {
-              ${langList
-                .filter((l) => l !== 'zh')
-                .map(
-                  (langName) =>
-                    `case '${langName}': return '${byPath(
-                      langMap[langName],
-                      key,
-                    )}';`,
-                )
-                .join('')}
-              default: return '${byPath(langMap.zh, key)}';
-            }
-          })`,
-        );
-      }
-      return code;
-    },
-  },
+  extractI18n,
+  siteUrl,
 ];

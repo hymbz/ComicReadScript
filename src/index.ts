@@ -189,12 +189,7 @@ try {
     }
 
     // #禁漫天堂
-    // 发布页：https://jmcomic.ltd
-    case '18comic-god.xyz':
-    case '18comic-god.club':
-    case '18comic-god.cc':
-    case 'jmcomic.me':
-    case 'jmcomic1.me':
+    case 'siteUrl#jm':
     case '18comic.org':
     case '18comic.vip': {
       inject('jm');
@@ -319,7 +314,7 @@ try {
     }
 
     // #绅士漫画(wnacg)
-    case 'www.wn3.lol':
+    case 'siteUrl#wnacg':
     case 'www.wnacg.com':
     case 'wnacg.com': {
       // 突出显示下拉阅读的按钮
