@@ -54,7 +54,7 @@ const getImgMedian = (sizeFn: (value: ComicImg) => number) => {
 export const placeholderSize = createThrottleMemo(
   () => ({
     width: getImgMedian((img) => img.width!) ?? 800,
-    height: getImgMedian((img) => img.height!) ?? 600,
+    height: getImgMedian((img) => img.height!) ?? 1200,
   }),
   500,
 );

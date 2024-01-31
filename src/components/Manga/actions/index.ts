@@ -10,3 +10,4 @@ export * from './show';
 export * from './switch';
 export * from './turnPage';
 export * from './zoom';
+export * from './scrollModeDrag';

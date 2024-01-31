@@ -15,6 +15,7 @@ import {
   handlePinchZoom,
   handleZoomDrag,
   handleMangaFlowDrag,
+  handleScrollModeDrag,
   touches,
   initIntersectionObserver,
   bound,
@@ -37,7 +38,8 @@ export const ComicImgFlow: Component = () => {
     if (store.gridMode) return;
     if (touches.size > 1) return handlePinchZoom(state, e);
     if (store.zoom.scale !== 100) return handleZoomDrag(state, e);
-    if (!store.option.scrollMode) return handleMangaFlowDrag(state, e);
+    if (store.option.scrollMode) return handleScrollModeDrag(state, e);
+    return handleMangaFlowDrag(state, e);
   };
 
   onMount(() => {
