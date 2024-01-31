@@ -139,7 +139,7 @@
     cursor: none;
   }
 
-  &[data-animation="page"] {
+  &[data-animation="page"] .img {
     transition-duration: 300ms;
   }
 

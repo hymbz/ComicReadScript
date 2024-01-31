@@ -22,7 +22,7 @@ export const resetPage = (state: State, animation = false) => {
   let i = -1;
   if (inRange(renderRange.start(), state.activePageIndex, renderRange.end()))
     i = state.activePageIndex - renderRange.start();
-  if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;
+  if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i;
   else state.page.offset.x.pct = i === -1 ? 0 : i;
 
   state.page.anima = animation ? 'page' : '';
