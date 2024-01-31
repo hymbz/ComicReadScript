@@ -176,6 +176,7 @@
       "nhentai_error": "nhentai 匹配出错",
       "nhentai_failed": "匹配失败，请在确认登录 {{nhentai}} 后刷新"
     },
+    "need_captcha": "需要人机验证",
     "nhentai": {
       "fetch_next_page_failed": "获取下一页漫画数据失败",
       "tag_blacklist_fetch_failed": "标签黑名单获取失败"

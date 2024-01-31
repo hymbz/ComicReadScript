@@ -176,6 +176,7 @@
       "nhentai_error": "Error in nhentai matching",
       "nhentai_failed": "Matching failed, please refresh after confirming login to {{nhentai}}"
     },
+    "need_captcha": "Need CAPTCHA verification",
     "nhentai": {
       "fetch_next_page_failed": "Failed to get next page of comic data",
       "tag_blacklist_fetch_failed": "Failed to fetch tag blacklist"

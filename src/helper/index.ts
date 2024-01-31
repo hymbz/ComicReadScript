@@ -437,7 +437,7 @@ export const requestIdleCallback = (
 export const autoUpdate = (update: () => Promise<void>) => {
   const refresh = singleThreaded(update);
   ['click', 'popstate'].forEach((eventName) =>
-    window.addEventListener(eventName, refresh),
+    window.addEventListener(eventName, refresh, { capture: true }),
   );
   refresh();
 };

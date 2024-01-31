@@ -106,6 +106,7 @@ export const useInit = async <T extends Record<string, any>>(
     setFab,
     setManga,
     mangaProps,
+    fabProps,
     needAutoShow,
     isStored,
     /** Manga 组件的默认 onLoading */

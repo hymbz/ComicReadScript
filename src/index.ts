@@ -471,6 +471,44 @@ try {
       break;
     }
 
+    // #Anchira
+    case 'anchira.to': {
+      options = {
+        name: 'hitomi',
+        getImgList: async ({ fabProps }) => {
+          const [, , galleryId, galleryKey] =
+            window.location.pathname.split('/');
+
+          const headers = {
+            'X-Requested-With': 'XMLHttpRequest',
+            Referer: window.location.href,
+          };
+          const res = await main.request<string>(
+            `/api/v1/library/${galleryId}/${galleryKey}/data`,
+            { headers, noCheckCode: true },
+          );
+          if (res.status !== 200)
+            main.toast.error(main.t('site.need_captcha'), {
+              throw: true,
+              duration: Infinity,
+              onClick: () => fabProps?.onClick?.(),
+            });
+
+          const { names, key, hash } = JSON.parse(res.response) as {
+            names: string[];
+            key: string;
+            hash: string;
+          };
+          return names.map(
+            (name) =>
+              `https://kisakisexo.xyz/${galleryId}/${key}/${hash}/b/${name}`,
+          );
+        },
+        SPA: { isMangaPage: () => window.location.href.includes('/g/') },
+      };
+      break;
+    }
+
     // #kemono
     case 'kemono.su':
     case 'kemono.party': {

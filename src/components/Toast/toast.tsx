@@ -48,8 +48,8 @@ toast.set = (id: string, options: Partial<Toast>) => {
 };
 
 toast.success = (msg: string, options?: Partial<Toast>) =>
-  toast(msg, { ...options, type: 'success' });
+  toast(msg, { ...options, exit: undefined, type: 'success' });
 toast.warn = (msg: string, options?: Partial<Toast>) =>
-  toast(msg, { ...options, type: 'warn' });
+  toast(msg, { ...options, exit: undefined, type: 'warn' });
 toast.error = (msg: string, options?: Partial<Toast>) =>
-  toast(msg, { ...options, type: 'error' });
+  toast(msg, { ...options, exit: undefined, type: 'error' });

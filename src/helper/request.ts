@@ -19,6 +19,7 @@ const xmlHttpRequest = (
 export type RequestDetails = Partial<Tampermonkey.Request<any>> & {
   errorText?: string;
   noTip?: true;
+  noCheckCode?: true;
 };
 
 /** 发起请求 */
@@ -39,7 +40,7 @@ export const request = async <T = any>(
       timeout: 1000 * 10,
       ...details,
     });
-    if (res.status !== 200) {
+    if (!details?.noCheckCode && res.status !== 200) {
       log.error(errorText, res);
       throw new Error(errorText);
     }
