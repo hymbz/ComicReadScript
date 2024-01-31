@@ -44,7 +44,6 @@ declare global {
       GM_xmlhttpRequest: GM_xmlhttpRequest;
       [k: string]: any;
     };
-    [key: string]: any;
   }
 }
 

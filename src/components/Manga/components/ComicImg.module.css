@@ -1,4 +1,17 @@
+.img > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .img {
+  content-visibility: hidden;
+
+  position: relative;
+  transform: translate(var(--page-x), var(--page-y)) translateZ(0);
+
+  display: none;
+
   max-width: 100%;
   height: 100%;
   max-height: 100%;
@@ -6,16 +19,17 @@
   object-fit: contain;
   background-color: var(--hover-bg-color, #fff3);
 
-  &[data-fill="left"] {
-    transform: translate(50%);
+  &[data-show] {
+    content-visibility: visible;
+    display: block;
   }
 
-  &[data-fill="right"] {
-    transform: translate(-50%);
+  &[data-show="0"] {
+    justify-self: end;
   }
 
-  &[data-fill="page"] {
-    display: none;
+  &[data-show="1"] {
+    justify-self: start;
   }
 
   &[data-type="long"] {
@@ -35,7 +49,6 @@
   &[data-load-type="wait"],
   &[src=""] {
     position: relative;
-    aspect-ratio: 3 / 4;
     height: 100%;
   }
 
@@ -77,29 +90,6 @@
   }
 }
 
-.page {
-  content-visibility: hidden;
-
-  position: relative;
-  z-index: 1;
-  transform: translate(var(--page-x), var(--page-y)) translateZ(0);
-
-  display: none;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-
-  width: 100%;
-  height: 100%;
-
-  transition-duration: 0ms;
-
-  &[data-show] {
-    content-visibility: visible;
-    display: flex;
-  }
-}
-
 .mangaBox {
   width: 100%;
   height: 100%;
@@ -128,8 +118,7 @@
   grid-auto-flow: column;
   grid-auto-rows: 100%;
   grid-row-gap: 0;
-  grid-template-columns: 100%;
-  grid-template-rows: 100%;
+  place-items: center;
 
   width: 100%;
   height: 100%;
@@ -137,7 +126,6 @@
   color: var(--text);
 
   backface-visibility: hidden;
-  outline: none;
 
   transition-duration: 0ms;
 
@@ -147,16 +135,11 @@
     object-fit: scale-down;
   }
 
-  /* 根据漫画方向调换位置 */
-  &[dir="ltr"] .page {
-    flex-direction: row;
-  }
-
   &[data-hidden-mouse="true"] {
     cursor: none;
   }
 
-  &[data-animation="page"] .page {
+  &[data-animation="page"] {
     transition-duration: 300ms;
   }
 
@@ -173,39 +156,44 @@
   transform: none;
 
   overflow: auto;
+  grid-auto-columns: unset;
   grid-auto-flow: row;
   grid-auto-rows: calc(100% / 3);
   grid-row-gap: 1.5em;
-  grid-template-columns: repeat(3, 1fr);
   grid-template-rows: unset;
 
   box-sizing: border-box;
   padding-bottom: 2em;
 
-  & .page {
+  & .img {
     transform: none;
     height: auto;
 
-    &::after {
-      content: var(--tip);
+    & > img {
+      cursor: pointer;
+    }
 
+    & > .gridModeTip {
       position: absolute;
-      bottom: -1.4em;
-      left: 0;
-      transform: scale(0.8);
+      bottom: -1.5em;
 
       direction: ltr;
+      overflow: hidden;
 
       width: 100%;
 
+      line-height: 1.5em;
       text-align: center;
-      white-space: pre;
+      text-overflow: ellipsis;
+      white-space: nowrap;
 
       opacity: 0.5;
     }
 
-    & .img {
-      cursor: pointer;
+    &[data-load-type="error"],
+    &[data-load-type="wait"],
+    &[src=""] {
+      height: 100%;
     }
   }
 }
@@ -218,16 +206,7 @@
     flex-direction: column;
     height: fit-content;
 
-    & .page {
-      width: unset;
-      height: fit-content;
-
-      &:not(:first-of-type) {
-        margin-top: calc(var(--scroll-mode-spacing) * 7px);
-      }
-    }
-
-    & .img {
+    & .img[data-show] {
       display: unset;
 
       width: calc(var(--scroll-mode-img-scale) * min(100%, var(--width)));
@@ -239,6 +218,10 @@
 
       &[data-load-type="loading"] {
         position: unset;
+      }
+
+      &:not(:first-of-type) {
+        margin-top: calc(var(--scroll-mode-spacing) * 7px);
       }
     }
 

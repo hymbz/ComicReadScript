@@ -20,8 +20,8 @@ import { rootSize, scrollTop } from './memo';
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 export const focus = () =>
   requestAnimationFrame(() => {
-    refs.mangaFlow?.click();
-    refs.mangaFlow?.focus();
+    refs.mangaBox?.click();
+    refs.mangaBox?.focus();
   });
 
 export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {

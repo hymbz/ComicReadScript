@@ -1,7 +1,22 @@
 import { createRoot, createSignal, onCleanup } from 'solid-js';
 import { inRange, throttle } from 'helper';
-import { createEffectOn, createEqualsSignal } from 'helper/solidJs';
+import {
+  createEffectOn,
+  createEqualsSignal,
+  createRootMemo,
+} from 'helper/solidJs';
 import { store, _setState, setState } from '../../store';
+
+/** 记录每张图片所在的页面 */
+export const imgPageMap = createRootMemo(() => {
+  const map: Record<number, number> = {};
+  for (let i = 0; i < store.pageList.length; i++) {
+    store.pageList[i].forEach((imgIndex) => {
+      if (imgIndex !== -1) map[imgIndex] = i;
+    });
+  }
+  return map;
+});
 
 /** 当前显示的图片 */
 export const showImgList = new Set<HTMLImageElement>();
@@ -11,9 +26,7 @@ const [_showPageList, setShowPageList] = createEqualsSignal<number[]>([]);
 export const showPageList = _showPageList;
 const updateShowPageList = throttle(() => {
   const newShowPageList = new Set<number>();
-  showImgList.forEach((img) =>
-    newShowPageList.add(+img.parentElement!.getAttribute('data-index')!),
-  );
+  showImgList.forEach((img) => newShowPageList.add(imgPageMap()[+img.alt]));
   setShowPageList([...newShowPageList].sort((a, b) => a - b));
 });
 
@@ -50,10 +63,8 @@ export const rootSize = _rootSize;
 export const initResizeObserver = (dom: HTMLElement) => {
   setRootSize({ width: dom.scrollWidth, height: dom.scrollHeight });
   // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
-  const resizeObserver = new ResizeObserver(
-    throttle(([{ contentRect }]) =>
-      setRootSize({ width: contentRect.width, height: contentRect.height }),
-    ),
+  const resizeObserver = new ResizeObserver(([{ contentRect }]) =>
+    setRootSize({ width: contentRect.width, height: contentRect.height }),
   );
   resizeObserver.disconnect();
   resizeObserver.observe(dom);

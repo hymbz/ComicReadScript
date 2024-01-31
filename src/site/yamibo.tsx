@@ -389,7 +389,11 @@ interface History {
 
             const pc = () => (
               <>
-                <a class="historyTag" onClick={window.atarget} href={url()}>
+                <a
+                  class="historyTag"
+                  onClick={unsafeWindow.atarget}
+                  href={url()}
+                >
                   回第{data()?.lastPageNum}页{' '}
                 </a>
                 <Show when={lastReplies() > 0}>
@@ -401,7 +405,7 @@ interface History {
             const mobile = () => (
               <li>
                 <a
-                  onClick={window.atarget}
+                  onClick={unsafeWindow.atarget}
                   href={url()}
                   style={{ color: 'unset' }}
                 >

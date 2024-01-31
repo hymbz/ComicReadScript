@@ -29,17 +29,12 @@
     color: inherit;
 
     background-color: transparent;
-    border: 0;
 
     animation: jello 0.3s forwards;
 
     &[data-is-end] {
       margin: 2em;
       font-size: 3em;
-    }
-
-    &:focus-visible {
-      outline: none;
     }
   }
 

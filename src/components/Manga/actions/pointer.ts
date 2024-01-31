@@ -4,7 +4,9 @@ import { useDoubleClick } from '../hooks/useDoubleClick';
 import type { UseDrag } from '../hooks/useDrag';
 import { store, setState, refs } from '../store';
 import { resetUI, scrollTo } from './helper';
+import { imgPageMap, imgTopList, rootSize } from './memo';
 import { resetPage } from './show';
+import { zoom } from './zoom';
 import {
   turnPageFn,
   turnPageAnimation,
@@ -12,11 +14,12 @@ import {
   isBottom,
   isTop,
 } from './turnPage';
-import { zoom } from './zoom';
-import { imgTopList, rootSize } from './memo';
 
 /** 根据坐标判断点击的元素 */
-const findClickEle = (eleList: HTMLCollection, { x, y }: MouseEvent) =>
+const findClickEle = <T extends Element>(
+  eleList: HTMLCollectionOf<T>,
+  { x, y }: MouseEvent,
+) =>
   [...eleList].find((e) => {
     const rect = e.getBoundingClientRect();
     return (
@@ -48,10 +51,8 @@ export const handlePageClick = (e: MouseEvent) => {
 export const handleGridClick = (e: MouseEvent) => {
   const target = findClickEle(refs.root.getElementsByTagName('img'), e);
   if (!target) return;
-  const pageNumText = target.parentElement?.getAttribute('data-index');
-  if (!pageNumText) return;
-  const pageNum = +pageNumText;
-  if (!Reflect.has(store.pageList, pageNum)) return;
+  const pageNum = imgPageMap()[+target.alt];
+  if (pageNum === undefined) return;
   setState((state) => {
     state.activePageIndex = pageNum;
     state.gridMode = false;

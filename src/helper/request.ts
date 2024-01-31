@@ -39,7 +39,10 @@ export const request = async <T = any>(
       timeout: 1000 * 10,
       ...details,
     });
-    if (res.status !== 200) throw new Error(errorText);
+    if (res.status !== 200) {
+      log.error(errorText, res);
+      throw new Error(errorText);
+    }
     return res;
   } catch (error) {
     if (errorNum >= 0) {

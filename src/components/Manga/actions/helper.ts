@@ -6,7 +6,7 @@ import type { Option } from '../store/option';
 import { defaultOption } from '../store/option';
 
 /** 触发 onOptionChange */
-export const triggerOnOptionChange = scheduleIdle(
+const triggerOnOptionChange = scheduleIdle(
   () => store.prop.OptionChange?.(difference(store.option, defaultOption)),
   1000,
 );

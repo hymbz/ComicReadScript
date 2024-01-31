@@ -1,11 +1,17 @@
 import type { Component, JSX } from 'solid-js';
-import { createEffect, createMemo, onCleanup, onMount } from 'solid-js';
-
+import { Show, createEffect, createMemo, onCleanup, onMount } from 'solid-js';
+import { inRange } from 'helper';
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
+import { createMemoMap } from 'helper/solidJs';
 import { setState, store } from '../store';
 import {
+  activePage,
+  getImgTip,
+  imgPageMap,
+  imgShowState,
   placeholderSize,
+  renderImgRange,
   showImgList,
   updateImgLoadType,
   updateImgSize,
@@ -52,7 +58,7 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
 };
 
 /** 漫画图片 */
-export const ComicImg: Component<ComicImgProps> = (props) => {
+export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   let ref: HTMLImageElement;
 
   onMount(() => store.observer?.observe(ref));
@@ -61,45 +67,66 @@ export const ComicImg: Component<ComicImgProps> = (props) => {
     showImgList.delete(ref);
   });
 
-  const img = createMemo(() => store.imgList[props.index]);
+  const show = createMemo(
+    () =>
+      store.gridMode ||
+      inRange(renderImgRange().start, img.index, renderImgRange().end),
+  );
 
   const src = createMemo(() => {
-    if (!img() || img().loadType === 'wait') return '';
-    if (img().translationType === 'show') return img().translationUrl;
-    return img().src;
+    if (img.loadType === 'wait') return '';
+    if (img.translationType === 'show') return img.translationUrl;
+    return img.src;
   });
 
-  const style = createMemo<JSX.CSSProperties | undefined>(() => {
-    if (!store.option.scrollMode) return undefined;
-    const size = img()?.width ? img() : placeholderSize();
-    return {
-      '--width': `${size.width}px`,
-      'aspect-ratio': `${size.width} / ${size.height}`,
-    };
+  const size = createMemo(() => (img?.width ? img : placeholderSize()));
+
+  const style = createMemoMap<JSX.CSSProperties>({
+    'grid-area': () => `_${img.index}`,
+    '--width': () => `${size().width}px`,
+    'aspect-ratio': () => `${size().width} / ${size().height}`,
+    'box-shadow': () => {
+      if (!store.gridMode || !activePage().includes(img.index))
+        return undefined;
+
+      const page = store.pageList[imgPageMap()[img.index]].filter(
+        (i) => i !== -1,
+      );
+      const showState = page.length === 1 ? 2 : imgShowState()[img.index];
+      if (showState === 2) return '0 0 1em 0.5em var(--text-secondary)';
+      return `${showState ? -1 : 1}em 0 1em -0.5em var(--text-secondary)`;
+    },
   });
 
   createEffect(() => {
-    if (!src() || img().loadType !== 'loaded') return;
+    if (!src() || img.loadType !== 'loaded') return;
     // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
     // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
     ref.decode();
   });
 
   return (
-    <img
-      ref={ref!}
+    <picture
       class={classes.img}
       style={style()}
-      src={src()}
-      alt={`${props.index + 1}`}
-      data-fill={props.index === -1 ? 'page' : props.fill}
-      data-type={img()?.type || undefined}
-      data-load-type={
-        img()?.loadType === 'loaded' ? undefined : img()?.loadType
-      }
-      onLoad={(e) => handleImgLoaded(props.index, e.currentTarget)}
-      onError={(e) => handleImgError(props.index, e.currentTarget)}
-      draggable="false"
-    />
+      data-show={show() ? imgShowState()[img.index] ?? '' : undefined}
+      data-type={img?.type || undefined}
+      data-load-type={img?.loadType === 'loaded' ? undefined : img?.loadType}
+    >
+      <img
+        ref={ref!}
+        src={src()}
+        alt={`${img.index}`}
+        onLoad={(e) => handleImgLoaded(img.index, e.currentTarget)}
+        onError={(e) => handleImgError(img.index, e.currentTarget)}
+        draggable="false"
+      />
+      <Show when={store.gridMode}>
+        <div
+          class={classes.gridModeTip}
+          children={store.gridMode ? getImgTip(img.index) : ''}
+        />
+      </Show>
+    </picture>
   );
 };

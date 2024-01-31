@@ -78,7 +78,7 @@ const getSaveOption = (): MangaProps['option'] => {
 const handleOptionChange: MangaProps['onOptionChange'] = (option) =>
   localStorage.setItem('option', JSON.stringify(option));
 
-window.toast = toast;
+(window as any).toast = toast;
 
 export const Root: Component = () => (
   <div ref={(e) => handleDrag(e)} class={classes.root}>

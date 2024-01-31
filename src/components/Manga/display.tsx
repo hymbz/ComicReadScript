@@ -148,11 +148,11 @@ export default function DisplayManga() {
   };
 
   const option: MangaProps['option'] = {
-    scrollMode: true,
+    // scrollMode: true,
   };
 
   // const duplicateArray = (arr: string[], count: number) =>
-  //   [].concat(...new Array(count).fill(arr));
+  //   ([] as string[]).concat(...new Array(count).fill(arr));
 
   // const _imgList = duplicateArray(imgList[1], 30);
   // log.warn('个数', _imgList.length);

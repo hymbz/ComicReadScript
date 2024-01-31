@@ -11,26 +11,27 @@ import { activePage, renderRange, updateRenderRange } from './memo';
 /** 将页面移回原位 */
 export const resetPage = (state: State, animation = false) => {
   updateRenderRange(state);
+  state.page.offset.x.pct = 0;
+  state.page.offset.y.pct = 0;
+
   if (state.option.scrollMode) {
     state.page.anima = '';
     return;
   }
 
-  state.page.offset.x.pct = 0;
-  state.page.offset.y.pct = 0;
   let i = -1;
   if (inRange(renderRange.start(), state.activePageIndex, renderRange.end()))
     i = state.activePageIndex - renderRange.start();
   if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i * 100;
-  else state.page.offset.x.pct = i === -1 ? 0 : i * 100;
+  else state.page.offset.x.pct = i === -1 ? 0 : i;
 
   state.page.anima = animation ? 'page' : '';
 };
 
 /** 获取指定图片的提示文本 */
-const getImgTip = (state: State, i: number) => {
+export const getImgTip = (i: number) => {
   if (i === -1) return t('other.fill_page');
-  const img = state.imgList[i];
+  const img = store.imgList[i];
 
   // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
   if (img.loadType !== 'loaded')
@@ -50,7 +51,7 @@ const getImgTip = (state: State, i: number) => {
 export const getPageTip = (pageIndex: number): string => {
   const page = store.pageList[pageIndex];
   if (!page) return 'null';
-  const pageIndexText = page.map((index) => getImgTip(store, index)) as
+  const pageIndexText = page.map((index) => getImgTip(index)) as
     | [string]
     | [string, string];
   if (store.option.dir === 'rtl') pageIndexText.reverse();

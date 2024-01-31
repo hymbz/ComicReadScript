@@ -21,7 +21,6 @@
 
   /* 扩大触发范围 */
   border-left: max(6vw, 1em) solid transparent;
-  outline: none;
 
   & > div {
     pointer-events: none;

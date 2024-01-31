@@ -34,9 +34,11 @@ export const translationImage = async (i: number) => {
     if (img.loadType !== 'loaded')
       return setMessage(i, t('translation.tip.img_not_fully_loaded'));
 
-    const translationUrl = await (store.option.translation.server === 'cotrans'
-      ? cotransTranslation
-      : selfhostedTranslation)(i);
+    const translationUrl = await (
+      store.option.translation.server === 'cotrans'
+        ? cotransTranslation
+        : selfhostedTranslation
+    )(i);
 
     setState((state) => {
       state.imgList[i].translationUrl = translationUrl;

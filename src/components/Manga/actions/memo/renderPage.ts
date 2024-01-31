@@ -1,6 +1,6 @@
 import { createRoot, createSignal } from 'solid-js';
 import { inRange } from 'helper';
-import { createEffectOn } from 'helper/solidJs';
+import { createEffectOn, createRootMemo } from 'helper/solidJs';
 import type { State } from '../../store';
 import { setState, store } from '../../store';
 import { contentHeight, imgTopList } from './common';
@@ -9,7 +9,7 @@ import { rootSize, scrollTop } from './observer';
 const [renderRangeStart, setRenderRangeStart] = createSignal(0);
 const [renderRangeEnd, setRenderRangeEnd] = createSignal(0);
 
-/** 渲染范围 */
+/** 渲染页面的范围 */
 export const renderRange = { start: renderRangeStart, end: renderRangeEnd };
 
 const findTopImg = (initIndex: number, top: number) => {
@@ -38,7 +38,7 @@ export const updateRenderRange = (state: State) => {
     }
   } else {
     startPage = Math.max(0, state.activePageIndex - 1);
-    endPage = Math.min(state.pageList.length, state.activePageIndex + 2);
+    endPage = Math.min(state.pageList.length - 1, state.activePageIndex + 2);
   }
 
   if (!startPage) startPage = 0;
@@ -65,3 +65,33 @@ createRoot(() => {
     endImgTop = imgTopList()[renderRangeEnd()];
   });
 });
+
+/** 渲染图片的范围 */
+export const renderImgRange = createRootMemo(() => {
+  if (!store.pageList[renderRangeStart()] || !store.pageList[renderRangeEnd()])
+    return { start: 0, end: 0 };
+  const renderImgList = [
+    ...store.pageList[renderRangeStart()],
+    ...store.pageList[renderRangeEnd()],
+  ].filter((i) => i !== -1);
+  return { start: Math.min(...renderImgList), end: Math.max(...renderImgList) };
+});
+
+/**
+ * 图片显示状态
+ *
+ * 0 - 页面中的第一张图片
+ * 1 - 页面中的最后一张图片
+ * 2 - 页面中的唯一一张图片
+ */
+export const imgShowState = createRootMemo<(0 | 1 | 2)[]>(() => {
+  const stateList: (0 | 1 | 2)[] = [];
+  for (let i = 0; i < store.pageList.length; i++) {
+    const [a, b] = store.pageList[i];
+    if (b !== undefined) {
+      stateList[a] = 0;
+      stateList[b] = 1;
+    } else stateList[a] = 2;
+  }
+  return stateList;
+}, []);

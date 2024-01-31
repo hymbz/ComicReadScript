@@ -92,9 +92,9 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
         if (window.location.pathname === '/')
           return 'https://nhentai.net/api/galleries/all?';
         if (querySelector('a.tag'))
-          return `https://nhentai.net/api/galleries/tagged?tag_id=${querySelector(
-            'a.tag',
-          )?.classList[1].split('-')[1]}&`;
+          return `https://nhentai.net/api/galleries/tagged?tag_id=${
+            querySelector('a.tag')?.classList[1].split('-')[1]
+          }&`;
         if (window.location.pathname.includes('search'))
           return `https://nhentai.net/api/galleries/search?query=${new URLSearchParams(
             window.location.search,
@@ -133,8 +133,8 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
         let comicDomHtml = '';
 
         result.forEach((comic) => {
-          const blacklisted = comic.tags.some(
-            (tag) => blacklist?.includes(tag.id),
+          const blacklisted = comic.tags.some((tag) =>
+            blacklist?.includes(tag.id),
           );
           comicDomHtml += `<div class="gallery${
             blacklisted ? ' blacklisted' : ''

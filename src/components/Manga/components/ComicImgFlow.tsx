@@ -2,7 +2,12 @@ import type { Component, JSX } from 'solid-js';
 import { For, Show, createMemo, onMount } from 'solid-js';
 import { boolDataVal } from 'helper';
 import { createEffectOn, createMemoMap } from 'helper/solidJs';
+import { ComicImg } from './ComicImg';
+import { EmptyTip } from './EmptyTip';
 import { refs, setState, store } from '../store';
+import { useHiddenMouse } from '../hooks/useHiddenMouse';
+import type { UseDrag } from '../hooks/useDrag';
+import { useDrag } from '../hooks/useDrag';
 import {
   bindRef,
   handleClick,
@@ -19,11 +24,9 @@ import {
   bindScrollTop,
   scrollTo,
   scrollTop,
+  isOnePageMode,
+  rootSize,
 } from '../actions';
-import { useHiddenMouse } from '../hooks/useHiddenMouse';
-import type { UseDrag } from '../hooks/useDrag';
-import { useDrag } from '../hooks/useDrag';
-import { ComicPage } from './ComicPage';
 
 import classes from '../index.module.css';
 
@@ -65,17 +68,47 @@ export const ComicImgFlow: Component = () => {
     // 目前还是会有轻微偏移，但考虑到大部分情况下都是顺序阅读，本身出现概率就低，就不继续排查优化了
   });
 
+  const pageToText = (page: [number] | [number, number]) =>
+    `${(page.length !== 1 ? page : [page[0], page[0]])
+      .map((i) => (i === -1 ? '.' : `_${i}`))
+      .join(' ')}`;
+  const gridAreas = createMemo(() => {
+    if (store.gridMode) {
+      const columnNum = isOnePageMode() ? 5 : 3;
+      const areaList: string[][] = [[]];
+      store.pageList.forEach((page) => {
+        if (areaList.at(-1)!.length === columnNum) areaList.push([]);
+        areaList.at(-1)!.push(pageToText(page));
+      });
+      while (areaList.at(-1)!.length !== columnNum)
+        areaList.at(-1)!.push('. .');
+      return areaList.map((line) => `"${line.join(' ')}"`).join('\n');
+    }
+
+    if (store.option.scrollMode) return '';
+
+    return store.page.vertical
+      ? store.pageList
+          .slice(renderRange.start(), renderRange.end() + 1)
+          .map((page) => `"${pageToText(page)}"`)
+          .join('\n')
+      : `"${store.pageList
+          .slice(renderRange.start(), renderRange.end() + 1)
+          .map(pageToText)
+          .join(' ')}"`;
+  });
+
   const style = createMemoMap<JSX.CSSProperties>({
     '--scale': () => store.zoom.scale / 100,
-    '--zoom-x': () => `${store.zoom.offset.x || 0}px`,
-    '--zoom-y': () => `${store.zoom.offset.y || 0}px`,
+    '--zoom-x': () => `${store.zoom.offset.x}px`,
+    '--zoom-y': () => `${store.zoom.offset.y}px`,
     '--page-x': () => {
       if (store.option.scrollMode) return '0px';
-      const x = `calc(${store.page.offset.x.pct}% + ${store.page.offset.x.px}px)`;
+      const x = `${store.page.offset.x.pct * rootSize().width + store.page.offset.x.px}px`;
       return store.option.dir === 'rtl' ? x : `calc(${x} * -1)`;
     },
     '--page-y': () =>
-      `calc(${store.page.offset.y.pct}% + ${store.page.offset.y.px}px)`,
+      `${store.page.offset.y.pct * rootSize().height + store.page.offset.y.px}px`,
     'touch-action': () => {
       if (store.gridMode) return 'auto';
       if (store.zoom.scale !== 100) {
@@ -89,12 +122,20 @@ export const ComicImgFlow: Component = () => {
       !store.gridMode && store.option.scrollMode
         ? `${contentHeight()}px`
         : undefined,
+    'grid-template-areas': gridAreas,
+    'grid-template-columns': () => {
+      if (!store.imgList.length) return undefined;
+      if (store.gridMode) return `repeat(${isOnePageMode() ? 10 : 6}, 1fr)`;
+      if (store.page.vertical) return isOnePageMode() ? '100%' : '50% 50%';
+      return `repeat(${gridAreas().split(' ').length}, 50%)`;
+    },
   });
 
   return (
     <div
       ref={bindRef('mangaBox')}
       class={`${classes.mangaBox} ${classes.beautifyScrollbar}`}
+      tabIndex={-1}
     >
       <div
         id={classes.mangaFlow}
@@ -112,13 +153,12 @@ export const ComicImgFlow: Component = () => {
         on:mousemove={onMouseMove}
         onTransitionEnd={handleTransitionEnd}
         style={style()}
-        tabIndex={-1}
       >
         <Show when={store.option.scrollMode}>
           <span style={{ height: `${scrollModeFill()}px`, 'flex-shrink': 0 }} />
         </Show>
-        <For each={store.pageList} fallback={<h1>NULL</h1>}>
-          {(page, i) => <ComicPage page={page} index={i()} />}
+        <For each={store.imgList} fallback={<EmptyTip />}>
+          {(img, i) => <ComicImg index={i()} {...img} />}
         </For>
       </div>
     </div>

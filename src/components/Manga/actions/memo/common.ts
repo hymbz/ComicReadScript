@@ -1,6 +1,16 @@
 import { createRootMemo, createThrottleMemo } from 'helper/solidJs';
-import { store, refs } from '../../store';
+import { store } from '../../store';
 import { findFillIndex } from '../../handleComicData';
+import { rootSize } from './observer';
+
+/** 是否为单页模式 */
+export const isOnePageMode = createRootMemo(
+  () =>
+    store.option.onePageMode ||
+    store.option.scrollMode ||
+    store.isMobile ||
+    store.imgList.length <= 1,
+);
 
 /** 当前显示页面 */
 export const activePage = createRootMemo(
@@ -32,7 +42,6 @@ export const defaultImgType = createRootMemo<ComicImg['type']>(() => {
 
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = (sizeFn: (value: ComicImg) => number) => {
-  if (!store.option.scrollMode) return 0;
   const list = store.imgList
     .filter((img) => img.loadType === 'loaded' && img.width)
     .map(sizeFn)
@@ -44,8 +53,8 @@ const getImgMedian = (sizeFn: (value: ComicImg) => number) => {
 /** 图片占位尺寸 */
 export const placeholderSize = createThrottleMemo(
   () => ({
-    width: getImgMedian((img) => img.width!) ?? refs.root?.offsetWidth,
-    height: getImgMedian((img) => img.height!) ?? refs.root?.offsetHeight,
+    width: getImgMedian((img) => img.width!) ?? 800,
+    height: getImgMedian((img) => img.height!) ?? 600,
   }),
   500,
 );
@@ -55,7 +64,9 @@ export const imgHeightList = createRootMemo(() =>
   store.option.scrollMode
     ? store.imgList.map(
         (img) =>
-          (img.height ?? placeholderSize().height) *
+          (img.height && img.width && img.width > rootSize().width
+            ? img.height * (rootSize().width / img.width)
+            : img.height ?? placeholderSize().height) *
           store.option.scrollModeImgScale,
       )
     : [],

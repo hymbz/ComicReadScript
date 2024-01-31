@@ -1,8 +1,8 @@
 import { refs, setState, store } from '../store';
 import { zoom } from './zoom';
-import { setOption } from './helper';
+import { scrollTo, setOption } from './helper';
 import { updatePageData } from './image';
-import { nowFillIndex } from './memo';
+import { activeImgIndex, imgTopList, nowFillIndex } from './memo';
 
 /** 切换页面填充 */
 export const switchFillEffect = () => {
@@ -24,8 +24,7 @@ export const switchScrollMode = () => {
     updatePageData(state);
   });
   // 切换到卷轴模式后自动定位到对应页
-  if (store.option.scrollMode)
-    refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView();
+  if (store.option.scrollMode) scrollTo(imgTopList()[store.activePageIndex]);
 };
 
 /** 切换单双页模式 */
@@ -45,6 +44,7 @@ export const switchDir = () => {
 
 /** 切换网格模式 */
 export const switchGridMode = () => {
+  zoom(100);
   setState((state) => {
     state.gridMode = !state.gridMode;
     if (state.zoom.scale !== 100) zoom(100);
@@ -52,8 +52,10 @@ export const switchGridMode = () => {
   });
   // 切换到网格模式后自动定位到当前页
   if (store.gridMode)
-    refs.mangaFlow.children[store.activePageIndex]?.scrollIntoView({
-      block: 'center',
-      inline: 'center',
+    requestAnimationFrame(() => {
+      refs.mangaFlow.children[activeImgIndex()]?.scrollIntoView({
+        block: 'center',
+        inline: 'center',
+      });
     });
 };

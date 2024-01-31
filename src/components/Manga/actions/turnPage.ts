@@ -100,9 +100,8 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
 
     state.isDragMode = true;
     resetPage(state);
-    if (store.page.vertical)
-      state.page.offset.y.pct += dir === 'next' ? 100 : -100;
-    else state.page.offset.x.pct += dir === 'next' ? -100 : 100;
+    if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 1 : -1;
+    else state.page.offset.x.pct += dir === 'next' ? -1 : 1;
 
     setTimeout(() => {
       setState((draftState) => {

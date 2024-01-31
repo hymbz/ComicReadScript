@@ -56,8 +56,15 @@
   }
 }
 
-p {
+p,
+img {
   margin: 0;
+}
+
+div,
+button {
+  border: none;
+  outline: none;
 }
 
 blockquote {

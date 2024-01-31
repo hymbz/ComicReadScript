@@ -3,7 +3,13 @@ import { autoCloseFill, handleComicData } from '../handleComicData';
 import type { State } from '../store';
 import { store } from '../store';
 import { scrollTo, setOption } from './helper';
-import { activeImgIndex, contentHeight, preloadNum, scrollTop } from './memo';
+import {
+  activeImgIndex,
+  contentHeight,
+  isOnePageMode,
+  preloadNum,
+  scrollTop,
+} from './memo';
 
 type LoadImgDraft = { editNum: number; loadNum: number };
 const loadImg = (state: State, index: number, draft: LoadImgDraft) => {
@@ -86,19 +92,11 @@ export const updateImgLoadType = debounce((state: State) => {
 /** 重新计算 PageData */
 export const updatePageData = (state: State) => {
   const lastActiveImgIndex = activeImgIndex();
-  const {
-    imgList,
-    fillEffect,
-    option: { onePageMode, scrollMode },
-    isMobile,
-  } = state;
 
   let newPageList: PageList = [];
-  if (onePageMode || scrollMode || isMobile || imgList.length <= 1)
-    newPageList = imgList.map((_, i) => [i]);
-  else newPageList = handleComicData(imgList, fillEffect);
+  if (isOnePageMode()) newPageList = state.imgList.map((_, i) => [i]);
+  else newPageList = handleComicData(state.imgList, state.fillEffect);
   if (!isEqual(state.pageList, newPageList)) state.pageList = newPageList;
-
   updateImgLoadType(state);
 
   // 在图片排列改变后自动跳转回原先显示图片所在的页数
