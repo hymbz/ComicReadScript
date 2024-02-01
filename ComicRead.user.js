@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.5.4
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、kemono、welovemanga
+// @version         8.6.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、Anchira、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
@@ -748,7 +748,9 @@ const requestIdleCallback$1 = (callback, timeout) => {
  */
 const autoUpdate = update => {
   const refresh = singleThreaded(update);
-  ['click', 'popstate'].forEach(eventName => window.addEventListener(eventName, refresh));
+  ['click', 'popstate'].forEach(eventName => window.addEventListener(eventName, refresh, {
+    capture: true
+  }));
   refresh();
 };
 
@@ -996,6 +998,7 @@ const zh = {
       nhentai_error: "nhentai 匹配出错",
       nhentai_failed: "匹配失败，请在确认登录 {{nhentai}} 后刷新"
     },
+    need_captcha: "需要人机验证",
     nhentai: {
       fetch_next_page_failed: "获取下一页漫画数据失败",
       tag_blacklist_fetch_failed: "标签黑名单获取失败"
@@ -1246,6 +1249,7 @@ const en = {
       nhentai_error: "Error in nhentai matching",
       nhentai_failed: "Matching failed, please refresh after confirming login to {{nhentai}}"
     },
+    need_captcha: "Need CAPTCHA verification",
     nhentai: {
       fetch_next_page_failed: "Failed to get next page of comic data",
       tag_blacklist_fetch_failed: "Failed to fetch tag blacklist"
@@ -1496,6 +1500,7 @@ const ru = {
       nhentai_error: "Ошибка сопоставления с nhentai",
       nhentai_failed: "Ошибка сопостовления. Пожалуйста перезагрузите страницу после входа на {{nhentai}}"
     },
+    need_captcha: "需要人机验证",
     nhentai: {
       fetch_next_page_failed: "Не удалось получить следующую страницу",
       tag_blacklist_fetch_failed: "Не удалось получить заблокированные теги"
@@ -1710,14 +1715,17 @@ toast$2.set = (id, options) => {
 };
 toast$2.success = (msg, options) => toast$2(msg, {
   ...options,
+  exit: undefined,
   type: 'success'
 });
 toast$2.warn = (msg, options) => toast$2(msg, {
   ...options,
+  exit: undefined,
   type: 'warn'
 });
 toast$2.error = (msg, options) => toast$2(msg, {
   ...options,
+  exit: undefined,
   type: 'error'
 });
 
@@ -1925,7 +1933,7 @@ const request$1 = async (url, details, errorNum = 0) => {
       timeout: 1000 * 10,
       ...details
     });
-    if (res.status !== 200) {
+    if (!details?.noCheckCode && res.status !== 200) {
       log.error(errorText, res);
       throw new Error(errorText);
     }
@@ -2654,7 +2662,7 @@ const getImgMedian = sizeFn => {
 /** 图片占位尺寸 */
 const placeholderSize = createThrottleMemo(() => ({
   width: getImgMedian(img => img.width) ?? 800,
-  height: getImgMedian(img => img.height) ?? 600
+  height: getImgMedian(img => img.height) ?? 1200
 }), 500);
 
 /** 每张图片的高度 */
@@ -3166,7 +3174,7 @@ const checkBound = state => {
   state.zoom.offset.x = clamp(bound.x(), state.zoom.offset.x, 0);
   state.zoom.offset.y = clamp(bound.y(), state.zoom.offset.y, 0);
 };
-const zoom = (val, focal, animation = true) => {
+const zoom = (val, focal, animation = false) => {
   const newScale = clamp(100, val, 500);
   if (newScale === store.zoom.scale) return;
 
@@ -3206,7 +3214,7 @@ const zoom = (val, focal, animation = true) => {
 //
 
 /** 摩擦系数 */
-const FRICTION_COEFF = 0.91;
+const FRICTION_COEFF$1 = 0.91;
 const mouse = {
   x: 0,
   y: 0
@@ -3219,19 +3227,19 @@ const velocity = {
   x: 0,
   y: 0
 };
-let animationId$1 = null;
+let animationId$2 = null;
 const cancelAnimation = () => {
-  if (!animationId$1) return;
-  cancelAnimationFrame(animationId$1);
-  animationId$1 = null;
+  if (!animationId$2) return;
+  cancelAnimationFrame(animationId$2);
+  animationId$2 = null;
 };
-let lastTime = 0;
+let lastTime$1 = 0;
 
 /** 逐帧计算惯性滑动 */
 const handleSlideAnima = timestamp => {
   // 当速率足够小时停止计算动画
   if (approx(velocity.x, 0, 1) && approx(velocity.y, 0, 1)) {
-    animationId$1 = null;
+    animationId$2 = null;
     return;
   }
 
@@ -3242,20 +3250,20 @@ const handleSlideAnima = timestamp => {
     checkBound(state);
 
     // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
-    if (timestamp - lastTime > 16) {
-      velocity.x *= FRICTION_COEFF;
-      velocity.y *= FRICTION_COEFF;
-      lastTime = timestamp;
+    if (timestamp - lastTime$1 > 16) {
+      velocity.x *= FRICTION_COEFF$1;
+      velocity.y *= FRICTION_COEFF$1;
+      lastTime$1 = timestamp;
     }
   });
-  animationId$1 = requestAnimationFrame(handleSlideAnima);
+  animationId$2 = requestAnimationFrame(handleSlideAnima);
 };
 
 /** 逐帧根据鼠标坐标移动元素，并计算速率 */
 const handleDragAnima$1 = () => {
   // 当停着不动时退出循环
   if (mouse.x === store.zoom.offset.x && mouse.y === store.zoom.offset.y) {
-    animationId$1 = null;
+    animationId$2 = null;
     return;
   }
   setState(state => {
@@ -3267,7 +3275,7 @@ const handleDragAnima$1 = () => {
     velocity.x = state.zoom.offset.x - last.x;
     velocity.y = state.zoom.offset.y - last.y;
   });
-  animationId$1 = requestAnimationFrame(handleDragAnima$1);
+  animationId$2 = requestAnimationFrame(handleDragAnima$1);
 };
 
 /** 是否正在双指捏合缩放中 */
@@ -3285,15 +3293,15 @@ const handleZoomDrag = ({
       {
         mouse.x = store.zoom.offset.x;
         mouse.y = store.zoom.offset.y;
-        if (animationId$1) cancelAnimation();
+        if (animationId$2) cancelAnimation();
         break;
       }
     case 'move':
       {
-        if (animationId$1) cancelAnimation();
+        if (animationId$2) cancelAnimation();
         mouse.x += x - lx;
         mouse.y += y - ly;
-        if (animationId$1 === null) animationId$1 = requestAnimationFrame(handleDragAnima$1);
+        if (animationId$2 === null) animationId$2 = requestAnimationFrame(handleDragAnima$1);
         break;
       }
     case 'up':
@@ -3305,8 +3313,8 @@ const handleZoomDrag = ({
           mouse.y = store.zoom.offset.y;
           return;
         }
-        if (animationId$1) cancelAnimationFrame(animationId$1);
-        animationId$1 = requestAnimationFrame(handleSlideAnima);
+        if (animationId$2) cancelAnimationFrame(animationId$2);
+        animationId$2 = requestAnimationFrame(handleSlideAnima);
       }
   }
 };
@@ -3326,7 +3334,7 @@ const getDistance = (a, b) => Math.hypot(b.xy[0] - a.xy[0], b.xy[1] - a.xy[1]);
 /** 逐帧计算当前屏幕上两点之间的距离，并换算成缩放比例 */
 const handlePinchZoomAnima = () => {
   if (touches.size < 2) {
-    animationId$1 = null;
+    animationId$2 = null;
     return;
   }
   const [a, b] = [...touches.values()];
@@ -3335,7 +3343,7 @@ const handlePinchZoomAnima = () => {
     x: (a.xy[0] + b.xy[0]) / 2,
     y: (a.xy[1] + b.xy[1]) / 2
   });
-  animationId$1 = requestAnimationFrame(handlePinchZoomAnima);
+  animationId$2 = requestAnimationFrame(handlePinchZoomAnima);
 };
 
 /** 处理双指捏合缩放 */
@@ -3360,7 +3368,7 @@ const handlePinchZoom = ({
       }
     case 'move':
       {
-        if (animationId$1 === null) animationId$1 = requestAnimationFrame(handlePinchZoomAnima);
+        if (animationId$2 === null) animationId$2 = requestAnimationFrame(handlePinchZoomAnima);
         break;
       }
     case 'cancel':
@@ -3445,25 +3453,25 @@ const getTurnPageDir = startTime => {
   return dir;
 };
 let dx = 0;
-let dy = 0;
-let animationId = null;
+let dy$1 = 0;
+let animationId$1 = null;
 const handleDragAnima = () => {
   // 当停着不动时退出循环
-  if (dx === store.page.offset.x.px && dy === store.page.offset.y.px) {
-    animationId = null;
+  if (dx === store.page.offset.x.px && dy$1 === store.page.offset.y.px) {
+    animationId$1 = null;
     return;
   }
   setState(state => {
-    if (state.page.vertical) state.page.offset.y.px = dy;else state.page.offset.x.px = dx;
+    if (state.page.vertical) state.page.offset.y.px = dy$1;else state.page.offset.x.px = dx;
   });
-  animationId = requestAnimationFrame(handleDragAnima);
+  animationId$1 = requestAnimationFrame(handleDragAnima);
 };
 const handleDragEnd = startTime => {
   dx = 0;
-  dy = 0;
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
+  dy$1 = 0;
+  if (animationId$1) {
+    cancelAnimationFrame(animationId$1);
+    animationId$1 = null;
   }
 
   // 将拖动的页面移回正常位置
@@ -3487,16 +3495,16 @@ const handleMangaFlowDrag = ({
     case 'move':
       {
         dx = store.option.dir === 'rtl' ? x - ix : ix - x;
-        dy = y - iy;
+        dy$1 = y - iy;
         if (store.isDragMode) {
-          if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
+          if (!animationId$1) animationId$1 = requestAnimationFrame(handleDragAnima);
           return;
         }
 
         // 判断滑动方向
         let slideDir;
-        if (Math.abs(dx) > 5 && approx(dy, 0, 5)) slideDir = 'horizontal';
-        if (Math.abs(dy) > 5 && approx(dx, 0, 5)) slideDir = 'vertical';
+        if (Math.abs(dx) > 5 && approx(dy$1, 0, 5)) slideDir = 'horizontal';
+        if (Math.abs(dy$1) > 5 && approx(dx, 0, 5)) slideDir = 'vertical';
         if (!slideDir) return;
         setState(state => {
           // 根据滑动方向自动切换排列模式
@@ -3538,25 +3546,25 @@ const handleTrackpadWheel = e => {
     if (absDeltaY < 2) return;
   } else retardStartTime = 0;
   lastDeltaY$1 = absDeltaY;
-  dy += deltaY;
+  dy$1 += deltaY;
   setState(state => {
     // 滚动至漫画头尾尽头时
-    if (isTop(state) && dy > 0 || isBottom(state) && dy < 0) {
-      if (time > 200) turnPageFn(state, dy < 0 ? 'next' : 'prev');
-      dy = 0;
+    if (isTop(state) && dy$1 > 0 || isBottom(state) && dy$1 < 0) {
+      if (time > 200) turnPageFn(state, dy$1 < 0 ? 'next' : 'prev');
+      dy$1 = 0;
     }
 
     // 滚动过一页时
-    if (dy <= -rootSize().height) {
-      if (turnPageFn(state, 'next')) dy += rootSize().height;
-    } else if (dy >= rootSize().height) {
-      if (turnPageFn(state, 'prev')) dy -= rootSize().height;
+    if (dy$1 <= -rootSize().height) {
+      if (turnPageFn(state, 'next')) dy$1 += rootSize().height;
+    } else if (dy$1 >= rootSize().height) {
+      if (turnPageFn(state, 'prev')) dy$1 -= rootSize().height;
     }
     state.page.vertical = true;
     state.isDragMode = true;
     resetPage(state);
   });
-  if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
+  if (!animationId$1) animationId$1 = requestAnimationFrame(handleDragAnima);
   handleDragEnd.debounce();
 };
 
@@ -3614,7 +3622,7 @@ const switchGridMode = () => {
   });
 };
 
-var css$1 = ".index_module_img__40e84c8f>img{display:block;height:100%;width:100%}.index_module_img__40e84c8f{content-visibility:hidden;background-color:var(--hover-bg-color,#fff3);display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.index_module_img__40e84c8f[data-show]{content-visibility:visible;display:block}.index_module_img__40e84c8f[data-show=\\"0\\"]{justify-self:end}.index_module_img__40e84c8f[data-show=\\"1\\"]{justify-self:start}.index_module_img__40e84c8f[data-type=long]{height:auto;width:100%}.index_module_img__40e84c8f[data-load-type=loading]{animation:index_module_show__40e84c8f 2s forwards;max-width:100vw!important;opacity:0}.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[data-load-type=wait],.index_module_img__40e84c8f[src=\\"\\"]{height:100%;position:relative}:is(.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[src=\\"\\"]):before{opacity:0}:is(.index_module_img__40e84c8f[data-load-type],.index_module_img__40e84c8f[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}:is(.index_module_img__40e84c8f[data-load-type=loading],.index_module_img__40e84c8f[data-load-type=wait]):after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__40e84c8f[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__40e84c8f[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_mangaBox__40e84c8f{height:100%;width:100%}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{scrollbar-width:none}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f::-webkit-scrollbar{display:none}.index_module_mangaFlow__40e84c8f{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.index_module_mangaFlow__40e84c8f[data-disable-zoom] .index_module_img__40e84c8f{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__40e84c8f[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__40e84c8f[data-animation=page] .index_module_img__40e84c8f,.index_module_mangaFlow__40e84c8f[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__40e84c8f[data-vertical]{grid-auto-flow:row}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f{height:auto;transform:none}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>img{cursor:pointer}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>.index_module_gridModeTip__40e84c8f{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=error],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=wait],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[src=\\"\\"]{height:100%}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{overflow:auto}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f{display:flex;flex-direction:column;height:-moz-fit-content;height:fit-content}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width)))}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show][data-load-type=loading]{position:unset}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]:not(:first-of-type){margin-top:calc(var(--scroll-mode-spacing)*7px)}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f[data-grid-mode] .index_module_img__40e84c8f{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}@keyframes index_module_show__40e84c8f{0%{opacity:0}90%{opacity:0}to{opacity:1}}.index_module_endPage__40e84c8f{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__40e84c8f>button{animation:index_module_jello__40e84c8f .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__40e84c8f>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__40e84c8f>.index_module_tip__40e84c8f{margin:auto;position:absolute}.index_module_endPage__40e84c8f[data-show]{opacity:1;pointer-events:all}.index_module_endPage__40e84c8f[data-type=start]>.index_module_tip__40e84c8f{transform:translateY(-10em)}.index_module_endPage__40e84c8f[data-type=end]>.index_module_tip__40e84c8f{transform:translateY(10em)}.index_module_root__40e84c8f[data-mobile] .index_module_endPage__40e84c8f>button{width:1em}.index_module_comments__40e84c8f{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__40e84c8f>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__40e84c8f:hover{opacity:1}.index_module_root__40e84c8f[data-mobile] .index_module_comments__40e84c8f{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__40e84c8f{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__40e84c8f{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__40e84c8f{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__40e84c8f[data-show],.index_module_toolbar__40e84c8f:hover) .index_module_toolbarPanel__40e84c8f{transform:none}.index_module_toolbar__40e84c8f[data-close] .index_module_toolbarPanel__40e84c8f{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__40e84c8f{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f{font-size:1.3em}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f:not([data-show]){pointer-events:none}.index_module_root__40e84c8f[data-mobile] .index_module_toolbarBg__40e84c8f{filter:opacity(.8)}.index_module_SettingPanelPopper__40e84c8f{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__40e84c8f{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.index_module_SettingPanel__40e84c8f hr{color:#fff;margin:0}.index_module_SettingBlock__40e84c8f{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div+:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div{margin-top:1em}.index_module_SettingBlock__40e84c8f[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__40e84c8f[data-show=false] .index_module_SettingBlockBody__40e84c8f{padding:unset}.index_module_SettingBlockSubtitle__40e84c8f{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__40e84c8f{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__40e84c8f+.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_SettingsItemName__40e84c8f{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__40e84c8f{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__40e84c8f{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true] .index_module_SettingsItemSwitchRound__40e84c8f{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__40e84c8f{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__40e84c8f{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__40e84c8f{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__40e84c8f{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f{overflow:hidden}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f>.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_hotkeys__40e84c8f{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__40e84c8f+.index_module_hotkeys__40e84c8f{margin-top:.5em}.index_module_hotkeys__40e84c8f:last-child{border-bottom:none}.index_module_hotkeysItem__40e84c8f{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__40e84c8f>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__40e84c8f>svg:hover{opacity:.9}.index_module_hotkeysItem__40e84c8f:hover{padding:.2em .5em}.index_module_hotkeysItem__40e84c8f:hover>svg{display:unset}.index_module_hotkeysItem__40e84c8f:focus,.index_module_hotkeysItem__40e84c8f:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__40e84c8f{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__40e84c8f>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__40e84c8f>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__40e84c8f>div[title]>svg{width:1.6em}.index_module_hotkeys__40e84c8f:hover div[title]{transform:scale(1)}.index_module_scrollbar__40e84c8f{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__40e84c8f>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__40e84c8f{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__40e84c8f[data-type=wait]{opacity:.5}.index_module_scrollbarPage__40e84c8f[data-type=error]{background-color:#f005}.index_module_scrollbarPage__40e84c8f[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__40e84c8f[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__40e84c8f[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__40e84c8f[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__40e84c8f[data-translation-type=error]{background-color:#f005}.index_module_scrollbarSlider__40e84c8f{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__40e84c8f{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__40e84c8f:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f:hover:before,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show]:before{opacity:1}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarSlider__40e84c8f{opacity:0}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarSlider__40e84c8f{opacity:1}.index_module_scrollbar__40e84c8f[data-position=hidden]{display:none}.index_module_scrollbar__40e84c8f[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__40e84c8f[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{top:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__40e84c8f[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f{bottom:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom],.index_module_scrollbar__40e84c8f[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__40e84c8f[data-position=bottom]:before,.index_module_scrollbar__40e84c8f[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarSlider__40e84c8f{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr],.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f{transform:translateX(var(--top))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f{transform:translateX(var(--poper-top))}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f{transform:scaleX(1)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-type=loaded],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-translation-type],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-translation-type]{transform:scaleX(1)}.index_module_root__40e84c8f[data-scroll-mode] .index_module_scrollbar__40e84c8f:before,.index_module_root__40e84c8f[data-scroll-mode] :is(.index_module_scrollbarSlider__40e84c8f,.index_module_scrollbarPoper__40e84c8f){transition:opacity .15s}.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover:before{opacity:0}.index_module_touchAreaRoot__40e84c8f{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.index_module_touchAreaRoot__40e84c8f[data-show]{opacity:1}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__40e84c8f[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=next],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__40e84c8f[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__40e84c8f[data-mobile] .index_module_touchAreaRoot__40e84c8f{flex-direction:column!important;letter-spacing:0}.index_module_root__40e84c8f[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__40e84c8f{display:none!important}.index_module_invisible__40e84c8f{visibility:hidden!important}.index_module_root__40e84c8f{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__40e84c8f a{color:var(--text-secondary)}.index_module_root__40e84c8f[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__40e84c8f{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".index_module_img__40e84c8f>img{display:block;height:100%;width:100%}.index_module_img__40e84c8f{content-visibility:hidden;background-color:var(--hover-bg-color,#fff3);display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.index_module_img__40e84c8f[data-show]{content-visibility:visible;display:block}.index_module_img__40e84c8f[data-show=\\"0\\"]{justify-self:end}.index_module_img__40e84c8f[data-show=\\"1\\"]{justify-self:start}.index_module_img__40e84c8f[data-type=long]{height:auto;width:100%}.index_module_img__40e84c8f[data-load-type=loading]{max-width:100vw!important}.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[data-load-type=wait],.index_module_img__40e84c8f[src=\\"\\"]{height:100%;position:relative}:is(.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[src=\\"\\"]):before{opacity:0}:is(.index_module_img__40e84c8f[data-load-type],.index_module_img__40e84c8f[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.index_module_img__40e84c8f[data-load-type=loading],.index_module_img__40e84c8f[data-load-type=loading]:after{background-image:var(--md-cloud-download);background-position:50%;background-repeat:no-repeat;background-size:30%}.index_module_img__40e84c8f[data-load-type=loading]:after{animation:index_module_show__40e84c8f 1s forwards;content:\\"\\"}.index_module_img__40e84c8f[data-load-type=wait]:after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__40e84c8f[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__40e84c8f[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_mangaBox__40e84c8f{height:100%;width:100%}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{scrollbar-width:none}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f::-webkit-scrollbar{display:none}.index_module_mangaFlow__40e84c8f{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.index_module_mangaFlow__40e84c8f[data-disable-zoom] .index_module_img__40e84c8f{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__40e84c8f[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__40e84c8f[data-animation=page] .index_module_img__40e84c8f,.index_module_mangaFlow__40e84c8f[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__40e84c8f[data-vertical]{grid-auto-flow:row}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f{height:auto;transform:none}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>img{cursor:pointer}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>.index_module_gridModeTip__40e84c8f{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=error],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=wait],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[src=\\"\\"]{height:100%}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{overflow:auto}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f{display:flex;flex-direction:column;height:-moz-fit-content;height:fit-content}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width)))}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show][data-load-type=loading]{position:unset}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]:not(:first-of-type){margin-top:calc(var(--scroll-mode-spacing)*7px)}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f[data-grid-mode] .index_module_img__40e84c8f{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}@keyframes index_module_show__40e84c8f{0%{opacity:1}90%{opacity:1}to{opacity:0}}.index_module_endPage__40e84c8f{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__40e84c8f>button{animation:index_module_jello__40e84c8f .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__40e84c8f>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__40e84c8f>.index_module_tip__40e84c8f{margin:auto;position:absolute}.index_module_endPage__40e84c8f[data-show]{opacity:1;pointer-events:all}.index_module_endPage__40e84c8f[data-type=start]>.index_module_tip__40e84c8f{transform:translateY(-10em)}.index_module_endPage__40e84c8f[data-type=end]>.index_module_tip__40e84c8f{transform:translateY(10em)}.index_module_root__40e84c8f[data-mobile] .index_module_endPage__40e84c8f>button{width:1em}.index_module_comments__40e84c8f{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__40e84c8f>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__40e84c8f:hover{opacity:1}.index_module_root__40e84c8f[data-mobile] .index_module_comments__40e84c8f{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__40e84c8f{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__40e84c8f{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__40e84c8f{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__40e84c8f[data-show],.index_module_toolbar__40e84c8f:hover) .index_module_toolbarPanel__40e84c8f{transform:none}.index_module_toolbar__40e84c8f[data-close] .index_module_toolbarPanel__40e84c8f{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__40e84c8f{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f{font-size:1.3em}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f:not([data-show]){pointer-events:none}.index_module_root__40e84c8f[data-mobile] .index_module_toolbarBg__40e84c8f{filter:opacity(.8)}.index_module_SettingPanelPopper__40e84c8f{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__40e84c8f{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.index_module_SettingPanel__40e84c8f hr{color:#fff;margin:0}.index_module_SettingBlock__40e84c8f{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div+:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div{margin-top:1em}.index_module_SettingBlock__40e84c8f[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__40e84c8f[data-show=false] .index_module_SettingBlockBody__40e84c8f{padding:unset}.index_module_SettingBlockSubtitle__40e84c8f{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__40e84c8f{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__40e84c8f+.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_SettingsItemName__40e84c8f{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__40e84c8f{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__40e84c8f{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true] .index_module_SettingsItemSwitchRound__40e84c8f{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__40e84c8f{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__40e84c8f{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__40e84c8f{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__40e84c8f{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f{overflow:hidden}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f>.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_hotkeys__40e84c8f{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__40e84c8f+.index_module_hotkeys__40e84c8f{margin-top:.5em}.index_module_hotkeys__40e84c8f:last-child{border-bottom:none}.index_module_hotkeysItem__40e84c8f{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__40e84c8f>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__40e84c8f>svg:hover{opacity:.9}.index_module_hotkeysItem__40e84c8f:hover{padding:.2em .5em}.index_module_hotkeysItem__40e84c8f:hover>svg{display:unset}.index_module_hotkeysItem__40e84c8f:focus,.index_module_hotkeysItem__40e84c8f:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__40e84c8f{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__40e84c8f>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__40e84c8f>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__40e84c8f>div[title]>svg{width:1.6em}.index_module_hotkeys__40e84c8f:hover div[title]{transform:scale(1)}.index_module_scrollbar__40e84c8f{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__40e84c8f>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__40e84c8f{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__40e84c8f[data-type=wait]{opacity:.5}.index_module_scrollbarPage__40e84c8f[data-type=error]{background-color:#f005}.index_module_scrollbarPage__40e84c8f[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__40e84c8f[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__40e84c8f[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__40e84c8f[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__40e84c8f[data-translation-type=error]{background-color:#f005}.index_module_scrollbarSlider__40e84c8f{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__40e84c8f{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__40e84c8f:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f:hover:before,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show]:before{opacity:1}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarSlider__40e84c8f{opacity:0}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarSlider__40e84c8f{opacity:1}.index_module_scrollbar__40e84c8f[data-position=hidden]{display:none}.index_module_scrollbar__40e84c8f[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__40e84c8f[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{top:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__40e84c8f[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f{bottom:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom],.index_module_scrollbar__40e84c8f[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__40e84c8f[data-position=bottom]:before,.index_module_scrollbar__40e84c8f[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarSlider__40e84c8f{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr],.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f{transform:translateX(var(--top))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f{transform:translateX(var(--poper-top))}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f{transform:scaleX(1)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-type=loaded],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-translation-type],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-translation-type]{transform:scaleX(1)}.index_module_root__40e84c8f[data-scroll-mode] .index_module_scrollbar__40e84c8f:before,.index_module_root__40e84c8f[data-scroll-mode] :is(.index_module_scrollbarSlider__40e84c8f,.index_module_scrollbarPoper__40e84c8f){transition:opacity .15s}.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover:before{opacity:0}.index_module_touchAreaRoot__40e84c8f{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.index_module_touchAreaRoot__40e84c8f[data-show]{opacity:1}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__40e84c8f[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=next],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__40e84c8f[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__40e84c8f[data-mobile] .index_module_touchAreaRoot__40e84c8f{flex-direction:column!important;letter-spacing:0}.index_module_root__40e84c8f[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__40e84c8f{display:none!important}.index_module_invisible__40e84c8f{visibility:hidden!important}.index_module_root__40e84c8f{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__40e84c8f a{color:var(--text-secondary)}.index_module_root__40e84c8f[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__40e84c8f{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"index_module_img__40e84c8f","show":"index_module_show__40e84c8f","mangaBox":"index_module_mangaBox__40e84c8f","root":"index_module_root__40e84c8f","mangaFlow":"index_module_mangaFlow__40e84c8f","gridModeTip":"index_module_gridModeTip__40e84c8f","endPage":"index_module_endPage__40e84c8f","jello":"index_module_jello__40e84c8f","tip":"index_module_tip__40e84c8f","comments":"index_module_comments__40e84c8f","toolbar":"index_module_toolbar__40e84c8f","toolbarPanel":"index_module_toolbarPanel__40e84c8f","toolbarBg":"index_module_toolbarBg__40e84c8f","SettingPanelPopper":"index_module_SettingPanelPopper__40e84c8f","SettingPanel":"index_module_SettingPanel__40e84c8f","SettingBlock":"index_module_SettingBlock__40e84c8f","SettingBlockBody":"index_module_SettingBlockBody__40e84c8f","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__40e84c8f","SettingsItem":"index_module_SettingsItem__40e84c8f","SettingsItemName":"index_module_SettingsItemName__40e84c8f","SettingsItemSwitch":"index_module_SettingsItemSwitch__40e84c8f","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__40e84c8f","SettingsItemIconButton":"index_module_SettingsItemIconButton__40e84c8f","SettingsItemSelect":"index_module_SettingsItemSelect__40e84c8f","closeCover":"index_module_closeCover__40e84c8f","SettingsShowItem":"index_module_SettingsShowItem__40e84c8f","SettingsShowItemBody":"index_module_SettingsShowItemBody__40e84c8f","hotkeys":"index_module_hotkeys__40e84c8f","hotkeysItem":"index_module_hotkeysItem__40e84c8f","hotkeysHeader":"index_module_hotkeysHeader__40e84c8f","scrollbar":"index_module_scrollbar__40e84c8f","scrollbarPage":"index_module_scrollbarPage__40e84c8f","scrollbarSlider":"index_module_scrollbarSlider__40e84c8f","scrollbarPoper":"index_module_scrollbarPoper__40e84c8f","touchAreaRoot":"index_module_touchAreaRoot__40e84c8f","touchArea":"index_module_touchArea__40e84c8f","hidden":"index_module_hidden__40e84c8f","invisible":"index_module_invisible__40e84c8f","beautifyScrollbar":"index_module_beautifyScrollbar__40e84c8f"};
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
@@ -3894,6 +3902,63 @@ solidJs.createRoot(() => {
   });
 });
 
+/** 摩擦系数 */
+const FRICTION_COEFF = 0.96;
+let lastTop = 0;
+let dy = 0;
+let animationId = null;
+let lastTime = 0;
+
+/** 逐帧计算速率 */
+const calcVelocity = () => {
+  const nowTop = scrollTop();
+  dy = nowTop - lastTop;
+  lastTop = nowTop;
+  animationId = requestAnimationFrame(calcVelocity);
+};
+
+/** 逐帧计算惯性滑动 */
+const handleSlide = timestamp => {
+  // 当速率足够小时停止计算动画
+  if (approx(dy, 0, 1)) {
+    animationId = null;
+    return;
+  }
+  // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
+  if (timestamp - lastTime > 16) {
+    dy *= FRICTION_COEFF;
+    lastTime = timestamp;
+  }
+  scrollTo(scrollTop() + dy);
+  animationId = requestAnimationFrame(handleSlide);
+};
+let initTop = 0;
+const handleScrollModeDrag = ({
+  type,
+  xy: [, y],
+  initial: [, iy]
+}) => {
+  switch (type) {
+    case 'down':
+      {
+        if (animationId) cancelAnimationFrame(animationId);
+        initTop = scrollTop();
+        requestAnimationFrame(calcVelocity);
+        return;
+      }
+    case 'move':
+      {
+        scrollTo(initTop + iy - y);
+        return;
+      }
+    case 'up':
+      {
+        if (animationId) cancelAnimationFrame(animationId);
+        animationId = requestAnimationFrame(handleSlide);
+      }
+  }
+};
+
 var _tmpl$$D = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$b = /*#__PURE__*/web.template(\`<picture><img draggable=false>\`);
 /** 图片加载完毕的回调 */
@@ -4140,7 +4205,8 @@ const ComicImgFlow = () => {
     if (store.gridMode) return;
     if (touches.size > 1) return handlePinchZoom(state);
     if (store.zoom.scale !== 100) return handleZoomDrag(state);
-    if (!store.option.scrollMode) return handleMangaFlowDrag(state);
+    if (store.option.scrollMode) return handleScrollModeDrag(state);
+    return handleMangaFlowDrag(state);
   };
   solidJs.onMount(() => {
     useDrag({
@@ -6637,8 +6703,8 @@ const useFab = async initProps => {
 };
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复切换页面填充会导致图片重新加载的 bug </p></li><li><p>修复使用触摸板在卷轴模式下滚动后会再异常滚动一截的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>在卷轴模式下使用鼠标拖拽滚动页面 </p></li><li><p>支持 Anchira\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6859,6 +6925,7 @@ const useInit = async (name, defaultOptions = {}) => {
     setFab,
     setManga,
     mangaProps,
+    fabProps,
     needAutoShow,
     isStored,
     /** Manga 组件的默认 onLoading */
@@ -9055,12 +9122,10 @@ const api = (url, details) => main.eachApi(url, apiList, details);
       }
 
     // #禁漫天堂
-    // 发布页：https://jmcomic.ltd
-    case '18comic-god.xyz':
-    case '18comic-god.club':
-    case '18comic-god.cc':
     case 'jmcomic.me':
-    case 'jmcomic1.me':
+    case '18comic-cn.vip':
+    case '18comic-c.xyz':
+    case '18comic-c.art':
     case '18comic.org':
     case '18comic.vip':
       {
@@ -9247,7 +9312,19 @@ const main = require('main');
       }
 
     // #绅士漫画(wnacg)
-    case 'www.wn3.lol':
+    case 'www.hm08.lol':
+    case 'www.hm09.lol':
+    case 'www.hm10.lol':
+    case 'www.hm06.lol':
+    case 'www.hm07.lol':
+    case 'www.hm05.lol':
+    case 'www.hm04.lol':
+    case 'www.hm01.lol':
+    case 'www.hm02.lol':
+    case 'www.hm03.lol':
+    case 'www.hm1.lol':
+    case 'www.hm2.lol':
+    case 'www.hm3.lol':
     case 'www.wnacg.com':
     case 'wnacg.com':
       {
@@ -9369,6 +9446,42 @@ const main = require('main');
           name: 'hitomi',
           wait: () => !!unsafeWindow.galleryinfo?.files,
           getImgList: () => (unsafeWindow.galleryinfo?.files).map(img => unsafeWindow.url_from_url_from_hash(unsafeWindow.galleryinfo.id, img, 'webp', undefined, 'a'))
+        };
+        break;
+      }
+
+    // #Anchira
+    case 'anchira.to':
+      {
+        options = {
+          name: 'hitomi',
+          getImgList: async ({
+            fabProps
+          }) => {
+            const [,, galleryId, galleryKey] = window.location.pathname.split('/');
+            const headers = {
+              'X-Requested-With': 'XMLHttpRequest',
+              Referer: window.location.href
+            };
+            const res = await main.request(`/api/v1/library/${galleryId}/${galleryKey}/data`, {
+              headers,
+              noCheckCode: true
+            });
+            if (res.status !== 200) main.toast.error(main.t('site.need_captcha'), {
+              throw: true,
+              duration: Infinity,
+              onClick: () => fabProps?.onClick?.()
+            });
+            const {
+              names,
+              key,
+              hash
+            } = JSON.parse(res.response);
+            return names.map(name => `https://kisakisexo.xyz/${galleryId}/${key}/${hash}/b/${name}`);
+          },
+          SPA: {
+            isMangaPage: () => window.location.href.includes('/g/')
+          }
         };
         break;
       }
