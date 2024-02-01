@@ -176,6 +176,7 @@
       "nhentai_error": "Ошибка сопоставления с nhentai",
       "nhentai_failed": "Ошибка сопостовления. Пожалуйста перезагрузите страницу после входа на {{nhentai}}"
     },
+    "need_captcha": "需要人机验证",
     "nhentai": {
       "fetch_next_page_failed": "Не удалось получить следующую страницу",
       "tag_blacklist_fetch_failed": "Не удалось получить заблокированные теги"
