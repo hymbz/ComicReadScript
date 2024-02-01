@@ -1,0 +1,11 @@
+---
+name: 功能建议
+description: feature request
+body:
+  - type: textarea
+    id: feature-request
+    attributes:
+      label: 具体描述
+      description: 请详细描述需要改进或者添加的功能
+    validations:
+      required: true

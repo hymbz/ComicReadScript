@@ -1,0 +1,39 @@
+---
+name: 问题反馈
+description: Bug report
+body:
+  - type: checkboxes
+    attributes:
+      label: 在提交 issue 之前，请先确认
+      options:
+        - label: 脚本已更新至最新版本
+          required: true
+
+  - type: input
+    attributes:
+      label: 使用的油猴扩展是？
+      description: 例如 Violentmonkey（暴力猴）、Tampermonkey（篡改猴）
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: 使用的浏览器是？
+      description: 如果浏览器未更新至最新版本，请附上具体的版本号
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: 问题会在哪个网页上出现？
+      description: 除非在所有站点上都会出现该问题，否则请提供一个具体的网址
+      placeholder: 例：https://exhentai.org/g/2795726/81cbaaa96e/
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: 问题是？
+      description: 除非问题能够一目了然，否则请具体描述操作流程以便复现
+    validations:
+      required: true
