@@ -39,10 +39,6 @@
 
   &[data-load-type="loading"] {
     max-width: 100vw !important;
-
-    /* 加载中的图片稍等一下再显示，避免出错图片的元素被直接显示出来 */
-    opacity: 0;
-    animation: show 2s forwards;
   }
 
   &[data-load-type="error"],
@@ -74,7 +70,22 @@
     background-size: 30%;
   }
 
-  :is(&[data-load-type="loading"], &[data-load-type="wait"])::after {
+  &[data-load-type="loading"],
+  &[data-load-type="loading"]::after {
+    background-image: var(--md-cloud-download);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 30%;
+  }
+
+  &[data-load-type="loading"]::after {
+    content: "";
+
+    /* 加载中的图片先遮一下，避免出错图片的元素被直接显示出来 */
+    animation: show 1s forwards;
+  }
+
+  &[data-load-type="wait"]::after {
     content: "";
     background-image: var(--md-cloud-download);
   }
@@ -236,14 +247,14 @@
 
 @keyframes show {
   0% {
-    opacity: 0;
+    opacity: 1;
   }
 
   90% {
-    opacity: 0;
+    opacity: 1;
   }
 
   100% {
-    opacity: 1;
+    opacity: 0;
   }
 }
