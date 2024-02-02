@@ -41,6 +41,8 @@ const getImgData = async (file: File): Promise<ImgFile[]> => {
 
 export const handleExit = () => _setState('show', false);
 
+const collator = new Intl.Collator(undefined, { numeric: true });
+
 /** 加载新的文件列表 */
 export const loadNewImglist = async (files: File[], errorTip?: string) => {
   if (!files.length) return;
@@ -66,7 +68,7 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
       state.imgList = [];
     });
     setState((state) => {
-      newImglist.sort((a, b) => a.name.localeCompare(b.name));
+      newImglist.sort((a, b) => collator.compare(a.name, b.name));
       state.imgList = newImglist;
       state.show = true;
 
