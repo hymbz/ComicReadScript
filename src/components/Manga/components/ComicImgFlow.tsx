@@ -128,7 +128,7 @@ export const ComicImgFlow: Component = () => {
     'grid-template-columns': () => {
       if (!store.imgList.length) return undefined;
       if (store.gridMode) return `repeat(${isOnePageMode() ? 10 : 6}, 1fr)`;
-      if (store.page.vertical) return isOnePageMode() ? '100%' : '50% 50%';
+      if (store.page.vertical) return '50% 50%';
       return `repeat(${gridAreas().split(' ').length}, 50%)`;
     },
   });

@@ -144,11 +144,13 @@ export const defaultSettingList: () => SettingList = () => [
           onChange={createStateSetFn('darkMode')}
         />
 
-        <SettingsItemSwitch
-          name={t('setting.option.disable_auto_enlarge')}
-          value={store.option.disableZoom}
-          onChange={createStateSetFn('disableZoom')}
-        />
+        <Show when={!store.option.scrollMode}>
+          <SettingsItemSwitch
+            name={t('setting.option.disable_auto_enlarge')}
+            value={store.option.disableZoom}
+            onChange={createStateSetFn('disableZoom')}
+          />
+        </Show>
 
         <Show when={store.option.scrollMode}>
           <SettingsItemNumber
