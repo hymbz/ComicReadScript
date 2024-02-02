@@ -343,16 +343,20 @@ try {
     case 'mangabz.com': {
       if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) break;
 
-      const getImgList = async (
-        fnMap: UseInitFnMap,
-        imgList: string[] = [],
-      ): Promise<string[]> => {
+      const imgNum: number =
+        unsafeWindow.MANGABZ_IMAGE_COUNT ?? unsafeWindow.imgsLen;
+      if (!(Number.isSafeInteger(imgNum) && imgNum > 0)) {
+        main.toast.error(main.t('site.changed_load_failed'));
+        break;
+      }
+
+      const getPageImg = async (i: number) => {
         const res = await unsafeWindow.$.ajax({
           type: 'GET',
           url: 'chapterimage.ashx',
           data: {
             cid: unsafeWindow.MANGABZ_CID,
-            page: imgList.length + 1,
+            page: i,
             key: '',
             _cid: unsafeWindow.MANGABZ_CID,
             _mid: unsafeWindow.MANGABZ_MID,
@@ -360,34 +364,37 @@ try {
             _sign: unsafeWindow.MANGABZ_VIEWSIGN,
           },
         });
-
-        // 返回的数据只能通过 eval 获得
-        const newImgList = [
-          ...imgList,
-          // eslint-disable-next-line no-eval
-          ...(eval(res) as string[]),
-        ];
-
-        if (newImgList.length !== unsafeWindow.MANGABZ_IMAGE_COUNT) {
-          // 在 Fab 按钮上通过进度条和提示文本显示当前进度
-          fnMap.setFab({
-            progress: newImgList.length / unsafeWindow.MANGABZ_IMAGE_COUNT,
-            tip: `加载图片中 - ${newImgList.length}/${unsafeWindow.MANGABZ_IMAGE_COUNT}`,
-          });
-          return getImgList(fnMap, newImgList);
-        }
-
-        return newImgList;
+        // eslint-disable-next-line no-eval
+        return eval(res) as string[];
       };
+
+      const handlePrevNext = (pcSelector: string, mobileText: string) =>
+        main.querySelectorClick(
+          () =>
+            main.querySelector(pcSelector) ??
+            main
+              .querySelectorAll('.bottom-bar-tool a')
+              .find((e) => e.innerText.includes(mobileText)),
+        );
 
       options = {
         name: 'mangabz',
-        getImgList,
-        onNext: main.querySelectorClick(
+        getImgList: ({ dynamicUpdate }) =>
+          dynamicUpdate(async (setImg) => {
+            let imgIndex = 0;
+            while (imgIndex < imgNum) {
+              const newImgs = await getPageImg(imgIndex + 1);
+              // eslint-disable-next-line no-loop-func
+              newImgs.forEach((url) => setImg(imgIndex++, url));
+            }
+          }, imgNum)(),
+        onNext: handlePrevNext(
           'body > .container a[href^="/"]:last-child',
+          '下一',
         ),
-        onPrev: main.querySelectorClick(
+        onPrev: handlePrevNext(
           'body > .container a[href^="/"]:first-child',
+          '上一',
         ),
       };
       break;
