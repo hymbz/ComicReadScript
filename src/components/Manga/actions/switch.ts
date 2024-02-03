@@ -2,7 +2,13 @@ import { refs, setState, store } from '../store';
 import { zoom } from './zoom';
 import { scrollTo, setOption } from './helper';
 import { updatePageData } from './image';
-import { activeImgIndex, imgTopList, nowFillIndex } from './memo';
+import {
+  activeImgIndex,
+  contentHeight,
+  imgTopList,
+  nowFillIndex,
+  scrollTop,
+} from './memo';
 
 /** 切换页面填充 */
 export const switchFillEffect = () => {
@@ -58,4 +64,17 @@ export const switchGridMode = () => {
         inline: 'center',
       });
     });
+};
+
+/** 切换卷轴模式下图片适应宽度 */
+export const switchFitToWidth = () => {
+  const top = scrollTop();
+  const height = contentHeight();
+
+  setOption((draftOption) => {
+    draftOption.scrollModeFitToWidth = !draftOption.scrollModeFitToWidth;
+  });
+
+  // 滚回之前的位置
+  scrollTo((top / height) * contentHeight());
 };

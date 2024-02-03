@@ -16,10 +16,6 @@ export interface Option {
   };
   /** 单页模式 */
   onePageMode: boolean;
-  /** 卷轴模式 */
-  scrollMode: boolean;
-  /** 卷轴模式下的图片间距 */
-  scrollModeSpacing: number;
   /** 点击翻页 */
   clickPageTurn: {
     enabled: boolean;
@@ -42,12 +38,19 @@ export interface Option {
   jumpToNext: boolean;
   /** 始终加载所有图片 */
   alwaysLoadAllImg: boolean;
-  /** 卷轴模式下图片的缩放比例 */
-  scrollModeImgScale: number;
   /** 在结束页显示评论 */
   showComment: boolean;
   /** 预加载页数 */
   preloadPageNum: number;
+
+  /** 卷轴模式 */
+  scrollMode: boolean;
+  /** 卷轴模式下的图片间距 */
+  scrollModeSpacing: number;
+  /** 卷轴模式下图片的缩放比例 */
+  scrollModeImgScale: number;
+  /** 卷轴模式下图片适应宽度 */
+  scrollModeFitToWidth: boolean;
 
   /** 翻译 */
   translation: {
@@ -80,8 +83,6 @@ export const defaultOption: Readonly<Option> = {
     easyScroll: false,
   },
   onePageMode: false,
-  scrollMode: false,
-  scrollModeSpacing: 0,
   clickPageTurn: {
     enabled: 'ontouchstart' in document.documentElement,
     reverse: false,
@@ -93,9 +94,13 @@ export const defaultOption: Readonly<Option> = {
   swapPageTurnKey: false,
   jumpToNext: true,
   alwaysLoadAllImg: false,
-  scrollModeImgScale: 1,
   showComment: true,
   preloadPageNum: 20,
+
+  scrollMode: false,
+  scrollModeSpacing: 0,
+  scrollModeImgScale: 1,
+  scrollModeFitToWidth: false,
 
   translation: {
     server: 'disable',

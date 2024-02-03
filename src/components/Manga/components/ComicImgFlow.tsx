@@ -152,6 +152,7 @@ export const ComicImgFlow: Component = () => {
         data-vertical={boolDataVal(store.page.vertical)}
         data-animation={store.page.anima}
         data-hidden-mouse={!store.gridMode && hiddenMouse()}
+        data-fit-width={boolDataVal(store.option.scrollModeFitToWidth)}
         on:mousemove={onMouseMove}
         onTransitionEnd={handleTransitionEnd}
         style={style()}

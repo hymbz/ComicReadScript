@@ -62,13 +62,13 @@ export const placeholderSize = createThrottleMemo(
 /** 每张图片的高度 */
 export const imgHeightList = createRootMemo(() =>
   store.option.scrollMode
-    ? store.imgList.map(
-        (img) =>
-          (img.height && img.width && img.width > rootSize().width
-            ? img.height * (rootSize().width / img.width)
-            : img.height ?? placeholderSize().height) *
-          store.option.scrollModeImgScale,
-      )
+    ? store.imgList.map((img) => {
+        let height = img.height ?? placeholderSize().height;
+        const width = img.width ?? placeholderSize().width;
+        if (width > rootSize().width || store.option.scrollModeFitToWidth)
+          height *= rootSize().width / width;
+        return height * store.option.scrollModeImgScale;
+      })
     : [],
 );
 

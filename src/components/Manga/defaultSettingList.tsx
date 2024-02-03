@@ -15,6 +15,7 @@ import {
   createStateSetFn,
   setOption,
   switchDir,
+  switchFitToWidth,
   updateImgLoadType,
   zoomScrollModeImg,
 } from './actions';
@@ -174,6 +175,11 @@ export const defaultSettingList: () => SettingList = () => [
               });
             }}
             value={Math.round(store.option.scrollModeSpacing)}
+          />
+          <SettingsItemSwitch
+            name={'卷轴图片适合宽度'}
+            value={store.option.scrollModeFitToWidth}
+            onChange={switchFitToWidth}
           />
         </Show>
       </>
