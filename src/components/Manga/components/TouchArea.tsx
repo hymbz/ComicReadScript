@@ -1,10 +1,11 @@
-import { For, type Component, createMemo } from 'solid-js';
+import { For, type Component } from 'solid-js';
 
 import { boolDataVal } from 'helper';
+import { createRootMemo } from 'helper/solidJs';
 import { store } from '../store';
+import { bindRef } from '../actions';
 
 import classes from '../index.module.css';
-import { bindRef } from '../actions';
 
 // 用大写表示要在此区块上显示提示
 export type Area = 'prev' | 'menu' | 'next' | 'PREV' | 'MENU' | 'NEXT';
@@ -34,43 +35,41 @@ export const areaArrayMap = {
   ] as ArrayConfig,
 };
 
-export const TouchArea: Component = () => {
-  const areaType = createMemo(() =>
-    Reflect.has(areaArrayMap, store.option.clickPageTurn.area)
-      ? (store.option.clickPageTurn.area as keyof typeof areaArrayMap)
-      : 'left_right',
-  );
+const areaType = createRootMemo(() =>
+  Reflect.has(areaArrayMap, store.option.clickPageTurn.area)
+    ? (store.option.clickPageTurn.area as keyof typeof areaArrayMap)
+    : 'left_right',
+);
 
-  const dir = () => {
-    if (!store.option.clickPageTurn.reverse) return store.option.dir;
-    return store.option.dir === 'rtl' ? 'ltr' : 'rtl';
-  };
+export const dir = createRootMemo(() => {
+  if (!store.option.clickPageTurn.reverse) return store.option.dir;
+  return store.option.dir === 'rtl' ? 'ltr' : 'rtl';
+});
 
-  return (
-    <div
-      ref={bindRef('touchArea')}
-      class={classes.touchAreaRoot}
-      dir={dir()}
-      data-show={boolDataVal(store.show.touchArea)}
-      data-area={areaType()}
-      data-turn-page={boolDataVal(
-        store.option.clickPageTurn.enabled && !store.option.scrollMode,
+export const TouchArea: Component = () => (
+  <div
+    ref={bindRef('touchArea')}
+    class={classes.touchAreaRoot}
+    dir={dir()}
+    data-show={boolDataVal(store.show.touchArea)}
+    data-area={areaType()}
+    data-turn-page={boolDataVal(
+      store.option.clickPageTurn.enabled && !store.option.scrollMode,
+    )}
+  >
+    <For each={areaArrayMap[areaType()]}>
+      {(rows) => (
+        <For each={rows}>
+          {(area) => (
+            <div
+              class={classes.touchArea}
+              data-area={area}
+              role="button"
+              tabIndex={-1}
+            />
+          )}
+        </For>
       )}
-    >
-      <For each={areaArrayMap[areaType()]}>
-        {(rows) => (
-          <For each={rows}>
-            {(area) => (
-              <div
-                class={classes.touchArea}
-                data-area={area}
-                role="button"
-                tabIndex={-1}
-              />
-            )}
-          </For>
-        )}
-      </For>
-    </div>
-  );
-};
+    </For>
+  </div>
+);
