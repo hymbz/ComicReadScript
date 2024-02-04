@@ -1,20 +1,15 @@
-/* eslint-disable solid/no-innerhtml */
-import MdClose from '@material-design-icons/svg/round/close.svg';
-
 import { Show, type Component } from 'solid-js';
 import { pwaInstallHandler } from 'pwa-install-handler';
 import { directoryOpen, fileOpen } from 'browser-fs-access';
 import { parse as parseMd } from 'marked';
-
 import { setInitLang, t } from 'helper/i18n';
 import type { MangaProps } from '../../components/Manga';
-import { Manga, buttonListDivider } from '../../components/Manga';
-import { IconButton } from '../../components/IconButton';
+import { Manga } from '../../components/Manga';
 import { Toaster, toast } from '../../components/Toast';
-
 import { store, handleExit, loadNewImglist, _setState } from './store';
 import { FileSystemToFile, imgExtension } from './helper';
 import { handleDrag } from './handleDrag';
+import { editButtonList } from './handleButtonList';
 import { DownloadButton, loadUrl } from './DownloadButton';
 
 import classes from './index.module.css';
@@ -53,17 +48,6 @@ window.launchQueue?.setConsumer(async (launchParams) => {
   loadNewImglist(await FileSystemToFile(launchParams.files));
 });
 
-// 增加退出按钮
-const editButtonList: MangaProps['editButtonList'] = (list) => [
-  ...list,
-  buttonListDivider,
-  () => (
-    <IconButton tip={t('button.exit')} onClick={handleExit}>
-      <MdClose />
-    </IconButton>
-  ),
-];
-
 // 支持粘贴 url
 window.addEventListener('paste', (event) =>
   loadUrl(event.clipboardData?.getData('text/plain')),
@@ -84,6 +68,7 @@ export const Root: Component = () => (
   <div ref={(e) => handleDrag(e)} class={classes.root}>
     <div class={classes.main} data-drag={store.dragging}>
       <div class={classes.body}>
+        {/* eslint-disable-next-line solid/no-innerhtml */}
         <div innerHTML={parseMd(t('pwa.tip_md')) as string} />
 
         <span style={{ 'margin-top': '1em' }}>
@@ -105,6 +90,7 @@ export const Root: Component = () => (
           class={classes.installTip}
           classList={{ [classes.hide]: !!store.hiddenInstallTip }}
         >
+          {/* eslint-disable-next-line solid/no-innerhtml */}
           <div innerHTML={parseMd(t('pwa.install_md')) as string} />
           <div style={{ 'text-align': 'center' }}>
             <button type="button" on:click={pwaInstallHandler.install}>

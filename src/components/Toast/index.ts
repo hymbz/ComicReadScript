@@ -4,7 +4,7 @@ import { css as style } from './index.module.css';
 
 export const ToastStyle = style;
 
-export { Toaster } from './Toaster';
+export { Toaster, ref } from './Toaster';
 export { toast } from './toast';
 
 export interface Toast {

@@ -5,6 +5,8 @@ import { ToastItem } from './ToastItem';
 
 import classes from './index.module.css';
 
+export const [ref, setRef] = createSignal<HTMLElement>();
+
 export const Toaster: Component = () => {
   const [visible, setVisible] = createSignal(
     document.visibilityState === 'visible',
@@ -21,7 +23,11 @@ export const Toaster: Component = () => {
   });
 
   return (
-    <div class={classes.root} data-paused={visible() ? undefined : ''}>
+    <div
+      ref={setRef}
+      class={classes.root}
+      data-paused={visible() ? undefined : ''}
+    >
       <For each={store.list}>{(id) => <ToastItem {...store.map[id]} />}</For>
     </div>
   );

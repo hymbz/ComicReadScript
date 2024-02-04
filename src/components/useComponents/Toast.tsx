@@ -1,10 +1,10 @@
 import { mountComponents } from './helper';
-import { ToastStyle, Toaster, toast as _toast } from '../Toast';
+import { ToastStyle, Toaster, toast as _toast, ref } from '../Toast';
 
 let dom: HTMLDivElement;
 
 const init = () => {
-  if (dom) return;
+  if (dom || ref()) return;
 
   // 提前挂载漫画节点，防止 toast 没法显示在漫画上层
   if (!document.getElementById('comicRead')) {
