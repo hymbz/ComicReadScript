@@ -2,19 +2,11 @@ import { createSignal, type Component } from 'solid-js';
 import { filetypeinfo } from 'magic-bytes.js';
 import { t } from 'helper/i18n';
 import { request } from 'helper/request';
-import { boolDataVal, wait } from 'helper';
+import { boolDataVal, isUrl, wait } from 'helper';
 import { loadNewImglist } from './store';
 import { toast } from '../../components/Toast';
 
 const [progress, setProgress] = createSignal<null | number>(null);
-
-const isUrl = (text: string) => {
-  try {
-    return !!new URL(text);
-  } catch (_) {
-    return false;
-  }
-};
 
 export const loadUrl = async (url: string | null | undefined) => {
   try {

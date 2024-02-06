@@ -96,6 +96,16 @@ export const getMostItem = <T>(list: T[]) => {
 export const createFillImgList = (imgList: string[], length: number) =>
   [...imgList, ...Array(length - imgList.length).fill('')] as string[];
 
+/** 判断字符串是否为 URL */
+export const isUrl = (text: string) => {
+  // 等浏览器版本上来后可以直接使用 URL.canParse
+  try {
+    return !!new URL(text);
+  } catch (_) {
+    return false;
+  }
+};
+
 /** 将对象转为 URLParams 类型的字符串 */
 export const dataToParams = (data: Record<string, unknown>) =>
   Object.entries(data)

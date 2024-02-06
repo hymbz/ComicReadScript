@@ -1,4 +1,4 @@
-import type { InitOptions, UseInitFnMap } from './helper/universalInit';
+import type { InitOptions } from './helper/universalInit';
 
 /**
  * 虽然在打包的时候已经尽可能保持代码格式不变了，但因为脚本代码比较多的缘故
@@ -255,23 +255,29 @@ try {
     }
 
     // #动漫屋(dm5)
+    case 'www.manhuaren.com':
+    case 'm.1kkk.com':
+    case 'www.1kkk.com':
     case 'tel.dm5.com':
     case 'en.dm5.com':
-    case 'www.dm5.com':
     case 'www.dm5.cn':
-    case 'www.1kkk.com': {
+    case 'www.dm5.com': {
       if (!Reflect.has(unsafeWindow, 'DM5_CID')) break;
 
-      const getImgList = async (
-        fnMap: UseInitFnMap,
-        imgList: string[] = [],
-      ): Promise<string[]> => {
+      const imgNum: number =
+        unsafeWindow.DM5_IMAGE_COUNT ?? unsafeWindow.imgsLen;
+      if (!(Number.isSafeInteger(imgNum) && imgNum > 0)) {
+        main.toast.error(main.t('site.changed_load_failed'));
+        break;
+      }
+
+      const getPageImg = async (i: number) => {
         const res = await unsafeWindow.$.ajax({
           type: 'GET',
           url: 'chapterfun.ashx',
           data: {
             cid: unsafeWindow.DM5_CID,
-            page: imgList.length + 1,
+            page: i,
             key: unsafeWindow.$('#dm5_key').length
               ? unsafeWindow.$('#dm5_key').val()
               : '',
@@ -283,31 +289,40 @@ try {
             _sign: unsafeWindow.DM5_VIEWSIGN,
           },
         });
-
-        // 返回的数据只能通过 eval 获得
-        const newImgList = [
-          ...imgList,
-          // eslint-disable-next-line no-eval
-          ...(eval(res) as string[]),
-        ];
-
-        if (newImgList.length !== unsafeWindow.DM5_IMAGE_COUNT) {
-          // 在 Fab 按钮上通过进度条和提示文本显示当前进度
-          fnMap.setFab({
-            progress: newImgList.length / unsafeWindow.DM5_IMAGE_COUNT,
-            tip: `加载图片中 - ${newImgList.length}/${unsafeWindow.DM5_IMAGE_COUNT}`,
-          });
-          return getImgList(fnMap, newImgList);
-        }
-
-        return newImgList;
+        // eslint-disable-next-line no-eval
+        return eval(res) as string[];
       };
+
+      const handlePrevNext = (pcSelector: string, mobileText: string) =>
+        main.querySelectorClick(
+          () =>
+            main.querySelector(pcSelector) ??
+            main
+              .querySelectorAll('.view-bottom-bar a')
+              .find((e) => e.innerText.includes(mobileText)),
+        );
 
       options = {
         name: 'dm5',
-        getImgList,
-        onNext: main.querySelectorClick('.logo_2'),
-        onPrev: main.querySelectorClick('.logo_1'),
+        getImgList: ({ dynamicUpdate }) => {
+          // manhuaren 和 1kkk 的移动端上会直接用一个变量存储所有图片的链接
+          if (
+            Array.isArray(unsafeWindow.newImgs) &&
+            unsafeWindow.newImgs.every(main.isUrl)
+          )
+            return unsafeWindow.newImgs as string[];
+
+          return dynamicUpdate(async (setImg) => {
+            let imgIndex = 0;
+            while (imgIndex < imgNum) {
+              const newImgs = await getPageImg(imgIndex + 1);
+              // eslint-disable-next-line no-loop-func
+              newImgs.forEach((url) => setImg(imgIndex++, url));
+            }
+          }, imgNum)();
+        },
+        onPrev: handlePrevNext('.logo_1', '上一章'),
+        onNext: handlePrevNext('.logo_2', '下一章'),
         onExit: (isEnd) => isEnd && main.scrollIntoView('.postlist'),
       };
       break;
