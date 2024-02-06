@@ -180,6 +180,7 @@ export const handleWheel = (e: WheelEvent) => {
     store.zoom.scale === 100
   ) {
     e.preventDefault();
+    if (store.option.scrollModeFitToWidth) return;
     return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
   }
 

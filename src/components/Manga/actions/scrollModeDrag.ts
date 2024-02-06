@@ -37,11 +37,11 @@ const handleSlide = (timestamp: DOMHighResTimeStamp) => {
 
 let initTop = 0;
 
-export const handleScrollModeDrag: UseDrag = ({
-  type,
-  xy: [, y],
-  initial: [, iy],
-}) => {
+export const handleScrollModeDrag: UseDrag = (
+  { type, xy: [, y], initial: [, iy] },
+  e,
+) => {
+  if (e.pointerType !== 'mouse') return;
   switch (type) {
     case 'down': {
       if (animationId) cancelAnimationFrame(animationId);

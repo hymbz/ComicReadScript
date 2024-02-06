@@ -65,8 +65,9 @@ export const imgHeightList = createRootMemo(() =>
     ? store.imgList.map((img) => {
         let height = img.height ?? placeholderSize().height;
         const width = img.width ?? placeholderSize().width;
-        if (width > rootSize().width || store.option.scrollModeFitToWidth)
-          height *= rootSize().width / width;
+        if (store.option.scrollModeFitToWidth)
+          return height * (rootSize().width / width);
+        if (width > rootSize().width) height *= rootSize().width / width;
         return height * store.option.scrollModeImgScale;
       })
     : [],
