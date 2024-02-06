@@ -2,6 +2,7 @@ import { approx } from 'helper';
 import type { UseDrag } from '../hooks/useDrag';
 import { scrollTo } from './helper';
 import { scrollTop } from './memo';
+import { refs } from '../store';
 
 /** 摩擦系数 */
 const FRICTION_COEFF = 0.96;
@@ -45,7 +46,7 @@ export const handleScrollModeDrag: UseDrag = (
   switch (type) {
     case 'down': {
       if (animationId) cancelAnimationFrame(animationId);
-      initTop = scrollTop();
+      initTop = refs.mangaBox.scrollTop;
       requestAnimationFrame(calcVelocity);
       return;
     }
