@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.7.0
+// @version         8.7.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、Anchira、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -473,6 +473,16 @@ const getMostItem = list => {
 
 /** 将数组扩充到指定长度，不足项用空字符串补足 */
 const createFillImgList = (imgList, length) => [...imgList, ...Array(length - imgList.length).fill('')];
+
+/** 判断字符串是否为 URL */
+const isUrl = text => {
+  // 等浏览器版本上来后可以直接使用 URL.canParse
+  try {
+    return !!new URL(text);
+  } catch (_) {
+    return false;
+  }
+};
 
 /** 将对象转为 URLParams 类型的字符串 */
 const dataToParams = data => Object.entries(data).map(([key, val]) => \`\${key}=\${val}\`).join('&');
@@ -2672,7 +2682,8 @@ const placeholderSize = createThrottleMemo(() => ({
 const imgHeightList = createRootMemo(() => store.option.scrollMode ? store.imgList.map(img => {
   let height = img.height ?? placeholderSize().height;
   const width = img.width ?? placeholderSize().width;
-  if (width > rootSize().width || store.option.scrollModeFitToWidth) height *= rootSize().width / width;
+  if (store.option.scrollModeFitToWidth) return height * (rootSize().width / width);
+  if (width > rootSize().width) height *= rootSize().width / width;
   return height * store.option.scrollModeImgScale;
 }) : []);
 
@@ -3787,6 +3798,7 @@ const handleWheel = e => {
   // 卷轴模式下的图片缩放
   if ((e.ctrlKey || e.altKey) && store.option.scrollMode && store.zoom.scale === 100) {
     e.preventDefault();
+    if (store.option.scrollModeFitToWidth) return;
     return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
   }
   if (e.ctrlKey || e.altKey || store.zoom.scale !== 100) {
@@ -3957,12 +3969,13 @@ const handleScrollModeDrag = ({
   type,
   xy: [, y],
   initial: [, iy]
-}) => {
+}, e) => {
+  if (e.pointerType !== 'mouse') return;
   switch (type) {
     case 'down':
       {
         if (animationId) cancelAnimationFrame(animationId);
-        initTop = scrollTop();
+        initTop = refs.mangaBox.scrollTop;
         requestAnimationFrame(calcVelocity);
         return;
       }
@@ -4225,7 +4238,7 @@ const ComicImgFlow = () => {
     if (store.gridMode) return;
     if (touches.size > 1) return handlePinchZoom(state);
     if (store.zoom.scale !== 100) return handleZoomDrag(state);
-    if (store.option.scrollMode) return handleScrollModeDrag(state);
+    if (store.option.scrollMode) return handleScrollModeDrag(state, e);
     return handleMangaFlowDrag(state);
   };
   solidJs.onMount(() => {
@@ -6753,12 +6766,8 @@ const useFab = async initProps => {
 };
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>实现卷轴模式下的适合宽度缩放\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>修复 mangabz 在移动端上无法正常加载的 bug\`),
-  _tmpl$6 = /*#__PURE__*/web.template(\`<h3>优化\`),
-  _tmpl$7 = /*#__PURE__*/web.template(\`<ul><li>将结束页上/下一话按钮的位置调整为和点击翻页的左右区域一致\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复在卷轴模式下开启图片适合宽度后的异常滚动 </p></li><li><p>支持漫画柜的移动端 </p></li><li><p>支持漫画人和极速漫画的移动端\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6821,7 +6830,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5(), _tmpl$6(), _tmpl$7()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -7445,6 +7454,7 @@ exports.imgMap = imgMap;
 exports.inRange = inRange;
 exports.insertNode = insertNode;
 exports.isEqual = isEqual;
+exports.isUrl = isUrl;
 exports.keyboardCodeToText = keyboardCodeToText;
 exports.lang = lang;
 exports.linstenKeyup = linstenKeyup;
@@ -7940,6 +7950,8 @@ web.delegateEvents(["click"]);
       }
 
     // #动漫之家——「解锁隐藏漫画」
+    case 'comic.idmzj.com':
+    case 'comic.dmzj.com':
     case 'manhua.idmzj.com':
     case 'manhua.dmzj.com':
       {
@@ -9177,7 +9189,7 @@ const api = (url, details) => main.eachApi(url, apiList, details);
 
     // #禁漫天堂
     case 'jmcomic.me':
-    case '18comic-cn.vip':
+    case '18comic-palworld.club':
     case '18comic-c.xyz':
     case '18comic-c.art':
     case '18comic.org':
@@ -9279,26 +9291,49 @@ const main = require('main');
       }
 
     // #漫画柜(manhuagui)
-    case 'www.manhuagui.com':
-    case 'www.mhgui.com':
     case 'tw.manhuagui.com':
+    case 'm.manhuagui.com':
+    case 'www.mhgui.com':
+    case 'www.manhuagui.com':
       {
-        if (!Reflect.has(unsafeWindow, 'cInfo')) break;
+        if (!/\/comic\/\d+\/\d+\.html/.test(window.location.pathname)) break;
+        let comicInfo;
+        try {
+          const dataScript = main.querySelector('body > script:not([src])');
+          comicInfo = JSON.parse(
+          // 只能通过 eval 获得数据
+          // eslint-disable-next-line no-eval
+          eval(dataScript.innerHTML.slice(26)).match(/(?<=.*?\()\{.+\}/)[0]);
+        } catch (error) {
+          main.toast.error(main.t('site.changed_load_failed'));
+          break;
+        }
 
         // 让切换章节的提示可以显示在漫画页上
         GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
+        const handlePrevNext = cid => {
+          if (cid === 0) return undefined;
+          const newUrl = window.location.pathname.replace(/(?<=\/)\d+(?=\.html)/, `${cid}`);
+          return () => window.location.assign(newUrl);
+        };
         options = {
           name: 'manhuagui',
           getImgList: () => {
-            const comicInfo = JSON.parse(
-            // 只能通过 eval 获得数据
-            // eslint-disable-next-line no-eval
-            eval(main.querySelectorAll('body > script').at(-1).innerHTML.slice(26)).slice(12, -12));
             const sl = Object.entries(comicInfo.sl).map(attr => `${attr[0]}=${attr[1]}`).join('&');
-            return comicInfo.files.map(file => `${unsafeWindow.pVars.manga.filePath}${file}?${sl}`);
+            if (comicInfo.files) return comicInfo.files.map(file => `${unsafeWindow.pVars.manga.filePath}${file}?${sl}`);
+            if (comicInfo.images) {
+              const {
+                origin
+              } = new URL(main.querySelector('#manga img').src);
+              return comicInfo.images.map(url => `${origin}${url}?${sl}`);
+            }
+            main.toast.error(main.t('site.changed_load_failed'), {
+              throw: true
+            });
+            return [];
           },
-          onNext: unsafeWindow.cInfo.nextId !== 0 ? main.querySelectorClick('a.nextC') : undefined,
-          onPrev: unsafeWindow.cInfo.prevId !== 0 ? main.querySelectorClick('a.prevC') : undefined
+          onNext: handlePrevNext(comicInfo.nextId),
+          onPrev: handlePrevNext(comicInfo.prevId)
         };
         break;
       }
@@ -9317,20 +9352,27 @@ const main = require('main');
       }
 
     // #动漫屋(dm5)
+    case 'www.manhuaren.com':
+    case 'm.1kkk.com':
+    case 'www.1kkk.com':
     case 'tel.dm5.com':
     case 'en.dm5.com':
-    case 'www.dm5.com':
     case 'www.dm5.cn':
-    case 'www.1kkk.com':
+    case 'www.dm5.com':
       {
         if (!Reflect.has(unsafeWindow, 'DM5_CID')) break;
-        const getImgList = async (fnMap, imgList = []) => {
+        const imgNum = unsafeWindow.DM5_IMAGE_COUNT ?? unsafeWindow.imgsLen;
+        if (!(Number.isSafeInteger(imgNum) && imgNum > 0)) {
+          main.toast.error(main.t('site.changed_load_failed'));
+          break;
+        }
+        const getPageImg = async i => {
           const res = await unsafeWindow.$.ajax({
             type: 'GET',
             url: 'chapterfun.ashx',
             data: {
               cid: unsafeWindow.DM5_CID,
-              page: imgList.length + 1,
+              page: i,
               key: unsafeWindow.$('#dm5_key').length ? unsafeWindow.$('#dm5_key').val() : '',
               language: 1,
               gtk: 6,
@@ -9340,26 +9382,28 @@ const main = require('main');
               _sign: unsafeWindow.DM5_VIEWSIGN
             }
           });
-
-          // 返回的数据只能通过 eval 获得
-          const newImgList = [...imgList,
           // eslint-disable-next-line no-eval
-          ...eval(res)];
-          if (newImgList.length !== unsafeWindow.DM5_IMAGE_COUNT) {
-            // 在 Fab 按钮上通过进度条和提示文本显示当前进度
-            fnMap.setFab({
-              progress: newImgList.length / unsafeWindow.DM5_IMAGE_COUNT,
-              tip: `加载图片中 - ${newImgList.length}/${unsafeWindow.DM5_IMAGE_COUNT}`
-            });
-            return getImgList(fnMap, newImgList);
-          }
-          return newImgList;
+          return eval(res);
         };
+        const handlePrevNext = (pcSelector, mobileText) => main.querySelectorClick(() => main.querySelector(pcSelector) ?? main.querySelectorAll('.view-bottom-bar a').find(e => e.innerText.includes(mobileText)));
         options = {
           name: 'dm5',
-          getImgList,
-          onNext: main.querySelectorClick('.logo_2'),
-          onPrev: main.querySelectorClick('.logo_1'),
+          getImgList: ({
+            dynamicUpdate
+          }) => {
+            // manhuaren 和 1kkk 的移动端上会直接用一个变量存储所有图片的链接
+            if (Array.isArray(unsafeWindow.newImgs) && unsafeWindow.newImgs.every(main.isUrl)) return unsafeWindow.newImgs;
+            return dynamicUpdate(async setImg => {
+              let imgIndex = 0;
+              while (imgIndex < imgNum) {
+                const newImgs = await getPageImg(imgIndex + 1);
+                // eslint-disable-next-line no-loop-func
+                newImgs.forEach(url => setImg(imgIndex++, url));
+              }
+            }, imgNum)();
+          },
+          onPrev: handlePrevNext('.logo_1', '上一章'),
+          onNext: handlePrevNext('.logo_2', '下一章'),
           onExit: isEnd => isEnd && main.scrollIntoView('.postlist')
         };
         break;

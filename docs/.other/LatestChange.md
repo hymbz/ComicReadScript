@@ -1,16 +1,8 @@
-## [8.7.0](https://github.com/hymbz/ComicReadScript/compare/v8.6.0...v8.7.0) (2024-02-04)
-
-
-### Features
-
-* :sparkles: 实现卷轴模式下的适合宽度缩放 ([86bdb1c](https://github.com/hymbz/ComicReadScript/commit/86bdb1c8b52c78a4c63cd06dfa079d5fe409f89f)), closes [#142](https://github.com/hymbz/ComicReadScript/issues/142)
+## [8.7.1](https://github.com/hymbz/ComicReadScript/compare/v8.7.0...v8.7.1) (2024-02-06)
 
 
 ### Bug Fixes
 
-* :bug: 修复 mangabz 在移动端上无法正常加载的 bug ([5051990](https://github.com/hymbz/ComicReadScript/commit/5051990834a4a22ca73aa7cd5b30f67605bbbea8)), closes [#145](https://github.com/hymbz/ComicReadScript/issues/145)
-
-
-### Performance Improvements
-
-* 将结束页上/下一话按钮的位置调整为和点击翻页的左右区域一致 ([0209c36](https://github.com/hymbz/ComicReadScript/commit/0209c36f420368bfd8522353f0ebc742995677e7))
+* :bug: 修复在卷轴模式下开启图片适合宽度后的异常滚动 ([9c1c7ed](https://github.com/hymbz/ComicReadScript/commit/9c1c7ed70b2424e99f20ee7eae766857142a24f8)), closes [#147](https://github.com/hymbz/ComicReadScript/issues/147)
+* :bug: 支持漫画柜的移动端 ([ba1142c](https://github.com/hymbz/ComicReadScript/commit/ba1142cd9842bdd981bb10b30507c103928f73c6)), closes [#148](https://github.com/hymbz/ComicReadScript/issues/148)
+* :bug: 支持漫画人和极速漫画的移动端 ([84c2141](https://github.com/hymbz/ComicReadScript/commit/84c214113e06376b8abc651bc5e32059f851e6b9)), closes [#148](https://github.com/hymbz/ComicReadScript/issues/148)
