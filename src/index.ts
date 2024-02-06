@@ -70,6 +70,8 @@ try {
     }
 
     // #动漫之家——「解锁隐藏漫画」
+    case 'comic.idmzj.com':
+    case 'comic.dmzj.com':
     case 'manhua.idmzj.com':
     case 'manhua.dmzj.com': {
       inject('dmzj');
