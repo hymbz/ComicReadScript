@@ -197,42 +197,65 @@ try {
     }
 
     // #漫画柜(manhuagui)
-    case 'www.manhuagui.com':
+    case 'tw.manhuagui.com':
+    case 'm.manhuagui.com':
     case 'www.mhgui.com':
-    case 'tw.manhuagui.com': {
-      if (!Reflect.has(unsafeWindow, 'cInfo')) break;
+    case 'www.manhuagui.com': {
+      if (!/\/comic\/\d+\/\d+\.html/.test(window.location.pathname)) break;
+
+      let comicInfo: {
+        sl: Record<string, string>;
+        files?: string[];
+        images?: string[];
+        prevId: number;
+        nextId: number;
+      };
+      try {
+        const dataScript = main.querySelector('body > script:not([src])')!;
+        comicInfo = JSON.parse(
+          // 只能通过 eval 获得数据
+          // eslint-disable-next-line no-eval
+          eval(dataScript.innerHTML.slice(26)).match(/(?<=.*?\()\{.+\}/)[0],
+        );
+      } catch (error) {
+        main.toast.error(main.t('site.changed_load_failed'));
+        break;
+      }
 
       // 让切换章节的提示可以显示在漫画页上
       GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
 
+      const handlePrevNext = (cid: number) => {
+        if (cid === 0) return undefined;
+        const newUrl = window.location.pathname.replace(
+          /(?<=\/)\d+(?=\.html)/,
+          `${cid}`,
+        );
+        return () => window.location.assign(newUrl);
+      };
+
       options = {
         name: 'manhuagui',
         getImgList: () => {
-          const comicInfo = JSON.parse(
-            // 只能通过 eval 获得数据
-            // eslint-disable-next-line no-eval
-            eval(
-              main
-                .querySelectorAll('body > script')
-                .at(-1)!
-                .innerHTML.slice(26),
-            ).slice(12, -12),
-          );
           const sl = Object.entries(comicInfo.sl)
             .map((attr) => `${attr[0]}=${attr[1]}`)
             .join('&');
-          return (comicInfo.files as string[]).map(
-            (file) => `${unsafeWindow.pVars.manga.filePath}${file}?${sl}`,
-          );
+
+          if (comicInfo.files)
+            return comicInfo.files.map(
+              (file) => `${unsafeWindow.pVars.manga.filePath}${file}?${sl}`,
+            );
+          if (comicInfo.images) {
+            const { origin } = new URL(
+              main.querySelector<HTMLImageElement>('#manga img')!.src,
+            );
+            return comicInfo.images.map((url) => `${origin}${url}?${sl}`);
+          }
+          main.toast.error(main.t('site.changed_load_failed'), { throw: true });
+          return [];
         },
-        onNext:
-          unsafeWindow.cInfo.nextId !== 0
-            ? main.querySelectorClick('a.nextC')
-            : undefined,
-        onPrev:
-          unsafeWindow.cInfo.prevId !== 0
-            ? main.querySelectorClick('a.prevC')
-            : undefined,
+        onNext: handlePrevNext(comicInfo.nextId),
+        onPrev: handlePrevNext(comicInfo.prevId),
       };
       break;
     }
