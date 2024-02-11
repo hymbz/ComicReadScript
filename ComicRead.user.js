@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.7.1
+// @version         8.7.2
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、Anchira、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -6767,7 +6767,7 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复在卷轴模式下开启图片适合宽度后的异常滚动 </p></li><li><p>支持漫画柜的移动端 </p></li><li><p>支持漫画人和极速漫画的移动端\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在 copymanga 上的部分漫画无法正常运行的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -9063,16 +9063,34 @@ const apiList = ['https://api.copymanga.info', 'https://api.copymanga.net', 'htt
 
 const api = (url, details) => main.eachApi(url, apiList, details);
 (() => {
+  const token = document.cookie.split('; ').find(cookie => cookie.startsWith('token='))?.replace('token=', '');
   if (window.location.href.includes('/chapter/')) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [,, name,, id] = window.location.pathname.split('/');
+    const headers = {
+      webp: '1',
+      region: '1',
+      'User-Agent': 'COPY/2.0.7|',
+      version: '2.0.7',
+      source: 'copyApp',
+      referer: 'com.copymanga.app-2.0.7'
+    };
+    if (token) Reflect.set(headers, 'Authorization', `Token ${token}`);
+    const getImgList = async () => {
+      const res = await api(`/api/v3/comic/${name}/chapter2/${id}?platform=3`, {
+        headers
+      });
+      const data = JSON.parse(res.responseText);
+      const imgList = [];
+      const {
+        words,
+        contents
+      } = data.results.chapter;
+      for (let i = 0; i < contents.length; i++) imgList[words[i]] = contents[i].url.replace('.c800x.', '.c1500x.');
+      return imgList;
+    };
     options = {
       name: 'copymanga',
-      getImgList: async () => {
-        const res = await api(window.location.href.replace(/.*?(?=\/comic\/)/, '/api/v3'));
-        return JSON.parse(res.responseText).results.chapter.contents.map(({
-          url
-        }) => url);
-      },
+      getImgList,
       onNext: main.querySelectorClick('.comicContent-next a:not(.prev-null)'),
       onPrev: main.querySelectorClick('.comicContent-prev:not(.index,.list) a:not(.prev-null)'),
       getCommentList: async () => {
@@ -9091,7 +9109,6 @@ const api = (url, details) => main.eachApi(url, apiList, details);
   // 在目录页显示上次阅读记录
   if (window.location.href.includes('/comic/')) {
     const comicName = window.location.href.split('/comic/')[1];
-    const token = document.cookie.split('; ').find(cookie => cookie.startsWith('token='))?.replace('token=', '');
     if (!comicName || !token) return;
     let a;
     const setStyle = main.createStyle();
