@@ -26,16 +26,30 @@ const api = (url: string, details?: RequestDetails) =>
   eachApi(url, apiList, details);
 
 (() => {
+  const token = document.cookie
+    .split('; ')
+    .find((cookie) => cookie.startsWith('token='))
+    ?.replace('token=', '');
+
   if (window.location.href.includes('/chapter/')) {
     const [, , name, , id] = window.location.pathname.split('/');
 
+    const headers = {
+      webp: '1',
+      region: '1',
+      'User-Agent': 'COPY/2.0.7|',
+      version: '2.0.7',
+      source: 'copyApp',
+      referer: 'com.copymanga.app-2.0.7',
+    };
+    if (token) Reflect.set(headers, 'Authorization', `Token ${token}`);
+
     const getImgList = async () => {
-      const res = await api(`/api/v3/comic/${name}/chapter2/${id}?platform=3`);
-      const {
-        results: {
-          chapter: { words, contents },
-        },
-      } = JSON.parse(res.responseText) as {
+      const res = await api(`/api/v3/comic/${name}/chapter2/${id}?platform=3`, {
+        headers,
+      });
+      const data = JSON.parse(res.responseText) as {
+        message: string;
         results: {
           chapter: {
             contents: { url: string }[];
@@ -45,8 +59,9 @@ const api = (url: string, details?: RequestDetails) =>
       };
 
       const imgList: string[] = [];
+      const { words, contents } = data.results.chapter;
       for (let i = 0; i < contents.length; i++)
-        imgList[words[i]] = contents[i].url;
+        imgList[words[i]] = contents[i].url.replace('.c800x.', '.c1500x.');
       return imgList;
     };
 
@@ -74,12 +89,6 @@ const api = (url: string, details?: RequestDetails) =>
   // 在目录页显示上次阅读记录
   if (window.location.href.includes('/comic/')) {
     const comicName = window.location.href.split('/comic/')[1];
-
-    const token = document.cookie
-      .split('; ')
-      .find((cookie) => cookie.startsWith('token='))
-      ?.replace('token=', '');
-
     if (!comicName || !token) return;
 
     let a: HTMLAnchorElement;
