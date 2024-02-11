@@ -27,19 +27,32 @@ const api = (url: string, details?: RequestDetails) =>
 
 (() => {
   if (window.location.href.includes('/chapter/')) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [, , name, , id] = window.location.pathname.split('/');
+
+    const getImgList = async () => {
+      const res = await api(`/api/v3/comic/${name}/chapter2/${id}?platform=3`);
+      const {
+        results: {
+          chapter: { words, contents },
+        },
+      } = JSON.parse(res.responseText) as {
+        results: {
+          chapter: {
+            contents: { url: string }[];
+            words: number[];
+          };
+        };
+      };
+
+      const imgList: string[] = [];
+      for (let i = 0; i < contents.length; i++)
+        imgList[words[i]] = contents[i].url;
+      return imgList;
+    };
+
     options = {
       name: 'copymanga',
-      getImgList: async () => {
-        const res = await api(
-          window.location.href.replace(/.*?(?=\/comic\/)/, '/api/v3'),
-        );
-        return (
-          JSON.parse(res.responseText).results.chapter.contents as {
-            url: string;
-          }[]
-        ).map(({ url }) => url);
-      },
+      getImgList,
       onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
       onPrev: querySelectorClick(
         '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
