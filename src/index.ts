@@ -108,6 +108,7 @@ try {
     }
 
     // #拷贝漫画(copymanga)——「显示最后阅读记录」
+    case 'mangacopy.com':
     case 'copymanga.site':
     case 'copymanga.info':
     case 'copymanga.net':
