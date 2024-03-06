@@ -18,7 +18,6 @@ import {
   createEffectOn,
   getAdPageByFileName,
   getAdPageByContent,
-  requestIdleCallback,
   ReactiveSet,
 } from 'main';
 
@@ -189,10 +188,10 @@ declare const selected_tagname: string;
       [, ehImgFileNameList[index]] = e.title.split(/：|: /);
     });
     // 先根据文件名判断一次
-    getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
+    await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
     // 不行的话再用缩略图识别
     if (!mangaProps.adList!.size)
-      getAdPageByContent(thumbnailEleList, mangaProps.adList);
+      await getAdPageByContent(thumbnailEleList, mangaProps.adList);
   }
 
   const { loadImgList } = init(
@@ -213,7 +212,7 @@ declare const selected_tagname: string;
             ehImgFileNameList[index] = fileName;
             setImg(index, imgUrl);
           }),
-          (_doneNum) => {
+          async (_doneNum) => {
             const doneNum = startIndex + _doneNum;
             setFab({
               progress: doneNum / totalImgNum,
@@ -224,11 +223,8 @@ declare const selected_tagname: string;
             if (doneNum === totalImgNum) {
               comicReadModeDom.innerHTML = ` Read`;
               if (enableDetectAd) {
-                getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
-                requestIdleCallback(
-                  () => getAdPageByContent(ehImgList, mangaProps.adList),
-                  3 * 1000,
-                );
+                await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
+                await getAdPageByContent(ehImgList, mangaProps.adList);
               }
             }
           },

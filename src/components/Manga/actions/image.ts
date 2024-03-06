@@ -100,10 +100,12 @@ export const updatePageData = (state: State) => {
   updateImgLoadType(state);
 
   // 在图片排列改变后自动跳转回原先显示图片所在的页数
-  if (lastActiveImgIndex !== activeImgIndex())
-    state.activePageIndex = state.pageList.findIndex((page) =>
+  if (lastActiveImgIndex !== activeImgIndex()) {
+    const newActivePageIndex = state.pageList.findIndex((page) =>
       page.includes(lastActiveImgIndex),
     );
+    if (newActivePageIndex !== -1) state.activePageIndex = newActivePageIndex;
+  }
 };
 
 /**

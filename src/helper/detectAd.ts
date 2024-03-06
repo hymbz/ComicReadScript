@@ -63,21 +63,24 @@ const isColorImg = (imgCanvas: HTMLCanvasElement) => {
   return false;
 };
 
-const imgToCanvas = async (img: HTMLImageElement) => {
-  await wait(() => img.naturalHeight && img.naturalWidth);
+const imgToCanvas = async (img: HTMLImageElement | string) => {
+  if (typeof img !== 'string') {
+    await wait(() => img.naturalHeight && img.naturalWidth, 1000 * 10);
 
-  try {
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
 
-    const ctx = canvas.getContext('2d')!;
-    ctx.drawImage(img, 0, 0);
-    // 没被 CORS 污染就直接使用这个 canvas
-    if (ctx.getImageData(0, 0, 1, 1)) return canvas;
-  } catch (_) {}
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0);
+      // 没被 CORS 污染就直接使用这个 canvas
+      if (ctx.getImageData(0, 0, 1, 1)) return canvas;
+    } catch (_) {}
+  }
 
-  const res = await request<Blob>(img.src, { responseType: 'blob' });
+  const url = typeof img === 'string' ? img : img.src;
+  const res = await request<Blob>(url, { responseType: 'blob' });
 
   const image = new Image();
   await new Promise((resolve, reject) => {
@@ -107,15 +110,20 @@ const qrCodeWhiteList = [
   /^https:\/\/marshmallow-qa\.com/,
 ];
 
-const isAdImg = async (
+/** 判断是否含有二维码 */
+const hasQrCode = async (
   imgCanvas: HTMLCanvasElement,
+  scanRegion?: QrScanner.ScanRegion,
   qrEngine?: AsyncReturnType<typeof QrScanner.createQrEngine>,
   canvas?: HTMLCanvasElement,
 ) => {
-  // 黑白图肯定不是广告
-  if (!isColorImg(imgCanvas)) return false;
   try {
-    const { data } = await QrScanner.scanImage(imgCanvas, { qrEngine, canvas });
+    const { data } = await QrScanner.scanImage(imgCanvas, {
+      qrEngine,
+      canvas,
+      scanRegion,
+      alsoTryWithoutScanRegion: true,
+    });
     if (!data) return false;
     log(`检测到二维码： ${data}`);
     return qrCodeWhiteList.every((reg) => !reg.test(data));
@@ -124,21 +132,45 @@ const isAdImg = async (
   }
 };
 
+const isAdImg = async (
+  imgCanvas: HTMLCanvasElement,
+  qrEngine?: AsyncReturnType<typeof QrScanner.createQrEngine>,
+  canvas?: HTMLCanvasElement,
+) => {
+  // 黑白图肯定不是广告
+  if (!isColorImg(imgCanvas)) return false;
+
+  const width = imgCanvas.width / 2;
+  const height = imgCanvas.height / 2;
+
+  // 分区块扫描图片
+  const scanRegionList: Array<QrScanner.ScanRegion | undefined> = [
+    undefined,
+    // 右下
+    { x: width, y: height, width, height },
+    // 左下
+    { x: 0, y: height, width, height },
+    // 右上
+    { x: width, y: 0, width, height },
+    // 左上
+    { x: 0, y: 0, width, height },
+  ];
+
+  for (let i = 0; i < scanRegionList.length; i++) {
+    const scanRegion = scanRegionList[i];
+    if (await hasQrCode(imgCanvas, scanRegion, qrEngine, canvas)) return true;
+  }
+
+  return false;
+};
+
 const byContent =
   (
-    qrEngine: AsyncReturnType<typeof QrScanner.createQrEngine>,
-    canvas: HTMLCanvasElement,
+    qrEngine?: AsyncReturnType<typeof QrScanner.createQrEngine>,
+    canvas?: HTMLCanvasElement,
   ) =>
-  async (img: HTMLImageElement | string) => {
-    let imgEle: HTMLImageElement;
-    if (typeof img === 'string') {
-      imgEle = new Image();
-      imgEle.src = img;
-    } else imgEle = img;
-    const imgCanvas = await imgToCanvas(imgEle);
-
-    return isAdImg(imgCanvas, qrEngine, canvas);
-  };
+  async (img: HTMLImageElement | string) =>
+    isAdImg(await imgToCanvas(img), qrEngine, canvas);
 
 /** 通过图片内容判断是否是广告 */
 export const getAdPageByContent = async (
