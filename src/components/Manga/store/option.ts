@@ -68,6 +68,8 @@ export interface Option {
       translator: string;
       targetLanguage: string;
     };
+    /** 只下载完成翻译的图片 */
+    onlyDownloadTranslated: boolean;
   };
 }
 
@@ -113,6 +115,7 @@ export const defaultOption: Readonly<Option> = {
       direction: 'auto',
       targetLanguage,
     },
+    onlyDownloadTranslated: false,
   },
 };
 

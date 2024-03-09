@@ -18,21 +18,29 @@ export const DownloadButton = () => {
   const handleDownload = async () => {
     const fileData: Zippable = {};
 
-    const downImgList = store.imgList.map((img) =>
-      img.translationType === 'show'
-        ? `${img.translationUrl!}#.${getFileExt(img.src)}`
-        : img.src,
-    );
-    const imgIndexNum = `${downImgList.length}`.length;
+    const { imgList } = store;
+    const imgIndexNum = `${imgList.length}`.length;
 
-    for (let i = 0; i < downImgList.length; i += 1) {
-      setStatu(`${i}/${downImgList.length}`);
-      const index = `${i}`.padStart(imgIndexNum, '0');
+    for (let i = 0; i < imgList.length; i += 1) {
+      setStatu(`${i}/${imgList.length}`);
+
+      if (
+        store.option.translation.onlyDownloadTranslated &&
+        imgList[i].translationType !== 'show'
+      )
+        continue;
 
       let data: ArrayBuffer;
       let fileName: string;
 
-      const url = downImgList[i];
+      const img = imgList[i];
+      const url =
+        img.translationType === 'show'
+          ? `${img.translationUrl!}#.${getFileExt(img.src)}`
+          : img.src;
+
+      const index = `${i}`.padStart(imgIndexNum, '0');
+
       if (url.startsWith('blob:')) {
         const res = await fetch(url);
         const blob = await res.blob();
@@ -56,6 +64,11 @@ export const DownloadButton = () => {
       fileData[fileName] = new Uint8Array(data!);
     }
 
+    if (Object.keys(fileData).length === 0) {
+      toast.warn(t('alert.no_img_download'));
+      setStatu('button.download');
+      return;
+    }
     setStatu('button.packaging');
     const zipped = zipSync(fileData, {
       level: 0,

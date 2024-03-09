@@ -182,6 +182,12 @@ export const SettingTranslation = () => {
             />
           </Show>
         </Show>
+
+        <SettingsItemSwitch
+          name={t('setting.translation.options.onlyDownloadTranslated')}
+          value={store.option.translation.onlyDownloadTranslated}
+          onChange={createStateSetFn('translation.onlyDownloadTranslated')}
+        />
       </SettingsShowItem>
     </>
   );

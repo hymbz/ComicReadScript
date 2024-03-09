@@ -4,6 +4,7 @@
     "download_failed": "下载失败",
     "fetch_comic_img_failed": "获取漫画图片失败",
     "img_load_failed": "图片加载失败",
+    "no_img_download": "没有能下载的图片",
     "repeat_load": "加载图片中，请稍候",
     "server_connect_failed": "无法连接到服务器"
   },
@@ -146,6 +147,7 @@
         "direction_vertical": "仅限垂直",
         "forceRetry": "忽略缓存强制重试",
         "localUrl": "自定义服务器 URL",
+        "onlyDownloadTranslated": "只下载完成翻译的图片",
         "target_language": "目标语言",
         "text_detector": "文本扫描器",
         "translator": "翻译服务"

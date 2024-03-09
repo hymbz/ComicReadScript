@@ -4,6 +4,7 @@
     "download_failed": "Download failed",
     "fetch_comic_img_failed": "Failed to fetch comic images",
     "img_load_failed": "Image loading failed",
+    "no_img_download": "No images available for download",
     "repeat_load": "Loading image, please wait",
     "server_connect_failed": "Unable to connect to the server"
   },
@@ -146,6 +147,7 @@
         "direction_vertical": "Vertical only",
         "forceRetry": "Force retry (ignore cache)",
         "localUrl": "customize server URL",
+        "onlyDownloadTranslated": "Download only the translated images",
         "target_language": "Target language",
         "text_detector": "Text detector",
         "translator": "Translator"
