@@ -4,6 +4,7 @@
     "download_failed": "Ошибка загрузки",
     "fetch_comic_img_failed": "Не удалось загрузить изображения",
     "img_load_failed": "Не удалось загрузить изображение",
+    "no_img_download": "没有能下载的图片",
     "repeat_load": "Загрузка изображения, пожалуйста подождите",
     "server_connect_failed": "Не удалось подключиться к серверу"
   },
@@ -146,6 +147,7 @@
         "direction_vertical": "Только вертикально",
         "forceRetry": "Принудительный повтор(Игнорировать кэш)",
         "localUrl": "Настроить URL сервера",
+        "onlyDownloadTranslated": "只下载完成翻译的图片",
         "target_language": "Целевой язык",
         "text_detector": "Детектор текста",
         "translator": "Переводчик"
