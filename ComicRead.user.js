@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.7.2
+// @version         8.7.3
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、Anchira、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -836,6 +836,7 @@ const zh = {
     download_failed: "下载失败",
     fetch_comic_img_failed: "获取漫画图片失败",
     img_load_failed: "图片加载失败",
+    no_img_download: "没有能下载的图片",
     repeat_load: "加载图片中，请稍候",
     server_connect_failed: "无法连接到服务器"
   },
@@ -978,6 +979,7 @@ const zh = {
         direction_vertical: "仅限垂直",
         forceRetry: "忽略缓存强制重试",
         localUrl: "自定义服务器 URL",
+        onlyDownloadTranslated: "只下载完成翻译的图片",
         target_language: "目标语言",
         text_detector: "文本扫描器",
         translator: "翻译服务"
@@ -1087,6 +1089,7 @@ const en = {
     download_failed: "Download failed",
     fetch_comic_img_failed: "Failed to fetch comic images",
     img_load_failed: "Image loading failed",
+    no_img_download: "No images available for download",
     repeat_load: "Loading image, please wait",
     server_connect_failed: "Unable to connect to the server"
   },
@@ -1229,6 +1232,7 @@ const en = {
         direction_vertical: "Vertical only",
         forceRetry: "Force retry (ignore cache)",
         localUrl: "customize server URL",
+        onlyDownloadTranslated: "Download only the translated images",
         target_language: "Target language",
         text_detector: "Text detector",
         translator: "Translator"
@@ -2300,7 +2304,8 @@ const defaultOption = {
       translator: 'gpt3.5',
       direction: 'auto',
       targetLanguage
-    }
+    },
+    onlyDownloadTranslated: false
   }
 };
 const OptionState = {
@@ -2862,7 +2867,10 @@ const updatePageData = state => {
   updateImgLoadType(state);
 
   // 在图片排列改变后自动跳转回原先显示图片所在的页数
-  if (lastActiveImgIndex !== activeImgIndex()) state.activePageIndex = state.pageList.findIndex(page => page.includes(lastActiveImgIndex));
+  if (lastActiveImgIndex !== activeImgIndex()) {
+    const newActivePageIndex = state.pageList.findIndex(page => page.includes(lastActiveImgIndex));
+    if (newActivePageIndex !== -1) state.activePageIndex = newActivePageIndex;
+  }
 };
 
 /**
@@ -5171,6 +5179,16 @@ const SettingTranslation = () => {
             }
           })];
         }
+      }), web.createComponent(SettingsItemSwitch, {
+        get name() {
+          return t('setting.translation.options.onlyDownloadTranslated');
+        },
+        get value() {
+          return store.option.translation.onlyDownloadTranslated;
+        },
+        get onChange() {
+          return createStateSetFn('translation.onlyDownloadTranslated');
+        }
       })];
     }
   })];
@@ -6402,14 +6420,18 @@ const DownloadButton = () => {
   const getFileExt = url => url.split('.').pop();
   const handleDownload = async () => {
     const fileData = {};
-    const downImgList = store.imgList.map(img => img.translationType === 'show' ? \`\${img.translationUrl}#.\${getFileExt(img.src)}\` : img.src);
-    const imgIndexNum = \`\${downImgList.length}\`.length;
-    for (let i = 0; i < downImgList.length; i += 1) {
-      setStatu(\`\${i}/\${downImgList.length}\`);
-      const index = \`\${i}\`.padStart(imgIndexNum, '0');
+    const {
+      imgList
+    } = store;
+    const imgIndexNum = \`\${imgList.length}\`.length;
+    for (let i = 0; i < imgList.length; i += 1) {
+      setStatu(\`\${i}/\${imgList.length}\`);
+      if (store.option.translation.onlyDownloadTranslated && imgList[i].translationType !== 'show') continue;
       let data;
       let fileName;
-      const url = downImgList[i];
+      const img = imgList[i];
+      const url = img.translationType === 'show' ? \`\${img.translationUrl}#.\${getFileExt(img.src)}\` : img.src;
+      const index = \`\${i}\`.padStart(imgIndexNum, '0');
       if (url.startsWith('blob:')) {
         const res = await fetch(url);
         const blob = await res.blob();
@@ -6430,6 +6452,11 @@ const DownloadButton = () => {
         }
       }
       fileData[fileName] = new Uint8Array(data);
+    }
+    if (Object.keys(fileData).length === 0) {
+      toast$1.warn(t('alert.no_img_download'));
+      setStatu('button.download');
+      return;
     }
     setStatu('button.packaging');
     const zipped = fflate.zipSync(fileData, {
@@ -6767,7 +6794,9 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在 copymanga 上的部分漫画无法正常运行的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复简易模式下图片未正确加载的 bug </p></li><li><p>增加拷贝漫画的支持域名\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>优化 eh 识别广告的成功率 </p></li><li><p>增加「只下载完成翻译的图片」选项\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6830,7 +6859,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3()], {
+    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -7216,17 +7245,20 @@ const isColorImg = imgCanvas => {
   return false;
 };
 const imgToCanvas = async img => {
-  await main.wait(() => img.naturalHeight && img.naturalWidth);
-  try {
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    // 没被 CORS 污染就直接使用这个 canvas
-    if (ctx.getImageData(0, 0, 1, 1)) return canvas;
-  } catch (_) {}
-  const res = await main.request(img.src, {
+  if (typeof img !== 'string') {
+    await main.wait(() => img.naturalHeight && img.naturalWidth, 1000 * 10);
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      // 没被 CORS 污染就直接使用这个 canvas
+      if (ctx.getImageData(0, 0, 1, 1)) return canvas;
+    } catch (_) {}
+  }
+  const url = typeof img === 'string' ? img : img.src;
+  const res = await main.request(url, {
     responseType: 'blob'
   });
   const image = new Image();
@@ -7253,15 +7285,17 @@ const qrCodeWhiteList = [
 /^https:\\/\\/fantia\\.jp/,
 // 棉花糖
 /^https:\\/\\/marshmallow-qa\\.com/];
-const isAdImg = async (imgCanvas, qrEngine, canvas) => {
-  // 黑白图肯定不是广告
-  if (!isColorImg(imgCanvas)) return false;
+
+/** 判断是否含有二维码 */
+const hasQrCode = async (imgCanvas, scanRegion, qrEngine, canvas) => {
   try {
     const {
       data
     } = await QrScanner.scanImage(imgCanvas, {
       qrEngine,
-      canvas
+      canvas,
+      scanRegion,
+      alsoTryWithoutScanRegion: true
     });
     if (!data) return false;
     main.log(\`检测到二维码： \${data}\`);
@@ -7270,15 +7304,49 @@ const isAdImg = async (imgCanvas, qrEngine, canvas) => {
     return false;
   }
 };
-const byContent = (qrEngine, canvas) => async img => {
-  let imgEle;
-  if (typeof img === 'string') {
-    imgEle = new Image();
-    imgEle.src = img;
-  } else imgEle = img;
-  const imgCanvas = await imgToCanvas(imgEle);
-  return isAdImg(imgCanvas, qrEngine, canvas);
+const isAdImg = async (imgCanvas, qrEngine, canvas) => {
+  // 黑白图肯定不是广告
+  if (!isColorImg(imgCanvas)) return false;
+  const width = imgCanvas.width / 2;
+  const height = imgCanvas.height / 2;
+
+  // 分区块扫描图片
+  const scanRegionList = [undefined,
+  // 右下
+  {
+    x: width,
+    y: height,
+    width,
+    height
+  },
+  // 左下
+  {
+    x: 0,
+    y: height,
+    width,
+    height
+  },
+  // 右上
+  {
+    x: width,
+    y: 0,
+    width,
+    height
+  },
+  // 左上
+  {
+    x: 0,
+    y: 0,
+    width,
+    height
+  }];
+  for (let i = 0; i < scanRegionList.length; i++) {
+    const scanRegion = scanRegionList[i];
+    if (await hasQrCode(imgCanvas, scanRegion, qrEngine, canvas)) return true;
+  }
+  return false;
 };
+const byContent = (qrEngine, canvas) => async img => isAdImg(await imgToCanvas(img), qrEngine, canvas);
 
 /** 通过图片内容判断是否是广告 */
 const getAdPageByContent = async (imgList, adList = new Set()) => {
@@ -7371,18 +7439,17 @@ const handleTrigged = e => {
 };
 
 /** 监视图片是否被显示的 Observer */
-// imgShowObserver = new IntersectionObserver((entries) =>
-//   entries.forEach((img) => {
-//     // const ele = img.target as HTMLImageElement;
-//     // if (img.isIntersecting) {
-//     //   imgMap.set(ele, {
-//     //     ...getImg(ele),
-//     //     observerTimeout: window.setTimeout(handleTrigged, 290, ele),
-//     //   });
-//     // }
-//     // const timeoutID = imgMap.get(ele)?.observerTimeout;
-//     // if (timeoutID) window.clearTimeout(timeoutID);
-//   }),
+imgShowObserver = new IntersectionObserver(entries => entries.forEach(img => {
+  const ele = img.target;
+  if (img.isIntersecting) {
+    imgMap.set(ele, {
+      ...getImg(ele),
+      observerTimeout: window.setTimeout(handleTrigged, 290, ele)
+    });
+  }
+  const timeoutID = imgMap.get(ele)?.observerTimeout;
+  if (timeoutID) window.clearTimeout(timeoutID);
+}));
 const turnPageScheduled = createScheduled(fn => throttle(fn, 1000));
 /** 触发翻页 */
 const triggerTurnPage = async (waitTime = 0) => {
@@ -8621,9 +8688,9 @@ const main = require('main');
       [, ehImgFileNameList[index]] = e.title.split(/：|: /);
     });
     // 先根据文件名判断一次
-    main.getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
+    await main.getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
     // 不行的话再用缩略图识别
-    if (!mangaProps.adList.size) main.getAdPageByContent(thumbnailEleList, mangaProps.adList);
+    if (!mangaProps.adList.size) await main.getAdPageByContent(thumbnailEleList, mangaProps.adList);
   }
   const {
     loadImgList
@@ -8640,7 +8707,7 @@ const main = require('main');
         ehImgPageList[index] = imgPageUrl;
         ehImgFileNameList[index] = fileName;
         setImg(index, imgUrl);
-      }), _doneNum => {
+      }), async _doneNum => {
         const doneNum = startIndex + _doneNum;
         setFab({
           progress: doneNum / totalImgNum,
@@ -8650,8 +8717,8 @@ const main = require('main');
         if (doneNum === totalImgNum) {
           comicReadModeDom.innerHTML = ` Read`;
           if (enableDetectAd) {
-            main.getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
-            main.requestIdleCallback(() => main.getAdPageByContent(ehImgList, mangaProps.adList), 3 * 1000);
+            await main.getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
+            await main.getAdPageByContent(ehImgList, mangaProps.adList);
           }
         }
       });
@@ -9043,6 +9110,7 @@ const main = require('main');
       }
 
     // #拷贝漫画(copymanga)——「显示最后阅读记录」
+    case 'mangacopy.com':
     case 'copymanga.site':
     case 'copymanga.info':
     case 'copymanga.net':
@@ -9206,8 +9274,8 @@ const api = (url, details) => main.eachApi(url, apiList, details);
 
     // #禁漫天堂
     case 'jmcomic.me':
-    case '18comic-palworld.club':
-    case '18comic-c.xyz':
+    case '18comic-ff7rebirth.xyz':
+    case '18comic-palworld.vip':
     case '18comic-c.art':
     case '18comic.org':
     case '18comic.vip':
@@ -9427,9 +9495,8 @@ const main = require('main');
       }
 
     // #绅士漫画(wnacg)
-    case 'www.hm11.lol':
-    case 'www.hm12.lol':
-    case 'www.hm13.lol':
+    case 'www.hm15.lol':
+    case 'www.hm16.lol':
     case 'www.wnacg.com':
     case 'wnacg.com':
       {
