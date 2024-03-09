@@ -99,19 +99,19 @@ const handleTrigged = (e: HTMLImageElement) => {
 };
 
 /** 监视图片是否被显示的 Observer */
-// imgShowObserver = new IntersectionObserver((entries) =>
-//   entries.forEach((img) => {
-//     // const ele = img.target as HTMLImageElement;
-//     // if (img.isIntersecting) {
-//     //   imgMap.set(ele, {
-//     //     ...getImg(ele),
-//     //     observerTimeout: window.setTimeout(handleTrigged, 290, ele),
-//     //   });
-//     // }
-//     // const timeoutID = imgMap.get(ele)?.observerTimeout;
-//     // if (timeoutID) window.clearTimeout(timeoutID);
-//   }),
-// );
+imgShowObserver = new IntersectionObserver((entries) =>
+  entries.forEach((img) => {
+    const ele = img.target as HTMLImageElement;
+    if (img.isIntersecting) {
+      imgMap.set(ele, {
+        ...getImg(ele),
+        observerTimeout: window.setTimeout(handleTrigged, 290, ele),
+      });
+    }
+    const timeoutID = imgMap.get(ele)?.observerTimeout;
+    if (timeoutID) window.clearTimeout(timeoutID);
+  }),
+);
 
 const turnPageScheduled = createScheduled((fn) => throttle(fn, 1000));
 /** 触发翻页 */
