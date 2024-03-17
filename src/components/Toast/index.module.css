@@ -75,7 +75,9 @@
 
 .msg {
   width: fit-content;
+  line-height: 1.4em;
   text-align: start;
+  white-space: break-spaces;
 
   & h2 {
     margin: 0;
