@@ -3,11 +3,11 @@ import { difference, byPath } from 'helper';
 import type { State } from '../store';
 import { store, setState, refs } from '../store';
 import type { Option } from '../store/option';
-import { defaultOption } from '../store/option';
 
 /** 触发 onOptionChange */
 const triggerOnOptionChange = scheduleIdle(
-  () => store.prop.OptionChange?.(difference(store.option, defaultOption)),
+  () =>
+    store.prop.OptionChange?.(difference(store.option, store.defaultOption)),
   1000,
 );
 

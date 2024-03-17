@@ -76,7 +76,7 @@ export interface Option {
 const LanguageMap = { zh: 'CHS', en: 'ENG' };
 const targetLanguage = LanguageMap[lang()] ?? 'CHS';
 
-export const defaultOption: Readonly<Option> = {
+const _defaultOption: Readonly<Option> = {
   dir: 'rtl',
   scrollbar: {
     position: 'auto',
@@ -119,6 +119,10 @@ export const defaultOption: Readonly<Option> = {
   },
 };
 
+export const defaultOption = () =>
+  JSON.parse(JSON.stringify(_defaultOption)) as Option;
+
 export const OptionState = {
-  option: JSON.parse(JSON.stringify(defaultOption)) as Option,
+  defaultOption: defaultOption(),
+  option: defaultOption(),
 };

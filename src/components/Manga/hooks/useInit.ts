@@ -32,9 +32,9 @@ export const useInit = (props: MangaProps) => {
     Record<keyof MangaProps, (state: State) => unknown>
   > = {
     option: (state) => {
-      state.option = props.option
-        ? assign(state.option, props.option as Option)
-        : (JSON.parse(JSON.stringify(defaultOption)) as Option);
+      if (!props.option) return;
+      state.option = assign(state.option, props.option as Option);
+      state.defaultOption = assign(defaultOption(), props.option) as Option;
     },
     fillEffect: (state) => {
       state.fillEffect = props.fillEffect ?? { '-1': true };
