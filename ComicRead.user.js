@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.7.3
+// @version         8.7.4
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、Anchira、kemono、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -1019,7 +1019,7 @@ const zh = {
     show_settings_menu: "显示设置菜单",
     simple: {
       auto_read_mode_message: "已默认开启「自动进入阅读模式」",
-      no_img: "未找到合适的漫画图片，如有需要可点此关闭简易阅读模式",
+      no_img: "未找到合适的漫画图片，\\n如有需要可点此关闭简易阅读模式",
       simple_read_mode: "使用简易阅读模式"
     }
   },
@@ -1342,6 +1342,7 @@ const ru = {
     download_failed: "Ошибка загрузки",
     fetch_comic_img_failed: "Не удалось загрузить изображения",
     img_load_failed: "Не удалось загрузить изображение",
+    no_img_download: "没有能下载的图片",
     repeat_load: "Загрузка изображения, пожалуйста подождите",
     server_connect_failed: "Не удалось подключиться к серверу"
   },
@@ -1484,6 +1485,7 @@ const ru = {
         direction_vertical: "Только вертикально",
         forceRetry: "Принудительный повтор(Игнорировать кэш)",
         localUrl: "Настроить URL сервера",
+        onlyDownloadTranslated: "只下载完成翻译的图片",
         target_language: "Целевой язык",
         text_detector: "Детектор текста",
         translator: "Переводчик"
@@ -1637,8 +1639,8 @@ const mountComponents = (id, fc) => {
   return dom;
 };
 
-var css$3 = ".index_module_root__d8c71ff0{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__d8c71ff0{align-items:center;animation:index_module_bounceInRight__d8c71ff0 .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__d8c71ff0>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__d8c71ff0[data-exit]{animation:index_module_bounceOutRight__d8c71ff0 .5s 1}.index_module_schedule__d8c71ff0{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__d8c71ff0[data-schedule] .index_module_schedule__d8c71ff0{transition:transform .1s}.index_module_item__d8c71ff0:not([data-schedule]) .index_module_schedule__d8c71ff0{animation:index_module_schedule__d8c71ff0 linear 1 forwards}:is(.index_module_item__d8c71ff0:hover,.index_module_item__d8c71ff0[data-schedule],.index_module_root__d8c71ff0[data-paused]) .index_module_schedule__d8c71ff0{animation-play-state:paused}.index_module_msg__d8c71ff0{text-align:start;width:-moz-fit-content;width:fit-content}.index_module_msg__d8c71ff0 h2{margin:0}.index_module_msg__d8c71ff0 h3{margin:.7em 0}.index_module_msg__d8c71ff0 ul{margin:0;text-align:left}.index_module_msg__d8c71ff0 button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__d8c71ff0 button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__d8c71ff0{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__d8c71ff0{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__d8c71ff0{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2$3 = {"root":"index_module_root__d8c71ff0","item":"index_module_item__d8c71ff0","bounceInRight":"index_module_bounceInRight__d8c71ff0","bounceOutRight":"index_module_bounceOutRight__d8c71ff0","schedule":"index_module_schedule__d8c71ff0","msg":"index_module_msg__d8c71ff0"};
+var css$3 = ".index_module_root__7041fa4c{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__7041fa4c{align-items:center;animation:index_module_bounceInRight__7041fa4c .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__7041fa4c>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__7041fa4c[data-exit]{animation:index_module_bounceOutRight__7041fa4c .5s 1}.index_module_schedule__7041fa4c{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__7041fa4c[data-schedule] .index_module_schedule__7041fa4c{transition:transform .1s}.index_module_item__7041fa4c:not([data-schedule]) .index_module_schedule__7041fa4c{animation:index_module_schedule__7041fa4c linear 1 forwards}:is(.index_module_item__7041fa4c:hover,.index_module_item__7041fa4c[data-schedule],.index_module_root__7041fa4c[data-paused]) .index_module_schedule__7041fa4c{animation-play-state:paused}.index_module_msg__7041fa4c{line-height:1.4em;text-align:start;white-space:break-spaces;width:-moz-fit-content;width:fit-content}.index_module_msg__7041fa4c h2{margin:0}.index_module_msg__7041fa4c h3{margin:.7em 0}.index_module_msg__7041fa4c ul{margin:0;text-align:left}.index_module_msg__7041fa4c button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__7041fa4c button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__7041fa4c{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__7041fa4c{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__7041fa4c{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2$3 = {"root":"index_module_root__7041fa4c","item":"index_module_item__7041fa4c","bounceInRight":"index_module_bounceInRight__7041fa4c","bounceOutRight":"index_module_bounceOutRight__7041fa4c","schedule":"index_module_schedule__7041fa4c","msg":"index_module_msg__7041fa4c"};
 
 const [_state$1, _setState$1] = store$2.createStore({
   list: [],
@@ -2268,7 +2270,7 @@ const LanguageMap = {
   en: 'ENG'
 };
 const targetLanguage = LanguageMap[lang()] ?? 'CHS';
-const defaultOption = {
+const _defaultOption = {
   dir: 'rtl',
   scrollbar: {
     position: 'auto',
@@ -2308,8 +2310,10 @@ const defaultOption = {
     onlyDownloadTranslated: false
   }
 };
+const defaultOption = () => JSON.parse(JSON.stringify(_defaultOption));
 const OptionState = {
-  option: JSON.parse(JSON.stringify(defaultOption))
+  defaultOption: defaultOption(),
+  option: defaultOption()
 };
 
 const OtherState = {
@@ -2427,7 +2431,7 @@ const refs = {
 };
 
 /** 触发 onOptionChange */
-const triggerOnOptionChange = scheduleIdle(() => store.prop.OptionChange?.(difference(store.option, defaultOption)), 1000);
+const triggerOnOptionChange = scheduleIdle(() => store.prop.OptionChange?.(difference(store.option, store.defaultOption)), 1000);
 
 /** 在 option 后手动触发 onOptionChange */
 const setOption = fn => {
@@ -6240,7 +6244,9 @@ const useInit$1 = props => {
   initResizeObserver(refs.root);
   const watchProps = {
     option: state => {
-      state.option = props.option ? assign(state.option, props.option) : JSON.parse(JSON.stringify(defaultOption));
+      if (!props.option) return;
+      state.option = assign(state.option, props.option);
+      state.defaultOption = assign(defaultOption(), props.option);
     },
     fillEffect: state => {
       state.fillEffect = props.fillEffect ?? {
@@ -6794,9 +6800,7 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复简易模式下图片未正确加载的 bug </p></li><li><p>增加拷贝漫画的支持域名\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>优化\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>优化 eh 识别广告的成功率 </p></li><li><p>增加「只下载完成翻译的图片」选项\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在 kemono 上没有记住阅读配置的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6859,7 +6863,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -9275,8 +9279,7 @@ const api = (url, details) => main.eachApi(url, apiList, details);
     // #禁漫天堂
     case 'jmcomic.me':
     case '18comic-ff7rebirth.xyz':
-    case '18comic-palworld.vip':
-    case '18comic-c.art':
+    case '18comic-ff7rebirth.quest':
     case '18comic.org':
     case '18comic.vip':
       {
