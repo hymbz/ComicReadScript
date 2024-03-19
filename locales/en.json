@@ -48,7 +48,8 @@
     "turn_page_down": "Turn the page to the down",
     "turn_page_left": "Turn the page to the left",
     "turn_page_right": "Turn the page to the right",
-    "turn_page_up": "Turn the page to the up"
+    "turn_page_up": "Turn the page to the up",
+    "translate_current_page": "Translate current page"
   },
   "img_status": {
     "error": "Load Error",

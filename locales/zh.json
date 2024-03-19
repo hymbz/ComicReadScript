@@ -48,7 +48,8 @@
     "turn_page_down": "向下翻页",
     "turn_page_left": "向左翻页",
     "turn_page_right": "向右翻页",
-    "turn_page_up": "向上翻页"
+    "turn_page_up": "向上翻页",
+    "translate_current_page": "翻译当前页"
   },
   "img_status": {
     "error": "加载出错",
