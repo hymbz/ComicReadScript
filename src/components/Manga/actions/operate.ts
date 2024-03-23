@@ -145,13 +145,15 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 
     case 'translate_current_page':
       if (store.option.translation.server !== 'disable')
-      return setImgTranslationEnbale(activePage(),
-        !activePage().some(
-          (i) =>
-            store.imgList[i]?.translationType &&
-            store.imgList[i].translationType !== 'hide',
-        )
-      );
+        return setImgTranslationEnbale(
+          activePage(),
+          !activePage().some(
+            (i) =>
+              store.imgList[i]?.translationType &&
+              store.imgList[i].translationType !== 'hide',
+          ),
+        );
+      break;
 
     case 'switch_auto_enlarge':
       return setOption((draftOption) => {
