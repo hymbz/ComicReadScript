@@ -8,7 +8,7 @@ const siteUrlFnMap = {
     return [
       ...res.data
         .replace(/&nbsp;/g, '')
-        .matchAll(/(?<=\n)[-A-Za-z0-9.]+?(?=<br)/g),
+        .matchAll(/(?<=\n\s*)[-A-Za-z0-9.]+?(?=<br)/g),
     ].flat();
   },
   wnacg: async () => {
@@ -43,7 +43,8 @@ export const siteUrl: OutputPluginOption = {
         const list = siteUrlMap![name].filter((url) =>
           URL.canParse(`https://${url}`),
         );
-        if (!list.length) throw new Error('未找到可用网址，发布页已失效');
+        if (!list.length)
+          throw new Error(`未找到可用网址，${name}发布页已失效`);
 
         const otherUrlList: string[] = [
           ...other.matchAll(/(?<=case ').+?(?=':)/g),
