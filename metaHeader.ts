@@ -80,7 +80,9 @@ export const getMetaData = (isDevMode: boolean) => {
     name: pkg.name,
     namespace: pkg.name,
     version: pkg.version,
-    description: `${zh.description}${getSupportSiteList().join('、')}`,
+    description: `${zh.description}${getSupportSiteList()
+      .map((site) => site.replace(/\[(.+)\]\(.+\)/, '$1'))
+      .join('、')}`,
     'description:en': en.description,
     'description:ru': ru.description,
     author: pkg.author,

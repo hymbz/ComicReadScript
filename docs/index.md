@@ -103,46 +103,46 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 ## 支持网站
 
-部分网站除适配阅读模式外，还添加了一些增强功能，具体可点击跳转查看详情
+部分网站除阅读模式外，还添加了一些增强功能
 
-- [百合会](#百合会)
+- [百合会](https://bbs.yamibo.com)
   - [记录阅读进度](#记录阅读进度)
   - [关闭快捷导航的跳转](#关闭快捷导航的跳转)
   - [固定导航条](#固定导航条)
   - [修正点击页数时的跳转判定](#修正点击页数时的跳转判定)
   - 自动签到
-- 百合会新站
-- 动漫之家
+- [百合会新站](https://www.yamibo.com)
+- [动漫之家](https://manhua.idmzj.com)
   - 解锁隐藏漫画
-- [ehentai](#ehentai)
+- [ehentai](https://e-hentai.org)
   - [关联 nhentai](#关联-nhentai)
   - [快捷键翻页](#快捷键翻页)
   - [识别广告](#识别广告)
-- [nhentai](#nhentai)
+- [nhentai](https://nhentai.net)
   - [彻底屏蔽漫画](#彻底屏蔽漫画)
   - [自动翻页](#自动翻页)
-- Yurifans
+- [Yurifans](https://www.yurifans.com)
   - 自动签到
-- 拷贝漫画
+- [拷贝漫画](https://www.copymanga.com)
   - 在目录页显示上次阅读记录
 
 <!-- 根据 src/index.ts 自动生成 -->
 <!-- supportSiteList -->
 
-- PonpomuYuri
-- 明日方舟泰拉记事社
-- 禁漫天堂
-- 漫画柜(manhuagui)
-- 漫画DB(manhuadb)
-- 动漫屋(dm5)
-- 绅士漫画(wnacg)
-- mangabz
-- komiic
-- hitomi
-- Anchira
-- kemono
-- nekohouse
-- welovemanga
+- [PonpomuYuri](https://www.ponpomu.com)
+- [明日方舟泰拉记事社](https://terra-historicus.hypergryph.com)
+- [禁漫天堂](https://18comic.vip)
+- [漫画柜(manhuagui)](https://www.manhuagui.com)
+- [漫画DB(manhuadb)](https://www.manhuadb.com)
+- [动漫屋(dm5)](https://www.dm5.com)
+- [绅士漫画(wnacg)](https://www.wnacg.com)
+- [mangabz](https://mangabz.com)
+- [komiic](https://komiic.com)
+- [hitomi](https://hitomi.la)
+- [Anchira](https://anchira.to)
+- [kemono](https://kemono.su)
+- [nekohouse](https://nekohouse.su)
+- [welovemanga](https://welovemanga.one)
 
 <!-- supportSiteList -->
 

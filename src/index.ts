@@ -126,7 +126,7 @@ try {
       break;
     }
 
-    // #PonpomuYuri
+    // #[PonpomuYuri](https://www.ponpomu.com)
     case 'www.ponpomu.com': {
       options = {
         name: 'terraHistoricus',
@@ -146,7 +146,7 @@ try {
       break;
     }
 
-    // #明日方舟泰拉记事社
+    // #[明日方舟泰拉记事社](https://terra-historicus.hypergryph.com)
     case 'terra-historicus.hypergryph.com': {
       const apiUrl = () =>
         `https://terra-historicus.hypergryph.com/api${window.location.pathname}`;
@@ -191,7 +191,7 @@ try {
       break;
     }
 
-    // #禁漫天堂
+    // #[禁漫天堂](https://18comic.vip)
     case 'siteUrl#jm':
     case '18comic.org':
     case '18comic.vip': {
@@ -199,7 +199,7 @@ try {
       break;
     }
 
-    // #漫画柜(manhuagui)
+    // #[漫画柜(manhuagui)](https://www.manhuagui.com)
     case 'tw.manhuagui.com':
     case 'm.manhuagui.com':
     case 'www.mhgui.com':
@@ -263,7 +263,7 @@ try {
       break;
     }
 
-    // #漫画DB(manhuadb)
+    // #[漫画DB(manhuadb)](https://www.manhuadb.com)
     case 'www.manhuadb.com': {
       if (!Reflect.has(unsafeWindow, 'img_data_arr')) break;
 
@@ -280,7 +280,7 @@ try {
       break;
     }
 
-    // #动漫屋(dm5)
+    // #[动漫屋(dm5)](https://www.dm5.com)
     case 'www.manhuaren.com':
     case 'm.1kkk.com':
     case 'www.1kkk.com':
@@ -354,7 +354,7 @@ try {
       break;
     }
 
-    // #绅士漫画(wnacg)
+    // #[绅士漫画(wnacg)](https://www.wnacg.com)
     case 'siteUrl#wnacg':
     case 'www.wnacg.com':
     case 'wnacg.com': {
@@ -379,7 +379,7 @@ try {
       break;
     }
 
-    // #mangabz
+    // #[mangabz](https://mangabz.com)
     case 'www.mangabz.com':
     case 'mangabz.com': {
       if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) break;
@@ -441,7 +441,7 @@ try {
       break;
     }
 
-    // #komiic
+    // #[komiic](https://komiic.com)
     case 'komiic.com': {
       const query = `
         query imagesByChapterId($chapterId: ID!) {
@@ -499,7 +499,7 @@ try {
       break;
     }
 
-    // #hitomi
+    // #[hitomi](https://hitomi.la)
     case 'hitomi.la': {
       options = {
         name: 'hitomi',
@@ -519,7 +519,7 @@ try {
       break;
     }
 
-    // #Anchira
+    // #[Anchira](https://anchira.to)
     case 'anchira.to': {
       options = {
         name: 'hitomi',
@@ -557,7 +557,7 @@ try {
       break;
     }
 
-    // #kemono
+    // #[kemono](https://kemono.su)
     case 'kemono.su':
     case 'kemono.party': {
       options = {
@@ -589,7 +589,7 @@ try {
       break;
     }
 
-    // #nekohouse
+    // #[nekohouse](https://nekohouse.su)
     case 'nekohouse.su': {
       options = {
         name: 'nekohouse',
@@ -602,7 +602,7 @@ try {
       break;
     }
 
-    // #welovemanga
+    // #[welovemanga](https://welovemanga.one)
     case 'nicomanga.com':
     case 'weloma.art':
     case 'welovemanga.one': {
