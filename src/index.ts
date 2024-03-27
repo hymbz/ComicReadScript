@@ -589,6 +589,19 @@ try {
       break;
     }
 
+    // #nekohouse
+    case 'nekohouse.su': {
+      options = {
+        name: 'nekohouse',
+        getImgList: () =>
+          main
+            .querySelectorAll<HTMLAnchorElement>('.fileThumb')
+            .map((e) => e.getAttribute('href')!),
+        initOptions: { autoShow: false, option: { onePageMode: true } },
+      };
+      break;
+    }
+
     // #welovemanga
     case 'nicomanga.com':
     case 'weloma.art':
