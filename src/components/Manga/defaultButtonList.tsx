@@ -14,7 +14,6 @@ import { IconButton } from '../IconButton';
 import { SettingPanel } from './components/SettingPanel';
 
 import {
-  activePage,
   nowFillIndex,
   zoomScrollModeImg,
   switchFillEffect,
@@ -22,9 +21,9 @@ import {
   switchOnePageMode,
   doubleClickZoom,
   switchGridMode,
+  switchTranslation,
+  isTranslatingImage,
 } from './actions';
-
-import { setImgTranslationEnbale } from './actions/translation';
 
 import classes from './index.module.css';
 
@@ -103,32 +102,19 @@ export const defaultButtonList: ToolbarButtonList = [
     />
   ),
   // 翻译设置
-  () => {
-    /** 当前显示的图片是否正在翻译 */
-    const isTranslatingImage = createMemo(() =>
-      activePage().some(
-        (i) =>
-          store.imgList[i]?.translationType &&
-          store.imgList[i].translationType !== 'hide',
-      ),
-    );
-
-    return (
-      <IconButton
-        tip={
-          isTranslatingImage()
-            ? t('button.close_current_page_translation')
-            : t('button.translate_current_page')
-        }
-        enabled={isTranslatingImage()}
-        hidden={store.option.translation.server === 'disable'}
-        onClick={() =>
-          setImgTranslationEnbale(activePage(), !isTranslatingImage())
-        }
-        children={<MdTranslate />}
-      />
-    );
-  },
+  () => (
+    <IconButton
+      tip={
+        isTranslatingImage()
+          ? t('button.close_current_page_translation')
+          : t('button.translate_current_page')
+      }
+      enabled={isTranslatingImage()}
+      hidden={store.option.translation.server === 'disable'}
+      onClick={switchTranslation}
+      children={<MdTranslate />}
+    />
+  ),
   // 设置
   () => {
     const [showPanel, setShowPanel] = createSignal(false);

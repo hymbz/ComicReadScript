@@ -1,13 +1,16 @@
+import { createRootMemo } from 'helper/solidJs';
 import { refs, setState, store } from '../store';
 import { zoom } from './zoom';
 import { scrollTo, setOption } from './helper';
 import { updatePageData } from './image';
+import { setImgTranslationEnbale } from './translation';
 import {
   activeImgIndex,
   contentHeight,
   imgTopList,
   nowFillIndex,
   scrollTop,
+  activePage,
 } from './memo';
 
 /** 切换页面填充 */
@@ -78,3 +81,16 @@ export const switchFitToWidth = () => {
   // 滚回之前的位置
   scrollTo((top / height) * contentHeight());
 };
+
+/** 当前显示的图片是否正在翻译 */
+export const isTranslatingImage = createRootMemo(() =>
+  activePage().some(
+    (i) =>
+      store.imgList[i]?.translationType &&
+      store.imgList[i].translationType !== 'hide',
+  ),
+);
+
+/** 切换当前页的翻译状态 */
+export const switchTranslation = () =>
+  setImgTranslationEnbale(activePage(), !isTranslatingImage());
