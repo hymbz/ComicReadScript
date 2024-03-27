@@ -48,7 +48,9 @@ import {
     ),
   });
 
-  const imgEleList = querySelectorAll<HTMLImageElement>('.scramble-page > img');
+  const imgEleList = querySelectorAll<HTMLImageElement>(
+    '.scramble-page:not(.thewayhome) > img',
+  );
 
   // 判断当前漫画是否有被分割，没有就直接获取图片链接加载
   // 判断条件来自页面上的 scramble_image 函数
