@@ -53,7 +53,6 @@ export const createMemoMap = <Return extends Record<string, any>>(fnMap: {
     Object.entries(fnMap).map(([key, fn]) => {
       // 如果函数已经是 createMemo 创建的，就直接使用
       if (fn.name === 'bound readSignal') return [key, fn];
-      // eslint-disable-next-line solid/reactivity
       return [key, createRootMemo(fn, undefined)];
     }),
   ) as typeof fnMap;

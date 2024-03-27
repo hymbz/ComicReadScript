@@ -37,7 +37,7 @@ export const areaArrayMap = {
 
 const areaType = createRootMemo(() =>
   Reflect.has(areaArrayMap, store.option.clickPageTurn.area)
-    ? (store.option.clickPageTurn.area as keyof typeof areaArrayMap)
+    ? store.option.clickPageTurn.area
     : 'left_right',
 );
 
