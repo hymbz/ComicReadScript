@@ -13,7 +13,7 @@ import { toast } from './Toast';
 export const DownloadButton = () => {
   const [statu, setStatu] = createSignal('button.download');
 
-  const getFileExt = (url: string) => url.split('.').pop();
+  const getFileExt = (url: string) => url.match(/[^?]+\.(\w+)/)?.[1] ?? 'jpg';
 
   const handleDownload = async () => {
     const fileData: Zippable = {};
@@ -48,7 +48,7 @@ export const DownloadButton = () => {
         const fileExt = blob.type.split('/')[1];
         fileName = `${index}.${fileExt}`;
       } else {
-        const fileExt = getFileExt(url) ?? 'jpg';
+        const fileExt = getFileExt(url);
         fileName = `${index}.${fileExt}`;
         try {
           const res = await request<ArrayBufferLike>(url, {
