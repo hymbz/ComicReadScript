@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.7.4
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、Anchira、kemono、welovemanga
+// @version         8.8.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
@@ -880,7 +880,8 @@ const zh = {
     turn_page_down: "向下翻页",
     turn_page_left: "向左翻页",
     turn_page_right: "向右翻页",
-    turn_page_up: "向上翻页"
+    turn_page_up: "向上翻页",
+    translate_current_page: "翻译当前页"
   },
   img_status: {
     error: "加载出错",
@@ -1133,7 +1134,8 @@ const en = {
     turn_page_down: "Turn the page to the down",
     turn_page_left: "Turn the page to the left",
     turn_page_right: "Turn the page to the right",
-    turn_page_up: "Turn the page to the up"
+    turn_page_up: "Turn the page to the up",
+    translate_current_page: "Translate current page"
   },
   img_status: {
     error: "Load Error",
@@ -1342,7 +1344,7 @@ const ru = {
     download_failed: "Ошибка загрузки",
     fetch_comic_img_failed: "Не удалось загрузить изображения",
     img_load_failed: "Не удалось загрузить изображение",
-    no_img_download: "没有能下载的图片",
+    no_img_download: "Нет доступных картинок для загрузки",
     repeat_load: "Загрузка изображения, пожалуйста подождите",
     server_connect_failed: "Не удалось подключиться к серверу"
   },
@@ -1386,7 +1388,8 @@ const ru = {
     turn_page_down: "Перелистнуть страницу вниз",
     turn_page_left: "Перелистнуть страницу влево",
     turn_page_right: "Перелистнуть страницу вправо",
-    turn_page_up: "Перелистнуть страницу вверх"
+    turn_page_up: "Перелистнуть страницу вверх",
+    translate_current_page: "Перевести текущую страницу"
   },
   img_status: {
     error: "Ошибка загрузки",
@@ -1460,8 +1463,8 @@ const ru = {
       paragraph_scrollbar: "Полоса прокрутки",
       paragraph_translation: "Перевод",
       preload_page_num: "Предзагружать страниц",
-      scroll_mode_img_scale: "Режим скроллинга коэффициент масштабирования изображения",
-      scroll_mode_img_spacing: "Режим скроллинга расстояние между страницами",
+      scroll_mode_img_scale: "Коэффициент масштабирования изображения в режиме скроллинга",
+      scroll_mode_img_spacing: "Расстояние между страницами в режиме скроллинга",
       scrollbar_auto_hidden: "Автоматически скрывать",
       scrollbar_easy_scroll: "Лёгкая прокрутка",
       scrollbar_position: "Позиция",
@@ -1485,14 +1488,14 @@ const ru = {
         direction_vertical: "Только вертикально",
         forceRetry: "Принудительный повтор(Игнорировать кэш)",
         localUrl: "Настроить URL сервера",
-        onlyDownloadTranslated: "只下载完成翻译的图片",
+        onlyDownloadTranslated: "Скачать только переведённые изображения",
         target_language: "Целевой язык",
         text_detector: "Детектор текста",
         translator: "Переводчик"
       },
       server: "Сервер",
       server_selfhosted: "Свой",
-      translate_after_current: "Перевести страницу до конца",
+      translate_after_current: "Переводить страницу до конца",
       translate_all_img: "Перевести все изображения"
     }
   },
@@ -1516,7 +1519,7 @@ const ru = {
       nhentai_error: "Ошибка сопоставления с nhentai",
       nhentai_failed: "Ошибка сопостовления. Пожалуйста перезагрузите страницу после входа на {{nhentai}}"
     },
-    need_captcha: "需要人机验证",
+    need_captcha: "CAPTCHA",
     nhentai: {
       fetch_next_page_failed: "Не удалось получить следующую страницу",
       tag_blacklist_fetch_failed: "Не удалось получить заблокированные теги"
@@ -2012,7 +2015,7 @@ const MdAutoFlashOff = ((props = {}) => (() => {
   return _el$;
 })());
 
-var css$2 = ".index_module_iconButtonItem__58f56840{align-items:center;display:flex;position:relative}.index_module_iconButton__58f56840{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__58f56840:focus,.index_module_iconButton__58f56840:hover{background-color:var(--hover-bg-color,#fff3)}.index_module_iconButton__58f56840.index_module_enabled__58f56840{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.index_module_iconButton__58f56840.index_module_enabled__58f56840:focus,.index_module_iconButton__58f56840.index_module_enabled__58f56840:hover{background-color:var(--hover-bg-color-enable,#fffa)}.index_module_iconButton__58f56840>svg{width:1em}.index_module_iconButtonPopper__58f56840{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.index_module_iconButtonPopper__58f56840[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840:before{background-color:initial;border:.4em solid #0000;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.index_module_iconButtonItem__58f56840:focus .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840:hover .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840[data-show=true] .index_module_iconButtonPopper__58f56840{opacity:1}.index_module_hidden__58f56840{display:none}";
+var css$2 = ".index_module_iconButtonItem__58f56840{align-items:center;display:flex;position:relative}.index_module_iconButton__58f56840{align-items:center;background-color:transparent;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.index_module_iconButton__58f56840:focus,.index_module_iconButton__58f56840:hover{background-color:var(--hover-bg-color,#fff3)}.index_module_iconButton__58f56840.index_module_enabled__58f56840{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.index_module_iconButton__58f56840.index_module_enabled__58f56840:focus,.index_module_iconButton__58f56840.index_module_enabled__58f56840:hover{background-color:var(--hover-bg-color-enable,#fffa)}.index_module_iconButton__58f56840>svg{width:1em}.index_module_iconButtonPopper__58f56840{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.index_module_iconButtonPopper__58f56840[data-placement=right]{left:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]{right:calc(100% + 1.5em)}.index_module_iconButtonPopper__58f56840[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.index_module_iconButtonPopper__58f56840:before{background-color:transparent;border:.4em solid transparent;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.index_module_iconButtonItem__58f56840:focus .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840:hover .index_module_iconButtonPopper__58f56840,.index_module_iconButtonItem__58f56840[data-show=true] .index_module_iconButtonPopper__58f56840{opacity:1}.index_module_hidden__58f56840{display:none}";
 var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__58f56840","iconButton":"index_module_iconButton__58f56840","enabled":"index_module_enabled__58f56840","iconButtonPopper":"index_module_iconButtonPopper__58f56840","hidden":"index_module_hidden__58f56840"};
 
 var _tmpl$$H = /*#__PURE__*/web.template(\`<div><button type=button tabindex=0>\`),
@@ -2222,7 +2225,6 @@ const createMemoMap = fnMap => {
   const memoMap = Object.fromEntries(Object.entries(fnMap).map(([key, fn]) => {
     // 如果函数已经是 createMemo 创建的，就直接使用
     if (fn.name === 'bound readSignal') return [key, fn];
-    // eslint-disable-next-line solid/reactivity
     return [key, createRootMemo(fn, undefined)];
   }));
   const map = createRootMemo(() => {
@@ -2469,7 +2471,8 @@ const defaultHotkeys = {
   switch_grid_mode: [],
   switch_single_double_page_mode: [],
   switch_dir: [],
-  switch_auto_enlarge: []
+  switch_auto_enlarge: [],
+  translate_current_page: []
 };
 const setHotkeys = (...args) => {
   _setState(...['hotkeys', ...args]);
@@ -3599,6 +3602,330 @@ const handleTrackpadWheel = e => {
   handleDragEnd.debounce();
 };
 
+const setMessage = (i, msg) => _setState('imgList', i, 'translationMessage', msg);
+const request = (url, details) => new Promise((resolve, reject) => {
+  if (typeof GM_xmlhttpRequest === 'undefined') reject(new Error(t('pwa.alert.userscript_not_installed')));
+  GM_xmlhttpRequest({
+    method: 'GET',
+    url,
+    headers: {
+      Referer: window.location.href
+    },
+    ...details,
+    onload: resolve,
+    onerror: reject,
+    ontimeout: reject
+  });
+});
+const download = async url => {
+  if (url.startsWith('blob:')) {
+    const res = await fetch(url);
+    return res.blob();
+  }
+  const res = await request(url, {
+    responseType: 'blob'
+  });
+  return res.response;
+};
+const createFormData = imgBlob => {
+  const file = new File([imgBlob], \`image.\${imgBlob.type.split('/').at(-1)}\`, {
+    type: imgBlob.type
+  });
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('mime', file.type);
+  formData.append('size', store.option.translation.options.size);
+  formData.append('detector', store.option.translation.options.detector);
+  formData.append('direction', store.option.translation.options.direction);
+  formData.append('translator', store.option.translation.options.translator);
+  formData.append('tgt_lang', store.option.translation.options.targetLanguage);
+  formData.append('target_language', store.option.translation.options.targetLanguage);
+  formData.append('retry', \`\${store.option.translation.forceRetry}\`);
+  return formData;
+};
+
+/** 将站点列表转为选择器中的选项 */
+const createOptions = list => list.map(name => [name, t(\`translation.translator.\${name}\`) || name]);
+
+const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
+
+/** 获取部署服务的可用翻译 */
+const getValidTranslators = async () => {
+  try {
+    const res = await request(\`\${url()}\`);
+    const translatorsText = res.responseText.match(/(?<=validTranslators: ).+?(?=,\\n)/)?.[0];
+    if (!translatorsText) return undefined;
+    const list = JSON.parse(translatorsText.replaceAll(\`'\`, \`"\`));
+    return createOptions(list);
+  } catch (e) {
+    log.error(t('translation.tip.get_translator_list_error'), e);
+    return undefined;
+  }
+};
+
+/** 使用自部署服务器翻译指定图片 */
+const selfhostedTranslation = async i => {
+  if (!(await getValidTranslators())) throw new Error(t('alert.server_connect_failed'));
+  const img = store.imgList[i];
+  setMessage(i, t('translation.tip.img_downloading'));
+  let imgBlob;
+  try {
+    imgBlob = await download(img.src);
+  } catch (error) {
+    log.error(error);
+    throw new Error(t('translation.tip.download_img_failed'));
+  }
+  let task_id;
+  // 上传图片取得任务 id
+  try {
+    const res = await request(\`\${url()}/submit\`, {
+      method: 'POST',
+      data: createFormData(imgBlob)
+    });
+    const resData = JSON.parse(res.responseText);
+    task_id = resData.task_id;
+  } catch (error) {
+    log.error(error);
+    throw new Error(t('translation.tip.upload_error'));
+  }
+  let errorNum = 0;
+  let taskState;
+  // 等待翻译完成
+  while (!taskState?.finished) {
+    try {
+      await sleep(200);
+      const res = await request(\`\${url()}/task-state?taskid=\${task_id}\`);
+      taskState = JSON.parse(res.responseText);
+      setMessage(i, \`\${t(\`translation.status.\${taskState.state}\`) || taskState.state}\`);
+    } catch (error) {
+      log.error(error);
+      if (errorNum > 5) throw new Error(t('translation.tip.check_img_status_failed'));
+      errorNum += 1;
+    }
+  }
+  return URL.createObjectURL(await download(\`\${url()}/result/\${task_id}\`));
+};
+
+/** 等待翻译完成 */
+const waitTranslation = (id, i) => {
+  const ws = new WebSocket(\`wss://api.cotrans.touhou.ai/task/\${id}/event/v1\`);
+  return new Promise((resolve, reject) => {
+    ws.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      switch (msg.type) {
+        case 'result':
+          resolve(msg.result.translation_mask);
+          break;
+        case 'pending':
+          setMessage(i, t('translation.tip.pending', {
+            pos: msg.pos
+          }));
+          break;
+        case 'status':
+          setMessage(i, t(\`translation.status.\${msg.status}\`) || msg.status);
+          break;
+        case 'error':
+          reject(new Error(\`\${t('translation.tip.error')}：id \${msg.error_id}\`));
+          break;
+        case 'not_found':
+          reject(new Error(\`\${t('translation.tip.error')}：Not Found\`));
+          break;
+      }
+    };
+  });
+};
+
+/** 将翻译后的内容覆盖到原图上 */
+const mergeImage = async (rawImage, maskUri) => {
+  const canvas = document.createElement('canvas');
+  const canvasCtx = canvas.getContext('2d');
+  const img = new Image();
+  img.src = URL.createObjectURL(rawImage);
+  await new Promise((resolve, reject) => {
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvasCtx.drawImage(img, 0, 0);
+      resolve(null);
+    };
+    img.onerror = reject;
+  });
+  const img2 = new Image();
+  img2.src = maskUri;
+  img2.crossOrigin = 'anonymous';
+  await new Promise(resolve => {
+    img2.onload = () => {
+      canvasCtx.drawImage(img2, 0, 0);
+      resolve(null);
+    };
+  });
+  return URL.createObjectURL(await canvasToBlob(canvas));
+};
+
+/** 缩小过大的图片 */
+const resize = async (blob, w, h) => {
+  if (w <= 4096 && h <= 4096) return blob;
+  const img = new Image();
+  img.src = URL.createObjectURL(blob);
+  await new Promise((resolve, reject) => {
+    img.onload = resolve;
+    img.onerror = reject;
+  });
+  if (w <= 4096 && h <= 4096) return blob;
+  const scale = Math.min(4096 / w, 4096 / h);
+  const width = Math.floor(w * scale);
+  const height = Math.floor(h * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, width, height);
+  URL.revokeObjectURL(img.src);
+  return canvasToBlob(canvas);
+};
+
+/** 使用 cotrans 翻译指定图片 */
+const cotransTranslation = async i => {
+  const img = store.imgList[i];
+  setMessage(i, t('translation.tip.img_downloading'));
+  let imgBlob;
+  try {
+    imgBlob = await download(img.src);
+  } catch (error) {
+    log.error(error);
+    throw new Error(t('translation.tip.download_img_failed'));
+  }
+  try {
+    imgBlob = await resize(imgBlob, img.width, img.height);
+  } catch (error) {
+    log.error(error);
+    throw new Error(t('translation.tip.resize_img_failed'));
+  }
+  let res;
+  try {
+    res = await request('https://api.cotrans.touhou.ai/task/upload/v1', {
+      method: 'POST',
+      data: createFormData(imgBlob),
+      headers: {
+        Origin: 'https://cotrans.touhou.ai',
+        Referer: 'https://cotrans.touhou.ai/'
+      }
+    });
+  } catch (error) {
+    log.error(error);
+    throw new Error(t('translation.tip.upload_error'));
+  }
+  let resData;
+  try {
+    resData = JSON.parse(res.responseText);
+  } catch (_) {
+    throw new Error(\`\${t('translation.tip.upload_return_error')}：\${res.responseText}\`);
+  }
+  if ('error_id' in resData) throw new Error(\`\${t('translation.tip.upload_return_error')}：\${resData.error_id}\`);
+  if (!resData.id) throw new Error(t('translation.tip.id_not_returned'));
+  const translation_mask = resData.result?.translation_mask || (await waitTranslation(resData.id, i));
+  return mergeImage(imgBlob, translation_mask);
+};
+const cotransTranslators = ['google', 'youdao', 'baidu', 'deepl', 'gpt3.5', 'offline', 'none'];
+
+/** 翻译指定图片 */
+const translationImage = async i => {
+  try {
+    if (typeof GM_xmlhttpRequest === 'undefined') {
+      toast?.error(t('pwa.alert.userscript_not_installed'));
+      throw new Error(t('pwa.alert.userscript_not_installed'));
+    }
+    const img = store.imgList[i];
+    if (!img?.src) return;
+    if (img.translationType !== 'wait') return;
+    if (img.translationUrl) return _setState('imgList', i, 'translationType', 'show');
+    if (img.loadType !== 'loaded') return setMessage(i, t('translation.tip.img_not_fully_loaded'));
+    const translationUrl = await (store.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(i);
+    setState(state => {
+      state.imgList[i].translationUrl = translationUrl;
+      state.imgList[i].translationMessage = t('translation.tip.translation_completed');
+      state.imgList[i].translationType = 'show';
+    });
+  } catch (error) {
+    setState(state => {
+      state.imgList[i].translationType = 'error';
+      if (error.message) state.imgList[i].translationMessage = error.message;
+    });
+  }
+};
+
+/** 逐个翻译状态为等待翻译的图片 */
+const translationAll = singleThreaded(async () => {
+  for (let i = 0; i < store.imgList.length; i++) {
+    const img = store.imgList[i];
+    if (img.loadType !== 'loaded' || img.translationType !== 'wait') continue;
+    await translationImage(i);
+  }
+});
+
+/** 开启或关闭指定图片的翻译 */
+const setImgTranslationEnbale = (list, enbale) => {
+  setState(state => {
+    list.forEach(i => {
+      const img = state.imgList[i];
+      if (!img) return;
+      if (enbale) {
+        if (state.option.translation.forceRetry) {
+          img.translationType = 'wait';
+          img.translationUrl = undefined;
+          setMessage(i, t('translation.tip.wait_translation'));
+        } else {
+          switch (img.translationType) {
+            case 'hide':
+              {
+                img.translationType = 'show';
+                break;
+              }
+            case 'error':
+            case undefined:
+              {
+                img.translationType = 'wait';
+                setMessage(i, t('translation.tip.wait_translation'));
+                break;
+              }
+          }
+        }
+      } else {
+        switch (img.translationType) {
+          case 'show':
+            {
+              img.translationType = 'hide';
+              break;
+            }
+          case 'error':
+          case 'wait':
+            {
+              img.translationType = undefined;
+              break;
+            }
+        }
+      }
+    });
+  });
+  return translationAll();
+};
+const [selfhostedOptions, setSelfOptions] = createEqualsSignal([]);
+
+// 在切换翻译服务器的同时切换可用翻译的选项列表
+createEffectOn([() => store.option.translation.server, () => store.option.translation.localUrl], async () => {
+  if (store.option.translation.server !== 'selfhosted') return;
+  setSelfOptions((await getValidTranslators()) ?? []);
+
+  // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
+  if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
+    setOption(draftOption => {
+      draftOption.translation.options.translator = 'google';
+    });
+  }
+});
+const translatorOptions = createRootMemo(solidJs.on([selfhostedOptions, lang, () => store.option.translation.server], () => store.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
+
 /** 切换页面填充 */
 const switchFillEffect = () => {
   setState(state => {
@@ -3665,7 +3992,13 @@ const switchFitToWidth = () => {
   scrollTo(top / height * contentHeight());
 };
 
-var css$1 = ".index_module_img__40e84c8f>img{display:block;height:100%;width:100%}.index_module_img__40e84c8f{content-visibility:hidden;background-color:var(--hover-bg-color,#fff3);display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.index_module_img__40e84c8f[data-show]{content-visibility:visible;display:block}.index_module_img__40e84c8f[data-show=\\"0\\"]{justify-self:end}.index_module_img__40e84c8f[data-show=\\"1\\"]{justify-self:start}.index_module_img__40e84c8f[data-type=long]{height:auto;width:100%}.index_module_img__40e84c8f[data-load-type=loading]{max-width:100vw!important}.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[data-load-type=wait],.index_module_img__40e84c8f[src=\\"\\"]{height:100%;position:relative}:is(.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[src=\\"\\"]):before{opacity:0}:is(.index_module_img__40e84c8f[data-load-type],.index_module_img__40e84c8f[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.index_module_img__40e84c8f[data-load-type=loading],.index_module_img__40e84c8f[data-load-type=loading]:after{background-image:var(--md-cloud-download);background-position:50%;background-repeat:no-repeat;background-size:30%}.index_module_img__40e84c8f[data-load-type=loading]:after{animation:index_module_show__40e84c8f 1s forwards;content:\\"\\"}.index_module_img__40e84c8f[data-load-type=wait]:after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__40e84c8f[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__40e84c8f[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_mangaBox__40e84c8f{height:100%;width:100%}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{scrollbar-width:none}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f::-webkit-scrollbar{display:none}.index_module_mangaFlow__40e84c8f{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.index_module_mangaFlow__40e84c8f[data-disable-zoom] .index_module_img__40e84c8f{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__40e84c8f[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__40e84c8f[data-animation=page] .index_module_img__40e84c8f,.index_module_mangaFlow__40e84c8f[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__40e84c8f[data-vertical]{grid-auto-flow:row}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f{height:auto;transform:none}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>img{cursor:pointer}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>.index_module_gridModeTip__40e84c8f{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=error],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=wait],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[src=\\"\\"]{height:100%}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{overflow:auto}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f{display:flex;flex-direction:column;height:-moz-fit-content;height:fit-content}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width)))}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show][data-load-type=loading]{position:unset}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]:not(:first-of-type){margin-top:calc(var(--scroll-mode-spacing)*7px)}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f[data-grid-mode] .index_module_img__40e84c8f{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f[data-fit-width] .index_module_img__40e84c8f{height:auto;max-width:100%;width:100%}@keyframes index_module_show__40e84c8f{0%{opacity:1}90%{opacity:1}to{opacity:0}}.index_module_endPage__40e84c8f{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__40e84c8f>button{animation:index_module_jello__40e84c8f .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__40e84c8f>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__40e84c8f>.index_module_tip__40e84c8f{margin:auto;position:absolute}.index_module_endPage__40e84c8f[data-show]{opacity:1;pointer-events:all}.index_module_endPage__40e84c8f[data-type=start]>.index_module_tip__40e84c8f{transform:translateY(-10em)}.index_module_endPage__40e84c8f[data-type=end]>.index_module_tip__40e84c8f{transform:translateY(10em)}.index_module_root__40e84c8f[data-mobile] .index_module_endPage__40e84c8f>button{width:1em}.index_module_comments__40e84c8f{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__40e84c8f>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__40e84c8f:hover{opacity:1}.index_module_root__40e84c8f[data-mobile] .index_module_comments__40e84c8f{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__40e84c8f{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__40e84c8f{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__40e84c8f{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__40e84c8f[data-show],.index_module_toolbar__40e84c8f:hover) .index_module_toolbarPanel__40e84c8f{transform:none}.index_module_toolbar__40e84c8f[data-close] .index_module_toolbarPanel__40e84c8f{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__40e84c8f{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f{font-size:1.3em}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f:not([data-show]){pointer-events:none}.index_module_root__40e84c8f[data-mobile] .index_module_toolbarBg__40e84c8f{filter:opacity(.8)}.index_module_SettingPanelPopper__40e84c8f{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__40e84c8f{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.index_module_SettingPanel__40e84c8f hr{color:#fff;margin:0}.index_module_SettingBlock__40e84c8f{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div+:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div{margin-top:1em}.index_module_SettingBlock__40e84c8f[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__40e84c8f[data-show=false] .index_module_SettingBlockBody__40e84c8f{padding:unset}.index_module_SettingBlockSubtitle__40e84c8f{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__40e84c8f{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__40e84c8f+.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_SettingsItemName__40e84c8f{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__40e84c8f{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__40e84c8f{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true] .index_module_SettingsItemSwitchRound__40e84c8f{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__40e84c8f{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__40e84c8f{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__40e84c8f{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__40e84c8f{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f{overflow:hidden}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f>.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_hotkeys__40e84c8f{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__40e84c8f+.index_module_hotkeys__40e84c8f{margin-top:.5em}.index_module_hotkeys__40e84c8f:last-child{border-bottom:none}.index_module_hotkeysItem__40e84c8f{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__40e84c8f>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__40e84c8f>svg:hover{opacity:.9}.index_module_hotkeysItem__40e84c8f:hover{padding:.2em .5em}.index_module_hotkeysItem__40e84c8f:hover>svg{display:unset}.index_module_hotkeysItem__40e84c8f:focus,.index_module_hotkeysItem__40e84c8f:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__40e84c8f{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__40e84c8f>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__40e84c8f>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__40e84c8f>div[title]>svg{width:1.6em}.index_module_hotkeys__40e84c8f:hover div[title]{transform:scale(1)}.index_module_scrollbar__40e84c8f{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__40e84c8f>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__40e84c8f{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__40e84c8f[data-type=wait]{opacity:.5}.index_module_scrollbarPage__40e84c8f[data-type=error]{background-color:#f005}.index_module_scrollbarPage__40e84c8f[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__40e84c8f[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__40e84c8f[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__40e84c8f[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__40e84c8f[data-translation-type=error]{background-color:#f005}.index_module_scrollbarSlider__40e84c8f{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__40e84c8f{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__40e84c8f:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f:hover:before,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show]:before{opacity:1}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarSlider__40e84c8f{opacity:0}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarSlider__40e84c8f{opacity:1}.index_module_scrollbar__40e84c8f[data-position=hidden]{display:none}.index_module_scrollbar__40e84c8f[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.index_module_scrollbar__40e84c8f[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{top:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.index_module_scrollbar__40e84c8f[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f{bottom:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom],.index_module_scrollbar__40e84c8f[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__40e84c8f[data-position=bottom]:before,.index_module_scrollbar__40e84c8f[data-position=top]:before{border-left:.4em solid #0000}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarSlider__40e84c8f{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr],.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f{transform:translateX(var(--top))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f{transform:translateX(var(--poper-top))}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f{transform:scaleX(1)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-type=loaded],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-translation-type],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-translation-type]{transform:scaleX(1)}.index_module_root__40e84c8f[data-scroll-mode] .index_module_scrollbar__40e84c8f:before,.index_module_root__40e84c8f[data-scroll-mode] :is(.index_module_scrollbarSlider__40e84c8f,.index_module_scrollbarPoper__40e84c8f){transition:opacity .15s}.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover:before{opacity:0}.index_module_touchAreaRoot__40e84c8f{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.index_module_touchAreaRoot__40e84c8f[data-show]{opacity:1}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__40e84c8f[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=next],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__40e84c8f[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__40e84c8f[data-mobile] .index_module_touchAreaRoot__40e84c8f{flex-direction:column!important;letter-spacing:0}.index_module_root__40e84c8f[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__40e84c8f{display:none!important}.index_module_invisible__40e84c8f{visibility:hidden!important}.index_module_root__40e84c8f{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__40e84c8f a{color:var(--text-secondary)}.index_module_root__40e84c8f[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__40e84c8f{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-track{background:#0000}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+/** 当前显示的图片是否正在翻译 */
+const isTranslatingImage = createRootMemo(() => activePage().some(i => store.imgList[i]?.translationType && store.imgList[i].translationType !== 'hide'));
+
+/** 切换当前页的翻译状态 */
+const switchTranslation = () => setImgTranslationEnbale(activePage(), !isTranslatingImage());
+
+var css$1 = ".index_module_img__40e84c8f>img{display:block;height:100%;width:100%}.index_module_img__40e84c8f{background-color:var(--hover-bg-color,#fff3);content-visibility:hidden;display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.index_module_img__40e84c8f[data-show]{content-visibility:visible;display:block}.index_module_img__40e84c8f[data-show=\\"0\\"]{justify-self:end}.index_module_img__40e84c8f[data-show=\\"1\\"]{justify-self:start}.index_module_img__40e84c8f[data-type=long]{height:auto;width:100%}.index_module_img__40e84c8f[data-load-type=loading]{max-width:100vw!important}.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[data-load-type=wait],.index_module_img__40e84c8f[src=\\"\\"]{height:100%;position:relative}:is(.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[src=\\"\\"]):before{opacity:0}:is(.index_module_img__40e84c8f[data-load-type],.index_module_img__40e84c8f[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.index_module_img__40e84c8f[data-load-type=loading],.index_module_img__40e84c8f[data-load-type=loading]:after{background-image:var(--md-cloud-download);background-position:50%;background-repeat:no-repeat;background-size:30%}.index_module_img__40e84c8f[data-load-type=loading]:after{animation:index_module_show__40e84c8f 1s forwards;content:\\"\\"}.index_module_img__40e84c8f[data-load-type=wait]:after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__40e84c8f[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__40e84c8f[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_mangaBox__40e84c8f{height:100%;width:100%}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{scrollbar-width:none}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f::-webkit-scrollbar{display:none}.index_module_mangaFlow__40e84c8f{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.index_module_mangaFlow__40e84c8f[data-disable-zoom] .index_module_img__40e84c8f{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__40e84c8f[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__40e84c8f[data-animation=page] .index_module_img__40e84c8f{transition-duration:.3s}.index_module_mangaFlow__40e84c8f[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__40e84c8f[data-vertical]{grid-auto-flow:row}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f{height:auto;transform:none}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>img{cursor:pointer}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>.index_module_gridModeTip__40e84c8f{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=error],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=wait],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[src=\\"\\"]{height:100%}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{overflow:auto}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f{display:flex;flex-direction:column;height:-moz-fit-content;height:fit-content}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width)))}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show][data-load-type=loading]{position:unset}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]:not(:first-of-type){margin-top:calc(var(--scroll-mode-spacing)*7px)}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f[data-grid-mode] .index_module_img__40e84c8f{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f[data-fit-width] .index_module_img__40e84c8f{height:auto;max-width:100%;width:100%}@keyframes index_module_show__40e84c8f{0%{opacity:1}90%{opacity:1}to{opacity:0}}.index_module_endPage__40e84c8f{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__40e84c8f>button{animation:index_module_jello__40e84c8f .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__40e84c8f>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__40e84c8f>.index_module_tip__40e84c8f{margin:auto;position:absolute}.index_module_endPage__40e84c8f[data-show]{opacity:1;pointer-events:all}.index_module_endPage__40e84c8f[data-type=start]>.index_module_tip__40e84c8f{transform:translateY(-10em)}.index_module_endPage__40e84c8f[data-type=end]>.index_module_tip__40e84c8f{transform:translateY(10em)}.index_module_root__40e84c8f[data-mobile] .index_module_endPage__40e84c8f>button{width:1em}.index_module_comments__40e84c8f{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__40e84c8f>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__40e84c8f:hover{opacity:1}.index_module_root__40e84c8f[data-mobile] .index_module_comments__40e84c8f{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__40e84c8f{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__40e84c8f{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__40e84c8f{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__40e84c8f[data-show],.index_module_toolbar__40e84c8f:hover) .index_module_toolbarPanel__40e84c8f{transform:none}.index_module_toolbar__40e84c8f[data-close] .index_module_toolbarPanel__40e84c8f{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__40e84c8f{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f{font-size:1.3em}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f:not([data-show]){pointer-events:none}.index_module_root__40e84c8f[data-mobile] .index_module_toolbarBg__40e84c8f{filter:opacity(.8)}.index_module_SettingPanelPopper__40e84c8f{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__40e84c8f{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.index_module_SettingPanel__40e84c8f hr{color:#fff;margin:0}.index_module_SettingBlock__40e84c8f{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div+:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div{margin-top:1em}.index_module_SettingBlock__40e84c8f[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__40e84c8f[data-show=false] .index_module_SettingBlockBody__40e84c8f{padding:unset}.index_module_SettingBlockSubtitle__40e84c8f{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__40e84c8f{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__40e84c8f+.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_SettingsItemName__40e84c8f{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__40e84c8f{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__40e84c8f{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true] .index_module_SettingsItemSwitchRound__40e84c8f{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__40e84c8f{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__40e84c8f{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__40e84c8f{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__40e84c8f{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f{overflow:hidden}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f>.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_hotkeys__40e84c8f{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__40e84c8f+.index_module_hotkeys__40e84c8f{margin-top:.5em}.index_module_hotkeys__40e84c8f:last-child{border-bottom:none}.index_module_hotkeysItem__40e84c8f{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__40e84c8f>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__40e84c8f>svg:hover{opacity:.9}.index_module_hotkeysItem__40e84c8f:hover{padding:.2em .5em}.index_module_hotkeysItem__40e84c8f:hover>svg{display:unset}.index_module_hotkeysItem__40e84c8f:focus,.index_module_hotkeysItem__40e84c8f:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__40e84c8f{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__40e84c8f>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__40e84c8f>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__40e84c8f>div[title]>svg{width:1.6em}.index_module_hotkeys__40e84c8f:hover div[title]{transform:scale(1)}.index_module_scrollbar__40e84c8f{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__40e84c8f>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__40e84c8f{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__40e84c8f[data-type=wait]{opacity:.5}.index_module_scrollbarPage__40e84c8f[data-type=error]{background-color:#f005}.index_module_scrollbarPage__40e84c8f[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__40e84c8f[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__40e84c8f[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__40e84c8f[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__40e84c8f[data-translation-type=error]{background-color:#f005}.index_module_scrollbarSlider__40e84c8f{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__40e84c8f{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__40e84c8f:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f:hover:before,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show]:before{opacity:1}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarSlider__40e84c8f{opacity:0}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarSlider__40e84c8f{opacity:1}.index_module_scrollbar__40e84c8f[data-position=hidden]{display:none}.index_module_scrollbar__40e84c8f[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.index_module_scrollbar__40e84c8f[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{top:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.index_module_scrollbar__40e84c8f[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f{bottom:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom],.index_module_scrollbar__40e84c8f[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__40e84c8f[data-position=bottom]:before,.index_module_scrollbar__40e84c8f[data-position=top]:before{border-left:.4em solid transparent}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarSlider__40e84c8f{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr],.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f{transform:translateX(var(--top))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f{transform:translateX(var(--poper-top))}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f{transform:scaleX(1)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-type=loaded],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-translation-type],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-translation-type]{transform:scaleX(1)}.index_module_root__40e84c8f[data-scroll-mode] .index_module_scrollbar__40e84c8f:before,.index_module_root__40e84c8f[data-scroll-mode] :is(.index_module_scrollbarSlider__40e84c8f,.index_module_scrollbarPoper__40e84c8f){transition:opacity .15s}.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover:before{opacity:0}.index_module_touchAreaRoot__40e84c8f{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.index_module_touchAreaRoot__40e84c8f[data-show]{opacity:1}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__40e84c8f[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=next],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__40e84c8f[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__40e84c8f[data-mobile] .index_module_touchAreaRoot__40e84c8f{flex-direction:column!important;letter-spacing:0}.index_module_root__40e84c8f[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__40e84c8f{display:none!important}.index_module_invisible__40e84c8f{visibility:hidden!important}.index_module_root__40e84c8f{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__40e84c8f a{color:var(--text-secondary)}.index_module_root__40e84c8f[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__40e84c8f{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-track{background:transparent}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"index_module_img__40e84c8f","show":"index_module_show__40e84c8f","mangaBox":"index_module_mangaBox__40e84c8f","root":"index_module_root__40e84c8f","mangaFlow":"index_module_mangaFlow__40e84c8f","gridModeTip":"index_module_gridModeTip__40e84c8f","endPage":"index_module_endPage__40e84c8f","jello":"index_module_jello__40e84c8f","tip":"index_module_tip__40e84c8f","comments":"index_module_comments__40e84c8f","toolbar":"index_module_toolbar__40e84c8f","toolbarPanel":"index_module_toolbarPanel__40e84c8f","toolbarBg":"index_module_toolbarBg__40e84c8f","SettingPanelPopper":"index_module_SettingPanelPopper__40e84c8f","SettingPanel":"index_module_SettingPanel__40e84c8f","SettingBlock":"index_module_SettingBlock__40e84c8f","SettingBlockBody":"index_module_SettingBlockBody__40e84c8f","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__40e84c8f","SettingsItem":"index_module_SettingsItem__40e84c8f","SettingsItemName":"index_module_SettingsItemName__40e84c8f","SettingsItemSwitch":"index_module_SettingsItemSwitch__40e84c8f","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__40e84c8f","SettingsItemIconButton":"index_module_SettingsItemIconButton__40e84c8f","SettingsItemSelect":"index_module_SettingsItemSelect__40e84c8f","closeCover":"index_module_closeCover__40e84c8f","SettingsShowItem":"index_module_SettingsShowItem__40e84c8f","SettingsShowItemBody":"index_module_SettingsShowItemBody__40e84c8f","hotkeys":"index_module_hotkeys__40e84c8f","hotkeysItem":"index_module_hotkeysItem__40e84c8f","hotkeysHeader":"index_module_hotkeysHeader__40e84c8f","scrollbar":"index_module_scrollbar__40e84c8f","scrollbarPage":"index_module_scrollbarPage__40e84c8f","scrollbarSlider":"index_module_scrollbarSlider__40e84c8f","scrollbarPoper":"index_module_scrollbarPoper__40e84c8f","touchAreaRoot":"index_module_touchAreaRoot__40e84c8f","touchArea":"index_module_touchArea__40e84c8f","hidden":"index_module_hidden__40e84c8f","invisible":"index_module_invisible__40e84c8f","beautifyScrollbar":"index_module_beautifyScrollbar__40e84c8f"};
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
@@ -3780,6 +4113,8 @@ const handleKeyDown = e => {
       return switchDir();
     case 'switch_grid_mode':
       return switchGridMode();
+    case 'translate_current_page':
+      return switchTranslation();
     case 'switch_auto_enlarge':
       return setOption(draftOption => {
         draftOption.disableZoom = !draftOption.disableZoom;
@@ -4666,330 +5001,6 @@ const SettingsItemSelect = props => {
   });
 };
 
-const setMessage = (i, msg) => _setState('imgList', i, 'translationMessage', msg);
-const request = (url, details) => new Promise((resolve, reject) => {
-  if (typeof GM_xmlhttpRequest === 'undefined') reject(new Error(t('pwa.alert.userscript_not_installed')));
-  GM_xmlhttpRequest({
-    method: 'GET',
-    url,
-    headers: {
-      Referer: window.location.href
-    },
-    ...details,
-    onload: resolve,
-    onerror: reject,
-    ontimeout: reject
-  });
-});
-const download = async url => {
-  if (url.startsWith('blob:')) {
-    const res = await fetch(url);
-    return res.blob();
-  }
-  const res = await request(url, {
-    responseType: 'blob'
-  });
-  return res.response;
-};
-const createFormData = imgBlob => {
-  const file = new File([imgBlob], \`image.\${imgBlob.type.split('/').at(-1)}\`, {
-    type: imgBlob.type
-  });
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('mime', file.type);
-  formData.append('size', store.option.translation.options.size);
-  formData.append('detector', store.option.translation.options.detector);
-  formData.append('direction', store.option.translation.options.direction);
-  formData.append('translator', store.option.translation.options.translator);
-  formData.append('tgt_lang', store.option.translation.options.targetLanguage);
-  formData.append('target_language', store.option.translation.options.targetLanguage);
-  formData.append('retry', \`\${store.option.translation.forceRetry}\`);
-  return formData;
-};
-
-/** 将站点列表转为选择器中的选项 */
-const createOptions = list => list.map(name => [name, t(\`translation.translator.\${name}\`) || name]);
-
-const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
-
-/** 获取部署服务的可用翻译 */
-const getValidTranslators = async () => {
-  try {
-    const res = await request(\`\${url()}\`);
-    const translatorsText = res.responseText.match(/(?<=validTranslators: ).+?(?=,\\n)/)?.[0];
-    if (!translatorsText) return undefined;
-    const list = JSON.parse(translatorsText.replaceAll(\`'\`, \`"\`));
-    return createOptions(list);
-  } catch (e) {
-    log.error(t('translation.tip.get_translator_list_error'), e);
-    return undefined;
-  }
-};
-
-/** 使用自部署服务器翻译指定图片 */
-const selfhostedTranslation = async i => {
-  if (!(await getValidTranslators())) throw new Error(t('alert.server_connect_failed'));
-  const img = store.imgList[i];
-  setMessage(i, t('translation.tip.img_downloading'));
-  let imgBlob;
-  try {
-    imgBlob = await download(img.src);
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.download_img_failed'));
-  }
-  let task_id;
-  // 上传图片取得任务 id
-  try {
-    const res = await request(\`\${url()}/submit\`, {
-      method: 'POST',
-      data: createFormData(imgBlob)
-    });
-    const resData = JSON.parse(res.responseText);
-    task_id = resData.task_id;
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.upload_error'));
-  }
-  let errorNum = 0;
-  let taskState;
-  // 等待翻译完成
-  while (!taskState?.finished) {
-    try {
-      await sleep(200);
-      const res = await request(\`\${url()}/task-state?taskid=\${task_id}\`);
-      taskState = JSON.parse(res.responseText);
-      setMessage(i, \`\${t(\`translation.status.\${taskState.state}\`) || taskState.state}\`);
-    } catch (error) {
-      log.error(error);
-      if (errorNum > 5) throw new Error(t('translation.tip.check_img_status_failed'));
-      errorNum += 1;
-    }
-  }
-  return URL.createObjectURL(await download(\`\${url()}/result/\${task_id}\`));
-};
-
-/** 等待翻译完成 */
-const waitTranslation = (id, i) => {
-  const ws = new WebSocket(\`wss://api.cotrans.touhou.ai/task/\${id}/event/v1\`);
-  return new Promise((resolve, reject) => {
-    ws.onmessage = e => {
-      const msg = JSON.parse(e.data);
-      switch (msg.type) {
-        case 'result':
-          resolve(msg.result.translation_mask);
-          break;
-        case 'pending':
-          setMessage(i, t('translation.tip.pending', {
-            pos: msg.pos
-          }));
-          break;
-        case 'status':
-          setMessage(i, t(\`translation.status.\${msg.status}\`) || msg.status);
-          break;
-        case 'error':
-          reject(new Error(\`\${t('translation.tip.error')}：id \${msg.error_id}\`));
-          break;
-        case 'not_found':
-          reject(new Error(\`\${t('translation.tip.error')}：Not Found\`));
-          break;
-      }
-    };
-  });
-};
-
-/** 将翻译后的内容覆盖到原图上 */
-const mergeImage = async (rawImage, maskUri) => {
-  const canvas = document.createElement('canvas');
-  const canvasCtx = canvas.getContext('2d');
-  const img = new Image();
-  img.src = URL.createObjectURL(rawImage);
-  await new Promise((resolve, reject) => {
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      canvasCtx.drawImage(img, 0, 0);
-      resolve(null);
-    };
-    img.onerror = reject;
-  });
-  const img2 = new Image();
-  img2.src = maskUri;
-  img2.crossOrigin = 'anonymous';
-  await new Promise(resolve => {
-    img2.onload = () => {
-      canvasCtx.drawImage(img2, 0, 0);
-      resolve(null);
-    };
-  });
-  return URL.createObjectURL(await canvasToBlob(canvas));
-};
-
-/** 缩小过大的图片 */
-const resize = async (blob, w, h) => {
-  if (w <= 4096 && h <= 4096) return blob;
-  const img = new Image();
-  img.src = URL.createObjectURL(blob);
-  await new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
-  });
-  if (w <= 4096 && h <= 4096) return blob;
-  const scale = Math.min(4096 / w, 4096 / h);
-  const width = Math.floor(w * scale);
-  const height = Math.floor(h * scale);
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, 0, 0, width, height);
-  URL.revokeObjectURL(img.src);
-  return canvasToBlob(canvas);
-};
-
-/** 使用 cotrans 翻译指定图片 */
-const cotransTranslation = async i => {
-  const img = store.imgList[i];
-  setMessage(i, t('translation.tip.img_downloading'));
-  let imgBlob;
-  try {
-    imgBlob = await download(img.src);
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.download_img_failed'));
-  }
-  try {
-    imgBlob = await resize(imgBlob, img.width, img.height);
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.resize_img_failed'));
-  }
-  let res;
-  try {
-    res = await request('https://api.cotrans.touhou.ai/task/upload/v1', {
-      method: 'POST',
-      data: createFormData(imgBlob),
-      headers: {
-        Origin: 'https://cotrans.touhou.ai',
-        Referer: 'https://cotrans.touhou.ai/'
-      }
-    });
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.upload_error'));
-  }
-  let resData;
-  try {
-    resData = JSON.parse(res.responseText);
-  } catch (_) {
-    throw new Error(\`\${t('translation.tip.upload_return_error')}：\${res.responseText}\`);
-  }
-  if ('error_id' in resData) throw new Error(\`\${t('translation.tip.upload_return_error')}：\${resData.error_id}\`);
-  if (!resData.id) throw new Error(t('translation.tip.id_not_returned'));
-  const translation_mask = resData.result?.translation_mask || (await waitTranslation(resData.id, i));
-  return mergeImage(imgBlob, translation_mask);
-};
-const cotransTranslators = ['google', 'youdao', 'baidu', 'deepl', 'gpt3.5', 'offline', 'none'];
-
-/** 翻译指定图片 */
-const translationImage = async i => {
-  try {
-    if (typeof GM_xmlhttpRequest === 'undefined') {
-      toast?.error(t('pwa.alert.userscript_not_installed'));
-      throw new Error(t('pwa.alert.userscript_not_installed'));
-    }
-    const img = store.imgList[i];
-    if (!img?.src) return;
-    if (img.translationType !== 'wait') return;
-    if (img.translationUrl) return _setState('imgList', i, 'translationType', 'show');
-    if (img.loadType !== 'loaded') return setMessage(i, t('translation.tip.img_not_fully_loaded'));
-    const translationUrl = await (store.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(i);
-    setState(state => {
-      state.imgList[i].translationUrl = translationUrl;
-      state.imgList[i].translationMessage = t('translation.tip.translation_completed');
-      state.imgList[i].translationType = 'show';
-    });
-  } catch (error) {
-    setState(state => {
-      state.imgList[i].translationType = 'error';
-      if (error.message) state.imgList[i].translationMessage = error.message;
-    });
-  }
-};
-
-/** 逐个翻译状态为等待翻译的图片 */
-const translationAll = singleThreaded(async () => {
-  for (let i = 0; i < store.imgList.length; i++) {
-    const img = store.imgList[i];
-    if (img.loadType !== 'loaded' || img.translationType !== 'wait') continue;
-    await translationImage(i);
-  }
-});
-
-/** 开启或关闭指定图片的翻译 */
-const setImgTranslationEnbale = (list, enbale) => {
-  setState(state => {
-    list.forEach(i => {
-      const img = state.imgList[i];
-      if (!img) return;
-      if (enbale) {
-        if (state.option.translation.forceRetry) {
-          img.translationType = 'wait';
-          img.translationUrl = undefined;
-          setMessage(i, t('translation.tip.wait_translation'));
-        } else {
-          switch (img.translationType) {
-            case 'hide':
-              {
-                img.translationType = 'show';
-                break;
-              }
-            case 'error':
-            case undefined:
-              {
-                img.translationType = 'wait';
-                setMessage(i, t('translation.tip.wait_translation'));
-                break;
-              }
-          }
-        }
-      } else {
-        switch (img.translationType) {
-          case 'show':
-            {
-              img.translationType = 'hide';
-              break;
-            }
-          case 'error':
-          case 'wait':
-            {
-              img.translationType = undefined;
-              break;
-            }
-        }
-      }
-    });
-  });
-  return translationAll();
-};
-const [selfhostedOptions, setSelfOptions] = createEqualsSignal([]);
-
-// 在切换翻译服务器的同时切换可用翻译的选项列表
-createEffectOn([() => store.option.translation.server, () => store.option.translation.localUrl], async () => {
-  if (store.option.translation.server !== 'selfhosted') return;
-  setSelfOptions((await getValidTranslators()) ?? []);
-
-  // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
-  if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
-    setOption(draftOption => {
-      draftOption.translation.options.translator = 'google';
-    });
-  }
-});
-const translatorOptions = createRootMemo(solidJs.on([selfhostedOptions, lang, () => store.option.translation.server], () => store.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
-
 var _tmpl$$l = /*#__PURE__*/web.template(\`<div><div>\`);
 
 /** 带有动画过渡的切换显示设置项 */
@@ -5622,10 +5633,7 @@ const SettingPanel = () => {
       },
       children: ([name, SettingItem, hidden], i) => {
         const [show, setShwo] = solidJs.createSignal(!hidden);
-        return [web.memo((() => {
-          var _c$ = web.memo(() => !!i());
-          return () => _c$() ? _tmpl$3$3() : null;
-        })()), (() => {
+        return [web.memo(() => web.memo(() => !!i())() ? _tmpl$3$3() : null), (() => {
           var _el$2 = _tmpl$2$4(),
             _el$3 = _el$2.firstChild,
             _el$4 = _el$3.nextSibling;
@@ -5751,25 +5759,21 @@ const defaultButtonList = [
   }
 }),
 // 翻译设置
-() => {
-  /** 当前显示的图片是否正在翻译 */
-  const isTranslatingImage = solidJs.createMemo(() => activePage().some(i => store.imgList[i]?.translationType && store.imgList[i].translationType !== 'hide'));
-  return web.createComponent(IconButton, {
-    get tip() {
-      return web.memo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
-    },
-    get enabled() {
-      return isTranslatingImage();
-    },
-    get hidden() {
-      return store.option.translation.server === 'disable';
-    },
-    onClick: () => setImgTranslationEnbale(activePage(), !isTranslatingImage()),
-    get children() {
-      return web.createComponent(MdTranslate, {});
-    }
-  });
-},
+() => web.createComponent(IconButton, {
+  get tip() {
+    return web.memo(() => !!isTranslatingImage())() ? t('button.close_current_page_translation') : t('button.translate_current_page');
+  },
+  get enabled() {
+    return isTranslatingImage();
+  },
+  get hidden() {
+    return store.option.translation.server === 'disable';
+  },
+  onClick: switchTranslation,
+  get children() {
+    return web.createComponent(MdTranslate, {});
+  }
+}),
 // 设置
 () => {
   const [showPanel, setShowPanel] = solidJs.createSignal(false);
@@ -6423,7 +6427,7 @@ const Manga = props => {
 /** 下载按钮 */
 const DownloadButton = () => {
   const [statu, setStatu] = solidJs.createSignal('button.download');
-  const getFileExt = url => url.split('.').pop();
+  const getFileExt = url => url.match(/[^?]+\\.(\\w+)/)?.[1] ?? 'jpg';
   const handleDownload = async () => {
     const fileData = {};
     const {
@@ -6445,7 +6449,7 @@ const DownloadButton = () => {
         const fileExt = blob.type.split('/')[1];
         fileName = \`\${index}.\${fileExt}\`;
       } else {
-        const fileExt = getFileExt(url) ?? 'jpg';
+        const fileExt = getFileExt(url);
         fileName = \`\${index}.\${fileExt}\`;
         try {
           const res = await request$1(url, {
@@ -6604,7 +6608,7 @@ const MdCloudDownload = ((props = {}) => (() => {
   return _el$;
 })());
 
-var css = ".index_module_fabRoot__f35e0ac6{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__f35e0ac6[data-show=false]{pointer-events:none}.index_module_fabRoot__f35e0ac6[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__f35e0ac6[data-trans=true]{opacity:.8}.index_module_fabRoot__f35e0ac6[data-trans=true]:focus,.index_module_fabRoot__f35e0ac6[data-trans=true]:focus-visible,.index_module_fabRoot__f35e0ac6[data-trans=true]:hover{opacity:1}.index_module_fab__f35e0ac6{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.index_module_fab__f35e0ac6>svg{font-size:1.5em;width:1em}.index_module_fab__f35e0ac6:hover{background-color:var(fab-hover,#78909c)}.index_module_fab__f35e0ac6:focus,.index_module_fab__f35e0ac6:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.index_module_progress__f35e0ac6{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__f35e0ac6>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__f35e0ac6:hover{color:#cfd8dc}.index_module_progress__f35e0ac6[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__f35e0ac6{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__f35e0ac6:hover,.index_module_fabRoot__f35e0ac6[data-focus=true]) .index_module_popper__f35e0ac6{display:flex}.index_module_speedDial__f35e0ac6{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__f35e0ac6{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__f35e0ac6:hover,:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6{pointer-events:all}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6>.index_module_speedDialItem__f35e0ac6{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__f35e0ac6{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__f35e0ac6[data-focus=true] .index_module_backdrop__f35e0ac6{pointer-events:unset}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true],.index_module_speedDial__f35e0ac6:hover) .index_module_backdrop__f35e0ac6{opacity:.4}";
+var css = ".index_module_fabRoot__f35e0ac6{font-size:1.1em;transition:transform .2s}.index_module_fabRoot__f35e0ac6[data-show=false]{pointer-events:none}.index_module_fabRoot__f35e0ac6[data-show=false]>button{transform:scale(0)}.index_module_fabRoot__f35e0ac6[data-trans=true]{opacity:.8}.index_module_fabRoot__f35e0ac6[data-trans=true]:focus,.index_module_fabRoot__f35e0ac6[data-trans=true]:focus-visible,.index_module_fabRoot__f35e0ac6[data-trans=true]:hover{opacity:1}.index_module_fab__f35e0ac6{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px 0 rgba(0,0,0,.14),0 1px 18px 0 rgba(0,0,0,.12);color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.index_module_fab__f35e0ac6>svg{font-size:1.5em;width:1em}.index_module_fab__f35e0ac6:hover{background-color:var(fab-hover,#78909c)}.index_module_fab__f35e0ac6:focus,.index_module_fab__f35e0ac6:focus-visible{box-shadow:0 3px 5px -1px rgba(0,0,0,.5),0 6px 10px 0 rgba(0,0,0,.34),0 1px 18px 0 rgba(0,0,0,.32);outline:none}.index_module_progress__f35e0ac6{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.index_module_progress__f35e0ac6>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.index_module_progress__f35e0ac6:hover{color:#cfd8dc}.index_module_progress__f35e0ac6[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.index_module_popper__f35e0ac6{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.index_module_fab__f35e0ac6:hover,.index_module_fabRoot__f35e0ac6[data-focus=true]) .index_module_popper__f35e0ac6{display:flex}.index_module_speedDial__f35e0ac6{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.index_module_speedDialItem__f35e0ac6{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.index_module_speedDial__f35e0ac6:hover{pointer-events:all}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6{pointer-events:all}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true])>.index_module_speedDial__f35e0ac6>.index_module_speedDialItem__f35e0ac6{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.index_module_backdrop__f35e0ac6{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.index_module_fabRoot__f35e0ac6[data-focus=true] .index_module_backdrop__f35e0ac6{pointer-events:unset}:is(.index_module_fabRoot__f35e0ac6:hover:not([data-show=false]),.index_module_fabRoot__f35e0ac6[data-focus=true],.index_module_speedDial__f35e0ac6:hover) .index_module_backdrop__f35e0ac6{opacity:.4}";
 var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__f35e0ac6","fab":"index_module_fab__f35e0ac6","progress":"index_module_progress__f35e0ac6","popper":"index_module_popper__f35e0ac6","speedDial":"index_module_speedDial__f35e0ac6","speedDialItem":"index_module_speedDialItem__f35e0ac6","backdrop":"index_module_backdrop__f35e0ac6"};
 
 var _tmpl$$3 = /*#__PURE__*/web.template(\`<div><div>\`),
@@ -6799,8 +6803,10 @@ const useFab = async initProps => {
 };
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在 kemono 上没有记住阅读配置的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>支持 nekohouse </p></li><li><p>translate_current_page shortcut\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复部分网站下载的漫画文件后辍异常的 bug </p></li><li><p>修复在禁漫上使用时会提示「漫画加载出错」的 bug </p></li><li><p>eslint problems\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6863,7 +6869,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3()], {
+    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -9227,7 +9233,7 @@ const api = (url, details) => main.eachApi(url, apiList, details);
         break;
       }
 
-    // #PonpomuYuri
+    // #[PonpomuYuri](https://www.ponpomu.com)
     case 'www.ponpomu.com':
       {
         options = {
@@ -9243,7 +9249,7 @@ const api = (url, details) => main.eachApi(url, apiList, details);
         break;
       }
 
-    // #明日方舟泰拉记事社
+    // #[明日方舟泰拉记事社](https://terra-historicus.hypergryph.com)
     case 'terra-historicus.hypergryph.com':
       {
         const apiUrl = () => `https://terra-historicus.hypergryph.com/api${window.location.pathname}`;
@@ -9276,9 +9282,9 @@ const api = (url, details) => main.eachApi(url, apiList, details);
         break;
       }
 
-    // #禁漫天堂
+    // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic.me':
-    case '18comic-ff7rebirth.xyz':
+    case '18comic-ff7rebirth.art':
     case '18comic-ff7rebirth.quest':
     case '18comic.org':
     case '18comic.vip':
@@ -9315,7 +9321,7 @@ const main = require('main');
     onPrev: main.querySelectorClick(() => main.querySelector('.menu-bolock-ul .fa-angle-double-left')?.parentElement),
     onNext: main.querySelectorClick(() => main.querySelector('.menu-bolock-ul .fa-angle-double-right')?.parentElement)
   });
-  const imgEleList = main.querySelectorAll('.scramble-page > img');
+  const imgEleList = main.querySelectorAll('.scramble-page:not(.thewayhome) > img');
 
   // 判断当前漫画是否有被分割，没有就直接获取图片链接加载
   // 判断条件来自页面上的 scramble_image 函数
@@ -9378,7 +9384,7 @@ const main = require('main');
         break;
       }
 
-    // #漫画柜(manhuagui)
+    // #[漫画柜(manhuagui)](https://www.manhuagui.com)
     case 'tw.manhuagui.com':
     case 'm.manhuagui.com':
     case 'www.mhgui.com':
@@ -9426,7 +9432,7 @@ const main = require('main');
         break;
       }
 
-    // #漫画DB(manhuadb)
+    // #[漫画DB(manhuadb)](https://www.manhuadb.com)
     case 'www.manhuadb.com':
       {
         if (!Reflect.has(unsafeWindow, 'img_data_arr')) break;
@@ -9439,7 +9445,7 @@ const main = require('main');
         break;
       }
 
-    // #动漫屋(dm5)
+    // #[动漫屋(dm5)](https://www.dm5.com)
     case 'www.manhuaren.com':
     case 'm.1kkk.com':
     case 'www.1kkk.com':
@@ -9497,7 +9503,7 @@ const main = require('main');
         break;
       }
 
-    // #绅士漫画(wnacg)
+    // #[绅士漫画(wnacg)](https://www.wnacg.com)
     case 'www.hm15.lol':
     case 'www.hm16.lol':
     case 'www.wnacg.com':
@@ -9521,7 +9527,7 @@ const main = require('main');
         break;
       }
 
-    // #mangabz
+    // #[mangabz](https://mangabz.com)
     case 'www.mangabz.com':
     case 'mangabz.com':
       {
@@ -9567,7 +9573,7 @@ const main = require('main');
         break;
       }
 
-    // #komiic
+    // #[komiic](https://komiic.com)
     case 'komiic.com':
       {
         const query = `
@@ -9617,7 +9623,7 @@ const main = require('main');
         break;
       }
 
-    // #hitomi
+    // #[hitomi](https://hitomi.la)
     case 'hitomi.la':
       {
         options = {
@@ -9628,7 +9634,7 @@ const main = require('main');
         break;
       }
 
-    // #Anchira
+    // #[Anchira](https://anchira.to)
     case 'anchira.to':
       {
         options = {
@@ -9664,7 +9670,7 @@ const main = require('main');
         break;
       }
 
-    // #kemono
+    // #[kemono](https://kemono.su)
     case 'kemono.su':
     case 'kemono.party':
       {
@@ -9691,7 +9697,23 @@ const main = require('main');
         break;
       }
 
-    // #welovemanga
+    // #[nekohouse](https://nekohouse.su)
+    case 'nekohouse.su':
+      {
+        options = {
+          name: 'nekohouse',
+          getImgList: () => main.querySelectorAll('.fileThumb').map(e => e.getAttribute('href')),
+          initOptions: {
+            autoShow: false,
+            option: {
+              onePageMode: true
+            }
+          }
+        };
+        break;
+      }
+
+    // #[welovemanga](https://welovemanga.one)
     case 'nicomanga.com':
     case 'weloma.art':
     case 'welovemanga.one':
