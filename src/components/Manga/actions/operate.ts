@@ -15,7 +15,8 @@ import {
 } from './switch';
 
 import classes from '../index.module.css';
-import { rootSize, scrollTop } from './memo';
+import { activePage, rootSize, scrollTop } from './memo';
+import { setImgTranslationEnbale } from './translation';
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 export const focus = () =>
@@ -141,6 +142,18 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return switchDir();
     case 'switch_grid_mode':
       return switchGridMode();
+
+    case 'translate_current_page':
+      if (store.option.translation.server !== 'disable')
+        return setImgTranslationEnbale(
+          activePage(),
+          !activePage().some(
+            (i) =>
+              store.imgList[i]?.translationType &&
+              store.imgList[i].translationType !== 'hide',
+          ),
+        );
+      break;
 
     case 'switch_auto_enlarge':
       return setOption((draftOption) => {

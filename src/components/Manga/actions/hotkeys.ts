@@ -16,6 +16,7 @@ export const defaultHotkeys: Readonly<Record<string, string[]>> = {
   switch_single_double_page_mode: [],
   switch_dir: [],
   switch_auto_enlarge: [],
+  translate_current_page: [],
 };
 
 export const setHotkeys = (...args: any[]) => {
