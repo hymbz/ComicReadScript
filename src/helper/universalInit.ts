@@ -16,7 +16,7 @@ export interface InitOptions {
   onExit?: MangaProps['onExit'];
   getCommentList?: () => Promise<string[]> | string[];
 
-  /** 默认站点配置 */
+  /** 初始站点配置 */
   initOptions?: Partial<SiteOptions>;
 
   /** 用于适配单页应用的配置项 */

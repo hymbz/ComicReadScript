@@ -566,7 +566,7 @@ try {
           main
             .querySelectorAll<HTMLAnchorElement>('.post__thumbnail a')
             .map((e) => e.href),
-        initOptions: { autoShow: false, option: { onePageMode: true } },
+        initOptions: { autoShow: false, defaultOption: { onePageMode: true } },
       };
 
       const zipExtension = ['zip', 'rar', '7z', 'cbz', 'cbr', 'cb7'];
@@ -597,7 +597,7 @@ try {
           main
             .querySelectorAll<HTMLAnchorElement>('.fileThumb')
             .map((e) => e.getAttribute('href')!),
-        initOptions: { autoShow: false, option: { onePageMode: true } },
+        initOptions: { autoShow: false, defaultOption: { onePageMode: true } },
       };
       break;
     }

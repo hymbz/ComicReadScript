@@ -66,6 +66,7 @@ export const useInit = async <T extends Record<string, any>>(
   const [setManga, mangaProps] = await useManga({
     imgList: [],
     option: options.option,
+    defaultOption: options.defaultOption,
     onOptionChange: (option) =>
       setOptions({ option } as Partial<T & SiteOptions>),
     hotkeys: hotkeys(),

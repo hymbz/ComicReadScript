@@ -1,10 +1,11 @@
 import { createMutable } from 'solid-js/store';
 import { createMemo, createRoot, createSignal } from 'solid-js';
 import type { MangaProps } from '../components/Manga';
-import { difference } from '.';
+import { assign, difference } from '.';
 
 export interface SiteOptions {
   option: MangaProps['option'];
+  defaultOption: MangaProps['defaultOption'];
 
   /** 自动进入阅读模式 */
   autoShow: boolean;
@@ -36,10 +37,9 @@ export const useSiteOptions = async <T = Record<string, any>>(
 
   const saveOptions = await GM.getValue<SaveOptions>(name);
 
-  const options = createMutable<SaveOptions>({
-    ..._defaultOptions,
-    ...saveOptions,
-  });
+  const options = createMutable<SaveOptions>(
+    assign(_defaultOptions, saveOptions),
+  );
 
   const setOptions = async (newValue: Partial<SaveOptions>) => {
     Object.assign(options, newValue);

@@ -15,7 +15,7 @@ import {
   updateImgLoadType,
   updatePageData,
 } from '../actions';
-import { defaultOption, type Option } from '../store/option';
+import { defaultOption } from '../store/option';
 import { playAnimation } from '../helper';
 import { autoCloseFill } from '../handleComicData';
 
@@ -32,9 +32,10 @@ export const useInit = (props: MangaProps) => {
     Record<keyof MangaProps, (state: State) => unknown>
   > = {
     option: (state) => {
-      if (!props.option) return;
-      state.option = assign(state.option, props.option as Option);
-      state.defaultOption = assign(defaultOption(), props.option) as Option;
+      state.option = assign(state.option, props.defaultOption, props.option);
+    },
+    defaultOption: (state) => {
+      state.defaultOption = assign(defaultOption(), props.defaultOption);
     },
     fillEffect: (state) => {
       state.fillEffect = props.fillEffect ?? { '-1': true };

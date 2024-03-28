@@ -42,6 +42,8 @@ export interface MangaProps {
   fillEffect?: FillEffect;
   /** 初始化配置 */
   option?: Partial<Option>;
+  /** 默认配置 */
+  defaultOption?: Partial<Option>;
   /** 快捷键配置 */
   hotkeys?: State['hotkeys'];
   /** 是否显示 */

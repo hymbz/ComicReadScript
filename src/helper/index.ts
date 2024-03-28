@@ -377,22 +377,31 @@ export const difference = <T extends object>(a: T, b: T): Partial<T> => {
   return res;
 };
 
-/**
- * Object.assign 的深拷贝版，不会导致 a 子对象属性的缺失
- *
- * 不会修改参数对象，返回的是新对象
- */
-export const assign = <T extends object>(a: T, b: T): T => {
+const _assign = <T extends object>(a: T, b: Partial<T>): T => {
   const res = JSON.parse(JSON.stringify(a)) as T;
   const keys = Object.keys(b);
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
     if (res[key] === undefined) res[key] = b[key];
     else if (typeof b[key] === 'object') {
-      const _res = assign(res[key], b[key]);
+      const _res = _assign(res[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
     } else if (res[key] !== b[key]) res[key] = b[key];
   }
+  return res;
+};
+/**
+ * Object.assign 的深拷贝版，不会导致子对象属性的缺失
+ *
+ * 不会修改参数对象，返回的是新对象
+ */
+export const assign = <T extends object>(
+  target: T,
+  ...sources: (Partial<T> | undefined)[]
+): T => {
+  let res = target;
+  for (let i = 0; i < sources.length; i += 1)
+    if (sources[i] !== undefined) res = _assign(res, sources[i]!);
   return res;
 };
 
