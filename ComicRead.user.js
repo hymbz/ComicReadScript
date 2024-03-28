@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.8.0
+// @version         8.8.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -698,22 +698,26 @@ const difference = (a, b) => {
   }
   return res;
 };
-
-/**
- * Object.assign 的深拷贝版，不会导致 a 子对象属性的缺失
- *
- * 不会修改参数对象，返回的是新对象
- */
-const assign = (a, b) => {
+const _assign = (a, b) => {
   const res = JSON.parse(JSON.stringify(a));
   const keys = Object.keys(b);
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
     if (res[key] === undefined) res[key] = b[key];else if (typeof b[key] === 'object') {
-      const _res = assign(res[key], b[key]);
+      const _res = _assign(res[key], b[key]);
       if (Object.keys(_res).length) res[key] = _res;
     } else if (res[key] !== b[key]) res[key] = b[key];
   }
+  return res;
+};
+/**
+ * Object.assign 的深拷贝版，不会导致子对象属性的缺失
+ *
+ * 不会修改参数对象，返回的是新对象
+ */
+const assign = (target, ...sources) => {
+  let res = target;
+  for (let i = 0; i < sources.length; i += 1) if (sources[i] !== undefined) res = _assign(res, sources[i]);
   return res;
 };
 
@@ -2420,6 +2424,7 @@ const {
   ...OptionState,
   ...OtherState
 });
+
 const refs = {
   root: undefined,
   mangaBox: undefined,
@@ -3101,9 +3106,7 @@ solidJs.createRoot(() => {
 });
 
 /** 判断当前是否已经滚动到底部 */
-const isBottom = state => {
-  return state.option.scrollMode ? Math.ceil(scrollTop() + rootSize().height) >= contentHeight() : state.activePageIndex === state.pageList.length - 1;
-};
+const isBottom = state => state.option.scrollMode ? approx(scrollTop() + rootSize().height, contentHeight(), 1) : state.activePageIndex === state.pageList.length - 1;
 
 /** 判断当前是否已经滚动到顶部 */
 const isTop = state => state.option.scrollMode ? scrollTop() === 0 : state.activePageIndex === 0;
@@ -6248,9 +6251,10 @@ const useInit$1 = props => {
   initResizeObserver(refs.root);
   const watchProps = {
     option: state => {
-      if (!props.option) return;
-      state.option = assign(state.option, props.option);
-      state.defaultOption = assign(defaultOption(), props.option);
+      state.option = assign(state.option, props.defaultOption, props.option);
+    },
+    defaultOption: state => {
+      state.defaultOption = assign(defaultOption(), props.defaultOption);
     },
     fillEffect: state => {
       state.fillEffect = props.fillEffect ?? {
@@ -6803,10 +6807,8 @@ const useFab = async initProps => {
 };
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>支持 nekohouse </p></li><li><p>translate_current_page shortcut\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复部分网站下载的漫画文件后辍异常的 bug </p></li><li><p>修复在禁漫上使用时会提示「漫画加载出错」的 bug </p></li><li><p>eslint problems\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复卷轴模式下偶尔滚动到底后无法触发结束页的 bug </p></li><li><p>修复阅读配置有时会变回初始配置的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6869,7 +6871,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Infinity,
@@ -6904,10 +6906,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     ...defaultOptions
   };
   const saveOptions = await GM.getValue(name);
-  const options = store$2.createMutable({
-    ..._defaultOptions,
-    ...saveOptions
-  });
+  const options = store$2.createMutable(assign(_defaultOptions, saveOptions));
   const setOptions = async newValue => {
     Object.assign(options, newValue);
 
@@ -6986,6 +6985,7 @@ const useInit = async (name, defaultOptions = {}) => {
   const [setManga, mangaProps] = await useManga({
     imgList: [],
     option: options.option,
+    defaultOption: options.defaultOption,
     onOptionChange: option => setOptions({
       option
     }),
@@ -9679,7 +9679,7 @@ const main = require('main');
           getImgList: () => main.querySelectorAll('.post__thumbnail a').map(e => e.href),
           initOptions: {
             autoShow: false,
-            option: {
+            defaultOption: {
               onePageMode: true
             }
           }
@@ -9705,7 +9705,7 @@ const main = require('main');
           getImgList: () => main.querySelectorAll('.fileThumb').map(e => e.getAttribute('href')),
           initOptions: {
             autoShow: false,
-            option: {
+            defaultOption: {
               onePageMode: true
             }
           }
