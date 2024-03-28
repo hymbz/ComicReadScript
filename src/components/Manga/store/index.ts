@@ -13,6 +13,8 @@ export const { store, setState, _state, _setState } = useStore({
   ...OtherState,
 });
 
+// unsafeWindow.store = store;
+
 export type State = typeof _state;
 
 export const refs = {

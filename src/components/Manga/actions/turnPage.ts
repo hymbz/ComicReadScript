@@ -1,15 +1,14 @@
-import { debounce } from 'helper';
+import { approx, debounce } from 'helper';
 import type { State } from '../store';
 import { store, setState, _setState } from '../store';
 import { contentHeight, rootSize, scrollTop } from './memo';
 import { resetPage } from './show';
 
 /** 判断当前是否已经滚动到底部 */
-export const isBottom = (state: State) => {
-  return state.option.scrollMode
-    ? Math.ceil(scrollTop() + rootSize().height) >= contentHeight()
+export const isBottom = (state: State) =>
+  state.option.scrollMode
+    ? approx(scrollTop() + rootSize().height, contentHeight(), 1)
     : state.activePageIndex === state.pageList.length - 1;
-};
 
 /** 判断当前是否已经滚动到顶部 */
 export const isTop = (state: State) =>
