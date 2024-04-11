@@ -8,7 +8,7 @@
   content-visibility: hidden;
 
   position: relative;
-  transform: translate(var(--page-x), var(--page-y)) translateZ(0);
+  transform: translate(var(--page-x), var(--page-y));
 
   display: none;
 
