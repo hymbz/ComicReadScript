@@ -3,11 +3,11 @@ export const OtherState = {
   observer: null as IntersectionObserver | null,
 
   flag: {
-    /** 是否需要自动开启卷轴模式 */
+    /** 是否自动开启过卷轴模式 */
     autoScrollMode: false,
-    /** 是否需要自动将未加载图片类型设为跨页图 */
+    /** 是否自动将未加载图片类型设为跨页图过 */
     autoWide: false,
-    /** 是否需要将滚动条移至底部 */
+    /** 是否自动将滚动条移至底部过 */
     autoLong: false,
 
     /**
