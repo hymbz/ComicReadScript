@@ -1,5 +1,5 @@
-import type { ScheduleCallback } from '@solid-primitives/scheduled';
 import {
+  type ScheduleCallback,
   leadingAndTrailing,
   throttle as _throttle,
   debounce as _debounce,
@@ -30,7 +30,7 @@ export const approx = (val: number, target: number, range: number) =>
 
 /** 根据传入的条件列表的真假，对 val 进行取反 */
 export const ifNot = (val: unknown, ...conditions: boolean[]) => {
-  let res: boolean = !!val;
+  let res = Boolean(val);
   conditions.forEach((v) => {
     if (v) res = !res;
   });
@@ -67,7 +67,9 @@ export const insertNode = (
   const temp = document.createElement('div');
   temp.innerHTML = textnode;
   const frag = document.createDocumentFragment();
-  while (temp.firstChild) frag.appendChild(temp.firstChild);
+  while (temp.firstChild) frag.append(temp.firstChild);
+  // TODO: 可以淘汰这个工具函数了
+  // eslint-disable-next-line unicorn/prefer-modern-dom-apis
   node.insertBefore(frag, referenceNode);
 };
 
@@ -82,11 +84,10 @@ export const querySelectorClick = (
 
 /** 找出数组中出现最多次的元素 */
 export const getMostItem = <T>(list: T[]) => {
-  const counts = list.reduce((map, val) => {
-    map.set(val, map.get(val) ?? 0 + 1);
-    return map;
-  }, new Map<T, number>());
+  const counts = new Map<T, number>();
+  for (const val of list) counts.set(val, counts.get(val) ?? 0 + 1);
 
+  // eslint-disable-next-line unicorn/no-array-reduce
   return [...counts.entries()].reduce((maxItem, item) =>
     maxItem[1] > item[1] ? maxItem : item,
   )[0];
@@ -94,14 +95,17 @@ export const getMostItem = <T>(list: T[]) => {
 
 /** 将数组扩充到指定长度，不足项用空字符串补足 */
 export const createFillImgList = (imgList: string[], length: number) =>
-  [...imgList, ...Array(length - imgList.length).fill('')] as string[];
+  [
+    ...imgList,
+    ...Array.from({ length: length - imgList.length }).fill(''),
+  ] as string[];
 
 /** 判断字符串是否为 URL */
 export const isUrl = (text: string) => {
   // 等浏览器版本上来后可以直接使用 URL.canParse
   try {
-    return !!new URL(text);
-  } catch (_) {
+    return Boolean(new URL(text));
+  } catch {
     return false;
   }
 };
@@ -109,7 +113,7 @@ export const isUrl = (text: string) => {
 /** 将对象转为 URLParams 类型的字符串 */
 export const dataToParams = (data: Record<string, unknown>) =>
   Object.entries(data)
-    .map(([key, val]) => `${key}=${val}`)
+    .map(([key, val]) => `${key}=${String(val)}`)
     .join('&');
 
 /** 将 blob 数据作为文件保存至本地 */
@@ -133,6 +137,7 @@ export const linstenKeyup = (handler: (e: KeyboardEvent) => unknown) =>
       case 'TEXTAREA':
         return;
     }
+
     handler(e);
   });
 
@@ -222,10 +227,9 @@ export const plimit = async <T>(
     };
   });
 
+  // eslint-disable-next-line no-unmodified-loop-condition
   while (doneNum !== totalNum) {
-    while (taskList.length && execPool.size < limit) {
-      taskList.shift()!();
-    }
+    while (taskList.length > 0 && execPool.size < limit) taskList.shift()!();
     await Promise.race(execPool);
   }
 
@@ -238,9 +242,9 @@ export const plimit = async <T>(
  */
 export const needDarkMode = (hexColor: string) => {
   // by: https://24ways.org/2010/calculating-color-contrast
-  const r = parseInt(hexColor.substring(1, 3), 16);
-  const g = parseInt(hexColor.substring(3, 5), 16);
-  const b = parseInt(hexColor.substring(5, 7), 16);
+  const r = Number.parseInt(hexColor.slice(1, 3), 16);
+  const g = Number.parseInt(hexColor.slice(3, 5), 16);
+  const b = Number.parseInt(hexColor.slice(5, 7), 16);
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
   return yiq < 128;
 };
@@ -248,7 +252,7 @@ export const needDarkMode = (hexColor: string) => {
 /** 等到传入的函数返回 true */
 export const wait = async <T>(
   fn: () => T | undefined | Promise<T | undefined>,
-  timeout = Infinity,
+  timeout = Number.POSITIVE_INFINITY,
 ): Promise<TrueValue<T>> => {
   let res: T | undefined = await fn();
   let _timeout = timeout;
@@ -257,12 +261,13 @@ export const wait = async <T>(
     _timeout -= 10;
     res = await fn();
   }
+
   return res as TrueValue<T>;
 };
 
 /** 等到指定的 dom 出现 */
 export const waitDom = (selector: string) =>
-  wait(() => querySelector(selector) as HTMLElement);
+  wait(() => querySelector(selector));
 
 /** 等待指定的图片元素加载完成 */
 export const waitImgLoad = (img: HTMLImageElement, timeout = 1000 * 10) =>
@@ -317,6 +322,7 @@ export const getImgSize = async (
     image.onerror = () => {
       error = true;
     };
+
     image.src = url;
 
     await wait(
@@ -327,9 +333,8 @@ export const getImgSize = async (
     );
     if (error) return null;
     return [image.naturalWidth, image.naturalHeight];
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    if (isDevMode) console.error('获取图片尺寸时出错', e);
+  } catch (error_) {
+    if (isDevMode) console.error('获取图片尺寸时出错', error_);
     return null;
   } finally {
     image.src = '';
@@ -367,29 +372,30 @@ export const canvasToBlob = (
 export const difference = <T extends object>(a: T, b: T): Partial<T> => {
   const res = {};
   const keys = Object.keys(a);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
+  for (const key of keys) {
     if (typeof a[key] === 'object' && typeof b[key] === 'object') {
       const _res = difference(a[key], b[key]);
-      if (Object.keys(_res).length) res[key] = _res;
+      if (Object.keys(_res).length > 0) res[key] = _res;
     } else if (a[key] !== b?.[key]) res[key] = a[key];
   }
+
   return res;
 };
 
 const _assign = <T extends object>(a: T, b: Partial<T>): T => {
   const res = JSON.parse(JSON.stringify(a)) as T;
   const keys = Object.keys(b);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
+  for (const key of keys) {
     if (res[key] === undefined) res[key] = b[key];
     else if (typeof b[key] === 'object') {
       const _res = _assign(res[key], b[key]);
-      if (Object.keys(_res).length) res[key] = _res;
+      if (Object.keys(_res).length > 0) res[key] = _res;
     } else if (res[key] !== b[key]) res[key] = b[key];
   }
+
   return res;
 };
+
 /**
  * Object.assign 的深拷贝版，不会导致子对象属性的缺失
  *
@@ -397,7 +403,7 @@ const _assign = <T extends object>(a: T, b: Partial<T>): T => {
  */
 export const assign = <T extends object>(
   target: T,
-  ...sources: (Partial<T> | undefined)[]
+  ...sources: Array<Partial<T> | undefined>
 ): T => {
   let res = target;
   for (let i = 0; i < sources.length; i += 1)
@@ -430,12 +436,14 @@ export const byPath = <T = object>(
         i += 1;
         key = keys[i];
       }
+
       if (res !== undefined) target[key] = res;
       break;
     }
 
     target = target[key];
   }
+
   if (target === obj) return null;
   return target as T;
 };
@@ -450,7 +458,7 @@ export const requestIdleCallback = (
 };
 
 /**
- * 通过监视点击等会触发动态加载的事件，在触发动态加载后更新图片列表等
+ * 通过监视点击等会触发动态加载的事件，在触发后执行指定动作
  * @param update 动态加载后的重新加载
  */
 export const autoUpdate = (update: () => Promise<void>) => {

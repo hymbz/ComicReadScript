@@ -15,7 +15,7 @@ export const zipExtension = new Set<ZipExtension>([
 const extensionRe = /\.[^.]+$/;
 /** 根据文件名判断文件是否受支持 */
 export const isSupportFile = (name: string) => {
-  const extension = name.match(extensionRe)?.[0];
+  const extension = extensionRe.exec(name)?.[0];
   if (!extension) return null;
   if (zipExtension.has(extension as any)) return extension as ZipExtension;
   if (imgExtension.has(extension)) return 'img';
@@ -25,7 +25,7 @@ export const isSupportFile = (name: string) => {
 export const loadScript = (url: string) => {
   const script = document.createElement('script');
   script.setAttribute('src', url);
-  document.head.appendChild(script);
+  document.head.append(script);
 };
 
 /** 创建 blob 链接，但是会先测试图片 url 能否正确加载 */

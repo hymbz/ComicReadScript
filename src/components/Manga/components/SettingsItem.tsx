@@ -20,7 +20,7 @@ export const SettingsItem: Component<SettingsItemProps> = (props) => (
         : classes.SettingsItem
     }
     classList={{
-      [props.class ?? '']: !!props.class?.length,
+      [props.class ?? '']: Boolean(props.class?.length),
       ...props.classList,
     }}
     style={props.style}

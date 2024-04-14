@@ -1,6 +1,6 @@
 import { createEffect, createRoot, on } from 'solid-js';
-
 import { t } from 'helper/i18n';
+
 import { useStore } from '../../helper/useStore';
 import { toast } from '../../components/Toast';
 
@@ -45,7 +45,7 @@ const collator = new Intl.Collator(undefined, { numeric: true });
 
 /** 加载新的文件列表 */
 export const loadNewImglist = async (files: File[], errorTip?: string) => {
-  if (!files.length) return;
+  if (files.length === 0) return;
 
   if (store.loading) {
     toast.warn(t('pwa.alert.repeat_load'));
@@ -55,8 +55,9 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
   _setState('loading', true);
 
   try {
-    const newImglist = (await Promise.all(files.map(getImgData))).flat();
-    if (!newImglist.length) {
+    const imgListRaw = await Promise.all(files.map(getImgData));
+    const newImglist = imgListRaw.flat();
+    if (newImglist.length === 0) {
       toast.warn(errorTip ?? t('pwa.alert.img_not_found'));
       return;
     }
@@ -73,7 +74,7 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
       state.show = true;
 
       // 在用过一次后提示安装
-      if (state.hiddenInstallTip === 'init' && state.imgList.length)
+      if (state.hiddenInstallTip === 'init' && state.imgList.length > 0)
         state.hiddenInstallTip = '';
     });
   } catch (error) {

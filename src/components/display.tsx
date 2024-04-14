@@ -1,5 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
-
 /*
  * 用于测试时显示组件
  */
@@ -45,7 +43,7 @@ render(
           const Component = lazy(Fc as any);
           return (
             <Route
-              path={path.split('/').at(-2) as string}
+              path={path.split('/').at(-2)}
               component={() => (
                 <Suspense fallback={null}>
                   <Component />

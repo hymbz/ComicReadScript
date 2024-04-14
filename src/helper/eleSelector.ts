@@ -15,6 +15,7 @@ export const getEleSelector = (ele: HTMLElement) => {
     e = e.parentNode as HTMLElement;
     parents.push(getTagText(e));
   }
+
   return parents.reverse().join('>');
 };
 
@@ -26,6 +27,7 @@ export const isEleSelector = (ele: HTMLElement, selector: string) => {
     if (getTagText(e) !== parents[i]) return false;
     e = e.parentNode as HTMLElement;
   }
+
   return e === e.getRootNode();
 };
 

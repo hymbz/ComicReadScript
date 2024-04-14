@@ -1,7 +1,9 @@
-import { byPath } from '.';
+import { toast } from '../components/useComponents/Toast';
+
 import { lang } from './i18n';
 import { log } from './logger';
-import { toast } from '../components/useComponents/Toast';
+
+import { byPath } from '.';
 
 /** 重命名配置项 */
 const renameOption = async (name: string, list: string[]) => {
@@ -29,9 +31,7 @@ const migration = async () => {
   const values = await GM.listValues();
 
   // 6 => 7
-  for (let i = 0; i < values.length; i++) {
-    const key = values[i];
-
+  for (const key of values) {
     switch (key) {
       case 'Version':
       case 'Languages':
@@ -98,7 +98,7 @@ export const handleVersionUpdate = async () => {
       {
         id: 'Version Tip',
         type: 'custom',
-        duration: Infinity,
+        duration: Number.POSITIVE_INFINITY,
         // 手动点击关掉通知后才不会再次弹出
         onDismiss: () => GM.setValue('Version', GM.info.script.version),
       },

@@ -1,4 +1,5 @@
 import { lang } from 'helper/i18n';
+
 import type { areaArrayMap } from '../components/TouchArea';
 
 export interface Option {

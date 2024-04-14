@@ -1,5 +1,8 @@
 import { getKeyboardCode } from 'helper';
+
 import { store, refs, _setState } from '../store';
+import classes from '../index.module.css';
+
 import { rootSize, scrollTop } from './memo';
 import { handleTrackpadWheel } from './pointer';
 import { zoomScrollModeImg } from './image';
@@ -15,8 +18,6 @@ import {
   switchGridMode,
   switchTranslation,
 } from './switch';
-
-import classes from '../index.module.css';
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 export const focus = () =>
@@ -38,6 +39,7 @@ const scrollModeScroll = (dir: 'next' | 'prev') => {
     scrollTo(scrollTop() + rootSize().height * 0.8 * (dir === 'next' ? 1 : -1));
     _setState('flag', 'scrollLock', true);
   }
+
   closeScrollLock();
 };
 
@@ -66,6 +68,7 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       e.preventDefault();
       return _setState('gridMode', false);
     }
+
     if (store.show.endPage) {
       e.stopPropagation();
       e.preventDefault();
@@ -74,7 +77,7 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   }
 
   // 处理标注了 data-only-number 的元素
-  if ((e.target as HTMLElement).getAttribute('data-only-number') !== null) {
+  if ((e.target as HTMLElement).dataset.onlyNumber !== undefined) {
     // 拦截能输入数字外的按键
     if (isAlphabetKey.test(code)) {
       e.stopPropagation();
@@ -117,6 +120,7 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       if (store.option.scrollMode) scrollModeScroll('prev');
       return turnPage('prev');
     }
+
     case 'turn_page_down': {
       if (store.option.scrollMode) scrollModeScroll('next');
       return turnPage('next');
@@ -217,6 +221,7 @@ export const handleWheel = (e: WheelEvent) => {
       diffNum += 1;
       equalNum = 0;
     }
+
     if (equalNum >= 3) {
       wheelType = undefined;
       lastPageNum = -1;
@@ -237,6 +242,7 @@ export const handleWheel = (e: WheelEvent) => {
         );
         return;
       }
+
       wheelType = 'mouse';
     }
     // falls through

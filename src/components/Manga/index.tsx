@@ -1,17 +1,20 @@
-import type { Component } from 'solid-js';
-import { createEffect, enableScheduling, onMount } from 'solid-js';
-
+import {
+  type Component,
+  createEffect,
+  enableScheduling,
+  onMount,
+} from 'solid-js';
 import { boolDataVal } from 'helper';
+
 import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
 import { Scrollbar } from './components/Scrollbar';
 import { TouchArea } from './components/TouchArea';
 import { EndPage } from './components/EndPage';
 import { CssVar } from './components/CssVar';
-
 import { store, type State } from './store/index';
-import type { FillEffect } from './store/image';
-import type { Option } from './store/option';
+import { type FillEffect } from './store/image';
+import { type Option } from './store/option';
 import { useInit } from './hooks/useInit';
 import {
   bindRef,
@@ -21,14 +24,12 @@ import {
   handleWheel,
 } from './actions';
 import { stopPropagation } from './helper';
-
 import classes, { css as style } from './index.module.css';
 
 export { buttonListDivider } from './defaultButtonList';
 
+// eslint-disable-next-line unicorn/prefer-export-from
 export const MangaStyle = style;
-
-export { store };
 
 enableScheduling();
 
@@ -86,7 +87,7 @@ export const Manga: Component<MangaProps> = (props) => {
         class={classes.root}
         classList={{
           [classes.hidden]: props.show === false,
-          [props.class ?? '']: !!props.class,
+          [props.class ?? '']: Boolean(props.class),
           ...props.classList,
         }}
         ref={bindRef('root')}
@@ -110,3 +111,5 @@ export const Manga: Component<MangaProps> = (props) => {
     </>
   );
 };
+
+export { store } from './store/index';

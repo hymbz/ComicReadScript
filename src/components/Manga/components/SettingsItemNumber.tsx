@@ -26,9 +26,13 @@ export const SettingsItemNumber: Component<SSettingsItemNumberProps> = (
   const handleKeyDown: EventHandler['on:keydown'] = (e) => {
     switch (e.key) {
       case 'ArrowUp':
-        return props.onChange(+e.target.textContent! + (props.step ?? 1));
+        return props.onChange(
+          Number(e.target.textContent!) + (props.step ?? 1),
+        );
       case 'ArrowDown':
-        return props.onChange(+e.target.textContent! - (props.step ?? 1));
+        return props.onChange(
+          Number(e.target.textContent!) - (props.step ?? 1),
+        );
     }
   };
 
@@ -46,9 +50,8 @@ export const SettingsItemNumber: Component<SSettingsItemNumberProps> = (
           on:keydown={handleKeyDown}
           onBlur={(e) => {
             try {
-              props.onChange(+e.currentTarget.textContent!);
+              props.onChange(Number(e.currentTarget.textContent!));
             } finally {
-              // eslint-disable-next-line no-param-reassign
               e.currentTarget.textContent = `${props.value}`;
             }
           }}

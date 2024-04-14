@@ -1,4 +1,5 @@
 import { beforeEach, expect, it } from 'vitest';
+
 import { handleComicData, autoCloseFill } from './handleComicData';
 import type { FillEffect } from './store/image';
 
@@ -9,21 +10,18 @@ import type { FillEffect } from './store/image';
 // https://bbs.yamibo.com/thread-499050-1-1.html
 
 const mock = (
-  imgTypeList: ComicImg['type'][],
-  fillEffect: FillEffect = { '-1': true },
-) => ({
-  pageList: handleComicData(
+  imgTypeList: Array<ComicImg['type']>,
+  initFillEffect?: FillEffect,
+) => {
+  const fillEffect = { '-1': true, ...initFillEffect };
+  const pageList = handleComicData(
     imgTypeList.map(
-      (type): ComicImg => ({
-        type,
-        loadType: 'loaded',
-        src: '',
-      }),
+      (type): ComicImg => ({ type, loadType: 'loaded', src: '' }),
     ),
     fillEffect,
-  ),
-  fillEffect,
-});
+  );
+  return { pageList, fillEffect };
+};
 
 beforeEach(() => autoCloseFill.clear());
 

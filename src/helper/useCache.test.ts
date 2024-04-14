@@ -1,4 +1,5 @@
 import { expect, it, beforeEach } from 'vitest';
+
 import { useCache } from './useCache';
 import 'fake-indexeddb/auto';
 

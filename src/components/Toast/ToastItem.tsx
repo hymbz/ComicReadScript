@@ -2,16 +2,14 @@ import MdCheckCircle from '@material-design-icons/svg/round/check_circle.svg';
 import MdWarning from '@material-design-icons/svg/round/warning.svg';
 import MdError from '@material-design-icons/svg/round/error.svg';
 import MdInfo from '@material-design-icons/svg/round/info.svg';
-
-import type { Component } from 'solid-js';
-import { createEffect, createMemo, Show } from 'solid-js';
+import { type Component, createEffect, createMemo, Show } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
+
 import { _setState, setState } from './store';
+import { toast } from './toast';
+import classes from './index.module.css';
 
 import type { Toast } from '.';
-import { toast } from './toast';
-
-import classes from './index.module.css';
 
 const iconMap = {
   info: MdInfo,
@@ -32,7 +30,7 @@ const colorMap = {
 const dismissToast = (id: string) =>
   setState((state) => {
     state.map[id].onDismiss?.({ ...state.map[id] });
-    const i = state.list.findIndex((t) => t === id);
+    const i = state.list.indexOf(id);
     if (i !== -1) state.list.splice(i, 1);
     Reflect.deleteProperty(state.map, id);
   });
@@ -44,7 +42,9 @@ const resetToastUpdate = (id: string) =>
 export const ToastItem: Component<Toast> = (props) => {
   /** 是否要显示进度 */
   const showSchedule = createMemo(() =>
-    props.duration === Infinity && props.schedule ? true : undefined,
+    props.duration === Number.POSITIVE_INFINITY && props.schedule
+      ? true
+      : undefined,
   );
 
   const dismiss = (e: AnimationEvent | MouseEvent) => {
@@ -88,7 +88,12 @@ export const ToastItem: Component<Toast> = (props) => {
       <div class={classes.msg}>
         {typeof props.msg === 'string' ? props.msg : <props.msg />}
       </div>
-      <Show when={props.duration !== Infinity || props.schedule !== undefined}>
+      <Show
+        when={
+          props.duration !== Number.POSITIVE_INFINITY ||
+          props.schedule !== undefined
+        }
+      >
         <div
           ref={scheduleRef!}
           class={classes.schedule}

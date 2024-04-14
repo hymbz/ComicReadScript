@@ -81,6 +81,7 @@ declare const selected_tagname: string;
         }
       });
     }
+
     return;
   }
 
@@ -100,8 +101,8 @@ declare const selected_tagname: string;
     });
 
     try {
-      return res.responseText.match(getImgFromImgPageRe)![1];
-    } catch (error) {
+      return getImgFromImgPageRe.exec(res.responseText)![1];
+    } catch {
       throw new Error(t('site.ehentai.fetch_img_url_failed'));
     }
   };
@@ -113,7 +114,7 @@ declare const selected_tagname: string;
   /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (
     pageNum = 0,
-  ): Promise<[string, string][]> => {
+  ): Promise<Array<[string, string]>> => {
     const res = await request(
       `${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
       { errorText: t('site.ehentai.fetch_img_page_url_failed') },
@@ -139,17 +140,18 @@ declare const selected_tagname: string;
       ?.textContent?.replaceAll(',', '')
       .match(/\d+/g)
       ?.at(-1);
-    if (numText) return +numText;
+    if (numText) return Number(numText);
 
     const res = await request(window.location.href);
-    numText = res.responseText.match(
-      /(?<=<td class="gdt2">)\d+(?= pages<\/td>)/,
+    numText = /(?<=<td class="gdt2">)\d+(?= pages<\/td>)/.exec(
+      res.responseText,
     )?.[0];
-    if (numText) return +numText;
+    if (numText) return Number(numText);
 
     toast.error(t('site.changed_load_failed'));
     return 0;
   };
+
   const totalImgNum = await getImgNum();
   const placeValueNum = `${totalImgNum}`.length;
 
@@ -162,7 +164,7 @@ declare const selected_tagname: string;
     () => [...(mangaProps.adList ?? [])],
     () => {
       if (!mangaProps.adList?.size) return;
-      setStyle(
+      return setStyle(
         [...mangaProps.adList]
           .map((i) => {
             const alt = `${i + 1}`.padStart(placeValueNum, '0');
@@ -181,7 +183,7 @@ declare const selected_tagname: string;
     const thumbnailEleList: HTMLImageElement[] = [];
 
     querySelectorAll<HTMLImageElement>('.gdtl img').forEach((e) => {
-      const index = +e.alt - 1;
+      const index = Number(e.alt) - 1;
       if (Number.isNaN(index)) return;
       thumbnailEleList[index] = e;
       // 根据当前显示的图片获取一部分文件名
@@ -190,7 +192,7 @@ declare const selected_tagname: string;
     // 先根据文件名判断一次
     await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
     // 不行的话再用缩略图识别
-    if (!mangaProps.adList!.size)
+    if (mangaProps.adList!.size === 0)
       await getAdPageByContent(thumbnailEleList, mangaProps.adList);
   }
 
@@ -198,8 +200,9 @@ declare const selected_tagname: string;
     dynamicUpdate(async (setImg) => {
       comicReadModeDom.innerHTML = ` loading`;
 
-      const totalPageNum = +querySelector('.ptt td:nth-last-child(2)')!
-        .textContent!;
+      const totalPageNum = Number(
+        querySelector('.ptt td:nth-last-child(2)')!.textContent!,
+      );
       for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
         const startIndex = ehImgList.length;
         const imgPageUrlList = await getImgFromDetailsPage(pageNum);
@@ -239,7 +242,7 @@ declare const selected_tagname: string;
       errorText: t('site.ehentai.fetch_img_page_source_failed'),
     });
 
-    const nl = res.responseText.match(/nl\('(.+?)'\)/)?.[1];
+    const nl = /nl\('(.+?)'\)/.exec(res.responseText)?.[1];
     if (!nl) throw new Error(t('site.ehentai.fetch_img_url_failed'));
     const newUrl = new URL(url);
     newUrl.searchParams.set('nl', nl);
@@ -271,12 +274,12 @@ declare const selected_tagname: string;
   );
 
   setManga({
-    onExit: (isEnd) => {
+    onExit(isEnd) {
       if (isEnd) scrollIntoView('#cdiv');
       setManga('show', false);
     },
     // 在图片加载出错时刷新图片
-    onLoading: async (imgList, img) => {
+    async onLoading(imgList, img) {
       onLoading(imgList, img);
       if (!img) return;
       if (img.loadType !== 'error' || (await testImgUrl(img.src))) return;
@@ -286,7 +289,7 @@ declare const selected_tagname: string;
 
   setFab('initialShow', options.autoShow);
   comicReadModeDom.addEventListener('click', () =>
-    loadImgList(ehImgList.length ? ehImgList : undefined, true),
+    loadImgList(ehImgList.length > 0 ? ehImgList : undefined, true),
   );
 
   if (options.hotkeys_page_turn) {
@@ -312,7 +315,8 @@ declare const selected_tagname: string;
       toast.error(t('site.ehentai.html_changed_nhentai_failed'));
       return;
     }
-    const title = encodeURI(titleDom.innerText);
+
+    const title = encodeURI(titleDom.textContent!);
 
     const newTagLine = document.createElement('tr');
 
@@ -322,7 +326,7 @@ declare const selected_tagname: string;
         `https://nhentai.net/api/galleries/search?query=${title}`,
         { errorText: t('site.ehentai.nhentai_error'), noTip: true },
       );
-    } catch (_) {
+    } catch {
       newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
@@ -330,9 +334,10 @@ declare const selected_tagname: string;
           nhentai: `<a href='https://nhentai.net/search/?q=${title}' target="_blank" ><u>nhentai</u></a>`,
         })}
       </td>`;
-      taglistDom.appendChild(newTagLine);
+      taglistDom.append(newTagLine);
       return;
     }
+
     const nHentaiComicInfo = JSON.parse(res.responseText) as {
       result: Array<{
         id: number;
@@ -344,15 +349,14 @@ declare const selected_tagname: string;
     };
 
     // 构建新标签行
-    if (nHentaiComicInfo.result.length) {
+    if (nHentaiComicInfo.result.length > 0) {
       let temp = '<td class="tc">nhentai:</td><td>';
       let i = nHentaiComicInfo.result.length;
       while (i) {
         i -= 1;
         const tempComicInfo = nHentaiComicInfo.result[i];
-        const _title = tempComicInfo.title.japanese
-          ? tempComicInfo.title.japanese
-          : tempComicInfo.title.english;
+        const _title =
+          tempComicInfo.title.japanese || tempComicInfo.title.english;
         temp += `
           <div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${_title}">
             <a
@@ -364,16 +368,18 @@ declare const selected_tagname: string;
             </a>
           </div>`;
       }
+
       newTagLine.innerHTML = `${temp}</td>`;
     } else
       newTagLine.innerHTML =
         '<td class="tc">nhentai:</td><td class="tc" style="text-align: left;">Null</td>';
 
-    taglistDom.appendChild(newTagLine);
+    taglistDom.append(newTagLine);
 
     // 重写 _refresh_tagmenu_act 函数，加入脚本的功能
     const nhentaiImgList: Record<string, string[]> = {};
     const raw_refresh_tagmenu_act = unsafeWindow._refresh_tagmenu_act;
+    // eslint-disable-next-line func-names
     unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(
       a: HTMLAnchorElement,
     ) {
@@ -391,7 +397,7 @@ declare const selected_tagname: string;
           tagmenu_act_dom.querySelector('a[href="#"]')!;
 
         const { media_id, num_pages, images } =
-          nHentaiComicInfo.result[+a.getAttribute('nhentai-index')!];
+          nHentaiComicInfo.result[Number(a.getAttribute('nhentai-index')!)];
         // nhentai api 对应的扩展名
         const fileType = { j: 'jpg', p: 'png', g: 'gif' };
 
@@ -428,4 +434,4 @@ declare const selected_tagname: string;
       else raw_refresh_tagmenu_act(a) as unknown;
     };
   }
-})().catch((e) => log.error(e));
+})().catch((error) => log.error(error));

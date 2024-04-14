@@ -8,7 +8,7 @@ GM_xmlhttpRequest({
     // eslint-disable-next-line no-eval
     eval(`(async () => {${r.responseText}})();`);
   },
-  onerror: (e) => {
+  onerror(e) {
     if (e.status === 0) throw new Error('dev server not running');
     throw new Error(String(e));
   },

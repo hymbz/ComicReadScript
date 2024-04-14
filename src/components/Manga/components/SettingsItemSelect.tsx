@@ -1,12 +1,11 @@
-import { For, createEffect } from 'solid-js';
-import type { JSX } from 'solid-js';
-
-import { SettingsItem } from './SettingsItem';
+import { type JSX, For, createEffect } from 'solid-js';
 
 import classes from '../index.module.css';
 
+import { SettingsItem } from './SettingsItem';
+
 export interface SettingsItemSelectProps<T> {
-  options: ([string, string] | [string])[];
+  options: Array<[string, string] | [string]>;
   name: string;
   value: T;
   class?: string;

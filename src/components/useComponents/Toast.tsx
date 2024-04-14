@@ -1,5 +1,6 @@
-import { mountComponents } from './helper';
 import { ToastStyle, Toaster, toast as _toast, ref } from '../Toast';
+
+import { mountComponents } from './helper';
 
 let dom: HTMLDivElement;
 
@@ -10,7 +11,7 @@ const init = () => {
   if (!document.getElementById('comicRead')) {
     const _dom = document.createElement('div');
     _dom.id = 'comicRead';
-    document.body.appendChild(_dom);
+    document.body.append(_dom);
   }
 
   dom = mountComponents('toast', () => (

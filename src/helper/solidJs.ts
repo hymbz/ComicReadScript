@@ -1,6 +1,8 @@
 import { createScheduled } from '@solid-primitives/scheduled';
-import type { Accessor, EffectFunction, MemoOptions } from 'solid-js';
 import {
+  type Accessor,
+  type EffectFunction,
+  type MemoOptions,
   createEffect,
   createRoot,
   getOwner,
@@ -8,6 +10,7 @@ import {
   createSignal,
   createMemo,
 } from 'solid-js';
+
 import { isEqual, throttle } from '.';
 
 /** 会自动设置 equals 的 createSignal */

@@ -1,6 +1,6 @@
-import type { SiteOptions } from 'main';
-import { autoUpdate, useInit, wait } from 'main';
+import { type SiteOptions, autoUpdate, useInit, wait } from 'main';
 import type { AsyncReturnType } from 'type-fest';
+
 import type { MangaProps } from '../components/Manga';
 
 export type UseInitFnMap = AsyncReturnType<typeof useInit>;
@@ -50,14 +50,14 @@ export const universalInit = async ({
 
   if (onExit)
     setManga({
-      onExit: (isEnd) => {
+      onExit(isEnd) {
         onExit?.(isEnd);
         setManga({ show: false });
       },
     });
 
   if (!SPA) {
-    if (onNext || onPrev) setManga({ onNext, onPrev });
+    if (onNext ?? onPrev) setManga({ onNext, onPrev });
     if (getCommentList) setManga({ commentList: await getCommentList() });
     return;
   }

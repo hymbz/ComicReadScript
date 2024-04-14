@@ -1,4 +1,5 @@
 import { createScheduled } from '@solid-primitives/scheduled';
+
 import { singleThreaded, triggerEleLazyLoad, wait, throttle, sleep } from '.';
 
 interface ImgData {
@@ -32,15 +33,17 @@ const closeScrollLock = (delay: number) => {
     scrollLock.timeout = 0;
   }, delay);
 };
+
 export const openScrollLock = (time: number) => {
   scrollLock.enabled = true;
   closeScrollLock(time);
 };
+
 window.addEventListener('wheel', () => openScrollLock(1000));
 
 /** 用于判断是否是图片 url 的正则 */
 const isImgUrlRe =
-  /^(((https?|ftp|file):)?\/)?\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#%=~_|]$/;
+  /^(((https?|ftp|file):)?\/)?\/[-\w+&@#/%?=~|!:,.;]+[-\w+&@#%=~|]$/;
 
 /** 检查元素属性，将格式为图片 url 的属性值作为 src */
 const tryCorrectUrl = (e: Element) => {
@@ -75,6 +78,7 @@ const isLazyLoaded = (e: HTMLImageElement, oldSrc?: string) => {
 };
 
 export const imgMap = new Map<HTMLImageElement, ImgData>();
+// eslint-disable-next-line prefer-const
 let imgShowObserver: IntersectionObserver;
 
 const getImg = (e: HTMLImageElement) => imgMap.get(e) ?? createImgData();
@@ -108,6 +112,7 @@ imgShowObserver = new IntersectionObserver((entries) =>
         observerTimeout: window.setTimeout(handleTrigged, 290, ele),
       });
     }
+
     const timeoutID = imgMap.get(ele)?.observerTimeout;
     if (timeoutID) window.clearTimeout(timeoutID);
   }),
@@ -141,13 +146,12 @@ export const triggerLazyLoad = singleThreaded(
       if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));
     });
 
-    for (let i = 0; i < targetImgList.length; i++) {
+    for (const e of targetImgList) {
       await wait(() => !scrollLock.enabled);
       const waitTime = getWaitTime();
 
       await triggerTurnPage(waitTime);
 
-      const e = targetImgList[i];
       if (!needTrigged(e)) continue;
       tryCorrectUrl(e);
 
@@ -162,6 +166,6 @@ export const triggerLazyLoad = singleThreaded(
 
     await triggerTurnPage();
 
-    if (targetImgList.length !== 0) state.continueRun = true;
+    if (targetImgList.length > 0) state.continueRun = true;
   },
 );

@@ -1,7 +1,8 @@
 import { clamp, isEqual, debounce } from 'helper';
+
 import { autoCloseFill, handleComicData } from '../handleComicData';
-import type { State } from '../store';
-import { store } from '../store';
+import { type State, store } from '../store';
+
 import { scrollTo, setOption } from './helper';
 import {
   activeImgIndex,
@@ -20,8 +21,10 @@ const loadImg = (state: State, index: number, draft: LoadImgDraft) => {
     img.loadType = 'loading';
     draft.editNum += 1;
   }
+
   return draft.editNum >= draft.loadNum;
 };
+
 const loadPage = (state: State, index: number, draft: LoadImgDraft) =>
   state.pageList[index]?.some((i) => loadImg(state, i, draft));
 
@@ -32,7 +35,11 @@ const loadPage = (state: State, index: number, draft: LoadImgDraft) =>
  * @param loadNum 加载图片的数量
  * @returns 返回是否成功加载了未加载图片
  */
-const loadPageImg = (state: State, loadPageNum = Infinity, loadNum = 2) => {
+const loadPageImg = (
+  state: State,
+  loadPageNum = Number.POSITIVE_INFINITY,
+  loadNum = 2,
+) => {
   const draft: LoadImgDraft = { editNum: 0, loadNum };
   const targetPage = state.activePageIndex + loadPageNum;
 
@@ -57,7 +64,7 @@ export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
     const newVal = set
       ? zoomLevel
       : store.option.scrollModeImgScale + zoomLevel;
-    draftOption.scrollModeImgScale = clamp(0.1, +newVal.toFixed(2), 3);
+    draftOption.scrollModeImgScale = clamp(0.1, Number(newVal.toFixed(2)), 3);
   });
 
   // 在卷轴模式下缩放时保持滚动进度不变
@@ -83,9 +90,9 @@ export const updateImgLoadType = debounce((state: State) => {
     // 根据设置决定是否要继续加载其余图片
     (!state.option.alwaysLoadAllImg && state.imgList.length > 60) ||
     // 加载当前页后面的图片
-    loadPageImg(state, Infinity, 5) ||
+    loadPageImg(state, Number.POSITIVE_INFINITY, 5) ||
     // 加载当前页前面的图片
-    loadPageImg(state, -Infinity, 5)
+    loadPageImg(state, Number.NEGATIVE_INFINITY, 5)
   );
 });
 
@@ -94,8 +101,9 @@ export const updatePageData = (state: State) => {
   const lastActiveImgIndex = activeImgIndex();
 
   let newPageList: PageList = [];
-  if (isOnePageMode()) newPageList = state.imgList.map((_, i) => [i]);
-  else newPageList = handleComicData(state.imgList, state.fillEffect);
+  newPageList = isOnePageMode()
+    ? state.imgList.map((_, i) => [i])
+    : handleComicData(state.imgList, state.fillEffect);
   if (!isEqual(state.pageList, newPageList)) state.pageList = newPageList;
   updateImgLoadType(state);
 

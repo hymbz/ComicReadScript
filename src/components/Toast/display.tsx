@@ -2,8 +2,9 @@
  * 用于测试时显示组件
  */
 
-import { toast } from '.';
 import { Toaster } from './Toaster';
+
+import { toast } from '.';
 
 export default function Display() {
   const duration = 1000 * 3;
@@ -36,7 +37,9 @@ export default function Display() {
 
       <button
         on:click={() =>
-          toast.error('加载图片中，请稍候', { duration: Infinity })
+          toast.error('加载图片中，请稍候', {
+            duration: Number.POSITIVE_INFINITY,
+          })
         }
       >
         永久显示

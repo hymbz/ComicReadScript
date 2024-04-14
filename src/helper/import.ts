@@ -10,6 +10,7 @@ const gmApiList = Object.keys(gmApi);
 
 const crsLib: Window['crsLib'] = {
   // 有些 cjs 模块会检查这个，所以在这里声明下
+  // eslint-disable-next-line n/prefer-global/process
   process: { env: { NODE_ENV: process.env.NODE_ENV } },
   ...gmApi,
 };
@@ -32,9 +33,9 @@ const evalCode = (code: string) => {
  */
 const selfImportSync = (name: string) => {
   const code =
-    name !== 'main'
-      ? GM_getResourceText(name.replaceAll('/', '|'))
-      : inject('main');
+    name === 'main'
+      ? inject('main')
+      : GM_getResourceText(name.replaceAll('/', '|'));
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
@@ -70,11 +71,11 @@ const selfImportSync = (name: string) => {
 };
 
 interface SelfModule {
+  [key: string | symbol]: unknown;
   default: {
     (...args: unknown[]): unknown;
     [key: string | symbol]: unknown;
   };
-  [key: string | symbol]: unknown;
 }
 
 /**
@@ -85,6 +86,7 @@ export const require = (name: string) => {
   // 为了应对 rollup 打包时的工具函数 _interopNamespace，要给外部库加上 __esModule 标志
   const __esModule = { value: true };
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const selfLibProxy = () => {};
   selfLibProxy.default = {};
 
@@ -101,17 +103,18 @@ export const require = (name: string) => {
       const module = crsLib[name];
       const ModuleFunc =
         typeof module.default === 'function' ? module.default : module;
-      return ModuleFunc(...args) as object;
+      return ModuleFunc(...args) as Record<string, unknown>;
     },
     construct(_, args) {
       if (!crsLib[name]) selfImportSync(name);
       const module = crsLib[name];
       const ModuleFunc =
         typeof module.default === 'function' ? module.default : module;
-      return new ModuleFunc(...args) as object;
+      return new ModuleFunc(...args) as Record<string, unknown>;
     },
   });
 
   return selfDefault as unknown;
 };
+
 crsLib.require = require;

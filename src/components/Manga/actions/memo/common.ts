@@ -1,6 +1,8 @@
 import { createRootMemo, createThrottleMemo } from 'helper/solidJs';
+
 import { store } from '../../store';
 import { findFillIndex } from '../../handleComicData';
+
 import { rootSize } from './observer';
 
 /** 是否为单页模式 */
@@ -45,8 +47,8 @@ const getImgMedian = (sizeFn: (value: ComicImg) => number) => {
   const list = store.imgList
     .filter((img) => img.loadType === 'loaded' && img.width)
     .map(sizeFn)
-    .sort();
-  if (!list.length) return null;
+    .sort((a, b) => a - b);
+  if (list.length === 0) return null;
   return list[Math.floor(list.length / 2)];
 };
 
@@ -77,12 +79,13 @@ export const imgHeightList = createRootMemo(() =>
 export const imgTopList = createRootMemo(() => {
   if (!store.option.scrollMode) return [];
 
-  const list = new Array<number>(imgHeightList().length);
+  const list = Array.from<number>({ length: imgHeightList().length });
   let top = 0;
   for (let i = 0; i < imgHeightList().length; i++) {
     list[i] = top;
     top += imgHeightList()[i] + store.option.scrollModeSpacing * 7;
   }
+
   return list;
 });
 

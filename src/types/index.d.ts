@@ -1,15 +1,11 @@
 import type { JSX, Component } from 'solid-js';
 
-import 'solid-js';
-
 declare global {
   declare const isDevMode: boolean;
 
   type EventHandler<T = HTMLElement> = JSX.DOMAttributes<T>;
 
-  type ClassList = {
-    [k: string]: boolean | undefined;
-  };
+  type ClassList = Record<string, boolean | undefined>;
 
   type TrueValue<T> = Exclude<T, void | false | undefined | null>;
 
@@ -41,8 +37,8 @@ declare global {
 
   interface Window {
     crsLib?: {
-      GM_xmlhttpRequest: GM_xmlhttpRequest;
       [k: string]: any;
+      GM_xmlhttpRequest: GM_xmlhttpRequest;
     };
   }
 }

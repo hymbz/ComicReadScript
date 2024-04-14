@@ -1,7 +1,6 @@
 import { getFilesFromDataTransferItems } from '@placemarkio/flat-drop-files';
 
 import { loadNewImglist, _setState } from './store';
-
 import classes from './index.module.css';
 
 const setDragging = (v: boolean) => _setState('dragging', v);
@@ -11,7 +10,9 @@ export const handleDrag = (ref: HTMLElement) => {
     setDragging(false);
     e.preventDefault();
     if (!e.dataTransfer) return;
-    loadNewImglist(await getFilesFromDataTransferItems(e.dataTransfer.items));
+    return loadNewImglist(
+      await getFilesFromDataTransferItems(e.dataTransfer.items),
+    );
   });
 
   // 防止拖拽文件被浏览器处理

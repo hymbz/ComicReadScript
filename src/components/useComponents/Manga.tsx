@@ -1,15 +1,20 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
-
 import { t } from 'helper/i18n';
 import { createStore } from 'solid-js/store';
 import { createEffectOn, createRootMemo } from 'helper/solidJs';
-import { DownloadButton } from './DownloadButton';
+
 import { IconButton, IconButtonStyle } from '../IconButton';
-import type { MangaProps } from '../Manga';
-import { buttonListDivider, MangaStyle, Manga, store } from '../Manga';
+import {
+  type MangaProps,
+  buttonListDivider,
+  MangaStyle,
+  Manga,
+} from '../Manga';
+
+import { DownloadButton } from './DownloadButton';
 import { mountComponents } from './helper';
 
-export { store };
+export { store } from '../Manga';
 export { showPageList } from '../Manga/actions';
 
 let dom: HTMLDivElement;
@@ -77,7 +82,7 @@ export const useManga = async (initProps?: Partial<UseMangaProps>) => {
       dom.style.setProperty('z-index', '2147483647', 'important');
     }
 
-    if (imgList().length && props.show) {
+    if (imgList().length > 0 && props.show) {
       dom.setAttribute('show', '');
       document.documentElement.style.overflow = 'hidden';
     } else {
@@ -94,7 +99,7 @@ export const useManga = async (initProps?: Partial<UseMangaProps>) => {
 
   setProps({
     onExit: () => setProps('show', false),
-    editButtonList: (list) => {
+    editButtonList(list) {
       // 在设置按钮上方放置下载按钮
       list.splice(-1, 0, DownloadButton);
       return [

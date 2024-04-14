@@ -1,10 +1,14 @@
-import type { AsyncUnzipOptions, Unzipped } from 'fflate';
-import { unzip as unzipCb } from 'fflate';
-
+import {
+  type AsyncUnzipOptions,
+  type Unzipped,
+  unzip as unzipCb,
+} from 'fflate';
 import { t } from 'helper/i18n';
-import type { ZipData } from '.';
+
 import { toast } from '../../../components/Toast';
 import { createObjectURL, isSupportFile } from '../helper';
+
+import { type ZipData } from '.';
 
 const fflateUnzip = (data: Uint8Array, opts: AsyncUnzipOptions) =>
   new Promise<Unzipped>((resolve, reject) => {
@@ -24,14 +28,14 @@ export const fflate = async ({ zipFile, extension }: ZipData) => {
       filter: ({ name }) => isSupportFile(name) === 'img',
     });
 
-    return Promise.all(
+    return await Promise.all(
       Object.entries(res).map(async ([name, data]) => {
         const url = await createObjectURL(new Blob([data.buffer]));
         if (!url) throw new Error(t('pwa.alert.img_data_error'));
         return { name, url };
       }),
     );
-  } catch (e) {
+  } catch {
     toast.error(`fflate ${t('pwa.alert.unzip_error')}`);
     return [];
   }

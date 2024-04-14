@@ -1,10 +1,9 @@
 import MdOutlineFormatTextdirectionLToR from '@material-design-icons/svg/round/format_textdirection_l_to_r.svg';
 import MdOutlineFormatTextdirectionRToL from '@material-design-icons/svg/round/format_textdirection_r_to_l.svg';
-
 import { Show, type Component } from 'solid-js';
-
 import { lang, setLang, t } from 'helper/i18n';
 import { needDarkMode, clamp, throttle } from 'helper';
+
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
 import { SettingHotkeys } from './components/SettingHotkeys';
@@ -20,15 +19,13 @@ import {
   zoomScrollModeImg,
 } from './actions';
 import { _setState, setState, store } from './store';
-
 import classes from './index.module.css';
 import { SettingsItemNumber } from './components/SettingsItemNumber';
 import { areaArrayMap } from './components/TouchArea';
 
-export type SettingList = (
-  | [string, Component]
-  | [string, Component, boolean]
-)[];
+export type SettingList = Array<
+  [string, Component] | [string, Component, boolean]
+>;
 
 /** 默认菜单项 */
 export const defaultSettingList: () => SettingList = () => [
@@ -170,8 +167,9 @@ export const defaultSettingList: () => SettingList = () => [
             maxLength={5}
             onChange={(val) => {
               if (Number.isNaN(val)) return;
+              const newVal = clamp(0, val, Number.POSITIVE_INFINITY);
               setOption((draftOption) => {
-                draftOption.scrollModeSpacing = clamp(0, val, Infinity);
+                draftOption.scrollModeSpacing = newVal;
               });
             }}
             value={Math.round(store.option.scrollModeSpacing)}
@@ -226,7 +224,7 @@ export const defaultSettingList: () => SettingList = () => [
           onChange={(val) => {
             if (Number.isNaN(val)) return;
             setOption((draftOption) => {
-              draftOption.preloadPageNum = clamp(0, val, 99999);
+              draftOption.preloadPageNum = clamp(0, val, 99_999);
             });
           }}
           value={store.option.preloadPageNum}

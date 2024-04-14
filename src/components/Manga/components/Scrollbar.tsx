@@ -1,7 +1,14 @@
-import type { Component, JSX } from 'solid-js';
-import { createSignal, createMemo, Show, onMount } from 'solid-js';
+import {
+  type Component,
+  type JSX,
+  createSignal,
+  createMemo,
+  Show,
+  onMount,
+} from 'solid-js';
 import { boolDataVal, debounce } from 'helper';
 import { createMemoMap, createThrottleMemo } from 'helper/solidJs';
+
 import { refs, store } from '../store';
 import { useDrag } from '../hooks/useDrag';
 import {
@@ -15,10 +22,9 @@ import {
   showPageList,
   scrollLength,
 } from '../actions';
+import classes from '../index.module.css';
 
 import { ScrollbarPageStatus } from './ScrollbarPageStatus';
-
-import classes from '../index.module.css';
 
 /** 滚动条 */
 export const Scrollbar: Component = () => {
@@ -40,7 +46,9 @@ export const Scrollbar: Component = () => {
   };
 
   /** 是否强制显示滚动条 */
-  const showScrollbar = createMemo(() => store.show.scrollbar || !!penetrate());
+  const showScrollbar = createMemo(
+    () => store.show.scrollbar || Boolean(penetrate()),
+  );
 
   /** 滚动条提示文本 */
   const tipText = createThrottleMemo(() => {

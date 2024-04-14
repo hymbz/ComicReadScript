@@ -1,6 +1,5 @@
 import { createMutable } from 'solid-js/store';
 import { onMount } from 'solid-js';
-
 import { toast, request, log } from 'main';
 import dmzjDecrypt from 'dmzjDecrypt';
 
@@ -16,11 +15,11 @@ interface chapterData {
 export interface ComicDetail {
   title: string;
   last_updatetime: Text;
-  last_update_chapter_id: number | null;
-  chapters: {
+  last_update_chapter_id: number | undefined;
+  chapters: Array<{
     name: string;
     list: chapterData[];
-  }[];
+  }>;
 }
 
 /** dmzj 的章节信息 */
@@ -58,7 +57,7 @@ export const getViewpoint = async (comicId: Text, chapterId: Text) => {
     return JSON.parse(res.responseText).data.list.map(
       ({ title, num }) => `${title} [+${num}]`,
     ) as string[];
-  } catch (_) {
+  } catch {
     return [];
   }
 };
@@ -85,7 +84,7 @@ const getComicDetail_base = async (comicId: string): Promise<ComicDetail> => {
   return {
     title,
     last_updatetime,
-    last_update_chapter_id: null,
+    last_update_chapter_id: undefined,
     chapters: [
       {
         name: '连载',
@@ -141,7 +140,7 @@ const getComicDetail_traversal = async (
 
   toast.warn('正在通过遍历获取所有章节，耗时可能较长', {
     id: 'traversalTip',
-    duration: Infinity,
+    duration: Number.POSITIVE_INFINITY,
   });
 
   while (nextId) {
@@ -156,7 +155,7 @@ const getComicDetail_traversal = async (
         updatetime,
       });
       nextId = prev_chap_id;
-    } catch (_) {
+    } catch {
       nextId = undefined;
     }
   }
@@ -175,14 +174,14 @@ export const useComicDetail = (comicId: string) => {
   ];
 
   onMount(async () => {
-    for (let i = 0; i < apiFn.length; i++) {
+    for (const api of apiFn) {
       try {
-        Object.assign(data, await apiFn[i](comicId, data));
+        Object.assign(data, await api(comicId, data));
         if (data.chapters?.some((chapter) => chapter.list.length)) return;
-      } catch (_) {}
+      } catch {}
     }
 
-    toast.error('漫画数据获取失败', { duration: Infinity });
+    toast.error('漫画数据获取失败', { duration: Number.POSITIVE_INFINITY });
   });
 
   return data;

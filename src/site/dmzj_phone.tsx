@@ -10,8 +10,12 @@ import {
   universalInit,
 } from 'main';
 import dmzjDecrypt from 'dmzjDecrypt';
-import type { ChapterInfo } from '../helper/dmzjApi';
-import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
+
+import {
+  type ChapterInfo,
+  getChapterInfo,
+  getViewpoint,
+} from '../helper/dmzjApi';
 
 (async () => {
   const { setManga, init } = await useInit('dmzj');
@@ -22,7 +26,10 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
       // 跳过正常漫画
       if (Reflect.has(unsafeWindow, 'obj_id')) return;
 
-      const comicId = parseInt(window.location.pathname.split('/')[2], 10);
+      const comicId = Number.parseInt(
+        window.location.pathname.split('/')[2],
+        10,
+      );
       if (Number.isNaN(comicId)) {
         document.body.childNodes[0].remove();
         insertNode(
@@ -124,6 +131,7 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
       );
       break;
     }
+
     case 'view': {
       // 如果不是隐藏漫画，直接进入阅读模式
       if (unsafeWindow.comic_id) {
@@ -133,8 +141,8 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
           name: 'dmzj',
           getImgList: () =>
             querySelectorAll('#commicBox img')
-              .map((e) => e.getAttribute('data-original'))
-              .filter((src) => src) as string[],
+              .map((e) => e.dataset.original)
+              .filter(Boolean) as string[],
           getCommentList: () =>
             getViewpoint(unsafeWindow.subId, unsafeWindow.chapterId),
           onNext: querySelectorClick('#loadNextChapter'),
@@ -144,8 +152,8 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
       }
 
       const tipDom = document.createElement('p');
-      tipDom.innerText = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
-      document.body.appendChild(tipDom);
+      tipDom.textContent = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
+      document.body.append(tipDom);
 
       let data: ChapterInfo | undefined;
 
@@ -155,12 +163,12 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
         [, comicId, chapterId] = /(\d+)\/(\d+)/.exec(window.location.pathname)!;
         data = await getChapterInfo(comicId, chapterId);
       } catch (error) {
-        toast.error('获取漫画数据失败', { duration: Infinity });
-        tipDom.innerText = (error as Error).message;
+        toast.error('获取漫画数据失败', { duration: Number.POSITIVE_INFINITY });
+        tipDom.textContent = (error as Error).message;
         throw error;
       }
 
-      tipDom.innerText = `加载完成，即将进入阅读模式`;
+      tipDom.textContent = `加载完成，即将进入阅读模式`;
 
       const {
         folder,
@@ -171,11 +179,11 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
         page_url,
       } = data;
 
-      document.title = `${chapter_name} ${folder.split('/').at(1)}` ?? folder;
+      document.title = `${chapter_name} ${folder.split('/').at(1)}`;
 
       setManga({
         // 进入阅读模式后禁止退出，防止返回空白页面
-        onExit: () => {},
+        onExit: undefined,
         onNext: next_chap_id
           ? () => {
               window.location.href = `https://m.dmzj.com/view/${comic_id}/${next_chap_id}.html`;
@@ -190,7 +198,7 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
       });
 
       init(() => {
-        if (page_url.length) return page_url;
+        if (page_url.length > 0) return page_url;
 
         tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
         return [];
@@ -200,4 +208,4 @@ import { getChapterInfo, getViewpoint } from '../helper/dmzjApi';
       break;
     }
   }
-})().catch((e) => log.error(e));
+})().catch((error) => log.error(error));

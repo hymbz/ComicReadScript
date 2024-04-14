@@ -1,9 +1,11 @@
 import { plimit } from 'helper';
 import { t } from 'helper/i18n';
-import type { ZipData } from '.';
+
 import type { ImgFile } from '../store';
 import { toast } from '../../../components/Toast';
 import { createObjectURL, isSupportFile, loadScript } from '../helper';
+
+import type { ZipData } from '.';
 
 loadScript('/libunrar/rpc.js');
 
@@ -37,6 +39,7 @@ export const waitRPC = () =>
       resolve();
       return;
     }
+
     const id = window.setInterval(() => {
       if (!Reflect.has(window, 'RPC')) return;
       window.clearInterval(id);
@@ -90,7 +93,7 @@ export const libunrar = async (
 
   try {
     const ret = await rpc.unrar(unzipData, password);
-    return findImgFile(ret, tip);
+    return await findImgFile(ret, tip);
   } catch (error) {
     switch (error) {
       case 'Password was not provided for encrypted file header':
@@ -101,6 +104,7 @@ export const libunrar = async (
             throw: new Error(error as string),
           });
         }
+
         // eslint-disable-next-line no-alert
         const newPassword = prompt(t('pwa.message.enter_password'));
         if (!newPassword) return [];

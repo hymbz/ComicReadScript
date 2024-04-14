@@ -1,6 +1,6 @@
-import type { Component, JSX } from 'solid-js';
-import { throttle } from 'helper';
 import {
+  type Component,
+  type JSX,
   For,
   onCleanup,
   onMount,
@@ -9,10 +9,12 @@ import {
   mergeProps,
   Show,
 } from 'solid-js';
-
+import { throttle } from 'helper';
 import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
+
 import classes, { css as style } from './index.module.css';
 
+// eslint-disable-next-line unicorn/prefer-export-from
 export const FabStyle = style;
 
 export interface FabProps {
@@ -53,7 +55,7 @@ export const Fab: Component<FabProps> = (_props) => {
   // 绑定滚动事件
   const handleScroll = throttle((e: Event) => {
     // 跳过非用户操作的滚动
-    if (e.isTrusted === false) return;
+    if (!e.isTrusted) return;
     if (window.scrollY === lastY) return;
     setShow(
       // 滚动到底部时显示

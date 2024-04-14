@@ -1,5 +1,4 @@
-import type { BigInteger } from 'jsencrypt/lib/lib/jsbn/jsbn';
-import { parseBigInt } from 'jsencrypt/lib/lib/jsbn/jsbn';
+import { type BigInteger, parseBigInt } from 'jsencrypt/lib/lib/jsbn/jsbn';
 import { b64tohex } from 'jsencrypt/lib/lib/jsbn/base64';
 import { JSEncryptRSAKey } from 'jsencrypt/lib/JSEncryptRSAKey';
 import { Root } from 'protobufjs';
@@ -206,15 +205,15 @@ export interface ComicDetailInfo {
     title: string;
     last_updatetime: number;
     last_update_chapter_id: number;
-    chapters: {
+    chapters: Array<{
       title: string;
-      data: {
+      data: Array<{
         chapter_id: number;
         chapter_order: number;
         chapter_title: string;
         updatetime: number;
-      }[];
-    }[];
+      }>;
+    }>;
   };
 }
 
@@ -225,6 +224,7 @@ const base64ToArrayBuffer = (str: string) => {
   const binaryString = window.atob(str);
   const bytes = new Uint8Array(binaryString.length);
   for (let i = 0; i < binaryString.length; i++)
+    // eslint-disable-next-line unicorn/prefer-code-point
     bytes[i] = binaryString.charCodeAt(i);
   return bytes;
 };
@@ -233,6 +233,7 @@ const arrayBufferToBase64 = (buffer: Uint8Array) => {
   let binary = '';
   const bytes = new Uint8Array(buffer);
   const len = bytes.byteLength;
+  // eslint-disable-next-line unicorn/prefer-code-point
   for (let i = 0; i < len; i++) binary += String.fromCharCode(bytes[i]);
   return window.btoa(binary);
 };
@@ -252,7 +253,7 @@ const pkcs1unpad2 = (d: BigInteger, n: number) => {
 const customDecrypt = (t: string) => {
   const e = parseBigInt(t, 16);
   const i = key.doPrivate(e);
-  if (i == null) return null;
+  if (i === null) return null;
   // eslint-disable-next-line no-bitwise
   return pkcs1unpad2(i, (((key as any).n.bitLength() as number) + 7) >> 3);
 };
@@ -272,9 +273,11 @@ const utilsDmzjDecrypt = (str: string) => {
     i11++;
     i10 = i11 * 128;
   }
+
   return Uint8Array.from(bytes);
 };
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default <T = ComicDetailInfo>(str: string) => {
   const bytes = utilsDmzjDecrypt(str);
   return message.decode(bytes) as T;

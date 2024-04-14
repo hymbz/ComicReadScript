@@ -1,8 +1,8 @@
 import type { Component } from 'solid-js';
 
-import { SettingsItem } from './SettingsItem';
-
 import classes from '../index.module.css';
+
+import { SettingsItem } from './SettingsItem';
 
 export interface SettingsItemSwitchProps {
   name: string;

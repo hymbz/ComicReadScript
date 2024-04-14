@@ -3,14 +3,13 @@
  */
 
 import { createSignal } from 'solid-js';
-
 import Filter1 from '@material-design-icons/svg/round/looks_one.svg';
 import Filter2 from '@material-design-icons/svg/round/looks_two.svg';
 import Filter3 from '@material-design-icons/svg/round/looks_3.svg';
 
-import { Fab } from '.';
-
 import { IconButton } from '../IconButton';
+
+import { Fab } from '.';
 
 export default function Display() {
   const [progress, setProgress] = createSignal(0);
@@ -52,7 +51,7 @@ export default function Display() {
       <input
         type="number"
         onChange={(e) => {
-          setProgress(+e.target.value / 10);
+          setProgress(Number(e.target.value) / 10);
         }}
       />
       <input
@@ -74,7 +73,7 @@ export default function Display() {
       <div
         style={{
           position: 'fixed',
-          'z-index': 999999999,
+          'z-index': 999_999_999,
           right: '3em',
           bottom: '2em',
         }}

@@ -1,8 +1,9 @@
 import { createRoot, createMemo } from 'solid-js';
 import { clamp, approx } from 'helper';
-import type { PointerState, UseDrag } from '../hooks/useDrag';
-import type { State } from '../store';
-import { store, setState, refs } from '../store';
+
+import { type PointerState, type UseDrag } from '../hooks/useDrag';
+import { type State, store, setState, refs } from '../store';
+
 import { resetUI } from './helper';
 import { closeScrollLock } from './turnPage';
 
@@ -151,6 +152,7 @@ export const handleZoomDrag: UseDrag = ({
       if (animationId) cancelAnimation();
       break;
     }
+
     case 'move': {
       if (animationId) cancelAnimation();
       mouse.x += x - lx;
@@ -159,6 +161,7 @@ export const handleZoomDrag: UseDrag = ({
         animationId = requestAnimationFrame(handleDragAnima);
       break;
     }
+
     case 'up': {
       // 当双指捏合结束，一个手指抬起时，将剩余的指针当作刚点击来处理
       if (pinchZoom) {
@@ -167,6 +170,7 @@ export const handleZoomDrag: UseDrag = ({
         mouse.y = store.zoom.offset.y;
         return;
       }
+
       if (animationId) cancelAnimationFrame(animationId);
       animationId = requestAnimationFrame(handleSlideAnima);
     }
@@ -215,16 +219,19 @@ export const handlePinchZoom: UseDrag = ({ type }) => {
       initScale = store.zoom.scale;
       break;
     }
+
     case 'up': {
       const [a, b] = [...touches.values()];
       initDistance = getDistance(a, b);
       break;
     }
+
     case 'move': {
       if (animationId === null)
         animationId = requestAnimationFrame(handlePinchZoomAnima);
       break;
     }
+
     case 'cancel': {
       const [a, b] = [...touches.values()];
       initDistance = getDistance(a, b);

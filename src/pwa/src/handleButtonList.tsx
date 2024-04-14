@@ -1,10 +1,10 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
-
 import { t } from 'helper/i18n';
+
 import { IconButton } from '../../components/IconButton';
-import type { MangaProps } from '../../components/Manga';
-import { buttonListDivider } from '../../components/Manga';
+import { type MangaProps, buttonListDivider } from '../../components/Manga';
 import { DownloadButton } from '../../components/useComponents/DownloadButton';
+
 import { handleExit } from './store';
 
 const ExitButton = () => (

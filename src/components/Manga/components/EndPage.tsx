@@ -1,5 +1,5 @@
-import type { Component } from 'solid-js';
 import {
+  type Component,
   createMemo,
   createEffect,
   createSignal,
@@ -8,12 +8,13 @@ import {
   Show,
 } from 'solid-js';
 import { t } from 'helper/i18n';
+
 import { stopPropagation } from '../helper';
 import { _setState, store } from '../store';
 import { bindRef, focus, turnPage } from '../actions';
-import { dir } from './TouchArea';
-
 import classes from '../index.module.css';
+
+import { dir } from './TouchArea';
 
 let delayTypeTimer = 0;
 
@@ -66,6 +67,7 @@ export const EndPage: Component = () => {
         if (store.prop.Exit) return t('end_page.tip.exit');
         break;
     }
+
     return '';
   });
 

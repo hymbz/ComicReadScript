@@ -1,8 +1,13 @@
-import type { Component } from 'solid-js';
-import { For, createSignal, onCleanup, onMount } from 'solid-js';
+import {
+  type Component,
+  For,
+  createSignal,
+  onCleanup,
+  onMount,
+} from 'solid-js';
+
 import { store } from './store';
 import { ToastItem } from './ToastItem';
-
 import classes from './index.module.css';
 
 export const [ref, setRef] = createSignal<HTMLElement>();
@@ -16,6 +21,7 @@ export const Toaster: Component = () => {
     const handleVisibilityChange = () => {
       setVisible(document.visibilityState === 'visible');
     };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     onCleanup(() =>
       document.removeEventListener('visibilitychange', handleVisibilityChange),

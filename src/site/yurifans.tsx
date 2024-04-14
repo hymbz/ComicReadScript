@@ -18,7 +18,7 @@ declare const b2token: string;
   if (options.自动签到)
     (async () => {
       // 跳过未登录的情况
-      if (typeof b2token === 'undefined' || !b2token) return;
+      if (!globalThis.b2token) return;
 
       const todayString = new Date().toLocaleDateString('zh-CN');
       // 判断当前日期与上次成功签到日期是否相同
@@ -33,12 +33,12 @@ declare const b2token: string;
         const data = JSON.parse(res.responseText);
 
         // 首次成功签到 或 重复签到
-        if (!(data?.mission?.date || !Number.isNaN(+data)))
+        if (!(data?.mission?.date || !Number.isNaN(Number(data))))
           throw new Error('签到失败');
 
         toast('自动签到成功');
         localStorage.setItem('signDate', todayString);
-      } catch (e) {
+      } catch {
         toast.error('自动签到失败');
       }
     })();
@@ -60,12 +60,12 @@ declare const b2token: string;
     needAutoShow.val = false;
     const { loadImgList } = init(() => []);
 
-    const imgListMap: HTMLCollectionOf<HTMLImageElement>[] = [];
+    const imgListMap: Array<HTMLCollectionOf<HTMLImageElement>> = [];
 
-    const loadChapterImg = (i: number) => {
+    const loadChapterImg = async (i: number) => {
       const imgList = imgListMap[i];
-      loadImgList(
-        [...imgList].map((e) => e.getAttribute('data-src')!),
+      await loadImgList(
+        [...imgList].map((e) => e.dataset.src!),
         true,
       );
 
@@ -87,7 +87,7 @@ declare const b2token: string;
           (imgRoot.style.height &&
             imgRoot.style.height.split('.')[0].length <= 2)
         )
-          loadChapterImg(i);
+          return loadChapterImg(i);
       });
     });
     return;

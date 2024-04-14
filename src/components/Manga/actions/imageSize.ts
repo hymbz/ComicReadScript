@@ -1,9 +1,10 @@
 import { createRoot } from 'solid-js';
 import { getImgSize, plimit, singleThreaded } from 'helper';
 import { createEffectOn } from 'helper/solidJs';
-import type { State } from '../store';
-import { setState, store } from '../store';
+
+import { type State, setState, store } from '../store';
 import { isWideImg } from '../handleComicData';
+
 import { resetImgState, updatePageData } from './image';
 import { rootSize } from './memo';
 
@@ -72,6 +73,7 @@ export const updateImgSize = (i: number, width: number, height: number) => {
           state.flag.autoLong = true;
         // fall through
       }
+
       // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
       case 'wide': {
         if (state.flag.autoWide || !checkImgTypeCount(state, i, 3, isWideImg))
@@ -109,7 +111,7 @@ export const updateImgSize = (i: number, width: number, height: number) => {
 createRoot(() => {
   // 预加载所有图片的尺寸
   createEffectOn(
-    () => store.imgList,
+    () => store.imgList.join(','),
     singleThreaded((state) =>
       plimit(
         store.imgList.map((img, i) => async () => {
@@ -142,6 +144,7 @@ createRoot(() => {
           isEdited = true;
           Reflect.deleteProperty(state.fillEffect, i);
         }
+
         if (isEdited) resetImgState(state);
         updatePageData(state);
       }),

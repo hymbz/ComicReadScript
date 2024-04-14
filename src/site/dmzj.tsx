@@ -12,6 +12,7 @@ import {
   universalInit,
   log,
 } from 'main';
+
 import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
 
 (async () => {
@@ -22,8 +23,10 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
     });
 
     // 页面上原有的漫画标题
-    const titleList = querySelectorAll('#hothit p.t').map((e) =>
-      e.innerText.replace('[完]', ''),
+    const titleList = new Set(
+      querySelectorAll('#hothit p.t').map((e) =>
+        e.textContent!.replace('[完]', ''),
+      ),
     );
     insertNode(
       document.getElementById('hothit')!,
@@ -42,7 +45,7 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
             newComicTitle: /title='(.+?)'/.exec(item)![1],
           };
         })
-        .filter(({ title }) => !titleList.includes(title))
+        .filter(({ title }) => !titleList.has(title))
         .map(
           (data) => `
             <div class="pic">
@@ -62,12 +65,12 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
     const [, comicPy, chapterId] = window.location.pathname.split(/\/|\./);
     if (!comicPy) {
       toast.error('漫画数据获取失败', {
-        duration: Infinity,
+        duration: Number.POSITIVE_INFINITY,
         throw: new Error('获取漫画拼音简称失败'),
       });
     }
-    const comicId = await getComicId(comicPy);
 
+    const comicId = await getComicId(comicPy);
     return { comicId, chapterId };
   };
 
@@ -143,7 +146,7 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
     await wait(() => {
       const dom = querySelector('#qiehuan_txt');
       if (!dom) return;
-      if (dom.innerText !== '切换到上下滚动阅读') return true;
+      if (dom.textContent !== '切换到上下滚动阅读') return true;
       dom.click();
     });
   };
@@ -158,7 +161,7 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
 
   const checkButton = (selector: string) => {
     const dom = querySelector(selector);
-    if (dom && dom.innerText) return () => dom.click();
+    if (dom?.textContent) return () => dom.click();
   };
 
   const isMangaPage = async () => {
@@ -170,7 +173,7 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
     name: 'dmzj',
     getImgList,
     onExit: (isEnd) => isEnd && scrollIntoView('#hd'),
-    getCommentList: async () => {
+    async getCommentList() {
       const { comicId, chapterId } = await getId();
       return getViewpoint(comicId, chapterId);
     },
@@ -180,4 +183,4 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
       getOnNext: () => checkButton('.display_right #next_chapter'),
     },
   });
-})().catch((e) => log.error(e));
+})().catch((error) => log.error(error));

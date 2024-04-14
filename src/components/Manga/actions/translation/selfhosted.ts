@@ -1,9 +1,11 @@
 import { sleep } from 'helper';
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
+
 import { store } from '../../store';
-import type { TaskState } from './helper';
+
 import {
+  type TaskState,
   setMessage,
   download,
   request,
@@ -17,14 +19,14 @@ const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
 export const getValidTranslators = async () => {
   try {
     const res = await request(`${url()}`);
-    const translatorsText = res.responseText.match(
-      /(?<=validTranslators: ).+?(?=,\n)/,
+    const translatorsText = /(?<=validTranslators: ).+?(?=,\n)/.exec(
+      res.responseText,
     )?.[0];
     if (!translatorsText) return undefined;
     const list = JSON.parse(translatorsText.replaceAll(`'`, `"`)) as string[];
     return createOptions(list);
-  } catch (e) {
-    log.error(t('translation.tip.get_translator_list_error'), e);
+  } catch (error) {
+    log.error(t('translation.tip.get_translator_list_error'), error);
     return undefined;
   }
 };

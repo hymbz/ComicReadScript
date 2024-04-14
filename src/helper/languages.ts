@@ -4,7 +4,7 @@ export type Languages = (typeof langList)[number];
 /** 判断传入的字符串是否是支持的语言类型代码 */
 export const isLanguages = (
   lang: string | undefined | null,
-): lang is Languages => !!lang && langList.includes(lang as Languages);
+): lang is Languages => Boolean(lang) && langList.includes(lang as Languages);
 
 /** 返回浏览器偏好语言 */
 const getBrowserLang = () => {
@@ -24,15 +24,15 @@ const getBrowserLang = () => {
   return newLang;
 };
 
-const getSaveLang = () =>
-  typeof GM !== 'undefined'
-    ? GM.getValue<string>('Languages')
-    : localStorage.getItem('Languages');
+const getSaveLang = async () =>
+  typeof GM === 'undefined'
+    ? localStorage.getItem('Languages')
+    : GM.getValue<string>('Languages');
 
-export const setSaveLang = (val: string) =>
-  typeof GM !== 'undefined'
-    ? GM.setValue('Languages', val)
-    : localStorage.setItem('Languages', val);
+export const setSaveLang = async (val: string) =>
+  typeof GM === 'undefined'
+    ? localStorage.setItem('Languages', val)
+    : GM.setValue('Languages', val);
 
 export const getInitLang = async () => {
   const saveLang = await getSaveLang();

@@ -30,6 +30,7 @@ const getAdPage = async <T>(
       adNum += 1;
       continue;
     }
+
     // 连续两张广告后面的肯定也都是广告
     if (adNum >= 2) adList.add(i);
     // 夹在两张广告中间的肯定也是广告
@@ -60,6 +61,7 @@ const isColorImg = (imgCanvas: HTMLCanvasElement) => {
     const b = data[i + 2];
     if (!isGrayscalePixel(r, g, b)) return true;
   }
+
   return false;
 };
 
@@ -76,7 +78,7 @@ const imgToCanvas = async (img: HTMLImageElement | string) => {
       ctx.drawImage(img, 0, 0);
       // 没被 CORS 污染就直接使用这个 canvas
       if (ctx.getImageData(0, 0, 1, 1)) return canvas;
-    } catch (_) {}
+    } catch {}
   }
 
   const url = typeof img === 'string' ? img : img.src;
@@ -127,7 +129,7 @@ const hasQrCode = async (
     if (!data) return false;
     log(`检测到二维码： ${data}`);
     return qrCodeWhiteList.every((reg) => !reg.test(data));
-  } catch (_) {
+  } catch {
     return false;
   }
 };
@@ -156,10 +158,8 @@ const isAdImg = async (
     { x: 0, y: 0, width, height },
   ];
 
-  for (let i = 0; i < scanRegionList.length; i++) {
-    const scanRegion = scanRegionList[i];
+  for (const scanRegion of scanRegionList)
     if (await hasQrCode(imgCanvas, scanRegion, qrEngine, canvas)) return true;
-  }
 
   return false;
 };
@@ -185,7 +185,7 @@ export const getAdPageByContent = async (
 const adFileNameRe = /^[zZ]+/;
 
 /** 通过文件名判断是否是广告 */
-export const getAdPageByFileName = (
+export const getAdPageByFileName = async (
   fileNameList: Array<string | undefined>,
   adList = new Set<number>(),
 ) =>

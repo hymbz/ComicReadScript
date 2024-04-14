@@ -1,5 +1,5 @@
+/* eslint-disable i18next/no-literal-string */
 import { render } from 'solid-js/web';
-
 import {
   insertNode,
   querySelector,
@@ -94,13 +94,12 @@ interface History {
         if (!/成功！|打过卡/.test(body)) throw new Error('自动签到失败');
         toast.success('自动签到成功');
         localStorage.setItem('signDate', todayString);
-      } catch (e) {
+      } catch {
         toast.error('自动签到失败');
       }
     })();
 
   if (options.关闭快捷导航的跳转)
-    // eslint-disable-next-line no-script-url
     querySelector('#qmenu a')?.setAttribute('href', 'javascript:;');
 
   // 判断当前页是帖子
@@ -112,10 +111,10 @@ interface History {
 
     const fid: number =
       unsafeWindow.fid ??
-      +(
+      Number(
         new URLSearchParams(
           querySelector<HTMLAnchorElement>('h2 > a')?.href,
-        ).get('fid') ?? '-1'
+        ).get('fid') ?? '-1',
       );
 
     // 限定板块启用
@@ -151,6 +150,7 @@ interface History {
           )
             imgList.splice(i, 1);
         }
+
         return imgList.map((img) => img.src);
       };
 
@@ -161,12 +161,12 @@ interface History {
 
       setManga({
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
-        onLoading: (_imgList, img) => {
+        onLoading(_imgList, img) {
           onLoading(_imgList, img);
           if (!img) return;
           if (imgList.length !== updateImgList().length) return loadImgList();
         },
-        onExit: (isEnd) => {
+        onExit(isEnd) {
           if (isEnd)
             scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
 
@@ -198,7 +198,7 @@ interface History {
             if (id) return;
             id = window.setInterval(() => {
               imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
-              if (!imgList.length || !updateImgList().length)
+              if (imgList.length === 0 || updateImgList().length === 0)
                 return setFab('progress', undefined);
 
               setManga({
@@ -225,13 +225,13 @@ interface History {
             `https://bbs.yamibo.com/misc.php?mod=tag&id=${tagId}&type=thread&page=${pageNum}`,
           );
 
-          const newList = [...res.responseText.matchAll(reg)].map(
-            ([tid]) => +tid,
+          const newList = [...res.responseText.matchAll(reg)].map(([tid]) =>
+            Number(tid),
           );
           threadList = threadList.concat(newList);
 
-          const index = threadList.findIndex((tid) => tid === unsafeWindow.tid);
-          if (newList.length && (index === -1 || !threadList[index + 1]))
+          const index = threadList.indexOf(unsafeWindow.tid);
+          if (newList.length > 0 && (index === -1 || !threadList[index + 1]))
             return setPrevNext(pageNum + 1);
 
           return setManga({
@@ -251,6 +251,7 @@ interface History {
               : undefined,
           });
         };
+
         setTimeout(setPrevNext);
       }
     }
@@ -265,14 +266,14 @@ interface History {
         { errorText: '获取帖子回复数时出错' },
       );
       /** 回复数 */
-      const allReplies = parseInt(
+      const allReplies = Number.parseInt(
         JSON.parse(res.responseText)?.Variables?.thread?.allreplies,
         10,
       );
       if (!allReplies) return;
 
       /** 当前所在页数 */
-      const currentPageNum = parseInt(
+      const currentPageNum = Number.parseInt(
         querySelector('#pgt strong')?.innerHTML ??
           querySelector<HTMLSelectElement>('#dumppage')?.value ??
           '1',
@@ -293,7 +294,7 @@ interface History {
           ? `#${data.lastAnchor} ~ div`
           : '#postlist > div, .plc.cl',
       );
-      if (!watchFloorList.length) return;
+      if (watchFloorList.length === 0) return;
 
       let id = 0;
       /** 储存数据，但是防抖 */
@@ -313,8 +314,8 @@ interface History {
           if (!trigger) return;
 
           // 取消触发楼层上面楼层的监视
-          const triggerIndex = watchFloorList.findIndex(
-            (e) => e === trigger.target,
+          const triggerIndex = watchFloorList.indexOf(
+            trigger.target as HTMLElement,
           );
           if (triggerIndex === -1) return;
           watchFloorList
@@ -383,7 +384,8 @@ interface History {
 
             const lastReplies = createMemo(() =>
               !isMobile && data()
-                ? +e.querySelector('.num a')!.innerHTML - data()!.lastReplies
+                ? Number(e.querySelector('.num a')!.innerHTML) -
+                  data()!.lastReplies
                 : 0,
             );
 
@@ -416,7 +418,7 @@ interface History {
             );
 
             return (
-              <Show when={!!data()}>
+              <Show when={Boolean(data())}>
                 <Show when={isMobile} children={mobile()} fallback={pc()} />
               </Show>
             );
@@ -431,4 +433,4 @@ interface History {
       querySelector('#autopbn')?.addEventListener('click', updateHistoryTag);
     }
   }
-})().catch((e) => log.error(e));
+})().catch((error) => log.error(error));

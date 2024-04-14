@@ -1,7 +1,9 @@
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
 import { canvasToBlob } from 'helper';
+
 import { store } from '../../store';
+
 import { setMessage, download, request, createFormData } from './helper';
 
 type QueryV1Message =
@@ -73,6 +75,7 @@ const mergeImage = async (rawImage: Blob, maskUri: string) => {
       canvasCtx.drawImage(img, 0, 0);
       resolve(null);
     };
+
     img.onerror = reject;
   });
 
@@ -161,11 +164,12 @@ export const cotransTranslation = async (i: number) => {
     | { error_id: string };
   try {
     resData = JSON.parse(res.responseText);
-  } catch (_) {
+  } catch {
     throw new Error(
       `${t('translation.tip.upload_return_error')}：${res.responseText}`,
     );
   }
+
   if ('error_id' in resData)
     throw new Error(
       `${t('translation.tip.upload_return_error')}：${resData.error_id}`,

@@ -1,11 +1,10 @@
-import type { Component } from 'solid-js';
-import { For, createSignal } from 'solid-js';
+import { type Component, For, createSignal } from 'solid-js';
 import { lang } from 'helper/i18n';
 import { createRootMemo } from 'helper/solidJs';
+
 import { defaultSettingList } from '../defaultSettingList';
 import { store } from '../store';
 import { stopPropagation } from '../helper';
-
 import classes from '../index.module.css';
 
 /** 菜单面板 */
@@ -17,7 +16,7 @@ export const SettingPanel: Component = () => {
   return (
     <div
       class={`${classes.SettingPanel} ${classes.beautifyScrollbar}`}
-      style={{ width: lang() !== 'zh' ? '20em' : '15em' }}
+      style={{ width: lang() === 'zh' ? '15em' : '20em' }}
       onScroll={stopPropagation}
       onWheel={stopPropagation}
       on:click={stopPropagation}

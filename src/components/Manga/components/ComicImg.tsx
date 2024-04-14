@@ -1,9 +1,17 @@
-import type { Component, JSX } from 'solid-js';
-import { Show, createEffect, createMemo, onCleanup, onMount } from 'solid-js';
+import {
+  type Component,
+  type JSX,
+  Show,
+  createEffect,
+  createMemo,
+  onCleanup,
+  onMount,
+} from 'solid-js';
 import { inRange } from 'helper';
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
 import { createMemoMap } from 'helper/solidJs';
+
 import { setState, store } from '../store';
 import {
   activePage,
@@ -16,7 +24,6 @@ import {
   updateImgLoadType,
   updateImgSize,
 } from '../actions';
-
 import classes from '../index.module.css';
 
 export interface ComicImgProps {
@@ -85,7 +92,7 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     'grid-area': () => `_${img.index}`,
     '--width': () => `${size().width}px`,
     'aspect-ratio': () => `${size().width} / ${size().height}`,
-    'box-shadow': () => {
+    'box-shadow'() {
       if (!store.gridMode || !activePage().includes(img.index))
         return undefined;
 

@@ -1,6 +1,7 @@
-import fs from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import pkg from './package.json' assert { type: 'json' };
 import zh from './locales/zh.json' assert { type: 'json' };
 import en from './locales/en.json' assert { type: 'json' };
@@ -81,7 +82,7 @@ export const getMetaData = (isDevMode: boolean) => {
     namespace: pkg.name,
     version: pkg.version,
     description: `${zh.description}${getSupportSiteList()
-      .map((site) => site.replace(/\[(.+)\]\(.+\)/, '$1'))
+      .map((site) => site.replace(/\[(.+)]\(.+\)/, '$1'))
       .join('、')}`,
     'description:en': en.description,
     'description:ru': ru.description,
@@ -161,7 +162,8 @@ export const getMetaData = (isDevMode: boolean) => {
                   .join('\n')
               : Object.entries(val)
                   .map(
-                    ([k, v]) => `// @${key.padEnd(keyLength, ' ')} ${k} ${v}`,
+                    ([k, v]) =>
+                      `// @${key.padEnd(keyLength, ' ')} ${k} ${String(v)}`,
                   )
                   .join('\n');
           default:

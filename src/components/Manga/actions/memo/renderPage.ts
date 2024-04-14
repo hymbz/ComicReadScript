@@ -1,8 +1,9 @@
 import { createRoot, createSignal } from 'solid-js';
 import { inRange } from 'helper';
 import { createEffectOn, createRootMemo } from 'helper/solidJs';
-import type { State } from '../../store';
-import { setState, store } from '../../store';
+
+import { type State, setState, store } from '../../store';
+
 import { contentHeight, imgTopList } from './common';
 import { rootSize, scrollTop } from './observer';
 
@@ -41,8 +42,8 @@ export const updateRenderRange = (state: State) => {
     endPage = Math.min(state.pageList.length - 1, state.activePageIndex + 2);
   }
 
-  if (!startPage) startPage = 0;
-  if (!endPage) endPage = startPage + 1;
+  startPage ||= 0;
+  endPage ||= startPage + 1;
   setRenderRangeStart(startPage);
   setRenderRangeEnd(endPage);
 };
@@ -84,14 +85,17 @@ export const renderImgRange = createRootMemo(() => {
  * 1 - 页面中的最后一张图片
  * 2 - 页面中的唯一一张图片
  */
-export const imgShowState = createRootMemo<(0 | 1 | 2)[]>(() => {
-  const stateList: (0 | 1 | 2)[] = [];
+export const imgShowState = createRootMemo<Array<0 | 1 | 2>>(() => {
+  const stateList: Array<0 | 1 | 2> = [];
   for (let i = 0; i < store.pageList.length; i++) {
     const [a, b] = store.pageList[i];
-    if (b !== undefined) {
+    if (b === undefined) {
+      stateList[a] = 2;
+    } else {
       stateList[a] = 0;
       stateList[b] = 1;
-    } else stateList[a] = 2;
+    }
   }
+
   return stateList;
 }, []);

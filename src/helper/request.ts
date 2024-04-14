@@ -1,7 +1,9 @@
-import { sleep } from '.';
 import { toast } from '../components/useComponents/Toast';
+
 import { t } from './i18n';
 import { log } from './logger';
+
+import { sleep } from '.';
 
 // 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = (
@@ -44,12 +46,14 @@ export const request = async <T = any>(
       log.error(errorText, res);
       throw new Error(errorText);
     }
+
     return res;
   } catch (error) {
     if (errorNum >= 0) {
       if (!details?.noTip) toast.error(errorText);
       throw new Error(errorText);
     }
+
     log.error(errorText, error);
     await sleep(1000);
     return request(url, details, errorNum + 1);
@@ -62,11 +66,10 @@ export const eachApi = async <T = any>(
   baseUrlList: string[],
   details?: RequestDetails,
 ) => {
-  for (let i = 0; i < baseUrlList.length; i++) {
-    const baseUrl = baseUrlList[i];
+  for (const baseUrl of baseUrlList) {
     try {
       return await request<T>(`${baseUrl}${url}`, { ...details, noTip: true });
-    } catch (_) {}
+    } catch {}
   }
 
   const errorText = details?.errorText ?? t('alert.comic_load_error');

@@ -1,13 +1,17 @@
-import type { Component, JSX } from 'solid-js';
-import { For, Show, createMemo, onMount } from 'solid-js';
+import {
+  type Component,
+  type JSX,
+  For,
+  Show,
+  createMemo,
+  onMount,
+} from 'solid-js';
 import { boolDataVal } from 'helper';
 import { createEffectOn, createMemoMap } from 'helper/solidJs';
-import { ComicImg } from './ComicImg';
-import { EmptyTip } from './EmptyTip';
+
 import { refs, setState, store } from '../store';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
-import type { UseDrag } from '../hooks/useDrag';
-import { useDrag } from '../hooks/useDrag';
+import { type UseDrag, useDrag } from '../hooks/useDrag';
 import {
   bindRef,
   handleClick,
@@ -28,8 +32,10 @@ import {
   isOnePageMode,
   rootSize,
 } from '../actions';
-
 import classes from '../index.module.css';
+
+import { EmptyTip } from './EmptyTip';
+import { ComicImg } from './ComicImg';
 
 export const ComicImgFlow: Component = () => {
   const { hiddenMouse, onMouseMove } = useHiddenMouse();
@@ -62,16 +68,19 @@ export const ComicImgFlow: Component = () => {
   );
 
   /** 在当前页之前有图片被加载出来，导致内容高度发生变化后，重新滚动页面，确保当前显示位置不变 */
-  createEffectOn([scrollModeFill, imgTopList], ([height, topList], prev) => {
-    if (!prev || !height) return;
-    const [prevHeight, prevTopList] = prev;
-    if (prevTopList === topList || prevHeight === height) return;
-    scrollTo(scrollTop() + height - prevHeight);
-    // 目前还是会有轻微偏移，但考虑到大部分情况下都是顺序阅读，本身出现概率就低，就不继续排查优化了
-  });
+  createEffectOn(
+    [() => scrollModeFill(), imgTopList],
+    ([height, topList], prev) => {
+      if (!prev || !height) return;
+      const [prevHeight, prevTopList] = prev;
+      if (prevTopList === topList || prevHeight === height) return;
+      scrollTo(scrollTop() + height - prevHeight);
+      // 目前还是会有轻微偏移，但考虑到大部分情况下都是顺序阅读，本身出现概率就低，就不继续排查优化了
+    },
+  );
 
   const pageToText = (page: [number] | [number, number]) =>
-    `${(page.length !== 1 ? page : [page[0], page[0]])
+    `${(page.length === 1 ? [page[0], page[0]] : page)
       .map((i) => (i === -1 ? '.' : `_${i}`))
       .join(' ')}`;
   const gridAreas = createMemo(() => {
@@ -104,20 +113,21 @@ export const ComicImgFlow: Component = () => {
     '--scale': () => store.zoom.scale / 100,
     '--zoom-x': () => `${store.zoom.offset.x}px`,
     '--zoom-y': () => `${store.zoom.offset.y}px`,
-    '--page-x': () => {
+    '--page-x'() {
       if (store.option.scrollMode) return '0px';
       const x = `${store.page.offset.x.pct * rootSize().width + store.page.offset.x.px}px`;
       return store.option.dir === 'rtl' ? x : `calc(${x} * -1)`;
     },
     '--page-y': () =>
       `${store.page.offset.y.pct * rootSize().height + store.page.offset.y.px}px`,
-    'touch-action': () => {
+    'touch-action'() {
       if (store.gridMode) return 'auto';
       if (store.zoom.scale !== 100) {
         if (!store.option.scrollMode) return 'none';
         if (store.zoom.offset.y === 0) return 'pan-up';
         if (store.zoom.offset.y === bound.y()) return 'pan-down';
       }
+
       if (store.option.scrollMode) return 'pan-y';
     },
     height: () =>
@@ -125,8 +135,8 @@ export const ComicImgFlow: Component = () => {
         ? `${contentHeight()}px`
         : undefined,
     'grid-template-areas': gridAreas,
-    'grid-template-columns': () => {
-      if (!store.imgList.length) return undefined;
+    'grid-template-columns'() {
+      if (store.imgList.length === 0) return undefined;
       if (store.gridMode) return `repeat(${isOnePageMode() ? 10 : 6}, 1fr)`;
       if (store.page.vertical) return '50% 50%';
       return `repeat(${gridAreas().split(' ').length}, 50%)`;

@@ -1,10 +1,9 @@
 import { For, type Component } from 'solid-js';
-
 import { boolDataVal } from 'helper';
 import { createRootMemo } from 'helper/solidJs';
+
 import { store } from '../store';
 import { bindRef } from '../actions';
-
 import classes from '../index.module.css';
 
 // 用大写表示要在此区块上显示提示

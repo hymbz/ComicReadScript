@@ -1,11 +1,12 @@
 import { Archive } from 'libarchive.js';
-
 import { plimit } from 'helper';
 import { t } from 'helper/i18n';
-import type { ZipData } from '.';
+
 import type { ImgFile } from '../store';
 import { toast } from '../../../components/Toast';
 import { createObjectURL, isSupportFile } from '../helper';
+
+import type { ZipData } from '.';
 
 const initLibarchive = false;
 /**
@@ -45,7 +46,7 @@ export const libarchive = async ({
           );
           if (!url) throw new Error(t('pwa.alert.img_data_error'));
           return { name: file.name, url };
-        } catch (e) {
+        } catch (error) {
           // 如果输入了错误的密码，所有文件都会解压出错
           // 所以为了避免错误提示刷屏，就统一用一个提示框来提示
           // 但也不能因为一个文件解压出错就直接中断所有文件的解压
@@ -58,8 +59,8 @@ export const libarchive = async ({
           toast.error(
             `「${zipFile.name}」 - 「${file.name}」 ${t(
               'pwa.alert.unzip_error',
-            )}：${(e as Error).message}`,
-            { duration: Infinity },
+            )}：${(error as Error).message}`,
+            { duration: Number.POSITIVE_INFINITY },
           );
           return undefined;
         }

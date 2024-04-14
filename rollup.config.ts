@@ -1,7 +1,7 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import fs from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import shell from 'shelljs';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
@@ -9,14 +9,13 @@ import { babel } from '@rollup/plugin-babel';
 import styles from 'rollup-plugin-styles';
 import solidPlugin from 'vite-plugin-solid';
 import json from '@rollup/plugin-json';
-
 import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
 import { watchExternal } from 'rollup-plugin-watch-external';
-
 import type { InputPluginOption, Plugin, RollupOptions } from 'rollup';
 import { createServer } from 'vite';
 import { parse as parseMd } from 'marked';
+
 import { selfPlugins, solidSvg } from './src/rollup-plugin';
 import { getMetaData, updateReadme } from './metaHeader';
 
@@ -43,9 +42,11 @@ const latestChangeHtml = await (() => {
             .replaceAll('Bug Fixes', '修复')
             .replaceAll('Performance Improvements', '优化');
         case '*':
-          return mdText
-            .replace(/(?<=^\* ):\w+?: /, '')
-            .replace(/(?<=^.*)\(\[\w+\]\(.+?\)\).*/, '');
+          return mdText.replace(
+            // eslint-disable-next-line unicorn/better-regex
+            /(?<=^\* ):\w+?: |(?<=^.*)\(\[\w+\]\(.+?\)\).*/,
+            '',
+          );
         default:
           return '';
       }
@@ -121,7 +122,7 @@ export const buildOptions = (
             let code = rawCode;
 
             switch (fileName) {
-              case 'index': {
+              case 'index':
                 updateReadme();
                 if (isDevMode)
                   code = [
@@ -132,9 +133,8 @@ export const buildOptions = (
 
                 code = createMetaHeader(meta) + code;
                 break;
-              }
 
-              case 'dev': {
+              case 'dev':
                 code =
                   createMetaHeader({
                     ...meta,
@@ -144,7 +144,6 @@ export const buildOptions = (
                     downloadURL: undefined,
                   }) + code;
                 break;
-              }
             }
 
             return code;
@@ -194,6 +193,7 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
   server.printUrls();
 })();
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default [
   // // 打包 dmzjDecrypt 时用的配置
   // (() => {

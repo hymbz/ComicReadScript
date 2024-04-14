@@ -2,12 +2,12 @@ import MdAutoFixHigh from '@material-design-icons/svg/round/auto_fix_high.svg';
 import MdAutoFixOff from '@material-design-icons/svg/round/auto_fix_off.svg';
 import MdAutoFlashOn from '@material-design-icons/svg/round/flash_on.svg';
 import MdAutoFlashOff from '@material-design-icons/svg/round/flash_off.svg';
-
 import type { Component, JSX } from 'solid-js';
+
+import { IconButton } from '../components/IconButton';
 
 import { t } from './i18n';
 import type { SiteOptions } from './useSiteOptions';
-import { IconButton } from '../components/IconButton';
 
 export const useSpeedDial = <T extends Record<string, any>>(
   options: T & SiteOptions,

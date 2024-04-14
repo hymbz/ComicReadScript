@@ -3,10 +3,9 @@
  */
 
 import { log } from 'helper/logger';
-import type { MangaProps } from '.';
-import { Manga } from '.';
 
-// eslint-disable-next-line import/no-extraneous-dependencies
+import { type MangaProps, Manga } from '.';
+
 import 'normalize.css';
 
 const imgList = [

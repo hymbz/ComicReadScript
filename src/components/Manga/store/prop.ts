@@ -1,5 +1,6 @@
 import type { ToolbarButtonList } from '../defaultButtonList';
 import type { SettingList } from '../defaultSettingList';
+
 import type { Option } from './option';
 
 export const PropState = {

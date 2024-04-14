@@ -1,16 +1,16 @@
 import { createMemo, Show } from 'solid-js';
-
 import { t } from 'helper/i18n';
-import { SettingsItemSwitch } from './SettingsItemSwitch';
-import { SettingsItemSelect } from './SettingsItemSelect';
+
 import { activeImgIndex, createStateSetFn, setOption } from '../actions';
 import {
   setImgTranslationEnbale,
   translatorOptions,
 } from '../actions/translation';
 import { setState, store } from '../store';
-
 import classes from '../index.module.css';
+
+import { SettingsItemSelect } from './SettingsItemSelect';
+import { SettingsItemSwitch } from './SettingsItemSwitch';
 import { SettingsShowItem } from './SettingsShowItem';
 
 export const SettingTranslation = () => {

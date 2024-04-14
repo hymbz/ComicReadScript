@@ -2,9 +2,9 @@
 import { createEffect, on } from 'solid-js';
 import { assign, debounce, throttle } from 'helper';
 import { createEffectOn } from 'helper/solidJs';
-import type { MangaProps } from '..';
-import type { State } from '../store';
-import { refs, setState } from '../store';
+
+import { type MangaProps } from '..';
+import { type State, refs, setState } from '../store';
 import {
   defaultHotkeys,
   defaultImgType,
@@ -31,28 +31,28 @@ export const useInit = (props: MangaProps) => {
   const watchProps: Partial<
     Record<keyof MangaProps, (state: State) => unknown>
   > = {
-    option: (state) => {
+    option(state) {
       state.option = assign(state.option, props.defaultOption, props.option);
     },
-    defaultOption: (state) => {
+    defaultOption(state) {
       state.defaultOption = assign(defaultOption(), props.defaultOption);
     },
-    fillEffect: (state) => {
+    fillEffect(state) {
       state.fillEffect = props.fillEffect ?? { '-1': true };
       updatePageData(state);
     },
-    hotkeys: (state) => {
+    hotkeys(state) {
       state.hotkeys = {
         ...JSON.parse(JSON.stringify(defaultHotkeys)),
         ...props.hotkeys,
       };
     },
 
-    onExit: (state) => {
+    onExit(state) {
       state.prop.Exit = props.onExit
         ? (isEnd?: boolean | Event) => {
             playAnimation(refs.exit);
-            props.onExit?.(!!isEnd);
+            props.onExit?.(Boolean(isEnd));
             setState((draftState) => {
               if (isEnd) draftState.activePageIndex = 0;
               draftState.show.endPage = undefined;
@@ -60,7 +60,7 @@ export const useInit = (props: MangaProps) => {
           }
         : undefined;
     },
-    onPrev: (state) => {
+    onPrev(state) {
       state.prop.Prev = props.onPrev
         ? throttle(() => {
             playAnimation(refs.prev);
@@ -68,7 +68,7 @@ export const useInit = (props: MangaProps) => {
           }, 1000)
         : undefined;
     },
-    onNext: (state) => {
+    onNext(state) {
       state.prop.Next = props.onNext
         ? throttle(() => {
             playAnimation(refs.next);
@@ -76,28 +76,28 @@ export const useInit = (props: MangaProps) => {
           }, 1000)
         : undefined;
     },
-    editButtonList: (state) => {
+    editButtonList(state) {
       state.prop.editButtonList = props.editButtonList ?? ((list) => list);
     },
-    editSettingList: (state) => {
+    editSettingList(state) {
       state.prop.editSettingList = props.editSettingList ?? ((list) => list);
     },
-    onLoading: (state) => {
+    onLoading(state) {
       state.prop.Loading = props.onLoading
         ? debounce(props.onLoading)
         : undefined;
     },
-    onOptionChange: (state) => {
+    onOptionChange(state) {
       state.prop.OptionChange = props.onOptionChange
         ? debounce(props.onOptionChange)
         : undefined;
     },
-    onHotkeysChange: (state) => {
+    onHotkeysChange(state) {
       state.prop.HotkeysChange = props.onHotkeysChange
         ? debounce(props.onHotkeysChange)
         : undefined;
     },
-    commentList: (state) => {
+    commentList(state) {
       state.commentList = props.commentList;
     },
   };
@@ -122,9 +122,8 @@ export const useInit = (props: MangaProps) => {
 
       /** 是否需要重置页面填充 */
       let needResetFillEffect = false;
-      const fillEffectList = Object.keys(state.fillEffect).map((k) => +k);
-      for (let i = 0; i < fillEffectList.length; i++) {
-        const pageIndex = fillEffectList[i];
+      const fillEffectList = Object.keys(state.fillEffect).map(Number);
+      for (const pageIndex of fillEffectList) {
         if (pageIndex === -1) continue;
         if (state.imgList[pageIndex].src === props.imgList[pageIndex]) continue;
         needResetFillEffect = true;
@@ -146,6 +145,7 @@ export const useInit = (props: MangaProps) => {
           needUpdatePageData = true;
         state.imgList[i] = imgMap.get(url) ?? createComicImg(url);
       }
+
       if (state.imgList.length > props.imgList.length) {
         state.imgList.length = props.imgList.length;
         needUpdatePageData = true;
@@ -189,7 +189,7 @@ export const useInit = (props: MangaProps) => {
   };
 
   // 处理 imgList 参数的初始化和修改
-  createEffectOn(() => props.imgList.join(), throttle(handleImgList, 500));
+  createEffectOn(() => props.imgList.join(','), throttle(handleImgList, 500));
 
   focus();
 };

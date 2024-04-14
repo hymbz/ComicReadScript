@@ -3,8 +3,10 @@ import { filetypeinfo } from 'magic-bytes.js';
 import { t } from 'helper/i18n';
 import { request } from 'helper/request';
 import { boolDataVal, isUrl, wait } from 'helper';
-import { loadNewImglist } from './store';
+
 import { toast } from '../../components/Toast';
+
+import { loadNewImglist } from './store';
 
 const [progress, setProgress] = createSignal<null | number>(null);
 
@@ -22,13 +24,13 @@ export const loadUrl = async (url: string | null | undefined) => {
     const res = await request<ArrayBuffer>(url, {
       responseType: 'arraybuffer',
       onprogress: ({ loaded, total }) => setProgress(loaded / total),
-      timeout: Infinity,
+      timeout: Number.POSITIVE_INFINITY,
     });
 
     const [fileType] = filetypeinfo(new Uint8Array(res.response));
     if (!fileType) throw new Error(t('pwa.alert.img_not_found_files'));
 
-    loadNewImglist(
+    await loadNewImglist(
       [
         new File([res.response], `archive.${fileType.extension}`, {
           type: fileType.mime,
@@ -46,11 +48,10 @@ export const loadUrl = async (url: string | null | undefined) => {
 // 自动根据查询字符串加载 url
 const handleUrl = () => {
   const urlParams = new URLSearchParams(window.location.search);
-  loadUrl(urlParams.get('url'));
+  return loadUrl(urlParams.get('url'));
 };
 
-// eslint-disable-next-line solid/reactivity
-handleUrl();
+setTimeout(handleUrl);
 window.onpopstate = handleUrl;
 
 export const DownloadButton: Component = () => (
@@ -67,7 +68,7 @@ export const DownloadButton: Component = () => (
       const url = new URL(window.location.href);
       url.searchParams.set('url', downUrl);
       window.history.pushState({}, '', url);
-      handleUrl();
+      return handleUrl();
     }}
   >
     {progress() === null

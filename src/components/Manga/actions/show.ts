@@ -2,8 +2,9 @@ import { createRoot } from 'solid-js';
 import { t } from 'helper/i18n';
 import { inRange } from 'helper';
 import { createEffectOn } from 'helper/solidJs';
-import type { State } from '../store';
-import { _setState, setState, store } from '../store';
+
+import { type State, _setState, setState, store } from '../store';
+
 import { updateImgLoadType } from './image';
 import { resetUI } from './helper';
 import { activePage, renderRange, updateRenderRange } from './memo';
@@ -65,7 +66,7 @@ createRoot(() => {
     () => {
       setState((state) => {
         updateImgLoadType(state);
-        if (state.show.endPage) state.show.endPage = undefined;
+        state.show.endPage &&= undefined;
       });
     },
     { defer: true },

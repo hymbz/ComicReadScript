@@ -1,9 +1,10 @@
 import { createRoot, createSignal } from 'solid-js';
 import { clamp } from 'helper';
 import { createEffectOn, createRootMemo } from 'helper/solidJs';
-import type { PointerState, UseDrag } from '../hooks/useDrag';
-import type { State } from '../store';
-import { store, refs, _setState } from '../store';
+
+import { type PointerState, type UseDrag } from '../hooks/useDrag';
+import { type State, store, refs, _setState } from '../store';
+
 import { contentHeight, rootSize, scrollTop } from './memo';
 import { scrollTo } from './helper';
 
@@ -37,6 +38,7 @@ export const scrollPosition = createRootMemo(
       if (store.isMobile) return 'top';
       return store.flag.autoLong ? 'bottom' : 'right';
     }
+
     return store.option.scrollbar.position;
   },
 );

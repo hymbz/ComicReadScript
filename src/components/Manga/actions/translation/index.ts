@@ -6,13 +6,14 @@ import {
   createEqualsSignal,
   createRootMemo,
 } from 'helper/solidJs';
+
 import { store, setState, _setState } from '../../store';
+import { setOption } from '../helper';
+
 import { createOptions, setMessage } from './helper';
 import { getValidTranslators, selfhostedTranslation } from './selfhosted';
 import { cotransTranslation, cotransTranslators } from './cotrans';
-import { setOption } from '../helper';
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 declare const toast: typeof import('components/Toast/toast').toast | undefined;
 
 /** 翻译指定图片 */
@@ -83,6 +84,7 @@ export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
               img.translationType = 'show';
               break;
             }
+
             case 'error':
             case undefined: {
               img.translationType = 'wait';
@@ -97,6 +99,7 @@ export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
             img.translationType = 'hide';
             break;
           }
+
           case 'error':
           case 'wait': {
             img.translationType = undefined;
@@ -111,7 +114,7 @@ export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
 };
 
 const [selfhostedOptions, setSelfOptions] = createEqualsSignal<
-  [string, string][]
+  Array<[string, string]>
 >([]);
 
 // 在切换翻译服务器的同时切换可用翻译的选项列表

@@ -1,11 +1,10 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
 import MdRefresh from '@material-design-icons/svg/round/refresh.svg';
 import MdAdd from '@material-design-icons/svg/round/add.svg';
-
 import { type Component, For, Index } from 'solid-js';
-
 import { getKeyboardCode, keyboardCodeToText } from 'helper';
 import { t } from 'helper/i18n';
+
 import { store } from '../store';
 import {
   defaultHotkeys,
@@ -14,7 +13,6 @@ import {
   hotkeysMap,
   setHotkeys,
 } from '../actions';
-
 import classes from '../index.module.css';
 
 const KeyItem: Component<{
@@ -57,7 +55,6 @@ const KeyItem: Component<{
       onBlur={() => code() || del()}
     >
       {keyboardCodeToText(code())}
-      {/* eslint-disable-next-line solid/no-unknown-namespaces */}
       <MdClose on:click={del} />
     </div>
   );

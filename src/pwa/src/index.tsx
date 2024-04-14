@@ -3,18 +3,18 @@ import { pwaInstallHandler } from 'pwa-install-handler';
 import { directoryOpen, fileOpen } from 'browser-fs-access';
 import { parse as parseMd } from 'marked';
 import { setInitLang, t } from 'helper/i18n';
-import type { MangaProps } from '../../components/Manga';
-import { Manga } from '../../components/Manga';
+
+import { type MangaProps, Manga } from '../../components/Manga';
 import { Toaster, toast } from '../../components/Toast';
+
 import { store, handleExit, loadNewImglist, _setState } from './store';
 import { FileSystemToFile, imgExtension } from './helper';
 import { handleDrag } from './handleDrag';
 import { editButtonList } from './handleButtonList';
 import { DownloadButton, loadUrl } from './DownloadButton';
-
 import classes from './index.module.css';
 
-setInitLang();
+setTimeout(setInitLang);
 
 /** 选择文件 */
 const handleSelectFiles = async () => {
@@ -23,7 +23,7 @@ const handleSelectFiles = async () => {
     ['application/zip', ['.zip', '.cbz']],
     ['application/x-rar-compressed', ['.rar', '.cbr']],
     ['application/x-7z-compressed', ['.7z', '.cb7']],
-  ] as [string, string[]][];
+  ] as Array<[string, string[]]>;
 
   const files: File[] = await fileOpen([
     { multiple: true },
@@ -34,18 +34,18 @@ const handleSelectFiles = async () => {
     })),
   ]);
 
-  loadNewImglist(files, t('pwa.alert.img_not_found_files'));
+  return loadNewImglist(files, t('pwa.alert.img_not_found_files'));
 };
 
 /** 选择文件夹 */
 const handleSelectDir = async () => {
   const files = (await directoryOpen({ recursive: true })) as File[];
-  loadNewImglist(files, t('pwa.alert.img_not_found_folder'));
+  return loadNewImglist(files, t('pwa.alert.img_not_found_folder'));
 };
 
 // 实现从本地文件的打开方式启动时加载文件
 window.launchQueue?.setConsumer(async (launchParams) => {
-  loadNewImglist(await FileSystemToFile(launchParams.files));
+  return loadNewImglist(await FileSystemToFile(launchParams.files));
 });
 
 // 支持粘贴 url
@@ -88,7 +88,7 @@ export const Root: Component = () => (
 
         <div
           class={classes.installTip}
-          classList={{ [classes.hide]: !!store.hiddenInstallTip }}
+          classList={{ [classes.hide]: Boolean(store.hiddenInstallTip) }}
         >
           {/* eslint-disable-next-line solid/no-innerhtml */}
           <div innerHTML={parseMd(t('pwa.install_md')) as string} />

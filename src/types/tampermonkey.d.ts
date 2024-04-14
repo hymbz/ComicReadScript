@@ -61,9 +61,7 @@ declare namespace Tampermonkey {
 
   // Request
 
-  interface RequestHeaders {
-    readonly [header: string]: string;
-  }
+  type RequestHeaders = Readonly<Record<string, string>>;
 
   type RequestEventListener<TResponse> = (
     this: TResponse,
@@ -110,8 +108,6 @@ declare namespace Tampermonkey {
 
     // Events
 
-    /** Callback to be executed if the request was aborted */
-    onabort?(): void;
     /** Callback to be executed if the request ended up with an error */
     onerror?: RequestEventListener<ErrorResponse> | undefined;
     /** Callback to be executed if the request started to load */
@@ -120,10 +116,12 @@ declare namespace Tampermonkey {
     onprogress?: RequestEventListener<ProgressResponse<TContext>> | undefined;
     /** Callback to be executed if the request's ready state changed */
     onreadystatechange?: RequestEventListener<Response<TContext>> | undefined;
-    /** Callback to be executed if the request failed due to a timeout */
-    ontimeout?(): void;
     /** Callback to be executed if the request was loaded */
     onload?: RequestEventListener<Response<TContext>> | undefined;
+    /** Callback to be executed if the request was aborted */
+    onabort?(): void;
+    /** Callback to be executed if the request failed due to a timeout */
+    ontimeout?(): void;
   }
 
   // Download Response
@@ -171,12 +169,12 @@ declare namespace Tampermonkey {
     timeout?: number | undefined;
     /** Callback to be executed if this download ended up with an error */
     onerror?: RequestEventListener<DownloadErrorResponse> | undefined;
+    /** Callback to be executed if this download failed due to a timeout */
+    onprogress?: RequestEventListener<DownloadProgressResponse> | undefined;
     /** Callback to be executed if this download finished */
     ontimeout?(): void;
     /** Callback to be executed if this download finished */
     onload?(): void;
-    /** Callback to be executed if this download failed due to a timeout */
-    onprogress?: RequestEventListener<DownloadProgressResponse> | undefined;
   }
 
   interface AbortHandle<TReturn> {
@@ -193,11 +191,11 @@ declare namespace Tampermonkey {
   }
 
   interface OpenTabObject {
+    closed: boolean;
     /** Closes tab */
     close(): void;
     /** Set closed listener */
     onclose?(): void;
-    closed: boolean;
   }
 
   interface NotificationThis extends Notification {
@@ -376,7 +374,7 @@ declare namespace Tampermonkey {
  * The unsafeWindow object provides full access to the pages javascript
  * functions and variables
  */
-declare let unsafeWindow: Window & { [key: string]: any };
+declare let unsafeWindow: Window & Record<string, any>;
 
 // Styles
 
@@ -478,7 +476,7 @@ declare function GM_unregisterMenuCommand(menuCommandId: number): void;
  * @param details
  */
 declare function GM_xmlhttpRequest<TContext = any>(
-  details: Tampermonkey.Request<TContext>, // tslint:disable-line:no-unnecessary-generics
+  details: Tampermonkey.Request<TContext>,
 ): Tampermonkey.AbortHandle<void>;
 
 /**
@@ -512,7 +510,7 @@ declare function GM_getTab(callback: (obj: any) => void): void;
  * @param callback
  */
 declare function GM_getTabs(
-  callback: (tabsMap: { [tabId: number]: any }) => void,
+  callback: (tabsMap: Record<number, any>) => void,
 ): void;
 
 // Utils
@@ -570,8 +568,8 @@ declare function GM_setClipboard(
 declare function GM_addElement(
   tag_name: string,
   attributes: {
-    textContent: string;
     [key: string]: any;
+    textContent: string;
   },
 ): HTMLElement;
 
@@ -581,6 +579,14 @@ declare function GM_addElement(
  * `GM` has all the `GM_*` apis in promisified form
  */
 declare const GM: Readonly<{
+  // Utils
+  info: Tampermonkey.ScriptInfo;
+
+  addElement: (
+    tag_name: string,
+    attributes: { textContent: string },
+  ) => Promise<void>;
+
   // Styles
 
   /**
@@ -656,7 +662,7 @@ declare const GM: Readonly<{
    */
   xmlHttpRequest<TContext = any>(
     // onload and the like still work
-    details: Tampermonkey.Request<TContext>, // tslint:disable-line:no-unnecessary-generics
+    details: Tampermonkey.Request<TContext>,
   ): Promise<Tampermonkey.Response<TContext>>;
 
   // GM_download has two signatures, GM.download has one
@@ -675,10 +681,7 @@ declare const GM: Readonly<{
   getTab(): Promise<any>;
 
   /** Gets all tab objects as a hash to communicate with other script instances */
-  getTabs(): Promise<{ [tabId: number]: any }>;
-
-  // Utils
-  info: Tampermonkey.ScriptInfo;
+  getTabs(): Promise<Record<number, any>>;
 
   /** Log a message to the console */
   log(...message: any[]): Promise<void>;
@@ -735,9 +738,4 @@ declare const GM: Readonly<{
    * type ("text" or "html").
    */
   setClipboard(data: string, info?: Tampermonkey.ContentType): Promise<void>;
-
-  addElement: (
-    tag_name: string,
-    attributes: { textContent: string },
-  ) => Promise<void>;
 }>;

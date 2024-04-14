@@ -1,5 +1,4 @@
-import type { useInit } from 'main';
-import { t } from 'main';
+import { type useInit, t } from 'main';
 import type { AsyncReturnType } from 'type-fest';
 
 // 因为直接放到 site/other 里会导致打包时自动加入 import solidjs 的代码，

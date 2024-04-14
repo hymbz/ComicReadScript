@@ -40,15 +40,7 @@ export const handleComicData = (
       imgCache = -1;
     }
 
-    if (!isWideImg(img)) {
-      if (imgCache !== null) {
-        pageList.push([imgCache, i]);
-        imgCache = null;
-      } else {
-        imgCache = i;
-      }
-      if (Reflect.has(fillEffect, i)) Reflect.deleteProperty(fillEffect, i);
-    } else {
+    if (isWideImg(img)) {
       if (imgCache !== null) {
         const nowFillIndex = findFillIndex(i, fillEffect);
 
@@ -70,6 +62,15 @@ export const handleComicData = (
         fillEffect[i] = false;
 
       pageList.push([i]);
+    } else {
+      if (imgCache === null) {
+        imgCache = i;
+      } else {
+        pageList.push([imgCache, i]);
+        imgCache = null;
+      }
+
+      if (Reflect.has(fillEffect, i)) Reflect.deleteProperty(fillEffect, i);
     }
   }
 

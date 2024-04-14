@@ -12,7 +12,6 @@ inject('import');
 /** 站点配置 */
 let options: InitOptions | undefined;
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 const main = require('main') as typeof import('./main');
 
 try {
@@ -23,6 +22,7 @@ try {
       inject('yamibo');
       break;
     }
+
     // #百合会新站
     case 'www.yamibo.com': {
       if (!window.location.pathname.includes('/manga/view-chapter')) break;
@@ -31,37 +31,43 @@ try {
       if (!id) break;
 
       /** 总页数 */
-      const totalPageNum = +main
-        .querySelector('section div:first-of-type div:last-of-type')!
-        .innerHTML.split('：')[1];
+      const totalPageNum = Number(
+        main
+          .querySelector('section div:first-of-type div:last-of-type')!
+          .innerHTML.split('：')[1],
+      );
       if (Number.isNaN(totalPageNum))
         throw new Error(main.t('site.changed_load_failed'));
 
       /** 获取指定页数的图片 url */
-      const getImg = async (i = 1) => {
+      const getImg = async (i: number) => {
         const res = await main.request(
           `https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`,
         );
-
-        return res.responseText
-          .match(/(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/)![0]
-          .replaceAll('&amp;', '&');
+        return /(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/
+          .exec(res.responseText)![0]
+          .replaceAll('&amp;', '&')
+          .replaceAll('http://', 'https://');
       };
 
       options = {
         name: 'newYamibo',
-        getImgList: ({ setFab }) =>
-          main.plimit(
-            Object.keys([...new Array(totalPageNum)]).map(
-              (i) => () => getImg(+i + 1),
-            ),
-            (doneNum, totalNum) => {
-              setFab({
-                progress: doneNum / totalNum,
-                tip: `加载图片中 - ${doneNum}/${totalNum}`,
-              });
-            },
-          ),
+        getImgList: ({ dynamicUpdate, setFab }) =>
+          dynamicUpdate(
+            async (setImg) =>
+              main.plimit(
+                [...Array.from({ length: totalPageNum }).keys()].map(
+                  (i) => async () => setImg(i, await getImg(i + 1)),
+                ),
+                (doneNum, totalNum) => {
+                  setFab({
+                    progress: doneNum / totalNum,
+                    tip: `加载图片中 - ${doneNum}/${totalNum}`,
+                  });
+                },
+              ),
+            totalPageNum,
+          )(),
         onNext: main.querySelectorClick('#btnNext'),
         onPrev: main.querySelectorClick('#btnPrev'),
         onExit: (isEnd) => isEnd && main.scrollIntoView('#w1'),
@@ -77,11 +83,13 @@ try {
       inject('dmzj');
       break;
     }
+
     case 'm.idmzj.com':
     case 'm.dmzj.com': {
       inject('dmzj_phone');
       break;
     }
+
     case 'www.idmzj.com':
     case 'www.dmzj.com': {
       inject('dmzj_www');
@@ -130,11 +138,11 @@ try {
     case 'www.ponpomu.com': {
       options = {
         name: 'terraHistoricus',
-        wait: () => !!main.querySelector('.comic-page-container img'),
+        wait: () => Boolean(main.querySelector('.comic-page-container img')),
         getImgList: () =>
           main
             .querySelectorAll('.comic-page-container img')
-            .map((e) => e.getAttribute('data-srcset')!),
+            .map((e) => e.dataset.srcset!),
         SPA: {
           isMangaPage: () => window.location.href.includes('/comic/'),
           getOnPrev: () =>
@@ -158,8 +166,8 @@ try {
 
       options = {
         name: 'terraHistoricus',
-        wait: () => !!main.querySelector('.HG_COMIC_READER_main'),
-        getImgList: async ({ setFab }) => {
+        wait: () => Boolean(main.querySelector('.HG_COMIC_READER_main')),
+        async getImgList({ setFab }) {
           const res = await main.request(apiUrl());
           const pageList = JSON.parse(res.response).data.pageInfos as unknown[];
           if (
@@ -169,7 +177,7 @@ try {
             throw new Error('获取图片列表时出错');
 
           return main.plimit<string>(
-            [...Array(pageList.length).keys()].map(getImgUrl),
+            [...Array.from({ length: pageList.length }).keys()].map(getImgUrl),
             (doneNum, totalNum) => {
               setFab({
                 progress: doneNum / totalNum,
@@ -218,9 +226,9 @@ try {
         comicInfo = JSON.parse(
           // 只能通过 eval 获得数据
           // eslint-disable-next-line no-eval
-          eval(dataScript.innerHTML.slice(26)).match(/(?<=.*?\()\{.+\}/)[0],
+          eval(dataScript.innerHTML.slice(26)).match(/(?<=.*?\(){.+}/)[0],
         );
-      } catch (error) {
+      } catch {
         main.toast.error(main.t('site.changed_load_failed'));
         break;
       }
@@ -239,7 +247,7 @@ try {
 
       options = {
         name: 'manhuagui',
-        getImgList: () => {
+        getImgList() {
           const sl = Object.entries(comicInfo.sl)
             .map((attr) => `${attr[0]}=${attr[1]}`)
             .join('&');
@@ -254,6 +262,7 @@ try {
             );
             return comicInfo.images.map((url) => `${origin}${url}?${sl}`);
           }
+
           main.toast.error(main.t('site.changed_load_failed'), { throw: true });
           return [];
         },
@@ -270,7 +279,7 @@ try {
       options = {
         name: 'manhuaDB',
         getImgList: () =>
-          (unsafeWindow.img_data_arr as { img: string }[]).map(
+          (unsafeWindow.img_data_arr as Array<{ img: string }>).map(
             (data) =>
               `${unsafeWindow.img_host}/${unsafeWindow.img_pre}/${data.img}`,
           ),
@@ -304,9 +313,10 @@ try {
           data: {
             cid: unsafeWindow.DM5_CID,
             page: i,
-            key: unsafeWindow.$('#dm5_key').length
-              ? unsafeWindow.$('#dm5_key').val()
-              : '',
+            key:
+              unsafeWindow.$('#dm5_key').length > 0
+                ? unsafeWindow.$('#dm5_key').val()
+                : '',
             language: 1,
             gtk: 6,
             _cid: unsafeWindow.DM5_CID,
@@ -325,12 +335,12 @@ try {
             main.querySelector(pcSelector) ??
             main
               .querySelectorAll('.view-bottom-bar a')
-              .find((e) => e.innerText.includes(mobileText)),
+              .find((e) => e.textContent?.includes(mobileText)),
         );
 
       options = {
         name: 'dm5',
-        getImgList: ({ dynamicUpdate }) => {
+        getImgList({ dynamicUpdate }) {
           // manhuaren 和 1kkk 的移动端上会直接用一个变量存储所有图片的链接
           if (
             Array.isArray(unsafeWindow.newImgs) &&
@@ -339,11 +349,9 @@ try {
             return unsafeWindow.newImgs as string[];
 
           return dynamicUpdate(async (setImg) => {
-            let imgIndex = 0;
-            while (imgIndex < imgNum) {
-              const newImgs = await getPageImg(imgIndex + 1);
-              // eslint-disable-next-line no-loop-func
-              newImgs.forEach((url) => setImg(imgIndex++, url));
+            for (let i = 0; i < imgNum; i++) {
+              const newImgs = await getPageImg(i + 1);
+              newImgs.forEach((url) => setImg(i, url));
             }
           }, imgNum)();
         },
@@ -370,7 +378,7 @@ try {
       options = {
         name: 'wnacg',
         getImgList: () =>
-          (unsafeWindow.imglist as { url: string; caption: string }[])
+          (unsafeWindow.imglist as Array<{ url: string; caption: string }>)
             .filter(
               ({ caption }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！',
             )
@@ -415,18 +423,16 @@ try {
             main.querySelector(pcSelector) ??
             main
               .querySelectorAll('.bottom-bar-tool a')
-              .find((e) => e.innerText.includes(mobileText)),
+              .find((e) => e.textContent?.includes(mobileText)),
         );
 
       options = {
         name: 'mangabz',
         getImgList: ({ dynamicUpdate }) =>
           dynamicUpdate(async (setImg) => {
-            let imgIndex = 0;
-            while (imgIndex < imgNum) {
-              const newImgs = await getPageImg(imgIndex + 1);
-              // eslint-disable-next-line no-loop-func
-              newImgs.forEach((url) => setImg(imgIndex++, url));
+            for (let i = 0; i < imgNum; i++) {
+              const newImgs = await getPageImg(i + 1);
+              newImgs.forEach((url) => setImg(i, url));
             }
           }, imgNum)(),
         onNext: handlePrevNext(
@@ -455,7 +461,7 @@ try {
         }`;
 
       const getImgList = async (): Promise<string[]> => {
-        const chapterId = window.location.pathname.match(/chapter\/(\d+)/)?.[1];
+        const chapterId = /chapter\/(\d+)/.exec(window.location.pathname)?.[1];
         if (!chapterId) throw new Error(main.t('site.changed_load_failed'));
 
         const res = await main.request('/api/query', {
@@ -468,9 +474,9 @@ try {
           }),
         });
         return (
-          JSON.parse(res.responseText).data.imagesByChapterId as {
+          JSON.parse(res.responseText).data.imagesByChapterId as Array<{
             kid: string;
-          }[]
+          }>
         ).map(({ kid }) => `https://komiic.com/api/image/${kid}`);
       };
 
@@ -481,7 +487,7 @@ try {
             .querySelectorAll(
               '.v-bottom-navigation__content > button:not([disabled])',
             )
-            .find((e) => e.innerText.includes(text)),
+            .find((e) => e.textContent?.includes(text)),
         );
       };
 
@@ -503,7 +509,7 @@ try {
     case 'hitomi.la': {
       options = {
         name: 'hitomi',
-        wait: () => !!unsafeWindow.galleryinfo?.files,
+        wait: () => Boolean(unsafeWindow.galleryinfo?.files),
         getImgList: () =>
           (unsafeWindow.galleryinfo?.files as object[]).map(
             (img) =>
@@ -523,7 +529,7 @@ try {
     case 'anchira.to': {
       options = {
         name: 'hitomi',
-        getImgList: async ({ fabProps }) => {
+        async getImgList({ fabProps }) {
           const [, , galleryId, galleryKey] =
             window.location.pathname.split('/');
 
@@ -538,7 +544,7 @@ try {
           if (res.status !== 200)
             main.toast.error(main.t('site.need_captcha'), {
               throw: true,
-              duration: Infinity,
+              duration: Number.POSITIVE_INFINITY,
               onClick: () => fabProps?.onClick?.(),
             });
 
@@ -569,11 +575,11 @@ try {
         initOptions: { autoShow: false, defaultOption: { onePageMode: true } },
       };
 
-      const zipExtension = ['zip', 'rar', '7z', 'cbz', 'cbr', 'cb7'];
+      const zipExtension = new Set(['zip', 'rar', '7z', 'cbz', 'cbr', 'cb7']);
       main
         .querySelectorAll<HTMLAnchorElement>('.post__attachment a')
         .forEach((e) => {
-          if (!zipExtension.includes(e.href.split('.').pop()!)) return;
+          if (!zipExtension.has(e.href.split('.').pop()!)) return;
           const a = document.createElement('a');
           a.href = `https://comic-read.pages.dev/?url=${encodeURIComponent(
             e.href,
@@ -617,10 +623,7 @@ try {
         const imgList = main
           .querySelectorAll<HTMLImageElement>(imgSelector)
           .map(
-            (e) =>
-              e.getAttribute('data-src')?.trim() ??
-              e.getAttribute('data-original')?.trim() ??
-              e.src,
+            (e) => e.dataset.src?.trim() ?? e.dataset.original?.trim() ?? e.src,
           );
         if (imgList.every((url) => !isLoadingGifRe.test(url))) return imgList;
         await main.sleep(500);

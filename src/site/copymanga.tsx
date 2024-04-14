@@ -1,5 +1,6 @@
-import type { InitOptions, RequestDetails } from 'main';
 import {
+  type InitOptions,
+  type RequestDetails,
   eachApi,
   querySelectorClick,
   wait,
@@ -19,7 +20,6 @@ const apiList = [
 
 // API 参考：https://github.com/fumiama/copymanga/blob/279e08b06a70307bf20162900103ec1fdcb97751/app/src/res/values/strings.xml
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 declare let options: InitOptions | undefined;
 
 const api = (url: string, details?: RequestDetails) =>
@@ -52,7 +52,7 @@ const api = (url: string, details?: RequestDetails) =>
         message: string;
         results: {
           chapter: {
-            contents: { url: string }[];
+            contents: Array<{ url: string }>;
             words: number[];
           };
         };
@@ -72,7 +72,7 @@ const api = (url: string, details?: RequestDetails) =>
       onPrev: querySelectorClick(
         '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
       ),
-      getCommentList: async () => {
+      async getCommentList() {
         const chapter_id = window.location.pathname.split('/').at(-1);
         const res = await api(
           `/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`,
@@ -127,7 +127,7 @@ const api = (url: string, details?: RequestDetails) =>
         return;
       }
 
-      setStyle(`ul a[href*="${lastChapterId}"] {
+      await setStyle(`ul a[href*="${lastChapterId}"] {
         color: #fff !important;
         background: #1790E6;
       }`);
@@ -136,7 +136,7 @@ const api = (url: string, details?: RequestDetails) =>
       a.textContent = data?.results?.browse?.chapter_name as string;
     };
 
-    updateLastChapter();
+    setTimeout(updateLastChapter);
     document.addEventListener('visibilitychange', updateLastChapter);
   }
 })();

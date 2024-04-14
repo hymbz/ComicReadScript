@@ -1,8 +1,10 @@
 import { approx, debounce } from 'helper';
-import type { Area } from '../components/TouchArea';
+
+import { type Area } from '../components/TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
-import type { UseDrag } from '../hooks/useDrag';
+import { type UseDrag } from '../hooks/useDrag';
 import { store, setState, refs } from '../store';
+
 import { resetUI, scrollTo } from './helper';
 import { imgPageMap, imgTopList, rootSize } from './memo';
 import { resetPage } from './show';
@@ -31,7 +33,7 @@ const findClickEle = <T extends Element>(
 export const handlePageClick = (e: MouseEvent) => {
   const targetArea = findClickEle(refs.touchArea.children, e);
   if (!targetArea) return;
-  const areaName = targetArea.getAttribute('data-area') as Area | undefined;
+  const areaName = (targetArea as HTMLElement).dataset.area as Area | undefined;
   if (!areaName) return;
 
   if (areaName === 'menu' || areaName === 'MENU')
@@ -51,7 +53,7 @@ export const handlePageClick = (e: MouseEvent) => {
 export const handleGridClick = (e: MouseEvent) => {
   const target = findClickEle(refs.root.getElementsByTagName('img'), e);
   if (!target) return;
-  const pageNum = imgPageMap()[+target.alt];
+  const pageNum = imgPageMap()[Number(target.alt)];
   if (pageNum === undefined) return;
   setState((state) => {
     state.activePageIndex = pageNum;
@@ -62,7 +64,7 @@ export const handleGridClick = (e: MouseEvent) => {
 
 /** 双击放大 */
 export const doubleClickZoom = (e?: MouseEvent) =>
-  !store.gridMode && zoom(store.zoom.scale !== 100 ? 100 : 350, e, true);
+  !store.gridMode && zoom(store.zoom.scale === 100 ? 350 : 100, e, true);
 
 export const handleClick = useDoubleClick(
   (e) => (store.gridMode ? handleGridClick(e) : handlePageClick(e)),
@@ -138,6 +140,7 @@ const handleDragEnd = (startTime?: number) => {
     state.isDragMode = false;
   });
 };
+
 handleDragEnd.debounce = debounce(handleDragEnd, 200);
 
 export const handleMangaFlowDrag: UseDrag = ({
@@ -152,7 +155,7 @@ export const handleMangaFlowDrag: UseDrag = ({
       dy = y - iy;
 
       if (store.isDragMode) {
-        if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
+        animationId ||= requestAnimationFrame(handleDragAnima);
         return;
       }
 
@@ -170,6 +173,7 @@ export const handleMangaFlowDrag: UseDrag = ({
       });
       return;
     }
+
     case 'up':
       return handleDragEnd(startTime);
   }
@@ -205,7 +209,7 @@ export const handleTrackpadWheel = (e: WheelEvent) => {
 
   // 加速度小于指定值后逐渐缩小滚动距离，实现减速效果
   if (Math.abs(absDeltaY - lastDeltaY) <= 6) {
-    if (!retardStartTime) retardStartTime = Date.now();
+    retardStartTime ||= Date.now();
     deltaY *= 1 - Math.min(1, ((Date.now() - retardStartTime) / 10) * 0.002);
     absDeltaY = Math.abs(deltaY);
     if (absDeltaY < 2) return;
@@ -224,15 +228,14 @@ export const handleTrackpadWheel = (e: WheelEvent) => {
     // 滚动过一页时
     if (dy <= -rootSize().height) {
       if (turnPageFn(state, 'next')) dy += rootSize().height;
-    } else if (dy >= rootSize().height) {
-      if (turnPageFn(state, 'prev')) dy -= rootSize().height;
-    }
+    } else if (dy >= rootSize().height && turnPageFn(state, 'prev'))
+      dy -= rootSize().height;
 
     state.page.vertical = true;
     state.isDragMode = true;
     resetPage(state);
   });
-  if (!animationId) animationId = requestAnimationFrame(handleDragAnima);
+  animationId ||= requestAnimationFrame(handleDragAnima);
 
   handleDragEnd.debounce();
 };

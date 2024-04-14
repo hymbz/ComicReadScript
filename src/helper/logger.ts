@@ -4,11 +4,8 @@ const prefix = [
 ];
 
 export const log = (...args: unknown[]) =>
-  // eslint-disable-next-line no-console
-  console.log.apply(null, [...prefix, ...args]);
+  Reflect.apply(console.log, null, [...prefix, ...args]);
 log.warn = (...args: unknown[]) =>
-  // eslint-disable-next-line no-console
-  console.warn.apply(null, [...prefix, ...args]);
+  Reflect.apply(console.warn, null, [...prefix, ...args]);
 log.error = (...args: unknown[]) =>
-  // eslint-disable-next-line no-console
-  console.error.apply(null, [...prefix, ...args]);
+  Reflect.apply(console.error, null, [...prefix, ...args]);

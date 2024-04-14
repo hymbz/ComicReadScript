@@ -6,13 +6,13 @@ import MdSettings from '@material-design-icons/svg/round/settings.svg';
 import MdSearch from '@material-design-icons/svg/round/search.svg';
 import MdTranslate from '@material-design-icons/svg/round/translate.svg';
 import MdGrid from '@material-design-icons/svg/round/grid_4x4.svg';
-
 import { createMemo, type Component, createSignal } from 'solid-js';
 import { t } from 'helper/i18n';
-import { _setState, store } from './store';
-import { IconButton } from '../IconButton';
-import { SettingPanel } from './components/SettingPanel';
 
+import { IconButton } from '../IconButton';
+
+import { _setState, store } from './store';
+import { SettingPanel } from './components/SettingPanel';
 import {
   nowFillIndex,
   zoomScrollModeImg,
@@ -24,7 +24,6 @@ import {
   switchTranslation,
   isTranslatingImage,
 } from './actions';
-
 import classes from './index.module.css';
 
 export type ToolbarButtonList = Component[];
@@ -62,7 +61,7 @@ export const defaultButtonList: ToolbarButtonList = [
   () => (
     <IconButton
       tip={t('button.page_fill')}
-      enabled={!!store.fillEffect[nowFillIndex()]}
+      enabled={Boolean(store.fillEffect[nowFillIndex()])}
       hidden={
         store.isMobile || store.option.onePageMode || store.option.scrollMode
       }

@@ -1,8 +1,8 @@
 import { scheduleIdle } from '@solid-primitives/scheduled';
 import { difference, byPath } from 'helper';
-import type { State } from '../store';
-import { store, setState, refs } from '../store';
-import type { Option } from '../store/option';
+
+import { type State, store, setState, refs } from '../store';
+import { type Option } from '../store/option';
 
 /** 触发 onOptionChange */
 const triggerOnOptionChange = scheduleIdle(

@@ -5,6 +5,7 @@ import {
   createEqualsSignal,
   createRootMemo,
 } from 'helper/solidJs';
+
 import { store, _setState, setState } from '../../store';
 
 /** 记录每张图片所在的页面 */
@@ -15,6 +16,7 @@ export const imgPageMap = createRootMemo(() => {
       if (imgIndex !== -1) map[imgIndex] = i;
     });
   }
+
   return map;
 });
 
@@ -26,13 +28,15 @@ const [_showPageList, setShowPageList] = createEqualsSignal<number[]>([]);
 export const showPageList = _showPageList;
 const updateShowPageList = throttle(() => {
   const newShowPageList = new Set<number>();
-  showImgList.forEach((img) => newShowPageList.add(imgPageMap()[+img.alt]));
+  showImgList.forEach((img) =>
+    newShowPageList.add(imgPageMap()[Number(img.alt)]),
+  );
   setShowPageList([...newShowPageList].sort((a, b) => a - b));
 });
 
 export const initIntersectionObserver = (root: HTMLElement) => {
   const handleObserver: IntersectionObserverCallback = (entries) => {
-    if (!entries.length) return;
+    if (entries.length === 0) return;
     entries.forEach(({ isIntersecting, target }) => {
       if (isIntersecting) showImgList.add(target as HTMLImageElement);
       else showImgList.delete(target as HTMLImageElement);

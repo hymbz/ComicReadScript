@@ -19,7 +19,7 @@ const fileType = {
 
 type Images = {
   thumbnail: { h: number; w: number; t: keyof typeof fileType };
-  pages: { number: number; extension: string }[];
+  pages: Array<{ number: number; extension: string }>;
 };
 declare const gallery: { num_pages: number; media_id: string; images: Images };
 
@@ -36,7 +36,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
   // 在漫画详情页
   if (Reflect.has(unsafeWindow, 'gallery')) {
     setManga({
-      onExit: (isEnd) => {
+      onExit(isEnd) {
         if (isEnd) scrollIntoView('#comment-container');
         setManga('show', false);
       },
@@ -61,7 +61,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
   }
 
   // 在漫画浏览页
-  if (document.getElementsByClassName('gallery').length) {
+  if (document.getElementsByClassName('gallery').length > 0) {
     if (options.open_link_new_page)
       querySelectorAll('a:not([href^="javascript:"])').forEach((e) =>
         e.setAttribute('target', '_blank'),
@@ -121,13 +121,13 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
         const { result, num_pages } = JSON.parse(res.responseText) as {
           num_pages: number;
-          result: {
+          result: Array<{
             id: number;
             media_id: string;
-            tags: { id: number }[];
+            tags: Array<{ id: number }>;
             title: { english: string };
             images: Images;
-          }[];
+          }>;
         };
 
         let comicDomHtml = '';
@@ -193,7 +193,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
         }
 
         // 添加分隔线
-        contentDom.appendChild(document.createElement('hr'));
+        contentDom.append(document.createElement('hr'));
         if (pageNum < num_pages) loadLock = false;
         else
           (
@@ -212,8 +212,8 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
       window.addEventListener('scroll', loadNewComic);
       if (querySelector('section.pagination'))
-        contentDom.appendChild(document.createElement('hr'));
+        contentDom.append(document.createElement('hr'));
       await loadNewComic();
     }
   }
-})().catch((e) => log.error(e));
+})().catch((error) => log.error(error));

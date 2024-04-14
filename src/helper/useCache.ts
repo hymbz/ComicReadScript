@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-
 export type UseStore = <T>(
   txMode: IDBTransactionMode,
   callback: (store: IDBObjectStore) => T | PromiseLike<T>,
@@ -14,7 +12,7 @@ const promisifyRequest = <T>(
       resolve((request as any).result);
     // eslint-disable-next-line no-multi-assign
     (request as any).onabort = (request as any).onerror = () =>
-      reject((request as any).error);
+      reject((request as any).error as Error);
   });
 
 export const useCache = <Schema extends Record<string, unknown>>(
@@ -25,6 +23,7 @@ export const useCache = <Schema extends Record<string, unknown>>(
   request.onupgradeneeded = () => {
     initSchema(request.result);
   };
+
   const dbp = promisifyRequest(request);
 
   const useStore = <T>(
@@ -60,7 +59,7 @@ export const useCache = <Schema extends Record<string, unknown>>(
         promisifyRequest(
           (index ? store.index(index as string) : store).getAll(
             query,
-          ) as IDBRequest<Schema[K][]>,
+          ) as IDBRequest<Array<Schema[K]>>,
         ),
       ),
 
@@ -72,12 +71,12 @@ export const useCache = <Schema extends Record<string, unknown>>(
     ) =>
       useStore(storeName, 'readwrite', async (store) => {
         if (index) {
-          store.index(index).openCursor(query).onsuccess =
-            async function onsuccess() {
-              if (!this.result) return;
-              await promisifyRequest(this.result.delete());
-              this.result.continue();
-            };
+          store.index(index).openCursor(query).onsuccess = async function () {
+            if (!this.result) return;
+            await promisifyRequest(this.result.delete());
+            this.result.continue();
+          };
+
           await promisifyRequest(store.transaction);
         } else {
           store.delete(query);

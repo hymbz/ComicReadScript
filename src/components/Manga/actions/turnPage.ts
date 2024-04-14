@@ -1,6 +1,7 @@
 import { approx, debounce } from 'helper';
-import type { State } from '../store';
-import { store, setState, _setState } from '../store';
+
+import { type State, store, setState, _setState } from '../store';
+
 import { contentHeight, rootSize, scrollTop } from './memo';
 import { resetPage } from './show';
 
@@ -47,6 +48,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
           closeScrollLock();
           return false;
         }
+
         if (state.option.scrollMode) return false;
         state.activePageIndex -= 1;
         return true;
@@ -59,6 +61,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
           state.prop.Next();
           return false;
         }
+
         state.prop.Exit?.(true);
         return false;
       case 'start':
@@ -76,6 +79,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
           closeScrollLock();
           return false;
         }
+
         if (state.option.scrollMode) return false;
         state.activePageIndex += 1;
         return true;

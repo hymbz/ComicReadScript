@@ -1,11 +1,9 @@
-import type { Component } from 'solid-js';
-import { For, createMemo } from 'solid-js';
-
+import { type Component, For, createMemo } from 'solid-js';
 import { boolDataVal } from 'helper';
 import { createThrottleMemo } from 'helper/solidJs';
+
 import { store } from '../store';
 import { contentHeight, imgHeightList } from '../actions';
-
 import classes from '../index.module.css';
 
 interface ScrollbarPageItem {
@@ -48,7 +46,7 @@ const ScrollbarPage: Component<ScrollbarPageItem> = (props) => {
 export const ScrollbarPageStatus = () => {
   // 将相同类型的页面合并显示
   const scrollbarPageList = createThrottleMemo(() => {
-    if (!store.pageList.length) return [];
+    if (store.pageList.length === 0) return [];
 
     const list: ScrollbarPageItem[] = [];
     let item: ScrollbarPageItem | undefined;

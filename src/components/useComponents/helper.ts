@@ -2,7 +2,7 @@ import type { JSX } from 'solid-js';
 import { render } from 'solid-js/web';
 
 const getDom = (id: string) => {
-  let dom = document.getElementById(id) as HTMLDivElement | null;
+  let dom = document.getElementById(id) as HTMLDivElement | undefined;
   if (dom) {
     dom.innerHTML = '';
     return dom;
@@ -10,7 +10,7 @@ const getDom = (id: string) => {
 
   dom = document.createElement('div');
   dom.id = id;
-  document.body.appendChild(dom);
+  document.body.append(dom);
   return dom;
 };
 

@@ -10,7 +10,7 @@ export const useHiddenMouse = () => {
   return {
     hiddenMouse,
     /** 鼠标移动 */
-    onMouseMove: () => {
+    onMouseMove() {
       setHiddenMouse(false);
       hidden();
     },

@@ -31,9 +31,10 @@ import {
 
   while (!unsafeWindow?.onImageLoaded) {
     if (document.readyState === 'complete') {
-      toast.error('无法获取图片', { duration: Infinity });
+      toast.error('无法获取图片', { duration: Number.POSITIVE_INFINITY });
       return;
     }
+
     await sleep(100);
   }
 
@@ -58,7 +59,7 @@ import {
     unsafeWindow.aid < unsafeWindow.scramble_id ||
     unsafeWindow.speed === '1'
   ) {
-    init(() => imgEleList.map((e) => e.getAttribute('data-original')!));
+    init(() => imgEleList.map((e) => e.dataset.original!));
     return;
   }
 
@@ -66,13 +67,13 @@ import {
     if (imgEle.src.startsWith('blob:')) return imgEle.src;
 
     const originalUrl = imgEle.src;
-    const res = await request<Blob>(imgEle.getAttribute('data-original')!, {
+    const res = await request<Blob>(imgEle.dataset.original!, {
       responseType: 'blob',
       revalidate: true,
       fetch: true,
     });
-    if (!res.response.size) {
-      toast.warn(`下载原图时出错: ${imgEle.getAttribute('data-page')}`);
+    if (res.response.size === 0) {
+      toast.warn(`下载原图时出错: ${imgEle.dataset.page}`);
       return '';
     }
 
@@ -81,7 +82,7 @@ import {
     if (err) {
       URL.revokeObjectURL(imgEle.src);
       imgEle.src = originalUrl;
-      toast.warn(`加载原图时出错: ${imgEle.getAttribute('data-page')}`);
+      toast.warn(`加载原图时出错: ${imgEle.dataset.page}`);
       return '';
     }
 
@@ -93,11 +94,11 @@ import {
         1,
       );
       URL.revokeObjectURL(imgEle.src);
-      if (!blob) throw new Error('');
+      if (!blob) throw new Error('转换图片时出错');
       return `${URL.createObjectURL(blob)}#.webp`;
-    } catch (error) {
+    } catch {
       imgEle.src = originalUrl;
-      toast.warn(`转换图片时出错: ${imgEle.getAttribute('data-page')}`);
+      toast.warn(`转换图片时出错: ${imgEle.dataset.page}`);
       return '';
     }
   };
@@ -105,7 +106,7 @@ import {
   // 先等懒加载触发完毕
   await wait(
     () =>
-      querySelectorAll('.lazy-loaded.hide').length &&
+      querySelectorAll('.lazy-loaded.hide').length > 0 &&
       querySelectorAll('.lazy-loaded.hide').length ===
         querySelectorAll('canvas').length,
   );
@@ -129,13 +130,15 @@ import {
   );
 
   const retry = async (num = 0) => {
-    for (let i = 0; i < imgEleList.length; i++) {
+    for (const [i, imgEle] of imgEleList.entries()) {
       if (mangaProps.imgList[i]) continue;
-      setManga('imgList', i, await getImgUrl(imgEleList[i]));
+      setManga('imgList', i, await getImgUrl(imgEle));
       await sleep(1000);
     }
+
     if (num < 60 && mangaProps.imgList.some((url) => !url))
       setTimeout(retry, 1000 * 5, num + 1);
   };
-  retry();
-})().catch((e) => log.error(e));
+
+  await retry();
+})().catch((error) => log.error(error));

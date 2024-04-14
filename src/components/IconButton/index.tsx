@@ -1,8 +1,8 @@
-import type { Component, JSX } from 'solid-js';
-import { mergeProps } from 'solid-js';
+import { type Component, type JSX, mergeProps } from 'solid-js';
 
 import classes, { css as style } from './index.module.css';
 
+// eslint-disable-next-line unicorn/prefer-export-from
 export const IconButtonStyle = style;
 
 interface IconButtonProps {

@@ -1,10 +1,8 @@
-import type { Component } from 'solid-js';
-import { For, createEffect } from 'solid-js';
-
+import { type Component, For, createEffect } from 'solid-js';
 import { boolDataVal } from 'helper';
+
 import { defaultButtonList } from '../defaultButtonList';
 import { store } from '../store';
-
 import classes from '../index.module.css';
 import { focus } from '../actions';
 

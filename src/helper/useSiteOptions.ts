@@ -1,6 +1,8 @@
 import { createMutable } from 'solid-js/store';
 import { createMemo, createRoot, createSignal } from 'solid-js';
+
 import type { MangaProps } from '../components/Manga';
+
 import { assign, difference } from '.';
 
 export interface SiteOptions {
@@ -52,7 +54,7 @@ export const useSiteOptions = async <T = Record<string, any>>(
 
   const isStored = saveOptions !== undefined;
   // 如果当前站点没有存储配置，就补充上去
-  if (!isStored) GM.setValue(name, options);
+  if (!isStored) await GM.setValue(name, options);
 
   return {
     /** 站点配置 */
@@ -65,7 +67,7 @@ export const useSiteOptions = async <T = Record<string, any>>(
     /** 快捷键配置 */
     hotkeys,
     /** 处理快捷键配置的变动 */
-    onHotkeysChange: (newValue: Record<string, string[]>) => {
+    onHotkeysChange(newValue: Record<string, string[]>) {
       GM.setValue('Hotkeys', newValue);
       setHotkeys(newValue);
     },

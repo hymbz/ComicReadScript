@@ -1,8 +1,9 @@
 import { createMemo, type Component } from 'solid-js';
 import { t } from 'helper/i18n';
-import { store } from '../store';
 
+import { store } from '../store';
 import classes from '../index.module.css';
+
 /** 深色模式 */
 const dark = `
 --hover-bg-color: #FFF3;

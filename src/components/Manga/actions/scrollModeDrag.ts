@@ -1,8 +1,10 @@
 import { approx } from 'helper';
+
 import type { UseDrag } from '../hooks/useDrag';
+import { refs } from '../store';
+
 import { scrollTo } from './helper';
 import { scrollTop } from './memo';
-import { refs } from '../store';
 
 /** 摩擦系数 */
 const FRICTION_COEFF = 0.96;
@@ -27,11 +29,13 @@ const handleSlide = (timestamp: DOMHighResTimeStamp) => {
     animationId = null;
     return;
   }
+
   // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
   if (timestamp - lastTime > 16) {
     dy *= FRICTION_COEFF;
     lastTime = timestamp;
   }
+
   scrollTo(scrollTop() + dy);
   animationId = requestAnimationFrame(handleSlide);
 };
@@ -50,10 +54,12 @@ export const handleScrollModeDrag: UseDrag = (
       requestAnimationFrame(calcVelocity);
       return;
     }
+
     case 'move': {
       scrollTo(initTop + iy - y);
       return;
     }
+
     case 'up': {
       if (animationId) cancelAnimationFrame(animationId);
       animationId = requestAnimationFrame(handleSlide);

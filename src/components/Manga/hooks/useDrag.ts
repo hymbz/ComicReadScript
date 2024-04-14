@@ -1,6 +1,6 @@
 import { onCleanup, onMount } from 'solid-js';
-
 import { approx } from 'helper';
+
 import { focus } from '../actions';
 
 export interface PointerState {

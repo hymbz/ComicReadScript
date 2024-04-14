@@ -2,14 +2,13 @@ import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 import MdImageSearch from '@material-design-icons/svg/round/image_search.svg';
 import MdImportContacts from '@material-design-icons/svg/round/import_contacts.svg';
 import MdCloudDownload from '@material-design-icons/svg/round/cloud_download.svg';
-
 import { Dynamic } from 'solid-js/web';
 import { createRoot, createEffect } from 'solid-js';
 import { createStore } from 'solid-js/store';
 
-import type { FabProps } from '../Fab';
-import { Fab, FabStyle } from '../Fab';
+import { type FabProps, Fab, FabStyle } from '../Fab';
 import { IconButtonStyle } from '../IconButton';
+
 import { mountComponents } from './helper';
 
 let dom: HTMLDivElement;
@@ -31,15 +30,20 @@ export const useFab = async (initProps?: FabProps) => {
 
   const FabIcon = () => {
     switch (props.progress) {
-      case undefined:
+      case undefined: {
         // 没有内容的书
         return MdImportContacts;
+      }
+
       case 1:
-      case 2:
+      case 2: {
         // 有内容的书
         return MdMenuBook;
-      default:
+      }
+
+      default: {
         return props.progress > 1 ? MdCloudDownload : MdImageSearch;
+      }
     }
   };
 

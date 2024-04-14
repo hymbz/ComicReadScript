@@ -140,7 +140,7 @@ import {
           ).length
         : 0;
       const _imgEleList = expectCount
-        ? [...imgEleList, ...new Array<null>(expectCount)]
+        ? [...imgEleList, ...Array.from<null>({ length: expectCount })]
         : imgEleList;
 
       let isEdited = false;
@@ -149,7 +149,7 @@ import {
           const newUrl = e ? await handleBlobImg(e) : '';
           if (newUrl === mangaProps.imgList[i]) return;
 
-          if (!isEdited) isEdited = true;
+          isEdited ||= true;
           setManga('imgList', i, newUrl);
         }),
       );
@@ -172,11 +172,11 @@ import {
     let timeout = false;
     setTimeout(() => {
       timeout = true;
-      if (mangaProps.imgList.length) return;
+      if (mangaProps.imgList.length > 0) return;
       toast.warn(t('site.simple.no_img'), {
         id: 'no_img',
-        duration: Infinity,
-        onClick: async () => {
+        duration: Number.POSITIVE_INFINITY,
+        async onClick() {
           await setOptions({ remember_current_site: false });
           window.location.reload();
         },
@@ -186,7 +186,9 @@ import {
     const triggerAllLazyLoad = () =>
       triggerLazyLoad(getAllImg, () =>
         // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时停留一段时间
-        mangaProps.show || (!timeout && !mangaProps.imgList.length) ? 300 : 0,
+        mangaProps.show || (!timeout && mangaProps.imgList.length === 0)
+          ? 300
+          : 0,
       );
 
     /** 监视页面元素发生变化的 Observer */
@@ -207,6 +209,7 @@ import {
         updateImgList();
         triggerAllLazyLoad();
       }
+
       await wait(() => mangaProps.imgList.length);
       toast.dismiss('no_img');
       return mangaProps.imgList;
@@ -216,7 +219,7 @@ import {
     createEffectOn(
       showPageList,
       throttle(() => {
-        if (!showPageList().length || !store.show) return;
+        if (showPageList().length === 0 || !store.show) return;
         const lastImgIndex = store.pageList[showPageList().at(-1)!].findLast(
           (i) => i !== -1,
         );
@@ -250,6 +253,6 @@ import {
 
   const menuId = await GM.registerMenuCommand(
     extractI18n('site.simple.simple_read_mode')(await getInitLang()),
-    () => !start() && GM.unregisterMenuCommand(menuId),
+    async () => !(await start()) && GM.unregisterMenuCommand(menuId),
   );
-})().catch((e) => log.error(e));
+})().catch((error) => log.error(error));

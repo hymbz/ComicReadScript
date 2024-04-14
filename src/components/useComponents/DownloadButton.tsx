@@ -1,19 +1,20 @@
 import MdFileDownload from '@material-design-icons/svg/round/file_download.svg';
-
 import { zipSync, type Zippable } from 'fflate';
 import { createMemo, createSignal } from 'solid-js';
 import { saveAs } from 'helper';
 import { request } from 'helper/request';
 import { t } from 'helper/i18n';
+
 import { store } from '../Manga';
 import { IconButton } from '../IconButton';
+
 import { toast } from './Toast';
 
 /** 下载按钮 */
 export const DownloadButton = () => {
   const [statu, setStatu] = createSignal('button.download');
 
-  const getFileExt = (url: string) => url.match(/[^?]+\.(\w+)/)?.[1] ?? 'jpg';
+  const getFileExt = (url: string) => /[^?]+\.(\w+)/.exec(url)?.[1] ?? 'jpg';
 
   const handleDownload = async () => {
     const fileData: Zippable = {};
@@ -56,7 +57,7 @@ export const DownloadButton = () => {
             errorText: `${t('alert.download_failed')}: ${fileName}`,
           });
           data = res.response;
-        } catch (error) {
+        } catch {
           fileName = `${index} - ${t('alert.download_failed')}.${fileExt}`;
         }
       }
@@ -69,6 +70,7 @@ export const DownloadButton = () => {
       setStatu('button.download');
       return;
     }
+
     setStatu('button.packaging');
     const zipped = zipSync(fileData, {
       level: 0,
