@@ -167,7 +167,8 @@
       "detect_ad": "识别广告页",
       "hotkeys_page_turn": "快捷键翻页",
       "open_link_new_page": "在新页面中打开链接",
-      "remember_current_site": "记住当前站点"
+      "remember_current_site": "记住当前站点",
+      "load_original_image": "加载原图"
     },
     "changed_load_failed": "网站发生变化，无法加载漫画",
     "ehentai": {

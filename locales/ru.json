@@ -167,7 +167,8 @@
       "detect_ad": "Detect advertise page",
       "hotkeys_page_turn": "Переворот страниц горячими клавишами",
       "open_link_new_page": "Открывать ссылки в новой вкладке",
-      "remember_current_site": "Запомнить текущий сайт"
+      "remember_current_site": "Запомнить текущий сайт",
+      "load_original_image": "Загружать оригинальное изображение"
     },
     "changed_load_failed": "Страница изменилась, невозможно загрузить комикс",
     "ehentai": {

@@ -167,7 +167,8 @@
       "detect_ad": "Detect advertise page",
       "hotkeys_page_turn": "Page turning with hotkeys",
       "open_link_new_page": "Open links in a new page",
-      "remember_current_site": "Remember the current site"
+      "remember_current_site": "Remember the current site",
+      "load_original_image": "Load original image"
     },
     "changed_load_failed": "The website has undergone changes, unable to load comics",
     "ehentai": {
