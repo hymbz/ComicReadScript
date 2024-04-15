@@ -2,6 +2,7 @@ module.exports = {
   prettier: true,
   plugins: ["i18next", "jsdoc", "solid"],
   extends: ["plugin:solid/typescript", "plugin:jsdoc/recommended"],
+  ignores: ["*.js"],
 
   rules: {
     // 不限制文件名的大小写样式

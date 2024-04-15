@@ -35,13 +35,13 @@ const extractI18n: OutputPluginOption = {
                 .filter((l) => l !== 'zh')
                 .map(
                   (langName) =>
-                    `case '${langName}': return '${byPath(
+                    `case '${langName}': return '${byPath<string>(
                       langMap[langName],
                       key,
                     )}';`,
                 )
                 .join('')}
-              default: return '${byPath(langMap.zh, key)}';
+              default: return '${byPath<string>(langMap.zh, key)}';
             }
           })`,
       );

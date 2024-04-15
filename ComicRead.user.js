@@ -6835,9 +6835,9 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>kemono.su 新增是否加载原图的开关 (<a href=https://github.com/hymbz/ComicReadScript/commit/0fc6ea98ff349b4931b22d8803c03d8a7e141d4d>0fc6ea9</a>), closes <a href=https://github.com/hymbz/ComicReadScript/issues/158>#158\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>kemono.su 新增是否加载原图的开关\`),
   _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>修复双页模式下两页图片中间有缝隙的 bug (<a href=https://github.com/hymbz/ComicReadScript/commit/0e00e7be57f90efe205ae6a265e4229424e7fbd2>0e00e7b</a>), closes <a href=https://github.com/hymbz/8/issues/pid64549617>8#pid64549617\`);
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>修复双页模式下两页图片中间有缝隙的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {

@@ -42,9 +42,8 @@ const latestChangeHtml = await (() => {
             .replaceAll('Bug Fixes', '修复')
             .replaceAll('Performance Improvements', '优化');
         case '*':
-          return mdText.replace(
-            // eslint-disable-next-line unicorn/better-regex
-            /(?<=^\* ):\w+?: |(?<=^.*)\(\[\w+\]\(.+?\)\).*/,
+          return mdText.replaceAll(
+            /(?<=^\* ):\w+?: |(?<=^.*)\(\[\w+]\(.+?\)\).*/g,
             '',
           );
         default:

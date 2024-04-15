@@ -1,9 +1,8 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import { readFile } from 'node:fs/promises';
-import type { TransformResult } from 'rollup';
-import type { Config } from 'svgo';
-import { optimize } from 'svgo';
-import type { Plugin } from 'vite';
+
+import { type TransformResult } from 'rollup';
+import { type Config, optimize } from 'svgo';
+import { type Plugin } from 'vite';
 import solid from 'vite-plugin-solid';
 
 /** svgo 配置 */
@@ -47,8 +46,8 @@ export function solidSvg(): Plugin {
       code = optimized || code;
 
       return `export default (props = {}) => ${code
-        .replace(/([{}])/g, "{'$1'}")
-        .replace(/<!--\s*([\s\S]*?)\s*-->/g, '{/* $1 */}')
+        .replaceAll(/([{}])/g, "{'$1'}")
+        .replaceAll(/<!--\s*([\s\S]*?)\s*-->/g, '{/* $1 */}')
         .replace(/(?<=<svg.*?)(>)/i, ' {...props}>')}`;
     },
 
