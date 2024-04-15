@@ -45,11 +45,11 @@
     "switch_page_fill": "Switch page fill",
     "switch_scroll_mode": "Switch scroll mode",
     "switch_single_double_page_mode": "Switch single/double page mode",
+    "translate_current_page": "Translate current page",
     "turn_page_down": "Turn the page to the down",
     "turn_page_left": "Turn the page to the left",
     "turn_page_right": "Turn the page to the right",
-    "turn_page_up": "Turn the page to the up",
-    "translate_current_page": "Translate current page"
+    "turn_page_up": "Turn the page to the up"
   },
   "img_status": {
     "error": "Load Error",
@@ -166,9 +166,9 @@
       "block_totally": "Totally block comics",
       "detect_ad": "Detect advertise page",
       "hotkeys_page_turn": "Page turning with hotkeys",
+      "load_original_image": "Load original image",
       "open_link_new_page": "Open links in a new page",
-      "remember_current_site": "Remember the current site",
-      "load_original_image": "Load original image"
+      "remember_current_site": "Remember the current site"
     },
     "changed_load_failed": "The website has undergone changes, unable to load comics",
     "ehentai": {
