@@ -1,7 +1,11 @@
-## [8.8.1](https://github.com/hymbz/ComicReadScript/compare/v8.8.0...v8.8.1) (2024-03-28)
+## [8.9.0](https://github.com/hymbz/ComicReadScript/compare/v8.8.1...v8.9.0) (2024-04-15)
+
+
+### Features
+
+* :sparkles: kemono.su 新增是否加载原图的开关 ([0fc6ea9](https://github.com/hymbz/ComicReadScript/commit/0fc6ea98ff349b4931b22d8803c03d8a7e141d4d)), closes [#158](https://github.com/hymbz/ComicReadScript/issues/158)
 
 
 ### Bug Fixes
 
-* :bug: 修复卷轴模式下偶尔滚动到底后无法触发结束页的 bug ([eff76e1](https://github.com/hymbz/ComicReadScript/commit/eff76e183d852e720e13135324dcf1e103e4a842))
-* :bug: 修复阅读配置有时会变回初始配置的 bug ([f2ebb6e](https://github.com/hymbz/ComicReadScript/commit/f2ebb6e3df0bd8ae91b9e497adb8e9439f691811))
+* :bug: 修复双页模式下两页图片中间有缝隙的 bug ([0e00e7b](https://github.com/hymbz/ComicReadScript/commit/0e00e7be57f90efe205ae6a265e4229424e7fbd2)), closes [8#pid64549617](https://github.com/hymbz/8/issues/pid64549617)

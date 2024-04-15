@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.8.1
+// @version         8.9.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -72,6 +72,7 @@ const gmApi = {
 const gmApiList = Object.keys(gmApi);
 const crsLib = {
   // 有些 cjs 模块会检查这个，所以在这里声明下
+  // eslint-disable-next-line n/prefer-global/process
   process: {
     env: {
       NODE_ENV: 'production'
@@ -96,7 +97,7 @@ const evalCode = code => {
  * @param name \@resource 引用的资源名
  */
 const selfImportSync = name => {
-  const code = name !== 'main' ? GM_getResourceText(name.replaceAll('/', '|')) :`
+  const code = name === 'main' ?`
 const solidJs = require('solid-js');
 const web = require('solid-js/web');
 const store$2 = require('solid-js/store');
@@ -423,7 +424,7 @@ const approx = (val, target, range) => Math.abs(target - val) <= range;
 
 /** 根据传入的条件列表的真假，对 val 进行取反 */
 const ifNot = (val, ...conditions) => {
-  let res = !!val;
+  let res = Boolean(val);
   conditions.forEach(v => {
     if (v) res = !res;
   });
@@ -452,7 +453,9 @@ const insertNode = (node, textnode, referenceNode = null) => {
   const temp = document.createElement('div');
   temp.innerHTML = textnode;
   const frag = document.createDocumentFragment();
-  while (temp.firstChild) frag.appendChild(temp.firstChild);
+  while (temp.firstChild) frag.append(temp.firstChild);
+  // TODO: 可以淘汰这个工具函数了
+  // eslint-disable-next-line unicorn/prefer-modern-dom-apis
   node.insertBefore(frag, referenceNode);
 };
 
@@ -464,28 +467,30 @@ const querySelectorClick = selector => {
 
 /** 找出数组中出现最多次的元素 */
 const getMostItem = list => {
-  const counts = list.reduce((map, val) => {
-    map.set(val, map.get(val) ?? 0 + 1);
-    return map;
-  }, new Map());
+  const counts = new Map();
+  for (const val of list) counts.set(val, counts.get(val) ?? 0 + 1);
+
+  // eslint-disable-next-line unicorn/no-array-reduce
   return [...counts.entries()].reduce((maxItem, item) => maxItem[1] > item[1] ? maxItem : item)[0];
 };
 
 /** 将数组扩充到指定长度，不足项用空字符串补足 */
-const createFillImgList = (imgList, length) => [...imgList, ...Array(length - imgList.length).fill('')];
+const createFillImgList = (imgList, length) => [...imgList, ...Array.from({
+  length: length - imgList.length
+}).fill('')];
 
 /** 判断字符串是否为 URL */
 const isUrl = text => {
   // 等浏览器版本上来后可以直接使用 URL.canParse
   try {
-    return !!new URL(text);
-  } catch (_) {
+    return Boolean(new URL(text));
+  } catch {
     return false;
   }
 };
 
 /** 将对象转为 URLParams 类型的字符串 */
-const dataToParams = data => Object.entries(data).map(([key, val]) => \`\${key}=\${val}\`).join('&');
+const dataToParams = data => Object.entries(data).map(([key, val]) => \`\${key}=\${String(val)}\`).join('&');
 
 /** 将 blob 数据作为文件保存至本地 */
 const saveAs = (blob, name = 'download') => {
@@ -574,10 +579,10 @@ const plimit = async (fnList, callBack = undefined, limit = 10) => {
       execPool.add(p);
     };
   });
+
+  // eslint-disable-next-line no-unmodified-loop-condition
   while (doneNum !== totalNum) {
-    while (taskList.length && execPool.size < limit) {
-      taskList.shift()();
-    }
+    while (taskList.length > 0 && execPool.size < limit) taskList.shift()();
     await Promise.race(execPool);
   }
   return resList;
@@ -589,15 +594,15 @@ const plimit = async (fnList, callBack = undefined, limit = 10) => {
  */
 const needDarkMode = hexColor => {
   // by: https://24ways.org/2010/calculating-color-contrast
-  const r = parseInt(hexColor.substring(1, 3), 16);
-  const g = parseInt(hexColor.substring(3, 5), 16);
-  const b = parseInt(hexColor.substring(5, 7), 16);
+  const r = Number.parseInt(hexColor.slice(1, 3), 16);
+  const g = Number.parseInt(hexColor.slice(3, 5), 16);
+  const b = Number.parseInt(hexColor.slice(5, 7), 16);
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
   return yiq < 128;
 };
 
 /** 等到传入的函数返回 true */
-const wait = async (fn, timeout = Infinity) => {
+const wait = async (fn, timeout = Number.POSITIVE_INFINITY) => {
   let res = await fn();
   let _timeout = timeout;
   while (_timeout > 0 && !res) {
@@ -663,7 +668,7 @@ const getImgSize = async (url, breakFn) => {
     await wait(() => !error && (image.naturalWidth || image.naturalHeight) && (breakFn ? !breakFn() : true));
     if (error) return null;
     return [image.naturalWidth, image.naturalHeight];
-  } catch (e) {
+  } catch (error_) {
     return null;
   } finally {
     image.src = '';
@@ -689,11 +694,10 @@ const canvasToBlob = (canvas, type, quality = 1) => new Promise((resolve, reject
 const difference = (a, b) => {
   const res = {};
   const keys = Object.keys(a);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
+  for (const key of keys) {
     if (typeof a[key] === 'object' && typeof b[key] === 'object') {
       const _res = difference(a[key], b[key]);
-      if (Object.keys(_res).length) res[key] = _res;
+      if (Object.keys(_res).length > 0) res[key] = _res;
     } else if (a[key] !== b?.[key]) res[key] = a[key];
   }
   return res;
@@ -701,15 +705,15 @@ const difference = (a, b) => {
 const _assign = (a, b) => {
   const res = JSON.parse(JSON.stringify(a));
   const keys = Object.keys(b);
-  for (let i = 0; i < keys.length; i += 1) {
-    const key = keys[i];
+  for (const key of keys) {
     if (res[key] === undefined) res[key] = b[key];else if (typeof b[key] === 'object') {
       const _res = _assign(res[key], b[key]);
-      if (Object.keys(_res).length) res[key] = _res;
+      if (Object.keys(_res).length > 0) res[key] = _res;
     } else if (res[key] !== b[key]) res[key] = b[key];
   }
   return res;
 };
+
 /**
  * Object.assign 的深拷贝版，不会导致子对象属性的缺失
  *
@@ -757,7 +761,7 @@ const requestIdleCallback$1 = (callback, timeout) => {
 };
 
 /**
- * 通过监视点击等会触发动态加载的事件，在触发动态加载后更新图片列表等
+ * 通过监视点击等会触发动态加载的事件，在触发后执行指定动作
  * @param update 动态加载后的重新加载
  */
 const autoUpdate = update => {
@@ -797,42 +801,9 @@ const createStyle = () => {
 };
 
 const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
-const log = (...args) =>
-// eslint-disable-next-line no-console
-console.log.apply(null, [...prefix, ...args]);
-log.warn = (...args) =>
-// eslint-disable-next-line no-console
-console.warn.apply(null, [...prefix, ...args]);
-log.error = (...args) =>
-// eslint-disable-next-line no-console
-console.error.apply(null, [...prefix, ...args]);
-
-const langList = ['zh', 'en', 'ru'];
-/** 判断传入的字符串是否是支持的语言类型代码 */
-const isLanguages = lang => !!lang && langList.includes(lang);
-
-/** 返回浏览器偏好语言 */
-const getBrowserLang = () => {
-  let newLang;
-  for (let i = 0; i < navigator.languages.length; i++) {
-    const language = navigator.languages[i];
-    const matchLang = langList.find(l => l === language || l === language.split('-')[0]);
-    if (matchLang) {
-      newLang = matchLang;
-      break;
-    }
-  }
-  return newLang;
-};
-const getSaveLang = () => typeof GM !== 'undefined' ? GM.getValue('Languages') : localStorage.getItem('Languages');
-const setSaveLang = val => typeof GM !== 'undefined' ? GM.setValue('Languages', val) : localStorage.setItem('Languages', val);
-const getInitLang = async () => {
-  const saveLang = await getSaveLang();
-  if (isLanguages(saveLang)) return saveLang;
-  const lang = getBrowserLang() ?? 'zh';
-  setSaveLang(lang);
-  return lang;
-};
+const log = (...args) => Reflect.apply(console.log, null, [...prefix, ...args]);
+log.warn = (...args) => Reflect.apply(console.warn, null, [...prefix, ...args]);
+log.error = (...args) => Reflect.apply(console.error, null, [...prefix, ...args]);
 
 const zh = {
   alert: {
@@ -1003,7 +974,8 @@ const zh = {
       detect_ad: "识别广告页",
       hotkeys_page_turn: "快捷键翻页",
       open_link_new_page: "在新页面中打开链接",
-      remember_current_site: "记住当前站点"
+      remember_current_site: "记住当前站点",
+      load_original_image: "加载原图"
     },
     changed_load_failed: "网站发生变化，无法加载漫画",
     ehentai: {
@@ -1257,7 +1229,8 @@ const en = {
       detect_ad: "Detect advertise page",
       hotkeys_page_turn: "Page turning with hotkeys",
       open_link_new_page: "Open links in a new page",
-      remember_current_site: "Remember the current site"
+      remember_current_site: "Remember the current site",
+      load_original_image: "Load original image"
     },
     changed_load_failed: "The website has undergone changes, unable to load comics",
     ehentai: {
@@ -1511,7 +1484,8 @@ const ru = {
       detect_ad: "Detect advertise page",
       hotkeys_page_turn: "Переворот страниц горячими клавишами",
       open_link_new_page: "Открывать ссылки в новой вкладке",
-      remember_current_site: "Запомнить текущий сайт"
+      remember_current_site: "Запомнить текущий сайт",
+      load_original_image: "Загружать оригинальное изображение"
     },
     changed_load_failed: "Страница изменилась, невозможно загрузить комикс",
     ehentai: {
@@ -1596,10 +1570,37 @@ const ru = {
   }
 };
 
+const langList = ['zh', 'en', 'ru'];
+/** 判断传入的字符串是否是支持的语言类型代码 */
+const isLanguages = lang => Boolean(lang) && langList.includes(lang);
+
+/** 返回浏览器偏好语言 */
+const getBrowserLang = () => {
+  let newLang;
+  for (let i = 0; i < navigator.languages.length; i++) {
+    const language = navigator.languages[i];
+    const matchLang = langList.find(l => l === language || l === language.split('-')[0]);
+    if (matchLang) {
+      newLang = matchLang;
+      break;
+    }
+  }
+  return newLang;
+};
+const getSaveLang = async () => typeof GM === 'undefined' ? localStorage.getItem('Languages') : GM.getValue('Languages');
+const setSaveLang = async val => typeof GM === 'undefined' ? localStorage.setItem('Languages', val) : GM.setValue('Languages', val);
+const getInitLang = async () => {
+  const saveLang = await getSaveLang();
+  if (isLanguages(saveLang)) return saveLang;
+  const lang = getBrowserLang() ?? 'zh';
+  setSaveLang(lang);
+  return lang;
+};
+
 const [lang, setLang] = solidJs.createSignal('zh');
 const setInitLang = async () => setLang(await getInitLang());
 const t = solidJs.createRoot(() => {
-  solidJs.createEffect(solidJs.on(lang, () => setSaveLang(lang()), {
+  solidJs.createEffect(solidJs.on(lang, async () => setSaveLang(lang()), {
     defer: true
   }));
   const locales = solidJs.createMemo(() => {
@@ -1617,34 +1618,11 @@ const t = solidJs.createRoot(() => {
   return (keys, variables) => {
     let text = byPath(locales(), keys) ?? '';
     if (variables) Object.entries(variables).forEach(([k, v]) => {
-      text = text.replaceAll(\`{{\${k}}}\`, \`\${v}\`);
+      text = text.replaceAll(\`{{\${k}}}\`, \`\${String(v)}\`);
     });
     return text;
   };
 });
-
-const getDom = id => {
-  let dom = document.getElementById(id);
-  if (dom) {
-    dom.innerHTML = '';
-    return dom;
-  }
-  dom = document.createElement('div');
-  dom.id = id;
-  document.body.appendChild(dom);
-  return dom;
-};
-
-/** 挂载 solid-js 组件 */
-const mountComponents = (id, fc) => {
-  const dom = getDom(id);
-  dom.style.setProperty('display', 'unset', 'important');
-  const shadowDom = dom.attachShadow({
-    mode: 'closed'
-  });
-  web.render(fc, shadowDom);
-  return dom;
-};
 
 var css$3 = ".index_module_root__7041fa4c{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.index_module_item__7041fa4c{align-items:center;animation:index_module_bounceInRight__7041fa4c .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.index_module_item__7041fa4c>svg{color:var(--theme);margin-right:.5em;width:1.5em}.index_module_item__7041fa4c[data-exit]{animation:index_module_bounceOutRight__7041fa4c .5s 1}.index_module_schedule__7041fa4c{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.index_module_item__7041fa4c[data-schedule] .index_module_schedule__7041fa4c{transition:transform .1s}.index_module_item__7041fa4c:not([data-schedule]) .index_module_schedule__7041fa4c{animation:index_module_schedule__7041fa4c linear 1 forwards}:is(.index_module_item__7041fa4c:hover,.index_module_item__7041fa4c[data-schedule],.index_module_root__7041fa4c[data-paused]) .index_module_schedule__7041fa4c{animation-play-state:paused}.index_module_msg__7041fa4c{line-height:1.4em;text-align:start;white-space:break-spaces;width:-moz-fit-content;width:fit-content}.index_module_msg__7041fa4c h2{margin:0}.index_module_msg__7041fa4c h3{margin:.7em 0}.index_module_msg__7041fa4c ul{margin:0;text-align:left}.index_module_msg__7041fa4c button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.index_module_msg__7041fa4c button:hover{background:#e0e0e0}p{margin:0}@keyframes index_module_schedule__7041fa4c{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes index_module_bounceInRight__7041fa4c{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes index_module_bounceOutRight__7041fa4c{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
 var modules_c21c94f2$3 = {"root":"index_module_root__7041fa4c","item":"index_module_item__7041fa4c","bounceInRight":"index_module_bounceInRight__7041fa4c","bounceOutRight":"index_module_bounceOutRight__7041fa4c","schedule":"index_module_schedule__7041fa4c","msg":"index_module_msg__7041fa4c"};
@@ -1659,9 +1637,7 @@ const setState$1 = fn => _setState$1(store$2.produce(fn));
 const store$1 = _state$1;
 const creatId = () => {
   let id = \`\${Date.now()}\`;
-  while (Reflect.has(store$1.map, id)) {
-    id += '_';
-  }
+  while (Reflect.has(store$1.map, id)) id += '_';
   return id;
 };
 
@@ -1725,7 +1701,7 @@ const toast$2 = (msg, options) => {
       fn = log.error;
       break;
   }
-  fn.call(null, 'Toast:', msg);
+  fn('Toast:', msg);
   if (options?.throw && typeof msg === 'string') throw new Error(msg);
 };
 toast$2.dismiss = id => {
@@ -1773,7 +1749,7 @@ const dismissToast = id => setState$1(state => {
   state.map[id].onDismiss?.({
     ...state.map[id]
   });
-  const i = state.list.findIndex(t => t === id);
+  const i = state.list.indexOf(id);
   if (i !== -1) state.list.splice(i, 1);
   Reflect.deleteProperty(state.map, id);
 });
@@ -1782,7 +1758,7 @@ const dismissToast = id => setState$1(state => {
 const resetToastUpdate = id => _setState$1('map', id, 'update', undefined);
 const ToastItem = props => {
   /** 是否要显示进度 */
-  const showSchedule = solidJs.createMemo(() => props.duration === Infinity && props.schedule ? true : undefined);
+  const showSchedule = solidJs.createMemo(() => props.duration === Number.POSITIVE_INFINITY && props.schedule ? true : undefined);
   const dismiss = e => {
     e.stopPropagation();
     if (showSchedule() && 'animationName' in e) return;
@@ -1823,7 +1799,7 @@ const ToastItem = props => {
     })());
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
-        return props.duration !== Infinity || props.schedule !== undefined;
+        return props.duration !== Number.POSITIVE_INFINITY || props.schedule !== undefined;
       },
       get children() {
         var _el$3 = _tmpl$$O();
@@ -1903,7 +1879,31 @@ const Toaster = () => {
   })();
 };
 
+// eslint-disable-next-line unicorn/prefer-export-from
 const ToastStyle = css$3;
+
+const getDom = id => {
+  let dom = document.getElementById(id);
+  if (dom) {
+    dom.innerHTML = '';
+    return dom;
+  }
+  dom = document.createElement('div');
+  dom.id = id;
+  document.body.append(dom);
+  return dom;
+};
+
+/** 挂载 solid-js 组件 */
+const mountComponents = (id, fc) => {
+  const dom = getDom(id);
+  dom.style.setProperty('display', 'unset', 'important');
+  const shadowDom = dom.attachShadow({
+    mode: 'closed'
+  });
+  web.render(fc, shadowDom);
+  return dom;
+};
 
 var _tmpl$$M = /*#__PURE__*/web.template(\`<style type=text/css>\`);
 let dom$2;
@@ -1914,7 +1914,7 @@ const init = () => {
   if (!document.getElementById('comicRead')) {
     const _dom = document.createElement('div');
     _dom.id = 'comicRead';
-    document.body.appendChild(_dom);
+    document.body.append(_dom);
   }
   dom$2 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
     var _el$ = _tmpl$$M();
@@ -1976,14 +1976,13 @@ const request$1 = async (url, details, errorNum = 0) => {
 
 /** 轮流向多个 api 发起请求 */
 const eachApi = async (url, baseUrlList, details) => {
-  for (let i = 0; i < baseUrlList.length; i++) {
-    const baseUrl = baseUrlList[i];
+  for (const baseUrl of baseUrlList) {
     try {
       return await request$1(\`\${baseUrl}\${url}\`, {
         ...details,
         noTip: true
       });
-    } catch (_) {}
+    } catch {}
   }
   const errorText = details?.errorText ?? t('alert.comic_load_error');
   if (!details?.noTip) toast$1.error(errorText);
@@ -2024,6 +2023,8 @@ var modules_c21c94f2$2 = {"iconButtonItem":"index_module_iconButtonItem__58f5684
 
 var _tmpl$$H = /*#__PURE__*/web.template(\`<div><button type=button tabindex=0>\`),
   _tmpl$2$c = /*#__PURE__*/web.template(\`<div>\`);
+
+// eslint-disable-next-line unicorn/prefer-export-from
 const IconButtonStyle = css$2;
 /** 图标按钮 */
 const IconButton = _props => {
@@ -2127,8 +2128,6 @@ const useSpeedDial = (options, setOptions) => {
   return list;
 };
 
-/* eslint-disable no-param-reassign */
-
 const promisifyRequest = request => new Promise((resolve, reject) => {
   // eslint-disable-next-line no-multi-assign
   request.oncomplete = request.onsuccess = () => resolve(request.result);
@@ -2155,7 +2154,7 @@ const useCache = (initSchema, version = 1) => {
     /** 删除符合条件的数据 */
     del: (storeName, query, index) => useStore(storeName, 'readwrite', async store => {
       if (index) {
-        store.index(index).openCursor(query).onsuccess = async function onsuccess() {
+        store.index(index).openCursor(query).onsuccess = async function () {
           if (!this.result) return;
           await promisifyRequest(this.result.delete());
           this.result.continue();
@@ -2240,13 +2239,6 @@ const createMemoMap = fnMap => {
 };
 const createEffectOn = (deps, fn, options) => solidJs.getOwner() ? solidJs.createEffect(solidJs.on(deps, fn, options)) : solidJs.createRoot(() => solidJs.createEffect(solidJs.on(deps, fn, options)));
 
-var _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">\`);
-const MdFileDownload = ((props = {}) => (() => {
-  var _el$ = _tmpl$$E();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
 const useStore = initState => {
   const [_state, _setState] = store$2.createStore(initState);
   return {
@@ -2326,11 +2318,11 @@ const OtherState = {
   /** 监视图片是否出现的 observer */
   observer: null,
   flag: {
-    /** 是否需要自动开启卷轴模式 */
+    /** 是否自动开启过卷轴模式 */
     autoScrollMode: false,
-    /** 是否需要自动将未加载图片类型设为跨页图 */
+    /** 是否自动将未加载图片类型设为跨页图过 */
     autoWide: false,
-    /** 是否需要将滚动条移至底部 */
+    /** 是否自动将滚动条移至底部过 */
     autoLong: false,
     /**
      * 用于防止滚轮连续滚动导致过快触发事件的锁
@@ -2437,6 +2429,20 @@ const refs = {
   exit: undefined
 };
 
+/** 在鼠标静止一段时间后自动隐藏 */
+const useHiddenMouse = () => {
+  const [hiddenMouse, setHiddenMouse] = solidJs.createSignal(true);
+  const hidden = debounce(() => setHiddenMouse(true), 1000);
+  return {
+    hiddenMouse,
+    /** 鼠标移动 */
+    onMouseMove() {
+      setHiddenMouse(false);
+      hidden();
+    }
+  };
+};
+
 /** 触发 onOptionChange */
 const triggerOnOptionChange = scheduleIdle(() => store.prop.OptionChange?.(difference(store.option, store.defaultOption)), 1000);
 
@@ -2530,15 +2536,7 @@ const handleComicData = (imgList, fillEffect) => {
       if (imgCache !== null) pageList.push([imgCache]);
       imgCache = -1;
     }
-    if (!isWideImg(img)) {
-      if (imgCache !== null) {
-        pageList.push([imgCache, i]);
-        imgCache = null;
-      } else {
-        imgCache = i;
-      }
-      if (Reflect.has(fillEffect, i)) Reflect.deleteProperty(fillEffect, i);
-    } else {
+    if (isWideImg(img)) {
       if (imgCache !== null) {
         const nowFillIndex = findFillIndex(i, fillEffect);
 
@@ -2556,6 +2554,14 @@ const handleComicData = (imgList, fillEffect) => {
       }
       if (fillEffect[i] === undefined && img.loadType !== 'loading') fillEffect[i] = false;
       pageList.push([i]);
+    } else {
+      if (imgCache === null) {
+        imgCache = i;
+      } else {
+        pageList.push([imgCache, i]);
+        imgCache = null;
+      }
+      if (Reflect.has(fillEffect, i)) Reflect.deleteProperty(fillEffect, i);
     }
   }
   if (imgCache !== null && imgCache !== -1) {
@@ -2583,12 +2589,12 @@ const [_showPageList, setShowPageList] = createEqualsSignal([]);
 const showPageList = _showPageList;
 const updateShowPageList = throttle(() => {
   const newShowPageList = new Set();
-  showImgList.forEach(img => newShowPageList.add(imgPageMap()[+img.alt]));
+  showImgList.forEach(img => newShowPageList.add(imgPageMap()[Number(img.alt)]));
   setShowPageList([...newShowPageList].sort((a, b) => a - b));
 });
 const initIntersectionObserver = root => {
   const handleObserver = entries => {
-    if (!entries.length) return;
+    if (entries.length === 0) return;
     entries.forEach(({
       isIntersecting,
       target
@@ -2684,8 +2690,8 @@ const defaultImgType = createRootMemo(() => {
 
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = sizeFn => {
-  const list = store.imgList.filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort();
-  if (!list.length) return null;
+  const list = store.imgList.filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort((a, b) => a - b);
+  if (list.length === 0) return null;
   return list[Math.floor(list.length / 2)];
 };
 
@@ -2707,7 +2713,9 @@ const imgHeightList = createRootMemo(() => store.option.scrollMode ? store.imgLi
 /** 卷轴模式下每张图片的位置 */
 const imgTopList = createRootMemo(() => {
   if (!store.option.scrollMode) return [];
-  const list = new Array(imgHeightList().length);
+  const list = Array.from({
+    length: imgHeightList().length
+  });
   let top = 0;
   for (let i = 0; i < imgHeightList().length; i++) {
     list[i] = top;
@@ -2751,8 +2759,8 @@ const updateRenderRange = state => {
     startPage = Math.max(0, state.activePageIndex - 1);
     endPage = Math.min(state.pageList.length - 1, state.activePageIndex + 2);
   }
-  if (!startPage) startPage = 0;
-  if (!endPage) endPage = startPage + 1;
+  startPage ||= 0;
+  endPage ||= startPage + 1;
   setRenderRangeStart(startPage);
   setRenderRangeEnd(endPage);
 };
@@ -2793,10 +2801,12 @@ const imgShowState = createRootMemo(() => {
   const stateList = [];
   for (let i = 0; i < store.pageList.length; i++) {
     const [a, b] = store.pageList[i];
-    if (b !== undefined) {
+    if (b === undefined) {
+      stateList[a] = 2;
+    } else {
       stateList[a] = 0;
       stateList[b] = 1;
-    } else stateList[a] = 2;
+    }
   }
   return stateList;
 }, []);
@@ -2820,7 +2830,7 @@ const loadPage = (state, index, draft) => state.pageList[index]?.some(i => loadI
  * @param loadNum 加载图片的数量
  * @returns 返回是否成功加载了未加载图片
  */
-const loadPageImg = (state, loadPageNum = Infinity, loadNum = 2) => {
+const loadPageImg = (state, loadPageNum = Number.POSITIVE_INFINITY, loadNum = 2) => {
   const draft = {
     editNum: 0,
     loadNum
@@ -2840,7 +2850,7 @@ const zoomScrollModeImg = (zoomLevel, set = false) => {
   const oldScrollTop = scrollTop();
   setOption(draftOption => {
     const newVal = set ? zoomLevel : store.option.scrollModeImgScale + zoomLevel;
-    draftOption.scrollModeImgScale = clamp(0.1, +newVal.toFixed(2), 3);
+    draftOption.scrollModeImgScale = clamp(0.1, Number(newVal.toFixed(2)), 3);
   });
 
   // 在卷轴模式下缩放时保持滚动进度不变
@@ -2864,9 +2874,9 @@ const updateImgLoadType = debounce(state => {
     // 根据设置决定是否要继续加载其余图片
     !state.option.alwaysLoadAllImg && state.imgList.length > 60 ||
     // 加载当前页后面的图片
-    loadPageImg(state, Infinity, 5) ||
+    loadPageImg(state, Number.POSITIVE_INFINITY, 5) ||
     // 加载当前页前面的图片
-    loadPageImg(state, -Infinity, 5)
+    loadPageImg(state, Number.NEGATIVE_INFINITY, 5)
   );
 });
 
@@ -2874,7 +2884,7 @@ const updateImgLoadType = debounce(state => {
 const updatePageData = state => {
   const lastActiveImgIndex = activeImgIndex();
   let newPageList = [];
-  if (isOnePageMode()) newPageList = state.imgList.map((_, i) => [i]);else newPageList = handleComicData(state.imgList, state.fillEffect);
+  newPageList = isOnePageMode() ? state.imgList.map((_, i) => [i]) : handleComicData(state.imgList, state.fillEffect);
   if (!isEqual(state.pageList, newPageList)) state.pageList = newPageList;
   updateImgLoadType(state);
 
@@ -2958,6 +2968,7 @@ const updateImgSize = (i, width, height) => {
           if (!state.flag.autoLong && checkImgTypeCount(store, i, 5)) state.flag.autoLong = true;
           // fall through
         }
+
       // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
       case 'wide':
         {
@@ -2989,14 +3000,19 @@ const updateImgSize = (i, width, height) => {
   });
 };
 solidJs.createRoot(() => {
-  // 预加载所有图片的尺寸
-  createEffectOn(() => store.imgList, singleThreaded(state => plimit(store.imgList.map((img, i) => async () => {
-    if (state.continueRun) return;
-    if (img.loadType !== 'wait' || img.width || img.height || !img.src) return;
-    const size = await getImgSize(img.src, () => state.continueRun);
-    if (state.continueRun) return;
-    if (size) updateImgSize(i, ...size);
-  }), undefined, Math.max(store.option.preloadPageNum, 1))));
+  const isLoading = () => store.imgList.some(img => img.loadType === 'loading');
+
+  // 空闲期间预加载所有图片的尺寸
+  // 主要是卷轴模式下需要提前知道尺寸方便正确布局
+  // 翻页模式下如果有跨页图也能提前发现重新排序
+  createEffectOn(isLoading, singleThreaded(async () => {
+    while (!isLoading()) {
+      const i = store.imgList.findIndex(img => !(img.width || img.height));
+      if (i === -1) break;
+      const size = await getImgSize(store.imgList[i].src);
+      if (size) updateImgSize(i, ...size);
+    }
+  }));
 
   // 处理显示窗口的长宽变化
   createEffectOn(rootSize, ({
@@ -3018,6 +3034,9 @@ solidJs.createRoot(() => {
     defer: true
   });
 });
+
+var css$1 = ".index_module_img__40e84c8f>img{display:block;height:100%;width:100%}.index_module_img__40e84c8f{background-color:var(--hover-bg-color,#fff3);content-visibility:hidden;display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;position:relative;transform:translate(var(--page-x),var(--page-y))}.index_module_img__40e84c8f[data-show]{content-visibility:visible;display:block}.index_module_img__40e84c8f[data-show=\\"0\\"]{justify-self:end}.index_module_img__40e84c8f[data-show=\\"1\\"]{justify-self:start}.index_module_img__40e84c8f[data-type=long]{height:auto;width:100%}.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[data-load-type=wait],.index_module_img__40e84c8f[src=\\"\\"]{height:100%;position:relative}:is(.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[src=\\"\\"]):before{opacity:0}:is(.index_module_img__40e84c8f[data-load-type],.index_module_img__40e84c8f[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.index_module_img__40e84c8f[data-load-type=loading],.index_module_img__40e84c8f[data-load-type=loading]:after{background-image:var(--md-cloud-download);background-position:50%;background-repeat:no-repeat;background-size:30%}.index_module_img__40e84c8f[data-load-type=loading]:after{animation:index_module_show__40e84c8f 1s forwards;content:\\"\\"}.index_module_img__40e84c8f[data-load-type=wait]:after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__40e84c8f[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__40e84c8f[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_mangaBox__40e84c8f{height:100%;width:100%}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{scrollbar-width:none}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f::-webkit-scrollbar{display:none}.index_module_mangaFlow__40e84c8f{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.index_module_mangaFlow__40e84c8f[data-disable-zoom] .index_module_img__40e84c8f{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__40e84c8f[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__40e84c8f[data-animation=page] .index_module_img__40e84c8f{transition-duration:.3s}.index_module_mangaFlow__40e84c8f[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__40e84c8f[data-vertical]{grid-auto-flow:row}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f{height:auto;transform:none}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>img{cursor:pointer}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>.index_module_gridModeTip__40e84c8f{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=error],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=wait],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[src=\\"\\"]{height:100%}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{overflow:auto}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f{display:flex;flex-direction:column;height:-moz-fit-content;height:fit-content}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width)))}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show][data-load-type=loading]{position:unset}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]:not(:first-of-type){margin-top:calc(var(--scroll-mode-spacing)*7px)}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f[data-grid-mode] .index_module_img__40e84c8f{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f[data-fit-width] .index_module_img__40e84c8f{height:auto;max-width:100%;width:100%}@keyframes index_module_show__40e84c8f{0%{opacity:1}90%{opacity:1}to{opacity:0}}.index_module_endPage__40e84c8f{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__40e84c8f>button{animation:index_module_jello__40e84c8f .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__40e84c8f>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__40e84c8f>.index_module_tip__40e84c8f{margin:auto;position:absolute}.index_module_endPage__40e84c8f[data-show]{opacity:1;pointer-events:all}.index_module_endPage__40e84c8f[data-type=start]>.index_module_tip__40e84c8f{transform:translateY(-10em)}.index_module_endPage__40e84c8f[data-type=end]>.index_module_tip__40e84c8f{transform:translateY(10em)}.index_module_root__40e84c8f[data-mobile] .index_module_endPage__40e84c8f>button{width:1em}.index_module_comments__40e84c8f{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__40e84c8f>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__40e84c8f:hover{opacity:1}.index_module_root__40e84c8f[data-mobile] .index_module_comments__40e84c8f{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__40e84c8f{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__40e84c8f{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__40e84c8f{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__40e84c8f[data-show],.index_module_toolbar__40e84c8f:hover) .index_module_toolbarPanel__40e84c8f{transform:none}.index_module_toolbar__40e84c8f[data-close] .index_module_toolbarPanel__40e84c8f{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__40e84c8f{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f{font-size:1.3em}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f:not([data-show]){pointer-events:none}.index_module_root__40e84c8f[data-mobile] .index_module_toolbarBg__40e84c8f{filter:opacity(.8)}.index_module_SettingPanelPopper__40e84c8f{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__40e84c8f{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.index_module_SettingPanel__40e84c8f hr{color:#fff;margin:0}.index_module_SettingBlock__40e84c8f{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div+:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div{margin-top:1em}.index_module_SettingBlock__40e84c8f[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__40e84c8f[data-show=false] .index_module_SettingBlockBody__40e84c8f{padding:unset}.index_module_SettingBlockSubtitle__40e84c8f{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__40e84c8f{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__40e84c8f+.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_SettingsItemName__40e84c8f{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__40e84c8f{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__40e84c8f{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true] .index_module_SettingsItemSwitchRound__40e84c8f{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__40e84c8f{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__40e84c8f{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__40e84c8f{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__40e84c8f{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f{overflow:hidden}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f>.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_hotkeys__40e84c8f{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__40e84c8f+.index_module_hotkeys__40e84c8f{margin-top:.5em}.index_module_hotkeys__40e84c8f:last-child{border-bottom:none}.index_module_hotkeysItem__40e84c8f{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__40e84c8f>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__40e84c8f>svg:hover{opacity:.9}.index_module_hotkeysItem__40e84c8f:hover{padding:.2em .5em}.index_module_hotkeysItem__40e84c8f:hover>svg{display:unset}.index_module_hotkeysItem__40e84c8f:focus,.index_module_hotkeysItem__40e84c8f:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__40e84c8f{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__40e84c8f>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__40e84c8f>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__40e84c8f>div[title]>svg{width:1.6em}.index_module_hotkeys__40e84c8f:hover div[title]{transform:scale(1)}.index_module_scrollbar__40e84c8f{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__40e84c8f>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__40e84c8f{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__40e84c8f[data-type=wait]{opacity:.5}.index_module_scrollbarPage__40e84c8f[data-type=error]{background-color:#f005}.index_module_scrollbarPage__40e84c8f[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__40e84c8f[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__40e84c8f[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__40e84c8f[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__40e84c8f[data-translation-type=error]{background-color:#f005}.index_module_scrollbarSlider__40e84c8f{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__40e84c8f{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__40e84c8f:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f:hover:before,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show]:before{opacity:1}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarSlider__40e84c8f{opacity:0}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarSlider__40e84c8f{opacity:1}.index_module_scrollbar__40e84c8f[data-position=hidden]{display:none}.index_module_scrollbar__40e84c8f[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.index_module_scrollbar__40e84c8f[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{top:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.index_module_scrollbar__40e84c8f[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f{bottom:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom],.index_module_scrollbar__40e84c8f[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__40e84c8f[data-position=bottom]:before,.index_module_scrollbar__40e84c8f[data-position=top]:before{border-left:.4em solid transparent}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarSlider__40e84c8f{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr],.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f{transform:translateX(var(--top))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f{transform:translateX(var(--poper-top))}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f{transform:scaleX(1)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-type=loaded],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-translation-type],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-translation-type]{transform:scaleX(1)}.index_module_root__40e84c8f[data-scroll-mode] .index_module_scrollbar__40e84c8f:before,.index_module_root__40e84c8f[data-scroll-mode] :is(.index_module_scrollbarSlider__40e84c8f,.index_module_scrollbarPoper__40e84c8f){transition:opacity .15s}.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover:before{opacity:0}.index_module_touchAreaRoot__40e84c8f{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.index_module_touchAreaRoot__40e84c8f[data-show]{opacity:1}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__40e84c8f[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=next],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__40e84c8f[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__40e84c8f[data-mobile] .index_module_touchAreaRoot__40e84c8f{flex-direction:column!important;letter-spacing:0}.index_module_root__40e84c8f[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__40e84c8f{display:none!important}.index_module_invisible__40e84c8f{visibility:hidden!important}.index_module_root__40e84c8f{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__40e84c8f a{color:var(--text-secondary)}.index_module_root__40e84c8f[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__40e84c8f{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-track{background:transparent}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var modules_c21c94f2$1 = {"img":"index_module_img__40e84c8f","show":"index_module_show__40e84c8f","mangaBox":"index_module_mangaBox__40e84c8f","root":"index_module_root__40e84c8f","mangaFlow":"index_module_mangaFlow__40e84c8f","gridModeTip":"index_module_gridModeTip__40e84c8f","endPage":"index_module_endPage__40e84c8f","jello":"index_module_jello__40e84c8f","tip":"index_module_tip__40e84c8f","comments":"index_module_comments__40e84c8f","toolbar":"index_module_toolbar__40e84c8f","toolbarPanel":"index_module_toolbarPanel__40e84c8f","toolbarBg":"index_module_toolbarBg__40e84c8f","SettingPanelPopper":"index_module_SettingPanelPopper__40e84c8f","SettingPanel":"index_module_SettingPanel__40e84c8f","SettingBlock":"index_module_SettingBlock__40e84c8f","SettingBlockBody":"index_module_SettingBlockBody__40e84c8f","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__40e84c8f","SettingsItem":"index_module_SettingsItem__40e84c8f","SettingsItemName":"index_module_SettingsItemName__40e84c8f","SettingsItemSwitch":"index_module_SettingsItemSwitch__40e84c8f","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__40e84c8f","SettingsItemIconButton":"index_module_SettingsItemIconButton__40e84c8f","SettingsItemSelect":"index_module_SettingsItemSelect__40e84c8f","closeCover":"index_module_closeCover__40e84c8f","SettingsShowItem":"index_module_SettingsShowItem__40e84c8f","SettingsShowItemBody":"index_module_SettingsShowItemBody__40e84c8f","hotkeys":"index_module_hotkeys__40e84c8f","hotkeysItem":"index_module_hotkeysItem__40e84c8f","hotkeysHeader":"index_module_hotkeysHeader__40e84c8f","scrollbar":"index_module_scrollbar__40e84c8f","scrollbarPage":"index_module_scrollbarPage__40e84c8f","scrollbarSlider":"index_module_scrollbarSlider__40e84c8f","scrollbarPoper":"index_module_scrollbarPoper__40e84c8f","touchAreaRoot":"index_module_touchAreaRoot__40e84c8f","touchArea":"index_module_touchArea__40e84c8f","hidden":"index_module_hidden__40e84c8f","invisible":"index_module_invisible__40e84c8f","beautifyScrollbar":"index_module_beautifyScrollbar__40e84c8f"};
 
 let clickTimeout = null;
 const useDoubleClick = (click, doubleClick, timeout = 200) => {
@@ -3077,7 +3096,7 @@ solidJs.createRoot(() => {
   createEffectOn(() => store.activePageIndex, () => {
     setState(state => {
       updateImgLoadType(state);
-      if (state.show.endPage) state.show.endPage = undefined;
+      state.show.endPage &&= undefined;
     });
   }, {
     defer: true
@@ -3430,7 +3449,7 @@ const findClickEle = (eleList, {
 const handlePageClick = e => {
   const targetArea = findClickEle(refs.touchArea.children, e);
   if (!targetArea) return;
-  const areaName = targetArea.getAttribute('data-area');
+  const areaName = targetArea.dataset.area;
   if (!areaName) return;
   if (areaName === 'menu' || areaName === 'MENU') return setState(state => {
     state.show.scrollbar = !state.show.scrollbar;
@@ -3447,7 +3466,7 @@ const handlePageClick = e => {
 const handleGridClick = e => {
   const target = findClickEle(refs.root.getElementsByTagName('img'), e);
   if (!target) return;
-  const pageNum = imgPageMap()[+target.alt];
+  const pageNum = imgPageMap()[Number(target.alt)];
   if (pageNum === undefined) return;
   setState(state => {
     state.activePageIndex = pageNum;
@@ -3457,7 +3476,7 @@ const handleGridClick = e => {
 };
 
 /** 双击放大 */
-const doubleClickZoom = e => !store.gridMode && zoom(store.zoom.scale !== 100 ? 100 : 350, e, true);
+const doubleClickZoom = e => !store.gridMode && zoom(store.zoom.scale === 100 ? 350 : 100, e, true);
 const handleClick = useDoubleClick(e => store.gridMode ? handleGridClick(e) : handlePageClick(e), doubleClickZoom);
 
 /** 判断翻页方向 */
@@ -3534,7 +3553,7 @@ const handleMangaFlowDrag = ({
         dx = store.option.dir === 'rtl' ? x - ix : ix - x;
         dy$1 = y - iy;
         if (store.isDragMode) {
-          if (!animationId$1) animationId$1 = requestAnimationFrame(handleDragAnima);
+          animationId$1 ||= requestAnimationFrame(handleDragAnima);
           return;
         }
 
@@ -3577,7 +3596,7 @@ const handleTrackpadWheel = e => {
 
   // 加速度小于指定值后逐渐缩小滚动距离，实现减速效果
   if (Math.abs(absDeltaY - lastDeltaY$1) <= 6) {
-    if (!retardStartTime) retardStartTime = Date.now();
+    retardStartTime ||= Date.now();
     deltaY *= 1 - Math.min(1, (Date.now() - retardStartTime) / 10 * 0.002);
     absDeltaY = Math.abs(deltaY);
     if (absDeltaY < 2) return;
@@ -3594,14 +3613,12 @@ const handleTrackpadWheel = e => {
     // 滚动过一页时
     if (dy$1 <= -rootSize().height) {
       if (turnPageFn(state, 'next')) dy$1 += rootSize().height;
-    } else if (dy$1 >= rootSize().height) {
-      if (turnPageFn(state, 'prev')) dy$1 -= rootSize().height;
-    }
+    } else if (dy$1 >= rootSize().height && turnPageFn(state, 'prev')) dy$1 -= rootSize().height;
     state.page.vertical = true;
     state.isDragMode = true;
     resetPage(state);
   });
-  if (!animationId$1) animationId$1 = requestAnimationFrame(handleDragAnima);
+  animationId$1 ||= requestAnimationFrame(handleDragAnima);
   handleDragEnd.debounce();
 };
 
@@ -3656,12 +3673,12 @@ const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
 const getValidTranslators = async () => {
   try {
     const res = await request(\`\${url()}\`);
-    const translatorsText = res.responseText.match(/(?<=validTranslators: ).+?(?=,\\n)/)?.[0];
+    const translatorsText = /(?<=validTranslators: ).+?(?=,\\n)/.exec(res.responseText)?.[0];
     if (!translatorsText) return undefined;
     const list = JSON.parse(translatorsText.replaceAll(\`'\`, \`"\`));
     return createOptions(list);
-  } catch (e) {
-    log.error(t('translation.tip.get_translator_list_error'), e);
+  } catch (error) {
+    log.error(t('translation.tip.get_translator_list_error'), error);
     return undefined;
   }
 };
@@ -3822,7 +3839,7 @@ const cotransTranslation = async i => {
   let resData;
   try {
     resData = JSON.parse(res.responseText);
-  } catch (_) {
+  } catch {
     throw new Error(\`\${t('translation.tip.upload_return_error')}：\${res.responseText}\`);
   }
   if ('error_id' in resData) throw new Error(\`\${t('translation.tip.upload_return_error')}：\${resData.error_id}\`);
@@ -3934,7 +3951,7 @@ const switchFillEffect = () => {
   setState(state => {
     // 如果当前页不是双页显示的就跳过，避免在显示跨页图的页面切换却没看到效果的疑惑
     if (state.pageList[state.activePageIndex].length !== 2) return;
-    state.fillEffect[nowFillIndex()] = +!state.fillEffect[nowFillIndex()];
+    state.fillEffect[nowFillIndex()] = Number(!state.fillEffect[nowFillIndex()]);
     updatePageData(state);
   });
 };
@@ -3962,7 +3979,7 @@ const switchOnePageMode = () => {
 /** 切换阅读方向 */
 const switchDir = () => {
   setOption(draftOption => {
-    draftOption.dir = draftOption.dir !== 'rtl' ? 'rtl' : 'ltr';
+    draftOption.dir = draftOption.dir === 'rtl' ? 'ltr' : 'rtl';
   });
 };
 
@@ -4000,9 +4017,6 @@ const isTranslatingImage = createRootMemo(() => activePage().some(i => store.img
 
 /** 切换当前页的翻译状态 */
 const switchTranslation = () => setImgTranslationEnbale(activePage(), !isTranslatingImage());
-
-var css$1 = ".index_module_img__40e84c8f>img{display:block;height:100%;width:100%}.index_module_img__40e84c8f{background-color:var(--hover-bg-color,#fff3);content-visibility:hidden;display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.index_module_img__40e84c8f[data-show]{content-visibility:visible;display:block}.index_module_img__40e84c8f[data-show=\\"0\\"]{justify-self:end}.index_module_img__40e84c8f[data-show=\\"1\\"]{justify-self:start}.index_module_img__40e84c8f[data-type=long]{height:auto;width:100%}.index_module_img__40e84c8f[data-load-type=loading]{max-width:100vw!important}.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[data-load-type=wait],.index_module_img__40e84c8f[src=\\"\\"]{height:100%;position:relative}:is(.index_module_img__40e84c8f[data-load-type=error],.index_module_img__40e84c8f[src=\\"\\"]):before{opacity:0}:is(.index_module_img__40e84c8f[data-load-type],.index_module_img__40e84c8f[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.index_module_img__40e84c8f[data-load-type=loading],.index_module_img__40e84c8f[data-load-type=loading]:after{background-image:var(--md-cloud-download);background-position:50%;background-repeat:no-repeat;background-size:30%}.index_module_img__40e84c8f[data-load-type=loading]:after{animation:index_module_show__40e84c8f 1s forwards;content:\\"\\"}.index_module_img__40e84c8f[data-load-type=wait]:after{background-image:var(--md-cloud-download);content:\\"\\"}.index_module_img__40e84c8f[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.index_module_img__40e84c8f[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.index_module_mangaBox__40e84c8f{height:100%;width:100%}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{scrollbar-width:none}.index_module_root__40e84c8f:not([data-grid-mode]) .index_module_mangaBox__40e84c8f::-webkit-scrollbar{display:none}.index_module_mangaFlow__40e84c8f{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.index_module_mangaFlow__40e84c8f[data-disable-zoom] .index_module_img__40e84c8f{height:unset;max-height:100%;object-fit:scale-down}.index_module_mangaFlow__40e84c8f[data-hidden-mouse=true]{cursor:none}.index_module_mangaFlow__40e84c8f[data-animation=page] .index_module_img__40e84c8f{transition-duration:.3s}.index_module_mangaFlow__40e84c8f[data-animation=zoom]{transition-duration:.3s}.index_module_mangaFlow__40e84c8f[data-vertical]{grid-auto-flow:row}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f{height:auto;transform:none}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>img{cursor:pointer}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f>.index_module_gridModeTip__40e84c8f{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=error],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-load-type=wait],.index_module_root__40e84c8f[data-grid-mode] .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[src=\\"\\"]{height:100%}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f{overflow:auto}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f{display:flex;flex-direction:column;height:-moz-fit-content;height:fit-content}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]{display:unset;height:auto;max-height:unset;max-width:unset;object-fit:contain;width:calc(var(--scroll-mode-img-scale)*min(100%, var(--width)))}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show][data-load-type=loading]{position:unset}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f .index_module_img__40e84c8f[data-show]:not(:first-of-type){margin-top:calc(var(--scroll-mode-spacing)*7px)}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f[data-grid-mode] .index_module_img__40e84c8f{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.index_module_root__40e84c8f[data-scroll-mode]:not([data-grid-mode]) .index_module_mangaBox__40e84c8f .index_module_mangaFlow__40e84c8f[data-fit-width] .index_module_img__40e84c8f{height:auto;max-width:100%;width:100%}@keyframes index_module_show__40e84c8f{0%{opacity:1}90%{opacity:1}to{opacity:0}}.index_module_endPage__40e84c8f{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.index_module_endPage__40e84c8f>button{animation:index_module_jello__40e84c8f .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.index_module_endPage__40e84c8f>button[data-is-end]{font-size:3em;margin:2em}.index_module_endPage__40e84c8f>.index_module_tip__40e84c8f{margin:auto;position:absolute}.index_module_endPage__40e84c8f[data-show]{opacity:1;pointer-events:all}.index_module_endPage__40e84c8f[data-type=start]>.index_module_tip__40e84c8f{transform:translateY(-10em)}.index_module_endPage__40e84c8f[data-type=end]>.index_module_tip__40e84c8f{transform:translateY(10em)}.index_module_root__40e84c8f[data-mobile] .index_module_endPage__40e84c8f>button{width:1em}.index_module_comments__40e84c8f{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.index_module_comments__40e84c8f>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.index_module_comments__40e84c8f:hover{opacity:1}.index_module_root__40e84c8f[data-mobile] .index_module_comments__40e84c8f{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes index_module_jello__40e84c8f{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.index_module_toolbar__40e84c8f{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.index_module_toolbarPanel__40e84c8f{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.index_module_toolbar__40e84c8f[data-show],.index_module_toolbar__40e84c8f:hover) .index_module_toolbarPanel__40e84c8f{transform:none}.index_module_toolbar__40e84c8f[data-close] .index_module_toolbarPanel__40e84c8f{transform:translateX(-100%);visibility:hidden}.index_module_toolbarBg__40e84c8f{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f{font-size:1.3em}.index_module_root__40e84c8f[data-mobile] .index_module_toolbar__40e84c8f:not([data-show]){pointer-events:none}.index_module_root__40e84c8f[data-mobile] .index_module_toolbarBg__40e84c8f{filter:opacity(.8)}.index_module_SettingPanelPopper__40e84c8f{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.index_module_SettingPanel__40e84c8f{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.index_module_SettingPanel__40e84c8f hr{color:#fff;margin:0}.index_module_SettingBlock__40e84c8f{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div+:is(.index_module_SettingBlock__40e84c8f .index_module_SettingBlockBody__40e84c8f)>div{margin-top:1em}.index_module_SettingBlock__40e84c8f[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.index_module_SettingBlock__40e84c8f[data-show=false] .index_module_SettingBlockBody__40e84c8f{padding:unset}.index_module_SettingBlockSubtitle__40e84c8f{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.index_module_SettingsItem__40e84c8f{align-items:center;display:flex;justify-content:space-between}.index_module_SettingsItem__40e84c8f+.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_SettingsItemName__40e84c8f{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_SettingsItemSwitch__40e84c8f{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.index_module_SettingsItemSwitchRound__40e84c8f{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true]{background:var(--secondary-bg)}.index_module_SettingsItemSwitch__40e84c8f[data-checked=true] .index_module_SettingsItemSwitchRound__40e84c8f{background:var(--secondary);transform:translateX(110%)}.index_module_SettingsItemIconButton__40e84c8f{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.index_module_SettingsItemSelect__40e84c8f{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.index_module_closeCover__40e84c8f{height:100%;left:0;position:fixed;top:0;width:100%}.index_module_SettingsShowItem__40e84c8f{display:grid;transition:grid-template-rows .2s ease-out}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f{overflow:hidden}.index_module_SettingsShowItem__40e84c8f>.index_module_SettingsShowItemBody__40e84c8f>.index_module_SettingsItem__40e84c8f{margin-top:1em}.index_module_hotkeys__40e84c8f{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.index_module_hotkeys__40e84c8f+.index_module_hotkeys__40e84c8f{margin-top:.5em}.index_module_hotkeys__40e84c8f:last-child{border-bottom:none}.index_module_hotkeysItem__40e84c8f{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.index_module_hotkeysItem__40e84c8f>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.index_module_hotkeysItem__40e84c8f>svg:hover{opacity:.9}.index_module_hotkeysItem__40e84c8f:hover{padding:.2em .5em}.index_module_hotkeysItem__40e84c8f:hover>svg{display:unset}.index_module_hotkeysItem__40e84c8f:focus,.index_module_hotkeysItem__40e84c8f:focus-visible{outline:var(--text) solid 2px}.index_module_hotkeysHeader__40e84c8f{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.index_module_hotkeysHeader__40e84c8f>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.index_module_hotkeysHeader__40e84c8f>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.index_module_hotkeysHeader__40e84c8f>div[title]>svg{width:1.6em}.index_module_hotkeys__40e84c8f:hover div[title]{transform:scale(1)}.index_module_scrollbar__40e84c8f{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.index_module_scrollbar__40e84c8f>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.index_module_scrollbarPage__40e84c8f{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleY(0)}.index_module_scrollbarPage__40e84c8f[data-type=wait]{opacity:.5}.index_module_scrollbarPage__40e84c8f[data-type=error]{background-color:#f005}.index_module_scrollbarPage__40e84c8f[data-null]{background-color:#fbc02d}.index_module_scrollbarPage__40e84c8f[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.index_module_scrollbarPage__40e84c8f[data-translation-type=wait]{background-color:#81c784}.index_module_scrollbarPage__40e84c8f[data-translation-type=show]{background-color:#4caf50}.index_module_scrollbarPage__40e84c8f[data-translation-type=error]{background-color:#f005}.index_module_scrollbarSlider__40e84c8f{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.index_module_scrollbarPoper__40e84c8f{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.index_module_scrollbar__40e84c8f:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:before{opacity:0;transition:opacity .15s,transform .15s}.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f:hover .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f:hover:before,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-force-show]:before{opacity:1}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]) .index_module_scrollbarSlider__40e84c8f{opacity:0}.index_module_scrollbar__40e84c8f[data-auto-hidden]:not([data-force-show]):hover .index_module_scrollbarSlider__40e84c8f{opacity:1}.index_module_scrollbar__40e84c8f[data-position=hidden]{display:none}.index_module_scrollbar__40e84c8f[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.index_module_scrollbar__40e84c8f[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{top:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.index_module_scrollbar__40e84c8f[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f{bottom:1.2em}.index_module_scrollbar__40e84c8f[data-position=bottom],.index_module_scrollbar__40e84c8f[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.index_module_scrollbar__40e84c8f[data-position=bottom]:before,.index_module_scrollbar__40e84c8f[data-position=top]:before{border-left:.4em solid transparent}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarSlider__40e84c8f{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPoper__40e84c8f{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr],.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr]:before,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr]:before{left:0;right:unset}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarSlider__40e84c8f{transform:translateX(var(--top))}.index_module_scrollbar__40e84c8f[data-position=bottom][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top][data-dir=ltr] .index_module_scrollbarPoper__40e84c8f{transform:translateX(var(--poper-top))}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f,.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f{transform:scaleX(1)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-type=loaded],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-type=loaded]{transform:scaleX(0)}.index_module_scrollbar__40e84c8f[data-position=bottom] .index_module_scrollbarPage__40e84c8f[data-translation-type],.index_module_scrollbar__40e84c8f[data-position=top] .index_module_scrollbarPage__40e84c8f[data-translation-type]{transform:scaleX(1)}.index_module_root__40e84c8f[data-scroll-mode] .index_module_scrollbar__40e84c8f:before,.index_module_root__40e84c8f[data-scroll-mode] :is(.index_module_scrollbarSlider__40e84c8f,.index_module_scrollbarPoper__40e84c8f){transition:opacity .15s}.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover .index_module_scrollbarPoper__40e84c8f,.index_module_root__40e84c8f[data-mobile] .index_module_scrollbar__40e84c8f:hover:before{opacity:0}.index_module_touchAreaRoot__40e84c8f{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.index_module_touchAreaRoot__40e84c8f[data-show]{opacity:1}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f{align-items:center;display:flex;justify-content:center;text-align:center}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=prev]{background-color:#95e1d3e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=menu]{background-color:#fce38ae6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=next]{background-color:#f38181e6}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.index_module_touchAreaRoot__40e84c8f .index_module_touchArea__40e84c8f[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.index_module_touchAreaRoot__40e84c8f[data-vert=true]{flex-direction:column!important}.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=NEXT],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=PREV],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=next],.index_module_touchAreaRoot__40e84c8f:not([data-turn-page]) .index_module_touchArea__40e84c8f[data-area=prev]{visibility:hidden}.index_module_touchAreaRoot__40e84c8f[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.index_module_root__40e84c8f[data-mobile] .index_module_touchAreaRoot__40e84c8f{flex-direction:column!important;letter-spacing:0}.index_module_root__40e84c8f[data-mobile] [data-area]:after{font-size:.8em}.index_module_hidden__40e84c8f{display:none!important}.index_module_invisible__40e84c8f{visibility:hidden!important}.index_module_root__40e84c8f{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.index_module_root__40e84c8f a{color:var(--text-secondary)}.index_module_root__40e84c8f[data-mobile]{font-size:.8em}.index_module_beautifyScrollbar__40e84c8f{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar{height:10px;width:5px}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-track{background:transparent}.index_module_beautifyScrollbar__40e84c8f::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
-var modules_c21c94f2$1 = {"img":"index_module_img__40e84c8f","show":"index_module_show__40e84c8f","mangaBox":"index_module_mangaBox__40e84c8f","root":"index_module_root__40e84c8f","mangaFlow":"index_module_mangaFlow__40e84c8f","gridModeTip":"index_module_gridModeTip__40e84c8f","endPage":"index_module_endPage__40e84c8f","jello":"index_module_jello__40e84c8f","tip":"index_module_tip__40e84c8f","comments":"index_module_comments__40e84c8f","toolbar":"index_module_toolbar__40e84c8f","toolbarPanel":"index_module_toolbarPanel__40e84c8f","toolbarBg":"index_module_toolbarBg__40e84c8f","SettingPanelPopper":"index_module_SettingPanelPopper__40e84c8f","SettingPanel":"index_module_SettingPanel__40e84c8f","SettingBlock":"index_module_SettingBlock__40e84c8f","SettingBlockBody":"index_module_SettingBlockBody__40e84c8f","SettingBlockSubtitle":"index_module_SettingBlockSubtitle__40e84c8f","SettingsItem":"index_module_SettingsItem__40e84c8f","SettingsItemName":"index_module_SettingsItemName__40e84c8f","SettingsItemSwitch":"index_module_SettingsItemSwitch__40e84c8f","SettingsItemSwitchRound":"index_module_SettingsItemSwitchRound__40e84c8f","SettingsItemIconButton":"index_module_SettingsItemIconButton__40e84c8f","SettingsItemSelect":"index_module_SettingsItemSelect__40e84c8f","closeCover":"index_module_closeCover__40e84c8f","SettingsShowItem":"index_module_SettingsShowItem__40e84c8f","SettingsShowItemBody":"index_module_SettingsShowItemBody__40e84c8f","hotkeys":"index_module_hotkeys__40e84c8f","hotkeysItem":"index_module_hotkeysItem__40e84c8f","hotkeysHeader":"index_module_hotkeysHeader__40e84c8f","scrollbar":"index_module_scrollbar__40e84c8f","scrollbarPage":"index_module_scrollbarPage__40e84c8f","scrollbarSlider":"index_module_scrollbarSlider__40e84c8f","scrollbarPoper":"index_module_scrollbarPoper__40e84c8f","touchAreaRoot":"index_module_touchAreaRoot__40e84c8f","touchArea":"index_module_touchArea__40e84c8f","hidden":"index_module_hidden__40e84c8f","invisible":"index_module_invisible__40e84c8f","beautifyScrollbar":"index_module_beautifyScrollbar__40e84c8f"};
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 const focus = () => requestAnimationFrame(() => {
@@ -4052,7 +4066,7 @@ const handleKeyDown = e => {
   }
 
   // 处理标注了 data-only-number 的元素
-  if (e.target.getAttribute('data-only-number') !== null) {
+  if (e.target.dataset.onlyNumber !== undefined) {
     // 拦截能输入数字外的按键
     if (isAlphabetKey.test(code)) {
       e.stopPropagation();
@@ -4306,6 +4320,7 @@ const handleSlide = timestamp => {
     animationId = null;
     return;
   }
+
   // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
   if (timestamp - lastTime > 16) {
     dy *= FRICTION_COEFF;
@@ -4340,156 +4355,6 @@ const handleScrollModeDrag = ({
         animationId = requestAnimationFrame(handleSlide);
       }
   }
-};
-
-var _tmpl$$D = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$b = /*#__PURE__*/web.template(\`<picture><img draggable=false>\`);
-/** 图片加载完毕的回调 */
-const handleImgLoaded = (i, e) => {
-  if (!e.getAttribute('src')) return;
-  setState(state => {
-    const img = state.imgList[i];
-    if (!img) return;
-    if (img.loadType === 'error' && e.src !== img.src) return;
-    if (img.width !== e.naturalWidth || img.height !== e.naturalHeight) updateImgSize(i, e.naturalWidth, e.naturalHeight);
-    img.loadType = 'loaded';
-    updateImgLoadType(state);
-    state.prop.Loading?.(state.imgList, img);
-  });
-};
-const errorNumMap = new Map();
-
-/** 图片加载出错的回调 */
-const handleImgError = (i, e) => {
-  if (!e.getAttribute('src')) return;
-  setState(state => {
-    const img = state.imgList[i];
-    if (!img) return;
-    const errorNum = errorNumMap.get(img.src) ?? 0;
-    // 首次失败自动重试一次
-    img.loadType = errorNum === 0 ? 'loading' : 'error';
-    errorNumMap.set(img.src, errorNum + 1);
-    updateImgLoadType(state);
-    if (e) log.error(t('alert.img_load_failed'), e);
-    state.prop.Loading?.(state.imgList, img);
-  });
-};
-
-/** 漫画图片 */
-const ComicImg = img => {
-  let ref;
-  solidJs.onMount(() => store.observer?.observe(ref));
-  solidJs.onCleanup(() => {
-    store.observer?.unobserve(ref);
-    showImgList.delete(ref);
-  });
-  const show = solidJs.createMemo(() => store.gridMode || inRange(renderImgRange().start, img.index, renderImgRange().end));
-  const src = solidJs.createMemo(() => {
-    if (img.loadType === 'wait') return '';
-    if (img.translationType === 'show') return img.translationUrl;
-    return img.src;
-  });
-  const size = solidJs.createMemo(() => img?.width ? img : placeholderSize());
-  const style = createMemoMap({
-    'grid-area': () => \`_\${img.index}\`,
-    '--width': () => \`\${size().width}px\`,
-    'aspect-ratio': () => \`\${size().width} / \${size().height}\`,
-    'box-shadow': () => {
-      if (!store.gridMode || !activePage().includes(img.index)) return undefined;
-      const page = store.pageList[imgPageMap()[img.index]].filter(i => i !== -1);
-      const showState = page.length === 1 ? 2 : imgShowState()[img.index];
-      if (showState === 2) return '0 0 1em 0.5em var(--text-secondary)';
-      return \`\${showState ? -1 : 1}em 0 1em -0.5em var(--text-secondary)\`;
-    }
-  });
-  solidJs.createEffect(() => {
-    if (!src() || img.loadType !== 'loaded') return;
-    // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
-    // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
-    ref.decode();
-  });
-  return (() => {
-    var _el$ = _tmpl$2$b(),
-      _el$2 = _el$.firstChild;
-    _el$2.addEventListener("error", e => handleImgError(img.index, e.currentTarget));
-    _el$2.addEventListener("load", e => handleImgLoaded(img.index, e.currentTarget));
-    var _ref$ = ref;
-    typeof _ref$ === "function" ? web.use(_ref$, _el$2) : ref = _el$2;
-    web.insert(_el$, web.createComponent(solidJs.Show, {
-      get when() {
-        return store.gridMode;
-      },
-      get children() {
-        var _el$3 = _tmpl$$D();
-        web.insert(_el$3, (() => {
-          var _c$ = web.memo(() => !!store.gridMode);
-          return () => _c$() ? getImgTip(img.index) : '';
-        })());
-        web.effect(() => web.className(_el$3, modules_c21c94f2$1.gridModeTip));
-        return _el$3;
-      }
-    }), null);
-    web.effect(_p$ => {
-      var _v$ = modules_c21c94f2$1.img,
-        _v$2 = style(),
-        _v$3 = show() ? imgShowState()[img.index] ?? '' : undefined,
-        _v$4 = img?.type || undefined,
-        _v$5 = img?.loadType === 'loaded' ? undefined : img?.loadType,
-        _v$6 = src(),
-        _v$7 = \`\${img.index}\`;
-      _v$ !== _p$.e && web.className(_el$, _p$.e = _v$);
-      _p$.t = web.style(_el$, _v$2, _p$.t);
-      _v$3 !== _p$.a && web.setAttribute(_el$, "data-show", _p$.a = _v$3);
-      _v$4 !== _p$.o && web.setAttribute(_el$, "data-type", _p$.o = _v$4);
-      _v$5 !== _p$.i && web.setAttribute(_el$, "data-load-type", _p$.i = _v$5);
-      _v$6 !== _p$.n && web.setAttribute(_el$2, "src", _p$.n = _v$6);
-      _v$7 !== _p$.s && web.setAttribute(_el$2, "alt", _p$.s = _v$7);
-      return _p$;
-    }, {
-      e: undefined,
-      t: undefined,
-      a: undefined,
-      o: undefined,
-      i: undefined,
-      n: undefined,
-      s: undefined
-    });
-    return _el$;
-  })();
-};
-
-var _tmpl$$C = /*#__PURE__*/web.template(\`<h1>NULL\`);
-const EmptyTip = () => {
-  const [show, setShow] = solidJs.createSignal(false);
-  solidJs.onMount(() => {
-    let timeoutId = window.setTimeout(() => {
-      setShow(true);
-      timeoutId = 0;
-    }, 2000);
-    solidJs.onCleanup(() => timeoutId && clearTimeout(timeoutId));
-  });
-  return web.createComponent(solidJs.Show, {
-    get when() {
-      return show();
-    },
-    get children() {
-      return _tmpl$$C();
-    }
-  });
-};
-
-/** 在鼠标静止一段时间后自动隐藏 */
-const useHiddenMouse = () => {
-  const [hiddenMouse, setHiddenMouse] = solidJs.createSignal(true);
-  const hidden = debounce(() => setHiddenMouse(true), 1000);
-  return {
-    hiddenMouse,
-    /** 鼠标移动 */
-    onMouseMove: () => {
-      setHiddenMouse(false);
-      hidden();
-    }
-  };
 };
 
 const createPointerState = (e, type = 'down') => {
@@ -4577,7 +4442,152 @@ const useDrag = ({
   });
 };
 
-var _tmpl$$B = /*#__PURE__*/web.template(\`<span>\`),
+var _tmpl$$E = /*#__PURE__*/web.template(\`<h1>NULL\`);
+const EmptyTip = () => {
+  const [show, setShow] = solidJs.createSignal(false);
+  solidJs.onMount(() => {
+    let timeoutId = window.setTimeout(() => {
+      setShow(true);
+      timeoutId = 0;
+    }, 2000);
+    solidJs.onCleanup(() => timeoutId && clearTimeout(timeoutId));
+  });
+  return web.createComponent(solidJs.Show, {
+    get when() {
+      return show();
+    },
+    get children() {
+      return _tmpl$$E();
+    }
+  });
+};
+
+var _tmpl$$D = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$b = /*#__PURE__*/web.template(\`<picture><img draggable=false>\`);
+/** 图片加载完毕的回调 */
+const handleImgLoaded = (i, e) => {
+  if (!e.getAttribute('src')) return;
+  setState(state => {
+    const img = state.imgList[i];
+    if (!img) return;
+    if (img.loadType === 'error' && e.src !== img.src) return;
+    if (img.width !== e.naturalWidth || img.height !== e.naturalHeight) updateImgSize(i, e.naturalWidth, e.naturalHeight);
+    img.loadType = 'loaded';
+    updateImgLoadType(state);
+    state.prop.Loading?.(state.imgList, img);
+  });
+};
+const errorNumMap = new Map();
+
+/** 图片加载出错的回调 */
+const handleImgError = (i, e) => {
+  if (!e.getAttribute('src')) return;
+  setState(state => {
+    const img = state.imgList[i];
+    if (!img) return;
+    const errorNum = errorNumMap.get(img.src) ?? 0;
+    // 首次失败自动重试一次
+    img.loadType = errorNum === 0 ? 'loading' : 'error';
+    errorNumMap.set(img.src, errorNum + 1);
+    updateImgLoadType(state);
+    if (e) log.error(t('alert.img_load_failed'), e);
+    state.prop.Loading?.(state.imgList, img);
+  });
+};
+
+/** 漫画图片 */
+const ComicImg = img => {
+  let ref;
+  solidJs.onMount(() => store.observer?.observe(ref));
+  solidJs.onCleanup(() => {
+    store.observer?.unobserve(ref);
+    showImgList.delete(ref);
+  });
+  const show = solidJs.createMemo(() => store.gridMode || inRange(renderImgRange().start, img.index, renderImgRange().end));
+  const src = solidJs.createMemo(() => {
+    if (img.loadType === 'wait') return '';
+    if (img.translationType === 'show') return img.translationUrl;
+    return img.src;
+  });
+  const size = solidJs.createMemo(() => img?.width ? img : placeholderSize());
+  const style = createMemoMap({
+    'grid-area': () => \`_\${img.index}\`,
+    '--width': () => \`\${size().width}px\`,
+    'aspect-ratio': () => \`\${size().width} / \${size().height}\`,
+    'box-shadow'() {
+      if (!store.gridMode || !activePage().includes(img.index)) return undefined;
+      const page = store.pageList[imgPageMap()[img.index]].filter(i => i !== -1);
+      const showState = page.length === 1 ? 2 : imgShowState()[img.index];
+      if (showState === 2) return '0 0 1em 0.5em var(--text-secondary)';
+      return \`\${showState ? -1 : 1}em 0 1em -0.5em var(--text-secondary)\`;
+    }
+  });
+  solidJs.createEffect(() => {
+    if (!src() || img.loadType !== 'loaded') return;
+    // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
+    // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
+    ref.decode();
+  });
+
+  // 加载期间尽快获取图片尺寸
+  createEffectOn(() => src(), singleThreaded(async () => {
+    if (img.width || img.height) return;
+    // eslint-disable-next-line solid/reactivity
+    await wait(() => !src() || ref.naturalWidth || ref.naturalHeight);
+    if (!(ref.naturalWidth || ref.naturalHeight)) return;
+    updateImgSize(img.index, ref.naturalWidth, ref.naturalHeight);
+  }));
+  return (() => {
+    var _el$ = _tmpl$2$b(),
+      _el$2 = _el$.firstChild;
+    _el$2.addEventListener("error", e => handleImgError(img.index, e.currentTarget));
+    _el$2.addEventListener("load", e => handleImgLoaded(img.index, e.currentTarget));
+    var _ref$ = ref;
+    typeof _ref$ === "function" ? web.use(_ref$, _el$2) : ref = _el$2;
+    web.insert(_el$, web.createComponent(solidJs.Show, {
+      get when() {
+        return store.gridMode;
+      },
+      get children() {
+        var _el$3 = _tmpl$$D();
+        web.insert(_el$3, (() => {
+          var _c$ = web.memo(() => !!store.gridMode);
+          return () => _c$() ? getImgTip(img.index) : '';
+        })());
+        web.effect(() => web.className(_el$3, modules_c21c94f2$1.gridModeTip));
+        return _el$3;
+      }
+    }), null);
+    web.effect(_p$ => {
+      var _v$ = modules_c21c94f2$1.img,
+        _v$2 = style(),
+        _v$3 = show() ? imgShowState()[img.index] ?? '' : undefined,
+        _v$4 = img?.type || undefined,
+        _v$5 = img?.loadType === 'loaded' ? undefined : img?.loadType,
+        _v$6 = src(),
+        _v$7 = \`\${img.index}\`;
+      _v$ !== _p$.e && web.className(_el$, _p$.e = _v$);
+      _p$.t = web.style(_el$, _v$2, _p$.t);
+      _v$3 !== _p$.a && web.setAttribute(_el$, "data-show", _p$.a = _v$3);
+      _v$4 !== _p$.o && web.setAttribute(_el$, "data-type", _p$.o = _v$4);
+      _v$5 !== _p$.i && web.setAttribute(_el$, "data-load-type", _p$.i = _v$5);
+      _v$6 !== _p$.n && web.setAttribute(_el$2, "src", _p$.n = _v$6);
+      _v$7 !== _p$.s && web.setAttribute(_el$2, "alt", _p$.s = _v$7);
+      return _p$;
+    }, {
+      e: undefined,
+      t: undefined,
+      a: undefined,
+      o: undefined,
+      i: undefined,
+      n: undefined,
+      s: undefined
+    });
+    return _el$;
+  })();
+};
+
+var _tmpl$$C = /*#__PURE__*/web.template(\`<span>\`),
   _tmpl$2$a = /*#__PURE__*/web.template(\`<div tabindex=-1><div>\`);
 const ComicImgFlow = () => {
   const {
@@ -4612,14 +4622,14 @@ const ComicImgFlow = () => {
   const scrollModeFill = solidJs.createMemo(() => imgTopList()[renderRange.start()] ?? 0);
 
   /** 在当前页之前有图片被加载出来，导致内容高度发生变化后，重新滚动页面，确保当前显示位置不变 */
-  createEffectOn([scrollModeFill, imgTopList], ([height, topList], prev) => {
+  createEffectOn([() => scrollModeFill(), imgTopList], ([height, topList], prev) => {
     if (!prev || !height) return;
     const [prevHeight, prevTopList] = prev;
     if (prevTopList === topList || prevHeight === height) return;
     scrollTo(scrollTop() + height - prevHeight);
     // 目前还是会有轻微偏移，但考虑到大部分情况下都是顺序阅读，本身出现概率就低，就不继续排查优化了
   });
-  const pageToText = page => \`\${(page.length !== 1 ? page : [page[0], page[0]]).map(i => i === -1 ? '.' : \`_\${i}\`).join(' ')}\`;
+  const pageToText = page => \`\${(page.length === 1 ? [page[0], page[0]] : page).map(i => i === -1 ? '.' : \`_\${i}\`).join(' ')}\`;
   const gridAreas = solidJs.createMemo(() => {
     if (store.gridMode) {
       const columnNum = isOnePageMode() ? 5 : 3;
@@ -4638,13 +4648,13 @@ const ComicImgFlow = () => {
     '--scale': () => store.zoom.scale / 100,
     '--zoom-x': () => \`\${store.zoom.offset.x}px\`,
     '--zoom-y': () => \`\${store.zoom.offset.y}px\`,
-    '--page-x': () => {
+    '--page-x'() {
       if (store.option.scrollMode) return '0px';
       const x = \`\${store.page.offset.x.pct * rootSize().width + store.page.offset.x.px}px\`;
       return store.option.dir === 'rtl' ? x : \`calc(\${x} * -1)\`;
     },
     '--page-y': () => \`\${store.page.offset.y.pct * rootSize().height + store.page.offset.y.px}px\`,
-    'touch-action': () => {
+    'touch-action'() {
       if (store.gridMode) return 'auto';
       if (store.zoom.scale !== 100) {
         if (!store.option.scrollMode) return 'none';
@@ -4655,8 +4665,8 @@ const ComicImgFlow = () => {
     },
     height: () => !store.gridMode && store.option.scrollMode ? \`\${contentHeight()}px\` : undefined,
     'grid-template-areas': gridAreas,
-    'grid-template-columns': () => {
-      if (!store.imgList.length) return undefined;
+    'grid-template-columns'() {
+      if (store.imgList.length === 0) return undefined;
       if (store.gridMode) return \`repeat(\${isOnePageMode() ? 10 : 6}, 1fr)\`;
       if (store.page.vertical) return '50% 50%';
       return \`repeat(\${gridAreas().split(' ').length}, 50%)\`;
@@ -4676,7 +4686,7 @@ const ComicImgFlow = () => {
         return store.option.scrollMode;
       },
       get children() {
-        var _el$3 = _tmpl$$B();
+        var _el$3 = _tmpl$$C();
         _el$3.style.setProperty("flex-shrink", "0");
         web.effect(() => \`\${scrollModeFill()}px\` != null ? _el$3.style.setProperty("height", \`\${scrollModeFill()}px\`) : _el$3.style.removeProperty("height"));
         return _el$3;
@@ -4736,73 +4746,73 @@ const ComicImgFlow = () => {
   })();
 };
 
-var _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">\`);
+var _tmpl$$B = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">\`);
 const MdLooksOne = ((props = {}) => (() => {
+  var _el$ = _tmpl$$B();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+var _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">\`);
+const MdLooksTwo = ((props = {}) => (() => {
   var _el$ = _tmpl$$A();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">\`);
-const MdLooksTwo = ((props = {}) => (() => {
+var _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">\`);
+const MdViewDay = ((props = {}) => (() => {
   var _el$ = _tmpl$$z();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">\`);
-const MdViewDay = ((props = {}) => (() => {
+var _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">\`);
+const MdQueue = ((props = {}) => (() => {
   var _el$ = _tmpl$$y();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">\`);
-const MdQueue = ((props = {}) => (() => {
+var _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0s.41-1.08 0-1.49zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14">\`);
+const MdSearch = ((props = {}) => (() => {
   var _el$ = _tmpl$$x();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0s.41-1.08 0-1.49zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14">\`);
-const MdSearch = ((props = {}) => (() => {
+var _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.5 17.5 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.7 15.7 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.89.89 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">\`);
+const MdTranslate = ((props = {}) => (() => {
   var _el$ = _tmpl$$w();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.5 17.5 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.7 15.7 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.89.89 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">\`);
-const MdTranslate = ((props = {}) => (() => {
+var _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">\`);
+const MdGrid = ((props = {}) => (() => {
   var _el$ = _tmpl$$v();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">\`);
-const MdGrid = ((props = {}) => (() => {
+var _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A4 4 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">\`);
+const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
   var _el$ = _tmpl$$u();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A4 4 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">\`);
-const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
+var _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A4 4 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">\`);
+const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
   var _el$ = _tmpl$$t();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A4 4 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">\`);
-const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
-  var _el$ = _tmpl$$s();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-var _tmpl$$r = /*#__PURE__*/web.template(\`<div><div> <!> \`);
+var _tmpl$$s = /*#__PURE__*/web.template(\`<div><div> <!> \`);
 /** 设置菜单项 */
 const SettingsItem = props => (() => {
-  var _el$ = _tmpl$$r(),
+  var _el$ = _tmpl$$s(),
     _el$2 = _el$.firstChild,
     _el$3 = _el$2.firstChild,
     _el$5 = _el$3.nextSibling;
@@ -4812,7 +4822,7 @@ const SettingsItem = props => (() => {
   web.effect(_p$ => {
     var _v$ = props.class ? \`\${modules_c21c94f2$1.SettingsItem} \${props.class}\` : modules_c21c94f2$1.SettingsItem,
       _v$2 = {
-        [props.class ?? '']: !!props.class?.length,
+        [props.class ?? '']: Boolean(props.class?.length),
         ...props.classList
       },
       _v$3 = props.style,
@@ -4831,7 +4841,7 @@ const SettingsItem = props => (() => {
   return _el$;
 })();
 
-var _tmpl$$q = /*#__PURE__*/web.template(\`<button type=button><div>\`);
+var _tmpl$$r = /*#__PURE__*/web.template(\`<button type=button><div>\`);
 /** 开关式菜单项 */
 const SettingsItemSwitch = props => {
   const handleClick = () => props.onChange(!props.value);
@@ -4846,7 +4856,7 @@ const SettingsItemSwitch = props => {
       return props.classList;
     },
     get children() {
-      var _el$ = _tmpl$$q(),
+      var _el$ = _tmpl$$r(),
         _el$2 = _el$.firstChild;
       _el$.addEventListener("click", handleClick);
       web.effect(_p$ => {
@@ -4867,21 +4877,21 @@ const SettingsItemSwitch = props => {
   });
 };
 
-var _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">\`);
+var _tmpl$$q = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">\`);
 const MdRefresh = ((props = {}) => (() => {
+  var _el$ = _tmpl$$q();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+var _tmpl$$p = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">\`);
+const MdAdd = ((props = {}) => (() => {
   var _el$ = _tmpl$$p();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">\`);
-const MdAdd = ((props = {}) => (() => {
-  var _el$ = _tmpl$$o();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-var _tmpl$$n = /*#__PURE__*/web.template(\`<div tabindex=0>\`),
+var _tmpl$$o = /*#__PURE__*/web.template(\`<div tabindex=0>\`),
   _tmpl$2$9 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
 const KeyItem = props => {
   const code = () => store.hotkeys[props.operateName][props.i];
@@ -4903,7 +4913,7 @@ const KeyItem = props => {
     if (!Reflect.has(hotkeysMap(), newCode)) setHotkeys(props.operateName, props.i, newCode);
   };
   return (() => {
-    var _el$ = _tmpl$$n();
+    var _el$ = _tmpl$$o();
     _el$.addEventListener("blur", () => code() || del());
     web.use(ref => code() || setTimeout(() => ref.focus()), _el$);
     _el$.addEventListener("keydown", handleKeyDown);
@@ -4963,7 +4973,7 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
   })()
 });
 
-var _tmpl$$m = /*#__PURE__*/web.template(\`<select>\`),
+var _tmpl$$n = /*#__PURE__*/web.template(\`<select>\`),
   _tmpl$2$8 = /*#__PURE__*/web.template(\`<option>\`);
 /** 选择器式菜单项 */
 const SettingsItemSelect = props => {
@@ -4982,7 +4992,7 @@ const SettingsItemSelect = props => {
       return props.classList;
     },
     get children() {
-      var _el$ = _tmpl$$m();
+      var _el$ = _tmpl$$n();
       _el$.addEventListener("change", e => props.onChange(e.target.value));
       var _ref$ = ref;
       typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
@@ -5004,11 +5014,11 @@ const SettingsItemSelect = props => {
   });
 };
 
-var _tmpl$$l = /*#__PURE__*/web.template(\`<div><div>\`);
+var _tmpl$$m = /*#__PURE__*/web.template(\`<div><div>\`);
 
 /** 带有动画过渡的切换显示设置项 */
 const SettingsShowItem = props => (() => {
-  var _el$ = _tmpl$$l(),
+  var _el$ = _tmpl$$m(),
     _el$2 = _el$.firstChild;
   web.insert(_el$2, () => props.children);
   web.effect(_p$ => {
@@ -5027,7 +5037,7 @@ const SettingsShowItem = props => (() => {
   return _el$;
 })();
 
-var _tmpl$$k = /*#__PURE__*/web.template(\`<blockquote>\`),
+var _tmpl$$l = /*#__PURE__*/web.template(\`<blockquote>\`),
   _tmpl$2$7 = /*#__PURE__*/web.template(\`<input type=url>\`);
 const SettingTranslation = () => {
   const isTranslationEnable = solidJs.createMemo(() => store.option.translation.server !== 'disable' && translatorOptions().length > 0);
@@ -5055,7 +5065,7 @@ const SettingTranslation = () => {
       return store.option.translation.server === 'cotrans';
     },
     get children() {
-      var _el$ = _tmpl$$k();
+      var _el$ = _tmpl$$l();
       web.effect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
       return _el$;
     }
@@ -5212,7 +5222,7 @@ const SettingTranslation = () => {
   })];
 };
 
-var _tmpl$$j = /*#__PURE__*/web.template(\`<div><span contenteditable data-only-number></span><span>\`);
+var _tmpl$$k = /*#__PURE__*/web.template(\`<div><span contenteditable data-only-number></span><span>\`);
 /** 数值输入框菜单项 */
 const SettingsItemNumber = props => {
   const handleInput = e => {
@@ -5221,9 +5231,9 @@ const SettingsItemNumber = props => {
   const handleKeyDown = e => {
     switch (e.key) {
       case 'ArrowUp':
-        return props.onChange(+e.target.textContent + (props.step ?? 1));
+        return props.onChange(Number(e.target.textContent) + (props.step ?? 1));
       case 'ArrowDown':
-        return props.onChange(+e.target.textContent - (props.step ?? 1));
+        return props.onChange(Number(e.target.textContent) - (props.step ?? 1));
     }
   };
   return web.createComponent(SettingsItem, {
@@ -5237,14 +5247,13 @@ const SettingsItemNumber = props => {
       return props.classList;
     },
     get children() {
-      var _el$ = _tmpl$$j(),
+      var _el$ = _tmpl$$k(),
         _el$2 = _el$.firstChild,
         _el$3 = _el$2.nextSibling;
       _el$2.addEventListener("blur", e => {
         try {
-          props.onChange(+e.currentTarget.textContent);
+          props.onChange(Number(e.currentTarget.textContent));
         } finally {
-          // eslint-disable-next-line no-param-reassign
           e.currentTarget.textContent = \`\${props.value}\`;
         }
       });
@@ -5259,7 +5268,7 @@ const SettingsItemNumber = props => {
   });
 };
 
-var _tmpl$$i = /*#__PURE__*/web.template(\`<div>\`),
+var _tmpl$$j = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$6 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
 
 const areaArrayMap = {
@@ -5274,7 +5283,7 @@ const dir = createRootMemo(() => {
   return store.option.dir === 'rtl' ? 'ltr' : 'rtl';
 });
 const TouchArea = () => (() => {
-  var _el$ = _tmpl$$i();
+  var _el$ = _tmpl$$j();
   var _ref$ = bindRef('touchArea');
   typeof _ref$ === "function" && web.use(_ref$, _el$);
   web.insert(_el$, web.createComponent(solidJs.For, {
@@ -5313,7 +5322,7 @@ const TouchArea = () => (() => {
   return _el$;
 })();
 
-var _tmpl$$h = /*#__PURE__*/web.template(\`<button type=button>\`),
+var _tmpl$$i = /*#__PURE__*/web.template(\`<button type=button>\`),
   _tmpl$2$5 = /*#__PURE__*/web.template(\`<input type=color>\`);
 /** 默认菜单项 */
 const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
@@ -5321,7 +5330,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return web.memo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
   },
   get children() {
-    var _el$ = _tmpl$$h();
+    var _el$ = _tmpl$$i();
     _el$.addEventListener("click", switchDir);
     web.insert(_el$, (() => {
       var _c$ = web.memo(() => store.option.dir === 'rtl');
@@ -5505,8 +5514,9 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       maxLength: 5,
       onChange: val => {
         if (Number.isNaN(val)) return;
+        const newVal = clamp(0, val, Number.POSITIVE_INFINITY);
         setOption(draftOption => {
-          draftOption.scrollModeSpacing = clamp(0, val, Infinity);
+          draftOption.scrollModeSpacing = newVal;
         });
       },
       get value() {
@@ -5571,7 +5581,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
   onChange: val => {
     if (Number.isNaN(val)) return;
     setOption(draftOption => {
-      draftOption.preloadPageNum = clamp(0, val, 99999);
+      draftOption.preloadPageNum = clamp(0, val, 99_999);
     });
   },
   get value() {
@@ -5618,7 +5628,7 @@ const playAnimation = e => e?.getAnimations().forEach(animation => {
   animation.play();
 });
 
-var _tmpl$$g = /*#__PURE__*/web.template(\`<div>\`),
+var _tmpl$$h = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
   _tmpl$3$3 = /*#__PURE__*/web.template(\`<hr>\`);
 
@@ -5626,7 +5636,7 @@ var _tmpl$$g = /*#__PURE__*/web.template(\`<div>\`),
 const SettingPanel = () => {
   const settingList = createRootMemo(() => store.prop.editSettingList(defaultSettingList()));
   return (() => {
-    var _el$ = _tmpl$$g();
+    var _el$ = _tmpl$$h();
     web.addEventListener(_el$, "wheel", stopPropagation);
     web.addEventListener(_el$, "scroll", stopPropagation);
     _el$.addEventListener("click", stopPropagation);
@@ -5666,7 +5676,7 @@ const SettingPanel = () => {
     }));
     web.effect(_p$ => {
       var _v$ = \`\${modules_c21c94f2$1.SettingPanel} \${modules_c21c94f2$1.beautifyScrollbar}\`,
-        _v$2 = lang() !== 'zh' ? '20em' : '15em';
+        _v$2 = lang() === 'zh' ? '15em' : '20em';
       _v$ !== _p$.e && web.className(_el$, _p$.e = _v$);
       _v$2 !== _p$.t && ((_p$.t = _v$2) != null ? _el$.style.setProperty("width", _v$2) : _el$.style.removeProperty("width"));
       return _p$;
@@ -5678,11 +5688,11 @@ const SettingPanel = () => {
   })();
 };
 
-var _tmpl$$f = /*#__PURE__*/web.template(\`<div>\`),
+var _tmpl$$g = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
 /** 工具栏按钮分隔栏 */
 const buttonListDivider = () => (() => {
-  var _el$ = _tmpl$$f();
+  var _el$ = _tmpl$$g();
   _el$.style.setProperty("height", "1em");
   return _el$;
 })();
@@ -5721,7 +5731,7 @@ const defaultButtonList = [
     return t('button.page_fill');
   },
   get enabled() {
-    return !!store.fillEffect[nowFillIndex()];
+    return Boolean(store.fillEffect[nowFillIndex()]);
   },
   get hidden() {
     return store.isMobile || store.option.onePageMode || store.option.scrollMode;
@@ -5814,13 +5824,13 @@ const defaultButtonList = [
   });
 }];
 
-var _tmpl$$e = /*#__PURE__*/web.template(\`<div role=toolbar><div><div>\`);
+var _tmpl$$f = /*#__PURE__*/web.template(\`<div role=toolbar><div><div>\`);
 
 /** 左侧工具栏 */
 const Toolbar = () => {
   solidJs.createEffect(() => store.show.toolbar || focus());
   return (() => {
-    var _el$ = _tmpl$$e(),
+    var _el$ = _tmpl$$f(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
     _el$2.addEventListener("click", focus);
@@ -5856,7 +5866,7 @@ const Toolbar = () => {
   })();
 };
 
-var _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`);
+var _tmpl$$e = /*#__PURE__*/web.template(\`<div>\`);
 const getScrollbarPage = (img, i) => ({
   num: 1,
   length: imgHeightList()[i],
@@ -5867,7 +5877,7 @@ const getScrollbarPage = (img, i) => ({
 const ScrollbarPage = props => {
   const flexBasis = solidJs.createMemo(() => store.option.scrollMode ? props.length / contentHeight() : props.num / store.imgList.length);
   return (() => {
-    var _el$ = _tmpl$$d();
+    var _el$ = _tmpl$$e();
     web.effect(_p$ => {
       var _v$ = modules_c21c94f2$1.scrollbarPage,
         _v$2 = \`\${flexBasis() * 100}%\`,
@@ -5895,7 +5905,7 @@ const ScrollbarPage = props => {
 const ScrollbarPageStatus = () => {
   // 将相同类型的页面合并显示
   const scrollbarPageList = createThrottleMemo(() => {
-    if (!store.pageList.length) return [];
+    if (store.pageList.length === 0) return [];
     const list = [];
     let item;
     const handleImg = i => {
@@ -5936,7 +5946,7 @@ const ScrollbarPageStatus = () => {
   });
 };
 
-var _tmpl$$c = /*#__PURE__*/web.template(\`<div role=scrollbar tabindex=-1><div></div><div>\`);
+var _tmpl$$d = /*#__PURE__*/web.template(\`<div role=scrollbar tabindex=-1><div></div><div>\`);
 
 /** 滚动条 */
 const Scrollbar = () => {
@@ -5957,7 +5967,7 @@ const Scrollbar = () => {
   };
 
   /** 是否强制显示滚动条 */
-  const showScrollbar = solidJs.createMemo(() => store.show.scrollbar || !!penetrate());
+  const showScrollbar = solidJs.createMemo(() => store.show.scrollbar || Boolean(penetrate()));
 
   /** 滚动条提示文本 */
   const tipText = createThrottleMemo(() => {
@@ -5980,7 +5990,7 @@ const Scrollbar = () => {
     '--slider-top': () => \`\${sliderTop() * scrollLength()}px\`
   });
   return (() => {
-    var _el$ = _tmpl$$c(),
+    var _el$ = _tmpl$$d(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.nextSibling;
     _el$.addEventListener("wheel", handleWheel);
@@ -6038,7 +6048,7 @@ const Scrollbar = () => {
   })();
 };
 
-var _tmpl$$b = /*#__PURE__*/web.template(\`<div>\`),
+var _tmpl$$c = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$2 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1><p></p><button type=button></button><button type=button data-is-end></button><button type=button>\`),
   _tmpl$3$2 = /*#__PURE__*/web.template(\`<p>\`);
 let delayTypeTimer = 0;
@@ -6109,7 +6119,7 @@ const EndPage = () => {
         return web.memo(() => !!store.option.showComment)() && delayType() === 'end';
       },
       get children() {
-        var _el$6 = _tmpl$$b();
+        var _el$6 = _tmpl$$c();
         web.addEventListener(_el$6, "wheel", stopPropagation);
         web.insert(_el$6, web.createComponent(solidJs.For, {
           get each() {
@@ -6167,7 +6177,8 @@ const EndPage = () => {
   })();
 };
 
-var _tmpl$$a = /*#__PURE__*/web.template(\`<style type=text/css>\`);
+var _tmpl$$b = /*#__PURE__*/web.template(\`<style type=text/css>\`);
+
 /** 深色模式 */
 const dark = \`
 --hover-bg-color: #FFF3;
@@ -6226,7 +6237,7 @@ const CssVar = () => {
       --i18n-touch-area-next: "\${t('touch_area.next')}";
       --i18n-touch-area-menu: "\${t('touch_area.menu')}";\`);
   return (() => {
-    var _el$ = _tmpl$$a();
+    var _el$ = _tmpl$$b();
     web.insert(_el$, () => \`.\${modules_c21c94f2$1.root} {
       \${store.option.darkMode ? dark : light}
 
@@ -6250,62 +6261,62 @@ const createComicImg = url => ({
 const useInit$1 = props => {
   initResizeObserver(refs.root);
   const watchProps = {
-    option: state => {
+    option(state) {
       state.option = assign(state.option, props.defaultOption, props.option);
     },
-    defaultOption: state => {
+    defaultOption(state) {
       state.defaultOption = assign(defaultOption(), props.defaultOption);
     },
-    fillEffect: state => {
+    fillEffect(state) {
       state.fillEffect = props.fillEffect ?? {
         '-1': true
       };
       updatePageData(state);
     },
-    hotkeys: state => {
+    hotkeys(state) {
       state.hotkeys = {
         ...JSON.parse(JSON.stringify(defaultHotkeys)),
         ...props.hotkeys
       };
     },
-    onExit: state => {
+    onExit(state) {
       state.prop.Exit = props.onExit ? isEnd => {
         playAnimation(refs.exit);
-        props.onExit?.(!!isEnd);
+        props.onExit?.(Boolean(isEnd));
         setState(draftState => {
           if (isEnd) draftState.activePageIndex = 0;
           draftState.show.endPage = undefined;
         });
       } : undefined;
     },
-    onPrev: state => {
+    onPrev(state) {
       state.prop.Prev = props.onPrev ? throttle(() => {
         playAnimation(refs.prev);
         props.onPrev?.();
       }, 1000) : undefined;
     },
-    onNext: state => {
+    onNext(state) {
       state.prop.Next = props.onNext ? throttle(() => {
         playAnimation(refs.next);
         props.onNext?.();
       }, 1000) : undefined;
     },
-    editButtonList: state => {
+    editButtonList(state) {
       state.prop.editButtonList = props.editButtonList ?? (list => list);
     },
-    editSettingList: state => {
+    editSettingList(state) {
       state.prop.editSettingList = props.editSettingList ?? (list => list);
     },
-    onLoading: state => {
+    onLoading(state) {
       state.prop.Loading = props.onLoading ? debounce(props.onLoading) : undefined;
     },
-    onOptionChange: state => {
+    onOptionChange(state) {
       state.prop.OptionChange = props.onOptionChange ? debounce(props.onOptionChange) : undefined;
     },
-    onHotkeysChange: state => {
+    onHotkeysChange(state) {
       state.prop.HotkeysChange = props.onHotkeysChange ? debounce(props.onHotkeysChange) : undefined;
     },
-    commentList: state => {
+    commentList(state) {
       state.commentList = props.commentList;
     }
   };
@@ -6319,9 +6330,8 @@ const useInit$1 = props => {
 
       /** 是否需要重置页面填充 */
       let needResetFillEffect = false;
-      const fillEffectList = Object.keys(state.fillEffect).map(k => +k);
-      for (let i = 0; i < fillEffectList.length; i++) {
-        const pageIndex = fillEffectList[i];
+      const fillEffectList = Object.keys(state.fillEffect).map(Number);
+      for (const pageIndex of fillEffectList) {
         if (pageIndex === -1) continue;
         if (state.imgList[pageIndex].src === props.imgList[pageIndex]) continue;
         needResetFillEffect = true;
@@ -6375,11 +6385,13 @@ const useInit$1 = props => {
   };
 
   // 处理 imgList 参数的初始化和修改
-  createEffectOn(() => props.imgList.join(), throttle(handleImgList, 500));
+  createEffectOn(() => props.imgList.join(','), throttle(handleImgList, 500));
   focus();
 };
 
-var _tmpl$$9 = /*#__PURE__*/web.template(\`<div>\`);
+var _tmpl$$a = /*#__PURE__*/web.template(\`<div>\`);
+
+// eslint-disable-next-line unicorn/prefer-export-from
 const MangaStyle = css$1;
 solidJs.enableScheduling();
 /** 漫画组件 */
@@ -6387,7 +6399,7 @@ const Manga = props => {
   solidJs.onMount(() => useInit$1(props));
   solidJs.createEffect(() => props.show && focus());
   return [(() => {
-    var _el$ = _tmpl$$9();
+    var _el$ = _tmpl$$a();
     web.addEventListener(_el$, "wheel", handleWheel);
     var _ref$ = bindRef('root');
     typeof _ref$ === "function" && web.use(_ref$, _el$);
@@ -6405,7 +6417,7 @@ const Manga = props => {
       var _v$ = modules_c21c94f2$1.root,
         _v$2 = {
           [modules_c21c94f2$1.hidden]: props.show === false,
-          [props.class ?? '']: !!props.class,
+          [props.class ?? '']: Boolean(props.class),
           ...props.classList
         },
         _v$3 = boolDataVal(store.isMobile),
@@ -6428,10 +6440,17 @@ const Manga = props => {
   })(), web.createComponent(CssVar, {})];
 };
 
+var _tmpl$$9 = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.59 9H15V4c0-.55-.45-1-1-1h-4c-.55 0-1 .45-1 1v5H7.41c-.89 0-1.34 1.08-.71 1.71l4.59 4.59c.39.39 1.02.39 1.41 0l4.59-4.59c.63-.63.19-1.71-.7-1.71M5 19c0 .55.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1H6c-.55 0-1 .45-1 1">\`);
+const MdFileDownload = ((props = {}) => (() => {
+  var _el$ = _tmpl$$9();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
 /** 下载按钮 */
 const DownloadButton = () => {
   const [statu, setStatu] = solidJs.createSignal('button.download');
-  const getFileExt = url => url.match(/[^?]+\\.(\\w+)/)?.[1] ?? 'jpg';
+  const getFileExt = url => /[^?]+\\.(\\w+)/.exec(url)?.[1] ?? 'jpg';
   const handleDownload = async () => {
     const fileData = {};
     const {
@@ -6461,7 +6480,7 @@ const DownloadButton = () => {
             errorText: \`\${t('alert.download_failed')}: \${fileName}\`
           });
           data = res.response;
-        } catch (error) {
+        } catch {
           fileName = \`\${index} - \${t('alert.download_failed')}.\${fileExt}\`;
         }
       }
@@ -6554,7 +6573,7 @@ const useManga = async initProps => {
       })()]);
       dom$1.style.setProperty('z-index', '2147483647', 'important');
     }
-    if (imgList().length && props.show) {
+    if (imgList().length > 0 && props.show) {
       dom$1.setAttribute('show', '');
       document.documentElement.style.overflow = 'hidden';
     } else {
@@ -6573,7 +6592,7 @@ const useManga = async initProps => {
   });
   setProps({
     onExit: () => setProps('show', false),
-    editButtonList: list => {
+    editButtonList(list) {
       // 在设置按钮上方放置下载按钮
       list.splice(-1, 0, DownloadButton);
       return [...list,
@@ -6618,6 +6637,8 @@ var modules_c21c94f2 = {"fabRoot":"index_module_fabRoot__f35e0ac6","fab":"index_
 var _tmpl$$3 = /*#__PURE__*/web.template(\`<div><div>\`),
   _tmpl$2$1 = /*#__PURE__*/web.template(\`<div><button type=button tabindex=-1><span role=progressbar><svg viewBox="22 22 44 44"><circle cx=44 cy=44 r=20.2 fill=none stroke-width=3.6>\`),
   _tmpl$3$1 = /*#__PURE__*/web.template(\`<div>\`);
+
+// eslint-disable-next-line unicorn/prefer-export-from
 const FabStyle = css;
 /**
  * Fab 按钮
@@ -6636,7 +6657,7 @@ const Fab = _props => {
   // 绑定滚动事件
   const handleScroll = throttle(e => {
     // 跳过非用户操作的滚动
-    if (e.isTrusted === false) return;
+    if (!e.isTrusted) return;
     if (window.scrollY === lastY) return;
     setShow(
     // 滚动到底部时显示
@@ -6770,14 +6791,20 @@ const useFab = async initProps => {
   const FabIcon = () => {
     switch (props.progress) {
       case undefined:
-        // 没有内容的书
-        return MdImportContacts;
+        {
+          // 没有内容的书
+          return MdImportContacts;
+        }
       case 1:
       case 2:
-        // 有内容的书
-        return MdMenuBook;
+        {
+          // 有内容的书
+          return MdMenuBook;
+        }
       default:
-        return props.progress > 1 ? MdCloudDownload : MdImageSearch;
+        {
+          return props.progress > 1 ? MdCloudDownload : MdImageSearch;
+        }
     }
   };
   solidJs.createRoot(() => {
@@ -6807,8 +6834,10 @@ const useFab = async initProps => {
 };
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复卷轴模式下偶尔滚动到底后无法触发结束页的 bug </p></li><li><p>修复阅读配置有时会变回初始配置的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>kemono.su 新增是否加载原图的开关 (<a href=https://github.com/hymbz/ComicReadScript/commit/0fc6ea98ff349b4931b22d8803c03d8a7e141d4d>0fc6ea9</a>), closes <a href=https://github.com/hymbz/ComicReadScript/issues/158>#158\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>修复双页模式下两页图片中间有缝隙的 bug (<a href=https://github.com/hymbz/ComicReadScript/commit/0e00e7be57f90efe205ae6a265e4229424e7fbd2>0e00e7b</a>), closes <a href=https://github.com/hymbz/8/issues/pid64549617>8#pid64549617\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6834,8 +6863,7 @@ const migration = async () => {
   const values = await GM.listValues();
 
   // 6 => 7
-  for (let i = 0; i < values.length; i++) {
-    const key = values[i];
+  for (const key of values) {
     switch (key) {
       case 'Version':
       case 'Languages':
@@ -6871,10 +6899,10 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3()], {
+    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
       id: 'Version Tip',
       type: 'custom',
-      duration: Infinity,
+      duration: Number.POSITIVE_INFINITY,
       // 手动点击关掉通知后才不会再次弹出
       onDismiss: () => GM.setValue('Version', GM.info.script.version)
     });
@@ -6916,7 +6944,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
   const [hotkeys, setHotkeys] = solidJs.createSignal(await getHotkeys());
   const isStored = saveOptions !== undefined;
   // 如果当前站点没有存储配置，就补充上去
-  if (!isStored) GM.setValue(name, options);
+  if (!isStored) await GM.setValue(name, options);
   return {
     /** 站点配置 */
     options,
@@ -6927,7 +6955,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     /** 快捷键配置 */
     hotkeys,
     /** 处理快捷键配置的变动 */
-    onHotkeysChange: newValue => {
+    onHotkeysChange(newValue) {
       GM.setValue('Hotkeys', newValue);
       setHotkeys(newValue);
     },
@@ -6968,19 +6996,16 @@ const useInit = async (name, defaultOptions = {}) => {
 
     /** 图片加载进度 */
     const progress = 1 + loadNum / list.length;
-    if (progress !== 2) {
-      setFab({
-        progress,
-        tip: \`\${t('other.img_loading')} - \${loadNum}/\${list.length}\`
-      });
-    } else {
+    if (progress === 2)
       // 图片全部加载完成后恢复 Fab 状态
       setFab({
         progress,
         tip: t('other.read_mode'),
         show: !options.hiddenFAB && undefined
-      });
-    }
+      });else setFab({
+      progress,
+      tip: \`\${t('other.img_loading')} - \${loadNum}/\${list.length}\`
+    });
   };
   const [setManga, mangaProps] = await useManga({
     imgList: [],
@@ -7037,7 +7062,7 @@ const useInit = async (name, defaultOptions = {}) => {
      * @param getImgList 返回图片列表的函数
      * @returns 自动加载图片并进入阅读模式的函数
      */
-    init: getImgList => {
+    init(getImgList) {
       const firstRun = menuId === undefined;
 
       /** 是否正在加载图片中 */
@@ -7058,9 +7083,9 @@ const useInit = async (name, defaultOptions = {}) => {
             setManga('show', true);
             needAutoShow.val = false;
           }
-        } catch (e) {
-          log.error(e);
-          if (show) toast$1.error(e.message);
+        } catch (error) {
+          log.error(error);
+          if (show) toast$1.error(error.message);
           setFab({
             progress: undefined
           });
@@ -7074,17 +7099,19 @@ const useInit = async (name, defaultOptions = {}) => {
         if (loading) return toast$1.warn(t('alert.repeat_load'), {
           duration: 1500
         });
-        if (!mangaProps.imgList.length) return loadImgList(undefined, true);
+        if (mangaProps.imgList.length === 0) return loadImgList(undefined, true);
         setManga('show', true);
       };
       setFab({
         onClick: showComic,
         show: !options.hiddenFAB && undefined
       });
-      if (needAutoShow.val && options.autoShow) showComic();
+      if (needAutoShow.val && options.autoShow) setTimeout(showComic);
       if (firstRun) {
-        GM.registerMenuCommand(t('other.enter_comic_read_mode'), fabProps.onClick);
-        updateHideFabMenu();
+        (async () => {
+          await GM.registerMenuCommand(t('other.enter_comic_read_mode'), fabProps.onClick);
+          await updateHideFabMenu();
+        })();
         window.addEventListener('keydown', e => {
           if (e.target.tagName === 'INPUT') return;
           const code = getKeyboardCode(e);
@@ -7102,11 +7129,13 @@ const useInit = async (name, defaultOptions = {}) => {
       };
     },
     /** 使用动态更新来加载 imgList */
-    dynamicUpdate: (work, totalImgNum) => async () => {
-      if (mangaProps.imgList.length === totalImgNum) return mangaProps.imgList;
+    dynamicUpdate: (work, length) => async () => {
+      if (mangaProps.imgList.length === length) return mangaProps.imgList;
       await new Promise(resolve => {
-        setManga('imgList', Array(totalImgNum).fill(''));
-        work((i, url) => resolve(setManga('imgList', i, url)));
+        setManga('imgList', Array.from({
+          length
+        }).fill(''));
+        return work((i, url) => resolve(setManga('imgList', i, url)));
       });
       return mangaProps.imgList;
     }
@@ -7139,7 +7168,7 @@ const universalInit = async ({
     loadImgList
   } = init(() => getImgList(fnMap));
   if (onExit) setManga({
-    onExit: isEnd => {
+    onExit(isEnd) {
       onExit?.(isEnd);
       setManga({
         show: false
@@ -7147,7 +7176,7 @@ const universalInit = async ({
     }
   });
   if (!SPA) {
-    if (onNext || onPrev) setManga({
+    if (onNext ?? onPrev) setManga({
       onNext,
       onPrev
     });
@@ -7224,6 +7253,7 @@ const getAdPage = async (list, isAdPage, adList = new Set()) => {
       adNum += 1;
       continue;
     }
+
     // 连续两张广告后面的肯定也都是广告
     if (adNum >= 2) adList.add(i);
     // 夹在两张广告中间的肯定也是广告
@@ -7265,7 +7295,7 @@ const imgToCanvas = async img => {
       ctx.drawImage(img, 0, 0);
       // 没被 CORS 污染就直接使用这个 canvas
       if (ctx.getImageData(0, 0, 1, 1)) return canvas;
-    } catch (_) {}
+    } catch {}
   }
   const url = typeof img === 'string' ? img : img.src;
   const res = await main.request(url, {
@@ -7310,7 +7340,7 @@ const hasQrCode = async (imgCanvas, scanRegion, qrEngine, canvas) => {
     if (!data) return false;
     main.log(\`检测到二维码： \${data}\`);
     return qrCodeWhiteList.every(reg => !reg.test(data));
-  } catch (_) {
+  } catch {
     return false;
   }
 };
@@ -7350,10 +7380,7 @@ const isAdImg = async (imgCanvas, qrEngine, canvas) => {
     width,
     height
   }];
-  for (let i = 0; i < scanRegionList.length; i++) {
-    const scanRegion = scanRegionList[i];
-    if (await hasQrCode(imgCanvas, scanRegion, qrEngine, canvas)) return true;
-  }
+  for (const scanRegion of scanRegionList) if (await hasQrCode(imgCanvas, scanRegion, qrEngine, canvas)) return true;
   return false;
 };
 const byContent = (qrEngine, canvas) => async img => isAdImg(await imgToCanvas(img), qrEngine, canvas);
@@ -7367,7 +7394,7 @@ const getAdPageByContent = async (imgList, adList = new Set()) => {
 const adFileNameRe = /^[zZ]+/;
 
 /** 通过文件名判断是否是广告 */
-const getAdPageByFileName = (fileNameList, adList = new Set()) => getAdPage(fileNameList, fileName => adFileNameRe.test(fileName), adList);
+const getAdPageByFileName = async (fileNameList, adList = new Set()) => getAdPage(fileNameList, fileName => adFileNameRe.test(fileName), adList);
 
 const createImgData = (oldSrc = '') => ({
   triggedNum: 0,
@@ -7398,7 +7425,7 @@ const openScrollLock = time => {
 window.addEventListener('wheel', () => openScrollLock(1000));
 
 /** 用于判断是否是图片 url 的正则 */
-const isImgUrlRe = /^(((https?|ftp|file):)?\\/)?\\/[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#%=~_|]$/;
+const isImgUrlRe = /^(((https?|ftp|file):)?\\/)?\\/[-\\w+&@#/%?=~|!:,.;]+[-\\w+&@#%=~|]$/;
 
 /** 检查元素属性，将格式为图片 url 的属性值作为 src */
 const tryCorrectUrl = e => {
@@ -7431,6 +7458,7 @@ const isLazyLoaded = (e, oldSrc) => {
   return false;
 };
 const imgMap = new Map();
+// eslint-disable-next-line prefer-const
 let imgShowObserver;
 const getImg = e => imgMap.get(e) ?? createImgData();
 const MAX_TRIGGED_NUM = 5;
@@ -7488,17 +7516,16 @@ const triggerLazyLoad = singleThreaded(async (state, getAllImg, getWaitTime) => 
     imgShowObserver.observe(e);
     if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));
   });
-  for (let i = 0; i < targetImgList.length; i++) {
+  for (const e of targetImgList) {
     await wait(() => !scrollLock.enabled);
     const waitTime = getWaitTime();
     await triggerTurnPage(waitTime);
-    const e = targetImgList[i];
     if (!needTrigged(e)) continue;
     tryCorrectUrl(e);
     if ((await triggerEleLazyLoad(e, waitTime, () => isLazyLoaded(e, imgMap.get(e)?.oldSrc))) || waitTime) handleTrigged(e);
   }
   await triggerTurnPage();
-  if (targetImgList.length !== 0) state.continueRun = true;
+  if (targetImgList.length > 0) state.continueRun = true;
 });
 
 exports.ReactiveSet = ReactiveSet;
@@ -7570,7 +7597,7 @@ exports.useSpeedDial = useSpeedDial;
 exports.wait = wait;
 exports.waitDom = waitDom;
 exports.waitImgLoad = waitImgLoad;
-`
+` : GM_getResourceText(name.replaceAll('/', '|'));
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
@@ -7610,6 +7637,8 @@ const require = name => {
   const __esModule = {
     value: true
   };
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const selfLibProxy = () => {};
   selfLibProxy.default = {};
   const selfDefault = new Proxy(selfLibProxy, {
@@ -7636,12 +7665,10 @@ const require = name => {
   return selfDefault;
 };
 crsLib.require = require;
-
+;
 
 /** 站点配置 */
 let options;
-
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 const main = require('main');
 try {
   // 匹配站点
@@ -7728,19 +7755,17 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
       if (!/成功！|打过卡/.test(body)) throw new Error('自动签到失败');
       main.toast.success('自动签到成功');
       localStorage.setItem('signDate', todayString);
-    } catch (e) {
+    } catch {
       main.toast.error('自动签到失败');
     }
   })();
-  if (options.关闭快捷导航的跳转)
-    // eslint-disable-next-line no-script-url
-    main.querySelector('#qmenu a')?.setAttribute('href', 'javascript:;');
+  if (options.关闭快捷导航的跳转) main.querySelector('#qmenu a')?.setAttribute('href', 'javascript:;');
 
   // 判断当前页是帖子
   if (/thread(-\d+){3}|mod=viewthread/.test(document.URL)) {
     // 修复微博图床的链接
     main.querySelectorAll('img[file*="sinaimg.cn"]').forEach(e => e.setAttribute('referrerpolicy', 'no-referrer'));
-    const fid = unsafeWindow.fid ?? +(new URLSearchParams(main.querySelector('h2 > a')?.href).get('fid') ?? '-1');
+    const fid = unsafeWindow.fid ?? Number(new URLSearchParams(main.querySelector('h2 > a')?.href).get('fid') ?? '-1');
 
     // 限定板块启用
     if (fid === 30 || fid === 37) {
@@ -7774,12 +7799,12 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
       } = init(() => imgList.map(img => img.src));
       setManga({
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
-        onLoading: (_imgList, img) => {
+        onLoading(_imgList, img) {
           onLoading(_imgList, img);
           if (!img) return;
           if (imgList.length !== updateImgList().length) return loadImgList();
         },
-        onExit: isEnd => {
+        onExit(isEnd) {
           if (isEnd) main.scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
           setManga('show', false);
         }
@@ -7802,7 +7827,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
             if (id) return;
             id = window.setInterval(() => {
               imgList = main.querySelectorAll('.t_fsz img');
-              if (!imgList.length || !updateImgList().length) return setFab('progress', undefined);
+              if (imgList.length === 0 || updateImgList().length === 0) return setFab('progress', undefined);
               setManga({
                 imgList: updateImgList(),
                 show: options.autoShow ?? undefined
@@ -7823,10 +7848,10 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
         // 先获取包含当前帖后一话在内的同一标签下的帖子id列表，再根据结果设定上/下一话
         const setPrevNext = async (pageNum = 1) => {
           const res = await main.request(`https://bbs.yamibo.com/misc.php?mod=tag&id=${tagId}&type=thread&page=${pageNum}`);
-          const newList = [...res.responseText.matchAll(reg)].map(([tid]) => +tid);
+          const newList = [...res.responseText.matchAll(reg)].map(([tid]) => Number(tid));
           threadList = threadList.concat(newList);
-          const index = threadList.findIndex(tid => tid === unsafeWindow.tid);
-          if (newList.length && (index === -1 || !threadList[index + 1])) return setPrevNext(pageNum + 1);
+          const index = threadList.indexOf(unsafeWindow.tid);
+          if (newList.length > 0 && (index === -1 || !threadList[index + 1])) return setPrevNext(pageNum + 1);
           return setManga({
             onPrev: threadList[index - 1] ? () => {
               window.location.assign(`thread-${threadList[index - 1]}-1-1.html`);
@@ -7846,11 +7871,11 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
         errorText: '获取帖子回复数时出错'
       });
       /** 回复数 */
-      const allReplies = parseInt(JSON.parse(res.responseText)?.Variables?.thread?.allreplies, 10);
+      const allReplies = Number.parseInt(JSON.parse(res.responseText)?.Variables?.thread?.allreplies, 10);
       if (!allReplies) return;
 
       /** 当前所在页数 */
-      const currentPageNum = parseInt(main.querySelector('#pgt strong')?.innerHTML ?? main.querySelector('#dumppage')?.value ?? '1', 10);
+      const currentPageNum = Number.parseInt(main.querySelector('#pgt strong')?.innerHTML ?? main.querySelector('#dumppage')?.value ?? '1', 10);
       const cache = main.useCache(db => {
         db.createObjectStore('history', {
           keyPath: 'tid'
@@ -7863,7 +7888,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
       // 如果有上次阅读进度的数据，则监视上次的进度之后的楼层，否则监视所有
       /** 监视楼层列表 */
       const watchFloorList = main.querySelectorAll(data?.lastAnchor && currentPageNum === data.lastPageNum ? `#${data.lastAnchor} ~ div` : '#postlist > div, .plc.cl');
-      if (!watchFloorList.length) return;
+      if (watchFloorList.length === 0) return;
       let id = 0;
       /** 储存数据，但是防抖 */
       const debounceSave = saveData => {
@@ -7881,7 +7906,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
         if (!trigger) return;
 
         // 取消触发楼层上面楼层的监视
-        const triggerIndex = watchFloorList.findIndex(e => e === trigger.target);
+        const triggerIndex = watchFloorList.indexOf(trigger.target);
         if (triggerIndex === -1) return;
         watchFloorList.splice(0, triggerIndex + 1).forEach(e => observer.unobserve(e));
 
@@ -7930,7 +7955,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
           const [data, setData] = solidJs.createSignal();
           solidJs.createEffect(solidJs.on(updateFlag, () => cache.get('history', tid).then(setData)));
           const url = solidJs.createMemo(() => data() ? getUrl(data(), tid) : '');
-          const lastReplies = solidJs.createMemo(() => !isMobile && data() ? +e.querySelector('.num a').innerHTML - data().lastReplies : 0);
+          const lastReplies = solidJs.createMemo(() => !isMobile && data() ? Number(e.querySelector('.num a').innerHTML) - data().lastReplies : 0);
           const pc = () => [(() => {
             var _el$ = _tmpl$(),
               _el$2 = _el$.firstChild,
@@ -7965,7 +7990,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
           })();
           return web.createComponent(solidJs.Show, {
             get when() {
-              return !!data();
+              return Boolean(data());
             },
             get children() {
               return web.createComponent(solidJs.Show, {
@@ -7988,11 +8013,12 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
       main.querySelector('#autopbn')?.addEventListener('click', updateHistoryTag);
     }
   }
-})().catch(e => main.log.error(e));
+})().catch(error => main.log.error(error));
 web.delegateEvents(["click"]);
-
+;
         break;
       }
+
     // #百合会新站
     case 'www.yamibo.com':
       {
@@ -8001,24 +8027,27 @@ web.delegateEvents(["click"]);
         if (!id) break;
 
         /** 总页数 */
-        const totalPageNum = +main.querySelector('section div:first-of-type div:last-of-type').innerHTML.split('：')[1];
+        const totalPageNum = Number(main.querySelector('section div:first-of-type div:last-of-type').innerHTML.split('：')[1]);
         if (Number.isNaN(totalPageNum)) throw new Error(main.t('site.changed_load_failed'));
 
         /** 获取指定页数的图片 url */
-        const getImg = async (i = 1) => {
+        const getImg = async i => {
           const res = await main.request(`https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`);
-          return res.responseText.match(/(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/)[0].replaceAll('&amp;', '&');
+          return /(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/.exec(res.responseText)[0].replaceAll('&amp;', '&').replaceAll('http://', 'https://');
         };
         options = {
           name: 'newYamibo',
           getImgList: ({
+            dynamicUpdate,
             setFab
-          }) => main.plimit(Object.keys([...new Array(totalPageNum)]).map(i => () => getImg(+i + 1)), (doneNum, totalNum) => {
+          }) => dynamicUpdate(async setImg => main.plimit([...Array.from({
+            length: totalPageNum
+          }).keys()].map(i => async () => setImg(i, await getImg(i + 1))), (doneNum, totalNum) => {
             setFab({
               progress: doneNum / totalNum,
               tip: `加载图片中 - ${doneNum}/${totalNum}`
             });
-          }),
+          }), totalPageNum)(),
           onNext: main.querySelectorClick('#btnNext'),
           onPrev: main.querySelectorClick('#btnPrev'),
           onExit: isEnd => isEnd && main.scrollIntoView('#w1')
@@ -8060,7 +8089,7 @@ const getViewpoint = async (comicId, chapterId) => {
       title,
       num
     }) => `${title} [+${num}]`);
-  } catch (_) {
+  } catch {
     return [];
   }
 };
@@ -8076,7 +8105,7 @@ const getComicDetail_base = async comicId => {
   return {
     title,
     last_updatetime,
-    last_update_chapter_id: null,
+    last_update_chapter_id: undefined,
     chapters: [{
       name: '连载',
       list: list.map(({
@@ -8137,7 +8166,7 @@ const getComicDetail_traversal = async (comicId, draftData) => {
   };
   main.toast.warn('正在通过遍历获取所有章节，耗时可能较长', {
     id: 'traversalTip',
-    duration: Infinity
+    duration: Number.POSITIVE_INFINITY
   });
   while (nextId) {
     try {
@@ -8152,7 +8181,7 @@ const getComicDetail_traversal = async (comicId, draftData) => {
         updatetime
       });
       nextId = prev_chap_id;
-    } catch (_) {
+    } catch {
       nextId = undefined;
     }
   }
@@ -8164,14 +8193,14 @@ const useComicDetail = comicId => {
   const data = store.createMutable({});
   const apiFn = [getComicDetail_v4Api, getComicDetail_base, getComicDetail_traversal];
   solidJs.onMount(async () => {
-    for (let i = 0; i < apiFn.length; i++) {
+    for (const api of apiFn) {
       try {
-        Object.assign(data, await apiFn[i](comicId, data));
+        Object.assign(data, await api(comicId, data));
         if (data.chapters?.some(chapter => chapter.list.length)) return;
-      } catch (_) {}
+      } catch {}
     }
     main.toast.error('漫画数据获取失败', {
-      duration: Infinity
+      duration: Number.POSITIVE_INFINITY
     });
   });
   return data;
@@ -8201,7 +8230,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_titl
     });
 
     // 页面上原有的漫画标题
-    const titleList = main.querySelectorAll('#hothit p.t').map(e => e.innerText.replace('[完]', ''));
+    const titleList = new Set(main.querySelectorAll('#hothit p.t').map(e => e.textContent.replace('[完]', '')));
     main.insertNode(document.getElementById('hothit'), res.responseText.split('item').filter((_, i) => i % 2).map(item => {
       const newComicUrl = /manhua.dmzj.com\/(.+?)\?from=rssReader/.exec(item)[1];
       return {
@@ -8213,7 +8242,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_titl
       };
     }).filter(({
       title
-    }) => !titleList.includes(title)).map(data => `
+    }) => !titleList.has(title)).map(data => `
             <div class="pic">
               <a href="/${data.comicUrl}/" target="_blank">
               <img src="${data.imgUrl}" alt="${data.title}" title="" style="">
@@ -8227,7 +8256,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_titl
     const [, comicPy, chapterId] = window.location.pathname.split(/\/|\./);
     if (!comicPy) {
       main.toast.error('漫画数据获取失败', {
-        duration: Infinity,
+        duration: Number.POSITIVE_INFINITY,
         throw: new Error('获取漫画拼音简称失败')
       });
     }
@@ -8302,7 +8331,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_titl
     await main.wait(() => {
       const dom = main.querySelector('#qiehuan_txt');
       if (!dom) return;
-      if (dom.innerText !== '切换到上下滚动阅读') return true;
+      if (dom.textContent !== '切换到上下滚动阅读') return true;
       dom.click();
     });
   };
@@ -8313,7 +8342,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_titl
   };
   const checkButton = selector => {
     const dom = main.querySelector(selector);
-    if (dom && dom.innerText) return () => dom.click();
+    if (dom?.textContent) return () => dom.click();
   };
   const isMangaPage = async () => {
     if (isListPageRe.test(window.location.pathname)) return handleListPage();
@@ -8323,7 +8352,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_titl
     name: 'dmzj',
     getImgList,
     onExit: isEnd => isEnd && main.scrollIntoView('#hd'),
-    getCommentList: async () => {
+    async getCommentList() {
       const {
         comicId,
         chapterId
@@ -8336,8 +8365,8 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_titl
       getOnNext: () => checkButton('.display_right #next_chapter')
     }
   });
-})().catch(e => main.log.error(e));
-
+})().catch(error => main.log.error(error));
+;
         break;
       }
     case 'm.idmzj.com':
@@ -8368,7 +8397,7 @@ const getViewpoint = async (comicId, chapterId) => {
       title,
       num
     }) => `${title} [+${num}]`);
-  } catch (_) {
+  } catch {
     return [];
   }
 };
@@ -8385,7 +8414,7 @@ const getViewpoint = async (comicId, chapterId) => {
       {
         // 跳过正常漫画
         if (Reflect.has(unsafeWindow, 'obj_id')) return;
-        const comicId = parseInt(window.location.pathname.split('/')[2], 10);
+        const comicId = Number.parseInt(window.location.pathname.split('/')[2], 10);
         if (Number.isNaN(comicId)) {
           document.body.childNodes[0].remove();
           main.insertNode(document.body, `
@@ -8466,7 +8495,7 @@ const getViewpoint = async (comicId, chapterId) => {
           await GM.addStyle('.subHeader{display:none !important}');
           await main.universalInit({
             name: 'dmzj',
-            getImgList: () => main.querySelectorAll('#commicBox img').map(e => e.getAttribute('data-original')).filter(src => src),
+            getImgList: () => main.querySelectorAll('#commicBox img').map(e => e.dataset.original).filter(Boolean),
             getCommentList: () => getViewpoint(unsafeWindow.subId, unsafeWindow.chapterId),
             onNext: main.querySelectorClick('#loadNextChapter'),
             onPrev: main.querySelectorClick('#loadPrevChapter')
@@ -8474,8 +8503,8 @@ const getViewpoint = async (comicId, chapterId) => {
           return;
         }
         const tipDom = document.createElement('p');
-        tipDom.innerText = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
-        document.body.appendChild(tipDom);
+        tipDom.textContent = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
+        document.body.append(tipDom);
         let data;
         let comicId;
         let chapterId;
@@ -8484,12 +8513,12 @@ const getViewpoint = async (comicId, chapterId) => {
           data = await getChapterInfo(comicId, chapterId);
         } catch (error) {
           main.toast.error('获取漫画数据失败', {
-            duration: Infinity
+            duration: Number.POSITIVE_INFINITY
           });
-          tipDom.innerText = error.message;
+          tipDom.textContent = error.message;
           throw error;
         }
-        tipDom.innerText = `加载完成，即将进入阅读模式`;
+        tipDom.textContent = `加载完成，即将进入阅读模式`;
         const {
           folder,
           chapter_name,
@@ -8498,10 +8527,10 @@ const getViewpoint = async (comicId, chapterId) => {
           comic_id,
           page_url
         } = data;
-        document.title = `${chapter_name} ${folder.split('/').at(1)}` ?? folder;
+        document.title = `${chapter_name} ${folder.split('/').at(1)}`;
         setManga({
           // 进入阅读模式后禁止退出，防止返回空白页面
-          onExit: () => {},
+          onExit: undefined,
           onNext: next_chap_id ? () => {
             window.location.href = `https://m.dmzj.com/view/${comic_id}/${next_chap_id}.html`;
           } : undefined,
@@ -8511,7 +8540,7 @@ const getViewpoint = async (comicId, chapterId) => {
           editButtonList: e => e
         });
         init(() => {
-          if (page_url.length) return page_url;
+          if (page_url.length > 0) return page_url;
           tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
           return [];
         });
@@ -8519,8 +8548,8 @@ const getViewpoint = async (comicId, chapterId) => {
         break;
       }
   }
-})().catch(e => main.log.error(e));
-
+})().catch(error => main.log.error(error));
+;
         break;
       }
     case 'www.idmzj.com':
@@ -8547,7 +8576,7 @@ const turnPage = chapterId => {
   await main.waitDom('.head_wz');
   // 只在漫画页内运行
   const comicId = main.querySelector('.head_wz [id]')?.id;
-  const chapterId = window.location.pathname.match(chapterIdRe)?.[0];
+  const chapterId = chapterIdRe.exec(window.location.pathname)?.[0];
   if (!comicId || !chapterId) return;
   const {
     setManga,
@@ -8564,13 +8593,13 @@ const turnPage = chapterId => {
       onNext: turnPage(next_chap_id),
       onPrev: turnPage(prev_chap_id)
     });
-  } catch (_) {
+  } catch {
     main.toast.error('获取漫画数据失败', {
-      duration: Infinity
+      duration: Number.POSITIVE_INFINITY
     });
   }
-})().catch(e => main.log.error(e));
-
+})().catch(error => main.log.error(error));
+;
         break;
       }
 
@@ -8640,8 +8669,8 @@ const main = require('main');
       errorText: main.t('site.ehentai.fetch_img_page_source_failed')
     });
     try {
-      return res.responseText.match(getImgFromImgPageRe)[1];
-    } catch (error) {
+      return getImgFromImgPageRe.exec(res.responseText)[1];
+    } catch {
       throw new Error(main.t('site.ehentai.fetch_img_url_failed'));
     }
   };
@@ -8665,10 +8694,10 @@ const main = require('main');
   };
   const getImgNum = async () => {
     let numText = main.querySelector('.gtb .gpc')?.textContent?.replaceAll(',', '').match(/\d+/g)?.at(-1);
-    if (numText) return +numText;
+    if (numText) return Number(numText);
     const res = await main.request(window.location.href);
-    numText = res.responseText.match(/(?<=<td class="gdt2">)\d+(?= pages<\/td>)/)?.[0];
-    if (numText) return +numText;
+    numText = /(?<=<td class="gdt2">)\d+(?= pages<\/td>)/.exec(res.responseText)?.[0];
+    if (numText) return Number(numText);
     main.toast.error(main.t('site.changed_load_failed'));
     return 0;
   };
@@ -8680,7 +8709,7 @@ const main = require('main');
   const setStyle = main.createStyle();
   main.createEffectOn(() => [...(mangaProps.adList ?? [])], () => {
     if (!mangaProps.adList?.size) return;
-    setStyle([...mangaProps.adList].map(i => {
+    return setStyle([...mangaProps.adList].map(i => {
       const alt = `${i + 1}`.padStart(placeValueNum, '0');
       return `img[alt="${alt}"]:not(:hover) { filter: blur(8px); clip-path: border-box; }`;
     }).join('\n'));
@@ -8691,7 +8720,7 @@ const main = require('main');
     /** 缩略图元素列表 */
     const thumbnailEleList = [];
     main.querySelectorAll('.gdtl img').forEach(e => {
-      const index = +e.alt - 1;
+      const index = Number(e.alt) - 1;
       if (Number.isNaN(index)) return;
       thumbnailEleList[index] = e;
       // 根据当前显示的图片获取一部分文件名
@@ -8700,13 +8729,13 @@ const main = require('main');
     // 先根据文件名判断一次
     await main.getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
     // 不行的话再用缩略图识别
-    if (!mangaProps.adList.size) await main.getAdPageByContent(thumbnailEleList, mangaProps.adList);
+    if (mangaProps.adList.size === 0) await main.getAdPageByContent(thumbnailEleList, mangaProps.adList);
   }
   const {
     loadImgList
   } = init(dynamicUpdate(async setImg => {
     comicReadModeDom.innerHTML = ` loading`;
-    const totalPageNum = +main.querySelector('.ptt td:nth-last-child(2)').textContent;
+    const totalPageNum = Number(main.querySelector('.ptt td:nth-last-child(2)').textContent);
     for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
       const startIndex = ehImgList.length;
       const imgPageUrlList = await getImgFromDetailsPage(pageNum);
@@ -8740,7 +8769,7 @@ const main = require('main');
     const res = await main.request(url, {
       errorText: main.t('site.ehentai.fetch_img_page_source_failed')
     });
-    const nl = res.responseText.match(/nl\('(.+?)'\)/)?.[1];
+    const nl = /nl\('(.+?)'\)/.exec(res.responseText)?.[1];
     if (!nl) throw new Error(main.t('site.ehentai.fetch_img_url_failed'));
     const newUrl = new URL(url);
     newUrl.searchParams.set('nl', nl);
@@ -8768,12 +8797,12 @@ const main = require('main');
     return reloadImg(i);
   })));
   setManga({
-    onExit: isEnd => {
+    onExit(isEnd) {
       if (isEnd) main.scrollIntoView('#cdiv');
       setManga('show', false);
     },
     // 在图片加载出错时刷新图片
-    onLoading: async (imgList, img) => {
+    async onLoading(imgList, img) {
       onLoading(imgList, img);
       if (!img) return;
       if (img.loadType !== 'error' || (await main.testImgUrl(img.src))) return;
@@ -8781,7 +8810,7 @@ const main = require('main');
     }
   });
   setFab('initialShow', options.autoShow);
-  comicReadModeDom.addEventListener('click', () => loadImgList(ehImgList.length ? ehImgList : undefined, true));
+  comicReadModeDom.addEventListener('click', () => loadImgList(ehImgList.length > 0 ? ehImgList : undefined, true));
   if (options.hotkeys_page_turn) {
     main.linstenKeyup(e => {
       switch (e.key) {
@@ -8803,7 +8832,7 @@ const main = require('main');
       main.toast.error(main.t('site.ehentai.html_changed_nhentai_failed'));
       return;
     }
-    const title = encodeURI(titleDom.innerText);
+    const title = encodeURI(titleDom.textContent);
     const newTagLine = document.createElement('tr');
     let res;
     try {
@@ -8811,7 +8840,7 @@ const main = require('main');
         errorText: main.t('site.ehentai.nhentai_error'),
         noTip: true
       });
-    } catch (_) {
+    } catch {
       newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
@@ -8819,19 +8848,19 @@ const main = require('main');
         nhentai: `<a href='https://nhentai.net/search/?q=${title}' target="_blank" ><u>nhentai</u></a>`
       })}
       </td>`;
-      taglistDom.appendChild(newTagLine);
+      taglistDom.append(newTagLine);
       return;
     }
     const nHentaiComicInfo = JSON.parse(res.responseText);
 
     // 构建新标签行
-    if (nHentaiComicInfo.result.length) {
+    if (nHentaiComicInfo.result.length > 0) {
       let temp = '<td class="tc">nhentai:</td><td>';
       let i = nHentaiComicInfo.result.length;
       while (i) {
         i -= 1;
         const tempComicInfo = nHentaiComicInfo.result[i];
-        const _title = tempComicInfo.title.japanese ? tempComicInfo.title.japanese : tempComicInfo.title.english;
+        const _title = tempComicInfo.title.japanese || tempComicInfo.title.english;
         temp += `
           <div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${_title}">
             <a
@@ -8845,11 +8874,12 @@ const main = require('main');
       }
       newTagLine.innerHTML = `${temp}</td>`;
     } else newTagLine.innerHTML = '<td class="tc">nhentai:</td><td class="tc" style="text-align: left;">Null</td>';
-    taglistDom.appendChild(newTagLine);
+    taglistDom.append(newTagLine);
 
     // 重写 _refresh_tagmenu_act 函数，加入脚本的功能
     const nhentaiImgList = {};
     const raw_refresh_tagmenu_act = unsafeWindow._refresh_tagmenu_act;
+    // eslint-disable-next-line func-names
     unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(a) {
       if (a.hasAttribute('nhentai-index')) {
         const tagmenu_act_dom = document.getElementById('tagmenu_act');
@@ -8859,7 +8889,7 @@ const main = require('main');
           media_id,
           num_pages,
           images
-        } = nHentaiComicInfo.result[+a.getAttribute('nhentai-index')];
+        } = nHentaiComicInfo.result[Number(a.getAttribute('nhentai-index'))];
         // nhentai api 对应的扩展名
         const fileType = {
           j: 'jpg',
@@ -8891,8 +8921,8 @@ const main = require('main');
       else raw_refresh_tagmenu_act(a);
     };
   }
-})().catch(e => main.log.error(e));
-
+})().catch(error => main.log.error(error));
+;
         break;
       }
 
@@ -8925,7 +8955,7 @@ const fileType = {
   // 在漫画详情页
   if (Reflect.has(unsafeWindow, 'gallery')) {
     setManga({
-      onExit: isEnd => {
+      onExit(isEnd) {
         if (isEnd) main.scrollIntoView('#comment-container');
         setManga('show', false);
       }
@@ -8946,7 +8976,7 @@ const fileType = {
   }
 
   // 在漫画浏览页
-  if (document.getElementsByClassName('gallery').length) {
+  if (document.getElementsByClassName('gallery').length > 0) {
     if (options.open_link_new_page) main.querySelectorAll('a:not([href^="javascript:"])').forEach(e => e.setAttribute('target', '_blank'));
     const blacklist = (unsafeWindow?._n_app ?? unsafeWindow?.n)?.options?.blacklisted_tags;
     if (blacklist === undefined) main.toast.error(main.t('site.nhentai.tag_blacklist_fetch_failed'));
@@ -9016,7 +9046,7 @@ const fileType = {
         }
 
         // 添加分隔线
-        contentDom.appendChild(document.createElement('hr'));
+        contentDom.append(document.createElement('hr'));
         if (pageNum < num_pages) loadLock = false;else contentDom.lastElementChild.style.animationPlayState = 'paused';
 
         // 当前页的漫画全部被屏蔽或当前显示的漫画少到连滚动条都出不来时，继续加载
@@ -9024,12 +9054,12 @@ const fileType = {
         return undefined;
       };
       window.addEventListener('scroll', loadNewComic);
-      if (main.querySelector('section.pagination')) contentDom.appendChild(document.createElement('hr'));
+      if (main.querySelector('section.pagination')) contentDom.append(document.createElement('hr'));
       await loadNewComic();
     }
   }
-})().catch(e => main.log.error(e));
-
+})().catch(error => main.log.error(error));
+;
         break;
       }
 
@@ -9051,7 +9081,7 @@ const main = require('main');
   // 自动签到
   if (options.自动签到) (async () => {
     // 跳过未登录的情况
-    if (typeof b2token === 'undefined' || !b2token) return;
+    if (!globalThis.b2token) return;
     const todayString = new Date().toLocaleDateString('zh-CN');
     // 判断当前日期与上次成功签到日期是否相同
     if (todayString === localStorage.getItem('signDate')) return;
@@ -9066,10 +9096,10 @@ const main = require('main');
       const data = JSON.parse(res.responseText);
 
       // 首次成功签到 或 重复签到
-      if (!(data?.mission?.date || !Number.isNaN(+data))) throw new Error('签到失败');
+      if (!(data?.mission?.date || !Number.isNaN(Number(data)))) throw new Error('签到失败');
       main.toast('自动签到成功');
       localStorage.setItem('signDate', todayString);
-    } catch (e) {
+    } catch {
       main.toast.error('自动签到失败');
     }
   })();
@@ -9092,9 +9122,9 @@ const main = require('main');
       loadImgList
     } = init(() => []);
     const imgListMap = [];
-    const loadChapterImg = i => {
+    const loadChapterImg = async i => {
       const imgList = imgListMap[i];
-      loadImgList([...imgList].map(e => e.getAttribute('data-src')), true);
+      await loadImgList([...imgList].map(e => e.dataset.src), true);
       setManga({
         onPrev: i === 0 ? undefined : () => loadChapterImg(i - 1),
         onNext: i === imgListMap.length - 1 ? undefined : () => loadChapterImg(i + 1)
@@ -9105,7 +9135,7 @@ const main = require('main');
       imgListMap.push(imgRoot.getElementsByTagName('img'));
       a.addEventListener('click', () => {
         // 只在打开折叠内容时进入阅读模式
-        if (imgRoot.style.display === 'none' || imgRoot.style.height && imgRoot.style.height.split('.')[0].length <= 2) loadChapterImg(i);
+        if (imgRoot.style.display === 'none' || imgRoot.style.height && imgRoot.style.height.split('.')[0].length <= 2) return loadChapterImg(i);
       });
     });
     return;
@@ -9115,7 +9145,7 @@ const main = require('main');
   await main.wait(() => main.querySelectorAll('.entry-content img').length);
   return init(() => main.querySelectorAll('.entry-content img').map(e => e.src));
 })();
-
+;
         break;
       }
 
@@ -9171,7 +9201,7 @@ const api = (url, details) => main.eachApi(url, apiList, details);
       getImgList,
       onNext: main.querySelectorClick('.comicContent-next a:not(.prev-null)'),
       onPrev: main.querySelectorClick('.comicContent-prev:not(.index,.list) a:not(.prev-null)'),
-      getCommentList: async () => {
+      async getCommentList() {
         const chapter_id = window.location.pathname.split('/').at(-1);
         const res = await api(`/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`, {
           errorText: '获取漫画评论失败'
@@ -9218,18 +9248,18 @@ const api = (url, details) => main.eachApi(url, apiList, details);
         a.textContent = '接口異常';
         return;
       }
-      setStyle(`ul a[href*="${lastChapterId}"] {
+      await setStyle(`ul a[href*="${lastChapterId}"] {
         color: #fff !important;
         background: #1790E6;
       }`);
       a.href = `${window.location.pathname}/chapter/${lastChapterId}`;
       a.textContent = data?.results?.browse?.chapter_name;
     };
-    updateLastChapter();
+    setTimeout(updateLastChapter);
     document.addEventListener('visibilitychange', updateLastChapter);
   }
 })();
-
+;
         break;
       }
 
@@ -9238,8 +9268,8 @@ const api = (url, details) => main.eachApi(url, apiList, details);
       {
         options = {
           name: 'terraHistoricus',
-          wait: () => !!main.querySelector('.comic-page-container img'),
-          getImgList: () => main.querySelectorAll('.comic-page-container img').map(e => e.getAttribute('data-srcset')),
+          wait: () => Boolean(main.querySelector('.comic-page-container img')),
+          getImgList: () => main.querySelectorAll('.comic-page-container img').map(e => e.dataset.srcset),
           SPA: {
             isMangaPage: () => window.location.href.includes('/comic/'),
             getOnPrev: () => main.querySelectorClick('.prev-btn:not(.invisible) a'),
@@ -9259,14 +9289,16 @@ const api = (url, details) => main.eachApi(url, apiList, details);
         };
         options = {
           name: 'terraHistoricus',
-          wait: () => !!main.querySelector('.HG_COMIC_READER_main'),
-          getImgList: async ({
+          wait: () => Boolean(main.querySelector('.HG_COMIC_READER_main')),
+          async getImgList({
             setFab
-          }) => {
+          }) {
             const res = await main.request(apiUrl());
             const pageList = JSON.parse(res.response).data.pageInfos;
             if (pageList.length === 0 && window.location.pathname.includes('episode')) throw new Error('获取图片列表时出错');
-            return main.plimit([...Array(pageList.length).keys()].map(getImgUrl), (doneNum, totalNum) => {
+            return main.plimit([...Array.from({
+              length: pageList.length
+            }).keys()].map(getImgUrl), (doneNum, totalNum) => {
               setFab({
                 progress: doneNum / totalNum,
                 tip: `加载图片中 - ${doneNum}/${totalNum}`
@@ -9284,7 +9316,7 @@ const api = (url, details) => main.eachApi(url, apiList, details);
 
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic.me':
-    case '18comic-ff7rebirth.art':
+    case '18comic-eldenring.art':
     case '18comic-ff7rebirth.quest':
     case '18comic.org':
     case '18comic.vip':
@@ -9311,7 +9343,7 @@ const main = require('main');
   while (!unsafeWindow?.onImageLoaded) {
     if (document.readyState === 'complete') {
       main.toast.error('无法获取图片', {
-        duration: Infinity
+        duration: Number.POSITIVE_INFINITY
       });
       return;
     }
@@ -9326,19 +9358,19 @@ const main = require('main');
   // 判断当前漫画是否有被分割，没有就直接获取图片链接加载
   // 判断条件来自页面上的 scramble_image 函数
   if (unsafeWindow.aid < unsafeWindow.scramble_id || unsafeWindow.speed === '1') {
-    init(() => imgEleList.map(e => e.getAttribute('data-original')));
+    init(() => imgEleList.map(e => e.dataset.original));
     return;
   }
   const getImgUrl = async imgEle => {
     if (imgEle.src.startsWith('blob:')) return imgEle.src;
     const originalUrl = imgEle.src;
-    const res = await main.request(imgEle.getAttribute('data-original'), {
+    const res = await main.request(imgEle.dataset.original, {
       responseType: 'blob',
       revalidate: true,
       fetch: true
     });
-    if (!res.response.size) {
-      main.toast.warn(`下载原图时出错: ${imgEle.getAttribute('data-page')}`);
+    if (res.response.size === 0) {
+      main.toast.warn(`下载原图时出错: ${imgEle.dataset.page}`);
       return '';
     }
     imgEle.src = URL.createObjectURL(res.response);
@@ -9346,24 +9378,24 @@ const main = require('main');
     if (err) {
       URL.revokeObjectURL(imgEle.src);
       imgEle.src = originalUrl;
-      main.toast.warn(`加载原图时出错: ${imgEle.getAttribute('data-page')}`);
+      main.toast.warn(`加载原图时出错: ${imgEle.dataset.page}`);
       return '';
     }
     try {
       unsafeWindow.onImageLoaded(imgEle);
       const blob = await main.canvasToBlob(imgEle.nextElementSibling, 'image/webp', 1);
       URL.revokeObjectURL(imgEle.src);
-      if (!blob) throw new Error('');
+      if (!blob) throw new Error('转换图片时出错');
       return `${URL.createObjectURL(blob)}#.webp`;
-    } catch (error) {
+    } catch {
       imgEle.src = originalUrl;
-      main.toast.warn(`转换图片时出错: ${imgEle.getAttribute('data-page')}`);
+      main.toast.warn(`转换图片时出错: ${imgEle.dataset.page}`);
       return '';
     }
   };
 
   // 先等懒加载触发完毕
-  await main.wait(() => main.querySelectorAll('.lazy-loaded.hide').length && main.querySelectorAll('.lazy-loaded.hide').length === main.querySelectorAll('canvas').length);
+  await main.wait(() => main.querySelectorAll('.lazy-loaded.hide').length > 0 && main.querySelectorAll('.lazy-loaded.hide').length === main.querySelectorAll('canvas').length);
   init(dynamicUpdate(setImg => main.plimit(imgEleList.map((img, i) => async () => setImg(i, await getImgUrl(img))), (doneNum, totalNum) => {
     setFab({
       progress: doneNum / totalNum,
@@ -9371,16 +9403,16 @@ const main = require('main');
     });
   }), imgEleList.length));
   const retry = async (num = 0) => {
-    for (let i = 0; i < imgEleList.length; i++) {
+    for (const [i, imgEle] of imgEleList.entries()) {
       if (mangaProps.imgList[i]) continue;
-      setManga('imgList', i, await getImgUrl(imgEleList[i]));
+      setManga('imgList', i, await getImgUrl(imgEle));
       await main.sleep(1000);
     }
     if (num < 60 && mangaProps.imgList.some(url => !url)) setTimeout(retry, 1000 * 5, num + 1);
   };
-  retry();
-})().catch(e => main.log.error(e));
-
+  await retry();
+})().catch(error => main.log.error(error));
+;
         break;
       }
 
@@ -9397,8 +9429,8 @@ const main = require('main');
           comicInfo = JSON.parse(
           // 只能通过 eval 获得数据
           // eslint-disable-next-line no-eval
-          eval(dataScript.innerHTML.slice(26)).match(/(?<=.*?\()\{.+\}/)[0]);
-        } catch (error) {
+          eval(dataScript.innerHTML.slice(26)).match(/(?<=.*?\(){.+}/)[0]);
+        } catch {
           main.toast.error(main.t('site.changed_load_failed'));
           break;
         }
@@ -9412,7 +9444,7 @@ const main = require('main');
         };
         options = {
           name: 'manhuagui',
-          getImgList: () => {
+          getImgList() {
             const sl = Object.entries(comicInfo.sl).map(attr => `${attr[0]}=${attr[1]}`).join('&');
             if (comicInfo.files) return comicInfo.files.map(file => `${unsafeWindow.pVars.manga.filePath}${file}?${sl}`);
             if (comicInfo.images) {
@@ -9467,7 +9499,7 @@ const main = require('main');
             data: {
               cid: unsafeWindow.DM5_CID,
               page: i,
-              key: unsafeWindow.$('#dm5_key').length ? unsafeWindow.$('#dm5_key').val() : '',
+              key: unsafeWindow.$('#dm5_key').length > 0 ? unsafeWindow.$('#dm5_key').val() : '',
               language: 1,
               gtk: 6,
               _cid: unsafeWindow.DM5_CID,
@@ -9479,20 +9511,18 @@ const main = require('main');
           // eslint-disable-next-line no-eval
           return eval(res);
         };
-        const handlePrevNext = (pcSelector, mobileText) => main.querySelectorClick(() => main.querySelector(pcSelector) ?? main.querySelectorAll('.view-bottom-bar a').find(e => e.innerText.includes(mobileText)));
+        const handlePrevNext = (pcSelector, mobileText) => main.querySelectorClick(() => main.querySelector(pcSelector) ?? main.querySelectorAll('.view-bottom-bar a').find(e => e.textContent?.includes(mobileText)));
         options = {
           name: 'dm5',
-          getImgList: ({
+          getImgList({
             dynamicUpdate
-          }) => {
+          }) {
             // manhuaren 和 1kkk 的移动端上会直接用一个变量存储所有图片的链接
             if (Array.isArray(unsafeWindow.newImgs) && unsafeWindow.newImgs.every(main.isUrl)) return unsafeWindow.newImgs;
             return dynamicUpdate(async setImg => {
-              let imgIndex = 0;
-              while (imgIndex < imgNum) {
-                const newImgs = await getPageImg(imgIndex + 1);
-                // eslint-disable-next-line no-loop-func
-                newImgs.forEach(url => setImg(imgIndex++, url));
+              for (let i = 0; i < imgNum; i++) {
+                const newImgs = await getPageImg(i + 1);
+                newImgs.forEach(url => setImg(i, url));
               }
             }, imgNum)();
           },
@@ -9554,17 +9584,15 @@ const main = require('main');
           // eslint-disable-next-line no-eval
           return eval(res);
         };
-        const handlePrevNext = (pcSelector, mobileText) => main.querySelectorClick(() => main.querySelector(pcSelector) ?? main.querySelectorAll('.bottom-bar-tool a').find(e => e.innerText.includes(mobileText)));
+        const handlePrevNext = (pcSelector, mobileText) => main.querySelectorClick(() => main.querySelector(pcSelector) ?? main.querySelectorAll('.bottom-bar-tool a').find(e => e.textContent?.includes(mobileText)));
         options = {
           name: 'mangabz',
           getImgList: ({
             dynamicUpdate
           }) => dynamicUpdate(async setImg => {
-            let imgIndex = 0;
-            while (imgIndex < imgNum) {
-              const newImgs = await getPageImg(imgIndex + 1);
-              // eslint-disable-next-line no-loop-func
-              newImgs.forEach(url => setImg(imgIndex++, url));
+            for (let i = 0; i < imgNum; i++) {
+              const newImgs = await getPageImg(i + 1);
+              newImgs.forEach(url => setImg(i, url));
             }
           }, imgNum)(),
           onNext: handlePrevNext('body > .container a[href^="/"]:last-child', '下一'),
@@ -9587,7 +9615,7 @@ const main = require('main');
           }
         }`;
         const getImgList = async () => {
-          const chapterId = window.location.pathname.match(/chapter\/(\d+)/)?.[1];
+          const chapterId = /chapter\/(\d+)/.exec(window.location.pathname)?.[1];
           if (!chapterId) throw new Error(main.t('site.changed_load_failed'));
           const res = await main.request('/api/query', {
             method: 'POST',
@@ -9608,7 +9636,7 @@ const main = require('main');
         };
         const handlePrevNext = text => async () => {
           await main.waitDom('.v-bottom-navigation__content');
-          return main.querySelectorClick(() => main.querySelectorAll('.v-bottom-navigation__content > button:not([disabled])').find(e => e.innerText.includes(text)));
+          return main.querySelectorClick(() => main.querySelectorAll('.v-bottom-navigation__content > button:not([disabled])').find(e => e.textContent?.includes(text)));
         };
         const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
         options = {
@@ -9628,7 +9656,7 @@ const main = require('main');
       {
         options = {
           name: 'hitomi',
-          wait: () => !!unsafeWindow.galleryinfo?.files,
+          wait: () => Boolean(unsafeWindow.galleryinfo?.files),
           getImgList: () => (unsafeWindow.galleryinfo?.files).map(img => unsafeWindow.url_from_url_from_hash(unsafeWindow.galleryinfo.id, img, 'webp', undefined, 'a'))
         };
         break;
@@ -9639,9 +9667,9 @@ const main = require('main');
       {
         options = {
           name: 'hitomi',
-          getImgList: async ({
+          async getImgList({
             fabProps
-          }) => {
+          }) {
             const [,, galleryId, galleryKey] = window.location.pathname.split('/');
             const headers = {
               'X-Requested-With': 'XMLHttpRequest',
@@ -9653,7 +9681,7 @@ const main = require('main');
             });
             if (res.status !== 200) main.toast.error(main.t('site.need_captcha'), {
               throw: true,
-              duration: Infinity,
+              duration: Number.POSITIVE_INFINITY,
               onClick: () => fabProps?.onClick?.()
             });
             const {
@@ -9674,26 +9702,40 @@ const main = require('main');
     case 'kemono.su':
     case 'kemono.party':
       {
-        options = {
-          name: 'kemono',
-          getImgList: () => main.querySelectorAll('.post__thumbnail a').map(e => e.href),
-          initOptions: {
-            autoShow: false,
-            defaultOption: {
-              onePageMode: true
-            }
-          }
-        };
-        const zipExtension = ['zip', 'rar', '7z', 'cbz', 'cbr', 'cb7'];
-        main.querySelectorAll('.post__attachment a').forEach(e => {
-          if (!zipExtension.includes(e.href.split('.').pop())) return;
-          const a = document.createElement('a');
-          a.href = `https://comic-read.pages.dev/?url=${encodeURIComponent(e.href)}`;
-          a.textContent = e.textContent.replace('Download ', 'ComicReadPWA - ');
-          a.className = e.className;
-          a.style.opacity = '.6';
-          e.parentNode.insertBefore(a, e.nextElementSibling);
-        });
+const main = require('main');
+
+(async () => {
+  const {
+    init,
+    options,
+    setManga
+  } = await main.useInit('kemono', {
+    autoShow: false,
+    defaultOption: {
+      onePageMode: true
+    },
+    /** 加载原图 */
+    load_original_image: true
+  });
+  const getImglist = () => options.load_original_image ? main.querySelectorAll('.post__thumbnail a').map(e => e.href) : main.querySelectorAll('.post__thumbnail img').map(e => e.src);
+  init(getImglist);
+
+  // 在切换时重新获取图片
+  main.createEffectOn(() => options.load_original_image, () => setManga('imgList', getImglist()));
+
+  // 加上跳转至 pwa 的链接
+  const zipExtension = new Set(['zip', 'rar', '7z', 'cbz', 'cbr', 'cb7']);
+  main.querySelectorAll('.post__attachment a').forEach(e => {
+    if (!zipExtension.has(e.href.split('.').pop())) return;
+    const a = document.createElement('a');
+    a.href = `https://comic-read.pages.dev/?url=${encodeURIComponent(e.href)}`;
+    a.textContent = e.textContent.replace('Download ', 'ComicReadPWA - ');
+    a.className = e.className;
+    a.style.opacity = '.6';
+    e.parentNode.insertBefore(a, e.nextElementSibling);
+  });
+})();
+;
         break;
       }
 
@@ -9722,7 +9764,7 @@ const main = require('main');
         const imgSelector = '#listImgs img.chapter-img.chapter-img:not(.ls-is-cached)';
         const isLoadingGifRe = /loading.*\.gif/;
         const getImgList = async () => {
-          const imgList = main.querySelectorAll(imgSelector).map(e => e.getAttribute('data-src')?.trim() ?? e.getAttribute('data-original')?.trim() ?? e.src);
+          const imgList = main.querySelectorAll(imgSelector).map(e => e.dataset.src?.trim() ?? e.dataset.original?.trim() ?? e.src);
           if (imgList.every(url => !isLoadingGifRe.test(url))) return imgList;
           await main.sleep(500);
           return getImgList();
@@ -9737,6 +9779,7 @@ const main = require('main');
       }
 
     // 为 pwa 版页面提供 api，以便翻译功能能正常运作
+    // case 'localhost':
     case 'comic-read.pages.dev':
       {
         unsafeWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
@@ -9749,7 +9792,7 @@ const main = require('main');
 
 const langList = ['zh', 'en', 'ru'];
 /** 判断传入的字符串是否是支持的语言类型代码 */
-const isLanguages = lang => !!lang && langList.includes(lang);
+const isLanguages = lang => Boolean(lang) && langList.includes(lang);
 
 /** 返回浏览器偏好语言 */
 const getBrowserLang = () => {
@@ -9764,8 +9807,8 @@ const getBrowserLang = () => {
   }
   return newLang;
 };
-const getSaveLang = () => typeof GM !== 'undefined' ? GM.getValue('Languages') : localStorage.getItem('Languages');
-const setSaveLang = val => typeof GM !== 'undefined' ? GM.setValue('Languages', val) : localStorage.setItem('Languages', val);
+const getSaveLang = async () => typeof GM === 'undefined' ? localStorage.getItem('Languages') : GM.getValue('Languages');
+const setSaveLang = async val => typeof GM === 'undefined' ? localStorage.setItem('Languages', val) : GM.setValue('Languages', val);
 const getInitLang = async () => {
   const saveLang = await getSaveLang();
   if (isLanguages(saveLang)) return saveLang;
@@ -9894,12 +9937,14 @@ const isEleSelector = (ele, selector) => {
 
       /** 找出应该是漫画图片，且还需要继续触发懒加载的图片个数 */
       const expectCount = options.selector ? main.querySelectorAll(options.selector).filter(main.needTrigged).length : 0;
-      const _imgEleList = expectCount ? [...imgEleList, ...new Array(expectCount)] : imgEleList;
+      const _imgEleList = expectCount ? [...imgEleList, ...Array.from({
+        length: expectCount
+      })] : imgEleList;
       let isEdited = false;
       await main.plimit(_imgEleList.map((e, i) => async () => {
         const newUrl = e ? await handleBlobImg(e) : '';
         if (newUrl === mangaProps.imgList[i]) return;
-        if (!isEdited) isEdited = true;
+        isEdited ||= true;
         setManga('imgList', i, newUrl);
       }));
       if (isEdited) saveImgEleSelector(imgEleList);
@@ -9914,11 +9959,11 @@ const isEleSelector = (ele, selector) => {
     let timeout = false;
     setTimeout(() => {
       timeout = true;
-      if (mangaProps.imgList.length) return;
+      if (mangaProps.imgList.length > 0) return;
       main.toast.warn(main.t('site.simple.no_img'), {
         id: 'no_img',
-        duration: Infinity,
-        onClick: async () => {
+        duration: Number.POSITIVE_INFINITY,
+        async onClick() {
           await setOptions({
             remember_current_site: false
           });
@@ -9928,7 +9973,7 @@ const isEleSelector = (ele, selector) => {
     }, 3000);
     const triggerAllLazyLoad = () => main.triggerLazyLoad(getAllImg, () =>
     // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时停留一段时间
-    mangaProps.show || !timeout && !mangaProps.imgList.length ? 300 : 0);
+    mangaProps.show || !timeout && mangaProps.imgList.length === 0 ? 300 : 0);
 
     /** 监视页面元素发生变化的 Observer */
     const imgDomObserver = new MutationObserver(() => {
@@ -9954,7 +9999,7 @@ const isEleSelector = (ele, selector) => {
 
     // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
     main.createEffectOn(main.showPageList, main.throttle(() => {
-      if (!main.showPageList().length || !main.store.show) return;
+      if (main.showPageList().length === 0 || !main.store.show) return;
       const lastImgIndex = main.store.pageList[main.showPageList().at(-1)].findLast(i => i !== -1);
       if (lastImgIndex === undefined) return;
       imgEleList[lastImgIndex]?.scrollIntoView({
@@ -9982,9 +10027,9 @@ const isEleSelector = (ele, selector) => {
               case 'en': return 'Enter simple reading mode';case 'ru': return 'Включить простой режим чтения';
               default: return '使用简易阅读模式';
             }
-          })(await getInitLang()), () => !start() && GM.unregisterMenuCommand(menuId));
-})().catch(e => main.log.error(e));
-
+          })(await getInitLang()), async () => !(await start()) && GM.unregisterMenuCommand(menuId));
+})().catch(error => main.log.error(error));
+;
       }
   }
   if (options) main.universalInit(options);
