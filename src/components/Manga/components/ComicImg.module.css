@@ -37,10 +37,6 @@
     height: auto;
   }
 
-  &[data-load-type="loading"] {
-    max-width: 100vw !important;
-  }
-
   &[data-load-type="error"],
   &[data-load-type="wait"],
   &[src=""] {

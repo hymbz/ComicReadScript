@@ -109,24 +109,22 @@ export const updateImgSize = (i: number, width: number, height: number) => {
 };
 
 createRoot(() => {
-  // 预加载所有图片的尺寸
-  createEffectOn(
-    () => store.imgList.join(','),
-    singleThreaded((state) =>
-      plimit(
-        store.imgList.map((img, i) => async () => {
-          if (state.continueRun) return;
-          if (img.loadType !== 'wait' || img.width || img.height || !img.src)
-            return;
+  const isLoading = () =>
+    store.imgList.some((img) => img.loadType === 'loading');
 
-          const size = await getImgSize(img.src, () => state.continueRun);
-          if (state.continueRun) return;
-          if (size) updateImgSize(i, ...size);
-        }),
-        undefined,
-        Math.max(store.option.preloadPageNum, 1),
-      ),
-    ),
+  // 空闲期间预加载所有图片的尺寸
+  // 主要是卷轴模式下需要提前知道尺寸方便正确布局
+  // 翻页模式下如果有跨页图也能提前发现重新排序
+  createEffectOn(
+    isLoading,
+    singleThreaded(async () => {
+      while (!isLoading()) {
+        const i = store.imgList.findIndex((img) => !(img.width || img.height));
+        if (i === -1) break;
+        const size = await getImgSize(store.imgList[i].src);
+        if (size) updateImgSize(i, ...size);
+      }
+    }),
   );
 
   // 处理显示窗口的长宽变化

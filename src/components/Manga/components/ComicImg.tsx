@@ -7,10 +7,10 @@ import {
   onCleanup,
   onMount,
 } from 'solid-js';
-import { inRange } from 'helper';
+import { inRange, singleThreaded, wait } from 'helper';
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
-import { createMemoMap } from 'helper/solidJs';
+import { createEffectOn, createMemoMap } from 'helper/solidJs';
 
 import { setState, store } from '../store';
 import {
@@ -111,6 +111,18 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
     ref.decode();
   });
+
+  // 加载期间尽快获取图片尺寸
+  createEffectOn(
+    () => src(),
+    singleThreaded(async () => {
+      if (img.width || img.height) return;
+      // eslint-disable-next-line solid/reactivity
+      await wait(() => !src() || ref.naturalWidth || ref.naturalHeight);
+      if (!(ref.naturalWidth || ref.naturalHeight)) return;
+      updateImgSize(img.index, ref.naturalWidth, ref.naturalHeight);
+    }),
+  );
 
   return (
     <picture
