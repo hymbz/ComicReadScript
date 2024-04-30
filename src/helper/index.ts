@@ -76,9 +76,18 @@ export const insertNode = (
 /** 返回 Dom 的点击函数 */
 export const querySelectorClick = (
   selector: string | (() => HTMLElement | undefined | null),
+  textContent?: string,
 ) => {
-  const getDom = () =>
-    typeof selector === 'string' ? querySelector(selector) : selector();
+  let getDom: () => HTMLElement | null | undefined;
+
+  if (typeof selector === 'function') getDom = selector;
+  else if (textContent) {
+    getDom = () =>
+      querySelectorAll(selector).find((e) =>
+        e.textContent?.includes(textContent),
+      );
+  } else getDom = () => querySelector(selector);
+
   if (getDom()) return () => getDom()?.click();
 };
 

@@ -482,12 +482,9 @@ try {
 
       const handlePrevNext = (text: string) => async () => {
         await main.waitDom('.v-bottom-navigation__content');
-        return main.querySelectorClick(() =>
-          main
-            .querySelectorAll(
-              '.v-bottom-navigation__content > button:not([disabled])',
-            )
-            .find((e) => e.textContent?.includes(text)),
+        return main.querySelectorClick(
+          '.v-bottom-navigation__content > button:not([disabled])',
+          text,
         );
       };
 
@@ -547,13 +544,6 @@ try {
     case 'www.77mh.nl': {
       if (!Reflect.has(unsafeWindow, 'arr')) break;
 
-      const handlePrevNext = (text: string) =>
-        main.querySelectorClick(() =>
-          main
-            .querySelectorAll('#pnpage > a')
-            .find((e) => e.textContent?.includes(text)),
-        );
-
       options = {
         name: '77mh',
         getImgList: () =>
@@ -563,8 +553,8 @@ try {
               : unsafeWindow.img_qianz;
             return `${baseUrl}${path}`;
           }),
-        onNext: handlePrevNext('下一'),
-        onPrev: handlePrevNext('上一'),
+        onNext: main.querySelectorClick('#pnpage > a', '下一'),
+        onPrev: main.querySelectorClick('#pnpage > a', '上一'),
       };
       break;
     }
