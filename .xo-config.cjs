@@ -49,36 +49,6 @@ module.exports = {
     // import 不同分组之间加上空行
     "import/order": ["warn", { "newlines-between": "always" }],
 
-    // 允许在 void 的函数内 return
-    "@typescript-eslint/no-confusing-void-expression": "off",
-    // 不限制变量名的大小写样式
-    "@typescript-eslint/naming-convention": "off",
-    // 不限制类型断言的方式
-    "@typescript-eslint/consistent-type-assertions": "off",
-    // 不限制类型定义的方式
-    "@typescript-eslint/consistent-type-definitions": "off",
-    // 不强制使用 for of
-    "@typescript-eslint/prefer-for-of": "off",
-    // 不禁止类型
-    "@typescript-eslint/ban-types": "off",
-    // 不强制返回 Promise 的函数使用 async
-    "@typescript-eslint/promise-function-async": "off",
-
-    // 允许 switch 省略部分值
-    "@typescript-eslint/switch-exhaustiveness-check": "off",
-    // 允许浮动 Promise
-    "@typescript-eslint/no-floating-promises": "off",
-    // 允许使用 any
-    "@typescript-eslint/no-unsafe-argument": "off",
-    "@typescript-eslint/no-unsafe-assignment": "off",
-    "@typescript-eslint/no-unsafe-call": "off",
-
-    // 在判断类型时允许使用 ||
-    "@typescript-eslint/prefer-nullish-coalescing": [
-      "error",
-      { ignorePrimitives: true },
-    ],
-
     // 使用 process
     "n/prefer-global/process": ["error", "always"],
 
@@ -101,18 +71,6 @@ module.exports = {
     // 允许有参数不被写明
     "jsdoc/require-param": "off",
 
-    // 允许使用 require
-    "unicorn/prefer-module": "off",
-    "@typescript-eslint/no-require-imports": "off",
-    "@typescript-eslint/no-var-requires": "off",
-
-    "@typescript-eslint/consistent-type-imports": ["error", {
-      // 允许 typeof import
-      disallowTypeAnnotations: false,
-      // 使用 内联类型导入
-      fixStyle: "inline-type-imports",
-    }],
-
     "i18next/no-literal-string": "off",
 
     "solid/reactivity": ["warn", {
@@ -121,6 +79,52 @@ module.exports = {
   },
 
   overrides: [
+    {
+      files: ["**/*.ts", "**/*.tsx"],
+      rules: {
+        // 允许在 void 的函数内 return
+        "@typescript-eslint/no-confusing-void-expression": "off",
+        // 不限制变量名的大小写样式
+        "@typescript-eslint/naming-convention": "off",
+        // 不限制类型断言的方式
+        "@typescript-eslint/consistent-type-assertions": "off",
+        // 不限制类型定义的方式
+        "@typescript-eslint/consistent-type-definitions": "off",
+        // 不强制使用 for of
+        "@typescript-eslint/prefer-for-of": "off",
+        // 不禁止类型
+        "@typescript-eslint/ban-types": "off",
+        // 不强制返回 Promise 的函数使用 async
+        "@typescript-eslint/promise-function-async": "off",
+
+        // 允许 switch 省略部分值
+        "@typescript-eslint/switch-exhaustiveness-check": "off",
+        // 允许浮动 Promise
+        "@typescript-eslint/no-floating-promises": "off",
+        // 允许使用 any
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+
+        // 在判断类型时允许使用 ||
+        "@typescript-eslint/prefer-nullish-coalescing": [
+          "error",
+          { ignorePrimitives: true },
+        ],
+
+        // 允许使用 require
+        "unicorn/prefer-module": "off",
+        "@typescript-eslint/no-require-imports": "off",
+        "@typescript-eslint/no-var-requires": "off",
+
+        "@typescript-eslint/consistent-type-imports": ["error", {
+          // 允许 typeof import
+          disallowTypeAnnotations: false,
+          // 使用 内联类型导入
+          fixStyle: "inline-type-imports",
+        }],
+      }
+    },
     {
       files: "**/!(display)*.tsx",
       rules: {

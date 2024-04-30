@@ -10,7 +10,6 @@ const gmApiList = Object.keys(gmApi);
 
 const crsLib: Window['crsLib'] = {
   // 有些 cjs 模块会检查这个，所以在这里声明下
-  // eslint-disable-next-line n/prefer-global/process
   process: { env: { NODE_ENV: process.env.NODE_ENV } },
   ...gmApi,
 };

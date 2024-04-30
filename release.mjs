@@ -1,8 +1,9 @@
-import { fileURLToPath } from 'url';
-import path from 'path';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+import { readFileSync } from 'node:fs';
+
 import shell from 'shelljs';
 import release from 'release-it';
-import packageJSON from './package.json' assert { type: 'json' };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -17,7 +18,7 @@ const exec = (...commands) => {
 
 (async () => {
   if (process.argv.slice(2).includes('push')) {
-    const { version } = packageJSON;
+    const { version } = JSON.parse(readFileSync('./package.json'));
 
     // 打包代码
     exec('pnpm build');

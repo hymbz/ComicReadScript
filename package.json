@@ -11,7 +11,7 @@
     "release": "node release.mjs",
     "release:push": "node release.mjs push",
     "test": "vitest",
-    "check": "tsc -noEmit && xo **/*.ts?",
+    "check": "tsc -noEmit && xo .",
     "pwa-assets-generator": "pwa-assets-generator",
     "pwa:dev": "vite serve src/pwa",
     "pwa:build": "vite build src/pwa",

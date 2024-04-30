@@ -1,12 +1,12 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { defineConfig } from 'vite';
-import type { ManifestOptions } from 'vite-plugin-pwa';
-import { VitePWA } from 'vite-plugin-pwa';
+import { type ManifestOptions, VitePWA } from 'vite-plugin-pwa';
 import solidPlugin from 'vite-plugin-solid';
 import markdown from '@jackfranklin/rollup-plugin-markdown';
 import replace from '@rollup/plugin-replace';
+
 import { solidSvg } from '../rollup-plugin/rollup-solid-svg';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

@@ -1,19 +1,18 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import axios from 'axios';
 import type { OutputPluginOption } from 'rollup';
 
 const siteUrlFnMap = {
-  jm: async () => {
+  async jm() {
     const res = await axios<string>('https://jmcomic-fb.vip');
     return [
       ...res.data
-        .replace(/&nbsp;/g, '')
-        .matchAll(/(?<=\n\s*)[-A-Za-z0-9.]+?(?=<br)/g),
+        .replaceAll('&nbsp;', '')
+        .matchAll(/(?<=\n\s*)[-A-Za-z\d.]+?(?=<br)/g),
     ].flat();
   },
-  wnacg: async () => {
+  async wnacg() {
     const res = await axios<string>('https://wnacg01.org');
-    return [...res.data.matchAll(/(?<=<i>)[-A-Za-z0-9.]+?(?=<\/i>)/g)].flat();
+    return [...res.data.matchAll(/(?<=<i>)[-A-Za-z\d.]+?(?=<\/i>)/g)].flat();
   },
 };
 
@@ -31,27 +30,27 @@ const initSiteUrlMap = async () =>
 export const siteUrl: OutputPluginOption = {
   name: 'self-siteUrl',
   async renderChunk(rawCode) {
-    if (!siteUrlMap) siteUrlMap = await initSiteUrlMap();
+    siteUrlMap ||= await initSiteUrlMap();
 
     let code = rawCode;
     // 将 inject 函数调用替换为 dist 文件夹下的指定文件内容
     code = code.replaceAll(
-      /case 'siteUrl#(.+?)':(.+?)(?=\{)/gs,
+      /case 'siteUrl#(.+?)':(.+?)(?={)/gs,
       (_, name, other) => {
         if (!Reflect.has(siteUrlMap!, name))
           throw new Error(`未知站点：${name}`);
         const list = siteUrlMap![name].filter((url) =>
           URL.canParse(`https://${url}`),
         );
-        if (!list.length)
+        if (list.length === 0)
           throw new Error(`未找到可用网址，${name}发布页已失效`);
 
-        const otherUrlList: string[] = [
-          ...other.matchAll(/(?<=case ').+?(?=':)/g),
-        ].flat();
+        const otherUrlList = new Set<string>(
+          [...other.matchAll(/(?<=case ').+?(?=':)/g)].flat(),
+        );
 
         return `${list
-          .filter((url) => !otherUrlList.includes(url))
+          .filter((url) => !otherUrlList.has(url))
           .map((url) => `case '${url}':`)
           .join('\n    ')}${other}`;
       },
