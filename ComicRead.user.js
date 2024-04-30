@@ -9652,22 +9652,40 @@ const main = require('main');
       }
 
     // #[无限动漫](https://www.comicabc.com)
+    case '8.twobili.com':
     case 'a.twobili.com':
     case 'www.comicabc.com':
       {
-        if (!location.pathname.startsWith('/online/') && !location.pathname.startsWith('/ReadComic/')) break;
+        const pathStartList = ['/online/', '/ReadComic/', '/comic/'];
+        if (!pathStartList.some(path => location.pathname.startsWith(path))) break;
         const getImgList = () => {
-          const mainCode = [...document.scripts].find(s => s.textContent.includes('ge(e)')).textContent;
-          // 取得混淆過的關鍵代碼
-          const [, keyCode] = /ge\([^.]+\.src\s?=\s?([^;]+)/.exec(mainCode);
           const imgList = [];
-          const total = unsafeWindow.ps;
-          for (let i = 1; i <= total; i++) {
-            // 把關鍵代碼裡的(p)或(pp)替換成頁數(1)
-            const code = keyCode.replaceAll(/\(pp?\)/g, `(${i})`);
-            // 使用 eval 來取得圖片網址
-            // eslint-disable-next-line no-eval
-            imgList.push(`${location.protocol}${eval(code)}`);
+          if (Reflect.has(unsafeWindow, 'ss')) {
+            const {
+              ss,
+              c,
+              ti,
+              nn,
+              mm,
+              f
+            } = unsafeWindow;
+            for (let i = 1; i <= unsafeWindow.ps; i++) {
+              imgList.push([`https://img${ss(c, 4, 2)}.8comic.com`, ss(c, 6, 1), ti, ss(c, 0, 4),
+              // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+              `${nn([i])}_${ss(c, mm([i]) + 10, 3, f)}.jpg`].join('/'));
+            }
+          } else {
+            const mainCode = [...document.scripts].find(s => s.textContent.includes('ge(e)')).textContent;
+            // 取得混淆過的關鍵代碼
+            const [, keyCode] = /ge\([^.]+\.src\s?=\s?([^;]+)/.exec(mainCode);
+            const total = unsafeWindow.ps;
+            for (let i = 1; i <= total; i++) {
+              // 把關鍵代碼裡的(p)或(pp)替換成頁數(1)
+              const code = keyCode.replaceAll(/\(pp?\)/g, `(${i})`);
+              // 使用 eval 來取得圖片網址
+              // eslint-disable-next-line no-eval
+              imgList.push(`${location.protocol}${eval(code)}`);
+            }
           }
           return imgList;
         };
@@ -9681,13 +9699,18 @@ const main = require('main');
       }
 
     // #[新新漫画](https://www.77mh.nl)
+    case 'm.77mh.me':
+    case 'www.77mh.me':
+    case 'm.77mh.xyz':
+    case 'www.77mh.xyz':
+    case 'm.77mh.nl':
     case 'www.77mh.nl':
       {
         if (!Reflect.has(unsafeWindow, 'msg')) break;
         options = {
           name: '77mh',
           async getImgList() {
-            const baseUrl = location.hostname.includes('m.77mh') ? unsafeWindow.ImgSvrList : unsafeWindow.img_qianz;
+            const baseUrl = unsafeWindow.img_qianz ?? unsafeWindow.ImgSvrList;
             return unsafeWindow.msg.split('|').map(path => `${baseUrl}${path}`);
           },
           onNext: main.querySelectorClick('#pnpage > a', '下一'),

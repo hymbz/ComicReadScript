@@ -557,15 +557,19 @@ try {
     }
 
     // #[新新漫画](https://www.77mh.nl)
+    case 'm.77mh.me':
+    case 'www.77mh.me':
+    case 'm.77mh.xyz':
+    case 'www.77mh.xyz':
+    case 'm.77mh.nl':
     case 'www.77mh.nl': {
       if (!Reflect.has(unsafeWindow, 'msg')) break;
 
       options = {
         name: '77mh',
         async getImgList() {
-          const baseUrl: string = location.hostname.includes('m.77mh')
-            ? unsafeWindow.ImgSvrList
-            : unsafeWindow.img_qianz;
+          const baseUrl: string =
+            unsafeWindow.img_qianz ?? unsafeWindow.ImgSvrList;
 
           return (unsafeWindow.msg as string)
             .split('|')
