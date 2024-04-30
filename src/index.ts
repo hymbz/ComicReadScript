@@ -505,6 +505,44 @@ try {
       break;
     }
 
+    // #[无限动漫](https://www.comicabc.com)
+    case 'a.twobili.com':
+    case 'www.comicabc.com': {
+      if (
+        !location.pathname.startsWith('/online/') &&
+        !location.pathname.startsWith('/ReadComic/')
+      )
+        break;
+
+      const getImgList = () => {
+        const mainCode = [...document.scripts].find((s) =>
+          s.textContent!.includes('ge(e)'),
+        )!.textContent!;
+        // 取得混淆過的關鍵代碼
+        const [, keyCode] = /ge\([^.]+\.src\s?=\s?([^;]+)/.exec(mainCode)!;
+
+        const imgList: string[] = [];
+        const total: number = unsafeWindow.ps;
+        for (let i = 1; i <= total; i++) {
+          // 把關鍵代碼裡的(p)或(pp)替換成頁數(1)
+          const code = keyCode.replaceAll(/\(pp?\)/g, `(${i})`);
+          // 使用 eval 來取得圖片網址
+          // eslint-disable-next-line no-eval
+          imgList.push(`${location.protocol}${eval(code)}`);
+        }
+
+        return imgList;
+      };
+
+      options = {
+        name: '8comic',
+        getImgList,
+        onNext: main.querySelectorClick('#nextvol'),
+        onPrev: main.querySelectorClick('#prevvol'),
+      };
+      break;
+    }
+
     // #[新新漫画](https://www.77mh.nl)
     case 'www.77mh.nl': {
       if (!Reflect.has(unsafeWindow, 'arr')) break;
