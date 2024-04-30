@@ -505,11 +505,37 @@ try {
       break;
     }
 
+    // #[新新漫画](https://www.77mh.nl)
+    case 'www.77mh.nl': {
+      if (!Reflect.has(unsafeWindow, 'arr')) break;
+
+      const handlePrevNext = (text: string) =>
+        main.querySelectorClick(() =>
+          main
+            .querySelectorAll('#pnpage > a')
+            .find((e) => e.textContent?.includes(text)),
+        );
+
+      options = {
+        name: '77mh',
+        getImgList: () =>
+          (unsafeWindow.arr as string[]).map((path) => {
+            const baseUrl: string = location.hostname.includes('m.77mh')
+              ? unsafeWindow.ImgSvrList
+              : unsafeWindow.img_qianz;
+            return `${baseUrl}${path}`;
+          }),
+        onNext: handlePrevNext('下一'),
+        onPrev: handlePrevNext('上一'),
+      };
+      break;
+    }
+
     // #[hitomi](https://hitomi.la)
     case 'hitomi.la': {
       options = {
         name: 'hitomi',
-        wait: () => Boolean(unsafeWindow.galleryinfo?.files),
+        wait: () => Reflect.has(unsafeWindow.galleryinfo, 'files'),
         getImgList: () =>
           (unsafeWindow.galleryinfo?.files as object[]).map(
             (img) =>

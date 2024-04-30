@@ -250,10 +250,17 @@ export const needDarkMode = (hexColor: string) => {
 };
 
 /** 等到传入的函数返回 true */
-export const wait = async <T>(
+export async function wait<T>(
+  fn: () => T | undefined | Promise<T | undefined>,
+): Promise<TrueValue<T>>;
+export async function wait<T>(
+  fn: () => T | undefined | Promise<T | undefined>,
+  timeout?: number,
+): Promise<T>;
+export async function wait<T>(
   fn: () => T | undefined | Promise<T | undefined>,
   timeout = Number.POSITIVE_INFINITY,
-): Promise<TrueValue<T>> => {
+) {
   let res: T | undefined = await fn();
   let _timeout = timeout;
   while (_timeout > 0 && !res) {
@@ -262,8 +269,8 @@ export const wait = async <T>(
     res = await fn();
   }
 
-  return res as TrueValue<T>;
-};
+  return res;
+}
 
 /** 等到指定的 dom 出现 */
 export const waitDom = (selector: string) =>
