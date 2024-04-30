@@ -1,11 +1,7 @@
-## [8.9.0](https://github.com/hymbz/ComicReadScript/compare/v8.8.1...v8.9.0) (2024-04-15)
+## [8.10.0](https://github.com/hymbz/ComicReadScript/compare/v8.9.0...v8.10.0) (2024-04-30)
 
 
 ### Features
 
-* :sparkles: kemono.su 新增是否加载原图的开关 ([0fc6ea9](https://github.com/hymbz/ComicReadScript/commit/0fc6ea98ff349b4931b22d8803c03d8a7e141d4d)), closes [#158](https://github.com/hymbz/ComicReadScript/issues/158)
-
-
-### Bug Fixes
-
-* :bug: 修复双页模式下两页图片中间有缝隙的 bug ([0e00e7b](https://github.com/hymbz/ComicReadScript/commit/0e00e7be57f90efe205ae6a265e4229424e7fbd2)), closes [8#pid64549617](https://github.com/hymbz/8/issues/pid64549617)
+* :sparkles: 支持 无限动漫 ([6dfd9ae](https://github.com/hymbz/ComicReadScript/commit/6dfd9aeea585a459ec52e90c25f0e7ce40398c19))
+* :sparkles: 支持 新新漫画 ([2dbd0d8](https://github.com/hymbz/ComicReadScript/commit/2dbd0d8b5d93aed09214b7ad0910cc80a71e15a0))

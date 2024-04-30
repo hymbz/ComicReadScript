@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.9.0
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、hitomi、Anchira、kemono、nekohouse、welovemanga
+// @version         8.10.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
@@ -72,7 +72,6 @@ const gmApi = {
 const gmApiList = Object.keys(gmApi);
 const crsLib = {
   // 有些 cjs 模块会检查这个，所以在这里声明下
-  // eslint-disable-next-line n/prefer-global/process
   process: {
     env: {
       NODE_ENV: 'production'
@@ -460,8 +459,11 @@ const insertNode = (node, textnode, referenceNode = null) => {
 };
 
 /** 返回 Dom 的点击函数 */
-const querySelectorClick = selector => {
-  const getDom = () => typeof selector === 'string' ? querySelector(selector) : selector();
+const querySelectorClick = (selector, textContent) => {
+  let getDom;
+  if (typeof selector === 'function') getDom = selector;else if (textContent) {
+    getDom = () => querySelectorAll(selector).find(e => e.textContent?.includes(textContent));
+  } else getDom = () => querySelector(selector);
   if (getDom()) return () => getDom()?.click();
 };
 
@@ -601,8 +603,7 @@ const needDarkMode = hexColor => {
   return yiq < 128;
 };
 
-/** 等到传入的函数返回 true */
-const wait = async (fn, timeout = Number.POSITIVE_INFINITY) => {
+async function wait(fn, timeout = Number.POSITIVE_INFINITY) {
   let res = await fn();
   let _timeout = timeout;
   while (_timeout > 0 && !res) {
@@ -611,7 +612,7 @@ const wait = async (fn, timeout = Number.POSITIVE_INFINITY) => {
     res = await fn();
   }
   return res;
-};
+}
 
 /** 等到指定的 dom 出现 */
 const waitDom = selector => wait(() => querySelector(selector));
@@ -1107,11 +1108,11 @@ const en = {
     switch_page_fill: "Switch page fill",
     switch_scroll_mode: "Switch scroll mode",
     switch_single_double_page_mode: "Switch single/double page mode",
+    translate_current_page: "Translate current page",
     turn_page_down: "Turn the page to the down",
     turn_page_left: "Turn the page to the left",
     turn_page_right: "Turn the page to the right",
-    turn_page_up: "Turn the page to the up",
-    translate_current_page: "Translate current page"
+    turn_page_up: "Turn the page to the up"
   },
   img_status: {
     error: "Load Error",
@@ -1228,9 +1229,9 @@ const en = {
       block_totally: "Totally block comics",
       detect_ad: "Detect advertise page",
       hotkeys_page_turn: "Page turning with hotkeys",
+      load_original_image: "Load original image",
       open_link_new_page: "Open links in a new page",
-      remember_current_site: "Remember the current site",
-      load_original_image: "Load original image"
+      remember_current_site: "Remember the current site"
     },
     changed_load_failed: "The website has undergone changes, unable to load comics",
     ehentai: {
@@ -6835,9 +6836,7 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>kemono.su 新增是否加载原图的开关\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>修复双页模式下两页图片中间有缝隙的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>支持 无限动漫 </p></li><li><p>支持 新新漫画\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -6899,7 +6898,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Number.POSITIVE_INFINITY,
@@ -9316,8 +9315,9 @@ const api = (url, details) => main.eachApi(url, apiList, details);
 
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic.me':
-    case '18comic-eldenring.art':
-    case '18comic-ff7rebirth.quest':
+    case '18-comicfreedom.xyz':
+    case '18-comicfreedom.art':
+    case '18-comicfreedom.org':
     case '18comic.org':
     case '18comic.vip':
       {
@@ -9636,7 +9636,7 @@ const main = require('main');
         };
         const handlePrevNext = text => async () => {
           await main.waitDom('.v-bottom-navigation__content');
-          return main.querySelectorClick(() => main.querySelectorAll('.v-bottom-navigation__content > button:not([disabled])').find(e => e.textContent?.includes(text)));
+          return main.querySelectorClick('.v-bottom-navigation__content > button:not([disabled])', text);
         };
         const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
         options = {
@@ -9651,12 +9651,57 @@ const main = require('main');
         break;
       }
 
+    // #[无限动漫](https://www.comicabc.com)
+    case 'a.twobili.com':
+    case 'www.comicabc.com':
+      {
+        if (!location.pathname.startsWith('/online/') && !location.pathname.startsWith('/ReadComic/')) break;
+        const getImgList = () => {
+          const mainCode = [...document.scripts].find(s => s.textContent.includes('ge(e)')).textContent;
+          // 取得混淆過的關鍵代碼
+          const [, keyCode] = /ge\([^.]+\.src\s?=\s?([^;]+)/.exec(mainCode);
+          const imgList = [];
+          const total = unsafeWindow.ps;
+          for (let i = 1; i <= total; i++) {
+            // 把關鍵代碼裡的(p)或(pp)替換成頁數(1)
+            const code = keyCode.replaceAll(/\(pp?\)/g, `(${i})`);
+            // 使用 eval 來取得圖片網址
+            // eslint-disable-next-line no-eval
+            imgList.push(`${location.protocol}${eval(code)}`);
+          }
+          return imgList;
+        };
+        options = {
+          name: '8comic',
+          getImgList,
+          onNext: main.querySelectorClick('#nextvol'),
+          onPrev: main.querySelectorClick('#prevvol')
+        };
+        break;
+      }
+
+    // #[新新漫画](https://www.77mh.nl)
+    case 'www.77mh.nl':
+      {
+        if (!Reflect.has(unsafeWindow, 'msg')) break;
+        options = {
+          name: '77mh',
+          async getImgList() {
+            const baseUrl = location.hostname.includes('m.77mh') ? unsafeWindow.ImgSvrList : unsafeWindow.img_qianz;
+            return unsafeWindow.msg.split('|').map(path => `${baseUrl}${path}`);
+          },
+          onNext: main.querySelectorClick('#pnpage > a', '下一'),
+          onPrev: main.querySelectorClick('#pnpage > a', '上一')
+        };
+        break;
+      }
+
     // #[hitomi](https://hitomi.la)
     case 'hitomi.la':
       {
         options = {
           name: 'hitomi',
-          wait: () => Boolean(unsafeWindow.galleryinfo?.files),
+          wait: () => Reflect.has(unsafeWindow.galleryinfo, 'files'),
           getImgList: () => (unsafeWindow.galleryinfo?.files).map(img => unsafeWindow.url_from_url_from_hash(unsafeWindow.galleryinfo.id, img, 'webp', undefined, 'a'))
         };
         break;
