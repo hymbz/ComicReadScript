@@ -542,17 +542,19 @@ try {
 
     // #[新新漫画](https://www.77mh.nl)
     case 'www.77mh.nl': {
-      if (!Reflect.has(unsafeWindow, 'arr')) break;
+      if (!Reflect.has(unsafeWindow, 'msg')) break;
 
       options = {
         name: '77mh',
-        getImgList: () =>
-          (unsafeWindow.arr as string[]).map((path) => {
-            const baseUrl: string = location.hostname.includes('m.77mh')
-              ? unsafeWindow.ImgSvrList
-              : unsafeWindow.img_qianz;
-            return `${baseUrl}${path}`;
-          }),
+        async getImgList() {
+          const baseUrl: string = location.hostname.includes('m.77mh')
+            ? unsafeWindow.ImgSvrList
+            : unsafeWindow.img_qianz;
+
+          return (unsafeWindow.msg as string)
+            .split('|')
+            .map((path) => `${baseUrl}${path}`);
+        },
         onNext: main.querySelectorClick('#pnpage > a', '下一'),
         onPrev: main.querySelectorClick('#pnpage > a', '上一'),
       };
