@@ -3,7 +3,6 @@ import {
   querySelectorClick,
   wait,
   querySelector,
-  createStyle,
   request,
 } from 'main';
 
@@ -84,7 +83,8 @@ declare let options: InitOptions | undefined;
 
     let a: HTMLAnchorElement;
 
-    const setStyle = createStyle();
+    const stylesheet = new CSSStyleSheet();
+    document.adoptedStyleSheets.push(stylesheet);
 
     const updateLastChapter = async () => {
       // 因为拷贝漫画的目录是动态加载的，所以要等目录加载出来再往上添加
@@ -120,7 +120,7 @@ declare let options: InitOptions | undefined;
         return;
       }
 
-      await setStyle(`ul a[href*="${lastChapterId}"] {
+      await stylesheet.replace(`ul a[href*="${lastChapterId}"] {
         color: #fff !important;
         background: #1790E6;
       }`);

@@ -511,12 +511,3 @@ export const keyboardCodeToText = (code: string) =>
     .replace('ArrowLeft', '←')
     .replace('ArrowRight', '→')
     .replace(/^\s$/, 'Space');
-
-/** 创建一个可以不断更新的 style 元素 */
-export const createStyle = () => {
-  let style: HTMLStyleElement;
-  return async (css: string) => {
-    if (style) style.textContent = css;
-    else style = await GM.addStyle(css);
-  };
-};

@@ -14,7 +14,6 @@ import {
   testImgUrl,
   singleThreaded,
   store,
-  createStyle,
   createEffectOn,
   getAdPageByFileName,
   getAdPageByContent,
@@ -155,12 +154,13 @@ declare const selected_tagname: string;
   const ehImgPageList: string[] = [];
   const ehImgFileNameList: string[] = [];
 
-  const setStyle = createStyle();
+  const stylesheet = new CSSStyleSheet();
+  document.adoptedStyleSheets.push(stylesheet);
   createEffectOn(
     () => [...(mangaProps.adList ?? [])],
     () => {
       if (!mangaProps.adList?.size) return;
-      return setStyle(
+      return stylesheet.replace(
         [...mangaProps.adList]
           .map((i) => {
             const alt = `${i + 1}`.padStart(placeValueNum, '0');
