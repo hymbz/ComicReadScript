@@ -349,9 +349,9 @@ try {
             return unsafeWindow.newImgs as string[];
 
           return dynamicUpdate(async (setImg) => {
-            for (let i = 0; i < imgNum; i++) {
+            for (let i = 0; i < imgNum; ) {
               const newImgs = await getPageImg(i + 1);
-              newImgs.forEach((url) => setImg(i, url));
+              for (const url of newImgs) setImg(i++, url);
             }
           }, imgNum)();
         },
