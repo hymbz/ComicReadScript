@@ -22,8 +22,9 @@ const apiList = [
 
 declare let options: InitOptions | undefined;
 
-const api = (url: string, details?: RequestDetails) =>
-  eachApi(url, apiList, details);
+function api<T = any>(url: string, details?: RequestDetails) {
+  return eachApi<T>(url, apiList, details);
+}
 
 (() => {
   const token = document.cookie
@@ -45,10 +46,7 @@ const api = (url: string, details?: RequestDetails) =>
     if (token) Reflect.set(headers, 'Authorization', `Token ${token}`);
 
     const getImgList = async () => {
-      const res = await api(`/api/v3/comic/${name}/chapter2/${id}?platform=3`, {
-        headers,
-      });
-      const data = JSON.parse(res.responseText) as {
+      type ResData = {
         message: string;
         results: {
           chapter: {
@@ -57,6 +55,11 @@ const api = (url: string, details?: RequestDetails) =>
           };
         };
       };
+      const res = await api<ResData>(
+        `/api/v3/comic/${name}/chapter2/${id}?platform=3`,
+        { responseType: 'json', headers },
+      );
+      const data = res.response;
 
       const imgList: string[] = [];
       const { words, contents } = data.results.chapter;
@@ -76,9 +79,9 @@ const api = (url: string, details?: RequestDetails) =>
         const chapter_id = window.location.pathname.split('/').at(-1);
         const res = await api(
           `/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`,
-          { errorText: '获取漫画评论失败' },
+          { responseType: 'json', errorText: '获取漫画评论失败' },
         );
-        return JSON.parse(res.responseText).results.list.map(
+        return res.response.results.list.map(
           ({ comment }) => comment as string,
         ) as string[];
       },

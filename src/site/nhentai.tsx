@@ -112,14 +112,8 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
         loadLock = true;
         pageNum += 1;
-        const res = await request(
-          `${apiUrl}page=${pageNum}${
-            window.location.pathname.includes('popular') ? '&sort=popular ' : ''
-          }`,
-          { errorText: t('site.nhentai.fetch_next_page_failed') },
-        );
 
-        const { result, num_pages } = JSON.parse(res.responseText) as {
+        type ResData = {
           num_pages: number;
           result: Array<{
             id: number;
@@ -129,6 +123,16 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
             images: Images;
           }>;
         };
+        const res = await request<ResData>(
+          `${apiUrl}page=${pageNum}${
+            window.location.pathname.includes('popular') ? '&sort=popular ' : ''
+          }`,
+          {
+            responseType: 'json',
+            errorText: t('site.nhentai.fetch_next_page_failed'),
+          },
+        );
+        const { result, num_pages } = res.response;
 
         let comicDomHtml = '';
 

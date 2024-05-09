@@ -49,17 +49,16 @@ export const selfhostedTranslation = async (i: number) => {
   let task_id: string;
   // 上传图片取得任务 id
   try {
-    const res = await request(`${url()}/submit`, {
-      method: 'POST',
-      data: createFormData(imgBlob),
-    });
-
-    const resData = JSON.parse(res.responseText) as {
+    type resData = {
       task_id: string;
       status: string;
     };
-
-    task_id = resData.task_id;
+    const res = await request<resData>(`${url()}/submit`, {
+      method: 'POST',
+      responseType: 'json',
+      data: createFormData(imgBlob),
+    });
+    task_id = res.response.task_id;
   } catch (error) {
     log.error(error);
     throw new Error(t('translation.tip.upload_error'));
@@ -71,8 +70,11 @@ export const selfhostedTranslation = async (i: number) => {
   while (!taskState?.finished) {
     try {
       await sleep(200);
-      const res = await request(`${url()}/task-state?taskid=${task_id}`);
-      taskState = JSON.parse(res.responseText) as TaskState;
+      const res = await request<TaskState>(
+        `${url()}/task-state?taskid=${task_id}`,
+        { responseType: 'json' },
+      );
+      taskState = res.response;
       setMessage(
         i,
         `${t(`translation.status.${taskState.state}`) || taskState.state}`,

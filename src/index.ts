@@ -466,6 +466,7 @@ try {
 
         const res = await main.request('/api/query', {
           method: 'POST',
+          responseType: 'json',
           headers: { 'content-type': 'application/json' },
           data: JSON.stringify({
             operationName: 'imagesByChapterId',
@@ -474,9 +475,7 @@ try {
           }),
         });
         return (
-          JSON.parse(res.responseText).data.imagesByChapterId as Array<{
-            kid: string;
-          }>
+          res.response.data.imagesByChapterId as Array<{ kid: string }>
         ).map(({ kid }) => `https://komiic.com/api/image/${kid}`);
       };
 

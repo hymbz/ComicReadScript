@@ -37,24 +37,23 @@ export interface ChapterInfo {
 export const getChapterInfo = async (comicId: Text, chapterId: Text) => {
   const res = await request<ChapterInfo>(
     `https://m.dmzj.com/chapinfo/${comicId}/${chapterId}.html`,
-    { errorText: '获取章节数据失败' },
+    { responseType: 'json', errorText: '获取章节数据失败' },
   );
-
-  return JSON.parse(res.responseText) as ChapterInfo;
+  return res.response;
 };
 
 /** 根据漫画 id 和章节 id 获取章节评论 */
 export const getViewpoint = async (comicId: Text, chapterId: Text) => {
   try {
-    const res = await request<ChapterInfo>(
+    const res = await request(
       `https://manhua.dmzj.com/tpi/api/viewpoint/getViewpoint?type=0&type_id=${comicId}&chapter_id=${chapterId}&more=1`,
-      { errorText: '获取章节评论失败' },
+      { responseType: 'json', errorText: '获取章节评论失败' },
     );
 
     // 还有另一个 api
     // http://v3api.dmzj.com/viewPoint/0/${comic_id}/${chapter_id}.json
 
-    return JSON.parse(res.responseText).data.list.map(
+    return res.response.data.list.map(
       ({ title, num }) => `${title} [+${num}]`,
     ) as string[];
   } catch {
@@ -63,23 +62,27 @@ export const getViewpoint = async (comicId: Text, chapterId: Text) => {
 };
 
 const getComicDetail_base = async (comicId: string): Promise<ComicDetail> => {
-  const res = await request(
+  type resData = {
+    data: {
+      info: {
+        last_updatetime: string;
+        title: string;
+      };
+      list: Array<{
+        id: string;
+        chapter_name: string;
+        updatetime: string;
+      }>;
+    };
+  };
+  const res = await request<resData>(
     `https://api.dmzj.com/dynamic/comicinfo/${comicId}.json`,
+    { responseType: 'json' },
   );
   const {
     info: { last_updatetime, title },
     list,
-  } = JSON.parse(res.responseText).data as {
-    info: {
-      last_updatetime: string;
-      title: string;
-    };
-    list: Array<{
-      id: string;
-      chapter_name: string;
-      updatetime: string;
-    }>;
-  };
+  } = res.response.data;
 
   return {
     title,
@@ -198,6 +201,7 @@ export const getComicId = async (py: string) => {
       uid: '',
       comic_py: py,
     }).toString()}`,
+    { responseType: 'json' },
   );
-  return JSON.parse(res.responseText).data?.comicInfo?.id as string;
+  return res.response.data?.comicInfo?.id as string;
 };

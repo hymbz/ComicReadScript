@@ -263,11 +263,11 @@ interface History {
       if (!tid) return;
       const res = await request(
         `https://bbs.yamibo.com/api/mobile/index.php?module=viewthread&tid=${tid}`,
-        { errorText: '获取帖子回复数时出错' },
+        { responseType: 'json', errorText: '获取帖子回复数时出错' },
       );
       /** 回复数 */
       const allReplies = Number.parseInt(
-        JSON.parse(res.responseText)?.Variables?.thread?.allreplies,
+        res.response?.Variables?.thread?.allreplies,
         10,
       );
       if (!allReplies) return;
