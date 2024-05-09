@@ -158,16 +158,17 @@ declare const selected_tagname: string;
   document.adoptedStyleSheets.push(stylesheet);
   createEffectOn(
     () => [...(mangaProps.adList ?? [])],
-    () => {
-      if (!mangaProps.adList?.size) return;
-      return stylesheet.replace(
-        [...mangaProps.adList]
-          .map((i) => {
-            const alt = `${i + 1}`.padStart(placeValueNum, '0');
-            return `img[alt="${alt}"]:not(:hover) { filter: blur(8px); clip-path: border-box; }`;
-          })
-          .join('\n'),
-      );
+    (adList) => {
+      if (adList.length === 0) return;
+      const styleList = adList.map((i) => {
+        const alt = `${i + 1}`.padStart(placeValueNum, '0');
+        return `img[alt="${alt}"]:not(:hover) {
+          filter: blur(8px);
+          clip-path: border-box;
+          backdrop-filter: blur(8px);
+        }`;
+      });
+      return stylesheet.replace(styleList.join('\n'));
     },
   );
 
@@ -178,7 +179,7 @@ declare const selected_tagname: string;
     /** 缩略图元素列表 */
     const thumbnailEleList: HTMLImageElement[] = [];
 
-    querySelectorAll<HTMLImageElement>('.gdtl img').forEach((e) => {
+    querySelectorAll<HTMLImageElement>('#gdt img').forEach((e) => {
       const index = Number(e.alt) - 1;
       if (Number.isNaN(index)) return;
       thumbnailEleList[index] = e;
