@@ -62,6 +62,9 @@ img {
 }
 
 div,
+div:focus,
+div:focus-within,
+div:focus-visible,
 button {
   border: none;
   outline: none;

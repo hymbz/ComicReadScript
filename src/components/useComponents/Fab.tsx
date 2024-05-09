@@ -50,15 +50,15 @@ export const useFab = async (initProps?: FabProps) => {
   createRoot(() => {
     createEffect(() => {
       if (dom) return;
-      dom = mountComponents('fab', () => (
-        <>
+      dom = mountComponents(
+        'fab',
+        () => (
           <Fab {...props}>
             {props.children ?? <Dynamic component={FabIcon()} />}
           </Fab>
-          <style type="text/css">{IconButtonStyle}</style>
-          <style type="text/css">{FabStyle}</style>
-        </>
-      ));
+        ),
+        [IconButtonStyle, FabStyle],
+      );
       dom.style.setProperty('z-index', '2147483646', 'important');
     });
   });

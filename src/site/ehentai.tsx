@@ -92,24 +92,19 @@ declare const selected_tagname: string;
   );
   const comicReadModeDom = document.getElementById('comicReadMode')!;
 
-  const getImgFromImgPageRe = /id="img" src="(.+?)"/;
-
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async (url: string): Promise<string> => {
     const res = await request(url, {
+      fetch: true,
       errorText: t('site.ehentai.fetch_img_page_source_failed'),
     });
 
     try {
-      return getImgFromImgPageRe.exec(res.responseText)![1];
+      return /id="img" src="(.+?)"/.exec(res.responseText)![1];
     } catch {
       throw new Error(t('site.ehentai.fetch_img_url_failed'));
     }
   };
-
-  /** 从详情页获取图片页的地址的正则 */
-  const getImgFromDetailsPageRe =
-    /<a href="(.{20,50})"><img alt=.+?title=".+?: (.+?)"/gm;
 
   /** 从详情页获取图片页的地址 */
   const getImgFromDetailsPage = async (
@@ -117,11 +112,12 @@ declare const selected_tagname: string;
   ): Promise<Array<[string, string]>> => {
     const res = await request(
       `${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
-      { errorText: t('site.ehentai.fetch_img_page_url_failed') },
+      { fetch: true, errorText: t('site.ehentai.fetch_img_page_url_failed') },
     );
-
     // 从详情页获取图片页的地址
-    const reRes = res.responseText.matchAll(getImgFromDetailsPageRe);
+    const reRes = res.responseText.matchAll(
+      /<a href="(.{20,50})"><img alt=.+?title=".+?: (.+?)"/gm,
+    );
     if (reRes === null) {
       if (
         res.responseText.includes(
@@ -320,12 +316,25 @@ declare const selected_tagname: string;
 
     const newTagLine = document.createElement('tr');
 
-    let res: Tampermonkey.Response<any>;
+    let nHentaiComicInfo: {
+      result: Array<{
+        id: number;
+        media_id: string;
+        num_pages: number;
+        images: { pages: Array<{ t: string }> };
+        title: { japanese: string; english: string };
+      }>;
+    };
     try {
-      res = await request(
+      const res = await request<typeof nHentaiComicInfo>(
         `https://nhentai.net/api/galleries/search?query=${title}`,
-        { errorText: t('site.ehentai.nhentai_error'), noTip: true },
+        {
+          responseType: 'json',
+          errorText: t('site.ehentai.nhentai_error'),
+          noTip: true,
+        },
       );
+      nHentaiComicInfo = res.response;
     } catch {
       newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
@@ -337,16 +346,6 @@ declare const selected_tagname: string;
       taglistDom.append(newTagLine);
       return;
     }
-
-    const nHentaiComicInfo = JSON.parse(res.responseText) as {
-      result: Array<{
-        id: number;
-        media_id: string;
-        num_pages: number;
-        images: { pages: Array<{ t: string }> };
-        title: { japanese: string; english: string };
-      }>;
-    };
 
     // 构建新标签行
     if (nHentaiComicInfo.result.length > 0) {

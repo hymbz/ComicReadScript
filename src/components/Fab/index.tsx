@@ -14,8 +14,8 @@ import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 
 import classes, { css as style } from './index.module.css';
 
-// eslint-disable-next-line unicorn/prefer-export-from
-export const FabStyle = style;
+export const FabStyle = new CSSStyleSheet();
+FabStyle.replaceSync(style);
 
 export interface FabProps {
   /** 百分比进度值，小数 */

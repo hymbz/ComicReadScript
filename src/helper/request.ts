@@ -24,21 +24,61 @@ export type RequestDetails = Partial<Tampermonkey.Request<any>> & {
   noCheckCode?: true;
 };
 
+export type Response<T = any> = {
+  readonly responseText: string;
+  readonly response: T;
+  readonly status: number;
+};
+
 /** 发起请求 */
 export const request = async <T = any>(
   url: string,
   details?: RequestDetails,
   errorNum = 0,
-): Promise<Tampermonkey.Response<T>> => {
+): Promise<Response<T>> => {
+  const headers = { Referer: window.location.href };
   const errorText = `${
     details?.errorText ?? t('alert.comic_load_error')
   } - ${url}`;
+
   try {
+    // 虽然 GM_xmlhttpRequest 有 fetch 选项，但在 stay 上不太稳定
+    // 为了支持 ios 端只能自己实现一下了
+    if (
+      details?.fetch ??
+      (url.startsWith('/') || url.startsWith(window.location.origin))
+    ) {
+      const res = await fetch(url, {
+        method: 'GET',
+        headers,
+        ...details,
+        signal: AbortSignal.timeout(details?.timeout ?? 1000 * 10),
+      });
+
+      let response = null as T;
+      switch (details?.responseType) {
+        case 'arraybuffer':
+          response = (await res.arrayBuffer()) as T;
+          break;
+        case 'blob':
+          response = (await res.blob()) as T;
+          break;
+        case 'json':
+          response = (await res.json()) as T;
+          break;
+      }
+
+      return {
+        status: res.status,
+        response,
+        responseText: response ? '' : await res.text(),
+      };
+    }
+
     const res = await xmlHttpRequest({
       method: 'GET',
       url,
-      headers: { Referer: window.location.href },
-      fetch: url.startsWith('/') || url.startsWith(window.location.origin),
+      headers,
       timeout: 1000 * 10,
       ...details,
     });

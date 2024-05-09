@@ -72,13 +72,11 @@ export const useManga = async (initProps?: Partial<UseMangaProps>) => {
 
   createEffectOn([() => imgList().length, () => props.show], () => {
     if (!dom) {
-      dom = mountComponents('comicRead', () => (
-        <>
-          <Manga {...props} imgList={imgList()} />
-          <style type="text/css">{IconButtonStyle}</style>
-          <style type="text/css">{MangaStyle}</style>
-        </>
-      ));
+      dom = mountComponents(
+        'comicRead',
+        () => <Manga {...props} imgList={imgList()} />,
+        [IconButtonStyle, MangaStyle],
+      );
       dom.style.setProperty('z-index', '2147483647', 'important');
     }
 

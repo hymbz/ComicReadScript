@@ -15,10 +15,15 @@ const getDom = (id: string) => {
 };
 
 /** 挂载 solid-js 组件 */
-export const mountComponents = (id: string, fc: () => JSX.Element) => {
+export const mountComponents = (
+  id: string,
+  fc: () => JSX.Element,
+  styleSheets?: CSSStyleSheet[],
+) => {
   const dom = getDom(id);
   dom.style.setProperty('display', 'unset', 'important');
   const shadowDom = dom.attachShadow({ mode: 'closed' });
+  if (styleSheets) shadowDom.adoptedStyleSheets = styleSheets;
   render(fc, shadowDom);
   return dom;
 };

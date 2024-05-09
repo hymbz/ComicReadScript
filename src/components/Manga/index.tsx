@@ -28,8 +28,8 @@ import classes, { css as style } from './index.module.css';
 
 export { buttonListDivider } from './defaultButtonList';
 
-// eslint-disable-next-line unicorn/prefer-export-from
-export const MangaStyle = style;
+export const MangaStyle = new CSSStyleSheet();
+MangaStyle.replaceSync(style);
 
 enableScheduling();
 
