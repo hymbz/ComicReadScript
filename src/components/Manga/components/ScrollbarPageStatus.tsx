@@ -7,28 +7,35 @@ import { contentHeight, imgHeightList } from '../actions';
 import classes from '../index.module.css';
 
 interface ScrollbarPageItem {
-  /** 图片数量 */
+  /** 翻页模式下是图片数量，卷轴模式下是图片长度之和 */
   num: number;
-  /** 图片长度之和 */
-  length: number;
   loadType: ComicImg['loadType'];
   isNull: boolean;
   translationType: ComicImg['translationType'];
 }
 
-const getScrollbarPage = (img: ComicImg, i: number): ScrollbarPageItem => ({
-  num: 1,
-  length: imgHeightList()[i],
-  loadType: img.loadType,
-  isNull: !img.src,
-  translationType: img.translationType,
-});
+const getScrollbarPage = (
+  img: ComicImg,
+  i: number,
+  double = false,
+): ScrollbarPageItem => {
+  let num: number;
+  if (store.option.scrollMode) num = imgHeightList()[i];
+  else num = double ? 2 : 1;
+
+  return {
+    num,
+    loadType: img.loadType,
+    isNull: !img.src,
+    translationType: img.translationType,
+  };
+};
 
 const ScrollbarPage: Component<ScrollbarPageItem> = (props) => {
-  const flexBasis = createMemo(() =>
-    store.option.scrollMode
-      ? props.length / contentHeight()
-      : props.num / store.imgList.length,
+  const flexBasis = createMemo(
+    () =>
+      props.num /
+      (store.option.scrollMode ? contentHeight() : store.imgList.length),
   );
 
   return (
@@ -51,11 +58,11 @@ export const ScrollbarPageStatus = () => {
     const list: ScrollbarPageItem[] = [];
     let item: ScrollbarPageItem | undefined;
 
-    const handleImg = (i: number) => {
+    const handleImg = (i: number, double = false) => {
       const img = store.imgList[i];
 
       if (!item) {
-        item = getScrollbarPage(img, i);
+        item = getScrollbarPage(img, i, double);
         return;
       }
 
@@ -64,17 +71,18 @@ export const ScrollbarPageStatus = () => {
         !img.src === item.isNull &&
         img.translationType === item.translationType
       ) {
-        item.num += 1;
-        item.length += imgHeightList()[i];
+        if (store.option.scrollMode) item.num += imgHeightList()[i];
+        else item.num += double ? 2 : 1;
       } else {
         list.push(item);
-        item = getScrollbarPage(img, i);
+        item = getScrollbarPage(img, i, double);
       }
     };
 
     for (let i = 0; i < store.pageList.length; i++) {
       const [a, b] = store.pageList[i];
-      if (b === undefined) handleImg(a);
+
+      if (b === undefined) handleImg(a, !store.option.onePageMode);
       else if (a === -1) {
         handleImg(b);
         handleImg(b);
