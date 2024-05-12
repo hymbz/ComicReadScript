@@ -1,8 +1,6 @@
-const hasNumRe = /\d/;
-
 const getTagText = (ele: HTMLElement) => {
   let text = ele.nodeName;
-  if (ele.id && !hasNumRe.test(ele.id)) text += `#${ele.id}`;
+  if (ele.id && !/\d/.test(ele.id)) text += `#${ele.id}`;
   return text;
 };
 

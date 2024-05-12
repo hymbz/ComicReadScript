@@ -487,13 +487,12 @@ try {
         );
       };
 
-      const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
-
       options = {
         name: 'komiic',
         getImgList,
         SPA: {
-          isMangaPage: () => urlMatchRe.test(window.location.href),
+          isMangaPage: () =>
+            /comic\/\d+\/chapter\/\d+\/images\//.test(window.location.href),
           getOnPrev: handlePrevNext('上一'),
           getOnNext: handlePrevNext('下一'),
         },

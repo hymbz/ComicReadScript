@@ -182,8 +182,6 @@ export const getAdPageByContent = async (
   return getAdPage(imgList, byContent(qrEngine, canvas), adList);
 };
 
-const adFileNameRe = /^[zZ]+/;
-
 /** 通过文件名判断是否是广告 */
 export const getAdPageByFileName = async (
   fileNameList: Array<string | undefined>,
@@ -191,6 +189,6 @@ export const getAdPageByFileName = async (
 ) =>
   getAdPage(
     fileNameList,
-    (fileName: string) => adFileNameRe.test(fileName),
+    (fileName: string) => /^[zZ]+/.test(fileName),
     adList,
   );

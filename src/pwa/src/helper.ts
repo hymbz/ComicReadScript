@@ -12,10 +12,9 @@ export const zipExtension = new Set<ZipExtension>([
   '.cb7',
 ]);
 
-const extensionRe = /\.[^.]+$/;
 /** 根据文件名判断文件是否受支持 */
 export const isSupportFile = (name: string) => {
-  const extension = extensionRe.exec(name)?.[0];
+  const extension = /\.[^.]+$/.exec(name)?.[0];
   if (!extension) return null;
   if (zipExtension.has(extension as any)) return extension as ZipExtension;
   if (imgExtension.has(extension)) return 'img';

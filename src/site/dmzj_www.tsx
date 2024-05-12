@@ -2,8 +2,6 @@ import { log, querySelector, toast, useInit, waitDom } from 'main';
 
 import { getChapterInfo } from '../helper/dmzjApi';
 
-const chapterIdRe = /(?<=\/)\d+(?=\.html)/;
-
 const turnPage = (chapterId?: number) => {
   if (!chapterId) return undefined;
 
@@ -19,7 +17,7 @@ const turnPage = (chapterId?: number) => {
   await waitDom('.head_wz');
   // 只在漫画页内运行
   const comicId = querySelector('.head_wz [id]')?.id;
-  const chapterId = chapterIdRe.exec(window.location.pathname)?.[0];
+  const chapterId = /(?<=\/)\d+(?=\.html)/.exec(window.location.pathname)?.[0];
 
   if (!comicId || !chapterId) return;
 

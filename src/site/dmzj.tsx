@@ -74,9 +74,6 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
     return { comicId, chapterId };
   };
 
-  const isListPageRe = /^\/[^/]*?\/?$/;
-  const isMangaPageRe = /^\/.*?\/\d+\.shtml$/;
-
   const handleListPage = async () => {
     await waitDom('.newpl_ans');
     // 判断漫画被禁
@@ -165,8 +162,8 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
   };
 
   const isMangaPage = async () => {
-    if (isListPageRe.test(window.location.pathname)) return handleListPage();
-    return isMangaPageRe.test(window.location.pathname);
+    if (/^\/[^/]*?\/?$/.test(window.location.pathname)) return handleListPage();
+    return /^\/.*?\/\d+\.shtml$/.test(window.location.pathname);
   };
 
   await universalInit({
