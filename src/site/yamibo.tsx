@@ -280,7 +280,7 @@ interface History {
         10,
       );
 
-      const cache = useCache<{ history: History }>((db: IDBDatabase) => {
+      const cache = await useCache<{ history: History }>((db: IDBDatabase) => {
         db.createObjectStore('history', { keyPath: 'tid' });
       });
       const data = await cache.get('history', `${tid}`);
@@ -347,7 +347,7 @@ interface History {
     }
 
     if (options.记录阅读进度) {
-      const cache = useCache<{ history: History }>((db: IDBDatabase) => {
+      const cache = await useCache<{ history: History }>((db: IDBDatabase) => {
         db.createObjectStore('history', { keyPath: 'tid' });
       });
 
