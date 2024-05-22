@@ -14,12 +14,7 @@ const init = () => {
     document.body.append(_dom);
   }
 
-  dom = mountComponents('toast', () => (
-    <>
-      <Toaster />
-      <style type="text/css">{ToastStyle}</style>
-    </>
-  ));
+  dom = mountComponents('toast', () => <Toaster />, [ToastStyle]);
   dom.style.setProperty('z-index', '2147483647', 'important');
 };
 

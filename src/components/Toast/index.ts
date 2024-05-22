@@ -2,8 +2,8 @@ import type { Component } from 'solid-js';
 
 import { css as style } from './index.module.css';
 
-// eslint-disable-next-line unicorn/prefer-export-from
-export const ToastStyle = style;
+export const ToastStyle = new CSSStyleSheet();
+ToastStyle.replaceSync(style);
 
 export { Toaster, ref } from './Toaster';
 export { toast } from './toast';

@@ -44,8 +44,8 @@ declare let options: InitOptions | undefined;
         };
       };
       const res = await request<ResData>(
-        `${window.location.origin}/api/v3/comic/${name}/chapter2/${id}?platform=3`,
-        { responseType: 'json', headers, fetch: false },
+        `/api/v3/comic/${name}/chapter2/${id}?platform=3`,
+        { responseType: 'json', headers },
       );
 
       const imgList: string[] = [];
