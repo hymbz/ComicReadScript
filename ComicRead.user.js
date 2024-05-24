@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.10.1
+// @version         8.10.2
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -1634,30 +1634,30 @@ const creatId = () => {
   return id;
 };
 
-var _tmpl$$Q = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">\`);
+var _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">\`);
 const MdCheckCircle = ((props = {}) => (() => {
-  var _el$ = _tmpl$$Q();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-var _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
-const MdWarning = ((props = {}) => (() => {
   var _el$ = _tmpl$$P();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
-const MdError = ((props = {}) => (() => {
+var _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
+const MdWarning = ((props = {}) => (() => {
   var _el$ = _tmpl$$O();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">\`);
-const MdInfo = ((props = {}) => (() => {
+var _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
+const MdError = ((props = {}) => (() => {
   var _el$ = _tmpl$$N();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+var _tmpl$$M = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">\`);
+const MdInfo = ((props = {}) => (() => {
+  var _el$ = _tmpl$$M();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -1721,7 +1721,7 @@ toast$2.error = (msg, options) => toast$2(msg, {
   type: 'error'
 });
 
-var _tmpl$$M = /*#__PURE__*/web.template(\`<div>\`),
+var _tmpl$$L = /*#__PURE__*/web.template(\`<div>\`),
   _tmpl$2$d = /*#__PURE__*/web.template(\`<div><div>\`);
 const iconMap = {
   info: MdInfo,
@@ -1795,7 +1795,7 @@ const ToastItem = props => {
         return props.duration !== Number.POSITIVE_INFINITY || props.schedule !== undefined;
       },
       get children() {
-        var _el$3 = _tmpl$$M();
+        var _el$3 = _tmpl$$L();
         _el$3.addEventListener("animationend", dismiss);
         var _ref$ = scheduleRef;
         typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
@@ -1838,7 +1838,7 @@ const ToastItem = props => {
   })();
 };
 
-var _tmpl$$L = /*#__PURE__*/web.template(\`<div>\`);
+var _tmpl$$K = /*#__PURE__*/web.template(\`<div>\`);
 const [ref, setRef] = solidJs.createSignal();
 const Toaster = () => {
   const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
@@ -1850,7 +1850,7 @@ const Toaster = () => {
     solidJs.onCleanup(() => document.removeEventListener('visibilitychange', handleVisibilityChange));
   });
   return (() => {
-    var _el$ = _tmpl$$L();
+    var _el$ = _tmpl$$K();
     web.use(setRef, _el$);
     web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
@@ -1872,8 +1872,8 @@ const Toaster = () => {
   })();
 };
 
-// eslint-disable-next-line unicorn/prefer-export-from
-const ToastStyle = css$3;
+const ToastStyle = new CSSStyleSheet();
+ToastStyle.replaceSync(css$3);
 
 const getDom = id => {
   let dom = document.getElementById(id);
@@ -1899,7 +1899,6 @@ const mountComponents = (id, fc, styleSheets) => {
   return dom;
 };
 
-var _tmpl$$K = /*#__PURE__*/web.template(\`<style type=text/css>\`);
 let dom$2;
 const init = () => {
   if (dom$2 || ref()) return;
@@ -1910,11 +1909,7 @@ const init = () => {
     _dom.id = 'comicRead';
     document.body.append(_dom);
   }
-  dom$2 = mountComponents('toast', () => [web.createComponent(Toaster, {}), (() => {
-    var _el$ = _tmpl$$K();
-    web.insert(_el$, ToastStyle);
-    return _el$;
-  })()]);
+  dom$2 = mountComponents('toast', () => web.createComponent(Toaster, {}), [ToastStyle]);
   dom$2.style.setProperty('z-index', '2147483647', 'important');
 };
 const toast$1 = new Proxy(toast$2, {
@@ -2149,56 +2144,24 @@ const useSpeedDial = (options, setOptions) => {
 };
 
 const promisifyRequest = request => new Promise((resolve, reject) => {
-  // eslint-disable-next-line no-multi-assign
-  request.oncomplete = request.onsuccess = () => resolve(request.result);
-  // eslint-disable-next-line no-multi-assign
-  request.onabort = request.onerror = () => reject(request.error);
+  request.onsuccess = () => resolve(request.result);
+  request.onerror = () => reject(request.error);
 });
-const useCache = (initSchema, version = 1) => {
+const openDb = (version, initSchema) => new Promise((resolve, reject) => {
   const request = indexedDB.open('ComicReadScript', version);
-  request.onupgradeneeded = () => {
-    initSchema(request.result);
+  request.onupgradeneeded = () => initSchema(request.result);
+  request.onsuccess = () => resolve(request.result);
+  request.onerror = error => {
+    console.error('数据库打开失败', error);
+    reject(new Error('数据库打开失败'));
   };
-  const dbp = promisifyRequest(request);
-  const useStore = (storeName, txMode, callback) => dbp.then(db => callback(db.transaction(storeName, txMode).objectStore(storeName)));
+});
+const useCache = async (initSchema, version = 1) => {
+  const db = await openDb(version, initSchema);
   return {
-    /** 存入数据 */
-    set: (storeName, value) => useStore(storeName, 'readwrite', async store => {
-      store.put(value);
-      await promisifyRequest(store.transaction);
-    }),
-    /** 根据主键直接获取数据 */
-    get: (storeName, query) => useStore(storeName, 'readonly', store => promisifyRequest(store.get(query))),
-    /** 查找符合条件的数据 */
-    find: (storeName, query, index) => useStore(storeName, 'readonly', store => promisifyRequest((index ? store.index(index) : store).getAll(query))),
-    /** 删除符合条件的数据 */
-    del: (storeName, query, index) => useStore(storeName, 'readwrite', async store => {
-      if (index) {
-        store.index(index).openCursor(query).onsuccess = async function () {
-          if (!this.result) return;
-          await promisifyRequest(this.result.delete());
-          this.result.continue();
-        };
-        await promisifyRequest(store.transaction);
-      } else {
-        store.delete(query);
-        await promisifyRequest(store.transaction);
-      }
-    })
-
-    // each: <K extends keyof Schema & string>(
-    //   storeName: K,
-    //   query: IDBValidKey | IDBKeyRange | null,
-    //   callback: (cursor: IDBCursorWithValue) => void,
-    // ) =>
-    //   useStore(storeName, 'readonly', (store) => {
-    //     store.openCursor(query).onsuccess = function onsuccess() {
-    //       if (!this.result) return;
-    //       callback(this.result);
-    //       this.result.continue();
-    //     };
-    //     return promisifyRequest(store.transaction);
-    //   }),
+    set: (storeName, value) => promisifyRequest(db.transaction(storeName, 'readwrite').objectStore(storeName).put(value)),
+    get: async (storeName, query) => promisifyRequest(db.transaction(storeName, 'readonly').objectStore(storeName).get(query)),
+    del: (storeName, query) => promisifyRequest(db.transaction(storeName, 'readwrite').objectStore(storeName).delete(query))
   };
 };
 
@@ -5889,15 +5852,18 @@ const Toolbar = () => {
 };
 
 var _tmpl$$c = /*#__PURE__*/web.template(\`<div>\`);
-const getScrollbarPage = (img, i) => ({
-  num: 1,
-  length: imgHeightList()[i],
-  loadType: img.loadType,
-  isNull: !img.src,
-  translationType: img.translationType
-});
+const getScrollbarPage = (img, i, double = false) => {
+  let num;
+  if (store.option.scrollMode) num = imgHeightList()[i];else num = double ? 2 : 1;
+  return {
+    num,
+    loadType: img.loadType,
+    isNull: !img.src,
+    translationType: img.translationType
+  };
+};
 const ScrollbarPage = props => {
-  const flexBasis = solidJs.createMemo(() => store.option.scrollMode ? props.length / contentHeight() : props.num / store.imgList.length);
+  const flexBasis = solidJs.createMemo(() => props.num / (store.option.scrollMode ? contentHeight() : store.imgList.length));
   return (() => {
     var _el$ = _tmpl$$c();
     web.effect(_p$ => {
@@ -5930,23 +5896,22 @@ const ScrollbarPageStatus = () => {
     if (store.pageList.length === 0) return [];
     const list = [];
     let item;
-    const handleImg = i => {
+    const handleImg = (i, double = false) => {
       const img = store.imgList[i];
       if (!item) {
-        item = getScrollbarPage(img, i);
+        item = getScrollbarPage(img, i, double);
         return;
       }
       if (img.loadType === item.loadType && !img.src === item.isNull && img.translationType === item.translationType) {
-        item.num += 1;
-        item.length += imgHeightList()[i];
+        if (store.option.scrollMode) item.num += imgHeightList()[i];else item.num += double ? 2 : 1;
       } else {
         list.push(item);
-        item = getScrollbarPage(img, i);
+        item = getScrollbarPage(img, i, double);
       }
     };
     for (let i = 0; i < store.pageList.length; i++) {
       const [a, b] = store.pageList[i];
-      if (b === undefined) handleImg(a);else if (a === -1) {
+      if (b === undefined) handleImg(a, !store.option.onePageMode);else if (a === -1) {
         handleImg(b);
         handleImg(b);
       } else if (b === -1) {
@@ -6837,7 +6802,7 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复 dm5 有缺页和重复页的 bug </p></li><li><p>修复 eh 默认缩略图下不会自动模糊显示广告页的 bug </p></li><li><p>修复拷贝漫画加载缓慢的问题 </p></li><li><p>修复在 ios 上无法正常运行的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复在 ios 上 300 记录阅读进度功能失效的 bug </p></li><li><p>修复在 ios 上拷贝漫画无法正常工作的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -7391,10 +7356,9 @@ const getAdPageByContent = async (imgList, adList = new Set()) => {
   const canvas = document.createElement('canvas');
   return getAdPage(imgList, byContent(qrEngine, canvas), adList);
 };
-const adFileNameRe = /^[zZ]+/;
 
 /** 通过文件名判断是否是广告 */
-const getAdPageByFileName = async (fileNameList, adList = new Set()) => getAdPage(fileNameList, fileName => adFileNameRe.test(fileName), adList);
+const getAdPageByFileName = async (fileNameList, adList = new Set()) => getAdPage(fileNameList, fileName => /^[zZ]+/.test(fileName), adList);
 
 const createImgData = (oldSrc = '') => ({
   triggedNum: 0,
@@ -7876,7 +7840,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
 
       /** 当前所在页数 */
       const currentPageNum = Number.parseInt(main.querySelector('#pgt strong')?.innerHTML ?? main.querySelector('#dumppage')?.value ?? '1', 10);
-      const cache = main.useCache(db => {
+      const cache = await main.useCache(db => {
         db.createObjectStore('history', {
           keyPath: 'tid'
         });
@@ -7933,7 +7897,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
       while (i--) List[i].setAttribute('onClick', 'atarget(this)');
     }
     if (options.记录阅读进度) {
-      const cache = main.useCache(db => {
+      const cache = await main.useCache(db => {
         db.createObjectStore('history', {
           keyPath: 'tid'
         });
@@ -8272,8 +8236,6 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_titl
       chapterId
     };
   };
-  const isListPageRe = /^\/[^/]*?\/?$/;
-  const isMangaPageRe = /^\/.*?\/\d+\.shtml$/;
   const handleListPage = async () => {
     await main.waitDom('.newpl_ans');
     // 判断漫画被禁
@@ -8351,8 +8313,8 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div class=photo_part><div class=h2_titl
     if (dom?.textContent) return () => dom.click();
   };
   const isMangaPage = async () => {
-    if (isListPageRe.test(window.location.pathname)) return handleListPage();
-    return isMangaPageRe.test(window.location.pathname);
+    if (/^\/[^/]*?\/?$/.test(window.location.pathname)) return handleListPage();
+    return /^\/.*?\/\d+\.shtml$/.test(window.location.pathname);
   };
   await main.universalInit({
     name: 'dmzj',
@@ -8574,7 +8536,6 @@ const getChapterInfo = async (comicId, chapterId) => {
   return res.response;
 };
 
-const chapterIdRe = /(?<=\/)\d+(?=\.html)/;
 const turnPage = chapterId => {
   if (!chapterId) return undefined;
   return () => {
@@ -8585,7 +8546,7 @@ const turnPage = chapterId => {
   await main.waitDom('.head_wz');
   // 只在漫画页内运行
   const comicId = main.querySelector('.head_wz [id]')?.id;
-  const chapterId = chapterIdRe.exec(window.location.pathname)?.[0];
+  const chapterId = /(?<=\/)\d+(?=\.html)/.exec(window.location.pathname)?.[0];
   if (!comicId || !chapterId) return;
   const {
     setManga,
@@ -9197,10 +9158,9 @@ const main = require('main');
   if (window.location.href.includes('/chapter/')) [,, name,, id] = window.location.pathname.split('/');else if (window.location.href.includes('/comicContent/')) [,,, name, id] = window.location.pathname.split('/');
   if (name && id) {
     const getImgList = async () => {
-      const res = await main.request(`${window.location.origin}/api/v3/comic/${name}/chapter2/${id}?platform=3`, {
+      const res = await main.request(`/api/v3/comic/${name}/chapter2/${id}?platform=3`, {
         responseType: 'json',
-        headers,
-        fetch: false
+        headers
       });
       const imgList = [];
       const {
@@ -9332,9 +9292,8 @@ const main = require('main');
 
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic.me':
-    case '18-comicfreedom.xyz':
-    case '18-comicstellar.art':
-    case '18-comicfreedom.org':
+    case '18-comicblade.xyz':
+    case '18-comicstellar.me':
     case '18comic.org':
     case '18comic.vip':
       {
@@ -9551,8 +9510,9 @@ const main = require('main');
       }
 
     // #[绅士漫画(wnacg)](https://www.wnacg.com)
-    case 'www.hm15.lol':
-    case 'www.hm16.lol':
+    case 'www.hm19.lol':
+    case 'www.hm17.lol':
+    case 'www.hm18.lol':
     case 'www.wnacg.com':
     case 'wnacg.com':
       {
@@ -9656,12 +9616,11 @@ const main = require('main');
           await main.waitDom('.v-bottom-navigation__content');
           return main.querySelectorClick('.v-bottom-navigation__content > button:not([disabled])', text);
         };
-        const urlMatchRe = /comic\/\d+\/chapter\/\d+\/images\//;
         options = {
           name: 'komiic',
           getImgList,
           SPA: {
-            isMangaPage: () => urlMatchRe.test(window.location.href),
+            isMangaPage: () => /comic\/\d+\/chapter\/\d+\/images\//.test(window.location.href),
             getOnPrev: handlePrevNext('上一'),
             getOnNext: handlePrevNext('下一')
           }
@@ -9903,10 +9862,9 @@ const getInitLang = async () => {
   return lang;
 };
 
-const hasNumRe = /\d/;
 const getTagText = ele => {
   let text = ele.nodeName;
-  if (ele.id && !hasNumRe.test(ele.id)) text += `#${ele.id}`;
+  if (ele.id && !/\d/.test(ele.id)) text += `#${ele.id}`;
   return text;
 };
 
