@@ -52,7 +52,7 @@ export const request = async <T = any>(
         method: 'GET',
         headers,
         ...details,
-        signal: AbortSignal.timeout(details?.timeout ?? 1000 * 10),
+        signal: AbortSignal.timeout?.(details?.timeout ?? 1000 * 10),
       });
 
       let response = null as T;
