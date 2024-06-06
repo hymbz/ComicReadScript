@@ -117,11 +117,10 @@ import {
         const newImgList = getAllImg()
           .filter(
             (e) =>
-              (e.offsetParent &&
-                e.naturalHeight > 500 &&
-                e.naturalWidth > 500) ||
-              (isEleSelector(e, options.selector) &&
-                (e.naturalHeight > 500 || e.naturalWidth > 500)),
+              e.offsetHeight > 100 &&
+              e.offsetWidth > 100 &&
+              ((e.naturalHeight > 500 && e.naturalWidth > 500) ||
+                isEleSelector(e, options.selector)),
           )
           .sort((a, b) => a.offsetTop - b.offsetTop);
         return newImgList.length >= 2 && newImgList;
