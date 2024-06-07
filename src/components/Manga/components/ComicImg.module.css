@@ -8,8 +8,9 @@
   content-visibility: hidden;
 
   position: relative;
-  transform: translate(var(--page-x), var(--page-y));
+  transform: translate(var(--page-x), var(--page-y)) translateZ(0);
 
+  overflow: hidden;
   display: none;
 
   max-width: 100%;
