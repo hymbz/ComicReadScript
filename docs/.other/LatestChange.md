@@ -1,7 +1,7 @@
-## [8.10.2](https://github.com/hymbz/ComicReadScript/compare/v8.10.1...v8.10.2) (2024-05-24)
+## [8.10.3](https://github.com/hymbz/ComicReadScript/compare/v8.10.2...v8.10.3) (2024-06-07)
 
 
 ### Bug Fixes
 
-* :bug: 修复在 ios 上 300 记录阅读进度功能失效的 bug ([3212bcc](https://github.com/hymbz/ComicReadScript/commit/3212bccac7259b84d69c5c79e79fd07b9fa5542d))
-* :bug: 修复在 ios 上拷贝漫画无法正常工作的 bug ([3167d7d](https://github.com/hymbz/ComicReadScript/commit/3167d7d572a8ddb733f8aa5863ed8b60fdb0141a))
+* :bug: 修复部分浏览器翻页后的图片渲染错误 ([995315d](https://github.com/hymbz/ComicReadScript/commit/995315d97ad0fd6ede98b326b0a95e3889b19838)), closes [#169](https://github.com/hymbz/ComicReadScript/issues/169)
+* :bug: 修复简易阅读模式在部分网站的图片排序错误 ([069c04e](https://github.com/hymbz/ComicReadScript/commit/069c04e5024d26e9da14d9333b5bb322003439ad))
