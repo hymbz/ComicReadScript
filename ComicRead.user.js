@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.10.3
+// @version         8.10.4
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -6802,7 +6802,7 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复部分浏览器翻页后的图片渲染错误 </p></li><li><p>修复简易阅读模式在部分网站的图片排序错误\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在 nicomanga 上失效的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -9805,12 +9805,10 @@ const main = require('main');
     case 'weloma.art':
     case 'welovemanga.one':
       {
-        if (!main.querySelector('#listImgs')) break;
-        const imgSelector = '#listImgs img.chapter-img.chapter-img:not(.ls-is-cached)';
-        const isLoadingGifRe = /loading.*\.gif/;
+        if (!main.querySelector('#listImgs, .chapter-content')) break;
         const getImgList = async () => {
-          const imgList = main.querySelectorAll(imgSelector).map(e => e.dataset.src?.trim() ?? e.dataset.original?.trim() ?? e.src);
-          if (imgList.every(url => !isLoadingGifRe.test(url))) return imgList;
+          const imgList = main.querySelectorAll('img.chapter-img:not(.ls-is-cached)').map(e => (e.dataset.src ?? e.dataset.srcset ?? e.dataset.original ?? e.src).trim());
+          if (imgList.length > 0 && imgList.every(url => !/loading.*\.gif/.test(url))) return imgList;
           await main.sleep(500);
           return getImgList();
         };
