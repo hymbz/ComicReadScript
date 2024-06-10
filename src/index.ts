@@ -661,20 +661,26 @@ try {
     case 'nicomanga.com':
     case 'weloma.art':
     case 'welovemanga.one': {
-      if (!main.querySelector('#listImgs')) break;
-
-      const imgSelector =
-        '#listImgs img.chapter-img.chapter-img:not(.ls-is-cached)';
-
-      const isLoadingGifRe = /loading.*\.gif/;
+      if (!main.querySelector('#listImgs, .chapter-content')) break;
 
       const getImgList = async (): Promise<string[]> => {
         const imgList = main
-          .querySelectorAll<HTMLImageElement>(imgSelector)
-          .map(
-            (e) => e.dataset.src?.trim() ?? e.dataset.original?.trim() ?? e.src,
+          .querySelectorAll<HTMLImageElement>(
+            'img.chapter-img:not(.ls-is-cached)',
+          )
+          .map((e) =>
+            (
+              e.dataset.src ??
+              e.dataset.srcset ??
+              e.dataset.original ??
+              e.src
+            ).trim(),
           );
-        if (imgList.every((url) => !isLoadingGifRe.test(url))) return imgList;
+        if (
+          imgList.length > 0 &&
+          imgList.every((url) => !/loading.*\.gif/.test(url))
+        )
+          return imgList;
         await main.sleep(500);
         return getImgList();
       };
