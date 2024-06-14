@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.10.4
+// @version         8.10.5
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -526,7 +526,7 @@ const loop = async (fn, ms = 0) => {
 };
 
 /** 使指定函数延迟运行期间的多次调用直到运行结束 */
-const singleThreaded = callback => {
+const singleThreaded = (callback, defaultContinueRun = true) => {
   const state = {
     running: false,
     continueRun: false
@@ -534,7 +534,7 @@ const singleThreaded = callback => {
   const fn = async (...args) => {
     if (state.continueRun) return;
     if (state.running) {
-      state.continueRun = true;
+      state.continueRun = defaultContinueRun;
       return;
     }
     let res;
@@ -792,6 +792,8 @@ const getKeyboardCode = e => {
 
 /** 将快捷键的编码转换成更易读的形式 */
 const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\\s$/, 'Space');
+
+/* eslint-disable no-console */
 
 const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
 const log = (...args) => Reflect.apply(console.log, null, [...prefix, ...args]);
@@ -1934,7 +1936,7 @@ const xmlHttpRequest = details => new Promise((resolve, reject) => {
   });
 });
 /** 发起请求 */
-const request$1 = async (url, details, errorNum = 0) => {
+const request$1 = async (url, details, retryNum = 0, errorNum = 0) => {
   const headers = {
     Referer: window.location.href
   };
@@ -1980,13 +1982,13 @@ const request$1 = async (url, details, errorNum = 0) => {
     }
     return res;
   } catch (error) {
-    if (errorNum >= 0) {
-      if (!details?.noTip) toast$1.error(errorText);
+    if (errorNum >= retryNum) {
+      (details?.noTip ? console.error : toast$1.error)(errorText);
       throw new Error(errorText);
     }
     log.error(errorText, error);
     await sleep(1000);
-    return request$1(url, details, errorNum + 1);
+    return request$1(url, details, retryNum, errorNum + 1);
   }
 };
 
@@ -6802,7 +6804,7 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复在 nicomanga 上失效的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复 300 记录阅读进度功能在特定情况下失效的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -7640,8 +7642,8 @@ try {
     case 'bbs.yamibo.com':
       {
 const web = require('solid-js/web');
-const main = require('main');
 const solidJs = require('solid-js');
+const main = require('main');
 
 var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
   _tmpl$2 = /*#__PURE__*/web.template(`<div class=historyTag>+`),
@@ -7810,36 +7812,36 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
 
         // 先获取包含当前帖后一话在内的同一标签下的帖子id列表，再根据结果设定上/下一话
         const setPrevNext = async (pageNum = 1) => {
-          const res = await main.request(`https://bbs.yamibo.com/misc.php?mod=tag&id=${tagId}&type=thread&page=${pageNum}`);
+          const res = await main.request(`/misc.php?mod=tag&id=${tagId}&type=thread&page=${pageNum}`);
           const newList = [...res.responseText.matchAll(reg)].map(([tid]) => Number(tid));
           threadList = threadList.concat(newList);
           const index = threadList.indexOf(unsafeWindow.tid);
           if (newList.length > 0 && (index === -1 || !threadList[index + 1])) return setPrevNext(pageNum + 1);
           return setManga({
-            onPrev: threadList[index - 1] ? () => {
-              window.location.assign(`thread-${threadList[index - 1]}-1-1.html`);
-            } : undefined,
-            onNext: threadList[index + 1] ? () => {
-              window.location.assign(`thread-${threadList[index + 1]}-1-1.html`);
-            } : undefined
+            onPrev: threadList[index - 1] ? () => window.location.assign(`thread-${threadList[index - 1]}-1-1.html`) : undefined,
+            onNext: threadList[index + 1] ? () => window.location.assign(`thread-${threadList[index + 1]}-1-1.html`) : undefined
           });
         };
         setTimeout(setPrevNext);
       }
     }
     if (options.记录阅读进度) {
-      const tid = unsafeWindow.tid ?? new URLSearchParams(window.location.search).get('tid');
+      const tid = unsafeWindow.tid ?? new URLSearchParams(window.location.search).get('tid') ?? /\/thread-(\d+)-\d+-\d+.html/.exec(window.location.pathname)?.[1];
       if (!tid) return;
-      const res = await main.request(`https://bbs.yamibo.com/api/mobile/index.php?module=viewthread&tid=${tid}`, {
-        responseType: 'json',
-        errorText: '获取帖子回复数时出错'
-      });
+
       /** 回复数 */
-      const allReplies = Number.parseInt(res.response?.Variables?.thread?.allreplies, 10);
-      if (!allReplies) return;
+      let allReplies;
+      try {
+        const res = await main.request(`/api/mobile/index.php?module=viewthread&tid=${tid}`, {
+          responseType: 'json',
+          errorText: '获取帖子回复数时出错',
+          noTip: true
+        });
+        allReplies = Number.parseInt(res.response?.Variables?.thread?.allreplies, 10);
+      } catch {}
 
       /** 当前所在页数 */
-      const currentPageNum = Number.parseInt(main.querySelector('#pgt strong')?.innerHTML ?? main.querySelector('#dumppage')?.value ?? '1', 10);
+      const currentPageNum = Number.parseInt(main.querySelector('#pgt strong')?.textContent ?? main.querySelector('#dumppage')?.value ?? '1', 10);
       const cache = await main.useCache(db => {
         db.createObjectStore('history', {
           keyPath: 'tid'
@@ -7878,7 +7880,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
         debounceSave({
           tid: `${tid}`,
           lastPageNum: currentPageNum,
-          lastReplies: allReplies,
+          lastReplies: allReplies || data?.lastReplies || 0,
           lastAnchor: trigger.target.id
         });
       }, {
@@ -7917,7 +7919,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
         const tid = getTid(e);
         web.render(() => {
           const [data, setData] = solidJs.createSignal();
-          solidJs.createEffect(solidJs.on(updateFlag, () => cache.get('history', tid).then(setData)));
+          main.createEffectOn(updateFlag, () => cache.get('history', tid).then(setData));
           const url = solidJs.createMemo(() => data() ? getUrl(data(), tid) : '');
           const lastReplies = solidJs.createMemo(() => !isMobile && data() ? Number(e.querySelector('.num a').innerHTML) - data().lastReplies : 0);
           const pc = () => [(() => {
@@ -8966,19 +8968,15 @@ const fileType = {
       `);
       let pageNum = Number(main.querySelector('.page.current')?.innerHTML ?? '');
       if (Number.isNaN(pageNum)) return;
-      let loadLock = !pageNum;
       const contentDom = document.getElementById('content');
-      const apiUrl = (() => {
-        if (window.location.pathname === '/') return 'https://nhentai.net/api/galleries/all?';
-        if (main.querySelector('a.tag')) return `https://nhentai.net/api/galleries/tagged?tag_id=${main.querySelector('a.tag')?.classList[1].split('-')[1]}&`;
-        if (window.location.pathname.includes('search')) return `https://nhentai.net/api/galleries/search?query=${new URLSearchParams(window.location.search).get('q')}&`;
-        return '';
-      })();
-      const loadNewComic = async () => {
-        if (loadLock || contentDom.lastElementChild.getBoundingClientRect().top > window.innerHeight) return undefined;
-        loadLock = true;
+      let apiUrl = '';
+      if (window.location.pathname === '/') apiUrl = '/api/galleries/all?';else if (main.querySelector('a.tag')) apiUrl = `/api/galleries/tagged?tag_id=${main.querySelector('a.tag')?.classList[1].split('-')[1]}&`;else if (window.location.pathname.includes('search')) apiUrl = `/api/galleries/search?query=${new URLSearchParams(window.location.search).get('q')}&`;
+      let observer; // eslint-disable-line prefer-const
+
+      const loadNewComic = main.singleThreaded(async () => {
         pageNum += 1;
         const res = await main.request(`${apiUrl}page=${pageNum}${window.location.pathname.includes('popular') ? '&sort=popular ' : ''}`, {
+          fetch: true,
           responseType: 'json',
           errorText: main.t('site.nhentai.fetch_next_page_failed')
         });
@@ -9021,16 +9019,18 @@ const fileType = {
         }
 
         // 添加分隔线
-        contentDom.append(document.createElement('hr'));
-        if (pageNum < num_pages) loadLock = false;else contentDom.lastElementChild.style.animationPlayState = 'paused';
-
-        // 当前页的漫画全部被屏蔽或当前显示的漫画少到连滚动条都出不来时，继续加载
-        if (!comicDomHtml || contentDom.offsetHeight < document.body.offsetHeight) return loadNewComic();
-        return undefined;
-      };
-      window.addEventListener('scroll', loadNewComic);
+        const hr = document.createElement('hr');
+        contentDom.append(hr);
+        observer.disconnect();
+        observer.observe(hr);
+        if (pageNum >= num_pages) hr.style.animationPlayState = 'paused';
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('page', `${pageNum}`);
+        history.replaceState(null, '', `?${urlParams.toString()}`);
+      }, false);
+      observer = new IntersectionObserver(entries => entries[0].isIntersecting && loadNewComic());
+      observer.observe(contentDom.lastElementChild);
       if (main.querySelector('section.pagination')) contentDom.append(document.createElement('hr'));
-      await loadNewComic();
     }
   }
 })().catch(error => main.log.error(error));
@@ -9292,7 +9292,6 @@ const main = require('main');
 
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic.me':
-    case '18-comicblade.xyz':
     case '18-comicblade.org':
     case '18comic.org':
     case '18comic.vip':
