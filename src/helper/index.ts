@@ -168,6 +168,7 @@ export const singleThreaded = <T extends any[], R>(
     state: { running: boolean; continueRun: boolean },
     ...args: T
   ) => R | Promise<R>,
+  defaultContinueRun = true,
 ) => {
   const state = {
     running: false,
@@ -177,7 +178,7 @@ export const singleThreaded = <T extends any[], R>(
   const fn = async (...args: T) => {
     if (state.continueRun) return;
     if (state.running) {
-      state.continueRun = true;
+      state.continueRun = defaultContinueRun;
       return;
     }
 

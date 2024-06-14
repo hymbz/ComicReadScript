@@ -5,6 +5,15 @@ module.exports = {
   ignores: ["*.js"],
 
   rules: {
+    // 提示未使用的变量
+    "@typescript-eslint/no-unused-vars": "warn",
+    // 提示使用了 console
+    'no-console': ["warn", { allow: ["warn", "error"] }],
+    // 禁止重新赋值函数参数
+    "no-param-reassign": "error",
+
+    // 不限制代码深度
+    "max-depth": "off",
     // 不限制文件名的大小写样式
     "unicorn/filename-case": "off",
     // 不限制 import 的扩展名
@@ -96,6 +105,8 @@ module.exports = {
         "@typescript-eslint/ban-types": "off",
         // 不强制返回 Promise 的函数使用 async
         "@typescript-eslint/promise-function-async": "off",
+        // 不强制换行
+        "@typescript-eslint/padding-line-between-statements": "off",
 
         // 允许 switch 省略部分值
         "@typescript-eslint/switch-exhaustiveness-check": "off",

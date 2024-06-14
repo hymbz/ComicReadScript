@@ -5,6 +5,7 @@ import {
   querySelectorAll,
   request,
   scrollIntoView,
+  singleThreaded,
   t,
   toast,
   useInit,
@@ -86,31 +87,22 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       let pageNum = Number(querySelector('.page.current')?.innerHTML ?? '');
       if (Number.isNaN(pageNum)) return;
 
-      let loadLock = !pageNum;
       const contentDom = document.getElementById('content')!;
-      const apiUrl = (() => {
-        if (window.location.pathname === '/')
-          return 'https://nhentai.net/api/galleries/all?';
-        if (querySelector('a.tag'))
-          return `https://nhentai.net/api/galleries/tagged?tag_id=${
-            querySelector('a.tag')?.classList[1].split('-')[1]
-          }&`;
-        if (window.location.pathname.includes('search'))
-          return `https://nhentai.net/api/galleries/search?query=${new URLSearchParams(
-            window.location.search,
-          ).get('q')}&`;
-        return '';
-      })();
 
-      const loadNewComic = async (): Promise<void> => {
-        if (
-          loadLock ||
-          contentDom.lastElementChild!.getBoundingClientRect().top >
-            window.innerHeight
-        )
-          return undefined;
+      let apiUrl = '';
+      if (window.location.pathname === '/') apiUrl = '/api/galleries/all?';
+      else if (querySelector('a.tag'))
+        apiUrl = `/api/galleries/tagged?tag_id=${
+          querySelector('a.tag')?.classList[1].split('-')[1]
+        }&`;
+      else if (window.location.pathname.includes('search'))
+        apiUrl = `/api/galleries/search?query=${new URLSearchParams(
+          window.location.search,
+        ).get('q')}&`;
 
-        loadLock = true;
+      let observer: IntersectionObserver; // eslint-disable-line prefer-const
+
+      const loadNewComic = singleThreaded(async (): Promise<void> => {
         pageNum += 1;
 
         type ResData = {
@@ -128,6 +120,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
             window.location.pathname.includes('popular') ? '&sort=popular ' : ''
           }`,
           {
+            fetch: true,
             responseType: 'json',
             errorText: t('site.nhentai.fetch_next_page_failed'),
           },
@@ -197,27 +190,24 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
         }
 
         // 添加分隔线
-        contentDom.append(document.createElement('hr'));
-        if (pageNum < num_pages) loadLock = false;
-        else
-          (
-            contentDom.lastElementChild as HTMLElement
-          ).style.animationPlayState = 'paused';
+        const hr = document.createElement('hr');
+        contentDom.append(hr);
+        observer.disconnect();
+        observer.observe(hr);
+        if (pageNum >= num_pages) hr.style.animationPlayState = 'paused';
 
-        // 当前页的漫画全部被屏蔽或当前显示的漫画少到连滚动条都出不来时，继续加载
-        if (
-          !comicDomHtml ||
-          contentDom.offsetHeight < document.body.offsetHeight
-        )
-          return loadNewComic();
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('page', `${pageNum}`);
+        history.replaceState(null, '', `?${urlParams.toString()}`);
+      }, false);
 
-        return undefined;
-      };
+      observer = new IntersectionObserver(
+        (entries) => entries[0].isIntersecting && loadNewComic(),
+      );
+      observer.observe(contentDom.lastElementChild!);
 
-      window.addEventListener('scroll', loadNewComic);
       if (querySelector('section.pagination'))
         contentDom.append(document.createElement('hr'));
-      await loadNewComic();
     }
   }
 })().catch((error) => log.error(error));
