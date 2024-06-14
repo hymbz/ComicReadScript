@@ -1,5 +1,5 @@
 import { createRoot } from 'solid-js';
-import { getImgSize, plimit, singleThreaded } from 'helper';
+import { getImgSize, singleThreaded } from 'helper';
 import { createEffectOn } from 'helper/solidJs';
 
 import { type State, setState, store } from '../store';

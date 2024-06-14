@@ -8,7 +8,7 @@ import {
 
 // API 参考：https://github.com/fumiama/copymanga/blob/279e08b06a70307bf20162900103ec1fdcb97751/app/src/main/res/values/strings.xml
 
-declare let options: InitOptions | undefined;
+declare let options: InitOptions; // eslint-disable-line @typescript-eslint/no-unused-vars
 
 (() => {
   const headers = {

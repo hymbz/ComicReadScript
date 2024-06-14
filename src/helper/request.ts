@@ -34,6 +34,7 @@ export type Response<T = any> = {
 export const request = async <T = any>(
   url: string,
   details?: RequestDetails,
+  retryNum = 0,
   errorNum = 0,
 ): Promise<Response<T>> => {
   const headers = { Referer: window.location.href };
@@ -89,14 +90,14 @@ export const request = async <T = any>(
 
     return res;
   } catch (error) {
-    if (errorNum >= 0) {
-      if (!details?.noTip) toast.error(errorText);
+    if (errorNum >= retryNum) {
+      (details?.noTip ? console.error : toast.error)(errorText);
       throw new Error(errorText);
     }
 
     log.error(errorText, error);
     await sleep(1000);
-    return request(url, details, errorNum + 1);
+    return request(url, details, retryNum, errorNum + 1);
   }
 };
 

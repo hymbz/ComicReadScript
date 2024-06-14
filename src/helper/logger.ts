@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 const prefix = [
   '%cComicRead',
   'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;',

@@ -1,5 +1,6 @@
 /* eslint-disable i18next/no-literal-string */
 import { render } from 'solid-js/web';
+import { Show, createMemo, createSignal } from 'solid-js';
 import {
   insertNode,
   querySelector,
@@ -10,8 +11,8 @@ import {
   useInit,
   toast,
   log,
+  createEffectOn,
 } from 'main';
-import { Show, createEffect, createMemo, createSignal, on } from 'solid-js';
 
 interface History {
   tid: string;
@@ -222,7 +223,7 @@ interface History {
         // 先获取包含当前帖后一话在内的同一标签下的帖子id列表，再根据结果设定上/下一话
         const setPrevNext = async (pageNum = 1): Promise<void> => {
           const res = await request(
-            `https://bbs.yamibo.com/misc.php?mod=tag&id=${tagId}&type=thread&page=${pageNum}`,
+            `/misc.php?mod=tag&id=${tagId}&type=thread&page=${pageNum}`,
           );
 
           const newList = [...res.responseText.matchAll(reg)].map(([tid]) =>
@@ -236,18 +237,16 @@ interface History {
 
           return setManga({
             onPrev: threadList[index - 1]
-              ? () => {
+              ? () =>
                   window.location.assign(
                     `thread-${threadList[index - 1]}-1-1.html`,
-                  );
-                }
+                  )
               : undefined,
             onNext: threadList[index + 1]
-              ? () => {
+              ? () =>
                   window.location.assign(
                     `thread-${threadList[index + 1]}-1-1.html`,
-                  );
-                }
+                  )
               : undefined,
           });
         };
@@ -259,22 +258,30 @@ interface History {
     if (options.记录阅读进度) {
       const tid =
         unsafeWindow.tid ??
-        new URLSearchParams(window.location.search).get('tid');
+        new URLSearchParams(window.location.search).get('tid') ??
+        /\/thread-(\d+)-\d+-\d+.html/.exec(window.location.pathname)?.[1];
       if (!tid) return;
-      const res = await request(
-        `https://bbs.yamibo.com/api/mobile/index.php?module=viewthread&tid=${tid}`,
-        { responseType: 'json', errorText: '获取帖子回复数时出错' },
-      );
+
       /** 回复数 */
-      const allReplies = Number.parseInt(
-        res.response?.Variables?.thread?.allreplies,
-        10,
-      );
-      if (!allReplies) return;
+      let allReplies: number | undefined;
+      try {
+        const res = await request(
+          `/api/mobile/index.php?module=viewthread&tid=${tid}`,
+          {
+            responseType: 'json',
+            errorText: '获取帖子回复数时出错',
+            noTip: true,
+          },
+        );
+        allReplies = Number.parseInt(
+          res.response?.Variables?.thread?.allreplies,
+          10,
+        );
+      } catch {}
 
       /** 当前所在页数 */
       const currentPageNum = Number.parseInt(
-        querySelector('#pgt strong')?.innerHTML ??
+        querySelector('#pgt strong')?.textContent ??
           querySelector<HTMLSelectElement>('#dumppage')?.value ??
           '1',
         10,
@@ -326,7 +333,7 @@ interface History {
           debounceSave({
             tid: `${tid}`,
             lastPageNum: currentPageNum,
-            lastReplies: allReplies,
+            lastReplies: allReplies || data?.lastReplies || 0,
             lastAnchor: trigger.target.id,
           });
         },
@@ -376,8 +383,8 @@ interface History {
           () => {
             const [data, setData] = createSignal<History | undefined>();
 
-            createEffect(
-              on(updateFlag, () => cache.get('history', tid).then(setData)),
+            createEffectOn(updateFlag, () =>
+              cache.get('history', tid).then(setData),
             );
 
             const url = createMemo(() => (data() ? getUrl(data()!, tid) : ''));

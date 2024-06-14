@@ -2,7 +2,7 @@ module.exports = {
   prettier: true,
   plugins: ["i18next", "jsdoc", "solid"],
   extends: ["plugin:solid/typescript", "plugin:jsdoc/recommended"],
-  ignores: ["*.js"],
+  ignores: ["*.js", "*.mjs"],
 
   rules: {
     // 提示未使用的变量
