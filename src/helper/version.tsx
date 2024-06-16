@@ -6,6 +6,7 @@ import { log } from './logger';
 import { byPath } from '.';
 
 /** 重命名配置项 */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const renameOption = async (name: string, list: string[]) => {
   try {
     const option = await GM.getValue<object>(name);
@@ -30,48 +31,24 @@ const renameOption = async (name: string, list: string[]) => {
 const migration = async () => {
   const values = await GM.listValues();
 
-  // 6 => 7
+  // 8 => 9
   for (const key of values) {
     switch (key) {
       case 'Version':
       case 'Languages':
+      case 'Hotkeys':
         continue;
+    }
 
-      case 'HotKeys': {
-        await renameOption(key, [
-          '向上翻页 => turn_page_up',
-          '向下翻页 => turn_page_down',
-          '向右翻页 => turn_page_right',
-          '向左翻页 => turn_page_left',
-          '跳至首页 => jump_to_home',
-          '跳至尾页 => jump_to_end',
-          '退出 => exit',
-          '切换页面填充 => switch_page_fill',
-          '切换卷轴模式 => switch_scroll_mode',
-          '切换单双页模式 => switch_single_double_page_mode',
-          '切换阅读方向 => switch_dir',
-          '进入阅读模式 => enter_read_mode',
-        ]);
-        break;
-      }
-
-      default:
-        await renameOption(key, [
-          'option.scrollbar.showProgress => showImgStatus',
-          'option.clickPage => clickPageTurn',
-          'option.clickPage.overturn => reverse',
-          'option.swapTurnPage => swapPageTurnKey',
-          'option.flipToNext => jumpToNext',
-          // ehentai
-          '匹配nhentai => associate_nhentai',
-          '快捷键翻页 => hotkeys_page_turn',
-          // nhentai
-          '自动翻页 => auto_page_turn',
-          '彻底屏蔽漫画 => block_totally',
-          '在新页面中打开链接 => open_link_new_page',
-          // other
-          '记住当前站点 => remember_current_site',
-        ]);
+    const saveData = await GM.getValue<any>(key);
+    if (typeof saveData?.option?.scrollMode === 'boolean') {
+      saveData.option.scrollMode = {
+        enabled: saveData.option.scrollMode,
+        spacing: saveData.option.scrollModeSpacing,
+        imgScale: saveData.option.scrollModeImgScale,
+        fitToWidth: saveData.option.scrollModeFitToWidth,
+      };
+      await GM.setValue(key, saveData);
     }
   }
 };

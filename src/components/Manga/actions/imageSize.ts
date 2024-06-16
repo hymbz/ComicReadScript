@@ -94,7 +94,7 @@ export const updateImgSize = (i: number, width: number, height: number) => {
           if (comicImg.loadType === 'wait' && comicImg.type === '')
             state.imgList[index].type = 'vertical';
         });
-        state.option.scrollMode = true;
+        state.option.scrollMode.enabled = true;
         state.flag.autoScrollMode = true;
         isEdited = true;
         break;

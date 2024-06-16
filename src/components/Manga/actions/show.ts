@@ -15,7 +15,7 @@ export const resetPage = (state: State, animation = false) => {
   state.page.offset.x.pct = 0;
   state.page.offset.y.pct = 0;
 
-  if (state.option.scrollMode) {
+  if (state.option.scrollMode.enabled) {
     state.page.anima = '';
     return;
   }
@@ -56,7 +56,7 @@ export const getPageTip = (pageIndex: number): string => {
     | [string]
     | [string, string];
   if (store.option.dir === 'rtl') pageIndexText.reverse();
-  return pageIndexText.join(store.option.scrollMode ? '\n' : ' | ');
+  return pageIndexText.join(store.option.scrollMode.enabled ? '\n' : ' | ');
 };
 
 createRoot(() => {
@@ -103,7 +103,7 @@ createRoot(() => {
   );
 
   createEffectOn(
-    () => store.option.scrollModeImgScale,
+    () => store.option.scrollMode.imgScale,
     () => setState(updateRenderRange),
   );
 });

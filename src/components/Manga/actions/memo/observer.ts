@@ -87,7 +87,7 @@ export const bindScrollTop = (dom: HTMLElement) => {
 createRoot(() => {
   // 卷轴模式下，将当前显示的第一页作为当前页
   createEffectOn(showPageList, ([firstPage]) => {
-    if (!store.gridMode && store.option.scrollMode)
+    if (!store.gridMode && store.option.scrollMode.enabled)
       _setState('activePageIndex', firstPage ?? 0);
   });
 

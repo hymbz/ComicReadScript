@@ -63,8 +63,8 @@ export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
   setOption((draftOption) => {
     const newVal = set
       ? zoomLevel
-      : store.option.scrollModeImgScale + zoomLevel;
-    draftOption.scrollModeImgScale = clamp(0.1, Number(newVal.toFixed(2)), 3);
+      : store.option.scrollMode.imgScale + zoomLevel;
+    draftOption.scrollMode.imgScale = clamp(0.1, Number(newVal.toFixed(2)), 3);
   });
 
   // 在卷轴模式下缩放时保持滚动进度不变

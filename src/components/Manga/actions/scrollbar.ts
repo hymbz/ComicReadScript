@@ -14,14 +14,14 @@ export const scrollLength = _scrollLength;
 
 /** 滚动条滑块长度 */
 export const sliderHeight = createRootMemo(() =>
-  store.option.scrollMode
+  store.option.scrollMode.enabled
     ? rootSize().height / contentHeight()
     : 1 / store.pageList.length,
 );
 
 /** 滚动条滑块高度 */
 export const sliderTop = createRootMemo(() =>
-  store.option.scrollMode
+  store.option.scrollMode.enabled
     ? scrollTop() / contentHeight()
     : (1 / store.pageList.length) * store.activePageIndex,
 );
@@ -90,7 +90,7 @@ export const handlescrollbarSlider: UseDrag = ({ type, xy, initial }, e) => {
   /** 点击位置在滚动条上的位置比率 */
   const clickTop = getClickTop(x, y, e.target as HTMLElement);
 
-  if (store.option.scrollMode) {
+  if (store.option.scrollMode.enabled) {
     if (type === 'move') {
       scrollTo(
         clamp(0, startTop + getSliderDist(xy, initial, scrollbarDom), 1) *

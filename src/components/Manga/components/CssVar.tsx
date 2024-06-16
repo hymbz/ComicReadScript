@@ -81,8 +81,8 @@ export const CssVar: Component = () => {
         store.option.customBackground ??
         (store.option.darkMode ? '#000' : '#fff')
       };
-      --scroll-mode-img-scale: ${store.option.scrollModeImgScale};
-      --scroll-mode-spacing: ${store.option.scrollModeSpacing};
+      --scroll-mode-img-scale: ${store.option.scrollMode.imgScale};
+      --scroll-mode-spacing: ${store.option.scrollMode.spacing};
 
       ${svg()}
       ${i18n()}

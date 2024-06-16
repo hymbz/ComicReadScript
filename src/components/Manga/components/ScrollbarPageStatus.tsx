@@ -20,7 +20,7 @@ const getScrollbarPage = (
   double = false,
 ): ScrollbarPageItem => {
   let num: number;
-  if (store.option.scrollMode) num = imgHeightList()[i];
+  if (store.option.scrollMode.enabled) num = imgHeightList()[i];
   else num = double ? 2 : 1;
 
   return {
@@ -35,7 +35,9 @@ const ScrollbarPage: Component<ScrollbarPageItem> = (props) => {
   const flexBasis = createMemo(
     () =>
       props.num /
-      (store.option.scrollMode ? contentHeight() : store.imgList.length),
+      (store.option.scrollMode.enabled
+        ? contentHeight()
+        : store.imgList.length),
   );
 
   return (
@@ -71,7 +73,7 @@ export const ScrollbarPageStatus = () => {
         !img.src === item.isNull &&
         img.translationType === item.translationType
       ) {
-        if (store.option.scrollMode) item.num += imgHeightList()[i];
+        if (store.option.scrollMode.enabled) item.num += imgHeightList()[i];
         else item.num += double ? 2 : 1;
       } else {
         list.push(item);

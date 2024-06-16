@@ -98,7 +98,7 @@ export const Manga: Component<MangaProps> = (props) => {
         oncapture:keyup={stopPropagation}
         on:click={stopPropagation}
         data-mobile={boolDataVal(store.isMobile)}
-        data-scroll-mode={boolDataVal(store.option.scrollMode)}
+        data-scroll-mode={boolDataVal(store.option.scrollMode.enabled)}
         data-grid-mode={boolDataVal(store.gridMode)}
       >
         <ComicImgFlow />

@@ -9,7 +9,7 @@ import { rootSize } from './observer';
 export const isOnePageMode = createRootMemo(
   () =>
     store.option.onePageMode ||
-    store.option.scrollMode ||
+    store.option.scrollMode.enabled ||
     store.isMobile ||
     store.imgList.length <= 1,
 );
@@ -63,27 +63,27 @@ export const placeholderSize = createThrottleMemo(
 
 /** 每张图片的高度 */
 export const imgHeightList = createRootMemo(() =>
-  store.option.scrollMode
+  store.option.scrollMode.enabled
     ? store.imgList.map((img) => {
         let height = img.height ?? placeholderSize().height;
         const width = img.width ?? placeholderSize().width;
-        if (store.option.scrollModeFitToWidth)
+        if (store.option.scrollMode.fitToWidth)
           return height * (rootSize().width / width);
         if (width > rootSize().width) height *= rootSize().width / width;
-        return height * store.option.scrollModeImgScale;
+        return height * store.option.scrollMode.imgScale;
       })
     : [],
 );
 
 /** 卷轴模式下每张图片的位置 */
 export const imgTopList = createRootMemo(() => {
-  if (!store.option.scrollMode) return [];
+  if (!store.option.scrollMode.enabled) return [];
 
   const list = Array.from<number>({ length: imgHeightList().length });
   let top = 0;
   for (let i = 0; i < imgHeightList().length; i++) {
     list[i] = top;
-    top += imgHeightList()[i] + store.option.scrollModeSpacing * 7;
+    top += imgHeightList()[i] + store.option.scrollMode.spacing * 7;
   }
 
   return list;

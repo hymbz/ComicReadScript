@@ -177,9 +177,11 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
           if (id.includes('node_modules')) return null;
           let newCode = code;
           newCode = newCode.replace('isDevMode', 'true');
-          // 将 vite 不支持的 rollup-plugin-styles 相关 css 导出代码删除
-          newCode = newCode.replace(', { css as style }', '');
-          newCode = newCode.replace(/\n.+?Style = style;\n/, '');
+          // 将 rollup-plugin-styles 格式转换成 vite 支持的格式
+          newCode = newCode.replace(
+            /, { css as style }( from '(.+?)';)/,
+            `$1\nimport style from '$2?inline';`,
+          );
           return newCode;
         },
       },

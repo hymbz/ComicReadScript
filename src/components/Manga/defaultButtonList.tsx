@@ -43,7 +43,7 @@ export const defaultButtonList: ToolbarButtonList = [
           ? t('button.page_mode_single')
           : t('button.page_mode_double')
       }
-      hidden={store.isMobile || store.option.scrollMode}
+      hidden={store.isMobile || store.option.scrollMode.enabled}
       onClick={switchOnePageMode}
       children={store.option.onePageMode ? <MdLooksOne /> : <MdLooksTwo />}
     />
@@ -52,7 +52,7 @@ export const defaultButtonList: ToolbarButtonList = [
   () => (
     <IconButton
       tip={t('button.scroll_mode')}
-      enabled={store.option.scrollMode}
+      enabled={store.option.scrollMode.enabled}
       onClick={switchScrollMode}
       children={<MdViewDay />}
     />
@@ -63,7 +63,9 @@ export const defaultButtonList: ToolbarButtonList = [
       tip={t('button.page_fill')}
       enabled={Boolean(store.fillEffect[nowFillIndex()])}
       hidden={
-        store.isMobile || store.option.onePageMode || store.option.scrollMode
+        store.isMobile ||
+        store.option.onePageMode ||
+        store.option.scrollMode.enabled
       }
       onClick={switchFillEffect}
       children={<MdQueue />}
@@ -85,14 +87,15 @@ export const defaultButtonList: ToolbarButtonList = [
       tip={t('button.zoom_in')}
       enabled={
         store.zoom.scale !== 100 ||
-        (store.option.scrollMode && store.option.scrollModeImgScale > 1)
+        (store.option.scrollMode.enabled &&
+          store.option.scrollMode.imgScale > 1)
       }
       onClick={() => {
-        if (!store.option.scrollMode) return doubleClickZoom();
+        if (!store.option.scrollMode.enabled) return doubleClickZoom();
 
         if (
-          store.option.scrollModeImgScale >= 1 &&
-          store.option.scrollModeImgScale < 1.6
+          store.option.scrollMode.imgScale >= 1 &&
+          store.option.scrollMode.imgScale < 1.6
         )
           return zoomScrollModeImg(0.2);
         return zoomScrollModeImg(1, true);

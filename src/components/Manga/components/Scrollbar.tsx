@@ -33,7 +33,7 @@ export const Scrollbar: Component = () => {
       ref: refs.scrollbar,
       handleDrag: handlescrollbarSlider,
       easyMode: () =>
-        store.option.scrollMode && store.option.scrollbar.easyScroll,
+        store.option.scrollMode.enabled && store.option.scrollbar.easyScroll,
     });
   });
 
@@ -60,7 +60,7 @@ export const Scrollbar: Component = () => {
     }
 
     const tipList = showPageList().map((i) => getPageTip(i));
-    if (store.option.scrollMode || store.page.vertical)
+    if (store.option.scrollMode.enabled || store.page.vertical)
       return tipList.join('\n');
     if (store.option.dir === 'rtl') tipList.reverse();
     return tipList.join('   ');

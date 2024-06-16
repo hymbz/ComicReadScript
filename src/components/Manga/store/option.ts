@@ -3,28 +3,10 @@ import { lang } from 'helper/i18n';
 import type { areaArrayMap } from '../components/TouchArea';
 
 export interface Option {
+  /** 漫画方向 */
   dir: 'ltr' | 'rtl';
-  /** 滚动条 */
-  scrollbar: {
-    /** 滚动条位置 */
-    position: 'hidden' | 'auto' | 'top' | 'bottom' | 'right';
-    /** 自动隐藏 */
-    autoHidden: boolean;
-    /** 显示图片加载状态 */
-    showImgStatus: boolean;
-    /** 快捷滚动 */
-    easyScroll: boolean;
-  };
   /** 单页模式 */
   onePageMode: boolean;
-  /** 点击翻页 */
-  clickPageTurn: {
-    enabled: boolean;
-    /** 左右反转点击区域 */
-    reverse: boolean;
-    /** 区域排列类型 */
-    area: keyof typeof areaArrayMap;
-  };
   /** 默认启用首页填充 */
   firstPageFill: boolean;
   /** 自定义背景色 */
@@ -44,14 +26,37 @@ export interface Option {
   /** 预加载页数 */
   preloadPageNum: number;
 
+  /** 滚动条 */
+  scrollbar: {
+    /** 滚动条位置 */
+    position: 'hidden' | 'auto' | 'top' | 'bottom' | 'right';
+    /** 自动隐藏 */
+    autoHidden: boolean;
+    /** 显示图片加载状态 */
+    showImgStatus: boolean;
+    /** 快捷滚动 */
+    easyScroll: boolean;
+  };
+
+  /** 点击翻页 */
+  clickPageTurn: {
+    enabled: boolean;
+    /** 左右反转点击区域 */
+    reverse: boolean;
+    /** 区域排列类型 */
+    area: keyof typeof areaArrayMap;
+  };
+
   /** 卷轴模式 */
-  scrollMode: boolean;
-  /** 卷轴模式下的图片间距 */
-  scrollModeSpacing: number;
-  /** 卷轴模式下图片的缩放比例 */
-  scrollModeImgScale: number;
-  /** 卷轴模式下图片适应宽度 */
-  scrollModeFitToWidth: boolean;
+  scrollMode: {
+    enabled: boolean;
+    /** 卷轴模式下的图片间距 */
+    spacing: number;
+    /** 卷轴模式下图片的缩放比例 */
+    imgScale: number;
+    /** 卷轴模式下图片适应宽度 */
+    fitToWidth: boolean;
+  };
 
   /** 翻译 */
   translation: {
@@ -100,10 +105,12 @@ const _defaultOption: Readonly<Option> = {
   showComment: true,
   preloadPageNum: 20,
 
-  scrollMode: false,
-  scrollModeSpacing: 0,
-  scrollModeImgScale: 1,
-  scrollModeFitToWidth: false,
+  scrollMode: {
+    enabled: false,
+    spacing: 0,
+    imgScale: 1,
+    fitToWidth: false,
+  },
 
   translation: {
     server: 'disable',

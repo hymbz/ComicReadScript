@@ -44,7 +44,7 @@ export const ComicImgFlow: Component = () => {
     if (store.gridMode) return;
     if (touches.size > 1) return handlePinchZoom(state, e);
     if (store.zoom.scale !== 100) return handleZoomDrag(state, e);
-    if (store.option.scrollMode) return handleScrollModeDrag(state, e);
+    if (store.option.scrollMode.enabled) return handleScrollModeDrag(state, e);
     return handleMangaFlowDrag(state, e);
   };
 
@@ -96,7 +96,7 @@ export const ComicImgFlow: Component = () => {
       return areaList.map((line) => `"${line.join(' ')}"`).join('\n');
     }
 
-    if (store.option.scrollMode) return '';
+    if (store.option.scrollMode.enabled) return '';
 
     return store.page.vertical
       ? store.pageList
@@ -114,7 +114,7 @@ export const ComicImgFlow: Component = () => {
     '--zoom-x': () => `${store.zoom.offset.x}px`,
     '--zoom-y': () => `${store.zoom.offset.y}px`,
     '--page-x'() {
-      if (store.option.scrollMode) return '0px';
+      if (store.option.scrollMode.enabled) return '0px';
       const x = `${store.page.offset.x.pct * rootSize().width + store.page.offset.x.px}px`;
       return store.option.dir === 'rtl' ? x : `calc(${x} * -1)`;
     },
@@ -123,15 +123,15 @@ export const ComicImgFlow: Component = () => {
     'touch-action'() {
       if (store.gridMode) return 'auto';
       if (store.zoom.scale !== 100) {
-        if (!store.option.scrollMode) return 'none';
+        if (!store.option.scrollMode.enabled) return 'none';
         if (store.zoom.offset.y === 0) return 'pan-up';
         if (store.zoom.offset.y === bound.y()) return 'pan-down';
       }
 
-      if (store.option.scrollMode) return 'pan-y';
+      if (store.option.scrollMode.enabled) return 'pan-y';
     },
     height: () =>
-      !store.gridMode && store.option.scrollMode
+      !store.gridMode && store.option.scrollMode.enabled
         ? `${contentHeight()}px`
         : undefined,
     'grid-template-areas': gridAreas,
@@ -156,18 +156,18 @@ export const ComicImgFlow: Component = () => {
         class={`${classes.mangaFlow} ${classes.beautifyScrollbar}`}
         data-disable-zoom={boolDataVal(
           store.option.disableZoom ||
-            (!store.gridMode && store.option.scrollMode),
+            (!store.gridMode && store.option.scrollMode.enabled),
         )}
         data-scale-mode={boolDataVal(store.zoom.scale !== 100)}
         data-vertical={boolDataVal(store.page.vertical)}
         data-animation={store.page.anima}
         data-hidden-mouse={!store.gridMode && hiddenMouse()}
-        data-fit-width={boolDataVal(store.option.scrollModeFitToWidth)}
+        data-fit-width={boolDataVal(store.option.scrollMode.fitToWidth)}
         on:mousemove={onMouseMove}
         onTransitionEnd={handleTransitionEnd}
         style={style()}
       >
-        <Show when={store.option.scrollMode}>
+        <Show when={store.option.scrollMode.enabled}>
           <span style={{ height: `${scrollModeFill()}px`, 'flex-shrink': 0 }} />
         </Show>
         <For each={store.imgList} fallback={<EmptyTip />}>

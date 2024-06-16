@@ -59,7 +59,7 @@ export const handleGridClick = (e: MouseEvent) => {
     state.activePageIndex = pageNum;
     state.gridMode = false;
   });
-  if (store.option.scrollMode) scrollTo(imgTopList()[pageNum]);
+  if (store.option.scrollMode.enabled) scrollTo(imgTopList()[pageNum]);
 };
 
 /** 双击放大 */
@@ -198,7 +198,7 @@ export const handleTrackpadWheel = (e: WheelEvent) => {
     lastWheel = now;
   }
 
-  if (store.option.scrollMode) {
+  if (store.option.scrollMode.enabled) {
     if (
       time > 200 &&
       ((isTop(store) && e.deltaY < 0) || (isBottom(store) && e.deltaY > 0))

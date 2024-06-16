@@ -32,12 +32,13 @@ export const switchFillEffect = () => {
 export const switchScrollMode = () => {
   zoom(100);
   setOption((draftOption, state) => {
-    draftOption.scrollMode = !draftOption.scrollMode;
-    draftOption.onePageMode = draftOption.scrollMode;
+    draftOption.scrollMode.enabled = !draftOption.scrollMode.enabled;
+    draftOption.onePageMode = draftOption.scrollMode.enabled;
     updatePageData(state);
   });
   // 切换到卷轴模式后自动定位到对应页
-  if (store.option.scrollMode) scrollTo(imgTopList()[store.activePageIndex]);
+  if (store.option.scrollMode.enabled)
+    scrollTo(imgTopList()[store.activePageIndex]);
 };
 
 /** 切换单双页模式 */
@@ -79,7 +80,7 @@ export const switchFitToWidth = () => {
   const height = contentHeight();
 
   setOption((draftOption) => {
-    draftOption.scrollModeFitToWidth = !draftOption.scrollModeFitToWidth;
+    draftOption.scrollMode.fitToWidth = !draftOption.scrollMode.fitToWidth;
   });
 
   // 滚回之前的位置

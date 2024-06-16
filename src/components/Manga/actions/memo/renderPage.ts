@@ -24,7 +24,7 @@ export const updateRenderRange = (state: State) => {
   let startPage: number | undefined;
   let endPage: number | undefined;
 
-  if (state.option.scrollMode) {
+  if (state.option.scrollMode.enabled) {
     if (contentHeight() === 0) {
       startPage = 0;
       endPage = 1;
@@ -50,7 +50,7 @@ export const updateRenderRange = (state: State) => {
 
 createRoot(() => {
   createEffectOn(
-    () => store.option.scrollModeImgScale,
+    () => store.option.scrollMode.imgScale,
     () => setState(updateRenderRange),
   );
 

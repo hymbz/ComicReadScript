@@ -27,7 +27,7 @@ export const focus = () =>
   });
 
 export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
-  if (e.button !== 1 || store.option.scrollMode) return;
+  if (e.button !== 1 || store.option.scrollMode.enabled) return;
   e.stopPropagation();
   e.preventDefault();
   switchFillEffect();
@@ -87,7 +87,10 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   }
 
   // 卷轴、网格模式下跳过用于移动的按键
-  if ((store.option.scrollMode || store.gridMode) && !store.show.endPage) {
+  if (
+    (store.option.scrollMode.enabled || store.gridMode) &&
+    !store.show.endPage
+  ) {
     switch (e.key) {
       case 'Home':
       case 'End':
@@ -117,12 +120,12 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 
   switch (hotkeysMap()[code]) {
     case 'turn_page_up': {
-      if (store.option.scrollMode) scrollModeScroll('prev');
+      if (store.option.scrollMode.enabled) scrollModeScroll('prev');
       return turnPage('prev');
     }
 
     case 'turn_page_down': {
-      if (store.option.scrollMode) scrollModeScroll('next');
+      if (store.option.scrollMode.enabled) scrollModeScroll('next');
       return turnPage('next');
     }
 
@@ -184,11 +187,11 @@ export const handleWheel = (e: WheelEvent) => {
   // 卷轴模式下的图片缩放
   if (
     (e.ctrlKey || e.altKey) &&
-    store.option.scrollMode &&
+    store.option.scrollMode.enabled &&
     store.zoom.scale === 100
   ) {
     e.preventDefault();
-    if (store.option.scrollModeFitToWidth) return;
+    if (store.option.scrollMode.fitToWidth) return;
     return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
   }
 
