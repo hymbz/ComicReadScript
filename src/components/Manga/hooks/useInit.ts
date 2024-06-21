@@ -49,16 +49,14 @@ export const useInit = (props: MangaProps) => {
     },
 
     onExit(state) {
-      state.prop.Exit = props.onExit
-        ? (isEnd?: boolean | Event) => {
-            playAnimation(refs.exit);
-            props.onExit?.(Boolean(isEnd));
-            setState((draftState) => {
-              if (isEnd) draftState.activePageIndex = 0;
-              draftState.show.endPage = undefined;
-            });
-          }
-        : undefined;
+      state.prop.Exit = (isEnd?: boolean | Event) => {
+        playAnimation(refs.exit);
+        props.onExit?.(Boolean(isEnd));
+        setState((draftState) => {
+          if (isEnd) draftState.activePageIndex = 0;
+          draftState.show.endPage = undefined;
+        });
+      };
     },
     onPrev(state) {
       state.prop.Prev = props.onPrev
