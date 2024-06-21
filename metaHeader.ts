@@ -115,11 +115,11 @@ export const getMetaData = (isDevMode: boolean) => {
     grant: [
       'GM_addElement',
       'GM_getResourceText',
+      'GM_addStyle',
       'GM_xmlhttpRequest',
       'GM.addValueChangeListener',
       'GM.removeValueChangeListener',
       'GM.getResourceText',
-      'GM.addStyle',
       'GM.getValue',
       'GM.setValue',
       'GM.listValues',

@@ -14,7 +14,7 @@ import { mountComponents } from './helper';
 let dom: HTMLDivElement;
 
 export const useFab = async (initProps?: FabProps) => {
-  await GM.addStyle(`
+  GM_addStyle(`
     #fab {
       --text-bg: transparent;
 

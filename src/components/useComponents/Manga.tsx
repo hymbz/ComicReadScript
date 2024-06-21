@@ -25,7 +25,7 @@ type UseMangaProps = MangaProps & { adList?: Set<number> };
  * 显示漫画阅读窗口
  */
 export const useManga = async (initProps?: Partial<UseMangaProps>) => {
-  await GM.addStyle(`
+  GM_addStyle(`
     #comicRead {
       position: fixed;
       top: 0;

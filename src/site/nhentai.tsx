@@ -75,10 +75,10 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
     // blacklist === null 时是未登录
 
     if (options.block_totally && blacklist?.length)
-      await GM.addStyle('.blacklisted.gallery { display: none; }');
+      GM_addStyle('.blacklisted.gallery { display: none; }');
 
     if (options.auto_page_turn) {
-      await GM.addStyle(`
+      GM_addStyle(`
         hr { bottom: 0; box-sizing: border-box; margin: -1em auto 2em; }
         hr:last-child { position: relative; animation: load .8s linear alternate infinite; }
         hr:not(:last-child) { display: none; }

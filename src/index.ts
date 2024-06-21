@@ -234,7 +234,7 @@ try {
       }
 
       // 让切换章节的提示可以显示在漫画页上
-      GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
+      GM_addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
 
       const handlePrevNext = (cid: number) => {
         if (cid === 0) return undefined;

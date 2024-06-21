@@ -103,7 +103,7 @@ import {
       });
 
       document.body.childNodes[0].remove();
-      await GM.addStyle(
+      GM_addStyle(
         `
           h1 {
             margin: 0 -20vw;
@@ -135,7 +135,7 @@ import {
     case 'view': {
       // 如果不是隐藏漫画，直接进入阅读模式
       if (unsafeWindow.comic_id) {
-        await GM.addStyle('.subHeader{display:none !important}');
+        GM_addStyle('.subHeader{display:none !important}');
 
         await universalInit({
           name: 'dmzj',

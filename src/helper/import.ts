@@ -4,6 +4,7 @@ const gmApi = {
     typeof GM_addElement === 'undefined' ? undefined : GM_addElement,
   GM_getResourceText,
   GM_xmlhttpRequest,
+  GM_addStyle,
   unsafeWindow,
 };
 const gmApiList = Object.keys(gmApi);

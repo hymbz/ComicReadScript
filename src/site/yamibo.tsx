@@ -31,7 +31,7 @@ interface History {
       自动签到: true,
     });
 
-  await GM.addStyle(
+  GM_addStyle(
     `#fab { --fab: #6E2B19; fab-hover: #A15640; }
 
     ${
