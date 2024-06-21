@@ -78,7 +78,7 @@ const isLazyLoaded = (e: HTMLImageElement, oldSrc?: string) => {
 };
 
 export const imgMap = new Map<HTMLImageElement, ImgData>();
-// eslint-disable-next-line prefer-const
+// eslint-disable-next-line no-autofix/prefer-const
 let imgShowObserver: IntersectionObserver;
 
 const getImg = (e: HTMLImageElement) => imgMap.get(e) ?? createImgData();

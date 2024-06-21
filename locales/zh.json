@@ -39,16 +39,18 @@
     "exit": "退出",
     "jump_to_end": "跳至尾页",
     "jump_to_home": "跳至首页",
+    "page_down": "向下翻页",
+    "page_up": "向上翻页",
+    "scroll_down": "向下滚动",
+    "scroll_left": "向左滚动",
+    "scroll_right": "向右滚动",
+    "scroll_up": "向上滚动",
     "switch_auto_enlarge": "切换图片自动放大选项",
     "switch_dir": "切换阅读方向",
     "switch_grid_mode": "切换网格模式",
     "switch_page_fill": "切换页面填充",
     "switch_scroll_mode": "切换卷轴模式",
     "switch_single_double_page_mode": "切换单双页模式",
-    "turn_page_down": "向下翻页",
-    "turn_page_left": "向左翻页",
-    "turn_page_right": "向右翻页",
-    "turn_page_up": "向上翻页",
     "translate_current_page": "翻译当前页"
   },
   "img_status": {
@@ -103,6 +105,8 @@
     },
     "language": "语言",
     "option": {
+      "abreast_duplicate": "每列重复比例",
+      "abreast_mode": "并排卷轴模式",
       "always_load_all_img": "始终加载所有图片",
       "background_color": "背景颜色",
       "click_page_turn_area": "点击区域",
@@ -114,6 +118,7 @@
       "dir_rtl": "从右到左（日漫）",
       "disable_auto_enlarge": "禁止图片自动放大",
       "first_page_fill": "默认启用首页填充",
+      "fit_to_width": "图片适合宽度",
       "jump_to_next_chapter": "翻页至上/下一话",
       "paragraph_dir": "阅读方向",
       "paragraph_display": "显示",
@@ -166,9 +171,9 @@
       "block_totally": "彻底屏蔽漫画",
       "detect_ad": "识别广告页",
       "hotkeys_page_turn": "快捷键翻页",
+      "load_original_image": "加载原图",
       "open_link_new_page": "在新页面中打开链接",
-      "remember_current_site": "记住当前站点",
-      "load_original_image": "加载原图"
+      "remember_current_site": "记住当前站点"
     },
     "changed_load_failed": "网站发生变化，无法加载漫画",
     "ehentai": {

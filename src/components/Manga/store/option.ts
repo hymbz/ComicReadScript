@@ -56,6 +56,10 @@ export interface Option {
     imgScale: number;
     /** 卷轴模式下图片适应宽度 */
     fitToWidth: boolean;
+    /** 并排模式 */
+    abreastMode: boolean;
+    /** 并排模式下重新显示上列结尾部分的比例 */
+    abreastDuplicate: number;
   };
 
   /** 翻译 */
@@ -110,6 +114,8 @@ const _defaultOption: Readonly<Option> = {
     spacing: 0,
     imgScale: 1,
     fitToWidth: false,
+    abreastMode: false,
+    abreastDuplicate: 0.2,
   },
 
   translation: {

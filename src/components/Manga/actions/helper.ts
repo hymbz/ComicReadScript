@@ -35,6 +35,3 @@ export const resetUI = (state: State) => {
   state.show.scrollbar = false;
   state.show.touchArea = false;
 };
-
-export const scrollTo = (top: number, smooth = false) =>
-  refs.mangaBox.scrollTo({ top, behavior: smooth ? 'smooth' : 'instant' });

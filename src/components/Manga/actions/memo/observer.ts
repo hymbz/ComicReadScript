@@ -7,6 +7,9 @@ import {
 } from 'helper/solidJs';
 
 import { store, _setState, setState } from '../../store';
+import { useDomSize } from '../../hooks/useDomSize';
+
+import { isAbreastMode } from './common';
 
 /** 记录每张图片所在的页面 */
 export const imgPageMap = createRootMemo(() => {
@@ -56,28 +59,14 @@ export const initIntersectionObserver = (root: HTMLElement) => {
   });
 };
 
-const [_rootSize, setRootSize] = createSignal(
-  { width: 0, height: 0 },
-  // 宽高为零时不触发变更
-  { equals: (_, { width, height }) => !width || !height },
-);
-/** 容器尺寸 */
-export const rootSize = _rootSize;
-
-export const initResizeObserver = (dom: HTMLElement) => {
-  setRootSize({ width: dom.scrollWidth, height: dom.scrollHeight });
-  // 在 rootDom 的大小改变时更新比例，并重新计算图片类型
-  const resizeObserver = new ResizeObserver(([{ contentRect }]) =>
-    setRootSize({ width: contentRect.width, height: contentRect.height }),
-  );
-  resizeObserver.disconnect();
-  resizeObserver.observe(dom);
-  onCleanup(() => resizeObserver.disconnect());
-};
+export const [rootSize, watchRootSize] = useDomSize();
+export const [flowSize, watchFlowSize] = useDomSize();
 
 const [_scrollTop, setScrollTop] = createSignal(0);
 /** 滚动距离 */
-export const scrollTop = _scrollTop;
+export const scrollTop = createRootMemo(() =>
+  isAbreastMode() ? store.page.offset.x.px : _scrollTop(),
+);
 export const bindScrollTop = (dom: HTMLElement) => {
   dom.addEventListener('scroll', () => setScrollTop(dom.scrollTop), {
     passive: true,

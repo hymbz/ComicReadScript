@@ -8,19 +8,24 @@ import { isWideImg } from '../handleComicData';
 import { resetImgState, updatePageData } from './image';
 import { rootSize } from './memo';
 
-/** 根据比例更新图片类型。返回是否修改了图片类型 */
-const updateImgType = (state: State, draftImg: ComicImg) => {
-  const { width, height, type } = draftImg;
-  if (!width || !height || !rootSize().width || !rootSize().height)
-    return false;
-
-  const imgRatio = width / height;
+/** 根据比例判断图片类型 */
+export const getImgType = (
+  img: { width: number; height: number },
+  state = store,
+) => {
+  const imgRatio = img.width / img.height;
   if (imgRatio <= state.proportion.单页比例) {
-    draftImg.type = imgRatio < state.proportion.条漫比例 ? 'vertical' : '';
-  } else {
-    draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
+    return imgRatio < state.proportion.条漫比例 ? 'vertical' : '';
   }
+  return imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
+};
 
+/** 更新图片类型。返回是否修改了图片类型 */
+const updateImgType = (state: State, draftImg: ComicImg) => {
+  if (!rootSize().width || !rootSize().height) return false;
+  const { type } = draftImg;
+  if (!draftImg.width || !draftImg.height) return false;
+  draftImg.type = getImgType(draftImg as Required<ComicImg>, state);
   return type !== draftImg.type;
 };
 
@@ -57,6 +62,10 @@ const checkImgTypeCount = (
   return false;
 };
 
+/** 是否是未知尺寸的图片 */
+const isUnknownSize = (img: ComicImg) =>
+  (img.loadType === 'wait' || img.loadType === 'error') && img.type === '';
+
 /** 更新图片尺寸 */
 export const updateImgSize = (i: number, width: number, height: number) => {
   setState((state) => {
@@ -74,14 +83,12 @@ export const updateImgSize = (i: number, width: number, height: number) => {
         // fall through
       }
 
-      // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
+      // 连续出现多张跨页图后，将未知尺寸的图片类型设为跨页图
       case 'wide': {
         if (state.flag.autoWide || !checkImgTypeCount(state, i, 3, isWideImg))
           break;
-        state.imgList.forEach((comicImg, index) => {
-          if (comicImg.loadType === 'wait' && comicImg.type === '')
-            state.imgList[index].type = 'wide';
-        });
+        for (const [index, comicImg] of state.imgList.entries())
+          if (isUnknownSize(comicImg)) state.imgList[index].type = 'wide';
         state.flag.autoWide = true;
         isEdited = true;
         break;
@@ -90,10 +97,8 @@ export const updateImgSize = (i: number, width: number, height: number) => {
       // 连续出现多张长图后，自动开启卷轴模式
       case 'vertical': {
         if (state.flag.autoScrollMode || !checkImgTypeCount(state, i, 3)) break;
-        state.imgList.forEach((comicImg, index) => {
-          if (comicImg.loadType === 'wait' && comicImg.type === '')
-            state.imgList[index].type = 'vertical';
-        });
+        for (const [index, comicImg] of state.imgList.entries())
+          if (isUnknownSize(comicImg)) state.imgList[index].type = 'vertical';
         state.option.scrollMode.enabled = true;
         state.flag.autoScrollMode = true;
         isEdited = true;
@@ -113,8 +118,8 @@ createRoot(() => {
     store.imgList.some((img) => img.loadType === 'loading');
 
   // 空闲期间预加载所有图片的尺寸
-  // 主要是卷轴模式下需要提前知道尺寸方便正确布局
-  // 翻页模式下如果有跨页图也能提前发现重新排序
+  // 卷轴模式下需要提前知道尺寸方便正确布局
+  // 翻页模式下也需要提前发现跨页图重新排序
   createEffectOn(
     isLoading,
     singleThreaded(async () => {

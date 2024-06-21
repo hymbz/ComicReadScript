@@ -9,7 +9,7 @@ import {
   defaultHotkeys,
   defaultImgType,
   focus,
-  initResizeObserver,
+  watchRootSize,
   resetImgState,
   scrollTo,
   updateImgLoadType,
@@ -26,7 +26,7 @@ const createComicImg = (url: string): ComicImg => ({
 });
 
 export const useInit = (props: MangaProps) => {
-  initResizeObserver(refs.root);
+  watchRootSize(refs.root);
 
   const watchProps: Partial<
     Record<keyof MangaProps, (state: State) => unknown>

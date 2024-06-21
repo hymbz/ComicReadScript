@@ -62,9 +62,8 @@ export const createMemoMap = <Return extends Record<string, any>>(fnMap: {
 
   const map = createRootMemo(() => {
     const obj = {} as Return;
-    Object.keys(memoMap).forEach((key) =>
-      Reflect.set(obj, key, memoMap[key]()),
-    );
+    for (const key of Object.keys(memoMap))
+      Reflect.set(obj, key, memoMap[key]());
     return obj;
   });
   return map;

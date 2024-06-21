@@ -1,16 +1,16 @@
 import {
   type Component,
-  type JSX,
   createSignal,
   createMemo,
   Show,
   onMount,
 } from 'solid-js';
 import { boolDataVal, debounce } from 'helper';
-import { createMemoMap, createThrottleMemo } from 'helper/solidJs';
+import { createThrottleMemo } from 'helper/solidJs';
 
 import { refs, store } from '../store';
 import { useDrag } from '../hooks/useDrag';
+import { useStyleMemo } from '../hooks/useStyle';
 import {
   bindRef,
   getPageTip,
@@ -18,9 +18,14 @@ import {
   handlescrollbarSlider,
   sliderMidpoint,
   sliderHeight,
-  sliderTop,
+  scrollPercentage,
   showPageList,
-  scrollLength,
+  scrollDomLength,
+  isScrollMode,
+  isOnePageMode,
+  abreastShowColumn,
+  isAbreastMode,
+  abreastArea,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -32,8 +37,7 @@ export const Scrollbar: Component = () => {
     useDrag({
       ref: refs.scrollbar,
       handleDrag: handlescrollbarSlider,
-      easyMode: () =>
-        store.option.scrollMode.enabled && store.option.scrollbar.easyScroll,
+      easyMode: () => isScrollMode() && store.option.scrollbar.easyScroll,
     });
   });
 
@@ -50,6 +54,19 @@ export const Scrollbar: Component = () => {
     () => store.show.scrollbar || Boolean(penetrate()),
   );
 
+  const abreastShowTip = createMemo(() => {
+    if (!isAbreastMode()) return undefined;
+
+    const columns = abreastArea()
+      .columns.slice(abreastShowColumn().start, abreastShowColumn().end + 1)
+      .map((column) => column.map(getPageTip));
+    if (store.option.dir === 'rtl') {
+      columns.reverse();
+      columns.forEach((column) => column.reverse());
+    }
+    return columns.map((column) => column.join(', ')).join(' | ');
+  });
+
   /** 滚动条提示文本 */
   const tipText = createThrottleMemo(() => {
     switch (showPageList().length) {
@@ -59,27 +76,27 @@ export const Scrollbar: Component = () => {
         return getPageTip(showPageList()[0]);
     }
 
+    if (isAbreastMode()) return abreastShowTip();
     const tipList = showPageList().map((i) => getPageTip(i));
-    if (store.option.scrollMode.enabled || store.page.vertical)
-      return tipList.join('\n');
+    if (isOnePageMode()) return tipList.join('\n');
+    if (tipList.length === 1) return tipList[0];
     if (store.option.dir === 'rtl') tipList.reverse();
     return tipList.join('   ');
   });
 
-  const style = createMemoMap<JSX.CSSProperties>({
+  useStyleMemo(`.${classes.scrollbar}`, {
     'pointer-events': () =>
       penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
-    '--scroll-length': () => `${scrollLength()}px`,
+    '--scroll-length': () => `${scrollDomLength()}px`,
     '--slider-midpoint': () => `${sliderMidpoint()}px`,
-    '--slider-height': () => `${sliderHeight() * scrollLength()}px`,
-    '--slider-top': () => `${sliderTop() * scrollLength()}px`,
+    '--slider-height': () => `${sliderHeight() * scrollDomLength()}px`,
+    '--slider-top': () => `${scrollPercentage() * scrollDomLength()}px`,
   });
 
   return (
     <div
       ref={bindRef('scrollbar')}
       class={classes.scrollbar}
-      style={style()}
       role="scrollbar"
       tabIndex={-1}
       aria-controls={classes.mangaFlow}

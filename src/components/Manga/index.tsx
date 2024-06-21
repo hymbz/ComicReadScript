@@ -11,7 +11,7 @@ import { Toolbar } from './components/Toolbar';
 import { Scrollbar } from './components/Scrollbar';
 import { TouchArea } from './components/TouchArea';
 import { EndPage } from './components/EndPage';
-import { CssVar } from './components/CssVar';
+import { useCssVar } from './hooks/useCssVar';
 import { store, type State } from './store/index';
 import { type FillEffect } from './store/image';
 import { type Option } from './store/option';
@@ -81,6 +81,8 @@ export const Manga: Component<MangaProps> = (props) => {
 
   createEffect(() => props.show && focus());
 
+  useCssVar();
+
   return (
     <>
       <div
@@ -107,7 +109,6 @@ export const Manga: Component<MangaProps> = (props) => {
         <TouchArea />
         <EndPage />
       </div>
-      <CssVar />
     </>
   );
 };

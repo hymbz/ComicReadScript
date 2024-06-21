@@ -1,19 +1,9 @@
-import { approx, debounce } from 'helper';
+import { debounce } from 'helper';
 
 import { type State, store, setState, _setState } from '../store';
 
-import { contentHeight, rootSize, scrollTop } from './memo';
 import { resetPage } from './show';
-
-/** 判断当前是否已经滚动到底部 */
-export const isBottom = (state: State) =>
-  state.option.scrollMode
-    ? approx(scrollTop() + rootSize().height, contentHeight(), 1)
-    : state.activePageIndex === state.pageList.length - 1;
-
-/** 判断当前是否已经滚动到顶部 */
-export const isTop = (state: State) =>
-  state.option.scrollMode ? scrollTop() === 0 : state.activePageIndex === 0;
+import { isBottom, isTop } from './scroll';
 
 export const closeScrollLock = debounce(
   () => _setState('flag', 'scrollLock', false),
@@ -38,7 +28,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
 
       default:
         // 弹出卷首结束页
-        if (isTop(state)) {
+        if (isTop()) {
           if (!state.prop.Exit) return false;
           // 没有 onPrev 时不弹出
           if (!state.prop.Prev || !state.option.jumpToNext) return false;
@@ -49,7 +39,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
           return false;
         }
 
-        if (state.option.scrollMode) return false;
+        if (state.option.scrollMode.enabled) return false;
         state.activePageIndex -= 1;
         return true;
     }
@@ -72,7 +62,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
 
       default:
         // 弹出卷尾结束页
-        if (isBottom(state)) {
+        if (isBottom()) {
           if (!state.prop.Exit) return false;
           state.show.endPage = 'end';
           state.flag.scrollLock = true;
@@ -80,7 +70,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
           return false;
         }
 
-        if (state.option.scrollMode) return false;
+        if (state.option.scrollMode.enabled) return false;
         state.activePageIndex += 1;
         return true;
     }

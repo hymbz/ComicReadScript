@@ -1,13 +1,6 @@
-import {
-  type Component,
-  type JSX,
-  For,
-  Show,
-  createMemo,
-  onMount,
-} from 'solid-js';
-import { boolDataVal } from 'helper';
-import { createEffectOn, createMemoMap } from 'helper/solidJs';
+import { type Component, Show, createMemo, onMount, Index } from 'solid-js';
+import { boolDataVal, createSequence } from 'helper';
+import { createEffectOn } from 'helper/solidJs';
 
 import { refs, setState, store } from '../store';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
@@ -31,13 +24,22 @@ import {
   scrollTop,
   isOnePageMode,
   rootSize,
+  watchFlowSize,
+  isAbreastMode,
+  isScrollMode,
+  abreastColumnWidth,
+  abreastArea,
+  imgAreaStyle,
 } from '../actions';
 import classes from '../index.module.css';
+import { useStyle, useStyleMemo } from '../hooks/useStyle';
 
 import { EmptyTip } from './EmptyTip';
 import { ComicImg } from './ComicImg';
 
 export const ComicImgFlow: Component = () => {
+  onMount(() => watchFlowSize(refs.mangaFlow));
+
   const { hiddenMouse, onMouseMove } = useHiddenMouse();
 
   const handleDrag: UseDrag = (state, e) => {
@@ -96,7 +98,12 @@ export const ComicImgFlow: Component = () => {
       return areaList.map((line) => `"${line.join(' ')}"`).join('\n');
     }
 
-    if (store.option.scrollMode.enabled) return '';
+    if (store.option.scrollMode.enabled) {
+      if (!store.option.scrollMode.abreastMode) return '';
+      return `"${createSequence(abreastArea().columns.length)
+        .map((i) => `_${i}`)
+        .join(' ')}"`;
+    }
 
     return store.page.vertical
       ? store.pageList
@@ -109,12 +116,12 @@ export const ComicImgFlow: Component = () => {
           .join(' ')}"`;
   });
 
-  const style = createMemoMap<JSX.CSSProperties>({
+  useStyleMemo(`#${classes.mangaFlow}`, {
     '--scale': () => store.zoom.scale / 100,
     '--zoom-x': () => `${store.zoom.offset.x}px`,
     '--zoom-y': () => `${store.zoom.offset.y}px`,
     '--page-x'() {
-      if (store.option.scrollMode.enabled) return '0px';
+      if (isScrollMode()) return '0px';
       const x = `${store.page.offset.x.pct * rootSize().width + store.page.offset.x.px}px`;
       return store.option.dir === 'rtl' ? x : `calc(${x} * -1)`;
     },
@@ -128,20 +135,25 @@ export const ComicImgFlow: Component = () => {
         if (store.zoom.offset.y === bound.y()) return 'pan-down';
       }
 
-      if (store.option.scrollMode.enabled) return 'pan-y';
+      if (store.option.scrollMode.enabled)
+        return store.option.scrollMode.abreastMode ? 'pan-x' : 'pan-y';
     },
     height: () =>
-      !store.gridMode && store.option.scrollMode.enabled
-        ? `${contentHeight()}px`
-        : undefined,
+      !store.gridMode && isScrollMode() ? `${contentHeight()}px` : undefined,
     'grid-template-areas': gridAreas,
     'grid-template-columns'() {
       if (store.imgList.length === 0) return undefined;
       if (store.gridMode) return `repeat(${isOnePageMode() ? 10 : 6}, 1fr)`;
       if (store.page.vertical) return '50% 50%';
+      if (isAbreastMode())
+        return `repeat(${abreastArea().columns.length}, ${abreastColumnWidth()}px)`;
+      if (isScrollMode()) return undefined;
       return `repeat(${gridAreas().split(' ').length}, 50%)`;
     },
+    '--abreastScrollWidth': () => `${abreastColumnWidth()}px`,
   });
+
+  useStyle(imgAreaStyle);
 
   return (
     <div
@@ -163,16 +175,16 @@ export const ComicImgFlow: Component = () => {
         data-animation={store.page.anima}
         data-hidden-mouse={!store.gridMode && hiddenMouse()}
         data-fit-width={boolDataVal(store.option.scrollMode.fitToWidth)}
+        data-abreast-scroll={boolDataVal(store.option.scrollMode.abreastMode)}
         on:mousemove={onMouseMove}
         onTransitionEnd={handleTransitionEnd}
-        style={style()}
       >
         <Show when={store.option.scrollMode.enabled}>
           <span style={{ height: `${scrollModeFill()}px`, 'flex-shrink': 0 }} />
         </Show>
-        <For each={store.imgList} fallback={<EmptyTip />}>
-          {(img, i) => <ComicImg index={i()} {...img} />}
-        </For>
+        <Index each={store.imgList} fallback={<EmptyTip />}>
+          {(img, i) => <ComicImg index={i} {...img()} />}
+        </Index>
       </div>
     </div>
   );

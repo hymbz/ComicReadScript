@@ -151,6 +151,11 @@ export const defaultSettingList: () => SettingList = () => [
         </Show>
 
         <Show when={store.option.scrollMode.enabled}>
+          <SettingsItemSwitch
+            name={t('setting.option.abreast_mode')}
+            value={store.option.scrollMode.abreastMode}
+            onChange={createStateSetFn('scrollMode.abreastMode')}
+          />
           <SettingsItemNumber
             name={t('setting.option.scroll_mode_img_scale')}
             maxLength={3}
@@ -174,11 +179,27 @@ export const defaultSettingList: () => SettingList = () => [
             }}
             value={Math.round(store.option.scrollMode.spacing)}
           />
-          <SettingsItemSwitch
-            name={'卷轴图片适合宽度'}
-            value={store.option.scrollMode.fitToWidth}
-            onChange={switchFitToWidth}
-          />
+          <Show when={store.option.scrollMode.abreastMode}>
+            <SettingsItemNumber
+              name={t('setting.option.abreast_duplicate')}
+              maxLength={3}
+              suffix="%"
+              step={5}
+              onChange={(val) => {
+                if (Number.isNaN(val)) return;
+                const newVal = clamp(0, val / 100, 0.95);
+                _setState('option', 'scrollMode', 'abreastDuplicate', newVal);
+              }}
+              value={Math.round(store.option.scrollMode.abreastDuplicate * 100)}
+            />
+          </Show>
+          <Show when={!store.option.scrollMode.abreastMode}>
+            <SettingsItemSwitch
+              name={t('setting.option.fit_to_width')}
+              value={store.option.scrollMode.fitToWidth}
+              onChange={switchFitToWidth}
+            />
+          </Show>
         </Show>
       </>
     ),

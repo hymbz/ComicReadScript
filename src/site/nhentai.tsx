@@ -100,7 +100,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
           window.location.search,
         ).get('q')}&`;
 
-      let observer: IntersectionObserver; // eslint-disable-line prefer-const
+      let observer: IntersectionObserver; // eslint-disable-line no-autofix/prefer-const
 
       const loadNewComic = singleThreaded(async (): Promise<void> => {
         pageNum += 1;

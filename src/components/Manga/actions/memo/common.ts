@@ -3,7 +3,15 @@ import { createRootMemo, createThrottleMemo } from 'helper/solidJs';
 import { store } from '../../store';
 import { findFillIndex } from '../../handleComicData';
 
-import { rootSize } from './observer';
+/** 当前是否为并排卷轴模式 */
+export const isAbreastMode = createRootMemo(
+  () => store.option.scrollMode.enabled && store.option.scrollMode.abreastMode,
+);
+
+/** 当前是否为普通卷轴模式 */
+export const isScrollMode = createRootMemo(
+  () => store.option.scrollMode.enabled && !store.option.scrollMode.abreastMode,
+);
 
 /** 是否为单页模式 */
 export const isOnePageMode = createRootMemo(
@@ -61,35 +69,7 @@ export const placeholderSize = createThrottleMemo(
   500,
 );
 
-/** 每张图片的高度 */
-export const imgHeightList = createRootMemo(() =>
-  store.option.scrollMode.enabled
-    ? store.imgList.map((img) => {
-        let height = img.height ?? placeholderSize().height;
-        const width = img.width ?? placeholderSize().width;
-        if (store.option.scrollMode.fitToWidth)
-          return height * (rootSize().width / width);
-        if (width > rootSize().width) height *= rootSize().width / width;
-        return height * store.option.scrollMode.imgScale;
-      })
-    : [],
-);
-
-/** 卷轴模式下每张图片的位置 */
-export const imgTopList = createRootMemo(() => {
-  if (!store.option.scrollMode.enabled) return [];
-
-  const list = Array.from<number>({ length: imgHeightList().length });
-  let top = 0;
-  for (let i = 0; i < imgHeightList().length; i++) {
-    list[i] = top;
-    top += imgHeightList()[i] + store.option.scrollMode.spacing * 7;
-  }
-
-  return list;
-});
-
-/** 漫画流的总高度 */
-export const contentHeight = createRootMemo(
-  () => (imgTopList().at(-1) ?? 0) + (imgHeightList().at(-1) ?? 0),
+/** 并排卷轴模式下的列宽度 */
+export const abreastColumnWidth = createRootMemo(
+  () => placeholderSize().width * store.option.scrollMode.imgScale,
 );

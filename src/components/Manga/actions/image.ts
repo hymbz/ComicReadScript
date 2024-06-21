@@ -3,17 +3,21 @@ import { clamp, isEqual, debounce } from 'helper';
 import { autoCloseFill, handleComicData } from '../handleComicData';
 import { type State, store } from '../store';
 
-import { scrollTo, setOption } from './helper';
+import { setOption } from './helper';
 import {
   activeImgIndex,
-  contentHeight,
   isOnePageMode,
   preloadNum,
-  scrollTop,
+  showPageList,
 } from './memo';
+import { saveScrollProgress } from './scroll';
 
 type LoadImgDraft = { editNum: number; loadNum: number };
-const loadImg = (state: State, index: number, draft: LoadImgDraft) => {
+const loadImg = (
+  state: State,
+  index: number,
+  draft = { editNum: 0, loadNum: 1 } as LoadImgDraft,
+) => {
   if (index === -1) return false;
   const img = state.imgList[index];
   if (!img?.src) return false;
@@ -41,34 +45,38 @@ const loadPageImg = (
   loadNum = 2,
 ) => {
   const draft: LoadImgDraft = { editNum: 0, loadNum };
-  const targetPage = state.activePageIndex + loadPageNum;
+  const targetPageIndex = state.option.scrollMode.enabled
+    ? showPageList().at(-1) ?? state.activePageIndex
+    : state.activePageIndex;
+  const targetPage = targetPageIndex + loadPageNum;
 
-  if (targetPage < state.activePageIndex) {
+  if (targetPage < targetPageIndex) {
     const end = Math.max(0, targetPage);
-    for (let i = state.activePageIndex; i >= end; i--)
+    for (let i = targetPageIndex; i >= end; i--)
       if (loadPage(state, i, draft)) break;
   } else {
     const end = Math.min(state.pageList.length, targetPage);
-    for (let i = state.activePageIndex; i < end; i++)
+    for (let i = targetPageIndex; i < end; i++)
       if (loadPage(state, i, draft)) break;
   }
 
   return draft.editNum > 0;
 };
 
+/** 在卷轴模式下进行缩放，并且保持滚动进度不变 */
 export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
-  const oldHeight = contentHeight();
-  const oldScrollTop = scrollTop();
-
+  const jump = saveScrollProgress();
   setOption((draftOption) => {
     const newVal = set
       ? zoomLevel
       : store.option.scrollMode.imgScale + zoomLevel;
     draftOption.scrollMode.imgScale = clamp(0.1, Number(newVal.toFixed(2)), 3);
   });
+  jump();
 
-  // 在卷轴模式下缩放时保持滚动进度不变
-  scrollTo(oldScrollTop ? (oldScrollTop / oldHeight) * contentHeight() : 0);
+  // 并排卷轴模式下并没有一个明确直观的滚动进度，
+  // 也想不出有什么实现效果能和普通卷轴模式的效果一致,
+  // 所以就摆烂不管了，反正现在这样也已经能避免乱跳了
 };
 
 /** 根据当前页数更新所有图片的加载状态 */
@@ -80,9 +88,12 @@ export const updateImgLoadType = debounce((state: State) => {
       state.imgList[i].loadType = 'wait';
   }
 
+  // 优先加载当前显示的图片
+  if (state.option.scrollMode.enabled) {
+    for (const index of showPageList()) if (loadImg(state, index)) return true;
+  } else if (loadPageImg(state, 1)) return true;
+
   return (
-    // 优先加载当前显示页
-    loadPageImg(state, 1) ||
     // 再加载后面几页
     loadPageImg(state, preloadNum().back) ||
     // 再加载前面几页

@@ -5,27 +5,32 @@ import { log } from './logger';
 
 import { byPath } from '.';
 
-/** 重命名配置项 */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const renameOption = async (name: string, list: string[]) => {
+const migrationOption = async (
+  name: string,
+  editFn: (option: Record<any, any>, save: () => Promise<void>) => unknown,
+) => {
   try {
     const option = await GM.getValue<object>(name);
     if (!option) throw new Error(`GM.getValue Error: not found ${name}`);
-
-    for (let i = list.length - 1; i; i--) {
-      const [path, newName] = list[i].split(' => ');
-      byPath(option, path, (parent, key) => {
-        log('rename Option', list[i]);
-        Reflect.set(parent, newName, parent[key]);
-        Reflect.deleteProperty(parent, key);
-      });
-    }
-
-    await GM.setValue(name, option);
+    await editFn(option, () => GM.setValue(name, option));
   } catch (error) {
     log.error(`migration ${name} option error:`, error);
   }
 };
+
+/** 重命名配置项 */
+export const renameOption = async (name: string, list: string[]) =>
+  migrationOption(name, (option, save) => {
+    for (const itemText of list) {
+      const [path, newName] = itemText.split(' => ');
+      byPath(option, path, (parent, key) => {
+        log('rename Option', itemText);
+        if (newName) Reflect.set(parent, newName, parent[key]);
+        Reflect.deleteProperty(parent, key);
+      });
+    }
+    return save();
+  });
 
 /** 旧版本配置迁移 */
 const migration = async () => {
@@ -36,19 +41,30 @@ const migration = async () => {
     switch (key) {
       case 'Version':
       case 'Languages':
-      case 'Hotkeys':
         continue;
-    }
 
-    const saveData = await GM.getValue<any>(key);
-    if (typeof saveData?.option?.scrollMode === 'boolean') {
-      saveData.option.scrollMode = {
-        enabled: saveData.option.scrollMode,
-        spacing: saveData.option.scrollModeSpacing,
-        imgScale: saveData.option.scrollModeImgScale,
-        fitToWidth: saveData.option.scrollModeFitToWidth,
-      };
-      await GM.setValue(key, saveData);
+      case 'Hotkeys': {
+        await renameOption(key, [
+          // 原本上下快捷键是混在一起的，现在分开后要迁移太麻烦了，应该也没多少人改，就直接删了
+          'turn_page_up => ',
+          'turn_page_down => ',
+          'turn_page_right => scroll_right',
+          'turn_page_left => scroll_left',
+        ]);
+        break;
+      }
+
+      default:
+        await migrationOption(key, (option, save) => {
+          if (typeof option.option?.scrollMode !== 'boolean') return;
+          option.option.scrollMode = {
+            enabled: option.option.scrollMode,
+            spacing: option.option.scrollModeSpacing,
+            imgScale: option.option.scrollModeImgScale,
+            fitToWidth: option.option.scrollModeFitToWidth,
+          };
+          return save();
+        });
     }
   }
 };

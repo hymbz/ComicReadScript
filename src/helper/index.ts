@@ -102,12 +102,10 @@ export const getMostItem = <T>(list: T[]) => {
   )[0];
 };
 
-/** 将数组扩充到指定长度，不足项用空字符串补足 */
-export const createFillImgList = (imgList: string[], length: number) =>
-  [
-    ...imgList,
-    ...Array.from({ length: length - imgList.length }).fill(''),
-  ] as string[];
+/** 创建顺序数组 */
+export const createSequence = (length: number) => [
+  ...Array.from({ length }).keys(),
+];
 
 /** 判断字符串是否为 URL */
 export const isUrl = (text: string) => {

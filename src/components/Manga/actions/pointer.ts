@@ -1,21 +1,16 @@
-import { approx, debounce } from 'helper';
+import { debounce } from 'helper';
 
 import { type Area } from '../components/TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
 import { type UseDrag } from '../hooks/useDrag';
 import { store, setState, refs } from '../store';
 
-import { resetUI, scrollTo } from './helper';
-import { imgPageMap, imgTopList, rootSize } from './memo';
+import { resetUI } from './helper';
+import { imgPageMap, rootSize } from './memo';
 import { resetPage } from './show';
 import { zoom } from './zoom';
-import {
-  turnPageFn,
-  turnPageAnimation,
-  turnPage,
-  isBottom,
-  isTop,
-} from './turnPage';
+import { turnPageFn, turnPageAnimation, turnPage } from './turnPage';
+import { isBottom, isTop, scrollViewImg } from './scroll';
 
 /** 根据坐标判断点击的元素 */
 const findClickEle = <T extends Element>(
@@ -59,7 +54,7 @@ export const handleGridClick = (e: MouseEvent) => {
     state.activePageIndex = pageNum;
     state.gridMode = false;
   });
-  if (store.option.scrollMode.enabled) scrollTo(imgTopList()[pageNum]);
+  scrollViewImg(pageNum);
 };
 
 /** 双击放大 */
@@ -161,8 +156,10 @@ export const handleMangaFlowDrag: UseDrag = ({
 
       // 判断滑动方向
       let slideDir: 'vertical' | 'horizontal' | undefined;
-      if (Math.abs(dx) > 5 && approx(dy, 0, 5)) slideDir = 'horizontal';
-      if (Math.abs(dy) > 5 && approx(dx, 0, 5)) slideDir = 'vertical';
+      const dxAbs = Math.abs(dx);
+      const dyAbs = Math.abs(dy);
+      if (dxAbs > 5 && dyAbs < 5) slideDir = 'horizontal';
+      if (dyAbs > 5 && dxAbs < 5) slideDir = 'vertical';
       if (!slideDir) return;
 
       setState((state) => {
@@ -201,7 +198,7 @@ export const handleTrackpadWheel = (e: WheelEvent) => {
   if (store.option.scrollMode.enabled) {
     if (
       time > 200 &&
-      ((isTop(store) && e.deltaY < 0) || (isBottom(store) && e.deltaY > 0))
+      ((isTop() && e.deltaY < 0) || (isBottom() && e.deltaY > 0))
     )
       turnPage(e.deltaY > 0 ? 'next' : 'prev');
     return;
@@ -220,7 +217,7 @@ export const handleTrackpadWheel = (e: WheelEvent) => {
 
   setState((state) => {
     // 滚动至漫画头尾尽头时
-    if ((isTop(state) && dy > 0) || (isBottom(state) && dy < 0)) {
+    if ((isTop() && dy > 0) || (isBottom() && dy < 0)) {
       if (time > 200) turnPageFn(state, dy < 0 ? 'next' : 'prev');
       dy = 0;
     }

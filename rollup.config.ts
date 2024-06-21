@@ -25,8 +25,6 @@ const DEV_PORT = 2405;
 
 const isDevMode = process.env.NODE_ENV === 'development';
 
-const { meta, createMetaHeader } = getMetaData(isDevMode);
-
 const latestChangeHtml = await (() => {
   const md = fs
     .readFileSync(resolve(__dirname, `docs/.other/LatestChange.md`))
@@ -54,6 +52,10 @@ const latestChangeHtml = await (() => {
 
   return parseMd(newMd);
 })();
+
+const { meta, createMetaHeader } = getMetaData(isDevMode);
+
+const generateScopedName = '[local]';
 
 export const buildOptions = (
   fileName: string,
@@ -86,7 +88,10 @@ export const buildOptions = (
       json({ namedExports: false, indent: '  ' }),
       nodeResolve({ browser: true, extensions: ['.js', '.ts', '.tsx'] }),
       commonjs(),
-      styles({ mode: 'extract', modules: true }),
+      styles({
+        mode: 'extract',
+        modules: { generateScopedName },
+      }),
 
       solidSvg() as InputPluginOption,
       babel({
@@ -161,6 +166,7 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
   // 创建一个 dist 文件夹的文件服务器，用于在浏览器获取最新的脚本代码
   const server = await createServer({
     root: resolve(__dirname, 'src'),
+    css: { modules: { generateScopedName } },
     server: {
       host: true,
       port: DEV_PORT,

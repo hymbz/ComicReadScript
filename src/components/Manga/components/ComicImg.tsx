@@ -6,6 +6,7 @@ import {
   createMemo,
   onCleanup,
   onMount,
+  For,
 } from 'solid-js';
 import { inRange, singleThreaded, wait } from 'helper';
 import { t } from 'helper/i18n';
@@ -18,18 +19,16 @@ import {
   getImgTip,
   imgPageMap,
   imgShowState,
-  placeholderSize,
+  isAbreastMode,
   renderImgRange,
   showImgList,
   updateImgLoadType,
   updateImgSize,
+  abreastArea,
+  getImgType,
+  placeholderSize,
 } from '../actions';
 import classes from '../index.module.css';
-
-export interface ComicImgProps {
-  index: number;
-  fill?: undefined | 'left' | 'right';
-}
 
 /** 图片加载完毕的回调 */
 const handleImgLoaded = (i: number, e: HTMLImageElement) => {
@@ -58,6 +57,12 @@ const handleImgError = (i: number, e: HTMLImageElement) => {
     // 首次失败自动重试一次
     img.loadType = errorNum === 0 ? 'loading' : 'error';
     errorNumMap.set(img.src, errorNum + 1);
+
+    if (store.flag.autoScrollMode) img.type = 'vertical';
+    else if (store.flag.autoWide) img.type = 'wide';
+    else if (store.flag.autoLong) img.type = 'long';
+    else getImgType(placeholderSize());
+
     updateImgLoadType(state);
     if (e) log.error(t('alert.img_load_failed'), e);
     state.prop.Loading?.(state.imgList, img);
@@ -86,12 +91,7 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     return img.src;
   });
 
-  const size = createMemo(() => (img?.width ? img : placeholderSize()));
-
   const style = createMemoMap<JSX.CSSProperties>({
-    'grid-area': () => `_${img.index}`,
-    '--width': () => `${size().width}px`,
-    'aspect-ratio': () => `${size().width} / ${size().height}`,
     'box-shadow'() {
       if (!store.gridMode || !activePage().includes(img.index))
         return undefined;
@@ -124,28 +124,52 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     }),
   );
 
-  return (
+  const cloneNum = createMemo(() => {
+    if (!isAbreastMode()) return 0;
+
+    const imgPosition = abreastArea().position[img.index];
+    if (!imgPosition) return 0;
+    return imgPosition.length - 1;
+  });
+
+  const _ComicImg: Component<{ cloneIndex?: number }> = (props) => (
     <picture
       class={classes.img}
       style={style()}
+      data-index={
+        props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index
+      }
       data-show={show() ? imgShowState()[img.index] ?? '' : undefined}
       data-type={img?.type || undefined}
       data-load-type={img?.loadType === 'loaded' ? undefined : img?.loadType}
     >
-      <img
-        ref={ref!}
-        src={src()}
-        alt={`${img.index}`}
-        onLoad={(e) => handleImgLoaded(img.index, e.currentTarget)}
-        onError={(e) => handleImgError(img.index, e.currentTarget)}
-        draggable="false"
-      />
-      <Show when={store.gridMode}>
-        <div
-          class={classes.gridModeTip}
-          children={store.gridMode ? getImgTip(img.index) : ''}
+      <Show when={props.cloneIndex === undefined || img.loadType === 'loaded'}>
+        <img
+          ref={ref!}
+          src={src()}
+          alt={`${img.index}`}
+          onLoad={(e) => handleImgLoaded(img.index, e.currentTarget)}
+          onError={(e) => handleImgError(img.index, e.currentTarget)}
+          draggable="false"
         />
+        <Show when={store.gridMode}>
+          <div
+            class={classes.gridModeTip}
+            children={store.gridMode ? getImgTip(img.index) : ''}
+          />
+        </Show>
       </Show>
     </picture>
+  );
+
+  return (
+    <>
+      <_ComicImg />
+      <Show when={!store.gridMode && show() && cloneNum() > 0}>
+        <For each={Array.from({ length: cloneNum() })}>
+          {(_, i) => <_ComicImg cloneIndex={i() + 1} />}
+        </For>
+      </Show>
+    </>
   );
 };

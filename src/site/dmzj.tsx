@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { For } from 'solid-js';
 import { render } from 'solid-js/web';
 import {

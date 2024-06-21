@@ -3,8 +3,14 @@ import { inRange } from 'helper';
 import { createEffectOn, createRootMemo } from 'helper/solidJs';
 
 import { type State, setState, store } from '../../store';
+import {
+  abreastArea,
+  abreastContentWidth,
+  abreastScrollFill,
+  abreastShowColumn,
+} from '../abreastScroll';
 
-import { contentHeight, imgTopList } from './common';
+import { contentHeight, imgTopList } from './img';
 import { rootSize, scrollTop } from './observer';
 
 const [renderRangeStart, setRenderRangeStart] = createSignal(0);
@@ -24,7 +30,21 @@ export const updateRenderRange = (state: State) => {
   let startPage: number | undefined;
   let endPage: number | undefined;
 
-  if (state.option.scrollMode.enabled) {
+  if (!state.option.scrollMode.enabled) {
+    startPage = Math.max(0, state.activePageIndex - 1);
+    endPage = Math.min(state.pageList.length - 1, state.activePageIndex + 2);
+  } else if (state.option.scrollMode.abreastMode) {
+    if (abreastContentWidth() === 0) {
+      startPage = 0;
+      endPage = 1;
+    } else {
+      startPage = abreastArea().columns[abreastShowColumn().start][0];
+      if (abreastShowColumn().start === 0 && abreastScrollFill() < 0)
+        startPage -= Math.ceil(abreastScrollFill() / rootSize().height);
+      endPage = abreastArea().columns[abreastShowColumn().end]?.at(-1);
+    }
+  } else {
+    // eslint-disable-next-line no-lonely-if
     if (contentHeight() === 0) {
       startPage = 0;
       endPage = 1;
@@ -37,9 +57,6 @@ export const updateRenderRange = (state: State) => {
           ? imgTopList().length - 1
           : findTopImg(startPage, bottom);
     }
-  } else {
-    startPage = Math.max(0, state.activePageIndex - 1);
-    endPage = Math.min(state.pageList.length - 1, state.activePageIndex + 2);
   }
 
   startPage ||= 0;
@@ -65,6 +82,8 @@ createRoot(() => {
     startImgBootom = getImgBottom(renderRangeStart());
     endImgTop = imgTopList()[renderRangeEnd()];
   });
+
+  createEffectOn(abreastShowColumn, () => setState(updateRenderRange));
 });
 
 /** 渲染图片的范围 */

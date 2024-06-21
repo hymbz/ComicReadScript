@@ -1,31 +1,36 @@
-import { approx } from 'helper';
-
 import type { UseDrag } from '../hooks/useDrag';
-import { refs } from '../store';
+import { refs, store } from '../store';
 
-import { scrollTo } from './helper';
 import { scrollTop } from './memo';
+import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
+import { scrollTo } from './scroll';
 
 /** 摩擦系数 */
 const FRICTION_COEFF = 0.96;
 
 let lastTop = 0;
 let dy = 0;
+let lastLeft = 0;
+let dx = 0;
 let animationId: number | null = null;
 let lastTime: DOMHighResTimeStamp = 0;
 
 /** 逐帧计算速率 */
 const calcVelocity = () => {
-  const nowTop = scrollTop();
+  const nowTop = store.option.scrollMode.abreastMode
+    ? abreastScrollFill()
+    : scrollTop();
   dy = nowTop - lastTop;
   lastTop = nowTop;
+  dx = store.page.offset.x.px - lastLeft;
+  lastLeft = store.page.offset.x.px;
   animationId = requestAnimationFrame(calcVelocity);
 };
 
 /** 逐帧计算惯性滑动 */
 const handleSlide = (timestamp: DOMHighResTimeStamp) => {
   // 当速率足够小时停止计算动画
-  if (approx(dy, 0, 1)) {
+  if (Math.abs(dx) + Math.abs(dy) < 1) {
     animationId = null;
     return;
   }
@@ -33,17 +38,23 @@ const handleSlide = (timestamp: DOMHighResTimeStamp) => {
   // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
   if (timestamp - lastTime > 16) {
     dy *= FRICTION_COEFF;
+    dx *= FRICTION_COEFF;
     lastTime = timestamp;
   }
 
-  scrollTo(scrollTop() + dy);
+  if (store.option.scrollMode.abreastMode) {
+    scrollTo(scrollTop() + dx);
+    setAbreastScrollFill(abreastScrollFill() + dy);
+  } else scrollTo(scrollTop() + dy);
   animationId = requestAnimationFrame(handleSlide);
 };
 
 let initTop = 0;
+let initLeft = 0;
+let initAbreastScrollFill = 0;
 
 export const handleScrollModeDrag: UseDrag = (
-  { type, xy: [, y], initial: [, iy] },
+  { type, xy: [x, y], initial: [ix, iy] },
   e,
 ) => {
   if (e.pointerType !== 'mouse') return;
@@ -51,12 +62,20 @@ export const handleScrollModeDrag: UseDrag = (
     case 'down': {
       if (animationId) cancelAnimationFrame(animationId);
       initTop = refs.mangaBox.scrollTop;
+      initLeft = store.page.offset.x.px * (store.option.dir === 'rtl' ? 1 : -1);
+      initAbreastScrollFill = abreastScrollFill();
       requestAnimationFrame(calcVelocity);
       return;
     }
 
     case 'move': {
-      scrollTo(initTop + iy - y);
+      if (store.option.scrollMode.abreastMode) {
+        const dx = x - ix;
+        const dy = y - iy;
+
+        scrollTo((initLeft + dx) * (store.option.dir === 'rtl' ? 1 : -1));
+        setAbreastScrollFill(initAbreastScrollFill + dy);
+      } else scrollTo(initTop + iy - y);
       return;
     }
 

@@ -23,6 +23,7 @@ import {
   switchGridMode,
   switchTranslation,
   isTranslatingImage,
+  isOnePageMode,
 } from './actions';
 import classes from './index.module.css';
 
@@ -43,7 +44,7 @@ export const defaultButtonList: ToolbarButtonList = [
           ? t('button.page_mode_single')
           : t('button.page_mode_double')
       }
-      hidden={store.isMobile || store.option.scrollMode.enabled}
+      hidden={isOnePageMode()}
       onClick={switchOnePageMode}
       children={store.option.onePageMode ? <MdLooksOne /> : <MdLooksTwo />}
     />
@@ -62,11 +63,7 @@ export const defaultButtonList: ToolbarButtonList = [
     <IconButton
       tip={t('button.page_fill')}
       enabled={Boolean(store.fillEffect[nowFillIndex()])}
-      hidden={
-        store.isMobile ||
-        store.option.onePageMode ||
-        store.option.scrollMode.enabled
-      }
+      hidden={isOnePageMode()}
       onClick={switchFillEffect}
       children={<MdQueue />}
     />

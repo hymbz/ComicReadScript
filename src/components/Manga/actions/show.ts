@@ -55,6 +55,7 @@ export const getPageTip = (pageIndex: number): string => {
   const pageIndexText = page.map((index) => getImgTip(index)) as
     | [string]
     | [string, string];
+  if (pageIndexText.length === 1) return pageIndexText[0];
   if (store.option.dir === 'rtl') pageIndexText.reverse();
   return pageIndexText.join(store.option.scrollMode.enabled ? '\n' : ' | ');
 };

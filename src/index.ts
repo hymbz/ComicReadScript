@@ -56,9 +56,9 @@ try {
           dynamicUpdate(
             async (setImg) =>
               main.plimit(
-                [...Array.from({ length: totalPageNum }).keys()].map(
-                  (i) => async () => setImg(i, await getImg(i + 1)),
-                ),
+                main
+                  .createSequence(totalPageNum)
+                  .map((i) => async () => setImg(i, await getImg(i + 1))),
                 (doneNum, totalNum) => {
                   setFab({
                     progress: doneNum / totalNum,
@@ -177,7 +177,7 @@ try {
             throw new Error('获取图片列表时出错');
 
           return main.plimit<string>(
-            [...Array.from({ length: pageList.length }).keys()].map(getImgUrl),
+            main.createSequence(pageList.length).map(getImgUrl),
             (doneNum, totalNum) => {
               setFab({
                 progress: doneNum / totalNum,

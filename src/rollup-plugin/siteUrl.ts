@@ -3,7 +3,7 @@ import type { OutputPluginOption } from 'rollup';
 
 const siteUrlFnMap = {
   async jm() {
-    const res = await axios<string>('https://jmcomic-fb.vip');
+    const res = await axios<string>('https://jmcomic1.ltd');
     return [
       ...res.data
         .replaceAll('&nbsp;', '')

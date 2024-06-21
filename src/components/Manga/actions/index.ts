@@ -11,3 +11,6 @@ export * from './switch';
 export * from './turnPage';
 export * from './zoom';
 export * from './scrollModeDrag';
+export * from './abreastScroll';
+export * from './scroll';
+export * from './scroll';

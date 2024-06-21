@@ -6,14 +6,6 @@
 @import "./components/Scrollbar.module.css";
 @import "./components/TouchArea.module.css";
 
-.hidden {
-  display: none !important;
-}
-
-.invisible {
-  visibility: hidden !important;
-}
-
 .root {
   position: relative;
 
@@ -34,6 +26,14 @@
   &[data-mobile] {
     font-size: 0.8em;
   }
+}
+
+.hidden {
+  display: none !important;
+}
+
+.invisible {
+  visibility: hidden !important;
 }
 
 .beautifyScrollbar {

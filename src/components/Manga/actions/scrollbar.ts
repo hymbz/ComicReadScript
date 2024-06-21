@@ -5,30 +5,21 @@ import { createEffectOn, createRootMemo } from 'helper/solidJs';
 import { type PointerState, type UseDrag } from '../hooks/useDrag';
 import { type State, store, refs, _setState } from '../store';
 
-import { contentHeight, rootSize, scrollTop } from './memo';
-import { scrollTo } from './helper';
+import { rootSize } from './memo';
+import {
+  scrollLength,
+  scrollPercentage,
+  scrollTo,
+  sliderHeight,
+} from './scroll';
 
-const [_scrollLength, setScrollLength] = createSignal(0);
+const [_scrollDomLength, setScrollDomLength] = createSignal(0);
 /** 滚动条元素的长度 */
-export const scrollLength = _scrollLength;
-
-/** 滚动条滑块长度 */
-export const sliderHeight = createRootMemo(() =>
-  store.option.scrollMode.enabled
-    ? rootSize().height / contentHeight()
-    : 1 / store.pageList.length,
-);
-
-/** 滚动条滑块高度 */
-export const sliderTop = createRootMemo(() =>
-  store.option.scrollMode.enabled
-    ? scrollTop() / contentHeight()
-    : (1 / store.pageList.length) * store.activePageIndex,
-);
+export const scrollDomLength = _scrollDomLength;
 
 /** 滚动条滑块的中心点高度 */
 export const sliderMidpoint = createRootMemo(
-  () => scrollLength() * (sliderTop() + sliderHeight() / 2),
+  () => scrollDomLength() * (scrollPercentage() + sliderHeight() / 2),
 );
 
 /** 滚动条位置 */
@@ -66,9 +57,9 @@ const getSliderDist = (
   switch (scrollPosition()) {
     case 'bottom':
     case 'top':
-      return store.option.dir === 'ltr'
-        ? (x - ix) / e.offsetWidth
-        : (1 - (x - ix)) / e.offsetWidth;
+      return store.option.dir === 'rtl'
+        ? (1 - (x - ix)) / e.offsetWidth
+        : (x - ix) / e.offsetWidth;
 
     default:
       return (y - iy) / e.offsetHeight;
@@ -92,14 +83,15 @@ export const handlescrollbarSlider: UseDrag = ({ type, xy, initial }, e) => {
 
   if (store.option.scrollMode.enabled) {
     if (type === 'move') {
-      scrollTo(
+      const top =
         clamp(0, startTop + getSliderDist(xy, initial, scrollbarDom), 1) *
-          contentHeight(),
-      );
+        scrollLength();
+      scrollTo(top);
     } else {
       // 确保滚动条的中心会在点击位置
       startTop = clickTop - sliderHeight() / 2;
-      scrollTo(startTop * contentHeight(), true);
+      const top = startTop * scrollLength();
+      scrollTo(top, true);
     }
   } else {
     let newPageIndex = Math.floor(clickTop * store.pageList.length);
@@ -120,7 +112,7 @@ createRoot(() => {
     // 部分情况下，在窗口大小改变后滚动条大小不会立刻跟着修改，需要等待一帧渲染
     // 比如打开后台标签页后等一会再切换过去
     requestAnimationFrame(() =>
-      setScrollLength(
+      setScrollDomLength(
         Math.max(refs.scrollbar.clientWidth, refs.scrollbar.clientHeight),
       ),
     );
