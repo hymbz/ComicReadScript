@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         8.10.5
+// @version         8.10.6
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -31,11 +31,11 @@
 // @connect         *
 // @grant           GM_addElement
 // @grant           GM_getResourceText
+// @grant           GM_addStyle
 // @grant           GM_xmlhttpRequest
 // @grant           GM.addValueChangeListener
 // @grant           GM.removeValueChangeListener
 // @grant           GM.getResourceText
-// @grant           GM.addStyle
 // @grant           GM.getValue
 // @grant           GM.setValue
 // @grant           GM.listValues
@@ -67,6 +67,7 @@ const gmApi = {
   GM_addElement: typeof GM_addElement === 'undefined' ? undefined : GM_addElement,
   GM_getResourceText,
   GM_xmlhttpRequest,
+  GM_addStyle,
   unsafeWindow
 };
 const gmApiList = Object.keys(gmApi);
@@ -6269,14 +6270,14 @@ const useInit$1 = props => {
       };
     },
     onExit(state) {
-      state.prop.Exit = props.onExit ? isEnd => {
+      state.prop.Exit = isEnd => {
         playAnimation(refs.exit);
         props.onExit?.(Boolean(isEnd));
         setState(draftState => {
           if (isEnd) draftState.activePageIndex = 0;
           draftState.show.endPage = undefined;
         });
-      } : undefined;
+      };
     },
     onPrev(state) {
       state.prop.Prev = props.onPrev ? throttle(() => {
@@ -6505,7 +6506,7 @@ let dom$1;
  * 显示漫画阅读窗口
  */
 const useManga = async initProps => {
-  await GM.addStyle(\`
+  GM_addStyle(\`
     #comicRead {
       position: fixed;
       top: 0;
@@ -6751,7 +6752,7 @@ const Fab = _props => {
 
 let dom;
 const useFab = async initProps => {
-  await GM.addStyle(\`
+  GM_addStyle(\`
     #fab {
       --text-bg: transparent;
 
@@ -6804,7 +6805,7 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>修复 300 记录阅读进度功能在特定情况下失效的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>兼容 AdGuard </p></li><li><p>修复在动漫之家隐藏漫画上无法显示结束页的 bug\`);
 
 /** 重命名配置项 */
 const renameOption = async (name, list) => {
@@ -7663,7 +7664,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
     固定导航条: true,
     自动签到: true
   });
-  await GM.addStyle(`#fab { --fab: #6E2B19; fab-hover: #A15640; }
+  GM_addStyle(`#fab { --fab: #6E2B19; fab-hover: #A15640; }
 
     ${options.固定导航条 ? '.header-stackup { position: fixed !important }' : ''}
 
@@ -8434,7 +8435,7 @@ const getViewpoint = async (comicId, chapterId) => {
           main.insertNode(document.body, temp);
         });
         document.body.childNodes[0].remove();
-        await GM.addStyle(`
+        GM_addStyle(`
           h1 {
             margin: 0 -20vw;
           }
@@ -8464,7 +8465,7 @@ const getViewpoint = async (comicId, chapterId) => {
       {
         // 如果不是隐藏漫画，直接进入阅读模式
         if (unsafeWindow.comic_id) {
-          await GM.addStyle('.subHeader{display:none !important}');
+          GM_addStyle('.subHeader{display:none !important}');
           await main.universalInit({
             name: 'dmzj',
             getImgList: () => main.querySelectorAll('#commicBox img').map(e => e.dataset.original).filter(Boolean),
@@ -8958,9 +8959,9 @@ const fileType = {
     if (blacklist === undefined) main.toast.error(main.t('site.nhentai.tag_blacklist_fetch_failed'));
     // blacklist === null 时是未登录
 
-    if (options.block_totally && blacklist?.length) await GM.addStyle('.blacklisted.gallery { display: none; }');
+    if (options.block_totally && blacklist?.length) GM_addStyle('.blacklisted.gallery { display: none; }');
     if (options.auto_page_turn) {
-      await GM.addStyle(`
+      GM_addStyle(`
         hr { bottom: 0; box-sizing: border-box; margin: -1em auto 2em; }
         hr:last-child { position: relative; animation: load .8s linear alternate infinite; }
         hr:not(:last-child) { display: none; }
@@ -9292,7 +9293,9 @@ const main = require('main');
 
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic.me':
-    case '18-comicblade.org':
+    case '18-comicfrieren.xyz':
+    case '18-comicblade.vip':
+    case '18-comicfrieren.me':
     case '18comic.org':
     case '18comic.vip':
       {
@@ -9411,7 +9414,7 @@ const main = require('main');
         }
 
         // 让切换章节的提示可以显示在漫画页上
-        GM.addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
+        GM_addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
         const handlePrevNext = cid => {
           if (cid === 0) return undefined;
           const newUrl = window.location.pathname.replace(/(?<=\/)\d+(?=\.html)/, `${cid}`);
