@@ -13,4 +13,6 @@ export * from './zoom';
 export * from './scrollModeDrag';
 export * from './abreastScroll';
 export * from './scroll';
-export * from './scroll';
+export * from './imageLoad';
+export * from './imageType';
+export * from './renderPage';

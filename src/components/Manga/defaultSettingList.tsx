@@ -15,10 +15,9 @@ import {
   setOption,
   switchDir,
   switchFitToWidth,
-  updateImgLoadType,
   zoomScrollModeImg,
 } from './actions';
-import { _setState, setState, store } from './store';
+import { _setState, store } from './store';
 import classes from './index.module.css';
 import { SettingsItemNumber } from './components/SettingsItemNumber';
 import { areaArrayMap } from './components/TouchArea';
@@ -213,12 +212,7 @@ export const defaultSettingList: () => SettingList = () => [
         <SettingsItemSwitch
           name={t('setting.option.always_load_all_img')}
           value={store.option.alwaysLoadAllImg}
-          onChange={(val) => {
-            setOption((draftOption) => {
-              draftOption.alwaysLoadAllImg = val;
-            });
-            setState(updateImgLoadType);
-          }}
+          onChange={createStateSetFn('alwaysLoadAllImg')}
         />
 
         <SettingsItemSwitch

@@ -32,7 +32,6 @@ export const t = createRoot(() => {
     }
   });
 
-  // eslint-disable-next-line solid/reactivity
   return (keys: string, variables?: Record<string, unknown>) => {
     let text = byPath<string>(locales(), keys) ?? '';
     if (variables)

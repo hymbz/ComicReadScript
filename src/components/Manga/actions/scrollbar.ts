@@ -22,6 +22,11 @@ export const sliderMidpoint = createRootMemo(
   () => scrollDomLength() * (scrollPercentage() + sliderHeight() / 2),
 );
 
+/** 滚动条滑块的位置 */
+export const sliderTop = createRootMemo(
+  () => `${scrollPercentage() * scrollDomLength()}px`,
+);
+
 /** 滚动条位置 */
 export const scrollPosition = createRootMemo(
   (): State['option']['scrollbar']['position'] => {

@@ -9,8 +9,6 @@ export const [_state, _setState] = createStore({
 export type State = typeof _state;
 
 export const setState = (fn: (state: State) => void) => _setState(produce(fn));
-
-// eslint-disable-next-line solid/reactivity
 export const store: Readonly<State> = _state;
 
 export const creatId = (): string => {

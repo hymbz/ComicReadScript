@@ -210,9 +210,7 @@
   overflow: auto;
 
   & .mangaFlow {
-    display: flex;
-    flex-direction: column;
-    height: fit-content;
+    grid-row-gap: calc(var(--scroll-mode-spacing) * 7px);
 
     & .img[data-show] {
       display: block;
@@ -226,10 +224,6 @@
 
       &[data-load-type="loading"] {
         position: unset;
-      }
-
-      &:not(:first-of-type) {
-        margin-top: calc(var(--scroll-mode-spacing) * 7px);
       }
     }
 
@@ -245,14 +239,15 @@
       max-width: 100%;
       height: auto;
     }
+  }
 
-    &[data-abreast-scroll] {
+  &[data-abreast-scroll] {
+    overflow: hidden;
+
+    .mangaFlow {
       transform: translate(var(--page-x), var(--page-y)) translateZ(0);
-
-      display: grid;
       grid-column-gap: calc(var(--scroll-mode-spacing) * 7px);
       align-items: start;
-
       height: 100%;
 
       & > div {

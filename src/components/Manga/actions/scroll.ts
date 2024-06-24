@@ -8,31 +8,26 @@ import {
   abreastContentWidth,
   abreastArea,
 } from './abreastScroll';
-import {
-  isScrollMode,
-  contentHeight,
-  isAbreastMode,
-  scrollTop,
-  rootSize,
-  imgTopList,
-  abreastColumnWidth,
-} from './memo';
+import { isScrollMode, isAbreastMode, abreastColumnWidth } from './memo/common';
+import { contentHeight, imgTopList } from './imageSize';
+import { scrollTop, rootSize } from './memo/observer';
+import { setOption } from './helper';
 
-/** 滚动条的长度 */
+/** 滚动内容的长度 */
 export const scrollLength = createRootMemo(() => {
   if (isScrollMode()) return contentHeight();
   if (isAbreastMode()) return abreastContentWidth();
   return store.pageList.length;
 });
 
-/** 滚动条的滚动进度 */
+/** 滚动内容的滚动进度 */
 export const scrollProgress = createRootMemo(() => {
   if (isScrollMode()) return scrollTop();
   if (isAbreastMode()) return store.page.offset.x.px;
   return store.activePageIndex;
 });
 
-/** 滚动条的滚动进度百分比 */
+/** 滚动内容的滚动进度百分比 */
 export const scrollPercentage = createRootMemo(
   () => scrollProgress() / scrollLength(),
 );
@@ -78,4 +73,20 @@ export const scrollViewImg = (i: number) => {
     );
     scrollTo(columnNum * abreastColumnWidth());
   } else scrollTo(imgTopList()[i]);
+};
+
+/** 在卷轴模式下进行缩放，并且保持滚动进度不变 */
+export const zoomScrollModeImg = (zoomLevel: number, set = false) => {
+  const jump = saveScrollProgress();
+  setOption((draftOption) => {
+    const newVal = set
+      ? zoomLevel
+      : store.option.scrollMode.imgScale + zoomLevel;
+    draftOption.scrollMode.imgScale = clamp(0.1, Number(newVal.toFixed(2)), 3);
+  });
+  jump();
+
+  // 并排卷轴模式下并没有一个明确直观的滚动进度，
+  // 也想不出有什么实现效果能和普通卷轴模式的效果一致,
+  // 所以就摆烂不管了，反正现在这样也已经能避免乱跳了
 };

@@ -18,14 +18,13 @@ import {
   handlescrollbarSlider,
   sliderMidpoint,
   sliderHeight,
-  scrollPercentage,
-  showPageList,
   scrollDomLength,
   isScrollMode,
   isOnePageMode,
   abreastShowColumn,
   isAbreastMode,
   abreastArea,
+  sliderTop,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -69,15 +68,15 @@ export const Scrollbar: Component = () => {
 
   /** 滚动条提示文本 */
   const tipText = createThrottleMemo(() => {
-    switch (showPageList().length) {
-      case 0:
-        return '';
-      case 1:
-        return getPageTip(showPageList()[0]);
-    }
+    if (store.showRange[0] === store.showRange[1])
+      return getPageTip(store.showRange[0]);
 
     if (isAbreastMode()) return abreastShowTip();
-    const tipList = showPageList().map((i) => getPageTip(i));
+
+    const tipList: string[] = [];
+    for (let i = store.showRange[0]; i <= store.showRange[1]; i++)
+      tipList.push(getPageTip(i));
+
     if (isOnePageMode()) return tipList.join('\n');
     if (tipList.length === 1) return tipList[0];
     if (store.option.dir === 'rtl') tipList.reverse();
@@ -90,7 +89,7 @@ export const Scrollbar: Component = () => {
     '--scroll-length': () => `${scrollDomLength()}px`,
     '--slider-midpoint': () => `${sliderMidpoint()}px`,
     '--slider-height': () => `${sliderHeight() * scrollDomLength()}px`,
-    '--slider-top': () => `${scrollPercentage() * scrollDomLength()}px`,
+    '--slider-top': sliderTop,
   });
 
   return (

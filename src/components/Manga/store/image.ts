@@ -6,6 +6,9 @@ declare global {
     width?: number;
     height?: number;
 
+    size: { height: number; width: number };
+    dom?: HTMLImageElement;
+
     translationUrl?: string;
     translationMessage?: string;
     translationType?: 'wait' | 'show' | 'hide' | 'error';
@@ -29,4 +32,8 @@ export const imgState = {
     横幅比例: 0,
     条漫比例: 0,
   },
+
+  showRange: [0, 0] as [number, number],
+  renderRange: [0, 0] as [number, number],
+  loadingRange: [0, 0] as [number, number],
 };

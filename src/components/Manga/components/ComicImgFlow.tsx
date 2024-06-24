@@ -1,4 +1,4 @@
-import { type Component, Show, createMemo, onMount, Index } from 'solid-js';
+import { type Component, Show, createMemo, onMount, For } from 'solid-js';
 import { boolDataVal, createSequence } from 'helper';
 import { createEffectOn } from 'helper/solidJs';
 
@@ -14,11 +14,8 @@ import {
   handleMangaFlowDrag,
   handleScrollModeDrag,
   touches,
-  initIntersectionObserver,
   bound,
   imgTopList,
-  contentHeight,
-  renderRange,
   bindScrollTop,
   scrollTo,
   scrollTop,
@@ -30,6 +27,8 @@ import {
   abreastColumnWidth,
   abreastArea,
   imgAreaStyle,
+  renderImgList,
+  contentHeight,
 } from '../actions';
 import classes from '../index.module.css';
 import { useStyle, useStyleMemo } from '../hooks/useStyle';
@@ -53,7 +52,6 @@ export const ComicImgFlow: Component = () => {
   onMount(() => {
     useDrag({ ref: refs.mangaBox, handleDrag, handleClick, touches });
     bindScrollTop(refs.mangaBox);
-    initIntersectionObserver(refs.mangaBox);
   });
 
   const handleTransitionEnd = () => {
@@ -65,9 +63,7 @@ export const ComicImgFlow: Component = () => {
   };
 
   /** 卷轴模式下当前显示页之前未渲染页的总高度 */
-  const scrollModeFill = createMemo(
-    () => imgTopList()[renderRange.start()] ?? 0,
-  );
+  const scrollModeFill = createMemo(() => imgTopList()[store.showRange[0]]);
 
   /** 在当前页之前有图片被加载出来，导致内容高度发生变化后，重新滚动页面，确保当前显示位置不变 */
   createEffectOn(
@@ -86,20 +82,27 @@ export const ComicImgFlow: Component = () => {
       .map((i) => (i === -1 ? '.' : `_${i}`))
       .join(' ')}`;
   const gridAreas = createMemo(() => {
+    if (store.pageList.length === 0) return undefined;
+
     if (store.gridMode) {
       const columnNum = isOnePageMode() ? 5 : 3;
       const areaList: string[][] = [[]];
-      store.pageList.forEach((page) => {
+      for (const page of store.pageList) {
         if (areaList.at(-1)!.length === columnNum) areaList.push([]);
         areaList.at(-1)!.push(pageToText(page));
-      });
+      }
       while (areaList.at(-1)!.length !== columnNum)
         areaList.at(-1)!.push('. .');
-      return areaList.map((line) => `"${line.join(' ')}"`).join('\n');
+      return (
+        areaList.map((line) => `"${line.join(' ')}"`).join('\n') || undefined
+      );
     }
 
     if (store.option.scrollMode.enabled) {
-      if (!store.option.scrollMode.abreastMode) return '';
+      if (!store.option.scrollMode.abreastMode)
+        return createSequence(store.imgList.length)
+          .map((i) => `"_${i}"`)
+          .join('\n');
       return `"${createSequence(abreastArea().columns.length)
         .map((i) => `_${i}`)
         .join(' ')}"`;
@@ -107,11 +110,11 @@ export const ComicImgFlow: Component = () => {
 
     return store.page.vertical
       ? store.pageList
-          .slice(renderRange.start(), renderRange.end() + 1)
+          .slice(store.renderRange[0], store.renderRange[1] + 1)
           .map((page) => `"${pageToText(page)}"`)
           .join('\n')
       : `"${store.pageList
-          .slice(renderRange.start(), renderRange.end() + 1)
+          .slice(store.renderRange[0], store.renderRange[1] + 1)
           .map(pageToText)
           .join(' ')}"`;
   });
@@ -138,8 +141,6 @@ export const ComicImgFlow: Component = () => {
       if (store.option.scrollMode.enabled)
         return store.option.scrollMode.abreastMode ? 'pan-x' : 'pan-y';
     },
-    height: () =>
-      !store.gridMode && isScrollMode() ? `${contentHeight()}px` : undefined,
     'grid-template-areas': gridAreas,
     'grid-template-columns'() {
       if (store.imgList.length === 0) return undefined;
@@ -148,8 +149,15 @@ export const ComicImgFlow: Component = () => {
       if (isAbreastMode())
         return `repeat(${abreastArea().columns.length}, ${abreastColumnWidth()}px)`;
       if (isScrollMode()) return undefined;
-      return `repeat(${gridAreas().split(' ').length}, 50%)`;
+      return `repeat(${gridAreas()?.split(' ').length ?? 0}, 50%)`;
     },
+    'grid-template-rows'() {
+      if (!isScrollMode()) return undefined;
+      return store.imgList
+        .map(({ size: { height } }) => `${height}px`)
+        .join(' ');
+    },
+    height: () => (isScrollMode() ? `${contentHeight()}px` : undefined),
     '--abreastScrollWidth': () => `${abreastColumnWidth()}px`,
   });
 
@@ -160,6 +168,7 @@ export const ComicImgFlow: Component = () => {
       ref={bindRef('mangaBox')}
       class={`${classes.mangaBox} ${classes.beautifyScrollbar}`}
       tabIndex={-1}
+      data-abreast-scroll={boolDataVal(store.option.scrollMode.abreastMode)}
     >
       <div
         id={classes.mangaFlow}
@@ -175,16 +184,13 @@ export const ComicImgFlow: Component = () => {
         data-animation={store.page.anima}
         data-hidden-mouse={!store.gridMode && hiddenMouse()}
         data-fit-width={boolDataVal(store.option.scrollMode.fitToWidth)}
-        data-abreast-scroll={boolDataVal(store.option.scrollMode.abreastMode)}
         on:mousemove={onMouseMove}
         onTransitionEnd={handleTransitionEnd}
       >
-        <Show when={store.option.scrollMode.enabled}>
-          <span style={{ height: `${scrollModeFill()}px`, 'flex-shrink': 0 }} />
-        </Show>
-        <Index each={store.imgList} fallback={<EmptyTip />}>
-          {(img, i) => <ComicImg index={i} {...img()} />}
-        </Index>
+        <Show when={store.imgList.length === 0} children={<EmptyTip />} />
+        <For each={[...renderImgList().values()]}>
+          {(i) => <ComicImg index={i} {...store.imgList[i]} />}
+        </For>
       </div>
     </div>
   );

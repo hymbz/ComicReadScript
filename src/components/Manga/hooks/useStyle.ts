@@ -35,16 +35,12 @@ export const useStyleMemo = (
   const styleSheet = useStyleSheet();
   styleSheet.insertRule(`${selector} { }`);
 
-  const style = (styleSheet.cssRules[0] as CSSStyleRule).styleMap;
-  const setStyle = (key: string, val?: string | number) => {
-    if (val === undefined || val === '') return style.delete(key);
+  const { style } = styleSheet.cssRules[0] as CSSStyleRule;
+  // 等火狐实现了 CSS Typed OM 后改用 styleMap 性能会更好，也能使用 CSS Typed OM 的 单位
 
-    try {
-      style.set(key, val);
-    } catch {
-      console.error('样式值不合法', key, val);
-      style.delete(key);
-    }
+  const setStyle = (key: string, val?: string | number) => {
+    if (val === undefined || val === '') return style.removeProperty(key);
+    style.setProperty(key, typeof val === 'string' ? val : `${val}`);
   };
 
   for (const styleMap of styleMapList) {

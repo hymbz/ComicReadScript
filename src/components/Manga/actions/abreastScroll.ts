@@ -1,4 +1,4 @@
-import { createRootMemo } from 'helper/solidJs';
+import { createRootMemo, createThrottleMemo } from 'helper/solidJs';
 import { createSignal } from 'solid-js';
 import { clamp } from 'helper';
 
@@ -7,7 +7,6 @@ import { store } from '../store';
 
 import { abreastColumnWidth, isAbreastMode } from './memo/common';
 import { rootSize } from './memo/observer';
-import { imgSize } from './memo/img';
 
 /** 并排卷轴模式下的全局滚动填充 */
 export const [abreastScrollFill, _setAbreastScrollFill] = createSignal(0);
@@ -21,14 +20,16 @@ interface Area {
 }
 
 /** 并排卷轴模式下的每列布局 */
-export const abreastArea = createRootMemo(
-  (): Area => {
+export const abreastArea = createThrottleMemo<Area>(
+  (prev): Area => {
+    if (!store.option.scrollMode.enabled) return prev!;
+
     const columns: number[][] = [[]];
     const position: Area['position'] = {};
     let length = 0;
 
     const rootHeight = rootSize().height;
-    if (!rootHeight || imgSize().length === 0)
+    if (!rootHeight || store.imgList.length === 0)
       return { columns, position, length };
 
     const repeatHeight = rootHeight * store.option.scrollMode.abreastDuplicate;
@@ -44,7 +45,7 @@ export const abreastArea = createRootMemo(
     for (let i = 0; i < store.imgList.length; i++) {
       const imgPosition: Position = [];
 
-      const imgHeight = imgSize()[i].height;
+      const imgHeight = store.imgList[i].size.height;
       length += imgHeight;
       let height = imgHeight;
 
@@ -77,7 +78,7 @@ export const abreastArea = createRootMemo(
           // 把上一张图片加进来填补空白
           columns.at(-1)!.push(prevImgIndex);
 
-          const prevImgHeight = imgSize()[prevImgIndex].height;
+          const prevImgHeight = store.imgList[prevImgIndex].size.height;
           emptyTop -= prevImgHeight;
 
           position[prevImgIndex].push({
@@ -92,7 +93,8 @@ export const abreastArea = createRootMemo(
 
     return { columns, position, length };
   },
-  { columns: [], position: new Map() },
+  100,
+  { columns: [], position: {}, length: 0 },
 );
 
 /** 头尾滚动的限制值 */
@@ -103,7 +105,7 @@ export const setAbreastScrollFill = (val: number) =>
   _setAbreastScrollFill(clamp(-scrollFillLimit(), val, scrollFillLimit()));
 
 /** 并排卷轴模式下当前要显示的列 */
-export const abreastShowColumn = createRootMemo(() => {
+export const abreastShowColumn = createThrottleMemo(() => {
   if (abreastArea().columns.length === 0) return { start: 0, end: 0 };
 
   let start = Math.floor(store.page.offset.x.px / abreastColumnWidth());
@@ -131,8 +133,10 @@ export const abreastScrollWidth = createRootMemo(
   () => abreastContentWidth() - rootSize().width,
 );
 
-/** 每个图片所在位置的样式 */
+/** 卷轴模式下每个图片所在位置的样式 */
 export const imgAreaStyle = createRootMemo(() => {
+  if (!isAbreastMode() || store.gridMode) return '';
+
   let styleText = '';
 
   const selector = (index: number, imgNum = 0) => {
@@ -140,18 +144,13 @@ export const imgAreaStyle = createRootMemo(() => {
     return `#mangaFlow > .${classes.img}[data-index="${indexText}"]`;
   };
 
-  for (const [index, { width, height }] of imgSize().entries()) {
-    const sizeStyle = `aspect-ratio: ${width} / ${height}; --width: ${width}px;`;
-
-    if (isAbreastMode() && !store.gridMode) {
-      let imgNum = 0;
-      for (const { column, top } of abreastArea().position[index] ?? []) {
-        const itemStyle = `grid-area: _${column}; --abreast-position: ${top}px;`;
-        styleText += `${selector(index, imgNum)} { ${sizeStyle} ${itemStyle} }\n`;
-        imgNum += 1;
-      }
-    } else
-      styleText += `${selector(index)} { ${sizeStyle} grid-area: _${index}; }\n`;
+  for (const index of store.imgList.keys()) {
+    let imgNum = 0;
+    for (const { column, top } of abreastArea().position[index] ?? []) {
+      const itemStyle = `grid-area: _${column}; --abreast-position: ${top}px;`;
+      styleText += `${selector(index, imgNum)} { ${itemStyle} }\n`;
+      imgNum += 1;
+    }
   }
 
   return styleText;

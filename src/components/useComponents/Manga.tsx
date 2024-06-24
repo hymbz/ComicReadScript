@@ -15,7 +15,7 @@ import { DownloadButton } from './DownloadButton';
 import { mountComponents } from './helper';
 
 export { store } from '../Manga';
-export { showPageList } from '../Manga/actions';
+export * from '../Manga/actions';
 
 let dom: HTMLDivElement;
 

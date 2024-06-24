@@ -1,4 +1,3 @@
-/* eslint-disable solid/reactivity */
 import { createEffect, on } from 'solid-js';
 import { assign, debounce, throttle } from 'helper';
 import { createEffectOn } from 'helper/solidJs';
@@ -12,7 +11,6 @@ import {
   watchRootSize,
   resetImgState,
   scrollTo,
-  updateImgLoadType,
   updatePageData,
 } from '../actions';
 import { defaultOption } from '../store/option';
@@ -23,6 +21,7 @@ const createComicImg = (url: string): ComicImg => ({
   type: defaultImgType(),
   src: url || '',
   loadType: 'wait',
+  size: { width: 0, height: 0 },
 });
 
 export const useInit = (props: MangaProps) => {
@@ -159,7 +158,6 @@ export const useInit = (props: MangaProps) => {
       }
 
       if (isNew || needUpdatePageData) updatePageData(state);
-      else updateImgLoadType(state);
 
       if (isNew || state.pageList.length === 0) {
         resetImgState(state);

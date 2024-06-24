@@ -16,8 +16,8 @@ import {
   log,
   singleThreaded,
   store,
+  renderImgList,
   throttle,
-  showPageList,
   createEffectOn,
   triggerLazyLoad,
   needTrigged,
@@ -96,6 +96,13 @@ import {
       return url;
     };
 
+    const handleImgUrl = async (e: HTMLImageElement) => {
+      const url = await handleBlobImg(e);
+      if (url.startsWith('http:') && window.location.protocol === 'https:')
+        return url.replace('http:', 'https:');
+      return url;
+    };
+
     const imgBlackList = [
       // 东方永夜机的预加载图片
       '#pagetual-preload',
@@ -145,7 +152,7 @@ import {
       let isEdited = false;
       await plimit(
         _imgEleList.map((e, i) => async () => {
-          const newUrl = e ? await handleBlobImg(e) : '';
+          const newUrl = e ? await handleImgUrl(e) : '';
           if (newUrl === mangaProps.imgList[i]) return;
 
           isEdited ||= true;
@@ -216,12 +223,10 @@ import {
 
     // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
     createEffectOn(
-      showPageList,
-      throttle(() => {
-        if (showPageList().length === 0 || !store.show) return;
-        const lastImgIndex = store.pageList[showPageList().at(-1)!].findLast(
-          (i) => i !== -1,
-        );
+      renderImgList,
+      throttle((list) => {
+        if (list.size === 0 || !store.show) return;
+        const lastImgIndex = [...list].at(-1);
         if (lastImgIndex === undefined) return;
         imgEleList[lastImgIndex]?.scrollIntoView({
           behavior: 'instant',

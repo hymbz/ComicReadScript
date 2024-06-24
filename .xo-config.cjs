@@ -9,6 +9,9 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": "warn",
     // 提示使用了 console
     'no-console': ["warn", { allow: ["warn", "error"] }],
+    'no-debugger': "warn",
+
+    "no-use-extend-native/no-use-extend-native": "off",
 
     // 禁止重新赋值函数参数
     "no-param-reassign": "error",
@@ -84,9 +87,7 @@ module.exports = {
     // 允许有参数不被写明
     "jsdoc/require-param": "off",
 
-    "solid/reactivity": ["warn", {
-      // "customReactiveFunctions": ["createEffectOn"]
-    }],
+    "solid/reactivity": "off",
   },
 
   overrides: [

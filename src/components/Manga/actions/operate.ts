@@ -19,12 +19,16 @@ import {
   switchTranslation,
 } from './switch';
 import { handleTrackpadWheel } from './pointer';
-import { zoomScrollModeImg } from './image';
 import { setOption } from './helper';
 import { hotkeysMap } from './hotkeys';
 import { zoom } from './zoom';
 import { closeScrollLock, turnPage } from './turnPage';
-import { scrollLength, scrollProgress, scrollTo } from './scroll';
+import {
+  scrollLength,
+  scrollProgress,
+  scrollTo,
+  zoomScrollModeImg,
+} from './scroll';
 import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容

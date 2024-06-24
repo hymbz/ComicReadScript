@@ -3,7 +3,7 @@ import { boolDataVal } from 'helper';
 import { createThrottleMemo } from 'helper/solidJs';
 
 import { store } from '../store';
-import { contentHeight, imgSize } from '../actions';
+import { contentHeight } from '../actions';
 import classes from '../index.module.css';
 
 interface ScrollbarPageItem {
@@ -20,7 +20,7 @@ const getScrollbarPage = (
   double = false,
 ): ScrollbarPageItem => {
   let num: number;
-  if (store.option.scrollMode.enabled) num = imgSize()[i].height;
+  if (store.option.scrollMode.enabled) num = store.imgList[i].size.height;
   else num = double ? 2 : 1;
 
   return {
@@ -73,7 +73,8 @@ export const ScrollbarPageStatus = () => {
         !img.src === item.isNull &&
         img.translationType === item.translationType
       ) {
-        if (store.option.scrollMode.enabled) item.num += imgSize()[i].height;
+        if (store.option.scrollMode.enabled)
+          item.num += store.imgList[i].size.height;
         else item.num += double ? 2 : 1;
       } else {
         list.push(item);
@@ -100,7 +101,7 @@ export const ScrollbarPageStatus = () => {
     if (item) list.push(item);
 
     return list;
-  }, 100);
+  }, 200);
 
   return (
     <For each={scrollbarPageList()}>
