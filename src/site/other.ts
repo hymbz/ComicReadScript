@@ -129,7 +129,9 @@ import {
               ((e.naturalHeight > 500 && e.naturalWidth > 500) ||
                 isEleSelector(e, options.selector)),
           )
-          .sort((a, b) => a.offsetTop - b.offsetTop);
+          .sort(
+            (a, b) => a.getBoundingClientRect().y - b.getBoundingClientRect().y,
+          );
         return newImgList.length >= 2 && newImgList;
       });
 
