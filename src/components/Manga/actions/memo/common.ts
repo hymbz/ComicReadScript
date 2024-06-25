@@ -43,13 +43,6 @@ export const preloadNum = createRootMemo(() => ({
   front: Math.floor(store.option.preloadPageNum / 2),
 }));
 
-/** 默认图片类型 */
-export const defaultImgType = createRootMemo<ComicImg['type']>(() => {
-  if (store.flag.autoWide) return 'wide';
-  if (store.flag.autoScrollMode) return 'vertical';
-  return '';
-});
-
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = (sizeFn: (value: ComicImg) => number) => {
   const list = store.imgList

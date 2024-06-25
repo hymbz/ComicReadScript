@@ -6,7 +6,6 @@ import { type MangaProps } from '..';
 import { type State, refs, setState } from '../store';
 import {
   defaultHotkeys,
-  defaultImgType,
   focus,
   watchDomSize,
   resetImgState,
@@ -18,7 +17,6 @@ import { playAnimation } from '../helper';
 import { autoCloseFill } from '../handleComicData';
 
 const createComicImg = (url: string): ComicImg => ({
-  type: defaultImgType(),
   src: url || '',
   loadType: 'wait',
   size: { width: 0, height: 0 },

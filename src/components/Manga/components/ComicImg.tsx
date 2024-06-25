@@ -10,6 +10,7 @@ import {
   isAbreastMode,
   abreastArea,
   placeholderSize,
+  defaultImgType,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -61,8 +62,8 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
       style={style()}
       id={`_${props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index}`}
       data-show={show()}
-      data-type={img?.type || undefined}
-      data-load-type={img?.loadType === 'loaded' ? undefined : img?.loadType}
+      data-type={img.type ?? defaultImgType()}
+      data-load-type={img.loadType === 'loaded' ? undefined : img.loadType}
     >
       <Show when={props.cloneIndex === undefined || img.loadType === 'loaded'}>
         <img src={src()} alt={`${img.index}`} draggable="false" />

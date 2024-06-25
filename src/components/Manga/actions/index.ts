@@ -16,3 +16,4 @@ export * from './scroll';
 export * from './imageLoad';
 export * from './imageType';
 export * from './renderPage';
+export * from '../handleComicData';

@@ -1,7 +1,7 @@
 declare global {
   type ComicImg = {
     loadType: 'loading' | 'loaded' | 'error' | 'wait';
-    type: 'long' | 'wide' | 'vertical' | '';
+    type?: 'long' | 'wide' | 'vertical' | '';
     src: string;
     width?: number;
     height?: number;

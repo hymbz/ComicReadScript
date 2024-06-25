@@ -48,13 +48,7 @@ const handleImgError = (i: number, e: HTMLImageElement) => () => {
     const img = state.imgList[i];
     if (!img) return;
     img.loadType = 'error';
-
-    if (store.flag.autoScrollMode) img.type = 'vertical';
-    else if (store.flag.autoWide) img.type = 'wide';
-    else if (store.flag.autoLong) img.type = 'long';
-    // else getImgType(placeholderSize());
-    // TODO:
-
+    img.type = undefined;
     if (e) log.error(t('alert.img_load_failed'), e);
     state.prop.Loading?.(state.imgList, img);
   });

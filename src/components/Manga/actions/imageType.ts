@@ -1,14 +1,14 @@
 import { createEffectOn } from 'helper/solidJs';
 
 import { type State, setState, store } from '../store';
-import { isWideImg } from '../handleComicData';
+import { defaultImgType, isWideImg } from '../handleComicData';
 
 import { resetImgState, updatePageData } from './image';
 
 /** 根据比例判断图片类型 */
 export const getImgType = (
   img: { width: number; height: number },
-  state = store,
+  state: State = store,
 ) => {
   const imgRatio = img.width / img.height;
   if (imgRatio <= state.proportion.单页比例) {
@@ -23,7 +23,7 @@ const _updateImgType = (state: State, draftImg: ComicImg) => {
   const { type } = draftImg;
   if (!draftImg.width || !draftImg.height) return false;
   draftImg.type = getImgType(draftImg as Required<ComicImg>, state);
-  return type !== draftImg.type;
+  return (type ?? defaultImgType()) !== draftImg.type;
 };
 
 /** 检查指定图片周围包括自己在内，是否有足够数量的**连续**的符合条件的图片 */
@@ -59,10 +59,6 @@ const checkImgTypeCount = (
   return false;
 };
 
-/** 是否是未知尺寸的图片 */
-const isUnknownSize = (img: ComicImg) =>
-  (img.loadType === 'wait' || img.loadType === 'error') && img.type === '';
-
 export const updateImgType = (state: State, i: number) => {
   const img = state.imgList[i];
 
@@ -76,12 +72,10 @@ export const updateImgType = (state: State, i: number) => {
       // fall through
     }
 
-    // 连续出现多张跨页图后，将未知尺寸的图片类型设为跨页图
+    // 连续出现多张跨页图后，将默认图片类型设为跨页图
     case 'wide': {
       if (state.flag.autoWide || !checkImgTypeCount(state, i, 3, isWideImg))
         break;
-      for (const [index, comicImg] of state.imgList.entries())
-        if (isUnknownSize(comicImg)) state.imgList[index].type = 'wide';
       state.flag.autoWide = true;
       isEdited = true;
       break;
@@ -90,8 +84,6 @@ export const updateImgType = (state: State, i: number) => {
     // 连续出现多张长图后，自动开启卷轴模式
     case 'vertical': {
       if (state.flag.autoScrollMode || !checkImgTypeCount(state, i, 3)) break;
-      for (const [index, comicImg] of state.imgList.entries())
-        if (isUnknownSize(comicImg)) state.imgList[index].type = 'vertical';
       state.option.scrollMode.enabled = true;
       state.flag.autoScrollMode = true;
       isEdited = true;
