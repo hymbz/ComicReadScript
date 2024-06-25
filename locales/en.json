@@ -22,7 +22,8 @@
     "scroll_mode": "Scroll mode",
     "setting": "Settings",
     "translate_current_page": "Translate current page",
-    "zoom_in": "Zoom in"
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out"
   },
   "description": "Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.",
   "end_page": {

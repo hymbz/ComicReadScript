@@ -22,7 +22,8 @@
     "scroll_mode": "卷轴模式",
     "setting": "设置",
     "translate_current_page": "翻译当前页",
-    "zoom_in": "放大"
+    "zoom_in": "放大",
+    "zoom_out": "缩小"
   },
   "description": "为漫画站增加双页阅读、翻译等优化体验的增强功能。",
   "end_page": {

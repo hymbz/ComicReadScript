@@ -23,13 +23,13 @@ const getImgDisplaySize = (state: State, index: number) => {
   width = img.width ?? placeholderSize().width;
 
   if (!state.option.scrollMode.enabled) return { height, width };
-
   if (isAbreastMode()) return setWidth(abreastColumnWidth());
-  if (state.option.scrollMode.fitToWidth || width > state.rootSize.width)
-    return setWidth(state.rootSize.width);
+  if (state.option.scrollMode.fitToWidth) return setWidth(state.rootSize.width);
 
   height *= state.option.scrollMode.imgScale;
   width *= state.option.scrollMode.imgScale;
+
+  if (width > state.rootSize.width) return setWidth(state.rootSize.width);
 
   return { height, width };
 };
