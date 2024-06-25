@@ -1,16 +1,16 @@
 import {
   type Component,
-  type JSX,
   createSignal,
   createMemo,
   Show,
   onMount,
 } from 'solid-js';
 import { boolDataVal, debounce } from 'helper';
-import { createMemoMap, createThrottleMemo } from 'helper/solidJs';
+import { createThrottleMemo } from 'helper/solidJs';
 
 import { refs, store } from '../store';
 import { useDrag } from '../hooks/useDrag';
+import { useStyleMemo } from '../hooks/useStyle';
 import {
   bindRef,
   getPageTip,
@@ -18,9 +18,14 @@ import {
   handlescrollbarSlider,
   sliderMidpoint,
   sliderHeight,
+  scrollDomLength,
+  isScrollMode,
+  isOnePageMode,
+  abreastShowColumn,
+  isAbreastMode,
+  abreastArea,
   sliderTop,
-  showPageList,
-  scrollLength,
+  watchDomSize,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -32,9 +37,9 @@ export const Scrollbar: Component = () => {
     useDrag({
       ref: refs.scrollbar,
       handleDrag: handlescrollbarSlider,
-      easyMode: () =>
-        store.option.scrollMode && store.option.scrollbar.easyScroll,
+      easyMode: () => isScrollMode() && store.option.scrollbar.easyScroll,
     });
+    watchDomSize('scrollbarSize', refs.scrollbar);
   });
 
   // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
@@ -50,36 +55,50 @@ export const Scrollbar: Component = () => {
     () => store.show.scrollbar || Boolean(penetrate()),
   );
 
+  /** 并排卷轴模式下的滚动条提示文本 */
+  const abreastShowTip = createMemo(() => {
+    if (!isAbreastMode()) return undefined;
+
+    const columns = abreastArea()
+      .columns.slice(abreastShowColumn().start, abreastShowColumn().end + 1)
+      .map((column) => column.map(getPageTip));
+    if (store.option.dir === 'rtl') {
+      columns.reverse();
+      for (const column of columns) column.reverse();
+    }
+    return columns.map((column) => column.join(' ')).join('\n');
+  });
+
   /** 滚动条提示文本 */
   const tipText = createThrottleMemo(() => {
-    switch (showPageList().length) {
-      case 0:
-        return '';
-      case 1:
-        return getPageTip(showPageList()[0]);
-    }
+    if (store.showRange[0] === store.showRange[1])
+      return getPageTip(store.showRange[0]);
 
-    const tipList = showPageList().map((i) => getPageTip(i));
-    if (store.option.scrollMode || store.page.vertical)
-      return tipList.join('\n');
+    if (isAbreastMode()) return abreastShowTip();
+
+    const tipList: string[] = [];
+    for (let i = store.showRange[0]; i <= store.showRange[1]; i++)
+      tipList.push(getPageTip(i));
+
+    if (isOnePageMode()) return tipList.join('\n');
+    if (tipList.length === 1) return tipList[0];
     if (store.option.dir === 'rtl') tipList.reverse();
     return tipList.join('   ');
   });
 
-  const style = createMemoMap<JSX.CSSProperties>({
+  useStyleMemo(`.${classes.scrollbar}`, {
     'pointer-events': () =>
       penetrate() || store.isDragMode || store.gridMode ? 'none' : 'auto',
-    '--scroll-length': () => `${scrollLength()}px`,
+    '--scroll-length': () => `${scrollDomLength()}px`,
     '--slider-midpoint': () => `${sliderMidpoint()}px`,
-    '--slider-height': () => `${sliderHeight() * scrollLength()}px`,
-    '--slider-top': () => `${sliderTop() * scrollLength()}px`,
+    '--slider-height': () => `${sliderHeight() * scrollDomLength()}px`,
+    '--slider-top': sliderTop,
   });
 
   return (
     <div
       ref={bindRef('scrollbar')}
       class={classes.scrollbar}
-      style={style()}
       role="scrollbar"
       tabIndex={-1}
       aria-controls={classes.mangaFlow}
@@ -88,6 +107,7 @@ export const Scrollbar: Component = () => {
       data-force-show={boolDataVal(showScrollbar())}
       data-dir={store.option.dir}
       data-position={scrollPosition()}
+      data-is-abreast-mode={boolDataVal(isAbreastMode())}
       onWheel={handleWheel}
     >
       <div

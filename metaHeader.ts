@@ -40,10 +40,10 @@ const resource = {
   dev: {} as Record<string, string | undefined>,
   prod: {} as Record<string, string | undefined>,
 };
-Object.entries(resourceList).forEach(([k, v]) => {
+for (const [k, v] of Object.entries(resourceList)) {
   resource.prod[k] = v.at(0);
   resource.dev[k] = v.at(-1);
-});
+}
 
 /** 根据 index.ts 的注释获取支持站点列表 */
 const getSupportSiteList = () => {
@@ -143,11 +143,11 @@ export const getMetaData = (isDevMode: boolean) => {
     const _metaData: typeof metaData = JSON.parse(JSON.stringify(metaData));
 
     // 将 @resource 中的 / 替换为 |，以兼容 ios 的油猴扩展
-    Object.keys(_metaData.resource).forEach((key) => {
-      if (!key.includes('/')) return;
+    for (const key of Object.keys(_metaData.resource)) {
+      if (!key.includes('/')) continue;
       _metaData.resource[key.replaceAll('/', '|')] = _metaData.resource[key];
       Reflect.deleteProperty(_metaData.resource, key);
-    });
+    }
 
     const metaText = Object.entries(_metaData)
       .filter(([, val]) => val)

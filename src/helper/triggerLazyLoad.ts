@@ -72,13 +72,15 @@ const tryCorrectUrl = (e: Element) => {
 const isLazyLoaded = (e: HTMLImageElement, oldSrc?: string) => {
   if (!e.src) return false;
   if (!e.offsetParent) return false;
+  // 有些网站会使用 svg 占位
+  if (e.src.startsWith('data:image/svg')) return false;
   if (oldSrc !== undefined && e.src !== oldSrc) return true;
   if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
   return false;
 };
 
-export const imgMap = new Map<HTMLImageElement, ImgData>();
-// eslint-disable-next-line prefer-const
+export const imgMap = new WeakMap<HTMLImageElement, ImgData>();
+// eslint-disable-next-line no-autofix/prefer-const
 let imgShowObserver: IntersectionObserver;
 
 const getImg = (e: HTMLImageElement) => imgMap.get(e) ?? createImgData();
@@ -103,8 +105,8 @@ const handleTrigged = (e: HTMLImageElement) => {
 };
 
 /** 监视图片是否被显示的 Observer */
-imgShowObserver = new IntersectionObserver((entries) =>
-  entries.forEach((img) => {
+imgShowObserver = new IntersectionObserver((entries) => {
+  for (const img of entries) {
     const ele = img.target as HTMLImageElement;
     if (img.isIntersecting) {
       imgMap.set(ele, {
@@ -115,8 +117,8 @@ imgShowObserver = new IntersectionObserver((entries) =>
 
     const timeoutID = imgMap.get(ele)?.observerTimeout;
     if (timeoutID) window.clearTimeout(timeoutID);
-  }),
-);
+  }
+});
 
 const turnPageScheduled = createScheduled((fn) => throttle(fn, 1000));
 /** 触发翻页 */
@@ -140,11 +142,14 @@ export const triggerLazyLoad = singleThreaded(
     // 过滤掉已经被触发过懒加载的图片
     const targetImgList = getAllImg()
       .filter(needTrigged)
-      .sort((a, b) => a.offsetTop - b.offsetTop);
-    targetImgList.forEach((e) => {
+      .sort(
+        (a, b) => a.getBoundingClientRect().y - b.getBoundingClientRect().y,
+      );
+
+    for (const e of targetImgList) {
       imgShowObserver.observe(e);
       if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));
-    });
+    }
 
     for (const e of targetImgList) {
       await wait(() => !scrollLock.enabled);

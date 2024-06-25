@@ -77,7 +77,7 @@ export const SettingHotkeys: Component = () => (
             title={t('setting.hotkeys.restore')}
             on:click={() => {
               const newKeys = defaultHotkeys[name] ?? [];
-              newKeys.forEach(delHotkeys);
+              for (const code of defaultHotkeys[name]) delHotkeys(code);
               setHotkeys(name, newKeys);
             }}
           >

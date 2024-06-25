@@ -179,13 +179,13 @@ declare const selected_tagname: string;
     /** 缩略图元素列表 */
     const thumbnailEleList: HTMLImageElement[] = [];
 
-    querySelectorAll<HTMLImageElement>('#gdt img').forEach((e) => {
+    for (const e of querySelectorAll<HTMLImageElement>('#gdt img')) {
       const index = Number(e.alt) - 1;
       if (Number.isNaN(index)) return;
       thumbnailEleList[index] = e;
       // 根据当前显示的图片获取一部分文件名
       [, ehImgFileNameList[index]] = e.title.split(/：|: /);
-    });
+    }
     // 先根据文件名判断一次
     await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
     // 不行的话再用缩略图识别

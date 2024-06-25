@@ -3,17 +3,11 @@ import { createRootMemo } from 'helper/solidJs';
 import { refs, setState, store } from '../store';
 
 import { zoom } from './zoom';
-import { scrollTo, setOption } from './helper';
+import { setOption } from './helper';
 import { updatePageData } from './image';
 import { setImgTranslationEnbale } from './translation';
-import {
-  activeImgIndex,
-  contentHeight,
-  imgTopList,
-  nowFillIndex,
-  scrollTop,
-  activePage,
-} from './memo';
+import { activeImgIndex, nowFillIndex, activePage } from './memo';
+import { saveScrollProgress, scrollViewImg } from './scroll';
 
 /** 切换页面填充 */
 export const switchFillEffect = () => {
@@ -32,12 +26,14 @@ export const switchFillEffect = () => {
 export const switchScrollMode = () => {
   zoom(100);
   setOption((draftOption, state) => {
-    draftOption.scrollMode = !draftOption.scrollMode;
-    draftOption.onePageMode = draftOption.scrollMode;
+    draftOption.scrollMode.enabled = !draftOption.scrollMode.enabled;
+    draftOption.onePageMode = draftOption.scrollMode.enabled;
+    state.page.offset.x.px = 0;
+    state.page.offset.y.px = 0;
     updatePageData(state);
   });
   // 切换到卷轴模式后自动定位到对应页
-  if (store.option.scrollMode) scrollTo(imgTopList()[store.activePageIndex]);
+  scrollViewImg(store.activePageIndex);
 };
 
 /** 切换单双页模式 */
@@ -75,15 +71,11 @@ export const switchGridMode = () => {
 
 /** 切换卷轴模式下图片适应宽度 */
 export const switchFitToWidth = () => {
-  const top = scrollTop();
-  const height = contentHeight();
-
+  const jump = saveScrollProgress();
   setOption((draftOption) => {
-    draftOption.scrollModeFitToWidth = !draftOption.scrollModeFitToWidth;
+    draftOption.scrollMode.fitToWidth = !draftOption.scrollMode.fitToWidth;
   });
-
-  // 滚回之前的位置
-  scrollTo((top / height) * contentHeight());
+  jump();
 };
 
 /** 当前显示的图片是否正在翻译 */

@@ -15,10 +15,9 @@ import {
   setOption,
   switchDir,
   switchFitToWidth,
-  updateImgLoadType,
   zoomScrollModeImg,
 } from './actions';
-import { _setState, setState, store } from './store';
+import { _setState, store } from './store';
 import classes from './index.module.css';
 import { SettingsItemNumber } from './components/SettingsItemNumber';
 import { areaArrayMap } from './components/TouchArea';
@@ -82,7 +81,7 @@ export const defaultSettingList: () => SettingList = () => [
             value={store.option.scrollbar.showImgStatus}
             onChange={createStateSetFn('scrollbar.showImgStatus')}
           />
-          <Show when={store.option.scrollMode}>
+          <Show when={store.option.scrollMode.enabled}>
             <SettingsItemSwitch
               name={t('setting.option.scrollbar_easy_scroll')}
               value={store.option.scrollbar.easyScroll}
@@ -142,7 +141,7 @@ export const defaultSettingList: () => SettingList = () => [
           onChange={createStateSetFn('darkMode')}
         />
 
-        <Show when={!store.option.scrollMode}>
+        <Show when={!store.option.scrollMode.enabled}>
           <SettingsItemSwitch
             name={t('setting.option.disable_auto_enlarge')}
             value={store.option.disableZoom}
@@ -150,7 +149,12 @@ export const defaultSettingList: () => SettingList = () => [
           />
         </Show>
 
-        <Show when={store.option.scrollMode}>
+        <Show when={store.option.scrollMode.enabled}>
+          <SettingsItemSwitch
+            name={t('setting.option.abreast_mode')}
+            value={store.option.scrollMode.abreastMode}
+            onChange={createStateSetFn('scrollMode.abreastMode')}
+          />
           <SettingsItemNumber
             name={t('setting.option.scroll_mode_img_scale')}
             maxLength={3}
@@ -160,7 +164,7 @@ export const defaultSettingList: () => SettingList = () => [
               if (Number.isNaN(val)) return;
               zoomScrollModeImg(val / 100, true);
             }}
-            value={Math.round(store.option.scrollModeImgScale * 100)}
+            value={Math.round(store.option.scrollMode.imgScale * 100)}
           />
           <SettingsItemNumber
             name={t('setting.option.scroll_mode_img_spacing')}
@@ -169,16 +173,32 @@ export const defaultSettingList: () => SettingList = () => [
               if (Number.isNaN(val)) return;
               const newVal = clamp(0, val, Number.POSITIVE_INFINITY);
               setOption((draftOption) => {
-                draftOption.scrollModeSpacing = newVal;
+                draftOption.scrollMode.spacing = newVal;
               });
             }}
-            value={Math.round(store.option.scrollModeSpacing)}
+            value={Math.round(store.option.scrollMode.spacing)}
           />
-          <SettingsItemSwitch
-            name={'卷轴图片适合宽度'}
-            value={store.option.scrollModeFitToWidth}
-            onChange={switchFitToWidth}
-          />
+          <Show when={store.option.scrollMode.abreastMode}>
+            <SettingsItemNumber
+              name={t('setting.option.abreast_duplicate')}
+              maxLength={3}
+              suffix="%"
+              step={5}
+              onChange={(val) => {
+                if (Number.isNaN(val)) return;
+                const newVal = clamp(0, val / 100, 0.95);
+                _setState('option', 'scrollMode', 'abreastDuplicate', newVal);
+              }}
+              value={Math.round(store.option.scrollMode.abreastDuplicate * 100)}
+            />
+          </Show>
+          <Show when={!store.option.scrollMode.abreastMode}>
+            <SettingsItemSwitch
+              name={t('setting.option.fit_to_width')}
+              value={store.option.scrollMode.fitToWidth}
+              onChange={switchFitToWidth}
+            />
+          </Show>
         </Show>
       </>
     ),
@@ -192,12 +212,7 @@ export const defaultSettingList: () => SettingList = () => [
         <SettingsItemSwitch
           name={t('setting.option.always_load_all_img')}
           value={store.option.alwaysLoadAllImg}
-          onChange={(val) => {
-            setOption((draftOption) => {
-              draftOption.alwaysLoadAllImg = val;
-            });
-            setState(updateImgLoadType);
-          }}
+          onChange={createStateSetFn('alwaysLoadAllImg')}
         />
 
         <SettingsItemSwitch

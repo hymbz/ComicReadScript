@@ -5,73 +5,66 @@ import { log } from './logger';
 
 import { byPath } from '.';
 
-/** 重命名配置项 */
-const renameOption = async (name: string, list: string[]) => {
+const migrationOption = async (
+  name: string,
+  editFn: (option: Record<any, any>, save: () => Promise<void>) => unknown,
+) => {
   try {
     const option = await GM.getValue<object>(name);
     if (!option) throw new Error(`GM.getValue Error: not found ${name}`);
-
-    for (let i = list.length - 1; i; i--) {
-      const [path, newName] = list[i].split(' => ');
-      byPath(option, path, (parent, key) => {
-        log('rename Option', list[i]);
-        Reflect.set(parent, newName, parent[key]);
-        Reflect.deleteProperty(parent, key);
-      });
-    }
-
-    await GM.setValue(name, option);
+    await editFn(option, () => GM.setValue(name, option));
   } catch (error) {
     log.error(`migration ${name} option error:`, error);
   }
 };
 
+/** 重命名配置项 */
+export const renameOption = async (name: string, list: string[]) =>
+  migrationOption(name, (option, save) => {
+    for (const itemText of list) {
+      const [path, newName] = itemText.split(' => ');
+      byPath(option, path, (parent, key) => {
+        log('rename Option', itemText);
+        if (newName) Reflect.set(parent, newName, parent[key]);
+        Reflect.deleteProperty(parent, key);
+      });
+    }
+    return save();
+  });
+
 /** 旧版本配置迁移 */
 const migration = async () => {
   const values = await GM.listValues();
 
-  // 6 => 7
+  // 8 => 9
   for (const key of values) {
     switch (key) {
       case 'Version':
       case 'Languages':
         continue;
 
-      case 'HotKeys': {
+      case 'Hotkeys': {
         await renameOption(key, [
-          '向上翻页 => turn_page_up',
-          '向下翻页 => turn_page_down',
-          '向右翻页 => turn_page_right',
-          '向左翻页 => turn_page_left',
-          '跳至首页 => jump_to_home',
-          '跳至尾页 => jump_to_end',
-          '退出 => exit',
-          '切换页面填充 => switch_page_fill',
-          '切换卷轴模式 => switch_scroll_mode',
-          '切换单双页模式 => switch_single_double_page_mode',
-          '切换阅读方向 => switch_dir',
-          '进入阅读模式 => enter_read_mode',
+          // 原本上下快捷键是混在一起的，现在分开后要迁移太麻烦了，应该也没多少人改，就直接删了
+          'turn_page_up => ',
+          'turn_page_down => ',
+          'turn_page_right => scroll_right',
+          'turn_page_left => scroll_left',
         ]);
         break;
       }
 
       default:
-        await renameOption(key, [
-          'option.scrollbar.showProgress => showImgStatus',
-          'option.clickPage => clickPageTurn',
-          'option.clickPage.overturn => reverse',
-          'option.swapTurnPage => swapPageTurnKey',
-          'option.flipToNext => jumpToNext',
-          // ehentai
-          '匹配nhentai => associate_nhentai',
-          '快捷键翻页 => hotkeys_page_turn',
-          // nhentai
-          '自动翻页 => auto_page_turn',
-          '彻底屏蔽漫画 => block_totally',
-          '在新页面中打开链接 => open_link_new_page',
-          // other
-          '记住当前站点 => remember_current_site',
-        ]);
+        await migrationOption(key, (option, save) => {
+          if (typeof option.option?.scrollMode !== 'boolean') return;
+          option.option.scrollMode = {
+            enabled: option.option.scrollMode,
+            spacing: option.option.scrollModeSpacing,
+            imgScale: option.option.scrollModeImgScale,
+            fitToWidth: option.option.scrollModeFitToWidth,
+          };
+          return save();
+        });
     }
   }
 };

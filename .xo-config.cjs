@@ -1,6 +1,6 @@
 module.exports = {
   prettier: true,
-  plugins: ["i18next", "jsdoc", "solid"],
+  plugins: ["i18next", "jsdoc", "solid", "no-autofix"],
   extends: ["plugin:solid/typescript", "plugin:jsdoc/recommended"],
   ignores: ["*.js", "*.mjs"],
 
@@ -9,8 +9,15 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": "warn",
     // 提示使用了 console
     'no-console': ["warn", { allow: ["warn", "error"] }],
+    'no-debugger': "warn",
+
+    "no-use-extend-native/no-use-extend-native": "off",
+
     // 禁止重新赋值函数参数
     "no-param-reassign": "error",
+    // 禁用 prefer-const 的自动修复
+    "prefer-const": "off",
+    "no-autofix/prefer-const": "warn",
 
     // 不限制代码深度
     "max-depth": "off",
@@ -20,7 +27,7 @@ module.exports = {
     "import/extensions": "off",
     "n/file-extension-in-import": "off",
     // 不限制循环方式
-    "unicorn/no-array-for-each": "off",
+    // "unicorn/no-array-for-each": "off",
     // 不限制注释首字母大小写
     "capitalized-comments": "off",
     // 不强制使用 addEventListener
@@ -80,11 +87,7 @@ module.exports = {
     // 允许有参数不被写明
     "jsdoc/require-param": "off",
 
-    "i18next/no-literal-string": "off",
-
-    "solid/reactivity": ["warn", {
-      // "customReactiveFunctions": ["createEffectOn"]
-    }],
+    "solid/reactivity": "off",
   },
 
   overrides: [
@@ -139,7 +142,11 @@ module.exports = {
     {
       files: "**/!(display)*.tsx",
       rules: {
-        "i18next/no-literal-string": "error",
+        "i18next/no-literal-string": [
+          "error", {
+            mode: 'jsx-only',
+            'jsx-attributes': { include: ['^name'] },
+          }],
       },
     },
   ],

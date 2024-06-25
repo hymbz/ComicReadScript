@@ -62,12 +62,12 @@ export const ToastItem: Component<Toast> = (props) => {
   let scheduleRef: HTMLDivElement;
   createEffect(() => {
     if (!props.update) return;
-
     resetToastUpdate(props.id);
-    scheduleRef?.getAnimations().forEach((animation) => {
+    if (!scheduleRef) return;
+    for (const animation of scheduleRef.getAnimations()) {
       animation.cancel();
       animation.play();
-    });
+    }
   });
 
   const handleClick: EventHandler['on:click'] = (e) => {

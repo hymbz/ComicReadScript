@@ -22,7 +22,8 @@
     "scroll_mode": "Scroll mode",
     "setting": "Settings",
     "translate_current_page": "Translate current page",
-    "zoom_in": "Zoom in"
+    "zoom_in": "Zoom in",
+    "zoom_out": "Zoom out"
   },
   "description": "Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.",
   "end_page": {
@@ -39,17 +40,19 @@
     "exit": "Exit",
     "jump_to_end": "Jump to the last page",
     "jump_to_home": "Jump to the first page",
+    "page_down": "Turn the page to the down",
+    "page_up": "Turn the page to the up",
+    "scroll_down": "Scroll down",
+    "scroll_left": "Scroll left",
+    "scroll_right": "Scroll right",
+    "scroll_up": "Scroll up",
     "switch_auto_enlarge": "Switch auto image enlarge option",
     "switch_dir": "Switch reading direction",
     "switch_grid_mode": "Switch grid mode",
     "switch_page_fill": "Switch page fill",
     "switch_scroll_mode": "Switch scroll mode",
     "switch_single_double_page_mode": "Switch single/double page mode",
-    "translate_current_page": "Translate current page",
-    "turn_page_down": "Turn the page to the down",
-    "turn_page_left": "Turn the page to the left",
-    "turn_page_right": "Turn the page to the right",
-    "turn_page_up": "Turn the page to the up"
+    "translate_current_page": "Translate current page"
   },
   "img_status": {
     "error": "Load Error",
@@ -103,6 +106,8 @@
     },
     "language": "Language",
     "option": {
+      "abreast_duplicate": "Column duplicates ratio",
+      "abreast_mode": "Abreast scroll mode",
       "always_load_all_img": "Always load all images",
       "background_color": "Background Color",
       "click_page_turn_area": "Touch area",
@@ -114,6 +119,7 @@
       "dir_rtl": "RTL (Japanese manga)",
       "disable_auto_enlarge": "Disable automatic image enlarge",
       "first_page_fill": "Enable first page fill by default",
+      "fit_to_width": "Fit to width",
       "jump_to_next_chapter": "Turn to the next/previous chapter",
       "paragraph_dir": "Reading direction",
       "paragraph_display": "Display",

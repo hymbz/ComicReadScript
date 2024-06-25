@@ -1,151 +1,111 @@
-import { createRoot } from 'solid-js';
-import { getImgSize, singleThreaded } from 'helper';
-import { createEffectOn } from 'helper/solidJs';
+import { createEffectOn, createRootMemo } from 'helper/solidJs';
+import { getImgSize, requestIdleCallback, singleThreaded } from 'helper';
 
-import { type State, setState, store } from '../store';
-import { isWideImg } from '../handleComicData';
+import { type State, store, setState } from '../store';
 
-import { resetImgState, updatePageData } from './image';
-import { rootSize } from './memo';
+import { abreastColumnWidth, isAbreastMode, placeholderSize } from './memo';
+import { updateImgType } from './imageType';
 
-/** 根据比例更新图片类型。返回是否修改了图片类型 */
-const updateImgType = (state: State, draftImg: ComicImg) => {
-  const { width, height, type } = draftImg;
-  if (!width || !height || !rootSize().width || !rootSize().height)
-    return false;
+let height = 0;
+let width = 0;
 
-  const imgRatio = width / height;
-  if (imgRatio <= state.proportion.单页比例) {
-    draftImg.type = imgRatio < state.proportion.条漫比例 ? 'vertical' : '';
-  } else {
-    draftImg.type = imgRatio > state.proportion.横幅比例 ? 'long' : 'wide';
-  }
-
-  return type !== draftImg.type;
+const setWidth = (w: number) => {
+  height *= w / width;
+  width = w;
+  return { height, width };
 };
 
-/** 检查指定图片周围包括自己在内，是否有足够数量的**连续**的符合条件的图片 */
-const checkImgTypeCount = (
-  state: State,
-  index: number,
-  maxNum: number,
-  fn = (other: ComicImg, target: ComicImg) => other.type === target.type,
-) => {
-  let num = 1;
+/** 获取指定图片的显示尺寸 */
+const getImgDisplaySize = (state: State, index: number) => {
+  const img = state.imgList[index];
 
-  const targetImg = state.imgList[index];
+  height = img.height ?? placeholderSize().height;
+  width = img.width ?? placeholderSize().width;
 
-  let i = index;
-  while (i--) {
-    const img = state.imgList[i];
-    if (img.loadType !== 'loaded') continue;
-    if (fn(img, targetImg)) {
-      num += 1;
-      if (num >= maxNum) return true;
-    } else break;
-  }
+  if (!state.option.scrollMode.enabled) return { height, width };
+  if (isAbreastMode()) return setWidth(abreastColumnWidth());
+  if (state.option.scrollMode.fitToWidth) return setWidth(state.rootSize.width);
 
-  for (i = index; i < state.imgList.length; i++) {
-    const img = state.imgList[i];
-    if (img.loadType !== 'loaded') continue;
-    if (fn(img, targetImg)) {
-      num += 1;
-      if (num >= maxNum) return true;
-    } else break;
-  }
+  height *= state.option.scrollMode.imgScale;
+  width *= state.option.scrollMode.imgScale;
 
-  return false;
+  if (width > state.rootSize.width) return setWidth(state.rootSize.width);
+
+  return { height, width };
 };
 
 /** 更新图片尺寸 */
-export const updateImgSize = (i: number, width: number, height: number) => {
-  setState((state) => {
-    const img = state.imgList[i];
-    if (!img) return;
-    img.width = width;
-    img.height = height;
-    let isEdited = updateImgType(state, img);
-
-    switch (img.type) {
-      // 连续出现多张宽图后，自动将滚动条移至底部
-      case 'long': {
-        if (!state.flag.autoLong && checkImgTypeCount(store, i, 5))
-          state.flag.autoLong = true;
-        // fall through
-      }
-
-      // 连续出现多张跨页图后，将剩余未加载图片类型设为跨页图
-      case 'wide': {
-        if (state.flag.autoWide || !checkImgTypeCount(state, i, 3, isWideImg))
-          break;
-        state.imgList.forEach((comicImg, index) => {
-          if (comicImg.loadType === 'wait' && comicImg.type === '')
-            state.imgList[index].type = 'wide';
-        });
-        state.flag.autoWide = true;
-        isEdited = true;
-        break;
-      }
-
-      // 连续出现多张长图后，自动开启卷轴模式
-      case 'vertical': {
-        if (state.flag.autoScrollMode || !checkImgTypeCount(state, i, 3)) break;
-        state.imgList.forEach((comicImg, index) => {
-          if (comicImg.loadType === 'wait' && comicImg.type === '')
-            state.imgList[index].type = 'vertical';
-        });
-        state.option.scrollMode = true;
-        state.flag.autoScrollMode = true;
-        isEdited = true;
-        break;
-      }
-    }
-
-    if (!isEdited) return;
-
-    Reflect.deleteProperty(state.fillEffect, i);
-    updatePageData(state);
-  });
+export const updateImgSize = (
+  state: State,
+  index: number,
+  width: number,
+  height: number,
+) => {
+  const img = state.imgList[index];
+  if (img.width === width && img.height === height) return;
+  img.width = width;
+  img.height = height;
+  img.size = getImgDisplaySize(state, index);
+  updateImgType(state, index);
 };
 
-createRoot(() => {
-  const isLoading = () =>
-    store.imgList.some((img) => img.loadType === 'loading');
+createEffectOn(
+  [
+    () => store.option.scrollMode.enabled,
+    () => store.option.scrollMode.abreastMode,
+    () => store.option.scrollMode.fitToWidth,
+    () => store.option.scrollMode.imgScale,
+    () => store.imgList,
+    () => store.rootSize.width,
+    () => store.rootSize.height,
+    placeholderSize,
+  ],
+  ([isScrollMode]) => {
+    if (!isScrollMode) return;
+    setState((state) => {
+      for (const [index, img] of state.imgList.entries())
+        img.size = getImgDisplaySize(state, index);
+    });
+  },
+);
 
-  // 空闲期间预加载所有图片的尺寸
-  // 主要是卷轴模式下需要提前知道尺寸方便正确布局
-  // 翻页模式下如果有跨页图也能提前发现重新排序
-  createEffectOn(
-    isLoading,
-    singleThreaded(async () => {
-      while (!isLoading()) {
-        const i = store.imgList.findIndex((img) => !(img.width || img.height));
-        if (i === -1) break;
-        const size = await getImgSize(store.imgList[i].src);
-        if (size) updateImgSize(i, ...size);
-      }
-    }),
-  );
+/** 卷轴模式下每张图片的位置 */
+export const imgTopList = createRootMemo(() => {
+  if (!store.option.scrollMode.enabled) return [];
 
-  // 处理显示窗口的长宽变化
-  createEffectOn(
-    rootSize,
-    ({ width, height }) =>
-      setState((state) => {
-        state.proportion.单页比例 = Math.min(width / 2 / height, 1);
-        state.proportion.横幅比例 = width / height;
-        state.proportion.条漫比例 = state.proportion.单页比例 / 2;
-
-        let isEdited = false;
-        for (let i = 0; i < state.imgList.length; i++) {
-          if (!updateImgType(state, state.imgList[i])) continue;
-          isEdited = true;
-          Reflect.deleteProperty(state.fillEffect, i);
-        }
-
-        if (isEdited) resetImgState(state);
-        updatePageData(state);
-      }),
-    { defer: true },
-  );
+  const list = Array.from<number>({ length: store.imgList.length });
+  let top = 0;
+  for (let i = 0; i < store.imgList.length; i++) {
+    list[i] = top;
+    top += store.imgList[i].size.height + store.option.scrollMode.spacing * 7;
+  }
+  return list;
 });
+
+/** 卷轴模式下漫画流的总高度 */
+export const contentHeight = createRootMemo(
+  () => (imgTopList().at(-1) ?? 0) + (store.imgList.at(-1)?.size.height ?? 0),
+);
+
+/** 预加载图片尺寸 */
+const preloadImgSize = singleThreaded(async () => {
+  let index = 0;
+  for (; index < store.imgList.length; index++) {
+    const img = store.imgList[index];
+    if (img.size === undefined) continue;
+    const size = await getImgSize(img.src);
+    if (!size) continue;
+    // 防止加载过程中 imgList 变了的情况
+    if (store.imgList[index].src !== img.src) break;
+    // eslint-disable-next-line @typescript-eslint/no-loop-func
+    setState((state) => updateImgSize(state, index, ...size));
+  }
+
+  if (index < store.imgList.length) requestIdleCallback(preloadImgSize);
+});
+
+// 空闲期间预加载所有图片的尺寸
+// 卷轴模式下需要提前知道尺寸方便正确布局
+// 翻页模式下也需要提前发现跨页图重新排序
+requestIdleCallback(preloadImgSize);
+createEffectOn(() => store.imgList, preloadImgSize);

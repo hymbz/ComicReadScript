@@ -3,10 +3,11 @@ import MdLooksTwo from '@material-design-icons/svg/round/looks_two.svg';
 import MdViewDay from '@material-design-icons/svg/round/view_day.svg';
 import MdQueue from '@material-design-icons/svg/round/queue.svg';
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
-import MdSearch from '@material-design-icons/svg/round/search.svg';
 import MdTranslate from '@material-design-icons/svg/round/translate.svg';
 import MdGrid from '@material-design-icons/svg/round/grid_4x4.svg';
-import { createMemo, type Component, createSignal } from 'solid-js';
+import MdZoomIn from '@material-design-icons/svg/round/zoom_in.svg';
+import MdZoomOut from '@material-design-icons/svg/round/zoom_out.svg';
+import { createMemo, type Component, createSignal, Show } from 'solid-js';
 import { t } from 'helper/i18n';
 
 import { IconButton } from '../IconButton';
@@ -23,6 +24,7 @@ import {
   switchGridMode,
   switchTranslation,
   isTranslatingImage,
+  isOnePageMode,
 } from './actions';
 import classes from './index.module.css';
 
@@ -31,6 +33,21 @@ export type ToolbarButtonList = Component[];
 /** 工具栏按钮分隔栏 */
 export const buttonListDivider: Component = () => (
   <div style={{ height: '1em' }} />
+);
+
+const ZoomButton = () => (
+  <IconButton
+    tip={store.zoom.scale === 100 ? t('button.zoom_in') : t('button.zoom_out')}
+    enabled={store.zoom.scale !== 100}
+    onClick={doubleClickZoom}
+    children={
+      <Show
+        when={store.zoom.scale === 100}
+        fallback={<MdZoomOut />}
+        children={<MdZoomIn />}
+      />
+    }
+  />
 );
 
 /** 工具栏的默认按钮列表 */
@@ -43,7 +60,7 @@ export const defaultButtonList: ToolbarButtonList = [
           ? t('button.page_mode_single')
           : t('button.page_mode_double')
       }
-      hidden={store.isMobile || store.option.scrollMode}
+      hidden={store.isMobile || store.option.scrollMode.enabled}
       onClick={switchOnePageMode}
       children={store.option.onePageMode ? <MdLooksOne /> : <MdLooksTwo />}
     />
@@ -52,7 +69,7 @@ export const defaultButtonList: ToolbarButtonList = [
   () => (
     <IconButton
       tip={t('button.scroll_mode')}
-      enabled={store.option.scrollMode}
+      enabled={store.option.scrollMode.enabled}
       onClick={switchScrollMode}
       children={<MdViewDay />}
     />
@@ -62,9 +79,7 @@ export const defaultButtonList: ToolbarButtonList = [
     <IconButton
       tip={t('button.page_fill')}
       enabled={Boolean(store.fillEffect[nowFillIndex()])}
-      hidden={
-        store.isMobile || store.option.onePageMode || store.option.scrollMode
-      }
+      hidden={isOnePageMode()}
       onClick={switchFillEffect}
       children={<MdQueue />}
     />
@@ -81,24 +96,20 @@ export const defaultButtonList: ToolbarButtonList = [
   buttonListDivider,
   // 放大模式
   () => (
-    <IconButton
-      tip={t('button.zoom_in')}
-      enabled={
-        store.zoom.scale !== 100 ||
-        (store.option.scrollMode && store.option.scrollModeImgScale > 1)
-      }
-      onClick={() => {
-        if (!store.option.scrollMode) return doubleClickZoom();
-
-        if (
-          store.option.scrollModeImgScale >= 1 &&
-          store.option.scrollModeImgScale < 1.6
-        )
-          return zoomScrollModeImg(0.2);
-        return zoomScrollModeImg(1, true);
-      }}
-      children={<MdSearch />}
-    />
+    <Show when={store.option.scrollMode.enabled} fallback={<ZoomButton />}>
+      <IconButton
+        tip={t('button.zoom_in')}
+        enabled={store.option.scrollMode.imgScale >= 3}
+        onClick={() => zoomScrollModeImg(0.05)}
+        children={<MdZoomIn />}
+      />
+      <IconButton
+        tip={t('button.zoom_out')}
+        enabled={store.option.scrollMode.imgScale <= 0.1}
+        onClick={() => zoomScrollModeImg(-0.05)}
+        children={<MdZoomOut />}
+      />
+    </Show>
   ),
   // 翻译设置
   () => (

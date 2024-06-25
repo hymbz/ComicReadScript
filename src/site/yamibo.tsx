@@ -106,9 +106,8 @@ interface History {
   // 判断当前页是帖子
   if (/thread(-\d+){3}|mod=viewthread/.test(document.URL)) {
     // 修复微博图床的链接
-    querySelectorAll('img[file*="sinaimg.cn"]').forEach((e) =>
-      e.setAttribute('referrerpolicy', 'no-referrer'),
-    );
+    for (const e of querySelectorAll('img[file*="sinaimg.cn"]'))
+      e.setAttribute('referrerpolicy', 'no-referrer');
 
     const fid: number =
       unsafeWindow.fid ??
@@ -194,7 +193,8 @@ interface History {
       // 如果帖子内有设置目录
       if (querySelector('#threadindex')) {
         let id: number;
-        querySelectorAll('#threadindex li').forEach((dom) => {
+        for (const dom of querySelectorAll('#threadindex li')) {
+          // eslint-disable-next-line @typescript-eslint/no-loop-func
           dom.addEventListener('click', () => {
             if (id) return;
             id = window.setInterval(() => {
@@ -210,7 +210,7 @@ interface History {
               window.clearInterval(id);
             }, 100);
           });
-        });
+        }
       }
 
       const tagDom = querySelector<HTMLAnchorElement>('.ptg.mbm.mtn > a');
@@ -325,9 +325,8 @@ interface History {
             trigger.target as HTMLElement,
           );
           if (triggerIndex === -1) return;
-          watchFloorList
-            .splice(0, triggerIndex + 1)
-            .forEach((e) => observer.unobserve(e));
+          for (const e of watchFloorList.splice(0, triggerIndex + 1))
+            observer.unobserve(e);
 
           // 储存数据
           debounceSave({
@@ -339,7 +338,7 @@ interface History {
         },
         { rootMargin: '-160px' },
       );
-      watchFloorList.forEach((e) => observer.observe(e));
+      for (const e of watchFloorList) observer.observe(e);
     }
 
     return;
@@ -376,10 +375,11 @@ interface History {
           `forum.php?mod=viewthread&tid=${tid}&extra=page%3D1&mobile=2&page=${data.lastPageNum}#${data.lastAnchor}`;
       }
 
-      querySelectorAll(listSelector).forEach((e) => {
+      for (const e of querySelectorAll(listSelector)) {
         const tid = getTid(e);
 
         render(
+          // eslint-disable-next-line @typescript-eslint/no-loop-func
           () => {
             const [data, setData] = createSignal<History | undefined>();
 
@@ -432,7 +432,7 @@ interface History {
           },
           isMobile ? e.children[3] : e.getElementsByTagName('th')[0],
         );
-      });
+      }
 
       // 切换回当前页时更新提示
       document.addEventListener('visibilitychange', updateHistoryTag);

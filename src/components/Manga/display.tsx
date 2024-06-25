@@ -2,6 +2,7 @@
  * 用于测试时显示组件
  */
 
+import { createSequence } from 'helper';
 import { log } from 'helper/logger';
 
 import { type MangaProps, Manga } from '.';
@@ -127,18 +128,11 @@ const imgList = [
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141212150076.jpg.c800x.jpg',
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141214660077.jpg.c800x.jpg',
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141217260078.jpg.c800x.jpg',
-    '',
+    // '',
   ],
-  [
-    'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141214660077.jpg.c800x.jpg',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ],
+  createSequence(70).map(
+    (i) => `http://127.0.0.1:3000/${`${i + 1}`.padStart(4, '0')}.jpg`,
+  ),
 ];
 
 export default function DisplayManga() {
@@ -150,11 +144,13 @@ export default function DisplayManga() {
     // scrollMode: true,
   };
 
-  // const duplicateArray = (arr: string[], count: number) =>
-  //   ([] as string[]).concat(...new Array(count).fill(arr));
+  const duplicateArray = (arr: string[], count: number) =>
+    ([] as string[]).concat(
+      ...Array.from<string[]>({ length: count }).fill(arr),
+    );
 
-  // const _imgList = duplicateArray(imgList[1], 30);
-  // log.warn('个数', _imgList.length);
+  const _imgList = duplicateArray(imgList[0], 1);
+  log.warn('个数', _imgList.length);
 
-  return <Manga imgList={imgList[1]} onExit={onExit} option={option} />;
+  return <Manga imgList={_imgList} onExit={onExit} option={option} />;
 }

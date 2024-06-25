@@ -210,15 +210,13 @@
   overflow: auto;
 
   & .mangaFlow {
-    display: flex;
-    flex-direction: column;
-    height: fit-content;
+    grid-row-gap: calc(var(--scroll-mode-spacing) * 7px);
 
     & .img[data-show] {
-      display: unset;
+      display: block;
 
-      width: calc(var(--scroll-mode-img-scale) * min(100%, var(--width)));
-      max-width: unset;
+      width: var(--width);
+      max-width: 100%;
       height: auto;
       max-height: unset;
 
@@ -226,10 +224,6 @@
 
       &[data-load-type="loading"] {
         position: unset;
-      }
-
-      &:not(:first-of-type) {
-        margin-top: calc(var(--scroll-mode-spacing) * 7px);
       }
     }
 
@@ -244,6 +238,40 @@
       width: 100%;
       max-width: 100%;
       height: auto;
+    }
+  }
+
+  &[data-abreast-scroll] {
+    overflow: hidden;
+
+    .mangaFlow {
+      transform: translate(var(--page-x), var(--page-y)) translateZ(0);
+      grid-column-gap: calc(var(--scroll-mode-spacing) * 7px);
+      align-items: start;
+      height: 100%;
+
+      & > div {
+        overflow: hidden;
+        flex-shrink: 0;
+        width: var(--abreastScrollWidth);
+        height: 100%;
+
+        & > picture:first-of-type {
+          margin-top: var(--fill);
+        }
+      }
+
+      &[dir="ltr"] {
+        flex-direction: unset;
+      }
+
+      .img[data-show] {
+        transform: translateY(var(--abreast-position)) translateZ(0);
+        width: 100%;
+
+        /* 取消正常卷轴模式下的间距实现 */
+        margin-top: unset;
+      }
     }
   }
 }

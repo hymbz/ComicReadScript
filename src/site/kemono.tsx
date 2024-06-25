@@ -27,13 +27,13 @@ import { createEffectOn, querySelectorAll, useInit } from 'main';
 
   // 加上跳转至 pwa 的链接
   const zipExtension = new Set(['zip', 'rar', '7z', 'cbz', 'cbr', 'cb7']);
-  querySelectorAll<HTMLAnchorElement>('.post__attachment a').forEach((e) => {
-    if (!zipExtension.has(e.href.split('.').pop()!)) return;
+  for (const e of querySelectorAll<HTMLAnchorElement>('.post__attachment a')) {
+    if (!zipExtension.has(e.href.split('.').pop()!)) continue;
     const a = document.createElement('a');
     a.href = `https://comic-read.pages.dev/?url=${encodeURIComponent(e.href)}`;
     a.textContent = e.textContent!.replace('Download ', 'ComicReadPWA - ');
     a.className = e.className;
     a.style.opacity = '.6';
     e.parentNode!.insertBefore(a, e.nextElementSibling);
-  });
+  }
 })();

@@ -4,10 +4,12 @@ import { createRootMemo } from 'helper/solidJs';
 import { _setState, store } from '../store';
 
 export const defaultHotkeys: Readonly<Record<string, string[]>> = {
-  turn_page_up: ['w', 'ArrowUp', 'PageUp', 'Shift + W'],
-  turn_page_down: [' ', 's', 'ArrowDown', 'PageDown', 'Shift + S'],
-  turn_page_right: ['d', '.', 'ArrowRight'],
-  turn_page_left: ['a', ',', 'ArrowLeft'],
+  scroll_up: ['w', 'Shift + W', 'ArrowUp'],
+  scroll_down: ['s', 'Shift + S', 'ArrowDown', ' '],
+  scroll_left: ['a', 'Shift + A', ',', 'ArrowLeft'],
+  scroll_right: ['d', 'Shift + D', '.', 'ArrowRight'],
+  page_up: ['PageUp'],
+  page_down: [' ', 'PageDown'],
   jump_to_home: ['Home'],
   jump_to_end: ['End'],
   exit: ['Escape'],
@@ -43,12 +45,12 @@ export const hotkeysMap = createRootMemo(() =>
 
 /** 删除指定快捷键 */
 export const delHotkeys = (code: string) => {
-  Object.entries(store.hotkeys).forEach(([name, keys]) => {
+  for (const [name, keys] of Object.entries(store.hotkeys)) {
     const i = keys.indexOf(code);
     if (i === -1) return;
 
     const newKeys = [...store.hotkeys[name]];
     newKeys.splice(i, 1);
     setHotkeys(name, newKeys);
-  });
+  }
 };

@@ -1,7 +1,8 @@
 import { scheduleIdle } from '@solid-primitives/scheduled';
+import { onCleanup } from 'solid-js';
 import { difference, byPath } from 'helper';
 
-import { type State, store, setState, refs } from '../store';
+import { type State, store, setState, refs, _setState } from '../store';
 import { type Option } from '../store/option';
 
 /** 触发 onOptionChange */
@@ -29,12 +30,23 @@ export const bindRef =
   (e: T) =>
     Reflect.set(refs, name, e);
 
+export const watchDomSize = <T extends HTMLElement = HTMLElement>(
+  name: keyof State,
+  e: T,
+) => {
+  const resizeObserver = new ResizeObserver(([{ contentRect }]) => {
+    if (!contentRect.width || !contentRect.height) return;
+    const size = { width: contentRect.width, height: contentRect.height };
+    _setState(name as any, size);
+  });
+  resizeObserver.disconnect();
+  resizeObserver.observe(e);
+  onCleanup(() => resizeObserver.disconnect());
+};
+
 /** 将界面恢复到正常状态 */
 export const resetUI = (state: State) => {
   state.show.toolbar = false;
   state.show.scrollbar = false;
   state.show.touchArea = false;
 };
-
-export const scrollTo = (top: number, smooth = false) =>
-  refs.mangaBox.scrollTo({ top, behavior: smooth ? 'smooth' : 'instant' });

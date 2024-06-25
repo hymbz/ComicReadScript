@@ -15,7 +15,6 @@ import { isEqual, throttle } from '.';
 
 /** 会自动设置 equals 的 createSignal */
 export const createEqualsSignal = ((init: any, options?: any) =>
-  // eslint-disable-next-line solid/reactivity
   createSignal(init, { equals: isEqual, ...options })) as typeof createSignal;
 
 /** 会自动设置 equals 和 createRoot 的 createMemo */
@@ -28,10 +27,8 @@ export const createRootMemo = ((fn: any, init?: any, options?: any) => {
       : options;
 
   return getOwner()
-    ? // eslint-disable-next-line solid/reactivity
-      createMemo(fn, _init, _options)
-    : // eslint-disable-next-line solid/reactivity
-      createRoot(() => createMemo(fn, _init, _options));
+    ? createMemo(fn, _init, _options)
+    : createRoot(() => createMemo(fn, _init, _options));
 }) as typeof createMemo;
 
 /** 节流的 createMemo */
@@ -62,9 +59,8 @@ export const createMemoMap = <Return extends Record<string, any>>(fnMap: {
 
   const map = createRootMemo(() => {
     const obj = {} as Return;
-    Object.keys(memoMap).forEach((key) =>
-      Reflect.set(obj, key, memoMap[key]()),
-    );
+    for (const key of Object.keys(memoMap))
+      Reflect.set(obj, key, memoMap[key]());
     return obj;
   });
   return map;

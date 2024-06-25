@@ -3,13 +3,12 @@ import { getKeyboardCode } from 'helper';
 import { store, refs, _setState } from '../store';
 import classes from '../index.module.css';
 
-import { rootSize, scrollTop } from './memo';
-import { handleTrackpadWheel } from './pointer';
-import { zoomScrollModeImg } from './image';
-import { scrollTo, setOption } from './helper';
-import { hotkeysMap } from './hotkeys';
-import { zoom } from './zoom';
-import { closeScrollLock, turnPage } from './turnPage';
+import {
+  abreastColumnWidth,
+  isAbreastMode,
+  isScrollMode,
+  scrollTop,
+} from './memo';
 import {
   switchFillEffect,
   switchScrollMode,
@@ -18,6 +17,18 @@ import {
   switchGridMode,
   switchTranslation,
 } from './switch';
+import { handleTrackpadWheel } from './pointer';
+import { setOption } from './helper';
+import { hotkeysMap } from './hotkeys';
+import { zoom } from './zoom';
+import { closeScrollLock, turnPage } from './turnPage';
+import {
+  scrollLength,
+  scrollProgress,
+  scrollTo,
+  zoomScrollModeImg,
+} from './scroll';
+import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 export const focus = () =>
@@ -27,16 +38,18 @@ export const focus = () =>
   });
 
 export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
-  if (e.button !== 1 || store.option.scrollMode) return;
+  if (e.button !== 1 || store.option.scrollMode.enabled) return;
   e.stopPropagation();
   e.preventDefault();
   switchFillEffect();
 };
 
-/** 卷轴模式下的滚动 */
-const scrollModeScroll = (dir: 'next' | 'prev') => {
+/** 卷轴模式下的页面滚动 */
+const scrollModeScrollPage = (dir: 'next' | 'prev') => {
   if (!store.show.endPage) {
-    scrollTo(scrollTop() + rootSize().height * 0.8 * (dir === 'next' ? 1 : -1));
+    scrollTo(
+      scrollTop() + store.rootSize.height * 0.8 * (dir === 'next' ? 1 : -1),
+    );
     _setState('flag', 'scrollLock', true);
   }
 
@@ -87,7 +100,7 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   }
 
   // 卷轴、网格模式下跳过用于移动的按键
-  if ((store.option.scrollMode || store.gridMode) && !store.show.endPage) {
+  if ((isScrollMode() || store.gridMode) && !store.show.endPage) {
     switch (e.key) {
       case 'Home':
       case 'End':
@@ -115,21 +128,54 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     e.preventDefault();
   }
 
+  // 并排卷轴模式下的快捷键
+  if (isAbreastMode()) {
+    switch (hotkeysMap()[code]) {
+      case 'scroll_up':
+        setAbreastScrollFill(
+          abreastScrollFill() - store.rootSize.height * 0.02,
+        );
+        return;
+      case 'scroll_down':
+        setAbreastScrollFill(
+          abreastScrollFill() + store.rootSize.height * 0.02,
+        );
+        return;
+
+      case 'scroll_left':
+        return scrollTo(scrollProgress() + abreastColumnWidth());
+      case 'scroll_right':
+        return scrollTo(scrollProgress() - abreastColumnWidth());
+
+      case 'page_up':
+        return scrollTo(scrollProgress() - store.rootSize.width * 0.8);
+      case 'page_down':
+        return scrollTo(scrollProgress() + store.rootSize.width * 0.8);
+
+      case 'jump_to_home':
+        return scrollTo(0);
+      case 'jump_to_end':
+        return scrollTo(scrollLength());
+    }
+  }
+
   switch (hotkeysMap()[code]) {
-    case 'turn_page_up': {
-      if (store.option.scrollMode) scrollModeScroll('prev');
+    case 'page_up':
+    case 'scroll_up': {
+      if (isScrollMode()) scrollModeScrollPage('prev');
       return turnPage('prev');
     }
 
-    case 'turn_page_down': {
-      if (store.option.scrollMode) scrollModeScroll('next');
+    case 'page_down':
+    case 'scroll_down': {
+      if (isScrollMode()) scrollModeScrollPage('next');
       return turnPage('next');
     }
 
-    case 'turn_page_right':
-      return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
-    case 'turn_page_left':
+    case 'scroll_left':
       return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));
+    case 'scroll_right':
+      return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
 
     case 'jump_to_home':
       return _setState('activePageIndex', 0);
@@ -184,11 +230,11 @@ export const handleWheel = (e: WheelEvent) => {
   // 卷轴模式下的图片缩放
   if (
     (e.ctrlKey || e.altKey) &&
-    store.option.scrollMode &&
+    store.option.scrollMode.enabled &&
     store.zoom.scale === 100
   ) {
     e.preventDefault();
-    if (store.option.scrollModeFitToWidth) return;
+    if (store.option.scrollMode.fitToWidth) return;
     return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
   }
 
@@ -199,7 +245,15 @@ export const handleWheel = (e: WheelEvent) => {
 
   const nowDeltaY = Math.abs(e.deltaY);
 
-  // 通过判断`两次滚动距离是否成倍数`和`滚动距离是否过小`来判断是否是触摸板
+  // 并排卷轴模式下
+  if (isAbreastMode() && store.zoom.scale === 100) {
+    e.preventDefault();
+    // 先触发翻页判断再滚动，防止在滚动到底时立刻触发结束页
+    turnPage(isWheelDown ? 'next' : 'prev');
+    scrollTo(scrollTop() + e.deltaY);
+  }
+
+  // 通过`两次滚动距离是否成倍数`和`滚动距离是否过小`来判断是否是触摸板
   if (
     wheelType !== 'trackpad' &&
     (nowDeltaY < 2 ||

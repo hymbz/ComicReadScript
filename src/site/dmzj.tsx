@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { For } from 'solid-js';
 import { render } from 'solid-js/web';
 import {
@@ -83,7 +84,7 @@ import { getComicId, getViewpoint, useComicDetail } from '../helper/dmzjApi';
     querySelector('.cartoon_online_border')!.innerHTML = '获取漫画数据中';
 
     // 删掉原有的章节 dom
-    querySelectorAll('.odd_anim_title ~ *').forEach((e) => e.remove());
+    for (const e of querySelectorAll('.odd_anim_title ~ *')) e.remove();
 
     const { comicId } = await getId();
 

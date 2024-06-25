@@ -4,8 +4,10 @@ export const stopPropagation = (e: Event) => {
 };
 
 /** 从头开始播放元素的动画 */
-export const playAnimation = (e?: HTMLElement) =>
-  e?.getAnimations().forEach((animation) => {
+export const playAnimation = (e?: HTMLElement) => {
+  if (!e) return;
+  for (const animation of e.getAnimations()) {
     animation.cancel();
     animation.play();
-  });
+  }
+};

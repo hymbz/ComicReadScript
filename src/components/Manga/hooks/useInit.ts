@@ -1,4 +1,3 @@
-/* eslint-disable solid/reactivity */
 import { createEffect, on } from 'solid-js';
 import { assign, debounce, throttle } from 'helper';
 import { createEffectOn } from 'helper/solidJs';
@@ -7,12 +6,10 @@ import { type MangaProps } from '..';
 import { type State, refs, setState } from '../store';
 import {
   defaultHotkeys,
-  defaultImgType,
   focus,
-  initResizeObserver,
+  watchDomSize,
   resetImgState,
   scrollTo,
-  updateImgLoadType,
   updatePageData,
 } from '../actions';
 import { defaultOption } from '../store/option';
@@ -20,13 +17,13 @@ import { playAnimation } from '../helper';
 import { autoCloseFill } from '../handleComicData';
 
 const createComicImg = (url: string): ComicImg => ({
-  type: defaultImgType(),
   src: url || '',
   loadType: 'wait',
+  size: { width: 0, height: 0 },
 });
 
 export const useInit = (props: MangaProps) => {
-  initResizeObserver(refs.root);
+  watchDomSize('rootSize', refs.root);
 
   const watchProps: Partial<
     Record<keyof MangaProps, (state: State) => unknown>
@@ -99,14 +96,14 @@ export const useInit = (props: MangaProps) => {
       state.commentList = props.commentList;
     },
   };
-  Object.entries(watchProps).forEach(([key, fn]) =>
+  for (const [key, fn] of Object.entries(watchProps)) {
     createEffect(
       on(
         () => props[key as keyof MangaProps],
         () => setState(fn),
       ),
-    ),
-  );
+    );
+  }
 
   const handleImgList = () => {
     setState((state) => {
@@ -157,7 +154,6 @@ export const useInit = (props: MangaProps) => {
       }
 
       if (isNew || needUpdatePageData) updatePageData(state);
-      else updateImgLoadType(state);
 
       if (isNew || state.pageList.length === 0) {
         resetImgState(state);

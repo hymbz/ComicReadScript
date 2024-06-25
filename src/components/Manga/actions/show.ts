@@ -1,28 +1,30 @@
 import { createRoot } from 'solid-js';
 import { t } from 'helper/i18n';
-import { inRange } from 'helper';
+import { debounce, inRange, throttle } from 'helper';
 import { createEffectOn } from 'helper/solidJs';
 
 import { type State, _setState, setState, store } from '../store';
 
-import { updateImgLoadType } from './image';
 import { resetUI } from './helper';
-import { activePage, renderRange, updateRenderRange } from './memo';
+import { activePage } from './memo';
+import { updateShowRange } from './renderPage';
 
 /** 将页面移回原位 */
 export const resetPage = (state: State, animation = false) => {
-  updateRenderRange(state);
+  updateShowRange(state);
   state.page.offset.x.pct = 0;
   state.page.offset.y.pct = 0;
 
-  if (state.option.scrollMode) {
+  if (state.option.scrollMode.enabled) {
     state.page.anima = '';
     return;
   }
 
   let i = -1;
-  if (inRange(renderRange.start(), state.activePageIndex, renderRange.end()))
-    i = state.activePageIndex - renderRange.start();
+  if (
+    inRange(state.renderRange[0], state.activePageIndex, state.renderRange[1])
+  )
+    i = state.activePageIndex - state.renderRange[0];
   if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i;
   else state.page.offset.x.pct = i === -1 ? 0 : i;
 
@@ -55,33 +57,32 @@ export const getPageTip = (pageIndex: number): string => {
   const pageIndexText = page.map((index) => getImgTip(index)) as
     | [string]
     | [string, string];
+  if (pageIndexText.length === 1) return pageIndexText[0];
   if (store.option.dir === 'rtl') pageIndexText.reverse();
-  return pageIndexText.join(store.option.scrollMode ? '\n' : ' | ');
+  return pageIndexText.join(store.option.scrollMode.enabled ? '\n' : ' | ');
 };
 
 createRoot(() => {
-  // 页数发生变动时
   createEffectOn(
     () => store.activePageIndex,
-    () => {
-      setState((state) => {
-        updateImgLoadType(state);
-        state.show.endPage &&= undefined;
-      });
-    },
+    () => store.show.endPage && _setState('show', 'endPage', undefined),
     { defer: true },
   );
 
   createEffectOn(
     activePage,
-    (page) => {
-      if (!store.isDragMode) setState(resetPage);
+    throttle(() => store.isDragMode || setState(resetPage)),
+  );
+
+  createEffectOn(
+    activePage,
+    debounce((page) => {
       // 如果当前显示页面有出错的图片，就重新加载一次
-      page?.forEach((i) => {
+      for (const i of page) {
         if (store.imgList[i]?.loadType !== 'error') return;
         _setState('imgList', i, 'loadType', 'wait');
-      });
-    },
+      }
+    }),
     { defer: true },
   );
 
@@ -100,10 +101,5 @@ createRoot(() => {
     () => store.gridMode,
     () => setState(resetUI),
     { defer: true },
-  );
-
-  createEffectOn(
-    () => store.option.scrollModeImgScale,
-    () => setState(updateRenderRange),
   );
 });

@@ -64,9 +64,8 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
   // 在漫画浏览页
   if (document.getElementsByClassName('gallery').length > 0) {
     if (options.open_link_new_page)
-      querySelectorAll('a:not([href^="javascript:"])').forEach((e) =>
-        e.setAttribute('target', '_blank'),
-      );
+      for (const e of querySelectorAll('a:not([href^="javascript:"])'))
+        e.setAttribute('target', '_blank');
 
     const blacklist: number[] = (unsafeWindow?._n_app ?? unsafeWindow?.n)
       ?.options?.blacklisted_tags;
@@ -100,7 +99,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
           window.location.search,
         ).get('q')}&`;
 
-      let observer: IntersectionObserver; // eslint-disable-line prefer-const
+      let observer: IntersectionObserver; // eslint-disable-line no-autofix/prefer-const
 
       const loadNewComic = singleThreaded(async (): Promise<void> => {
         pageNum += 1;
@@ -129,7 +128,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
         let comicDomHtml = '';
 
-        result.forEach((comic) => {
+        for (const comic of result) {
           const blacklisted = comic.tags.some((tag) =>
             blacklist?.includes(tag.id),
           );
@@ -146,7 +145,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
           }" src="https://t.nhentai.net/galleries/${comic.media_id}/thumb.${
             fileType[comic.images.thumbnail.t]
           }"><div class="caption">${comic.title.english}</div></a></div>`;
-        });
+        }
 
         // 构建页数按钮
         if (comicDomHtml) {

@@ -85,7 +85,7 @@ import {
       document.title = title;
       insertNode(document.body, `<h1>${title}</h1>`);
 
-      Object.values(chapters).forEach((chapter) => {
+      for (const chapter of Object.values(chapters)) {
         // 手动构建添加章节 dom
         let temp = `<h2>${chapter.title}</h2>`;
         let i = chapter.data.length;
@@ -100,7 +100,7 @@ import {
               : ''
           }>${chapter.data[i].chapter_title}</a>`;
         insertNode(document.body, temp);
-      });
+      }
 
       document.body.childNodes[0].remove();
       GM_addStyle(
