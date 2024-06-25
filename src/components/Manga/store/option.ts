@@ -115,7 +115,7 @@ const _defaultOption: Readonly<Option> = {
     imgScale: 1,
     fitToWidth: false,
     abreastMode: false,
-    abreastDuplicate: 0.2,
+    abreastDuplicate: 0.1,
   },
 
   translation: {

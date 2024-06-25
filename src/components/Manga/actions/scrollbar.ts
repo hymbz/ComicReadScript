@@ -4,6 +4,7 @@ import { createRootMemo } from 'helper/solidJs';
 import { type PointerState, type UseDrag } from '../hooks/useDrag';
 import { type State, store, refs, _setState } from '../store';
 
+import { isAbreastMode } from './memo';
 import {
   scrollLength,
   scrollPercentage,
@@ -31,6 +32,7 @@ export const scrollPosition = createRootMemo(
   (): State['option']['scrollbar']['position'] => {
     if (store.option.scrollbar.position === 'auto') {
       if (store.isMobile) return 'top';
+      if (isAbreastMode()) return 'bottom';
       return store.flag.autoLong ? 'bottom' : 'right';
     }
 
