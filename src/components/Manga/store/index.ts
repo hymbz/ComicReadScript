@@ -14,7 +14,8 @@ export const { store, setState, _state, _setState } = useStore({
   ...OtherState,
 });
 
-// unsafeWindow.store = store;
+// (window?.unsafeWindow ?? window).store = store;
+// (window?.unsafeWindow ?? window)._setState = _setState;
 
 export type State = typeof _state;
 

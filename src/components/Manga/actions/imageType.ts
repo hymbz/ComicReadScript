@@ -99,8 +99,8 @@ export const updateImgType = (state: State, i: number) => {
 
 // 处理显示窗口的长宽变化
 createEffectOn(
-  () => store.rootSize,
-  ({ width, height }) =>
+  [() => store.rootSize.width, () => store.rootSize.height],
+  ([width, height]) =>
     setState((state) => {
       state.proportion.单页比例 = Math.min(width / 2 / height, 1);
       state.proportion.横幅比例 = width / height;

@@ -149,7 +149,7 @@ export default function DisplayManga() {
       ...Array.from<string[]>({ length: count }).fill(arr),
     );
 
-  const _imgList = duplicateArray(imgList[2], 1);
+  const _imgList = duplicateArray(imgList[0], 1);
   log.warn('个数', _imgList.length);
 
   return <Manga imgList={_imgList} onExit={onExit} option={option} />;

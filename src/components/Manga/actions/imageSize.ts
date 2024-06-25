@@ -56,7 +56,8 @@ createEffectOn(
     () => store.option.scrollMode.fitToWidth,
     () => store.option.scrollMode.imgScale,
     () => store.imgList,
-    () => store.rootSize,
+    () => store.rootSize.width,
+    () => store.rootSize.height,
     placeholderSize,
   ],
   ([isScrollMode]) => {

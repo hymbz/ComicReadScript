@@ -1,7 +1,5 @@
 ## TODO
 
-- 卷轴模式优化
-  <!-- https://sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/237728 -->
 
 ## 调试
 

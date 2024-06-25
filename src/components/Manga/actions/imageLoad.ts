@@ -80,7 +80,7 @@ const loadImg = (index: number) => {
  */
 const loadPageImg = (target = 0, loadNum = 2) => {
   const load = (i: number) => {
-    loadImg(i);
+    for (const index of store.pageList[i]) loadImg(index);
     if (loadImgList.size >= loadNum) {
       setLoadLock(true);
       return true;
@@ -146,6 +146,7 @@ createEffectOn(
     () => store.imgList,
     () => store.activePageIndex,
     () => store.option.alwaysLoadAllImg,
+    () => store.showRange,
   ],
   updateImgLoadType,
 );

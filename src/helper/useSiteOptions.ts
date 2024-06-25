@@ -45,7 +45,6 @@ export const useSiteOptions = async <T = Record<string, any>>(
 
   const setOptions = async (newValue: Partial<SaveOptions>) => {
     Object.assign(options, newValue);
-
     // 只保存和默认设置不同的部分
     return GM.setValue(name, difference(options, _defaultOptions));
   };
@@ -54,7 +53,7 @@ export const useSiteOptions = async <T = Record<string, any>>(
 
   const isStored = saveOptions !== undefined;
   // 如果当前站点没有存储配置，就补充上去
-  if (!isStored) await GM.setValue(name, options);
+  if (!isStored) await GM.setValue(name, {});
 
   return {
     /** 站点配置 */

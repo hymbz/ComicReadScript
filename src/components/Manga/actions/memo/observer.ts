@@ -32,6 +32,6 @@ export const bindScrollTop = (dom: HTMLElement) => {
 
 // 窗口宽度小于800像素时，标记为移动端
 createEffectOn(
-  () => store.rootSize,
-  ({ width }) => _setState('isMobile', inRange(1, width, 800)),
+  () => store.rootSize.width,
+  (width) => _setState('isMobile', inRange(1, width, 800)),
 );

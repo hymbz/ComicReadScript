@@ -18,9 +18,9 @@ interface Area {
 }
 
 /** 并排卷轴模式下的每列布局 */
-export const abreastArea = createThrottleMemo<Area>(
+export const abreastArea = createRootMemo<Area>(
   (prev): Area => {
-    if (!store.option.scrollMode.enabled) return prev!;
+    if (!store.option.scrollMode.enabled) return prev;
 
     const columns: number[][] = [[]];
     const position: Area['position'] = {};
@@ -91,7 +91,6 @@ export const abreastArea = createThrottleMemo<Area>(
 
     return { columns, position, length };
   },
-  100,
   { columns: [], position: {}, length: 0 },
 );
 

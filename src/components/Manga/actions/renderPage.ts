@@ -19,6 +19,7 @@ const findTopImg = (top: number, initIndex = 0) => {
   return imgTopList().length - 1;
 };
 
+/** 获取并排卷轴模式下指定列的指定图片 */
 const getAbreastColumnImg = (column: number, img: number) => {
   const { columns } = abreastArea();
   return columns[clamp(0, column, columns.length - 1)]?.at(img) ?? 0;
@@ -77,7 +78,8 @@ createEffectOn(
     () => store.option.scrollMode.enabled,
     () => store.activePageIndex,
     () => store.option.scrollMode.abreastMode,
-    () => store.rootSize,
+    () => store.rootSize.width,
+    () => store.rootSize.height,
     abreastShowColumn,
     scrollTop,
   ],

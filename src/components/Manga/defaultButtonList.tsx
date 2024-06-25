@@ -60,7 +60,7 @@ export const defaultButtonList: ToolbarButtonList = [
           ? t('button.page_mode_single')
           : t('button.page_mode_double')
       }
-      hidden={isOnePageMode()}
+      hidden={store.isMobile || store.option.scrollMode.enabled}
       onClick={switchOnePageMode}
       children={store.option.onePageMode ? <MdLooksOne /> : <MdLooksTwo />}
     />
