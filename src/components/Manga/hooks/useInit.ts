@@ -8,7 +8,7 @@ import {
   defaultHotkeys,
   defaultImgType,
   focus,
-  watchRootSize,
+  watchDomSize,
   resetImgState,
   scrollTo,
   updatePageData,
@@ -25,7 +25,7 @@ const createComicImg = (url: string): ComicImg => ({
 });
 
 export const useInit = (props: MangaProps) => {
-  watchRootSize(refs.root);
+  watchDomSize('rootSize', refs.root);
 
   const watchProps: Partial<
     Record<keyof MangaProps, (state: State) => unknown>
@@ -100,14 +100,14 @@ export const useInit = (props: MangaProps) => {
       state.commentList = props.commentList;
     },
   };
-  Object.entries(watchProps).forEach(([key, fn]) =>
+  for (const [key, fn] of Object.entries(watchProps)) {
     createEffect(
       on(
         () => props[key as keyof MangaProps],
         () => setState(fn),
       ),
-    ),
-  );
+    );
+  }
 
   const handleImgList = () => {
     setState((state) => {

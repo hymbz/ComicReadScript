@@ -76,7 +76,7 @@ declare const b2token: string;
       });
     };
 
-    querySelectorAll('.xControl > a').forEach((a, i) => {
+    for (const [i, a] of querySelectorAll('.xControl > a').entries()) {
       const imgRoot = a.parentElement!.nextElementSibling! as HTMLElement;
       imgListMap.push(imgRoot.getElementsByTagName('img'));
 
@@ -89,7 +89,7 @@ declare const b2token: string;
         )
           return loadChapterImg(i);
       });
-    });
+    }
     return;
   }
 

@@ -20,8 +20,6 @@ import {
   scrollTo,
   scrollTop,
   isOnePageMode,
-  rootSize,
-  watchFlowSize,
   isAbreastMode,
   isScrollMode,
   abreastColumnWidth,
@@ -37,8 +35,6 @@ import { EmptyTip } from './EmptyTip';
 import { ComicImg } from './ComicImg';
 
 export const ComicImgFlow: Component = () => {
-  onMount(() => watchFlowSize(refs.mangaFlow));
-
   const { hiddenMouse, onMouseMove } = useHiddenMouse();
 
   const handleDrag: UseDrag = (state, e) => {
@@ -125,11 +121,11 @@ export const ComicImgFlow: Component = () => {
     '--zoom-y': () => `${store.zoom.offset.y}px`,
     '--page-x'() {
       if (isScrollMode()) return '0px';
-      const x = `${store.page.offset.x.pct * rootSize().width + store.page.offset.x.px}px`;
+      const x = `${store.page.offset.x.pct * store.rootSize.width + store.page.offset.x.px}px`;
       return store.option.dir === 'rtl' ? x : `calc(${x} * -1)`;
     },
     '--page-y': () =>
-      `${store.page.offset.y.pct * rootSize().height + store.page.offset.y.px}px`,
+      `${store.page.offset.y.pct * store.rootSize.height + store.page.offset.y.px}px`,
     'touch-action'() {
       if (store.gridMode) return 'auto';
       if (store.zoom.scale !== 100) {

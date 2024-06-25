@@ -27,7 +27,7 @@ module.exports = {
     "import/extensions": "off",
     "n/file-extension-in-import": "off",
     // 不限制循环方式
-    "unicorn/no-array-for-each": "off",
+    // "unicorn/no-array-for-each": "off",
     // 不限制注释首字母大小写
     "capitalized-comments": "off",
     // 不强制使用 addEventListener

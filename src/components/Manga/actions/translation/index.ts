@@ -69,7 +69,7 @@ const translationAll = singleThreaded(async (): Promise<void> => {
 /** 开启或关闭指定图片的翻译 */
 export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
   setState((state) => {
-    list.forEach((i) => {
+    for (const i of list) {
       const img = state.imgList[i];
       if (!img) return;
 
@@ -107,7 +107,7 @@ export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
           }
         }
       }
-    });
+    }
   });
 
   return translationAll();

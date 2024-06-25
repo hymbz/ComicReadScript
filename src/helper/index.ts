@@ -31,9 +31,7 @@ export const approx = (val: number, target: number, range: number) =>
 /** 根据传入的条件列表的真假，对 val 进行取反 */
 export const ifNot = (val: unknown, ...conditions: boolean[]) => {
   let res = Boolean(val);
-  conditions.forEach((v) => {
-    if (v) res = !res;
-  });
+  for (const v of conditions) if (v) res = !res;
   return res;
 };
 
@@ -478,9 +476,8 @@ export const requestIdleCallback = (
  */
 export const autoUpdate = (update: () => Promise<void>) => {
   const refresh = singleThreaded(update);
-  ['click', 'popstate'].forEach((eventName) =>
-    window.addEventListener(eventName, refresh, { capture: true }),
-  );
+  for (const eventName of ['click', 'popstate'])
+    window.addEventListener(eventName, refresh, { capture: true });
   refresh();
 };
 

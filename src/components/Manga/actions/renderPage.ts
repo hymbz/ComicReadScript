@@ -5,7 +5,7 @@ import { type State, setState, store, _setState } from '../store';
 
 import { abreastArea, abreastShowColumn } from './abreastScroll';
 import { scrollLength } from './scroll';
-import { rootSize, scrollTop } from './memo/observer';
+import { scrollTop } from './memo/observer';
 import { contentHeight, imgTopList } from './imageSize';
 
 /** 找到普通卷轴模式下指定高度上的图片 */
@@ -56,9 +56,9 @@ export const updateShowRange = (state: State) => {
   } else {
     // 普通卷轴模式
     const top = scrollTop();
-    const bottom = scrollTop() + rootSize().height;
-    const renderTop = top - rootSize().height;
-    const rednerBottom = bottom + rootSize().height;
+    const bottom = scrollTop() + state.rootSize.height;
+    const renderTop = top - state.rootSize.height;
+    const rednerBottom = bottom + state.rootSize.height;
 
     const renderTopImg = findTopImg(renderTop);
     const topImg = findTopImg(top, renderTopImg);
@@ -77,9 +77,9 @@ createEffectOn(
     () => store.option.scrollMode.enabled,
     () => store.activePageIndex,
     () => store.option.scrollMode.abreastMode,
+    () => store.rootSize,
     abreastShowColumn,
     scrollTop,
-    rootSize,
   ],
   throttle(() => setState(updateShowRange)),
   // 两种卷轴模式下都可以通过在每次滚动后记录

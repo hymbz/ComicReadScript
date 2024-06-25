@@ -1,9 +1,8 @@
-import { createRoot, createSignal } from 'solid-js';
+import { createSignal } from 'solid-js';
 import { inRange } from 'helper';
 import { createEffectOn, createRootMemo } from 'helper/solidJs';
 
 import { store, _setState } from '../../store';
-import { useDomSize } from '../../hooks/useDomSize';
 
 import { isAbreastMode } from './common';
 
@@ -11,15 +10,12 @@ import { isAbreastMode } from './common';
 export const imgPageMap = createRootMemo(() => {
   const map: Record<number, number> = {};
   for (let i = 0; i < store.pageList.length; i++) {
-    store.pageList[i].forEach((imgIndex) => {
+    for (const imgIndex of store.pageList[i])
       if (imgIndex !== -1) map[imgIndex] = i;
-    });
   }
 
   return map;
 });
-export const [rootSize, watchRootSize] = useDomSize();
-export const [flowSize, watchFlowSize] = useDomSize();
 
 const [_scrollTop, setScrollTop] = createSignal(0);
 /** 卷轴模式下的滚动距离 */
@@ -35,6 +31,7 @@ export const bindScrollTop = (dom: HTMLElement) => {
 };
 
 // 窗口宽度小于800像素时，标记为移动端
-createEffectOn(rootSize, ({ width }) =>
-  _setState('isMobile', inRange(1, width, 800)),
+createEffectOn(
+  () => store.rootSize,
+  ({ width }) => _setState('isMobile', inRange(1, width, 800)),
 );

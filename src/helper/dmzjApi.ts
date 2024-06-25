@@ -110,9 +110,8 @@ const getComicDetail_v4Api = async (comicId: string): Promise<ComicDetail> => {
     comicInfo: { last_update_chapter_id, last_updatetime, chapters, title },
   } = dmzjDecrypt(res.responseText);
 
-  Object.values(chapters).forEach((chapter) => {
+  for (const chapter of Object.values(chapters))
     chapter.data.sort((a, b) => a.chapter_order - b.chapter_order);
-  });
 
   return {
     title,

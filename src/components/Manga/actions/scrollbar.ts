@@ -1,11 +1,9 @@
-import { createRoot, createSignal } from 'solid-js';
 import { clamp } from 'helper';
-import { createEffectOn, createRootMemo } from 'helper/solidJs';
+import { createRootMemo } from 'helper/solidJs';
 
 import { type PointerState, type UseDrag } from '../hooks/useDrag';
 import { type State, store, refs, _setState } from '../store';
 
-import { rootSize } from './memo';
 import {
   scrollLength,
   scrollPercentage,
@@ -13,9 +11,10 @@ import {
   sliderHeight,
 } from './scroll';
 
-const [_scrollDomLength, setScrollDomLength] = createSignal(0);
 /** 滚动条元素的长度 */
-export const scrollDomLength = _scrollDomLength;
+export const scrollDomLength = createRootMemo(() =>
+  Math.max(store.scrollbarSize.width, store.scrollbarSize.height),
+);
 
 /** 滚动条滑块的中心点高度 */
 export const sliderMidpoint = createRootMemo(
@@ -109,17 +108,3 @@ export const handlescrollbarSlider: UseDrag = ({ type, xy, initial }, e) => {
       _setState('activePageIndex', newPageIndex);
   }
 };
-
-createRoot(() => {
-  // 更新 scrollLength
-  createEffectOn([scrollPosition, rootSize], () => {
-    if (!refs.scrollbar) return;
-    // 部分情况下，在窗口大小改变后滚动条大小不会立刻跟着修改，需要等待一帧渲染
-    // 比如打开后台标签页后等一会再切换过去
-    requestAnimationFrame(() =>
-      setScrollDomLength(
-        Math.max(refs.scrollbar.clientWidth, refs.scrollbar.clientHeight),
-      ),
-    );
-  });
-});

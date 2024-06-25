@@ -432,7 +432,7 @@ try {
           dynamicUpdate(async (setImg) => {
             for (let i = 0; i < imgNum; i++) {
               const newImgs = await getPageImg(i + 1);
-              newImgs.forEach((url) => setImg(i, url));
+              for (const url of newImgs) setImg(i, url);
             }
           }, imgNum)(),
         onNext: handlePrevNext(

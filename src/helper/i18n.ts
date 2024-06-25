@@ -35,9 +35,9 @@ export const t = createRoot(() => {
   return (keys: string, variables?: Record<string, unknown>) => {
     let text = byPath<string>(locales(), keys) ?? '';
     if (variables)
-      Object.entries(variables).forEach(([k, v]) => {
+      for (const [k, v] of Object.entries(variables))
         text = text.replaceAll(`{{${k}}}`, `${String(v)}`);
-      });
+
     if (isDevMode && !text) log.warn('unknown i18n key', keys);
     return text;
   };

@@ -3,12 +3,7 @@ import { getImgSize, requestIdleCallback, singleThreaded } from 'helper';
 
 import { type State, store, setState } from '../store';
 
-import {
-  rootSize,
-  abreastColumnWidth,
-  isAbreastMode,
-  placeholderSize,
-} from './memo';
+import { abreastColumnWidth, isAbreastMode, placeholderSize } from './memo';
 import { updateImgType } from './imageType';
 
 let height = 0;
@@ -30,8 +25,8 @@ const getImgDisplaySize = (state: State, index: number) => {
   if (!state.option.scrollMode.enabled) return { height, width };
 
   if (isAbreastMode()) return setWidth(abreastColumnWidth());
-  if (state.option.scrollMode.fitToWidth || width > rootSize().width)
-    return setWidth(rootSize().width);
+  if (state.option.scrollMode.fitToWidth || width > state.rootSize.width)
+    return setWidth(state.rootSize.width);
 
   height *= state.option.scrollMode.imgScale;
   width *= state.option.scrollMode.imgScale;
@@ -61,8 +56,8 @@ createEffectOn(
     () => store.option.scrollMode.fitToWidth,
     () => store.option.scrollMode.imgScale,
     () => store.imgList,
+    () => store.rootSize,
     placeholderSize,
-    rootSize,
   ],
   ([isScrollMode]) => {
     if (!isScrollMode) return;

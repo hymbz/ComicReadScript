@@ -45,12 +45,12 @@ export const hotkeysMap = createRootMemo(() =>
 
 /** 删除指定快捷键 */
 export const delHotkeys = (code: string) => {
-  Object.entries(store.hotkeys).forEach(([name, keys]) => {
+  for (const [name, keys] of Object.entries(store.hotkeys)) {
     const i = keys.indexOf(code);
     if (i === -1) return;
 
     const newKeys = [...store.hotkeys[name]];
     newKeys.splice(i, 1);
     setHotkeys(name, newKeys);
-  });
+  }
 };

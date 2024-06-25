@@ -2,11 +2,9 @@ import { createRootMemo, createThrottleMemo } from 'helper/solidJs';
 import { createSignal } from 'solid-js';
 import { clamp } from 'helper';
 
-import classes from '../index.module.css';
 import { store } from '../store';
 
 import { abreastColumnWidth, isAbreastMode } from './memo/common';
-import { rootSize } from './memo/observer';
 
 /** 并排卷轴模式下的全局滚动填充 */
 export const [abreastScrollFill, _setAbreastScrollFill] = createSignal(0);
@@ -28,7 +26,7 @@ export const abreastArea = createThrottleMemo<Area>(
     const position: Area['position'] = {};
     let length = 0;
 
-    const rootHeight = rootSize().height;
+    const rootHeight = store.rootSize.height;
     if (!rootHeight || store.imgList.length === 0)
       return { columns, position, length };
 
@@ -99,7 +97,7 @@ export const abreastArea = createThrottleMemo<Area>(
 
 /** 头尾滚动的限制值 */
 const scrollFillLimit = createRootMemo(
-  () => abreastArea().length - rootSize().height,
+  () => abreastArea().length - store.rootSize.height,
 );
 export const setAbreastScrollFill = (val: number) =>
   _setAbreastScrollFill(clamp(-scrollFillLimit(), val, scrollFillLimit()));
@@ -113,7 +111,7 @@ export const abreastShowColumn = createThrottleMemo(() => {
     start = abreastArea().columns.length - 1;
 
   let end = Math.floor(
-    (store.page.offset.x.px + rootSize().width) / abreastColumnWidth(),
+    (store.page.offset.x.px + store.rootSize.width) / abreastColumnWidth(),
   );
   if (end >= abreastArea().columns.length)
     end = abreastArea().columns.length - 1;
@@ -130,19 +128,17 @@ export const abreastContentWidth = createRootMemo(
 
 /** 并排卷轴模式下的最大滚动距离 */
 export const abreastScrollWidth = createRootMemo(
-  () => abreastContentWidth() - rootSize().width,
+  () => abreastContentWidth() - store.rootSize.width,
 );
 
-/** 卷轴模式下每个图片所在位置的样式 */
+/** 并排卷轴模式下每个图片所在位置的样式 */
 export const imgAreaStyle = createRootMemo(() => {
   if (!isAbreastMode() || store.gridMode) return '';
 
   let styleText = '';
 
-  const selector = (index: number, imgNum = 0) => {
-    const indexText = `${index}${imgNum === 0 ? '' : `-${imgNum}`}`;
-    return `#mangaFlow > .${classes.img}[data-index="${indexText}"]`;
-  };
+  const selector = (index: number, imgNum = 0) =>
+    `#_${index}${imgNum === 0 ? '' : `-${imgNum}`}`;
 
   for (const index of store.imgList.keys()) {
     let imgNum = 0;

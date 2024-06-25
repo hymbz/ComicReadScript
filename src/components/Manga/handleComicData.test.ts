@@ -16,7 +16,12 @@ const mock = (
   const fillEffect = { '-1': true, ...initFillEffect };
   const pageList = handleComicData(
     imgTypeList.map(
-      (type): ComicImg => ({ type, loadType: 'loaded', src: '' }),
+      (type): ComicImg => ({
+        type,
+        loadType: 'loaded',
+        src: '',
+        size: { height: 0, width: 0 },
+      }),
     ),
     fillEffect,
   );

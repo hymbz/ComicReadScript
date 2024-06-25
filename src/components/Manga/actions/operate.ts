@@ -7,7 +7,6 @@ import {
   abreastColumnWidth,
   isAbreastMode,
   isScrollMode,
-  rootSize,
   scrollTop,
 } from './memo';
 import {
@@ -48,7 +47,9 @@ export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
 /** 卷轴模式下的页面滚动 */
 const scrollModeScrollPage = (dir: 'next' | 'prev') => {
   if (!store.show.endPage) {
-    scrollTo(scrollTop() + rootSize().height * 0.8 * (dir === 'next' ? 1 : -1));
+    scrollTo(
+      scrollTop() + store.rootSize.height * 0.8 * (dir === 'next' ? 1 : -1),
+    );
     _setState('flag', 'scrollLock', true);
   }
 
@@ -131,10 +132,14 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   if (isAbreastMode()) {
     switch (hotkeysMap()[code]) {
       case 'scroll_up':
-        setAbreastScrollFill(abreastScrollFill() - rootSize().height * 0.02);
+        setAbreastScrollFill(
+          abreastScrollFill() - store.rootSize.height * 0.02,
+        );
         return;
       case 'scroll_down':
-        setAbreastScrollFill(abreastScrollFill() + rootSize().height * 0.02);
+        setAbreastScrollFill(
+          abreastScrollFill() + store.rootSize.height * 0.02,
+        );
         return;
 
       case 'scroll_left':
@@ -143,9 +148,9 @@ export const handleKeyDown = (e: KeyboardEvent) => {
         return scrollTo(scrollProgress() - abreastColumnWidth());
 
       case 'page_up':
-        return scrollTo(scrollProgress() - rootSize().width * 0.8);
+        return scrollTo(scrollProgress() - store.rootSize.width * 0.8);
       case 'page_down':
-        return scrollTo(scrollProgress() + rootSize().width * 0.8);
+        return scrollTo(scrollProgress() + store.rootSize.width * 0.8);
 
       case 'jump_to_home':
         return scrollTo(0);

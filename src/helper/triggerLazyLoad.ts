@@ -105,8 +105,8 @@ const handleTrigged = (e: HTMLImageElement) => {
 };
 
 /** 监视图片是否被显示的 Observer */
-imgShowObserver = new IntersectionObserver((entries) =>
-  entries.forEach((img) => {
+imgShowObserver = new IntersectionObserver((entries) => {
+  for (const img of entries) {
     const ele = img.target as HTMLImageElement;
     if (img.isIntersecting) {
       imgMap.set(ele, {
@@ -117,8 +117,8 @@ imgShowObserver = new IntersectionObserver((entries) =>
 
     const timeoutID = imgMap.get(ele)?.observerTimeout;
     if (timeoutID) window.clearTimeout(timeoutID);
-  }),
-);
+  }
+});
 
 const turnPageScheduled = createScheduled((fn) => throttle(fn, 1000));
 /** 触发翻页 */

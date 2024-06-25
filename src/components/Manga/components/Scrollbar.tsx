@@ -25,6 +25,7 @@ import {
   isAbreastMode,
   abreastArea,
   sliderTop,
+  watchDomSize,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -38,6 +39,7 @@ export const Scrollbar: Component = () => {
       handleDrag: handlescrollbarSlider,
       easyMode: () => isScrollMode() && store.option.scrollbar.easyScroll,
     });
+    watchDomSize('scrollbarSize', refs.scrollbar);
   });
 
   // 在被滚动时使自身可穿透，以便在卷轴模式下触发页面的滚动
@@ -61,7 +63,7 @@ export const Scrollbar: Component = () => {
       .map((column) => column.map(getPageTip));
     if (store.option.dir === 'rtl') {
       columns.reverse();
-      columns.forEach((column) => column.reverse());
+      for (const column of columns) column.reverse();
     }
     return columns.map((column) => column.join(', ')).join(' | ');
   });

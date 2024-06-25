@@ -59,9 +59,7 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     <picture
       class={classes.img}
       style={style()}
-      data-index={
-        props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index
-      }
+      id={`_${props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index}`}
       data-show={show()}
       data-type={img?.type || undefined}
       data-load-type={img?.loadType === 'loaded' ? undefined : img?.loadType}

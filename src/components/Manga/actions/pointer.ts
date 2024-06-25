@@ -6,7 +6,7 @@ import { type UseDrag } from '../hooks/useDrag';
 import { store, setState, refs } from '../store';
 
 import { resetUI } from './helper';
-import { imgPageMap, rootSize } from './memo';
+import { imgPageMap } from './memo';
 import { resetPage } from './show';
 import { zoom } from './zoom';
 import { turnPageFn, turnPageAnimation, turnPage } from './turnPage';
@@ -223,10 +223,10 @@ export const handleTrackpadWheel = (e: WheelEvent) => {
     }
 
     // 滚动过一页时
-    if (dy <= -rootSize().height) {
-      if (turnPageFn(state, 'next')) dy += rootSize().height;
-    } else if (dy >= rootSize().height && turnPageFn(state, 'prev'))
-      dy -= rootSize().height;
+    if (dy <= -state.rootSize.height) {
+      if (turnPageFn(state, 'next')) dy += state.rootSize.height;
+    } else if (dy >= state.rootSize.height && turnPageFn(state, 'prev'))
+      dy -= state.rootSize.height;
 
     state.page.vertical = true;
     state.isDragMode = true;

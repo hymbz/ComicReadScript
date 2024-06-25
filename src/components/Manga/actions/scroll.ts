@@ -10,7 +10,7 @@ import {
 } from './abreastScroll';
 import { isScrollMode, isAbreastMode, abreastColumnWidth } from './memo/common';
 import { contentHeight, imgTopList } from './imageSize';
-import { scrollTop, rootSize } from './memo/observer';
+import { scrollTop } from './memo/observer';
 import { setOption } from './helper';
 
 /** 滚动内容的长度 */
@@ -35,8 +35,8 @@ export const scrollPercentage = createRootMemo(
 /** 滚动条滑块长度 */
 export const sliderHeight = createRootMemo(() => {
   let itemLength = 1;
-  if (isScrollMode()) itemLength = rootSize().height;
-  if (isAbreastMode()) itemLength = rootSize().width;
+  if (isScrollMode()) itemLength = store.rootSize.height;
+  if (isAbreastMode()) itemLength = store.rootSize.width;
   return itemLength / scrollLength();
 });
 

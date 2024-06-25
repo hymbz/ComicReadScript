@@ -4,7 +4,6 @@ import { type State, setState, store } from '../store';
 import { isWideImg } from '../handleComicData';
 
 import { resetImgState, updatePageData } from './image';
-import { rootSize } from './memo';
 
 /** 根据比例判断图片类型 */
 export const getImgType = (
@@ -20,7 +19,7 @@ export const getImgType = (
 
 /** 更新图片类型。返回是否修改了图片类型 */
 const _updateImgType = (state: State, draftImg: ComicImg) => {
-  if (!rootSize().width || !rootSize().height) return false;
+  if (!state.rootSize.width || !state.rootSize.height) return false;
   const { type } = draftImg;
   if (!draftImg.width || !draftImg.height) return false;
   draftImg.type = getImgType(draftImg as Required<ComicImg>, state);
@@ -108,7 +107,7 @@ export const updateImgType = (state: State, i: number) => {
 
 // 处理显示窗口的长宽变化
 createEffectOn(
-  rootSize,
+  () => store.rootSize,
   ({ width, height }) =>
     setState((state) => {
       state.proportion.单页比例 = Math.min(width / 2 / height, 1);
@@ -125,5 +124,4 @@ createEffectOn(
       if (isEdited) resetImgState(state);
       updatePageData(state);
     }),
-  { defer: true },
 );
