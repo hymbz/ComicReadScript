@@ -55,6 +55,7 @@ export const Scrollbar: Component = () => {
     () => store.show.scrollbar || Boolean(penetrate()),
   );
 
+  /** 并排卷轴模式下的滚动条提示文本 */
   const abreastShowTip = createMemo(() => {
     if (!isAbreastMode()) return undefined;
 
@@ -65,7 +66,7 @@ export const Scrollbar: Component = () => {
       columns.reverse();
       for (const column of columns) column.reverse();
     }
-    return columns.map((column) => column.join(', ')).join(' | ');
+    return columns.map((column) => column.join(' ')).join('\n');
   });
 
   /** 滚动条提示文本 */
@@ -106,6 +107,7 @@ export const Scrollbar: Component = () => {
       data-force-show={boolDataVal(showScrollbar())}
       data-dir={store.option.dir}
       data-position={scrollPosition()}
+      data-is-abreast-mode={boolDataVal(isAbreastMode())}
       onWheel={handleWheel}
     >
       <div

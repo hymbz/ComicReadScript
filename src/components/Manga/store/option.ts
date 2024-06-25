@@ -105,7 +105,7 @@ const _defaultOption: Readonly<Option> = {
   darkMode: false,
   swapPageTurnKey: false,
   jumpToNext: true,
-  alwaysLoadAllImg: true,
+  alwaysLoadAllImg: false,
   showComment: true,
   preloadPageNum: 20,
 

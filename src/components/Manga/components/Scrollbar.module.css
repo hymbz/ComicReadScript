@@ -284,6 +284,19 @@
   }
 }
 
+.scrollbar[data-is-abreast-mode] {
+  /* stylelint-disable-next-line no-descending-specificity */
+  & .scrollbarPoper {
+    writing-mode: vertical-rl;
+    line-height: 1.5em;
+    text-orientation: upright;
+  }
+
+  &[data-dir="ltr"] .scrollbarPoper {
+    writing-mode: vertical-lr;
+  }
+}
+
 /* 卷轴模式下取消滚动条的位移动画 */
 .root[data-scroll-mode] .scrollbar::before,
 .root[data-scroll-mode] :is(.scrollbarSlider, .scrollbarPoper) {
