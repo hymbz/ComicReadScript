@@ -1,9 +1,9 @@
-name: updatePage
+name: updateDocsPage
 
 on:
   push:
     paths:
-      - '**.md'
+      - "**.md"
 
 jobs:
   deploy:
@@ -53,6 +53,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'comic-read-docs'
-          directory: 'docs/.vitepress/dist'
+          projectName: "comic-read-docs"
+          directory: "docs/.vitepress/dist"
           branch: main
