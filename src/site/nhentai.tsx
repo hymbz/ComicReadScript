@@ -78,7 +78,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
     if (options.auto_page_turn) {
       GM_addStyle(`
-        hr { bottom: 0; box-sizing: border-box; margin: -1em auto 2em; }
+        hr { bottom: 1px; box-sizing: border-box; margin: -1em auto 2em; }
         hr:last-child { position: relative; animation: load .8s linear alternate infinite; }
         hr:not(:last-child) { display: none; }
         @keyframes load { 0% { width: 100%; } 100% { width: 0; } }
