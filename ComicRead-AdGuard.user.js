@@ -7282,8 +7282,8 @@ const useFab = async initProps => {
 };
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>兼容 AdGuard </p></li><li><p>修复在动漫之家隐藏漫画上无法显示结束页的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>实现并排卷轴模式\`);
 const migrationOption = async (name, editFn) => {
   try {
     const option = await GM.getValue(name);
