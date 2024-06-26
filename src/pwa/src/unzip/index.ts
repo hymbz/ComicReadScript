@@ -9,11 +9,16 @@ import { fflate } from './fflate';
 import { libunrar } from './libunrar';
 import { libarchive } from './libarchive';
 
+const unzipFnMap = new Map<
+  string,
+  (data: ZipData) => Promise<Array<ImgFile | undefined>>
+>();
 // fflate 速度最快所以最先尝试
+unzipFnMap.set('fflate', fflate);
 // 是 rar 再交给 libunrar
+unzipFnMap.set('libunrar', libunrar);
 // 最后 7z 或有密码的给 libarchive
-const unzipFnList = [fflate, libunrar, libarchive];
-const unzipFnOrder = ['fflate', 'libunrar', 'libarchive'];
+unzipFnMap.set('libarchive', libarchive);
 
 export interface ZipData {
   zipFile: File;
@@ -28,15 +33,13 @@ export const unzip = async (zipFile: File, extension: ZipExtension) => {
 
   let imgDataList: Array<ImgFile | undefined> = [];
 
-  for (const [i, unzipFn] of unzipFnList.entries()) {
+  for (const [name, unzipFn] of unzipFnMap.entries()) {
     try {
-      log(unzipFnOrder[i]);
+      log(name);
       imgDataList = await unzipFn({ zipFile, tip, extension });
     } catch (error) {
       toast.error(
-        `${unzipFnOrder[i]} ${t('pwa.alert.unzip_error')}：${
-          (error as Error).message
-        }`,
+        `${name} ${t('pwa.alert.unzip_error')}：${(error as Error).message}`,
       );
     }
 

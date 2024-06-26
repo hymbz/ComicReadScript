@@ -8,6 +8,7 @@ import { store, setState, _setState } from '../store';
 
 import { preloadNum } from './memo/common';
 import { updateImgSize } from './imageSize';
+import { renderImgList } from './renderPage';
 
 const [loadLock, setLoadLock] = createSignal(false);
 
@@ -142,11 +143,8 @@ const updateImgLoadType = singleThreaded(() => {
 createEffectOn(
   [
     loadLock,
-    () => store.pageList,
-    () => store.imgList,
-    () => store.activePageIndex,
+    () => [...renderImgList()].map((i) => store.imgList[i]),
     () => store.option.alwaysLoadAllImg,
-    () => store.showRange,
   ],
   updateImgLoadType,
 );

@@ -16,18 +16,18 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  */
 const resourceList: Record<string, [string, string] | [string]> = {
   'solid-js': [
-    'https://registry.npmmirror.com/solid-js/1.8.12/files/dist/solid.cjs',
-    'https://registry.npmmirror.com/solid-js/1.8.12/files/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.17/files/dist/solid.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.17/files/dist/dev.cjs',
   ],
   'solid-js/store': [
-    'https://registry.npmmirror.com/solid-js/1.8.12/files/store/dist/store.cjs',
-    'https://registry.npmmirror.com/solid-js/1.8.12/files/store/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.17/files/store/dist/store.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.17/files/store/dist/dev.cjs',
   ],
   'solid-js/web': [
-    'https://registry.npmmirror.com/solid-js/1.8.12/files/web/dist/web.cjs',
-    'https://registry.npmmirror.com/solid-js/1.8.12/files/web/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.17/files/web/dist/web.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.17/files/web/dist/dev.cjs',
   ],
-  fflate: ['https://registry.npmmirror.com/fflate/0.8.1/files/umd/index.js'],
+  fflate: ['https://registry.npmmirror.com/fflate/0.8.2/files/umd/index.js'],
   'qr-scanner': [
     'https://registry.npmmirror.com/qr-scanner/1.4.2/files/qr-scanner.legacy.min.js',
   ],
@@ -91,7 +91,6 @@ export const getMetaData = (isDevMode: boolean) => {
     noframes: true,
     match: '*://*/*',
     connect: [
-      'cdn.jsdelivr.net',
       'yamibo.com',
       'dmzj.com',
       'idmzj.com',
