@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { beforeEach, expect, it } from 'vitest';
 
 import { handleComicData, autoCloseFill } from './handleComicData';
