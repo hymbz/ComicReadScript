@@ -29,6 +29,11 @@ const exec = (...commands) => {
       path.join(__dirname, './dist/index.js'),
       path.join(__dirname, './ComicRead.user.js'),
     );
+    shell.cp(
+      '-f',
+      path.join(__dirname, './dist/adguard.js'),
+      path.join(__dirname, './ComicRead-AdGuard.user.js'),
+    );
 
     // 提交上传更改
     exec(

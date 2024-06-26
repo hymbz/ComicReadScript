@@ -30,6 +30,8 @@
 1. 首先需要在浏览器上装好 [Violentmonkey](https://violentmonkey.github.io/)、[Tampermonkey](https://tampermonkey.net/) 之类的油猴扩展
 2. 然后通过 GreasyFork 安装脚本：[点我](https://sleazyfork.org/zh-CN/scripts/374903-comicread)
 
+> 另外也有 [AdGuard版](https://github.com/hymbz/ComicReadScript/raw/master/ComicRead-AdGuard.user.js)
+
 ## 快捷键
 
 | 操作 | 快捷键 |

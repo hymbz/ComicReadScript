@@ -12,7 +12,12 @@ import json from '@rollup/plugin-json';
 import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
 import { watchExternal } from 'rollup-plugin-watch-external';
-import type { InputPluginOption, Plugin, RollupOptions } from 'rollup';
+import type {
+  InputPluginOption,
+  OutputOptions,
+  OutputPluginOption,
+  RollupOptions,
+} from 'rollup';
 import { createServer } from 'vite';
 import { parse as parseMd } from 'marked';
 
@@ -60,11 +65,11 @@ const generateScopedName = '[local]';
 export const buildOptions = (
   fileName: string,
   watchFiles?: string[],
-  ...plugins: Array<Plugin | false>
+  fn?: (options: RollupOptions) => RollupOptions,
 ): RollupOptions => {
   const isUserScript = ['dev', 'index'].includes(fileName);
 
-  return {
+  const options: RollupOptions = {
     treeshake: true,
     external: [...Object.keys(meta.resource ?? {}), 'main', 'dmzjDecrypt'],
     input: resolve(__dirname, 'src', fileName),
@@ -109,7 +114,6 @@ export const buildOptions = (
       }),
 
       watchFiles && isDevMode && watchExternal({ entries: watchFiles }),
-      ...plugins,
     ],
     output: {
       // dev 和 index 外的文件都放到 cache 文件夹下
@@ -156,6 +160,8 @@ export const buildOptions = (
       ],
     },
   };
+
+  return fn ? fn(options) : options;
 };
 
 // 清空 dist 文件夹
@@ -200,8 +206,7 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
   server.printUrls();
 })();
 
-// eslint-disable-next-line import/no-anonymous-default-export
-export default [
+const optionList: RollupOptions[] = [
   // // 打包 dmzjDecrypt 时用的配置
   // (() => {
   //   const options = buildOptions(
@@ -228,3 +233,76 @@ export default [
 
   buildOptions('index', ['dist/**/*', '!dist/index.js']),
 ];
+
+if (!isDevMode)
+  optionList.push(
+    buildOptions('index', ['dist/**/*', '!dist/index.js'], (options) => {
+      (options.output as OutputOptions).file = 'dist/adguard.js';
+      Reflect.deleteProperty(options.output!, 'dir');
+      ((options.output as OutputOptions).plugins as OutputPluginOption[]).push({
+        name: 'selfAdGuardPlugin',
+        renderChunk(rawCode) {
+          let code = rawCode;
+
+          // 不知道为啥俄罗斯访问不了 npmmirror
+          // https://github.com/hymbz/ComicReadScript/issues/170
+          // 或许和 unpkg 功能的白名单<https://github.com/cnpm/unpkg-white-list>有关
+          // <https://sleazyfork.org/zh-CN/scripts/374903/discussions/248665>
+          // 可能再过一段时间就能恢复？但总之目前只能先改用 jsdelivr
+          code = code.replaceAll(
+            /@resource .+? https:\/\/registry.npmmirror.com\/.+(?=\n)/g,
+            (text) =>
+              text
+                .replace('registry.npmmirror.com/', 'cdn.jsdelivr.net/npm/')
+                .replace(/(npm\/[^/]+)\//, '$1@')
+                .replace('files/', ''),
+          );
+
+          // AdGuard 无法支持简易阅读模式，所以改为只在支持网站上运行
+          const indexCode = fs.readFileSync(
+            resolve(__dirname, 'src/index.ts'),
+            'utf8',
+          );
+          const matchList = [
+            ...indexCode.matchAll(/(?<=\n\s+case ').+?(?=':)/g),
+          ]
+            .filter(([url]) => !url.includes('siteUrl#'))
+            .flatMap(([url]) => `// @match           *://${url}/*`);
+          code = code.replace(
+            /\/\/ @match \s+ \*:\/\/\*\/\*/,
+            matchList.join('\n'),
+          );
+
+          // 删掉不支持的菜单 api
+          code = code.replaceAll(
+            /\/\/ @grant \s+ GM\.(registerMenuCommand|unregisterMenuCommand)\n/g,
+            '',
+          );
+
+          // 把菜单 api 的调用也改掉
+          code = code.replaceAll(
+            /await GM\.(registerMenuCommand|unregisterMenuCommand)/g,
+            'console.debug',
+          );
+
+          // 脚本更新链接也换掉
+          code = code.replaceAll(
+            '/raw/master/ComicRead.user.js',
+            '/raw/master/ComicRead-AdGuard.user.js',
+          );
+
+          // 不知道为啥会提示 'Access to function "GM_getValue" is not allowed.'
+          // 明明我用的是 GM.getValue。虽然好像对功能没有影响，但以防万一还是加上吧
+          code = code.replace(
+            /\n(?=\/\/ @grant)/,
+            '\n// @grant           GM_getValue\n// @grant           GM_setValue\n',
+          );
+
+          return code;
+        },
+      });
+      return options;
+    }),
+  );
+
+export default optionList;
