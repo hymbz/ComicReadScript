@@ -174,10 +174,14 @@
       "hotkeys_page_turn": "快捷键翻页",
       "load_original_image": "加载原图",
       "open_link_new_page": "在新页面中打开链接",
+      "quick_favorite": "快捷收藏",
       "remember_current_site": "记住当前站点"
     },
     "changed_load_failed": "网站发生变化，无法加载漫画",
     "ehentai": {
+      "change_favorite_failed": "收藏夹修改失败",
+      "change_favorite_success": "收藏夹修改成功",
+      "fetch_favorite_failed": "获取收藏夹信息失败",
       "fetch_img_page_source_failed": "获取图片页源码失败",
       "fetch_img_page_url_failed": "从详情页获取图片页地址失败",
       "fetch_img_url_failed": "从图片页获取图片地址失败",

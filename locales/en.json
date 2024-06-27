@@ -174,10 +174,14 @@
       "hotkeys_page_turn": "Page turning with hotkeys",
       "load_original_image": "Load original image",
       "open_link_new_page": "Open links in a new page",
+      "quick_favorite": "Quick favorite",
       "remember_current_site": "Remember the current site"
     },
     "changed_load_failed": "The website has undergone changes, unable to load comics",
     "ehentai": {
+      "change_favorite_failed": "Failed to change the favorite",
+      "change_favorite_success": "Favorite change success",
+      "fetch_favorite_failed": "Failed to get favorite info",
       "fetch_img_page_source_failed": "Failed to get the source code of the image page",
       "fetch_img_page_url_failed": "Failed to get the image page address from the detail page",
       "fetch_img_url_failed": "Failed to get the image address from the image page",

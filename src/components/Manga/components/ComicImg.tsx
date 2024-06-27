@@ -11,6 +11,8 @@ import {
   abreastArea,
   placeholderSize,
   defaultImgType,
+  handleImgError,
+  handleImgLoaded,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -66,7 +68,13 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
       data-load-type={img.loadType === 'loaded' ? undefined : img.loadType}
     >
       <Show when={props.cloneIndex === undefined || img.loadType === 'loaded'}>
-        <img src={src()} alt={`${img.index}`} draggable="false" />
+        <img
+          src={src()}
+          alt={`${img.index}`}
+          onLoad={(e) => handleImgLoaded(img.index, e.currentTarget)}
+          onError={(e) => handleImgError(img.index, e.currentTarget)}
+          draggable="false"
+        />
         <Show when={store.gridMode}>
           <div
             class={classes.gridModeTip}

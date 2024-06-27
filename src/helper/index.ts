@@ -507,3 +507,7 @@ export const keyboardCodeToText = (code: string) =>
     .replace('ArrowLeft', '←')
     .replace('ArrowRight', '→')
     .replace(/^\s$/, 'Space');
+
+/** 将 HTML 字符串转换为 DOM 对象 */
+export const domParse = (html: string) =>
+  new DOMParser().parseFromString(html, 'text/html');

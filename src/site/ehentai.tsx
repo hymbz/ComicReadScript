@@ -1,3 +1,5 @@
+import { type Accessor, For, createSignal, Show } from 'solid-js';
+import { render } from 'solid-js/web';
 import {
   t,
   insertNode,
@@ -18,6 +20,7 @@ import {
   getAdPageByFileName,
   getAdPageByContent,
   ReactiveSet,
+  domParse,
 } from 'main';
 
 declare const selected_tagname: string;
@@ -38,6 +41,8 @@ declare const selected_tagname: string;
     hotkeys_page_turn: true,
     /** 识别广告 */
     detect_ad: true,
+    /** 快捷收藏 */
+    quick_favorite: true,
     autoShow: false,
   });
 
@@ -84,9 +89,13 @@ declare const selected_tagname: string;
     return;
   }
 
+  const sidebarDom = document.getElementById('gd5')!;
+  // 表站开启了 Multi-Page Viewer 的话会将点击按钮挤出去，得缩一下位置
+  if (sidebarDom.children[6])
+    (sidebarDom.children[6] as HTMLElement).style.padding = '0';
   // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
   insertNode(
-    document.getElementById('gd5')!,
+    sidebarDom,
     '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>',
   );
   const comicReadModeDom = document.getElementById('comicReadMode')!;
@@ -433,5 +442,136 @@ declare const selected_tagname: string;
       // 非 nhentai 标签列的用原函数去处理
       else raw_refresh_tagmenu_act(a) as unknown;
     };
+  }
+
+  // 快捷收藏。必须处于登录状态
+  if (unsafeWindow.apiuid !== -1 && options.quick_favorite) {
+    const gd3 = querySelector('#gd3')!;
+    GM_addStyle(`
+      #gd3 {
+        position: relative;
+        height: 100%;
+      }
+
+      #comidread-favorites {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: calc(100% - 35px);
+        padding-left: 0.6em;
+        box-sizing: border-box;
+        z-index: 75;
+        border: none;
+        border-radius: 0;
+        overflow: auto;
+      }
+
+      .comidread-favorites-item {
+        display: flex;
+        align-items: center;
+        margin: 1em 0;
+        cursor: pointer;
+        width: fit-content;
+        text-align: left;
+      }
+
+      .comidread-favorites-item > input {
+        margin: 0 0.5em 0 0;
+        pointer-events: none;
+      }
+
+      .comidread-favorites-item > div {
+        margin: 0 0.5em 0 0;
+        height: 15px;
+        width: 15px;
+        background-repeat: no-repeat;
+        background-image: url(https://ehgt.org/g/fav.png);
+        flex-shrink: 0;
+      }
+    `);
+
+    const [show, setShow] = createSignal(false);
+
+    const [favorites, setFavorites] = createSignal<HTMLElement[]>([]);
+
+    const updateFavorite = async () => {
+      try {
+        const res = await request(`${unsafeWindow.popbase}addfav`, {
+          errorText: t('site.ehentai.fetch_favorite_failed'),
+        });
+        const dom = domParse(res.responseText);
+        const list = [...dom.querySelectorAll('.nosel > div')] as HTMLElement[];
+        if (list.length === 10) list[0].querySelector('input')!.checked = false;
+        setFavorites(list);
+      } catch {
+        toast.error(t('site.ehentai.fetch_favorite_failed'));
+        setFavorites([]);
+      }
+    };
+
+    // 将原本的收藏按钮改为切换显示快捷收藏夹
+    const favoriteDom = querySelector('#gdf')!;
+    favoriteDom.onclick = null;
+    favoriteDom.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      setShow((val) => !val);
+      if (show()) await updateFavorite();
+    });
+
+    const FavoriteItem = (e: HTMLElement, index: Accessor<number>) => {
+      const handleClick = async () => {
+        setShow(false);
+
+        const formData = new FormData();
+        formData.append('favcat', index() === 10 ? 'favdel' : `${index()}`);
+        formData.append('apply', 'Apply Changes');
+        formData.append('favnote', '');
+        formData.append('update', '1');
+        const res = await request(`${unsafeWindow.popbase}addfav`, {
+          method: 'POST',
+          data: formData,
+          errorText: t('site.ehentai.change_favorite_failed'),
+        });
+
+        toast.success(t('site.ehentai.change_favorite_success'));
+
+        // 修改收藏按钮样式的 js 代码
+        const updateCode = /\nif\(window.opener.document.+\n/
+          .exec(res.responseText)?.[0]
+          ?.replaceAll('window.opener.document', 'window.document');
+        if (updateCode) eval(updateCode); // eslint-disable-line no-eval
+
+        await updateFavorite();
+      };
+
+      return (
+        <div class="comidread-favorites-item" onClick={handleClick}>
+          <input type="radio" checked={e.querySelector('input')!.checked} />
+          <Show when={index() <= 9}>
+            <div
+              style={{ 'background-position': `0px -${2 + 19 * index()}px` }}
+            />
+          </Show>
+          {e.textContent?.trim()}
+        </div>
+      );
+    };
+
+    render(
+      () => (
+        <Show when={show()}>
+          <div id="comidread-favorites" class="stuffbox">
+            <For
+              each={favorites()}
+              children={FavoriteItem}
+              fallback="loading..."
+            />
+          </div>
+        </Show>
+      ),
+      gd3,
+    );
   }
 })().catch((error) => log.error(error));

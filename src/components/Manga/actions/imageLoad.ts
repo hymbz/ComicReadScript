@@ -24,7 +24,7 @@ const needLoadImgList = createRootMemo(() => {
 });
 
 /** 图片加载完毕的回调 */
-const handleImgLoaded = (i: number, e: HTMLImageElement) => () => {
+export const handleImgLoaded = (i: number, e: HTMLImageElement) => () => {
   setState((state) => {
     const img = state.imgList[i];
     if (!img) return;
@@ -43,7 +43,7 @@ const handleImgLoaded = (i: number, e: HTMLImageElement) => () => {
 };
 
 /** 图片加载出错的回调 */
-const handleImgError = (i: number, e: HTMLImageElement) => () => {
+export const handleImgError = (i: number, e: HTMLImageElement) => () => {
   loadingImgMap.delete(i);
   setState((state) => {
     const img = state.imgList[i];

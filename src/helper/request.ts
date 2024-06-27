@@ -53,6 +53,7 @@ export const request = async <T = any>(
         method: 'GET',
         headers,
         ...details,
+        body: details?.data,
         signal: AbortSignal.timeout?.(details?.timeout ?? 1000 * 10),
       });
 
