@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.0.0
+// @version         9.1.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -791,6 +791,9 @@ const getKeyboardCode = e => {
 /** 将快捷键的编码转换成更易读的形式 */
 const keyboardCodeToText = code => code.replace('Control', 'Ctrl').replace('ArrowUp', '↑').replace('ArrowDown', '↓').replace('ArrowLeft', '←').replace('ArrowRight', '→').replace(/^\\s$/, 'Space');
 
+/** 将 HTML 字符串转换为 DOM 对象 */
+const domParse = html => new DOMParser().parseFromString(html, 'text/html');
+
 /* eslint-disable no-console */
 
 const prefix = ['%cComicRead', 'background-color: #607d8b; color: white; padding: 2px 4px; border-radius: 4px;'];
@@ -974,10 +977,14 @@ const zh = {
       hotkeys_page_turn: "快捷键翻页",
       load_original_image: "加载原图",
       open_link_new_page: "在新页面中打开链接",
+      quick_favorite: "快捷收藏",
       remember_current_site: "记住当前站点"
     },
     changed_load_failed: "网站发生变化，无法加载漫画",
     ehentai: {
+      change_favorite_failed: "收藏夹修改失败",
+      change_favorite_success: "收藏夹修改成功",
+      fetch_favorite_failed: "获取收藏夹信息失败",
       fetch_img_page_source_failed: "获取图片页源码失败",
       fetch_img_page_url_failed: "从详情页获取图片页地址失败",
       fetch_img_url_failed: "从图片页获取图片地址失败",
@@ -1235,10 +1242,14 @@ const en = {
       hotkeys_page_turn: "Page turning with hotkeys",
       load_original_image: "Load original image",
       open_link_new_page: "Open links in a new page",
+      quick_favorite: "Quick favorite",
       remember_current_site: "Remember the current site"
     },
     changed_load_failed: "The website has undergone changes, unable to load comics",
     ehentai: {
+      change_favorite_failed: "Failed to change the favorite",
+      change_favorite_success: "Favorite change success",
+      fetch_favorite_failed: "Failed to get favorite info",
       fetch_img_page_source_failed: "Failed to get the source code of the image page",
       fetch_img_page_url_failed: "Failed to get the image page address from the detail page",
       fetch_img_url_failed: "Failed to get the image address from the image page",
@@ -1256,7 +1267,7 @@ const en = {
     show_settings_menu: "Show settings menu",
     simple: {
       auto_read_mode_message: "\\"Auto enter reading mode\\" is enabled by default",
-      no_img: "No suitable comic images were found. If necessary, you can click here to close the simple reading mode.",
+      no_img: "No suitable comic images were found.\\nIf necessary, you can click here to close the simple reading mode.",
       simple_read_mode: "Enter simple reading mode"
     }
   },
@@ -1496,10 +1507,14 @@ const ru = {
       hotkeys_page_turn: "Переворот страниц горячими клавишами",
       load_original_image: "Загружать оригинальное изображение",
       open_link_new_page: "Открывать ссылки в новой вкладке",
+      quick_favorite: "Быстрый фаворит",
       remember_current_site: "Запомнить текущий сайт"
     },
     changed_load_failed: "Страница изменилась, невозможно загрузить комикс",
     ehentai: {
+      change_favorite_failed: "Не удалось изменить избранное",
+      change_favorite_success: "Любимый успех изменений",
+      fetch_favorite_failed: "Не удалось получить информацию о избранном",
       fetch_img_page_source_failed: "Не удалось получить исходный код страницы с изображениями",
       fetch_img_page_url_failed: "Не удалось получить адрес страницы изображений из деталей",
       fetch_img_url_failed: "Не удалось получить адрес изображения",
@@ -1631,7 +1646,7 @@ const t = solidJs.createRoot(() => {
   };
 });
 
-var css$3 = ".root{align-items:flex-end;bottom:0;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.item,.root{display:flex}.item{align-items:center;animation:bounceInRight .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.item>svg{color:var(--theme);margin-right:.5em;width:1.5em}.item[data-exit]{animation:bounceOutRight .5s 1}.schedule{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.item[data-schedule] .schedule{transition:transform .1s}.item:not([data-schedule]) .schedule{animation:schedule linear 1 forwards}:is(.item:hover,.item[data-schedule],.root[data-paused]) .schedule{animation-play-state:paused}.msg{line-height:1.4em;text-align:start;white-space:break-spaces;width:-moz-fit-content;width:fit-content}.msg h2{margin:0}.msg h3{margin:.7em 0}.msg ul{margin:0;text-align:left}.msg button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.msg button:hover{background:#e0e0e0}p{margin:0}@keyframes schedule{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes bounceInRight{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes bounceOutRight{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var css$3 = ".root{align-items:flex-end;bottom:0;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.item,.root{display:flex}.item{align-items:center;animation:bounceInRight .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:-moz-fit-content;width:fit-content}.item>svg{color:var(--theme);margin-right:.5em;width:1.5em}.item[data-exit]{animation:bounceOutRight .5s 1}.schedule{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.item[data-schedule] .schedule{transition:transform .1s}.item:not([data-schedule]) .schedule{animation:schedule linear 1 forwards}:is(.item:hover,.item[data-schedule],.root[data-paused]) .schedule{animation-play-state:paused}.msg{line-height:1.4em;text-align:start;white-space:break-spaces;width:-moz-fit-content;width:fit-content;word-break:break-word}.msg h2{margin:0}.msg h3{margin:.7em 0}.msg ul{margin:0;text-align:left}.msg button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}.msg button:hover{background:#e0e0e0}p{margin:0}@keyframes schedule{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes bounceInRight{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes bounceOutRight{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
 var modules_c21c94f2$3 = {"root":"root","item":"item","bounceInRight":"bounceInRight","bounceOutRight":"bounceOutRight","schedule":"schedule","msg":"msg"};
 
 const [_state$1, _setState$1] = store$2.createStore({
@@ -1960,6 +1975,7 @@ const request$1 = async (url, details, retryNum = 0, errorNum = 0) => {
         method: 'GET',
         headers,
         ...details,
+        body: details?.data,
         signal: AbortSignal.timeout?.(details?.timeout ?? 1000 * 10)
       });
       let response = null;
@@ -2847,29 +2863,28 @@ const imgTopList = createRootMemo(() => {
 /** 卷轴模式下漫画流的总高度 */
 const contentHeight = createRootMemo(() => (imgTopList().at(-1) ?? 0) + (store.imgList.at(-1)?.size.height ?? 0));
 
-/** 预加载图片尺寸 */
-const preloadImgSize = singleThreaded(async () => {
-  let index = 0;
-  for (; index < store.imgList.length; index++) {
-    const img = store.imgList[index];
-    if (img.size === undefined) continue;
-    const size = await getImgSize(img.src);
-    if (!size) continue;
-    // 防止加载过程中 imgList 变了的情况
-    if (store.imgList[index].src !== img.src) break;
-    // eslint-disable-next-line @typescript-eslint/no-loop-func
-    setState(state => updateImgSize(state, index, ...size));
-  }
-  if (index < store.imgList.length) requestIdleCallback$1(preloadImgSize);
-});
-
+// /** 预加载图片尺寸 */
+// const preloadImgSize = singleThreaded(async () => {
+//   let index = 0;
+//   for (; index < store.imgList.length; index++) {
+//     const img = store.imgList[index];
+//     if (img.size === undefined) continue;
+//     const size = await getImgSize(img.src);
+//     if (!size) continue;
+//     // 防止加载过程中 imgList 变了的情况
+//     if (store.imgList[index].src !== img.src) break;
+//     // eslint-disable-next-line @typescript-eslint/no-loop-func
+//     setState((state) => updateImgSize(state, index, ...size));
+//   }
+//
+//   if (index < store.imgList.length) requestIdleCallback(preloadImgSize);
+// });
+//
 // 空闲期间预加载所有图片的尺寸
 // 卷轴模式下需要提前知道尺寸方便正确布局
 // 翻页模式下也需要提前发现跨页图重新排序
-requestIdleCallback$1(preloadImgSize);
-createEffectOn(() => store.imgList, preloadImgSize);
-
-var css$1 = ".img>img{display:block;height:100%;width:100%}.img{background-color:var(--hover-bg-color,#fff3);content-visibility:hidden;display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;overflow:hidden;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.img[data-show]{content-visibility:visible;display:block}.img[data-show=\\"0\\"]{justify-self:end}.img[data-show=\\"1\\"]{justify-self:start}.img[data-type=long]{height:auto;width:100%}.img[data-load-type=error],.img[data-load-type=wait],.img[src=\\"\\"]{height:100%;position:relative}:is(.img[data-load-type=error],.img[src=\\"\\"]):before{opacity:0}:is(.img[data-load-type],.img[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-load-type=loading],.img[data-load-type=loading]:after{background-image:var(--md-cloud-download);background-position:50%;background-repeat:no-repeat;background-size:30%}.img[data-load-type=loading]:after{animation:show 1s forwards;content:\\"\\"}.img[data-load-type=wait]:after{background-image:var(--md-cloud-download);content:\\"\\"}.img[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.img[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.mangaBox{height:100%;width:100%}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}.root:not([data-grid-mode]) .mangaBox::-webkit-scrollbar{display:none}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.mangaFlow[data-disable-zoom] .img{height:unset;max-height:100%;object-fit:scale-down}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-animation=page] .img{transition-duration:.3s}.mangaFlow[data-animation=zoom]{transition-duration:.3s}.mangaFlow[data-vertical]{grid-auto-flow:row}.root[data-grid-mode] .mangaFlow{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.root[data-grid-mode] .mangaFlow .img{height:auto;transform:none}.root[data-grid-mode] .mangaFlow .img>img{cursor:pointer}.root[data-grid-mode] .mangaFlow .img>.gridModeTip{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.root[data-grid-mode] .mangaFlow .img[data-load-type=error],.root[data-grid-mode] .mangaFlow .img[data-load-type=wait],.root[data-grid-mode] .mangaFlow .img[src=\\"\\"]{height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show]{display:block;height:auto;max-height:unset;max-width:100%;object-fit:contain;width:var(--width)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show][data-load-type=loading]{position:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-grid-mode] .img{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-fit-width] .img{height:auto;max-width:100%;width:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll]{overflow:hidden}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow{transform:translate(var(--page-x),var(--page-y)) translateZ(0);grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div{flex-shrink:0;height:100%;overflow:hidden;width:var(--abreastScrollWidth)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div>picture:first-of-type{margin-top:var(--fill)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow[dir=ltr]{flex-direction:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow .img[data-show]{margin-top:unset;transform:translateY(var(--abreast-position)) translateZ(0);width:100%}@keyframes show{0%{opacity:1}90%{opacity:1}to{opacity:0}}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.endPage>button[data-is-end]{font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}.SettingsShowItem>.SettingsShowItemBody>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.hotkeysItem>svg:hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.hotkeysHeader>div[title]>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.scrollbar:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}.scrollbar:hover .scrollbarPoper,.scrollbar:hover .scrollbarSlider,.scrollbar:hover:before,.scrollbar[data-force-show] .scrollbarPoper,.scrollbar[data-force-show] .scrollbarSlider,.scrollbar[data-force-show]:before{opacity:1}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.scrollbar[data-position=bottom]:before,.scrollbar[data-position=top]:before{border-left:.4em solid transparent}.scrollbar[data-position=bottom] .scrollbarSlider,.scrollbar[data-position=top] .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.scrollbar[data-position=bottom] .scrollbarPoper,.scrollbar[data-position=top] .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.scrollbar[data-position=bottom][data-dir=ltr],.scrollbar[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.scrollbar[data-position=bottom][data-dir=ltr]:before,.scrollbar[data-position=top][data-dir=ltr]:before{left:0;right:unset}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarSlider,.scrollbar[data-position=top][data-dir=ltr] .scrollbarSlider{transform:translateX(var(--top))}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarPoper,.scrollbar[data-position=top][data-dir=ltr] .scrollbarPoper{transform:translateX(var(--poper-top))}.scrollbar[data-position=bottom] .scrollbarPage,.scrollbar[data-position=top] .scrollbarPage{transform:scaleX(1)}.scrollbar[data-position=bottom] .scrollbarPage[data-type=loaded],.scrollbar[data-position=top] .scrollbarPage[data-type=loaded]{transform:scaleX(0)}.scrollbar[data-position=bottom] .scrollbarPage[data-translation-type],.scrollbar[data-position=top] .scrollbarPage[data-translation-type]{transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}.root[data-mobile] .scrollbar:hover .scrollbarPoper,.root[data-mobile] .scrollbar:hover:before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}.touchAreaRoot .touchArea[data-area=PREV],.touchAreaRoot .touchArea[data-area=prev]{background-color:#95e1d3e6}.touchAreaRoot .touchArea[data-area=MENU],.touchAreaRoot .touchArea[data-area=menu]{background-color:#fce38ae6}.touchAreaRoot .touchArea[data-area=NEXT],.touchAreaRoot .touchArea[data-area=next]{background-color:#f38181e6}.touchAreaRoot .touchArea[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.touchAreaRoot .touchArea[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.touchAreaRoot .touchArea[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:transparent}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div,div:focus,div:focus-visible,div:focus-within{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+// requestIdleCallback(preloadImgSize);
+var css$1 = ".img>img{display:block;height:100%;width:100%}.img{background-color:var(--hover-bg-color,#fff3);content-visibility:hidden;display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;overflow:hidden;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.img[data-show]{content-visibility:visible;display:block}.img[data-show=\\"0\\"]{justify-self:end}.img[data-show=\\"1\\"]{justify-self:start}.img[data-type=long]{height:auto;width:100%}.img[data-load-type=error],.img[data-load-type=wait],.img[src=\\"\\"]{height:100%;position:relative}:is(.img[data-load-type=error],.img[src=\\"\\"]):before{opacity:0}:is(.img[data-load-type],.img[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-load-type=loading],.img[data-load-type=loading]:after{background-image:var(--md-cloud-download);background-position:50%;background-repeat:no-repeat;background-size:30%}.img[data-load-type=loading]:after{animation:show 1s forwards;content:\\"\\"}.img[data-load-type=wait]:after{background-image:var(--md-cloud-download);content:\\"\\"}.img[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.img[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.mangaBox{height:100%;width:100%}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}.root:not([data-grid-mode]) .mangaBox::-webkit-scrollbar{display:none}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.mangaFlow[data-disable-zoom] .img{height:unset;max-height:100%;object-fit:scale-down}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-animation=page] .img{transition-duration:.3s}.mangaFlow[data-animation=zoom]{transition-duration:.3s}.mangaFlow[data-vertical]{grid-auto-flow:row}.root[data-grid-mode] .mangaFlow{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.root[data-grid-mode] .mangaFlow .img{height:auto;transform:none}.root[data-grid-mode] .mangaFlow .img>img{cursor:pointer}.root[data-grid-mode] .mangaFlow .img>.gridModeTip{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.root[data-grid-mode] .mangaFlow .img[data-load-type=error],.root[data-grid-mode] .mangaFlow .img[data-load-type=wait],.root[data-grid-mode] .mangaFlow .img[src=\\"\\"]{height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show]{display:block;height:auto;max-height:unset;max-width:100%;object-fit:contain;width:var(--width)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show][data-load-type=loading]{position:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-grid-mode] .img{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-fit-width] .img{height:auto;max-width:100%;width:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll]{overflow:hidden}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow{transform:translate(var(--page-x),var(--page-y)) translateZ(0);grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div{flex-shrink:0;height:100%;overflow:hidden;width:var(--abreastScrollWidth)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div>picture:first-of-type{margin-top:var(--fill)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow[dir=ltr]{flex-direction:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow .img[data-show]{margin-top:unset;transform:translateY(var(--abreast-position)) translateZ(0);width:100%}@keyframes show{0%{opacity:1}90%{opacity:1}to{opacity:0}}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.endPage>button[data-is-end]{font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}.SettingsShowItem>.SettingsShowItemBody>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.hotkeysItem>svg:hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.hotkeysHeader>div[title]>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.scrollbar:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}.scrollbar:hover .scrollbarPoper,.scrollbar:hover .scrollbarSlider,.scrollbar:hover:before,.scrollbar[data-force-show] .scrollbarPoper,.scrollbar[data-force-show] .scrollbarSlider,.scrollbar[data-force-show]:before{opacity:1}.scrollbar[data-drag] .scrollbarPoper,.scrollbar[data-drag] .scrollbarSlider,.scrollbar[data-drag]:before{transition:opacity .15s}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.scrollbar[data-position=bottom]:before,.scrollbar[data-position=top]:before{border-left:.4em solid transparent}.scrollbar[data-position=bottom] .scrollbarSlider,.scrollbar[data-position=top] .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.scrollbar[data-position=bottom] .scrollbarPoper,.scrollbar[data-position=top] .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.scrollbar[data-position=bottom][data-dir=ltr],.scrollbar[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.scrollbar[data-position=bottom][data-dir=ltr]:before,.scrollbar[data-position=top][data-dir=ltr]:before{left:0;right:unset}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarSlider,.scrollbar[data-position=top][data-dir=ltr] .scrollbarSlider{transform:translateX(var(--top))}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarPoper,.scrollbar[data-position=top][data-dir=ltr] .scrollbarPoper{transform:translateX(var(--poper-top))}.scrollbar[data-position=bottom] .scrollbarPage,.scrollbar[data-position=top] .scrollbarPage{transform:scaleX(1)}.scrollbar[data-position=bottom] .scrollbarPage[data-type=loaded],.scrollbar[data-position=top] .scrollbarPage[data-type=loaded]{transform:scaleX(0)}.scrollbar[data-position=bottom] .scrollbarPage[data-translation-type],.scrollbar[data-position=top] .scrollbarPage[data-translation-type]{transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}.root[data-mobile] .scrollbar:hover .scrollbarPoper,.root[data-mobile] .scrollbar:hover:before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}.touchAreaRoot .touchArea[data-area=PREV],.touchAreaRoot .touchArea[data-area=prev]{background-color:#95e1d3e6}.touchAreaRoot .touchArea[data-area=MENU],.touchAreaRoot .touchArea[data-area=menu]{background-color:#fce38ae6}.touchAreaRoot .touchArea[data-area=NEXT],.touchAreaRoot .touchArea[data-area=next]{background-color:#f38181e6}.touchAreaRoot .touchArea[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.touchAreaRoot .touchArea[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.touchAreaRoot .touchArea[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:transparent}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div,div:focus,div:focus-visible,div:focus-within{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"img","show":"show","mangaBox":"mangaBox","root":"root","mangaFlow":"mangaFlow","gridModeTip":"gridModeTip","endPage":"endPage","jello":"jello","tip":"tip","comments":"comments","toolbar":"toolbar","toolbarPanel":"toolbarPanel","toolbarBg":"toolbarBg","SettingPanelPopper":"SettingPanelPopper","SettingPanel":"SettingPanel","SettingBlock":"SettingBlock","SettingBlockBody":"SettingBlockBody","SettingBlockSubtitle":"SettingBlockSubtitle","SettingsItem":"SettingsItem","SettingsItemName":"SettingsItemName","SettingsItemSwitch":"SettingsItemSwitch","SettingsItemSwitchRound":"SettingsItemSwitchRound","SettingsItemIconButton":"SettingsItemIconButton","SettingsItemSelect":"SettingsItemSelect","closeCover":"closeCover","SettingsShowItem":"SettingsShowItem","SettingsShowItemBody":"SettingsShowItemBody","hotkeys":"hotkeys","hotkeysItem":"hotkeysItem","hotkeysHeader":"hotkeysHeader","scrollbar":"scrollbar","scrollbarPage":"scrollbarPage","scrollbarSlider":"scrollbarSlider","scrollbarPoper":"scrollbarPoper","touchAreaRoot":"touchAreaRoot","touchArea":"touchArea","hidden":"hidden","invisible":"invisible","beautifyScrollbar":"beautifyScrollbar"};
 
 /** 并排卷轴模式下的全局滚动填充 */
@@ -3149,7 +3164,9 @@ const imgShowState = createRootMemo(() => {
   if (store.pageList.length === 0) return new Map();
   const stateList = new Map();
   for (let i = store.renderRange[0]; i <= store.renderRange[1]; i++) {
-    const [a, b] = store.pageList[i];
+    const page = store.pageList[i];
+    if (!page) continue;
+    const [a, b] = page;
     if (b === undefined) {
       stateList.set(a, '');
     } else {
@@ -4406,15 +4423,25 @@ const getSliderDist = ([x, y], [ix, iy], e) => {
       return (y - iy) / e.offsetHeight;
   }
 };
+const [isDrag, setIsDrag] = solidJs.createSignal(false);
+const closeDrag = debounce(() => setIsDrag(false), 200);
+let lastType = 'up';
 
 /** 开始拖拽时的 sliderTop 值 */
 let startTop = 0;
-const handlescrollbarSlider = ({
+const handleScrollbarSlider = ({
   type,
   xy,
   initial
 }, e) => {
   const [x, y] = xy;
+
+  // 检测是否是拖动操作
+  if (type === 'move' && lastType === type) {
+    setIsDrag(true);
+    closeDrag();
+  }
+  lastType = type;
 
   // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
   if (type === 'up') return;
@@ -4555,7 +4582,7 @@ const handleImgError = (i, e) => () => {
     if (!img) return;
     img.loadType = 'error';
     img.type = undefined;
-    if (e) log.error(t('alert.img_load_failed'), e);
+    if (e) log.error(i, t('alert.img_load_failed'), e);
     state.prop.Loading?.(state.imgList, img);
   });
   setLoadLock(false);
@@ -4565,6 +4592,7 @@ const handleImgError = (i, e) => () => {
 const loadImgList = new Set();
 const loadImg = index => {
   if (!needLoadImgList().has(index) || !store.imgList[index].src) return;
+  if (store.imgList[index].loadType === 'error' && !renderImgList().has(index)) return;
   if (!loadingImgMap.has(index)) {
     const img = new Image();
     img.onload = handleImgLoaded(index, img);
@@ -4828,6 +4856,8 @@ const ComicImg = img => {
       get children() {
         return [(() => {
           var _el$2 = _tmpl$$B();
+          _el$2.addEventListener("error", e => handleImgError(img.index, e.currentTarget));
+          _el$2.addEventListener("load", e => handleImgLoaded(img.index, e.currentTarget));
           web.effect(_p$ => {
             var _v$ = src(),
               _v$2 = \`\${img.index}\`;
@@ -6359,7 +6389,7 @@ const Scrollbar = () => {
   solidJs.onMount(() => {
     useDrag({
       ref: refs.scrollbar,
-      handleDrag: handlescrollbarSlider,
+      handleDrag: handleScrollbarSlider,
       easyMode: () => isScrollMode() && store.option.scrollbar.easyScroll
     });
     watchDomSize('scrollbarSize', refs.scrollbar);
@@ -6430,11 +6460,12 @@ const Scrollbar = () => {
         _v$6 = store.option.dir,
         _v$7 = scrollPosition(),
         _v$8 = boolDataVal(isAbreastMode()),
-        _v$9 = modules_c21c94f2$1.scrollbarSlider,
-        _v$10 = {
+        _v$9 = boolDataVal(isDrag()),
+        _v$10 = modules_c21c94f2$1.scrollbarSlider,
+        _v$11 = {
           [modules_c21c94f2$1.hidden]: store.gridMode
         },
-        _v$11 = modules_c21c94f2$1.scrollbarPoper;
+        _v$12 = modules_c21c94f2$1.scrollbarPoper;
       _v$ !== _p$.e && web.className(_el$, _p$.e = _v$);
       _v$2 !== _p$.t && web.setAttribute(_el$, "aria-controls", _p$.t = _v$2);
       _v$3 !== _p$.a && web.setAttribute(_el$, "aria-valuenow", _p$.a = _v$3);
@@ -6443,9 +6474,10 @@ const Scrollbar = () => {
       _v$6 !== _p$.n && web.setAttribute(_el$, "data-dir", _p$.n = _v$6);
       _v$7 !== _p$.s && web.setAttribute(_el$, "data-position", _p$.s = _v$7);
       _v$8 !== _p$.h && web.setAttribute(_el$, "data-is-abreast-mode", _p$.h = _v$8);
-      _v$9 !== _p$.r && web.className(_el$2, _p$.r = _v$9);
-      _p$.d = web.classList(_el$2, _v$10, _p$.d);
-      _v$11 !== _p$.l && web.className(_el$3, _p$.l = _v$11);
+      _v$9 !== _p$.r && web.setAttribute(_el$, "data-drag", _p$.r = _v$9);
+      _v$10 !== _p$.d && web.className(_el$2, _p$.d = _v$10);
+      _p$.l = web.classList(_el$2, _v$11, _p$.l);
+      _v$12 !== _p$.u && web.className(_el$3, _p$.u = _v$12);
       return _p$;
     }, {
       e: undefined,
@@ -6458,7 +6490,8 @@ const Scrollbar = () => {
       h: undefined,
       r: undefined,
       d: undefined,
-      l: undefined
+      l: undefined,
+      u: undefined
     });
     return _el$;
   })();
@@ -7217,7 +7250,9 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>实现并排卷轴模式\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>为 ehentai 增加快捷收藏功能\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>修复使用 safari + stay 时在漫画柜、禁漫上无法正常运行的 bug\`);
 const migrationOption = async (name, editFn) => {
   try {
     const option = await GM.getValue(name);
@@ -7287,7 +7322,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3()], {
+    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Number.POSITIVE_INFINITY,
@@ -7955,6 +7990,7 @@ exports.defaultHotkeys = defaultHotkeys;
 exports.defaultImgType = defaultImgType;
 exports.delHotkeys = delHotkeys;
 exports.difference = difference;
+exports.domParse = domParse;
 exports.doubleClickZoom = doubleClickZoom;
 exports.eachApi = eachApi;
 exports.findFillIndex = findFillIndex;
@@ -7970,16 +8006,18 @@ exports.getPageTip = getPageTip;
 exports.handleClick = handleClick;
 exports.handleComicData = handleComicData;
 exports.handleGridClick = handleGridClick;
+exports.handleImgError = handleImgError;
+exports.handleImgLoaded = handleImgLoaded;
 exports.handleKeyDown = handleKeyDown;
 exports.handleMangaFlowDrag = handleMangaFlowDrag;
 exports.handleMouseDown = handleMouseDown;
 exports.handlePageClick = handlePageClick;
 exports.handlePinchZoom = handlePinchZoom;
 exports.handleScrollModeDrag = handleScrollModeDrag;
+exports.handleScrollbarSlider = handleScrollbarSlider;
 exports.handleTrackpadWheel = handleTrackpadWheel;
 exports.handleWheel = handleWheel;
 exports.handleZoomDrag = handleZoomDrag;
-exports.handlescrollbarSlider = handlescrollbarSlider;
 exports.hotkeysMap = hotkeysMap;
 exports.ifNot = ifNot;
 exports.imgAreaStyle = imgAreaStyle;
@@ -7991,6 +8029,7 @@ exports.inRange = inRange;
 exports.insertNode = insertNode;
 exports.isAbreastMode = isAbreastMode;
 exports.isBottom = isBottom;
+exports.isDrag = isDrag;
 exports.isEqual = isEqual;
 exports.isOnePageMode = isOnePageMode;
 exports.isScrollMode = isScrollMode;
@@ -8034,6 +8073,7 @@ exports.scrollViewImg = scrollViewImg;
 exports.setAbreastScrollFill = setAbreastScrollFill;
 exports.setHotkeys = setHotkeys;
 exports.setInitLang = setInitLang;
+exports.setIsDrag = setIsDrag;
 exports.setLang = setLang;
 exports.setOption = setOption;
 exports.singleThreaded = singleThreaded;
@@ -9092,8 +9132,13 @@ const turnPage = chapterId => {
     case 'exhentai.org':
     case 'e-hentai.org':
       {
+const web = require('solid-js/web');
+const solidJs = require('solid-js');
 const main = require('main');
 
+var _tmpl$ = /*#__PURE__*/web.template(`<div>`),
+  _tmpl$2 = /*#__PURE__*/web.template(`<div class=comidread-favorites-item><input type=radio>`),
+  _tmpl$3 = /*#__PURE__*/web.template(`<div id=comidread-favorites class=stuffbox>`);
 (async () => {
   const {
     options,
@@ -9110,6 +9155,8 @@ const main = require('main');
     hotkeys_page_turn: true,
     /** 识别广告 */
     detect_ad: true,
+    /** 快捷收藏 */
+    quick_favorite: true,
     autoShow: false
   });
   if (Reflect.has(unsafeWindow, 'mpvkey')) {
@@ -9142,9 +9189,11 @@ const main = require('main');
     }
     return;
   }
-
+  const sidebarDom = document.getElementById('gd5');
+  // 表站开启了 Multi-Page Viewer 的话会将点击按钮挤出去，得缩一下位置
+  if (sidebarDom.children[6]) sidebarDom.children[6].style.padding = '0';
   // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
-  main.insertNode(document.getElementById('gd5'), '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>');
+  main.insertNode(sidebarDom, '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>');
   const comicReadModeDom = document.getElementById('comicReadMode');
 
   /** 从图片页获取图片地址 */
@@ -9152,7 +9201,7 @@ const main = require('main');
     const res = await main.request(url, {
       fetch: true,
       errorText: main.t('site.ehentai.fetch_img_page_source_failed')
-    });
+    }, 10);
     try {
       return /id="img" src="(.+?)"/.exec(res.responseText)[1];
     } catch {
@@ -9268,7 +9317,10 @@ const main = require('main');
   const reloadImg = async i => {
     const pageUrl = await getNewImgPageUrl(ehImgPageList[i]);
     let imgUrl = '';
-    while (!imgUrl || !(await main.testImgUrl(imgUrl))) imgUrl = await getImgFromImgPage(pageUrl);
+    while (!imgUrl || !(await main.testImgUrl(imgUrl))) {
+      imgUrl = await getImgFromImgPage(pageUrl);
+      main.log(`刷新图片 ${i}\n${ehImgList[i]} ->\n${imgUrl}`);
+    }
     ehImgList[i] = imgUrl;
     ehImgPageList[i] = pageUrl;
     setManga('imgList', i, imgUrl);
@@ -9410,7 +9462,138 @@ const main = require('main');
       else raw_refresh_tagmenu_act(a);
     };
   }
+
+  // 快捷收藏。必须处于登录状态
+  if (unsafeWindow.apiuid !== -1 && options.quick_favorite) {
+    const gd3 = main.querySelector('#gd3');
+    GM_addStyle(`
+      #gd3 {
+        position: relative;
+        height: 100%;
+      }
+
+      #comidread-favorites {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: calc(100% - 35px);
+        padding-left: 0.6em;
+        box-sizing: border-box;
+        z-index: 75;
+        border: none;
+        border-radius: 0;
+        overflow: auto;
+      }
+
+      .comidread-favorites-item {
+        display: flex;
+        align-items: center;
+        margin: 1em 0;
+        cursor: pointer;
+        width: fit-content;
+        text-align: left;
+      }
+
+      .comidread-favorites-item > input {
+        margin: 0 0.5em 0 0;
+        pointer-events: none;
+      }
+
+      .comidread-favorites-item > div {
+        margin: 0 0.5em 0 0;
+        height: 15px;
+        width: 15px;
+        background-repeat: no-repeat;
+        background-image: url(https://ehgt.org/g/fav.png);
+        flex-shrink: 0;
+      }
+    `);
+    const [show, setShow] = solidJs.createSignal(false);
+    const [favorites, setFavorites] = solidJs.createSignal([]);
+    const updateFavorite = async () => {
+      try {
+        const res = await main.request(`${unsafeWindow.popbase}addfav`, {
+          errorText: main.t('site.ehentai.fetch_favorite_failed')
+        });
+        const dom = main.domParse(res.responseText);
+        const list = [...dom.querySelectorAll('.nosel > div')];
+        if (list.length === 10) list[0].querySelector('input').checked = false;
+        setFavorites(list);
+      } catch {
+        main.toast.error(main.t('site.ehentai.fetch_favorite_failed'));
+        setFavorites([]);
+      }
+    };
+
+    // 将原本的收藏按钮改为切换显示快捷收藏夹
+    const favoriteDom = main.querySelector('#gdf');
+    favoriteDom.onclick = null;
+    favoriteDom.addEventListener('click', async e => {
+      e.stopPropagation();
+      e.preventDefault();
+      setShow(val => !val);
+      if (show()) await updateFavorite();
+    });
+    const FavoriteItem = (e, index) => {
+      const handleClick = async () => {
+        setShow(false);
+        const formData = new FormData();
+        formData.append('favcat', index() === 10 ? 'favdel' : `${index()}`);
+        formData.append('apply', 'Apply Changes');
+        formData.append('favnote', '');
+        formData.append('update', '1');
+        const res = await main.request(`${unsafeWindow.popbase}addfav`, {
+          method: 'POST',
+          data: formData,
+          errorText: main.t('site.ehentai.change_favorite_failed')
+        });
+        main.toast.success(main.t('site.ehentai.change_favorite_success'));
+
+        // 修改收藏按钮样式的 js 代码
+        const updateCode = /\nif\(window.opener.document.+\n/.exec(res.responseText)?.[0]?.replaceAll('window.opener.document', 'window.document');
+        if (updateCode) eval(updateCode); // eslint-disable-line no-eval
+
+        await updateFavorite();
+      };
+      return (() => {
+        var _el$ = _tmpl$2(),
+          _el$2 = _el$.firstChild;
+        _el$.$$click = handleClick;
+        web.insert(_el$, web.createComponent(solidJs.Show, {
+          get when() {
+            return index() <= 9;
+          },
+          get children() {
+            var _el$3 = _tmpl$();
+            web.effect(_$p => (_$p = `0px -${2 + 19 * index()}px`) != null ? _el$3.style.setProperty("background-position", _$p) : _el$3.style.removeProperty("background-position"));
+            return _el$3;
+          }
+        }), null);
+        web.insert(_el$, () => e.textContent?.trim(), null);
+        web.effect(() => _el$2.checked = e.querySelector('input').checked);
+        return _el$;
+      })();
+    };
+    web.render(() => web.createComponent(solidJs.Show, {
+      get when() {
+        return show();
+      },
+      get children() {
+        var _el$4 = _tmpl$3();
+        web.insert(_el$4, web.createComponent(solidJs.For, {
+          get each() {
+            return favorites();
+          },
+          children: FavoriteItem,
+          fallback: "loading..."
+        }));
+        return _el$4;
+      }
+    }), gd3);
+  }
 })().catch(error => main.log.error(error));
+web.delegateEvents(["click"]);
 ;
         break;
       }
@@ -9474,7 +9657,7 @@ const fileType = {
     if (options.block_totally && blacklist?.length) GM_addStyle('.blacklisted.gallery { display: none; }');
     if (options.auto_page_turn) {
       GM_addStyle(`
-        hr { bottom: 0; box-sizing: border-box; margin: -1em auto 2em; }
+        hr { bottom: 1px; box-sizing: border-box; margin: -1em auto 2em; }
         hr:last-child { position: relative; animation: load .8s linear alternate infinite; }
         hr:not(:last-child) { display: none; }
         @keyframes load { 0% { width: 100%; } 100% { width: 0; } }
@@ -9869,20 +10052,25 @@ const main = require('main');
       return '';
     }
     try {
+      // 原有的 canvas 可能已被污染，直接删掉
+      if (imgEle.nextElementSibling?.tagName === 'CANVAS') imgEle.nextElementSibling.remove();
       unsafeWindow.onImageLoaded(imgEle);
       const blob = await main.canvasToBlob(imgEle.nextElementSibling, 'image/webp', 1);
       URL.revokeObjectURL(imgEle.src);
       if (!blob) throw new Error('转换图片时出错');
       return `${URL.createObjectURL(blob)}#.webp`;
-    } catch {
+    } catch (error) {
       imgEle.src = originalUrl;
-      main.toast.warn(`转换图片时出错: ${imgEle.dataset.page}`);
+      main.toast.warn(`转换图片时出错: ${imgEle.dataset.page}, ${error.message}`);
       return '';
     }
   };
 
   // 先等懒加载触发完毕
-  await main.wait(() => main.querySelectorAll('.lazy-loaded.hide').length > 0 && main.querySelectorAll('.lazy-loaded.hide').length === main.querySelectorAll('canvas').length);
+  await main.wait(() => {
+    const loadedNum = main.querySelectorAll('.lazy-loaded').length;
+    return loadedNum > 0 && main.querySelectorAll('canvas').length - loadedNum <= 1;
+  });
   init(dynamicUpdate(setImg => main.plimit(imgEleList.map((img, i) => async () => setImg(i, await getImgUrl(img))), (doneNum, totalNum) => {
     setFab({
       progress: doneNum / totalNum,
@@ -9912,7 +10100,8 @@ const main = require('main');
         if (!/\/comic\/\d+\/\d+\.html/.test(window.location.pathname)) break;
         let comicInfo;
         try {
-          const dataScript = main.querySelector('body > script:not([src])');
+          const dataScript = main.querySelectorAll('body > script:not([src])').find(script => script.innerHTML.startsWith('window['));
+          if (!dataScript) throw new Error(main.t('site.changed_load_failed'));
           comicInfo = JSON.parse(
           // 只能通过 eval 获得数据
           // eslint-disable-next-line no-eval

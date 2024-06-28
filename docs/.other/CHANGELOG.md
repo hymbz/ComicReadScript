@@ -1,5 +1,20 @@
 
 
+## [9.1.0](https://github.com/hymbz/ComicReadScript/compare/v9.0.0...v9.1.0) (2024-06-28)
+
+
+### Features
+
+* :sparkles: 为 ehentai 增加快捷收藏功能 ([d011011](https://github.com/hymbz/ComicReadScript/commit/d0110113e3058b0b9c0fd1ab98b4eab84f3692e4))
+
+
+### Bug Fixes
+
+* :bug: 修复部分浏览器上看不到 nhentai 自动翻页的加载提示的 bug ([835c24f](https://github.com/hymbz/ComicReadScript/commit/835c24fdd78a58ba4723f23ab70e269846190d6c))
+* :bug: 修复出错图片重试次数过多的 bug ([53a5ba5](https://github.com/hymbz/ComicReadScript/commit/53a5ba52115d8b04863b08eb92fff6f7378e8325))
+* :bug: 修复使用 safari + stay 时在漫画柜、禁漫上无法正常运行的 bug ([a9a80ed](https://github.com/hymbz/ComicReadScript/commit/a9a80ed6fae83fdbe4560b0587a6909812a14b3b))
+* :bug: 修复拖动滚动条时提示不够跟手的 bug ([e616554](https://github.com/hymbz/ComicReadScript/commit/e616554acc0f50af6571b16ca2595b3b6c29805c))
+
 ## [9.1.0](https://github.com/hymbz/ComicReadScript/compare/v8.10.6...v9.1.0) (2024-06-26)
 
 
