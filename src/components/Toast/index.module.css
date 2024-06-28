@@ -75,8 +75,10 @@
 
 .msg {
   width: fit-content;
+
   line-height: 1.4em;
   text-align: start;
+  word-break: break-word;
   white-space: break-spaces;
 
   & h2 {

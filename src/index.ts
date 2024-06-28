@@ -222,7 +222,10 @@ try {
         nextId: number;
       };
       try {
-        const dataScript = main.querySelector('body > script:not([src])')!;
+        const dataScript = main
+          .querySelectorAll('body > script:not([src])')
+          .find((script) => script.innerHTML.startsWith('window['));
+        if (!dataScript) throw new Error(main.t('site.changed_load_failed'));
         comicInfo = JSON.parse(
           // 只能通过 eval 获得数据
           // eslint-disable-next-line no-eval

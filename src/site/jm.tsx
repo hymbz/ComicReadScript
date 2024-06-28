@@ -87,6 +87,9 @@ import {
     }
 
     try {
+      // 原有的 canvas 可能已被污染，直接删掉
+      if (imgEle.nextElementSibling?.tagName === 'CANVAS')
+        imgEle.nextElementSibling.remove();
       unsafeWindow.onImageLoaded(imgEle);
       const blob = await canvasToBlob(
         imgEle.nextElementSibling as HTMLCanvasElement,
@@ -96,20 +99,20 @@ import {
       URL.revokeObjectURL(imgEle.src);
       if (!blob) throw new Error('转换图片时出错');
       return `${URL.createObjectURL(blob)}#.webp`;
-    } catch {
+    } catch (error) {
       imgEle.src = originalUrl;
-      toast.warn(`转换图片时出错: ${imgEle.dataset.page}`);
+      toast.warn(
+        `转换图片时出错: ${imgEle.dataset.page}, ${(error as Error).message}`,
+      );
       return '';
     }
   };
 
   // 先等懒加载触发完毕
-  await wait(
-    () =>
-      querySelectorAll('.lazy-loaded.hide').length > 0 &&
-      querySelectorAll('.lazy-loaded.hide').length ===
-        querySelectorAll('canvas').length,
-  );
+  await wait(() => {
+    const loadedNum = querySelectorAll('.lazy-loaded').length;
+    return loadedNum > 0 && querySelectorAll('canvas').length - loadedNum <= 1;
+  });
 
   init(
     dynamicUpdate(
@@ -139,6 +142,5 @@ import {
     if (num < 60 && mangaProps.imgList.some((url) => !url))
       setTimeout(retry, 1000 * 5, num + 1);
   };
-
   await retry();
 })().catch((error) => log.error(error));
