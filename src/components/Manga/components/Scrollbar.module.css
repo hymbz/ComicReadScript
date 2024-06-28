@@ -164,6 +164,15 @@
   }
 }
 
+/* 拖动滚动条时取消移动过渡动画，确保跟手 */
+.scrollbar[data-drag] {
+  &::before,
+  .scrollbarPoper,
+  .scrollbarSlider {
+    transition: opacity 150ms;
+  }
+}
+
 /* 实现自动隐藏 */
 .scrollbar[data-auto-hidden]:not([data-force-show]) {
   & .scrollbarSlider {

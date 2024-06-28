@@ -15,7 +15,7 @@ import {
   bindRef,
   getPageTip,
   scrollPosition,
-  handlescrollbarSlider,
+  handleScrollbarSlider,
   sliderMidpoint,
   sliderHeight,
   scrollDomLength,
@@ -26,6 +26,7 @@ import {
   abreastArea,
   sliderTop,
   watchDomSize,
+  isDrag,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -36,7 +37,7 @@ export const Scrollbar: Component = () => {
   onMount(() => {
     useDrag({
       ref: refs.scrollbar,
-      handleDrag: handlescrollbarSlider,
+      handleDrag: handleScrollbarSlider,
       easyMode: () => isScrollMode() && store.option.scrollbar.easyScroll,
     });
     watchDomSize('scrollbarSize', refs.scrollbar);
@@ -108,6 +109,7 @@ export const Scrollbar: Component = () => {
       data-dir={store.option.dir}
       data-position={scrollPosition()}
       data-is-abreast-mode={boolDataVal(isAbreastMode())}
+      data-drag={boolDataVal(isDrag())}
       onWheel={handleWheel}
     >
       <div

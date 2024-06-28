@@ -1,5 +1,6 @@
-import { clamp } from 'helper';
+import { clamp, debounce } from 'helper';
 import { createRootMemo } from 'helper/solidJs';
+import { createSignal } from 'solid-js';
 
 import { type PointerState, type UseDrag } from '../hooks/useDrag';
 import { type State, store, refs, _setState } from '../store';
@@ -72,10 +73,22 @@ const getSliderDist = (
   }
 };
 
+export const [isDrag, setIsDrag] = createSignal(false);
+const closeDrag = debounce(() => setIsDrag(false), 200);
+
+let lastType: PointerState['type'] = 'up';
+
 /** 开始拖拽时的 sliderTop 值 */
 let startTop = 0;
-export const handlescrollbarSlider: UseDrag = ({ type, xy, initial }, e) => {
+export const handleScrollbarSlider: UseDrag = ({ type, xy, initial }, e) => {
   const [x, y] = xy;
+
+  // 检测是否是拖动操作
+  if (type === 'move' && lastType === type) {
+    setIsDrag(true);
+    closeDrag();
+  }
+  lastType = type;
 
   // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
   if (type === 'up') return;
