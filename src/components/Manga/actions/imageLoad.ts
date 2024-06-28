@@ -50,7 +50,7 @@ export const handleImgError = (i: number, e: HTMLImageElement) => () => {
     if (!img) return;
     img.loadType = 'error';
     img.type = undefined;
-    if (e) log.error(t('alert.img_load_failed'), e);
+    if (e) log.error(i, t('alert.img_load_failed'), e);
     state.prop.Loading?.(state.imgList, img);
   });
   setLoadLock(false);
@@ -61,6 +61,9 @@ const loadImgList = new Set<number>();
 
 const loadImg = (index: number) => {
   if (!needLoadImgList().has(index) || !store.imgList[index].src) return;
+
+  if (store.imgList[index].loadType === 'error' && !renderImgList().has(index))
+    return;
 
   if (!loadingImgMap.has(index)) {
     const img = new Image();

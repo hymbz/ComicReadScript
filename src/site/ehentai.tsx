@@ -102,10 +102,14 @@ declare const selected_tagname: string;
 
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async (url: string): Promise<string> => {
-    const res = await request(url, {
-      fetch: true,
-      errorText: t('site.ehentai.fetch_img_page_source_failed'),
-    });
+    const res = await request(
+      url,
+      {
+        fetch: true,
+        errorText: t('site.ehentai.fetch_img_page_source_failed'),
+      },
+      10,
+    );
 
     try {
       return /id="img" src="(.+?)"/.exec(res.responseText)![1];
@@ -247,7 +251,6 @@ declare const selected_tagname: string;
     const res = await request(url, {
       errorText: t('site.ehentai.fetch_img_page_source_failed'),
     });
-
     const nl = /nl\('(.+?)'\)/.exec(res.responseText)?.[1];
     if (!nl) throw new Error(t('site.ehentai.fetch_img_url_failed'));
     const newUrl = new URL(url);
@@ -259,8 +262,10 @@ declare const selected_tagname: string;
   const reloadImg = async (i: number) => {
     const pageUrl = await getNewImgPageUrl(ehImgPageList[i]);
     let imgUrl = '';
-    while (!imgUrl || !(await testImgUrl(imgUrl)))
+    while (!imgUrl || !(await testImgUrl(imgUrl))) {
       imgUrl = await getImgFromImgPage(pageUrl);
+      log(`刷新图片 ${i}\n${ehImgList[i]} ->\n${imgUrl}`);
+    }
     ehImgList[i] = imgUrl;
     ehImgPageList[i] = pageUrl;
     setManga('imgList', i, imgUrl);

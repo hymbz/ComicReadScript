@@ -120,7 +120,10 @@ export const imgShowState = createRootMemo<Map<number, 0 | 1 | ''>>(() => {
 
   const stateList = new Map<number, 0 | 1 | ''>();
   for (let i = store.renderRange[0]; i <= store.renderRange[1]; i++) {
-    const [a, b] = store.pageList[i];
+    const page = store.pageList[i];
+    if (!page) continue;
+    const [a, b] = page;
+
     if (b === undefined) {
       stateList.set(a, '');
     } else {

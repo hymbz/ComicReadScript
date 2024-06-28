@@ -1,5 +1,4 @@
 import { createEffectOn, createRootMemo } from 'helper/solidJs';
-import { getImgSize, requestIdleCallback, singleThreaded } from 'helper';
 
 import { type State, store, setState } from '../store';
 
@@ -87,25 +86,25 @@ export const contentHeight = createRootMemo(
   () => (imgTopList().at(-1) ?? 0) + (store.imgList.at(-1)?.size.height ?? 0),
 );
 
-/** 预加载图片尺寸 */
-const preloadImgSize = singleThreaded(async () => {
-  let index = 0;
-  for (; index < store.imgList.length; index++) {
-    const img = store.imgList[index];
-    if (img.size === undefined) continue;
-    const size = await getImgSize(img.src);
-    if (!size) continue;
-    // 防止加载过程中 imgList 变了的情况
-    if (store.imgList[index].src !== img.src) break;
-    // eslint-disable-next-line @typescript-eslint/no-loop-func
-    setState((state) => updateImgSize(state, index, ...size));
-  }
-
-  if (index < store.imgList.length) requestIdleCallback(preloadImgSize);
-});
-
+// /** 预加载图片尺寸 */
+// const preloadImgSize = singleThreaded(async () => {
+//   let index = 0;
+//   for (; index < store.imgList.length; index++) {
+//     const img = store.imgList[index];
+//     if (img.size === undefined) continue;
+//     const size = await getImgSize(img.src);
+//     if (!size) continue;
+//     // 防止加载过程中 imgList 变了的情况
+//     if (store.imgList[index].src !== img.src) break;
+//     // eslint-disable-next-line @typescript-eslint/no-loop-func
+//     setState((state) => updateImgSize(state, index, ...size));
+//   }
+//
+//   if (index < store.imgList.length) requestIdleCallback(preloadImgSize);
+// });
+//
 // 空闲期间预加载所有图片的尺寸
 // 卷轴模式下需要提前知道尺寸方便正确布局
 // 翻页模式下也需要提前发现跨页图重新排序
-requestIdleCallback(preloadImgSize);
-createEffectOn(() => store.imgList, preloadImgSize);
+// requestIdleCallback(preloadImgSize);
+// createEffectOn(() => store.imgList, preloadImgSize);
