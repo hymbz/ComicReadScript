@@ -161,7 +161,7 @@ try {
 
       const getImgUrl = (i: number) => async () => {
         const res = await main.request(`${apiUrl()}/page?pageNum=${i + 1}`);
-        return JSON.parse(res.response).data.url as string;
+        return JSON.parse(res.responseText).data.url as string;
       };
 
       options = {
@@ -169,7 +169,8 @@ try {
         wait: () => Boolean(main.querySelector('.HG_COMIC_READER_main')),
         async getImgList({ setFab }) {
           const res = await main.request(apiUrl());
-          const pageList = JSON.parse(res.response).data.pageInfos as unknown[];
+          const pageList = JSON.parse(res.responseText).data
+            .pageInfos as unknown[];
           if (
             pageList.length === 0 &&
             window.location.pathname.includes('episode')
@@ -625,7 +626,7 @@ try {
               onClick: () => fabProps?.onClick?.(),
             });
 
-          const { names, key, hash } = JSON.parse(res.response) as {
+          const { names, key, hash } = JSON.parse(res.responseText) as {
             names: string[];
             key: string;
             hash: string;
