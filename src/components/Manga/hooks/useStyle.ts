@@ -8,7 +8,7 @@ const useStyleSheet = () => {
 
   onMount(() => {
     const root = refs.root.getRootNode() as Document;
-    root.adoptedStyleSheets.push(styleSheet);
+    root.adoptedStyleSheets = [...root.adoptedStyleSheets, styleSheet];
     onCleanup(() => {
       const index = root.adoptedStyleSheets.indexOf(styleSheet);
       if (index !== -1) root.adoptedStyleSheets.splice(index, 1);

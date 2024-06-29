@@ -66,7 +66,6 @@ export const insertNode = (
   temp.innerHTML = textnode;
   const frag = document.createDocumentFragment();
   while (temp.firstChild) frag.append(temp.firstChild);
-  // TODO: 可以淘汰这个工具函数了
   // eslint-disable-next-line unicorn/prefer-modern-dom-apis
   node.insertBefore(frag, referenceNode);
 };
