@@ -10,7 +10,7 @@ import { preloadNum } from './memo/common';
 import { updateImgSize } from './imageSize';
 import { renderImgList } from './renderPage';
 
-const [loadLock, setLoadLock] = createSignal(false);
+const [loadLock, setLoadLock] = createSignal(false, { equals: false });
 
 /** 用于存储正在加载的图片元素 */
 const loadingImgMap = new Map<number, HTMLImageElement>();
@@ -59,32 +59,39 @@ export const handleImgError = (i: number, e: HTMLImageElement) => () => {
 /** 当前要加载的图片 */
 const loadImgList = new Set<number>();
 
+/** 加载指定图片。返回是否加载成功 */
 const loadImg = (index: number) => {
-  if (!needLoadImgList().has(index) || !store.imgList[index].src) return;
-
-  if (store.imgList[index].loadType === 'error' && !renderImgList().has(index))
-    return;
+  if (index === -1) return true;
+  const img = store.imgList[index];
+  if (img.loadType === 'loaded') return true;
+  if (!img.src) return false;
+  if (img.loadType === 'error' && !renderImgList().has(index)) return true;
 
   if (!loadingImgMap.has(index)) {
-    const img = new Image();
-    img.onload = handleImgLoaded(index, img);
-    img.onerror = handleImgError(index, img);
-    img.src = store.imgList[index].src;
-    loadingImgMap.set(index, img);
+    const imgEle = new Image();
+    imgEle.onload = handleImgLoaded(index, imgEle);
+    imgEle.onerror = handleImgError(index, imgEle);
+    imgEle.src = img.src;
+    loadingImgMap.set(index, imgEle);
     _setState('imgList', index, 'loadType', 'loading');
   }
   loadImgList.add(index);
+  return true;
 };
 
 /**
  * 以当前显示页为基准，预加载附近指定页数的图片，并取消其他预加载的图片
  * @param target 加载目标页
  * @param loadNum 加载图片数量
- * @returns 返回是否成功加载了指定数量的图片
+ * @returns 返回指定范围内是否还有未加载的图片
  */
-const loadPageImg = (target = 0, loadNum = 2) => {
-  const load = (i: number) => {
-    for (const index of store.pageList[i]) loadImg(index);
+const loadRangeImg = (target = 0, loadNum = 2) => {
+  /** 是否还有未加载的图片 */
+  let hasUnloadedImg = false;
+
+  const loadPage = (i: number) => {
+    for (const index of store.pageList[i])
+      if (!loadImg(index)) hasUnloadedImg = true;
     if (loadImgList.size >= loadNum) {
       setLoadLock(true);
       return true;
@@ -107,35 +114,36 @@ const loadPageImg = (target = 0, loadNum = 2) => {
   }
 
   if (start <= end) {
-    for (let index = start; index <= end; index++) if (load(index)) return true;
+    for (let index = start; index <= end; index++)
+      if (loadPage(index)) return index !== end || hasUnloadedImg;
   } else {
-    for (let index = start; index >= end; index--) if (load(index)) return true;
+    for (let index = start; index >= end; index--)
+      if (loadPage(index)) return index !== end || hasUnloadedImg;
   }
 
-  return false;
+  return hasUnloadedImg;
 };
 
 const updateImgLoadType = singleThreaded(() => {
   if (needLoadImgList().size === 0 || loadLock()) return;
 
   loadImgList.clear();
-  setLoadLock(false);
 
   if (store.imgList.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _ =
       // 优先加载当前显示的图片
-      loadPageImg() ||
+      loadRangeImg() ||
       // 再加载后面几页
-      loadPageImg(preloadNum().back) ||
+      loadRangeImg(preloadNum().back) ||
       // 再加载前面几页
-      loadPageImg(-preloadNum().front) ||
+      loadRangeImg(-preloadNum().front) ||
       // 根据图片总数和设置决定是否要继续加载其余图片
       (!store.option.alwaysLoadAllImg && store.imgList.length > 60) ||
       // 加载当前页后面的图片
-      loadPageImg(Number.POSITIVE_INFINITY, 5) ||
+      loadRangeImg(Number.POSITIVE_INFINITY, 5) ||
       // 加载当前页前面的图片
-      loadPageImg(Number.NEGATIVE_INFINITY, 5);
+      loadRangeImg(Number.NEGATIVE_INFINITY, 5);
   }
 
   // 取消其他预加载的图片
