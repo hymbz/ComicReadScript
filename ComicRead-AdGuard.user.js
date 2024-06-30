@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.1.0
+// @version         9.1.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -517,7 +517,6 @@ const insertNode = (node, textnode, referenceNode = null) => {
   temp.innerHTML = textnode;
   const frag = document.createDocumentFragment();
   while (temp.firstChild) frag.append(temp.firstChild);
-  // TODO: 可以淘汰这个工具函数了
   // eslint-disable-next-line unicorn/prefer-modern-dom-apis
   node.insertBefore(frag, referenceNode);
 };
@@ -4610,7 +4609,9 @@ const handleScrollModeDrag = ({
   }
 };
 
-const [loadLock, setLoadLock] = solidJs.createSignal(false);
+const [loadLock, setLoadLock] = solidJs.createSignal(false, {
+  equals: false
+});
 
 /** 用于存储正在加载的图片元素 */
 const loadingImgMap = new Map();
@@ -4656,29 +4657,37 @@ const handleImgError = (i, e) => () => {
 
 /** 当前要加载的图片 */
 const loadImgList = new Set();
+
+/** 加载指定图片。返回是否加载成功 */
 const loadImg = index => {
-  if (!needLoadImgList().has(index) || !store.imgList[index].src) return;
-  if (store.imgList[index].loadType === 'error' && !renderImgList().has(index)) return;
+  if (index === -1) return true;
+  const img = store.imgList[index];
+  if (img.loadType === 'loaded') return true;
+  if (!img.src) return false;
+  if (img.loadType === 'error' && !renderImgList().has(index)) return true;
   if (!loadingImgMap.has(index)) {
-    const img = new Image();
-    img.onload = handleImgLoaded(index, img);
-    img.onerror = handleImgError(index, img);
-    img.src = store.imgList[index].src;
-    loadingImgMap.set(index, img);
+    const imgEle = new Image();
+    imgEle.onload = handleImgLoaded(index, imgEle);
+    imgEle.onerror = handleImgError(index, imgEle);
+    imgEle.src = img.src;
+    loadingImgMap.set(index, imgEle);
     _setState('imgList', index, 'loadType', 'loading');
   }
   loadImgList.add(index);
+  return true;
 };
 
 /**
  * 以当前显示页为基准，预加载附近指定页数的图片，并取消其他预加载的图片
  * @param target 加载目标页
  * @param loadNum 加载图片数量
- * @returns 返回是否成功加载了指定数量的图片
+ * @returns 返回指定范围内是否还有未加载的图片
  */
-const loadPageImg = (target = 0, loadNum = 2) => {
-  const load = i => {
-    for (const index of store.pageList[i]) loadImg(index);
+const loadRangeImg = (target = 0, loadNum = 2) => {
+  /** 是否还有未加载的图片 */
+  let hasUnloadedImg = false;
+  const loadPage = i => {
+    for (const index of store.pageList[i]) if (!loadImg(index)) hasUnloadedImg = true;
     if (loadImgList.size >= loadNum) {
       setLoadLock(true);
       return true;
@@ -4697,31 +4706,30 @@ const loadPageImg = (target = 0, loadNum = 2) => {
     end = clamp(0, end, store.pageList.length - 1);
   }
   if (start <= end) {
-    for (let index = start; index <= end; index++) if (load(index)) return true;
+    for (let index = start; index <= end; index++) if (loadPage(index)) return index !== end || hasUnloadedImg;
   } else {
-    for (let index = start; index >= end; index--) if (load(index)) return true;
+    for (let index = start; index >= end; index--) if (loadPage(index)) return index !== end || hasUnloadedImg;
   }
-  return false;
+  return hasUnloadedImg;
 };
 const updateImgLoadType = singleThreaded(() => {
   if (needLoadImgList().size === 0 || loadLock()) return;
   loadImgList.clear();
-  setLoadLock(false);
   if (store.imgList.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _ =
     // 优先加载当前显示的图片
-    loadPageImg() ||
+    loadRangeImg() ||
     // 再加载后面几页
-    loadPageImg(preloadNum().back) ||
+    loadRangeImg(preloadNum().back) ||
     // 再加载前面几页
-    loadPageImg(-preloadNum().front) ||
+    loadRangeImg(-preloadNum().front) ||
     // 根据图片总数和设置决定是否要继续加载其余图片
     !store.option.alwaysLoadAllImg && store.imgList.length > 60 ||
     // 加载当前页后面的图片
-    loadPageImg(Number.POSITIVE_INFINITY, 5) ||
+    loadRangeImg(Number.POSITIVE_INFINITY, 5) ||
     // 加载当前页前面的图片
-    loadPageImg(Number.NEGATIVE_INFINITY, 5);
+    loadRangeImg(Number.NEGATIVE_INFINITY, 5);
   }
 
   // 取消其他预加载的图片
@@ -4818,7 +4826,7 @@ const useStyleSheet = () => {
   const styleSheet = new CSSStyleSheet();
   solidJs.onMount(() => {
     const root = refs.root.getRootNode();
-    root.adoptedStyleSheets.push(styleSheet);
+    root.adoptedStyleSheets = [...root.adoptedStyleSheets, styleSheet];
     solidJs.onCleanup(() => {
       const index = root.adoptedStyleSheets.indexOf(styleSheet);
       if (index !== -1) root.adoptedStyleSheets.splice(index, 1);
@@ -7315,10 +7323,8 @@ const useFab = async initProps => {
 };
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>为 ehentai 增加快捷收藏功能\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li>修复使用 safari + stay 时在漫画柜、禁漫上无法正常运行的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复部分浏览器无法正常运行的 bug </p></li><li><p>修复部分浏览器在禁漫上无法加载图片的 bug\`);
 const migrationOption = async (name, editFn) => {
   try {
     const option = await GM.getValue(name);
@@ -7388,7 +7394,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Number.POSITIVE_INFINITY,
@@ -10023,7 +10029,7 @@ const main = require('main');
         const apiUrl = () => `https://terra-historicus.hypergryph.com/api${window.location.pathname}`;
         const getImgUrl = i => async () => {
           const res = await main.request(`${apiUrl()}/page?pageNum=${i + 1}`);
-          return JSON.parse(res.response).data.url;
+          return JSON.parse(res.responseText).data.url;
         };
         options = {
           name: 'terraHistoricus',
@@ -10032,7 +10038,7 @@ const main = require('main');
             setFab
           }) {
             const res = await main.request(apiUrl());
-            const pageList = JSON.parse(res.response).data.pageInfos;
+            const pageList = JSON.parse(res.responseText).data.pageInfos;
             if (pageList.length === 0 && window.location.pathname.includes('episode')) throw new Error('获取图片列表时出错');
             return main.plimit(main.createSequence(pageList.length).map(getImgUrl), (doneNum, totalNum) => {
               setFab({
@@ -10073,8 +10079,7 @@ const main = require('main');
     init,
     setManga,
     setFab,
-    dynamicUpdate,
-    mangaProps
+    dynamicUpdate
   } = await main.useInit('jm');
   while (!unsafeWindow?.onImageLoaded) {
     if (document.readyState === 'complete') {
@@ -10103,7 +10108,7 @@ const main = require('main');
     const res = await main.request(imgEle.dataset.original, {
       responseType: 'blob',
       revalidate: true,
-      fetch: true
+      fetch: false
     });
     if (res.response.size === 0) {
       main.toast.warn(`下载原图时出错: ${imgEle.dataset.page}`);
@@ -10143,15 +10148,6 @@ const main = require('main');
       tip: `加载图片中 - ${doneNum}/${totalNum}`
     });
   }), imgEleList.length));
-  const retry = async (num = 0) => {
-    for (const [i, imgEle] of imgEleList.entries()) {
-      if (mangaProps.imgList[i]) continue;
-      setManga('imgList', i, await getImgUrl(imgEle));
-      await main.sleep(1000);
-    }
-    if (num < 60 && mangaProps.imgList.some(url => !url)) setTimeout(retry, 1000 * 5, num + 1);
-  };
-  await retry();
 })().catch(error => main.log.error(error));
 ;
         break;
@@ -10497,7 +10493,7 @@ const main = require('main');
               names,
               key,
               hash
-            } = JSON.parse(res.response);
+            } = JSON.parse(res.responseText);
             return names.map(name => `https://kisakisexo.xyz/${galleryId}/${key}/${hash}/b/${name}`);
           },
           SPA: {
