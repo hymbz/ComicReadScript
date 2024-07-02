@@ -7,7 +7,6 @@ declare global {
     height?: number;
 
     size: { height: number; width: number };
-    dom?: HTMLImageElement;
 
     translationUrl?: string;
     translationMessage?: string;

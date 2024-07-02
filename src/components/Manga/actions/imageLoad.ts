@@ -31,8 +31,6 @@ export const handleImgLoaded = (i: number, e: HTMLImageElement) => () => {
     if (img.width !== e.naturalWidth || img.height !== e.naturalHeight)
       updateImgSize(state, i, e.naturalWidth, e.naturalHeight);
     img.loadType = 'loaded';
-    // 为了避免加载好的图片被垃圾回收掉，在这里挂下引用
-    img.dom = e;
     state.prop.Loading?.(state.imgList, img);
   });
   setLoadLock(false);
