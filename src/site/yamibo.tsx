@@ -80,7 +80,7 @@ interface History {
   );
 
   // 自动签到
-  if (options.自动签到)
+  if (unsafeWindow.discuz_uid && options.自动签到)
     (async () => {
       const todayString = new Date().toLocaleDateString('zh-CN');
       // 判断当前日期与上次成功签到日期是否相同
