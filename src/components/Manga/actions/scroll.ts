@@ -42,7 +42,7 @@ export const sliderHeight = createRootMemo(() => {
 
 /** 当前是否已经滚动到底部 */
 export const isBottom = createRootMemo(
-  () => scrollPercentage() + sliderHeight() >= 1,
+  () => scrollPercentage() + sliderHeight() >= 0.9999,
 );
 
 /** 当前是否已经滚动到顶部 */
