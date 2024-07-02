@@ -1,7 +1,7 @@
-## [9.1.1](https://github.com/hymbz/ComicReadScript/compare/v9.1.0...v9.1.1) (2024-06-30)
+## [9.1.2](https://github.com/hymbz/ComicReadScript/compare/v9.1.1...v9.1.2) (2024-07-02)
 
 
 ### Bug Fixes
 
-* :bug: 修复部分浏览器无法正常运行的 bug ([5d43378](https://github.com/hymbz/ComicReadScript/commit/5d43378dcc3354ffb477138b886649514d889f94))
-* :bug: 修复部分浏览器在禁漫上无法加载图片的 bug ([cb24bf8](https://github.com/hymbz/ComicReadScript/commit/cb24bf85fc0030f06345601109c5e89a0f22a245))
+* :bug: 修复 eh 切换标签页后已加载图片丢失的 bug ([f185c3c](https://github.com/hymbz/ComicReadScript/commit/f185c3cb01a3956d73b2861a586df4d4814cbe55))
+* :bug: 修复卷轴模式下有时无法触发结束页的 bug ([d3dbc70](https://github.com/hymbz/ComicReadScript/commit/d3dbc70f9f2b4dc7ce3424121e2b0ba69dd417d4))
