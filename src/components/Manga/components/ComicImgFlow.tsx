@@ -81,7 +81,11 @@ export const ComicImgFlow: Component = () => {
     if (store.pageList.length === 0) return undefined;
 
     if (store.gridMode) {
-      const columnNum = isOnePageMode() ? 5 : 3;
+      let columnNum: number;
+      if (store.isMobile) columnNum = 2;
+      else if (isOnePageMode()) columnNum = 4;
+      else columnNum = 2;
+
       const areaList: string[][] = [[]];
       for (const page of store.pageList) {
         if (areaList.at(-1)!.length === columnNum) areaList.push([]);
@@ -139,8 +143,7 @@ export const ComicImgFlow: Component = () => {
     },
     'grid-template-areas': gridAreas,
     'grid-template-columns'() {
-      if (store.imgList.length === 0) return undefined;
-      if (store.gridMode) return `repeat(${isOnePageMode() ? 10 : 6}, 1fr)`;
+      if (store.imgList.length === 0 || store.gridMode) return undefined;
       if (store.page.vertical) return '50% 50%';
       if (isAbreastMode())
         return `repeat(${abreastArea().columns.length}, ${abreastColumnWidth()}px)`;

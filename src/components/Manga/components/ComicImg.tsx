@@ -3,9 +3,7 @@ import { createMemoMap } from 'helper/solidJs';
 
 import { store } from '../store';
 import {
-  activePage,
   getImgTip,
-  imgPageMap,
   imgShowState,
   isAbreastMode,
   abreastArea,
@@ -32,17 +30,6 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     'grid-area': () => (isAbreastMode() ? undefined : `_${img.index}`),
     '--width': () =>
       store.option.scrollMode.enabled ? `${img.size.width}px` : undefined,
-    'box-shadow'() {
-      if (!store.gridMode || !activePage().includes(img.index))
-        return undefined;
-
-      const page = store.pageList[imgPageMap()[img.index]].filter(
-        (i) => i !== -1,
-      );
-      const showState = page.length === 1 ? 2 : imgShowState()[img.index];
-      if (showState === 2) return '0 0 1em 0.5em var(--text-secondary)';
-      return `${showState ? -1 : 1}em 0 1em -0.5em var(--text-secondary)`;
-    },
   });
 
   /** 并排卷轴模式下需要复制的图片数量 */
