@@ -71,7 +71,7 @@ export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
   setState((state) => {
     for (const i of list) {
       const img = state.imgList[i];
-      if (!img) return;
+      if (!img) continue;
 
       if (enbale) {
         if (state.option.translation.forceRetry) {
