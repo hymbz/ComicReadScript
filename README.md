@@ -14,7 +14,7 @@
 
 脚本会在网页右下角弹出用于 **进入阅读模式** 的悬浮按钮，其上的快捷按钮用于切换站点增强功能的开启与否。默认会开启**自动进入阅读模式**的功能，也可在这里关闭。脚本没有全局设置，所有修改都只会在当前站点生效保存。~~反正平时也就只上那几个站点。~~
 
-对于支持站点以外的网站，脚本也提供了「[简易阅读模式](#简易阅读模式)」，除了得手动跳转上/下一话外，和支持站点的使用体验没有区别。
+脚本也提供了「[简易阅读模式](#简易阅读模式)」用于自动识别适配支持站点以外的网站。
 
 > 如果喜欢这种阅读模式，也想用来看**本地漫画**的话，欢迎使用「[ComicRead PWA](https://comic-read.pages.dev/)」，只要打开网页拖入本地漫画即可获得完全一致的体验
 
@@ -30,7 +30,7 @@
 1. 首先需要在浏览器上装好 [Violentmonkey](https://violentmonkey.github.io/)、[Tampermonkey](https://tampermonkey.net/) 之类的油猴扩展
 2. 然后通过 GreasyFork 安装脚本：[点我](https://sleazyfork.org/zh-CN/scripts/374903-comicread)
 
-> 另外也有 [AdGuard版](https://github.com/hymbz/ComicReadScript/raw/master/ComicRead-AdGuard.user.js)
+> 另外也有删除了简易阅读模式，只在支持网站上运行的 [AdGuard版](https://github.com/hymbz/ComicReadScript/raw/master/ComicRead-AdGuard.user.js)
 
 ## 快捷键
 
