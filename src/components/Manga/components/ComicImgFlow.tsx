@@ -144,10 +144,10 @@ export const ComicImgFlow: Component = () => {
     'grid-template-areas': gridAreas,
     'grid-template-columns'() {
       if (store.imgList.length === 0 || store.gridMode) return undefined;
-      if (store.page.vertical) return '50% 50%';
       if (isAbreastMode())
         return `repeat(${abreastArea().columns.length}, ${abreastColumnWidth()}px)`;
       if (isScrollMode()) return undefined;
+      if (store.page.vertical) return '50% 50%';
       return `repeat(${gridAreas()?.split(' ').length ?? 0}, 50%)`;
     },
     'grid-template-rows'() {
