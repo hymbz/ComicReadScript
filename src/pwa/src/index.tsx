@@ -56,7 +56,19 @@ window.addEventListener('paste', (event) =>
 const getSaveOption = (): MangaProps['option'] => {
   const saveJson = localStorage.getItem('option');
   if (!saveJson) return undefined;
-  return JSON.parse(saveJson) as MangaProps['option'];
+
+  const option = JSON.parse(saveJson);
+
+  // TODO: pwa 版也需要有个迁移配置的步骤，这次版本更新忘记加了，下次一定要补上
+  if (typeof option?.scrollMode === 'boolean')
+    option.scrollMode = {
+      enabled: option.scrollMode,
+      spacing: option.scrollModeSpacing,
+      imgScale: option.scrollModeImgScale,
+      fitToWidth: option.scrollModeFitToWidth,
+    };
+
+  return option as MangaProps['option'];
 };
 
 const handleOptionChange: MangaProps['onOptionChange'] = (option) =>
