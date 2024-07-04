@@ -1,6 +1,6 @@
 import { createRoot } from 'solid-js';
 import { t } from 'helper/i18n';
-import { debounce, inRange, throttle } from 'helper';
+import { inRange, throttle } from 'helper';
 import { createEffectOn } from 'helper/solidJs';
 
 import { type State, _setState, setState, store } from '../store';
@@ -72,18 +72,6 @@ createRoot(() => {
   createEffectOn(
     activePage,
     throttle(() => store.isDragMode || setState(resetPage)),
-  );
-
-  createEffectOn(
-    activePage,
-    debounce((page) => {
-      // 如果当前显示页面有出错的图片，就重新加载一次
-      for (const i of page) {
-        if (store.imgList[i]?.loadType !== 'error') return;
-        _setState('imgList', i, 'loadType', 'wait');
-      }
-    }),
-    { defer: true },
   );
 
   // 在关闭工具栏的同时关掉滚动条的强制显示

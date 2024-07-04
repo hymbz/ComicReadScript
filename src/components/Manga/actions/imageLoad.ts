@@ -1,4 +1,4 @@
-import { clamp, singleThreaded } from 'helper';
+import { clamp, debounce, singleThreaded } from 'helper';
 import { createEffectOn, createRootMemo } from 'helper/solidJs';
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
@@ -6,7 +6,7 @@ import { createSignal } from 'solid-js';
 
 import { store, setState, _setState } from '../store';
 
-import { preloadNum } from './memo/common';
+import { activePage, preloadNum } from './memo/common';
 import { updateImgSize } from './imageSize';
 import { renderImgList } from './renderPage';
 
@@ -40,9 +40,13 @@ export const handleImgLoaded = (i: number, e: HTMLImageElement) => () => {
   e.decode();
 };
 
+/** 图片加载出错的次数 */
+const imgErrorNum = new Map<string, number>();
+
 /** 图片加载出错的回调 */
 export const handleImgError = (i: number, e: HTMLImageElement) => () => {
   loadingImgMap.delete(i);
+  imgErrorNum.set(e.src, (imgErrorNum.get(e.src) ?? 0) + 1);
   setState((state) => {
     const img = state.imgList[i];
     if (!img) return;
@@ -63,7 +67,11 @@ const loadImg = (index: number) => {
   const img = store.imgList[index];
   if (img.loadType === 'loaded') return true;
   if (!img.src) return false;
-  if (img.loadType === 'error' && !renderImgList().has(index)) return true;
+  if (
+    img.loadType === 'error' &&
+    (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3)
+  )
+    return true;
 
   if (!loadingImgMap.has(index)) {
     const imgEle = new Image();
@@ -156,4 +164,17 @@ createEffectOn(
     () => store.option.alwaysLoadAllImg,
   ],
   updateImgLoadType,
+);
+
+createEffectOn(
+  activePage,
+  debounce((page) => {
+    // 如果当前显示页面有出错的图片，就重新加载一次
+    for (const i of page) {
+      if (store.imgList[i]?.loadType !== 'error') continue;
+      _setState('imgList', i, 'loadType', 'wait');
+      loadImg(i);
+    }
+  }),
+  { defer: true },
 );
