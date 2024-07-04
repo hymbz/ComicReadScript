@@ -25,6 +25,165 @@ import {
 
 declare const selected_tagname: string;
 
+let hasStyle = false;
+/** 添加快捷收藏的界面 */
+const addQuickFavorite = (
+  favoriteButton: HTMLElement,
+  root: HTMLElement,
+  apiUrl: string,
+  position: [number, number],
+) => {
+  if (!hasStyle) {
+    hasStyle = true;
+    GM_addStyle(`
+      .comidread-favorites {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        padding-left: 0.6em;
+        box-sizing: border-box;
+        z-index: 75;
+        border: none;
+        border-radius: 0;
+        overflow: auto;
+        align-content: center;
+      }
+
+      .comidread-favorites-item {
+        display: flex;
+        align-items: center;
+        margin: 1em 0;
+        cursor: pointer;
+        width: fit-content;
+        text-align: left;
+      }
+
+      .comidread-favorites-item > input {
+        margin: 0 0.5em 0 0;
+        pointer-events: none;
+      }
+
+      .comidread-favorites-item > div {
+        margin: 0 0.5em 0 0;
+        height: 15px;
+        width: 15px;
+        background-repeat: no-repeat;
+        background-image: url(https://ehgt.org/g/fav.png);
+        flex-shrink: 0;
+      }
+
+      .gl1t > .comidread-favorites {
+        padding: 1em 1.5em;
+      }
+    `);
+  }
+  root.style.position = 'relative';
+  root.style.height = '100%';
+
+  const [show, setShow] = createSignal(false);
+
+  const [favorites, setFavorites] = createSignal<HTMLElement[]>([]);
+
+  const updateFavorite = async () => {
+    try {
+      const res = await request(apiUrl, {
+        errorText: t('site.ehentai.fetch_favorite_failed'),
+      });
+      const dom = domParse(res.responseText);
+      const list = [...dom.querySelectorAll('.nosel > div')] as HTMLElement[];
+      if (list.length === 10) list[0].querySelector('input')!.checked = false;
+      setFavorites(list);
+    } catch {
+      toast.error(t('site.ehentai.fetch_favorite_failed'));
+      setFavorites([]);
+    }
+  };
+
+  let hasRender = false;
+  const renderDom = () => {
+    if (hasRender) return;
+    hasRender = true;
+
+    const FavoriteItem = (e: HTMLElement, index: Accessor<number>) => {
+      const handleClick = async () => {
+        setShow(false);
+
+        const formData = new FormData();
+        formData.append('favcat', index() === 10 ? 'favdel' : `${index()}`);
+        formData.append('apply', 'Apply Changes');
+        formData.append('favnote', '');
+        formData.append('update', '1');
+        const res = await request(apiUrl, {
+          method: 'POST',
+          data: formData,
+          errorText: t('site.ehentai.change_favorite_failed'),
+        });
+
+        toast.success(t('site.ehentai.change_favorite_success'));
+
+        // 修改收藏按钮样式的 js 代码
+        const updateCode = /\nif\(window.opener.document.+\n/
+          .exec(res.responseText)?.[0]
+          ?.replaceAll('window.opener.document', 'window.document');
+        if (updateCode) eval(updateCode); // eslint-disable-line no-eval
+
+        await updateFavorite();
+      };
+
+      return (
+        <div class="comidread-favorites-item" onClick={handleClick}>
+          <input type="radio" checked={e.querySelector('input')!.checked} />
+          <Show when={index() <= 9}>
+            <div
+              style={{ 'background-position': `0px -${2 + 19 * index()}px` }}
+            />
+          </Show>
+          {e.textContent?.trim()}
+        </div>
+      );
+    };
+
+    let background = 'rgba(0, 0, 0, 0)';
+    let dom = root;
+    while (background === 'rgba(0, 0, 0, 0)') {
+      background = getComputedStyle(dom).backgroundColor;
+      dom = dom.parentElement!;
+    }
+
+    render(
+      () => (
+        <Show when={show()}>
+          <span
+            class="comidread-favorites"
+            style={{
+              background,
+              height: `${position[1] - position[0]}px`,
+              top: `${position[0]}px`,
+            }}
+          >
+            <For
+              each={favorites()}
+              children={FavoriteItem}
+              fallback={<h3>loading...</h3>}
+            />
+          </span>
+        </Show>
+      ),
+      root,
+    );
+  };
+
+  // 将原本的收藏按钮改为切换显示快捷收藏夹
+  favoriteButton.onclick = null;
+  favoriteButton.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    renderDom();
+    setShow((val) => !val);
+    if (show()) await updateFavorite();
+  });
+};
+
 (async () => {
   const {
     options,
@@ -84,6 +243,47 @@ declare const selected_tagname: string;
             break;
         }
       });
+    }
+
+    if (options.quick_favorite) {
+      switch (
+        querySelector<HTMLSelectElement>('#ujumpbox ~ div > select')?.value
+      ) {
+        case 't': {
+          for (const item of querySelectorAll('.gl1t')) {
+            const button = item.querySelector<HTMLElement>('[id][onclick]')!;
+            const top =
+              item.firstElementChild!.getBoundingClientRect().bottom -
+              item.getBoundingClientRect().top;
+            const bottom =
+              item.lastElementChild!.getBoundingClientRect().top -
+              item.getBoundingClientRect().top;
+            addQuickFavorite(
+              button,
+              item,
+              /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0],
+              [top, bottom],
+            );
+          }
+          break;
+        }
+
+        case 'e': {
+          for (const item of querySelectorAll('.gl1e')) {
+            const button =
+              item.nextElementSibling!.querySelector<HTMLElement>(
+                '[id][onclick]',
+              )!;
+            addQuickFavorite(
+              button,
+              item,
+              /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0],
+              [0, Number.parseInt(getComputedStyle(item).height, 10)],
+            );
+          }
+          break;
+        }
+      }
     }
 
     return;
@@ -319,59 +519,60 @@ declare const selected_tagname: string;
     });
   }
 
-  if (options.associate_nhentai) {
-    const titleDom = document.getElementById('gn');
-    const taglistDom = querySelector('#taglist tbody');
-    if (!titleDom || !taglistDom) {
-      toast.error(t('site.ehentai.html_changed_nhentai_failed'));
-      return;
-    }
+  if (options.associate_nhentai)
+    (async () => {
+      const titleDom = document.getElementById('gn');
+      const taglistDom = querySelector('#taglist tbody');
+      if (!titleDom || !taglistDom) {
+        toast.error(t('site.ehentai.html_changed_nhentai_failed'));
+        return;
+      }
 
-    const title = encodeURI(titleDom.textContent!);
+      const title = encodeURI(titleDom.textContent!);
 
-    const newTagLine = document.createElement('tr');
+      const newTagLine = document.createElement('tr');
 
-    let nHentaiComicInfo: {
-      result: Array<{
-        id: number;
-        media_id: string;
-        num_pages: number;
-        images: { pages: Array<{ t: string }> };
-        title: { japanese: string; english: string };
-      }>;
-    };
-    try {
-      const res = await request<typeof nHentaiComicInfo>(
-        `https://nhentai.net/api/galleries/search?query=${title}`,
-        {
-          responseType: 'json',
-          errorText: t('site.ehentai.nhentai_error'),
-          noTip: true,
-        },
-      );
-      nHentaiComicInfo = res.response;
-    } catch {
-      newTagLine.innerHTML = `
+      let nHentaiComicInfo: {
+        result: Array<{
+          id: number;
+          media_id: string;
+          num_pages: number;
+          images: { pages: Array<{ t: string }> };
+          title: { japanese: string; english: string };
+        }>;
+      };
+      try {
+        const res = await request<typeof nHentaiComicInfo>(
+          `https://nhentai.net/api/galleries/search?query=${title}`,
+          {
+            responseType: 'json',
+            errorText: t('site.ehentai.nhentai_error'),
+            noTip: true,
+          },
+        );
+        nHentaiComicInfo = res.response;
+      } catch {
+        newTagLine.innerHTML = `
       <td class="tc">nhentai:</td>
       <td class="tc" style="text-align: left;">
         ${t('site.ehentai.nhentai_failed', {
           nhentai: `<a href='https://nhentai.net/search/?q=${title}' target="_blank" ><u>nhentai</u></a>`,
         })}
       </td>`;
-      taglistDom.append(newTagLine);
-      return;
-    }
+        taglistDom.append(newTagLine);
+        return;
+      }
 
-    // 构建新标签行
-    if (nHentaiComicInfo.result.length > 0) {
-      let temp = '<td class="tc">nhentai:</td><td>';
-      let i = nHentaiComicInfo.result.length;
-      while (i) {
-        i -= 1;
-        const tempComicInfo = nHentaiComicInfo.result[i];
-        const _title =
-          tempComicInfo.title.japanese || tempComicInfo.title.english;
-        temp += `
+      // 构建新标签行
+      if (nHentaiComicInfo.result.length > 0) {
+        let temp = '<td class="tc">nhentai:</td><td>';
+        let i = nHentaiComicInfo.result.length;
+        while (i) {
+          i -= 1;
+          const tempComicInfo = nHentaiComicInfo.result[i];
+          const _title =
+            tempComicInfo.title.japanese || tempComicInfo.title.english;
+          temp += `
           <div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${_title}">
             <a
               href="https://nhentai.net/g/${tempComicInfo.id}/"
@@ -381,202 +582,81 @@ declare const selected_tagname: string;
               ${tempComicInfo.id}
             </a>
           </div>`;
-      }
+        }
 
-      newTagLine.innerHTML = `${temp}</td>`;
-    } else
-      newTagLine.innerHTML =
-        '<td class="tc">nhentai:</td><td class="tc" style="text-align: left;">Null</td>';
+        newTagLine.innerHTML = `${temp}</td>`;
+      } else
+        newTagLine.innerHTML =
+          '<td class="tc">nhentai:</td><td class="tc" style="text-align: left;">Null</td>';
 
-    taglistDom.append(newTagLine);
+      taglistDom.append(newTagLine);
 
-    // 重写 _refresh_tagmenu_act 函数，加入脚本的功能
-    const nhentaiImgList: Record<string, string[]> = {};
-    const raw_refresh_tagmenu_act = unsafeWindow._refresh_tagmenu_act;
-    // eslint-disable-next-line func-names
-    unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(
-      a: HTMLAnchorElement,
-    ) {
-      if (a.hasAttribute('nhentai-index')) {
-        const tagmenu_act_dom = document.getElementById('tagmenu_act')!;
-        tagmenu_act_dom.innerHTML = [
-          '',
-          `<a href="${a.href}" target="_blank"> Jump to nhentai</a>`,
-          `<a href="#"> ${
-            nhentaiImgList[selected_tagname] ? 'Read' : 'Load comic'
-          }</a>`,
-        ].join('<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">">');
+      // 重写 _refresh_tagmenu_act 函数，加入脚本的功能
+      const nhentaiImgList: Record<string, string[]> = {};
+      const raw_refresh_tagmenu_act = unsafeWindow._refresh_tagmenu_act;
+      // eslint-disable-next-line func-names
+      unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(
+        a: HTMLAnchorElement,
+      ) {
+        if (a.hasAttribute('nhentai-index')) {
+          const tagmenu_act_dom = document.getElementById('tagmenu_act')!;
+          tagmenu_act_dom.innerHTML = [
+            '',
+            `<a href="${a.href}" target="_blank"> Jump to nhentai</a>`,
+            `<a href="#"> ${
+              nhentaiImgList[selected_tagname] ? 'Read' : 'Load comic'
+            }</a>`,
+          ].join('<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">">');
 
-        const nhentaiComicReadButton =
-          tagmenu_act_dom.querySelector('a[href="#"]')!;
+          const nhentaiComicReadButton =
+            tagmenu_act_dom.querySelector('a[href="#"]')!;
 
-        const { media_id, num_pages, images } =
-          nHentaiComicInfo.result[Number(a.getAttribute('nhentai-index')!)];
-        // nhentai api 对应的扩展名
-        const fileType = { j: 'jpg', p: 'png', g: 'gif' };
+          const { media_id, num_pages, images } =
+            nHentaiComicInfo.result[Number(a.getAttribute('nhentai-index')!)];
+          // nhentai api 对应的扩展名
+          const fileType = { j: 'jpg', p: 'png', g: 'gif' };
 
-        const showNhentaiComic = init(
-          dynamicUpdate(async (setImg) => {
-            nhentaiComicReadButton.innerHTML = ` loading - 0/${num_pages}`;
-            nhentaiImgList[selected_tagname] = await plimit(
-              images.pages.map((page, i) => async () => {
-                const imgRes = await request<Blob>(
-                  `https://i.nhentai.net/galleries/${media_id}/${i + 1}.${
-                    fileType[page.t]
-                  }`,
-                  {
-                    headers: { Referer: `https://nhentai.net/g/${media_id}` },
-                    responseType: 'blob',
-                  },
-                );
-                const blobUrl = URL.createObjectURL(imgRes.response);
-                setImg(i, blobUrl);
-                return blobUrl;
-              }),
-              (doneNum, totalNum) => {
-                nhentaiComicReadButton.innerHTML = ` loading - ${doneNum}/${totalNum}`;
-              },
-            );
-            nhentaiComicReadButton.innerHTML = ' Read';
-          }, num_pages),
-        ).showComic;
+          const showNhentaiComic = init(
+            dynamicUpdate(async (setImg) => {
+              nhentaiComicReadButton.innerHTML = ` loading - 0/${num_pages}`;
+              nhentaiImgList[selected_tagname] = await plimit(
+                images.pages.map((page, i) => async () => {
+                  const imgRes = await request<Blob>(
+                    `https://i.nhentai.net/galleries/${media_id}/${i + 1}.${
+                      fileType[page.t]
+                    }`,
+                    {
+                      headers: { Referer: `https://nhentai.net/g/${media_id}` },
+                      responseType: 'blob',
+                    },
+                  );
+                  const blobUrl = URL.createObjectURL(imgRes.response);
+                  setImg(i, blobUrl);
+                  return blobUrl;
+                }),
+                (doneNum, totalNum) => {
+                  nhentaiComicReadButton.innerHTML = ` loading - ${doneNum}/${totalNum}`;
+                },
+              );
+              nhentaiComicReadButton.innerHTML = ' Read';
+            }, num_pages),
+          ).showComic;
 
-        // 加载 nhentai 漫画
-        nhentaiComicReadButton.addEventListener('click', showNhentaiComic);
-      }
-      // 非 nhentai 标签列的用原函数去处理
-      else raw_refresh_tagmenu_act(a) as unknown;
-    };
-  }
+          // 加载 nhentai 漫画
+          nhentaiComicReadButton.addEventListener('click', showNhentaiComic);
+        }
+        // 非 nhentai 标签列的用原函数去处理
+        else raw_refresh_tagmenu_act(a) as unknown;
+      };
+    })();
 
   // 快捷收藏。必须处于登录状态
   if (unsafeWindow.apiuid !== -1 && options.quick_favorite) {
-    const gd3 = querySelector('#gd3')!;
-    GM_addStyle(`
-      #gd3 {
-        position: relative;
-        height: 100%;
-      }
-
-      #comidread-favorites {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: calc(100% - 35px);
-        padding-left: 0.6em;
-        box-sizing: border-box;
-        z-index: 75;
-        border: none;
-        border-radius: 0;
-        overflow: auto;
-      }
-
-      .comidread-favorites-item {
-        display: flex;
-        align-items: center;
-        margin: 1em 0;
-        cursor: pointer;
-        width: fit-content;
-        text-align: left;
-      }
-
-      .comidread-favorites-item > input {
-        margin: 0 0.5em 0 0;
-        pointer-events: none;
-      }
-
-      .comidread-favorites-item > div {
-        margin: 0 0.5em 0 0;
-        height: 15px;
-        width: 15px;
-        background-repeat: no-repeat;
-        background-image: url(https://ehgt.org/g/fav.png);
-        flex-shrink: 0;
-      }
-    `);
-
-    const [show, setShow] = createSignal(false);
-
-    const [favorites, setFavorites] = createSignal<HTMLElement[]>([]);
-
-    const updateFavorite = async () => {
-      try {
-        const res = await request(`${unsafeWindow.popbase}addfav`, {
-          errorText: t('site.ehentai.fetch_favorite_failed'),
-        });
-        const dom = domParse(res.responseText);
-        const list = [...dom.querySelectorAll('.nosel > div')] as HTMLElement[];
-        if (list.length === 10) list[0].querySelector('input')!.checked = false;
-        setFavorites(list);
-      } catch {
-        toast.error(t('site.ehentai.fetch_favorite_failed'));
-        setFavorites([]);
-      }
-    };
-
-    // 将原本的收藏按钮改为切换显示快捷收藏夹
-    const favoriteDom = querySelector('#gdf')!;
-    favoriteDom.onclick = null;
-    favoriteDom.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      setShow((val) => !val);
-      if (show()) await updateFavorite();
-    });
-
-    const FavoriteItem = (e: HTMLElement, index: Accessor<number>) => {
-      const handleClick = async () => {
-        setShow(false);
-
-        const formData = new FormData();
-        formData.append('favcat', index() === 10 ? 'favdel' : `${index()}`);
-        formData.append('apply', 'Apply Changes');
-        formData.append('favnote', '');
-        formData.append('update', '1');
-        const res = await request(`${unsafeWindow.popbase}addfav`, {
-          method: 'POST',
-          data: formData,
-          errorText: t('site.ehentai.change_favorite_failed'),
-        });
-
-        toast.success(t('site.ehentai.change_favorite_success'));
-
-        // 修改收藏按钮样式的 js 代码
-        const updateCode = /\nif\(window.opener.document.+\n/
-          .exec(res.responseText)?.[0]
-          ?.replaceAll('window.opener.document', 'window.document');
-        if (updateCode) eval(updateCode); // eslint-disable-line no-eval
-
-        await updateFavorite();
-      };
-
-      return (
-        <div class="comidread-favorites-item" onClick={handleClick}>
-          <input type="radio" checked={e.querySelector('input')!.checked} />
-          <Show when={index() <= 9}>
-            <div
-              style={{ 'background-position': `0px -${2 + 19 * index()}px` }}
-            />
-          </Show>
-          {e.textContent?.trim()}
-        </div>
-      );
-    };
-
-    render(
-      () => (
-        <Show when={show()}>
-          <div id="comidread-favorites" class="stuffbox">
-            <For
-              each={favorites()}
-              children={FavoriteItem}
-              fallback="loading..."
-            />
-          </div>
-        </Show>
-      ),
-      gd3,
-    );
+    const button = querySelector('#gdf')!;
+    const root = querySelector('#gd3')!;
+    addQuickFavorite(button, root, `${unsafeWindow.popbase}addfav`, [
+      0,
+      (button.firstElementChild as HTMLElement).offsetTop,
+    ]);
   }
 })().catch((error) => log.error(error));
