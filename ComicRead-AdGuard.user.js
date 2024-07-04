@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.1.2
+// @version         9.2.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -2949,7 +2949,7 @@ const contentHeight = createRootMemo(() => (imgTopList().at(-1) ?? 0) + (store.i
 // 卷轴模式下需要提前知道尺寸方便正确布局
 // 翻页模式下也需要提前发现跨页图重新排序
 // requestIdleCallback(preloadImgSize);
-var css$1 = ".img>img{display:block;height:100%;width:100%}.img{background-color:var(--hover-bg-color,#fff3);content-visibility:hidden;display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;overflow:hidden;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.img[data-show]{content-visibility:visible;display:block}.img[data-show=\\"0\\"]{justify-self:end}.img[data-show=\\"1\\"]{justify-self:start}.img[data-type=long]{height:auto;width:100%}.img[data-load-type=error],.img[data-load-type=wait],.img[src=\\"\\"]{height:100%;position:relative}:is(.img[data-load-type=error],.img[src=\\"\\"]):before{opacity:0}:is(.img[data-load-type],.img[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-load-type=loading],.img[data-load-type=loading]:after{background-image:var(--md-cloud-download);background-position:50%;background-repeat:no-repeat;background-size:30%}.img[data-load-type=loading]:after{animation:show 1s forwards;content:\\"\\"}.img[data-load-type=wait]:after{background-image:var(--md-cloud-download);content:\\"\\"}.img[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.img[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.mangaBox{contain:layout style;height:100%;width:100%}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}.root:not([data-grid-mode]) .mangaBox::-webkit-scrollbar{display:none}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.mangaFlow[data-disable-zoom] .img{height:unset;max-height:100%;object-fit:scale-down}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-animation=page] .img{transition-duration:.3s}.mangaFlow[data-animation=zoom]{transition-duration:.3s}.mangaFlow[data-vertical]{grid-auto-flow:row}.root[data-grid-mode] .mangaFlow{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:33.33333%;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.root[data-grid-mode] .mangaFlow .img{height:auto;transform:none}.root[data-grid-mode] .mangaFlow .img>img{cursor:pointer}.root[data-grid-mode] .mangaFlow .img>.gridModeTip{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.root[data-grid-mode] .mangaFlow .img[data-load-type=error],.root[data-grid-mode] .mangaFlow .img[data-load-type=wait],.root[data-grid-mode] .mangaFlow .img[src=\\"\\"]{height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show]{display:block;height:auto;max-height:unset;max-width:100%;object-fit:contain;width:var(--width)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show][data-load-type=loading]{position:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-grid-mode] .img{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-fit-width] .img{height:auto;max-width:100%;width:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll]{overflow:hidden}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow{transform:translate(var(--page-x),var(--page-y)) translateZ(0);grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div{flex-shrink:0;height:100%;overflow:hidden;width:var(--abreastScrollWidth)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div>picture:first-of-type{margin-top:var(--fill)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow[dir=ltr]{flex-direction:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow .img[data-show]{margin-top:unset;transform:translateY(var(--abreast-position)) translateZ(0);width:100%}@keyframes show{0%{opacity:1}90%{opacity:1}to{opacity:0}}.imgPool{contain:strict;content-visibility:hidden;height:0;position:absolute;width:0}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.endPage>button[data-is-end]{font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}.SettingsShowItem>.SettingsShowItemBody>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.hotkeysItem>svg:hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.hotkeysHeader>div[title]>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.scrollbar:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}.scrollbar:hover .scrollbarPoper,.scrollbar:hover .scrollbarSlider,.scrollbar:hover:before,.scrollbar[data-force-show] .scrollbarPoper,.scrollbar[data-force-show] .scrollbarSlider,.scrollbar[data-force-show]:before{opacity:1}.scrollbar[data-drag] .scrollbarPoper,.scrollbar[data-drag] .scrollbarSlider,.scrollbar[data-drag]:before{transition:opacity .15s}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.scrollbar[data-position=bottom]:before,.scrollbar[data-position=top]:before{border-left:.4em solid transparent}.scrollbar[data-position=bottom] .scrollbarSlider,.scrollbar[data-position=top] .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.scrollbar[data-position=bottom] .scrollbarPoper,.scrollbar[data-position=top] .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.scrollbar[data-position=bottom][data-dir=ltr],.scrollbar[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.scrollbar[data-position=bottom][data-dir=ltr]:before,.scrollbar[data-position=top][data-dir=ltr]:before{left:0;right:unset}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarSlider,.scrollbar[data-position=top][data-dir=ltr] .scrollbarSlider{transform:translateX(var(--top))}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarPoper,.scrollbar[data-position=top][data-dir=ltr] .scrollbarPoper{transform:translateX(var(--poper-top))}.scrollbar[data-position=bottom] .scrollbarPage,.scrollbar[data-position=top] .scrollbarPage{transform:scaleX(1)}.scrollbar[data-position=bottom] .scrollbarPage[data-type=loaded],.scrollbar[data-position=top] .scrollbarPage[data-type=loaded]{transform:scaleX(0)}.scrollbar[data-position=bottom] .scrollbarPage[data-translation-type],.scrollbar[data-position=top] .scrollbarPage[data-translation-type]{transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}.root[data-mobile] .scrollbar:hover .scrollbarPoper,.root[data-mobile] .scrollbar:hover:before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}.touchAreaRoot .touchArea[data-area=PREV],.touchAreaRoot .touchArea[data-area=prev]{background-color:#95e1d3e6}.touchAreaRoot .touchArea[data-area=MENU],.touchAreaRoot .touchArea[data-area=menu]{background-color:#fce38ae6}.touchAreaRoot .touchArea[data-area=NEXT],.touchAreaRoot .touchArea[data-area=next]{background-color:#f38181e6}.touchAreaRoot .touchArea[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.touchAreaRoot .touchArea[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.touchAreaRoot .touchArea[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:transparent}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div,div:focus,div:focus-visible,div:focus-within{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".img>img{display:block;height:100%;width:100%}.img{background-color:var(--hover-bg-color,#fff3);content-visibility:hidden;display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;overflow:hidden;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.img[data-show]{content-visibility:visible;display:block}.img[data-show=\\"0\\"]{justify-self:end}.img[data-show=\\"1\\"]{justify-self:start}.img[data-type=long]{height:auto;width:100%}.img[data-load-type=error],.img[data-load-type=wait],.img[src=\\"\\"]{height:100%;position:relative}:is(.img[data-load-type=error],.img[src=\\"\\"]):before{opacity:0}:is(.img[data-load-type],.img[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-load-type=loading],.img[data-load-type=loading]:after{background-image:var(--md-cloud-download);background-position:50%;background-repeat:no-repeat;background-size:30%}.img[data-load-type=loading]:after{animation:show 1s forwards;content:\\"\\"}.img[data-load-type=wait]:after{background-image:var(--md-cloud-download);content:\\"\\"}.img[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.img[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.mangaBox{contain:layout style;height:100%;width:100%}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}.root:not([data-grid-mode]) .mangaBox::-webkit-scrollbar{display:none}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.mangaFlow[data-disable-zoom] .img{height:unset;max-height:100%;object-fit:scale-down}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-animation=page] .img{transition-duration:.3s}.mangaFlow[data-animation=zoom]{transition-duration:.3s}.mangaFlow[data-vertical]{grid-auto-flow:row}.root[data-grid-mode] .mangaFlow{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.root[data-grid-mode] .mangaFlow .img{height:auto;overflow:unset;transform:none}.root[data-grid-mode] .mangaFlow .img>img{cursor:pointer}.root[data-grid-mode] .mangaFlow .img>.gridModeTip{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.root[data-grid-mode] .mangaFlow .img[data-load-type=error],.root[data-grid-mode] .mangaFlow .img[data-load-type=wait],.root[data-grid-mode] .mangaFlow .img[src=\\"\\"]{height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show]{display:block;height:auto;max-height:unset;max-width:100%;object-fit:contain;width:var(--width)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show][data-load-type=loading]{position:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-grid-mode] .img{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-fit-width] .img{height:auto;max-width:100%;width:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll]{overflow:hidden}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow{transform:translate(var(--page-x),var(--page-y)) translateZ(0);grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div{flex-shrink:0;height:100%;overflow:hidden;width:var(--abreastScrollWidth)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div>picture:first-of-type{margin-top:var(--fill)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow[dir=ltr]{flex-direction:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow .img[data-show]{margin-top:unset;transform:translateY(var(--abreast-position)) translateZ(0);width:100%}@keyframes show{0%{opacity:1}90%{opacity:1}to{opacity:0}}.imgPool{contain:strict;content-visibility:hidden;height:0;position:absolute;width:0}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.endPage>button[data-is-end]{font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}.SettingsShowItem>.SettingsShowItemBody>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.hotkeysItem>svg:hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.hotkeysHeader>div[title]>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.scrollbar:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}.scrollbar:hover .scrollbarPoper,.scrollbar:hover .scrollbarSlider,.scrollbar:hover:before,.scrollbar[data-force-show] .scrollbarPoper,.scrollbar[data-force-show] .scrollbarSlider,.scrollbar[data-force-show]:before{opacity:1}.scrollbar[data-drag] .scrollbarPoper,.scrollbar[data-drag] .scrollbarSlider,.scrollbar[data-drag]:before{transition:opacity .15s}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.scrollbar[data-position=bottom]:before,.scrollbar[data-position=top]:before{border-left:.4em solid transparent}.scrollbar[data-position=bottom] .scrollbarSlider,.scrollbar[data-position=top] .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.scrollbar[data-position=bottom] .scrollbarPoper,.scrollbar[data-position=top] .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.scrollbar[data-position=bottom][data-dir=ltr],.scrollbar[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.scrollbar[data-position=bottom][data-dir=ltr]:before,.scrollbar[data-position=top][data-dir=ltr]:before{left:0;right:unset}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarSlider,.scrollbar[data-position=top][data-dir=ltr] .scrollbarSlider{transform:translateX(var(--top))}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarPoper,.scrollbar[data-position=top][data-dir=ltr] .scrollbarPoper{transform:translateX(var(--poper-top))}.scrollbar[data-position=bottom] .scrollbarPage,.scrollbar[data-position=top] .scrollbarPage{transform:scaleX(1)}.scrollbar[data-position=bottom] .scrollbarPage[data-type=loaded],.scrollbar[data-position=top] .scrollbarPage[data-type=loaded]{transform:scaleX(0)}.scrollbar[data-position=bottom] .scrollbarPage[data-translation-type],.scrollbar[data-position=top] .scrollbarPage[data-translation-type]{transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}.root[data-mobile] .scrollbar:hover .scrollbarPoper,.root[data-mobile] .scrollbar:hover:before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}.touchAreaRoot .touchArea[data-area=PREV],.touchAreaRoot .touchArea[data-area=prev]{background-color:#95e1d3e6}.touchAreaRoot .touchArea[data-area=MENU],.touchAreaRoot .touchArea[data-area=menu]{background-color:#fce38ae6}.touchAreaRoot .touchArea[data-area=NEXT],.touchAreaRoot .touchArea[data-area=next]{background-color:#f38181e6}.touchAreaRoot .touchArea[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.touchAreaRoot .touchArea[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.touchAreaRoot .touchArea[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:transparent}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div,div:focus,div:focus-visible,div:focus-within{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"img","show":"show","mangaBox":"mangaBox","root":"root","mangaFlow":"mangaFlow","gridModeTip":"gridModeTip","imgPool":"imgPool","endPage":"endPage","jello":"jello","tip":"tip","comments":"comments","toolbar":"toolbar","toolbarPanel":"toolbarPanel","toolbarBg":"toolbarBg","SettingPanelPopper":"SettingPanelPopper","SettingPanel":"SettingPanel","SettingBlock":"SettingBlock","SettingBlockBody":"SettingBlockBody","SettingBlockSubtitle":"SettingBlockSubtitle","SettingsItem":"SettingsItem","SettingsItemName":"SettingsItemName","SettingsItemSwitch":"SettingsItemSwitch","SettingsItemSwitchRound":"SettingsItemSwitchRound","SettingsItemIconButton":"SettingsItemIconButton","SettingsItemSelect":"SettingsItemSelect","closeCover":"closeCover","SettingsShowItem":"SettingsShowItem","SettingsShowItemBody":"SettingsShowItemBody","hotkeys":"hotkeys","hotkeysItem":"hotkeysItem","hotkeysHeader":"hotkeysHeader","scrollbar":"scrollbar","scrollbarPage":"scrollbarPage","scrollbarSlider":"scrollbarSlider","scrollbarPoper":"scrollbarPoper","touchAreaRoot":"touchAreaRoot","touchArea":"touchArea","hidden":"hidden","invisible":"invisible","beautifyScrollbar":"beautifyScrollbar"};
 
 /** 并排卷轴模式下的全局滚动填充 */
@@ -3287,15 +3287,6 @@ solidJs.createRoot(() => {
     defer: true
   });
   createEffectOn(activePage, throttle(() => store.isDragMode || setState(resetPage)));
-  createEffectOn(activePage, debounce(page => {
-    // 如果当前显示页面有出错的图片，就重新加载一次
-    for (const i of page) {
-      if (store.imgList[i]?.loadType !== 'error') return;
-      _setState('imgList', i, 'loadType', 'wait');
-    }
-  }), {
-    defer: true
-  });
 
   // 在关闭工具栏的同时关掉滚动条的强制显示
   createEffectOn(() => store.show.toolbar, () => store.show.scrollbar && !store.show.toolbar && _setState('show', 'scrollbar', false), {
@@ -3884,7 +3875,7 @@ const setImgTranslationEnbale = (list, enbale) => {
   setState(state => {
     for (const i of list) {
       const img = state.imgList[i];
-      if (!img) return;
+      if (!img) continue;
       if (enbale) {
         if (state.option.translation.forceRetry) {
           img.translationType = 'wait';
@@ -4639,9 +4630,13 @@ const handleImgLoaded = (i, e) => () => {
   e.decode();
 };
 
+/** 图片加载出错的次数 */
+const imgErrorNum = new Map();
+
 /** 图片加载出错的回调 */
 const handleImgError = (i, e) => () => {
   loadingImgMap.delete(i);
+  imgErrorNum.set(e.src, (imgErrorNum.get(e.src) ?? 0) + 1);
   setState(state => {
     const img = state.imgList[i];
     if (!img) return;
@@ -4662,7 +4657,7 @@ const loadImg = index => {
   const img = store.imgList[index];
   if (img.loadType === 'loaded') return true;
   if (!img.src) return false;
-  if (img.loadType === 'error' && !renderImgList().has(index)) return true;
+  if (img.loadType === 'error' && (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3)) return true;
   if (!loadingImgMap.has(index)) {
     const imgEle = new Image();
     imgEle.onload = handleImgLoaded(index, imgEle);
@@ -4734,6 +4729,16 @@ const updateImgLoadType = singleThreaded(() => {
   for (const index of loadingImgMap.keys()) if (!loadImgList.has(index)) loadingImgMap.delete(index);
 });
 createEffectOn([loadLock, () => [...renderImgList()].map(i => store.imgList[i]), () => store.option.alwaysLoadAllImg], updateImgLoadType);
+createEffectOn(activePage, debounce(page => {
+  // 如果当前显示页面有出错的图片，就重新加载一次
+  for (const i of page) {
+    if (store.imgList[i]?.loadType !== 'error') continue;
+    _setState('imgList', i, 'loadType', 'wait');
+    loadImg(i);
+  }
+}), {
+  defer: true
+});
 
 const createPointerState = (e, type = 'down') => {
   const xy = [e.clientX, e.clientY];
@@ -4899,14 +4904,7 @@ const ComicImg = img => {
   const style = createMemoMap({
     'aspect-ratio': () => \`\${img.width ?? placeholderSize().width} / \${img.height ?? placeholderSize().height}\`,
     'grid-area': () => isAbreastMode() ? undefined : \`_\${img.index}\`,
-    '--width': () => store.option.scrollMode.enabled ? \`\${img.size.width}px\` : undefined,
-    'box-shadow'() {
-      if (!store.gridMode || !activePage().includes(img.index)) return undefined;
-      const page = store.pageList[imgPageMap()[img.index]].filter(i => i !== -1);
-      const showState = page.length === 1 ? 2 : imgShowState()[img.index];
-      if (showState === 2) return '0 0 1em 0.5em var(--text-secondary)';
-      return \`\${showState ? -1 : 1}em 0 1em -0.5em var(--text-secondary)\`;
-    }
+    '--width': () => store.option.scrollMode.enabled ? \`\${img.size.width}px\` : undefined
   });
 
   /** 并排卷轴模式下需要复制的图片数量 */
@@ -5044,7 +5042,8 @@ const ComicImgFlow = () => {
   const gridAreas = solidJs.createMemo(() => {
     if (store.pageList.length === 0) return undefined;
     if (store.gridMode) {
-      const columnNum = isOnePageMode() ? 5 : 3;
+      let columnNum;
+      if (store.isMobile) columnNum = 2;else if (isOnePageMode()) columnNum = 4;else columnNum = 2;
       const areaList = [[]];
       for (const page of store.pageList) {
         if (areaList.at(-1).length === columnNum) areaList.push([]);
@@ -5080,11 +5079,10 @@ const ComicImgFlow = () => {
     },
     'grid-template-areas': gridAreas,
     'grid-template-columns'() {
-      if (store.imgList.length === 0) return undefined;
-      if (store.gridMode) return \`repeat(\${isOnePageMode() ? 10 : 6}, 1fr)\`;
-      if (store.page.vertical) return '50% 50%';
+      if (store.imgList.length === 0 || store.gridMode) return undefined;
       if (isAbreastMode()) return \`repeat(\${abreastArea().columns.length}, \${abreastColumnWidth()}px)\`;
       if (isScrollMode()) return undefined;
+      if (store.page.vertical) return '50% 50%';
       return \`repeat(\${gridAreas()?.split(' ').length ?? 0}, 50%)\`;
     },
     'grid-template-rows'() {
@@ -7359,8 +7357,10 @@ const useFab = async initProps => {
 };
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复 eh 切换标签页后已加载图片丢失的 bug </p></li><li><p>修复卷轴模式下有时无法触发结束页的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>为 eh 的列表页加上快捷收藏\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复网格模式在移动端上间隔过长的 bug </p></li><li><p>修复显示填充页时无法翻译的 bug </p></li><li><p>修复移动端卷轴模式下的显示错误\`);
 const migrationOption = async (name, editFn) => {
   try {
     const option = await GM.getValue(name);
@@ -7430,7 +7430,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3()], {
+    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Number.POSITIVE_INFINITY,
@@ -9246,7 +9246,164 @@ const main = require('main');
 
 var _tmpl$ = /*#__PURE__*/web.template(`<div>`),
   _tmpl$2 = /*#__PURE__*/web.template(`<div class=comidread-favorites-item><input type=radio>`),
-  _tmpl$3 = /*#__PURE__*/web.template(`<div id=comidread-favorites class=stuffbox>`);
+  _tmpl$3 = /*#__PURE__*/web.template(`<span class=comidread-favorites>`),
+  _tmpl$4 = /*#__PURE__*/web.template(`<h3>loading...`);
+let hasStyle = false;
+/** 添加快捷收藏的界面 */
+const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
+  if (!hasStyle) {
+    hasStyle = true;
+    GM_addStyle(`
+      .comidread-favorites {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        padding-left: 0.6em;
+        box-sizing: border-box;
+        z-index: 75;
+        border: none;
+        border-radius: 0;
+        overflow: auto;
+        align-content: center;
+      }
+
+      .comidread-favorites-item {
+        display: flex;
+        align-items: center;
+        margin: 1em 0;
+        cursor: pointer;
+        width: fit-content;
+        text-align: left;
+      }
+
+      .comidread-favorites-item > input {
+        margin: 0 0.5em 0 0;
+        pointer-events: none;
+      }
+
+      .comidread-favorites-item > div {
+        margin: 0 0.5em 0 0;
+        height: 15px;
+        width: 15px;
+        background-repeat: no-repeat;
+        background-image: url(https://ehgt.org/g/fav.png);
+        flex-shrink: 0;
+      }
+
+      .gl1t > .comidread-favorites {
+        padding: 1em 1.5em;
+      }
+    `);
+  }
+  root.style.position = 'relative';
+  root.style.height = '100%';
+  const [show, setShow] = solidJs.createSignal(false);
+  const [favorites, setFavorites] = solidJs.createSignal([]);
+  const updateFavorite = async () => {
+    try {
+      const res = await main.request(apiUrl, {
+        errorText: main.t('site.ehentai.fetch_favorite_failed')
+      });
+      const dom = main.domParse(res.responseText);
+      const list = [...dom.querySelectorAll('.nosel > div')];
+      if (list.length === 10) list[0].querySelector('input').checked = false;
+      setFavorites(list);
+    } catch {
+      main.toast.error(main.t('site.ehentai.fetch_favorite_failed'));
+      setFavorites([]);
+    }
+  };
+  let hasRender = false;
+  const renderDom = () => {
+    if (hasRender) return;
+    hasRender = true;
+    const FavoriteItem = (e, index) => {
+      const handleClick = async () => {
+        setShow(false);
+        const formData = new FormData();
+        formData.append('favcat', index() === 10 ? 'favdel' : `${index()}`);
+        formData.append('apply', 'Apply Changes');
+        formData.append('favnote', '');
+        formData.append('update', '1');
+        const res = await main.request(apiUrl, {
+          method: 'POST',
+          data: formData,
+          errorText: main.t('site.ehentai.change_favorite_failed')
+        });
+        main.toast.success(main.t('site.ehentai.change_favorite_success'));
+
+        // 修改收藏按钮样式的 js 代码
+        const updateCode = /\nif\(window.opener.document.+\n/.exec(res.responseText)?.[0]?.replaceAll('window.opener.document', 'window.document');
+        if (updateCode) eval(updateCode); // eslint-disable-line no-eval
+
+        await updateFavorite();
+      };
+      return (() => {
+        var _el$ = _tmpl$2(),
+          _el$2 = _el$.firstChild;
+        _el$.$$click = handleClick;
+        web.insert(_el$, web.createComponent(solidJs.Show, {
+          get when() {
+            return index() <= 9;
+          },
+          get children() {
+            var _el$3 = _tmpl$();
+            web.effect(_$p => (_$p = `0px -${2 + 19 * index()}px`) != null ? _el$3.style.setProperty("background-position", _$p) : _el$3.style.removeProperty("background-position"));
+            return _el$3;
+          }
+        }), null);
+        web.insert(_el$, () => e.textContent?.trim(), null);
+        web.effect(() => _el$2.checked = e.querySelector('input').checked);
+        return _el$;
+      })();
+    };
+    let background = 'rgba(0, 0, 0, 0)';
+    let dom = root;
+    while (background === 'rgba(0, 0, 0, 0)') {
+      background = getComputedStyle(dom).backgroundColor;
+      dom = dom.parentElement;
+    }
+    web.render(() => web.createComponent(solidJs.Show, {
+      get when() {
+        return show();
+      },
+      get children() {
+        var _el$4 = _tmpl$3();
+        background != null ? _el$4.style.setProperty("background", background) : _el$4.style.removeProperty("background");
+        web.insert(_el$4, web.createComponent(solidJs.For, {
+          get each() {
+            return favorites();
+          },
+          children: FavoriteItem,
+          get fallback() {
+            return _tmpl$4();
+          }
+        }));
+        web.effect(_p$ => {
+          var _v$ = `${position[1] - position[0]}px`,
+            _v$2 = `${position[0]}px`;
+          _v$ !== _p$.e && ((_p$.e = _v$) != null ? _el$4.style.setProperty("height", _v$) : _el$4.style.removeProperty("height"));
+          _v$2 !== _p$.t && ((_p$.t = _v$2) != null ? _el$4.style.setProperty("top", _v$2) : _el$4.style.removeProperty("top"));
+          return _p$;
+        }, {
+          e: undefined,
+          t: undefined
+        });
+        return _el$4;
+      }
+    }), root);
+  };
+
+  // 将原本的收藏按钮改为切换显示快捷收藏夹
+  favoriteButton.onclick = null;
+  favoriteButton.addEventListener('click', async e => {
+    e.stopPropagation();
+    e.preventDefault();
+    renderDom();
+    setShow(val => !val);
+    if (show()) await updateFavorite();
+  });
+};
 (async () => {
   const {
     options,
@@ -9294,6 +9451,28 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div>`),
             break;
         }
       });
+    }
+    if (options.quick_favorite) {
+      switch (main.querySelector('#ujumpbox ~ div > select')?.value) {
+        case 't':
+          {
+            for (const item of main.querySelectorAll('.gl1t')) {
+              const button = item.querySelector('[id][onclick]');
+              const top = item.firstElementChild.getBoundingClientRect().bottom - item.getBoundingClientRect().top;
+              const bottom = item.lastElementChild.getBoundingClientRect().top - item.getBoundingClientRect().top;
+              addQuickFavorite(button, item, /http.+?(?=')/.exec(button.getAttribute('onclick'))[0], [top, bottom]);
+            }
+            break;
+          }
+        case 'e':
+          {
+            for (const item of main.querySelectorAll('.gl1e')) {
+              const button = item.nextElementSibling.querySelector('[id][onclick]');
+              addQuickFavorite(button, item, /http.+?(?=')/.exec(button.getAttribute('onclick'))[0], [0, Number.parseInt(getComputedStyle(item).height, 10)]);
+            }
+            break;
+          }
+      }
     }
     return;
   }
@@ -9473,7 +9652,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div>`),
       }
     });
   }
-  if (options.associate_nhentai) {
+  if (options.associate_nhentai) (async () => {
     const titleDom = document.getElementById('gn');
     const taglistDom = main.querySelector('#taglist tbody');
     if (!titleDom || !taglistDom) {
@@ -9569,136 +9748,13 @@ var _tmpl$ = /*#__PURE__*/web.template(`<div>`),
       // 非 nhentai 标签列的用原函数去处理
       else raw_refresh_tagmenu_act(a);
     };
-  }
+  })();
 
   // 快捷收藏。必须处于登录状态
   if (unsafeWindow.apiuid !== -1 && options.quick_favorite) {
-    const gd3 = main.querySelector('#gd3');
-    GM_addStyle(`
-      #gd3 {
-        position: relative;
-        height: 100%;
-      }
-
-      #comidread-favorites {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: calc(100% - 35px);
-        padding-left: 0.6em;
-        box-sizing: border-box;
-        z-index: 75;
-        border: none;
-        border-radius: 0;
-        overflow: auto;
-      }
-
-      .comidread-favorites-item {
-        display: flex;
-        align-items: center;
-        margin: 1em 0;
-        cursor: pointer;
-        width: fit-content;
-        text-align: left;
-      }
-
-      .comidread-favorites-item > input {
-        margin: 0 0.5em 0 0;
-        pointer-events: none;
-      }
-
-      .comidread-favorites-item > div {
-        margin: 0 0.5em 0 0;
-        height: 15px;
-        width: 15px;
-        background-repeat: no-repeat;
-        background-image: url(https://ehgt.org/g/fav.png);
-        flex-shrink: 0;
-      }
-    `);
-    const [show, setShow] = solidJs.createSignal(false);
-    const [favorites, setFavorites] = solidJs.createSignal([]);
-    const updateFavorite = async () => {
-      try {
-        const res = await main.request(`${unsafeWindow.popbase}addfav`, {
-          errorText: main.t('site.ehentai.fetch_favorite_failed')
-        });
-        const dom = main.domParse(res.responseText);
-        const list = [...dom.querySelectorAll('.nosel > div')];
-        if (list.length === 10) list[0].querySelector('input').checked = false;
-        setFavorites(list);
-      } catch {
-        main.toast.error(main.t('site.ehentai.fetch_favorite_failed'));
-        setFavorites([]);
-      }
-    };
-
-    // 将原本的收藏按钮改为切换显示快捷收藏夹
-    const favoriteDom = main.querySelector('#gdf');
-    favoriteDom.onclick = null;
-    favoriteDom.addEventListener('click', async e => {
-      e.stopPropagation();
-      e.preventDefault();
-      setShow(val => !val);
-      if (show()) await updateFavorite();
-    });
-    const FavoriteItem = (e, index) => {
-      const handleClick = async () => {
-        setShow(false);
-        const formData = new FormData();
-        formData.append('favcat', index() === 10 ? 'favdel' : `${index()}`);
-        formData.append('apply', 'Apply Changes');
-        formData.append('favnote', '');
-        formData.append('update', '1');
-        const res = await main.request(`${unsafeWindow.popbase}addfav`, {
-          method: 'POST',
-          data: formData,
-          errorText: main.t('site.ehentai.change_favorite_failed')
-        });
-        main.toast.success(main.t('site.ehentai.change_favorite_success'));
-
-        // 修改收藏按钮样式的 js 代码
-        const updateCode = /\nif\(window.opener.document.+\n/.exec(res.responseText)?.[0]?.replaceAll('window.opener.document', 'window.document');
-        if (updateCode) eval(updateCode); // eslint-disable-line no-eval
-
-        await updateFavorite();
-      };
-      return (() => {
-        var _el$ = _tmpl$2(),
-          _el$2 = _el$.firstChild;
-        _el$.$$click = handleClick;
-        web.insert(_el$, web.createComponent(solidJs.Show, {
-          get when() {
-            return index() <= 9;
-          },
-          get children() {
-            var _el$3 = _tmpl$();
-            web.effect(_$p => (_$p = `0px -${2 + 19 * index()}px`) != null ? _el$3.style.setProperty("background-position", _$p) : _el$3.style.removeProperty("background-position"));
-            return _el$3;
-          }
-        }), null);
-        web.insert(_el$, () => e.textContent?.trim(), null);
-        web.effect(() => _el$2.checked = e.querySelector('input').checked);
-        return _el$;
-      })();
-    };
-    web.render(() => web.createComponent(solidJs.Show, {
-      get when() {
-        return show();
-      },
-      get children() {
-        var _el$4 = _tmpl$3();
-        web.insert(_el$4, web.createComponent(solidJs.For, {
-          get each() {
-            return favorites();
-          },
-          children: FavoriteItem,
-          fallback: "loading..."
-        }));
-        return _el$4;
-      }
-    }), gd3);
+    const button = main.querySelector('#gdf');
+    const root = main.querySelector('#gd3');
+    addQuickFavorite(button, root, `${unsafeWindow.popbase}addfav`, [0, button.firstElementChild.offsetTop]);
   }
 })().catch(error => main.log.error(error));
 web.delegateEvents(["click"]);
