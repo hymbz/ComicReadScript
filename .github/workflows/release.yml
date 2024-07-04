@@ -21,3 +21,4 @@ jobs:
           body_path: docs/.other/LatestChange.md
           files: |
             ComicRead.user.js
+            ComicRead-AdGuard.user.js
