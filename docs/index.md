@@ -214,7 +214,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 ![eh快捷收藏-列表页](https://comic-read-docs.pages.dev/eh快捷收藏-列表页.webp)
 
-> 使用 `鼠标中键` 点击或按住 `ctrl`、`shift`、`alt` 再点击可以调出原本的收藏弹窗
+> 使用 `鼠标中键` 点击或按住 `ctrl`、`shift`、`alt` 等任意修饰键再点击可以调出原本的收藏弹窗
 
 ### 快捷键翻页
 

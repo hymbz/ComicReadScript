@@ -180,7 +180,7 @@ const addQuickFavorite = (
     e.stopPropagation();
     e.preventDefault();
 
-    if (e.shiftKey || e.ctrlKey || e.altKey || e.buttons === 4)
+    if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey || e.buttons === 4)
       return rawClick.call(favoriteButton, e);
 
     renderDom();
