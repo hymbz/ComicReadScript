@@ -174,10 +174,15 @@ const addQuickFavorite = (
   };
 
   // 将原本的收藏按钮改为切换显示快捷收藏夹
+  const rawClick = favoriteButton.onclick as (ev: MouseEvent) => unknown;
   favoriteButton.onclick = null;
-  favoriteButton.addEventListener('click', async (e) => {
+  favoriteButton.addEventListener('mousedown', async (e) => {
     e.stopPropagation();
     e.preventDefault();
+
+    if (e.shiftKey || e.ctrlKey || e.altKey || e.buttons === 4)
+      return rawClick.call(favoriteButton, e);
+
     renderDom();
     setShow((val) => !val);
     if (show()) await updateFavorite();
