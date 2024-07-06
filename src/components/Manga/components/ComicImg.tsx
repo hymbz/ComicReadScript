@@ -16,7 +16,7 @@ import classes from '../index.module.css';
 
 /** 漫画图片 */
 export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
-  const show = () => imgShowState().get(img.index);
+  const showState = () => imgShowState().get(img.index);
 
   const src = createMemo(() => {
     if (img.loadType === 'wait') return '';
@@ -43,24 +43,35 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
 
   /** 是否要渲染复制图片 */
   const renderClone = () =>
-    !store.gridMode && show() !== undefined && cloneNum() > 0;
+    !store.gridMode && showState() !== undefined && cloneNum() > 0;
+
+  const rednerImg = (cloneIndex?: number) => {
+    if (!src()) return false;
+    if (img.loadType === 'loaded') return true;
+    if (cloneIndex !== undefined) return false;
+    return img.loadType !== 'wait';
+  };
 
   const _ComicImg: Component<{ cloneIndex?: number }> = (props) => (
     <picture
       class={classes.img}
       style={style()}
       id={`_${props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index}`}
-      data-show={show()}
+      data-show={showState()}
       data-type={img.type ?? defaultImgType()}
       data-load-type={img.loadType === 'loaded' ? undefined : img.loadType}
     >
-      <Show when={props.cloneIndex === undefined || img.loadType === 'loaded'}>
+      <Show when={rednerImg()}>
         <img
           src={src()}
           alt={`${img.index}`}
           onLoad={(e) => handleImgLoaded(img.index, e.currentTarget)}
           onError={(e) => handleImgError(img.index, e.currentTarget)}
           draggable="false"
+          // 火狐需要调用 decode 提前解码防止翻页闪烁
+          ref={(e) => e.decode()}
+          // Safari 需要设置为 sync 来提前解码防止翻页闪烁
+          decoding="sync"
         />
         <Show when={store.gridMode}>
           <div

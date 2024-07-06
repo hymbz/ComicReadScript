@@ -188,7 +188,11 @@ export const ComicImgFlow: Component = () => {
       >
         <Show when={store.imgList.length === 0} children={<EmptyTip />} />
         <For each={[...renderImgList().values()]}>
-          {(i) => <ComicImg index={i} {...store.imgList[i]} />}
+          {(i) => (
+            <Show when={i !== -1}>
+              <ComicImg index={i} {...store.imgList[i]} />
+            </Show>
+          )}
         </For>
       </div>
     </div>

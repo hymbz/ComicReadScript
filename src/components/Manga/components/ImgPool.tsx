@@ -14,7 +14,7 @@ export const ImgPool: Component = () => (
     <For each={store.imgList}>
       {(img, i) => (
         <Show when={img.loadType === 'loaded'}>
-          <img data-index={i()} src={img.src} />
+          <img data-index={i()} src={img.src} decoding="async" />
         </Show>
       )}
     </For>

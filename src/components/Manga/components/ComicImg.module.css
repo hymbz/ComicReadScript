@@ -19,6 +19,26 @@
 
   object-fit: contain;
   background-color: var(--hover-bg-color, #fff3);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 30%;
+
+  /* 遮住默认的出错图片标识 */
+  &::after {
+    pointer-events: none;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: #eee;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 30%;
+  }
 
   &[data-show] {
     content-visibility: visible;
@@ -38,63 +58,24 @@
     height: auto;
   }
 
-  &[data-load-type="error"],
-  &[data-load-type="wait"],
-  &[src=""] {
-    position: relative;
-    height: 100%;
-  }
-
-  /* 隐藏火狐的出错图片标识 */
-  :is(&[data-load-type="error"], &[src=""])::before {
-    opacity: 0;
-  }
-
-  /* 遮住默认的出错图片标识 */
-  :is(&[data-load-type], &[src=""])::after {
-    pointer-events: none;
-
-    position: absolute;
-    top: 0;
-    right: 0;
-
-    width: 100%;
-    height: 100%;
-
-    background-color: #eee;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 30%;
-  }
-
-  &[data-load-type="loading"],
-  &[data-load-type="loading"]::after {
-    background-image: var(--md-cloud-download);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 30%;
-  }
-
-  &[data-load-type="loading"]::after {
-    content: "";
-
-    /* 加载中的图片先遮一下，避免出错图片的元素被直接显示出来 */
-    animation: show 1s forwards;
-  }
-
-  &[data-load-type="wait"]::after {
-    content: "";
-    background-image: var(--md-cloud-download);
-  }
-
-  &[src=""]::after {
-    content: "";
+  /* src 为空时的图片标识 */
+  &:empty {
     background-image: var(--md-photo);
   }
 
+  /* 遮住默认的出错图片标识 */
   &[data-load-type="error"]::after {
     content: "";
     background-image: var(--md-image-not-supported);
+  }
+
+  &[data-load-type="loading"] {
+    background-image: var(--md-cloud-download);
+
+    /* 加载中的图片先隐藏一下，避免出错图片的元素被直接显示出来 */
+    img {
+      animation: show 1s forwards;
+    }
   }
 }
 
@@ -280,15 +261,15 @@
 
 @keyframes show {
   0% {
-    opacity: 1;
+    opacity: 0;
   }
 
   90% {
-    opacity: 1;
+    opacity: 0;
   }
 
   100% {
-    opacity: 0;
+    opacity: 1;
   }
 }
 

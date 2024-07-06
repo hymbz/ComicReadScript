@@ -35,9 +35,6 @@ export const handleImgLoaded = (i: number, e: HTMLImageElement) => () => {
   });
   setLoadLock(false);
   loadingImgMap.delete(i);
-  // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
-  // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
-  e.decode();
 };
 
 /** 图片加载出错的次数 */
@@ -52,7 +49,7 @@ export const handleImgError = (i: number, e: HTMLImageElement) => () => {
     if (!img) return;
     img.loadType = 'error';
     img.type = undefined;
-    if (e) log.error(i, t('alert.img_load_failed'), e);
+    log.error(i, t('alert.img_load_failed'), e);
     state.prop.Loading?.(state.imgList, img);
   });
   setLoadLock(false);
@@ -65,8 +62,7 @@ const loadImgList = new Set<number>();
 const loadImg = (index: number) => {
   if (index === -1) return true;
   const img = store.imgList[index];
-  if (img.loadType === 'loaded') return true;
-  if (!img.src) return false;
+  if (!img.src || img.loadType === 'loaded') return true;
   if (
     img.loadType === 'error' &&
     (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3)
