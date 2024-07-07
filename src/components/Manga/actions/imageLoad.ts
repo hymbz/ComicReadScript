@@ -15,13 +15,18 @@ const [loadLock, setLoadLock] = createSignal(false, { equals: false });
 /** 用于存储正在加载的图片元素 */
 const loadingImgMap = new Map<number, HTMLImageElement>();
 
-/** 需要加载的图片 */
-const needLoadImgList = createRootMemo(() => {
-  const list = new Set<number>();
-  for (const [index, img] of store.imgList.entries())
-    if (img.loadType !== 'loaded') list.add(index);
-  return list;
-});
+/** 加载期间尽快获取图片尺寸 */
+export const checkImgSize = (i: number, e: HTMLImageElement) => {
+  if (
+    !loadingImgMap.has(i) ||
+    store.imgList[i].width ||
+    store.imgList[i].height
+  )
+    return;
+  if (!e.naturalWidth || !e.naturalHeight)
+    return setTimeout(() => checkImgSize(i, e), 100);
+  setState((state) => updateImgSize(state, i, e.naturalWidth, e.naturalHeight));
+};
 
 /** 图片加载完毕的回调 */
 export const handleImgLoaded = (i: number, e: HTMLImageElement) => () => {
@@ -55,14 +60,21 @@ export const handleImgError = (i: number, e: HTMLImageElement) => () => {
   setLoadLock(false);
 };
 
+/** 需要加载的图片 */
+const needLoadImgList = createRootMemo(() => {
+  const list = new Set<number>();
+  for (const [index, img] of store.imgList.entries())
+    if (img.loadType !== 'loaded' && img.src) list.add(index);
+  return list;
+});
+
 /** 当前要加载的图片 */
 const loadImgList = new Set<number>();
 
 /** 加载指定图片。返回是否加载成功 */
 const loadImg = (index: number) => {
-  if (index === -1) return true;
+  if (index === -1 || !needLoadImgList().has(index)) return true;
   const img = store.imgList[index];
-  if (!img.src || img.loadType === 'loaded') return true;
   if (
     img.loadType === 'error' &&
     (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3)
@@ -74,8 +86,9 @@ const loadImg = (index: number) => {
     imgEle.onload = handleImgLoaded(index, imgEle);
     imgEle.onerror = handleImgError(index, imgEle);
     imgEle.src = img.src;
-    loadingImgMap.set(index, imgEle);
     _setState('imgList', index, 'loadType', 'loading');
+    loadingImgMap.set(index, imgEle);
+    checkImgSize(index, imgEle);
   }
   loadImgList.add(index);
   return true;
