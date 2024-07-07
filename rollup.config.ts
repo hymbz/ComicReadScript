@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { resolve, dirname, basename, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import shell from 'shelljs';
@@ -63,16 +63,21 @@ const { meta, createMetaHeader } = getMetaData(isDevMode);
 const generateScopedName = '[local]';
 
 export const buildOptions = (
-  fileName: string,
+  path: string,
   watchFiles?: string[],
   fn?: (options: RollupOptions) => RollupOptions,
 ): RollupOptions => {
-  const isUserScript = ['dev', 'index'].includes(fileName);
+  const isUserScript = ['dev', 'index'].includes(path);
+
+  const dir = isUserScript ? 'dist' : 'dist/cache';
+  const fileName = path.endsWith('index.tsx')
+    ? path.split('/')[1]
+    : basename(path, extname(path));
 
   const options: RollupOptions = {
     treeshake: true,
     external: [...Object.keys(meta.resource ?? {}), 'main', 'dmzjDecrypt'],
-    input: resolve(__dirname, 'src', fileName),
+    input: resolve(__dirname, 'src', path),
     // 忽略使用 eval 的警告
     onwarn(warning, warn) {
       if (warning.code !== 'EVAL') warn(warning);
@@ -116,8 +121,7 @@ export const buildOptions = (
       watchFiles && isDevMode && watchExternal({ entries: watchFiles }),
     ],
     output: {
-      // dev 和 index 外的文件都放到 cache 文件夹下
-      dir: resolve(__dirname, isUserScript ? 'dist' : 'dist/cache'),
+      file: `${dir}/${fileName}.js`,
       format: 'cjs',
       strict: false,
       generatedCode: 'es2015',
@@ -129,7 +133,7 @@ export const buildOptions = (
           renderChunk(rawCode) {
             let code = rawCode;
 
-            switch (fileName) {
+            switch (path) {
               case 'index':
                 updateReadme();
                 if (isDevMode)
@@ -226,8 +230,12 @@ const optionList: RollupOptions[] = [
   buildOptions('main'),
 
   ...fs
-    .readdirSync('src/site')
-    .map((fileName) => buildOptions(`site/${fileName}`)),
+    .readdirSync('src/site', { withFileTypes: true })
+    .map((item) =>
+      item.isFile()
+        ? buildOptions(`site/${item.name}`)
+        : buildOptions(`site/${item.name}/index.tsx`),
+    ),
 
   buildOptions('helper/import', ['dist/cache/main.js']),
 

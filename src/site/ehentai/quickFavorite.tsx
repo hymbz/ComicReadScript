@@ -1,0 +1,230 @@
+import { type Accessor, For, createSignal, Show } from 'solid-js';
+import { render } from 'solid-js/web';
+import {
+  t,
+  request,
+  toast,
+  domParse,
+  querySelector,
+  querySelectorAll,
+} from 'main';
+
+import { type PageType } from '.';
+
+let hasStyle = false;
+const addQuickFavorite = (
+  favoriteButton: HTMLElement,
+  root: HTMLElement,
+  apiUrl: string,
+  position: [number, number],
+) => {
+  if (!hasStyle) {
+    hasStyle = true;
+    GM_addStyle(`
+      .comidread-favorites {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        padding-left: 0.6em;
+        box-sizing: border-box;
+        z-index: 75;
+        border: none;
+        border-radius: 0;
+        overflow: auto;
+        align-content: center;
+      }
+
+      .comidread-favorites-item {
+        display: flex;
+        align-items: center;
+        margin: 1em 0;
+        cursor: pointer;
+        width: fit-content;
+        text-align: left;
+      }
+
+      .comidread-favorites-item > input {
+        margin: 0 0.5em 0 0;
+        pointer-events: none;
+      }
+
+      .comidread-favorites-item > div {
+        margin: 0 0.5em 0 0;
+        height: 15px;
+        width: 15px;
+        background-repeat: no-repeat;
+        background-image: url(https://ehgt.org/g/fav.png);
+        flex-shrink: 0;
+      }
+
+      .gl1t > .comidread-favorites {
+        padding: 1em 1.5em;
+      }
+    `);
+  }
+  root.style.position = 'relative';
+  root.style.height = '100%';
+
+  const [show, setShow] = createSignal(false);
+
+  const [favorites, setFavorites] = createSignal<HTMLElement[]>([]);
+
+  const updateFavorite = async () => {
+    try {
+      const res = await request(apiUrl, {
+        errorText: t('site.ehentai.fetch_favorite_failed'),
+      });
+      const dom = domParse(res.responseText);
+      const list = [...dom.querySelectorAll('.nosel > div')] as HTMLElement[];
+      if (list.length === 10) list[0].querySelector('input')!.checked = false;
+      setFavorites(list);
+    } catch {
+      toast.error(t('site.ehentai.fetch_favorite_failed'));
+      setFavorites([]);
+    }
+  };
+
+  let hasRender = false;
+  const renderDom = () => {
+    if (hasRender) return;
+    hasRender = true;
+
+    const FavoriteItem = (e: HTMLElement, index: Accessor<number>) => {
+      const checked = e.querySelector('input')!.checked;
+
+      const handleClick = async () => {
+        if (checked) return;
+
+        setShow(false);
+
+        const formData = new FormData();
+        formData.append('favcat', index() === 10 ? 'favdel' : `${index()}`);
+        formData.append('apply', 'Apply Changes');
+        formData.append('favnote', '');
+        formData.append('update', '1');
+        const res = await request(apiUrl, {
+          method: 'POST',
+          data: formData,
+          errorText: t('site.ehentai.change_favorite_failed'),
+        });
+
+        toast.success(t('site.ehentai.change_favorite_success'));
+
+        // 修改收藏按钮样式的 js 代码
+        const updateCode = /\nif\(window.opener.document.+\n/
+          .exec(res.responseText)?.[0]
+          ?.replaceAll('window.opener.document', 'window.document');
+        if (updateCode) eval(updateCode); // eslint-disable-line no-eval
+
+        await updateFavorite();
+      };
+
+      return (
+        <div class="comidread-favorites-item" onClick={handleClick}>
+          <input type="radio" checked={checked} />
+          <Show when={index() <= 9}>
+            <div
+              style={{ 'background-position': `0px -${2 + 19 * index()}px` }}
+            />
+          </Show>
+          {e.textContent?.trim()}
+        </div>
+      );
+    };
+
+    let background = 'rgba(0, 0, 0, 0)';
+    let dom = root;
+    while (background === 'rgba(0, 0, 0, 0)') {
+      background = getComputedStyle(dom).backgroundColor;
+      dom = dom.parentElement!;
+    }
+
+    render(
+      () => (
+        <Show when={show()}>
+          <span
+            class="comidread-favorites"
+            style={{
+              background,
+              height: `${position[1] - position[0]}px`,
+              top: `${position[0]}px`,
+            }}
+          >
+            <For
+              each={favorites()}
+              children={FavoriteItem}
+              fallback={<h3>loading...</h3>}
+            />
+          </span>
+        </Show>
+      ),
+      root,
+    );
+  };
+
+  // 将原本的收藏按钮改为切换显示快捷收藏夹
+  const rawClick = favoriteButton.onclick as (ev: MouseEvent) => unknown;
+  favoriteButton.onclick = null;
+  favoriteButton.addEventListener('mousedown', async (e) => {
+    if (e.buttons !== 1 && e.buttons !== 4) return;
+
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey || e.buttons === 4)
+      return rawClick.call(favoriteButton, e);
+
+    renderDom();
+    setShow((val) => !val);
+    if (show()) await updateFavorite();
+  });
+};
+
+/** 快捷收藏的界面 */
+export const quickFavorite = (pageType: PageType) => {
+  if (pageType === 'gallery') {
+    const button = querySelector('#gdf')!;
+    const root = querySelector('#gd3')!;
+    addQuickFavorite(button, root, `${unsafeWindow.popbase}addfav`, [
+      0,
+      (button.firstElementChild as HTMLElement).offsetTop,
+    ]);
+    return;
+  }
+
+  // 列表页根据不同显示方式分别处理
+  switch (pageType) {
+    case 't': {
+      for (const item of querySelectorAll('.gl1t')) {
+        const button = item.querySelector<HTMLElement>('[id][onclick]')!;
+        const top =
+          item.firstElementChild!.getBoundingClientRect().bottom -
+          item.getBoundingClientRect().top;
+        const bottom =
+          item.lastElementChild!.getBoundingClientRect().top -
+          item.getBoundingClientRect().top;
+        addQuickFavorite(
+          button,
+          item,
+          /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0],
+          [top, bottom],
+        );
+      }
+      break;
+    }
+
+    case 'e': {
+      for (const item of querySelectorAll('.gl1e')) {
+        const button =
+          item.nextElementSibling!.querySelector<HTMLElement>('[id][onclick]')!;
+        addQuickFavorite(
+          button,
+          item,
+          /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0],
+          [0, Number.parseInt(getComputedStyle(item).height, 10)],
+        );
+      }
+      break;
+    }
+  }
+};
