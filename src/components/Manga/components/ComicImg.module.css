@@ -272,14 +272,3 @@
     opacity: 1;
   }
 }
-
-.imgPool {
-  content-visibility: hidden;
-
-  position: absolute;
-
-  contain: strict;
-
-  width: 0;
-  height: 0;
-}

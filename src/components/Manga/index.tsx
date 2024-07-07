@@ -11,7 +11,6 @@ import { Toolbar } from './components/Toolbar';
 import { Scrollbar } from './components/Scrollbar';
 import { TouchArea } from './components/TouchArea';
 import { EndPage } from './components/EndPage';
-import { ImgPool } from './components/ImgPool';
 import { useCssVar } from './hooks/useCssVar';
 import { store, type State } from './store/index';
 import { type FillEffect } from './store/image';
@@ -109,7 +108,6 @@ export const Manga: Component<MangaProps> = (props) => {
         <Scrollbar />
         <TouchArea />
         <EndPage />
-        <ImgPool />
       </div>
     </>
   );

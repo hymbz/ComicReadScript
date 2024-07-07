@@ -1,4 +1,4 @@
-import { type Component, Show, createMemo, onMount, For } from 'solid-js';
+import { type Component, Show, createMemo, onMount, Index } from 'solid-js';
 import { boolDataVal, createSequence } from 'helper';
 import { createEffectOn } from 'helper/solidJs';
 
@@ -25,7 +25,6 @@ import {
   abreastColumnWidth,
   abreastArea,
   imgAreaStyle,
-  renderImgList,
   contentHeight,
 } from '../actions';
 import classes from '../index.module.css';
@@ -187,13 +186,9 @@ export const ComicImgFlow: Component = () => {
         onTransitionEnd={handleTransitionEnd}
       >
         <Show when={store.imgList.length === 0} children={<EmptyTip />} />
-        <For each={[...renderImgList().values()]}>
-          {(i) => (
-            <Show when={i !== -1}>
-              <ComicImg index={i} {...store.imgList[i]} />
-            </Show>
-          )}
-        </For>
+        <Index each={store.imgList}>
+          {(img, i) => <ComicImg index={i} {...img()} />}
+        </Index>
       </div>
     </div>
   );

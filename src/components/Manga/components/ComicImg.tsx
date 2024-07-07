@@ -11,18 +11,18 @@ import {
   defaultImgType,
   handleImgError,
   handleImgLoaded,
+  renderImgList,
 } from '../actions';
 import classes from '../index.module.css';
 
-/** 漫画图片 */
-export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
+const RenderComicImg: Component<ComicImg & { index: number }> = (img) => {
   const showState = () => imgShowState().get(img.index);
 
-  const src = createMemo(() => {
+  const src = () => {
     if (img.loadType === 'wait') return '';
     if (img.translationType === 'show') return img.translationUrl;
     return img.src;
-  });
+  };
 
   const style = createMemoMap<JSX.CSSProperties>({
     'aspect-ratio': () =>
@@ -68,9 +68,7 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
           onLoad={(e) => handleImgLoaded(img.index, e.currentTarget)}
           onError={(e) => handleImgError(img.index, e.currentTarget)}
           draggable="false"
-          // 火狐需要调用 decode 提前解码防止翻页闪烁
-          ref={(e) => e.decode()}
-          // Safari 需要设置为 sync 来提前解码防止翻页闪烁
+          // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
           decoding="sync"
         />
         <Show when={store.gridMode}>
@@ -94,3 +92,19 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     </>
   );
 };
+
+// 用于防止图片缓存被浏览器回收
+const SaveComicImg: Component<ComicImg & { index: number }> = (img) => (
+  <picture class={classes.img} id={`${img.index}`}>
+    <Show when={img.loadType === 'loaded'} children={<img src={img.src} />} />
+  </picture>
+);
+
+/** 漫画图片 */
+export const ComicImg: Component<ComicImg & { index: number }> = (img) => (
+  <Show
+    when={renderImgList().has(img.index)}
+    children={RenderComicImg(img)}
+    fallback={SaveComicImg(img)}
+  />
+);
