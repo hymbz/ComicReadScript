@@ -22,10 +22,21 @@ import {
 import { quickFavorite } from './quickFavorite';
 import { associateNhentai } from './associateNhentai';
 import { hotkeysPageTurn } from './hotkeys';
+import { colorizeTag } from './ColorizeTag';
 
-export type PageType = 'gallery' | 't' | 'e';
+export type PageType = 'gallery' | 'mytags' | 't' | 'e' | undefined;
 
 (async () => {
+  let pageType: PageType;
+
+  if (Reflect.has(unsafeWindow, 'display_comment_field')) pageType = 'gallery';
+  else if (location.pathname === '/mytags') pageType = 'mytags';
+  else
+    pageType = querySelector<HTMLSelectElement>('#ujumpbox ~ div > select')
+      ?.value as PageType;
+
+  if (!pageType) return;
+
   const {
     options,
     init,
@@ -43,6 +54,8 @@ export type PageType = 'gallery' | 't' | 'e';
     detect_ad: true,
     /** 快捷收藏 */
     quick_favorite: true,
+    /** 标签染色 */
+    colorize_tag: false,
     autoShow: false,
   });
 
@@ -68,14 +81,8 @@ export type PageType = 'gallery' | 't' | 'e';
     return;
   }
 
-  let pageType: PageType | undefined;
-  if (Reflect.has(unsafeWindow, 'display_comment_field')) pageType = 'gallery';
-  else
-    pageType = querySelector<HTMLSelectElement>('#ujumpbox ~ div > select')
-      ?.value as PageType | undefined;
-
-  if (!pageType) return;
-
+  // 标签染色
+  if (options.colorize_tag) colorizeTag(pageType);
   // 快捷键翻页
   if (options.hotkeys_page_turn) hotkeysPageTurn(pageType);
   // 快捷收藏。必须处于登录状态
