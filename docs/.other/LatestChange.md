@@ -1,13 +1,13 @@
-## [9.2.0](https://github.com/hymbz/ComicReadScript/compare/v9.1.2...v9.2.0) (2024-07-04)
+## [9.3.0](https://github.com/hymbz/ComicReadScript/compare/v9.2.0...v9.3.0) (2024-07-07)
 
 
 ### Features
 
-* :sparkles: 为 eh 的列表页加上快捷收藏 ([def90a7](https://github.com/hymbz/ComicReadScript/commit/def90a7344bf540921aa4c6b5801cadf66d08b70))
+* :sparkles: 增加 ehentai 标签染色功能 ([95ed709](https://github.com/hymbz/ComicReadScript/commit/95ed709bbf5d3f2198e102f9f9aaf29e8cca2e8f))
+* :sparkles: 增加 ehentai 快捷评分功能 ([55889d2](https://github.com/hymbz/ComicReadScript/commit/55889d286d5886be5e0ba33cde5c9662fa12b6fc))
 
 
 ### Bug Fixes
 
-* :bug: 修复网格模式在移动端上间隔过长的 bug ([933f65d](https://github.com/hymbz/ComicReadScript/commit/933f65dc741decd1b20a730b33e857387a049222))
-* :bug: 修复显示填充页时无法翻译的 bug ([4bab5fa](https://github.com/hymbz/ComicReadScript/commit/4bab5fac7e78a7c2472d650ba0a1504c97b8612c))
-* :bug: 修复移动端卷轴模式下的显示错误 ([c3dce0e](https://github.com/hymbz/ComicReadScript/commit/c3dce0e96808b0d3de9d0a9ff745868db2c83361))
+* :bug: 修复 ehentai 无法正常加载图片的 bug ([f843e84](https://github.com/hymbz/ComicReadScript/commit/f843e842d6905f9eb80bbff18d3010ec7adca735))
+* :bug: 修复在 safari 上图片加载完毕依然不显示的 bug ([510c524](https://github.com/hymbz/ComicReadScript/commit/510c5241706d438f111c65afd4861b4cc5b420fe)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/249178#comment-512383](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/249178/issues/comment-512383)

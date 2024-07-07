@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.2.0
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会——「记录阅读历史、自动签到等」、百合会新站、动漫之家——「解锁隐藏漫画」、E-Hentai——「匹配 nhentai 漫画」、nhentai——「彻底屏蔽漫画、自动翻页」、Yurifans——「自动签到」、拷贝漫画(copymanga)——「显示最后阅读记录」、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
-// @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation.
+// @version         9.3.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
+// @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Detect advertise page, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
 // @license         AGPL-3.0-or-later
@@ -970,19 +970,23 @@ const zh = {
   site: {
     add_feature: {
       associate_nhentai: "关联nhentai",
-      auto_page_turn: "自动翻页",
+      auto_page_turn: "无限滚动",
       block_totally: "彻底屏蔽漫画",
+      colorize_tag: "标签染色",
       detect_ad: "识别广告页",
       hotkeys_page_turn: "快捷键翻页",
       load_original_image: "加载原图",
       open_link_new_page: "在新页面中打开链接",
       quick_favorite: "快捷收藏",
+      quick_rating: "快捷评分",
       remember_current_site: "记住当前站点"
     },
     changed_load_failed: "网站发生变化，无法加载漫画",
     ehentai: {
       change_favorite_failed: "收藏夹修改失败",
       change_favorite_success: "收藏夹修改成功",
+      change_rating_failed: "评分修改失败",
+      change_rating_success: "评分修改成功",
       fetch_favorite_failed: "获取收藏夹信息失败",
       fetch_img_page_source_failed: "获取图片页源码失败",
       fetch_img_page_url_failed: "从详情页获取图片页地址失败",
@@ -1235,19 +1239,23 @@ const en = {
   site: {
     add_feature: {
       associate_nhentai: "Associate nhentai",
-      auto_page_turn: "Auto page turning",
+      auto_page_turn: "Infinite scroll",
       block_totally: "Totally block comics",
+      colorize_tag: "Colorize tags",
       detect_ad: "Detect advertise page",
       hotkeys_page_turn: "Page turning with hotkeys",
       load_original_image: "Load original image",
       open_link_new_page: "Open links in a new page",
       quick_favorite: "Quick favorite",
+      quick_rating: "Quick rating",
       remember_current_site: "Remember the current site"
     },
     changed_load_failed: "The website has undergone changes, unable to load comics",
     ehentai: {
       change_favorite_failed: "Failed to change the favorite",
-      change_favorite_success: "Favorite change success",
+      change_favorite_success: "Successfully changed the favorite",
+      change_rating_failed: "Failed to change the rating",
+      change_rating_success: "Successfully changed the rating",
       fetch_favorite_failed: "Failed to get favorite info",
       fetch_img_page_source_failed: "Failed to get the source code of the image page",
       fetch_img_page_url_failed: "Failed to get the image page address from the detail page",
@@ -1502,17 +1510,21 @@ const ru = {
       associate_nhentai: "Ассоциация с nhentai",
       auto_page_turn: "Автопереворот страниц",
       block_totally: "Глобально заблокировать комиксы",
+      colorize_tag: "Раскрасить теги",
       detect_ad: "Detect advertise page",
       hotkeys_page_turn: "Переворот страниц горячими клавишами",
       load_original_image: "Загружать оригинальное изображение",
       open_link_new_page: "Открывать ссылки в новой вкладке",
       quick_favorite: "Быстрый фаворит",
+      quick_rating: "Быстрый рейтинг",
       remember_current_site: "Запомнить текущий сайт"
     },
     changed_load_failed: "Страница изменилась, невозможно загрузить комикс",
     ehentai: {
       change_favorite_failed: "Не удалось изменить избранное",
-      change_favorite_success: "Любимый успех изменений",
+      change_favorite_success: "Избранное успешно изменено",
+      change_rating_failed: "Не удалось изменить оценку",
+      change_rating_success: "Успешно изменен рейтинг",
       fetch_favorite_failed: "Не удалось получить информацию о избранном",
       fetch_img_page_source_failed: "Не удалось получить исходный код страницы с изображениями",
       fetch_img_page_url_failed: "Не удалось получить адрес страницы изображений из деталей",
@@ -1660,30 +1672,30 @@ const creatId = () => {
   return id;
 };
 
-var _tmpl$$Q = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">\`);
+var _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2M9.29 16.29 5.7 12.7a.996.996 0 1 1 1.41-1.41L10 14.17l6.88-6.88a.996.996 0 1 1 1.41 1.41l-7.59 7.59a.996.996 0 0 1-1.41 0">\`);
 const MdCheckCircle = ((props = {}) => (() => {
-  var _el$ = _tmpl$$Q();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-var _tmpl$$P = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
-const MdWarning = ((props = {}) => (() => {
   var _el$ = _tmpl$$P();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
-const MdError = ((props = {}) => (() => {
+var _tmpl$$O = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M4.47 21h15.06c1.54 0 2.5-1.67 1.73-3L13.73 4.99c-.77-1.33-2.69-1.33-3.46 0L2.74 18c-.77 1.33.19 3 1.73 3M12 14c-.55 0-1-.45-1-1v-2c0-.55.45-1 1-1s1 .45 1 1v2c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
+const MdWarning = ((props = {}) => (() => {
   var _el$ = _tmpl$$O();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">\`);
-const MdInfo = ((props = {}) => (() => {
+var _tmpl$$N = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 11c-.55 0-1-.45-1-1V8c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1 4h-2v-2h2z">\`);
+const MdError = ((props = {}) => (() => {
   var _el$ = _tmpl$$N();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+var _tmpl$$M = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z">\`);
+const MdInfo = ((props = {}) => (() => {
+  var _el$ = _tmpl$$M();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -1747,8 +1759,8 @@ toast$2.error = (msg, options) => toast$2(msg, {
   type: 'error'
 });
 
-var _tmpl$$M = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$d = /*#__PURE__*/web.template(\`<div><div>\`);
+var _tmpl$$L = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$c = /*#__PURE__*/web.template(\`<div><div>\`);
 const iconMap = {
   info: MdInfo,
   success: MdCheckCircle,
@@ -1804,7 +1816,7 @@ const ToastItem = props => {
     dismiss(e);
   };
   return (() => {
-    var _el$ = _tmpl$2$d(),
+    var _el$ = _tmpl$2$c(),
       _el$2 = _el$.firstChild;
     _el$.addEventListener("animationend", handleAnimationEnd);
     _el$.addEventListener("click", handleClick);
@@ -1822,7 +1834,7 @@ const ToastItem = props => {
         return props.duration !== Number.POSITIVE_INFINITY || props.schedule !== undefined;
       },
       get children() {
-        var _el$3 = _tmpl$$M();
+        var _el$3 = _tmpl$$L();
         _el$3.addEventListener("animationend", dismiss);
         var _ref$ = scheduleRef;
         typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
@@ -1865,7 +1877,7 @@ const ToastItem = props => {
   })();
 };
 
-var _tmpl$$L = /*#__PURE__*/web.template(\`<div>\`);
+var _tmpl$$K = /*#__PURE__*/web.template(\`<div>\`);
 const [ref, setRef] = solidJs.createSignal();
 const Toaster = () => {
   const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
@@ -1877,7 +1889,7 @@ const Toaster = () => {
     solidJs.onCleanup(() => document.removeEventListener('visibilitychange', handleVisibilityChange));
   });
   return (() => {
-    var _el$ = _tmpl$$L();
+    var _el$ = _tmpl$$K();
     web.use(setRef, _el$);
     web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
@@ -1965,7 +1977,7 @@ const request$1 = async (url, details, retryNum = 0, errorNum = 0) => {
   const headers = {
     Referer: window.location.href
   };
-  const errorText = \`\${details?.errorText ?? t('alert.comic_load_error')} - \${url}\`;
+  const errorText = \`\${details?.errorText ?? t('alert.comic_load_error')}\\nurl: \${url}\`;
   try {
     // 虽然 GM_xmlhttpRequest 有 fetch 选项，但在 stay 上不太稳定
     // 为了支持 ios 端只能自己实现一下了
@@ -1977,6 +1989,10 @@ const request$1 = async (url, details, retryNum = 0, errorNum = 0) => {
         body: details?.data,
         signal: AbortSignal.timeout?.(details?.timeout ?? 1000 * 10)
       });
+      if (!details?.noCheckCode && res.status !== 200) {
+        log.error(errorText, res);
+        throw new Error(errorText);
+      }
       let response = null;
       switch (details?.responseType) {
         case 'arraybuffer':
@@ -2034,39 +2050,39 @@ const eachApi = async (url, baseUrlList, details) => {
   throw new Error(errorText);
 };
 
-var _tmpl$$K = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">\`);
+var _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m20.45 6 .49-1.06L22 4.45a.5.5 0 0 0 0-.91l-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05c.17.39.73.39.9 0M8.95 6l.49-1.06 1.06-.49a.5.5 0 0 0 0-.91l-1.06-.48L8.95 2a.492.492 0 0 0-.9 0l-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49L8.05 6c.17.39.73.39.9 0m10.6 7.5-.49 1.06-1.06.49a.5.5 0 0 0 0 .91l1.06.49.49 1.06a.5.5 0 0 0 .91 0l.49-1.06 1.05-.5a.5.5 0 0 0 0-.91l-1.06-.49-.49-1.06c-.17-.38-.73-.38-.9.01m-1.84-4.38-2.83-2.83a.996.996 0 0 0-1.41 0L2.29 17.46a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0L17.7 10.53c.4-.38.4-1.02.01-1.41m-3.5 2.09L12.8 9.8l1.38-1.38 1.41 1.41z">\`);
 const MdAutoFixHigh = ((props = {}) => (() => {
-  var _el$ = _tmpl$$K();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-var _tmpl$$J = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">\`);
-const MdAutoFixOff = ((props = {}) => (() => {
   var _el$ = _tmpl$$J();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">\`);
-const MdAutoFlashOn = ((props = {}) => (() => {
+var _tmpl$$I = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="m22 3.55-1.06-.49L20.45 2a.5.5 0 0 0-.91 0l-.49 1.06-1.05.49a.5.5 0 0 0 0 .91l1.06.49.49 1.05a.5.5 0 0 0 .91 0l.49-1.06L22 4.45c.39-.17.39-.73 0-.9m-7.83 4.87 1.41 1.41-1.46 1.46 1.41 1.41 2.17-2.17a.996.996 0 0 0 0-1.41l-2.83-2.83a.996.996 0 0 0-1.41 0l-2.17 2.17 1.41 1.41zM2.1 4.93l6.36 6.36-6.17 6.17a.996.996 0 0 0 0 1.41l2.83 2.83c.39.39 1.02.39 1.41 0l6.17-6.17 6.36 6.36a.996.996 0 1 0 1.41-1.41L3.51 3.51a.996.996 0 0 0-1.41 0c-.39.4-.39 1.03 0 1.42">\`);
+const MdAutoFixOff = ((props = {}) => (() => {
   var _el$ = _tmpl$$I();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">\`);
-const MdAutoFlashOff = ((props = {}) => (() => {
+var _tmpl$$H = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">\`);
+const MdAutoFlashOn = ((props = {}) => (() => {
   var _el$ = _tmpl$$H();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var css$2 = ".iconButtonItem{position:relative}.iconButton,.iconButtonItem{align-items:center;display:flex}.iconButton{background-color:transparent;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.iconButton:focus,.iconButton:hover{background-color:var(--hover-bg-color,#fff3)}.iconButton.enabled{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.iconButton.enabled:focus,.iconButton.enabled:hover{background-color:var(--hover-bg-color-enable,#fffa)}.iconButton>svg{width:1em}.iconButtonPopper{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.iconButtonPopper[data-placement=right]{left:calc(100% + 1.5em)}.iconButtonPopper[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.iconButtonPopper[data-placement=left]{right:calc(100% + 1.5em)}.iconButtonPopper[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.iconButtonPopper:before{background-color:transparent;border:.4em solid transparent;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.iconButtonItem:focus .iconButtonPopper,.iconButtonItem:hover .iconButtonPopper,.iconButtonItem[data-show=true] .iconButtonPopper{opacity:1}.hidden{display:none}";
+var _tmpl$$G = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">\`);
+const MdAutoFlashOff = ((props = {}) => (() => {
+  var _el$ = _tmpl$$G();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+var css$2 = ".iconButtonItem{position:relative}.iconButton,.iconButtonItem{align-items:center;display:flex}.iconButton{background-color:transparent;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.iconButton:focus,.iconButton:hover{background-color:var(--hover-bg-color,#fff3)}.iconButton.enabled{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.iconButton.enabled:focus,.iconButton.enabled:hover{background-color:var(--hover-bg-color-enable,#fffa)}.iconButton>svg{width:1em}.iconButtonPopper{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.iconButtonPopper[data-placement=right]{left:calc(100% + 1.5em)}.iconButtonPopper[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.iconButtonPopper[data-placement=left]{right:calc(100% + 1.5em)}.iconButtonPopper[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.iconButtonPopper:before{background-color:transparent;border:.4em solid transparent;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.iconButtonItem:is(:hover,:focus,[data-show=true]) .iconButtonPopper{opacity:1}.hidden{display:none}";
 var modules_c21c94f2$2 = {"iconButtonItem":"iconButtonItem","iconButton":"iconButton","enabled":"enabled","iconButtonPopper":"iconButtonPopper","hidden":"hidden"};
 
-var _tmpl$$G = /*#__PURE__*/web.template(\`<div><button type=button tabindex=0>\`),
-  _tmpl$2$c = /*#__PURE__*/web.template(\`<div>\`);
+var _tmpl$$F = /*#__PURE__*/web.template(\`<div><button type=button tabindex=0>\`),
+  _tmpl$2$b = /*#__PURE__*/web.template(\`<div>\`);
 const IconButtonStyle = new CSSStyleSheet();
 IconButtonStyle.replaceSync(css$2);
 /** 图标按钮 */
@@ -2081,7 +2097,7 @@ const IconButton = _props => {
     buttonRef?.blur();
   };
   return (() => {
-    var _el$ = _tmpl$$G(),
+    var _el$ = _tmpl$$F(),
       _el$2 = _el$.firstChild;
     var _ref$ = buttonRef;
     typeof _ref$ === "function" ? web.use(_ref$, _el$2) : buttonRef = _el$2;
@@ -2090,7 +2106,7 @@ const IconButton = _props => {
     web.insert(_el$, (() => {
       var _c$ = web.memo(() => !!(props.popper || props.tip));
       return () => _c$() ? (() => {
-        var _el$3 = _tmpl$2$c();
+        var _el$3 = _tmpl$2$b();
         web.insert(_el$3, () => props.popper || props.tip);
         web.effect(_p$ => {
           var _v$6 = [modules_c21c94f2$2.iconButtonPopper, props.popperClassName].join(' '),
@@ -2137,6 +2153,7 @@ const useSpeedDial = (options, setOptions) => {
       return props.showName ?? (t(\`site.add_feature.\${props.optionName}\`) || props.optionName);
     },
     placement: "left",
+    showTip: true,
     onClick: () => setOptions({
       ...options,
       [props.optionName]: !options[props.optionName]
@@ -2193,16 +2210,16 @@ const useCache = async (initSchema, version = 1) => {
   };
 };
 
-var _tmpl$$F = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.3 7.3 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">\`);
+var _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.3 7.3 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">\`);
 const MdSettings = ((props = {}) => (() => {
-  var _el$ = _tmpl$$F();
+  var _el$ = _tmpl$$E();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$E = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">\`);
+var _tmpl$$D = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4">\`);
 const MdClose = ((props = {}) => (() => {
-  var _el$ = _tmpl$$E();
+  var _el$ = _tmpl$$D();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
@@ -2883,8 +2900,8 @@ const contentHeight = createRootMemo(() => (imgTopList().at(-1) ?? 0) + (store.i
 // 卷轴模式下需要提前知道尺寸方便正确布局
 // 翻页模式下也需要提前发现跨页图重新排序
 // requestIdleCallback(preloadImgSize);
-var css$1 = ".img>img{display:block;height:100%;width:100%}.img{background-color:var(--hover-bg-color,#fff3);content-visibility:hidden;display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;overflow:hidden;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.img[data-show]{content-visibility:visible;display:block}.img[data-show=\\"0\\"]{justify-self:end}.img[data-show=\\"1\\"]{justify-self:start}.img[data-type=long]{height:auto;width:100%}.img[data-load-type=error],.img[data-load-type=wait],.img[src=\\"\\"]{height:100%;position:relative}:is(.img[data-load-type=error],.img[src=\\"\\"]):before{opacity:0}:is(.img[data-load-type],.img[src=\\"\\"]):after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-load-type=loading],.img[data-load-type=loading]:after{background-image:var(--md-cloud-download);background-position:50%;background-repeat:no-repeat;background-size:30%}.img[data-load-type=loading]:after{animation:show 1s forwards;content:\\"\\"}.img[data-load-type=wait]:after{background-image:var(--md-cloud-download);content:\\"\\"}.img[src=\\"\\"]:after{background-image:var(--md-photo);content:\\"\\"}.img[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.mangaBox{contain:layout style;height:100%;width:100%}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}.root:not([data-grid-mode]) .mangaBox::-webkit-scrollbar{display:none}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.mangaFlow[data-disable-zoom] .img{height:unset;max-height:100%;object-fit:scale-down}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-animation=page] .img{transition-duration:.3s}.mangaFlow[data-animation=zoom]{transition-duration:.3s}.mangaFlow[data-vertical]{grid-auto-flow:row}.root[data-grid-mode] .mangaFlow{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.root[data-grid-mode] .mangaFlow .img{height:auto;overflow:unset;transform:none}.root[data-grid-mode] .mangaFlow .img>img{cursor:pointer}.root[data-grid-mode] .mangaFlow .img>.gridModeTip{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.root[data-grid-mode] .mangaFlow .img[data-load-type=error],.root[data-grid-mode] .mangaFlow .img[data-load-type=wait],.root[data-grid-mode] .mangaFlow .img[src=\\"\\"]{height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show]{display:block;height:auto;max-height:unset;max-width:100%;object-fit:contain;width:var(--width)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show][data-load-type=loading]{position:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-grid-mode] .img{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-fit-width] .img{height:auto;max-width:100%;width:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll]{overflow:hidden}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow{transform:translate(var(--page-x),var(--page-y)) translateZ(0);grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div{flex-shrink:0;height:100%;overflow:hidden;width:var(--abreastScrollWidth)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div>picture:first-of-type{margin-top:var(--fill)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow[dir=ltr]{flex-direction:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow .img[data-show]{margin-top:unset;transform:translateY(var(--abreast-position)) translateZ(0);width:100%}@keyframes show{0%{opacity:1}90%{opacity:1}to{opacity:0}}.imgPool{contain:strict;content-visibility:hidden;height:0;position:absolute;width:0}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.endPage>button[data-is-end]{font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}.SettingsShowItem>.SettingsShowItemBody>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.hotkeysItem>svg:hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.hotkeysHeader>div[title]>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.scrollbar:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}.scrollbar:hover .scrollbarPoper,.scrollbar:hover .scrollbarSlider,.scrollbar:hover:before,.scrollbar[data-force-show] .scrollbarPoper,.scrollbar[data-force-show] .scrollbarSlider,.scrollbar[data-force-show]:before{opacity:1}.scrollbar[data-drag] .scrollbarPoper,.scrollbar[data-drag] .scrollbarSlider,.scrollbar[data-drag]:before{transition:opacity .15s}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.scrollbar[data-position=bottom]:before,.scrollbar[data-position=top]:before{border-left:.4em solid transparent}.scrollbar[data-position=bottom] .scrollbarSlider,.scrollbar[data-position=top] .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.scrollbar[data-position=bottom] .scrollbarPoper,.scrollbar[data-position=top] .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.scrollbar[data-position=bottom][data-dir=ltr],.scrollbar[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.scrollbar[data-position=bottom][data-dir=ltr]:before,.scrollbar[data-position=top][data-dir=ltr]:before{left:0;right:unset}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarSlider,.scrollbar[data-position=top][data-dir=ltr] .scrollbarSlider{transform:translateX(var(--top))}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarPoper,.scrollbar[data-position=top][data-dir=ltr] .scrollbarPoper{transform:translateX(var(--poper-top))}.scrollbar[data-position=bottom] .scrollbarPage,.scrollbar[data-position=top] .scrollbarPage{transform:scaleX(1)}.scrollbar[data-position=bottom] .scrollbarPage[data-type=loaded],.scrollbar[data-position=top] .scrollbarPage[data-type=loaded]{transform:scaleX(0)}.scrollbar[data-position=bottom] .scrollbarPage[data-translation-type],.scrollbar[data-position=top] .scrollbarPage[data-translation-type]{transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}.root[data-mobile] .scrollbar:hover .scrollbarPoper,.root[data-mobile] .scrollbar:hover:before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}.touchAreaRoot .touchArea[data-area=PREV],.touchAreaRoot .touchArea[data-area=prev]{background-color:#95e1d3e6}.touchAreaRoot .touchArea[data-area=MENU],.touchAreaRoot .touchArea[data-area=menu]{background-color:#fce38ae6}.touchAreaRoot .touchArea[data-area=NEXT],.touchAreaRoot .touchArea[data-area=next]{background-color:#f38181e6}.touchAreaRoot .touchArea[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.touchAreaRoot .touchArea[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.touchAreaRoot .touchArea[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:transparent}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div,div:focus,div:focus-visible,div:focus-within{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
-var modules_c21c94f2$1 = {"img":"img","show":"show","mangaBox":"mangaBox","root":"root","mangaFlow":"mangaFlow","gridModeTip":"gridModeTip","imgPool":"imgPool","endPage":"endPage","jello":"jello","tip":"tip","comments":"comments","toolbar":"toolbar","toolbarPanel":"toolbarPanel","toolbarBg":"toolbarBg","SettingPanelPopper":"SettingPanelPopper","SettingPanel":"SettingPanel","SettingBlock":"SettingBlock","SettingBlockBody":"SettingBlockBody","SettingBlockSubtitle":"SettingBlockSubtitle","SettingsItem":"SettingsItem","SettingsItemName":"SettingsItemName","SettingsItemSwitch":"SettingsItemSwitch","SettingsItemSwitchRound":"SettingsItemSwitchRound","SettingsItemIconButton":"SettingsItemIconButton","SettingsItemSelect":"SettingsItemSelect","closeCover":"closeCover","SettingsShowItem":"SettingsShowItem","SettingsShowItemBody":"SettingsShowItemBody","hotkeys":"hotkeys","hotkeysItem":"hotkeysItem","hotkeysHeader":"hotkeysHeader","scrollbar":"scrollbar","scrollbarPage":"scrollbarPage","scrollbarSlider":"scrollbarSlider","scrollbarPoper":"scrollbarPoper","touchAreaRoot":"touchAreaRoot","touchArea":"touchArea","hidden":"hidden","invisible":"invisible","beautifyScrollbar":"beautifyScrollbar"};
+var css$1 = ".img>img{display:block;height:100%;width:100%}.img{background-color:var(--hover-bg-color,#fff3);background-position:50%;background-repeat:no-repeat;background-size:30%;content-visibility:hidden;display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;overflow:hidden;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.img:after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-show]{content-visibility:visible;display:block}.img[data-show=\\"0\\"]{justify-self:end}.img[data-show=\\"1\\"]{justify-self:start}.img[data-type=long]{height:auto;width:100%}.img:empty{background-image:var(--md-photo)}.img[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.img[data-load-type=loading]{background-image:var(--md-cloud-download)}.img[data-load-type=loading] img{animation:show 1s forwards}.mangaBox{contain:layout style;height:100%;width:100%}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}.root:not([data-grid-mode]) .mangaBox::-webkit-scrollbar{display:none}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.mangaFlow[data-disable-zoom] .img{height:unset;max-height:100%;object-fit:scale-down}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-animation=page] .img{transition-duration:.3s}.mangaFlow[data-animation=zoom]{transition-duration:.3s}.mangaFlow[data-vertical]{grid-auto-flow:row}.root[data-grid-mode] .mangaFlow{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.root[data-grid-mode] .mangaFlow .img{height:auto;overflow:unset;transform:none}.root[data-grid-mode] .mangaFlow .img>img{cursor:pointer}.root[data-grid-mode] .mangaFlow .img>.gridModeTip{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.root[data-grid-mode] .mangaFlow .img[data-load-type=error],.root[data-grid-mode] .mangaFlow .img[data-load-type=wait],.root[data-grid-mode] .mangaFlow .img[src=\\"\\"]{height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show]{display:block;height:auto;max-height:unset;max-width:100%;object-fit:contain;width:var(--width)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show][data-load-type=loading]{position:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-grid-mode] .img{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-fit-width] .img{height:auto;max-width:100%;width:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll]{overflow:hidden}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow{transform:translate(var(--page-x),var(--page-y)) translateZ(0);grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div{flex-shrink:0;height:100%;overflow:hidden;width:var(--abreastScrollWidth)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div>picture:first-of-type{margin-top:var(--fill)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow[dir=ltr]{flex-direction:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow .img[data-show]{margin-top:unset;transform:translateY(var(--abreast-position)) translateZ(0);width:100%}@keyframes show{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.endPage>button[data-is-end]{font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}.SettingsShowItem>.SettingsShowItemBody>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.hotkeysItem>svg:hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.hotkeysHeader>div[title]>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.scrollbar:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}.scrollbar:hover .scrollbarPoper,.scrollbar:hover .scrollbarSlider,.scrollbar:hover:before,.scrollbar[data-force-show] .scrollbarPoper,.scrollbar[data-force-show] .scrollbarSlider,.scrollbar[data-force-show]:before{opacity:1}.scrollbar[data-drag] .scrollbarPoper,.scrollbar[data-drag] .scrollbarSlider,.scrollbar[data-drag]:before{transition:opacity .15s}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.scrollbar[data-position=bottom]:before,.scrollbar[data-position=top]:before{border-left:.4em solid transparent}.scrollbar[data-position=bottom] .scrollbarSlider,.scrollbar[data-position=top] .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.scrollbar[data-position=bottom] .scrollbarPoper,.scrollbar[data-position=top] .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.scrollbar[data-position=bottom][data-dir=ltr],.scrollbar[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.scrollbar[data-position=bottom][data-dir=ltr]:before,.scrollbar[data-position=top][data-dir=ltr]:before{left:0;right:unset}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarSlider,.scrollbar[data-position=top][data-dir=ltr] .scrollbarSlider{transform:translateX(var(--top))}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarPoper,.scrollbar[data-position=top][data-dir=ltr] .scrollbarPoper{transform:translateX(var(--poper-top))}.scrollbar[data-position=bottom] .scrollbarPage,.scrollbar[data-position=top] .scrollbarPage{transform:scaleX(1)}.scrollbar[data-position=bottom] .scrollbarPage[data-type=loaded],.scrollbar[data-position=top] .scrollbarPage[data-type=loaded]{transform:scaleX(0)}.scrollbar[data-position=bottom] .scrollbarPage[data-translation-type],.scrollbar[data-position=top] .scrollbarPage[data-translation-type]{transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}.root[data-mobile] .scrollbar:hover .scrollbarPoper,.root[data-mobile] .scrollbar:hover:before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}.touchAreaRoot .touchArea[data-area=PREV],.touchAreaRoot .touchArea[data-area=prev]{background-color:#95e1d3e6}.touchAreaRoot .touchArea[data-area=MENU],.touchAreaRoot .touchArea[data-area=menu]{background-color:#fce38ae6}.touchAreaRoot .touchArea[data-area=NEXT],.touchAreaRoot .touchArea[data-area=next]{background-color:#f38181e6}.touchAreaRoot .touchArea[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.touchAreaRoot .touchArea[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.touchAreaRoot .touchArea[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:transparent}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div,div:focus,div:focus-visible,div:focus-within{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var modules_c21c94f2$1 = {"img":"img","show":"show","mangaBox":"mangaBox","root":"root","mangaFlow":"mangaFlow","gridModeTip":"gridModeTip","endPage":"endPage","jello":"jello","tip":"tip","comments":"comments","toolbar":"toolbar","toolbarPanel":"toolbarPanel","toolbarBg":"toolbarBg","SettingPanelPopper":"SettingPanelPopper","SettingPanel":"SettingPanel","SettingBlock":"SettingBlock","SettingBlockBody":"SettingBlockBody","SettingBlockSubtitle":"SettingBlockSubtitle","SettingsItem":"SettingsItem","SettingsItemName":"SettingsItemName","SettingsItemSwitch":"SettingsItemSwitch","SettingsItemSwitchRound":"SettingsItemSwitchRound","SettingsItemIconButton":"SettingsItemIconButton","SettingsItemSelect":"SettingsItemSelect","closeCover":"closeCover","SettingsShowItem":"SettingsShowItem","SettingsShowItemBody":"SettingsShowItemBody","hotkeys":"hotkeys","hotkeysItem":"hotkeysItem","hotkeysHeader":"hotkeysHeader","scrollbar":"scrollbar","scrollbarPage":"scrollbarPage","scrollbarSlider":"scrollbarSlider","scrollbarPoper":"scrollbarPoper","touchAreaRoot":"touchAreaRoot","touchArea":"touchArea","hidden":"hidden","invisible":"invisible","beautifyScrollbar":"beautifyScrollbar"};
 
 /** 并排卷轴模式下的全局滚动填充 */
 const [abreastScrollFill, _setAbreastScrollFill] = solidJs.createSignal(0);
@@ -4541,12 +4558,12 @@ const [loadLock, setLoadLock] = solidJs.createSignal(false, {
 /** 用于存储正在加载的图片元素 */
 const loadingImgMap = new Map();
 
-/** 需要加载的图片 */
-const needLoadImgList = createRootMemo(() => {
-  const list = new Set();
-  for (const [index, img] of store.imgList.entries()) if (img.loadType !== 'loaded') list.add(index);
-  return list;
-});
+/** 加载期间尽快获取图片尺寸 */
+const checkImgSize = (i, e) => {
+  if (!loadingImgMap.has(i) || store.imgList[i].width || store.imgList[i].height) return;
+  if (!e.naturalWidth || !e.naturalHeight) return setTimeout(() => checkImgSize(i, e), 100);
+  setState(state => updateImgSize(state, i, e.naturalWidth, e.naturalHeight));
+};
 
 /** 图片加载完毕的回调 */
 const handleImgLoaded = (i, e) => () => {
@@ -4559,9 +4576,6 @@ const handleImgLoaded = (i, e) => () => {
   });
   setLoadLock(false);
   loadingImgMap.delete(i);
-  // 火狐浏览器在图片进入视口前，即使已经加载完了也不会对图片进行解码
-  // 所以需要手动调用 decode 提前解码，防止在翻页时闪烁
-  e.decode();
 };
 
 /** 图片加载出错的次数 */
@@ -4576,29 +4590,35 @@ const handleImgError = (i, e) => () => {
     if (!img) return;
     img.loadType = 'error';
     img.type = undefined;
-    if (e) log.error(i, t('alert.img_load_failed'), e);
+    log.error(i, t('alert.img_load_failed'), e);
     state.prop.Loading?.(state.imgList, img);
   });
   setLoadLock(false);
 };
+
+/** 需要加载的图片 */
+const needLoadImgList = createRootMemo(() => {
+  const list = new Set();
+  for (const [index, img] of store.imgList.entries()) if (img.loadType !== 'loaded' && img.src) list.add(index);
+  return list;
+});
 
 /** 当前要加载的图片 */
 const loadImgList = new Set();
 
 /** 加载指定图片。返回是否加载成功 */
 const loadImg = index => {
-  if (index === -1) return true;
+  if (index === -1 || !needLoadImgList().has(index)) return true;
   const img = store.imgList[index];
-  if (img.loadType === 'loaded') return true;
-  if (!img.src) return false;
   if (img.loadType === 'error' && (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3)) return true;
   if (!loadingImgMap.has(index)) {
     const imgEle = new Image();
     imgEle.onload = handleImgLoaded(index, imgEle);
     imgEle.onerror = handleImgError(index, imgEle);
     imgEle.src = img.src;
-    loadingImgMap.set(index, imgEle);
     _setState('imgList', index, 'loadType', 'loading');
+    loadingImgMap.set(index, imgEle);
+    checkImgSize(index, imgEle);
   }
   loadImgList.add(index);
   return true;
@@ -4803,7 +4823,7 @@ const useStyleMemo = (selector, ...styleMapList) => {
   }
 };
 
-var _tmpl$$D = /*#__PURE__*/web.template(\`<h1>NULL\`);
+var _tmpl$$C = /*#__PURE__*/web.template(\`<h1>NULL\`);
 const EmptyTip = () => {
   const [show, setShow] = solidJs.createSignal(false);
   solidJs.onMount(() => {
@@ -4818,23 +4838,22 @@ const EmptyTip = () => {
       return show();
     },
     get children() {
-      return _tmpl$$D();
+      return _tmpl$$C();
     }
   });
 };
 
-var _tmpl$$C = /*#__PURE__*/web.template(\`<img draggable=false>\`),
-  _tmpl$2$b = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$3$4 = /*#__PURE__*/web.template(\`<picture>\`);
-
-/** 漫画图片 */
-const ComicImg = img => {
-  const show = () => imgShowState().get(img.index);
-  const src = solidJs.createMemo(() => {
+var _tmpl$$B = /*#__PURE__*/web.template(\`<img draggable=false decoding=sync>\`),
+  _tmpl$2$a = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$3$4 = /*#__PURE__*/web.template(\`<picture>\`),
+  _tmpl$4$1 = /*#__PURE__*/web.template(\`<img>\`);
+const RenderComicImg = img => {
+  const showState = () => imgShowState().get(img.index);
+  const src = () => {
     if (img.loadType === 'wait') return '';
     if (img.translationType === 'show') return img.translationUrl;
     return img.src;
-  });
+  };
   const style = createMemoMap({
     'aspect-ratio': () => \`\${img.width ?? placeholderSize().width} / \${img.height ?? placeholderSize().height}\`,
     'grid-area': () => isAbreastMode() ? undefined : \`_\${img.index}\`,
@@ -4850,16 +4869,21 @@ const ComicImg = img => {
   });
 
   /** 是否要渲染复制图片 */
-  const renderClone = () => !store.gridMode && show() !== undefined && cloneNum() > 0;
+  const renderClone = () => !store.gridMode && showState() !== undefined && cloneNum() > 0;
+  const rednerImg = cloneIndex => {
+    if (!src()) return false;
+    if (img.loadType === 'loaded') return true;
+    return img.loadType !== 'wait';
+  };
   const _ComicImg = props => (() => {
     var _el$ = _tmpl$3$4();
     web.insert(_el$, web.createComponent(solidJs.Show, {
       get when() {
-        return props.cloneIndex === undefined || img.loadType === 'loaded';
+        return rednerImg();
       },
       get children() {
         return [(() => {
-          var _el$2 = _tmpl$$C();
+          var _el$2 = _tmpl$$B();
           _el$2.addEventListener("error", e => handleImgError(img.index, e.currentTarget));
           _el$2.addEventListener("load", e => handleImgLoaded(img.index, e.currentTarget));
           web.effect(_p$ => {
@@ -4878,7 +4902,7 @@ const ComicImg = img => {
             return store.gridMode;
           },
           get children() {
-            var _el$3 = _tmpl$2$b();
+            var _el$3 = _tmpl$2$a();
             web.insert(_el$3, (() => {
               var _c$ = web.memo(() => !!store.gridMode);
               return () => _c$() ? getImgTip(img.index) : '';
@@ -4893,7 +4917,7 @@ const ComicImg = img => {
       var _v$3 = modules_c21c94f2$1.img,
         _v$4 = style(),
         _v$5 = \`_\${props.cloneIndex ? \`\${img.index}-\${props.cloneIndex}\` : img.index}\`,
-        _v$6 = show(),
+        _v$6 = showState(),
         _v$7 = img.type ?? defaultImgType(),
         _v$8 = img.loadType === 'loaded' ? undefined : img.loadType;
       _v$3 !== _p$.e && web.className(_el$, _p$.e = _v$3);
@@ -4932,7 +4956,53 @@ const ComicImg = img => {
   })];
 };
 
-var _tmpl$$B = /*#__PURE__*/web.template(\`<div tabindex=-1><div>\`);
+// 用于防止图片缓存被浏览器回收
+const SaveComicImg = img => (() => {
+  var _el$4 = _tmpl$3$4();
+  web.insert(_el$4, web.createComponent(solidJs.Show, {
+    get when() {
+      return img.loadType === 'loaded';
+    },
+    get children() {
+      return (() => {
+        var _el$5 = _tmpl$4$1();
+        web.effect(() => web.setAttribute(_el$5, "src", img.src));
+        return _el$5;
+      })();
+    }
+  }));
+  web.effect(_p$ => {
+    var _v$9 = modules_c21c94f2$1.img,
+      _v$10 = \`\${img.index}\`;
+    _v$9 !== _p$.e && web.className(_el$4, _p$.e = _v$9);
+    _v$10 !== _p$.t && web.setAttribute(_el$4, "id", _p$.t = _v$10);
+    return _p$;
+  }, {
+    e: undefined,
+    t: undefined
+  });
+  return _el$4;
+})();
+
+/** 漫画图片 */
+const ComicImg = img => web.createComponent(solidJs.Show, {
+  get when() {
+    return renderImgList().has(img.index);
+  },
+  get children() {
+    return RenderComicImg(img);
+  },
+  get fallback() {
+    return SaveComicImg(img);
+  }
+});
+
+// 目前即使是不显示的图片也必须挂载上，否则解析好的图片会被浏览器垃圾回收掉，
+// 导致在 ehentai 上无法正常加载图片。但这样会在图片过多时造成性能问题，
+// 虽然也尝试了将解析好的 Image 对象存储起来挂上引用和另外放到一个避免渲染的 dom 下，
+// 但也都失败了，只能暂时先不管了。
+// 之后尝试新方案时必须经过如下测试：开个几百页的漫画加载完毕后，再打开二十个标签页切换过去，
+var _tmpl$$A = /*#__PURE__*/web.template(\`<div tabindex=-1><div>\`);
 const ComicImgFlow = () => {
   const {
     hiddenMouse,
@@ -5032,7 +5102,7 @@ const ComicImgFlow = () => {
   });
   useStyle(imgAreaStyle);
   return (() => {
-    var _el$ = _tmpl$$B(),
+    var _el$ = _tmpl$$A(),
       _el$2 = _el$.firstChild;
     var _ref$ = bindRef('mangaBox');
     typeof _ref$ === "function" && web.use(_ref$, _el$);
@@ -5048,13 +5118,13 @@ const ComicImgFlow = () => {
         return web.createComponent(EmptyTip, {});
       }
     }), null);
-    web.insert(_el$2, web.createComponent(solidJs.For, {
+    web.insert(_el$2, web.createComponent(solidJs.Index, {
       get each() {
-        return [...renderImgList().values()];
+        return store.imgList;
       },
-      children: i => web.createComponent(ComicImg, web.mergeProps({
+      children: (img, i) => web.createComponent(ComicImg, web.mergeProps({
         index: i
-      }, () => store.imgList[i]))
+      }, img))
     }), null);
     web.effect(_p$ => {
       var _v$ = \`\${modules_c21c94f2$1.mangaBox} \${modules_c21c94f2$1.beautifyScrollbar}\`,
@@ -5097,80 +5167,80 @@ const ComicImgFlow = () => {
   })();
 };
 
-var _tmpl$$A = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">\`);
+var _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-6 14c-.55 0-1-.45-1-1V9h-1c-.55 0-1-.45-1-1s.45-1 1-1h2c.55 0 1 .45 1 1v8c0 .55-.45 1-1 1">\`);
 const MdLooksOne = ((props = {}) => (() => {
-  var _el$ = _tmpl$$A();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-var _tmpl$$z = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">\`);
-const MdLooksTwo = ((props = {}) => (() => {
   var _el$ = _tmpl$$z();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">\`);
-const MdViewDay = ((props = {}) => (() => {
+var _tmpl$$y = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2m-4 8c0 1.1-.9 2-2 2h-2v2h3c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1v-3c0-1.1.9-2 2-2h2V9h-3c-.55 0-1-.45-1-1s.45-1 1-1h3c1.1 0 2 .9 2 2z">\`);
+const MdLooksTwo = ((props = {}) => (() => {
   var _el$ = _tmpl$$y();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">\`);
-const MdQueue = ((props = {}) => (() => {
+var _tmpl$$x = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 21h17c.55 0 1-.45 1-1v-1c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1M20 8H3c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1M2 4v1c0 .55.45 1 1 1h17c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1">\`);
+const MdViewDay = ((props = {}) => (() => {
   var _el$ = _tmpl$$x();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.5 17.5 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.7 15.7 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.89.89 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">\`);
-const MdTranslate = ((props = {}) => (() => {
+var _tmpl$$w = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M3 6c-.55 0-1 .45-1 1v13c0 1.1.9 2 2 2h13c.55 0 1-.45 1-1s-.45-1-1-1H5c-.55 0-1-.45-1-1V7c0-.55-.45-1-1-1m17-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m-2 9h-3v3c0 .55-.45 1-1 1s-1-.45-1-1v-3h-3c-.55 0-1-.45-1-1s.45-1 1-1h3V6c0-.55.45-1 1-1s1 .45 1 1v3h3c.55 0 1 .45 1 1s-.45 1-1 1">\`);
+const MdQueue = ((props = {}) => (() => {
   var _el$ = _tmpl$$w();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">\`);
-const MdGrid = ((props = {}) => (() => {
+var _tmpl$$v = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12.65 15.67c.14-.36.05-.77-.23-1.05l-2.09-2.06.03-.03A17.5 17.5 0 0 0 14.07 6h1.94c.54 0 .99-.45.99-.99v-.02c0-.54-.45-.99-.99-.99H10V3c0-.55-.45-1-1-1s-1 .45-1 1v1H1.99c-.54 0-.99.45-.99.99 0 .55.45.99.99.99h10.18A15.7 15.7 0 0 1 9 11.35c-.81-.89-1.49-1.86-2.06-2.88A.89.89 0 0 0 6.16 8c-.69 0-1.13.75-.79 1.35.63 1.13 1.4 2.21 2.3 3.21L3.3 16.87a.99.99 0 0 0 0 1.42c.39.39 1.02.39 1.42 0L9 14l2.02 2.02c.51.51 1.38.32 1.63-.35M17.5 10c-.6 0-1.14.37-1.35.94l-3.67 9.8c-.24.61.22 1.26.87 1.26.39 0 .74-.24.88-.61l.89-2.39h4.75l.9 2.39c.14.36.49.61.88.61.65 0 1.11-.65.88-1.26l-3.67-9.8c-.22-.57-.76-.94-1.36-.94m-1.62 7 1.62-4.33L19.12 17z">\`);
+const MdTranslate = ((props = {}) => (() => {
   var _el$ = _tmpl$$v();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34-4.23-.52-7.78 3.04-7.27 7.27.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.26 4.25c.41.41 1.07.41 1.48 0l.01-.01c.41-.41.41-1.07 0-1.48zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14m0-7c-.28 0-.5.22-.5.5V9H7.5c-.28 0-.5.22-.5.5s.22.5.5.5H9v1.5c0 .28.22.5.5.5s.5-.22.5-.5V10h1.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5H10V7.5c0-.28-.22-.5-.5-.5">\`);
-const MdZoomIn = ((props = {}) => (() => {
+var _tmpl$$u = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M22 6c0-.55-.45-1-1-1h-2V3c0-.55-.45-1-1-1s-1 .45-1 1v2h-4V3c0-.55-.45-1-1-1s-1 .45-1 1v2H7V3c0-.55-.45-1-1-1s-1 .45-1 1v2H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v4H3c-.55 0-1 .45-1 1s.45 1 1 1h2v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h4v2c0 .55.45 1 1 1s1-.45 1-1v-2h2c.55 0 1-.45 1-1s-.45-1-1-1h-2v-4h2c.55 0 1-.45 1-1s-.45-1-1-1h-2V7h2c.55 0 1-.45 1-1M7 7h4v4H7zm0 10v-4h4v4zm10 0h-4v-4h4zm0-6h-4V7h4z">\`);
+const MdGrid = ((props = {}) => (() => {
   var _el$ = _tmpl$$u();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.26 4.25c.41.41 1.07.41 1.48 0l.01-.01c.41-.41.41-1.07 0-1.48zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14m-2-5h4c.28 0 .5.22.5.5s-.22.5-.5.5h-4c-.28 0-.5-.22-.5-.5s.22-.5.5-.5">\`);
-const MdZoomOut = ((props = {}) => (() => {
+var _tmpl$$t = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34-4.23-.52-7.78 3.04-7.27 7.27.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.26 4.25c.41.41 1.07.41 1.48 0l.01-.01c.41-.41.41-1.07 0-1.48zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14m0-7c-.28 0-.5.22-.5.5V9H7.5c-.28 0-.5.22-.5.5s.22.5.5.5H9v1.5c0 .28.22.5.5.5s.5-.22.5-.5V10h1.5c.28 0 .5-.22.5-.5s-.22-.5-.5-.5H10V7.5c0-.28-.22-.5-.5-.5">\`);
+const MdZoomIn = ((props = {}) => (() => {
   var _el$ = _tmpl$$t();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A4 4 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">\`);
-const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
+var _tmpl$$s = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.26 4.25c.41.41 1.07.41 1.48 0l.01-.01c.41-.41.41-1.07 0-1.48zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14m-2-5h4c.28 0 .5.22.5.5s-.22.5-.5.5h-4c-.28 0-.5-.22-.5-.5s.22-.5.5-.5">\`);
+const MdZoomOut = ((props = {}) => (() => {
   var _el$ = _tmpl$$s();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$r = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A4 4 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">\`);
-const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
+var _tmpl$$r = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M9 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1H9.17C7.08 2 5.22 3.53 5.02 5.61A4 4 0 0 0 9 10m11.65 7.65-2.79-2.79a.501.501 0 0 0-.86.35V17H6c-.55 0-1 .45-1 1s.45 1 1 1h11v1.79c0 .45.54.67.85.35l2.79-2.79c.2-.19.2-.51.01-.7">\`);
+const MdOutlineFormatTextdirectionLToR = ((props = {}) => (() => {
   var _el$ = _tmpl$$r();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$q = /*#__PURE__*/web.template(\`<div><div> <!> \`);
+var _tmpl$$q = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M10 10v4c0 .55.45 1 1 1s1-.45 1-1V4h2v10c0 .55.45 1 1 1s1-.45 1-1V4h1c.55 0 1-.45 1-1s-.45-1-1-1h-6.83C8.08 2 6.22 3.53 6.02 5.61A4 4 0 0 0 10 10m-2 7v-1.79c0-.45-.54-.67-.85-.35l-2.79 2.79c-.2.2-.2.51 0 .71l2.79 2.79a.5.5 0 0 0 .85-.36V19h11c.55 0 1-.45 1-1s-.45-1-1-1z">\`);
+const MdOutlineFormatTextdirectionRToL = ((props = {}) => (() => {
+  var _el$ = _tmpl$$q();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+var _tmpl$$p = /*#__PURE__*/web.template(\`<div><div> <!> \`);
 /** 设置菜单项 */
 const SettingsItem = props => (() => {
-  var _el$ = _tmpl$$q(),
+  var _el$ = _tmpl$$p(),
     _el$2 = _el$.firstChild,
     _el$3 = _el$2.firstChild,
     _el$5 = _el$3.nextSibling;
@@ -5199,7 +5269,7 @@ const SettingsItem = props => (() => {
   return _el$;
 })();
 
-var _tmpl$$p = /*#__PURE__*/web.template(\`<button type=button><div>\`);
+var _tmpl$$o = /*#__PURE__*/web.template(\`<button type=button><div>\`);
 /** 开关式菜单项 */
 const SettingsItemSwitch = props => {
   const handleClick = () => props.onChange(!props.value);
@@ -5214,7 +5284,7 @@ const SettingsItemSwitch = props => {
       return props.classList;
     },
     get children() {
-      var _el$ = _tmpl$$p(),
+      var _el$ = _tmpl$$o(),
         _el$2 = _el$.firstChild;
       _el$.addEventListener("click", handleClick);
       web.effect(_p$ => {
@@ -5235,22 +5305,22 @@ const SettingsItemSwitch = props => {
   });
 };
 
-var _tmpl$$o = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">\`);
+var _tmpl$$n = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M17.65 6.35a7.95 7.95 0 0 0-6.48-2.31c-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20a7.98 7.98 0 0 0 7.21-4.56c.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53a5.994 5.994 0 0 1-6.8 3.31c-2.22-.49-4.01-2.3-4.48-4.52A6.002 6.002 0 0 1 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71z">\`);
 const MdRefresh = ((props = {}) => (() => {
-  var _el$ = _tmpl$$o();
-  web.spread(_el$, props, true, true);
-  return _el$;
-})());
-
-var _tmpl$$n = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">\`);
-const MdAdd = ((props = {}) => (() => {
   var _el$ = _tmpl$$n();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-var _tmpl$$m = /*#__PURE__*/web.template(\`<div tabindex=0>\`),
-  _tmpl$2$a = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
+var _tmpl$$m = /*#__PURE__*/web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 13h-5v5c0 .55-.45 1-1 1s-1-.45-1-1v-5H6c-.55 0-1-.45-1-1s.45-1 1-1h5V6c0-.55.45-1 1-1s1 .45 1 1v5h5c.55 0 1 .45 1 1s-.45 1-1 1">\`);
+const MdAdd = ((props = {}) => (() => {
+  var _el$ = _tmpl$$m();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+var _tmpl$$l = /*#__PURE__*/web.template(\`<div tabindex=0>\`),
+  _tmpl$2$9 = /*#__PURE__*/web.template(\`<div><div><p></p><span></span><div></div><div>\`);
 const KeyItem = props => {
   const code = () => store.hotkeys[props.operateName][props.i];
   const del = () => delHotkeys(code());
@@ -5271,7 +5341,7 @@ const KeyItem = props => {
     if (!Reflect.has(hotkeysMap(), newCode)) setHotkeys(props.operateName, props.i, newCode);
   };
   return (() => {
-    var _el$ = _tmpl$$m();
+    var _el$ = _tmpl$$l();
     _el$.addEventListener("blur", () => code() || del());
     web.use(ref => code() || setTimeout(() => ref.focus()), _el$);
     _el$.addEventListener("keydown", handleKeyDown);
@@ -5288,7 +5358,7 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
     return Object.entries(store.hotkeys);
   },
   children: ([name, keys]) => (() => {
-    var _el$2 = _tmpl$2$a(),
+    var _el$2 = _tmpl$2$9(),
       _el$3 = _el$2.firstChild,
       _el$4 = _el$3.firstChild,
       _el$5 = _el$4.nextSibling,
@@ -5331,8 +5401,8 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
   })()
 });
 
-var _tmpl$$l = /*#__PURE__*/web.template(\`<select>\`),
-  _tmpl$2$9 = /*#__PURE__*/web.template(\`<option>\`);
+var _tmpl$$k = /*#__PURE__*/web.template(\`<select>\`),
+  _tmpl$2$8 = /*#__PURE__*/web.template(\`<option>\`);
 /** 选择器式菜单项 */
 const SettingsItemSelect = props => {
   let ref;
@@ -5350,7 +5420,7 @@ const SettingsItemSelect = props => {
       return props.classList;
     },
     get children() {
-      var _el$ = _tmpl$$l();
+      var _el$ = _tmpl$$k();
       _el$.addEventListener("change", e => props.onChange(e.target.value));
       var _ref$ = ref;
       typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
@@ -5360,7 +5430,7 @@ const SettingsItemSelect = props => {
           return props.options;
         },
         children: ([val, label]) => (() => {
-          var _el$2 = _tmpl$2$9();
+          var _el$2 = _tmpl$2$8();
           _el$2.value = val;
           web.insert(_el$2, label ?? val);
           return _el$2;
@@ -5372,11 +5442,11 @@ const SettingsItemSelect = props => {
   });
 };
 
-var _tmpl$$k = /*#__PURE__*/web.template(\`<div><div>\`);
+var _tmpl$$j = /*#__PURE__*/web.template(\`<div><div>\`);
 
 /** 带有动画过渡的切换显示设置项 */
 const SettingsShowItem = props => (() => {
-  var _el$ = _tmpl$$k(),
+  var _el$ = _tmpl$$j(),
     _el$2 = _el$.firstChild;
   web.insert(_el$2, () => props.children);
   web.effect(_p$ => {
@@ -5395,8 +5465,8 @@ const SettingsShowItem = props => (() => {
   return _el$;
 })();
 
-var _tmpl$$j = /*#__PURE__*/web.template(\`<blockquote>\`),
-  _tmpl$2$8 = /*#__PURE__*/web.template(\`<input type=url>\`);
+var _tmpl$$i = /*#__PURE__*/web.template(\`<blockquote>\`),
+  _tmpl$2$7 = /*#__PURE__*/web.template(\`<input type=url>\`);
 const SettingTranslation = () => {
   const isTranslationEnable = solidJs.createMemo(() => store.option.translation.server !== 'disable' && translatorOptions().length > 0);
 
@@ -5423,7 +5493,7 @@ const SettingTranslation = () => {
       return store.option.translation.server === 'cotrans';
     },
     get children() {
-      var _el$ = _tmpl$$j();
+      var _el$ = _tmpl$$i();
       web.effect(() => _el$.innerHTML = t('setting.translation.cotrans_tip'));
       return _el$;
     }
@@ -5551,7 +5621,7 @@ const SettingTranslation = () => {
               return store.option.translation.localUrl !== undefined;
             },
             get children() {
-              var _el$2 = _tmpl$2$8();
+              var _el$2 = _tmpl$2$7();
               _el$2.addEventListener("change", e => {
                 setOption(draftOption => {
                   // 删掉末尾的斜杠
@@ -5580,7 +5650,7 @@ const SettingTranslation = () => {
   })];
 };
 
-var _tmpl$$i = /*#__PURE__*/web.template(\`<div><span contenteditable data-only-number></span><span>\`);
+var _tmpl$$h = /*#__PURE__*/web.template(\`<div><span contenteditable data-only-number></span><span>\`);
 /** 数值输入框菜单项 */
 const SettingsItemNumber = props => {
   const handleInput = e => {
@@ -5605,7 +5675,7 @@ const SettingsItemNumber = props => {
       return props.classList;
     },
     get children() {
-      var _el$ = _tmpl$$i(),
+      var _el$ = _tmpl$$h(),
         _el$2 = _el$.firstChild,
         _el$3 = _el$2.nextSibling;
       _el$2.addEventListener("blur", e => {
@@ -5626,8 +5696,8 @@ const SettingsItemNumber = props => {
   });
 };
 
-var _tmpl$$h = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$7 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
+var _tmpl$$g = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$6 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
 
 const areaArrayMap = {
   left_right: [['prev', 'menu', 'next'], ['PREV', 'MENU', 'NEXT'], ['prev', 'menu', 'next']],
@@ -5641,7 +5711,7 @@ const dir = createRootMemo(() => {
   return store.option.dir === 'rtl' ? 'ltr' : 'rtl';
 });
 const TouchArea = () => (() => {
-  var _el$ = _tmpl$$h();
+  var _el$ = _tmpl$$g();
   var _ref$ = bindRef('touchArea');
   typeof _ref$ === "function" && web.use(_ref$, _el$);
   web.insert(_el$, web.createComponent(solidJs.For, {
@@ -5651,7 +5721,7 @@ const TouchArea = () => (() => {
     children: rows => web.createComponent(solidJs.For, {
       each: rows,
       children: area => (() => {
-        var _el$2 = _tmpl$2$7();
+        var _el$2 = _tmpl$2$6();
         web.setAttribute(_el$2, "data-area", area);
         web.effect(() => web.className(_el$2, modules_c21c94f2$1.touchArea));
         return _el$2;
@@ -5680,15 +5750,15 @@ const TouchArea = () => (() => {
   return _el$;
 })();
 
-var _tmpl$$g = /*#__PURE__*/web.template(\`<button type=button>\`),
-  _tmpl$2$6 = /*#__PURE__*/web.template(\`<input type=color>\`);
+var _tmpl$$f = /*#__PURE__*/web.template(\`<button type=button>\`),
+  _tmpl$2$5 = /*#__PURE__*/web.template(\`<input type=color>\`);
 /** 默认菜单项 */
 const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.createComponent(SettingsItem, {
   get name() {
     return web.memo(() => store.option.dir === 'rtl')() ? t('setting.option.dir_rtl') : t('setting.option.dir_ltr');
   },
   get children() {
-    var _el$ = _tmpl$$g();
+    var _el$ = _tmpl$$f();
     _el$.addEventListener("click", switchDir);
     web.insert(_el$, (() => {
       var _c$ = web.memo(() => store.option.dir === 'rtl');
@@ -5988,7 +6058,7 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
     return t('setting.option.background_color');
   },
   get children() {
-    var _el$2 = _tmpl$2$6();
+    var _el$2 = _tmpl$2$5();
     _el$2.style.setProperty("width", "2em");
     _el$2.style.setProperty("margin-right", ".4em");
     _el$2.addEventListener("input", throttle(e => {
@@ -6027,15 +6097,15 @@ const playAnimation = e => {
   }
 };
 
-var _tmpl$$f = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$5 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
+var _tmpl$$e = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$4 = /*#__PURE__*/web.template(\`<div><div></div><div>\`),
   _tmpl$3$3 = /*#__PURE__*/web.template(\`<hr>\`);
 
 /** 菜单面板 */
 const SettingPanel = () => {
   const settingList = createRootMemo(() => store.prop.editSettingList(defaultSettingList()));
   return (() => {
-    var _el$ = _tmpl$$f();
+    var _el$ = _tmpl$$e();
     web.addEventListener(_el$, "wheel", stopPropagation);
     web.addEventListener(_el$, "scroll", stopPropagation);
     _el$.addEventListener("click", stopPropagation);
@@ -6046,7 +6116,7 @@ const SettingPanel = () => {
       children: ([name, SettingItem, hidden], i) => {
         const [show, setShwo] = solidJs.createSignal(!hidden);
         return [web.memo(() => web.memo(() => !!i())() ? _tmpl$3$3() : null), (() => {
-          var _el$2 = _tmpl$2$5(),
+          var _el$2 = _tmpl$2$4(),
             _el$3 = _el$2.firstChild,
             _el$4 = _el$3.nextSibling;
           _el$3.addEventListener("click", () => setShwo(prev => !prev));
@@ -6087,11 +6157,11 @@ const SettingPanel = () => {
   })();
 };
 
-var _tmpl$$e = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$4 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
+var _tmpl$$d = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1>\`);
 /** 工具栏按钮分隔栏 */
 const buttonListDivider = () => (() => {
-  var _el$ = _tmpl$$e();
+  var _el$ = _tmpl$$d();
   _el$.style.setProperty("height", "1em");
   return _el$;
 })();
@@ -6234,7 +6304,7 @@ const defaultButtonList = [
     setShowPanel(_showPanel);
   };
   const popper = solidJs.createMemo(() => [web.createComponent(SettingPanel, {}), (() => {
-    var _el$2 = _tmpl$2$4();
+    var _el$2 = _tmpl$2$3();
     _el$2.addEventListener("click", handleClick);
     web.effect(() => web.className(_el$2, modules_c21c94f2$1.closeCover));
     return _el$2;
@@ -6262,13 +6332,13 @@ const defaultButtonList = [
   });
 }];
 
-var _tmpl$$d = /*#__PURE__*/web.template(\`<div role=toolbar><div><div>\`);
+var _tmpl$$c = /*#__PURE__*/web.template(\`<div role=toolbar><div><div>\`);
 
 /** 左侧工具栏 */
 const Toolbar = () => {
   solidJs.createEffect(() => store.show.toolbar || focus());
   return (() => {
-    var _el$ = _tmpl$$d(),
+    var _el$ = _tmpl$$c(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild;
     _el$2.addEventListener("click", focus);
@@ -6304,7 +6374,7 @@ const Toolbar = () => {
   })();
 };
 
-var _tmpl$$c = /*#__PURE__*/web.template(\`<div>\`);
+var _tmpl$$b = /*#__PURE__*/web.template(\`<div>\`);
 const getScrollbarPage = (img, i, double = false) => {
   let num;
   if (store.option.scrollMode.enabled) num = store.imgList[i].size.height;else num = double ? 2 : 1;
@@ -6318,7 +6388,7 @@ const getScrollbarPage = (img, i, double = false) => {
 const ScrollbarPage = props => {
   const flexBasis = solidJs.createMemo(() => props.num / (store.option.scrollMode.enabled ? contentHeight() : store.imgList.length));
   return (() => {
-    var _el$ = _tmpl$$c();
+    var _el$ = _tmpl$$b();
     web.effect(_p$ => {
       var _v$ = modules_c21c94f2$1.scrollbarPage,
         _v$2 = \`\${flexBasis() * 100}%\`,
@@ -6386,7 +6456,7 @@ const ScrollbarPageStatus = () => {
   });
 };
 
-var _tmpl$$b = /*#__PURE__*/web.template(\`<div role=scrollbar tabindex=-1><div></div><div>\`);
+var _tmpl$$a = /*#__PURE__*/web.template(\`<div role=scrollbar tabindex=-1><div></div><div>\`);
 
 /** 滚动条 */
 const Scrollbar = () => {
@@ -6440,7 +6510,7 @@ const Scrollbar = () => {
     '--slider-top': sliderTop
   });
   return (() => {
-    var _el$ = _tmpl$$b(),
+    var _el$ = _tmpl$$a(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.nextSibling;
     _el$.addEventListener("wheel", handleWheel);
@@ -6501,8 +6571,8 @@ const Scrollbar = () => {
   })();
 };
 
-var _tmpl$$a = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$3 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1><p></p><button type=button></button><button type=button data-is-end></button><button type=button>\`),
+var _tmpl$$9 = /*#__PURE__*/web.template(\`<div>\`),
+  _tmpl$2$2 = /*#__PURE__*/web.template(\`<div role=button tabindex=-1><p></p><button type=button></button><button type=button data-is-end></button><button type=button>\`),
   _tmpl$3$2 = /*#__PURE__*/web.template(\`<p>\`);
 let delayTypeTimer = 0;
 const EndPage = () => {
@@ -6546,7 +6616,7 @@ const EndPage = () => {
     return '';
   });
   return (() => {
-    var _el$ = _tmpl$2$3(),
+    var _el$ = _tmpl$2$2(),
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.nextSibling,
       _el$4 = _el$3.nextSibling,
@@ -6572,7 +6642,7 @@ const EndPage = () => {
         return web.memo(() => !!store.option.showComment)() && delayType() === 'end';
       },
       get children() {
-        var _el$6 = _tmpl$$a();
+        var _el$6 = _tmpl$$9();
         web.addEventListener(_el$6, "wheel", stopPropagation);
         web.insert(_el$6, web.createComponent(solidJs.For, {
           get each() {
@@ -6629,43 +6699,6 @@ const EndPage = () => {
     return _el$;
   })();
 };
-
-var _tmpl$$9 = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$2$2 = /*#__PURE__*/web.template(\`<img>\`);
-
-// 为防止加载好的图片被浏览器垃圾回收掉，必须用 dom 挂载上
-// 测试方法：开个几百页的漫画加载完毕后，再打开二十个标签页切换过去，等待一分钟再切回来
-// 本来还以为把加载好的图片元素放到 store 里就不会被回收了的，但还是无法通过上述测试
-// 现在这样相比以前就只是减少了 ComicImg 里 createMemo 之类的性能损耗
-const ImgPool = () => (() => {
-  var _el$ = _tmpl$$9();
-  web.insert(_el$, web.createComponent(solidJs.For, {
-    get each() {
-      return store.imgList;
-    },
-    children: (img, i) => web.createComponent(solidJs.Show, {
-      get when() {
-        return img.loadType === 'loaded';
-      },
-      get children() {
-        var _el$2 = _tmpl$2$2();
-        web.effect(_p$ => {
-          var _v$ = i(),
-            _v$2 = img.src;
-          _v$ !== _p$.e && web.setAttribute(_el$2, "data-index", _p$.e = _v$);
-          _v$2 !== _p$.t && web.setAttribute(_el$2, "src", _p$.t = _v$2);
-          return _p$;
-        }, {
-          e: undefined,
-          t: undefined
-        });
-        return _el$2;
-      }
-    })
-  }));
-  web.effect(() => web.className(_el$, modules_c21c94f2$1.imgPool));
-  return _el$;
-})();
 
 /** 深色模式 */
 const darkStyle = {
@@ -6888,7 +6921,6 @@ const Manga = props => {
     web.insert(_el$, web.createComponent(Scrollbar, {}), null);
     web.insert(_el$, web.createComponent(TouchArea, {}), null);
     web.insert(_el$, web.createComponent(EndPage, {}), null);
-    web.insert(_el$, web.createComponent(ImgPool, {}), null);
     web.effect(_p$ => {
       var _v$ = modules_c21c94f2$1.root,
         _v$2 = {
@@ -7098,7 +7130,7 @@ const MdCloudDownload = ((props = {}) => (() => {
   return _el$;
 })());
 
-var css = ".fabRoot{font-size:1.1em;transition:transform .2s}.fabRoot[data-show=false]{pointer-events:none}.fabRoot[data-show=false]>button{transform:scale(0)}.fabRoot[data-trans=true]{opacity:.8}.fabRoot[data-trans=true]:focus,.fabRoot[data-trans=true]:focus-visible,.fabRoot[data-trans=true]:hover{opacity:1}.fab{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px 0 rgba(0,0,0,.14),0 1px 18px 0 rgba(0,0,0,.12);color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.fab>svg{font-size:1.5em;width:1em}.fab:hover{background-color:var(fab-hover,#78909c)}.fab:focus,.fab:focus-visible{box-shadow:0 3px 5px -1px rgba(0,0,0,.5),0 6px 10px 0 rgba(0,0,0,.34),0 1px 18px 0 rgba(0,0,0,.32);outline:none}.progress{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.progress>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.progress:hover{color:#cfd8dc}.progress[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.popper{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:none;font-size:.8em;padding:.4em .5em;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%);white-space:nowrap}:is(.fab:hover,.fabRoot[data-focus=true]) .popper{display:flex}.speedDial{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.speedDialItem{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.speedDial:hover{pointer-events:all}:is(.fabRoot:hover:not([data-show=false]),.fabRoot[data-focus=true])>.speedDial{pointer-events:all}:is(.fabRoot:hover:not([data-show=false]),.fabRoot[data-focus=true])>.speedDial>.speedDialItem{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.backdrop{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.fabRoot[data-focus=true] .backdrop{pointer-events:unset}:is(.fabRoot:hover:not([data-show=false]),.fabRoot[data-focus=true],.speedDial:hover) .backdrop{opacity:.4}";
+var css = ".fabRoot{font-size:1.1em;transition:transform .2s}.fabRoot[data-show=false]{pointer-events:none}.fabRoot[data-show=false]>button{transform:scale(0)}.fabRoot[data-trans=true]{opacity:.8}.fabRoot[data-trans=true]:focus,.fabRoot[data-trans=true]:focus-visible,.fabRoot[data-trans=true]:hover{opacity:1}.fab{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px rgba(0,0,0,.2),0 6px 10px 0 rgba(0,0,0,.14),0 1px 18px 0 rgba(0,0,0,.12);color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.fab>svg{font-size:1.5em;width:1em}.fab:focus,.fab:focus-visible{box-shadow:0 3px 5px -1px rgba(0,0,0,.5),0 6px 10px 0 rgba(0,0,0,.34),0 1px 18px 0 rgba(0,0,0,.32);outline:none}.progress{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.progress>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.progress:hover{color:#cfd8dc}.progress[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.popper{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%) scale(0);transform-origin:right;transition:transform .23s,opacity .15s;transition-delay:var(--hide-delay);white-space:nowrap}:is(.fab:hover,.fabRoot[data-focus=true]) .popper{opacity:1;transform:translateY(-50%) scale(1);transition-delay:0ms}.speedDial{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.speedDialItem{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.speedDial:hover{pointer-events:all}:is(.fabRoot:hover:not([data-show=false]),.fabRoot[data-focus=true])>.speedDial{pointer-events:all}:is(.fabRoot:hover:not([data-show=false]),.fabRoot[data-focus=true])>.speedDial>.speedDialItem{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.backdrop{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.fabRoot[data-focus=true] .backdrop{pointer-events:unset}:is(.fabRoot:hover:not([data-show=false]),.fabRoot[data-focus=true],.speedDial:hover) .backdrop{opacity:.4}";
 var modules_c21c94f2 = {"fabRoot":"fabRoot","fab":"fab","progress":"progress","popper":"popper","speedDial":"speedDial","speedDialItem":"speedDialItem","backdrop":"backdrop"};
 
 var _tmpl$$2 = /*#__PURE__*/web.template(\`<div><div>\`),
@@ -7136,9 +7168,7 @@ const Fab = _props => {
   solidJs.onCleanup(() => window.removeEventListener('scroll', handleScroll));
 
   // 将 forceShow 的变化同步到 show 上
-  solidJs.createEffect(() => {
-    if (props.show) setShow(props.show);
-  });
+  solidJs.createEffect(() => props.show && setShow(props.show));
   return (() => {
     var _el$ = _tmpl$2$1(),
       _el$2 = _el$.firstChild,
@@ -7172,19 +7202,19 @@ const Fab = _props => {
             web.insert(_el$8, web.createComponent(SpeedDialItem, {}));
             web.effect(_p$ => {
               var _v$12 = modules_c21c94f2.speedDialItem,
-                _v$13 = {
-                  '--show-delay': \`\${i() * 30}ms\`,
-                  '--hide-delay': \`\${(props.speedDial.length - 1 - i()) * 50}ms\`
-                },
-                _v$14 = i() * 30;
+                _v$13 = \`\${(i() + 1) * 30}ms\`,
+                _v$14 = \`\${(props.speedDial.length - 1 - i()) * 50}ms\`,
+                _v$15 = i() * 30;
               _v$12 !== _p$.e && web.className(_el$8, _p$.e = _v$12);
-              _p$.t = web.style(_el$8, _v$13, _p$.t);
-              _v$14 !== _p$.a && web.setAttribute(_el$8, "data-i", _p$.a = _v$14);
+              _v$13 !== _p$.t && ((_p$.t = _v$13) != null ? _el$8.style.setProperty("--show-delay", _v$13) : _el$8.style.removeProperty("--show-delay"));
+              _v$14 !== _p$.a && ((_p$.a = _v$14) != null ? _el$8.style.setProperty("--hide-delay", _v$14) : _el$8.style.removeProperty("--hide-delay"));
+              _v$15 !== _p$.o && web.setAttribute(_el$8, "data-i", _p$.o = _v$15);
               return _p$;
             }, {
               e: undefined,
               t: undefined,
-              a: undefined
+              a: undefined,
+              o: undefined
             });
             return _el$8;
           })()
@@ -7204,19 +7234,22 @@ const Fab = _props => {
     }), null);
     web.effect(_p$ => {
       var _v$3 = modules_c21c94f2.fabRoot,
-        _v$4 = props.style,
-        _v$5 = props.show ?? show(),
-        _v$6 = props.autoTrans,
-        _v$7 = props.focus,
+        _v$4 = props.show ?? show(),
+        _v$5 = props.autoTrans,
+        _v$6 = props.focus,
+        _v$7 = {
+          ...props.style,
+          '--hide-delay': \`\${props.speedDial.length * 50}ms\`
+        },
         _v$8 = modules_c21c94f2.fab,
         _v$9 = modules_c21c94f2.progress,
         _v$10 = props.progress,
         _v$11 = \`\${(1 - props.progress) * 290}%\`;
       _v$3 !== _p$.e && web.className(_el$, _p$.e = _v$3);
-      _p$.t = web.style(_el$, _v$4, _p$.t);
-      _v$5 !== _p$.a && web.setAttribute(_el$, "data-show", _p$.a = _v$5);
-      _v$6 !== _p$.o && web.setAttribute(_el$, "data-trans", _p$.o = _v$6);
-      _v$7 !== _p$.i && web.setAttribute(_el$, "data-focus", _p$.i = _v$7);
+      _v$4 !== _p$.t && web.setAttribute(_el$, "data-show", _p$.t = _v$4);
+      _v$5 !== _p$.a && web.setAttribute(_el$, "data-trans", _p$.a = _v$5);
+      _v$6 !== _p$.o && web.setAttribute(_el$, "data-focus", _p$.o = _v$6);
+      _p$.i = web.style(_el$, _v$7, _p$.i);
       _v$8 !== _p$.n && web.className(_el$2, _p$.n = _v$8);
       _v$9 !== _p$.s && web.className(_el$3, _p$.s = _v$9);
       _v$10 !== _p$.h && web.setAttribute(_el$3, "aria-valuenow", _p$.h = _v$10);
@@ -7292,9 +7325,9 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>为 eh 的列表页加上快捷收藏\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>增加 ehentai 标签染色功能 </p></li><li><p>增加 ehentai 快捷评分功能\`),
   _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复网格模式在移动端上间隔过长的 bug </p></li><li><p>修复显示填充页时无法翻译的 bug </p></li><li><p>修复移动端卷轴模式下的显示错误\`);
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复 ehentai 无法正常加载图片的 bug </p></li><li><p>修复在 safari 上图片加载完毕依然不显示的 bug\`);
 const migrationOption = async (name, editFn) => {
   try {
     const option = await GM.getValue(name);
@@ -8016,6 +8049,7 @@ exports.boolDataVal = boolDataVal;
 exports.bound = bound;
 exports.byPath = byPath;
 exports.canvasToBlob = canvasToBlob;
+exports.checkImgSize = checkImgSize;
 exports.clamp = clamp;
 exports.closeScrollLock = closeScrollLock$1;
 exports.contentHeight = contentHeight;
@@ -8234,7 +8268,7 @@ const main = require('main');
 try {
   // 匹配站点
   switch (window.location.hostname) {
-    // #百合会——「记录阅读历史、自动签到等」
+    // #百合会（记录阅读历史、自动签到等）
     case 'bbs.yamibo.com':
       {
 const web = require('solid-js/web');
@@ -8259,7 +8293,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
     固定导航条: true,
     自动签到: true
   });
-  GM_addStyle(`#fab { --fab: #6E2B19; fab-hover: #A15640; }
+  GM_addStyle(`#fab { --fab: #6E2B19; }
 
     ${options.固定导航条 ? '.header-stackup { position: fixed !important }' : ''}
 
@@ -8304,7 +8338,7 @@ var _tmpl$ = /*#__PURE__*/web.template(`<a class=historyTag>回第<!>页 `),
     `);
 
   // 自动签到
-  if (unsafeWindow.discuz_uid && options.自动签到) (async () => {
+  if (unsafeWindow.discuz_uid && unsafeWindow.discuz_uid !== '0' && options.自动签到) (async () => {
     const todayString = new Date().toLocaleDateString('zh-CN');
     // 判断当前日期与上次成功签到日期是否相同
     if (todayString === localStorage.getItem('signDate')) return;
@@ -8618,7 +8652,7 @@ web.delegateEvents(["click"]);
         break;
       }
 
-    // #动漫之家——「解锁隐藏漫画」
+    // #动漫之家（解锁隐藏漫画）
     case 'comic.idmzj.com':
     case 'comic.dmzj.com':
     case 'manhua.idmzj.com':
@@ -9170,20 +9204,19 @@ const turnPage = chapterId => {
         break;
       }
 
-    // #E-Hentai——「匹配 nhentai 漫画」
+    // #E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）
     case 'exhentai.org':
     case 'e-hentai.org':
       {
+const main = require('main');
 const web = require('solid-js/web');
 const solidJs = require('solid-js');
-const main = require('main');
 
-var _tmpl$ = /*#__PURE__*/web.template(`<div>`),
-  _tmpl$2 = /*#__PURE__*/web.template(`<div class=comidread-favorites-item><input type=radio>`),
+var _tmpl$$1 = /*#__PURE__*/web.template(`<div>`),
+  _tmpl$2$1 = /*#__PURE__*/web.template(`<div class=comidread-favorites-item><input type=radio>`),
   _tmpl$3 = /*#__PURE__*/web.template(`<span class=comidread-favorites>`),
   _tmpl$4 = /*#__PURE__*/web.template(`<h3>loading...`);
 let hasStyle = false;
-/** 添加快捷收藏的界面 */
 const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
   if (!hasStyle) {
     hasStyle = true;
@@ -9252,7 +9285,9 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
     if (hasRender) return;
     hasRender = true;
     const FavoriteItem = (e, index) => {
+      const checked = e.querySelector('input').checked;
       const handleClick = async () => {
+        if (checked) return;
         setShow(false);
         const formData = new FormData();
         formData.append('favcat', index() === 10 ? 'favdel' : `${index()}`);
@@ -9273,21 +9308,21 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
         await updateFavorite();
       };
       return (() => {
-        var _el$ = _tmpl$2(),
+        var _el$ = _tmpl$2$1(),
           _el$2 = _el$.firstChild;
         _el$.$$click = handleClick;
+        _el$2.checked = checked;
         web.insert(_el$, web.createComponent(solidJs.Show, {
           get when() {
             return index() <= 9;
           },
           get children() {
-            var _el$3 = _tmpl$();
+            var _el$3 = _tmpl$$1();
             web.effect(_$p => (_$p = `0px -${2 + 19 * index()}px`) != null ? _el$3.style.setProperty("background-position", _$p) : _el$3.style.removeProperty("background-position"));
             return _el$3;
           }
         }), null);
         web.insert(_el$, () => e.textContent?.trim(), null);
-        web.effect(() => _el$2.checked = e.querySelector('input').checked);
         return _el$;
       })();
     };
@@ -9329,16 +9364,392 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
   };
 
   // 将原本的收藏按钮改为切换显示快捷收藏夹
+  const rawClick = favoriteButton.onclick;
   favoriteButton.onclick = null;
-  favoriteButton.addEventListener('click', async e => {
+  favoriteButton.addEventListener('mousedown', async e => {
+    if (e.buttons !== 1 && e.buttons !== 4) return;
     e.stopPropagation();
     e.preventDefault();
+    if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey || e.buttons === 4) return rawClick.call(favoriteButton, e);
     renderDom();
     setShow(val => !val);
     if (show()) await updateFavorite();
   });
 };
+
+/** 快捷收藏的界面 */
+const quickFavorite = pageType => {
+  if (pageType === 'gallery') {
+    const button = main.querySelector('#gdf');
+    const root = main.querySelector('#gd3');
+    addQuickFavorite(button, root, `${unsafeWindow.popbase}addfav`, [0, button.firstElementChild.offsetTop]);
+    return;
+  }
+
+  // 列表页根据不同显示方式分别处理
+  switch (pageType) {
+    case 't':
+      {
+        for (const item of main.querySelectorAll('.gl1t')) {
+          const button = item.querySelector('[id][onclick]');
+          const top = item.firstElementChild.getBoundingClientRect().bottom - item.getBoundingClientRect().top;
+          const bottom = item.lastElementChild.getBoundingClientRect().top - item.getBoundingClientRect().top;
+          addQuickFavorite(button, item, /http.+?(?=')/.exec(button.getAttribute('onclick'))[0], [top, bottom]);
+        }
+        break;
+      }
+    case 'e':
+      {
+        for (const item of main.querySelectorAll('.gl1e')) {
+          const button = item.nextElementSibling.querySelector('[id][onclick]');
+          addQuickFavorite(button, item, /http.+?(?=')/.exec(button.getAttribute('onclick'))[0], [0, Number.parseInt(getComputedStyle(item).height, 10)]);
+        }
+        break;
+      }
+  }
+};
+web.delegateEvents(["click"]);
+
+/** 关联 nhentai */
+const associateNhentai = async (init, dynamicUpdate) => {
+  const titleDom = document.getElementById('gn');
+  const taglistDom = main.querySelector('#taglist tbody');
+  if (!titleDom || !taglistDom) {
+    if ((document.getElementById('taglist')?.children.length ?? 1) > 0) main.toast.error(main.t('site.ehentai.html_changed_nhentai_failed'));
+    return;
+  }
+  const title = encodeURI(titleDom.textContent);
+  const newTagLine = document.createElement('tr');
+  let nHentaiComicInfo;
+  try {
+    const res = await main.request(`https://nhentai.net/api/galleries/search?query=${title}`, {
+      responseType: 'json',
+      errorText: main.t('site.ehentai.nhentai_error'),
+      noTip: true
+    });
+    nHentaiComicInfo = res.response;
+  } catch {
+    newTagLine.innerHTML = `
+      <td class="tc">nhentai:</td>
+      <td class="tc" style="text-align: left;">
+        ${main.t('site.ehentai.nhentai_failed', {
+      nhentai: `<a href='https://nhentai.net/search/?q=${title}' target="_blank" ><u>nhentai</u></a>`
+    })}
+      </td>`;
+    taglistDom.append(newTagLine);
+    return;
+  }
+
+  // 构建新标签行
+  if (nHentaiComicInfo.result.length > 0) {
+    let temp = '<td class="tc">nhentai:</td><td>';
+    let i = nHentaiComicInfo.result.length;
+    while (i) {
+      i -= 1;
+      const tempComicInfo = nHentaiComicInfo.result[i];
+      const _title = tempComicInfo.title.japanese || tempComicInfo.title.english;
+      temp += `
+          <div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${_title}">
+            <a
+              href="https://nhentai.net/g/${tempComicInfo.id}/"
+              onClick="return toggle_tagmenu(1, 'nhentai:${tempComicInfo.id}',this)"
+              nhentai-index=${i}
+            >
+              ${tempComicInfo.id}
+            </a>
+          </div>`;
+    }
+    newTagLine.innerHTML = `${temp}</td>`;
+  } else newTagLine.innerHTML = '<td class="tc">nhentai:</td><td class="tc" style="text-align: left;">Null</td>';
+  taglistDom.append(newTagLine);
+
+  // 重写 _refresh_tagmenu_act 函数，加入脚本的功能
+  const nhentaiImgList = {};
+  const raw_refresh_tagmenu_act = unsafeWindow._refresh_tagmenu_act;
+  // eslint-disable-next-line func-names
+  unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(a) {
+    if (a.hasAttribute('nhentai-index')) {
+      const tagmenu_act_dom = document.getElementById('tagmenu_act');
+      tagmenu_act_dom.innerHTML = ['', `<a href="${a.href}" target="_blank"> Jump to nhentai</a>`, `<a href="#"> ${nhentaiImgList[selected_tagname] ? 'Read' : 'Load comic'}</a>`].join('<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">">');
+      const nhentaiComicReadButton = tagmenu_act_dom.querySelector('a[href="#"]');
+      const {
+        media_id,
+        num_pages,
+        images
+      } = nHentaiComicInfo.result[Number(a.getAttribute('nhentai-index'))];
+      // nhentai api 对应的扩展名
+      const fileType = {
+        j: 'jpg',
+        p: 'png',
+        g: 'gif'
+      };
+      const showNhentaiComic = init(dynamicUpdate(async setImg => {
+        nhentaiComicReadButton.innerHTML = ` loading - 0/${num_pages}`;
+        nhentaiImgList[selected_tagname] = await main.plimit(images.pages.map((page, i) => async () => {
+          const imgRes = await main.request(`https://i.nhentai.net/galleries/${media_id}/${i + 1}.${fileType[page.t]}`, {
+            headers: {
+              Referer: `https://nhentai.net/g/${media_id}`
+            },
+            responseType: 'blob'
+          });
+          const blobUrl = URL.createObjectURL(imgRes.response);
+          setImg(i, blobUrl);
+          return blobUrl;
+        }), (doneNum, totalNum) => {
+          nhentaiComicReadButton.innerHTML = ` loading - ${doneNum}/${totalNum}`;
+        });
+        nhentaiComicReadButton.innerHTML = ' Read';
+      }, num_pages)).showComic;
+
+      // 加载 nhentai 漫画
+      nhentaiComicReadButton.addEventListener('click', showNhentaiComic);
+    }
+    // 非 nhentai 标签列的用原函数去处理
+    else raw_refresh_tagmenu_act(a);
+  };
+};
+
+/** 快捷键翻页 */
+const hotkeysPageTurn = pageType => {
+  if (pageType === 'gallery') {
+    main.linstenKeyup(e => {
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'd':
+          main.querySelector('#dnext')?.click();
+          break;
+        case 'ArrowLeft':
+        case 'a':
+          main.querySelector('#dprev')?.click();
+          break;
+      }
+    });
+  } else {
+    main.linstenKeyup(e => {
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'd':
+          main.querySelector('#unext')?.click();
+          break;
+        case 'ArrowLeft':
+        case 'a':
+          main.querySelector('#uprev')?.click();
+          break;
+      }
+    });
+  }
+};
+
+// 为每个标签单独生成 css。用于方便调试时排查和修改样式时使用
+// const buildTagColorCss = (
+//   tag: string,
+//   color: string,
+//   border: string,
+//   background: string,
+// ) => `
+//   #td_${tag} { background: ${background}; }
+//   #td_${tag}.gt { border-color: ${border}; }
+//   #td_${tag}:not(.gt) { border-color: ${color}; }
+//   #taglist a#ta_${tag} { color: ${color} !important; position: relative; }
+const buildTagList = (tagList, prefix) => `\n${[...tagList].map(tag => `${prefix}${tag}`).join(',\n')}\n`;
+
+/** 获取最新的标签颜色数据 */
+const updateTagColor = async () => {
+  const res = await main.request('/mytags', {
+    fetch: true
+  });
+  const backgroundMap = {};
+  const borderMap = {};
+  const colorMap = {};
+  for (const [, color, border, background, title] of res.responseText.matchAll(/<div id="tagpreview_\d+.+?color:(.+?);border-color:(.+?);background:(.+?)".+title="(.+?)".+<\/div>/g)) {
+    const tag = title.replaceAll(' ', '_').replaceAll(':', '\\:');
+    backgroundMap[background] ||= new Set();
+    backgroundMap[background].add(tag);
+    borderMap[border] ||= new Set();
+    borderMap[border].add(tag);
+    colorMap[color] ||= new Set();
+    colorMap[color].add(tag);
+  }
+  let css = '';
+  for (const [background, tagList] of Object.entries(backgroundMap)) {
+    css += `:is(${buildTagList(tagList, '#td_')})`;
+    css += `{ background: ${background}; }\n\n`;
+  }
+  for (const [border, tagList] of Object.entries(borderMap)) {
+    // 强标签直接覆盖边框颜色
+    css += `:is(${buildTagList(tagList, '#td_')}).gt`;
+    css += `{ border-color: ${border}; }\n\n`;
+  }
+  for (const [color, tagList] of Object.entries(colorMap)) {
+    // 弱标签将边框颜色改为字体颜色突出显示
+    css += `:is(${buildTagList(tagList, '#td_')}):not(.gt)`;
+    css += `{ border-color: ${color}; }\n\n`;
+    css += `#taglist a:is(${buildTagList(tagList, '#ta_')})`;
+    css += `{ color: ${color} !important; position: relative; }\n\n`;
+  }
+  css += `
+    /* 禁用 eh 的变色效果 */
+    #taglist a { color: #DDDDDD !important; position: relative; }
+    #taglist a:hover { color: #EEEEEE !important; }
+
+    #taglist a::after {
+      content: "";
+      background: var(--color);
+      width: 100%;
+      position: absolute;
+      left: 0;
+      height: 2px;
+      bottom: -7px;
+    }
+    .tup { --color: #00E639; }
+    .tdn { --color: #FF3333; }
+    #taglist a[style="color: blue;"] { --color: blue; }
+  `;
+  await GM.setValue('ehTagColorizeCss', css);
+  return css;
+};
+
+/** 标签染色 */
+const colorizeTag = async pageType => {
+  switch (pageType) {
+    case 'gallery':
+      {
+        let colorizeCss = await GM.getValue('ehTagColorizeCss');
+        colorizeCss ||= await updateTagColor();
+        return GM_addStyle(colorizeCss);
+      }
+    case 'mytags':
+      {
+        // 进入时更新
+        updateTagColor();
+
+        // 点击保存按钮时更新
+        document.addEventListener('click', e => e.target.tagName === 'BUTTON' && e.target.id.startsWith('tagsave_') && updateTagColor());
+      }
+
+    // 除了在 mytags 里更新外，还可以在列表页检查高亮的标签和脚本存储的标签颜色数据是否对应，
+    // 在发现不对应时自动更新。但目前我最常用的「缩略图」模式只会返回高亮的标签，
+    // 只能检查在 mytags 里删除了标签的情况，所以暂且不实现。
+    // 等之后找到办法可以在不额外发起请求的情况下在列表页获取每个画廊的所有标签时再实现
+  }
+};
+
+var _tmpl$ = /*#__PURE__*/web.template(`<span class=comidread-quick-rating><img src=/img/blank.gif><map>`),
+  _tmpl$2 = /*#__PURE__*/web.template(`<area shape=rect>`);
+/** 快捷评分 */
+const quickRating = pageType => {
+  let list;
+  switch (pageType) {
+    case 'gallery':
+    case 'mytags':
+      return;
+    case 'e':
+      list = main.querySelectorAll('#favform > table > tbody > tr');
+      break;
+    case 'm':
+    case 'p':
+    case 'l':
+      list = main.querySelectorAll('#favform > table > tbody > tr').slice(1);
+      break;
+    case 't':
+      list = main.querySelectorAll('.gl1t');
+      break;
+  }
+  GM_addStyle(`
+    .comidread-quick-rating {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: click;
+    }
+  `);
+  const coordsList = ['0,0,7,16', '8,0,15,16', '16,0,23,16', '24,0,31,16', '32,0,39,16', '40,0,47,16', '48,0,55,16', '56,0,63,16', '64,0,71,16', '72,0,79,16'];
+
+  /** 修改评分 */
+  const editRating = async (url, num) => {
+    try {
+      const dataRes = await main.request(url, {
+        errorText: main.t('site.ehentai.change_rating_failed'),
+        noTip: true
+      });
+      const reRes = /api_url = "(.+?)".+?gid = (\d+).+?token = "(.+?)".+?apiuid = (\d+).+?apikey = "(.+?)"/s.exec(dataRes.responseText);
+      if (!reRes) throw new Error(main.t('site.ehentai.change_rating_failed'));
+      const [, api_url, gid, token, apiuid, apikey] = reRes;
+      const res = await main.request(api_url, {
+        method: 'POST',
+        responseType: 'json',
+        data: JSON.stringify({
+          method: 'rategallery',
+          rating: `${num}`,
+          apikey,
+          apiuid,
+          gid,
+          token
+        }),
+        fetch: true,
+        noTip: true
+      });
+      main.toast.success(`${main.t('site.ehentai.change_rating_success')}: ${res.response.rating_usr}`);
+      return res.response;
+    } catch {
+      main.toast.error(main.t('site.ehentai.change_rating_failed'));
+      throw new Error(main.t('site.ehentai.change_rating_failed'));
+    }
+  };
+
+  /** 根据评分修改显示效果 */
+  const updateRatingImage = (dom, num) => {
+    // 来自 eh 详情页的 update_rating_image 函数
+    let a = Math.round(num + 1);
+    const b = -80 + 16 * Math.ceil(a / 2);
+    a = a % 2 === 1 ? -21 : -1;
+    dom.style.backgroundPosition = `${b}px ${a}px`;
+  };
+  const renderQuickRating = (item, ir, index) => {
+    let basePosition = ir.style.backgroundPosition;
+    web.render(() => (() => {
+      var _el$ = _tmpl$(),
+        _el$2 = _el$.firstChild,
+        _el$3 = _el$2.nextSibling;
+      _el$.$$mouseout = () => {
+        ir.style.backgroundPosition = basePosition;
+      };
+      web.setAttribute(_el$, "data-index", index);
+      web.setAttribute(_el$2, "usemap", `#rating-${index}`);
+      web.setAttribute(_el$3, "name", `rating-${index}`);
+      web.insert(_el$3, web.createComponent(solidJs.For, {
+        each: coordsList,
+        children: (coords, i) => (() => {
+          var _el$4 = _tmpl$2();
+          _el$4.$$click = async () => {
+            const res = await editRating(item.querySelector('a').href, i() + 1);
+            ir.className = res.rating_cls;
+            updateRatingImage(ir, res.rating_usr * 2 - 1);
+            basePosition = ir.style.backgroundPosition;
+          };
+          _el$4.$$mouseover = () => updateRatingImage(ir, i());
+          web.setAttribute(_el$4, "coords", coords);
+          return _el$4;
+        })()
+      }));
+      return _el$;
+    })(), ir);
+  };
+  for (const [index, item] of list.entries()) {
+    const ir = [...item.querySelectorAll('.ir')].at(-1);
+    if (!ir) continue;
+    // 快捷评分使用得并不多，所以等鼠标移上去再处理，减少性能损耗
+    ir.addEventListener('mouseenter', () => renderQuickRating(item, ir, index), {
+      once: true
+    });
+  }
+};
+web.delegateEvents(["mouseout", "mouseover", "click"]);
+
 (async () => {
+  let pageType;
+  if (Reflect.has(unsafeWindow, 'display_comment_field')) pageType = 'gallery';else if (location.pathname === '/mytags') pageType = 'mytags';else pageType = main.querySelector('#ujumpbox ~ div > select')?.value;
+  if (!pageType) return;
   const {
     options,
     init,
@@ -9352,10 +9763,14 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
     associate_nhentai: true,
     /** 快捷键翻页 */
     hotkeys_page_turn: true,
-    /** 识别广告 */
+    /** 识别广告页 */
     detect_ad: true,
     /** 快捷收藏 */
     quick_favorite: true,
+    /** 标签染色 */
+    colorize_tag: false,
+    /** 快捷评分 */
+    quick_rating: true,
     autoShow: false
   });
   if (Reflect.has(unsafeWindow, 'mpvkey')) {
@@ -9370,46 +9785,17 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
     return;
   }
 
+  // 标签染色
+  if (options.colorize_tag) colorizeTag(pageType);
+  // 快捷键翻页
+  if (options.hotkeys_page_turn) hotkeysPageTurn(pageType);
+  // 快捷评分
+  if (options.quick_rating) main.requestIdleCallback(() => quickRating(pageType), 1000);
+  // 快捷收藏。必须处于登录状态
+  if (unsafeWindow.apiuid !== -1 && options.quick_favorite) quickFavorite(pageType);
+
   // 不是漫画页的话
-  if (!Reflect.has(unsafeWindow, 'apikey')) {
-    if (options.hotkeys_page_turn) {
-      main.linstenKeyup(e => {
-        switch (e.key) {
-          case 'ArrowRight':
-          case 'd':
-            main.querySelector('#dnext')?.click();
-            break;
-          case 'ArrowLeft':
-          case 'a':
-            main.querySelector('#dprev')?.click();
-            break;
-        }
-      });
-    }
-    if (options.quick_favorite) {
-      switch (main.querySelector('#ujumpbox ~ div > select')?.value) {
-        case 't':
-          {
-            for (const item of main.querySelectorAll('.gl1t')) {
-              const button = item.querySelector('[id][onclick]');
-              const top = item.firstElementChild.getBoundingClientRect().bottom - item.getBoundingClientRect().top;
-              const bottom = item.lastElementChild.getBoundingClientRect().top - item.getBoundingClientRect().top;
-              addQuickFavorite(button, item, /http.+?(?=')/.exec(button.getAttribute('onclick'))[0], [top, bottom]);
-            }
-            break;
-          }
-        case 'e':
-          {
-            for (const item of main.querySelectorAll('.gl1e')) {
-              const button = item.nextElementSibling.querySelector('[id][onclick]');
-              addQuickFavorite(button, item, /http.+?(?=')/.exec(button.getAttribute('onclick'))[0], [0, Number.parseInt(getComputedStyle(item).height, 10)]);
-            }
-            break;
-          }
-      }
-    }
-    return;
-  }
+  if (pageType !== 'gallery') return;
   const sidebarDom = document.getElementById('gd5');
   // 表站开启了 Multi-Page Viewer 的话会将点击按钮挤出去，得缩一下位置
   if (sidebarDom.children[6]) sidebarDom.children[6].style.padding = '0';
@@ -9458,20 +9844,6 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
   const ehImgList = [];
   const ehImgPageList = [];
   const ehImgFileNameList = [];
-  const stylesheet = new CSSStyleSheet();
-  document.adoptedStyleSheets.push(stylesheet);
-  main.createEffectOn(() => [...(mangaProps.adList ?? [])], adList => {
-    if (adList.length === 0) return;
-    const styleList = adList.map(i => {
-      const alt = `${i + 1}`.padStart(placeValueNum, '0');
-      return `img[alt="${alt}"]:not(:hover) {
-          filter: blur(8px);
-          clip-path: border-box;
-          backdrop-filter: blur(8px);
-        }`;
-    });
-    return stylesheet.replace(styleList.join('\n'));
-  });
   const enableDetectAd = options.detect_ad && document.getElementById('ta_other:extraneous_ads');
   if (enableDetectAd) {
     setManga('adList', new main.ReactiveSet());
@@ -9488,6 +9860,22 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
     await main.getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
     // 不行的话再用缩略图识别
     if (mangaProps.adList.size === 0) await main.getAdPageByContent(thumbnailEleList, mangaProps.adList);
+
+    // 模糊广告页的缩略图
+    const stylesheet = new CSSStyleSheet();
+    document.adoptedStyleSheets.push(stylesheet);
+    main.createEffectOn(() => [...(mangaProps.adList ?? [])], adList => {
+      if (adList.length === 0) return;
+      const styleList = adList.map(i => {
+        const alt = `${i + 1}`.padStart(placeValueNum, '0');
+        return `img[alt="${alt}"]:not(:hover) {
+          filter: blur(8px);
+          clip-path: border-box;
+          backdrop-filter: blur(8px);
+        }`;
+      });
+      return stylesheet.replace(styleList.join('\n'));
+    });
   }
   const {
     loadImgList
@@ -9572,131 +9960,15 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
   });
   setFab('initialShow', options.autoShow);
   comicReadModeDom.addEventListener('click', () => loadImgList(ehImgList.length > 0 ? ehImgList : undefined, true));
-  if (options.hotkeys_page_turn) {
-    main.linstenKeyup(e => {
-      switch (e.key) {
-        case 'ArrowRight':
-        case 'd':
-          main.querySelector('.ptt td:last-child:not(.ptdd)')?.click();
-          break;
-        case 'ArrowLeft':
-        case 'a':
-          main.querySelector('.ptt td:first-child:not(.ptdd)')?.click();
-          break;
-      }
-    });
-  }
-  if (options.associate_nhentai) (async () => {
-    const titleDom = document.getElementById('gn');
-    const taglistDom = main.querySelector('#taglist tbody');
-    if (!titleDom || !taglistDom) {
-      main.toast.error(main.t('site.ehentai.html_changed_nhentai_failed'));
-      return;
-    }
-    const title = encodeURI(titleDom.textContent);
-    const newTagLine = document.createElement('tr');
-    let nHentaiComicInfo;
-    try {
-      const res = await main.request(`https://nhentai.net/api/galleries/search?query=${title}`, {
-        responseType: 'json',
-        errorText: main.t('site.ehentai.nhentai_error'),
-        noTip: true
-      });
-      nHentaiComicInfo = res.response;
-    } catch {
-      newTagLine.innerHTML = `
-      <td class="tc">nhentai:</td>
-      <td class="tc" style="text-align: left;">
-        ${main.t('site.ehentai.nhentai_failed', {
-        nhentai: `<a href='https://nhentai.net/search/?q=${title}' target="_blank" ><u>nhentai</u></a>`
-      })}
-      </td>`;
-      taglistDom.append(newTagLine);
-      return;
-    }
 
-    // 构建新标签行
-    if (nHentaiComicInfo.result.length > 0) {
-      let temp = '<td class="tc">nhentai:</td><td>';
-      let i = nHentaiComicInfo.result.length;
-      while (i) {
-        i -= 1;
-        const tempComicInfo = nHentaiComicInfo.result[i];
-        const _title = tempComicInfo.title.japanese || tempComicInfo.title.english;
-        temp += `
-          <div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${_title}">
-            <a
-              href="https://nhentai.net/g/${tempComicInfo.id}/"
-              onClick="return toggle_tagmenu(1, 'nhentai:${tempComicInfo.id}',this)"
-              nhentai-index=${i}
-            >
-              ${tempComicInfo.id}
-            </a>
-          </div>`;
-      }
-      newTagLine.innerHTML = `${temp}</td>`;
-    } else newTagLine.innerHTML = '<td class="tc">nhentai:</td><td class="tc" style="text-align: left;">Null</td>';
-    taglistDom.append(newTagLine);
-
-    // 重写 _refresh_tagmenu_act 函数，加入脚本的功能
-    const nhentaiImgList = {};
-    const raw_refresh_tagmenu_act = unsafeWindow._refresh_tagmenu_act;
-    // eslint-disable-next-line func-names
-    unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(a) {
-      if (a.hasAttribute('nhentai-index')) {
-        const tagmenu_act_dom = document.getElementById('tagmenu_act');
-        tagmenu_act_dom.innerHTML = ['', `<a href="${a.href}" target="_blank"> Jump to nhentai</a>`, `<a href="#"> ${nhentaiImgList[selected_tagname] ? 'Read' : 'Load comic'}</a>`].join('<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">">');
-        const nhentaiComicReadButton = tagmenu_act_dom.querySelector('a[href="#"]');
-        const {
-          media_id,
-          num_pages,
-          images
-        } = nHentaiComicInfo.result[Number(a.getAttribute('nhentai-index'))];
-        // nhentai api 对应的扩展名
-        const fileType = {
-          j: 'jpg',
-          p: 'png',
-          g: 'gif'
-        };
-        const showNhentaiComic = init(dynamicUpdate(async setImg => {
-          nhentaiComicReadButton.innerHTML = ` loading - 0/${num_pages}`;
-          nhentaiImgList[selected_tagname] = await main.plimit(images.pages.map((page, i) => async () => {
-            const imgRes = await main.request(`https://i.nhentai.net/galleries/${media_id}/${i + 1}.${fileType[page.t]}`, {
-              headers: {
-                Referer: `https://nhentai.net/g/${media_id}`
-              },
-              responseType: 'blob'
-            });
-            const blobUrl = URL.createObjectURL(imgRes.response);
-            setImg(i, blobUrl);
-            return blobUrl;
-          }), (doneNum, totalNum) => {
-            nhentaiComicReadButton.innerHTML = ` loading - ${doneNum}/${totalNum}`;
-          });
-          nhentaiComicReadButton.innerHTML = ' Read';
-        }, num_pages)).showComic;
-
-        // 加载 nhentai 漫画
-        nhentaiComicReadButton.addEventListener('click', showNhentaiComic);
-      }
-      // 非 nhentai 标签列的用原函数去处理
-      else raw_refresh_tagmenu_act(a);
-    };
-  })();
-
-  // 快捷收藏。必须处于登录状态
-  if (unsafeWindow.apiuid !== -1 && options.quick_favorite) {
-    const button = main.querySelector('#gdf');
-    const root = main.querySelector('#gd3');
-    addQuickFavorite(button, root, `${unsafeWindow.popbase}addfav`, [0, button.firstElementChild.offsetTop]);
-  }
+  // 关联 nhentai
+  if (options.associate_nhentai) associateNhentai(init, dynamicUpdate);
 })().catch(error => main.log.error(error));
-web.delegateEvents(["click"]);
 ;
         break;
       }
 
-    // #nhentai——「彻底屏蔽漫画、自动翻页」
+    // #nhentai（彻底屏蔽漫画、无限滚动）
     case 'nhentai.net':
       {
 const main = require('main');
@@ -9714,7 +9986,7 @@ const fileType = {
     setManga,
     init
   } = await main.useInit('nhentai', {
-    /** 自动翻页 */
+    /** 无限滚动 */
     auto_page_turn: true,
     /** 彻底屏蔽漫画 */
     block_totally: true,
@@ -9832,7 +10104,7 @@ const fileType = {
         break;
       }
 
-    // #Yurifans——「自动签到」
+    // #Yurifans（自动签到）
     case 'yuri.website':
       {
 const main = require('main');
@@ -9918,7 +10190,7 @@ const main = require('main');
         break;
       }
 
-    // #拷贝漫画(copymanga)——「显示最后阅读记录」
+    // #拷贝漫画(copymanga)（显示最后阅读记录）
     case 'mangacopy.com':
     case 'copymanga.site':
     case 'copymanga.info':
