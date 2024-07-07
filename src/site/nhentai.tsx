@@ -26,7 +26,7 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
 
 (async () => {
   const { options, setFab, setManga, init } = await useInit('nhentai', {
-    /** 自动翻页 */
+    /** 无限滚动 */
     auto_page_turn: true,
     /** 彻底屏蔽漫画 */
     block_totally: true,

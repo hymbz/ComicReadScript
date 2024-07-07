@@ -40,7 +40,7 @@ export const request = async <T = any>(
   const headers = { Referer: window.location.href };
   const errorText = `${
     details?.errorText ?? t('alert.comic_load_error')
-  } - ${url}`;
+  }\nurl: ${url}`;
 
   try {
     // 虽然 GM_xmlhttpRequest 有 fetch 选项，但在 stay 上不太稳定
@@ -56,6 +56,10 @@ export const request = async <T = any>(
         body: details?.data,
         signal: AbortSignal.timeout?.(details?.timeout ?? 1000 * 10),
       });
+      if (!details?.noCheckCode && res.status !== 200) {
+        log.error(errorText, res);
+        throw new Error(errorText);
+      }
 
       let response = null as T;
       switch (details?.responseType) {

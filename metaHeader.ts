@@ -75,6 +75,16 @@ export const updateReadme = () => {
   if (newOutMd !== outMd) fs.writeFileSync(outMdPath, newOutMd);
 };
 
+const enSupportSite = [
+  'E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Detect advertise page, etc.)',
+  'nhentai (Totally block comics, Auto page turning)',
+  'hitomi',
+  'Anchira',
+  'kemono',
+  'nekohouse',
+  'welovemanga',
+];
+
 /** 脚本头部注释 */
 export const getMetaData = (isDevMode: boolean) => {
   const meta = {
@@ -84,7 +94,7 @@ export const getMetaData = (isDevMode: boolean) => {
     description: `${zh.description}${getSupportSiteList()
       .map((site) => site.replace(/\[(.+)]\(.+\)/, '$1'))
       .join('、')}`,
-    'description:en': en.description,
+    'description:en': `${en.description} ${enSupportSite.join(' | ')}.`,
     'description:ru': ru.description,
     author: pkg.author,
     license: pkg.license,

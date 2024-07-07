@@ -176,12 +176,15 @@
       "load_original_image": "Загружать оригинальное изображение",
       "open_link_new_page": "Открывать ссылки в новой вкладке",
       "quick_favorite": "Быстрый фаворит",
+      "quick_rating": "Быстрый рейтинг",
       "remember_current_site": "Запомнить текущий сайт"
     },
     "changed_load_failed": "Страница изменилась, невозможно загрузить комикс",
     "ehentai": {
       "change_favorite_failed": "Не удалось изменить избранное",
-      "change_favorite_success": "Любимый успех изменений",
+      "change_favorite_success": "Избранное успешно изменено",
+      "change_rating_failed": "Не удалось изменить оценку",
+      "change_rating_success": "Успешно изменен рейтинг",
       "fetch_favorite_failed": "Не удалось получить информацию о избранном",
       "fetch_img_page_source_failed": "Не удалось получить исходный код страницы с изображениями",
       "fetch_img_page_url_failed": "Не удалось получить адрес страницы изображений из деталей",

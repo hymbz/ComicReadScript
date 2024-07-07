@@ -17,23 +17,37 @@ import {
   getAdPageByFileName,
   getAdPageByContent,
   ReactiveSet,
+  requestIdleCallback,
 } from 'main';
 
 import { quickFavorite } from './quickFavorite';
 import { associateNhentai } from './associateNhentai';
 import { hotkeysPageTurn } from './hotkeys';
 import { colorizeTag } from './ColorizeTag';
+import { quickRating } from './quickRating';
 
-export type PageType = 'gallery' | 'mytags' | 't' | 'e' | undefined;
+type ListPageType =
+  /** 最小化 */
+  | 'm'
+  /** 最小化 + 关注标签 */
+  | 'p'
+  /** 紧凑 + 标签 */
+  | 'l'
+  /** 扩展 */
+  | 'e'
+  /** 缩略图 */
+  | 't';
+
+export type PageType = 'gallery' | 'mytags' | ListPageType;
 
 (async () => {
-  let pageType: PageType;
+  let pageType: PageType | undefined;
 
   if (Reflect.has(unsafeWindow, 'display_comment_field')) pageType = 'gallery';
   else if (location.pathname === '/mytags') pageType = 'mytags';
   else
     pageType = querySelector<HTMLSelectElement>('#ujumpbox ~ div > select')
-      ?.value as PageType;
+      ?.value as PageType | undefined;
 
   if (!pageType) return;
 
@@ -50,12 +64,14 @@ export type PageType = 'gallery' | 'mytags' | 't' | 'e' | undefined;
     associate_nhentai: true,
     /** 快捷键翻页 */
     hotkeys_page_turn: true,
-    /** 识别广告 */
+    /** 识别广告页 */
     detect_ad: true,
     /** 快捷收藏 */
     quick_favorite: true,
     /** 标签染色 */
     colorize_tag: false,
+    /** 快捷评分 */
+    quick_rating: true,
     autoShow: false,
   });
 
@@ -85,6 +101,9 @@ export type PageType = 'gallery' | 'mytags' | 't' | 'e' | undefined;
   if (options.colorize_tag) colorizeTag(pageType);
   // 快捷键翻页
   if (options.hotkeys_page_turn) hotkeysPageTurn(pageType);
+  // 快捷评分
+  if (options.quick_rating)
+    requestIdleCallback(() => quickRating(pageType), 1000);
   // 快捷收藏。必须处于登录状态
   if (unsafeWindow.apiuid !== -1 && options.quick_favorite)
     quickFavorite(pageType);

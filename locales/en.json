@@ -168,7 +168,7 @@
   "site": {
     "add_feature": {
       "associate_nhentai": "Associate nhentai",
-      "auto_page_turn": "Auto page turning",
+      "auto_page_turn": "Infinite scroll",
       "block_totally": "Totally block comics",
       "colorize_tag": "Colorize tags",
       "detect_ad": "Detect advertise page",
@@ -176,12 +176,15 @@
       "load_original_image": "Load original image",
       "open_link_new_page": "Open links in a new page",
       "quick_favorite": "Quick favorite",
+      "quick_rating": "Quick rating",
       "remember_current_site": "Remember the current site"
     },
     "changed_load_failed": "The website has undergone changes, unable to load comics",
     "ehentai": {
       "change_favorite_failed": "Failed to change the favorite",
-      "change_favorite_success": "Favorite change success",
+      "change_favorite_success": "Successfully changed the favorite",
+      "change_rating_failed": "Failed to change the rating",
+      "change_rating_success": "Successfully changed the rating",
       "fetch_favorite_failed": "Failed to get favorite info",
       "fetch_img_page_source_failed": "Failed to get the source code of the image page",
       "fetch_img_page_url_failed": "Failed to get the image page address from the detail page",

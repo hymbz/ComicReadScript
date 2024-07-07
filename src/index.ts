@@ -17,7 +17,7 @@ const main = require('main') as typeof import('./main');
 try {
   // 匹配站点
   switch (window.location.hostname) {
-    // #百合会——「记录阅读历史、自动签到等」
+    // #百合会（记录阅读历史、自动签到等）
     case 'bbs.yamibo.com': {
       inject('yamibo');
       break;
@@ -75,7 +75,7 @@ try {
       break;
     }
 
-    // #动漫之家——「解锁隐藏漫画」
+    // #动漫之家（解锁隐藏漫画）
     case 'comic.idmzj.com':
     case 'comic.dmzj.com':
     case 'manhua.idmzj.com':
@@ -96,26 +96,26 @@ try {
       break;
     }
 
-    // #E-Hentai——「匹配 nhentai 漫画」
+    // #E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）
     case 'exhentai.org':
     case 'e-hentai.org': {
       inject('ehentai');
       break;
     }
 
-    // #nhentai——「彻底屏蔽漫画、自动翻页」
+    // #nhentai（彻底屏蔽漫画、无限滚动）
     case 'nhentai.net': {
       inject('nhentai');
       break;
     }
 
-    // #Yurifans——「自动签到」
+    // #Yurifans（自动签到）
     case 'yuri.website': {
       inject('yurifans');
       break;
     }
 
-    // #拷贝漫画(copymanga)——「显示最后阅读记录」
+    // #拷贝漫画(copymanga)（显示最后阅读记录）
     case 'mangacopy.com':
     case 'copymanga.site':
     case 'copymanga.info':
