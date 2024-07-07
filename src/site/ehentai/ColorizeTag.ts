@@ -1,4 +1,4 @@
-import { request } from 'main';
+import { request, singleThreaded } from 'main';
 
 import { type PageType } from '.';
 
@@ -81,18 +81,29 @@ export const updateTagColor = async () => {
   return css;
 };
 
+const getTagColorizeCss = async () => {
+  let colorizeCss = await GM.getValue<string>('ehTagColorizeCss');
+  colorizeCss ||= await updateTagColor();
+  return colorizeCss;
+};
+
 /** 标签染色 */
 export const colorizeTag = async (pageType: PageType) => {
   switch (pageType) {
-    case 'gallery': {
-      let colorizeCss = await GM.getValue<string>('ehTagColorizeCss');
-      colorizeCss ||= await updateTagColor();
-      return GM_addStyle(colorizeCss);
-    }
+    case 'gallery':
+      return GM_addStyle(await getTagColorizeCss());
 
     case 'mytags': {
       // 进入时更新
       updateTagColor();
+
+      let oldCss = await getTagColorizeCss();
+      /** 不断循环直至获取到新数据 */
+      const waitUpdate = singleThreaded(async () => {
+        const newCss = await getTagColorizeCss();
+        if (newCss === oldCss) setTimeout(waitUpdate, 1000);
+        else oldCss = newCss;
+      });
 
       // 点击保存按钮时更新
       document.addEventListener(
@@ -100,7 +111,7 @@ export const colorizeTag = async (pageType: PageType) => {
         (e) =>
           (e.target as HTMLElement).tagName === 'BUTTON' &&
           (e.target as HTMLElement).id.startsWith('tagsave_') &&
-          updateTagColor(),
+          waitUpdate(),
       );
     }
 
