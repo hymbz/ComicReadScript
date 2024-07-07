@@ -24,6 +24,7 @@ export const useSpeedDial = <T extends Record<string, any>>(
         (t(`site.add_feature.${props.optionName}`) || props.optionName)
       }
       placement="left"
+      showTip={true}
       onClick={() =>
         setOptions({
           ...options,

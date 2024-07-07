@@ -69,17 +69,18 @@ export const Fab: Component<FabProps> = (_props) => {
   onCleanup(() => window.removeEventListener('scroll', handleScroll));
 
   // 将 forceShow 的变化同步到 show 上
-  createEffect(() => {
-    if (props.show) setShow(props.show);
-  });
+  createEffect(() => props.show && setShow(props.show));
 
   return (
     <div
       class={classes.fabRoot}
-      style={props.style}
       data-show={props.show ?? show()}
       data-trans={props.autoTrans}
       data-focus={props.focus}
+      style={{
+        ...props.style,
+        '--hide-delay': `${props.speedDial!.length * 50}ms`,
+      }}
     >
       <button
         type="button"
@@ -117,14 +118,12 @@ export const Fab: Component<FabProps> = (_props) => {
             {(SpeedDialItem, i) => (
               <div
                 class={classes.speedDialItem}
-                style={
-                  {
-                    '--show-delay': `${i() * 30}ms`,
-                    '--hide-delay': `${
-                      (props.speedDial!.length - 1 - i()) * 50
-                    }ms`,
-                  } as JSX.CSSProperties
-                }
+                style={{
+                  '--show-delay': `${(i() + 1) * 30}ms`,
+                  '--hide-delay': `${
+                    (props.speedDial!.length - 1 - i()) * 50
+                  }ms`,
+                }}
                 data-i={i() * 30}
               >
                 <SpeedDialItem />

@@ -103,9 +103,7 @@
 }
 
 /* 控制悬浮框的显示 */
-.iconButtonItem:hover .iconButtonPopper,
-.iconButtonItem:focus .iconButtonPopper,
-.iconButtonItem[data-show="true"] .iconButtonPopper {
+.iconButtonItem:is(:hover, :focus, [data-show="true"]) .iconButtonPopper {
   opacity: 1;
 }
 

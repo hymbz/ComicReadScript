@@ -51,10 +51,6 @@
     font-size: 1.5em;
   }
 
-  &:hover {
-    background-color: var(fab-hover, #78909c);
-  }
-
   &:focus,
   &:focus-visible {
     outline: none;
@@ -101,12 +97,15 @@
 
 /* 默认悬浮框样式 */
 .popper {
+  pointer-events: none;
+
   position: absolute;
   top: 50%;
   right: calc(100% + 1.5em);
-  transform: translateY(-50%);
+  transform-origin: right;
+  transform: translateY(-50%) scale(0);
 
-  display: none;
+  display: flex;
   align-items: center;
 
   padding: 0.4em 0.5em;
@@ -115,12 +114,20 @@
   color: white;
   white-space: nowrap;
 
+  opacity: 0;
   background-color: #303030;
   border-radius: 0.3em;
+
+  transition:
+    transform 230ms,
+    opacity 150ms;
+  transition-delay: var(--hide-delay);
 }
 
 :is(.fab:hover, .fabRoot[data-focus="true"]) .popper {
-  display: flex;
+  transform: translateY(-50%) scale(1);
+  opacity: 1;
+  transition-delay: 0ms;
 }
 
 /* 快捷拨号 */

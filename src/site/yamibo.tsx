@@ -32,7 +32,7 @@ interface History {
     });
 
   GM_addStyle(
-    `#fab { --fab: #6E2B19; fab-hover: #A15640; }
+    `#fab { --fab: #6E2B19; }
 
     ${
       options.固定导航条 ? '.header-stackup { position: fixed !important }' : ''
