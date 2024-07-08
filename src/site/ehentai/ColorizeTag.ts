@@ -60,8 +60,8 @@ export const updateTagColor = async () => {
 
   css += `
     /* 禁用 eh 的变色效果 */
-    #taglist a { color: #DDDDDD !important; position: relative; }
-    #taglist a:hover { color: #EEEEEE !important; }
+    #taglist a { color: var(--tag) !important; position: relative; }
+    #taglist a:hover { color: var(--tag-hover) !important; }
 
     #taglist a::after {
       content: "";
@@ -72,8 +72,8 @@ export const updateTagColor = async () => {
       height: 2px;
       bottom: -7px;
     }
-    .tup { --color: #00E639; }
-    .tdn { --color: #FF3333; }
+    .tup { --color: var(--tup) }
+    .tdn { --color: var(--tdn) }
     #taglist a[style="color: blue;"] { --color: blue; }
   `;
 
@@ -90,8 +90,14 @@ const getTagColorizeCss = async () => {
 /** 标签染色 */
 export const colorizeTag = async (pageType: PageType) => {
   switch (pageType) {
-    case 'gallery':
-      return GM_addStyle(await getTagColorizeCss());
+    case 'gallery': {
+      let css =
+        location.origin === 'https://exhentai.org'
+          ? '--tag: #DDDDDD; --tag-hover: #EEEEEE; --tup: #00E639; --tdn: #FF3333;'
+          : '--tag: #5C0D11; --tag-hover: #8F4701; --tup: green; --tdn: red;';
+      css = `#taglist { ${css} }\n\n${await getTagColorizeCss()}`;
+      return GM_addStyle(css);
+    }
 
     case 'mytags': {
       // 进入时更新

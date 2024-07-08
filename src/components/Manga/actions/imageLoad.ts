@@ -29,7 +29,7 @@ export const checkImgSize = (i: number, e: HTMLImageElement) => {
 };
 
 /** 图片加载完毕的回调 */
-export const handleImgLoaded = (i: number, e: HTMLImageElement) => () => {
+export const handleImgLoaded = (i: number, e: HTMLImageElement) => async () => {
   setState((state) => {
     const img = state.imgList[i];
     if (!img) return;
@@ -40,6 +40,7 @@ export const handleImgLoaded = (i: number, e: HTMLImageElement) => () => {
   });
   setLoadLock(false);
   loadingImgMap.delete(i);
+  await e.decode();
 };
 
 /** 图片加载出错的次数 */
