@@ -154,8 +154,8 @@ const updateImgLoadType = singleThreaded(() => {
       loadRangeImg(preloadNum().back) ||
       // 再加载前面几页
       loadRangeImg(-preloadNum().front) ||
-      // 根据图片总数和设置决定是否要继续加载其余图片
-      (!store.option.alwaysLoadAllImg && store.imgList.length > 60) ||
+      // 根据设置决定是否要继续加载其余图片
+      !store.option.alwaysLoadAllImg ||
       // 加载当前页后面的图片
       loadRangeImg(Number.POSITIVE_INFINITY, 5) ||
       // 加载当前页前面的图片

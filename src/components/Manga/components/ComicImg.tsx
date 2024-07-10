@@ -11,11 +11,10 @@ import {
   defaultImgType,
   handleImgError,
   handleImgLoaded,
-  renderImgList,
 } from '../actions';
 import classes from '../index.module.css';
 
-const RenderComicImg: Component<ComicImg & { index: number }> = (img) => {
+export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   const showState = () => imgShowState().get(img.index);
 
   const src = () => {
@@ -92,22 +91,6 @@ const RenderComicImg: Component<ComicImg & { index: number }> = (img) => {
     </>
   );
 };
-
-// 用于防止图片缓存被浏览器回收
-const SaveComicImg: Component<ComicImg & { index: number }> = (img) => (
-  <picture class={classes.img} id={`${img.index}`}>
-    <Show when={img.loadType === 'loaded'} children={<img src={img.src} />} />
-  </picture>
-);
-
-/** 漫画图片 */
-export const ComicImg: Component<ComicImg & { index: number }> = (img) => (
-  <Show
-    when={renderImgList().has(img.index)}
-    children={RenderComicImg(img)}
-    fallback={SaveComicImg(img)}
-  />
-);
 
 // 目前即使是不显示的图片也必须挂载上，否则解析好的图片会被浏览器垃圾回收掉，
 // 导致在 ehentai 上无法正常加载图片。但这样会在图片过多时造成性能问题，
