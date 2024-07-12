@@ -1,13 +1,7 @@
-## [9.3.0](https://github.com/hymbz/ComicReadScript/compare/v9.2.0...v9.3.0) (2024-07-07)
-
-
-### Features
-
-* :sparkles: 增加 ehentai 标签染色功能 ([95ed709](https://github.com/hymbz/ComicReadScript/commit/95ed709bbf5d3f2198e102f9f9aaf29e8cca2e8f))
-* :sparkles: 增加 ehentai 快捷评分功能 ([55889d2](https://github.com/hymbz/ComicReadScript/commit/55889d286d5886be5e0ba33cde5c9662fa12b6fc))
+## [9.3.1](https://github.com/hymbz/ComicReadScript/compare/v9.3.0...v9.3.1) (2024-07-12)
 
 
 ### Bug Fixes
 
-* :bug: 修复 ehentai 无法正常加载图片的 bug ([f843e84](https://github.com/hymbz/ComicReadScript/commit/f843e842d6905f9eb80bbff18d3010ec7adca735))
-* :bug: 修复在 safari 上图片加载完毕依然不显示的 bug ([510c524](https://github.com/hymbz/ComicReadScript/commit/510c5241706d438f111c65afd4861b4cc5b420fe)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/249178#comment-512383](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/249178/issues/comment-512383)
+* :bug: 修复出现多余功能按钮的 bug ([27a1ba4](https://github.com/hymbz/ComicReadScript/commit/27a1ba486d10d4cc01f41255d4d40b484b86a79d)), closes [#172](https://github.com/hymbz/ComicReadScript/issues/172)
+* :bug: 修复预加载页数未正确生效的 bug ([c9f4d8e](https://github.com/hymbz/ComicReadScript/commit/c9f4d8e9372f7b80514d94c574f9bda993df6068))

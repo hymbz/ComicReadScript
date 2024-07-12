@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.3.0
+// @version         9.3.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Detect advertise page, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -4398,7 +4398,7 @@ const handleWheel = e => {
   if ((e.ctrlKey || e.altKey) && store.option.scrollMode.enabled && store.zoom.scale === 100) {
     e.preventDefault();
     if (store.option.scrollMode.fitToWidth) return;
-    return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
+    return zoomScrollModeImg(isWheelDown ? -0.05 : 0.05);
   }
   if (e.ctrlKey || e.altKey || store.zoom.scale !== 100) {
     e.preventDefault();
@@ -4632,7 +4632,7 @@ const checkImgSize = (i, e) => {
 };
 
 /** 图片加载完毕的回调 */
-const handleImgLoaded = (i, e) => () => {
+const handleImgLoaded = (i, e) => async () => {
   setState(state => {
     const img = state.imgList[i];
     if (!img) return;
@@ -4642,6 +4642,7 @@ const handleImgLoaded = (i, e) => () => {
   });
   setLoadLock(false);
   loadingImgMap.delete(i);
+  await e.decode();
 };
 
 /** 图片加载出错的次数 */
@@ -4737,8 +4738,8 @@ const updateImgLoadType = singleThreaded(() => {
     loadRangeImg(preloadNum().back) ||
     // 再加载前面几页
     loadRangeImg(-preloadNum().front) ||
-    // 根据图片总数和设置决定是否要继续加载其余图片
-    !store.option.alwaysLoadAllImg && store.imgList.length > 60 ||
+    // 根据设置决定是否要继续加载其余图片
+    !store.option.alwaysLoadAllImg ||
     // 加载当前页后面的图片
     loadRangeImg(Number.POSITIVE_INFINITY, 5) ||
     // 加载当前页前面的图片
@@ -4911,9 +4912,8 @@ const EmptyTip = () => {
 
 var _tmpl$$B = /*#__PURE__*/web.template(\`<img draggable=false decoding=sync>\`),
   _tmpl$2$a = /*#__PURE__*/web.template(\`<div>\`),
-  _tmpl$3$4 = /*#__PURE__*/web.template(\`<picture>\`),
-  _tmpl$4$1 = /*#__PURE__*/web.template(\`<img>\`);
-const RenderComicImg = img => {
+  _tmpl$3$4 = /*#__PURE__*/web.template(\`<picture>\`);
+const ComicImg = img => {
   const showState = () => imgShowState().get(img.index);
   const src = () => {
     if (img.loadType === 'wait') return '';
@@ -5021,47 +5021,6 @@ const RenderComicImg = img => {
     }
   })];
 };
-
-// 用于防止图片缓存被浏览器回收
-const SaveComicImg = img => (() => {
-  var _el$4 = _tmpl$3$4();
-  web.insert(_el$4, web.createComponent(solidJs.Show, {
-    get when() {
-      return img.loadType === 'loaded';
-    },
-    get children() {
-      return (() => {
-        var _el$5 = _tmpl$4$1();
-        web.effect(() => web.setAttribute(_el$5, "src", img.src));
-        return _el$5;
-      })();
-    }
-  }));
-  web.effect(_p$ => {
-    var _v$9 = modules_c21c94f2$1.img,
-      _v$10 = \`\${img.index}\`;
-    _v$9 !== _p$.e && web.className(_el$4, _p$.e = _v$9);
-    _v$10 !== _p$.t && web.setAttribute(_el$4, "id", _p$.t = _v$10);
-    return _p$;
-  }, {
-    e: undefined,
-    t: undefined
-  });
-  return _el$4;
-})();
-
-/** 漫画图片 */
-const ComicImg = img => web.createComponent(solidJs.Show, {
-  get when() {
-    return renderImgList().has(img.index);
-  },
-  get children() {
-    return RenderComicImg(img);
-  },
-  get fallback() {
-    return SaveComicImg(img);
-  }
-});
 
 // 目前即使是不显示的图片也必须挂载上，否则解析好的图片会被浏览器垃圾回收掉，
 // 导致在 ehentai 上无法正常加载图片。但这样会在图片过多时造成性能问题，
@@ -7390,10 +7349,8 @@ const useFab = async initProps => {
 };
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>增加 ehentai 标签染色功能 </p></li><li><p>增加 ehentai 快捷评分功能\`),
-  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复 ehentai 无法正常加载图片的 bug </p></li><li><p>修复在 safari 上图片加载完毕依然不显示的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复出现多余功能按钮的 bug </p></li><li><p>修复预加载页数未正确生效的 bug\`);
 const migrationOption = async (name, editFn) => {
   try {
     const option = await GM.getValue(name);
@@ -7463,7 +7420,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5()], {
+    })(), _tmpl$2(), _tmpl$3()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Number.POSITIVE_INFINITY,
@@ -7486,6 +7443,17 @@ const getHotkeys = async () => ({
   ...(await GM.getValue('Hotkeys', {}))
 });
 
+/** 清理多余的配置项 */
+const clear = (options, defaultOptions) => {
+  let isClear = false;
+  for (const key of Object.keys(options)) {
+    if (Reflect.has(defaultOptions, key)) continue;
+    Reflect.deleteProperty(options, key);
+    isClear = true;
+  }
+  return isClear;
+};
+
 /**
  * 对修改站点配置的相关方法的封装
  * @param name 站点名
@@ -7493,6 +7461,8 @@ const getHotkeys = async () => ({
  */
 const useSiteOptions = async (name, defaultOptions = {}) => {
   const _defaultOptions = {
+    option: undefined,
+    defaultOption: undefined,
     autoShow: true,
     hiddenFAB: false,
     ...defaultOptions
@@ -7500,7 +7470,7 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
   const saveOptions = await GM.getValue(name);
   const options = store$2.createMutable(assign(_defaultOptions, saveOptions));
   const setOptions = async newValue => {
-    Object.assign(options, newValue);
+    if (newValue) Object.assign(options, newValue);
     // 只保存和默认设置不同的部分
     return GM.setValue(name, difference(options, _defaultOptions));
   };
@@ -7508,6 +7478,8 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
   const isStored = saveOptions !== undefined;
   // 如果当前站点没有存储配置，就补充上去
   if (!isStored) await GM.setValue(name, {});
+  // 否则检查是否有多余的配置
+  else if (clear(options, _defaultOptions)) await setOptions();
   return {
     /** 站点配置 */
     options,
@@ -9655,8 +9627,8 @@ const updateTagColor = async () => {
   }
   css += `
     /* 禁用 eh 的变色效果 */
-    #taglist a { color: #DDDDDD !important; position: relative; }
-    #taglist a:hover { color: #EEEEEE !important; }
+    #taglist a { color: var(--tag) !important; position: relative; }
+    #taglist a:hover { color: var(--tag-hover) !important; }
 
     #taglist a::after {
       content: "";
@@ -9667,12 +9639,17 @@ const updateTagColor = async () => {
       height: 2px;
       bottom: -7px;
     }
-    .tup { --color: #00E639; }
-    .tdn { --color: #FF3333; }
+    .tup { --color: var(--tup) }
+    .tdn { --color: var(--tdn) }
     #taglist a[style="color: blue;"] { --color: blue; }
   `;
   await GM.setValue('ehTagColorizeCss', css);
   return css;
+};
+const getTagColorizeCss = async () => {
+  let colorizeCss = await GM.getValue('ehTagColorizeCss');
+  colorizeCss ||= await updateTagColor();
+  return colorizeCss;
 };
 
 /** 标签染色 */
@@ -9680,17 +9657,23 @@ const colorizeTag = async pageType => {
   switch (pageType) {
     case 'gallery':
       {
-        let colorizeCss = await GM.getValue('ehTagColorizeCss');
-        colorizeCss ||= await updateTagColor();
-        return GM_addStyle(colorizeCss);
+        let css = location.origin === 'https://exhentai.org' ? '--tag: #DDDDDD; --tag-hover: #EEEEEE; --tup: #00E639; --tdn: #FF3333;' : '--tag: #5C0D11; --tag-hover: #8F4701; --tup: green; --tdn: red;';
+        css = `#taglist { ${css} }\n\n${await getTagColorizeCss()}`;
+        return GM_addStyle(css);
       }
     case 'mytags':
       {
         // 进入时更新
         updateTagColor();
+        let oldCss = await getTagColorizeCss();
+        /** 不断循环直至获取到新数据 */
+        const waitUpdate = main.singleThreaded(async () => {
+          const newCss = await getTagColorizeCss();
+          if (newCss === oldCss) setTimeout(waitUpdate, 1000);else oldCss = newCss;
+        });
 
         // 点击保存按钮时更新
-        document.addEventListener('click', e => e.target.tagName === 'BUTTON' && e.target.id.startsWith('tagsave_') && updateTagColor());
+        document.addEventListener('click', e => e.target.tagName === 'BUTTON' && e.target.id.startsWith('tagsave_') && waitUpdate());
       }
 
     // 除了在 mytags 里更新外，还可以在列表页检查高亮的标签和脚本存储的标签颜色数据是否对应，
@@ -10422,8 +10405,7 @@ const main = require('main');
 
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic.me':
-    case '18comic-erdtree.xyz':
-    case '18-comicstellar.xyz':
+    case '18comic-erdtree.cc':
     case '18comic.org':
     case '18comic.vip':
       {
