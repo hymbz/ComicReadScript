@@ -1,9 +1,12 @@
-import { createEffectOn } from 'helper/solidJs';
+import { createEffectOn, createRootEffect } from 'helper/solidJs';
 
 import { type State, setState, store } from '../store';
-import { defaultImgType, isWideImg } from '../handleComicData';
 
 import { resetImgState, updatePageData } from './image';
+import { placeholderSize } from './memo';
+
+const isWideType = (type: ComicImg['type']) =>
+  type === 'wide' || type === 'long';
 
 /** 根据比例判断图片类型 */
 export const getImgType = (
@@ -18,83 +21,15 @@ export const getImgType = (
 };
 
 /** 更新图片类型。返回是否修改了图片类型 */
-const _updateImgType = (state: State, draftImg: ComicImg) => {
+export const updateImgType = (state: State, draftImg: ComicImg) => {
   if (!state.rootSize.width || !state.rootSize.height) return false;
   const { type } = draftImg;
   if (!draftImg.width || !draftImg.height) return false;
   draftImg.type = getImgType(draftImg as Required<ComicImg>, state);
-  return (type ?? defaultImgType()) !== draftImg.type;
-};
 
-/** 检查指定图片周围包括自己在内，是否有足够数量的**连续**的符合条件的图片 */
-const checkImgTypeCount = (
-  state: State,
-  index: number,
-  maxNum: number,
-  fn = (other: ComicImg, target: ComicImg) => other.type === target.type,
-) => {
-  let num = 1;
+  if (isWideType(type) !== isWideType(draftImg.type)) updatePageData.throttle();
 
-  const targetImg = state.imgList[index];
-
-  let i = index;
-  while (i--) {
-    const img = state.imgList[i];
-    if (img.loadType !== 'loaded') continue;
-    if (fn(img, targetImg)) {
-      num += 1;
-      if (num >= maxNum) return true;
-    } else break;
-  }
-
-  for (i = index; i < state.imgList.length; i++) {
-    const img = state.imgList[i];
-    if (img.loadType !== 'loaded') continue;
-    if (fn(img, targetImg)) {
-      num += 1;
-      if (num >= maxNum) return true;
-    } else break;
-  }
-
-  return false;
-};
-
-export const updateImgType = (state: State, i: number) => {
-  const img = state.imgList[i];
-
-  let isEdited = _updateImgType(state, img);
-
-  switch (img.type) {
-    // 连续出现多张宽图后，自动将滚动条移至底部
-    case 'long': {
-      if (!state.flag.autoLong && checkImgTypeCount(store, i, 5))
-        state.flag.autoLong = true;
-      // fall through
-    }
-
-    // 连续出现多张跨页图后，将默认图片类型设为跨页图
-    case 'wide': {
-      if (state.flag.autoWide || !checkImgTypeCount(state, i, 3, isWideImg))
-        break;
-      state.flag.autoWide = true;
-      isEdited = true;
-      break;
-    }
-
-    // 连续出现多张长图后，自动开启卷轴模式
-    case 'vertical': {
-      if (state.flag.autoScrollMode || !checkImgTypeCount(state, i, 3)) break;
-      state.option.scrollMode.enabled = true;
-      state.flag.autoScrollMode = true;
-      isEdited = true;
-      break;
-    }
-  }
-
-  if (!isEdited) return;
-
-  Reflect.deleteProperty(state.fillEffect, i);
-  updatePageData(state);
+  return (type ?? state.defaultImgType) !== draftImg.type;
 };
 
 // 处理显示窗口的长宽变化
@@ -108,12 +43,48 @@ createEffectOn(
 
       let isEdited = false;
       for (let i = 0; i < state.imgList.length; i++) {
-        if (!_updateImgType(state, state.imgList[i])) continue;
+        const img = state.imgList[i];
+        const isWide = isWideType(img.type);
+        if (!updateImgType(state, img)) continue;
+        if (isWide === isWideType(img.type)) continue;
         isEdited = true;
         Reflect.deleteProperty(state.fillEffect, i);
       }
+      if (!isEdited) return;
 
-      if (isEdited) resetImgState(state);
+      resetImgState(state);
       updatePageData(state);
     }),
 );
+
+/** 是否自动开启过卷轴模式 */
+let autoScrollMode = false;
+
+createRootEffect((prevIsWide) => {
+  if (store.rootSize.width === 0 || store.rootSize.height === 0) return;
+
+  const defaultImgType = getImgType(placeholderSize());
+  if (defaultImgType === store.defaultImgType) return prevIsWide;
+
+  const isWide = isWideType(defaultImgType);
+
+  setState((state) => {
+    state.defaultImgType = defaultImgType;
+
+    // 连续出现多张长图后，自动开启卷轴模式
+    if (
+      defaultImgType === 'vertical' &&
+      !autoScrollMode &&
+      !state.option.scrollMode.enabled
+    ) {
+      state.option.scrollMode.enabled = true;
+      autoScrollMode = true;
+      updatePageData(state);
+      return;
+    }
+
+    if (isWide !== prevIsWide) updatePageData(state);
+  });
+
+  return isWide;
+}, false);

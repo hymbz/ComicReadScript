@@ -45,7 +45,7 @@ export const updateImgSize = (
   img.width = width;
   img.height = height;
   img.size = getImgDisplaySize(state, index);
-  updateImgType(state, index);
+  updateImgType(state, img);
 };
 
 createEffectOn(

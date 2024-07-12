@@ -66,7 +66,10 @@ export const createMemoMap = <Return extends Record<string, any>>(fnMap: {
   return map;
 };
 
-export const createEffectOn = ((deps: any, fn: any, options?: any) =>
+export const createRootEffect = ((fn: any, val: any, options: any) =>
   getOwner()
-    ? createEffect(on(deps, fn, options))
-    : createRoot(() => createEffect(on(deps, fn, options)))) as typeof on;
+    ? createEffect(fn, val, options)
+    : createRoot(() => createEffect(fn, val, options))) as typeof createEffect;
+
+export const createEffectOn = ((deps: any, fn: any, options?: any) =>
+  createRootEffect(on(deps, fn, options))) as typeof on;

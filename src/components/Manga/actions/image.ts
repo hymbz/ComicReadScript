@@ -1,11 +1,11 @@
-import { isEqual } from 'helper';
+import { isEqual, throttle } from 'helper';
 
 import { autoCloseFill, handleComicData } from '../handleComicData';
-import { type State } from '../store';
+import { setState, type State } from '../store';
 
 import { activeImgIndex, isOnePageMode } from './memo/common';
 
-/** 重新计算 PageData */
+/** 重新计算图片排列 */
 export const updatePageData = (state: State) => {
   const lastActiveImgIndex = activeImgIndex();
 
@@ -23,6 +23,7 @@ export const updatePageData = (state: State) => {
     if (newActivePageIndex !== -1) state.activePageIndex = newActivePageIndex;
   }
 };
+updatePageData.throttle = throttle(() => setState(updatePageData), 100);
 
 /**
  * 将处理图片的相关变量恢复到初始状态
@@ -33,9 +34,6 @@ export const updatePageData = (state: State) => {
  * 3. updatePageData
  */
 export const resetImgState = (state: State) => {
-  state.flag.autoScrollMode = false;
-  state.flag.autoWide = false;
-  state.flag.autoLong = false;
   autoCloseFill.clear();
   // 如果用户没有手动修改过首页填充，才将其恢复初始
   if (typeof state.fillEffect['-1'] === 'boolean')

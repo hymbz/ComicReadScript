@@ -8,7 +8,6 @@ import {
   isAbreastMode,
   abreastArea,
   placeholderSize,
-  defaultImgType,
   handleImgError,
   handleImgLoaded,
 } from '../actions';
@@ -26,7 +25,8 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   const style = createMemoMap<JSX.CSSProperties>({
     'aspect-ratio': () =>
       `${img.width ?? placeholderSize().width} / ${img.height ?? placeholderSize().height}`,
-    'grid-area': () => (isAbreastMode() ? undefined : `_${img.index}`),
+    'grid-area': () =>
+      !store.gridMode && isAbreastMode() ? undefined : `_${img.index}`,
     '--width': () =>
       store.option.scrollMode.enabled ? `${img.size.width}px` : undefined,
   });
@@ -57,7 +57,7 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
       style={style()}
       id={`_${props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index}`}
       data-show={showState()}
-      data-type={img.type ?? defaultImgType()}
+      data-type={img.type ?? store.defaultImgType}
       data-load-type={img.loadType === 'loaded' ? undefined : img.loadType}
     >
       <Show when={rednerImg()}>
@@ -83,7 +83,7 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   return (
     <>
       <_ComicImg />
-      <Show when={renderClone}>
+      <Show when={renderClone()}>
         <For each={Array.from({ length: cloneNum() })}>
           {(_, i) => <_ComicImg cloneIndex={i() + 1} />}
         </For>

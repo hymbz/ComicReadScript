@@ -35,4 +35,6 @@ export const imgState = {
   showRange: [0, 0] as [number, number],
   renderRange: [0, 0] as [number, number],
   loadingRange: [0, 0] as [number, number],
+
+  defaultImgType: '' as ComicImg['type'],
 };

@@ -1,20 +1,11 @@
-import { createRootMemo } from 'helper/solidJs';
-
-import type { FillEffect } from './store/image';
 import { store } from './store';
+import type { FillEffect } from './store/image';
 
 // 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
 // 2. 因为大部分用户都不会在意正确页序，所以应该尽量少加填充页
 
 /** 记录自动修改过页面填充的图片流 */
 export const autoCloseFill = new Set<number>();
-
-/** 默认图片类型 */
-export const defaultImgType = createRootMemo<ComicImg['type']>(() => {
-  if (store.flag.autoWide) return 'wide';
-  if (store.flag.autoScrollMode) return 'vertical';
-  return '';
-});
 
 /** 找到指定页面所处的图片流 */
 export const findFillIndex = (pageIndex: number, fillEffect: FillEffect) => {
@@ -25,7 +16,7 @@ export const findFillIndex = (pageIndex: number, fillEffect: FillEffect) => {
 
 /** 判断图片是否是跨页图 */
 export const isWideImg = (img: ComicImg) => {
-  switch (img.type ?? defaultImgType()) {
+  switch (img.type ?? store.defaultImgType) {
     case 'long':
     case 'wide':
       return true;

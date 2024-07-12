@@ -34,7 +34,8 @@ export const scrollPosition = createRootMemo(
     if (store.option.scrollbar.position === 'auto') {
       if (store.isMobile) return 'top';
       if (isAbreastMode()) return 'bottom';
-      return store.flag.autoLong ? 'bottom' : 'right';
+      // 大部分图片都是宽图时，将滚动条移至底部
+      return store.defaultImgType === 'long' ? 'bottom' : 'right';
     }
 
     return store.option.scrollbar.position;
