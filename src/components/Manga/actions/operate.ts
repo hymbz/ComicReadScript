@@ -235,7 +235,7 @@ export const handleWheel = (e: WheelEvent) => {
   ) {
     e.preventDefault();
     if (store.option.scrollMode.fitToWidth) return;
-    return zoomScrollModeImg(isWheelDown ? -0.1 : 0.1);
+    return zoomScrollModeImg(isWheelDown ? -0.05 : 0.05);
   }
 
   if (e.ctrlKey || e.altKey || store.zoom.scale !== 100) {

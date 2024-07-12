@@ -20,6 +20,20 @@ const getHotkeys = async (): Promise<Record<string, string[]>> => ({
   ...(await GM.getValue<Record<string, string[]>>('Hotkeys', {})),
 });
 
+/** 清理多余的配置项 */
+const clear = <T extends Record<string, any> = {}>(
+  options: T,
+  defaultOptions: T,
+) => {
+  let isClear = false;
+  for (const key of Object.keys(options)) {
+    if (Reflect.has(defaultOptions, key)) continue;
+    Reflect.deleteProperty(options, key);
+    isClear = true;
+  }
+  return isClear;
+};
+
 /**
  * 对修改站点配置的相关方法的封装
  * @param name 站点名
@@ -32,6 +46,8 @@ export const useSiteOptions = async <T = Record<string, any>>(
   type SaveOptions = T & SiteOptions;
 
   const _defaultOptions = {
+    option: undefined,
+    defaultOption: undefined,
     autoShow: true,
     hiddenFAB: false,
     ...defaultOptions,
@@ -43,8 +59,8 @@ export const useSiteOptions = async <T = Record<string, any>>(
     assign(_defaultOptions, saveOptions),
   );
 
-  const setOptions = async (newValue: Partial<SaveOptions>) => {
-    Object.assign(options, newValue);
+  const setOptions = async (newValue?: Partial<SaveOptions>) => {
+    if (newValue) Object.assign(options, newValue);
     // 只保存和默认设置不同的部分
     return GM.setValue(name, difference(options, _defaultOptions));
   };
@@ -54,6 +70,8 @@ export const useSiteOptions = async <T = Record<string, any>>(
   const isStored = saveOptions !== undefined;
   // 如果当前站点没有存储配置，就补充上去
   if (!isStored) await GM.setValue(name, {});
+  // 否则检查是否有多余的配置
+  else if (clear(options, _defaultOptions)) await setOptions();
 
   return {
     /** 站点配置 */
