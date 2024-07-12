@@ -186,8 +186,10 @@ export const defaultSettingList: () => SettingList = () => [
               step={5}
               onChange={(val) => {
                 if (Number.isNaN(val)) return;
-                const newVal = clamp(0, val / 100, 0.95);
-                _setState('option', 'scrollMode', 'abreastDuplicate', newVal);
+                setOption((draftOption) => {
+                  const newVal = clamp(0, val / 100, 0.95);
+                  draftOption.scrollMode.abreastDuplicate = newVal;
+                });
               }}
               value={Math.round(store.option.scrollMode.abreastDuplicate * 100)}
             />
