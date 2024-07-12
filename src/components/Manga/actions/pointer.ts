@@ -46,9 +46,9 @@ export const handlePageClick = (e: MouseEvent) => {
 
 /** 网格模式下点击图片跳到对应页 */
 export const handleGridClick = (e: MouseEvent) => {
-  const target = findClickEle(refs.root.getElementsByTagName('img'), e);
+  const target = findClickEle(refs.root.getElementsByClassName('img'), e);
   if (!target) return;
-  const pageNum = imgPageMap()[Number(target.alt)];
+  const pageNum = imgPageMap()[Number(target.id.slice(1))];
   if (pageNum === undefined) return;
   setState((state) => {
     state.activePageIndex = pageNum;

@@ -143,21 +143,23 @@
   grid-auto-rows: max-content;
   grid-row-gap: 1.5em;
   grid-template-rows: unset;
+  align-items: end;
 
   box-sizing: border-box;
-  padding-bottom: 2em;
 
   & .img {
+    cursor: pointer;
+
     transform: none;
+
     overflow: unset;
-    width: 100%;
+
+    width: inherit;
     height: auto;
 
-    & > img {
-      cursor: pointer;
-    }
-
     & > .gridModeTip {
+      cursor: auto;
+
       position: absolute;
       bottom: -1.5em;
 
@@ -187,6 +189,7 @@
 
   & .mangaFlow {
     grid-row-gap: calc(var(--scroll-mode-spacing) * 7px);
+    height: fit-content;
 
     & .img[data-show] {
       display: block;

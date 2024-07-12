@@ -31,10 +31,11 @@ import {
 import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
+// （虽然因为使用了 shadow dom 的缘故实际还是不能兼容，但说不定之后就改了呢
 export const focus = () =>
   requestAnimationFrame(() => {
-    refs.mangaBox?.click();
-    refs.mangaBox?.focus();
+    refs.mangaFlow?.click();
+    refs.mangaFlow?.focus();
   });
 
 export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
@@ -220,6 +221,7 @@ let equalNum = 0;
 let diffNum = 0;
 
 export const handleWheel = (e: WheelEvent) => {
+  if (store.gridMode) return;
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
   if (store.flag.scrollLock || e.deltaY === 0) return closeScrollLock();

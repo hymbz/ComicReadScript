@@ -25,7 +25,6 @@ import {
   abreastColumnWidth,
   abreastArea,
   imgAreaStyle,
-  contentHeight,
 } from '../actions';
 import classes from '../index.module.css';
 import { useStyle, useStyleMemo } from '../hooks/useStyle';
@@ -57,16 +56,22 @@ export const ComicImgFlow: Component = () => {
     });
   };
 
-  /** 卷轴模式下当前显示页之前未渲染页的总高度 */
-  const scrollModeFill = createMemo(() => imgTopList()[store.showRange[0]]);
-
   /** 在当前页之前有图片被加载出来，导致内容高度发生变化后，重新滚动页面，确保当前显示位置不变 */
   createEffectOn(
-    [() => scrollModeFill(), imgTopList],
-    ([height, topList], prev) => {
-      if (!prev || !height) return;
-      const [prevHeight, prevTopList] = prev;
-      if (prevTopList === topList || prevHeight === height) return;
+    [
+      () => store.showRange[0],
+      () => imgTopList()[store.showRange[0]],
+      imgTopList,
+    ],
+    ([showImg, height, topList], prev) => {
+      if (!prev || !height || !isScrollMode()) return;
+      const [prevShowImg, prevHeight, prevTopList] = prev;
+      if (
+        showImg !== prevShowImg ||
+        prevTopList === topList ||
+        prevHeight === height
+      )
+        return;
       scrollTo(scrollTop() + height - prevHeight);
       // 目前还是会有轻微偏移，但考虑到大部分情况下都是顺序阅读，本身出现概率就低，就不继续排查优化了
     },
@@ -76,12 +81,14 @@ export const ComicImgFlow: Component = () => {
     `${(page.length === 1 ? [page[0], page[0]] : page)
       .map((i) => (i === -1 ? '.' : `_${i}`))
       .join(' ')}`;
+
   const gridAreas = createMemo(() => {
     if (store.pageList.length === 0) return undefined;
 
     if (store.gridMode) {
       let columnNum: number;
       if (store.isMobile) columnNum = 2;
+      else if (store.defaultImgType === 'vertical') columnNum = 6;
       else if (isOnePageMode()) columnNum = 4;
       else columnNum = 2;
 
@@ -123,7 +130,7 @@ export const ComicImgFlow: Component = () => {
     '--zoom-x': () => `${store.zoom.offset.x}px`,
     '--zoom-y': () => `${store.zoom.offset.y}px`,
     '--page-x'() {
-      if (isScrollMode()) return '0px';
+      if (store.gridMode || isScrollMode()) return '0px';
       const x = `${store.page.offset.x.pct * store.rootSize.width + store.page.offset.x.px}px`;
       return store.option.dir === 'rtl' ? x : `calc(${x} * -1)`;
     },
@@ -150,13 +157,13 @@ export const ComicImgFlow: Component = () => {
       return `repeat(${gridAreas()?.split(' ').length ?? 0}, 50%)`;
     },
     'grid-template-rows'() {
-      if (!isScrollMode()) return undefined;
+      if (!isScrollMode() || store.gridMode) return undefined;
       return store.imgList
         .map(({ size: { height } }) => `${height}px`)
         .join(' ');
     },
-    height: () => (isScrollMode() ? `${contentHeight()}px` : undefined),
-    '--abreastScrollWidth': () => `${abreastColumnWidth()}px`,
+    '--abreastScrollWidth': () =>
+      abreastColumnWidth() ? `${abreastColumnWidth()}px` : undefined,
   });
 
   useStyle(imgAreaStyle);
@@ -165,7 +172,6 @@ export const ComicImgFlow: Component = () => {
     <div
       ref={bindRef('mangaBox')}
       class={`${classes.mangaBox} ${classes.beautifyScrollbar}`}
-      tabIndex={-1}
       data-abreast-scroll={boolDataVal(store.option.scrollMode.abreastMode)}
     >
       <div
@@ -184,6 +190,7 @@ export const ComicImgFlow: Component = () => {
         data-fit-width={boolDataVal(store.option.scrollMode.fitToWidth)}
         on:mousemove={onMouseMove}
         onTransitionEnd={handleTransitionEnd}
+        tabIndex={-1}
       >
         <Show when={store.imgList.length === 0} children={<EmptyTip />} />
         <Index each={store.imgList}>
