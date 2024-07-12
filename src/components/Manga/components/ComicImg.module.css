@@ -19,26 +19,10 @@
 
   object-fit: contain;
   background-color: var(--hover-bg-color, #fff3);
+  background-image: var(--md-photo);
   background-repeat: no-repeat;
   background-position: center;
   background-size: 30%;
-
-  /* 遮住默认的出错图片标识 */
-  &::after {
-    pointer-events: none;
-
-    position: absolute;
-    top: 0;
-    right: 0;
-
-    width: 100%;
-    height: 100%;
-
-    background-color: #eee;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 30%;
-  }
 
   &[data-show] {
     content-visibility: visible;
@@ -58,15 +42,23 @@
     height: auto;
   }
 
-  /* src 为空时的图片标识 */
-  &:empty {
-    background-image: var(--md-photo);
-  }
-
   /* 遮住默认的出错图片标识 */
   &[data-load-type="error"]::after {
+    pointer-events: none;
     content: "";
+
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: #eee;
     background-image: var(--md-image-not-supported);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 30%;
   }
 
   &[data-load-type="loading"] {
@@ -158,6 +150,7 @@
   & .img {
     transform: none;
     overflow: unset;
+    width: 100%;
     height: auto;
 
     & > img {

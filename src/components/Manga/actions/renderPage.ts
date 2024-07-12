@@ -30,10 +30,6 @@ export const updateShowRange = (state: State) => {
   if (scrollLength() === 0) {
     state.showRange = [0, 0];
     state.renderRange = state.showRange;
-  } else if (state.gridMode) {
-    // 网格模式
-    state.showRange = [0, state.pageList.length - 1];
-    state.renderRange = state.showRange;
   } else if (!state.option.scrollMode.enabled) {
     // 翻页模式
     state.showRange = [state.activePageIndex, state.activePageIndex];
@@ -118,8 +114,12 @@ export const renderImgList = createRootMemo(() =>
 export const imgShowState = createRootMemo<Map<number, 0 | 1 | ''>>(() => {
   if (store.pageList.length === 0) return new Map();
 
+  const showRange = store.gridMode
+    ? [0, store.pageList.length - 1]
+    : store.renderRange;
+
   const stateList = new Map<number, 0 | 1 | ''>();
-  for (let i = store.renderRange[0]; i <= store.renderRange[1]; i++) {
+  for (let i = showRange[0]; i <= showRange[1]; i++) {
     const page = store.pageList[i];
     if (!page) continue;
     const [a, b] = page;

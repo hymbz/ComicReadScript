@@ -70,12 +70,12 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
           // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
           decoding="sync"
         />
-        <Show when={store.gridMode}>
-          <div
-            class={classes.gridModeTip}
-            children={store.gridMode ? getImgTip(img.index) : ''}
-          />
-        </Show>
+      </Show>
+      <Show when={store.gridMode}>
+        <div
+          class={classes.gridModeTip}
+          children={store.gridMode ? getImgTip(img.index) : ''}
+        />
       </Show>
     </picture>
   );
