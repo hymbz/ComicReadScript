@@ -95,6 +95,13 @@ const loadImg = (index: number) => {
   return true;
 };
 
+/** 获取指定页数下的头/尾图片 */
+const getPageImg = (pageNum: number, imgType: 'start' | 'end') => {
+  const page = store.pageList[pageNum].filter((i) => i !== -1);
+  if (page.length === 1) return page[0];
+  return imgType === 'start' ? Math.min(...page) : Math.max(...page);
+};
+
 /**
  * 以当前显示页为基准，预加载附近指定页数的图片，并取消其他预加载的图片
  * @param target 加载目标页
@@ -102,39 +109,36 @@ const loadImg = (index: number) => {
  * @returns 返回指定范围内是否还有未加载的图片
  */
 const loadRangeImg = (target = 0, loadNum = 2) => {
-  /** 是否还有未加载的图片 */
-  let hasUnloadedImg = false;
-
-  const loadPage = (i: number) => {
-    for (const index of store.pageList[i])
-      if (!loadImg(index)) hasUnloadedImg = true;
-    if (loadImgList.size >= loadNum) {
-      setLoadLock(true);
-      return true;
-    }
-  };
-
-  let [start, end] = store.showRange;
+  let start = getPageImg(store.showRange[0], 'start');
+  let end = getPageImg(store.showRange[1], 'end');
 
   if (target !== 0) {
     if (target < 0) {
-      start = store.showRange[0] - 1;
-      end = store.showRange[0] + target;
+      end = start + target;
+      start -= 1;
     } else {
-      start = store.showRange[1] + 1;
-      end = store.showRange[1] + target;
+      start = end + 1;
+      end += target;
     }
 
-    start = clamp(0, start, store.pageList.length - 1);
-    end = clamp(0, end, store.pageList.length - 1);
+    start = clamp(0, start, store.imgList.length - 1);
+    end = clamp(0, end, store.imgList.length - 1);
   }
 
-  if (start <= end) {
-    for (let index = start; index <= end; index++)
-      if (loadPage(index)) return index !== end || hasUnloadedImg;
-  } else {
-    for (let index = start; index >= end; index--)
-      if (loadPage(index)) return index !== end || hasUnloadedImg;
+  /** 是否还有未加载的图片 */
+  let hasUnloadedImg = false;
+
+  let index = start;
+  const condition = start <= end ? () => index <= end : () => index >= end;
+  const step = start <= end ? 1 : -1;
+
+  while (condition()) {
+    if (!loadImg(index)) hasUnloadedImg = true;
+    if (loadImgList.size >= loadNum) {
+      setLoadLock(true);
+      return index !== end || hasUnloadedImg;
+    }
+    index += step;
   }
 
   return hasUnloadedImg;
@@ -170,6 +174,7 @@ const updateImgLoadType = singleThreaded(() => {
 createEffectOn(
   [
     loadLock,
+    preloadNum,
     () => [...renderImgList()].map((i) => store.imgList[i]),
     () => store.option.alwaysLoadAllImg,
   ],
