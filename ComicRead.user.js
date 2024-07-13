@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.3.1
+// @version         9.3.2
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Detect advertise page, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -2259,7 +2259,8 @@ const createMemoMap = fnMap => {
   });
   return map;
 };
-const createEffectOn = (deps, fn, options) => solidJs.getOwner() ? solidJs.createEffect(solidJs.on(deps, fn, options)) : solidJs.createRoot(() => solidJs.createEffect(solidJs.on(deps, fn, options)));
+const createRootEffect = (fn, val, options) => solidJs.getOwner() ? solidJs.createEffect(fn, val, options) : solidJs.createRoot(() => solidJs.createEffect(fn, val, options));
+const createEffectOn = (deps, fn, options) => createRootEffect(solidJs.on(deps, fn, options));
 
 const useStore = initState => {
   const [_state, _setState] = store$2.createStore(initState);
@@ -2285,7 +2286,8 @@ const imgState = {
   },
   showRange: [0, 0],
   renderRange: [0, 0],
-  loadingRange: [0, 0]
+  loadingRange: [0, 0],
+  defaultImgType: ''
 };
 
 const LanguageMap = {
@@ -2347,12 +2349,6 @@ const OtherState = {
   /** 监视图片是否出现的 observer */
   observer: null,
   flag: {
-    /** 是否自动开启过卷轴模式 */
-    autoScrollMode: false,
-    /** 是否自动将未加载图片类型设为跨页图过 */
-    autoWide: false,
-    /** 是否自动将滚动条移至底部过 */
-    autoLong: false,
     /**
      * 用于防止滚轮连续滚动导致过快触发事件的锁
      *
@@ -2559,13 +2555,6 @@ const delHotkeys = code => {
 /** 记录自动修改过页面填充的图片流 */
 const autoCloseFill = new Set();
 
-/** 默认图片类型 */
-const defaultImgType = createRootMemo(() => {
-  if (store.flag.autoWide) return 'wide';
-  if (store.flag.autoScrollMode) return 'vertical';
-  return '';
-});
-
 /** 找到指定页面所处的图片流 */
 const findFillIndex = (pageIndex, fillEffect) => {
   let nowFillIndex = pageIndex;
@@ -2575,7 +2564,7 @@ const findFillIndex = (pageIndex, fillEffect) => {
 
 /** 判断图片是否是跨页图 */
 const isWideImg = img => {
-  switch (img.type ?? defaultImgType()) {
+  switch (img.type ?? store.defaultImgType) {
     case 'long':
     case 'wide':
       return true;
@@ -2656,7 +2645,8 @@ const preloadNum = createRootMemo(() => ({
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = sizeFn => {
   const list = store.imgList.filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort((a, b) => a - b);
-  if (list.length === 0) return null;
+  // 因为涉及到图片默认类型的计算，所以至少等到加载完三张图片再计算，避免被首页大图干扰
+  if (list.length < 3) return null;
   return list[Math.floor(list.length / 2)];
 };
 
@@ -2667,9 +2657,9 @@ const placeholderSize = createThrottleMemo(() => ({
 }), 500);
 
 /** 并排卷轴模式下的列宽度 */
-const abreastColumnWidth = createRootMemo(() => placeholderSize().width * store.option.scrollMode.imgScale);
+const abreastColumnWidth = createRootMemo(() => isAbreastMode() ? placeholderSize().width * store.option.scrollMode.imgScale : 0);
 
-/** 重新计算 PageData */
+/** 重新计算图片排列 */
 const updatePageData = state => {
   const lastActiveImgIndex = activeImgIndex();
   let newPageList = [];
@@ -2682,6 +2672,7 @@ const updatePageData = state => {
     if (newActivePageIndex !== -1) state.activePageIndex = newActivePageIndex;
   }
 };
+updatePageData.throttle = throttle(() => setState(updatePageData), 100);
 
 /**
  * 将处理图片的相关变量恢复到初始状态
@@ -2692,9 +2683,6 @@ const updatePageData = state => {
  * 3. updatePageData
  */
 const resetImgState = state => {
-  state.flag.autoScrollMode = false;
-  state.flag.autoWide = false;
-  state.flag.autoLong = false;
   autoCloseFill.clear();
   // 如果用户没有手动修改过首页填充，才将其恢复初始
   if (typeof state.fillEffect['-1'] === 'boolean') state.fillEffect['-1'] = state.option.firstPageFill && state.imgList.length > 3;
@@ -2722,6 +2710,8 @@ const bindScrollTop = dom => {
 // 窗口宽度小于800像素时，标记为移动端
 createEffectOn(() => store.rootSize.width, width => _setState('isMobile', inRange(1, width, 800)));
 
+const isWideType = type => type === 'wide' || type === 'long';
+
 /** 根据比例判断图片类型 */
 const getImgType = (img, state = store) => {
   const imgRatio = img.width / img.height;
@@ -2732,72 +2722,15 @@ const getImgType = (img, state = store) => {
 };
 
 /** 更新图片类型。返回是否修改了图片类型 */
-const _updateImgType = (state, draftImg) => {
+const updateImgType = (state, draftImg) => {
   if (!state.rootSize.width || !state.rootSize.height) return false;
   const {
     type
   } = draftImg;
   if (!draftImg.width || !draftImg.height) return false;
   draftImg.type = getImgType(draftImg, state);
-  return (type ?? defaultImgType()) !== draftImg.type;
-};
-
-/** 检查指定图片周围包括自己在内，是否有足够数量的**连续**的符合条件的图片 */
-const checkImgTypeCount = (state, index, maxNum, fn = (other, target) => other.type === target.type) => {
-  let num = 1;
-  const targetImg = state.imgList[index];
-  let i = index;
-  while (i--) {
-    const img = state.imgList[i];
-    if (img.loadType !== 'loaded') continue;
-    if (fn(img, targetImg)) {
-      num += 1;
-      if (num >= maxNum) return true;
-    } else break;
-  }
-  for (i = index; i < state.imgList.length; i++) {
-    const img = state.imgList[i];
-    if (img.loadType !== 'loaded') continue;
-    if (fn(img, targetImg)) {
-      num += 1;
-      if (num >= maxNum) return true;
-    } else break;
-  }
-  return false;
-};
-const updateImgType = (state, i) => {
-  const img = state.imgList[i];
-  let isEdited = _updateImgType(state, img);
-  switch (img.type) {
-    // 连续出现多张宽图后，自动将滚动条移至底部
-    case 'long':
-      {
-        if (!state.flag.autoLong && checkImgTypeCount(store, i, 5)) state.flag.autoLong = true;
-        // fall through
-      }
-
-    // 连续出现多张跨页图后，将默认图片类型设为跨页图
-    case 'wide':
-      {
-        if (state.flag.autoWide || !checkImgTypeCount(state, i, 3, isWideImg)) break;
-        state.flag.autoWide = true;
-        isEdited = true;
-        break;
-      }
-
-    // 连续出现多张长图后，自动开启卷轴模式
-    case 'vertical':
-      {
-        if (state.flag.autoScrollMode || !checkImgTypeCount(state, i, 3)) break;
-        state.option.scrollMode.enabled = true;
-        state.flag.autoScrollMode = true;
-        isEdited = true;
-        break;
-      }
-  }
-  if (!isEdited) return;
-  Reflect.deleteProperty(state.fillEffect, i);
-  updatePageData(state);
+  if (isWideType(type) !== isWideType(draftImg.type)) updatePageData.throttle();
+  return (type ?? state.defaultImgType) !== draftImg.type;
 };
 
 // 处理显示窗口的长宽变化
@@ -2807,13 +2740,39 @@ createEffectOn([() => store.rootSize.width, () => store.rootSize.height], ([widt
   state.proportion.条漫比例 = state.proportion.单页比例 / 2;
   let isEdited = false;
   for (let i = 0; i < state.imgList.length; i++) {
-    if (!_updateImgType(state, state.imgList[i])) continue;
+    const img = state.imgList[i];
+    const isWide = isWideType(img.type);
+    if (!updateImgType(state, img)) continue;
+    if (isWide === isWideType(img.type)) continue;
     isEdited = true;
     Reflect.deleteProperty(state.fillEffect, i);
   }
-  if (isEdited) resetImgState(state);
+  if (!isEdited) return;
+  resetImgState(state);
   updatePageData(state);
 }));
+
+/** 是否自动开启过卷轴模式 */
+let autoScrollMode = false;
+createRootEffect(prevIsWide => {
+  if (store.rootSize.width === 0 || store.rootSize.height === 0) return;
+  const defaultImgType = getImgType(placeholderSize());
+  if (defaultImgType === store.defaultImgType) return prevIsWide;
+  const isWide = isWideType(defaultImgType);
+  setState(state => {
+    state.defaultImgType = defaultImgType;
+
+    // 连续出现多张长图后，自动开启卷轴模式
+    if (defaultImgType === 'vertical' && !autoScrollMode && !state.option.scrollMode.enabled) {
+      state.option.scrollMode.enabled = true;
+      autoScrollMode = true;
+      updatePageData(state);
+      return;
+    }
+    if (isWide !== prevIsWide) updatePageData(state);
+  });
+  return isWide;
+}, false);
 
 let height$1 = 0;
 let width$1 = 0;
@@ -2853,7 +2812,7 @@ const updateImgSize = (state, index, width, height) => {
   img.width = width;
   img.height = height;
   img.size = getImgDisplaySize(state, index);
-  updateImgType(state, index);
+  updateImgType(state, img);
 };
 createEffectOn([() => store.option.scrollMode.enabled, () => store.option.scrollMode.abreastMode, () => store.option.scrollMode.fitToWidth, () => store.option.scrollMode.imgScale, () => store.imgList, () => store.rootSize.width, () => store.rootSize.height, placeholderSize], ([isScrollMode]) => {
   if (!isScrollMode) return;
@@ -2900,7 +2859,7 @@ const contentHeight = createRootMemo(() => (imgTopList().at(-1) ?? 0) + (store.i
 // 卷轴模式下需要提前知道尺寸方便正确布局
 // 翻页模式下也需要提前发现跨页图重新排序
 // requestIdleCallback(preloadImgSize);
-var css$1 = ".img>img{display:block;height:100%;width:100%}.img{background-color:var(--hover-bg-color,#fff3);background-position:50%;background-repeat:no-repeat;background-size:30%;content-visibility:hidden;display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;overflow:hidden;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.img:after{background-color:#eee;background-position:50%;background-repeat:no-repeat;background-size:30%;height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-show]{content-visibility:visible;display:block}.img[data-show=\\"0\\"]{justify-self:end}.img[data-show=\\"1\\"]{justify-self:start}.img[data-type=long]{height:auto;width:100%}.img:empty{background-image:var(--md-photo)}.img[data-load-type=error]:after{background-image:var(--md-image-not-supported);content:\\"\\"}.img[data-load-type=loading]{background-image:var(--md-cloud-download)}.img[data-load-type=loading] img{animation:show 1s forwards}.mangaBox{contain:layout style;height:100%;width:100%}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}.root:not([data-grid-mode]) .mangaBox::-webkit-scrollbar{display:none}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.mangaFlow[data-disable-zoom] .img{height:unset;max-height:100%;object-fit:scale-down}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-animation=page] .img{transition-duration:.3s}.mangaFlow[data-animation=zoom]{transition-duration:.3s}.mangaFlow[data-vertical]{grid-auto-flow:row}.root[data-grid-mode] .mangaFlow{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;transform:none;grid-row-gap:1.5em;box-sizing:border-box;grid-template-rows:unset;padding-bottom:2em}.root[data-grid-mode] .mangaFlow .img{height:auto;overflow:unset;transform:none}.root[data-grid-mode] .mangaFlow .img>img{cursor:pointer}.root[data-grid-mode] .mangaFlow .img>.gridModeTip{bottom:-1.5em;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.root[data-grid-mode] .mangaFlow .img[data-load-type=error],.root[data-grid-mode] .mangaFlow .img[data-load-type=wait],.root[data-grid-mode] .mangaFlow .img[src=\\"\\"]{height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show]{display:block;height:auto;max-height:unset;max-width:100%;object-fit:contain;width:var(--width)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show][data-load-type=loading]{position:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-grid-mode] .img{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-fit-width] .img{height:auto;max-width:100%;width:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll]{overflow:hidden}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow{transform:translate(var(--page-x),var(--page-y)) translateZ(0);grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div{flex-shrink:0;height:100%;overflow:hidden;width:var(--abreastScrollWidth)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div>picture:first-of-type{margin-top:var(--fill)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow[dir=ltr]{flex-direction:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow .img[data-show]{margin-top:unset;transform:translateY(var(--abreast-position)) translateZ(0);width:100%}@keyframes show{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.endPage>button[data-is-end]{font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}.SettingsShowItem>.SettingsShowItemBody>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.hotkeysItem>svg:hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.hotkeysHeader>div[title]>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.scrollbar:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}.scrollbar:hover .scrollbarPoper,.scrollbar:hover .scrollbarSlider,.scrollbar:hover:before,.scrollbar[data-force-show] .scrollbarPoper,.scrollbar[data-force-show] .scrollbarSlider,.scrollbar[data-force-show]:before{opacity:1}.scrollbar[data-drag] .scrollbarPoper,.scrollbar[data-drag] .scrollbarSlider,.scrollbar[data-drag]:before{transition:opacity .15s}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.scrollbar[data-position=bottom]:before,.scrollbar[data-position=top]:before{border-left:.4em solid transparent}.scrollbar[data-position=bottom] .scrollbarSlider,.scrollbar[data-position=top] .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.scrollbar[data-position=bottom] .scrollbarPoper,.scrollbar[data-position=top] .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.scrollbar[data-position=bottom][data-dir=ltr],.scrollbar[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.scrollbar[data-position=bottom][data-dir=ltr]:before,.scrollbar[data-position=top][data-dir=ltr]:before{left:0;right:unset}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarSlider,.scrollbar[data-position=top][data-dir=ltr] .scrollbarSlider{transform:translateX(var(--top))}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarPoper,.scrollbar[data-position=top][data-dir=ltr] .scrollbarPoper{transform:translateX(var(--poper-top))}.scrollbar[data-position=bottom] .scrollbarPage,.scrollbar[data-position=top] .scrollbarPage{transform:scaleX(1)}.scrollbar[data-position=bottom] .scrollbarPage[data-type=loaded],.scrollbar[data-position=top] .scrollbarPage[data-type=loaded]{transform:scaleX(0)}.scrollbar[data-position=bottom] .scrollbarPage[data-translation-type],.scrollbar[data-position=top] .scrollbarPage[data-translation-type]{transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}.root[data-mobile] .scrollbar:hover .scrollbarPoper,.root[data-mobile] .scrollbar:hover:before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}.touchAreaRoot .touchArea[data-area=PREV],.touchAreaRoot .touchArea[data-area=prev]{background-color:#95e1d3e6}.touchAreaRoot .touchArea[data-area=MENU],.touchAreaRoot .touchArea[data-area=menu]{background-color:#fce38ae6}.touchAreaRoot .touchArea[data-area=NEXT],.touchAreaRoot .touchArea[data-area=next]{background-color:#f38181e6}.touchAreaRoot .touchArea[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.touchAreaRoot .touchArea[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.touchAreaRoot .touchArea[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:transparent}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div,div:focus,div:focus-visible,div:focus-within{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".img>img{display:block;height:100%;width:100%}.img{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%;content-visibility:hidden;display:none;height:100%;max-height:100%;max-width:100%;object-fit:contain;overflow:hidden;position:relative;transform:translate(var(--page-x),var(--page-y)) translateZ(0)}.img[data-show]{content-visibility:visible;display:block}.img[data-show=\\"0\\"]{justify-self:end}.img[data-show=\\"1\\"]{justify-self:start}.img[data-type=long]{height:auto;width:100%}.img[data-load-type=error]:after{background-color:#eee;background-image:var(--md-image-not-supported);background-position:50%;background-repeat:no-repeat;background-size:30%;content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-load-type=loading]{background-image:var(--md-cloud-download)}.img[data-load-type=loading] img{animation:show 1s forwards}.mangaBox{contain:layout style;height:100%;width:100%}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}.root:not([data-grid-mode]) .mangaBox::-webkit-scrollbar{display:none}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform:translate(var(--zoom-x),var(--zoom-y)) scale(var(--scale)) translateZ(0);transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;transition-duration:0ms;width:100%}.mangaFlow[data-disable-zoom] .img{height:unset;max-height:100%;object-fit:scale-down}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-animation=page] .img{transition-duration:.3s}.mangaFlow[data-animation=zoom]{transition-duration:.3s}.mangaFlow[data-vertical]{grid-auto-flow:row}.root[data-grid-mode] .mangaFlow{grid-auto-columns:unset;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;transform:none;grid-row-gap:1.5em;align-items:end;box-sizing:border-box;grid-template-rows:unset}.root[data-grid-mode] .mangaFlow .img{cursor:pointer;height:auto;overflow:unset;transform:none;width:inherit}.root[data-grid-mode] .mangaFlow .img>.gridModeTip{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.root[data-grid-mode] .mangaFlow .img[data-load-type=error],.root[data-grid-mode] .mangaFlow .img[data-load-type=wait],.root[data-grid-mode] .mangaFlow .img[src=\\"\\"]{height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px);height:-moz-fit-content;height:fit-content}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show]{display:block;height:auto;max-height:unset;max-width:100%;object-fit:contain;width:var(--width)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow .img[data-show][data-load-type=loading]{position:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-grid-mode] .img{height:100%;max-height:100%;max-width:100%;width:-moz-fit-content;width:fit-content}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow[data-fit-width] .img{height:auto;max-width:100%;width:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll]{overflow:hidden}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow{transform:translate(var(--page-x),var(--page-y)) translateZ(0);grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div{flex-shrink:0;height:100%;overflow:hidden;width:var(--abreastScrollWidth)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow>div>picture:first-of-type{margin-top:var(--fill)}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow[dir=ltr]{flex-direction:unset}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow .img[data-show]{margin-top:unset;transform:translateY(var(--abreast-position)) translateZ(0);width:100%}@keyframes show{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.endPage>button[data-is-end]{font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}.SettingsShowItem>.SettingsShowItemBody>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.hotkeysItem>svg:hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.hotkeysHeader>div[title]>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.scrollbar:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}.scrollbar:hover .scrollbarPoper,.scrollbar:hover .scrollbarSlider,.scrollbar:hover:before,.scrollbar[data-force-show] .scrollbarPoper,.scrollbar[data-force-show] .scrollbarSlider,.scrollbar[data-force-show]:before{opacity:1}.scrollbar[data-drag] .scrollbarPoper,.scrollbar[data-drag] .scrollbarSlider,.scrollbar[data-drag]:before{transition:opacity .15s}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.scrollbar[data-position=bottom]:before,.scrollbar[data-position=top]:before{border-left:.4em solid transparent}.scrollbar[data-position=bottom] .scrollbarSlider,.scrollbar[data-position=top] .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.scrollbar[data-position=bottom] .scrollbarPoper,.scrollbar[data-position=top] .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.scrollbar[data-position=bottom][data-dir=ltr],.scrollbar[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.scrollbar[data-position=bottom][data-dir=ltr]:before,.scrollbar[data-position=top][data-dir=ltr]:before{left:0;right:unset}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarSlider,.scrollbar[data-position=top][data-dir=ltr] .scrollbarSlider{transform:translateX(var(--top))}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarPoper,.scrollbar[data-position=top][data-dir=ltr] .scrollbarPoper{transform:translateX(var(--poper-top))}.scrollbar[data-position=bottom] .scrollbarPage,.scrollbar[data-position=top] .scrollbarPage{transform:scaleX(1)}.scrollbar[data-position=bottom] .scrollbarPage[data-type=loaded],.scrollbar[data-position=top] .scrollbarPage[data-type=loaded]{transform:scaleX(0)}.scrollbar[data-position=bottom] .scrollbarPage[data-translation-type],.scrollbar[data-position=top] .scrollbarPage[data-translation-type]{transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}.root[data-mobile] .scrollbar:hover .scrollbarPoper,.root[data-mobile] .scrollbar:hover:before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}.touchAreaRoot .touchArea[data-area=PREV],.touchAreaRoot .touchArea[data-area=prev]{background-color:#95e1d3e6}.touchAreaRoot .touchArea[data-area=MENU],.touchAreaRoot .touchArea[data-area=menu]{background-color:#fce38ae6}.touchAreaRoot .touchArea[data-area=NEXT],.touchAreaRoot .touchArea[data-area=next]{background-color:#f38181e6}.touchAreaRoot .touchArea[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.touchAreaRoot .touchArea[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.touchAreaRoot .touchArea[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:transparent}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div,div:focus,div:focus-visible,div:focus-within{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"img","show":"show","mangaBox":"mangaBox","root":"root","mangaFlow":"mangaFlow","gridModeTip":"gridModeTip","endPage":"endPage","jello":"jello","tip":"tip","comments":"comments","toolbar":"toolbar","toolbarPanel":"toolbarPanel","toolbarBg":"toolbarBg","SettingPanelPopper":"SettingPanelPopper","SettingPanel":"SettingPanel","SettingBlock":"SettingBlock","SettingBlockBody":"SettingBlockBody","SettingBlockSubtitle":"SettingBlockSubtitle","SettingsItem":"SettingsItem","SettingsItemName":"SettingsItemName","SettingsItemSwitch":"SettingsItemSwitch","SettingsItemSwitchRound":"SettingsItemSwitchRound","SettingsItemIconButton":"SettingsItemIconButton","SettingsItemSelect":"SettingsItemSelect","closeCover":"closeCover","SettingsShowItem":"SettingsShowItem","SettingsShowItemBody":"SettingsShowItemBody","hotkeys":"hotkeys","hotkeysItem":"hotkeysItem","hotkeysHeader":"hotkeysHeader","scrollbar":"scrollbar","scrollbarPage":"scrollbarPage","scrollbarSlider":"scrollbarSlider","scrollbarPoper":"scrollbarPoper","touchAreaRoot":"touchAreaRoot","touchArea":"touchArea","hidden":"hidden","invisible":"invisible","beautifyScrollbar":"beautifyScrollbar"};
 
 /** 并排卷轴模式下的全局滚动填充 */
@@ -3118,10 +3077,6 @@ const updateShowRange = state => {
   if (scrollLength() === 0) {
     state.showRange = [0, 0];
     state.renderRange = state.showRange;
-  } else if (state.gridMode) {
-    // 网格模式
-    state.showRange = [0, state.pageList.length - 1];
-    state.renderRange = state.showRange;
   } else if (!state.option.scrollMode.enabled) {
     // 翻页模式
     state.showRange = [state.activePageIndex, state.activePageIndex];
@@ -3178,8 +3133,9 @@ const renderImgList = createRootMemo(() => getRangeImgList(store.renderRange));
  */
 const imgShowState = createRootMemo(() => {
   if (store.pageList.length === 0) return new Map();
+  const showRange = store.gridMode ? [0, store.pageList.length - 1] : store.renderRange;
   const stateList = new Map();
-  for (let i = store.renderRange[0]; i <= store.renderRange[1]; i++) {
+  for (let i = showRange[0]; i <= showRange[1]; i++) {
     const page = store.pageList[i];
     if (!page) continue;
     const [a, b] = page;
@@ -4001,9 +3957,9 @@ const handlePageClick = e => {
 
 /** 网格模式下点击图片跳到对应页 */
 const handleGridClick = e => {
-  const target = findClickEle(refs.root.getElementsByTagName('img'), e);
+  const target = findClickEle(refs.root.getElementsByClassName('img'), e);
   if (!target) return;
-  const pageNum = imgPageMap()[Number(target.alt)];
+  const pageNum = imgPageMap()[Number(target.id.slice(1))];
   if (pageNum === undefined) return;
   setState(state => {
     state.activePageIndex = pageNum;
@@ -4162,9 +4118,10 @@ const handleTrackpadWheel = e => {
 };
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
+// （虽然因为使用了 shadow dom 的缘故实际还是不能兼容，但说不定之后就改了呢
 const focus = () => requestAnimationFrame(() => {
-  refs.mangaBox?.click();
-  refs.mangaBox?.focus();
+  refs.mangaFlow?.click();
+  refs.mangaFlow?.focus();
 });
 const handleMouseDown = e => {
   if (e.button !== 1 || store.option.scrollMode.enabled) return;
@@ -4322,6 +4279,7 @@ let wheelType;
 let equalNum = 0;
 let diffNum = 0;
 const handleWheel = e => {
+  if (store.gridMode) return;
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
   if (store.flag.scrollLock || e.deltaY === 0) return closeScrollLock$1();
@@ -4404,7 +4362,8 @@ const scrollPosition = createRootMemo(() => {
   if (store.option.scrollbar.position === 'auto') {
     if (store.isMobile) return 'top';
     if (isAbreastMode()) return 'bottom';
-    return store.flag.autoLong ? 'bottom' : 'right';
+    // 大部分图片都是宽图时，将滚动条移至底部
+    return store.defaultImgType === 'long' ? 'bottom' : 'right';
   }
   return store.option.scrollbar.position;
 });
@@ -4625,6 +4584,13 @@ const loadImg = index => {
   return true;
 };
 
+/** 获取指定页数下的头/尾图片 */
+const getPageImg = (pageNum, imgType) => {
+  const page = store.pageList[pageNum].filter(i => i !== -1);
+  if (page.length === 1) return page[0];
+  return imgType === 'start' ? Math.min(...page) : Math.max(...page);
+};
+
 /**
  * 以当前显示页为基准，预加载附近指定页数的图片，并取消其他预加载的图片
  * @param target 加载目标页
@@ -4632,31 +4598,32 @@ const loadImg = index => {
  * @returns 返回指定范围内是否还有未加载的图片
  */
 const loadRangeImg = (target = 0, loadNum = 2) => {
-  /** 是否还有未加载的图片 */
-  let hasUnloadedImg = false;
-  const loadPage = i => {
-    for (const index of store.pageList[i]) if (!loadImg(index)) hasUnloadedImg = true;
-    if (loadImgList.size >= loadNum) {
-      setLoadLock(true);
-      return true;
-    }
-  };
-  let [start, end] = store.showRange;
+  let start = getPageImg(store.showRange[0], 'start');
+  let end = getPageImg(store.showRange[1], 'end');
   if (target !== 0) {
     if (target < 0) {
-      start = store.showRange[0] - 1;
-      end = store.showRange[0] + target;
+      end = start + target;
+      start -= 1;
     } else {
-      start = store.showRange[1] + 1;
-      end = store.showRange[1] + target;
+      start = end + 1;
+      end += target;
     }
-    start = clamp(0, start, store.pageList.length - 1);
-    end = clamp(0, end, store.pageList.length - 1);
+    start = clamp(0, start, store.imgList.length - 1);
+    end = clamp(0, end, store.imgList.length - 1);
   }
-  if (start <= end) {
-    for (let index = start; index <= end; index++) if (loadPage(index)) return index !== end || hasUnloadedImg;
-  } else {
-    for (let index = start; index >= end; index--) if (loadPage(index)) return index !== end || hasUnloadedImg;
+
+  /** 是否还有未加载的图片 */
+  let hasUnloadedImg = false;
+  let index = start;
+  const condition = start <= end ? () => index <= end : () => index >= end;
+  const step = start <= end ? 1 : -1;
+  while (condition()) {
+    if (!loadImg(index)) hasUnloadedImg = true;
+    if (loadImgList.size >= loadNum) {
+      setLoadLock(true);
+      return index !== end || hasUnloadedImg;
+    }
+    index += step;
   }
   return hasUnloadedImg;
 };
@@ -4683,7 +4650,7 @@ const updateImgLoadType = singleThreaded(() => {
   // 取消其他预加载的图片
   for (const index of loadingImgMap.keys()) if (!loadImgList.has(index)) loadingImgMap.delete(index);
 });
-createEffectOn([loadLock, () => [...renderImgList()].map(i => store.imgList[i]), () => store.option.alwaysLoadAllImg], updateImgLoadType);
+createEffectOn([loadLock, preloadNum, () => [...renderImgList()].map(i => store.imgList[i]), () => store.option.alwaysLoadAllImg], updateImgLoadType);
 createEffectOn(activePage, debounce(page => {
   // 如果当前显示页面有出错的图片，就重新加载一次
   for (const i of page) {
@@ -4856,7 +4823,7 @@ const ComicImg = img => {
   };
   const style = createMemoMap({
     'aspect-ratio': () => \`\${img.width ?? placeholderSize().width} / \${img.height ?? placeholderSize().height}\`,
-    'grid-area': () => isAbreastMode() ? undefined : \`_\${img.index}\`,
+    'grid-area': () => !store.gridMode && isAbreastMode() ? undefined : \`_\${img.index}\`,
     '--width': () => store.option.scrollMode.enabled ? \`\${img.size.width}px\` : undefined
   });
 
@@ -4882,43 +4849,42 @@ const ComicImg = img => {
         return rednerImg();
       },
       get children() {
-        return [(() => {
-          var _el$2 = _tmpl$$B();
-          _el$2.addEventListener("error", e => handleImgError(img.index, e.currentTarget));
-          _el$2.addEventListener("load", e => handleImgLoaded(img.index, e.currentTarget));
-          web.effect(_p$ => {
-            var _v$ = src(),
-              _v$2 = \`\${img.index}\`;
-            _v$ !== _p$.e && web.setAttribute(_el$2, "src", _p$.e = _v$);
-            _v$2 !== _p$.t && web.setAttribute(_el$2, "alt", _p$.t = _v$2);
-            return _p$;
-          }, {
-            e: undefined,
-            t: undefined
-          });
-          return _el$2;
-        })(), web.createComponent(solidJs.Show, {
-          get when() {
-            return store.gridMode;
-          },
-          get children() {
-            var _el$3 = _tmpl$2$a();
-            web.insert(_el$3, (() => {
-              var _c$ = web.memo(() => !!store.gridMode);
-              return () => _c$() ? getImgTip(img.index) : '';
-            })());
-            web.effect(() => web.className(_el$3, modules_c21c94f2$1.gridModeTip));
-            return _el$3;
-          }
-        })];
+        var _el$2 = _tmpl$$B();
+        _el$2.addEventListener("error", e => handleImgError(img.index, e.currentTarget));
+        _el$2.addEventListener("load", e => handleImgLoaded(img.index, e.currentTarget));
+        web.effect(_p$ => {
+          var _v$ = src(),
+            _v$2 = \`\${img.index}\`;
+          _v$ !== _p$.e && web.setAttribute(_el$2, "src", _p$.e = _v$);
+          _v$2 !== _p$.t && web.setAttribute(_el$2, "alt", _p$.t = _v$2);
+          return _p$;
+        }, {
+          e: undefined,
+          t: undefined
+        });
+        return _el$2;
       }
-    }));
+    }), null);
+    web.insert(_el$, web.createComponent(solidJs.Show, {
+      get when() {
+        return store.gridMode;
+      },
+      get children() {
+        var _el$3 = _tmpl$2$a();
+        web.insert(_el$3, (() => {
+          var _c$ = web.memo(() => !!store.gridMode);
+          return () => _c$() ? getImgTip(img.index) : '';
+        })());
+        web.effect(() => web.className(_el$3, modules_c21c94f2$1.gridModeTip));
+        return _el$3;
+      }
+    }), null);
     web.effect(_p$ => {
       var _v$3 = modules_c21c94f2$1.img,
         _v$4 = style(),
         _v$5 = \`_\${props.cloneIndex ? \`\${img.index}-\${props.cloneIndex}\` : img.index}\`,
         _v$6 = showState(),
-        _v$7 = img.type ?? defaultImgType(),
+        _v$7 = img.type ?? store.defaultImgType,
         _v$8 = img.loadType === 'loaded' ? undefined : img.loadType;
       _v$3 !== _p$.e && web.className(_el$, _p$.e = _v$3);
       _p$.t = web.style(_el$, _v$4, _p$.t);
@@ -4938,7 +4904,9 @@ const ComicImg = img => {
     return _el$;
   })();
   return [web.createComponent(_ComicImg, {}), web.createComponent(solidJs.Show, {
-    when: renderClone,
+    get when() {
+      return renderClone();
+    },
     get children() {
       return web.createComponent(solidJs.For, {
         get each() {
@@ -4961,7 +4929,7 @@ const ComicImg = img => {
 // 虽然也尝试了将解析好的 Image 对象存储起来挂上引用和另外放到一个避免渲染的 dom 下，
 // 但也都失败了，只能暂时先不管了。
 // 之后尝试新方案时必须经过如下测试：开个几百页的漫画加载完毕后，再打开二十个标签页切换过去，
-var _tmpl$$A = /*#__PURE__*/web.template(\`<div tabindex=-1><div>\`);
+var _tmpl$$A = /*#__PURE__*/web.template(\`<div><div tabindex=-1>\`);
 const ComicImgFlow = () => {
   const {
     hiddenMouse,
@@ -4990,14 +4958,11 @@ const ComicImgFlow = () => {
     });
   };
 
-  /** 卷轴模式下当前显示页之前未渲染页的总高度 */
-  const scrollModeFill = solidJs.createMemo(() => imgTopList()[store.showRange[0]]);
-
   /** 在当前页之前有图片被加载出来，导致内容高度发生变化后，重新滚动页面，确保当前显示位置不变 */
-  createEffectOn([() => scrollModeFill(), imgTopList], ([height, topList], prev) => {
-    if (!prev || !height) return;
-    const [prevHeight, prevTopList] = prev;
-    if (prevTopList === topList || prevHeight === height) return;
+  createEffectOn([() => store.showRange[0], () => imgTopList()[store.showRange[0]], imgTopList], ([showImg, height, topList], prev) => {
+    if (!prev || !height || !isScrollMode()) return;
+    const [prevShowImg, prevHeight, prevTopList] = prev;
+    if (showImg !== prevShowImg || prevTopList === topList || prevHeight === height) return;
     scrollTo(scrollTop() + height - prevHeight);
     // 目前还是会有轻微偏移，但考虑到大部分情况下都是顺序阅读，本身出现概率就低，就不继续排查优化了
   });
@@ -5006,7 +4971,7 @@ const ComicImgFlow = () => {
     if (store.pageList.length === 0) return undefined;
     if (store.gridMode) {
       let columnNum;
-      if (store.isMobile) columnNum = 2;else if (isOnePageMode()) columnNum = 4;else columnNum = 2;
+      if (store.isMobile) columnNum = 2;else if (store.defaultImgType === 'vertical') columnNum = 6;else if (isOnePageMode()) columnNum = 4;else columnNum = 2;
       const areaList = [[]];
       for (const page of store.pageList) {
         if (areaList.at(-1).length === columnNum) areaList.push([]);
@@ -5026,7 +4991,7 @@ const ComicImgFlow = () => {
     '--zoom-x': () => \`\${store.zoom.offset.x}px\`,
     '--zoom-y': () => \`\${store.zoom.offset.y}px\`,
     '--page-x'() {
-      if (isScrollMode()) return '0px';
+      if (store.gridMode || isScrollMode()) return '0px';
       const x = \`\${store.page.offset.x.pct * store.rootSize.width + store.page.offset.x.px}px\`;
       return store.option.dir === 'rtl' ? x : \`calc(\${x} * -1)\`;
     },
@@ -5049,15 +5014,14 @@ const ComicImgFlow = () => {
       return \`repeat(\${gridAreas()?.split(' ').length ?? 0}, 50%)\`;
     },
     'grid-template-rows'() {
-      if (!isScrollMode()) return undefined;
+      if (!isScrollMode() || store.gridMode) return undefined;
       return store.imgList.map(({
         size: {
           height
         }
       }) => \`\${height}px\`).join(' ');
     },
-    height: () => isScrollMode() ? \`\${contentHeight()}px\` : undefined,
-    '--abreastScrollWidth': () => \`\${abreastColumnWidth()}px\`
+    '--abreastScrollWidth': () => abreastColumnWidth() ? \`\${abreastColumnWidth()}px\` : undefined
   });
   useStyle(imgAreaStyle);
   return (() => {
@@ -5933,8 +5897,10 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
           step: 5,
           onChange: val => {
             if (Number.isNaN(val)) return;
-            const newVal = clamp(0, val / 100, 0.95);
-            _setState('option', 'scrollMode', 'abreastDuplicate', newVal);
+            setOption(draftOption => {
+              const newVal = clamp(0, val / 100, 0.95);
+              draftOption.scrollMode.abreastDuplicate = newVal;
+            });
           },
           get value() {
             return Math.round(store.option.scrollMode.abreastDuplicate * 100);
@@ -7284,7 +7250,7 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复出现多余功能按钮的 bug </p></li><li><p>修复预加载页数未正确生效的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复双页模式下预加载页数未正确生效的 bug </p></li><li><p>修复网格模式和卷轴模式互相切换时的显示错误\`);
 const migrationOption = async (name, editFn) => {
   try {
     const option = await GM.getValue(name);
@@ -7310,6 +7276,8 @@ const renameOption = async (name, list) => migrationOption(name, (option, save) 
 
 /** 旧版本配置迁移 */
 const migration = async () => {
+  // 任何样式修改都得更新 css 才行，干脆直接删了
+  GM.deleteValue('ehTagColorizeCss');
   const values = await GM.listValues();
 
   // 8 => 9
@@ -7345,7 +7313,7 @@ const handleVersionUpdate = async () => {
   const version = await GM.getValue('Version');
   if (!version) return GM.setValue('Version', GM.info.script.version);
   if (version === GM.info.script.version) return;
-  if (version.split('.')[0] !== GM.info.script.version.split('.')[0]) await migration();
+  await migration();
 
   // 只在语言为中文时弹窗提示最新更新内容
   if (lang() === 'zh') {
@@ -8028,6 +7996,7 @@ exports.contentHeight = contentHeight;
 exports.createEffectOn = createEffectOn;
 exports.createEqualsSignal = createEqualsSignal;
 exports.createMemoMap = createMemoMap;
+exports.createRootEffect = createRootEffect;
 exports.createRootMemo = createRootMemo;
 exports.createSequence = createSequence;
 exports.createStateSetFn = createStateSetFn;
@@ -8035,7 +8004,6 @@ exports.createThrottleMemo = createThrottleMemo;
 exports.dataToParams = dataToParams;
 exports.debounce = debounce;
 exports.defaultHotkeys = defaultHotkeys;
-exports.defaultImgType = defaultImgType;
 exports.delHotkeys = delHotkeys;
 exports.difference = difference;
 exports.domParse = domParse;
@@ -9576,6 +9544,9 @@ const updateTagColor = async () => {
     .tup { --color: var(--tup) }
     .tdn { --color: var(--tdn) }
     #taglist a[style="color: blue;"] { --color: blue; }
+
+    /* 避免被上一行的下划线碰到 */
+    #taglist div:is(.gt, .gtl, .gtw) { margin-top: 1px; }
   `;
   await GM.setValue('ehTagColorizeCss', css);
   return css;
@@ -9599,15 +9570,10 @@ const colorizeTag = async pageType => {
       {
         // 进入时更新
         updateTagColor();
-        let oldCss = await getTagColorizeCss();
-        /** 不断循环直至获取到新数据 */
-        const waitUpdate = main.singleThreaded(async () => {
-          const newCss = await getTagColorizeCss();
-          if (newCss === oldCss) setTimeout(waitUpdate, 1000);else oldCss = newCss;
-        });
+        // 增删标签时会自动刷新页面触发这个更新
 
-        // 点击保存按钮时更新
-        document.addEventListener('click', e => e.target.tagName === 'BUTTON' && e.target.id.startsWith('tagsave_') && waitUpdate());
+        // 点击保存按钮时删除保存的 css，以便在下次需要时重新获取
+        document.addEventListener('click', e => e.target.tagName === 'BUTTON' && e.target.id.startsWith('tagsave_') && GM.deleteValue('ehTagColorizeCss'));
       }
 
     // 除了在 mytags 里更新外，还可以在列表页检查高亮的标签和脚本存储的标签颜色数据是否对应，
