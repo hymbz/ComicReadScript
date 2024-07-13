@@ -34,6 +34,9 @@ export const renameOption = async (name: string, list: string[]) =>
 
 /** 旧版本配置迁移 */
 const migration = async () => {
+  // 任何样式修改都得更新 css 才行，干脆直接删了
+  GM.deleteValue('ehTagColorizeCss');
+
   const values = await GM.listValues();
 
   // 8 => 9
@@ -75,8 +78,7 @@ export const handleVersionUpdate = async () => {
   if (!version) return GM.setValue('Version', GM.info.script.version);
   if (version === GM.info.script.version) return;
 
-  if (version.split('.')[0] !== GM.info.script.version.split('.')[0])
-    await migration();
+  await migration();
 
   // 只在语言为中文时弹窗提示最新更新内容
   if (lang() === 'zh') {

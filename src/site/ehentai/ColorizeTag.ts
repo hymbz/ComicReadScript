@@ -1,4 +1,4 @@
-import { request, singleThreaded } from 'main';
+import { request } from 'main';
 
 import { type PageType } from '.';
 
@@ -75,6 +75,9 @@ export const updateTagColor = async () => {
     .tup { --color: var(--tup) }
     .tdn { --color: var(--tdn) }
     #taglist a[style="color: blue;"] { --color: blue; }
+
+    /* 避免被上一行的下划线碰到 */
+    #taglist div:is(.gt, .gtl, .gtw) { margin-top: 1px; }
   `;
 
   await GM.setValue('ehTagColorizeCss', css);
@@ -102,22 +105,15 @@ export const colorizeTag = async (pageType: PageType) => {
     case 'mytags': {
       // 进入时更新
       updateTagColor();
+      // 增删标签时会自动刷新页面触发这个更新
 
-      let oldCss = await getTagColorizeCss();
-      /** 不断循环直至获取到新数据 */
-      const waitUpdate = singleThreaded(async () => {
-        const newCss = await getTagColorizeCss();
-        if (newCss === oldCss) setTimeout(waitUpdate, 1000);
-        else oldCss = newCss;
-      });
-
-      // 点击保存按钮时更新
+      // 点击保存按钮时删除保存的 css，以便在下次需要时重新获取
       document.addEventListener(
         'click',
         (e) =>
           (e.target as HTMLElement).tagName === 'BUTTON' &&
           (e.target as HTMLElement).id.startsWith('tagsave_') &&
-          waitUpdate(),
+          GM.deleteValue('ehTagColorizeCss'),
       );
     }
 
