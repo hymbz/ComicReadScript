@@ -435,7 +435,7 @@ try {
         getImgList: ({ dynamicUpdate }) =>
           dynamicUpdate(async (setImg) => {
             for (let i = 0; i < imgNum; i++) {
-              const newImgs = await getPageImg(i + 1);
+              const newImgs = await getPageImg(i);
               for (const url of newImgs) setImg(i, url);
             }
           }, imgNum)(),
