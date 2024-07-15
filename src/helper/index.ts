@@ -132,19 +132,6 @@ export const saveAs = (blob: Blob, name = 'download') => {
   setTimeout(() => a.dispatchEvent(new MouseEvent('click')));
 };
 
-/** 监听键盘事件 */
-export const linstenKeyup = (handler: (e: KeyboardEvent) => unknown) =>
-  window.addEventListener('keyup', (e) => {
-    // 跳过输入框的键盘事件
-    switch ((e.target as HTMLElement).tagName) {
-      case 'INPUT':
-      case 'TEXTAREA':
-        return;
-    }
-
-    handler(e);
-  });
-
 /** 滚动页面到指定元素的所在位置 */
 export const scrollIntoView = (
   selector: string,

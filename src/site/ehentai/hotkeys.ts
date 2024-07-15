@@ -1,35 +1,58 @@
-import { linstenKeyup, querySelector } from 'main';
+import { querySelector } from 'main';
 
 import { type PageType } from '.';
+
+/** 监听键盘事件 */
+export const linstenKeydown = (handler: (e: KeyboardEvent) => unknown) =>
+  window.addEventListener('keydown', (e) => {
+    // 跳过输入框的键盘事件
+    switch ((e.target as HTMLElement).tagName) {
+      case 'INPUT':
+      case 'TEXTAREA':
+        return;
+    }
+    return handler(e);
+  });
 
 /** 快捷键翻页 */
 export const hotkeysPageTurn = (pageType: PageType) => {
   if (pageType === 'gallery') {
-    linstenKeyup((e) => {
+    linstenKeydown((e) => {
       switch (e.key) {
         case 'ArrowRight':
         case 'd':
-          querySelector('#dnext')?.click();
-          break;
+          e.preventDefault();
+          return querySelector('.ptt td:last-child:not(.ptdd)')?.click();
 
         case 'ArrowLeft':
         case 'a':
-          querySelector('#dprev')?.click();
-          break;
+          e.preventDefault();
+          return querySelector('.ptt td:first-child:not(.ptdd)')?.click();
+      }
+
+      // 使用上下方向键进行投票
+      if (!unsafeWindow.selected_tagid) return;
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          return unsafeWindow?.tag_vote_up();
+        case 'ArrowDown':
+          e.preventDefault();
+          return unsafeWindow?.tag_vote_down();
       }
     });
   } else {
-    linstenKeyup((e) => {
+    linstenKeydown((e) => {
       switch (e.key) {
         case 'ArrowRight':
         case 'd':
-          querySelector('#unext')?.click();
-          break;
+          e.preventDefault();
+          return querySelector('#unext')?.click();
 
         case 'ArrowLeft':
         case 'a':
-          querySelector('#uprev')?.click();
-          break;
+          e.preventDefault();
+          return querySelector('#uprev')?.click();
       }
     });
   }
