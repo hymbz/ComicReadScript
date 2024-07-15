@@ -10514,9 +10514,14 @@ const main = require('main');
             // manhuaren 和 1kkk 的移动端上会直接用一个变量存储所有图片的链接
             if (Array.isArray(unsafeWindow.newImgs) && unsafeWindow.newImgs.every(main.isUrl)) return unsafeWindow.newImgs;
             return dynamicUpdate(async setImg => {
-              for (let i = 0; i < imgNum;) {
-                const newImgs = await getPageImg(i + 1);
-                for (const url of newImgs) setImg(i++, url);
+              const imgList = new Set();
+              while (imgList.size < imgNum) {
+                // 因为每次会返回指定页数及上一页的图片链接，所以加个1减少请求次数
+                for (const url of await getPageImg(imgList.size + 1)) {
+                  if (imgList.has(url)) continue;
+                  imgList.add(url);
+                  setImg(imgList.size - 1, url);
+                }
               }
             }, imgNum)();
           },
@@ -10583,9 +10588,14 @@ const main = require('main');
           getImgList: ({
             dynamicUpdate
           }) => dynamicUpdate(async setImg => {
-            for (let i = 0; i < imgNum; i++) {
-              const newImgs = await getPageImg(i);
-              for (const url of newImgs) setImg(i, url);
+            const imgList = new Set();
+            while (imgList.size < imgNum) {
+              // 因为每次会返回指定页数及上一页的图片链接，所以加个1减少请求次数
+              for (const url of await getPageImg(imgList.size + 1)) {
+                if (imgList.has(url)) continue;
+                imgList.add(url);
+                setImg(imgList.size - 1, url);
+              }
             }
           }, imgNum)(),
           onNext: handlePrevNext('body > .container a[href^="/"]:last-child', '下一'),
