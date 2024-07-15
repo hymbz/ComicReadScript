@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.3.2
+// @version         9.3.3
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、Anchira、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Detect advertise page, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -565,17 +565,6 @@ const saveAs = (blob, name = 'download') => {
   a.href = URL.createObjectURL(blob);
   setTimeout(() => a.dispatchEvent(new MouseEvent('click')));
 };
-
-/** 监听键盘事件 */
-const linstenKeyup = handler => window.addEventListener('keyup', e => {
-  // 跳过输入框的键盘事件
-  switch (e.target.tagName) {
-    case 'INPUT':
-    case 'TEXTAREA':
-      return;
-  }
-  handler(e);
-});
 
 /** 滚动页面到指定元素的所在位置 */
 const scrollIntoView = (selector, behavior = 'instant') => querySelector(selector)?.scrollIntoView({
@@ -7316,7 +7305,7 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复双页模式下预加载页数未正确生效的 bug </p></li><li><p>修复网格模式和卷轴模式互相切换时的显示错误\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复 eh 画廊内翻页快捷键失效的 bug </p></li><li><p>修复 mangabz 缺少第一页图片的 bug\`);
 const migrationOption = async (name, editFn) => {
   try {
     const option = await GM.getValue(name);
@@ -8121,7 +8110,6 @@ exports.isUrl = isUrl;
 exports.isWideImg = isWideImg;
 exports.keyboardCodeToText = keyboardCodeToText;
 exports.lang = lang;
-exports.linstenKeyup = linstenKeyup;
 exports.log = log;
 exports.loop = loop;
 exports.needDarkMode = needDarkMode;
@@ -9515,32 +9503,54 @@ const associateNhentai = async (init, dynamicUpdate) => {
   };
 };
 
+/** 监听键盘事件 */
+const linstenKeydown = handler => window.addEventListener('keydown', e => {
+  // 跳过输入框的键盘事件
+  switch (e.target.tagName) {
+    case 'INPUT':
+    case 'TEXTAREA':
+      return;
+  }
+  return handler(e);
+});
+
 /** 快捷键翻页 */
 const hotkeysPageTurn = pageType => {
   if (pageType === 'gallery') {
-    main.linstenKeyup(e => {
+    linstenKeydown(e => {
       switch (e.key) {
         case 'ArrowRight':
         case 'd':
-          main.querySelector('#dnext')?.click();
-          break;
+          e.preventDefault();
+          return main.querySelector('.ptt td:last-child:not(.ptdd)')?.click();
         case 'ArrowLeft':
         case 'a':
-          main.querySelector('#dprev')?.click();
-          break;
+          e.preventDefault();
+          return main.querySelector('.ptt td:first-child:not(.ptdd)')?.click();
+      }
+
+      // 使用上下方向键进行投票
+      if (!unsafeWindow.selected_tagid) return;
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          return unsafeWindow?.tag_vote_up();
+        case 'ArrowDown':
+          e.preventDefault();
+          return unsafeWindow?.tag_vote_down();
       }
     });
   } else {
-    main.linstenKeyup(e => {
+    linstenKeydown(e => {
       switch (e.key) {
         case 'ArrowRight':
         case 'd':
-          main.querySelector('#unext')?.click();
-          break;
+          e.preventDefault();
+          return main.querySelector('#unext')?.click();
         case 'ArrowLeft':
         case 'a':
-          main.querySelector('#uprev')?.click();
-          break;
+          e.preventDefault();
+          return main.querySelector('#uprev')?.click();
       }
     });
   }
@@ -10640,7 +10650,7 @@ const main = require('main');
             dynamicUpdate
           }) => dynamicUpdate(async setImg => {
             for (let i = 0; i < imgNum; i++) {
-              const newImgs = await getPageImg(i + 1);
+              const newImgs = await getPageImg(i);
               for (const url of newImgs) setImg(i, url);
             }
           }, imgNum)(),
