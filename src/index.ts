@@ -613,40 +613,68 @@ try {
       break;
     }
 
-    // #[Anchira](https://anchira.to)
-    case 'anchira.to': {
+    // #[koharu](https://koharu.to)
+    case 'koharu.to': {
+      const downloadImg = async (url: string) =>
+        new Promise<string>((resolve) => {
+          const xhr = new XMLHttpRequest();
+          xhr.responseType = 'blob';
+          xhr.open('GET', url);
+          xhr.onload = () => {
+            resolve(URL.createObjectURL(xhr.response));
+          };
+          xhr.send();
+        });
+
+      const isMangaPage = () => window.location.href.includes('/g/');
+
       options = {
-        name: 'hitomi',
-        async getImgList({ fabProps }) {
+        name: 'koharu',
+        async getImgList({ dynamicUpdate }) {
           const [, , galleryId, galleryKey] =
             window.location.pathname.split('/');
 
-          const headers = {
-            'X-Requested-With': 'XMLHttpRequest',
-            Referer: window.location.href,
+          type DetailRes = {
+            created_at: number;
+            updated_at: number;
+            data: Array<{
+              id: number;
+              public_key: string;
+              size: number;
+            }>;
           };
-          const res = await main.request<string>(
-            `/api/v1/library/${galleryId}/${galleryKey}/data`,
-            { headers, noCheckCode: true },
+          const detailRes = await main.request<DetailRes>(
+            `https://api.koharu.to/books/detail/${galleryId}/${galleryKey}`,
+            { fetch: true, responseType: 'json' },
           );
-          if (res.status !== 200)
-            main.toast.error(main.t('site.need_captcha'), {
-              throw: true,
-              duration: Number.POSITIVE_INFINITY,
-              onClick: () => fabProps?.onClick?.(),
-            });
+          const [{ id, public_key }] = Object.values(
+            detailRes.response.data,
+          ).sort((a, b) => b.size - a.size);
+          const { created_at, updated_at } = detailRes.response;
 
-          const { names, key, hash } = JSON.parse(res.responseText) as {
-            names: string[];
-            key: string;
-            hash: string;
+          type DataRes = {
+            base: string;
+            entries: Array<{ path: string }>;
           };
-          return names.map(
-            (name) =>
-              `https://kisakisexo.xyz/${galleryId}/${key}/${hash}/b/${name}`,
+          const dataRes = await main.request<DataRes>(
+            `https://api.koharu.to/books/data/${galleryId}/${galleryKey}/${
+              id
+            }/${public_key}?v=${updated_at ?? created_at}`,
+            { fetch: true, responseType: 'json' },
           );
+          const { base, entries } = dataRes.response;
+          const totalPageNum = entries.length;
+
+          return dynamicUpdate(async (setImg) => {
+            for (const [i, { path }] of entries.entries()) {
+              if (!isMangaPage) break;
+              const startTime = performance.now();
+              setImg(i, await downloadImg(`${base}${path}`));
+              await main.sleep(500 - (performance.now() - startTime));
+            }
+          }, totalPageNum)();
         },
-        SPA: { isMangaPage: () => window.location.href.includes('/g/') },
+        SPA: { isMangaPage },
       };
       break;
     }
