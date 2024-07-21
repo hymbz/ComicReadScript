@@ -497,3 +497,15 @@ export const keyboardCodeToText = (code: string) =>
 /** 将 HTML 字符串转换为 DOM 对象 */
 export const domParse = (html: string) =>
   new DOMParser().parseFromString(html, 'text/html');
+
+/** 监听键盘事件 */
+export const linstenKeydown = (handler: (e: KeyboardEvent) => unknown) =>
+  window.addEventListener('keydown', (e) => {
+    // 跳过输入框的键盘事件
+    switch ((e.target as HTMLElement).tagName) {
+      case 'INPUT':
+      case 'TEXTAREA':
+        return;
+    }
+    return handler(e);
+  });

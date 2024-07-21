@@ -1,18 +1,6 @@
-import { querySelector } from 'main';
+import { linstenKeydown, querySelector } from 'main';
 
 import { type PageType } from '.';
-
-/** 监听键盘事件 */
-export const linstenKeydown = (handler: (e: KeyboardEvent) => unknown) =>
-  window.addEventListener('keydown', (e) => {
-    // 跳过输入框的键盘事件
-    switch ((e.target as HTMLElement).tagName) {
-      case 'INPUT':
-      case 'TEXTAREA':
-        return;
-    }
-    return handler(e);
-  });
 
 /** 快捷键翻页 */
 export const hotkeysPageTurn = (pageType: PageType) => {

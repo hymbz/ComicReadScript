@@ -1,7 +1,9 @@
 import { createMutable } from 'solid-js/store';
-import { createMemo, createRoot, createSignal } from 'solid-js';
+import { createSignal } from 'solid-js';
 
 import type { MangaProps } from '../components/Manga';
+
+import { createRootMemo } from './solidJs';
 
 import { assign, difference } from '.';
 
@@ -89,11 +91,8 @@ export const useSiteOptions = async <T = Record<string, any>>(
       setHotkeys(newValue);
     },
     /** 进入阅读模式的快捷键 */
-    readModeHotkeys: createRoot(() => {
-      const readModeHotkeysMemo = createMemo(
-        () => new Set(Object.assign([], hotkeys().enter_read_mode)),
-      );
-      return readModeHotkeysMemo;
-    }),
+    readModeHotkeys: createRootMemo(
+      () => new Set(Object.assign([], hotkeys().enter_read_mode)),
+    ),
   };
 };

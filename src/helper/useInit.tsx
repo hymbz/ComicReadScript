@@ -11,7 +11,7 @@ import { handleVersionUpdate } from './version';
 import { type SiteOptions, useSiteOptions } from './useSiteOptions';
 import { useSpeedDial } from './useSpeedDial';
 
-import { getKeyboardCode } from '.';
+import { getKeyboardCode, linstenKeydown } from '.';
 
 /**
  * 对基础的初始化操作的封装
@@ -170,14 +170,14 @@ export const useInit = async <T extends Record<string, any>>(
           await updateHideFabMenu();
         })();
 
-        window.addEventListener('keydown', (e) => {
-          if ((e.target as HTMLElement).tagName === 'INPUT') return;
-          const code = getKeyboardCode(e);
-          if (!readModeHotkeys().has(code)) return;
-          e.stopPropagation();
-          e.preventDefault();
-          fabProps.onClick?.();
-        });
+        if (readModeHotkeys().size > 0)
+          linstenKeydown((e) => {
+            const code = getKeyboardCode(e);
+            if (!readModeHotkeys().has(code)) return;
+            e.stopPropagation();
+            e.preventDefault();
+            fabProps.onClick?.();
+          });
       }
 
       return {
