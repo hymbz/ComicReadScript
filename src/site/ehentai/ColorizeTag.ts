@@ -60,10 +60,10 @@ export const updateTagColor = async () => {
 
   css += `
     /* 禁用 eh 的变色效果 */
-    #taglist a { color: var(--tag) !important; position: relative; }
-    #taglist a:hover { color: var(--tag-hover) !important; }
+    #taglist a[id] { color: var(--tag) !important; position: relative; }
+    #taglist a[id]:hover { color: var(--tag-hover) !important; }
 
-    #taglist a::after {
+    #taglist a[id]::after {
       content: "";
       background: var(--color);
       width: 100%;
@@ -74,7 +74,7 @@ export const updateTagColor = async () => {
     }
     .tup { --color: var(--tup) }
     .tdn { --color: var(--tdn) }
-    #taglist a[style="color: blue;"] { --color: blue; }
+    #taglist a[id][style="color: blue;"] { --color: blue; }
 
     /* 避免被上一行的下划线碰到 */
     #taglist div:is(.gt, .gtl, .gtw) { margin-top: 1px; }

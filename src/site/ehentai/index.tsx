@@ -25,6 +25,7 @@ import { associateNhentai } from './associateNhentai';
 import { hotkeysPageTurn } from './hotkeys';
 import { colorizeTag } from './ColorizeTag';
 import { quickRating } from './quickRating';
+import { quickTagDefine } from './quickTagDefine';
 
 type ListPageType =
   /** 最小化 */
@@ -72,6 +73,8 @@ export type PageType = 'gallery' | 'mytags' | ListPageType;
     colorize_tag: false,
     /** 快捷评分 */
     quick_rating: true,
+    /** 快捷查看标签定义 */
+    quick_tag_define: true,
     autoShow: false,
   });
 
@@ -101,12 +104,15 @@ export type PageType = 'gallery' | 'mytags' | ListPageType;
   if (options.colorize_tag) colorizeTag(pageType);
   // 快捷键翻页
   if (options.hotkeys_page_turn) hotkeysPageTurn(pageType);
-  // 快捷评分
-  if (options.quick_rating)
-    requestIdleCallback(() => quickRating(pageType), 1000);
   // 快捷收藏。必须处于登录状态
   if (unsafeWindow.apiuid !== -1 && options.quick_favorite)
     quickFavorite(pageType);
+  // 快捷评分
+  if (options.quick_rating)
+    requestIdleCallback(() => quickRating(pageType), 1000);
+  // 快捷查看标签定义
+  if (options.quick_tag_define)
+    requestIdleCallback(() => quickTagDefine(pageType), 1000);
 
   // 不是漫画页的话
   if (pageType !== 'gallery') return;

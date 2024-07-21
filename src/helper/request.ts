@@ -28,6 +28,7 @@ export type Response<T = any> = {
   readonly responseText: string;
   readonly response: T;
   readonly status: number;
+  readonly statusText: string;
 };
 
 /** 发起请求 */
@@ -76,6 +77,7 @@ export const request = async <T = any>(
 
       return {
         status: res.status,
+        statusText: res.statusText,
         response,
         responseText: response ? '' : await res.text(),
       };
