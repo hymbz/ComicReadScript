@@ -8,7 +8,6 @@
   content-visibility: hidden;
 
   position: relative;
-  transform: translate(var(--page-x), var(--page-y)) translateZ(0);
 
   overflow: hidden;
   display: none;
@@ -92,8 +91,11 @@
   user-select: none;
 
   transform-origin: 0 0;
-  transform: translate(var(--zoom-x), var(--zoom-y)) scale(var(--scale))
-    translateZ(0);
+  transform: translate(
+      calc(var(--zoom-x) + var(--page-x)),
+      calc(var(--zoom-y) + var(--page-y))
+    )
+    scale(var(--scale)) translateZ(0);
 
   display: grid;
   grid-auto-columns: 100%;
@@ -224,7 +226,6 @@
     overflow: hidden;
 
     .mangaFlow {
-      transform: translate(var(--page-x), var(--page-y)) translateZ(0);
       grid-column-gap: calc(var(--scroll-mode-spacing) * 7px);
       align-items: start;
       height: 100%;

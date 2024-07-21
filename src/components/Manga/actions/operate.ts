@@ -34,8 +34,8 @@ import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
 // （虽然因为使用了 shadow dom 的缘故实际还是不能兼容，但说不定之后就改了呢
 export const focus = () =>
   requestAnimationFrame(() => {
-    refs.mangaFlow?.click();
-    refs.mangaFlow?.focus();
+    refs.mangaBox?.click();
+    refs.mangaBox?.focus();
   });
 
 export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {

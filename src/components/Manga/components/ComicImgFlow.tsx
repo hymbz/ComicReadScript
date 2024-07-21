@@ -173,6 +173,7 @@ export const ComicImgFlow: Component = () => {
       ref={bindRef('mangaBox')}
       class={`${classes.mangaBox} ${classes.beautifyScrollbar}`}
       data-abreast-scroll={boolDataVal(store.option.scrollMode.abreastMode)}
+      tabIndex={-1}
     >
       <div
         id={classes.mangaFlow}

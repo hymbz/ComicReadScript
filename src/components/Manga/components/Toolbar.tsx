@@ -1,5 +1,6 @@
-import { type Component, For, createEffect } from 'solid-js';
+import { type Component, For } from 'solid-js';
 import { boolDataVal } from 'helper';
+import { createEffectOn } from 'helper/solidJs';
 
 import { defaultButtonList } from '../defaultButtonList';
 import { store } from '../store';
@@ -8,7 +9,10 @@ import { focus } from '../actions';
 
 /** 左侧工具栏 */
 export const Toolbar: Component = () => {
-  createEffect(() => store.show.toolbar || focus());
+  createEffectOn(
+    () => store.show.toolbar,
+    (show) => show || focus(),
+  );
 
   return (
     <div

@@ -20,7 +20,7 @@ interface Area {
 /** 并排卷轴模式下的每列布局 */
 export const abreastArea = createRootMemo<Area>(
   (prev): Area => {
-    if (!store.option.scrollMode.enabled) return prev;
+    if (!isAbreastMode()) return prev;
 
     const columns: number[][] = [[]];
     const position: Area['position'] = {};
@@ -103,7 +103,8 @@ export const setAbreastScrollFill = (val: number) =>
 
 /** 并排卷轴模式下当前要显示的列 */
 export const abreastShowColumn = createThrottleMemo(() => {
-  if (abreastArea().columns.length === 0) return { start: 0, end: 0 };
+  if (!isAbreastMode() || abreastArea().columns.length === 0)
+    return { start: 0, end: 0 };
 
   let start = Math.floor(store.page.offset.x.px / abreastColumnWidth());
   if (start >= abreastArea().columns.length)
