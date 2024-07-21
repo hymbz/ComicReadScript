@@ -63,8 +63,8 @@ export type PageType = 'gallery' | 'mytags' | ListPageType;
   } = await useInit('ehentai', {
     /** 关联 nhentai */
     associate_nhentai: true,
-    /** 快捷键翻页 */
-    hotkeys_page_turn: true,
+    /** 快捷键 */
+    hotkeys: true,
     /** 识别广告页 */
     detect_ad: true,
     /** 快捷收藏 */
@@ -102,8 +102,8 @@ export type PageType = 'gallery' | 'mytags' | ListPageType;
 
   // 标签染色
   if (options.colorize_tag) colorizeTag(pageType);
-  // 快捷键翻页
-  if (options.hotkeys_page_turn) hotkeysPageTurn(pageType);
+  // 快捷键
+  if (options.hotkeys) hotkeysPageTurn(pageType);
   // 快捷收藏。必须处于登录状态
   if (unsafeWindow.apiuid !== -1 && options.quick_favorite)
     quickFavorite(pageType);

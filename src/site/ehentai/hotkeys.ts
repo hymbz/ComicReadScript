@@ -16,6 +16,12 @@ export const hotkeysPageTurn = (pageType: PageType) => {
         case 'a':
           e.preventDefault();
           return querySelector('.ptt td:first-child:not(.ptdd)')?.click();
+
+        case 'Escape':
+          if (unsafeWindow.selected_tagname) {
+            unsafeWindow.toggle_tagmenu();
+            return e.stopPropagation();
+          }
       }
 
       // 使用上下方向键进行投票

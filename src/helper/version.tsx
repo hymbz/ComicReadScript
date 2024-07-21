@@ -70,6 +70,14 @@ const migration = async () => {
         });
     }
   }
+
+  // 9.3 => 9.4
+  await migrationOption('ehentai', (option, save) => {
+    if (!Reflect.has(option, 'hotkeys_page_turn')) return;
+    option.hotkeys = option.hotkeys_page_turn;
+    Reflect.deleteProperty(option, 'hotkeys_page_turn');
+    return save();
+  });
 };
 
 /** 处理版本更新相关 */
@@ -78,6 +86,7 @@ export const handleVersionUpdate = async () => {
   if (!version) return GM.setValue('Version', GM.info.script.version);
   if (version === GM.info.script.version) return;
 
+  // 每次版本更新都执行一遍迁移
   await migration();
 
   // 只在语言为中文时弹窗提示最新更新内容
