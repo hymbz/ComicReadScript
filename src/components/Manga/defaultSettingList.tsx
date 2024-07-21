@@ -161,8 +161,7 @@ export const defaultSettingList: () => SettingList = () => [
             suffix="%"
             step={5}
             onChange={(val) => {
-              if (Number.isNaN(val)) return;
-              zoomScrollModeImg(val / 100, true);
+              if (!Number.isNaN(val)) zoomScrollModeImg(val / 100, true);
             }}
             value={Math.round(store.option.scrollMode.imgScale * 100)}
           />

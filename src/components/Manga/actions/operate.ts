@@ -240,7 +240,7 @@ export const handleWheel = (e: WheelEvent) => {
     return zoomScrollModeImg(isWheelDown ? -0.05 : 0.05);
   }
 
-  if (e.ctrlKey || e.altKey || store.zoom.scale !== 100) {
+  if (e.ctrlKey || e.altKey) {
     e.preventDefault();
     return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
   }
