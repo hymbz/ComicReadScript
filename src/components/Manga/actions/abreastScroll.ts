@@ -106,17 +106,20 @@ export const abreastShowColumn = createThrottleMemo(() => {
   if (!isAbreastMode() || abreastArea().columns.length === 0)
     return { start: 0, end: 0 };
 
-  let start = Math.floor(store.page.offset.x.px / abreastColumnWidth());
-  if (start >= abreastArea().columns.length)
-    start = abreastArea().columns.length - 1;
-
-  let end = Math.floor(
-    (store.page.offset.x.px + store.rootSize.width) / abreastColumnWidth(),
-  );
-  if (end >= abreastArea().columns.length)
-    end = abreastArea().columns.length - 1;
-
-  return { start, end };
+  return {
+    start: clamp(
+      0,
+      Math.floor(store.page.offset.x.px / abreastColumnWidth()),
+      abreastArea().columns.length - 1,
+    ),
+    end: clamp(
+      0,
+      Math.floor(
+        (store.page.offset.x.px + store.rootSize.width) / abreastColumnWidth(),
+      ),
+      abreastArea().columns.length - 1,
+    ),
+  };
 });
 
 /** 并排卷轴模式下的漫画流宽度 */

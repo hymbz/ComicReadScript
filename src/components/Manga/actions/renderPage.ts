@@ -47,8 +47,8 @@ export const updateShowRange = (state: State) => {
     ];
 
     state.renderRange = [
-      getAbreastColumnImg(start - 1, 0),
-      getAbreastColumnImg(end + 1, -1),
+      getAbreastColumnImg(start - 2, 0),
+      getAbreastColumnImg(end + 2, -1),
     ];
   } else {
     // 普通卷轴模式
