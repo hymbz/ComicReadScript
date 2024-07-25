@@ -62,15 +62,24 @@ import {
     return;
   }
 
+  const downloadImg = async (url: string) => {
+    try {
+      // 使用 fetch 可以复用本地缓存，但有时候会报 cors 问题
+      return await request<Blob>(url, { responseType: 'blob', fetch: true }, 3);
+    } catch {
+      return await request<Blob>(
+        url,
+        { responseType: 'blob', revalidate: true, fetch: false },
+        3,
+      );
+    }
+  };
+
   const getImgUrl = async (imgEle: HTMLImageElement) => {
     if (imgEle.src.startsWith('blob:')) return imgEle.src;
 
     const originalUrl = imgEle.src;
-    const res = await request<Blob>(imgEle.dataset.original!, {
-      responseType: 'blob',
-      revalidate: true,
-      fetch: false,
-    });
+    const res = await downloadImg(imgEle.dataset.original!);
     if (res.response.size === 0) {
       toast.warn(`下载原图时出错: ${imgEle.dataset.page}`);
       return '';

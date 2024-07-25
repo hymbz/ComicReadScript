@@ -55,6 +55,8 @@ module.exports = {
     "no-script-url": "off",
     // 允许 TODO 注释
     "no-warning-comments": "off",
+    // 允许 return await
+    "no-return-await": "off",
     // 允许调用大写开头的函数
     "new-cap": ["error", { "capIsNew": false }],
     // 允许使用复杂的数组解构

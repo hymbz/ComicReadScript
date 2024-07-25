@@ -9,4 +9,5 @@ export default defineConfig({
   test: {
     alias: { helper: resolve(__dirname, './src/helper') },
   },
+  define: { isDevMode: false },
 });
