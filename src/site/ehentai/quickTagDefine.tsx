@@ -57,9 +57,12 @@ export const quickTagDefine = (pageType: PageType) => {
     #comidread-tag-define {
       position: absolute;
       top: 0;
-      width: 95%;
+      left: 0;
+      width: 100%;
       height: 100%;
       text-align: start;
+      padding: 0 1em;
+      box-sizing: border-box;
     }
 
     #taglist {
