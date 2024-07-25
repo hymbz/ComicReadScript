@@ -23,7 +23,7 @@ import {
 import { quickFavorite } from './quickFavorite';
 import { associateNhentai } from './associateNhentai';
 import { hotkeysPageTurn } from './hotkeys';
-import { colorizeTag } from './ColorizeTag';
+import { colorizeTag } from './colorizeTag';
 import { quickRating } from './quickRating';
 import { quickTagDefine } from './quickTagDefine';
 
