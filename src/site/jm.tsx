@@ -65,7 +65,11 @@ import {
   const downloadImg = async (url: string) => {
     try {
       // 使用 fetch 可以复用本地缓存，但有时候会报 cors 问题
-      return await request<Blob>(url, { responseType: 'blob', fetch: true }, 3);
+      return await request<Blob>(
+        url,
+        { responseType: 'blob', fetch: true, noTip: true },
+        3,
+      );
     } catch {
       return await request<Blob>(
         url,
