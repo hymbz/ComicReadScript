@@ -1,6 +1,6 @@
 import { type Component, Show, createMemo, onMount, Index } from 'solid-js';
 import { boolDataVal, createSequence } from 'helper';
-import { createEffectOn, createMemoMap } from 'helper/solidJs';
+import { createEffectOn } from 'helper/solidJs';
 
 import { refs, setState, store } from '../store';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
@@ -125,25 +125,29 @@ export const ComicImgFlow: Component = () => {
           .join(' ')}"`;
   });
 
-  const transform = createMemoMap({
-    x() {
-      if (store.gridMode || isScrollMode()) return 0;
-      let x =
-        store.page.offset.x.pct * store.rootSize.width + store.page.offset.x.px;
-      if (store.option.dir !== 'rtl') x = -x;
-      return x + store.zoom.offset.x;
-    },
-    y: () =>
-      store.page.offset.y.pct * store.rootSize.height +
-      store.page.offset.y.px +
-      store.zoom.offset.y,
-    scale: () => store.zoom.scale / 100,
+  useStyleMemo(`.${classes.mangaBox}`, {
+    transform: () =>
+      `translate(${store.zoom.offset.x}px, ${store.zoom.offset.y}px)
+        scale(${store.zoom.scale / 100})`,
+  });
+
+  const pageX = createMemo(() => {
+    if (store.gridMode || isScrollMode()) return 0;
+    let x =
+      store.page.offset.x.pct * store.rootSize.width + store.page.offset.x.px;
+    if (store.option.dir !== 'rtl') x = -x;
+    return x;
   });
 
   useStyleMemo(`#${classes.mangaFlow}`, {
-    transform:
-      () => `translate(${transform().x}px, ${transform().y}px) scale(${transform().scale})
-    translateZ(0)`,
+    '--zoom-x': () => `${store.zoom.offset.x}px`,
+    '--zoom-y': () => `${store.zoom.offset.y}px`,
+    '--root-w': () => `${store.rootSize.width}px`,
+    transform: () =>
+      `translate(
+        ${pageX()}px,
+        ${store.page.offset.y.pct * store.rootSize.height + store.page.offset.y.px}px
+      ) translateZ(0)`,
     'touch-action'() {
       if (store.gridMode) return 'auto';
       if (store.zoom.scale !== 100) {

@@ -11,8 +11,8 @@ export const touches = new Map<number, PointerState>();
 
 const scale = () => store.zoom.scale / 100;
 
-const width = () => refs.mangaFlow?.clientWidth ?? 0;
-const height = () => refs.mangaFlow?.clientHeight ?? 0;
+const width = () => refs.mangaBox?.clientWidth ?? 0;
+const height = () => refs.mangaBox?.clientHeight ?? 0;
 
 export const bound = createRoot(() => {
   const x = createMemo(() => -width() * (scale() - 1));
@@ -35,7 +35,7 @@ export const zoom = (
   if (newScale === store.zoom.scale) return;
 
   // 消除放大导致的偏移
-  const { left, top } = refs.mangaFlow.getBoundingClientRect();
+  const { left, top } = refs.mangaBox.getBoundingClientRect();
   const x = (focal?.x ?? width() / 2) - left;
   const y = (focal?.y ?? height() / 2) - top;
 

@@ -14,8 +14,8 @@ export const { store, setState, _state, _setState } = useStore({
   ...OtherState,
 });
 
-// (window?.unsafeWindow ?? window).store = store;
-// (window?.unsafeWindow ?? window)._setState = _setState;
+if (isDevMode)
+  Object.assign((window as any).unsafeWindow ?? window, { store, _setState });
 
 export type State = typeof _state;
 
