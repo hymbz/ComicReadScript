@@ -56,26 +56,20 @@ export const Scrollbar: Component = () => {
     () => store.show.scrollbar || Boolean(penetrate()),
   );
 
-  /** 并排卷轴模式下的滚动条提示文本 */
-  const abreastShowTip = createMemo(() => {
-    if (!isAbreastMode()) return undefined;
-
-    const columns = abreastArea()
-      .columns.slice(abreastShowColumn().start, abreastShowColumn().end + 1)
-      .map((column) => column.map(getPageTip));
-    if (store.option.dir === 'rtl') {
-      columns.reverse();
-      for (const column of columns) column.reverse();
-    }
-    return columns.map((column) => column.join(' ')).join('\n');
-  });
-
   /** 滚动条提示文本 */
   const tipText = createThrottleMemo(() => {
     if (store.showRange[0] === store.showRange[1])
       return getPageTip(store.showRange[0]);
 
-    if (isAbreastMode()) return abreastShowTip();
+    /** 并排卷轴模式下的滚动条提示文本 */
+    if (isAbreastMode()) {
+      const columns = abreastArea()
+        .columns.slice(abreastShowColumn().start, abreastShowColumn().end + 1)
+        .map((column) => column.map(getPageTip));
+      if (store.option.dir !== 'rtl') columns.reverse();
+
+      return columns.map((column) => column.join(' ')).join('\n');
+    }
 
     const tipList: string[] = [];
     for (let i = store.showRange[0]; i <= store.showRange[1]; i++)

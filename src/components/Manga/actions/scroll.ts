@@ -52,6 +52,7 @@ export const isTop = createRootMemo(() => scrollPercentage() === 0);
 export const scrollTo = (x: number, smooth = false) => {
   if (!store.option.scrollMode.enabled) return;
   if (store.option.scrollMode.abreastMode) {
+    refs.mangaBox.scrollTo({ top: 0, behavior: 'instant' });
     const val = clamp(0, x, abreastScrollWidth());
     return _setState('page', 'offset', 'x', 'px', val);
   }

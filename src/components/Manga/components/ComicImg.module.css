@@ -91,11 +91,6 @@
   user-select: none;
 
   transform-origin: 0 0;
-  transform: translate(
-      calc(var(--zoom-x) + var(--page-x)),
-      calc(var(--zoom-y) + var(--page-y))
-    )
-    scale(var(--scale)) translateZ(0);
 
   display: grid;
   grid-auto-columns: 100%;
@@ -235,22 +230,15 @@
         flex-shrink: 0;
         width: var(--abreastScrollWidth);
         height: 100%;
-
-        & > picture:first-of-type {
-          margin-top: var(--fill);
-        }
       }
 
       &[dir="ltr"] {
         flex-direction: unset;
       }
 
-      .img[data-show] {
-        transform: translateY(var(--abreast-position)) translateZ(0);
+      .img {
+        will-change: transform;
         width: 100%;
-
-        /* 取消正常卷轴模式下的间距实现 */
-        margin-top: unset;
       }
     }
   }
