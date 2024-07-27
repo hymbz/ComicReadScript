@@ -1,4 +1,4 @@
-.img > img {
+.img img {
   display: block;
   width: 100%;
   height: 100%;
@@ -9,40 +9,40 @@
 
   position: relative;
 
-  overflow: hidden;
   display: none;
+  align-content: center;
 
-  max-width: 100%;
+  width: 100%;
   height: 100%;
-  max-height: 100%;
-
-  object-fit: contain;
-  background-color: var(--hover-bg-color, #fff3);
-  background-image: var(--md-photo);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 30%;
+  margin-right: auto;
+  margin-left: auto;
 
   &[data-show] {
     content-visibility: visible;
     display: block;
   }
 
-  &[data-show="0"] {
-    justify-self: end;
-  }
+  & > picture {
+    position: relative;
 
-  &[data-show="1"] {
-    justify-self: start;
-  }
+    display: block;
 
-  &[data-type="long"] {
-    width: 100%;
+    width: auto;
+    max-width: 100%;
     height: auto;
+    max-height: 100%;
+    margin-right: inherit;
+    margin-left: inherit;
+
+    background-color: var(--hover-bg-color, #fff3);
+    background-image: var(--md-photo);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 30%;
   }
 
   /* 遮住默认的出错图片标识 */
-  &[data-load-type="error"]::after {
+  &[data-load-type="error"] > picture::after {
     pointer-events: none;
     content: "";
 
@@ -60,7 +60,7 @@
     background-size: 30%;
   }
 
-  &[data-load-type="loading"] {
+  &[data-load-type="loading"] > picture {
     background-image: var(--md-cloud-download);
 
     /* 加载中的图片先隐藏一下，避免出错图片的元素被直接显示出来 */
@@ -68,6 +68,18 @@
       animation: show 1s forwards;
     }
   }
+}
+
+.mangaFlow[dir="ltr"] .img[data-show="1"],
+.mangaFlow[dir="rtl"] .img[data-show="0"] {
+  margin-right: auto;
+  margin-left: 0;
+}
+
+.mangaFlow[dir="ltr"] .img[data-show="0"],
+.mangaFlow[dir="rtl"] .img[data-show="1"] {
+  margin-right: 0;
+  margin-left: auto;
 }
 
 .mangaBox {
@@ -109,10 +121,9 @@
 
   transition-duration: 0ms;
 
-  &[data-disable-zoom] .img {
-    height: unset;
-    max-height: 100%;
-    object-fit: scale-down;
+  &[data-disable-zoom] .img > picture {
+    width: fit-content;
+    height: fit-content;
   }
 
   &[data-hidden-mouse="true"] {
@@ -134,7 +145,7 @@
 
 .root[data-grid-mode] .mangaFlow {
   overflow: auto;
-  grid-auto-columns: unset;
+  grid-auto-columns: 1fr;
   grid-auto-flow: row;
   grid-auto-rows: max-content;
   grid-row-gap: 1.5em;
@@ -145,9 +156,8 @@
 
   & .img {
     cursor: pointer;
-    overflow: unset;
-    width: inherit;
-    height: auto;
+    margin-right: auto;
+    margin-left: auto;
 
     & > .gridModeTip {
       cursor: auto;

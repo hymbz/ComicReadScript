@@ -2,7 +2,7 @@ import { scheduleIdle } from '@solid-primitives/scheduled';
 import { onCleanup } from 'solid-js';
 import { difference, byPath } from 'helper';
 
-import { type State, store, setState, refs, _setState } from '../store';
+import { type State, store, setState, refs } from '../store';
 import { type Option } from '../store/option';
 
 /** 触发 onOptionChange */
@@ -36,8 +36,12 @@ export const watchDomSize = <T extends HTMLElement = HTMLElement>(
 ) => {
   const resizeObserver = new ResizeObserver(([{ contentRect }]) => {
     if (!contentRect.width || !contentRect.height) return;
-    const size = { width: contentRect.width, height: contentRect.height };
-    _setState(name as any, size);
+    setState((state) => {
+      (state[name] as any) = {
+        width: contentRect.width,
+        height: contentRect.height,
+      };
+    });
   });
   resizeObserver.disconnect();
   resizeObserver.observe(e);

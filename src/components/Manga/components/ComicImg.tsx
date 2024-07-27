@@ -7,7 +7,6 @@ import {
   imgShowState,
   isAbreastMode,
   abreastArea,
-  placeholderSize,
   handleImgError,
   handleImgLoaded,
 } from '../actions';
@@ -23,8 +22,6 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   };
 
   const style = createMemoMap<JSX.CSSProperties>({
-    'aspect-ratio': () =>
-      `${img.width ?? placeholderSize().width} / ${img.height ?? placeholderSize().height}`,
     'grid-area': () =>
       !store.gridMode && isAbreastMode() ? undefined : `_${img.index}`,
     '--width': () =>
@@ -52,7 +49,7 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   };
 
   const _ComicImg: Component<{ cloneIndex?: number }> = (props) => (
-    <picture
+    <div
       class={classes.img}
       style={style()}
       id={`_${props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index}`}
@@ -60,24 +57,29 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
       data-type={img.type ?? store.defaultImgType}
       data-load-type={img.loadType === 'loaded' ? undefined : img.loadType}
     >
-      <Show when={rednerImg()}>
-        <img
-          src={src()}
-          alt={`${img.index}`}
-          onLoad={(e) => handleImgLoaded(img.index, e.currentTarget)}
-          onError={(e) => handleImgError(img.index, e.currentTarget)}
-          draggable="false"
-          // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
-          decoding="sync"
-        />
-      </Show>
+      {/* 因为 img 无法使用 ::after，所以得用 picture 包一下 */}
+      <picture
+        style={{ 'aspect-ratio': `${img.size.width} / ${img.size.height}` }}
+      >
+        <Show when={rednerImg()}>
+          <img
+            src={src()}
+            alt={`${img.index}`}
+            onLoad={(e) => handleImgLoaded(img.index, e.currentTarget)}
+            onError={(e) => handleImgError(img.index, e.currentTarget)}
+            draggable="false"
+            // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
+            decoding="sync"
+          />
+        </Show>
+      </picture>
       <Show when={store.gridMode}>
         <div
           class={classes.gridModeTip}
           children={store.gridMode ? getImgTip(img.index) : ''}
         />
       </Show>
-    </picture>
+    </div>
   );
 
   return (

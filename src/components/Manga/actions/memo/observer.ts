@@ -2,7 +2,8 @@ import { createSignal } from 'solid-js';
 import { inRange } from 'helper';
 import { createEffectOn, createRootMemo } from 'helper/solidJs';
 
-import { store, _setState } from '../../store';
+import { store, setState } from '../../store';
+import { resetImgState, updatePageData } from '../image';
 
 import { isAbreastMode } from './common';
 
@@ -13,7 +14,6 @@ export const imgPageMap = createRootMemo(() => {
     for (const imgIndex of store.pageList[i])
       if (imgIndex !== -1) map[imgIndex] = i;
   }
-
   return map;
 });
 
@@ -33,5 +33,13 @@ export const bindScrollTop = (dom: HTMLElement) => {
 // 窗口宽度小于800像素时，标记为移动端
 createEffectOn(
   () => store.rootSize.width,
-  (width) => _setState('isMobile', inRange(1, width, 800)),
+  (width) => {
+    const isMobile = inRange(1, width, 800);
+    if (isMobile === store.isMobile) return;
+    setState((state) => {
+      state.isMobile = isMobile;
+      resetImgState(state);
+      updatePageData(state);
+    });
+  },
 );

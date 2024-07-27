@@ -50,17 +50,16 @@ export const updateImgSize = (
 
 createEffectOn(
   [
+    () => store.imgList,
     () => store.option.scrollMode.enabled,
     () => store.option.scrollMode.abreastMode,
     () => store.option.scrollMode.fitToWidth,
     () => store.option.scrollMode.imgScale,
-    () => store.imgList,
-    () => store.rootSize.width,
-    () => store.rootSize.height,
+    () => store.rootSize,
     placeholderSize,
   ],
-  ([isScrollMode]) => {
-    if (!isScrollMode) return;
+  ([imgList]) => {
+    if (imgList.length === 0) return;
     setState((state) => {
       for (const [index, img] of state.imgList.entries())
         img.size = getImgDisplaySize(state, index);

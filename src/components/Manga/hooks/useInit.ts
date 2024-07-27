@@ -146,6 +146,8 @@ export const useInit = (props: MangaProps) => {
         needUpdatePageData = true;
       }
 
+      if (isNew) state.imgList = [...state.imgList];
+
       state.prop.Loading?.(state.imgList);
 
       if (isNew || needResetFillEffect) {

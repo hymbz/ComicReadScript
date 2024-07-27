@@ -25,13 +25,6 @@ export const imgState = {
 
   fillEffect: { '-1': true } as FillEffect,
 
-  /** 比例 */
-  proportion: {
-    单页比例: 0,
-    横幅比例: 0,
-    条漫比例: 0,
-  },
-
   showRange: [0, 0] as [number, number],
   renderRange: [0, 0] as [number, number],
   loadingRange: [0, 0] as [number, number],
