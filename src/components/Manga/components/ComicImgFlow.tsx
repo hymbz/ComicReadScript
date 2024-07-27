@@ -174,8 +174,6 @@ export const ComicImgFlow: Component = () => {
         .map(({ size: { height } }) => `${height}px`)
         .join(' ');
     },
-    '--abreastScrollWidth': () =>
-      abreastColumnWidth() ? `${abreastColumnWidth()}px` : undefined,
   });
 
   useStyle(imgAreaStyle);
@@ -194,8 +192,7 @@ export const ComicImgFlow: Component = () => {
         dir={store.option.dir}
         class={`${classes.mangaFlow} ${classes.beautifyScrollbar}`}
         data-disable-zoom={boolDataVal(
-          store.option.disableZoom ||
-            (!store.gridMode && store.option.scrollMode.enabled),
+          store.option.disableZoom && !store.option.scrollMode.enabled,
         )}
         data-scale-mode={boolDataVal(store.zoom.scale !== 100)}
         data-vertical={boolDataVal(store.page.vertical)}

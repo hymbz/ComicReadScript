@@ -24,8 +24,6 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   const style = createMemoMap<JSX.CSSProperties>({
     'grid-area': () =>
       !store.gridMode && isAbreastMode() ? undefined : `_${img.index}`,
-    '--width': () =>
-      store.option.scrollMode.enabled ? `${img.size.width}px` : undefined,
   });
 
   /** 并排卷轴模式下需要复制的图片数量 */
