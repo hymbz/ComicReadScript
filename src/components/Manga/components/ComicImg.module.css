@@ -82,23 +82,6 @@
   margin-left: auto;
 }
 
-.mangaBox {
-  transform-origin: 0 0;
-  contain: layout style;
-  width: 100%;
-  height: 100%;
-}
-
-.root:not([data-grid-mode]) .mangaBox {
-  /* 隐藏滚动条但不影响滚动 */
-  scrollbar-width: none;
-
-  /* 隐藏滚动条但不影响滚动 */
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
 .mangaFlow {
   touch-action: none;
   user-select: none;
@@ -119,8 +102,6 @@
 
   backface-visibility: hidden;
 
-  transition-duration: 0ms;
-
   &[data-disable-zoom] .img > picture {
     width: fit-content;
     height: fit-content;
@@ -130,16 +111,34 @@
     cursor: none;
   }
 
-  &[data-animation="page"] .img {
-    transition-duration: 300ms;
+  &[data-vertical] {
+    grid-auto-flow: row;
   }
+}
 
+.mangaBox {
+  transform-origin: 0 0;
+
+  contain: layout style;
+
+  width: 100%;
+  height: 100%;
+
+  transition-duration: 0ms;
+
+  &[data-animation="page"] .mangaFlow,
   &[data-animation="zoom"] {
     transition-duration: 300ms;
   }
+}
 
-  &[data-vertical] {
-    grid-auto-flow: row;
+.root:not([data-grid-mode]) .mangaBox {
+  /* 隐藏滚动条但不影响滚动 */
+  scrollbar-width: none;
+
+  /* 隐藏滚动条但不影响滚动 */
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 

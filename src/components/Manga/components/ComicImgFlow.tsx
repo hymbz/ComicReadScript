@@ -184,6 +184,7 @@ export const ComicImgFlow: Component = () => {
     <div
       ref={bindRef('mangaBox')}
       class={`${classes.mangaBox} ${classes.beautifyScrollbar}`}
+      data-animation={store.page.anima}
       data-abreast-scroll={boolDataVal(store.option.scrollMode.abreastMode)}
       tabIndex={-1}
     >
@@ -198,7 +199,6 @@ export const ComicImgFlow: Component = () => {
         )}
         data-scale-mode={boolDataVal(store.zoom.scale !== 100)}
         data-vertical={boolDataVal(store.page.vertical)}
-        data-animation={store.page.anima}
         data-hidden-mouse={!store.gridMode && hiddenMouse()}
         data-fit-width={boolDataVal(store.option.scrollMode.fitToWidth)}
         on:mousemove={onMouseMove}
