@@ -12,7 +12,7 @@ import { t } from 'helper/i18n';
 
 import { IconButton } from '../IconButton';
 
-import { _setState, store } from './store';
+import { _setState, refs, store } from './store';
 import { SettingPanel } from './components/SettingPanel';
 import {
   nowFillIndex,
@@ -25,6 +25,7 @@ import {
   switchTranslation,
   isTranslatingImage,
   isOnePageMode,
+  isScrollMode,
 } from './actions';
 import classes from './index.module.css';
 
@@ -141,6 +142,9 @@ export const defaultButtonList: ToolbarButtonList = [
         <div
           class={classes.closeCover}
           on:click={handleClick}
+          onWheel={(e) => {
+            if (isScrollMode()) refs.mangaBox.scrollBy({ top: e.deltaY });
+          }}
           role="button"
           tabIndex={-1}
         />
