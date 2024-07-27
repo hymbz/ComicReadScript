@@ -2,15 +2,12 @@ import { clamp, debounce, singleThreaded } from 'helper';
 import { createEffectOn, createRootMemo } from 'helper/solidJs';
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
-import { createSignal } from 'solid-js';
 
 import { store, setState, _setState } from '../store';
 
 import { activePage, preloadNum } from './memo/common';
 import { updateImgSize } from './imageSize';
 import { renderImgList } from './renderPage';
-
-const [loadLock, setLoadLock] = createSignal(false, { equals: false });
 
 /** 用于存储正在加载的图片元素 */
 const loadingImgMap = new Map<number, HTMLImageElement>();
@@ -38,9 +35,11 @@ export const handleImgLoaded = (i: number, e: HTMLImageElement) => async () => {
     img.loadType = 'loaded';
     state.prop.Loading?.(state.imgList, img);
   });
-  setLoadLock(false);
   loadingImgMap.delete(i);
-  await e.decode();
+  updateImgLoadType();
+  try {
+    await e.decode();
+  } catch {}
 };
 
 /** 图片加载出错的次数 */
@@ -58,7 +57,7 @@ export const handleImgError = (i: number, e: HTMLImageElement) => () => {
     log.error(i, t('alert.img_load_failed'), e);
     state.prop.Loading?.(state.imgList, img);
   });
-  setLoadLock(false);
+  updateImgLoadType();
 };
 
 /** 需要加载的图片 */
@@ -72,7 +71,7 @@ const needLoadImgList = createRootMemo(() => {
 /** 当前要加载的图片 */
 const loadImgList = new Set<number>();
 
-/** 加载指定图片。返回是否加载成功 */
+/** 加载指定图片。返回是否已加载完成 */
 const loadImg = (index: number) => {
   if (index === -1 || !needLoadImgList().has(index)) return true;
   const img = store.imgList[index];
@@ -92,7 +91,7 @@ const loadImg = (index: number) => {
     checkImgSize(index, imgEle);
   }
   loadImgList.add(index);
-  return true;
+  return false;
 };
 
 /** 获取指定页数下的头/尾图片 */
@@ -134,10 +133,7 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
 
   while (condition()) {
     if (!loadImg(index)) hasUnloadedImg = true;
-    if (loadImgList.size >= loadNum) {
-      setLoadLock(true);
-      return index !== end || hasUnloadedImg;
-    }
+    if (loadImgList.size >= loadNum) return index !== end || hasUnloadedImg;
     index += step;
   }
 
@@ -145,7 +141,7 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
 };
 
 const updateImgLoadType = singleThreaded(() => {
-  if (needLoadImgList().size === 0 || loadLock()) return;
+  if (needLoadImgList().size === 0) return;
 
   loadImgList.clear();
 
@@ -167,13 +163,15 @@ const updateImgLoadType = singleThreaded(() => {
   }
 
   // 取消其他预加载的图片
-  for (const index of loadingImgMap.keys())
-    if (!loadImgList.has(index)) loadingImgMap.delete(index);
+  for (const index of loadingImgMap.keys()) {
+    if (loadImgList.has(index)) continue;
+    loadingImgMap.delete(index);
+    _setState('imgList', index, 'loadType', 'wait');
+  }
 });
 
 createEffectOn(
   [
-    loadLock,
     preloadNum,
     () => [...renderImgList()].map((i) => store.imgList[i]),
     () => store.option.alwaysLoadAllImg,

@@ -76,7 +76,7 @@ export const updateReadme = () => {
 };
 
 const enSupportSite = [
-  'E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Detect advertise page, etc.)',
+  'E-Hentai (Associate nhentai, Quick favorite, Colorize tags, etc.)',
   'nhentai (Totally block comics, Auto page turning)',
   'hitomi',
   'Anchira',
