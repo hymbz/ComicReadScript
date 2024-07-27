@@ -12,6 +12,7 @@ import { SettingsShowItem } from './components/SettingsShowItem';
 import { SettingsItemSelect } from './components/SettingsItemSelect';
 import {
   createStateSetFn,
+  saveScrollProgress,
   setOption,
   switchDir,
   switchFitToWidth,
@@ -153,7 +154,13 @@ export const defaultSettingList: () => SettingList = () => [
           <SettingsItemSwitch
             name={t('setting.option.abreast_mode')}
             value={store.option.scrollMode.abreastMode}
-            onChange={createStateSetFn('scrollMode.abreastMode')}
+            onChange={(val) => {
+              const jump = saveScrollProgress();
+              setOption((draftOption) => {
+                draftOption.scrollMode.abreastMode = val;
+              });
+              jump();
+            }}
           />
           <SettingsItemNumber
             name={t('setting.option.scroll_mode_img_scale')}
