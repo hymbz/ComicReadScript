@@ -647,9 +647,9 @@ try {
             `https://api.koharu.to/books/detail/${galleryId}/${galleryKey}`,
             { fetch: true, responseType: 'json' },
           );
-          const [{ id, public_key }] = Object.values(
+          const [[w, { id, public_key }]] = Object.entries(
             detailRes.response.data,
-          ).sort((a, b) => b.size - a.size);
+          ).sort(([, a], [, b]) => b.size - a.size);
           const { created_at, updated_at } = detailRes.response;
 
           type DataRes = {
@@ -659,7 +659,7 @@ try {
           const dataRes = await main.request<DataRes>(
             `https://api.koharu.to/books/data/${galleryId}/${galleryKey}/${
               id
-            }/${public_key}?v=${updated_at ?? created_at}`,
+            }/${public_key}?v=${updated_at ?? created_at}&w=${w}`,
             { fetch: true, responseType: 'json' },
           );
           const { base, entries } = dataRes.response;
