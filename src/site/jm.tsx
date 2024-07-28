@@ -90,8 +90,9 @@ import {
     }
 
     imgEle.src = URL.createObjectURL(res.response);
-    const err = await waitImgLoad(imgEle);
-    if (err) {
+    try {
+      await waitImgLoad(imgEle, 1000 * 10);
+    } catch {
       URL.revokeObjectURL(imgEle.src);
       imgEle.src = originalUrl;
       toast.warn(`加载原图时出错: ${imgEle.dataset.page}`);

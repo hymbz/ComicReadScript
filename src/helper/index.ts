@@ -269,20 +269,35 @@ export const waitDom = (selector: string) =>
   wait(() => querySelector(selector));
 
 /** 等待指定的图片元素加载完成 */
-export const waitImgLoad = (img: HTMLImageElement, timeout = 1000 * 10) =>
-  new Promise<ErrorEvent | null>((resolve) => {
-    const id = window.setTimeout(
-      () => resolve(new ErrorEvent('timeout')),
-      timeout,
+export const waitImgLoad = (
+  target: HTMLImageElement | string,
+  timeout?: number,
+) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = typeof target === 'string' ? new Image() : target;
+
+    const id = timeout
+      ? window.setTimeout(() => reject(new Error('timeout')), timeout)
+      : undefined;
+
+    img.addEventListener(
+      'load',
+      () => {
+        window.clearTimeout(id);
+        resolve(img);
+      },
+      { once: true },
     );
-    img.addEventListener('load', () => {
-      resolve(null);
-      window.clearTimeout(id);
-    });
-    img.addEventListener('error', (e) => {
-      resolve(e);
-      window.clearTimeout(id);
-    });
+    img.addEventListener(
+      'error',
+      (e) => {
+        window.clearTimeout(id);
+        reject(new Error(e.message));
+      },
+      { once: true },
+    );
+
+    if (typeof target === 'string') img.src = target;
   });
 
 /** 将指定的布尔值转换为字符串或未定义 */
@@ -349,12 +364,15 @@ export const testImgUrl = (url: string) =>
     img.src = url;
   });
 
-export const canvasToBlob = (
-  canvas: HTMLCanvasElement,
+export const canvasToBlob = async (
+  canvas: HTMLCanvasElement | OffscreenCanvas,
   type?: string,
   quality = 1,
-) =>
-  new Promise<Blob>((resolve, reject) => {
+) => {
+  if (canvas instanceof OffscreenCanvas)
+    return canvas.convertToBlob({ type, quality });
+
+  return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
       (blob) =>
         blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')),
@@ -362,6 +380,7 @@ export const canvasToBlob = (
       quality,
     );
   });
+};
 
 /**
  * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性

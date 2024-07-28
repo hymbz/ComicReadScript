@@ -1,4 +1,4 @@
-import { log, request, wait } from 'main';
+import { log, request, wait, waitImgLoad } from 'main';
 import QrScanner from 'qr-scanner';
 import type { AsyncReturnType } from 'type-fest';
 
@@ -46,12 +46,10 @@ const isGrayscalePixel = (r: number, g: number, b: number) =>
   r === g && r === b;
 
 /** 判断一张图是否是彩图 */
-const isColorImg = (imgCanvas: HTMLCanvasElement) => {
-  const canvas = document.createElement('canvas');
+const isColorImg = (imgCanvas: HTMLCanvasElement | OffscreenCanvas) => {
   // 缩小尺寸放弃细节，避免被黑白图上的小段彩色文字干扰
-  canvas.width = 3;
-  canvas.height = 3;
-  const ctx = canvas.getContext('2d')!;
+  const canvas = new OffscreenCanvas(3, 3);
+  const ctx = canvas.getContext('2d', { alpha: false })!;
   ctx.drawImage(imgCanvas, 0, 0, canvas.width, canvas.height);
 
   const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -70,10 +68,7 @@ const imgToCanvas = async (img: HTMLImageElement | string) => {
     await wait(() => img.naturalHeight && img.naturalWidth, 1000 * 10);
 
     try {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-
+      const canvas = new OffscreenCanvas(img.width, img.height);
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0);
       // 没被 CORS 污染就直接使用这个 canvas
@@ -84,15 +79,8 @@ const imgToCanvas = async (img: HTMLImageElement | string) => {
   const url = typeof img === 'string' ? img : img.src;
   const res = await request<Blob>(url, { responseType: 'blob' });
 
-  const image = new Image();
-  await new Promise((resolve, reject) => {
-    image.onload = resolve;
-    image.onerror = reject;
-    image.src = URL.createObjectURL(res.response);
-  });
-  const canvas = document.createElement('canvas');
-  canvas.width = image.width;
-  canvas.height = image.height;
+  const image = await waitImgLoad(URL.createObjectURL(res.response));
+  const canvas = new OffscreenCanvas(image.width, image.height);
   const ctx = canvas.getContext('2d')!;
   ctx.drawImage(image, 0, 0);
 
@@ -114,15 +102,15 @@ const qrCodeWhiteList = [
 
 /** 判断是否含有二维码 */
 const hasQrCode = async (
-  imgCanvas: HTMLCanvasElement,
+  imgCanvas: HTMLCanvasElement | OffscreenCanvas,
   scanRegion?: QrScanner.ScanRegion,
   qrEngine?: AsyncReturnType<typeof QrScanner.createQrEngine>,
-  canvas?: HTMLCanvasElement,
+  canvas?: HTMLCanvasElement | OffscreenCanvas,
 ) => {
   try {
     const { data } = await QrScanner.scanImage(imgCanvas, {
       qrEngine,
-      canvas,
+      canvas: canvas as HTMLCanvasElement,
       scanRegion,
       alsoTryWithoutScanRegion: true,
     });
@@ -135,9 +123,9 @@ const hasQrCode = async (
 };
 
 const isAdImg = async (
-  imgCanvas: HTMLCanvasElement,
+  imgCanvas: HTMLCanvasElement | OffscreenCanvas,
   qrEngine?: AsyncReturnType<typeof QrScanner.createQrEngine>,
-  canvas?: HTMLCanvasElement,
+  canvas?: HTMLCanvasElement | OffscreenCanvas,
 ) => {
   // 黑白图肯定不是广告
   if (!isColorImg(imgCanvas)) return false;
@@ -167,7 +155,7 @@ const isAdImg = async (
 const byContent =
   (
     qrEngine?: AsyncReturnType<typeof QrScanner.createQrEngine>,
-    canvas?: HTMLCanvasElement,
+    canvas?: HTMLCanvasElement | OffscreenCanvas,
   ) =>
   async (img: HTMLImageElement | string) =>
     isAdImg(await imgToCanvas(img), qrEngine, canvas);
@@ -178,7 +166,7 @@ export const getAdPageByContent = async (
   adList = new Set<number>(),
 ) => {
   const qrEngine = await QrScanner.createQrEngine();
-  const canvas = document.createElement('canvas');
+  const canvas = new OffscreenCanvas(1, 1);
   return getAdPage(imgList, byContent(qrEngine, canvas), adList);
 };
 

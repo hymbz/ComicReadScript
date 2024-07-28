@@ -1,6 +1,6 @@
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
-import { canvasToBlob } from 'helper';
+import { canvasToBlob, waitImgLoad } from 'helper';
 
 import { store } from '../../store';
 
@@ -63,31 +63,16 @@ const waitTranslation = (id: string, i: number) => {
 
 /** 将翻译后的内容覆盖到原图上 */
 const mergeImage = async (rawImage: Blob, maskUri: string) => {
-  const canvas = document.createElement('canvas');
+  const img = await waitImgLoad(URL.createObjectURL(rawImage));
+  const canvas = new OffscreenCanvas(img.width, img.height);
   const canvasCtx = canvas.getContext('2d')!;
-
-  const img = new Image();
-  img.src = URL.createObjectURL(rawImage);
-  await new Promise((resolve, reject) => {
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      canvasCtx.drawImage(img, 0, 0);
-      resolve(null);
-    };
-
-    img.onerror = reject;
-  });
+  canvasCtx.drawImage(img, 0, 0);
 
   const img2 = new Image();
   img2.src = maskUri;
   img2.crossOrigin = 'anonymous';
-  await new Promise((resolve) => {
-    img2.onload = () => {
-      canvasCtx.drawImage(img2, 0, 0);
-      resolve(null);
-    };
-  });
+  await waitImgLoad(img2);
+  canvasCtx.drawImage(img2, 0, 0);
 
   return URL.createObjectURL(await canvasToBlob(canvas));
 };
@@ -96,23 +81,12 @@ const mergeImage = async (rawImage: Blob, maskUri: string) => {
 const resize = async (blob: Blob, w: number, h: number): Promise<Blob> => {
   if (w <= 4096 && h <= 4096) return blob;
 
-  const img = new Image();
-  img.src = URL.createObjectURL(blob);
-  await new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
-  });
-
-  if (w <= 4096 && h <= 4096) return blob;
-
   const scale = Math.min(4096 / w, 4096 / h);
   const width = Math.floor(w * scale);
   const height = Math.floor(h * scale);
 
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-
+  const img = await waitImgLoad(URL.createObjectURL(blob));
+  const canvas = new OffscreenCanvas(width, height);
   const ctx = canvas.getContext('2d')!;
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(img, 0, 0, width, height);

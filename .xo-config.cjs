@@ -70,6 +70,7 @@ module.exports = {
     // 使用 process
     "n/prefer-global/process": ["error", "always"],
 
+
     //
     // 项目特有的规则
     //
@@ -121,6 +122,12 @@ module.exports = {
         "@typescript-eslint/no-unsafe-argument": "off",
         "@typescript-eslint/no-unsafe-assignment": "off",
         "@typescript-eslint/no-unsafe-call": "off",
+
+        // 允许 return await
+        "@typescript-eslint/return-await": [
+          "off",
+          "error-handling-correctness-only",
+        ],
 
         // 在判断类型时允许使用 ||
         "@typescript-eslint/prefer-nullish-coalescing": [
