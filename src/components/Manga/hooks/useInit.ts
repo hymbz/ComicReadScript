@@ -11,6 +11,7 @@ import {
   resetImgState,
   scrollTo,
   updatePageData,
+  updateShowRange,
 } from '../actions';
 import { defaultOption } from '../store/option';
 import { playAnimation } from '../helper';
@@ -155,7 +156,14 @@ export const useInit = (props: MangaProps) => {
         autoCloseFill.clear();
       }
 
-      if (isNew || needUpdatePageData) updatePageData(state);
+      if (isNew || needUpdatePageData) {
+        updatePageData(state);
+
+        // 当前位于最后一页时最后一页被删的处理
+        if (state.activePageIndex >= state.pageList.length)
+          state.activePageIndex = state.pageList.length - 1;
+        updateShowRange(state);
+      }
 
       if (isNew || state.pageList.length === 0) {
         resetImgState(state);

@@ -14,6 +14,7 @@ const loadingImgMap = new Map<number, HTMLImageElement>();
 
 /** 加载期间尽快获取图片尺寸 */
 export const checkImgSize = (i: number, e: HTMLImageElement) => {
+  if (store.imgList[i] === undefined) return loadingImgMap.delete(i);
   if (
     !loadingImgMap.has(i) ||
     store.imgList[i].width ||
@@ -166,7 +167,8 @@ const updateImgLoadType = singleThreaded(() => {
   for (const index of loadingImgMap.keys()) {
     if (loadImgList.has(index)) continue;
     loadingImgMap.delete(index);
-    _setState('imgList', index, 'loadType', 'wait');
+    if (Reflect.has(store.imgList, index))
+      _setState('imgList', index, 'loadType', 'wait');
   }
 });
 

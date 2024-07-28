@@ -13,7 +13,8 @@ export const updatePageData = (state: State) => {
   newPageList = isOnePageMode()
     ? state.imgList.map((_, i) => [i])
     : handleComicData(state.imgList, state.fillEffect);
-  if (!isEqual(state.pageList, newPageList)) state.pageList = newPageList;
+  if (isEqual(state.pageList, newPageList)) return;
+  state.pageList = newPageList;
 
   // 在图片排列改变后自动跳转回原先显示图片所在的页数
   if (lastActiveImgIndex !== activeImgIndex()) {
