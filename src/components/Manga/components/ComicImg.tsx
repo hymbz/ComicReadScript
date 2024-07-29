@@ -1,5 +1,4 @@
-import { type Component, type JSX, Show, createMemo, For } from 'solid-js';
-import { createMemoMap } from 'helper/solidJs';
+import { type Component, Show, createMemo, For } from 'solid-js';
 
 import { store } from '../store';
 import {
@@ -21,11 +20,6 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     return img.src;
   };
 
-  const style = createMemoMap<JSX.CSSProperties>({
-    'grid-area': () =>
-      !store.gridMode && isAbreastMode() ? undefined : `_${img.index}`,
-  });
-
   /** 并排卷轴模式下需要复制的图片数量 */
   const cloneNum = createMemo(() => {
     if (!isAbreastMode()) return 0;
@@ -39,27 +33,20 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   const renderClone = () =>
     !store.gridMode && showState() !== undefined && cloneNum() > 0;
 
-  const rednerImg = (cloneIndex?: number) => {
-    if (!src()) return false;
-    if (img.loadType === 'loaded') return true;
-    if (cloneIndex !== undefined) return false;
-    return img.loadType !== 'wait';
-  };
-
   const _ComicImg: Component<{ cloneIndex?: number }> = (props) => (
     <div
       class={classes.img}
-      style={style()}
+      style={{ 'grid-area': `_${img.index}` }}
       id={`_${props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index}`}
       data-show={showState()}
       data-type={img.type ?? store.defaultImgType}
       data-load-type={img.loadType === 'loaded' ? undefined : img.loadType}
     >
-      {/* 因为 img 无法使用 ::after，所以得用 picture 包一下 */}
-      <picture
-        style={{ 'aspect-ratio': `${img.size.width} / ${img.size.height}` }}
-      >
-        <Show when={rednerImg()}>
+      <Show when={img.loadType !== 'wait' && src()}>
+        {/* 因为 img 无法使用 ::after，所以得用 picture 包一下 */}
+        <picture
+          style={{ 'aspect-ratio': `${img.size.width} / ${img.size.height}` }}
+        >
           <img
             src={src()}
             alt={`${img.index}`}
@@ -69,8 +56,8 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
             // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
             decoding="sync"
           />
-        </Show>
-      </picture>
+        </picture>
+      </Show>
       <Show when={store.gridMode}>
         <div
           class={classes.gridModeTip}

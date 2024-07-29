@@ -146,7 +146,7 @@ export const imgAreaStyle = createRootMemo(() => {
   for (const index of store.imgList.keys()) {
     let imgNum = 0;
     for (const { column, top } of abreastArea().position[index] ?? []) {
-      const itemStyle = `grid-area: _${column}; transform: translateY(${top}px);`;
+      const itemStyle = `grid-area: _${column} !important; transform: translateY(${top}px);`;
       styleText += `${selector(index, imgNum)} { ${itemStyle} }\n`;
       imgNum += 1;
     }

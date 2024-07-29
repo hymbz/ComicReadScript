@@ -135,6 +135,12 @@ module.exports = {
           { ignorePrimitives: true },
         ],
 
+        // 允许短路表达式
+        "@typescript-eslint/no-unused-expressions": [
+          "error",
+          { "allowShortCircuit": true }
+        ],
+
         // 允许使用 require
         "unicorn/prefer-module": "off",
         "@typescript-eslint/no-require-imports": "off",

@@ -108,7 +108,7 @@ export const renderImgList = createRootMemo(() =>
  *
  * 0 - 页面中的第一张图片
  * 1 - 页面中的最后一张图片
- * 2 - 页面中的唯一一张图片
+ * '' - 页面中的唯一一张图片
  */
 export const imgShowState = createRootMemo<Map<number, 0 | 1 | ''>>(() => {
   if (store.pageList.length === 0) return new Map();

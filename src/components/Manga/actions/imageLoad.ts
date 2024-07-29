@@ -3,31 +3,14 @@ import { createEffectOn, createRootMemo } from 'helper/solidJs';
 import { t } from 'helper/i18n';
 import { log } from 'helper/logger';
 
-import { store, setState, _setState } from '../store';
+import { store, setState, _setState, refs } from '../store';
 
 import { activePage, preloadNum } from './memo/common';
 import { updateImgSize } from './imageSize';
 import { renderImgList } from './renderPage';
 
-/** 用于存储正在加载的图片元素 */
-const loadingImgMap = new Map<number, HTMLImageElement>();
-
-/** 加载期间尽快获取图片尺寸 */
-export const checkImgSize = (i: number, e: HTMLImageElement) => {
-  if (store.imgList[i] === undefined) return loadingImgMap.delete(i);
-  if (
-    !loadingImgMap.has(i) ||
-    store.imgList[i].width ||
-    store.imgList[i].height
-  )
-    return;
-  if (!e.naturalWidth || !e.naturalHeight)
-    return setTimeout(() => checkImgSize(i, e), 100);
-  setState((state) => updateImgSize(state, i, e.naturalWidth, e.naturalHeight));
-};
-
 /** 图片加载完毕的回调 */
-export const handleImgLoaded = (i: number, e: HTMLImageElement) => async () => {
+export const handleImgLoaded = (i: number, e: HTMLImageElement) => {
   setState((state) => {
     const img = state.imgList[i];
     if (!img) return;
@@ -36,19 +19,15 @@ export const handleImgLoaded = (i: number, e: HTMLImageElement) => async () => {
     img.loadType = 'loaded';
     state.prop.Loading?.(state.imgList, img);
   });
-  loadingImgMap.delete(i);
   updateImgLoadType();
-  try {
-    await e.decode();
-  } catch {}
+  e.decode().catch();
 };
 
 /** 图片加载出错的次数 */
 const imgErrorNum = new Map<string, number>();
 
 /** 图片加载出错的回调 */
-export const handleImgError = (i: number, e: HTMLImageElement) => () => {
-  loadingImgMap.delete(i);
+export const handleImgError = (i: number, e: HTMLImageElement) => {
   imgErrorNum.set(e.src, (imgErrorNum.get(e.src) ?? 0) + 1);
   setState((state) => {
     const img = state.imgList[i];
@@ -69,7 +48,7 @@ const needLoadImgList = createRootMemo(() => {
   return list;
 });
 
-/** 当前要加载的图片 */
+/** 当前需要加载的图片 */
 const loadImgList = new Set<number>();
 
 /** 加载指定图片。返回是否已加载完成 */
@@ -81,16 +60,6 @@ const loadImg = (index: number) => {
     (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3)
   )
     return true;
-
-  if (!loadingImgMap.has(index)) {
-    const imgEle = new Image();
-    imgEle.onload = handleImgLoaded(index, imgEle);
-    imgEle.onerror = handleImgError(index, imgEle);
-    imgEle.src = img.src;
-    _setState('imgList', index, 'loadType', 'loading');
-    loadingImgMap.set(index, imgEle);
-    checkImgSize(index, imgEle);
-  }
   loadImgList.add(index);
   return false;
 };
@@ -141,16 +110,32 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
   return hasUnloadedImg;
 };
 
+/** 加载期间尽快获取图片尺寸 */
+export const checkImgSize = (index: number) => {
+  const imgDom = refs.mangaFlow.querySelector<HTMLImageElement>(
+    `#_${index} img`,
+  )!;
+  const timeoutId = setInterval(() => {
+    const img = store.imgList[index];
+    if (!img || img.loadType !== 'loading') return clearInterval(timeoutId);
+
+    if (imgDom.naturalWidth && imgDom.naturalHeight) {
+      setState((state) =>
+        updateImgSize(state, index, imgDom.naturalWidth, imgDom.naturalHeight),
+      );
+      return clearInterval(timeoutId);
+    }
+  }, 200);
+};
+
 const updateImgLoadType = singleThreaded(() => {
   if (needLoadImgList().size === 0) return;
 
   loadImgList.clear();
 
   if (store.imgList.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ =
-      // 优先加载当前显示的图片
-      loadRangeImg() ||
+    // 优先加载当前显示的图片
+    loadRangeImg() ||
       // 再加载后面几页
       loadRangeImg(preloadNum().back) ||
       // 再加载前面几页
@@ -163,13 +148,17 @@ const updateImgLoadType = singleThreaded(() => {
       loadRangeImg(Number.NEGATIVE_INFINITY, 5);
   }
 
-  // 取消其他预加载的图片
-  for (const index of loadingImgMap.keys()) {
-    if (loadImgList.has(index)) continue;
-    loadingImgMap.delete(index);
-    if (Reflect.has(store.imgList, index))
-      _setState('imgList', index, 'loadType', 'wait');
-  }
+  setState((state) => {
+    for (const index of needLoadImgList()) {
+      const { loadType } = state.imgList[index];
+      if (loadImgList.has(index)) {
+        if (loadType !== 'loading') {
+          state.imgList[index].loadType = 'loading';
+          setTimeout(checkImgSize, 0, index);
+        }
+      } else if (loadType === 'loading') state.imgList[index].loadType = 'wait';
+    }
+  });
 });
 
 createEffectOn(
