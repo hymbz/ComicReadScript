@@ -1,7 +1,8 @@
-## [9.4.2](https://github.com/hymbz/ComicReadScript/compare/v9.4.1...v9.4.2) (2024-07-27)
+## [9.4.3](https://github.com/hymbz/ComicReadScript/compare/v9.4.2...v9.4.3) (2024-07-29)
 
 
 ### Bug Fixes
 
-* :bug: 修复缩放和拖动页面的动画消失的 bug ([8174934](https://github.com/hymbz/ComicReadScript/commit/817493413739729ffc22dd84f8e642b085f14a71))
-* :bug: 修复在显示窗口不够宽时无法使用双页模式的 bug ([54729ad](https://github.com/hymbz/ComicReadScript/commit/54729ad7e9db94408e517e610ed361b8ad785d34)), closes [#174](https://github.com/hymbz/ComicReadScript/issues/174)
+* :bug: 修复 ehentai 标签染色功能只对默认标签集生效的 bug ([1225fa0](https://github.com/hymbz/ComicReadScript/commit/1225fa008e72f1f1b6c9fc332d86a77dde67bf7d)), closes [#175](https://github.com/hymbz/ComicReadScript/issues/175)
+* :bug: 修复 koharu 改版导致的报错 ([7e04bc1](https://github.com/hymbz/ComicReadScript/commit/7e04bc126976653c42082dcf85299df0cdb60db4))
+* :bug: 修复根据屏幕比例自动切换单双页模式功能失效的 bug ([a064162](https://github.com/hymbz/ComicReadScript/commit/a064162a82d76c05374272715303426556d4600f))

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.4.2
+// @version         9.4.3
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -670,16 +670,22 @@ async function wait(fn, timeout = Number.POSITIVE_INFINITY) {
 const waitDom = selector => wait(() => querySelector(selector));
 
 /** 等待指定的图片元素加载完成 */
-const waitImgLoad = (img, timeout = 1000 * 10) => new Promise(resolve => {
-  const id = window.setTimeout(() => resolve(new ErrorEvent('timeout')), timeout);
+const waitImgLoad = (target, timeout) => new Promise((resolve, reject) => {
+  const img = typeof target === 'string' ? new Image() : target;
+  const id = timeout ? window.setTimeout(() => reject(new Error('timeout')), timeout) : undefined;
   img.addEventListener('load', () => {
-    resolve(null);
     window.clearTimeout(id);
+    resolve(img);
+  }, {
+    once: true
   });
   img.addEventListener('error', e => {
-    resolve(e);
     window.clearTimeout(id);
+    reject(new Error(e.message));
+  }, {
+    once: true
   });
+  if (typeof target === 'string') img.src = target;
 });
 
 /** 将指定的布尔值转换为字符串或未定义 */
@@ -735,9 +741,15 @@ const testImgUrl = url => new Promise(resolve => {
   img.onerror = () => resolve(false);
   img.src = url;
 });
-const canvasToBlob = (canvas, type, quality = 1) => new Promise((resolve, reject) => {
-  canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')), type, quality);
-});
+const canvasToBlob = async (canvas, type, quality = 1) => {
+  if (canvas instanceof OffscreenCanvas) return canvas.convertToBlob({
+    type,
+    quality
+  });
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Canvas toBlob failed')), type, quality);
+  });
+};
 
 /**
  * 求 a 和 b 的差集，相当于从 a 中删去和 b 相同的属性
@@ -977,6 +989,7 @@ const zh = {
       abreast_duplicate: "每列重复比例",
       abreast_mode: "并排卷轴模式",
       always_load_all_img: "始终加载所有图片",
+      auto_switch_page_mode: "自动切换单双页模式",
       background_color: "背景颜色",
       click_page_turn_area: "点击区域",
       click_page_turn_enabled: "点击翻页",
@@ -1247,6 +1260,7 @@ const en = {
       abreast_duplicate: "Column duplicates ratio",
       abreast_mode: "Abreast scroll mode",
       always_load_all_img: "Always load all images",
+      auto_switch_page_mode: "Auto switch single/double page mode",
       background_color: "Background Color",
       click_page_turn_area: "Touch area",
       click_page_turn_enabled: "Click to turn page",
@@ -1517,6 +1531,7 @@ const ru = {
       abreast_duplicate: "Коэффициент дублирования столбцов",
       abreast_mode: "Режим прокрутки в ряд",
       always_load_all_img: "Всегда загружать все изображения",
+      auto_switch_page_mode: "Автоматическое переключение режима одиночной/двойной страницы",
       background_color: "Цвет фона",
       click_page_turn_area: "Область нажатия",
       click_page_turn_enabled: "Перелистывать по клику",
@@ -2366,7 +2381,6 @@ const _defaultOption = {
     showImgStatus: true,
     easyScroll: false
   },
-  onePageMode: false,
   clickPageTurn: {
     enabled: 'ontouchstart' in document.documentElement,
     reverse: false,
@@ -2380,6 +2394,8 @@ const _defaultOption = {
   alwaysLoadAllImg: false,
   showComment: true,
   preloadPageNum: 20,
+  pageNum: 0,
+  autoSwitchPageMode: true,
   scrollMode: {
     enabled: false,
     spacing: 0,
@@ -2686,9 +2702,6 @@ const isAbreastMode = createRootMemo(() => store.option.scrollMode.enabled && st
 /** 当前是否为普通卷轴模式 */
 const isScrollMode = createRootMemo(() => store.option.scrollMode.enabled && !store.option.scrollMode.abreastMode);
 
-/** 是否为单页模式 */
-const isOnePageMode = createRootMemo(() => store.option.onePageMode || store.option.scrollMode.enabled || store.isMobile || store.imgList.length <= 1);
-
 /** 当前显示页面 */
 const activePage = createRootMemo(() => store.pageList[store.activePageIndex] ?? []);
 
@@ -2720,13 +2733,19 @@ const placeholderSize = createThrottleMemo(() => ({
 
 /** 并排卷轴模式下的列宽度 */
 const abreastColumnWidth = createRootMemo(() => isAbreastMode() ? placeholderSize().width * store.option.scrollMode.imgScale : 0);
+const autoPageNum = createThrottleMemo(() => store.rootSize.width >= store.rootSize.height ? 2 : 1);
+const pageNum = solidJs.createMemo(() => store.option.pageNum || autoPageNum());
+
+/** 是否为单页模式 */
+const isOnePageMode = createRootMemo(() => pageNum() === 1 || store.option.scrollMode.enabled || store.isMobile || store.imgList.length <= 1);
 
 /** 重新计算图片排列 */
 const updatePageData = state => {
   const lastActiveImgIndex = activeImgIndex();
   let newPageList = [];
   newPageList = isOnePageMode() ? state.imgList.map((_, i) => [i]) : handleComicData(state.imgList, state.fillEffect);
-  if (!isEqual(state.pageList, newPageList)) state.pageList = newPageList;
+  if (isEqual(state.pageList, newPageList)) return;
+  state.pageList = newPageList;
 
   // 在图片排列改变后自动跳转回原先显示图片所在的页数
   if (lastActiveImgIndex !== activeImgIndex()) {
@@ -2749,6 +2768,7 @@ const resetImgState = state => {
   // 如果用户没有手动修改过首页填充，才将其恢复初始
   if (typeof state.fillEffect['-1'] === 'boolean') state.fillEffect['-1'] = state.option.firstPageFill && state.imgList.length > 3;
 };
+createEffectOn([pageNum, isOnePageMode], () => setState(updatePageData));
 
 /** 记录每张图片所在的页面 */
 const imgPageMap = createRootMemo(() => {
@@ -2822,7 +2842,6 @@ createRootEffect(prevIsWide => {
     if (defaultImgType === 'vertical' && !autoScrollMode && !state.option.scrollMode.enabled) {
       state.option.scrollMode.enabled = true;
       autoScrollMode = true;
-      updatePageData(state);
       return;
     }
     if (isWide !== prevIsWide) updatePageData(state);
@@ -3706,47 +3725,26 @@ const waitTranslation = (id, i) => {
 
 /** 将翻译后的内容覆盖到原图上 */
 const mergeImage = async (rawImage, maskUri) => {
-  const canvas = document.createElement('canvas');
+  const img = await waitImgLoad(URL.createObjectURL(rawImage));
+  const canvas = new OffscreenCanvas(img.width, img.height);
   const canvasCtx = canvas.getContext('2d');
-  const img = new Image();
-  img.src = URL.createObjectURL(rawImage);
-  await new Promise((resolve, reject) => {
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      canvasCtx.drawImage(img, 0, 0);
-      resolve(null);
-    };
-    img.onerror = reject;
-  });
+  canvasCtx.drawImage(img, 0, 0);
   const img2 = new Image();
   img2.src = maskUri;
   img2.crossOrigin = 'anonymous';
-  await new Promise(resolve => {
-    img2.onload = () => {
-      canvasCtx.drawImage(img2, 0, 0);
-      resolve(null);
-    };
-  });
+  await waitImgLoad(img2);
+  canvasCtx.drawImage(img2, 0, 0);
   return URL.createObjectURL(await canvasToBlob(canvas));
 };
 
 /** 缩小过大的图片 */
 const resize = async (blob, w, h) => {
   if (w <= 4096 && h <= 4096) return blob;
-  const img = new Image();
-  img.src = URL.createObjectURL(blob);
-  await new Promise((resolve, reject) => {
-    img.onload = resolve;
-    img.onerror = reject;
-  });
-  if (w <= 4096 && h <= 4096) return blob;
   const scale = Math.min(4096 / w, 4096 / h);
   const width = Math.floor(w * scale);
   const height = Math.floor(h * scale);
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
+  const img = await waitImgLoad(URL.createObjectURL(blob));
+  const canvas = new OffscreenCanvas(width, height);
   const ctx = canvas.getContext('2d');
   ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(img, 0, 0, width, height);
@@ -3910,10 +3908,8 @@ const switchScrollMode = () => {
   zoom(100);
   setOption((draftOption, state) => {
     draftOption.scrollMode.enabled = !draftOption.scrollMode.enabled;
-    draftOption.onePageMode = draftOption.scrollMode.enabled;
     state.page.offset.x.px = 0;
     state.page.offset.y.px = 0;
-    updatePageData(state);
   });
   // 切换到卷轴模式后自动定位到对应页
   scrollViewImg(store.activePageIndex);
@@ -3922,8 +3918,8 @@ const switchScrollMode = () => {
 /** 切换单双页模式 */
 const switchOnePageMode = () => {
   setOption((draftOption, state) => {
-    draftOption.onePageMode = !draftOption.onePageMode;
-    updatePageData(state);
+    const newPageNum = pageNum() === 1 ? 2 : 1;
+    draftOption.pageNum = state.option.autoSwitchPageMode && newPageNum === autoPageNum() ? 0 : newPageNum;
   });
 };
 
@@ -4571,6 +4567,7 @@ const loadingImgMap = new Map();
 
 /** 加载期间尽快获取图片尺寸 */
 const checkImgSize = (i, e) => {
+  if (store.imgList[i] === undefined) return loadingImgMap.delete(i);
   if (!loadingImgMap.has(i) || store.imgList[i].width || store.imgList[i].height) return;
   if (!e.naturalWidth || !e.naturalHeight) return setTimeout(() => checkImgSize(i, e), 100);
   setState(state => updateImgSize(state, i, e.naturalWidth, e.naturalHeight));
@@ -4702,7 +4699,7 @@ const updateImgLoadType = singleThreaded(() => {
   for (const index of loadingImgMap.keys()) {
     if (loadImgList.has(index)) continue;
     loadingImgMap.delete(index);
-    _setState('imgList', index, 'loadType', 'wait');
+    if (Reflect.has(store.imgList, index)) _setState('imgList', index, 'loadType', 'wait');
   }
 });
 createEffectOn([preloadNum, () => [...renderImgList()].map(i => store.imgList[i]), () => store.option.alwaysLoadAllImg], updateImgLoadType);
@@ -5903,6 +5900,19 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       }
     });
   }
+}), web.createComponent(SettingsItemSwitch, {
+  get name() {
+    return t('setting.option.auto_switch_page_mode');
+  },
+  get value() {
+    return store.option.autoSwitchPageMode;
+  },
+  onChange: val => {
+    setOption((draftOption, state) => {
+      draftOption.autoSwitchPageMode = val;
+      state.option.pageNum = val ? 0 : autoPageNum();
+    });
+  }
 }), web.createComponent(solidJs.Show, {
   get when() {
     return store.option.scrollMode.enabled;
@@ -6185,14 +6195,14 @@ const defaultButtonList = [
 // 单双页模式
 () => web.createComponent(IconButton, {
   get tip() {
-    return web.memo(() => !!store.option.onePageMode)() ? t('button.page_mode_single') : t('button.page_mode_double');
+    return web.memo(() => !!isOnePageMode())() ? t('button.page_mode_single') : t('button.page_mode_double');
   },
   get hidden() {
     return store.isMobile || store.option.scrollMode.enabled;
   },
   onClick: switchOnePageMode,
   get children() {
-    return web.memo(() => !!store.option.onePageMode)() ? web.createComponent(MdLooksOne, {}) : web.createComponent(MdLooksTwo, {});
+    return web.memo(() => !!isOnePageMode())() ? web.createComponent(MdLooksOne, {}) : web.createComponent(MdLooksTwo, {});
   }
 }),
 // 卷轴模式
@@ -6431,7 +6441,7 @@ const ScrollbarPageStatus = () => {
     };
     for (let i = 0; i < store.pageList.length; i++) {
       const [a, b] = store.pageList[i];
-      if (b === undefined) handleImg(a, !store.option.onePageMode);else if (a === -1) {
+      if (b === undefined) handleImg(a, !isOnePageMode());else if (a === -1) {
         handleImg(b);
         handleImg(b);
       } else if (b === -1) {
@@ -6862,7 +6872,13 @@ const useInit$1 = props => {
         };
         autoCloseFill.clear();
       }
-      if (isNew || needUpdatePageData) updatePageData(state);
+      if (isNew || needUpdatePageData) {
+        updatePageData(state);
+
+        // 当前位于最后一页时最后一页被删的处理
+        if (state.activePageIndex >= state.pageList.length) state.activePageIndex = state.pageList.length - 1;
+        updateShowRange(state);
+      }
       if (isNew || state.pageList.length === 0) {
         resetImgState(state);
         state.activePageIndex = 0;
@@ -7318,7 +7334,7 @@ const useFab = async initProps => {
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复缩放和拖动页面的动画消失的 bug </p></li><li><p>修复在显示窗口不够宽时无法使用双页模式的 bug\`);
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复 ehentai 标签染色功能只对默认标签集生效的 bug </p></li><li><p>修复 koharu 改版导致的报错 </p></li><li><p>修复根据屏幕比例自动切换单双页模式功能失效的 bug\`);
 const migrationOption = async (name, editFn) => {
   try {
     const option = await GM.getValue(name);
@@ -7778,11 +7794,11 @@ const isGrayscalePixel = (r, g, b) => r === g && r === b;
 
 /** 判断一张图是否是彩图 */
 const isColorImg = imgCanvas => {
-  const canvas = document.createElement('canvas');
   // 缩小尺寸放弃细节，避免被黑白图上的小段彩色文字干扰
-  canvas.width = 3;
-  canvas.height = 3;
-  const ctx = canvas.getContext('2d');
+  const canvas = new OffscreenCanvas(3, 3);
+  const ctx = canvas.getContext('2d', {
+    alpha: false
+  });
   ctx.drawImage(imgCanvas, 0, 0, canvas.width, canvas.height);
   const {
     data
@@ -7799,9 +7815,7 @@ const imgToCanvas = async img => {
   if (typeof img !== 'string') {
     await main.wait(() => img.naturalHeight && img.naturalWidth, 1000 * 10);
     try {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      const canvas = new OffscreenCanvas(img.width, img.height);
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
       // 没被 CORS 污染就直接使用这个 canvas
@@ -7812,15 +7826,8 @@ const imgToCanvas = async img => {
   const res = await main.request(url, {
     responseType: 'blob'
   });
-  const image = new Image();
-  await new Promise((resolve, reject) => {
-    image.onload = resolve;
-    image.onerror = reject;
-    image.src = URL.createObjectURL(res.response);
-  });
-  const canvas = document.createElement('canvas');
-  canvas.width = image.width;
-  canvas.height = image.height;
+  const image = await main.waitImgLoad(URL.createObjectURL(res.response));
+  const canvas = new OffscreenCanvas(image.width, image.height);
   const ctx = canvas.getContext('2d');
   ctx.drawImage(image, 0, 0);
   return canvas;
@@ -7844,7 +7851,7 @@ const hasQrCode = async (imgCanvas, scanRegion, qrEngine, canvas) => {
       data
     } = await QrScanner.scanImage(imgCanvas, {
       qrEngine,
-      canvas,
+      canvas: canvas,
       scanRegion,
       alsoTryWithoutScanRegion: true
     });
@@ -7899,7 +7906,7 @@ const byContent = (qrEngine, canvas) => async img => isAdImg(await imgToCanvas(i
 /** 通过图片内容判断是否是广告 */
 const getAdPageByContent = async (imgList, adList = new Set()) => {
   const qrEngine = await QrScanner.createQrEngine();
-  const canvas = document.createElement('canvas');
+  const canvas = new OffscreenCanvas(1, 1);
   return getAdPage(imgList, byContent(qrEngine, canvas), adList);
 };
 
@@ -8055,6 +8062,7 @@ exports.activePage = activePage;
 exports.approx = approx;
 exports.assign = assign;
 exports.autoCloseFill = autoCloseFill;
+exports.autoPageNum = autoPageNum;
 exports.autoReadModeMessage = autoReadModeMessage;
 exports.autoUpdate = autoUpdate;
 exports.bindRef = bindRef;
@@ -8135,6 +8143,7 @@ exports.needDarkMode = needDarkMode;
 exports.needTrigged = needTrigged;
 exports.nowFillIndex = nowFillIndex;
 exports.openScrollLock = openScrollLock;
+exports.pageNum = pageNum;
 exports.placeholderSize = placeholderSize;
 exports.plimit = plimit;
 exports.preloadNum = preloadNum;
@@ -9582,23 +9591,42 @@ const hotkeysPageTurn = pageType => {
 //   #td_${tag}:not(.gt) { border-color: ${color}; }
 //   #taglist a#ta_${tag} { color: ${color} !important; position: relative; }
 const buildTagList = (tagList, prefix) => `\n${[...tagList].map(tag => `${prefix}${tag}`).join(',\n')}\n`;
+const getTagSetHtml = async tagset => {
+  const url = tagset ? `/mytags?tagset=${tagset}` : '/mytags';
+  const res = await main.request(url, {
+    fetch: true
+  });
+  return main.domParse(res.responseText);
+};
 
 /** 获取最新的标签颜色数据 */
 const updateTagColor = async () => {
-  const res = await main.request('/mytags', {
-    fetch: true
-  });
   const backgroundMap = {};
   const borderMap = {};
   const colorMap = {};
-  for (const [, color, border, background, title] of res.responseText.matchAll(/<div id="tagpreview_\d+.+?color:(.+?);border-color:(.+?);background:(.+?)".+title="(.+?)".+<\/div>/g)) {
-    const tag = title.replaceAll(' ', '_').replaceAll(':', '\\:');
-    backgroundMap[background] ||= new Set();
-    backgroundMap[background].add(tag);
-    borderMap[border] ||= new Set();
-    borderMap[border].add(tag);
-    colorMap[color] ||= new Set();
-    colorMap[color].add(tag);
+  const tagSetList = [];
+  // 获取所有标签集的 html
+  const defaultTagSet = await getTagSetHtml();
+  await Promise.all([...defaultTagSet.querySelectorAll('#tagset_outer select option')].map(async option => {
+    const tagSet = option.selected ? defaultTagSet : await getTagSetHtml(option.value);
+    if (tagSet.querySelector('#tagset_enable')?.checked) tagSetList.push(tagSet);
+  }));
+  for (const html of tagSetList) {
+    for (const tagDom of html.querySelectorAll('#usertags_outer [id^=tagpreview_]')) {
+      const {
+        color,
+        borderColor,
+        background
+      } = tagDom.style;
+      const tag = tagDom.title.replaceAll(' ', '_').replaceAll(':', '\\:');
+      if (!tag) continue;
+      backgroundMap[background] ||= new Set();
+      backgroundMap[background].add(tag);
+      borderMap[borderColor] ||= new Set();
+      borderMap[borderColor].add(tag);
+      colorMap[color] ||= new Set();
+      colorMap[color].add(tag);
+    }
   }
   let css = '';
   for (const [background, tagList] of Object.entries(backgroundMap)) {
@@ -10604,8 +10632,9 @@ const main = require('main');
       return '';
     }
     imgEle.src = URL.createObjectURL(res.response);
-    const err = await main.waitImgLoad(imgEle);
-    if (err) {
+    try {
+      await main.waitImgLoad(imgEle, 1000 * 10);
+    } catch {
       URL.revokeObjectURL(imgEle.src);
       imgEle.src = originalUrl;
       main.toast.warn(`加载原图时出错: ${imgEle.dataset.page}`);
@@ -10990,15 +11019,15 @@ const main = require('main');
               fetch: true,
               responseType: 'json'
             });
-            const [{
+            const [[w, {
               id,
               public_key
-            }] = Object.values(detailRes.response.data).sort((a, b) => b.size - a.size);
+            }]] = Object.entries(detailRes.response.data).sort(([, a], [, b]) => b.size - a.size);
             const {
               created_at,
               updated_at
             } = detailRes.response;
-            const dataRes = await main.request(`https://api.koharu.to/books/data/${galleryId}/${galleryKey}/${id}/${public_key}?v=${updated_at ?? created_at}`, {
+            const dataRes = await main.request(`https://api.koharu.to/books/data/${galleryId}/${galleryKey}/${id}/${public_key}?v=${updated_at ?? created_at}&w=${w}`, {
               fetch: true,
               responseType: 'json'
             });
@@ -11039,7 +11068,7 @@ const main = require('main');
   } = await main.useInit('kemono', {
     autoShow: false,
     defaultOption: {
-      onePageMode: true
+      pageNum: 1
     },
     /** 加载原图 */
     load_original_image: true
@@ -11075,7 +11104,7 @@ const main = require('main');
           initOptions: {
             autoShow: false,
             defaultOption: {
-              onePageMode: true
+              pageNum: 1
             }
           }
         };
