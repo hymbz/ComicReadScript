@@ -694,7 +694,7 @@ try {
           main
             .querySelectorAll<HTMLAnchorElement>('.fileThumb')
             .map((e) => e.getAttribute('href')!),
-        initOptions: { autoShow: false, defaultOption: { onePageMode: true } },
+        initOptions: { autoShow: false, defaultOption: { pageNum: 1 } },
       };
       break;
     }

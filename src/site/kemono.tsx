@@ -3,7 +3,7 @@ import { createEffectOn, querySelectorAll, useInit } from 'main';
 (async () => {
   const { init, options, setManga } = await useInit('kemono', {
     autoShow: false,
-    defaultOption: { onePageMode: true },
+    defaultOption: { pageNum: 1 },
     /** 加载原图 */
     load_original_image: true,
   });

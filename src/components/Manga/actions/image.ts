@@ -1,9 +1,10 @@
 import { isEqual, throttle } from 'helper';
+import { createEffectOn } from 'helper/solidJs';
 
 import { autoCloseFill, handleComicData } from '../handleComicData';
 import { setState, type State } from '../store';
 
-import { activeImgIndex, isOnePageMode } from './memo/common';
+import { activeImgIndex, isOnePageMode, pageNum } from './memo/common';
 
 /** 重新计算图片排列 */
 export const updatePageData = (state: State) => {
@@ -41,3 +42,5 @@ export const resetImgState = (state: State) => {
     state.fillEffect['-1'] =
       state.option.firstPageFill && state.imgList.length > 3;
 };
+
+createEffectOn([pageNum, isOnePageMode], () => setState(updatePageData));

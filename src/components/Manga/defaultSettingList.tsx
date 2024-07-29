@@ -11,6 +11,7 @@ import { SettingTranslation } from './components/SettingTranslation';
 import { SettingsShowItem } from './components/SettingsShowItem';
 import { SettingsItemSelect } from './components/SettingsItemSelect';
 import {
+  autoPageNum,
   createStateSetFn,
   saveScrollProgress,
   setOption,
@@ -149,6 +150,17 @@ export const defaultSettingList: () => SettingList = () => [
             onChange={createStateSetFn('disableZoom')}
           />
         </Show>
+
+        <SettingsItemSwitch
+          name={t('setting.option.auto_switch_page_mode')}
+          value={store.option.autoSwitchPageMode}
+          onChange={(val) => {
+            setOption((draftOption, state) => {
+              draftOption.autoSwitchPageMode = val;
+              state.option.pageNum = val ? 0 : autoPageNum();
+            });
+          }}
+        />
 
         <Show when={store.option.scrollMode.enabled}>
           <SettingsItemSwitch

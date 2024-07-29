@@ -5,8 +5,6 @@ import type { areaArrayMap } from '../components/TouchArea';
 export interface Option {
   /** 漫画方向 */
   dir: 'ltr' | 'rtl';
-  /** 单页模式 */
-  onePageMode: boolean;
   /** 默认启用首页填充 */
   firstPageFill: boolean;
   /** 自定义背景色 */
@@ -25,6 +23,10 @@ export interface Option {
   showComment: boolean;
   /** 预加载页数 */
   preloadPageNum: number;
+  /** 显示页数。0 表示 auto */
+  pageNum: 1 | 2 | 0;
+  /** 自动切换单双页模式 */
+  autoSwitchPageMode: boolean;
 
   /** 滚动条 */
   scrollbar: {
@@ -94,7 +96,6 @@ const _defaultOption: Readonly<Option> = {
     showImgStatus: true,
     easyScroll: false,
   },
-  onePageMode: false,
   clickPageTurn: {
     enabled: 'ontouchstart' in document.documentElement,
     reverse: false,
@@ -108,6 +109,8 @@ const _defaultOption: Readonly<Option> = {
   alwaysLoadAllImg: false,
   showComment: true,
   preloadPageNum: 20,
+  pageNum: 0,
+  autoSwitchPageMode: true,
 
   scrollMode: {
     enabled: false,

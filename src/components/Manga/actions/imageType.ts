@@ -56,7 +56,6 @@ createRootEffect((prevIsWide) => {
     ) {
       state.option.scrollMode.enabled = true;
       autoScrollMode = true;
-      updatePageData(state);
       return;
     }
 

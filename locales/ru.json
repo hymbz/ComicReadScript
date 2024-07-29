@@ -109,6 +109,7 @@
       "abreast_duplicate": "Коэффициент дублирования столбцов",
       "abreast_mode": "Режим прокрутки в ряд",
       "always_load_all_img": "Всегда загружать все изображения",
+      "auto_switch_page_mode": "Автоматическое переключение режима одиночной/двойной страницы",
       "background_color": "Цвет фона",
       "click_page_turn_area": "Область нажатия",
       "click_page_turn_enabled": "Перелистывать по клику",

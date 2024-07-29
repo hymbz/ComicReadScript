@@ -3,7 +3,7 @@ import { boolDataVal } from 'helper';
 import { createThrottleMemo } from 'helper/solidJs';
 
 import { store } from '../store';
-import { contentHeight } from '../actions';
+import { contentHeight, isOnePageMode } from '../actions';
 import classes from '../index.module.css';
 
 interface ScrollbarPageItem {
@@ -85,7 +85,7 @@ export const ScrollbarPageStatus = () => {
     for (let i = 0; i < store.pageList.length; i++) {
       const [a, b] = store.pageList[i];
 
-      if (b === undefined) handleImg(a, !store.option.onePageMode);
+      if (b === undefined) handleImg(a, !isOnePageMode());
       else if (a === -1) {
         handleImg(b);
         handleImg(b);

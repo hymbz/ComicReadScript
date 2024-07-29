@@ -109,6 +109,7 @@
       "abreast_duplicate": "Column duplicates ratio",
       "abreast_mode": "Abreast scroll mode",
       "always_load_all_img": "Always load all images",
+      "auto_switch_page_mode": "Auto switch single/double page mode",
       "background_color": "Background Color",
       "click_page_turn_area": "Touch area",
       "click_page_turn_enabled": "Click to turn page",

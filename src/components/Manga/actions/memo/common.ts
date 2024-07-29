@@ -1,4 +1,5 @@
 import { createRootMemo, createThrottleMemo } from 'helper/solidJs';
+import { createMemo } from 'solid-js';
 
 import { store } from '../../store';
 import { findFillIndex } from '../../handleComicData';
@@ -11,15 +12,6 @@ export const isAbreastMode = createRootMemo(
 /** 当前是否为普通卷轴模式 */
 export const isScrollMode = createRootMemo(
   () => store.option.scrollMode.enabled && !store.option.scrollMode.abreastMode,
-);
-
-/** 是否为单页模式 */
-export const isOnePageMode = createRootMemo(
-  () =>
-    store.option.onePageMode ||
-    store.option.scrollMode.enabled ||
-    store.isMobile ||
-    store.imgList.length <= 1,
 );
 
 /** 当前显示页面 */
@@ -68,4 +60,19 @@ export const abreastColumnWidth = createRootMemo(() =>
   isAbreastMode()
     ? placeholderSize().width * store.option.scrollMode.imgScale
     : 0,
+);
+
+export const autoPageNum = createThrottleMemo(() =>
+  store.rootSize.width >= store.rootSize.height ? 2 : 1,
+);
+
+export const pageNum = createMemo(() => store.option.pageNum || autoPageNum());
+
+/** 是否为单页模式 */
+export const isOnePageMode = createRootMemo(
+  () =>
+    pageNum() === 1 ||
+    store.option.scrollMode.enabled ||
+    store.isMobile ||
+    store.imgList.length <= 1,
 );

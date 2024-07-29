@@ -6,7 +6,13 @@ import { zoom } from './zoom';
 import { setOption } from './helper';
 import { updatePageData } from './image';
 import { setImgTranslationEnbale } from './translation';
-import { activeImgIndex, nowFillIndex, activePage } from './memo';
+import {
+  activeImgIndex,
+  nowFillIndex,
+  activePage,
+  pageNum,
+  autoPageNum,
+} from './memo';
 import { saveScrollProgress, scrollViewImg } from './scroll';
 
 /** 切换页面填充 */
@@ -27,10 +33,8 @@ export const switchScrollMode = () => {
   zoom(100);
   setOption((draftOption, state) => {
     draftOption.scrollMode.enabled = !draftOption.scrollMode.enabled;
-    draftOption.onePageMode = draftOption.scrollMode.enabled;
     state.page.offset.x.px = 0;
     state.page.offset.y.px = 0;
-    updatePageData(state);
   });
   // 切换到卷轴模式后自动定位到对应页
   scrollViewImg(store.activePageIndex);
@@ -39,8 +43,11 @@ export const switchScrollMode = () => {
 /** 切换单双页模式 */
 export const switchOnePageMode = () => {
   setOption((draftOption, state) => {
-    draftOption.onePageMode = !draftOption.onePageMode;
-    updatePageData(state);
+    const newPageNum = pageNum() === 1 ? 2 : 1;
+    draftOption.pageNum =
+      state.option.autoSwitchPageMode && newPageNum === autoPageNum()
+        ? 0
+        : newPageNum;
   });
 };
 

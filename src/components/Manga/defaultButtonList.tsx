@@ -57,13 +57,13 @@ export const defaultButtonList: ToolbarButtonList = [
   () => (
     <IconButton
       tip={
-        store.option.onePageMode
+        isOnePageMode()
           ? t('button.page_mode_single')
           : t('button.page_mode_double')
       }
       hidden={store.isMobile || store.option.scrollMode.enabled}
       onClick={switchOnePageMode}
-      children={store.option.onePageMode ? <MdLooksOne /> : <MdLooksTwo />}
+      children={isOnePageMode() ? <MdLooksOne /> : <MdLooksTwo />}
     />
   ),
   // 卷轴模式
