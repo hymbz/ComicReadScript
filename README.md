@@ -228,7 +228,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 ![eh标签染色](/docs/public/eh标签染色.webp)
 
-> 标签颜色数据将在 `进入「My Tags」时` 和 `在「My Tags」中修改后` 更新
+> 标签颜色数据将在 `功能开启时`、`进入「My Tags」时` 和 `在「My Tags」中修改后` 更新
 
 ### 识别广告页
 

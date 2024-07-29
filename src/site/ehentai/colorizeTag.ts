@@ -1,4 +1,4 @@
-import { request } from 'main';
+import { domParse, request } from 'main';
 
 import { type PageType } from '.';
 
@@ -18,25 +18,50 @@ import { type PageType } from '.';
 const buildTagList = (tagList: Set<string>, prefix: string) =>
   `\n${[...tagList].map((tag) => `${prefix}${tag}`).join(',\n')}\n`;
 
+const getTagSetHtml = async (tagset?: string) => {
+  const url = tagset ? `/mytags?tagset=${tagset}` : '/mytags';
+  const res = await request(url, { fetch: true });
+  return domParse(res.responseText);
+};
+
 /** 获取最新的标签颜色数据 */
 export const updateTagColor = async () => {
-  const res = await request('/mytags', { fetch: true });
-
   const backgroundMap: Record<string, Set<string>> = {};
   const borderMap: Record<string, Set<string>> = {};
   const colorMap: Record<string, Set<string>> = {};
 
-  for (const [, color, border, background, title] of res.responseText.matchAll(
-    /<div id="tagpreview_\d+.+?color:(.+?);border-color:(.+?);background:(.+?)".+title="(.+?)".+<\/div>/g,
-  )) {
-    const tag = title.replaceAll(' ', '_').replaceAll(':', '\\:');
+  const tagSetList: Document[] = [];
+  // 获取所有标签集的 html
+  const defaultTagSet = await getTagSetHtml();
+  await Promise.all(
+    [
+      ...defaultTagSet.querySelectorAll<HTMLOptionElement>(
+        '#tagset_outer select option',
+      ),
+    ].map(async (option) => {
+      const tagSet = option.selected
+        ? defaultTagSet
+        : await getTagSetHtml(option.value);
+      if (tagSet.querySelector<HTMLInputElement>('#tagset_enable')?.checked)
+        tagSetList.push(tagSet);
+    }),
+  );
 
-    backgroundMap[background] ||= new Set();
-    backgroundMap[background].add(tag);
-    borderMap[border] ||= new Set();
-    borderMap[border].add(tag);
-    colorMap[color] ||= new Set();
-    colorMap[color].add(tag);
+  for (const html of tagSetList) {
+    for (const tagDom of html.querySelectorAll<HTMLElement>(
+      '#usertags_outer [id^=tagpreview_]',
+    )) {
+      const { color, borderColor, background } = tagDom.style;
+      const tag = tagDom.title.replaceAll(' ', '_').replaceAll(':', '\\:');
+      if (!tag) continue;
+
+      backgroundMap[background] ||= new Set();
+      backgroundMap[background].add(tag);
+      borderMap[borderColor] ||= new Set();
+      borderMap[borderColor].add(tag);
+      colorMap[color] ||= new Set();
+      colorMap[color].add(tag);
+    }
   }
 
   let css = '';
