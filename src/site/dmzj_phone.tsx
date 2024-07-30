@@ -18,8 +18,6 @@ import {
 } from '../helper/dmzjApi';
 
 (async () => {
-  const { setManga, init } = await useInit('dmzj');
-
   // 分别处理目录页和漫画页
   switch (window.location.pathname.split('/')[1]) {
     case 'info': {
@@ -180,6 +178,8 @@ import {
       } = data;
 
       document.title = `${chapter_name} ${folder.split('/').at(1)}`;
+
+      const { setManga, init } = await useInit('dmzj');
 
       setManga({
         // 进入阅读模式后禁止退出，防止返回空白页面
