@@ -2,6 +2,7 @@
   display: block;
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .img {
@@ -53,11 +54,9 @@
     width: 100%;
     height: 100%;
 
+    background: inherit;
     background-color: #eee;
     background-image: var(--md-image-not-supported);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 30%;
   }
 
   &[data-load-type="loading"] > picture {
@@ -221,5 +220,48 @@
 
   100% {
     opacity: 1;
+  }
+}
+
+/*
+  Safari 兼容
+  https://sleazyfork.org/zh-CN/scripts/374903/discussions/253166#comment-518444
+*/
+@supports (hanging-punctuation: first) and (font: -apple-system-body) and
+  (-webkit-appearance: none) {
+  .img > picture {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg);
+  }
+
+  .img:not([data-load-type]) > picture {
+    background-image: unset;
+  }
+
+  :is(
+      .mangaFlow[dir="ltr"] .img[data-show="1"],
+      .mangaFlow[dir="rtl"] .img[data-show="0"]
+    ) {
+    picture {
+      background-position: 5em 50%;
+
+      img {
+        object-position: left;
+      }
+    }
+  }
+
+  :is(
+      .mangaFlow[dir="ltr"] .img[data-show="0"],
+      .mangaFlow[dir="rtl"] .img[data-show="1"]
+    ) {
+    picture {
+      background-position: calc(100% - 5em) 50%;
+
+      img {
+        object-position: right;
+      }
+    }
   }
 }
