@@ -42,11 +42,11 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
       data-type={img.type ?? store.defaultImgType}
       data-load-type={img.loadType === 'loaded' ? undefined : img.loadType}
     >
-      <Show when={img.loadType !== 'wait' && src()}>
-        {/* 因为 img 无法使用 ::after，所以得用 picture 包一下 */}
-        <picture
-          style={{ 'aspect-ratio': `${img.size.width} / ${img.size.height}` }}
-        >
+      {/* 因为 img 无法使用 ::after，所以得用 picture 包一下 */}
+      <picture
+        style={{ 'aspect-ratio': `${img.size.width} / ${img.size.height}` }}
+      >
+        <Show when={img.loadType !== 'wait' && src()}>
           <img
             src={src()}
             alt={`${img.index}`}
@@ -56,8 +56,8 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
             // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
             decoding="sync"
           />
-        </picture>
-      </Show>
+        </Show>
+      </picture>
       <Show when={store.gridMode}>
         <div
           class={classes.gridModeTip}

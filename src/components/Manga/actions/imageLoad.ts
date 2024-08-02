@@ -5,9 +5,9 @@ import { log } from 'helper/logger';
 
 import { store, setState, _setState, refs } from '../store';
 
-import { activePage, preloadNum } from './memo/common';
+import { preloadNum } from './memo/common';
 import { updateImgSize } from './imageSize';
-import { renderImgList } from './renderPage';
+import { renderImgList, showImgList } from './renderPage';
 
 /** 图片加载完毕的回调 */
 export const handleImgLoaded = (i: number, e: HTMLImageElement) => {
@@ -55,11 +55,12 @@ const loadImgList = new Set<number>();
 const loadImg = (index: number) => {
   if (index === -1 || !needLoadImgList().has(index)) return true;
   const img = store.imgList[index];
-  if (
-    img.loadType === 'error' &&
-    (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3)
-  )
-    return true;
+  if (img.loadType === 'error') {
+    if (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3)
+      return true;
+    _setState('imgList', index, 'loadType', 'wait');
+    return false;
+  }
   loadImgList.add(index);
   return false;
 };
@@ -150,13 +151,13 @@ const updateImgLoadType = singleThreaded(() => {
 
   setState((state) => {
     for (const index of needLoadImgList()) {
-      const { loadType } = state.imgList[index];
+      const img = state.imgList[index];
       if (loadImgList.has(index)) {
-        if (loadType !== 'loading') {
-          state.imgList[index].loadType = 'loading';
-          setTimeout(checkImgSize, 0, index);
+        if (img.loadType !== 'loading') {
+          img.loadType = 'loading';
+          if (img.width === undefined) setTimeout(checkImgSize, 0, index);
         }
-      } else if (loadType === 'loading') state.imgList[index].loadType = 'wait';
+      } else if (img.loadType === 'loading') img.loadType = 'wait';
     }
   });
 });
@@ -171,14 +172,14 @@ createEffectOn(
 );
 
 createEffectOn(
-  activePage,
-  debounce((page) => {
+  showImgList,
+  debounce((showImgList) => {
     // 如果当前显示页面有出错的图片，就重新加载一次
-    for (const i of page) {
+    for (const i of showImgList) {
       if (store.imgList[i]?.loadType !== 'error') continue;
       _setState('imgList', i, 'loadType', 'wait');
-      loadImg(i);
+      updateImgLoadType();
     }
-  }),
+  }, 500),
   { defer: true },
 );

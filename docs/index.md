@@ -268,7 +268,7 @@ nhentai 的屏蔽机制是在被屏蔽漫画封面加上一层半透明遮罩，
 
 ## i18n
 
-为了方便中文圈外的用户使用，脚本借助 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 实现了多语言的翻译。欢迎好心人通过 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 提供新语言翻译或帮忙改进现有翻译质量。
+为了方便中文圈外的用户使用，脚本借助 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 实现了多语言的翻译（感谢 Weblate 为开源项目提供的免费套餐）。欢迎更多好心人通过 [Weblate](https://hosted.weblate.org/engage/comic_read_script/) 提供新语言翻译或帮忙改进现有翻译质量。
 
 同时非常感谢以下已经为脚本提供了翻译的贡献者
 
@@ -276,3 +276,9 @@ nhentai 的屏蔽机制是在被屏蔽漫画封面加上一层半透明遮罩，
 
 <a href="https://hosted.weblate.org/engage/comic_read_script/" align="left"><img src="https://hosted.weblate.org/widget/comic_read_script/main/287x66-grey.png" alt="翻译状态" /></a>
 <a href="https://hosted.weblate.org/engage/comic_read_script/" align="right"><img src="https://hosted.weblate.org/widget/comic_read_script/main/multi-auto.svg" alt="翻译状态" /></a>
+
+## 致谢
+
+感谢 [BrowserStack](https://www.browserstack.com/open-source?ref=pricing) 为开源项目提供的免费套餐。
+
+This project is tested with BrowserStack.

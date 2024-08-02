@@ -140,9 +140,6 @@ export const ComicImgFlow: Component = () => {
   });
 
   useStyleMemo(`#${classes.mangaFlow}`, {
-    '--zoom-x': () => `${store.zoom.offset.x}px`,
-    '--zoom-y': () => `${store.zoom.offset.y}px`,
-    '--root-w': () => `${store.rootSize.width}px`,
     transform: () =>
       `translate(
         ${pageX()}px,

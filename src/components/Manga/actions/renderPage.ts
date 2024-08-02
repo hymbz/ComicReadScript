@@ -103,6 +103,10 @@ export const renderImgList = createRootMemo(() =>
   getRangeImgList(store.renderRange),
 );
 
+export const showImgList = createRootMemo(() =>
+  getRangeImgList(store.showRange),
+);
+
 /**
  * 图片显示状态
  *
