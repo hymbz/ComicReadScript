@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.4.3
+// @version         9.5.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -315,35 +315,6 @@ var throttle$1 = (callback, wait) => {
     solidJs.onCleanup(clear);
   return Object.assign(throttled, { clear });
 };
-var scheduleIdle = web.isServer ? () => Object.assign(() => void 0, { clear: () => void 0 }) : (
-  // requestIdleCallback is not supported in Safari
-  window.requestIdleCallback ? (callback, maxWait) => {
-    let isDeferred = false, id, lastArgs;
-    const deferred = (...args) => {
-      lastArgs = args;
-      if (isDeferred)
-        return;
-      isDeferred = true;
-      id = requestIdleCallback(
-        () => {
-          callback(...lastArgs);
-          isDeferred = false;
-        },
-        { timeout: maxWait }
-      );
-    };
-    const clear = () => {
-      cancelIdleCallback(id);
-      isDeferred = false;
-    };
-    if (solidJs.getOwner())
-      solidJs.onCleanup(clear);
-    return Object.assign(deferred, { clear });
-  } : (
-    // fallback to setTimeout (throttle)
-    (callback) => throttle$1(callback)
-  )
-);
 function leadingAndTrailing(schedule, callback, wait) {
   if (web.isServer) {
     let called = false;
@@ -818,7 +789,7 @@ const byPath = (obj, path, handleVal) => {
   if (target === obj) return null;
   return target;
 };
-const requestIdleCallback$1 = (callback, timeout) => {
+const requestIdleCallback = (callback, timeout) => {
   if (Reflect.has(window, 'requestIdleCallback')) return window.requestIdleCallback(callback, {
     timeout
   });
@@ -1023,7 +994,8 @@ const zh = {
       scrollbar_show_img_status: "显示图片加载状态",
       show_clickable_area: "显示点击区域",
       show_comments: "在结束页显示评论",
-      swap_page_turn_key: "左右翻页键交换"
+      swap_page_turn_key: "左右翻页键交换",
+      zoom: "图片缩放"
     },
     translation: {
       cotrans_tip: "<p>将使用 <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans</a> 提供的接口翻译图片，该服务器由其维护者用爱发电自费维护</p>\\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\\n<p>所以还请 <b>注意用量</b></p>\\n<p>更推荐使用自己本地部署的项目，既不占用服务器资源也不需要排队</p>",
@@ -1294,7 +1266,8 @@ const en = {
       scrollbar_show_img_status: "Show image loading status",
       show_clickable_area: "Show clickable areas",
       show_comments: "Show comments on the end page",
-      swap_page_turn_key: "Swap LR page-turning keys"
+      swap_page_turn_key: "Swap LR page-turning keys",
+      zoom: "Image zoom ratio"
     },
     translation: {
       cotrans_tip: "<p>Using the interface provided by <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\\n<p>So please <b>mind the frequency of use</b>.</p>\\n<p>It is highly recommended to use your own locally deployed project, as it does not consume server resources and does not require queuing.</p>",
@@ -1565,7 +1538,8 @@ const ru = {
       scrollbar_show_img_status: "Показывать статус загрузки изображения",
       show_clickable_area: "Показывать кликабельные области",
       show_comments: "Показывать комментарии на последней странице",
-      swap_page_turn_key: "Поменять местами клавиши переключения страниц"
+      swap_page_turn_key: "Поменять местами клавиши переключения страниц",
+      zoom: "Коэффициент масштабирования изображения"
     },
     translation: {
       cotrans_tip: "<p>Использует для перевода <a href=\\"https://cotrans.touhou.ai\\" target=\\"_blank\\">Cotrans API</a>, работающий исключительно за счёт своего создателя.</p>\\n<p>Запросы обрабатываются по одному в порядке синхронной очереди. Когда очередь превышает лимит новые запросы будут приводить к ошибке. Если такое случилось попробуйте позже.</p>\\n<p>Так что пожалуйста <b>учитывайте загруженность при выборе</b></p>\\n<p>Настоятельно рекомендовано использовать проект развёрнутый локально т.к. это не потребляет серверные ресурсы и вы не ограничены очередью.</p>",
@@ -2396,6 +2370,13 @@ const _defaultOption = {
   preloadPageNum: 20,
   pageNum: 0,
   autoSwitchPageMode: true,
+  zoom: {
+    ratio: 100,
+    offset: {
+      x: 0,
+      y: 0
+    }
+  },
   scrollMode: {
     enabled: false,
     spacing: 0,
@@ -2504,15 +2485,6 @@ const ShowState = {
         px: 0
       }
     }
-  },
-  zoom: {
-    /** 缩放大小 */
-    scale: 100,
-    /** 确保缩放前后基准点不变所需的偏移量 */
-    offset: {
-      x: 0,
-      y: 0
-    }
   }
 };
 
@@ -2555,7 +2527,7 @@ const useHiddenMouse = () => {
 };
 
 /** 触发 onOptionChange */
-const triggerOnOptionChange = scheduleIdle(() => store.prop.OptionChange?.(difference(store.option, store.defaultOption)), 1000);
+const triggerOnOptionChange = throttle(() => store.prop.OptionChange?.(difference(store.option, store.defaultOption)), 1000);
 
 /** 在 option 后手动触发 onOptionChange */
 const setOption = fn => {
@@ -2818,7 +2790,6 @@ const getImgType = img => {
 
 /** 更新图片类型。返回是否修改了图片类型 */
 const updateImgType = (state, draftImg) => {
-  if (!state.rootSize.width || !state.rootSize.height) return false;
   const {
     type
   } = draftImg;
@@ -2934,7 +2905,7 @@ const contentHeight = createRootMemo(() => (imgTopList().at(-1) ?? 0) + (store.i
 // 卷轴模式下需要提前知道尺寸方便正确布局
 // 翻页模式下也需要提前发现跨页图重新排序
 // requestIdleCallback(preloadImgSize);
-var css$1 = ".img img{display:block}.img,.img img{height:100%;width:100%}.img{align-content:center;content-visibility:hidden;display:none;margin-left:auto;margin-right:auto;position:relative}.img[data-show]{content-visibility:visible;display:block}.img>picture{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%;display:block;height:auto;margin-left:inherit;margin-right:inherit;max-height:100%;max-width:100%;position:relative;width:auto}.img[data-load-type=error]>picture:after{background-color:#eee;background-image:var(--md-image-not-supported);background-position:50%;background-repeat:no-repeat;background-size:30%;content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-load-type=loading]>picture{background-image:var(--md-cloud-download)}.img[data-load-type=loading]>picture img{animation:show 1s forwards}.mangaFlow[dir=ltr] .img[data-show=\\"1\\"],.mangaFlow[dir=rtl] .img[data-show=\\"0\\"]{margin-left:0;margin-right:auto}.mangaFlow[dir=ltr] .img[data-show=\\"0\\"],.mangaFlow[dir=rtl] .img[data-show=\\"1\\"]{margin-left:auto;margin-right:0}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;width:100%}.mangaFlow[data-disable-zoom] .img>picture{height:-moz-fit-content;height:fit-content;width:-moz-fit-content;width:fit-content}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-vertical]{grid-auto-flow:row}.mangaBox{contain:layout style;height:100%;transform-origin:0 0;transition-duration:0ms;width:100%}.mangaBox[data-animation=page] .mangaFlow,.mangaBox[data-animation=zoom]{transition-duration:.3s}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}.root:not([data-grid-mode]) .mangaBox::-webkit-scrollbar{display:none}.root[data-grid-mode] .mangaFlow{grid-auto-columns:1fr;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;grid-row-gap:1.5em;align-items:end;box-sizing:border-box;grid-template-rows:unset}.root[data-grid-mode] .mangaFlow .img{cursor:pointer;margin-left:auto;margin-right:auto}.root[data-grid-mode] .mangaFlow .img>.gridModeTip{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.root[data-grid-mode] .mangaFlow .img[data-load-type=error],.root[data-grid-mode] .mangaFlow .img[data-load-type=wait],.root[data-grid-mode] .mangaFlow .img[src=\\"\\"]{height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px);height:-moz-fit-content;height:fit-content}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll]{overflow:hidden}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow{grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow .img{height:auto;width:100%;will-change:transform}@keyframes show{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.endPage>button[data-is-end]{font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}.SettingsShowItem>.SettingsShowItemBody>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.hotkeysItem>svg:hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.hotkeysHeader>div[title]>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.scrollbar:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}.scrollbar:hover .scrollbarPoper,.scrollbar:hover .scrollbarSlider,.scrollbar:hover:before,.scrollbar[data-force-show] .scrollbarPoper,.scrollbar[data-force-show] .scrollbarSlider,.scrollbar[data-force-show]:before{opacity:1}.scrollbar[data-drag] .scrollbarPoper,.scrollbar[data-drag] .scrollbarSlider,.scrollbar[data-drag]:before{transition:opacity .15s}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.scrollbar[data-position=bottom]:before,.scrollbar[data-position=top]:before{border-left:.4em solid transparent}.scrollbar[data-position=bottom] .scrollbarSlider,.scrollbar[data-position=top] .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.scrollbar[data-position=bottom] .scrollbarPoper,.scrollbar[data-position=top] .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.scrollbar[data-position=bottom][data-dir=ltr],.scrollbar[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.scrollbar[data-position=bottom][data-dir=ltr]:before,.scrollbar[data-position=top][data-dir=ltr]:before{left:0;right:unset}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarSlider,.scrollbar[data-position=top][data-dir=ltr] .scrollbarSlider{transform:translateX(var(--top))}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarPoper,.scrollbar[data-position=top][data-dir=ltr] .scrollbarPoper{transform:translateX(var(--poper-top))}.scrollbar[data-position=bottom] .scrollbarPage,.scrollbar[data-position=top] .scrollbarPage{transform:scaleX(1)}.scrollbar[data-position=bottom] .scrollbarPage[data-type=loaded],.scrollbar[data-position=top] .scrollbarPage[data-type=loaded]{transform:scaleX(0)}.scrollbar[data-position=bottom] .scrollbarPage[data-translation-type],.scrollbar[data-position=top] .scrollbarPage[data-translation-type]{transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}.root[data-mobile] .scrollbar:hover .scrollbarPoper,.root[data-mobile] .scrollbar:hover:before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}.touchAreaRoot .touchArea[data-area=PREV],.touchAreaRoot .touchArea[data-area=prev]{background-color:#95e1d3e6}.touchAreaRoot .touchArea[data-area=MENU],.touchAreaRoot .touchArea[data-area=menu]{background-color:#fce38ae6}.touchAreaRoot .touchArea[data-area=NEXT],.touchAreaRoot .touchArea[data-area=next]{background-color:#f38181e6}.touchAreaRoot .touchArea[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.touchAreaRoot .touchArea[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.touchAreaRoot .touchArea[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:transparent}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div,div:focus,div:focus-visible,div:focus-within{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".img img{display:block;object-fit:contain}.img,.img img{height:100%;width:100%}.img{align-content:center;content-visibility:hidden;display:none;margin-left:auto;margin-right:auto;position:relative}.img[data-show]{content-visibility:visible;display:block}.img>picture{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%;display:block;height:auto;margin-left:inherit;margin-right:inherit;max-height:100%;max-width:100%;position:relative;width:auto}.img[data-load-type=error]>picture:after{background:inherit;background-color:#eee;background-image:var(--md-image-not-supported);content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-load-type=loading]>picture{background-image:var(--md-cloud-download)}.img[data-load-type=loading]>picture img{animation:show 1s forwards}.mangaFlow[dir=ltr] .img[data-show=\\"1\\"],.mangaFlow[dir=rtl] .img[data-show=\\"0\\"]{margin-left:0;margin-right:auto}.mangaFlow[dir=ltr] .img[data-show=\\"0\\"],.mangaFlow[dir=rtl] .img[data-show=\\"1\\"]{margin-left:auto;margin-right:0}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;width:100%}.mangaFlow[data-disable-zoom] .img>picture{height:-moz-fit-content;height:fit-content;width:-moz-fit-content;width:fit-content}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-vertical]{grid-auto-flow:row}.mangaBox{contain:layout style;height:100%;transform-origin:0 0;transition-duration:0ms;width:100%}.mangaBox[data-animation=page] .mangaFlow,.mangaBox[data-animation=zoom]{transition-duration:.3s}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}.root:not([data-grid-mode]) .mangaBox::-webkit-scrollbar{display:none}.root[data-grid-mode] .mangaFlow{grid-auto-columns:1fr;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;grid-row-gap:1.5em;align-items:end;box-sizing:border-box;grid-template-rows:unset}.root[data-grid-mode] .mangaFlow .img{cursor:pointer;margin-left:auto;margin-right:auto}.root[data-grid-mode] .mangaFlow .img>.gridModeTip{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}.root[data-grid-mode] .mangaFlow .img[data-load-type=error],.root[data-grid-mode] .mangaFlow .img[data-load-type=wait],.root[data-grid-mode] .mangaFlow .img[src=\\"\\"]{height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px);height:-moz-fit-content;height:fit-content}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll]{overflow:hidden}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow{grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox[data-abreast-scroll] .mangaFlow .img{height:auto;width:100%;will-change:transform}@keyframes show{0%{opacity:0}90%{opacity:0}to{opacity:1}}@supports (hanging-punctuation:first) and (font:-apple-system-body) and (-webkit-appearance:none){.img>picture{background-color:var(--bg);height:100%;width:100%}.img:not([data-load-type])>picture{background-image:unset}:is(.mangaFlow[dir=ltr] .img[data-show=\\"1\\"],.mangaFlow[dir=rtl] .img[data-show=\\"0\\"]) picture{background-position:5em 50%}:is(.mangaFlow[dir=ltr] .img[data-show=\\"1\\"],.mangaFlow[dir=rtl] .img[data-show=\\"0\\"]) picture img{object-position:left}:is(.mangaFlow[dir=ltr] .img[data-show=\\"0\\"],.mangaFlow[dir=rtl] .img[data-show=\\"1\\"]) picture{background-position:calc(100% - 5em) 50%}:is(.mangaFlow[dir=ltr] .img[data-show=\\"0\\"],.mangaFlow[dir=rtl] .img[data-show=\\"1\\"]) picture img{object-position:right}}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:transparent;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}.endPage>button[data-is-end]{font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);color:var(--text);font-size:1.2em;height:-moz-fit-content;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px 0 rgba(0,0,0,.14),0 1px 3px 0 rgba(0,0,0,.12);height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:transparent;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}.SettingsShowItem>.SettingsShowItemBody>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:content-box;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}.hotkeysItem>svg:hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}.hotkeysHeader>div[title]>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid transparent;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:transparent;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:-moz-fit-content;width:fit-content}.scrollbar:before{background-color:transparent;border:.4em solid transparent;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}.scrollbar:hover .scrollbarPoper,.scrollbar:hover .scrollbarSlider,.scrollbar:hover:before,.scrollbar[data-force-show] .scrollbarPoper,.scrollbar[data-force-show] .scrollbarSlider,.scrollbar[data-force-show]:before{opacity:1}.scrollbar[data-drag] .scrollbarPoper,.scrollbar[data-drag] .scrollbarSlider,.scrollbar[data-drag]:before{transition:opacity .15s}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid transparent;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid transparent;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}.scrollbar[data-position=bottom]:before,.scrollbar[data-position=top]:before{border-left:.4em solid transparent}.scrollbar[data-position=bottom] .scrollbarSlider,.scrollbar[data-position=top] .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}.scrollbar[data-position=bottom] .scrollbarPoper,.scrollbar[data-position=top] .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}.scrollbar[data-position=bottom][data-dir=ltr],.scrollbar[data-position=top][data-dir=ltr]{--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}.scrollbar[data-position=bottom][data-dir=ltr]:before,.scrollbar[data-position=top][data-dir=ltr]:before{left:0;right:unset}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarSlider,.scrollbar[data-position=top][data-dir=ltr] .scrollbarSlider{transform:translateX(var(--top))}.scrollbar[data-position=bottom][data-dir=ltr] .scrollbarPoper,.scrollbar[data-position=top][data-dir=ltr] .scrollbarPoper{transform:translateX(var(--poper-top))}.scrollbar[data-position=bottom] .scrollbarPage,.scrollbar[data-position=top] .scrollbarPage{transform:scaleX(1)}.scrollbar[data-position=bottom] .scrollbarPage[data-type=loaded],.scrollbar[data-position=top] .scrollbarPage[data-type=loaded]{transform:scaleX(0)}.scrollbar[data-position=bottom] .scrollbarPage[data-translation-type],.scrollbar[data-position=top] .scrollbarPage[data-translation-type]{transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}.root[data-mobile] .scrollbar:hover .scrollbarPoper,.root[data-mobile] .scrollbar:hover:before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}.touchAreaRoot .touchArea[data-area=PREV],.touchAreaRoot .touchArea[data-area=prev]{background-color:#95e1d3e6}.touchAreaRoot .touchArea[data-area=MENU],.touchAreaRoot .touchArea[data-area=menu]{background-color:#fce38ae6}.touchAreaRoot .touchArea[data-area=NEXT],.touchAreaRoot .touchArea[data-area=next]{background-color:#f38181e6}.touchAreaRoot .touchArea[data-area=PREV]:after{content:var(--i18n-touch-area-prev)}.touchAreaRoot .touchArea[data-area=MENU]:after{content:var(--i18n-touch-area-menu)}.touchAreaRoot .touchArea[data-area=NEXT]:after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) transparent;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:transparent}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}button,div,div:focus,div:focus-visible,div:focus-within{border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"img","show":"show","mangaFlow":"mangaFlow","mangaBox":"mangaBox","root":"root","gridModeTip":"gridModeTip","endPage":"endPage","jello":"jello","tip":"tip","comments":"comments","toolbar":"toolbar","toolbarPanel":"toolbarPanel","toolbarBg":"toolbarBg","SettingPanelPopper":"SettingPanelPopper","SettingPanel":"SettingPanel","SettingBlock":"SettingBlock","SettingBlockBody":"SettingBlockBody","SettingBlockSubtitle":"SettingBlockSubtitle","SettingsItem":"SettingsItem","SettingsItemName":"SettingsItemName","SettingsItemSwitch":"SettingsItemSwitch","SettingsItemSwitchRound":"SettingsItemSwitchRound","SettingsItemIconButton":"SettingsItemIconButton","SettingsItemSelect":"SettingsItemSelect","closeCover":"closeCover","SettingsShowItem":"SettingsShowItem","SettingsShowItemBody":"SettingsShowItemBody","hotkeys":"hotkeys","hotkeysItem":"hotkeysItem","hotkeysHeader":"hotkeysHeader","scrollbar":"scrollbar","scrollbarPage":"scrollbarPage","scrollbarSlider":"scrollbarSlider","scrollbarPoper":"scrollbarPoper","touchAreaRoot":"touchAreaRoot","touchArea":"touchArea","hidden":"hidden","invisible":"invisible","beautifyScrollbar":"beautifyScrollbar"};
 
 /** 并排卷轴模式下的全局滚动填充 */
@@ -3023,9 +2994,10 @@ const abreastShowColumn = createThrottleMemo(() => {
     start: 0,
     end: 0
   };
+  const columnWidth = abreastColumnWidth() + store.option.scrollMode.spacing * 7;
   return {
-    start: clamp(0, Math.floor(store.page.offset.x.px / abreastColumnWidth()), abreastArea().columns.length - 1),
-    end: clamp(0, Math.floor((store.page.offset.x.px + store.rootSize.width) / abreastColumnWidth()), abreastArea().columns.length - 1)
+    start: clamp(0, Math.floor(store.page.offset.x.px / columnWidth), abreastArea().columns.length - 1),
+    end: clamp(0, Math.floor((store.page.offset.x.px + store.rootSize.width) / columnWidth), abreastArea().columns.length - 1)
   };
 });
 
@@ -3046,7 +3018,7 @@ const imgAreaStyle = createRootMemo(() => {
       column,
       top
     } of abreastArea().position[index] ?? []) {
-      const itemStyle = \`grid-area: _\${column}; transform: translateY(\${top}px);\`;
+      const itemStyle = \`grid-area: _\${column} !important; transform: translateY(\${top}px);\`;
       styleText += \`\${selector(index, imgNum)} { \${itemStyle} }\\n\`;
       imgNum += 1;
     }
@@ -3198,13 +3170,14 @@ const getRangeImgList = range => {
   return list;
 };
 const renderImgList = createRootMemo(() => getRangeImgList(store.renderRange));
+const showImgList = createRootMemo(() => getRangeImgList(store.showRange));
 
 /**
  * 图片显示状态
  *
  * 0 - 页面中的第一张图片
  * 1 - 页面中的最后一张图片
- * 2 - 页面中的唯一一张图片
+ * '' - 页面中的唯一一张图片
  */
 const imgShowState = createRootMemo(() => {
   if (store.pageList.length === 0) return new Map();
@@ -3367,24 +3340,23 @@ const turnPageAnimation = dir => {
 };
 
 const touches = new Map();
-const scale = () => store.zoom.scale / 100;
 const width = () => refs.mangaBox?.clientWidth ?? 0;
 const height = () => refs.mangaBox?.clientHeight ?? 0;
 const bound = solidJs.createRoot(() => {
-  const x = solidJs.createMemo(() => -width() * (scale() - 1));
-  const y = solidJs.createMemo(() => -height() * (scale() - 1));
+  const x = solidJs.createMemo(() => -width() * (store.option.zoom.ratio / 100 - 1));
+  const y = solidJs.createMemo(() => -height() * (store.option.zoom.ratio / 100 - 1));
   return {
     x,
     y
   };
 });
 const checkBound = state => {
-  state.zoom.offset.x = clamp(bound.x(), state.zoom.offset.x, 0);
-  state.zoom.offset.y = clamp(bound.y(), state.zoom.offset.y, 0);
+  state.option.zoom.offset.x = clamp(bound.x(), state.option.zoom.offset.x, 0);
+  state.option.zoom.offset.y = clamp(bound.y(), state.option.zoom.offset.y, 0);
 };
 const zoom = (val, focal, animation = false) => {
-  const newScale = clamp(100, val, 500);
-  if (newScale === store.zoom.scale) return;
+  const newScale = clamp(100, val, 300);
+  if (newScale === store.option.zoom.ratio) return;
 
   // 消除放大导致的偏移
   const {
@@ -3395,16 +3367,16 @@ const zoom = (val, focal, animation = false) => {
   const y = (focal?.y ?? height() / 2) - top;
 
   // 当前直接放大后的基准点坐标
-  const newX = x / (store.zoom.scale / 100) * (newScale / 100);
-  const newY = y / (store.zoom.scale / 100) * (newScale / 100);
+  const newX = x / (store.option.zoom.ratio / 100) * (newScale / 100);
+  const newY = y / (store.option.zoom.ratio / 100) * (newScale / 100);
 
   // 放大后基准点的偏移距离
   const dx = newX - x;
   const dy = newY - y;
-  setState(state => {
-    state.zoom.scale = newScale;
-    state.zoom.offset.x -= dx;
-    state.zoom.offset.y -= dy;
+  setOption((draftOption, state) => {
+    draftOption.zoom.ratio = newScale;
+    draftOption.zoom.offset.x -= dx;
+    draftOption.zoom.offset.y -= dy;
     checkBound(state);
     if (animation) state.page.anima = 'zoom';
 
@@ -3413,7 +3385,6 @@ const zoom = (val, focal, animation = false) => {
       state.flag.scrollLock = true;
       closeScrollLock$1();
     }
-    resetUI(state);
   });
 };
 
@@ -3452,9 +3423,9 @@ const handleSlideAnima = timestamp => {
   }
 
   // 在拖拽后模拟惯性滑动
-  setState(state => {
-    state.zoom.offset.x += velocity.x;
-    state.zoom.offset.y += velocity.y;
+  setOption((draftOption, state) => {
+    draftOption.zoom.offset.x += velocity.x;
+    draftOption.zoom.offset.y += velocity.y;
     checkBound(state);
 
     // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
@@ -3470,18 +3441,18 @@ const handleSlideAnima = timestamp => {
 /** 逐帧根据鼠标坐标移动元素，并计算速率 */
 const handleDragAnima$1 = () => {
   // 当停着不动时退出循环
-  if (mouse.x === store.zoom.offset.x && mouse.y === store.zoom.offset.y) {
+  if (mouse.x === store.option.zoom.offset.x && mouse.y === store.option.zoom.offset.y) {
     animationId$2 = null;
     return;
   }
-  setState(state => {
-    last.x = state.zoom.offset.x;
-    last.y = state.zoom.offset.y;
-    state.zoom.offset.x = mouse.x;
-    state.zoom.offset.y = mouse.y;
+  setOption((draftOption, state) => {
+    last.x = draftOption.zoom.offset.x;
+    last.y = draftOption.zoom.offset.y;
+    draftOption.zoom.offset.x = mouse.x;
+    draftOption.zoom.offset.y = mouse.y;
     checkBound(state);
-    velocity.x = state.zoom.offset.x - last.x;
-    velocity.y = state.zoom.offset.y - last.y;
+    velocity.x = draftOption.zoom.offset.x - last.x;
+    velocity.y = draftOption.zoom.offset.y - last.y;
   });
   animationId$2 = requestAnimationFrame(handleDragAnima$1);
 };
@@ -3495,12 +3466,12 @@ const handleZoomDrag = ({
   xy: [x, y],
   last: [lx, ly]
 }) => {
-  if (store.zoom.scale === 100) return;
+  if (store.option.zoom.ratio === 100) return;
   switch (type) {
     case 'down':
       {
-        mouse.x = store.zoom.offset.x;
-        mouse.y = store.zoom.offset.y;
+        mouse.x = store.option.zoom.offset.x;
+        mouse.y = store.option.zoom.offset.y;
         if (animationId$2) cancelAnimation();
         break;
       }
@@ -3517,8 +3488,8 @@ const handleZoomDrag = ({
         // 当双指捏合结束，一个手指抬起时，将剩余的指针当作刚点击来处理
         if (pinchZoom) {
           pinchZoom = false;
-          mouse.x = store.zoom.offset.x;
-          mouse.y = store.zoom.offset.y;
+          mouse.x = store.option.zoom.offset.x;
+          mouse.y = store.option.zoom.offset.y;
           return;
         }
         if (animationId$2) cancelAnimationFrame(animationId$2);
@@ -3565,7 +3536,7 @@ const handlePinchZoom = ({
         pinchZoom = true;
         const [a, b] = [...touches.values()];
         initDistance = getDistance(a, b);
-        initScale = store.zoom.scale;
+        initScale = store.option.zoom.ratio;
         break;
       }
     case 'up':
@@ -3935,7 +3906,7 @@ const switchGridMode = () => {
   zoom(100);
   setState(state => {
     state.gridMode = !state.gridMode;
-    if (state.zoom.scale !== 100) zoom(100);
+    if (store.option.zoom.ratio !== 100) zoom(100);
     state.page.anima = '';
   });
   // 切换到网格模式后自动定位到当前页
@@ -4000,7 +3971,7 @@ const handlePageClick = e => {
     state.show.scrollbar = !state.show.scrollbar;
     state.show.toolbar = !state.show.toolbar;
   });
-  if (!store.option.clickPageTurn.enabled || store.zoom.scale !== 100) return;
+  if (!store.option.clickPageTurn.enabled || store.option.zoom.ratio !== 100) return;
   setState(state => {
     resetUI(state);
     turnPageFn(state, areaName.toLowerCase());
@@ -4021,7 +3992,7 @@ const handleGridClick = e => {
 };
 
 /** 双击放大 */
-const doubleClickZoom = e => !store.gridMode && zoom(store.zoom.scale === 100 ? 350 : 100, e, true);
+const doubleClickZoom = e => !store.gridMode && zoom(store.option.zoom.ratio === 100 ? 350 : 100, e, true);
 const handleClick = useDoubleClick(e => store.gridMode ? handleGridClick(e) : handlePageClick(e), doubleClickZoom);
 
 /** 判断翻页方向 */
@@ -4339,19 +4310,19 @@ const handleWheel = e => {
   if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
 
   // 卷轴模式下的图片缩放
-  if ((e.ctrlKey || e.altKey) && store.option.scrollMode.enabled && store.zoom.scale === 100) {
+  if ((e.ctrlKey || e.altKey) && store.option.scrollMode.enabled && store.option.zoom.ratio === 100) {
     e.preventDefault();
     if (store.option.scrollMode.fitToWidth) return;
     return zoomScrollModeImg(isWheelDown ? -0.05 : 0.05);
   }
   if (e.ctrlKey || e.altKey) {
     e.preventDefault();
-    return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
+    return zoom(store.option.zoom.ratio + (isWheelDown ? -25 : 25), e);
   }
   const nowDeltaY = Math.abs(e.deltaY);
 
   // 并排卷轴模式下
-  if (isAbreastMode() && store.zoom.scale === 100) {
+  if (isAbreastMode() && store.option.zoom.ratio === 100) {
     e.preventDefault();
     // 先触发翻页判断再滚动，防止在滚动到底时立刻触发结束页
     turnPage(isWheelDown ? 'next' : 'prev');
@@ -4562,19 +4533,8 @@ const handleScrollModeDrag = ({
   }
 };
 
-/** 用于存储正在加载的图片元素 */
-const loadingImgMap = new Map();
-
-/** 加载期间尽快获取图片尺寸 */
-const checkImgSize = (i, e) => {
-  if (store.imgList[i] === undefined) return loadingImgMap.delete(i);
-  if (!loadingImgMap.has(i) || store.imgList[i].width || store.imgList[i].height) return;
-  if (!e.naturalWidth || !e.naturalHeight) return setTimeout(() => checkImgSize(i, e), 100);
-  setState(state => updateImgSize(state, i, e.naturalWidth, e.naturalHeight));
-};
-
 /** 图片加载完毕的回调 */
-const handleImgLoaded = (i, e) => async () => {
+const handleImgLoaded = (i, e) => {
   setState(state => {
     const img = state.imgList[i];
     if (!img) return;
@@ -4582,19 +4542,15 @@ const handleImgLoaded = (i, e) => async () => {
     img.loadType = 'loaded';
     state.prop.Loading?.(state.imgList, img);
   });
-  loadingImgMap.delete(i);
   updateImgLoadType();
-  try {
-    await e.decode();
-  } catch {}
+  e.decode().catch(() => {});
 };
 
 /** 图片加载出错的次数 */
 const imgErrorNum = new Map();
 
 /** 图片加载出错的回调 */
-const handleImgError = (i, e) => () => {
-  loadingImgMap.delete(i);
+const handleImgError = (i, e) => {
   imgErrorNum.set(e.src, (imgErrorNum.get(e.src) ?? 0) + 1);
   setState(state => {
     const img = state.imgList[i];
@@ -4614,22 +4570,17 @@ const needLoadImgList = createRootMemo(() => {
   return list;
 });
 
-/** 当前要加载的图片 */
+/** 当前需要加载的图片 */
 const loadImgList = new Set();
 
 /** 加载指定图片。返回是否已加载完成 */
 const loadImg = index => {
   if (index === -1 || !needLoadImgList().has(index)) return true;
   const img = store.imgList[index];
-  if (img.loadType === 'error' && (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3)) return true;
-  if (!loadingImgMap.has(index)) {
-    const imgEle = new Image();
-    imgEle.onload = handleImgLoaded(index, imgEle);
-    imgEle.onerror = handleImgError(index, imgEle);
-    imgEle.src = img.src;
-    _setState('imgList', index, 'loadType', 'loading');
-    loadingImgMap.set(index, imgEle);
-    checkImgSize(index, imgEle);
+  if (img.loadType === 'error') {
+    if (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3) return true;
+    _setState('imgList', index, 'loadType', 'wait');
+    return false;
   }
   loadImgList.add(index);
   return false;
@@ -4675,12 +4626,23 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
   }
   return hasUnloadedImg;
 };
+
+/** 加载期间尽快获取图片尺寸 */
+const checkImgSize = index => {
+  const imgDom = refs.mangaFlow.querySelector(\`#_\${index} img\`);
+  const timeoutId = setInterval(() => {
+    const img = store.imgList[index];
+    if (!img || img.loadType !== 'loading') return clearInterval(timeoutId);
+    if (imgDom.naturalWidth && imgDom.naturalHeight) {
+      setState(state => updateImgSize(state, index, imgDom.naturalWidth, imgDom.naturalHeight));
+      return clearInterval(timeoutId);
+    }
+  }, 200);
+};
 const updateImgLoadType = singleThreaded(() => {
   if (needLoadImgList().size === 0) return;
   loadImgList.clear();
   if (store.imgList.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const _ =
     // 优先加载当前显示的图片
     loadRangeImg() ||
     // 再加载后面几页
@@ -4694,23 +4656,27 @@ const updateImgLoadType = singleThreaded(() => {
     // 加载当前页前面的图片
     loadRangeImg(Number.NEGATIVE_INFINITY, 5);
   }
-
-  // 取消其他预加载的图片
-  for (const index of loadingImgMap.keys()) {
-    if (loadImgList.has(index)) continue;
-    loadingImgMap.delete(index);
-    if (Reflect.has(store.imgList, index)) _setState('imgList', index, 'loadType', 'wait');
-  }
+  setState(state => {
+    for (const index of needLoadImgList()) {
+      const img = state.imgList[index];
+      if (loadImgList.has(index)) {
+        if (img.loadType !== 'loading') {
+          img.loadType = 'loading';
+          if (img.width === undefined) setTimeout(checkImgSize, 0, index);
+        }
+      } else if (img.loadType === 'loading') img.loadType = 'wait';
+    }
+  });
 });
 createEffectOn([preloadNum, () => [...renderImgList()].map(i => store.imgList[i]), () => store.option.alwaysLoadAllImg], updateImgLoadType);
-createEffectOn(activePage, debounce(page => {
+createEffectOn(showImgList, debounce(showImgList => {
   // 如果当前显示页面有出错的图片，就重新加载一次
-  for (const i of page) {
+  for (const i of showImgList) {
     if (store.imgList[i]?.loadType !== 'error') continue;
     _setState('imgList', i, 'loadType', 'wait');
-    loadImg(i);
+    updateImgLoadType();
   }
-}), {
+}, 500), {
   defer: true
 });
 
@@ -4873,9 +4839,6 @@ const ComicImg = img => {
     if (img.translationType === 'show') return img.translationUrl;
     return img.src;
   };
-  const style = createMemoMap({
-    'grid-area': () => !store.gridMode && isAbreastMode() ? undefined : \`_\${img.index}\`
-  });
 
   /** 并排卷轴模式下需要复制的图片数量 */
   const cloneNum = solidJs.createMemo(() => {
@@ -4887,17 +4850,12 @@ const ComicImg = img => {
 
   /** 是否要渲染复制图片 */
   const renderClone = () => !store.gridMode && showState() !== undefined && cloneNum() > 0;
-  const rednerImg = cloneIndex => {
-    if (!src()) return false;
-    if (img.loadType === 'loaded') return true;
-    return img.loadType !== 'wait';
-  };
   const _ComicImg = props => (() => {
     var _el$ = _tmpl$3$4(),
       _el$2 = _el$.firstChild;
     web.insert(_el$2, web.createComponent(solidJs.Show, {
       get when() {
-        return rednerImg();
+        return web.memo(() => img.loadType !== 'wait')() && src();
       },
       get children() {
         var _el$3 = _tmpl$$B();
@@ -4932,14 +4890,14 @@ const ComicImg = img => {
     }), null);
     web.effect(_p$ => {
       var _v$3 = modules_c21c94f2$1.img,
-        _v$4 = style(),
+        _v$4 = \`_\${img.index}\`,
         _v$5 = \`_\${props.cloneIndex ? \`\${img.index}-\${props.cloneIndex}\` : img.index}\`,
         _v$6 = showState(),
         _v$7 = img.type ?? store.defaultImgType,
         _v$8 = img.loadType === 'loaded' ? undefined : img.loadType,
         _v$9 = \`\${img.size.width} / \${img.size.height}\`;
       _v$3 !== _p$.e && web.className(_el$, _p$.e = _v$3);
-      _p$.t = web.style(_el$, _v$4, _p$.t);
+      _v$4 !== _p$.t && ((_p$.t = _v$4) != null ? _el$.style.setProperty("grid-area", _v$4) : _el$.style.removeProperty("grid-area"));
       _v$5 !== _p$.a && web.setAttribute(_el$, "id", _p$.a = _v$5);
       _v$6 !== _p$.o && web.setAttribute(_el$, "data-show", _p$.o = _v$6);
       _v$7 !== _p$.i && web.setAttribute(_el$, "data-type", _p$.i = _v$7);
@@ -4992,7 +4950,7 @@ const ComicImgFlow = () => {
   const handleDrag = (state, e) => {
     if (store.gridMode) return;
     if (touches.size > 1) return handlePinchZoom(state);
-    if (store.zoom.scale !== 100) return handleZoomDrag(state);
+    if (store.option.zoom.ratio !== 100) return handleZoomDrag(state);
     if (store.option.scrollMode.enabled) return handleScrollModeDrag(state, e);
     return handleMangaFlowDrag(state);
   };
@@ -5008,7 +4966,7 @@ const ComicImgFlow = () => {
   const handleTransitionEnd = () => {
     if (store.isDragMode) return;
     setState(state => {
-      if (store.zoom.scale === 100) resetPage(state, true);else state.page.anima = '';
+      if (store.option.zoom.ratio === 100) resetPage(state, true);else state.page.anima = '';
     });
   };
 
@@ -5041,8 +4999,8 @@ const ComicImgFlow = () => {
     return store.page.vertical ? store.pageList.slice(store.renderRange[0], store.renderRange[1] + 1).map(page => \`"\${pageToText(page)}"\`).join('\\n') : \`"\${store.pageList.slice(store.renderRange[0], store.renderRange[1] + 1).map(pageToText).join(' ')}"\`;
   });
   useStyleMemo(\`.\${modules_c21c94f2$1.mangaBox}\`, {
-    transform: () => \`translate(\${store.zoom.offset.x}px, \${store.zoom.offset.y}px)
-        scale(\${store.zoom.scale / 100})\`
+    transform: () => \`translate(\${store.option.zoom.offset.x}px, \${store.option.zoom.offset.y}px)
+        scale(\${store.option.zoom.ratio / 100})\`
   });
   const pageX = solidJs.createMemo(() => {
     if (store.gridMode || isScrollMode()) return 0;
@@ -5051,19 +5009,16 @@ const ComicImgFlow = () => {
     return x;
   });
   useStyleMemo(\`#\${modules_c21c94f2$1.mangaFlow}\`, {
-    '--zoom-x': () => \`\${store.zoom.offset.x}px\`,
-    '--zoom-y': () => \`\${store.zoom.offset.y}px\`,
-    '--root-w': () => \`\${store.rootSize.width}px\`,
     transform: () => \`translate(
         \${pageX()}px,
         \${store.page.offset.y.pct * store.rootSize.height + store.page.offset.y.px}px
       ) translateZ(0)\`,
     'touch-action'() {
       if (store.gridMode) return 'auto';
-      if (store.zoom.scale !== 100) {
+      if (store.option.zoom.ratio !== 100) {
         if (!store.option.scrollMode.enabled) return 'none';
-        if (store.zoom.offset.y === 0) return 'pan-up';
-        if (store.zoom.offset.y === bound.y()) return 'pan-down';
+        if (store.option.zoom.offset.y === 0) return 'pan-up';
+        if (store.option.zoom.offset.y === bound.y()) return 'pan-down';
       }
       if (store.option.scrollMode.enabled) return store.option.scrollMode.abreastMode ? 'pan-x' : 'pan-y';
     },
@@ -5118,7 +5073,7 @@ const ComicImgFlow = () => {
         _v$5 = store.option.dir,
         _v$6 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
         _v$7 = boolDataVal(store.option.disableZoom && !store.option.scrollMode.enabled),
-        _v$8 = boolDataVal(store.zoom.scale !== 100),
+        _v$8 = boolDataVal(store.option.zoom.ratio !== 100),
         _v$9 = boolDataVal(store.page.vertical),
         _v$10 = !store.gridMode && hiddenMouse(),
         _v$11 = boolDataVal(store.option.scrollMode.fitToWidth);
@@ -6001,6 +5956,24 @@ const defaultSettingList = () => [[t('setting.option.paragraph_dir'), () => web.
       }
     })];
   }
+}), web.createComponent(solidJs.Show, {
+  get when() {
+    return !store.option.scrollMode.enabled;
+  },
+  get children() {
+    return web.createComponent(SettingsItemNumber, {
+      get name() {
+        return t('setting.option.zoom');
+      },
+      maxLength: 3,
+      suffix: "%",
+      step: 5,
+      onChange: val => Number.isNaN(val) || zoom(val),
+      get value() {
+        return Math.round(store.option.zoom.ratio);
+      }
+    });
+  }
 })]], [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [t('setting.option.paragraph_translation'), SettingTranslation, true], [t('setting.option.paragraph_other'), () => [web.createComponent(SettingsItemSwitch, {
   get name() {
     return t('setting.option.always_load_all_img');
@@ -6169,16 +6142,16 @@ const buttonListDivider = () => (() => {
 })();
 const ZoomButton = () => web.createComponent(IconButton, {
   get tip() {
-    return web.memo(() => store.zoom.scale === 100)() ? t('button.zoom_in') : t('button.zoom_out');
+    return web.memo(() => store.option.zoom.ratio === 100)() ? t('button.zoom_in') : t('button.zoom_out');
   },
   get enabled() {
-    return store.zoom.scale !== 100;
+    return store.option.zoom.ratio !== 100;
   },
-  onClick: doubleClickZoom,
+  onClick: () => doubleClickZoom(),
   get children() {
     return web.createComponent(solidJs.Show, {
       get when() {
-        return store.zoom.scale === 100;
+        return store.option.zoom.ratio === 100;
       },
       get fallback() {
         return web.createComponent(MdZoomOut, {});
@@ -7333,8 +7306,12 @@ const useFab = async initProps => {
 };
 
 var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
-  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li><p>修复 ehentai 标签染色功能只对默认标签集生效的 bug </p></li><li><p>修复 koharu 改版导致的报错 </p></li><li><p>修复根据屏幕比例自动切换单双页模式功能失效的 bug\`);
+  _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
+  _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>将图片缩放比例作为设置项保存\`),
+  _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复并排卷轴模式下图片会过早消失的 bug </p></li><li><p>修复在 Safari 上的图片显示变形 bug\`),
+  _tmpl$6 = /*#__PURE__*/web.template(\`<h3>改动\`),
+  _tmpl$7 = /*#__PURE__*/web.template(\`<ul><li>原本缩放后可以单独使用滚轮调整缩放比例，<br>现在还需要同时按下 <code>Ctrl/Alt\`);
 const migrationOption = async (name, editFn) => {
   try {
     const option = await GM.getValue(name);
@@ -7416,7 +7393,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), _tmpl$2(), _tmpl$3()], {
+    })(), _tmpl$2(), _tmpl$3(), _tmpl$4(), _tmpl$5(), _tmpl$6(), _tmpl$7()], {
       id: 'Version Tip',
       type: 'custom',
       duration: Number.POSITIVE_INFINITY,
@@ -8152,7 +8129,7 @@ exports.querySelectorAll = querySelectorAll;
 exports.querySelectorClick = querySelectorClick;
 exports.renderImgList = renderImgList;
 exports.request = request$1;
-exports.requestIdleCallback = requestIdleCallback$1;
+exports.requestIdleCallback = requestIdleCallback;
 exports.resetImgState = resetImgState;
 exports.resetPage = resetPage;
 exports.resetUI = resetUI;
@@ -8174,6 +8151,7 @@ exports.setInitLang = setInitLang;
 exports.setIsDrag = setIsDrag;
 exports.setLang = setLang;
 exports.setOption = setOption;
+exports.showImgList = showImgList;
 exports.singleThreaded = singleThreaded;
 exports.sleep = sleep;
 exports.sliderHeight = sliderHeight;
@@ -8254,8 +8232,6 @@ const require = name => {
   const __esModule = {
     value: true
   };
-
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const selfLibProxy = () => {};
   selfLibProxy.default = {};
   const selfDefault = new Proxy(selfLibProxy, {
@@ -9026,11 +9002,6 @@ const getViewpoint = async (comicId, chapterId) => {
 };
 
 (async () => {
-  const {
-    setManga,
-    init
-  } = await main.useInit('dmzj');
-
   // 分别处理目录页和漫画页
   switch (window.location.pathname.split('/')[1]) {
     case 'info':
@@ -9151,6 +9122,10 @@ const getViewpoint = async (comicId, chapterId) => {
           page_url
         } = data;
         document.title = `${chapter_name} ${folder.split('/').at(1)}`;
+        const {
+          setManga,
+          init
+        } = await main.useInit('dmzj');
         setManga({
           // 进入阅读模式后禁止退出，防止返回空白页面
           onExit: undefined,
@@ -9246,38 +9221,47 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
     GM_addStyle(`
       .comidread-favorites {
         position: absolute;
-        left: 0;
-        width: 100%;
-        padding-left: 0.6em;
-        box-sizing: border-box;
         z-index: 75;
-        border: none;
-        border-radius: 0;
+        left: 0;
+
         overflow: auto;
         align-content: center;
+
+        box-sizing: border-box;
+        width: 100%;
+        padding-left: 0.6em;
+
+        border: none;
+        border-radius: 0;
       }
 
       .comidread-favorites-item {
+        cursor: pointer;
+
         display: flex;
         align-items: center;
+
+        width: 100%;
         margin: 1em 0;
-        cursor: pointer;
-        width: fit-content;
+
         text-align: left;
+        overflow-wrap: anywhere;
       }
 
       .comidread-favorites-item > input {
-        margin: 0 0.5em 0 0;
         pointer-events: none;
+        margin: 0 0.5em 0 0;
       }
 
       .comidread-favorites-item > div {
-        margin: 0 0.5em 0 0;
-        height: 15px;
-        width: 15px;
-        background-repeat: no-repeat;
-        background-image: url(https://ehgt.org/g/fav.png);
         flex-shrink: 0;
+
+        width: 15px;
+        height: 15px;
+        margin: 0 0.5em 0 0;
+
+        background-image: url("https://ehgt.org/g/fav.png");
+        background-repeat: no-repeat;
       }
 
       .gl1t > .comidread-favorites {
