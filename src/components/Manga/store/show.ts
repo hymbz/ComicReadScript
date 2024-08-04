@@ -33,11 +33,4 @@ export const ShowState = {
       y: { pct: 0, px: 0 },
     },
   },
-
-  zoom: {
-    /** 缩放大小 */
-    scale: 100,
-    /** 确保缩放前后基准点不变所需的偏移量 */
-    offset: { x: 0, y: 0 },
-  },
 };

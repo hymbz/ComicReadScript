@@ -118,6 +118,8 @@ module.exports = {
         "@typescript-eslint/switch-exhaustiveness-check": "off",
         // 允许浮动 Promise
         "@typescript-eslint/no-floating-promises": "off",
+        // 允许使用空函数
+        "@typescript-eslint/no-empty-function": "off",
         // 允许使用 any
         "@typescript-eslint/no-unsafe-argument": "off",
         "@typescript-eslint/no-unsafe-assignment": "off",

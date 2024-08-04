@@ -38,12 +38,16 @@ export const buttonListDivider: Component = () => (
 
 const ZoomButton = () => (
   <IconButton
-    tip={store.zoom.scale === 100 ? t('button.zoom_in') : t('button.zoom_out')}
-    enabled={store.zoom.scale !== 100}
-    onClick={doubleClickZoom}
+    tip={
+      store.option.zoom.ratio === 100
+        ? t('button.zoom_in')
+        : t('button.zoom_out')
+    }
+    enabled={store.option.zoom.ratio !== 100}
+    onClick={() => doubleClickZoom()}
     children={
       <Show
-        when={store.zoom.scale === 100}
+        when={store.option.zoom.ratio === 100}
         fallback={<MdZoomOut />}
         children={<MdZoomIn />}
       />

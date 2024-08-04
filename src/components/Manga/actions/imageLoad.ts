@@ -20,7 +20,7 @@ export const handleImgLoaded = (i: number, e: HTMLImageElement) => {
     state.prop.Loading?.(state.imgList, img);
   });
   updateImgLoadType();
-  e.decode().catch();
+  e.decode().catch(() => {});
 };
 
 /** 图片加载出错的次数 */

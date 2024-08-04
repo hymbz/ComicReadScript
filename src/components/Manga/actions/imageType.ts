@@ -24,7 +24,6 @@ const getImgType = (img: { width: number; height: number }) => {
 
 /** 更新图片类型。返回是否修改了图片类型 */
 export const updateImgType = (state: State, draftImg: ComicImg) => {
-  if (!state.rootSize.width || !state.rootSize.height) return false;
   const { type } = draftImg;
   if (!draftImg.width || !draftImg.height) return false;
   draftImg.type = getImgType(draftImg as Required<ComicImg>);

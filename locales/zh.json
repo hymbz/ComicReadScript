@@ -143,7 +143,8 @@
       "scrollbar_show_img_status": "显示图片加载状态",
       "show_clickable_area": "显示点击区域",
       "show_comments": "在结束页显示评论",
-      "swap_page_turn_key": "左右翻页键交换"
+      "swap_page_turn_key": "左右翻页键交换",
+      "zoom": "图片缩放"
     },
     "translation": {
       "cotrans_tip": "<p>将使用 <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> 提供的接口翻译图片，该服务器由其维护者用爱发电自费维护</p>\n<p>多人同时使用时需要排队等待，等待队列达到上限后再上传新图片会报错，需要过段时间再试</p>\n<p>所以还请 <b>注意用量</b></p>\n<p>更推荐使用自己本地部署的项目，既不占用服务器资源也不需要排队</p>",

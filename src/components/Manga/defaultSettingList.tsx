@@ -17,6 +17,7 @@ import {
   setOption,
   switchDir,
   switchFitToWidth,
+  zoom,
   zoomScrollModeImg,
 } from './actions';
 import { _setState, store } from './store';
@@ -219,6 +220,17 @@ export const defaultSettingList: () => SettingList = () => [
               onChange={switchFitToWidth}
             />
           </Show>
+        </Show>
+
+        <Show when={!store.option.scrollMode.enabled}>
+          <SettingsItemNumber
+            name={t('setting.option.zoom')}
+            maxLength={3}
+            suffix="%"
+            step={5}
+            onChange={(val) => Number.isNaN(val) || zoom(val)}
+            value={Math.round(store.option.zoom.ratio)}
+          />
         </Show>
       </>
     ),

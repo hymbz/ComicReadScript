@@ -233,7 +233,7 @@ export const handleWheel = (e: WheelEvent) => {
   if (
     (e.ctrlKey || e.altKey) &&
     store.option.scrollMode.enabled &&
-    store.zoom.scale === 100
+    store.option.zoom.ratio === 100
   ) {
     e.preventDefault();
     if (store.option.scrollMode.fitToWidth) return;
@@ -242,13 +242,13 @@ export const handleWheel = (e: WheelEvent) => {
 
   if (e.ctrlKey || e.altKey) {
     e.preventDefault();
-    return zoom(store.zoom.scale + (isWheelDown ? -25 : 25), e);
+    return zoom(store.option.zoom.ratio + (isWheelDown ? -25 : 25), e);
   }
 
   const nowDeltaY = Math.abs(e.deltaY);
 
   // 并排卷轴模式下
-  if (isAbreastMode() && store.zoom.scale === 100) {
+  if (isAbreastMode() && store.option.zoom.ratio === 100) {
     e.preventDefault();
     // 先触发翻页判断再滚动，防止在滚动到底时立刻触发结束页
     turnPage(isWheelDown ? 'next' : 'prev');

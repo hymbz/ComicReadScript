@@ -63,7 +63,7 @@ export const switchGridMode = () => {
   zoom(100);
   setState((state) => {
     state.gridMode = !state.gridMode;
-    if (state.zoom.scale !== 100) zoom(100);
+    if (store.option.zoom.ratio !== 100) zoom(100);
     state.page.anima = '';
   });
   // 切换到网格模式后自动定位到当前页

@@ -86,7 +86,6 @@ export const require = (name: string) => {
   // 为了应对 rollup 打包时的工具函数 _interopNamespace，要给外部库加上 __esModule 标志
   const __esModule = { value: true };
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   const selfLibProxy = () => {};
   selfLibProxy.default = {};
 

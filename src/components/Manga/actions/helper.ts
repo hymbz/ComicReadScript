@@ -1,12 +1,11 @@
-import { scheduleIdle } from '@solid-primitives/scheduled';
 import { onCleanup } from 'solid-js';
-import { difference, byPath } from 'helper';
+import { difference, byPath, throttle } from 'helper';
 
 import { type State, store, setState, refs } from '../store';
 import { type Option } from '../store/option';
 
 /** 触发 onOptionChange */
-const triggerOnOptionChange = scheduleIdle(
+const triggerOnOptionChange = throttle(
   () =>
     store.prop.OptionChange?.(difference(store.option, store.defaultOption)),
   1000,

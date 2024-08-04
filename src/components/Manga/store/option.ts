@@ -28,6 +28,13 @@ export interface Option {
   /** 自动切换单双页模式 */
   autoSwitchPageMode: boolean;
 
+  zoom: {
+    /** 缩放大小 */
+    ratio: number;
+    /** 确保缩放前后基准点不变所需的偏移量 */
+    offset: { x: number; y: number };
+  };
+
   /** 滚动条 */
   scrollbar: {
     /** 滚动条位置 */
@@ -111,6 +118,11 @@ const _defaultOption: Readonly<Option> = {
   preloadPageNum: 20,
   pageNum: 0,
   autoSwitchPageMode: true,
+
+  zoom: {
+    ratio: 100,
+    offset: { x: 0, y: 0 },
+  },
 
   scrollMode: {
     enabled: false,

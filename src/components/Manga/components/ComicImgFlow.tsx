@@ -38,7 +38,7 @@ export const ComicImgFlow: Component = () => {
   const handleDrag: UseDrag = (state, e) => {
     if (store.gridMode) return;
     if (touches.size > 1) return handlePinchZoom(state, e);
-    if (store.zoom.scale !== 100) return handleZoomDrag(state, e);
+    if (store.option.zoom.ratio !== 100) return handleZoomDrag(state, e);
     if (store.option.scrollMode.enabled) return handleScrollModeDrag(state, e);
     return handleMangaFlowDrag(state, e);
   };
@@ -51,7 +51,7 @@ export const ComicImgFlow: Component = () => {
   const handleTransitionEnd = () => {
     if (store.isDragMode) return;
     setState((state) => {
-      if (store.zoom.scale === 100) resetPage(state, true);
+      if (store.option.zoom.ratio === 100) resetPage(state, true);
       else state.page.anima = '';
     });
   };
@@ -127,8 +127,8 @@ export const ComicImgFlow: Component = () => {
 
   useStyleMemo(`.${classes.mangaBox}`, {
     transform: () =>
-      `translate(${store.zoom.offset.x}px, ${store.zoom.offset.y}px)
-        scale(${store.zoom.scale / 100})`,
+      `translate(${store.option.zoom.offset.x}px, ${store.option.zoom.offset.y}px)
+        scale(${store.option.zoom.ratio / 100})`,
   });
 
   const pageX = createMemo(() => {
@@ -147,10 +147,10 @@ export const ComicImgFlow: Component = () => {
       ) translateZ(0)`,
     'touch-action'() {
       if (store.gridMode) return 'auto';
-      if (store.zoom.scale !== 100) {
+      if (store.option.zoom.ratio !== 100) {
         if (!store.option.scrollMode.enabled) return 'none';
-        if (store.zoom.offset.y === 0) return 'pan-up';
-        if (store.zoom.offset.y === bound.y()) return 'pan-down';
+        if (store.option.zoom.offset.y === 0) return 'pan-up';
+        if (store.option.zoom.offset.y === bound.y()) return 'pan-down';
       }
 
       if (store.option.scrollMode.enabled)
@@ -191,7 +191,7 @@ export const ComicImgFlow: Component = () => {
         data-disable-zoom={boolDataVal(
           store.option.disableZoom && !store.option.scrollMode.enabled,
         )}
-        data-scale-mode={boolDataVal(store.zoom.scale !== 100)}
+        data-scale-mode={boolDataVal(store.option.zoom.ratio !== 100)}
         data-vertical={boolDataVal(store.page.vertical)}
         data-hidden-mouse={!store.gridMode && hiddenMouse()}
         data-fit-width={boolDataVal(store.option.scrollMode.fitToWidth)}

@@ -37,7 +37,8 @@ export const handlePageClick = (e: MouseEvent) => {
       state.show.toolbar = !state.show.toolbar;
     });
 
-  if (!store.option.clickPageTurn.enabled || store.zoom.scale !== 100) return;
+  if (!store.option.clickPageTurn.enabled || store.option.zoom.ratio !== 100)
+    return;
   setState((state) => {
     resetUI(state);
     turnPageFn(state, areaName.toLowerCase() as 'prev' | 'next');
@@ -59,7 +60,7 @@ export const handleGridClick = (e: MouseEvent) => {
 
 /** 双击放大 */
 export const doubleClickZoom = (e?: MouseEvent) =>
-  !store.gridMode && zoom(store.zoom.scale === 100 ? 350 : 100, e, true);
+  !store.gridMode && zoom(store.option.zoom.ratio === 100 ? 350 : 100, e, true);
 
 export const handleClick = useDoubleClick(
   (e) => (store.gridMode ? handleGridClick(e) : handlePageClick(e)),

@@ -2,28 +2,26 @@ import { createRoot, createMemo } from 'solid-js';
 import { clamp, approx } from 'helper';
 
 import { type PointerState, type UseDrag } from '../hooks/useDrag';
-import { type State, store, setState, refs } from '../store';
+import { type State, store, refs } from '../store';
 
-import { resetUI } from './helper';
+import { setOption } from './helper';
 import { closeScrollLock } from './turnPage';
 
 export const touches = new Map<number, PointerState>();
-
-const scale = () => store.zoom.scale / 100;
 
 const width = () => refs.mangaBox?.clientWidth ?? 0;
 const height = () => refs.mangaBox?.clientHeight ?? 0;
 
 export const bound = createRoot(() => {
-  const x = createMemo(() => -width() * (scale() - 1));
-  const y = createMemo(() => -height() * (scale() - 1));
+  const x = createMemo(() => -width() * (store.option.zoom.ratio / 100 - 1));
+  const y = createMemo(() => -height() * (store.option.zoom.ratio / 100 - 1));
 
   return { x, y };
 });
 
 const checkBound = (state: State) => {
-  state.zoom.offset.x = clamp(bound.x(), state.zoom.offset.x, 0);
-  state.zoom.offset.y = clamp(bound.y(), state.zoom.offset.y, 0);
+  state.option.zoom.offset.x = clamp(bound.x(), state.option.zoom.offset.x, 0);
+  state.option.zoom.offset.y = clamp(bound.y(), state.option.zoom.offset.y, 0);
 };
 
 export const zoom = (
@@ -31,8 +29,8 @@ export const zoom = (
   focal?: { x: number; y: number },
   animation = false,
 ) => {
-  const newScale = clamp(100, val, 500);
-  if (newScale === store.zoom.scale) return;
+  const newScale = clamp(100, val, 300);
+  if (newScale === store.option.zoom.ratio) return;
 
   // 消除放大导致的偏移
   const { left, top } = refs.mangaBox.getBoundingClientRect();
@@ -40,17 +38,17 @@ export const zoom = (
   const y = (focal?.y ?? height() / 2) - top;
 
   // 当前直接放大后的基准点坐标
-  const newX = (x / (store.zoom.scale / 100)) * (newScale / 100);
-  const newY = (y / (store.zoom.scale / 100)) * (newScale / 100);
+  const newX = (x / (store.option.zoom.ratio / 100)) * (newScale / 100);
+  const newY = (y / (store.option.zoom.ratio / 100)) * (newScale / 100);
 
   // 放大后基准点的偏移距离
   const dx = newX - x;
   const dy = newY - y;
 
-  setState((state) => {
-    state.zoom.scale = newScale;
-    state.zoom.offset.x -= dx;
-    state.zoom.offset.y -= dy;
+  setOption((draftOption, state) => {
+    draftOption.zoom.ratio = newScale;
+    draftOption.zoom.offset.x -= dx;
+    draftOption.zoom.offset.y -= dy;
     checkBound(state);
 
     if (animation) state.page.anima = 'zoom';
@@ -60,8 +58,6 @@ export const zoom = (
       state.flag.scrollLock = true;
       closeScrollLock();
     }
-
-    resetUI(state);
   });
 };
 
@@ -94,9 +90,9 @@ const handleSlideAnima = (timestamp: DOMHighResTimeStamp) => {
   }
 
   // 在拖拽后模拟惯性滑动
-  setState((state) => {
-    state.zoom.offset.x += velocity.x;
-    state.zoom.offset.y += velocity.y;
+  setOption((draftOption, state) => {
+    draftOption.zoom.offset.x += velocity.x;
+    draftOption.zoom.offset.y += velocity.y;
     checkBound(state);
 
     // 确保每16毫秒才减少一次速率，防止在高刷新率显示器上衰减过快
@@ -114,21 +110,24 @@ const handleSlideAnima = (timestamp: DOMHighResTimeStamp) => {
 /** 逐帧根据鼠标坐标移动元素，并计算速率 */
 const handleDragAnima = () => {
   // 当停着不动时退出循环
-  if (mouse.x === store.zoom.offset.x && mouse.y === store.zoom.offset.y) {
+  if (
+    mouse.x === store.option.zoom.offset.x &&
+    mouse.y === store.option.zoom.offset.y
+  ) {
     animationId = null;
     return;
   }
 
-  setState((state) => {
-    last.x = state.zoom.offset.x;
-    last.y = state.zoom.offset.y;
+  setOption((draftOption, state) => {
+    last.x = draftOption.zoom.offset.x;
+    last.y = draftOption.zoom.offset.y;
 
-    state.zoom.offset.x = mouse.x;
-    state.zoom.offset.y = mouse.y;
+    draftOption.zoom.offset.x = mouse.x;
+    draftOption.zoom.offset.y = mouse.y;
     checkBound(state);
 
-    velocity.x = state.zoom.offset.x - last.x;
-    velocity.y = state.zoom.offset.y - last.y;
+    velocity.x = draftOption.zoom.offset.x - last.x;
+    velocity.y = draftOption.zoom.offset.y - last.y;
   });
 
   animationId = requestAnimationFrame(handleDragAnima);
@@ -143,12 +142,12 @@ export const handleZoomDrag: UseDrag = ({
   xy: [x, y],
   last: [lx, ly],
 }) => {
-  if (store.zoom.scale === 100) return;
+  if (store.option.zoom.ratio === 100) return;
 
   switch (type) {
     case 'down': {
-      mouse.x = store.zoom.offset.x;
-      mouse.y = store.zoom.offset.y;
+      mouse.x = store.option.zoom.offset.x;
+      mouse.y = store.option.zoom.offset.y;
       if (animationId) cancelAnimation();
       break;
     }
@@ -166,8 +165,8 @@ export const handleZoomDrag: UseDrag = ({
       // 当双指捏合结束，一个手指抬起时，将剩余的指针当作刚点击来处理
       if (pinchZoom) {
         pinchZoom = false;
-        mouse.x = store.zoom.offset.x;
-        mouse.y = store.zoom.offset.y;
+        mouse.x = store.option.zoom.offset.x;
+        mouse.y = store.option.zoom.offset.y;
         return;
       }
 
@@ -216,7 +215,7 @@ export const handlePinchZoom: UseDrag = ({ type }) => {
       pinchZoom = true;
       const [a, b] = [...touches.values()];
       initDistance = getDistance(a, b);
-      initScale = store.zoom.scale;
+      initScale = store.option.zoom.ratio;
       break;
     }
 
