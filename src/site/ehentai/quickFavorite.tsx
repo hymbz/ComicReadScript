@@ -23,38 +23,47 @@ const addQuickFavorite = (
     GM_addStyle(`
       .comidread-favorites {
         position: absolute;
-        left: 0;
-        width: 100%;
-        padding-left: 0.6em;
-        box-sizing: border-box;
         z-index: 75;
-        border: none;
-        border-radius: 0;
+        left: 0;
+
         overflow: auto;
         align-content: center;
+
+        box-sizing: border-box;
+        width: 100%;
+        padding-left: 0.6em;
+
+        border: none;
+        border-radius: 0;
       }
 
       .comidread-favorites-item {
+        cursor: pointer;
+
         display: flex;
         align-items: center;
+
+        width: 100%;
         margin: 1em 0;
-        cursor: pointer;
-        width: fit-content;
+
         text-align: left;
+        overflow-wrap: anywhere;
       }
 
       .comidread-favorites-item > input {
-        margin: 0 0.5em 0 0;
         pointer-events: none;
+        margin: 0 0.5em 0 0;
       }
 
       .comidread-favorites-item > div {
-        margin: 0 0.5em 0 0;
-        height: 15px;
-        width: 15px;
-        background-repeat: no-repeat;
-        background-image: url(https://ehgt.org/g/fav.png);
         flex-shrink: 0;
+
+        width: 15px;
+        height: 15px;
+        margin: 0 0.5em 0 0;
+
+        background-image: url("https://ehgt.org/g/fav.png");
+        background-repeat: no-repeat;
       }
 
       .gl1t > .comidread-favorites {

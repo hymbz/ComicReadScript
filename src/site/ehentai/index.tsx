@@ -27,6 +27,8 @@ import { colorizeTag } from './colorizeTag';
 import { quickRating } from './quickRating';
 import { quickTagDefine } from './quickTagDefine';
 
+// [ehentai 图像限额](https://github.com/ccloli/E-Hentai-Downloader/wiki/E−Hentai-Image-Viewing-Limits-(Chinese))
+
 type ListPageType =
   /** 最小化 */
   | 'm'
