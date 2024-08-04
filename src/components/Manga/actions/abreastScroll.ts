@@ -106,17 +106,17 @@ export const abreastShowColumn = createThrottleMemo(() => {
   if (!isAbreastMode() || abreastArea().columns.length === 0)
     return { start: 0, end: 0 };
 
+  const columnWidth =
+    abreastColumnWidth() + store.option.scrollMode.spacing * 7;
   return {
     start: clamp(
       0,
-      Math.floor(store.page.offset.x.px / abreastColumnWidth()),
+      Math.floor(store.page.offset.x.px / columnWidth),
       abreastArea().columns.length - 1,
     ),
     end: clamp(
       0,
-      Math.floor(
-        (store.page.offset.x.px + store.rootSize.width) / abreastColumnWidth(),
-      ),
+      Math.floor((store.page.offset.x.px + store.rootSize.width) / columnWidth),
       abreastArea().columns.length - 1,
     ),
   };
