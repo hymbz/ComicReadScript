@@ -13,7 +13,8 @@ import { renderImgList, showImgList } from './renderPage';
 export const handleImgLoaded = (i: number, e: HTMLImageElement) => {
   setState((state) => {
     const img = state.imgList[i];
-    if (!img) return;
+    // 与图片全载一起使用时会出现 src 不一样的情况，需要跳过
+    if (!img || e.src !== img.src) return;
     if (img.width !== e.naturalWidth || img.height !== e.naturalHeight)
       updateImgSize(state, i, e.naturalWidth, e.naturalHeight);
     img.loadType = 'loaded';

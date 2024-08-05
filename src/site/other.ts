@@ -178,18 +178,6 @@ import {
     });
 
     let timeout = false;
-    setTimeout(() => {
-      timeout = true;
-      if (mangaProps.imgList.length > 0) return;
-      toast.warn(t('site.simple.no_img'), {
-        id: 'no_img',
-        duration: Number.POSITIVE_INFINITY,
-        async onClick() {
-          await setOptions({ remember_current_site: false });
-          window.location.reload();
-        },
-      });
-    }, 3000);
 
     const triggerAllLazyLoad = () =>
       triggerLazyLoad(getAllImg, () =>
@@ -216,6 +204,19 @@ import {
         });
         updateImgList();
         triggerAllLazyLoad();
+
+        setTimeout(() => {
+          timeout = true;
+          if (mangaProps.imgList.length > 0) return;
+          toast.warn(t('site.simple.no_img'), {
+            id: 'no_img',
+            duration: Number.POSITIVE_INFINITY,
+            async onClick() {
+              await setOptions({ remember_current_site: false });
+              window.location.reload();
+            },
+          });
+        }, 3000);
       }
 
       await wait(() => mangaProps.imgList.length);
