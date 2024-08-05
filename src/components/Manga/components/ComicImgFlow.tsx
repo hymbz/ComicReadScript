@@ -150,7 +150,7 @@ export const ComicImgFlow: Component = () => {
       if (store.option.zoom.ratio !== 100) {
         if (!store.option.scrollMode.enabled) return 'none';
         if (store.option.zoom.offset.y === 0) return 'pan-up';
-        if (store.option.zoom.offset.y === bound.y()) return 'pan-down';
+        if (store.option.zoom.offset.y === bound().y) return 'pan-down';
       }
 
       if (store.option.scrollMode.enabled)

@@ -1,5 +1,5 @@
-import { createRoot, createMemo } from 'solid-js';
 import { clamp, approx } from 'helper';
+import { createMemoMap } from 'helper/solidJs';
 
 import { type PointerState, type UseDrag } from '../hooks/useDrag';
 import { type State, store, refs } from '../store';
@@ -9,19 +9,14 @@ import { closeScrollLock } from './turnPage';
 
 export const touches = new Map<number, PointerState>();
 
-const width = () => refs.mangaBox?.clientWidth ?? 0;
-const height = () => refs.mangaBox?.clientHeight ?? 0;
-
-export const bound = createRoot(() => {
-  const x = createMemo(() => -width() * (store.option.zoom.ratio / 100 - 1));
-  const y = createMemo(() => -height() * (store.option.zoom.ratio / 100 - 1));
-
-  return { x, y };
+export const bound = createMemoMap({
+  x: () => -store.rootSize.width * (store.option.zoom.ratio / 100 - 1),
+  y: () => -store.rootSize.height * (store.option.zoom.ratio / 100 - 1),
 });
 
 const checkBound = (state: State) => {
-  state.option.zoom.offset.x = clamp(bound.x(), state.option.zoom.offset.x, 0);
-  state.option.zoom.offset.y = clamp(bound.y(), state.option.zoom.offset.y, 0);
+  state.option.zoom.offset.x = clamp(bound().x, state.option.zoom.offset.x, 0);
+  state.option.zoom.offset.y = clamp(bound().y, state.option.zoom.offset.y, 0);
 };
 
 export const zoom = (
@@ -34,8 +29,8 @@ export const zoom = (
 
   // 消除放大导致的偏移
   const { left, top } = refs.mangaBox.getBoundingClientRect();
-  const x = (focal?.x ?? width() / 2) - left;
-  const y = (focal?.y ?? height() / 2) - top;
+  const x = (focal?.x ?? store.rootSize.width / 2) - left;
+  const y = (focal?.y ?? store.rootSize.height / 2) - top;
 
   // 当前直接放大后的基准点坐标
   const newX = (x / (store.option.zoom.ratio / 100)) * (newScale / 100);
