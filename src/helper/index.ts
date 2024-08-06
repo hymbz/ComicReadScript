@@ -28,13 +28,6 @@ export const inRange = (min: number, val: number, max: number) =>
 export const approx = (val: number, target: number, range: number) =>
   Math.abs(target - val) <= range;
 
-/** 根据传入的条件列表的真假，对 val 进行取反 */
-export const ifNot = (val: unknown, ...conditions: boolean[]) => {
-  let res = Boolean(val);
-  for (const v of conditions) if (v) res = !res;
-  return res;
-};
-
 /**
  * 对 document.querySelector 的封装
  * 将默认返回类型改为 HTMLElement
@@ -114,12 +107,6 @@ export const isUrl = (text: string) => {
   }
 };
 
-/** 将对象转为 URLParams 类型的字符串 */
-export const dataToParams = (data: Record<string, unknown>) =>
-  Object.entries(data)
-    .map(([key, val]) => `${key}=${String(val)}`)
-    .join('&');
-
 /** 将 blob 数据作为文件保存至本地 */
 export const saveAs = (blob: Blob, name = 'download') => {
   const a = document.createElementNS(
@@ -137,12 +124,6 @@ export const scrollIntoView = (
   selector: string,
   behavior: ScrollBehavior = 'instant',
 ) => querySelector(selector)?.scrollIntoView({ behavior });
-
-/** 循环执行指定函数 */
-export const loop = async (fn: () => unknown, ms = 0) => {
-  await fn();
-  setTimeout(loop, ms, fn);
-};
 
 /** 使指定函数延迟运行期间的多次调用直到运行结束 */
 export const singleThreaded = <T extends any[], R>(
@@ -322,36 +303,6 @@ export const triggerEleLazyLoad = async (
     if (isLazyLoaded && time) return await wait(isLazyLoaded, time);
   } finally {
     window.scroll({ top: nowScroll, behavior: 'auto' });
-  }
-};
-
-/** 获取图片尺寸 */
-export const getImgSize = async (
-  url: string,
-  breakFn?: () => boolean,
-): Promise<[number, number] | null> => {
-  let error = false;
-  const image = new Image();
-  try {
-    image.onerror = () => {
-      error = true;
-    };
-
-    image.src = url;
-
-    await wait(
-      () =>
-        !error &&
-        (image.naturalWidth || image.naturalHeight) &&
-        (breakFn ? !breakFn() : true),
-    );
-    if (error) return null;
-    return [image.naturalWidth, image.naturalHeight];
-  } catch (error_) {
-    if (isDevMode) console.error('获取图片尺寸时出错', error_);
-    return null;
-  } finally {
-    image.src = '';
   }
 };
 

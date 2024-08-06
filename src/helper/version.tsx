@@ -1,4 +1,5 @@
 import { toast } from '../components/useComponents/Toast';
+import { VersionTip } from '../components/Manga/components/VersionTip';
 
 import { lang } from './i18n';
 import { log } from './logger';
@@ -93,11 +94,22 @@ export const handleVersionUpdate = async () => {
   if (lang() === 'zh') {
     toast(
       () => (
+        /* eslint-disable i18next/no-literal-string */
         <>
-          {/* eslint-disable-next-line i18next/no-literal-string */}
           <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
           inject@LatestChange
+          <VersionTip v1={version} v2={'9.5.0'}>
+            <h3>改动</h3>
+            <ul>
+              <li>
+                原本缩放后可以单独使用滚轮调整缩放比例，
+                <br />
+                现在还需要同时按下 <code>Ctrl/Alt</code>
+              </li>
+            </ul>
+          </VersionTip>
         </>
+        /* eslint-enable i18next/no-literal-string */
       ),
       {
         id: 'Version Tip',
