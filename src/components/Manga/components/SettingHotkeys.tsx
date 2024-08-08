@@ -2,18 +2,35 @@ import MdClose from '@material-design-icons/svg/round/close.svg';
 import MdRefresh from '@material-design-icons/svg/round/refresh.svg';
 import MdAdd from '@material-design-icons/svg/round/add.svg';
 import { type Component, For, Index } from 'solid-js';
-import { getKeyboardCode, keyboardCodeToText } from 'helper';
+import { getKeyboardCode, isEqual, keyboardCodeToText } from 'helper';
 import { t } from 'helper/i18n';
 
-import { store } from '../store';
-import {
-  defaultHotkeys,
-  delHotkeys,
-  focus,
-  hotkeysMap,
-  setHotkeys,
-} from '../actions';
+import { _setState, store } from '../store';
+import { defaultHotkeys, focus, hotkeysMap } from '../actions';
 import classes from '../index.module.css';
+
+const setHotkeys = (...args: any[]) => {
+  _setState(...(['hotkeys', ...args] as [any]));
+  store.prop.HotkeysChange?.(
+    Object.fromEntries(
+      Object.entries(store.hotkeys).filter(
+        ([name, keys]) =>
+          !isEqual(keys.filter(Boolean), defaultHotkeys()[name]),
+      ),
+    ),
+  );
+};
+
+const delHotkeys = (code: string) => {
+  for (const [name, keys] of Object.entries(store.hotkeys)) {
+    const i = keys.indexOf(code);
+    if (i === -1) continue;
+
+    const newKeys = [...store.hotkeys[name]];
+    newKeys.splice(i, 1);
+    setHotkeys(name, newKeys);
+  }
+};
 
 const KeyItem: Component<{
   operateName: string;
@@ -61,8 +78,8 @@ const KeyItem: Component<{
 };
 
 export const SettingHotkeys: Component = () => (
-  <For each={Object.entries(store.hotkeys)}>
-    {([name, keys]) => (
+  <For each={Object.keys(defaultHotkeys())}>
+    {(name) => (
       <div class={classes.hotkeys}>
         <div class={classes.hotkeysHeader}>
           <p>{t(`hotkeys.${name}`) || name}</p>
@@ -76,8 +93,8 @@ export const SettingHotkeys: Component = () => (
           <div
             title={t('setting.hotkeys.restore')}
             on:click={() => {
-              const newKeys = defaultHotkeys[name] ?? [];
-              for (const code of defaultHotkeys[name]) delHotkeys(code);
+              const newKeys = defaultHotkeys()[name] ?? [];
+              for (const code of defaultHotkeys()[name]) delHotkeys(code);
               setHotkeys(name, newKeys);
             }}
           >
@@ -85,7 +102,7 @@ export const SettingHotkeys: Component = () => (
           </div>
         </div>
 
-        <Index each={keys}>
+        <Index each={store.hotkeys[name]}>
           {(_, i) => <KeyItem operateName={name} i={i} />}
         </Index>
       </div>

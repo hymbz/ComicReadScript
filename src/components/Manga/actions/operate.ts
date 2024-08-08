@@ -127,7 +127,7 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   if (Reflect.has(hotkeysMap(), code)) {
     e.stopPropagation();
     e.preventDefault();
-  }
+  } else return;
 
   // 并排卷轴模式下的快捷键
   if (isAbreastMode()) {
@@ -204,6 +204,11 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 
     case 'exit':
       return store.prop.Exit?.();
+
+    // 阅读模式以外的快捷键转发到网页上去处理
+    default:
+      document.body.dispatchEvent(new KeyboardEvent('keydown', e));
+      document.body.dispatchEvent(new KeyboardEvent('keyup', e));
   }
 };
 

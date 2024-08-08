@@ -1,9 +1,6 @@
 import { createMutable } from 'solid-js/store';
-import { createSignal } from 'solid-js';
 
 import type { MangaProps } from '../components/Manga';
-
-import { createRootMemo } from './solidJs';
 
 import { assign, difference } from '.';
 
@@ -16,11 +13,6 @@ export interface SiteOptions {
   /** 隐藏 FAB */
   hiddenFAB: boolean;
 }
-
-const getHotkeys = async (): Promise<Record<string, string[]>> => ({
-  enter_read_mode: ['v'],
-  ...(await GM.getValue<Record<string, string[]>>('Hotkeys', {})),
-});
 
 /** 清理多余的配置项 */
 const clear = <T extends Record<string, any> = {}>(
@@ -67,8 +59,6 @@ export const useSiteOptions = async <T = Record<string, any>>(
     return GM.setValue(name, difference(options, _defaultOptions));
   };
 
-  const [hotkeys, setHotkeys] = createSignal(await getHotkeys());
-
   const isStored = saveOptions !== undefined;
   // 如果当前站点没有存储配置，就补充上去
   if (!isStored) await GM.setValue(name, {});
@@ -82,17 +72,5 @@ export const useSiteOptions = async <T = Record<string, any>>(
     setOptions,
     /** 是否存过配置 */
     isStored,
-
-    /** 快捷键配置 */
-    hotkeys,
-    /** 处理快捷键配置的变动 */
-    onHotkeysChange(newValue: Record<string, string[]>) {
-      GM.setValue('Hotkeys', newValue);
-      setHotkeys(newValue);
-    },
-    /** 进入阅读模式的快捷键 */
-    readModeHotkeys: createRootMemo(
-      () => new Set(Object.assign([], hotkeys().enter_read_mode)),
-    ),
   };
 };

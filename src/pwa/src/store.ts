@@ -1,7 +1,7 @@
 import { createEffect, createRoot, on } from 'solid-js';
 import { t } from 'helper/i18n';
+import { useStore } from 'helper/useStore';
 
-import { useStore } from '../../helper/useStore';
 import { toast } from '../../components/Toast';
 
 import { unzip } from './unzip';

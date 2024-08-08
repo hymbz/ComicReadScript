@@ -1,9 +1,11 @@
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
+import { createSignal } from 'solid-js';
 
-import { useManga } from '../components/useComponents/Manga';
+import { hotkeysMap, useManga } from '../components/useComponents/Manga';
 import { useFab } from '../components/useComponents/Fab';
 import { toast } from '../components/useComponents/Toast';
 import { type MangaProps } from '../components/Manga';
+import { setDefaultHotkeys } from '../components/Manga/actions';
 
 import { setInitLang, t } from './i18n';
 import { log } from './logger';
@@ -12,6 +14,8 @@ import { type SiteOptions, useSiteOptions } from './useSiteOptions';
 import { useSpeedDial } from './useSpeedDial';
 
 import { getKeyboardCode, linstenKeydown } from '.';
+
+export const [hotkeys, setHotkeys] = createSignal<Record<string, string[]>>({});
 
 /**
  * 对基础的初始化操作的封装
@@ -26,14 +30,10 @@ export const useInit = async <T extends Record<string, any>>(
 
   await handleVersionUpdate();
 
-  const {
-    options,
-    setOptions,
-    readModeHotkeys,
-    hotkeys,
-    onHotkeysChange,
-    isStored,
-  } = await useSiteOptions(name, defaultOptions);
+  const { options, setOptions, isStored } = await useSiteOptions(
+    name,
+    defaultOptions,
+  );
 
   const [setFab, fabProps] = await useFab({
     tip: t('other.read_mode'),
@@ -63,15 +63,23 @@ export const useInit = async <T extends Record<string, any>>(
       });
   };
 
+  setHotkeys(await GM.getValue<Record<string, string[]>>('Hotkeys', {}));
+  setDefaultHotkeys((hotkeys) => ({ ...hotkeys, enter_read_mode: ['v'] }));
+
   const [setManga, mangaProps] = await useManga({
     imgList: [],
+    onLoading,
+
     option: options.option,
     defaultOption: options.defaultOption,
     onOptionChange: (option) =>
       setOptions({ option } as Partial<T & SiteOptions>),
+
     hotkeys: hotkeys(),
-    onHotkeysChange,
-    onLoading,
+    onHotkeysChange(newValue: Record<string, string[]>) {
+      GM.setValue('Hotkeys', newValue);
+      setHotkeys(newValue);
+    },
   });
 
   let menuId: number;
@@ -170,14 +178,13 @@ export const useInit = async <T extends Record<string, any>>(
           await updateHideFabMenu();
         })();
 
-        if (readModeHotkeys().size > 0)
-          linstenKeydown((e) => {
-            const code = getKeyboardCode(e);
-            if (!readModeHotkeys().has(code)) return;
-            e.stopPropagation();
-            e.preventDefault();
-            fabProps.onClick?.();
-          });
+        linstenKeydown((e) => {
+          const code = getKeyboardCode(e);
+          if (hotkeysMap()[code] !== 'enter_read_mode') return;
+          e.stopPropagation();
+          e.preventDefault();
+          fabProps.onClick?.();
+        });
       }
 
       return {

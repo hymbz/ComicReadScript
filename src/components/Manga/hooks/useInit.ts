@@ -39,12 +39,6 @@ export const useInit = (props: MangaProps) => {
       state.fillEffect = props.fillEffect ?? { '-1': true };
       updatePageData(state);
     },
-    hotkeys(state) {
-      state.hotkeys = {
-        ...JSON.parse(JSON.stringify(defaultHotkeys)),
-        ...props.hotkeys,
-      };
-    },
 
     onExit(state) {
       state.prop.Exit = (isEnd?: boolean | Event) => {
@@ -105,6 +99,15 @@ export const useInit = (props: MangaProps) => {
       ),
     );
   }
+
+  createEffect(() => {
+    setState((state) => {
+      state.hotkeys = {
+        ...JSON.parse(JSON.stringify(defaultHotkeys())),
+        ...props.hotkeys,
+      };
+    });
+  });
 
   const handleImgList = () => {
     setState((state) => {

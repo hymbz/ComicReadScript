@@ -163,7 +163,26 @@ module.exports = {
           "error", {
             mode: 'jsx-only',
             'jsx-attributes': { include: ['^name'] },
-          }],
+          },
+        ],
+      },
+    },
+    {
+      files: "src/site/**/*",
+      rules: {
+        "no-restricted-imports": ["warn", {
+          "patterns": [
+            {
+              "group": [
+                "helper/*",
+                "!helper/languages",
+                "!helper/eleSelector",
+                "../**/*"
+              ],
+              "message": "只能通过 main 导入"
+            }
+          ]
+        }],
       },
     },
   ],
