@@ -1,4 +1,5 @@
-import type { UseDrag } from '../hooks/useDrag';
+import type { UseDrag } from 'helper/useDrag';
+
 import { refs, store } from '../store';
 
 import { scrollTop } from './memo';

@@ -1,8 +1,8 @@
 import { debounce } from 'helper';
+import { type UseDrag } from 'helper/useDrag';
 
 import { type Area } from '../components/TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
-import { type UseDrag } from '../hooks/useDrag';
 import { store, setState, refs } from '../store';
 
 import { resetUI } from './helper';

@@ -7,9 +7,9 @@ import {
 } from 'solid-js';
 import { boolDataVal, debounce } from 'helper';
 import { createThrottleMemo } from 'helper/solidJs';
+import { useDrag } from 'helper/useDrag';
 
 import { refs, store } from '../store';
-import { useDrag } from '../hooks/useDrag';
 import { useStyleMemo } from '../hooks/useStyle';
 import {
   bindRef,

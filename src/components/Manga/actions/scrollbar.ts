@@ -1,11 +1,12 @@
 import { clamp, debounce } from 'helper';
 import { createRootMemo } from 'helper/solidJs';
+import { type PointerState, type UseDrag } from 'helper/useDrag';
 import { createSignal } from 'solid-js';
 
-import { type PointerState, type UseDrag } from '../hooks/useDrag';
 import { type State, store, refs, _setState } from '../store';
 
 import { isAbreastMode } from './memo';
+import { focus } from './operate';
 import {
   scrollLength,
   scrollPercentage,
@@ -92,7 +93,7 @@ export const handleScrollbarSlider: UseDrag = ({ type, xy, initial }, e) => {
   lastType = type;
 
   // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
-  if (type === 'up') return;
+  if (type === 'up') return focus();
 
   if (!refs.mangaFlow) return;
 

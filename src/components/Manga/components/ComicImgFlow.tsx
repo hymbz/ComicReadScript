@@ -1,10 +1,10 @@
 import { type Component, Show, createMemo, onMount, Index } from 'solid-js';
 import { boolDataVal, createSequence } from 'helper';
 import { createEffectOn } from 'helper/solidJs';
+import { type UseDrag, useDrag } from 'helper/useDrag';
 
 import { refs, setState, store } from '../store';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
-import { type UseDrag, useDrag } from '../hooks/useDrag';
 import {
   bindRef,
   handleClick,

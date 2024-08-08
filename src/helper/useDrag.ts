@@ -1,7 +1,7 @@
-import { onCleanup, onMount } from 'solid-js';
 import { approx } from 'helper';
+import { onAutoMount } from 'helper/solidJs';
 
-import { focus } from '../actions';
+import { focus } from '../components/Manga/actions';
 
 export interface PointerState {
   id: number;
@@ -15,6 +15,10 @@ export interface PointerState {
   last: [number, number];
   /** 手势开始时间 */
   startTime: number;
+
+  // 受 setPointerCapture 影响，除 down 外其他事件拿不到正确的 target，需要手动存一下
+  /** 触发元素 */
+  target: HTMLElement;
 }
 
 const createPointerState = (
@@ -29,6 +33,7 @@ const createPointerState = (
     initial: xy,
     last: xy,
     startTime: performance.now(),
+    target: e.target as HTMLElement,
   };
 };
 
@@ -36,8 +41,9 @@ type UseDragOptions = {
   ref: HTMLElement;
   handleDrag: UseDrag;
   easyMode?: () => boolean;
-  handleClick?: (e: PointerEvent) => boolean | void;
+  handleClick?: (e: PointerEvent, target: HTMLElement) => boolean | void;
   touches?: Map<number, PointerState>;
+  skip?: (e: PointerEvent) => boolean;
 };
 
 export type UseDrag = (state: PointerState, e: PointerEvent) => void;
@@ -47,9 +53,10 @@ export const useDrag = ({
   handleDrag,
   easyMode,
   handleClick,
+  skip,
   touches = new Map(),
 }: UseDragOptions) => {
-  onMount(() => {
+  onAutoMount(() => {
     const controller = new AbortController();
     const options = {
       capture: false,
@@ -58,9 +65,11 @@ export const useDrag = ({
     };
 
     const handleDown = (e: PointerEvent) => {
+      if (skip?.(e)) return;
+
       e.stopPropagation();
-      ref.setPointerCapture(e.pointerId);
       if (!easyMode?.() && e.buttons !== 1) return;
+      ref.setPointerCapture(e.pointerId);
 
       const state = createPointerState(e);
       touches.set(e.pointerId, state);
@@ -68,7 +77,6 @@ export const useDrag = ({
     };
 
     const handleMove = (e: PointerEvent) => {
-      e.stopPropagation();
       e.preventDefault();
 
       if (!easyMode?.() && e.buttons !== 1) return;
@@ -102,10 +110,9 @@ export const useDrag = ({
         approx(state.xy[1] - state.initial[1], 0, 5) &&
         performance.now() - state.startTime < 200
       )
-        handleClick(e);
+        handleClick(e, state.target);
 
       handleDrag(state, e);
-      focus();
     };
 
     ref.addEventListener('pointerdown', handleDown, options);
@@ -137,6 +144,6 @@ export const useDrag = ({
       ref.addEventListener('pointerout', handleUp, options);
     }
 
-    onCleanup(() => controller.abort());
+    return () => controller.abort();
   });
 };
