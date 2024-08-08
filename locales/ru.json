@@ -38,6 +38,7 @@
   "hotkeys": {
     "enter_read_mode": "Режим чтения",
     "exit": "Выход",
+    "float_tag_list": "Плавающий список тегов",
     "jump_to_end": "Перейти к последней странице",
     "jump_to_home": "Перейти к первой странице",
     "page_down": "Перелистнуть страницу вниз",
@@ -174,6 +175,7 @@
       "block_totally": "Глобально заблокировать комиксы",
       "colorize_tag": "Раскрасить теги",
       "detect_ad": "Detect advertise page",
+      "float_tag_list": "Плавающий список тегов",
       "hotkeys": "Горячие клавиши",
       "load_original_image": "Загружать оригинальное изображение",
       "open_link_new_page": "Открывать ссылки в новой вкладке",

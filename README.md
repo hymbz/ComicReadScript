@@ -1,11 +1,24 @@
 ![页面填充示例](/docs/public/页面填充示例.webp)
 
 <p align="center">
-  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread" target="_blank"><img src="https://img.shields.io/greasyfork/v/374903"></a>
-  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread" target="_blank"><img src="https://img.shields.io/greasyfork/dt/374903"></a>
-  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread/feedback" target="_blank"><img src="https://img.shields.io/greasyfork/rating-count/374903"></a>
-  <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank"><img src="https://img.shields.io/github/issues/hymbz/ComicReadScript"></a>
-  <a href="https://hosted.weblate.org/engage/comic_read_script/-/en/" target="_blank"><img src="https://hosted.weblate.org/widget/comic_read_script/main/en/svg-badge.svg" alt="Translation status" /></a>
+  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread" target="_blank">
+    <img src="https://img.shields.io/greasyfork/v/374903">
+  </a>
+  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread" target="_blank">
+    <img src="https://img.shields.io/greasyfork/dt/374903">
+  </a>
+  <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread/feedback" target="_blank">
+    <img src="https://img.shields.io/greasyfork/rating-count/374903">
+  </a>
+  <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">
+    <img src="https://img.shields.io/github/issues/hymbz/ComicReadScript">
+  </a>
+  <a href="https://hosted.weblate.org/engage/comic_read_script/-/en/">
+    <img src="https://hosted.weblate.org/widget/comic_read_script/main/en/svg-badge.svg">
+  </a>
+  <a href="https://hosted.weblate.org/engage/comic_read_script/-/ru/">
+    <img src="https://hosted.weblate.org/widget/comic_read_script/main/ru/svg-badge.svg" />
+  </a>
 </p>
 
 ## 简介
@@ -47,7 +60,7 @@
 | 退出阅读模式 | `Esc` |
 | 进入阅读模式 | `v` |
 
-> 可在设置中修改
+> 可在进入阅读模式后的左侧边栏的设置中修改
 
 ## 页面填充
 
@@ -132,6 +145,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
   - [关联 nhentai](#关联-nhentai)
   - [快捷收藏](#快捷收藏)
   - [标签染色](#标签染色)
+  - [悬浮标签列表](#悬浮标签列表)
   - [识别广告页](#识别广告页)
   - [快捷评分](#快捷评分)
   - [快捷键](#快捷键)
@@ -199,7 +213,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 ### 关联 nhentai
 
-根据漫画标题关联匹配 nhentai 的本子，结果会以标签的形式显示在标签栏中，标签内容为 nhentai 上的漫画 ID ，鼠标悬停在标签上可以看到漫画标题。
+根据漫画标题关联匹配 nhentai 的本子，结果会以标签的形式显示在标签列表中，标签内容为 nhentai 上的漫画 ID ，鼠标悬停在标签上可以看到漫画标题。
 
 点击标签后，标签菜单有两个选项：
 
@@ -224,15 +238,25 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 根据「My Tags」页面的设置，为详情页里的标签加上对应样式。默认关闭，需手动开启。
 
-虽然已经有好几个相同功能的脚本了，但无一例外都会直接覆盖掉标签的边框和字体颜色，导致无法看出标签的状态（详见 [EHWiki](https://ehwiki.org/wiki/Tagging_Mechanics/Chinese)），因此我还是重复造了这个轮子，针对上述问题做了改进：不覆盖弱标签的边框，字体颜色改用下划线颜色表示，并为了美观统一替换了 eh 自己的标签变色。
+虽然已经有好几个相同功能的脚本了，但无一例外都会直接覆盖掉标签的边框和字体颜色，导致无法看出标签的状态（详见 [EHWiki](https://ehwiki.org/wiki/Tagging_Mechanics/Chinese)），因此重复造了这个轮子，针对上述问题做了改进：不覆盖弱标签的边框，字体颜色改用下划线颜色表示，并为了美观统一替换了 eh 自己的标签变色。
 
 ![eh标签染色](/docs/public/eh标签染色.webp)
 
 > 标签颜色数据将在 `功能开启时`、`进入「My Tags」时` 和 `在「My Tags」中修改后` 更新
 
+### 悬浮标签列表
+
+因为「[E绅士标签翻译辅助工具-标签编辑](https://github.com/EhTagTranslation/UserScripts/tree/master/TagEditor)」无法和本脚本适配所以就自己实现了这个功能。让标签列表可以随意拖动和被快捷键唤出。默认关闭，需手动开启。
+
+![eh悬浮标签列表](/docs/public/eh悬浮标签列表.webp)
+
+相较原脚本增加了快捷键 `q` 以便在阅读模式下唤出（可在设置中修改），并能同时显示「[EhSyringe](https://github.com/EhTagTranslation/EhSyringe)」的标签描述，透明度改用鼠标滚轮调节。
+
+在悬浮状态下：打完标签后输入框会自动失焦以便能快速用快捷键关掉、输入框只要用鼠标划过就会自动聚焦省去鼠标点击。
+
 ### 识别广告页
 
-简单识别下广告页并自动排除，只会在有`extraneous ads(外部广告)`标签时生效。如果你有用 Hath Perks 购买了 `More Thumbs(更多缩略图)` 的话，可以通过调大缩略图行数来略微加快一点识别速度。
+简单识别下广告页并自动排除，只会在有`extraneous ads(外部广告)`标签时生效。
 
 如有误杀还请先反馈，然后可以先在右下角的悬浮按钮菜单里关闭该功能，等脚本更新修复后再开启。
 

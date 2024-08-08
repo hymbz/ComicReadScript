@@ -141,6 +141,6 @@ export const quickTagDefine = (pageType: PageType) => {
   linstenKeydown((e) => {
     if (e.key !== 'Escape' || !show()) return;
     setShow(false);
-    e.stopPropagation();
+    e.stopImmediatePropagation();
   });
 };

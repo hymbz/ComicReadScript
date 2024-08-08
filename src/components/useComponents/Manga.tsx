@@ -19,7 +19,7 @@ export * from '../Manga/actions';
 
 let dom: HTMLDivElement;
 
-type UseMangaProps = MangaProps & { adList?: Set<number> };
+export type UseMangaProps = MangaProps & { adList?: Set<number> };
 
 /**
  * 显示漫画阅读窗口
@@ -49,7 +49,7 @@ export const useManga = async (initProps?: Partial<UseMangaProps>) => {
     }
 
     /* 防止其他扩展的元素显示到漫画上来 */
-    #comicRead[show] ~ :not(#fab, #toast) {
+    #comicRead[show] ~ :not(#fab, #toast, .comicread-ignore) {
       display: none !important;
       pointer-events: none !important;
       visibility: hidden !important;

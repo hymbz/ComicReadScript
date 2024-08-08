@@ -38,6 +38,7 @@
   "hotkeys": {
     "enter_read_mode": "Enter reading mode",
     "exit": "Exit",
+    "float_tag_list": "Floating tag list",
     "jump_to_end": "Jump to the last page",
     "jump_to_home": "Jump to the first page",
     "page_down": "Turn the page to the down",
@@ -174,6 +175,7 @@
       "block_totally": "Totally block comics",
       "colorize_tag": "Colorize tags",
       "detect_ad": "Detect advertise page",
+      "float_tag_list": "Floating tag list",
       "hotkeys": "Hotkeys",
       "load_original_image": "Load original image",
       "open_link_new_page": "Open links in a new page",

@@ -26,6 +26,7 @@ import { hotkeysPageTurn } from './hotkeys';
 import { colorizeTag } from './colorizeTag';
 import { quickRating } from './quickRating';
 import { quickTagDefine } from './quickTagDefine';
+import { floatTagList } from './floatTagList';
 
 // [ehentai 图像限额](https://github.com/ccloli/E-Hentai-Downloader/wiki/E−Hentai-Image-Viewing-Limits-(Chinese))
 
@@ -77,6 +78,8 @@ export type PageType = 'gallery' | 'mytags' | ListPageType;
     quick_rating: true,
     /** 快捷查看标签定义 */
     quick_tag_define: true,
+    /** 悬浮标签列表 */
+    float_tag_list: false,
     autoShow: false,
   });
 
@@ -106,6 +109,8 @@ export type PageType = 'gallery' | 'mytags' | ListPageType;
   if (options.colorize_tag) colorizeTag(pageType);
   // 快捷键
   if (options.hotkeys) hotkeysPageTurn(pageType);
+  // 悬浮标签列表
+  if (options.float_tag_list) floatTagList(pageType, mangaProps);
   // 快捷收藏。必须处于登录状态
   if (unsafeWindow.apiuid !== -1 && options.quick_favorite)
     quickFavorite(pageType);

@@ -479,3 +479,12 @@ export const linstenKeydown = (handler: (e: KeyboardEvent) => unknown) =>
     }
     return handler(e);
   });
+
+/** 劫持修改原网页上的函数 */
+export const hijackFn = <T = (...args: unknown[]) => unknown>(
+  fnName: string,
+  fn: (rawFn: T, args: unknown[]) => unknown,
+) => {
+  const rawFn = unsafeWindow[fnName];
+  unsafeWindow[fnName] = (...args: unknown[]) => fn(rawFn, args);
+};

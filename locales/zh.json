@@ -38,6 +38,7 @@
   "hotkeys": {
     "enter_read_mode": "进入阅读模式",
     "exit": "退出",
+    "float_tag_list": "悬浮标签列表",
     "jump_to_end": "跳至尾页",
     "jump_to_home": "跳至首页",
     "page_down": "向下翻页",
@@ -174,6 +175,7 @@
       "block_totally": "彻底屏蔽漫画",
       "colorize_tag": "标签染色",
       "detect_ad": "识别广告页",
+      "float_tag_list": "悬浮标签列表",
       "hotkeys": "快捷键",
       "load_original_image": "加载原图",
       "open_link_new_page": "在新页面中打开链接",

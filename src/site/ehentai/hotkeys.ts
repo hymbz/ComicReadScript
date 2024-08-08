@@ -20,7 +20,7 @@ export const hotkeysPageTurn = (pageType: PageType) => {
         case 'Escape':
           if (unsafeWindow.selected_tagname) {
             unsafeWindow.toggle_tagmenu();
-            return e.stopPropagation();
+            return e.stopImmediatePropagation();
           }
       }
 
