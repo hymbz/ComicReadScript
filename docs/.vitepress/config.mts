@@ -1,14 +1,14 @@
 import { defineConfig } from 'vitepress';
-import { markdownItImageSize } from 'markdown-it-image-size';
 
-// https://vitepress.dev/reference/site-config
+import { imgSize } from './imgSize';
+
 
 export default defineConfig({
   lang: 'zh-CN',
   title: 'ComicRead Script',
   description: 'ComicRead Script Docs',
   head: [['link', { rel: 'icon', href: '/favicon.ico' }]],
-  markdown: { config: md => md.use(markdownItImageSize) },
+  markdown: { config: (md) => md.use(imgSize) },
   themeConfig: {
     nav: [
       {
