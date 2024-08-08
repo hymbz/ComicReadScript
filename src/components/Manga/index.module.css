@@ -61,11 +61,7 @@ img {
   margin: 0;
 }
 
-div,
-div:focus,
-div:focus-within,
-div:focus-visible,
-button {
+:where(div, div:focus, div:focus-within, div:focus-visible, button) {
   border: none;
   outline: none;
 }

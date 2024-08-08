@@ -9,6 +9,8 @@ import {
   on,
   createSignal,
   createMemo,
+  onMount,
+  onCleanup,
 } from 'solid-js';
 
 import { isEqual, throttle } from '.';
@@ -73,3 +75,12 @@ export const createRootEffect = ((fn: any, val: any, options: any) =>
 
 export const createEffectOn = ((deps: any, fn: any, options?: any) =>
   createRootEffect(on(deps, fn, options))) as typeof on;
+
+export const onAutoMount = (fn: () => void | (() => unknown)) => {
+  if (!getOwner()) return fn();
+
+  onMount(() => {
+    const cleanFn = fn();
+    if (cleanFn) onCleanup(cleanFn);
+  });
+};

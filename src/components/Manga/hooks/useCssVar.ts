@@ -73,8 +73,7 @@ export const useCssVar = () => {
     '--i18n-touch-area-menu': `${t('touch_area.menu')}`,
   });
 
-  useStyleMemo(
-    `.${classes.root}`,
+  useStyleMemo(`.${classes.root}`, [
     {
       '--bg': () =>
         `${
@@ -87,5 +86,5 @@ export const useCssVar = () => {
     () => (store.option.darkMode ? darkStyle : lightStyle),
     svg,
     i18n,
-  );
+  ]);
 };

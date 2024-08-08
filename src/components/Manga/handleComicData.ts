@@ -59,8 +59,7 @@ export const handleComicData = (
         imgCache = null;
       }
 
-      if (fillEffect[i] === undefined && img.loadType !== 'loading')
-        fillEffect[i] = false;
+      if (fillEffect[i] === undefined) fillEffect[i] = false;
 
       pageList.push([i]);
     } else {
