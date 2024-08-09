@@ -238,7 +238,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 根据「My Tags」页面的设置，为详情页里的标签加上对应样式。默认关闭，需手动开启。
 
-虽然已经有好几个相同功能的脚本了，但无一例外都会直接覆盖掉标签的边框和字体颜色，导致无法看出标签的状态（详见 [EHWiki](https://ehwiki.org/wiki/Tagging_Mechanics/Chinese)），因此重复造了这个轮子，针对上述问题做了改进：不覆盖弱标签的边框，字体颜色改用下划线颜色表示，并为了美观统一替换了 eh 自己的标签变色。
+虽然已经有好几个相同功能的脚本了，但无一例外都会直接覆盖掉标签的边框和字体颜色，导致无法看出标签的状态（详见 [EHWiki](https://ehwiki.org/wiki/Tagging_Mechanics/Chinese)），因此还是重复造了这个轮子，相较其他脚本做了改进：不覆盖弱标签的边框，原本的字体颜色改用下划线显示。
 
 ![eh标签染色](https://comic-read-docs.pages.dev/eh标签染色.webp)
 

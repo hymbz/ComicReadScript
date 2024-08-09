@@ -45,6 +45,7 @@ const migration = async () => {
     switch (key) {
       case 'Version':
       case 'Languages':
+      case 'ehTagColorizeCss':
         continue;
 
       case 'Hotkeys': {
