@@ -10087,9 +10087,14 @@ const floatTagList = (pageType, mangaProps) => {
     handleClick: (_, target) => target.click(),
     skip: e => !e.target.matches('#gd4, #taglist, #gwrd, td+td')
   });
-  const ehs = main.querySelector('#ehs-introduce-box');
-  const ehsParent = ehs?.parentElement;
-  if (ehs) {
+  let ehs;
+  let ehsParent;
+  const handleEhs = () => {
+    if (ehs) return;
+    ehs = main.querySelector('#ehs-introduce-box');
+    if (!ehs) return;
+    ehsParent = ehs.parentElement;
+
     // 让 ehs 的自动补全列表能显示在顶部
     const autoComplete = main.querySelector('.eh-syringe-lite-auto-complete-list');
     if (autoComplete) {
@@ -10104,8 +10109,9 @@ const floatTagList = (pageType, mangaProps) => {
       if (!unsafeWindow.selected_tagname) main.querySelector('#ehs-introduce-box .ehs-close')?.click();
       return res;
     });
-  }
+  };
   main.createEffectOn(() => store.open, open => {
+    handleEhs();
     if (open) {
       const {
         height,

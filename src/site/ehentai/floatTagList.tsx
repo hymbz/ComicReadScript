@@ -219,9 +219,14 @@ export const floatTagList = (pageType: PageType, mangaProps: UseMangaProps) => {
       !(e.target as HTMLElement).matches('#gd4, #taglist, #gwrd, td+td'),
   });
 
-  const ehs = querySelector('#ehs-introduce-box');
-  const ehsParent = ehs?.parentElement;
-  if (ehs) {
+  let ehs: HTMLElement | null;
+  let ehsParent: HTMLElement | null;
+  const handleEhs = () => {
+    if (ehs) return;
+    ehs = querySelector('#ehs-introduce-box');
+    if (!ehs) return;
+    ehsParent = ehs.parentElement;
+
     // 让 ehs 的自动补全列表能显示在顶部
     const autoComplete = querySelector('.eh-syringe-lite-auto-complete-list');
     if (autoComplete) {
@@ -237,11 +242,12 @@ export const floatTagList = (pageType: PageType, mangaProps: UseMangaProps) => {
         querySelector('#ehs-introduce-box .ehs-close')?.click();
       return res;
     });
-  }
+  };
 
   createEffectOn(
     () => store.open,
     (open) => {
+      handleEhs();
       if (open) {
         const { height, width } = gd4Style;
         placeholder.style.cssText = `height: ${height}; width: ${width};`;
