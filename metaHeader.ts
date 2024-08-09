@@ -16,16 +16,16 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
  */
 const resourceList: Record<string, [string, string] | [string]> = {
   'solid-js': [
-    'https://registry.npmmirror.com/solid-js/1.8.17/files/dist/solid.cjs',
-    'https://registry.npmmirror.com/solid-js/1.8.17/files/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.19/files/dist/solid.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.19/files/dist/dev.cjs',
   ],
   'solid-js/store': [
-    'https://registry.npmmirror.com/solid-js/1.8.17/files/store/dist/store.cjs',
-    'https://registry.npmmirror.com/solid-js/1.8.17/files/store/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.19/files/store/dist/store.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.19/files/store/dist/dev.cjs',
   ],
   'solid-js/web': [
-    'https://registry.npmmirror.com/solid-js/1.8.17/files/web/dist/web.cjs',
-    'https://registry.npmmirror.com/solid-js/1.8.17/files/web/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.19/files/web/dist/web.cjs',
+    'https://registry.npmmirror.com/solid-js/1.8.19/files/web/dist/dev.cjs',
   ],
   fflate: ['https://registry.npmmirror.com/fflate/0.8.2/files/umd/index.js'],
   'qr-scanner': [
@@ -149,7 +149,7 @@ export const getMetaData = (isDevMode: boolean) => {
   const keyLength = Math.max(...Object.keys(meta).map((key) => key.length)) + 1;
 
   const createMetaHeader = (metaData: Record<string, any>) => {
-    const _metaData: typeof metaData = JSON.parse(JSON.stringify(metaData));
+    const _metaData: typeof metaData = structuredClone(metaData);
 
     // 将 @resource 中的 / 替换为 |，以兼容 ios 的油猴扩展
     for (const key of Object.keys(_metaData.resource)) {

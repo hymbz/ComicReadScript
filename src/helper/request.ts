@@ -54,6 +54,7 @@ export const request = async <T = any>(
         method: 'GET',
         headers,
         ...details,
+        // eslint-disable-next-line unicorn/no-invalid-fetch-options
         body: details?.data,
         signal: AbortSignal.timeout?.(details?.timeout ?? 1000 * 10),
       });

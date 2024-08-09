@@ -1,6 +1,5 @@
+import { getChapterInfo } from 'helper/dmzjApi';
 import { log, querySelector, toast, useInit, waitDom } from 'main';
-
-import { getChapterInfo } from '../helper/dmzjApi';
 
 const turnPage = (chapterId?: number) => {
   if (!chapterId) return undefined;

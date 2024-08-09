@@ -8,8 +8,8 @@ module.exports = {
     // 提示未使用的变量
     "@typescript-eslint/no-unused-vars": "warn",
     // 提示使用了 console
-    'no-console': ["warn", { allow: ["warn", "error"] }],
-    'no-debugger': "warn",
+    "no-console": ["warn", { allow: ["warn", "error"] }],
+    "no-debugger": "warn",
 
     "no-use-extend-native/no-use-extend-native": "off",
 
@@ -37,7 +37,7 @@ module.exports = {
     // 不强制使用 querySelector
     "unicorn/prefer-query-selector": "off",
     // 不限制在 switch case 中使用大括号
-    "unicorn/switch-case-braces": 'off',
+    "unicorn/switch-case-braces": "off",
 
     // 允许直接传递函数给迭代器方法
     "unicorn/no-array-callback-reference": "off",
@@ -58,18 +58,21 @@ module.exports = {
     // 允许 return await
     "no-return-await": "off",
     // 允许调用大写开头的函数
-    "new-cap": ["error", { "capIsNew": false }],
+    "new-cap": ["error", { capIsNew: false }],
     // 允许使用复杂的数组解构
     "unicorn/no-unreadable-array-destructuring": "off",
     // 允许正常调用异步函数并使用 catch
     "unicorn/prefer-top-level-await": "off",
+    // 允许在相等判断中使用 !
+    "unicorn/no-negation-in-equality-check": "off",
+    // structured 无法处理代理对象
+    "unicorn/prefer-structured-clone": "off",
 
     // import 不同分组之间加上空行
     "import/order": ["warn", { "newlines-between": "always" }],
 
     // 使用 process
     "n/prefer-global/process": ["error", "always"],
-
 
     //
     // 项目特有的规则
@@ -84,7 +87,13 @@ module.exports = {
     "jsdoc/require-returns-type": "off",
     // 允许使用其他的 jsdoc 标签，以便使用 typescript-json-schema
     "jsdoc/check-tag-names": "off",
-    "jsdoc/check-param-names": ["warn", { checkDestructured: false }],
+    "jsdoc/check-param-names": [
+      "warn",
+      {
+        checkDestructured: false,
+        disableMissingParamChecks: true,
+      },
+    ],
     // 允许不写返回值
     "jsdoc/require-returns": "off",
     // 允许有参数不被写明
@@ -125,6 +134,8 @@ module.exports = {
         "@typescript-eslint/no-unsafe-assignment": "off",
         "@typescript-eslint/no-unsafe-call": "off",
 
+        "@typescript-eslint/use-unknown-in-catch-callback-variable": "off",
+
         // 允许 return await
         "@typescript-eslint/return-await": [
           "off",
@@ -140,7 +151,7 @@ module.exports = {
         // 允许短路表达式
         "@typescript-eslint/no-unused-expressions": [
           "error",
-          { "allowShortCircuit": true }
+          { allowShortCircuit: true },
         ],
 
         // 允许使用 require
@@ -148,21 +159,25 @@ module.exports = {
         "@typescript-eslint/no-require-imports": "off",
         "@typescript-eslint/no-var-requires": "off",
 
-        "@typescript-eslint/consistent-type-imports": ["error", {
-          // 允许 typeof import
-          disallowTypeAnnotations: false,
-          // 使用 内联类型导入
-          fixStyle: "inline-type-imports",
-        }],
-      }
+        "@typescript-eslint/consistent-type-imports": [
+          "error",
+          {
+            // 允许 typeof import
+            disallowTypeAnnotations: false,
+            // 使用 内联类型导入
+            fixStyle: "inline-type-imports",
+          },
+        ],
+      },
     },
     {
       files: "**/!(display)*.tsx",
       rules: {
         "i18next/no-literal-string": [
-          "error", {
-            mode: 'jsx-only',
-            'jsx-attributes': { include: ['^name'] },
+          "error",
+          {
+            mode: "jsx-only",
+            "jsx-attributes": { include: ["^name"] },
           },
         ],
       },
@@ -170,19 +185,23 @@ module.exports = {
     {
       files: "src/site/**/*",
       rules: {
-        "no-restricted-imports": ["warn", {
-          "patterns": [
-            {
-              "group": [
-                "helper/*",
-                "!helper/languages",
-                "!helper/eleSelector",
-                "../**/*"
-              ],
-              "message": "只能通过 main 导入"
-            }
-          ]
-        }],
+        "no-restricted-imports": [
+          "warn",
+          {
+            patterns: [
+              {
+                group: [
+                  "helper/*",
+                  "!helper/languages",
+                  "!helper/eleSelector",
+                  "!helper/dmzjApi",
+                  "../**/*",
+                ],
+                message: "只能通过 main 导入",
+              },
+            ],
+          },
+        ],
       },
     },
   ],

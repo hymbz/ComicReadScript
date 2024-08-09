@@ -1,3 +1,5 @@
+import { type ChapterInfo, getChapterInfo, getViewpoint } from 'helper/dmzjApi';
+import dmzjDecrypt from 'dmzjDecrypt';
 import {
   insertNode,
   querySelector,
@@ -9,13 +11,6 @@ import {
   log,
   universalInit,
 } from 'main';
-import dmzjDecrypt from 'dmzjDecrypt';
-
-import {
-  type ChapterInfo,
-  getChapterInfo,
-  getViewpoint,
-} from '../helper/dmzjApi';
 
 (async () => {
   // 分别处理目录页和漫画页
