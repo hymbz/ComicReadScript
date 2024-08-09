@@ -1,6 +1,6 @@
 import { createScheduled } from '@solid-primitives/scheduled';
 
-import { singleThreaded, triggerEleLazyLoad, wait, throttle, sleep } from '.';
+import { singleThreaded, wait, throttle, sleep } from '.';
 
 interface ImgData {
   /** 触发次数 */
@@ -68,6 +68,28 @@ const tryCorrectUrl = (e: Element) => {
   });
 };
 
+/**
+ *
+ * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
+ *
+ * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
+ */
+const triggerEleLazyLoad = async (
+  e: HTMLImageElement,
+  time?: number,
+  isLazyLoaded?: () => boolean | Promise<boolean>,
+) => {
+  const nowScroll = window.scrollY;
+  e.scrollIntoView({ behavior: 'instant' });
+  e.dispatchEvent(new Event('scroll', { bubbles: true }));
+
+  try {
+    if (isLazyLoaded && time) return await wait(isLazyLoaded, time);
+  } finally {
+    window.scroll({ top: nowScroll, behavior: 'instant' });
+  }
+};
+
 /** 判断一个元素是否已经触发完懒加载 */
 const isLazyLoaded = (e: HTMLImageElement, oldSrc?: string) => {
   if (!e.src) return false;
@@ -126,10 +148,10 @@ const triggerTurnPage = async (waitTime = 0) => {
   if (!turnPageScheduled()) return;
   const nowScroll = window.scrollY;
   // 滚到底部再滚回来，触发可能存在的自动翻页脚本
-  window.scroll({ top: document.body.scrollHeight, behavior: 'auto' });
+  window.scroll({ top: document.body.scrollHeight, behavior: 'instant' });
   document.body.dispatchEvent(new Event('scroll', { bubbles: true }));
   if (waitTime) await sleep(waitTime);
-  window.scroll({ top: nowScroll, behavior: 'auto' });
+  window.scroll({ top: nowScroll, behavior: 'instant' });
 };
 
 /** 触发页面上所有图片元素的懒加载 */

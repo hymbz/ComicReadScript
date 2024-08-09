@@ -284,28 +284,6 @@ export const waitImgLoad = (
 /** 将指定的布尔值转换为字符串或未定义 */
 export const boolDataVal = (val: boolean) => (val ? '' : undefined);
 
-/**
- *
- * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
- *
- * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
- */
-export const triggerEleLazyLoad = async (
-  e: HTMLImageElement,
-  time?: number,
-  isLazyLoaded?: () => boolean | Promise<boolean>,
-) => {
-  const nowScroll = window.scrollY;
-  e.scrollIntoView({ behavior: 'instant' });
-  e.dispatchEvent(new Event('scroll', { bubbles: true }));
-
-  try {
-    if (isLazyLoaded && time) return await wait(isLazyLoaded, time);
-  } finally {
-    window.scroll({ top: nowScroll, behavior: 'auto' });
-  }
-};
-
 /** 测试图片 url 能否正确加载 */
 export const testImgUrl = (url: string) =>
   new Promise((resolve) => {
