@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.6.0
+// @version         9.6.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -645,30 +645,6 @@ const waitImgLoad = (target, timeout) => new Promise((resolve, reject) => {
 
 /** 将指定的布尔值转换为字符串或未定义 */
 const boolDataVal = val => val ? '' : undefined;
-
-/**
- *
- * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
- *
- * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
- */
-const triggerEleLazyLoad = async (e, time, isLazyLoaded) => {
-  const nowScroll = window.scrollY;
-  e.scrollIntoView({
-    behavior: 'instant'
-  });
-  e.dispatchEvent(new Event('scroll', {
-    bubbles: true
-  }));
-  try {
-    if (isLazyLoaded && time) return await wait(isLazyLoaded, time);
-  } finally {
-    window.scroll({
-      top: nowScroll,
-      behavior: 'auto'
-    });
-  }
-};
 
 /** 测试图片 url 能否正确加载 */
 const testImgUrl = url => new Promise(resolve => {
@@ -7325,7 +7301,7 @@ var _tmpl$$1 = /*#__PURE__*/web.template(\`<h2>🥳 ComicRead 已更新到 v\`),
   _tmpl$2 = /*#__PURE__*/web.template(\`<h3>新增\`),
   _tmpl$3 = /*#__PURE__*/web.template(\`<ul><li>实现 ehentai 悬浮标签列表功能\`),
   _tmpl$4 = /*#__PURE__*/web.template(\`<h3>修复\`),
-  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复简易阅读模式下未找到图片提示时机错误 </p></li><li><p>修复缩放后无法拖拽移动的 bug\`),
+  _tmpl$5 = /*#__PURE__*/web.template(\`<ul><li><p>修复简易阅读模式下未找到图片提示时机错误 </p></li><li><p>修复缩放后无法拖拽移动的 bug </p></li><li><p>修复简易阅读模式下的异常滚动\`),
   _tmpl$6 = /*#__PURE__*/web.template(\`<h3>改动\`),
   _tmpl$7 = /*#__PURE__*/web.template(\`<ul><li>原本缩放后可以单独使用滚轮调整缩放比例，<br>现在还需要同时按下 <code>Ctrl/Alt\`);
 const migrationOption = async (name, editFn) => {
@@ -7958,6 +7934,30 @@ const tryCorrectUrl = e => {
   });
 };
 
+/**
+ *
+ * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
+ *
+ * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
+ */
+const triggerEleLazyLoad = async (e, time, isLazyLoaded) => {
+  const nowScroll = window.scrollY;
+  e.scrollIntoView({
+    behavior: 'instant'
+  });
+  e.dispatchEvent(new Event('scroll', {
+    bubbles: true
+  }));
+  try {
+    if (isLazyLoaded && time) return await wait(isLazyLoaded, time);
+  } finally {
+    window.scroll({
+      top: nowScroll,
+      behavior: 'instant'
+    });
+  }
+};
+
 /** 判断一个元素是否已经触发完懒加载 */
 const isLazyLoaded = (e, oldSrc) => {
   if (!e.src) return false;
@@ -8009,7 +8009,7 @@ const triggerTurnPage = async (waitTime = 0) => {
   // 滚到底部再滚回来，触发可能存在的自动翻页脚本
   window.scroll({
     top: document.body.scrollHeight,
-    behavior: 'auto'
+    behavior: 'instant'
   });
   document.body.dispatchEvent(new Event('scroll', {
     bubbles: true
@@ -8017,7 +8017,7 @@ const triggerTurnPage = async (waitTime = 0) => {
   if (waitTime) await sleep(waitTime);
   window.scroll({
     top: nowScroll,
-    behavior: 'auto'
+    behavior: 'instant'
   });
 };
 
@@ -8184,7 +8184,6 @@ exports.testImgUrl = testImgUrl;
 exports.throttle = throttle;
 exports.toast = toast$1;
 exports.touches = touches;
-exports.triggerEleLazyLoad = triggerEleLazyLoad;
 exports.triggerLazyLoad = triggerLazyLoad;
 exports.turnPage = turnPage;
 exports.turnPageAnimation = turnPageAnimation;

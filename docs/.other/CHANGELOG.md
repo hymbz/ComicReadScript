@@ -1,5 +1,12 @@
 
 
+## [9.6.1](https://github.com/hymbz/ComicReadScript/compare/v9.6.0...v9.6.1) (2024-08-09)
+
+
+### Bug Fixes
+
+* :bug: 修复简易阅读模式下的异常滚动 ([8dc4f04](https://github.com/hymbz/ComicReadScript/commit/8dc4f04792b149ce2db53df515709f60defe4091))
+
 ## [9.6.0](https://github.com/hymbz/ComicReadScript/compare/v9.5.0...v9.6.0) (2024-08-09)
 
 
