@@ -312,22 +312,18 @@ export const floatTagList = (pageType: PageType, mangaProps: UseMangaProps) => {
   };
 
   // 让标签可以直接拖进输入框，方便一次性点赞多个标签
-  newTagInput.addEventListener('drop', (e) => {
-    e.dataTransfer?.items[0].getAsString((url) => {
-      const tag = getDropTag(url);
-      if (!tag) return;
-      newTagInput.value = newTagInput.value.replace(url, `${tag}, `);
-    });
-  });
+  const handleDrop = (e: DragEvent) => {
+    const text = e.dataTransfer!.getData('text');
+    const tag = getDropTag(text);
+    if (!tag) return;
+    e.preventDefault();
+    if (!newTagInput.value.includes(tag)) newTagInput.value += `${tag}, `;
+  };
+  newTagInput.addEventListener('drop', handleDrop);
 
   // 增大拖拽标签的放置范围，不用非得拖进框
   const taglist = querySelector('#taglist')!;
   taglist.addEventListener('dragover', (e) => e.preventDefault());
-  taglist.addEventListener('drop', (e) => {
-    e.dataTransfer?.items[0].getAsString((url) => {
-      const tag = getDropTag(url);
-      if (!tag || newTagInput.value.includes(tag)) return;
-      newTagInput.value += `${tag}, `;
-    });
-  });
+  taglist.addEventListener('dragenter', (e) => e.preventDefault());
+  taglist.addEventListener('drop', handleDrop);
 };
