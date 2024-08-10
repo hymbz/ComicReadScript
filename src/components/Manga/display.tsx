@@ -2,8 +2,7 @@
  * 用于测试时显示组件
  */
 
-import { createSequence } from 'helper';
-import { log } from 'helper/logger';
+import { createSequence, log } from 'helper';
 
 import { type MangaProps, Manga } from '.';
 

@@ -1,5 +1,5 @@
-import { createRootMemo, createThrottleMemo } from 'helper/solidJs';
 import { createMemo } from 'solid-js';
+import { createRootMemo, createThrottleMemo } from 'helper';
 
 import { store } from '../../store';
 import { findFillIndex } from '../../handleComicData';

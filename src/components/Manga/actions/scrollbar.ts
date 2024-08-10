@@ -1,7 +1,11 @@
-import { clamp, debounce } from 'helper';
-import { createRootMemo } from 'helper/solidJs';
-import { type PointerState, type UseDrag } from 'helper/useDrag';
 import { createSignal } from 'solid-js';
+import {
+  clamp,
+  debounce,
+  createRootMemo,
+  type PointerState,
+  type UseDrag,
+} from 'helper';
 
 import { type State, store, refs, _setState } from '../store';
 

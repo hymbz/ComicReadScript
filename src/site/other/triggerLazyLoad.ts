@@ -1,6 +1,4 @@
-import { createScheduled } from '@solid-primitives/scheduled';
-
-import { singleThreaded, wait, throttle, sleep } from '.';
+import { createScheduled, singleThreaded, wait, throttle, sleep } from 'helper';
 
 interface ImgData {
   /** 触发次数 */

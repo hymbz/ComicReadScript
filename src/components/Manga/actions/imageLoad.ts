@@ -1,7 +1,12 @@
-import { clamp, debounce, singleThreaded } from 'helper';
-import { createEffectOn, createRootMemo } from 'helper/solidJs';
-import { t } from 'helper/i18n';
-import { log } from 'helper/logger';
+import {
+  clamp,
+  debounce,
+  singleThreaded,
+  createEffectOn,
+  createRootMemo,
+  t,
+  log,
+} from 'helper';
 
 import { store, setState, _setState, refs } from '../store';
 

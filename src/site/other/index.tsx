@@ -1,28 +1,26 @@
-// 这个文件里不能含有 jsx 代码，否则会在打包时自动加入 import solidjs 的代码
-
-import { getInitLang } from 'helper/languages';
-import { getEleSelector, isEleSelector } from 'helper/eleSelector';
 import {
+  getInitLang,
   t,
   getMostItem,
   querySelectorAll,
-  useInit,
   wait,
-  toast,
-  autoReadModeMessage,
   testImgUrl,
   canvasToBlob,
   plimit,
   log,
   singleThreaded,
-  store,
-  renderImgList,
   throttle,
   createEffectOn,
-  triggerLazyLoad,
+} from 'helper';
+import { renderImgList, store } from 'components/Manga';
+import { useInit, toast } from 'main';
+
+import { getEleSelector, isEleSelector } from './eleSelector';
+import {
   needTrigged,
+  triggerLazyLoad,
   openScrollLock,
-} from 'main';
+} from './triggerLazyLoad';
 
 // 测试案例
 // https://www.177picyy.com/html/2023/03/5505307.html
@@ -55,7 +53,17 @@ import {
     }
 
     if (!isStored)
-      toast(autoReadModeMessage(setOptions), { duration: 1000 * 7 });
+      toast(
+        () => (
+          <div>
+            {t('site.simple.auto_read_mode_message')}
+            <button on:click={() => setOptions({ autoShow: false })}>
+              {t('other.disable')}
+            </button>
+          </div>
+        ),
+        { duration: 1000 * 7 },
+      );
 
     // 为避免卡死，提供一个删除 selector 的菜单项
     const menuId = await GM.registerMenuCommand(

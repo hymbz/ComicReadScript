@@ -1,6 +1,5 @@
 import { createEffect, on } from 'solid-js';
-import { assign, debounce, throttle } from 'helper';
-import { createEffectOn } from 'helper/solidJs';
+import { assign, debounce, throttle, createEffectOn } from 'helper';
 
 import { type MangaProps } from '..';
 import { type State, refs, setState } from '../store';

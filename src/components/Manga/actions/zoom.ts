@@ -1,6 +1,10 @@
-import { clamp, approx } from 'helper';
-import { createMemoMap } from 'helper/solidJs';
-import { type PointerState, type UseDrag } from 'helper/useDrag';
+import {
+  clamp,
+  approx,
+  createMemoMap,
+  type PointerState,
+  type UseDrag,
+} from 'helper';
 
 import { type State, store, refs } from '../store';
 

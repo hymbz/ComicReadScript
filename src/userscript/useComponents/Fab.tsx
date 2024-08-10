@@ -5,9 +5,7 @@ import MdCloudDownload from '@material-design-icons/svg/round/cloud_download.svg
 import { Dynamic } from 'solid-js/web';
 import { createRoot, createEffect } from 'solid-js';
 import { createStore } from 'solid-js/store';
-
-import { type FabProps, Fab, FabStyle } from '../Fab';
-import { IconButtonStyle } from '../IconButton';
+import { type FabProps, Fab } from 'components/Fab';
 
 import { mountComponents } from './helper';
 
@@ -50,15 +48,11 @@ export const useFab = async (initProps?: FabProps) => {
   createRoot(() => {
     createEffect(() => {
       if (dom) return;
-      dom = mountComponents(
-        'fab',
-        () => (
-          <Fab {...props}>
-            {props.children ?? <Dynamic component={FabIcon()} />}
-          </Fab>
-        ),
-        [IconButtonStyle, FabStyle],
-      );
+      dom = mountComponents('fab', () => (
+        <Fab {...props}>
+          {props.children ?? <Dynamic component={FabIcon()} />}
+        </Fab>
+      ));
       dom.style.setProperty('z-index', '2147483646', 'important');
     });
   });

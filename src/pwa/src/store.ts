@@ -1,8 +1,6 @@
 import { createEffect, createRoot, on } from 'solid-js';
-import { t } from 'helper/i18n';
-import { useStore } from 'helper/useStore';
-
-import { toast } from '../../components/Toast';
+import { toast } from 'components/Toast';
+import { t, useStore } from 'helper';
 
 import { unzip } from './unzip';
 import { isSupportFile } from './helper';

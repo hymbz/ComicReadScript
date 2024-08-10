@@ -1,11 +1,12 @@
 import { on } from 'solid-js';
-import { lang, t } from 'helper/i18n';
-import { singleThreaded } from 'helper';
 import {
+  lang,
+  t,
+  singleThreaded,
   createEffectOn,
   createEqualsSignal,
   createRootMemo,
-} from 'helper/solidJs';
+} from 'helper';
 
 import { store, setState, _setState } from '../../store';
 import { setOption } from '../helper';

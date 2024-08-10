@@ -1,6 +1,5 @@
-import { createRootMemo, createThrottleMemo } from 'helper/solidJs';
 import { createSignal } from 'solid-js';
-import { clamp } from 'helper';
+import { createRootMemo, createThrottleMemo, clamp } from 'helper';
 
 import { store } from '../store';
 

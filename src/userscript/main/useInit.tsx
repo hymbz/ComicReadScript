@@ -1,19 +1,19 @@
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
 import { createSignal } from 'solid-js';
+import {
+  type MangaProps,
+  hotkeysMap,
+  setDefaultHotkeys,
+} from 'components/Manga';
+import { getKeyboardCode, linstenKeydown, setInitLang, t, log } from 'helper';
 
-import { hotkeysMap, useManga } from '../components/useComponents/Manga';
-import { useFab } from '../components/useComponents/Fab';
-import { toast } from '../components/useComponents/Toast';
-import { type MangaProps } from '../components/Manga';
-import { setDefaultHotkeys } from '../components/Manga/actions';
+import { useManga } from '../useComponents/Manga';
+import { useFab } from '../useComponents/Fab';
+import { toast } from '../useComponents/Toast';
 
-import { setInitLang, t } from './i18n';
-import { log } from './logger';
+import { useSpeedDial } from './useSpeedDial';
 import { handleVersionUpdate } from './version';
 import { type SiteOptions, useSiteOptions } from './useSiteOptions';
-import { useSpeedDial } from './useSpeedDial';
-
-import { getKeyboardCode, linstenKeydown } from '.';
 
 export const [hotkeys, setHotkeys] = createSignal<Record<string, string[]>>({});
 

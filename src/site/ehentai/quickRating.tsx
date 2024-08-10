@@ -1,6 +1,7 @@
 import { For } from 'solid-js';
 import { render } from 'solid-js/web';
-import { request, querySelectorAll, toast, t } from 'main';
+import { request, toast } from 'main';
+import { querySelectorAll, t } from 'helper';
 
 import { type PageType } from '.';
 

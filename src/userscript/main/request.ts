@@ -1,9 +1,6 @@
-import { toast } from '../components/useComponents/Toast';
+import { sleep, t, log } from 'helper';
 
-import { t } from './i18n';
-import { log } from './logger';
-
-import { sleep } from '.';
+import { toast } from '../useComponents/Toast';
 
 // 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = (

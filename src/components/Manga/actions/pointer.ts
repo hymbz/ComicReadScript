@@ -1,5 +1,4 @@
-import { debounce } from 'helper';
-import { type UseDrag } from 'helper/useDrag';
+import { debounce, type UseDrag } from 'helper';
 
 import { type Area } from '../components/TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';

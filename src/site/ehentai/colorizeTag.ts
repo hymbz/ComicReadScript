@@ -1,4 +1,5 @@
-import { domParse, request } from 'main';
+import { request } from 'main';
+import { domParse } from 'helper';
 
 import { type PageType } from '.';
 

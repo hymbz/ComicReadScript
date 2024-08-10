@@ -1,17 +1,17 @@
-import { useStore } from 'helper/useStore';
+import { useStore } from 'helper';
 
 import { imgState } from './image';
-import { OptionState } from './option';
-import { OtherState } from './other';
-import { PropState } from './prop';
-import { ShowState } from './show';
+import { optionState } from './option';
+import { otherState } from './other';
+import { propState } from './prop';
+import { showState } from './show';
 
 export const { store, setState, _state, _setState } = useStore({
   ...imgState,
-  ...ShowState,
-  ...PropState,
-  ...OptionState,
-  ...OtherState,
+  ...showState,
+  ...propState,
+  ...optionState,
+  ...otherState,
 });
 
 if (isDevMode)
@@ -21,7 +21,11 @@ if (isDevMode)
     _setState,
   });
 
-export type State = typeof _state;
+export type State = typeof imgState &
+  typeof showState &
+  typeof propState &
+  typeof optionState &
+  typeof otherState;
 
 export const refs = {
   root: undefined as unknown as HTMLElement,

@@ -1,25 +1,27 @@
-import type { InitOptions } from './helper/universalInit';
-
-/**
- * 虽然在打包的时候已经尽可能保持代码格式不变了，但因为脚本代码比较多的缘故
- * 所以真对脚本代码感兴趣的话，推荐还是直接上 github 仓库来看
- * <https://github.com/hymbz/ComicReadScript>
- * 对站点逻辑感兴趣的，结合 `src\index.ts` 看 `src\site` 下的对应文件即可
- */
-
-inject('import');
+import {
+  createSequence,
+  isUrl,
+  log,
+  plimit,
+  querySelector,
+  querySelectorAll,
+  querySelectorClick,
+  scrollIntoView,
+  sleep,
+  t,
+  waitDom,
+} from 'helper';
+import { request, toast, universalInit, type InitOptions } from 'main';
 
 /** 站点配置 */
 let options: InitOptions | undefined;
-
-const main = require('main') as typeof import('./main');
 
 try {
   // 匹配站点
   switch (window.location.hostname) {
     // #百合会（记录阅读历史、自动签到等）
     case 'bbs.yamibo.com': {
-      inject('yamibo');
+      inject('site/yamibo');
       break;
     }
 
@@ -32,16 +34,16 @@ try {
 
       /** 总页数 */
       const totalPageNum = Number(
-        main
-          .querySelector('section div:first-of-type div:last-of-type')!
-          .innerHTML.split('：')[1],
+        querySelector(
+          'section div:first-of-type div:last-of-type',
+        )!.innerHTML.split('：')[1],
       );
       if (Number.isNaN(totalPageNum))
-        throw new Error(main.t('site.changed_load_failed'));
+        throw new Error(t('site.changed_load_failed'));
 
       /** 获取指定页数的图片 url */
       const getImg = async (i: number) => {
-        const res = await main.request(
+        const res = await request(
           `https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`,
         );
         return /(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/
@@ -55,10 +57,10 @@ try {
         getImgList: ({ dynamicUpdate, setFab }) =>
           dynamicUpdate(
             async (setImg) =>
-              main.plimit(
-                main
-                  .createSequence(totalPageNum)
-                  .map((i) => async () => setImg(i, await getImg(i + 1))),
+              plimit(
+                createSequence(totalPageNum).map(
+                  (i) => async () => setImg(i, await getImg(i + 1)),
+                ),
                 (doneNum, totalNum) => {
                   setFab({
                     progress: doneNum / totalNum,
@@ -68,9 +70,9 @@ try {
               ),
             totalPageNum,
           )(),
-        onNext: main.querySelectorClick('#btnNext'),
-        onPrev: main.querySelectorClick('#btnPrev'),
-        onExit: (isEnd) => isEnd && main.scrollIntoView('#w1'),
+        onNext: querySelectorClick('#btnNext'),
+        onPrev: querySelectorClick('#btnPrev'),
+        onExit: (isEnd) => isEnd && scrollIntoView('#w1'),
       };
       break;
     }
@@ -80,38 +82,38 @@ try {
     case 'comic.dmzj.com':
     case 'manhua.idmzj.com':
     case 'manhua.dmzj.com': {
-      inject('dmzj');
+      inject('site/dmzj');
       break;
     }
 
     case 'm.idmzj.com':
     case 'm.dmzj.com': {
-      inject('dmzj_phone');
+      inject('site/dmzj_phone');
       break;
     }
 
     case 'www.idmzj.com':
     case 'www.dmzj.com': {
-      inject('dmzj_www');
+      inject('site/dmzj_www');
       break;
     }
 
     // #E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）
     case 'exhentai.org':
     case 'e-hentai.org': {
-      inject('ehentai');
+      inject('site/ehentai');
       break;
     }
 
     // #nhentai（彻底屏蔽漫画、无限滚动）
     case 'nhentai.net': {
-      inject('nhentai');
+      inject('site/nhentai');
       break;
     }
 
     // #Yurifans（自动签到）
     case 'yuri.website': {
-      inject('yurifans');
+      inject('site/yurifans');
       break;
     }
 
@@ -130,7 +132,7 @@ try {
     case 'www.copymanga.org':
     case 'www.copymanga.tv':
     case 'www.copymanga.com': {
-      inject('copymanga');
+      inject('site/copymanga');
       break;
     }
 
@@ -138,17 +140,15 @@ try {
     case 'www.ponpomu.com': {
       options = {
         name: 'terraHistoricus',
-        wait: () => Boolean(main.querySelector('.comic-page-container img')),
+        wait: () => Boolean(querySelector('.comic-page-container img')),
         getImgList: () =>
-          main
-            .querySelectorAll('.comic-page-container img')
-            .map((e) => e.dataset.srcset!),
+          querySelectorAll('.comic-page-container img').map(
+            (e) => e.dataset.srcset!,
+          ),
         SPA: {
           isMangaPage: () => window.location.href.includes('/comic/'),
-          getOnPrev: () =>
-            main.querySelectorClick('.prev-btn:not(.invisible) a'),
-          getOnNext: () =>
-            main.querySelectorClick('.next-btn:not(.invisible) a'),
+          getOnPrev: () => querySelectorClick('.prev-btn:not(.invisible) a'),
+          getOnNext: () => querySelectorClick('.next-btn:not(.invisible) a'),
         },
       };
       break;
@@ -160,15 +160,15 @@ try {
         `https://terra-historicus.hypergryph.com/api${window.location.pathname}`;
 
       const getImgUrl = (i: number) => async () => {
-        const res = await main.request(`${apiUrl()}/page?pageNum=${i + 1}`);
+        const res = await request(`${apiUrl()}/page?pageNum=${i + 1}`);
         return JSON.parse(res.responseText).data.url as string;
       };
 
       options = {
         name: 'terraHistoricus',
-        wait: () => Boolean(main.querySelector('.HG_COMIC_READER_main')),
+        wait: () => Boolean(querySelector('.HG_COMIC_READER_main')),
         async getImgList({ setFab }) {
-          const res = await main.request(apiUrl());
+          const res = await request(apiUrl());
           const pageList = JSON.parse(res.responseText).data
             .pageInfos as unknown[];
           if (
@@ -177,8 +177,8 @@ try {
           )
             throw new Error('获取图片列表时出错');
 
-          return main.plimit<string>(
-            main.createSequence(pageList.length).map(getImgUrl),
+          return plimit<string>(
+            createSequence(pageList.length).map(getImgUrl),
             (doneNum, totalNum) => {
               setFab({
                 progress: doneNum / totalNum,
@@ -189,10 +189,9 @@ try {
         },
         SPA: {
           isMangaPage: () => window.location.href.includes('episode'),
-          getOnPrev: () =>
-            main.querySelectorClick('footer .HG_COMIC_READER_prev a'),
+          getOnPrev: () => querySelectorClick('footer .HG_COMIC_READER_prev a'),
           getOnNext: () =>
-            main.querySelectorClick(
+            querySelectorClick(
               'footer .HG_COMIC_READER_prev+.HG_COMIC_READER_buttonEp a',
             ),
         },
@@ -204,7 +203,7 @@ try {
     case 'siteUrl#jm':
     case '18comic.org':
     case '18comic.vip': {
-      inject('jm');
+      inject('site/jm');
       break;
     }
 
@@ -223,17 +222,17 @@ try {
         nextId: number;
       };
       try {
-        const dataScript = main
-          .querySelectorAll('body > script:not([src])')
-          .find((script) => script.innerHTML.startsWith('window['));
-        if (!dataScript) throw new Error(main.t('site.changed_load_failed'));
+        const dataScript = querySelectorAll('body > script:not([src])').find(
+          (script) => script.innerHTML.startsWith('window['),
+        );
+        if (!dataScript) throw new Error(t('site.changed_load_failed'));
         comicInfo = JSON.parse(
           // 只能通过 eval 获得数据
           // eslint-disable-next-line no-eval
           eval(dataScript.innerHTML.slice(26)).match(/(?<=.*?\(){.+}/)[0],
         );
       } catch {
-        main.toast.error(main.t('site.changed_load_failed'));
+        toast.error(t('site.changed_load_failed'));
         break;
       }
 
@@ -262,12 +261,12 @@ try {
             );
           if (comicInfo.images) {
             const { origin } = new URL(
-              main.querySelector<HTMLImageElement>('#manga img')!.src,
+              querySelector<HTMLImageElement>('#manga img')!.src,
             );
             return comicInfo.images.map((url) => `${origin}${url}?${sl}`);
           }
 
-          main.toast.error(main.t('site.changed_load_failed'), { throw: true });
+          toast.error(t('site.changed_load_failed'), { throw: true });
           return [];
         },
         onNext: handlePrevNext(comicInfo.nextId),
@@ -306,7 +305,7 @@ try {
       const imgNum: number =
         unsafeWindow.DM5_IMAGE_COUNT ?? unsafeWindow.imgsLen;
       if (!(Number.isSafeInteger(imgNum) && imgNum > 0)) {
-        main.toast.error(main.t('site.changed_load_failed'));
+        toast.error(t('site.changed_load_failed'));
         break;
       }
 
@@ -334,12 +333,12 @@ try {
       };
 
       const handlePrevNext = (pcSelector: string, mobileText: string) =>
-        main.querySelectorClick(
+        querySelectorClick(
           () =>
-            main.querySelector(pcSelector) ??
-            main
-              .querySelectorAll('.view-bottom-bar a')
-              .find((e) => e.textContent?.includes(mobileText)),
+            querySelector(pcSelector) ??
+            querySelectorAll('.view-bottom-bar a').find((e) =>
+              e.textContent?.includes(mobileText),
+            ),
         );
 
       options = {
@@ -348,7 +347,7 @@ try {
           // manhuaren 和 1kkk 的移动端上会直接用一个变量存储所有图片的链接
           if (
             Array.isArray(unsafeWindow.newImgs) &&
-            unsafeWindow.newImgs.every(main.isUrl)
+            unsafeWindow.newImgs.every(isUrl)
           )
             return unsafeWindow.newImgs as string[];
 
@@ -366,7 +365,7 @@ try {
         },
         onPrev: handlePrevNext('.logo_1', '上一章'),
         onNext: handlePrevNext('.logo_2', '下一章'),
-        onExit: (isEnd) => isEnd && main.scrollIntoView('.postlist'),
+        onExit: (isEnd) => isEnd && scrollIntoView('.postlist'),
       };
       break;
     }
@@ -376,7 +375,7 @@ try {
     case 'www.wnacg.com':
     case 'wnacg.com': {
       // 突出显示下拉阅读的按钮
-      const buttonDom = main.querySelector('#bodywrap a.btn');
+      const buttonDom = querySelector('#bodywrap a.btn');
       if (buttonDom) {
         buttonDom.style.setProperty('background-color', '#607d8b');
         buttonDom.style.setProperty('background-image', 'none');
@@ -404,7 +403,7 @@ try {
       const imgNum: number =
         unsafeWindow.MANGABZ_IMAGE_COUNT ?? unsafeWindow.imgsLen;
       if (!(Number.isSafeInteger(imgNum) && imgNum > 0)) {
-        main.toast.error(main.t('site.changed_load_failed'));
+        toast.error(t('site.changed_load_failed'));
         break;
       }
 
@@ -427,12 +426,12 @@ try {
       };
 
       const handlePrevNext = (pcSelector: string, mobileText: string) =>
-        main.querySelectorClick(
+        querySelectorClick(
           () =>
-            main.querySelector(pcSelector) ??
-            main
-              .querySelectorAll('.bottom-bar-tool a')
-              .find((e) => e.textContent?.includes(mobileText)),
+            querySelector(pcSelector) ??
+            querySelectorAll('.bottom-bar-tool a').find((e) =>
+              e.textContent?.includes(mobileText),
+            ),
         );
 
       options = {
@@ -476,9 +475,9 @@ try {
 
       const getImgList = async (): Promise<string[]> => {
         const chapterId = /chapter\/(\d+)/.exec(window.location.pathname)?.[1];
-        if (!chapterId) throw new Error(main.t('site.changed_load_failed'));
+        if (!chapterId) throw new Error(t('site.changed_load_failed'));
 
-        const res = await main.request('/api/query', {
+        const res = await request('/api/query', {
           method: 'POST',
           responseType: 'json',
           headers: { 'content-type': 'application/json' },
@@ -494,8 +493,8 @@ try {
       };
 
       const handlePrevNext = (text: string) => async () => {
-        await main.waitDom('.v-bottom-navigation__content');
-        return main.querySelectorClick(
+        await waitDom('.v-bottom-navigation__content');
+        return querySelectorClick(
           '.v-bottom-navigation__content > button:not([disabled])',
           text,
         );
@@ -562,8 +561,8 @@ try {
       options = {
         name: '8comic',
         getImgList,
-        onNext: main.querySelectorClick('#nextvol'),
-        onPrev: main.querySelectorClick('#prevvol'),
+        onNext: querySelectorClick('#nextvol'),
+        onPrev: querySelectorClick('#prevvol'),
       };
       break;
     }
@@ -587,8 +586,8 @@ try {
             .split('|')
             .map((path) => `${baseUrl}${path}`);
         },
-        onNext: main.querySelectorClick('#pnpage > a', '下一'),
-        onPrev: main.querySelectorClick('#pnpage > a', '上一'),
+        onNext: querySelectorClick('#pnpage > a', '下一'),
+        onPrev: querySelectorClick('#pnpage > a', '上一'),
       };
       break;
     }
@@ -643,7 +642,7 @@ try {
               size: number;
             }>;
           };
-          const detailRes = await main.request<DetailRes>(
+          const detailRes = await request<DetailRes>(
             `https://api.koharu.to/books/detail/${galleryId}/${galleryKey}`,
             { fetch: true, responseType: 'json' },
           );
@@ -656,7 +655,7 @@ try {
             base: string;
             entries: Array<{ path: string }>;
           };
-          const dataRes = await main.request<DataRes>(
+          const dataRes = await request<DataRes>(
             `https://api.koharu.to/books/data/${galleryId}/${galleryKey}/${
               id
             }/${public_key}?v=${updated_at ?? created_at}&w=${w}`,
@@ -670,7 +669,7 @@ try {
               if (!isMangaPage) break;
               const startTime = performance.now();
               setImg(i, await downloadImg(`${base}${path}`));
-              await main.sleep(500 - (performance.now() - startTime));
+              await sleep(500 - (performance.now() - startTime));
             }
           }, totalPageNum)();
         },
@@ -682,7 +681,7 @@ try {
     // #[kemono](https://kemono.su)
     case 'kemono.su':
     case 'kemono.party': {
-      inject('kemono');
+      inject('site/kemono');
       break;
     }
 
@@ -691,9 +690,9 @@ try {
       options = {
         name: 'nekohouse',
         getImgList: () =>
-          main
-            .querySelectorAll<HTMLAnchorElement>('.fileThumb')
-            .map((e) => e.getAttribute('href')!),
+          querySelectorAll<HTMLAnchorElement>('.fileThumb').map(
+            (e) => e.getAttribute('href')!,
+          ),
         initOptions: { autoShow: false, defaultOption: { pageNum: 1 } },
       };
       break;
@@ -703,35 +702,33 @@ try {
     case 'nicomanga.com':
     case 'weloma.art':
     case 'welovemanga.one': {
-      if (!main.querySelector('#listImgs, .chapter-content')) break;
+      if (!querySelector('#listImgs, .chapter-content')) break;
 
       const getImgList = async (): Promise<string[]> => {
-        const imgList = main
-          .querySelectorAll<HTMLImageElement>(
-            'img.chapter-img:not(.ls-is-cached)',
-          )
-          .map((e) =>
-            (
-              e.dataset.src ??
-              e.dataset.srcset ??
-              e.dataset.original ??
-              e.src
-            ).trim(),
-          );
+        const imgList = querySelectorAll<HTMLImageElement>(
+          'img.chapter-img:not(.ls-is-cached)',
+        ).map((e) =>
+          (
+            e.dataset.src ??
+            e.dataset.srcset ??
+            e.dataset.original ??
+            e.src
+          ).trim(),
+        );
         if (
           imgList.length > 0 &&
           imgList.every((url) => !/loading.*\.gif/.test(url))
         )
           return imgList;
-        await main.sleep(500);
+        await sleep(500);
         return getImgList();
       };
 
       options = {
         name: 'welovemanga',
         getImgList,
-        onNext: main.querySelectorClick('.rd_top-right.next:not(.disabled)'),
-        onPrev: main.querySelectorClick('.rd_top-left.prev:not(.disabled)'),
+        onNext: querySelectorClick('.rd_top-right.next:not(.disabled)'),
+        onPrev: querySelectorClick('.rd_top-left.prev:not(.disabled)'),
       };
       break;
     }
@@ -740,16 +737,16 @@ try {
     // case 'localhost':
     case 'comic-read.pages.dev': {
       unsafeWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
-      unsafeWindow.toast = main.toast;
+      unsafeWindow.toast = toast;
       break;
     }
 
     default: {
-      inject('other');
+      inject('site/other');
     }
   }
 
-  if (options) main.universalInit(options);
+  if (options) universalInit(options);
 } catch (error) {
-  main.log.error(error as Error);
+  log.error(error as Error);
 }

@@ -3,9 +3,9 @@ import {
   type Unzipped,
   unzip as unzipCb,
 } from 'fflate';
-import { t } from 'helper/i18n';
+import { toast } from 'components/Toast';
+import { t } from 'helper';
 
-import { toast } from '../../../components/Toast';
 import { createObjectURL, isSupportFile } from '../helper';
 
 import { type ZipData } from '.';

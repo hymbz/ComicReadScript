@@ -1,5 +1,4 @@
-import { clamp, throttle } from 'helper';
-import { createEffectOn, createRootMemo } from 'helper/solidJs';
+import { clamp, throttle, createEffectOn, createRootMemo } from 'helper';
 
 import { type State, setState, store, _setState } from '../store';
 

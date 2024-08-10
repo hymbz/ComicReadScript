@@ -1,3 +1,4 @@
+import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 import {
   type Component,
   type JSX,
@@ -9,13 +10,9 @@ import {
   mergeProps,
   Show,
 } from 'solid-js';
-import { throttle } from 'helper';
-import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
+import { throttle, useStyle } from 'helper';
 
 import classes, { css as style } from './index.module.css';
-
-export const FabStyle = new CSSStyleSheet();
-FabStyle.replaceSync(style);
 
 export interface FabProps {
   /** 百分比进度值，小数 */
@@ -43,6 +40,8 @@ export interface FabProps {
  * Fab 按钮
  */
 export const Fab: Component<FabProps> = (_props) => {
+  onMount(() => useStyle(style));
+
   const props = mergeProps(
     { progress: 0, initialShow: true, autoTrans: false },
     _props,

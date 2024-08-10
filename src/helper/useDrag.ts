@@ -1,7 +1,6 @@
-import { approx } from 'helper';
-import { onAutoMount } from 'helper/solidJs';
+import { onAutoMount } from 'helper';
 
-import { focus } from '../components/Manga/actions';
+import { approx } from './other';
 
 export interface PointerState {
   id: number;
@@ -134,7 +133,6 @@ export const useDrag = ({
         state.type = 'cancel';
         handleDrag(state, e);
         touches.clear();
-        focus();
       },
       { capture: false, passive: true, signal: controller.signal },
     );

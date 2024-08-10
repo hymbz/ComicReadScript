@@ -1,9 +1,8 @@
 import { Archive } from 'libarchive.js';
-import { plimit } from 'helper';
-import { t } from 'helper/i18n';
+import { toast } from 'components/Toast';
+import { plimit, t } from 'helper';
 
 import type { ImgFile } from '../store';
-import { toast } from '../../../components/Toast';
 import { createObjectURL, isSupportFile } from '../helper';
 
 import type { ZipData } from '.';

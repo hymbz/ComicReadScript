@@ -1,19 +1,17 @@
 /* eslint-disable i18next/no-literal-string */
 import { For } from 'solid-js';
 import { render } from 'solid-js/web';
-import { getComicId, getViewpoint, useComicDetail } from 'helper/dmzjApi';
+import { getComicId, getViewpoint, useComicDetail } from 'dmzjApi';
+import { request, toast, universalInit } from 'main';
 import {
-  insertNode,
+  log,
   querySelector,
   querySelectorAll,
-  request,
-  scrollIntoView,
+  insertNode,
   waitDom,
   wait,
-  toast,
-  universalInit,
-  log,
-} from 'main';
+  scrollIntoView,
+} from 'helper';
 
 (async () => {
   // 通过 rss 链接，在作者作品页里添加上隐藏漫画的链接

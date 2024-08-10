@@ -1,25 +1,21 @@
+import { store } from 'components/Manga';
+import { request, useInit, toast, ReactiveSet } from 'main';
 import {
   t,
   insertNode,
   querySelector,
   scrollIntoView,
-  request,
-  useInit,
-  toast,
   plimit,
   querySelectorAll,
   wait,
   log,
   testImgUrl,
   singleThreaded,
-  store,
   createEffectOn,
-  getAdPageByFileName,
-  getAdPageByContent,
-  ReactiveSet,
   requestIdleCallback,
-} from 'main';
+} from 'helper';
 
+import { getAdPageByFileName, getAdPageByContent } from './detectAd';
 import { quickFavorite } from './quickFavorite';
 import { associateNhentai } from './associateNhentai';
 import { hotkeysPageTurn } from './hotkeys';

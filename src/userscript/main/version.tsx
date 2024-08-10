@@ -1,10 +1,8 @@
-import { toast } from '../components/useComponents/Toast';
-import { VersionTip } from '../components/Manga/components/VersionTip';
+import { byPath, lang, log } from 'helper';
 
-import { lang } from './i18n';
-import { log } from './logger';
+import { toast } from '../useComponents/Toast';
 
-import { byPath } from '.';
+import { VersionTip } from './versionTip';
 
 const migrationOption = async (
   name: string,

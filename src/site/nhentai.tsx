@@ -1,15 +1,13 @@
+import { request, toast, useInit } from 'main';
 import {
   insertNode,
   log,
   querySelector,
   querySelectorAll,
-  request,
   scrollIntoView,
   singleThreaded,
   t,
-  toast,
-  useInit,
-} from 'main';
+} from 'helper';
 
 /** 用于转换获得图片文件扩展名 */
 const fileType = {

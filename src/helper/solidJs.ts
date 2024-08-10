@@ -1,4 +1,3 @@
-import { createScheduled } from '@solid-primitives/scheduled';
 import {
   type Accessor,
   type EffectFunction,
@@ -11,9 +10,10 @@ import {
   createMemo,
   onMount,
   onCleanup,
+  type Owner,
 } from 'solid-js';
 
-import { isEqual, throttle } from '.';
+import { isEqual, throttle, createScheduled } from './other';
 
 /** 会自动设置 equals 的 createSignal */
 export const createEqualsSignal = ((init: any, options?: any) =>
@@ -76,11 +76,14 @@ export const createRootEffect = ((fn: any, val: any, options: any) =>
 export const createEffectOn = ((deps: any, fn: any, options?: any) =>
   createRootEffect(on(deps, fn, options))) as typeof on;
 
-export const onAutoMount = (fn: () => void | (() => unknown)) => {
-  if (!getOwner()) return fn();
+export const onAutoMount = (
+  fn: (owner: Owner | null) => void | (() => unknown),
+) => {
+  const owner = getOwner();
+  if (!owner) return fn(owner);
 
   onMount(() => {
-    const cleanFn = fn();
+    const cleanFn = fn(owner);
     if (cleanFn) onCleanup(cleanFn);
   });
 };

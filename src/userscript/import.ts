@@ -32,10 +32,37 @@ const evalCode = (code: string) => {
  * @param name \@resource 引用的资源名
  */
 const selfImportSync = (name: string) => {
-  const code =
-    name === 'main'
-      ? inject('main')
-      : GM_getResourceText(name.replaceAll('/', '|'));
+  let code: string;
+
+  // 为了方便打包、减少在无关站点上的运行损耗、顺带隔离下作用域
+  // 除站点逻辑外的代码会作为字符串存着，要用时再像外部模块一样导入
+  switch (name) {
+    case 'helper':
+      code = `inject('helper')`;
+      break;
+    case 'components/Manga':
+      code = `inject('components/Manga')`;
+      break;
+    case 'components/IconButton':
+      code = `inject('components/IconButton')`;
+      break;
+    case 'components/Fab':
+      code = `inject('components/Fab')`;
+      break;
+    case 'components/Toast':
+      code = `inject('components/Toast')`;
+      break;
+    case 'dmzjApi':
+      code = `inject('userscript/dmzjApi')`;
+      break;
+    case 'main':
+      code = `inject('userscript/main')`;
+      break;
+
+    default:
+      code = GM_getResourceText(name.replaceAll('/', '|'))!;
+  }
+
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
@@ -95,6 +122,11 @@ export const require = (name: string) => {
       if (prop === 'default') return selfDefault as unknown;
       if (!crsLib[name]) selfImportSync(name);
       const module: SelfModule = crsLib[name];
+      // try {
+      //   console.log(module.default?.[prop] ?? module?.[prop]);
+      // } catch {
+      //   debugger;
+      // }
       return module.default?.[prop] ?? module?.[prop];
     },
     apply(_, __, args) {

@@ -1,4 +1,4 @@
-import { lang } from 'helper/i18n';
+import { lang } from 'helper';
 
 import type { areaArrayMap } from '../components/TouchArea';
 
@@ -151,7 +151,7 @@ const _defaultOption: Readonly<Option> = {
 export const defaultOption = () =>
   JSON.parse(JSON.stringify(_defaultOption)) as Option;
 
-export const OptionState = {
+export const optionState = {
   defaultOption: defaultOption(),
   option: defaultOption(),
 };

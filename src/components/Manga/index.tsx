@@ -4,7 +4,7 @@ import {
   enableScheduling,
   onMount,
 } from 'solid-js';
-import { boolDataVal } from 'helper';
+import { boolDataVal, useStyle } from 'helper';
 
 import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
@@ -25,11 +25,6 @@ import {
 } from './actions';
 import { stopPropagation } from './helper';
 import classes, { css as style } from './index.module.css';
-
-export { buttonListDivider } from './defaultButtonList';
-
-export const MangaStyle = new CSSStyleSheet();
-MangaStyle.replaceSync(style);
 
 enableScheduling();
 
@@ -77,7 +72,10 @@ export interface MangaProps {
 
 /** 漫画组件 */
 export const Manga: Component<MangaProps> = (props) => {
-  onMount(() => useInit(props));
+  onMount(() => {
+    useStyle(style);
+    useInit(props);
+  });
 
   createEffect(() => props.show && focus());
 
@@ -113,4 +111,6 @@ export const Manga: Component<MangaProps> = (props) => {
   );
 };
 
+export { buttonListDivider } from './defaultButtonList';
 export { store } from './store/index';
+export * from './actions';

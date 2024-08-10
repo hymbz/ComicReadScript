@@ -1,4 +1,4 @@
-import type { UseDrag } from 'helper/useDrag';
+import type { UseDrag } from 'helper';
 
 import { refs, store } from '../store';
 

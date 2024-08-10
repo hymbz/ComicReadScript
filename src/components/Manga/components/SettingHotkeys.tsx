@@ -2,8 +2,7 @@ import MdClose from '@material-design-icons/svg/round/close.svg';
 import MdRefresh from '@material-design-icons/svg/round/refresh.svg';
 import MdAdd from '@material-design-icons/svg/round/add.svg';
 import { type Component, For, Index } from 'solid-js';
-import { getKeyboardCode, isEqual, keyboardCodeToText } from 'helper';
-import { t } from 'helper/i18n';
+import { getKeyboardCode, isEqual, keyboardCodeToText, t } from 'helper';
 
 import { _setState, store } from '../store';
 import { defaultHotkeys, focus, hotkeysMap } from '../actions';

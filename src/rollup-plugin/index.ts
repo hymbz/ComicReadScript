@@ -4,7 +4,7 @@ import fs from 'node:fs';
 
 import type { OutputPluginOption } from 'rollup';
 
-import { byPath } from '../helper';
+import { byPath } from '../helper/other';
 import { langList } from '../helper/languages';
 
 import { siteUrl } from './siteUrl';
@@ -21,42 +21,13 @@ for (const langName of langList) {
   Reflect.set(langMap, langName, JSON.parse(json));
 }
 
-const extractI18n: OutputPluginOption = {
-  name: 'self-extractI18n',
-  renderChunk(rawCode) {
-    let code = rawCode;
-    // 实现 extractI18n 函数
-    if (code.includes('extractI18n')) {
-      code = code.replaceAll(
-        /extractI18n\('(.+)'\)/g,
-        (_, key) => `((lang) => {
-            switch (lang) {
-              ${langList
-                .filter((l) => l !== 'zh')
-                .map(
-                  (langName) =>
-                    `case '${langName}': return '${byPath<string>(
-                      langMap[langName],
-                      key,
-                    )}';`,
-                )
-                .join('')}
-              default: return '${byPath<string>(langMap.zh, key)}';
-            }
-          })`,
-      );
-    }
-
-    return code;
-  },
-};
-
 export const selfPlugins: OutputPluginOption[] = [
   {
-    name: 'self-clear',
     // 不输出 css 文件
+    name: 'self-clear',
     generateBundle(_, bundle) {
-      Reflect.deleteProperty(bundle, 'style.css');
+      for (const key of Object.keys(bundle))
+        if (key.endsWith('.css')) Reflect.deleteProperty(bundle, key);
     },
     renderChunk(rawCode) {
       let code = rawCode;
@@ -73,30 +44,78 @@ export const selfPlugins: OutputPluginOption[] = [
     },
   },
   {
+    // 将 inject 函数调用替换为 dist 文件夹下的指定文件内容
     name: 'self-inject',
     renderChunk(rawCode) {
       let code = rawCode;
-      // 将 inject 函数调用替换为 dist 文件夹下的指定文件内容
-      code = code.replaceAll(/ *inject\('(.+?)'\)/g, (_, name) => {
-        switch (name) {
-          case 'main':
-            return `\`\n${fs
-              .readFileSync(resolve(__dirname, '../../dist/cache/main.js'))
-              .toString()
+      code = code.replaceAll(
+        / *(`)?inject\('(.+?)'\)`?;?/g,
+        (_, isTmplStr, path) => {
+          const file = fs
+            .readFileSync(resolve(__dirname, `../../dist/${path}.js`))
+            .toString();
+
+          if (isTmplStr !== undefined) {
+            return `\`\n${file
               .replaceAll('\\', '\\\\')
               .replaceAll('`', '\\`')
-              .replaceAll('${', '\\${')}\``;
+              .replaceAll('${', '\\${')}\`;`;
+          }
 
-          default:
-            return fs
-              .readFileSync(resolve(__dirname, `../../dist/cache/${name}.js`))
-              .toString()
-              .replaceAll('require$1', 'require');
-        }
-      });
+          return file;
+        },
+      );
       return code;
     },
   },
-  extractI18n,
+  {
+    // 实现 extractI18n 函数，单独提取指定的 i18n 语句出来使用
+    name: 'self-extractI18n',
+    renderChunk(rawCode) {
+      let code = rawCode;
+      if (code.includes('extractI18n')) {
+        code = code.replaceAll(
+          /extractI18n\('(.+)'\)/g,
+          (_, key) => `((lang) => {
+            switch (lang) {
+              ${langList
+                .filter((l) => l !== 'zh')
+                .map(
+                  (langName) =>
+                    `case '${langName}': return '${byPath<string>(
+                      langMap[langName],
+                      key,
+                    )}';`,
+                )
+                .join('')}
+              default: return '${byPath<string>(langMap.zh, key)}';
+            }
+          })`,
+        );
+      }
+
+      return code;
+    },
+  },
+  {
+    // 不知道为啥，打包出来的 web.template 调用会提前声明，导致 solidjs 也提前导入了
+    name: 'self-tmplMove',
+    renderChunk(rawCode) {
+      let code = rawCode;
+
+      const map = new Map<string, string>();
+      code = code.replaceAll(
+        /(\nvar)?\s+?(_tmpl.+?) = \/\*#__PURE__\*\/(web.template\(`.+?`\))(,|;)/g,
+        (_, __, name, tmpl) => {
+          map.set(name, tmpl);
+          return '';
+        },
+      );
+      for (const [name, tmpl] of map)
+        code = code.replaceAll(`${name}()`, `${tmpl}()`);
+
+      return code;
+    },
+  },
   siteUrl,
 ];

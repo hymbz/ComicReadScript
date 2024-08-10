@@ -2,10 +2,9 @@ import { Show, type Component } from 'solid-js';
 import { pwaInstallHandler } from 'pwa-install-handler';
 import { directoryOpen, fileOpen } from 'browser-fs-access';
 import { parse as parseMd } from 'marked';
-import { setInitLang, t } from 'helper/i18n';
-
-import { type MangaProps, Manga } from '../../components/Manga';
-import { Toaster, toast } from '../../components/Toast';
+import { type MangaProps, Manga } from 'components/Manga';
+import { Toaster, toast } from 'components/Toast';
+import { setInitLang, t } from 'helper';
 
 import { store, handleExit, loadNewImglist, _setState } from './store';
 import { FileSystemToFile, imgExtension } from './helper';

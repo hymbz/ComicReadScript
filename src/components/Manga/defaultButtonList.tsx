@@ -8,7 +8,7 @@ import MdGrid from '@material-design-icons/svg/round/grid_4x4.svg';
 import MdZoomIn from '@material-design-icons/svg/round/zoom_in.svg';
 import MdZoomOut from '@material-design-icons/svg/round/zoom_out.svg';
 import { createMemo, type Component, createSignal, Show } from 'solid-js';
-import { t } from 'helper/i18n';
+import { t } from 'helper';
 
 import { IconButton } from '../IconButton';
 

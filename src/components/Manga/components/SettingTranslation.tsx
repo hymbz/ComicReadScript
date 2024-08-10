@@ -1,5 +1,5 @@
 import { createMemo, Show } from 'solid-js';
-import { t } from 'helper/i18n';
+import { t } from 'helper';
 
 import { activeImgIndex, createStateSetFn, setOption } from '../actions';
 import {

@@ -2,3 +2,4 @@ dist
 dev-dist
 node_modules
 cache
+rollup.config-*.mjs

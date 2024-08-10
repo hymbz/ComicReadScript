@@ -1,7 +1,8 @@
-import { type SiteOptions, autoUpdate, useInit, wait } from 'main';
-import type { AsyncReturnType } from 'type-fest';
+import { type MangaProps } from 'components/Manga';
+import { autoUpdate, wait } from 'helper';
 
-import type { MangaProps } from '../components/Manga';
+import { useInit } from './useInit';
+import { type SiteOptions } from './useSiteOptions';
 
 export type UseInitFnMap = AsyncReturnType<typeof useInit>;
 

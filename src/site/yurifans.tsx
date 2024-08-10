@@ -1,11 +1,5 @@
-import {
-  querySelector,
-  querySelectorAll,
-  request,
-  toast,
-  useInit,
-  wait,
-} from 'main';
+import { request, toast, useInit } from 'main';
+import { querySelector, querySelectorAll, wait } from 'helper';
 
 declare const b2token: string;
 

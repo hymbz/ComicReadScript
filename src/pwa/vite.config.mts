@@ -1,15 +1,9 @@
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 import { defineConfig } from 'vite';
 import { type ManifestOptions, VitePWA } from 'vite-plugin-pwa';
-import solidPlugin from 'vite-plugin-solid';
 import markdown from '@jackfranklin/rollup-plugin-markdown';
 import replace from '@rollup/plugin-replace';
 
-import { solidSvg } from '../rollup-plugin/rollup-solid-svg';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { vitePlugins } from '../rollup-plugin/vite';
 
 const manifest: Partial<ManifestOptions> = {
   id: 'ComicRead',
@@ -61,36 +55,14 @@ export default defineConfig({
   server: { host: '0.0.0.0' },
   build: { rollupOptions: { external: ['/unarchiver.min.js'] } },
   css: { modules: { globalModulePaths: [/^#/] } },
-  resolve: {
-    alias: { helper: resolve(__dirname, '../../src/helper') },
-  },
   plugins: [
     replace({
       values: { isDevMode: 'false' },
 
       preventAssignment: true,
     }),
-    {
-      name: 'selfPlugin',
-      enforce: 'pre',
-      transform(code, id): null | string {
-        if (id.includes('node_modules')) return null;
-        let newCode = code;
-        // 将 vite 不支持的 rollup-plugin-styles 相关 css 导出代码改成正常的代码
-        newCode = newCode.replace(
-          /(\n.+?), { css as style }(.+?\n)/,
-          '$1$2const style = ""',
-        );
-        newCode = newCode.replace(
-          /\nimport { css as style } from .+?;\n/,
-          '\nconst style = ""\n',
-        );
-        return newCode;
-      },
-    },
+    ...vitePlugins,
     markdown({ parseFrontMatterAsMarkdown: true }),
-    solidSvg(),
-    solidPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: { suppressWarnings: true },

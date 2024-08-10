@@ -1,6 +1,6 @@
-import { log, request, wait, waitImgLoad } from 'main';
 import QrScanner from 'qr-scanner';
-import type { AsyncReturnType } from 'type-fest';
+import { request } from 'main';
+import { log, wait, waitImgLoad } from 'helper';
 
 const getAdPage = async <T>(
   list: Array<T | undefined>,

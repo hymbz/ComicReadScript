@@ -1,10 +1,5 @@
-import {
-  type InitOptions,
-  querySelectorClick,
-  wait,
-  querySelector,
-  request,
-} from 'main';
+import { request, type InitOptions } from 'main';
+import { querySelectorClick, wait, querySelector } from 'helper';
 
 // API 参考：https://github.com/fumiama/copymanga/blob/279e08b06a70307bf20162900103ec1fdcb97751/app/src/main/res/values/strings.xml
 

@@ -1,21 +1,11 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
-import { t } from 'helper/i18n';
+import { t, createEffectOn, createRootMemo } from 'helper';
 import { createStore } from 'solid-js/store';
-import { createEffectOn, createRootMemo } from 'helper/solidJs';
-
-import { IconButton, IconButtonStyle } from '../IconButton';
-import {
-  type MangaProps,
-  buttonListDivider,
-  MangaStyle,
-  Manga,
-} from '../Manga';
+import { IconButton } from 'components/IconButton';
+import { type MangaProps, buttonListDivider, Manga } from 'components/Manga';
 
 import { DownloadButton } from './DownloadButton';
 import { mountComponents } from './helper';
-
-export { store } from '../Manga';
-export * from '../Manga/actions';
 
 let dom: HTMLDivElement;
 
@@ -72,11 +62,9 @@ export const useManga = async (initProps?: Partial<UseMangaProps>) => {
 
   createEffectOn([() => imgList().length, () => props.show], () => {
     if (!dom) {
-      dom = mountComponents(
-        'comicRead',
-        () => <Manga {...props} imgList={imgList()} />,
-        [IconButtonStyle, MangaStyle],
-      );
+      dom = mountComponents('comicRead', () => (
+        <Manga {...props} imgList={imgList()} />
+      ));
       dom.style.setProperty('z-index', '2147483647', 'important');
     }
 

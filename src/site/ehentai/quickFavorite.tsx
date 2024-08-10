@@ -1,13 +1,7 @@
 import { type Accessor, For, createSignal, Show } from 'solid-js';
 import { render } from 'solid-js/web';
-import {
-  t,
-  request,
-  toast,
-  domParse,
-  querySelector,
-  querySelectorAll,
-} from 'main';
+import { request, toast } from 'main';
+import { t, domParse, querySelector, querySelectorAll } from 'helper';
 
 import { type PageType } from '.';
 

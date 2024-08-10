@@ -5,12 +5,12 @@ import {
   createSignal,
   on,
 } from 'solid-js';
-import { byPath } from 'helper';
 
 import zh from '../../locales/zh.json' assert { type: 'json' };
 import en from '../../locales/en.json' assert { type: 'json' };
 import ru from '../../locales/ru.json' assert { type: 'json' };
 
+import { byPath } from './other';
 import { log } from './logger';
 import { type Languages, getInitLang, setSaveLang } from './languages';
 

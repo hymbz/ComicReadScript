@@ -1,18 +1,16 @@
 /* eslint-disable i18next/no-literal-string */
 import { render } from 'solid-js/web';
 import { Show, createMemo, createSignal } from 'solid-js';
+import { request, useInit, toast } from 'main';
 import {
   insertNode,
   querySelector,
   querySelectorAll,
   scrollIntoView,
   useCache,
-  request,
-  useInit,
-  toast,
   log,
   createEffectOn,
-} from 'main';
+} from 'helper';
 
 interface History {
   tid: string;

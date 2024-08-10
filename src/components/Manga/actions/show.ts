@@ -1,7 +1,5 @@
 import { createRoot } from 'solid-js';
-import { t } from 'helper/i18n';
-import { inRange, throttle } from 'helper';
-import { createEffectOn } from 'helper/solidJs';
+import { t, inRange, throttle, createEffectOn } from 'helper';
 
 import { type State, _setState, setState, store } from '../store';
 

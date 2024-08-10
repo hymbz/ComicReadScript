@@ -1,17 +1,15 @@
+import { request, toast, useInit } from 'main';
 import {
-  request,
   plimit,
   querySelectorAll,
   sleep,
-  toast,
-  useInit,
   querySelectorClick,
   querySelector,
   wait,
   waitImgLoad,
   canvasToBlob,
   log,
-} from 'main';
+} from 'helper';
 
 // 已知问题：某些漫画始终会有几页在下载原图时出错
 // 并且这类漫画下即使关掉脚本，也还是会有几页就是加载不出来

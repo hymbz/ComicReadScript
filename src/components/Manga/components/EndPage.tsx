@@ -7,7 +7,7 @@ import {
   For,
   Show,
 } from 'solid-js';
-import { t } from 'helper/i18n';
+import { t } from 'helper';
 
 import { stopPropagation } from '../helper';
 import { _setState, store } from '../store';

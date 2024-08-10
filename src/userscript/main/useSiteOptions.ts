@@ -1,8 +1,6 @@
 import { createMutable } from 'solid-js/store';
-
-import type { MangaProps } from '../components/Manga';
-
-import { assign, difference } from '.';
+import type { MangaProps } from 'components/Manga';
+import { assign, difference } from 'helper';
 
 export interface SiteOptions {
   option: MangaProps['option'];

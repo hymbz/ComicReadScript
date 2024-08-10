@@ -1,4 +1,4 @@
-import { ToastStyle, Toaster, toast as _toast, ref } from '../Toast';
+import { Toaster, toast as _toast, ref } from 'components/Toast';
 
 import { mountComponents } from './helper';
 
@@ -14,7 +14,7 @@ const init = () => {
     document.body.append(_dom);
   }
 
-  dom = mountComponents('toast', () => <Toaster />, [ToastStyle]);
+  dom = mountComponents('toast', () => <Toaster />);
   dom.style.setProperty('z-index', '2147483647', 'important');
 };
 

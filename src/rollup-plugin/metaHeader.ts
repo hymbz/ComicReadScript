@@ -1,13 +1,9 @@
 import fs from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-import pkg from './package.json' assert { type: 'json' };
-import zh from './locales/zh.json' assert { type: 'json' };
-import en from './locales/en.json' assert { type: 'json' };
-import ru from './locales/ru.json' assert { type: 'json' };
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import pkg from '../../package.json' assert { type: 'json' };
+import zh from '../../locales/zh.json' assert { type: 'json' };
+import en from '../../locales/en.json' assert { type: 'json' };
+import ru from '../../locales/ru.json' assert { type: 'json' };
 
 /**
  * 脚本依赖库与对应的 cdn url
@@ -47,14 +43,14 @@ for (const [k, v] of Object.entries(resourceList)) {
 
 /** 根据 index.ts 的注释获取支持站点列表 */
 const getSupportSiteList = () => {
-  const indexCode = fs.readFileSync(resolve(__dirname, 'src/index.ts'), 'utf8');
+  const indexCode = fs.readFileSync('src/index.ts', 'utf8');
   /** 支持站点列表 */
   return [...indexCode.matchAll(/(?<=\n\s+\/\/\s#).+(?=\n)/g)].map((e) => e[0]);
 };
 
 /** 更新 README 上的支持站点列表 */
 export const updateReadme = () => {
-  const readmePath = resolve(__dirname, 'README.md');
+  const readmePath = 'README.md';
   const readmeMd = fs.readFileSync(readmePath, 'utf8');
   const newMd = readmeMd.replace(
     /(?<=<!-- supportSiteList -->\n\n).*(?=\n\n<!-- supportSiteList -->)/s,
@@ -66,7 +62,7 @@ export const updateReadme = () => {
   if (newMd !== readmeMd) fs.writeFileSync(readmePath, newMd);
 
   // 生成一个用于 greasyfork 介绍的 md 文件，把相对链接改成文档外链，以便正常显示图片
-  const outMdPath = resolve(__dirname, 'docs/index.md');
+  const outMdPath = 'docs/index.md';
   const outMd = fs.readFileSync(outMdPath, 'utf8');
   const newOutMd = newMd.replaceAll(
     '/docs/public/',
@@ -88,8 +84,8 @@ const enSupportSite = [
 /** 脚本头部注释 */
 export const getMetaData = (isDevMode: boolean) => {
   const meta = {
-    name: pkg.name,
-    namespace: pkg.name,
+    name: 'ComicRead',
+    namespace: 'ComicRead',
     version: pkg.version,
     description: `${zh.description}${getSupportSiteList()
       .map((site) => site.replace(/\[(.+)]\(.+\)/, '$1'))

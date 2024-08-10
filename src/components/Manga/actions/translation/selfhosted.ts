@@ -1,6 +1,4 @@
-import { sleep } from 'helper';
-import { t } from 'helper/i18n';
-import { log } from 'helper/logger';
+import { sleep, t, log } from 'helper';
 
 import { store } from '../../store';
 

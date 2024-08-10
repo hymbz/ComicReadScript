@@ -1,4 +1,4 @@
-import { log } from 'helper/logger';
+import { log } from 'helper';
 
 import { creatId, setState, _setState, store } from './store';
 

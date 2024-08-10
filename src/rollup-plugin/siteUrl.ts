@@ -3,7 +3,7 @@ import type { OutputPluginOption } from 'rollup';
 
 const siteUrlFnMap = {
   async jm() {
-    const res = await axios<string>('https://jmcomic1.ltd');
+    const res = await axios<string>('https://jmcomicgo.xyz');
     return [
       ...res.data
         .replaceAll('&nbsp;', '')
@@ -27,13 +27,13 @@ const initSiteUrlMap = async () =>
     ),
   );
 
+/** 根据发布页自动获取可用网址 */
 export const siteUrl: OutputPluginOption = {
   name: 'self-siteUrl',
   async renderChunk(rawCode) {
     siteUrlMap ||= await initSiteUrlMap();
 
     let code = rawCode;
-    // 将 inject 函数调用替换为 dist 文件夹下的指定文件内容
     code = code.replaceAll(
       /case 'siteUrl#(.+?)':(.+?)(?={)/gs,
       (_, name, other) => {

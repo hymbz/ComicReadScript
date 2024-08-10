@@ -1,6 +1,5 @@
 import { type Component, For, createMemo } from 'solid-js';
-import { boolDataVal } from 'helper';
-import { createThrottleMemo } from 'helper/solidJs';
+import { boolDataVal, createThrottleMemo } from 'helper';
 
 import { store } from '../store';
 import { contentHeight, isOnePageMode } from '../actions';

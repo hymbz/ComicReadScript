@@ -1,10 +1,5 @@
 import type { Component } from 'solid-js';
 
-import { css as style } from './index.module.css';
-
-export const ToastStyle = new CSSStyleSheet();
-ToastStyle.replaceSync(style);
-
 export { Toaster, ref } from './Toaster';
 export { toast } from './toast';
 

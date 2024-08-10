@@ -1,6 +1,4 @@
-import { t } from 'helper/i18n';
-import { log } from 'helper/logger';
-import { canvasToBlob, waitImgLoad } from 'helper';
+import { t, log, canvasToBlob, waitImgLoad } from 'helper';
 
 import { store } from '../../store';
 

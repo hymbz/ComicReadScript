@@ -9,6 +9,10 @@ declare global {
 
   type TrueValue<T> = Exclude<T, void | false | undefined | null>;
 
+  type AsyncReturnType<T extends (...args: any[]) => Promise<any>> = Awaited<
+    ReturnType<T>
+  >;
+
   /** 在打包时将此函数调用替换为 dist 文件夹下的指定文件内容 */
   declare const inject: <T = string>(name: string) => T;
 

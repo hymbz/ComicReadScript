@@ -1,5 +1,5 @@
 import fs from 'node:fs';
-import { resolve, dirname, basename, extname } from 'node:path';
+import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import shell from 'shelljs';
@@ -7,7 +7,6 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import { babel } from '@rollup/plugin-babel';
 import styles from 'rollup-plugin-styles';
-import solidPlugin from 'vite-plugin-solid';
 import json from '@rollup/plugin-json';
 import alias from '@rollup/plugin-alias';
 import replace from '@rollup/plugin-replace';
@@ -22,7 +21,8 @@ import { createServer } from 'vite';
 import { parse as parseMd } from 'marked';
 
 import { selfPlugins, solidSvg } from './src/rollup-plugin';
-import { getMetaData, updateReadme } from './metaHeader';
+import { getMetaData, updateReadme } from './src/rollup-plugin/metaHeader';
+import { vitePlugins } from './src/rollup-plugin/vite';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -62,21 +62,45 @@ const { meta, createMetaHeader } = getMetaData(isDevMode);
 
 const generateScopedName = '[local]';
 
+/** 单独打包的代码 */
+const packlist = [
+  'helper',
+  'components/Manga',
+  'components/IconButton',
+  'components/Fab',
+  'components/Toast',
+  'userscript/dmzjApi',
+  'userscript/main',
+];
+
+const babelConfig = {
+  presets: ['@babel/preset-env', '@babel/preset-typescript', 'solid'],
+  plugins: [
+    '@babel/plugin-transform-runtime',
+    [
+      '@babel/plugin-proposal-import-attributes-to-assertions',
+      { deprecatedAssertSyntax: true },
+    ],
+  ],
+};
+
 export const buildOptions = (
   path: string,
   watchFiles?: string[],
   fn?: (options: RollupOptions) => RollupOptions,
 ): RollupOptions => {
-  const isUserScript = ['dev', 'index'].includes(path);
-
-  const dir = isUserScript ? 'dist' : 'dist/cache';
-  const fileName = path.endsWith('index.tsx')
-    ? path.split('/')[1]
-    : basename(path, extname(path));
+  const outPath = `dist/${path.replace(/(\/index)?\.tsx?/, '')}.js`;
 
   const options: RollupOptions = {
     treeshake: true,
-    external: [...Object.keys(meta.resource ?? {}), 'main', 'dmzjDecrypt'],
+    external: [
+      ...Object.keys(meta.resource ?? {}),
+      ...packlist,
+      'dmzjDecrypt',
+      'dmzjApi',
+      'main',
+      /^solid/,
+    ],
     input: resolve(__dirname, 'src', path),
     // 忽略使用 eval 的警告
     onwarn(warning, warn) {
@@ -104,24 +128,20 @@ export const buildOptions = (
       }),
 
       solidSvg() as InputPluginOption,
+
+      // ts({ transpiler: 'babel', transpileOnly: true, babelConfig }),
+
       babel({
         babelHelpers: 'runtime',
         extensions: ['.ts', '.tsx'],
         exclude: ['node_modules/**'],
-        presets: ['@babel/preset-env', '@babel/preset-typescript', 'solid'],
-        plugins: [
-          '@babel/plugin-transform-runtime',
-          [
-            '@babel/plugin-proposal-import-attributes-to-assertions',
-            { deprecatedAssertSyntax: true },
-          ],
-        ],
+        ...babelConfig,
       }),
 
       watchFiles && isDevMode && watchExternal({ entries: watchFiles }),
     ],
     output: {
-      file: `${dir}/${fileName}.js`,
+      file: outPath,
       format: 'cjs',
       strict: false,
       generatedCode: 'es2015',
@@ -134,17 +154,23 @@ export const buildOptions = (
             let code = rawCode;
 
             switch (path) {
-              case 'index':
+              case 'index': {
                 updateReadme();
                 if (isDevMode)
-                  code = [
-                    `console.time('脚本启动消耗时间')`,
-                    code,
-                    `console.timeEnd('脚本启动消耗时间')`,
-                  ].join('\n');
+                  code = `
+                  console.time('脚本启动消耗时间');
+                  ${code}
+                  console.timeEnd('脚本启动消耗时间');
+                `;
 
-                code = createMetaHeader(meta) + code;
+                const importCode = fs
+                  .readFileSync(`dist/userscript/import.js`)
+                  .toString()
+                  .replaceAll('require$1', 'require');
+                code = `${createMetaHeader(meta)}\n${importCode}\n${code}`;
+
                 break;
+              }
 
               case 'dev':
                 code =
@@ -182,28 +208,7 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
       port: DEV_PORT,
       cors: false,
     },
-    resolve: {
-      alias: { helper: resolve(__dirname, 'src/helper') },
-    },
-    plugins: [
-      {
-        name: 'selfPlugin',
-        enforce: 'pre',
-        transform(code, id): null | string {
-          if (id.includes('node_modules')) return null;
-          let newCode = code;
-          newCode = newCode.replace('isDevMode', 'true');
-          // 将 rollup-plugin-styles 格式转换成 vite 支持的格式
-          newCode = newCode.replace(
-            /, { css as style }( from '(.+?)';)/,
-            `$1\nimport style from '$2?inline';`,
-          );
-          return newCode;
-        },
-      },
-      solidSvg(),
-      solidPlugin(),
-    ],
+    plugins: vitePlugins,
   });
   // 开启组件的测试服务器
   await server.listen();
@@ -211,35 +216,24 @@ shell.rm('-rf', resolve(__dirname, 'dist/*'));
 })();
 
 const optionList: RollupOptions[] = [
-  // // 打包 dmzjDecrypt 时用的配置
-  // (() => {
-  //   const options = buildOptions(
-  //     'helper/dmzjDecrypt',
-  //     undefined,
-  //     terser({
-  //       keep_classnames: true,
-  //       keep_fnames: true,
-  //       format: { beautify: true, ecma: 2015 },
-  //     }),
-  //   );
-  //   options.output = { ...options.output, name: 'dmzjDecrypt', format: 'umd' };
-  //   return options;
-  // })(),
-
   buildOptions('dev'),
-  buildOptions('main'),
+
+  ...packlist.map((path) => buildOptions(path)),
 
   ...fs
     .readdirSync('src/site', { withFileTypes: true })
     .map((item) =>
-      item.isFile()
-        ? buildOptions(`site/${item.name}`)
-        : buildOptions(`site/${item.name}/index.tsx`),
+      buildOptions(
+        item.isFile() ? `site/${item.name}` : `site/${item.name}/index.tsx`,
+      ),
     ),
 
-  buildOptions('helper/import', ['dist/cache/main.js']),
+  buildOptions(
+    'userscript/import',
+    packlist.map((path) => `dist/${path}.js`),
+  ),
 
-  buildOptions('index', ['dist/**/*', '!dist/index.js']),
+  buildOptions('index', ['dist/**/*', '!dist/index.*js']),
 ];
 
 if (!isDevMode)

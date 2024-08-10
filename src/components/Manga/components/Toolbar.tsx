@@ -1,6 +1,5 @@
 import { type Component, For } from 'solid-js';
-import { boolDataVal } from 'helper';
-import { createEffectOn } from 'helper/solidJs';
+import { boolDataVal, createEffectOn } from 'helper';
 
 import { defaultButtonList } from '../defaultButtonList';
 import { store } from '../store';

@@ -1,4 +1,4 @@
-export const OtherState = {
+export const otherState = {
   /** 监视图片是否出现的 observer */
   observer: null as IntersectionObserver | null,
 

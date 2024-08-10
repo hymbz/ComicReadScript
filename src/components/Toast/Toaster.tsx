@@ -5,10 +5,11 @@ import {
   onCleanup,
   onMount,
 } from 'solid-js';
+import { useStyle } from 'helper';
 
 import { store } from './store';
 import { ToastItem } from './ToastItem';
-import classes from './index.module.css';
+import classes, { css as style } from './index.module.css';
 
 export const [ref, setRef] = createSignal<HTMLElement>();
 
@@ -18,6 +19,8 @@ export const Toaster: Component = () => {
   );
 
   onMount(() => {
+    useStyle(style);
+
     const handleVisibilityChange = () => {
       setVisible(document.visibilityState === 'visible');
     };

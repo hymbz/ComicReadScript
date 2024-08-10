@@ -1,4 +1,4 @@
-import { createEffectOn, createRootMemo } from 'helper/solidJs';
+import { createEffectOn, createRootMemo } from 'helper';
 
 import { type State, store, setState } from '../store';
 

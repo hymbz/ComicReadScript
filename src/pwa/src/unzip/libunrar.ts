@@ -1,5 +1,4 @@
-import { plimit } from 'helper';
-import { t } from 'helper/i18n';
+import { plimit, t, wait } from 'helper';
 
 import type { ImgFile } from '../store';
 import { toast } from '../../../components/Toast';
@@ -8,6 +7,8 @@ import { createObjectURL, isSupportFile, loadScript } from '../helper';
 import type { ZipData } from '.';
 
 loadScript('/libunrar/rpc.js');
+
+declare const RPC: any;
 
 interface FileEntry {
   type: 'file';
@@ -31,21 +32,6 @@ declare interface LibunrarRPC {
 }
 
 let rpc: LibunrarRPC;
-
-/** 等待 RPC 对象被加载出来 */
-export const waitRPC = () =>
-  new Promise<void>((resolve) => {
-    if (Reflect.has(window, 'RPC')) {
-      resolve();
-      return;
-    }
-
-    const id = window.setInterval(() => {
-      if (!Reflect.has(window, 'RPC')) return;
-      window.clearInterval(id);
-      resolve();
-    }, 100);
-  });
 
 const findImgFile = async (
   entry: FileEntry | DirEntry,
@@ -83,7 +69,7 @@ export const libunrar = async (
   const { zipFile, tip, extension } = zipData;
   if (extension !== '.rar' && extension !== '.cbr') return [];
   if (!rpc) {
-    await waitRPC();
+    await wait(() => Reflect.has(window, 'RPC'));
     rpc = await RPC.new('./libunrar/worker.js');
   }
 

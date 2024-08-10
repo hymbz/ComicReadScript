@@ -1,10 +1,8 @@
 import { createSignal, type Component } from 'solid-js';
 import { filetypeinfo } from 'magic-bytes.js';
-import { t } from 'helper/i18n';
-import { request } from 'helper/request';
-import { boolDataVal, isUrl, wait } from 'helper';
-
-import { toast } from '../../components/Toast';
+import { toast } from 'components/Toast';
+import { request } from 'userscript/main';
+import { t, boolDataVal, isUrl, wait } from 'helper';
 
 import { loadNewImglist } from './store';
 

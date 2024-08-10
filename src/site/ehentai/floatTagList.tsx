@@ -1,20 +1,18 @@
 import MdPictureInPicture from '@material-design-icons/svg/round/picture_in_picture.svg?raw';
+import { focus, hotkeysMap, setDefaultHotkeys } from 'components/Manga';
+import { type UseMangaProps } from 'main';
 import {
   approx,
   clamp,
   createEffectOn,
-  focus,
   linstenKeydown,
   querySelector,
-  type UseMangaProps,
   useStyleMemo,
   useStore,
   useDrag,
   getKeyboardCode,
-  hotkeysMap,
-  setDefaultHotkeys,
   hijackFn,
-} from 'main';
+} from 'helper';
 
 import { type PageType } from '.';
 

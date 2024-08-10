@@ -1,16 +1,13 @@
-import { type ChapterInfo, getChapterInfo, getViewpoint } from 'helper/dmzjApi';
 import dmzjDecrypt from 'dmzjDecrypt';
+import { type ChapterInfo, getChapterInfo, getViewpoint } from 'dmzjApi';
+import { request, toast, useInit, universalInit } from 'main';
 import {
   insertNode,
   querySelector,
   querySelectorAll,
   querySelectorClick,
-  request,
-  toast,
-  useInit,
   log,
-  universalInit,
-} from 'main';
+} from 'helper';
 
 (async () => {
   // 分别处理目录页和漫画页
@@ -148,7 +145,7 @@ import {
       tipDom.textContent = '正在加载中，请坐和放宽，若长时间无反应请刷新页面';
       document.body.append(tipDom);
 
-      let data: ChapterInfo | undefined;
+      let data: ChapterInfo;
 
       let comicId: string;
       let chapterId: string;

@@ -1,4 +1,5 @@
-import { createEffectOn, querySelectorAll, useInit } from 'main';
+import { useInit } from 'main';
+import { createEffectOn, querySelectorAll } from 'helper';
 
 (async () => {
   const { init, options, setManga } = await useInit('kemono', {

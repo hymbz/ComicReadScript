@@ -11,6 +11,7 @@ module.exports = {
     "no-console": ["warn", { allow: ["warn", "error"] }],
     "no-debugger": "warn",
 
+    // 不知道为啥会对 `[...list].at(-1)` 报错
     "no-use-extend-native/no-use-extend-native": "off",
 
     // 禁止重新赋值函数参数
@@ -26,12 +27,8 @@ module.exports = {
     // 不限制 import 的扩展名
     "import/extensions": "off",
     "n/file-extension-in-import": "off",
-    // 不限制循环方式
-    // "unicorn/no-array-for-each": "off",
     // 不限制注释首字母大小写
     "capitalized-comments": "off",
-    // 不强制使用 addEventListener
-    "unicorn/prefer-add-event-listener": "off",
     // 不限制代码复杂性
     complexity: "off",
     // 不强制使用 querySelector
@@ -43,8 +40,6 @@ module.exports = {
     "unicorn/no-array-callback-reference": "off",
     // 允许使用缩写
     "unicorn/prevent-abbreviations": "off",
-    // 允许未分配导入
-    "import/no-unassigned-import": "off",
     // 允许默认导入变量名称和导入模块名称不同
     "import/no-named-as-default": "off",
     // 允许在 Promise 中返回值
@@ -57,12 +52,8 @@ module.exports = {
     "no-warning-comments": "off",
     // 允许 return await
     "no-return-await": "off",
-    // 允许调用大写开头的函数
-    "new-cap": ["error", { capIsNew: false }],
     // 允许使用复杂的数组解构
     "unicorn/no-unreadable-array-destructuring": "off",
-    // 允许正常调用异步函数并使用 catch
-    "unicorn/prefer-top-level-await": "off",
     // 允许在相等判断中使用 !
     "unicorn/no-negation-in-equality-check": "off",
     // structured 无法处理代理对象
@@ -77,6 +68,15 @@ module.exports = {
     //
     // 项目特有的规则
     //
+
+    // 允许正常调用异步函数并使用 catch
+    "unicorn/prefer-top-level-await": "off",
+    // 允许调用大写开头的函数
+    "new-cap": ["error", { capIsNew: false }],
+    // 允许未分配导入
+    "import/no-unassigned-import": "off",
+    // 不强制使用 addEventListener
+    "unicorn/prefer-add-event-listener": "off",
 
     // eslint-plugin-jsdoc 还无法识别出 TS 定义的接口
     "jsdoc/no-undefined-types": "off",
@@ -100,11 +100,20 @@ module.exports = {
     "jsdoc/require-param": "off",
 
     "solid/reactivity": "off",
+
+    "no-restricted-imports": [
+      "warn",
+      {
+        patterns: [
+          { group: ["helper/**/*"], message: "只能直接通过 helper 导入" },
+        ],
+      },
+    ],
   },
 
   overrides: [
     {
-      files: ["**/*.ts", "**/*.tsx"],
+      files: ["**/*.ts", "**/*.tsx", "**/*.mts"],
       rules: {
         // 允许在 void 的函数内 return
         "@typescript-eslint/no-confusing-void-expression": "off",
@@ -191,11 +200,12 @@ module.exports = {
             patterns: [
               {
                 group: [
-                  "helper/*",
-                  "!helper/languages",
-                  "!helper/eleSelector",
-                  "!helper/dmzjApi",
+                  "*/**/*",
+                  "!solid-js/**/*",
+                  "!components/**/*",
+                  "!@material*/**/*",
                   "../**/*",
+                  "!.*/**/*",
                 ],
                 message: "只能通过 main 导入",
               },

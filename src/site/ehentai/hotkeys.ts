@@ -1,4 +1,4 @@
-import { linstenKeydown, querySelector } from 'main';
+import { linstenKeydown, querySelector } from 'helper';
 
 import { type PageType } from '.';
 

@@ -1,8 +1,7 @@
 import MdOutlineFormatTextdirectionLToR from '@material-design-icons/svg/round/format_textdirection_l_to_r.svg';
 import MdOutlineFormatTextdirectionRToL from '@material-design-icons/svg/round/format_textdirection_r_to_l.svg';
 import { Show, type Component } from 'solid-js';
-import { lang, setLang, t } from 'helper/i18n';
-import { needDarkMode, clamp, throttle } from 'helper';
+import { lang, setLang, t, needDarkMode, clamp, throttle } from 'helper';
 
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';

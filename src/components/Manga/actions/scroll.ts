@@ -1,5 +1,4 @@
-import { clamp } from 'helper';
-import { createRootMemo } from 'helper/solidJs';
+import { clamp, createRootMemo } from 'helper';
 
 import { _setState, refs, store } from '../store';
 

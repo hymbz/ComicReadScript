@@ -1,7 +1,13 @@
 import { type Component, Show, createMemo, onMount, Index } from 'solid-js';
-import { boolDataVal, createSequence } from 'helper';
-import { createEffectOn } from 'helper/solidJs';
-import { type UseDrag, useDrag } from 'helper/useDrag';
+import {
+  boolDataVal,
+  createSequence,
+  createEffectOn,
+  type UseDrag,
+  useDrag,
+  useStyleMemo,
+  useStyle,
+} from 'helper';
 
 import { refs, setState, store } from '../store';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
@@ -27,7 +33,6 @@ import {
   imgAreaStyle,
 } from '../actions';
 import classes from '../index.module.css';
-import { useStyle, useStyleMemo } from '../hooks/useStyle';
 
 import { EmptyTip } from './EmptyTip';
 import { ComicImg } from './ComicImg';

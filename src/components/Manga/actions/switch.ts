@@ -1,4 +1,4 @@
-import { createRootMemo } from 'helper/solidJs';
+import { createRootMemo } from 'helper';
 
 import { refs, setState, store } from '../store';
 

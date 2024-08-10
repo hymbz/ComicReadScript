@@ -1,6 +1,5 @@
 import { type Component, For, createSignal } from 'solid-js';
-import { lang } from 'helper/i18n';
-import { createRootMemo } from 'helper/solidJs';
+import { lang, createRootMemo } from 'helper';
 
 import { defaultSettingList } from '../defaultSettingList';
 import { store } from '../store';

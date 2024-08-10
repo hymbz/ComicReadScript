@@ -1,5 +1,4 @@
-import { isEqual, throttle } from 'helper';
-import { createEffectOn } from 'helper/solidJs';
+import { isEqual, throttle, createEffectOn } from 'helper';
 
 import { autoCloseFill, handleComicData } from '../handleComicData';
 import { setState, type State } from '../store';

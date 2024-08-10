@@ -1,6 +1,5 @@
 import { createSignal } from 'solid-js';
-import { inRange } from 'helper';
-import { createEffectOn, createRootMemo } from 'helper/solidJs';
+import { inRange, createEffectOn, createRootMemo } from 'helper';
 
 import { store, setState } from '../../store';
 import { resetImgState, updatePageData } from '../image';

@@ -1,7 +1,6 @@
-import { t } from 'helper/i18n';
-import { log } from 'helper/logger';
+import { toast } from 'components/Toast';
+import { t, log } from 'helper';
 
-import { toast } from '../../../components/Toast';
 import type { ZipExtension } from '../helper';
 import type { ImgFile } from '../store';
 
