@@ -1,4 +1,3 @@
-import { createMemo } from 'solid-js';
 import { createRootMemo, createThrottleMemo } from 'helper';
 
 import { store } from '../../store';
@@ -66,7 +65,9 @@ export const autoPageNum = createThrottleMemo(() =>
   store.rootSize.width >= store.rootSize.height ? 2 : 1,
 );
 
-export const pageNum = createMemo(() => store.option.pageNum || autoPageNum());
+export const pageNum = createRootMemo(
+  () => store.option.pageNum || autoPageNum(),
+);
 
 /** 是否为单页模式 */
 export const isOnePageMode = createRootMemo(
