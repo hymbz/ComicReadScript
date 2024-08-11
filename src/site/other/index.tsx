@@ -16,11 +16,7 @@ import { renderImgList, store } from 'components/Manga';
 import { useInit, toast } from 'main';
 
 import { getEleSelector, isEleSelector } from './eleSelector';
-import {
-  needTrigged,
-  triggerLazyLoad,
-  openScrollLock,
-} from './triggerLazyLoad';
+import { needTrigged, triggerLazyLoad } from './triggerLazyLoad';
 
 // 测试案例
 // https://www.177picyy.com/html/2023/03/5505307.html
@@ -149,19 +145,30 @@ import {
         return;
       }
 
-      /** 找出应该是漫画图片，且还需要继续触发懒加载的图片个数 */
-      const expectCount = options.selector
-        ? querySelectorAll<HTMLImageElement>(options.selector).filter(
-            needTrigged,
-          ).length
-        : 0;
-      const _imgEleList = expectCount
-        ? [...imgEleList, ...Array.from<null>({ length: expectCount })]
-        : imgEleList;
+      let newImgEleList: Array<HTMLImageElement | undefined> = imgEleList;
+
+      /** 预计的图片总数 */
+      let expectCount = 0;
+      /** 还需要继续触发懒加载的图片个数 */
+      let needTriggedNum = 0;
+      if (options.selector) {
+        const expectImgList = querySelectorAll<HTMLImageElement>(
+          options.selector,
+        );
+        expectCount = expectImgList.length;
+        needTriggedNum = expectImgList.filter(needTrigged).length;
+        // 根据预计的图片总数补上占位的空图
+        const fillImgNum = expectCount - imgEleList.length;
+        if (fillImgNum > 0)
+          newImgEleList = [
+            ...imgEleList,
+            ...Array.from<undefined>({ length: fillImgNum }),
+          ];
+      }
 
       let isEdited = false;
       await plimit(
-        _imgEleList.map((e, i) => async () => {
+        newImgEleList.map((e, i) => async () => {
           const newUrl = e ? await handleImgUrl(e) : '';
           if (newUrl === mangaProps.imgList[i]) return;
 
@@ -172,12 +179,12 @@ import {
       if (isEdited) saveImgEleSelector(imgEleList);
 
       // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要再删掉多余的页数
-      if (mangaProps.imgList.length > _imgEleList.length)
-        setManga('imgList', mangaProps.imgList.slice(0, _imgEleList.length));
+      if (mangaProps.imgList.length > newImgEleList.length)
+        setManga('imgList', mangaProps.imgList.slice(0, newImgEleList.length));
 
       if (
         isEdited ||
-        expectCount ||
+        needTriggedNum ||
         imgEleList.some((e) => !e.naturalWidth && !e.naturalHeight)
       ) {
         if (updateImgListTimeout) window.clearTimeout(updateImgListTimeout);
@@ -188,11 +195,10 @@ import {
     let timeout = false;
 
     const triggerAllLazyLoad = () =>
-      triggerLazyLoad(getAllImg, () =>
-        // 只在`开启了阅读模式所以用户看不到网页滚动`和`当前可显示图片数量不足`时停留一段时间
-        mangaProps.show || (!timeout && mangaProps.imgList.length === 0)
-          ? 300
-          : 0,
+      triggerLazyLoad(
+        getAllImg,
+        // 只在`开启了阅读模式`和`当前可显示图片数量不足`时通过滚动触发懒加载
+        () => mangaProps.show || (!timeout && mangaProps.imgList.length === 0),
       );
 
     /** 监视页面元素发生变化的 Observer */
@@ -243,7 +249,6 @@ import {
           behavior: 'instant',
           block: 'end',
         });
-        openScrollLock(500);
       }, 1000),
       { defer: true },
     );
@@ -254,17 +259,14 @@ import {
       () => store.show,
       (show) => {
         if (show) laseScroll = window.scrollY;
-        else {
-          openScrollLock(1000);
-          // 稍微延迟一下，等之前触发懒加载时的滚动结束
-          requestAnimationFrame(() => window.scrollTo(0, laseScroll));
-        }
+        // 稍微延迟一下，等之前触发懒加载时的滚动结束
+        else requestAnimationFrame(() => window.scrollTo(0, laseScroll));
       },
     );
   };
 
   if ((await GM.getValue(window.location.hostname)) !== undefined)
-    return start();
+    return requestIdleCallback(start);
 
   const menuId = await GM.registerMenuCommand(
     extractI18n('site.simple.simple_read_mode')(await getInitLang()),

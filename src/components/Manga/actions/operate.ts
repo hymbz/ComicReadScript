@@ -181,7 +181,10 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     case 'jump_to_home':
       return _setState('activePageIndex', 0);
     case 'jump_to_end':
-      return _setState('activePageIndex', store.pageList.length - 1);
+      return _setState(
+        'activePageIndex',
+        Math.max(0, store.pageList.length - 1),
+      );
 
     case 'switch_page_fill':
       return switchFillEffect();

@@ -16,10 +16,11 @@ import { renderImgList, showImgList } from './renderPage';
 
 /** 图片加载完毕的回调 */
 export const handleImgLoaded = (i: number, e: HTMLImageElement) => {
+  // 内联图片元素被创建后立刻就会触发 load 事件，如果在调用这个函数前 url 发生改变
+  // 就会导致这里获得的是上个 url 图片的尺寸
+  if (!e.isConnected) return;
   setState((state) => {
     const img = state.imgList[i];
-    // 与图片全载一起使用时会出现 src 不一样的情况，需要跳过
-    if (!img || e.src !== encodeURI(img.src)) return;
     if (img.width !== e.naturalWidth || img.height !== e.naturalHeight)
       updateImgSize(state, i, e.naturalWidth, e.naturalHeight);
     img.loadType = 'loaded';
@@ -123,6 +124,7 @@ export const checkImgSize = (index: number) => {
     `#_${index} img`,
   )!;
   const timeoutId = setInterval(() => {
+    if (!imgDom?.isConnected) return clearInterval(timeoutId);
     const img = store.imgList[index];
     if (!img || img.loadType !== 'loading') return clearInterval(timeoutId);
 

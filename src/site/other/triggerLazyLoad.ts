@@ -15,30 +15,6 @@ const createImgData = (oldSrc = ''): ImgData => ({
   oldSrc,
 });
 
-// 使用 triggerEleLazyLoad 会导致正常的滚动在滚到一半时被打断，所以加个锁限制一下
-const scrollLock = {
-  enabled: false,
-  nextOpenTime: 0,
-  timeout: 0,
-};
-const closeScrollLock = (delay: number) => {
-  const time = Date.now() + delay;
-  if (time <= scrollLock.nextOpenTime) return;
-  scrollLock.nextOpenTime = time;
-  window.clearInterval(scrollLock.timeout);
-  scrollLock.timeout = window.setTimeout(() => {
-    scrollLock.enabled = false;
-    scrollLock.timeout = 0;
-  }, delay);
-};
-
-export const openScrollLock = (time: number) => {
-  scrollLock.enabled = true;
-  closeScrollLock(time);
-};
-
-window.addEventListener('wheel', () => openScrollLock(1000));
-
 /** 用于判断是否是图片 url 的正则 */
 const isImgUrlRe =
   /^(((https?|ftp|file):)?\/)?\/[-\w+&@#/%?=~|!:,.;]+[-\w+&@#%=~|]$/;
@@ -152,12 +128,14 @@ const triggerTurnPage = async (waitTime = 0) => {
   window.scroll({ top: nowScroll, behavior: 'instant' });
 };
 
+const waitTime = 300;
+
 /** 触发页面上所有图片元素的懒加载 */
 export const triggerLazyLoad = singleThreaded(
   async (
     state,
     getAllImg: () => HTMLImageElement[],
-    getWaitTime: () => number,
+    runCondition: () => boolean,
   ) => {
     // 过滤掉已经被触发过懒加载的图片
     const targetImgList = getAllImg()
@@ -172,8 +150,7 @@ export const triggerLazyLoad = singleThreaded(
     }
 
     for (const e of targetImgList) {
-      await wait(() => !scrollLock.enabled);
-      const waitTime = getWaitTime();
+      await wait(runCondition);
 
       await triggerTurnPage(waitTime);
 
@@ -181,10 +158,9 @@ export const triggerLazyLoad = singleThreaded(
       tryCorrectUrl(e);
 
       if (
-        (await triggerEleLazyLoad(e, waitTime, () =>
+        await triggerEleLazyLoad(e, waitTime, () =>
           isLazyLoaded(e, imgMap.get(e)?.oldSrc),
-        )) ||
-        waitTime
+        )
       )
         handleTrigged(e);
     }

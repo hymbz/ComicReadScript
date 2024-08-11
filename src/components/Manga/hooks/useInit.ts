@@ -11,6 +11,7 @@ import {
   scrollTo,
   updatePageData,
   updateShowRange,
+  placeholderSize,
 } from '../actions';
 import { defaultOption } from '../store/option';
 import { playAnimation } from '../helper';
@@ -19,7 +20,7 @@ import { autoCloseFill } from '../handleComicData';
 const createComicImg = (url: string): ComicImg => ({
   src: url || '',
   loadType: 'wait',
-  size: { width: 0, height: 0 },
+  size: placeholderSize(),
 });
 
 export const useInit = (props: MangaProps) => {
@@ -137,7 +138,9 @@ export const useInit = (props: MangaProps) => {
       const imgMap = new Map(state.imgList.map((img) => [img.src, img]));
       for (let i = 0; i < props.imgList.length; i++) {
         const url = props.imgList[i];
+        // 只有旧图一张不剩才算是新漫画
         if (isNew && imgMap.has(url)) isNew = false;
+        // 只要有加载好的旧图被删就要更新页面
         const img = url && !needUpdatePageData && state.imgList[i];
         if (img && img.loadType !== 'wait' && img.src && img.src !== url)
           needUpdatePageData = true;

@@ -239,7 +239,7 @@ export async function wait<T>(
   let res: T | undefined = await fn();
   let _timeout = timeout;
   while (_timeout > 0 && !res) {
-    await sleep(10);
+    await sleep(100);
     _timeout -= 10;
     res = await fn();
   }
@@ -263,22 +263,18 @@ export const waitImgLoad = (
       ? window.setTimeout(() => reject(new Error('timeout')), timeout)
       : undefined;
 
-    img.addEventListener(
-      'load',
-      () => {
-        window.clearTimeout(id);
-        resolve(img);
-      },
-      { once: true },
-    );
-    img.addEventListener(
-      'error',
-      (e) => {
-        window.clearTimeout(id);
-        reject(new Error(e.message));
-      },
-      { once: true },
-    );
+    const handleError = (e: ErrorEvent) => {
+      window.clearTimeout(id);
+      reject(new Error(e.message));
+    };
+    const handleLoad = () => {
+      window.clearTimeout(id);
+      img.removeEventListener('error', handleError);
+      resolve(img);
+    };
+
+    img.addEventListener('load', handleLoad, { once: true });
+    img.addEventListener('error', handleError, { once: true });
 
     if (typeof target === 'string') img.src = target;
   });
