@@ -5,10 +5,9 @@ import {
   createEffectOn,
   type UseDrag,
   useDrag,
-  useStyleMemo,
-  useStyle,
 } from 'helper';
 
+import { useStyleMemo, useStyle } from '../hooks/useStyle';
 import { refs, setState, store } from '../store';
 import { useHiddenMouse } from '../hooks/useHiddenMouse';
 import {

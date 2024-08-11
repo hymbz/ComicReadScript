@@ -4,18 +4,19 @@ import {
   enableScheduling,
   onMount,
 } from 'solid-js';
-import { boolDataVal, useStyle } from 'helper';
+import { boolDataVal } from 'helper';
 
 import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
 import { Scrollbar } from './components/Scrollbar';
 import { TouchArea } from './components/TouchArea';
 import { EndPage } from './components/EndPage';
+import { useInit } from './hooks/useInit';
+import { useStyle } from './hooks/useStyle';
 import { useCssVar } from './hooks/useCssVar';
 import { store, type State } from './store/index';
 import { type FillEffect } from './store/image';
 import { type Option } from './store/option';
-import { useInit } from './hooks/useInit';
 import {
   bindRef,
   focus,
@@ -72,14 +73,11 @@ export interface MangaProps {
 
 /** 漫画组件 */
 export const Manga: Component<MangaProps> = (props) => {
-  onMount(() => {
-    useStyle(style);
-    useInit(props);
-  });
+  useStyle(style);
+  useCssVar();
+  onMount(() => useInit(props));
 
   createEffect(() => props.show && focus());
-
-  useCssVar();
 
   return (
     <>

@@ -19,7 +19,7 @@ export const Toaster: Component = () => {
   );
 
   onMount(() => {
-    useStyle(style);
+    useStyle(style, ref());
 
     const handleVisibilityChange = () => {
       setVisible(document.visibilityState === 'visible');

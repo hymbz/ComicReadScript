@@ -40,8 +40,6 @@ export interface FabProps {
  * Fab 按钮
  */
 export const Fab: Component<FabProps> = (_props) => {
-  onMount(() => useStyle(style));
-
   const props = mergeProps(
     { progress: 0, initialShow: true, autoTrans: false },
     _props,
@@ -72,6 +70,7 @@ export const Fab: Component<FabProps> = (_props) => {
 
   return (
     <div
+      ref={(ref) => useStyle(style, ref)}
       class={classes.fabRoot}
       data-show={props.show ?? show()}
       data-trans={props.autoTrans}

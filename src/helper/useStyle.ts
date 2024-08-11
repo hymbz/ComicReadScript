@@ -1,21 +1,11 @@
-import { getOwner, type Accessor, type JSX } from 'solid-js';
+import { type Accessor, type JSX } from 'solid-js';
 import { createEffectOn, createRootMemo, onAutoMount } from 'helper';
-import type { Computation } from 'solid-js/types/reactive/signal';
 
-const useStyleSheet = () => {
+const useStyleSheet = (e?: Element) => {
   const styleSheet = new CSSStyleSheet();
 
-  onAutoMount((owner) => {
-    let root: Document;
-
-    if (owner) {
-      let _owner = getOwner() as Computation<unknown>;
-      while (_owner && !_owner.value)
-        _owner = _owner.owner as Computation<unknown>;
-      if (_owner === null) throw new Error('owner not found');
-      root = (_owner.value as HTMLElement).getRootNode() as Document;
-    } else root = document;
-
+  onAutoMount(() => {
+    const root = (e?.getRootNode() as Document) ?? document;
     root.adoptedStyleSheets = [...root.adoptedStyleSheets, styleSheet];
     return () => {
       const index = root.adoptedStyleSheets.indexOf(styleSheet);
@@ -26,8 +16,8 @@ const useStyleSheet = () => {
   return styleSheet;
 };
 
-export const useStyle = (css: Accessor<string> | string) => {
-  const styleSheet = useStyleSheet();
+export const useStyle = (css: string | Accessor<string>, e?: Element) => {
+  const styleSheet = useStyleSheet(e);
   if (typeof css === 'string') styleSheet.replaceSync(css);
   else createEffectOn(css, (style) => styleSheet.replaceSync(style));
 };
@@ -40,8 +30,9 @@ export type StyleMap = {
 export const useStyleMemo = (
   selector: string,
   styleMapArg: Array<StyleMap | Accessor<JSX.CSSProperties>> | StyleMap,
+  e?: Element,
 ) => {
-  const styleSheet = useStyleSheet();
+  const styleSheet = useStyleSheet(e);
   styleSheet.insertRule(`${selector} { }`);
 
   const { style } = styleSheet.cssRules[0] as CSSStyleRule;

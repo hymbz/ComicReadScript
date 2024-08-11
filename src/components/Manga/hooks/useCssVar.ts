@@ -1,8 +1,10 @@
 import { type JSX } from 'solid-js';
-import { t, useStyleMemo } from 'helper';
+import { t } from 'helper';
 
 import { store } from '../store';
 import classes from '../index.module.css';
+
+import { useStyleMemo } from './useStyle';
 
 /** 深色模式 */
 const darkStyle: JSX.CSSProperties = {

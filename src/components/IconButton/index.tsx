@@ -1,4 +1,4 @@
-import { type Component, type JSX, mergeProps, onMount } from 'solid-js';
+import { type Component, type JSX, mergeProps } from 'solid-js';
 import { useStyle } from 'helper';
 
 import classes, { css as style } from './index.module.css';
@@ -24,8 +24,6 @@ interface IconButtonProps {
 
 /** 图标按钮 */
 export const IconButton: Component<IconButtonProps> = (_props) => {
-  onMount(() => useStyle(style));
-
   const props = mergeProps({ placement: 'right' }, _props);
   let buttonRef: HTMLButtonElement;
   const handleClick: EventHandler['on:click'] = (e) => {
@@ -35,7 +33,11 @@ export const IconButton: Component<IconButtonProps> = (_props) => {
   };
 
   return (
-    <div class={classes.iconButtonItem} data-show={props.showTip}>
+    <div
+      ref={(ref) => useStyle(style, ref)}
+      class={classes.iconButtonItem}
+      data-show={props.showTip}
+    >
       <button
         ref={buttonRef!}
         aria-label={props.tip}

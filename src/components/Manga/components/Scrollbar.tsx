@@ -5,15 +5,10 @@ import {
   Show,
   onMount,
 } from 'solid-js';
-import {
-  boolDataVal,
-  debounce,
-  createThrottleMemo,
-  useDrag,
-  useStyleMemo,
-} from 'helper';
+import { boolDataVal, debounce, createThrottleMemo, useDrag } from 'helper';
 
 import { refs, store } from '../store';
+import { useStyleMemo } from '../hooks/useStyle';
 import {
   bindRef,
   getPageTip,
