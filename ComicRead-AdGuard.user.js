@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.6.2
+// @version         9.6.3
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -7753,7 +7753,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复 manhuagui 的加载异常\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复简易阅读模式下的异常滚动\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
@@ -11645,7 +11645,7 @@ const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondit
 
     // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
     helper.createEffectOn(Manga.renderImgList, helper.throttle(list => {
-      if (list.size === 0 || !Manga.store.show) return;
+      if (list.size === 0 || !mangaProps.show) return;
       const lastImgIndex = [...list].at(-1);
       if (lastImgIndex === undefined) return;
       imgEleList[lastImgIndex]?.scrollIntoView({
@@ -11658,7 +11658,7 @@ const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondit
 
     // 在退出阅读模式时跳回之前的滚动位置
     let laseScroll = window.scrollY;
-    helper.createEffectOn(() => Manga.store.show, show => {
+    helper.createEffectOn(() => mangaProps.show, show => {
       if (show) laseScroll = window.scrollY;
       // 稍微延迟一下，等之前触发懒加载时的滚动结束
       else requestAnimationFrame(() => window.scrollTo(0, laseScroll));
