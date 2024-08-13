@@ -259,8 +259,7 @@ import { needTrigged, triggerLazyLoad } from './triggerLazyLoad';
       () => mangaProps.show,
       (show) => {
         if (show) laseScroll = window.scrollY;
-        // 稍微延迟一下，等之前触发懒加载时的滚动结束
-        else requestAnimationFrame(() => window.scrollTo(0, laseScroll));
+        else window.scroll({ top: laseScroll, behavior: 'instant' });
       },
     );
   };

@@ -50,8 +50,9 @@ const tryCorrectUrl = (e: Element) => {
  */
 const triggerEleLazyLoad = async (
   e: HTMLImageElement,
-  time?: number,
-  isLazyLoaded?: () => boolean | Promise<boolean>,
+  time: number,
+  isLazyLoaded: () => boolean | Promise<boolean>,
+  runCondition: () => boolean,
 ) => {
   const nowScroll = window.scrollY;
   e.scrollIntoView({ behavior: 'instant' });
@@ -60,7 +61,7 @@ const triggerEleLazyLoad = async (
   try {
     if (isLazyLoaded && time) return await wait(isLazyLoaded, time);
   } finally {
-    window.scroll({ top: nowScroll, behavior: 'instant' });
+    if (runCondition()) window.scroll({ top: nowScroll, behavior: 'instant' });
   }
 };
 
@@ -118,14 +119,17 @@ imgShowObserver = new IntersectionObserver((entries) => {
 
 const turnPageScheduled = createScheduled((fn) => throttle(fn, 1000));
 /** 触发翻页 */
-const triggerTurnPage = async (waitTime = 0) => {
+const triggerTurnPage = async (
+  waitTime: number,
+  runCondition: () => boolean,
+) => {
   if (!turnPageScheduled()) return;
   const nowScroll = window.scrollY;
   // 滚到底部再滚回来，触发可能存在的自动翻页脚本
   window.scroll({ top: document.body.scrollHeight, behavior: 'instant' });
   document.body.dispatchEvent(new Event('scroll', { bubbles: true }));
   if (waitTime) await sleep(waitTime);
-  window.scroll({ top: nowScroll, behavior: 'instant' });
+  if (runCondition()) window.scroll({ top: nowScroll, behavior: 'instant' });
 };
 
 const waitTime = 300;
@@ -152,20 +156,23 @@ export const triggerLazyLoad = singleThreaded(
     for (const e of targetImgList) {
       await wait(runCondition);
 
-      await triggerTurnPage(waitTime);
+      await triggerTurnPage(waitTime, runCondition);
 
       if (!needTrigged(e)) continue;
       tryCorrectUrl(e);
 
       if (
-        await triggerEleLazyLoad(e, waitTime, () =>
-          isLazyLoaded(e, imgMap.get(e)?.oldSrc),
+        await triggerEleLazyLoad(
+          e,
+          waitTime,
+          () => isLazyLoaded(e, imgMap.get(e)?.oldSrc),
+          runCondition,
         )
       )
         handleTrigged(e);
     }
 
-    await triggerTurnPage();
+    await triggerTurnPage(0, runCondition);
 
     if (targetImgList.length > 0) state.continueRun = true;
   },

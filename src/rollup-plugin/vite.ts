@@ -13,6 +13,7 @@ export const vitePlugins: PluginOption[] = [
     transform(code, id): null | string {
       if (id.includes('node_modules')) return null;
       let newCode = code;
+      newCode = newCode.replace('isDevMode', 'true');
       newCode = newCode.replace(
         /(\n.+?), { css as style }(.+?\n)/,
         '$1$2const style = ""',

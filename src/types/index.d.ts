@@ -71,6 +71,7 @@ declare module 'solid-js' {
       mousedown: MouseEventSelf;
       mousemove: MouseEventSelf;
       input: InputEventSelf;
+      wheel: WheelEvent;
     }
 
     interface CustomCaptureEvents {
@@ -81,6 +82,7 @@ declare module 'solid-js' {
       mousedown: MouseEventSelf;
       mousemove: MouseEventSelf;
       input: InputEventSelf;
+      wheel: WheelEvent;
     }
   }
 }
