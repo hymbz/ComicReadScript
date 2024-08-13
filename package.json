@@ -86,6 +86,7 @@
     "stylelint-order": "^6.0.4",
     "stylelint-prettier": "^5.0.2",
     "svgo": "^3.3.2",
+    "sync-fetch": "^0.5.2",
     "tslib": "^2.6.3",
     "typescript": "^5.5.4",
     "vite": "^5.4.0",

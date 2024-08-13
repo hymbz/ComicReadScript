@@ -12,7 +12,7 @@ import {
   throttle,
   createEffectOn,
 } from 'helper';
-import { renderImgList, store } from 'components/Manga';
+import { renderImgList } from 'components/Manga';
 import { useInit, toast } from 'main';
 
 import { getEleSelector, isEleSelector } from './eleSelector';
@@ -242,7 +242,7 @@ import { needTrigged, triggerLazyLoad } from './triggerLazyLoad';
     createEffectOn(
       renderImgList,
       throttle((list) => {
-        if (list.size === 0 || !store.show) return;
+        if (list.size === 0 || !mangaProps.show) return;
         const lastImgIndex = [...list].at(-1);
         if (lastImgIndex === undefined) return;
         imgEleList[lastImgIndex]?.scrollIntoView({
@@ -256,7 +256,7 @@ import { needTrigged, triggerLazyLoad } from './triggerLazyLoad';
     // 在退出阅读模式时跳回之前的滚动位置
     let laseScroll = window.scrollY;
     createEffectOn(
-      () => store.show,
+      () => mangaProps.show,
       (show) => {
         if (show) laseScroll = window.scrollY;
         // 稍微延迟一下，等之前触发懒加载时的滚动结束
