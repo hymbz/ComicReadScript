@@ -9,11 +9,12 @@ import { request } from '../main/request';
 
 import { toast } from './Toast';
 
+const Accept =
+  'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8';
+
 /** 下载按钮 */
 export const DownloadButton = () => {
   const [statu, setStatu] = createSignal('button.download');
-
-  const getFileExt = (url: string) => /[^?]+\.(\w+)/.exec(url)?.[1] ?? 'jpg';
 
   const handleDownload = async () => {
     const fileData: Zippable = {};
@@ -30,38 +31,26 @@ export const DownloadButton = () => {
       )
         continue;
 
-      let data: ArrayBuffer;
-      let fileName: string;
-
       const img = imgList[i];
       const url =
-        img.translationType === 'show'
-          ? `${img.translationUrl!}#.${getFileExt(img.src)}`
-          : img.src;
+        img.translationType === 'show' ? img.translationUrl! : img.src;
 
       const index = `${i}`.padStart(imgIndexNum, '0');
 
-      if (url.startsWith('blob:')) {
-        const res = await fetch(url);
-        const blob = await res.blob();
-        data = await blob.arrayBuffer();
-        const fileExt = blob.type.split('/')[1];
-        fileName = `${index}.${fileExt}`;
-      } else {
-        const fileExt = getFileExt(url);
-        fileName = `${index}.${fileExt}`;
-        try {
-          const res = await request<ArrayBufferLike>(url, {
-            responseType: 'arraybuffer',
-            errorText: `${t('alert.download_failed')}: ${fileName}`,
-          });
-          data = res.response;
-        } catch {
-          fileName = `${index} - ${t('alert.download_failed')}.${fileExt}`;
-        }
+      let data: Blob | undefined;
+      let fileName: string;
+      try {
+        const res = await request<Blob>(url, {
+          headers: { Accept },
+          responseType: 'blob',
+          errorText: `${t('alert.download_failed')}: ${index}`,
+        });
+        data = res.response;
+        fileName = `${index}.${data.type.split('/')[1]}`;
+      } catch {
+        fileName = `${index} - ${t('alert.download_failed')}`;
       }
-
-      fileData[fileName] = new Uint8Array(data!);
+      fileData[fileName] = new Uint8Array((await data?.arrayBuffer()) ?? []);
     }
 
     if (Object.keys(fileData).length === 0) {
