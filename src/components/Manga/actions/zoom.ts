@@ -9,7 +9,6 @@ import {
 import { type State, store, refs } from '../store';
 
 import { setOption } from './helper';
-import { closeScrollLock } from './turnPage';
 
 export const touches = new Map<number, PointerState>();
 
@@ -51,12 +50,6 @@ export const zoom = (
     checkBound(state);
 
     if (animation) state.page.anima = 'zoom';
-
-    // 加一个延时锁防止在放大模式下通过滚轮缩小至原尺寸后就立刻跳到下一页
-    if (newScale === 100) {
-      state.flag.scrollLock = true;
-      closeScrollLock();
-    }
   });
 };
 

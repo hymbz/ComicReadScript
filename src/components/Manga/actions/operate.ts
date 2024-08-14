@@ -21,7 +21,7 @@ import { handleTrackpadWheel } from './pointer';
 import { setOption } from './helper';
 import { hotkeysMap } from './hotkeys';
 import { zoom } from './zoom';
-import { closeScrollLock, turnPage } from './turnPage';
+import { turnPage } from './turnPage';
 import {
   scrollLength,
   scrollProgress,
@@ -51,10 +51,7 @@ const scrollModeScrollPage = (dir: 'next' | 'prev') => {
     scrollTo(
       scrollTop() + store.rootSize.height * 0.8 * (dir === 'next' ? 1 : -1),
     );
-    _setState('flag', 'scrollLock', true);
   }
-
-  closeScrollLock();
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
@@ -232,7 +229,6 @@ export const handleWheel = (e: WheelEvent) => {
   if (store.gridMode) return;
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
-  if (store.flag.scrollLock || e.deltaY === 0) return closeScrollLock();
   const isWheelDown = e.deltaY > 0;
 
   if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
@@ -262,6 +258,9 @@ export const handleWheel = (e: WheelEvent) => {
     turnPage(isWheelDown ? 'next' : 'prev');
     scrollTo(scrollTop() + e.deltaY);
   }
+
+  // 防止滚动到网页
+  if (!(isScrollMode() || store.gridMode)) e.preventDefault();
 
   // 通过`两次滚动距离是否成倍数`和`滚动距离是否过小`来判断是否是触摸板
   if (

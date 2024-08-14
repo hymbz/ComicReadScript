@@ -60,6 +60,9 @@ export const useManga = async (initProps?: Partial<UseMangaProps>) => {
       : props.imgList,
   );
 
+  const htmlStyle = document.documentElement.style;
+  let lastOverflow = htmlStyle.overflow;
+
   createEffectOn([() => imgList().length, () => props.show], () => {
     if (!dom) {
       dom = mountComponents('comicRead', () => (
@@ -70,10 +73,13 @@ export const useManga = async (initProps?: Partial<UseMangaProps>) => {
 
     if (imgList().length > 0 && props.show) {
       dom.setAttribute('show', '');
-      document.documentElement.style.overflow = 'hidden';
+      lastOverflow = htmlStyle.overflow;
+      htmlStyle.setProperty('overflow', 'hidden', 'important');
+      htmlStyle.setProperty('scrollbar-width', 'none', 'important');
     } else {
       dom.removeAttribute('show');
-      document.documentElement.style.overflow = 'unset';
+      htmlStyle.overflow = lastOverflow;
+      htmlStyle.removeProperty('scrollbar-width');
     }
   });
 
