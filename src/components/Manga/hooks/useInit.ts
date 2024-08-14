@@ -135,7 +135,9 @@ export const useInit = (props: MangaProps) => {
       /** 传入的是否是新漫画 */
       let isNew = true;
 
-      const imgMap = new Map(state.imgList.map((img) => [img.src, img]));
+      const imgMap = new Map(
+        state.imgList.filter((img) => img.src).map((img) => [img.src, img]),
+      );
       for (let i = 0; i < props.imgList.length; i++) {
         const url = props.imgList[i];
         // 只有旧图一张不剩才算是新漫画

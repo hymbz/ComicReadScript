@@ -21,15 +21,14 @@ const turnPage = (chapterId?: number) => {
 
   if (!comicId || !chapterId) return;
 
-  const { setManga, init } = await useInit('dmzj');
+  const { setManga, setComicLoad } = await useInit('dmzj');
 
   try {
     const { next_chap_id, prev_chap_id, page_url } = await getChapterInfo(
       comicId,
       chapterId,
     );
-    init(() => page_url);
-
+    setComicLoad(() => page_url);
     setManga({
       onNext: turnPage(next_chap_id),
       onPrev: turnPage(prev_chap_id),

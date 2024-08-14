@@ -1,7 +1,7 @@
 export { ReactiveSet } from '@solid-primitives/set';
 
 export * from './request';
-export * from './universalInit';
+export * from './universal';
 export * from './useInit';
 export * from './useSiteOptions';
 export * from './useSpeedDial';

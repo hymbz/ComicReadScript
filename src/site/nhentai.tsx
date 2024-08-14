@@ -23,14 +23,17 @@ type Images = {
 declare const gallery: { num_pages: number; media_id: string; images: Images };
 
 (async () => {
-  const { options, setFab, setManga, init } = await useInit('nhentai', {
-    /** 无限滚动 */
-    auto_page_turn: true,
-    /** 彻底屏蔽漫画 */
-    block_totally: true,
-    /** 在新页面中打开链接 */
-    open_link_new_page: true,
-  });
+  const { options, setFab, setManga, setComicLoad, showComic } = await useInit(
+    'nhentai',
+    {
+      /** 无限滚动 */
+      auto_page_turn: true,
+      /** 彻底屏蔽漫画 */
+      block_totally: true,
+      /** 在新页面中打开链接 */
+      open_link_new_page: true,
+    },
+  );
 
   // 在漫画详情页
   if (Reflect.has(unsafeWindow, 'gallery')) {
@@ -47,14 +50,14 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Read</a>',
     );
     const comicReadModeDom = document.getElementById('comicReadMode')!;
-    const { showComic } = init(() =>
+    setComicLoad(() =>
       gallery.images.pages.map(
         ({ number, extension }) =>
           `https://i.nhentai.net/galleries/${gallery.media_id}/${number}.${extension}`,
       ),
     );
     setFab('initialShow', options.autoShow);
-    comicReadModeDom.addEventListener('click', showComic);
+    comicReadModeDom.addEventListener('click', () => showComic());
 
     return;
   }

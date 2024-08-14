@@ -124,6 +124,7 @@ export const quickTagDefine = (pageType: PageType) => {
     root,
   );
 
+  // 直接覆盖原有的函数
   unsafeWindow.tag_define = async () => {
     if (!unsafeWindow.selected_tagname) return;
 

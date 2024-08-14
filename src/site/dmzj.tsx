@@ -2,7 +2,7 @@
 import { For } from 'solid-js';
 import { render } from 'solid-js/web';
 import { getComicId, getViewpoint, useComicDetail } from 'dmzjApi';
-import { request, toast, universalInit } from 'main';
+import { request, toast, universal } from 'main';
 import {
   log,
   querySelector,
@@ -164,7 +164,7 @@ import {
     return /^\/.*?\/\d+\.shtml$/.test(window.location.pathname);
   };
 
-  await universalInit({
+  await universal({
     name: 'dmzj',
     getImgList,
     onExit: (isEnd) => isEnd && scrollIntoView('#hd'),

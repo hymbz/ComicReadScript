@@ -30,10 +30,11 @@ import { needTrigged, triggerLazyLoad } from './triggerLazyLoad';
   /** 执行脚本操作。如果中途中断，将返回 true */
   const start = async () => {
     const {
+      options,
+      setComicLoad,
+      setComicMap,
       setManga,
       setFab,
-      init,
-      options,
       setOptions,
       isStored,
       mangaProps,
@@ -173,14 +174,18 @@ import { needTrigged, triggerLazyLoad } from './triggerLazyLoad';
           if (newUrl === mangaProps.imgList[i]) return;
 
           isEdited ||= true;
-          setManga('imgList', i, newUrl);
+          setComicMap('', 'imgList', i, newUrl);
         }),
       );
       if (isEdited) saveImgEleSelector(imgEleList);
 
       // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要再删掉多余的页数
       if (mangaProps.imgList.length > newImgEleList.length)
-        setManga('imgList', mangaProps.imgList.slice(0, newImgEleList.length));
+        setComicMap(
+          '',
+          'imgList',
+          mangaProps.imgList.slice(0, newImgEleList.length),
+        );
 
       if (
         isEdited ||
@@ -207,7 +212,7 @@ import { needTrigged, triggerLazyLoad } from './triggerLazyLoad';
       triggerAllLazyLoad();
     });
 
-    init(async () => {
+    setComicLoad(async () => {
       if (!imgEleList) {
         imgEleList = [];
         imgDomObserver.observe(document.body, {

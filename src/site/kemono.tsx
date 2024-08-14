@@ -2,28 +2,38 @@ import { useInit } from 'main';
 import { createEffectOn, querySelectorAll } from 'helper';
 
 (async () => {
-  const { init, options, setManga } = await useInit('kemono', {
-    autoShow: false,
-    defaultOption: { pageNum: 1 },
-    /** 加载原图 */
-    load_original_image: true,
-  });
+  const { options, setComicLoad, showComic, needAutoShow } = await useInit(
+    'kemono',
+    {
+      autoShow: false,
+      defaultOption: { pageNum: 1 },
+      /** 加载原图 */
+      load_original_image: true,
+    },
+  );
 
-  const getImglist = () =>
-    options.load_original_image
-      ? querySelectorAll<HTMLAnchorElement>('.post__thumbnail a').map(
-          (e) => e.href,
-        )
-      : querySelectorAll<HTMLImageElement>('.post__thumbnail img').map(
-          (e) => e.src,
-        );
-
-  init(getImglist);
+  setComicLoad(
+    () =>
+      querySelectorAll<HTMLAnchorElement>('.post__thumbnail a').map(
+        (e) => e.href,
+      ),
+    'original',
+  );
+  setComicLoad(
+    () =>
+      querySelectorAll<HTMLImageElement>('.post__thumbnail img').map(
+        (e) => e.src,
+      ),
+    'thumbnail',
+  );
 
   // 在切换时重新获取图片
   createEffectOn(
     () => options.load_original_image,
-    () => setManga('imgList', getImglist()),
+    (isOriginal) => {
+      needAutoShow.val = options.autoShow;
+      showComic(isOriginal ? 'original' : 'thumbnail');
+    },
   );
 
   // 加上跳转至 pwa 的链接

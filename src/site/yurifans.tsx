@@ -3,10 +3,17 @@ import { querySelector, querySelectorAll, wait } from 'helper';
 
 declare const b2token: string;
 
+// 单篇
+// https://yuri.website/162404/
+// 连载折叠
+// https://yuri.website/148990/
+// 需要购买
+// https://yuri.website/147642/
+// https://yuri.website/122684/
+
 (async () => {
-  const { options, setManga, init, needAutoShow } = await useInit('yurifans', {
-    自动签到: true,
-  });
+  const { options, setManga, setComicLoad, showComic, comicMap, needAutoShow } =
+    await useInit('yurifans', { 自动签到: true });
 
   // 自动签到
   if (options.自动签到)
@@ -45,51 +52,47 @@ declare const b2token: string;
     const imgBody = querySelector('.content-hidden')!;
     const imgList = imgBody.getElementsByTagName('img');
     if (await wait(() => imgList.length, 1000))
-      init(() => [...imgList].map((e) => e.src));
+      setComicLoad(() => [...imgList].map((e) => e.src));
     return;
   }
 
   // 有折叠内容的漫画
   if (querySelector('.xControl')) {
     needAutoShow.val = false;
-    const { loadImgList } = init(() => []);
 
-    const imgListMap: Array<HTMLCollectionOf<HTMLImageElement>> = [];
-
-    const loadChapterImg = async (i: number) => {
-      const imgList = imgListMap[i];
-      await loadImgList(
-        [...imgList].map((e) => e.dataset.src!),
-        true,
-      );
+    const switchChapter = async (i: number) => {
+      showComic(i);
 
       setManga({
-        onPrev: i === 0 ? undefined : () => loadChapterImg(i - 1),
-        onNext:
-          i === imgListMap.length - 1 ? undefined : () => loadChapterImg(i + 1),
+        onPrev: Reflect.has(comicMap, i - 1)
+          ? () => switchChapter(i - 1)
+          : undefined,
+        onNext: Reflect.has(comicMap, i + 1)
+          ? () => switchChapter(i + 1)
+          : undefined,
       });
     };
 
     for (const [i, a] of querySelectorAll('.xControl > a').entries()) {
-      const imgRoot = a.parentElement!.nextElementSibling! as HTMLElement;
-      imgListMap.push(imgRoot.getElementsByTagName('img'));
+      const item = a.parentElement!.nextElementSibling! as HTMLElement;
+      setComicLoad(
+        () =>
+          [...item.getElementsByTagName('img')].map((e) => e.dataset.src ?? ''),
+        i,
+      );
 
-      a.addEventListener('click', () => {
-        // 只在打开折叠内容时进入阅读模式
-        if (
-          imgRoot.style.display === 'none' ||
-          (imgRoot.style.height &&
-            imgRoot.style.height.split('.')[0].length <= 2)
-        )
-          return loadChapterImg(i);
-      });
+      // 只在打开折叠内容时进入阅读模式
+      a.addEventListener(
+        'click',
+        () => item.getAttribute('style') !== '' && switchChapter(i),
+      );
     }
     return;
   }
 
   // 没有折叠的单篇漫画
   await wait(() => querySelectorAll('.entry-content img').length);
-  return init(() =>
+  setComicLoad(() =>
     querySelectorAll<HTMLImageElement>('.entry-content img').map((e) => e.src),
   );
 })();

@@ -402,17 +402,6 @@ export const requestIdleCallback = (
   return window.setTimeout(callback, 16);
 };
 
-/**
- * 通过监视点击等会触发动态加载的事件，在触发后执行指定动作
- * @param update 动态加载后的重新加载
- */
-export const autoUpdate = (update: () => Promise<void>) => {
-  const refresh = singleThreaded(update);
-  for (const eventName of ['click', 'popstate'])
-    window.addEventListener(eventName, refresh, { capture: true });
-  refresh();
-};
-
 /** 获取键盘事件的编码 */
 export const getKeyboardCode = (e: KeyboardEvent) => {
   let { key } = e;
@@ -457,10 +446,10 @@ export const linstenKeydown = (handler: (e: KeyboardEvent) => unknown) =>
   });
 
 /** 劫持修改原网页上的函数 */
-export const hijackFn = <T = (...args: unknown[]) => unknown>(
+export const hijackFn = <T extends unknown[] = unknown[], R = unknown>(
   fnName: string,
-  fn: (rawFn: T, args: unknown[]) => unknown,
+  fn: (rawFn: (...args: T) => R, args: T) => R,
 ) => {
   const rawFn = unsafeWindow[fnName];
-  unsafeWindow[fnName] = (...args: unknown[]) => fn(rawFn, args);
+  unsafeWindow[fnName] = (...args: T) => fn(rawFn, args);
 };

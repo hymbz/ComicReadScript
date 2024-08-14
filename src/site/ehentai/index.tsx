@@ -1,5 +1,5 @@
 import { store } from 'components/Manga';
-import { request, useInit, toast, ReactiveSet } from 'main';
+import { request, useInit, toast, ReactiveSet, type LoadImgFn } from 'main';
 import {
   t,
   insertNode,
@@ -38,13 +38,14 @@ type ListPageType =
   /** 缩略图 */
   | 't';
 
-export type PageType = 'gallery' | 'mytags' | ListPageType;
+export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
 
 (async () => {
   let pageType: PageType | undefined;
 
   if (Reflect.has(unsafeWindow, 'display_comment_field')) pageType = 'gallery';
   else if (location.pathname === '/mytags') pageType = 'mytags';
+  else if (Reflect.has(unsafeWindow, 'mpvkey')) pageType = 'mpv';
   else
     pageType = querySelector<HTMLSelectElement>('#ujumpbox ~ div > select')
       ?.value as PageType | undefined;
@@ -53,11 +54,13 @@ export type PageType = 'gallery' | 'mytags' | ListPageType;
 
   const {
     options,
-    init,
+    setComicLoad,
+    dynamicLoad,
+    showComic,
+    comicMap,
+    setComicMap,
     setFab,
     setManga,
-    dynamicUpdate,
-    onLoading,
     mangaProps,
   } = await useInit('ehentai', {
     /** 关联 nhentai */
@@ -79,26 +82,32 @@ export type PageType = 'gallery' | 'mytags' | ListPageType;
     autoShow: false,
   });
 
-  if (Reflect.has(unsafeWindow, 'mpvkey')) {
-    const imgEleList = querySelectorAll('.mi0[id]');
-    init(
-      dynamicUpdate(
-        (setImg) =>
-          plimit(
-            imgEleList.map((ele, i) => async () => {
-              const getUrl = () => ele.querySelector('img')?.src;
-              if (!getUrl()) unsafeWindow.load_image(i + 1);
-              unsafeWindow.next_possible_request = 0;
-              const imgUrl = await wait(getUrl);
-              setImg(i, imgUrl);
-            }),
-            undefined,
-            4,
-          ),
-        imgEleList.length,
-      ),
-    );
-    return;
+  if (pageType === 'mpv') {
+    return setComicLoad(() => {
+      const imgEleList = querySelectorAll('.mimg[id]');
+      const loadImgList: LoadImgFn = async (setImg) => {
+        const imagelist = unsafeWindow.imagelist as Array<{
+          i: string;
+          xhr: XMLHttpRequest;
+        }>;
+        plimit(
+          imagelist.map((_, i) => async () => {
+            const url = () => imagelist[i].i;
+            while (!url()) {
+              if (!Reflect.has(imagelist[i], 'xhr')) {
+                unsafeWindow.load_image(i + 1);
+                unsafeWindow.next_possible_request = 0;
+              }
+              await wait(url);
+            }
+            setImg(i, url());
+          }),
+          undefined,
+          4,
+        );
+      };
+      return dynamicLoad(loadImgList, imgEleList.length)();
+    });
   }
 
   // 标签染色
@@ -238,45 +247,39 @@ export type PageType = 'gallery' | 'mytags' | ListPageType;
     );
   }
 
-  const { loadImgList } = init(
-    dynamicUpdate(async (setImg) => {
-      comicReadModeDom.innerHTML = ` loading`;
+  const loadImgList: LoadImgFn = async (setImg) => {
+    comicReadModeDom.innerHTML = ` loading`;
 
-      const totalPageNum = Number(
-        querySelector('.ptt td:nth-last-child(2)')!.textContent!,
+    const totalPageNum = Number(
+      querySelector('.ptt td:nth-last-child(2)')!.textContent!,
+    );
+    for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
+      const startIndex = ehImgList.length;
+      const imgPageUrlList = await getImgFromDetailsPage(pageNum);
+      await plimit(
+        imgPageUrlList.map(([imgPageUrl, fileName], i) => async () => {
+          const imgUrl = await getImgFromImgPage(imgPageUrl);
+          const index = startIndex + i;
+          ehImgList[index] = imgUrl;
+          ehImgPageList[index] = imgPageUrl;
+          ehImgFileNameList[index] = fileName;
+          setImg(index, imgUrl);
+        }),
+        async (_doneNum) => {
+          const doneNum = startIndex + _doneNum;
+          comicReadModeDom.innerHTML = ` loading - ${doneNum}/${totalImgNum}`;
+
+          if (doneNum !== totalImgNum) return;
+          comicReadModeDom.innerHTML = ` Read`;
+          if (enableDetectAd) {
+            await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
+            await getAdPageByContent(ehImgList, mangaProps.adList);
+          }
+        },
       );
-      for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
-        const startIndex = ehImgList.length;
-        const imgPageUrlList = await getImgFromDetailsPage(pageNum);
-        await plimit(
-          imgPageUrlList.map(([imgPageUrl, fileName], i) => async () => {
-            const imgUrl = await getImgFromImgPage(imgPageUrl);
-            const index = startIndex + i;
-            ehImgList[index] = imgUrl;
-            ehImgPageList[index] = imgPageUrl;
-            ehImgFileNameList[index] = fileName;
-            setImg(index, imgUrl);
-          }),
-          async (_doneNum) => {
-            const doneNum = startIndex + _doneNum;
-            setFab({
-              progress: doneNum / totalImgNum,
-              tip: `${t('other.loading_img')} - ${doneNum}/${totalImgNum}`,
-            });
-            comicReadModeDom.innerHTML = ` loading - ${doneNum}/${totalImgNum}`;
-
-            if (doneNum === totalImgNum) {
-              comicReadModeDom.innerHTML = ` Read`;
-              if (enableDetectAd) {
-                await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
-                await getAdPageByContent(ehImgList, mangaProps.adList);
-              }
-            }
-          },
-        );
-      }
-    }, totalImgNum),
-  );
+    }
+  };
+  setComicLoad(dynamicLoad(loadImgList, totalImgNum));
 
   /** 获取新的图片页地址 */
   const getNewImgPageUrl = async (url: string) => {
@@ -300,7 +303,7 @@ export type PageType = 'gallery' | 'mytags' | ListPageType;
     }
     ehImgList[i] = imgUrl;
     ehImgPageList[i] = pageUrl;
-    setManga('imgList', i, imgUrl);
+    setComicMap('', 'imgList', i, imgUrl);
   };
 
   /** 判断当前显示的是否是 eh 源 */
@@ -322,19 +325,17 @@ export type PageType = 'gallery' | 'mytags' | ListPageType;
       setManga('show', false);
     },
     // 在图片加载出错时刷新图片
-    async onLoading(imgList, img) {
-      onLoading(imgList, img);
-      if (!img) return;
-      if (img.loadType !== 'error' || (await testImgUrl(img.src))) return;
+    async onLoading(_, img) {
+      if (!img || img.loadType !== 'error' || (await testImgUrl(img.src)))
+        return;
       return reloadErrorImg();
     },
   });
 
   setFab('initialShow', options.autoShow);
-  comicReadModeDom.addEventListener('click', () =>
-    loadImgList(ehImgList.length > 0 ? ehImgList : undefined, true),
-  );
+  comicReadModeDom.addEventListener('click', () => showComic(''));
 
   // 关联 nhentai
-  if (options.associate_nhentai) associateNhentai(init, dynamicUpdate);
+  if (options.associate_nhentai)
+    associateNhentai(dynamicLoad, setComicLoad, showComic, comicMap);
 })().catch((error) => log.error(error));

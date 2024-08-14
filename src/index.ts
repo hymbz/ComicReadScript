@@ -11,7 +11,13 @@ import {
   t,
   waitDom,
 } from 'helper';
-import { request, toast, universalInit, type InitOptions } from 'main';
+import {
+  request,
+  toast,
+  universal,
+  type InitOptions,
+  type LoadImgFn,
+} from 'main';
 
 /** 站点配置 */
 let options: InitOptions | undefined;
@@ -52,24 +58,16 @@ try {
           .replaceAll('http://', 'https://');
       };
 
+      const loadImgFn: LoadImgFn = (setImg) =>
+        plimit(
+          createSequence(totalPageNum).map(
+            (i) => async () => setImg(i, await getImg(i + 1)),
+          ),
+        );
+
       options = {
         name: 'newYamibo',
-        getImgList: ({ dynamicUpdate, setFab }) =>
-          dynamicUpdate(
-            async (setImg) =>
-              plimit(
-                createSequence(totalPageNum).map(
-                  (i) => async () => setImg(i, await getImg(i + 1)),
-                ),
-                (doneNum, totalNum) => {
-                  setFab({
-                    progress: doneNum / totalNum,
-                    tip: `加载图片中 - ${doneNum}/${totalNum}`,
-                  });
-                },
-              ),
-            totalPageNum,
-          )(),
+        getImgList: ({ dynamicLoad }) => dynamicLoad(loadImgFn, totalPageNum)(),
         onNext: querySelectorClick('#btnNext'),
         onPrev: querySelectorClick('#btnPrev'),
         onExit: (isEnd) => isEnd && scrollIntoView('#w1'),
@@ -167,25 +165,19 @@ try {
       options = {
         name: 'terraHistoricus',
         wait: () => Boolean(querySelector('.HG_COMIC_READER_main')),
-        async getImgList({ setFab }) {
-          const res = await request(apiUrl());
-          const pageList = JSON.parse(res.responseText).data
-            .pageInfos as unknown[];
+        async getImgList() {
+          const res = await request<{ data: { pageInfos: unknown[] } }>(
+            apiUrl(),
+            { responseType: 'json' },
+          );
+          const pageList = res.response.data.pageInfos;
           if (
             pageList.length === 0 &&
             window.location.pathname.includes('episode')
           )
             throw new Error('获取图片列表时出错');
 
-          return plimit<string>(
-            createSequence(pageList.length).map(getImgUrl),
-            (doneNum, totalNum) => {
-              setFab({
-                progress: doneNum / totalNum,
-                tip: `加载图片中 - ${doneNum}/${totalNum}`,
-              });
-            },
-          );
+          return plimit<string>(createSequence(pageList.length).map(getImgUrl));
         },
         SPA: {
           isMangaPage: () => window.location.href.includes('episode'),
@@ -343,7 +335,7 @@ try {
 
       options = {
         name: 'dm5',
-        getImgList({ dynamicUpdate }) {
+        getImgList({ dynamicLoad }) {
           // manhuaren 和 1kkk 的移动端上会直接用一个变量存储所有图片的链接
           if (
             Array.isArray(unsafeWindow.newImgs) &&
@@ -351,7 +343,7 @@ try {
           )
             return unsafeWindow.newImgs as string[];
 
-          return dynamicUpdate(async (setImg) => {
+          return dynamicLoad(async (setImg) => {
             const imgList = new Set<string>();
             while (imgList.size < imgNum) {
               // 因为每次会返回指定页数及上一页的图片链接，所以加个1减少请求次数
@@ -436,8 +428,8 @@ try {
 
       options = {
         name: 'mangabz',
-        getImgList: ({ dynamicUpdate }) =>
-          dynamicUpdate(async (setImg) => {
+        getImgList: ({ dynamicLoad }) =>
+          dynamicLoad(async (setImg) => {
             const imgList = new Set<string>();
             while (imgList.size < imgNum) {
               // 因为每次会返回指定页数及上一页的图片链接，所以加个1减少请求次数
@@ -629,7 +621,7 @@ try {
 
       options = {
         name: 'koharu',
-        async getImgList({ dynamicUpdate }) {
+        async getImgList({ dynamicLoad }) {
           const [, , galleryId, galleryKey] =
             window.location.pathname.split('/');
 
@@ -648,12 +640,14 @@ try {
           );
           const [[w, { id, public_key }]] = Object.entries(
             detailRes.response.data,
-          ).sort(([, a], [, b]) => b.size - a.size);
+          )
+            .filter(([, data]) => data.id && data.public_key)
+            .sort(([, a], [, b]) => b.size - a.size);
           const { created_at, updated_at } = detailRes.response;
 
           type DataRes = {
             base: string;
-            entries: Array<{ path: string }>;
+            entries: Array<{ path: string; dimensions: [number, number] }>;
           };
           const dataRes = await request<DataRes>(
             `https://api.koharu.to/books/data/${galleryId}/${galleryKey}/${
@@ -664,11 +658,11 @@ try {
           const { base, entries } = dataRes.response;
           const totalPageNum = entries.length;
 
-          return dynamicUpdate(async (setImg) => {
-            for (const [i, { path }] of entries.entries()) {
+          return dynamicLoad(async (setImg) => {
+            for (const [i, { path, dimensions }] of entries.entries()) {
               if (!isMangaPage) break;
               const startTime = performance.now();
-              setImg(i, await downloadImg(`${base}${path}`));
+              setImg(i, await downloadImg(`${base}${path}?w=${dimensions[0]}`));
               await sleep(500 - (performance.now() - startTime));
             }
           }, totalPageNum)();
@@ -746,7 +740,7 @@ try {
     }
   }
 
-  if (options) universalInit(options);
+  if (options) universal(options);
 } catch (error) {
   log.error(error as Error);
 }

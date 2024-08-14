@@ -10,7 +10,13 @@ import {
   useCache,
   log,
   createEffectOn,
+  hijackFn,
 } from 'helper';
+
+// 多页
+// https://bbs.yamibo.com/thread-43598-2-694.html
+// 目录页
+// https://bbs.yamibo.com/thread-496210-1-1.html
 
 interface History {
   tid: string;
@@ -20,14 +26,20 @@ interface History {
 }
 
 (async () => {
-  const { options, setFab, setManga, init, onLoading, needAutoShow } =
-    await useInit('yamibo', {
-      记录阅读进度: true,
-      关闭快捷导航的跳转: true,
-      修正点击页数时的跳转判定: true,
-      固定导航条: true,
-      自动签到: true,
-    });
+  const {
+    options,
+    setComicLoad,
+    showComic,
+    loadComic,
+    setManga,
+    needAutoShow,
+  } = await useInit('yamibo', {
+    记录阅读进度: true,
+    关闭快捷导航的跳转: true,
+    修正点击页数时的跳转判定: true,
+    固定导航条: true,
+    自动签到: true,
+  });
 
   GM_addStyle(
     `#fab { --fab: #6E2B19; }
@@ -135,7 +147,7 @@ interface History {
           const img = imgList[i];
 
           // 触发懒加载
-          const file = img.getAttribute('file');
+          const file = img.getAttribute('file')?.replaceAll('http:', 'https:');
           if (file && img.src !== file) {
             img.setAttribute('src', file);
             img.setAttribute('lazyloaded', 'true');
@@ -158,17 +170,12 @@ interface History {
         return imgList.map((img) => img.src);
       };
 
-      updateImgList();
-      const { showComic, loadImgList } = init(() =>
-        imgList.map((img) => img.src),
-      );
+      setComicLoad(updateImgList);
 
       setManga({
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
         onLoading(_imgList, img) {
-          onLoading(_imgList, img);
-          if (!img) return;
-          if (imgList.length !== updateImgList().length) return loadImgList();
+          if (img && img.width! < 500 && img.height! < 500) return loadComic();
         },
         onExit(isEnd) {
           if (isEnd)
@@ -178,12 +185,6 @@ interface History {
         },
       });
 
-      setFab({
-        progress: isFirstPage ? 1 : undefined,
-        tip: '阅读模式',
-        show: undefined,
-      });
-
       if (querySelector('div.pti > div.authi')) {
         insertNode(
           querySelector('div.pti > div.authi')!,
@@ -191,30 +192,18 @@ interface History {
         );
         document
           .getElementById('comicReadMode')
-          ?.addEventListener('click', showComic);
+          ?.addEventListener('click', () => showComic());
       }
 
       // 如果帖子内有设置目录
       if (querySelector('#threadindex')) {
-        let id: number;
-        for (const dom of querySelectorAll('#threadindex li')) {
-          // eslint-disable-next-line @typescript-eslint/no-loop-func
-          dom.addEventListener('click', () => {
-            if (id) return;
-            id = window.setInterval(() => {
-              imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
-              if (imgList.length === 0 || updateImgList().length === 0)
-                return setFab('progress', undefined);
-
-              setManga({
-                imgList: updateImgList(),
-                show: options.autoShow ?? undefined,
-              });
-              setFab('progress', 1);
-              window.clearInterval(id);
-            }, 100);
-          });
-        }
+        // 在网页通过 ajax 更新对应内容后重新获取漫画图片
+        hijackFn('ajaxinnerhtml', (rawFn, args) => {
+          rawFn(...args);
+          imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
+          if (imgList.length === 0 || updateImgList().length === 0) return;
+          if (options.autoShow) showComic();
+        });
       }
 
       const tagDom = querySelector<HTMLAnchorElement>('.ptg.mbm.mtn > a');

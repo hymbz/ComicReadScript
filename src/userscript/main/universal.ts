@@ -1,5 +1,5 @@
 import { type MangaProps } from 'components/Manga';
-import { autoUpdate, wait } from 'helper';
+import { singleThreaded, wait } from 'helper';
 
 import { useInit } from './useInit';
 import { type SiteOptions } from './useSiteOptions';
@@ -29,8 +29,19 @@ export interface InitOptions {
   };
 }
 
+/**
+ * 通过监视点击等会触发动态加载的事件，在触发后执行指定动作
+ * @param update 动态加载后的重新加载
+ */
+const autoUpdate = (update: () => Promise<void>) => {
+  const refresh = singleThreaded(update);
+  for (const eventName of ['click', 'popstate'])
+    window.addEventListener(eventName, refresh, { capture: true });
+  refresh();
+};
+
 /** 对简单站点的通用解 */
-export const universalInit = async ({
+export const universal = async ({
   name,
   wait: waitFn,
   getImgList,
@@ -45,9 +56,17 @@ export const universalInit = async ({
   if (waitFn) await wait(waitFn);
 
   const fnMap = await useInit(name, initOptions);
-  const { init, options, setManga, setFab, needAutoShow } = fnMap;
+  const {
+    options,
+    setComicLoad,
+    setManga,
+    setFab,
+    needAutoShow,
+    setComicMap,
+    showComic,
+  } = fnMap;
 
-  const { loadImgList } = init(() => getImgList(fnMap));
+  setComicLoad(() => getImgList(fnMap));
 
   if (onExit)
     setManga({
@@ -72,7 +91,8 @@ export const universalInit = async ({
 
     if (isMangaPage && !(await isMangaPage())) {
       setFab('show', false);
-      setManga({ show: false, imgList: [] });
+      setManga({ show: false });
+      setComicMap('', 'imgList', undefined);
       return;
     }
 
@@ -80,7 +100,8 @@ export const universalInit = async ({
 
     setManga({ onPrev: undefined, onNext: undefined });
     needAutoShow.val = options.autoShow;
-    await loadImgList();
+    setComicMap('', 'imgList', undefined);
+    if (needAutoShow.val && options.autoShow) await showComic('');
 
     await Promise.all([
       (async () =>

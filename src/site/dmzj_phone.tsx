@@ -1,6 +1,6 @@
 import dmzjDecrypt from 'dmzjDecrypt';
 import { type ChapterInfo, getChapterInfo, getViewpoint } from 'dmzjApi';
-import { request, toast, useInit, universalInit } from 'main';
+import { request, toast, useInit, universal } from 'main';
 import {
   insertNode,
   querySelector,
@@ -127,7 +127,7 @@ import {
       if (unsafeWindow.comic_id) {
         GM_addStyle('.subHeader{display:none !important}');
 
-        await universalInit({
+        await universal({
           name: 'dmzj',
           getImgList: () =>
             querySelectorAll('#commicBox img')
@@ -171,7 +171,7 @@ import {
 
       document.title = `${chapter_name} ${folder.split('/').at(1)}`;
 
-      const { setManga, init } = await useInit('dmzj');
+      const { setManga, setComicLoad } = await useInit('dmzj');
 
       setManga({
         // 进入阅读模式后禁止退出，防止返回空白页面
@@ -189,10 +189,10 @@ import {
         editButtonList: (e) => e,
       });
 
-      init(() => {
+      setComicLoad(() => {
         if (page_url.length > 0) return page_url;
 
-        tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
+        tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
         return [];
       });
 

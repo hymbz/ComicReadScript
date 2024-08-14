@@ -49,6 +49,11 @@ declare global {
 
 declare module 'solid-js' {
   namespace JSX {
+    interface ExplicitAttributes {
+      // attr:___
+      onclick: string;
+    }
+
     type KeyboardEventSelf = KeyboardEvent & {
       currentTarget: HTMLElement;
       target: Element;
