@@ -12,6 +12,7 @@ export const quickRating = (pageType: PageType) => {
   switch (pageType) {
     case 'gallery':
     case 'mytags':
+    case 'mpv':
       return;
 
     case 'e':
@@ -113,7 +114,7 @@ export const quickRating = (pageType: PageType) => {
             ir.style.backgroundPosition = basePosition;
           }}
         >
-          <img src="/img/blank.gif" usemap={`#rating-${index}`} />
+          <img src="https://ehgt.org/g/blank.gif" usemap={`#rating-${index}`} />
           <map name={`rating-${index}`}>
             <For each={coordsList}>
               {(coords, i) => (
