@@ -1,6 +1,6 @@
 import { request, toast, useInit } from 'main';
 import {
-  insertNode,
+  domParse,
   log,
   querySelector,
   querySelectorAll,
@@ -44,12 +44,6 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       },
     });
 
-    // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
-    insertNode(
-      document.getElementById('download')!.parentNode as HTMLElement,
-      '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Read</a>',
-    );
-    const comicReadModeDom = document.getElementById('comicReadMode')!;
     setComicLoad(() =>
       gallery.images.pages.map(
         ({ number, extension }) =>
@@ -57,7 +51,19 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       ),
     );
     setFab('initialShow', options.autoShow);
-    comicReadModeDom.addEventListener('click', () => showComic());
+
+    const comicReadModeDom = (
+      <a
+        href="javascript:;"
+        id="comicReadMode"
+        class="btn btn-secondary"
+        onClick={() => showComic()}
+      >
+        {/* eslint-disable-next-line i18next/no-literal-string */}
+        <i class="fa fa-book" /> Read
+      </a>
+    ) as HTMLAnchorElement;
+    document.getElementById('download')!.after(comicReadModeDom);
 
     return;
   }
@@ -78,131 +84,58 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       GM_addStyle('.blacklisted.gallery { display: none; }');
 
     if (options.auto_page_turn) {
+      let nextUrl = querySelector<HTMLAnchorElement>('a.next')?.href;
+      if (!nextUrl) return;
+
       GM_addStyle(`
         hr { bottom: 1px; box-sizing: border-box; margin: -1em auto 2em; }
         hr:last-child { position: relative; animation: load .8s linear alternate infinite; }
         hr:not(:last-child) { display: none; }
         @keyframes load { 0% { width: 100%; } 100% { width: 0; } }
       `);
-      let pageNum = Number(querySelector('.page.current')?.innerHTML ?? '');
-      if (Number.isNaN(pageNum)) return;
 
+      const blackSet = new Set(blacklist);
       const contentDom = document.getElementById('content')!;
 
-      let apiUrl = '';
-      if (window.location.pathname === '/') apiUrl = '/api/galleries/all?';
-      else if (querySelector('a.tag'))
-        apiUrl = `/api/galleries/tagged?tag_id=${
-          querySelector('a.tag')?.classList[1].split('-')[1]
-        }&`;
-      else if (window.location.pathname.includes('search'))
-        apiUrl = `/api/galleries/search?query=${new URLSearchParams(
-          window.location.search,
-        ).get('q')}&`;
+      const loadNextPage = singleThreaded(async (): Promise<void> => {
+        if (!nextUrl) return;
 
-      let observer: IntersectionObserver; // eslint-disable-line no-autofix/prefer-const
+        const res = await request(nextUrl, {
+          fetch: true,
+          errorText: t('site.nhentai.fetch_next_page_failed'),
+        });
+        const html = domParse(res.responseText);
+        history.replaceState(null, '', nextUrl);
 
-      const loadNewComic = singleThreaded(async (): Promise<void> => {
-        pageNum += 1;
+        const container = html.querySelector('.index-container')!;
+        for (const gallery of container.querySelectorAll<HTMLElement>(
+          '.gallery',
+        )) {
+          for (const img of gallery.getElementsByTagName('img'))
+            img.setAttribute('src', img.dataset.src!);
 
-        type ResData = {
-          num_pages: number;
-          result: Array<{
-            id: number;
-            media_id: string;
-            tags: Array<{ id: number }>;
-            title: { english: string };
-            images: Images;
-          }>;
-        };
-        const res = await request<ResData>(
-          `${apiUrl}page=${pageNum}${
-            window.location.pathname.includes('popular') ? '&sort=popular ' : ''
-          }`,
-          {
-            fetch: true,
-            responseType: 'json',
-            errorText: t('site.nhentai.fetch_next_page_failed'),
-          },
-        );
-        const { result, num_pages } = res.response;
-
-        let comicDomHtml = '';
-
-        for (const comic of result) {
-          const blacklisted = comic.tags.some((tag) =>
-            blacklist?.includes(tag.id),
-          );
-          comicDomHtml += `<div class="gallery${
-            blacklisted ? ' blacklisted' : ''
-          }" data-tags="${comic.tags.map((e) => e.id).join(' ')}"><a ${
-            options.open_link_new_page ? 'target="_blank"' : ''
-          } href="/g/${comic.id}/" class="cover" style="padding:0 0 ${
-            (comic.images.thumbnail.h / comic.images.thumbnail.w) * 100
-          }% 0"><img is="lazyload-image" class="" width="${
-            comic.images.thumbnail.w
-          }" height="${
-            comic.images.thumbnail.h
-          }" src="https://t.nhentai.net/galleries/${comic.media_id}/thumb.${
-            fileType[comic.images.thumbnail.t]
-          }"><div class="caption">${comic.title.english}</div></a></div>`;
+          // 判断是否有黑名单标签
+          const tags = gallery.dataset.tags!.split(' ').map(Number);
+          if (tags.some((tag) => blackSet.has(tag)))
+            gallery.classList.add('blacklisted');
         }
 
-        // 构建页数按钮
-        if (comicDomHtml) {
-          const target = options.open_link_new_page ? 'target="_blank" ' : '';
-          const pageNumDom: string[] = [];
-          for (let i = pageNum - 5; i <= pageNum + 5; i += 1) {
-            if (i > 0 && i <= num_pages)
-              pageNumDom.push(
-                `<a ${target}href="?page=${i}" class="page${
-                  i === pageNum ? ' current' : ''
-                }">${i}</a>`,
-              );
-          }
+        const pagination = html.querySelector<HTMLElement>('.pagination')!;
+        nextUrl = pagination.querySelector<HTMLAnchorElement>('a.next')?.href;
 
-          insertNode(
-            contentDom,
-            `<h1>${pageNum}</h1>
-             <div class="container index-container">${comicDomHtml}</div>
-             <section class="pagination">
-              <a ${target}href="?page=1" class="first">
-                <i class="fa fa-chevron-left"></i>
-                <i class="fa fa-chevron-left"></i>
-              </a>
-              <a ${target}href="?page=${pageNum - 1}" class="previous">
-                <i class="fa fa-chevron-left"></i>
-              </a>
-              ${pageNumDom.join('')}
-                ${
-                  pageNum === num_pages
-                    ? ''
-                    : `<a ${target}shref="?page=${pageNum + 1}" class="next">
-                        <i class="fa fa-chevron-right"></i>
-                      </a>
-                      <a ${target}href="?page=${num_pages}" class="last">
-                        <i class="fa fa-chevron-right"></i>
-                        <i class="fa fa-chevron-right"></i>
-                      </a>`
-                }
-              </section>`,
-          );
-        }
+        contentDom.append(container, pagination);
 
-        // 添加分隔线
         const hr = document.createElement('hr');
         contentDom.append(hr);
         observer.disconnect();
         observer.observe(hr);
-        if (pageNum >= num_pages) hr.style.animationPlayState = 'paused';
-
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.set('page', `${pageNum}`);
-        history.replaceState(null, '', `?${urlParams.toString()}`);
+        if (!nextUrl) hr.style.animationPlayState = 'paused';
       }, false);
 
-      observer = new IntersectionObserver(
-        (entries) => entries[0].isIntersecting && loadNewComic(),
+      loadNextPage();
+
+      const observer = new IntersectionObserver(
+        (entries) => entries[0].isIntersecting && loadNextPage(),
       );
       observer.observe(contentDom.lastElementChild!);
 
