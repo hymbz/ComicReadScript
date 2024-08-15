@@ -19,9 +19,9 @@ const createImgData = (oldSrc = ''): ImgData => ({
 const isImgUrlRe =
   /^(((https?|ftp|file):)?\/)?\/[-\w+&@#/%?=~|!:,.;]+[-\w+&@#%=~|]$/;
 
-/** 检查元素属性，将格式为图片 url 的属性值作为 src */
-const tryCorrectUrl = (e: Element) => {
-  e.getAttributeNames().some((key) => {
+/** 找出格式为图片 url 的元素属性 */
+export const getDatasetUrl = (e: Element) => {
+  for (const key of e.getAttributeNames()) {
     // 跳过白名单
     switch (key) {
       case 'src':
@@ -32,14 +32,13 @@ const tryCorrectUrl = (e: Element) => {
       case 'title':
       case 'onload':
       case 'onerror':
-        return false;
+        continue;
     }
 
     const val = e.getAttribute(key)!.trim();
-    if (!isImgUrlRe.test(val)) return false;
-    e.setAttribute('src', val);
-    return true;
-  });
+    if (!isImgUrlRe.test(val)) continue;
+    return val;
+  }
 };
 
 /**
@@ -156,10 +155,12 @@ export const triggerLazyLoad = singleThreaded(
     for (const e of targetImgList) {
       await wait(runCondition);
 
-      await triggerTurnPage(waitTime, runCondition);
+      await triggerTurnPage(0, runCondition);
 
       if (!needTrigged(e)) continue;
-      tryCorrectUrl(e);
+
+      const datasetUrl = getDatasetUrl(e);
+      if (datasetUrl) e.setAttribute('src', datasetUrl);
 
       if (
         await triggerEleLazyLoad(
@@ -172,7 +173,7 @@ export const triggerLazyLoad = singleThreaded(
         handleTrigged(e);
     }
 
-    await triggerTurnPage(0, runCondition);
+    await triggerTurnPage(waitTime, runCondition);
 
     if (targetImgList.length > 0) state.continueRun = true;
   },

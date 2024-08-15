@@ -16,7 +16,7 @@ import { renderImgList } from 'components/Manga';
 import { useInit, toast } from 'main';
 
 import { getEleSelector, isEleSelector } from './eleSelector';
-import { needTrigged, triggerLazyLoad } from './triggerLazyLoad';
+import { getDatasetUrl, needTrigged, triggerLazyLoad } from './triggerLazyLoad';
 
 // 测试案例
 // https://www.177picyy.com/html/2023/03/5505307.html
@@ -108,6 +108,24 @@ import { needTrigged, triggerLazyLoad } from './triggerLazyLoad';
       return url;
     };
 
+    /** 重复的加载占位图 */
+    const placeholderImgList = new Set<string>();
+    createEffectOn(
+      () =>
+        mangaProps.imgList.filter((url) => url && !placeholderImgList.has(url)),
+      throttle((imgList) => {
+        if (!imgList?.length || imgList.length - new Set(imgList).size <= 4)
+          return;
+
+        const repeatNumMap = new Map<string, number>();
+        for (const url of imgList) {
+          const repeatNum = (repeatNumMap.get(url) ?? 0) + 1;
+          repeatNumMap.set(url, repeatNum);
+          if (repeatNum > 5) placeholderImgList.add(url);
+        }
+      }),
+    );
+
     const imgBlackList = [
       // 东方永夜机的预加载图片
       '#pagetual-preload',
@@ -170,7 +188,11 @@ import { needTrigged, triggerLazyLoad } from './triggerLazyLoad';
       let isEdited = false;
       await plimit(
         newImgEleList.map((e, i) => async () => {
-          const newUrl = e ? await handleImgUrl(e) : '';
+          let newUrl = '';
+          if (e) {
+            newUrl = await handleImgUrl(e);
+            if (placeholderImgList.has(newUrl)) newUrl = getDatasetUrl(e) ?? '';
+          }
           if (newUrl === mangaProps.imgList[i]) return;
 
           isEdited ||= true;
@@ -236,6 +258,9 @@ import { needTrigged, triggerLazyLoad } from './triggerLazyLoad';
             },
           });
         }, 3000);
+
+        if (isDevMode)
+          Object.assign(unsafeWindow, { placeholderImgList, imgEleList });
       }
 
       await wait(() => mangaProps.imgList.length);
