@@ -2,7 +2,6 @@ import dmzjDecrypt from 'dmzjDecrypt';
 import { type ChapterInfo, getChapterInfo, getViewpoint } from 'dmzjApi';
 import { request, toast, useInit, universal } from 'main';
 import {
-  insertNode,
   querySelector,
   querySelectorAll,
   querySelectorClick,
@@ -21,14 +20,14 @@ import {
         10,
       );
       if (Number.isNaN(comicId)) {
-        document.body.childNodes[0].remove();
-        insertNode(
-          document.body,
+        document.body.innerHTML = '';
+        document.body.insertAdjacentHTML(
+          'beforeend',
           `
-          请手动输入漫画名进行搜索 <br />
-          <input type="search"> <button>搜索</button> <br />
-          <div id="list" />
-        `,
+            请手动输入漫画名进行搜索 <br />
+            <input type="search"> <button>搜索</button> <br />
+            <div id="list" />
+          `,
         );
 
         querySelector('button')!.addEventListener('click', async () => {
@@ -73,7 +72,7 @@ import {
       } = dmzjDecrypt(res.responseText);
 
       document.title = title;
-      insertNode(document.body, `<h1>${title}</h1>`);
+      document.body.insertAdjacentHTML('beforeend', `<h1>${title}</h1>`);
 
       for (const chapter of Object.values(chapters)) {
         // 手动构建添加章节 dom
@@ -89,7 +88,7 @@ import {
               ? 'style="color:red"'
               : ''
           }>${chapter.data[i].chapter_title}</a>`;
-        insertNode(document.body, temp);
+        document.body.insertAdjacentHTML('beforeend', temp);
       }
 
       document.body.childNodes[0].remove();

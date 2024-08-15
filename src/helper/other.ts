@@ -46,25 +46,6 @@ export const querySelectorAll = <T extends HTMLElement = HTMLElement>(
   selector: string,
 ) => [...document.querySelectorAll<T>(selector)];
 
-/**
- * 添加元素
- * @param node 被添加元素
- * @param textnode 添加元素
- * @param referenceNode 参考元素，添加元素将插在参考元素前
- */
-export const insertNode = (
-  node: HTMLElement | DocumentFragment,
-  textnode: string,
-  referenceNode: HTMLElement | null = null,
-) => {
-  const temp = document.createElement('div');
-  temp.innerHTML = textnode;
-  const frag = document.createDocumentFragment();
-  while (temp.firstChild) frag.append(temp.firstChild);
-  // eslint-disable-next-line unicorn/prefer-modern-dom-apis
-  node.insertBefore(frag, referenceNode);
-};
-
 /** 返回 Dom 的点击函数 */
 export const querySelectorClick = (
   selector: string | (() => HTMLElement | undefined | null),

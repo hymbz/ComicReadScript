@@ -77,6 +77,8 @@ module.exports = {
     "import/no-unassigned-import": "off",
     // 不强制使用 addEventListener
     "unicorn/prefer-add-event-listener": "off",
+    // 允许使用 js url
+    "solid/jsx-no-script-url": "off",
 
     // eslint-plugin-jsdoc 还无法识别出 TS 定义的接口
     "jsdoc/no-undefined-types": "off",
@@ -186,7 +188,7 @@ module.exports = {
           "error",
           {
             mode: "jsx-only",
-            "jsx-attributes": { include: ["^name"] },
+            "jsx-attributes": { include: ["^name", "children", "textContent"] },
           },
         ],
       },
@@ -212,6 +214,7 @@ module.exports = {
             ],
           },
         ],
+        "solid/components-return-once": "off",
       },
     },
   ],

@@ -1,14 +1,7 @@
 /* eslint-disable i18next/no-literal-string */
 import { request, type useInit, toast, type LoadImgFn } from 'main';
 import { t, querySelector, plimit, hijackFn } from 'helper';
-import {
-  createMemo,
-  createSignal,
-  For,
-  Show,
-  type Component,
-  type JSX,
-} from 'solid-js';
+import { createSignal, For, Show, type Component, type JSX } from 'solid-js';
 import { render } from 'solid-js/web';
 
 interface ComicInfo {
@@ -23,8 +16,7 @@ interface ComicInfo {
 export const associateNhentai = async (
   dynamicLoad: AsyncReturnType<typeof useInit>['dynamicLoad'],
   setComicLoad: AsyncReturnType<typeof useInit>['setComicLoad'],
-  showComic: AsyncReturnType<typeof useInit>['showComic'],
-  comicMap: AsyncReturnType<typeof useInit>['comicMap'],
+  LoadButton: Component<{ id: string }>,
 ) => {
   const titleDom = document.getElementById('gn');
   if (!titleDom || !querySelector('#taglist tbody')) {
@@ -138,24 +130,6 @@ export const associateNhentai = async (
   const TagMenu: Component<{ children: JSX.Element[] }> = (props) => (
     <For each={props.children}>{(item) => [icon(), item]}</For>
   );
-
-  const LoadButton: Component<{ id: string }> = (props) => {
-    const tip = createMemo(() => {
-      const imgList = comicMap[props.id].imgList;
-      const progress = imgList?.filter(Boolean).length;
-
-      switch (imgList?.length) {
-        case undefined:
-          return ' Load comic';
-        case progress:
-          return ' Read';
-        default:
-          return ` loading - ${progress}/${imgList!.length}`;
-      }
-    });
-
-    return <a href="#" children={tip()} onClick={() => showComic(props.id)} />;
-  };
 
   let dispose: () => void;
   hijackFn<[a: HTMLAnchorElement]>('_refresh_tagmenu_act', (rawFn, [a]) => {

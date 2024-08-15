@@ -2,12 +2,11 @@
 import { For } from 'solid-js';
 import { render } from 'solid-js/web';
 import { getComicId, getViewpoint, useComicDetail } from 'dmzjApi';
-import { request, toast, universal } from 'main';
+import { toast, universal } from 'main';
 import {
   log,
   querySelector,
   querySelectorAll,
-  insertNode,
   waitDom,
   wait,
   scrollIntoView,
@@ -15,49 +14,51 @@ import {
 
 (async () => {
   // 通过 rss 链接，在作者作品页里添加上隐藏漫画的链接
-  if (window.location.pathname.includes('/tags/')) {
-    const res = await request(querySelector<HTMLAreaElement>('a.rss')!.href, {
-      errorText: '获取作者作品失败',
-    });
+  // TODO: rss 都已失效，过段时间看看还没恢复就可以删了
+  // if (window.location.pathname.includes('/tags/')) {
+  //   const rssUrl = await wait(
+  //     () => querySelector<HTMLAreaElement>('a.rss')?.href,
+  //   );
+  //   const res = await request(rssUrl, { errorText: '获取作者作品失败' });
 
-    // 页面上原有的漫画标题
-    const titleList = new Set(
-      querySelectorAll('#hothit p.t').map((e) =>
-        e.textContent!.replace('[完]', ''),
-      ),
-    );
-    insertNode(
-      document.getElementById('hothit')!,
-      res.responseText
-        .split('item')
-        .filter((_, i) => i % 2)
-        .map((item) => {
-          const newComicUrl = /manhua.dmzj.com\/(.+?)\?from=rssReader/.exec(
-            item,
-          )![1];
-          return {
-            newComicUrl,
-            comicUrl: newComicUrl.split('/')[0],
-            title: /title><!\[CDATA\[(.+?)]]/.exec(item)![1],
-            imgUrl: /<img src='(.+?)'/.exec(item)![1],
-            newComicTitle: /title='(.+?)'/.exec(item)![1],
-          };
-        })
-        .filter(({ title }) => !titleList.has(title))
-        .map(
-          (data) => `
-            <div class="pic">
-              <a href="/${data.comicUrl}/" target="_blank">
-              <img src="${data.imgUrl}" alt="${data.title}" title="" style="">
-              <p class="t">【*隐藏*】${data.title}</p></a>
-              <p class="d">最新：<a href="/${data.newComicUrl}" target="_blank">${data.newComicTitle}</a></p>
-            </div>
-          `,
-        )
-        .join(''),
-    );
-    return;
-  }
+  //   // 页面上原有的漫画标题
+  //   const titleList = new Set(
+  //     querySelectorAll('p.t').map((e) => e.textContent!.replace('[完]', '')),
+  //   );
+  //   querySelectorAll('div.pic')
+  //     .at(-1)
+  //     ?.insertAdjacentHTML(
+  //       'afterend',
+  //       res.responseText
+  //         .split('item')
+  //         .filter((_, i) => i % 2)
+  //         .map((item) => {
+  //           const newComicUrl = /manhua.dmzj.com\/(.+?)\?from=rssReader/.exec(
+  //             item,
+  //           )![1];
+  //           return {
+  //             newComicUrl,
+  //             comicUrl: newComicUrl.split('/')[0],
+  //             title: /title><!\[CDATA\[(.+?)]]/.exec(item)![1],
+  //             imgUrl: /<img src='(.+?)'/.exec(item)![1],
+  //             newComicTitle: /title='(.+?)'/.exec(item)![1],
+  //           };
+  //         })
+  //         .filter(({ title }) => !titleList.has(title))
+  //         .map(
+  //           (data) => `
+  //           <div class="pic">
+  //             <a href="/${data.comicUrl}/" target="_blank">
+  //             <img src="${data.imgUrl}" alt="${data.title}" title="" style="">
+  //             <p class="t">【*隐藏*】${data.title}</p></a>
+  //             <p class="d">最新：<a href="/${data.newComicUrl}" target="_blank">${data.newComicTitle}</a></p>
+  //           </div>
+  //         `,
+  //         )
+  //         .join(''),
+  //     );
+  //   return;
+  // }
 
   const getId = async () => {
     const [, comicPy, chapterId] = window.location.pathname.split(/\/|\./);

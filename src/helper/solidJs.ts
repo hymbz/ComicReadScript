@@ -11,9 +11,15 @@ import {
   onMount,
   onCleanup,
   type Owner,
+  runWithOwner,
 } from 'solid-js';
 
 import { isEqual, throttle, createScheduled } from './other';
+
+let publicOwner: Owner;
+createRoot(() => {
+  publicOwner = getOwner()!;
+});
 
 /** 会自动设置 equals 的 createSignal */
 export const createEqualsSignal = ((init: any, options?: any) =>
@@ -30,7 +36,7 @@ export const createRootMemo = ((fn: any, init?: any, options?: any) => {
 
   return getOwner()
     ? createMemo(fn, _init, _options)
-    : createRoot(() => createMemo(fn, _init, _options));
+    : runWithOwner(publicOwner, () => createMemo(fn, _init, _options));
 }) as typeof createMemo;
 
 /** 节流的 createMemo */
@@ -71,7 +77,9 @@ export const createMemoMap = <Return extends Record<string, any>>(fnMap: {
 export const createRootEffect = ((fn: any, val: any, options: any) =>
   getOwner()
     ? createEffect(fn, val, options)
-    : createRoot(() => createEffect(fn, val, options))) as typeof createEffect;
+    : runWithOwner(publicOwner, () =>
+        createEffect(fn, val, options),
+      )) as typeof createEffect;
 
 export const createEffectOn = ((deps: any, fn: any, options?: any) =>
   createRootEffect(on(deps, fn, options))) as typeof on;

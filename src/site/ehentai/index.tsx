@@ -2,7 +2,6 @@ import { store } from 'components/Manga';
 import { request, useInit, toast, ReactiveSet, type LoadImgFn } from 'main';
 import {
   t,
-  insertNode,
   querySelector,
   scrollIntoView,
   plimit,
@@ -14,6 +13,8 @@ import {
   createEffectOn,
   requestIdleCallback,
 } from 'helper';
+import { render } from 'solid-js/web';
+import { createMemo, type Component } from 'solid-js';
 
 import { getAdPageByFileName, getAdPageByContent } from './detectAd';
 import { quickFavorite } from './quickFavorite';
@@ -133,12 +134,40 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   // 表站开启了 Multi-Page Viewer 的话会将点击按钮挤出去，得缩一下位置
   if (sidebarDom.children[6])
     (sidebarDom.children[6] as HTMLElement).style.padding = '0';
-  // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
-  insertNode(
+
+  const LoadButton: Component<{ id: string }> = (props) => {
+    const tip = createMemo(() => {
+      const imgList = comicMap[props.id]?.imgList;
+      const progress = imgList?.filter(Boolean).length;
+
+      switch (imgList?.length) {
+        case undefined:
+          return ' Load comic';
+        case progress:
+          return ' Read';
+        default:
+          return ` loading - ${progress}/${imgList!.length}`;
+      }
+    });
+
+    return (
+      <a
+        href="javascript:;"
+        onClick={() => showComic(props.id)}
+        children={tip()}
+      />
+    );
+  };
+
+  render(
+    () => (
+      <p class="g2 gsp">
+        <img src="https://ehgt.org/g/mr.gif" />
+        <LoadButton id="" />
+      </p>
+    ),
     sidebarDom,
-    '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>',
   );
-  const comicReadModeDom = document.getElementById('comicReadMode')!;
 
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async (url: string): Promise<string> => {
@@ -248,8 +277,6 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   }
 
   const loadImgList: LoadImgFn = async (setImg) => {
-    comicReadModeDom.innerHTML = ` loading`;
-
     const totalPageNum = Number(
       querySelector('.ptt td:nth-last-child(2)')!.textContent!,
     );
@@ -265,18 +292,11 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
           ehImgFileNameList[index] = fileName;
           setImg(index, imgUrl);
         }),
-        async (_doneNum) => {
-          const doneNum = startIndex + _doneNum;
-          comicReadModeDom.innerHTML = ` loading - ${doneNum}/${totalImgNum}`;
-
-          if (doneNum !== totalImgNum) return;
-          comicReadModeDom.innerHTML = ` Read`;
-          if (enableDetectAd) {
-            await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
-            await getAdPageByContent(ehImgList, mangaProps.adList);
-          }
-        },
       );
+      if (enableDetectAd) {
+        await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
+        await getAdPageByContent(ehImgList, mangaProps.adList);
+      }
     }
   };
   setComicLoad(dynamicLoad(loadImgList, totalImgNum));
@@ -333,9 +353,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   });
 
   setFab('initialShow', options.autoShow);
-  comicReadModeDom.addEventListener('click', () => showComic(''));
 
   // 关联 nhentai
   if (options.associate_nhentai)
-    associateNhentai(dynamicLoad, setComicLoad, showComic, comicMap);
+    associateNhentai(dynamicLoad, setComicLoad, LoadButton);
 })().catch((error) => log.error(error));

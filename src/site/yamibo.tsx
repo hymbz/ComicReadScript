@@ -3,7 +3,6 @@ import { render } from 'solid-js/web';
 import { Show, createMemo, createSignal } from 'solid-js';
 import { request, useInit, toast } from 'main';
 import {
-  insertNode,
   querySelector,
   querySelectorAll,
   scrollIntoView,
@@ -186,8 +185,8 @@ interface History {
       });
 
       if (querySelector('div.pti > div.authi')) {
-        insertNode(
-          querySelector('div.pti > div.authi')!,
+        querySelector('div.pti > div.authi')!.insertAdjacentHTML(
+          'beforeend',
           '<span class="pipe show">|</span><a id="comicReadMode" class="show" href="javascript:;">漫画阅读</a>',
         );
         document
