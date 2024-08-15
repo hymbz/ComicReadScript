@@ -1,6 +1,10 @@
 import MdPictureInPicture from '@material-design-icons/svg/round/picture_in_picture.svg?raw';
-import { focus, hotkeysMap, setDefaultHotkeys } from 'components/Manga';
-import { type UseMangaProps } from 'main';
+import {
+  focus,
+  hotkeysMap,
+  setDefaultHotkeys,
+  type MangaProps,
+} from 'components/Manga';
 import {
   approx,
   clamp,
@@ -33,7 +37,7 @@ const getDomPosition = (dom: HTMLElement) => {
   };
 };
 
-export const floatTagList = (pageType: PageType, mangaProps: UseMangaProps) => {
+export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
   if (pageType !== 'gallery') return;
 
   const gd4 = querySelector('#gd4')!;

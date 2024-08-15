@@ -10,7 +10,8 @@ import {
   log,
   testImgUrl,
   singleThreaded,
-  createEffectOn,
+  useStyle,
+  createRootMemo,
   requestIdleCallback,
 } from 'helper';
 import { render } from 'solid-js/web';
@@ -63,6 +64,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     setFab,
     setManga,
     mangaProps,
+    nowComic,
   } = await useInit('ehentai', {
     /** 关联 nhentai */
     associate_nhentai: true,
@@ -236,46 +238,6 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   const ehImgPageList: string[] = [];
   const ehImgFileNameList: string[] = [];
 
-  const enableDetectAd =
-    options.detect_ad && document.getElementById('ta_other:extraneous_ads');
-  if (enableDetectAd) {
-    setManga('adList', new ReactiveSet());
-    /** 缩略图元素列表 */
-    const thumbnailEleList: HTMLImageElement[] = [];
-
-    for (const e of querySelectorAll<HTMLImageElement>('#gdt img')) {
-      const index = Number(e.alt) - 1;
-      if (Number.isNaN(index)) return;
-      thumbnailEleList[index] = e;
-      // 根据当前显示的图片获取一部分文件名
-      [, ehImgFileNameList[index]] = e.title.split(/：|: /);
-    }
-    // 先根据文件名判断一次
-    await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
-    // 不行的话再用缩略图识别
-    if (mangaProps.adList!.size === 0)
-      await getAdPageByContent(thumbnailEleList, mangaProps.adList);
-
-    // 模糊广告页的缩略图
-    const stylesheet = new CSSStyleSheet();
-    document.adoptedStyleSheets.push(stylesheet);
-    createEffectOn(
-      () => [...(mangaProps.adList ?? [])],
-      (adList) => {
-        if (adList.length === 0) return;
-        const styleList = adList.map((i) => {
-          const alt = `${i + 1}`.padStart(placeValueNum, '0');
-          return `img[alt="${alt}"]:not(:hover) {
-          filter: blur(8px);
-          clip-path: border-box;
-          backdrop-filter: blur(8px);
-        }`;
-        });
-        return stylesheet.replace(styleList.join('\n'));
-      },
-    );
-  }
-
   const loadImgList: LoadImgFn = async (setImg) => {
     const totalPageNum = Number(
       querySelector('.ptt td:nth-last-child(2)')!.textContent!,
@@ -294,12 +256,49 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
         }),
       );
       if (enableDetectAd) {
-        await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
-        await getAdPageByContent(ehImgList, mangaProps.adList);
+        await getAdPageByFileName(ehImgFileNameList, comicMap[''].adList!);
+        await getAdPageByContent(ehImgList, comicMap[''].adList!);
       }
     }
   };
   setComicLoad(dynamicLoad(loadImgList, totalImgNum));
+
+  const enableDetectAd =
+    options.detect_ad && document.getElementById('ta_other:extraneous_ads');
+  if (enableDetectAd) {
+    setComicMap('', 'adList', new ReactiveSet());
+    /** 缩略图元素列表 */
+    const thumbnailEleList: HTMLImageElement[] = [];
+
+    for (const e of querySelectorAll<HTMLImageElement>('#gdt img')) {
+      const index = Number(e.alt) - 1;
+      if (Number.isNaN(index)) return;
+      thumbnailEleList[index] = e;
+      // 根据当前显示的图片获取一部分文件名
+      [, ehImgFileNameList[index]] = e.title.split(/：|: /);
+    }
+    // 先根据文件名判断一次
+    await getAdPageByFileName(ehImgFileNameList, comicMap[''].adList!);
+    // 不行的话再用缩略图识别
+    if (comicMap[''].adList!.size === 0)
+      await getAdPageByContent(thumbnailEleList, comicMap[''].adList!);
+
+    // 模糊广告页的缩略图
+    useStyle(
+      createRootMemo(() => {
+        if (!comicMap['']?.adList?.size) return '';
+        const styleList = [...comicMap[''].adList].map((i) => {
+          const alt = `${i + 1}`.padStart(placeValueNum, '0');
+          return `img[alt="${alt}"]:not(:hover) {
+            filter: blur(8px);
+            clip-path: border-box;
+            backdrop-filter: blur(8px);
+          }`;
+        });
+        return styleList.join('\n');
+      }),
+    );
+  }
 
   /** 获取新的图片页地址 */
   const getNewImgPageUrl = async (url: string) => {
@@ -326,14 +325,11 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     setComicMap('', 'imgList', i, imgUrl);
   };
 
-  /** 判断当前显示的是否是 eh 源 */
-  const isShowEh = () => store.imgList[0]?.src === ehImgList[0];
-
   /** 刷新所有错误图片 */
   const reloadErrorImg = singleThreaded(() =>
     plimit(
-      store.imgList.map(({ loadType }, i) => () => {
-        if (loadType !== 'error' || !isShowEh()) return;
+      store.imgList.map((img, i) => () => {
+        if (img.loadType !== 'error' || nowComic() !== '') return;
         return reloadImg(i);
       }),
     ),

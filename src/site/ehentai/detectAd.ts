@@ -5,7 +5,7 @@ import { log, wait, waitImgLoad } from 'helper';
 const getAdPage = async <T>(
   list: Array<T | undefined>,
   isAdPage: (item: T) => boolean | Promise<boolean>,
-  adList = new Set<number>(),
+  adList: Set<number>,
 ) => {
   let i = list.length - 1;
   let normalNum = 0;
@@ -163,7 +163,7 @@ const byContent =
 /** 通过图片内容判断是否是广告 */
 export const getAdPageByContent = async (
   imgList: Array<HTMLImageElement | string | undefined>,
-  adList = new Set<number>(),
+  adList: Set<number>,
 ) => {
   const qrEngine = await QrScanner.createQrEngine();
   const canvas = new OffscreenCanvas(1, 1);
@@ -173,7 +173,7 @@ export const getAdPageByContent = async (
 /** 通过文件名判断是否是广告 */
 export const getAdPageByFileName = async (
   fileNameList: Array<string | undefined>,
-  adList = new Set<number>(),
+  adList: Set<number>,
 ) =>
   getAdPage(
     fileNameList,

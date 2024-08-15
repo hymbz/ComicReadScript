@@ -3,7 +3,6 @@ import MdImageSearch from '@material-design-icons/svg/round/image_search.svg';
 import MdImportContacts from '@material-design-icons/svg/round/import_contacts.svg';
 import MdCloudDownload from '@material-design-icons/svg/round/cloud_download.svg';
 import { Dynamic } from 'solid-js/web';
-import { createRoot, createEffect } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import { type FabProps, Fab } from 'components/Fab';
 
@@ -45,17 +44,10 @@ export const useFab = async (initProps?: FabProps) => {
     }
   };
 
-  createRoot(() => {
-    createEffect(() => {
-      if (dom) return;
-      dom = mountComponents('fab', () => (
-        <Fab {...props}>
-          {props.children ?? <Dynamic component={FabIcon()} />}
-        </Fab>
-      ));
-      dom.style.setProperty('z-index', '2147483646', 'important');
-    });
-  });
+  dom = mountComponents('fab', () => (
+    <Fab {...props}>{props.children ?? <Dynamic component={FabIcon()} />}</Fab>
+  ));
+  dom.style.setProperty('z-index', '2147483646', 'important');
 
   return [setProps, props] as const;
 };

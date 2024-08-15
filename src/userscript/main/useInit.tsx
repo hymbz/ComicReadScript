@@ -70,22 +70,29 @@ export const useInit = async <T extends Record<string, any>>(
     // undefined 表示还未开始加载，空数组表示刚开始加载
     imgList?: string[];
     getImgList: () => Promise<string[]> | string[];
+    adList?: Set<number>;
   };
+
   const [comicMap, setComicMap] = createStore<Record<string | number, Comic>>(
     {},
   );
   const [nowComic, switchComic] = createSignal<string | number>('');
 
-  const nowImgList = createRootMemo(() => comicMap[nowComic()]?.imgList);
+  const nowImgList = createRootMemo(() => {
+    const comic = comicMap[nowComic()];
+    if (!comic?.imgList) return undefined;
+    if (!comic.adList?.size) return comic.imgList;
+    return comic.imgList.filter((_, i) => !comic.adList?.has(i));
+  });
 
   createEffectOn(nowImgList, (list) => list && setManga('imgList', list));
 
-  /** Manga 中加载完成的图片数量 */
+  /** 当前加载完成的图片数量 */
   const imgLoadNum = createRootMemo(
     () => store.imgList.filter((img) => img.loadType === 'loaded').length,
   );
 
-  /** comicMap 中当前已取得 URL 的图片数量 */
+  /** 当前已取得 url 的图片数量 */
   const loadImgNum = createRootMemo(
     () => nowImgList()?.filter(Boolean)?.length,
   );
@@ -209,6 +216,8 @@ export const useInit = async <T extends Record<string, any>>(
       fabProps.onClick?.();
     });
   };
+
+  if (isDevMode) Object.assign(unsafeWindow, { comicMap, mangaProps });
 
   return {
     options,

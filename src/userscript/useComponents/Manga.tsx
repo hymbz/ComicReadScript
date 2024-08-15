@@ -9,12 +9,10 @@ import { mountComponents } from './helper';
 
 let dom: HTMLDivElement;
 
-export type UseMangaProps = MangaProps & { adList?: Set<number> };
-
 /**
  * 显示漫画阅读窗口
  */
-export const useManga = async (initProps?: Partial<UseMangaProps>) => {
+export const useManga = async (initProps?: Partial<MangaProps>) => {
   GM_addStyle(`
     #comicRead {
       position: fixed;
@@ -48,40 +46,37 @@ export const useManga = async (initProps?: Partial<UseMangaProps>) => {
     }
   `);
 
-  const [props, setProps] = createStore<UseMangaProps>({
+  const [props, setProps] = createStore<MangaProps>({
     imgList: [],
     show: false,
     ...initProps,
   });
 
-  const imgList = createRootMemo(() =>
-    props.adList
-      ? props.imgList.filter((_, i) => !props.adList!.has(i))
-      : props.imgList,
-  );
+  dom = mountComponents('comicRead', () => <Manga {...props} />);
+  dom.style.setProperty('z-index', '2147483647', 'important');
 
   const htmlStyle = document.documentElement.style;
   let lastOverflow = htmlStyle.overflow;
 
-  createEffectOn([() => imgList().length, () => props.show], () => {
-    if (!dom) {
-      dom = mountComponents('comicRead', () => (
-        <Manga {...props} imgList={imgList()} />
-      ));
-      dom.style.setProperty('z-index', '2147483647', 'important');
-    }
-
-    if (imgList().length > 0 && props.show) {
-      dom.setAttribute('show', '');
-      lastOverflow = htmlStyle.overflow;
-      htmlStyle.setProperty('overflow', 'hidden', 'important');
-      htmlStyle.setProperty('scrollbar-width', 'none', 'important');
-    } else {
-      dom.removeAttribute('show');
-      htmlStyle.overflow = lastOverflow;
-      htmlStyle.removeProperty('scrollbar-width');
-    }
-  });
+  const showManga = createRootMemo(
+    () => props.show && props.imgList.length > 0,
+  );
+  createEffectOn(
+    showManga,
+    (show) => {
+      if (show) {
+        dom.setAttribute('show', '');
+        lastOverflow = htmlStyle.overflow;
+        htmlStyle.setProperty('overflow', 'hidden', 'important');
+        htmlStyle.setProperty('scrollbar-width', 'none', 'important');
+      } else {
+        dom.removeAttribute('show');
+        htmlStyle.overflow = lastOverflow;
+        htmlStyle.removeProperty('scrollbar-width');
+      }
+    },
+    { defer: true },
+  );
 
   const ExitButton = () => (
     <IconButton tip={t('button.exit')} onClick={() => props.onExit?.()}>
