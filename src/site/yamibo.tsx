@@ -146,7 +146,7 @@ interface History {
           const img = imgList[i];
 
           // 触发懒加载
-          const file = img.getAttribute('file')?.replaceAll('http:', 'https:');
+          const file = img.getAttribute('file');
           if (file && img.src !== file) {
             img.setAttribute('src', file);
             img.setAttribute('lazyloaded', 'true');

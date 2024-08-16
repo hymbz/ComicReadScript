@@ -18,7 +18,8 @@ import { playAnimation } from '../helper';
 import { autoCloseFill } from '../handleComicData';
 
 const createComicImg = (url: string): ComicImg => ({
-  src: url || '',
+  // 使用相对协议路径，防止 Mixed Content 报错
+  src: url.replace(/^http:/, ''),
   loadType: 'wait',
   size: placeholderSize(),
 });

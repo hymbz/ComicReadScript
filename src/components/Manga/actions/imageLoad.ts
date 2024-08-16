@@ -35,14 +35,17 @@ const imgErrorNum = new Map<string, number>();
 
 /** 图片加载出错的回调 */
 export const handleImgError = (i: number, e: HTMLImageElement) => {
+  if (!e.isConnected) return;
   imgErrorNum.set(e.src, (imgErrorNum.get(e.src) ?? 0) + 1);
   setState((state) => {
     const img = state.imgList[i];
     if (!img) return;
+    log.error(i, t('alert.img_load_failed'), e);
     img.loadType = 'error';
     img.type = undefined;
-    log.error(i, t('alert.img_load_failed'), e);
     state.prop.Loading?.(state.imgList, img);
+    if (renderImgList().has(i) && (imgErrorNum.get(img.src) ?? 0) < 3)
+      img.loadType = 'wait';
   });
   updateImgLoadType();
 };
@@ -62,12 +65,7 @@ const loadImgList = new Set<number>();
 const loadImg = (index: number) => {
   if (index === -1 || !needLoadImgList().has(index)) return true;
   const img = store.imgList[index];
-  if (img.loadType === 'error') {
-    if (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3)
-      return true;
-    _setState('imgList', index, 'loadType', 'wait');
-    return false;
-  }
+  if (img.loadType === 'error') return true;
   loadImgList.add(index);
   return false;
 };
