@@ -19,8 +19,8 @@ const getAdPage = async <T>(
     if (!item) break;
 
     if (await isAdPage(item)) adList.add(i);
-    // 找到连续两张正常漫画页后中断
-    else if (normalNum) break;
+    // 找到连续三张正常漫画页后中断
+    else if (normalNum >= 2) break;
     else normalNum += 1;
   }
 

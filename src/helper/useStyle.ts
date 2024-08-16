@@ -19,7 +19,10 @@ const useStyleSheet = (e?: Element) => {
 export const useStyle = (css: string | Accessor<string>, e?: Element) => {
   const styleSheet = useStyleSheet(e);
   if (typeof css === 'string') styleSheet.replaceSync(css);
-  else createEffectOn(css, (style) => styleSheet.replaceSync(style));
+  else
+    createEffectOn(createRootMemo(css), (style) =>
+      styleSheet.replaceSync(style),
+    );
 };
 
 export type StyleMap = {

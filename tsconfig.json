@@ -48,7 +48,6 @@
     "paths": {
       "main": ["userscript/main"],
       "dmzjDecrypt": ["userscript/dmzjDecrypt"],
-      "dmzjApi": ["userscript/dmzjApi"],
       "components/*": ["components/*"]
     } /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */,
     // "rootDirs": [],                        /* List of root folders whose combined content represents the structure of the project at runtime. */

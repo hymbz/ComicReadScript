@@ -1,4 +1,4 @@
-import { getChapterInfo } from 'dmzjApi';
+import { getChapterInfo } from 'userscript/dmzjApi';
 import { toast, useInit } from 'main';
 import { log, querySelector, waitDom } from 'helper';
 

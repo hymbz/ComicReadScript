@@ -152,6 +152,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - [nhentai](https://nhentai.net)
   - [彻底屏蔽漫画](#彻底屏蔽漫画)
   - [无限滚动](#无限滚动)
+  - [识别广告页](#识别广告页)
 - [Yurifans](https://www.yurifans.com)
   - 自动签到
 - [拷贝漫画](https://www.copymanga.com)

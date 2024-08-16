@@ -52,8 +52,11 @@ const selfImportSync = (name: string) => {
     case 'components/Toast':
       code = `inject('components/Toast')`;
       break;
-    case 'dmzjApi':
+    case 'userscript/dmzjApi':
       code = `inject('userscript/dmzjApi')`;
+      break;
+    case 'userscript/detectAd':
+      code = `inject('userscript/detectAd')`;
       break;
     case 'main':
       code = `inject('userscript/main')`;

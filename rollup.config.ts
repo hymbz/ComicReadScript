@@ -70,6 +70,7 @@ const packlist = [
   'components/Fab',
   'components/Toast',
   'userscript/dmzjApi',
+  'userscript/detectAd',
   'userscript/main',
 ];
 

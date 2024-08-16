@@ -1,5 +1,9 @@
 import dmzjDecrypt from 'dmzjDecrypt';
-import { type ChapterInfo, getChapterInfo, getViewpoint } from 'dmzjApi';
+import {
+  type ChapterInfo,
+  getChapterInfo,
+  getViewpoint,
+} from 'userscript/dmzjApi';
 import { request, toast, useInit, universal } from 'main';
 import {
   querySelector,

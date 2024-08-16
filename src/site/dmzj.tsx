@@ -1,8 +1,8 @@
 /* eslint-disable i18next/no-literal-string */
 import { For } from 'solid-js';
 import { render } from 'solid-js/web';
-import { getComicId, getViewpoint, useComicDetail } from 'dmzjApi';
 import { toast, universal } from 'main';
+import { getComicId, getViewpoint, useComicDetail } from 'userscript/dmzjApi';
 import {
   log,
   querySelector,

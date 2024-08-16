@@ -1,5 +1,8 @@
-import { request, toast, useInit } from 'main';
+import { ReactiveSet, request, toast, useInit } from 'main';
+import { getAdPageByContent } from 'userscript/detectAd';
 import {
+  createEffectOn,
+  useStyle,
   domParse,
   log,
   querySelector,
@@ -10,11 +13,7 @@ import {
 } from 'helper';
 
 /** 用于转换获得图片文件扩展名 */
-const fileType = {
-  j: 'jpg',
-  p: 'png',
-  g: 'gif',
-};
+const fileType = { j: 'jpg', p: 'png', g: 'gif' };
 
 type Images = {
   thumbnail: { h: number; w: number; t: keyof typeof fileType };
@@ -23,17 +22,24 @@ type Images = {
 declare const gallery: { num_pages: number; media_id: string; images: Images };
 
 (async () => {
-  const { options, setFab, setManga, setComicLoad, showComic } = await useInit(
-    'nhentai',
-    {
-      /** 无限滚动 */
-      auto_page_turn: true,
-      /** 彻底屏蔽漫画 */
-      block_totally: true,
-      /** 在新页面中打开链接 */
-      open_link_new_page: true,
-    },
-  );
+  const {
+    options,
+    setFab,
+    setManga,
+    setComicLoad,
+    showComic,
+    comicMap,
+    setComicMap,
+  } = await useInit('nhentai', {
+    /** 无限滚动 */
+    auto_page_turn: true,
+    /** 彻底屏蔽漫画 */
+    block_totally: true,
+    /** 在新页面中打开链接 */
+    open_link_new_page: true,
+    /** 识别广告页 */
+    detect_ad: true,
+  });
 
   // 在漫画详情页
   if (Reflect.has(unsafeWindow, 'gallery')) {
@@ -64,6 +70,40 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       </a>
     ) as HTMLAnchorElement;
     document.getElementById('download')!.after(comicReadModeDom);
+
+    const enableDetectAd =
+      options.detect_ad && querySelector('#tags .tag.tag-144644');
+    if (enableDetectAd) {
+      setComicMap('', 'adList', new ReactiveSet());
+
+      // 先使用缩略图识别
+      await getAdPageByContent(
+        querySelectorAll<HTMLImageElement>('.thumb-container img').map(
+          (img) => img.dataset.src,
+        ),
+        comicMap[''].adList!,
+      );
+
+      // 加载了原图后再用原图识别
+      createEffectOn(
+        () => comicMap[''].imgList,
+        (imgList) =>
+          imgList?.length && getAdPageByContent(imgList, comicMap[''].adList!),
+      );
+
+      // 模糊广告页的缩略图
+      useStyle(() => {
+        if (!comicMap['']?.adList?.size) return '';
+        const styleList = [...comicMap[''].adList].map(
+          (i) => `
+            .thumb-container:nth-of-type(${i + 1}):not(:hover) {
+              filter: blur(8px);
+              clip-path: border-box;
+            }`,
+        );
+        return styleList.join('\n');
+      });
+    }
 
     return;
   }

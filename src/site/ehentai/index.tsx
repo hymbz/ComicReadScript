@@ -1,5 +1,8 @@
-import { store } from 'components/Manga';
+import { createMemo, type Component } from 'solid-js';
+import { render } from 'solid-js/web';
 import { request, useInit, toast, ReactiveSet, type LoadImgFn } from 'main';
+import { store } from 'components/Manga';
+import { getAdPageByFileName, getAdPageByContent } from 'userscript/detectAd';
 import {
   t,
   querySelector,
@@ -14,10 +17,7 @@ import {
   createRootMemo,
   requestIdleCallback,
 } from 'helper';
-import { render } from 'solid-js/web';
-import { createMemo, type Component } from 'solid-js';
 
-import { getAdPageByFileName, getAdPageByContent } from './detectAd';
 import { quickFavorite } from './quickFavorite';
 import { associateNhentai } from './associateNhentai';
 import { hotkeysPageTurn } from './hotkeys';
@@ -170,6 +170,13 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     ),
     sidebarDom,
   );
+
+  // 关联 nhentai
+  if (options.associate_nhentai)
+    requestIdleCallback(
+      () => associateNhentai(dynamicLoad, setComicLoad, LoadButton),
+      1000,
+    );
 
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async (url: string): Promise<string> => {
@@ -349,8 +356,4 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   });
 
   setFab('initialShow', options.autoShow);
-
-  // 关联 nhentai
-  if (options.associate_nhentai)
-    associateNhentai(dynamicLoad, setComicLoad, LoadButton);
 })().catch((error) => log.error(error));

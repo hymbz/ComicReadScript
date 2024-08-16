@@ -6,7 +6,9 @@ vi.mock('main', () => ({}));
 
 const isEqual = async (fileNameList: string[], targetList: number[]) =>
   expect(
-    [...(await getAdPageByFileName(fileNameList))].sort((a, b) => a - b),
+    [...(await getAdPageByFileName(fileNameList, new Set()))].sort(
+      (a, b) => a - b,
+    ),
   ).toStrictEqual(targetList);
 
 describe('可以通过文件名判断的', () => {

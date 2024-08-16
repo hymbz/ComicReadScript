@@ -205,6 +205,7 @@ module.exports = {
                   "*/**/*",
                   "!solid-js/**/*",
                   "!components/**/*",
+                  "!userscript/**/*",
                   "!@material*/**/*",
                   "../**/*",
                   "!.*/**/*",
