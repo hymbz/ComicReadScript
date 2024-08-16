@@ -18,6 +18,8 @@ import {
   hijackFn,
 } from 'helper';
 
+import { setEscHandler } from './other';
+
 import { type PageType } from '.';
 
 const getDomPosition = (dom: HTMLElement) => {
@@ -271,12 +273,9 @@ export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
 
   setDefaultHotkeys((hotkeys) => ({ ...hotkeys, float_tag_list: ['q'] }));
 
-  linstenKeydown((e) => {
-    if (e.key === 'Escape' && store.open) {
-      _setState('open', false);
-      return e.stopImmediatePropagation();
-    }
+  setEscHandler(0, () => (store.open ? _setState('open', false) : true));
 
+  linstenKeydown((e) => {
     const code = getKeyboardCode(e);
     if (hotkeysMap()[code] !== 'float_tag_list') return;
 

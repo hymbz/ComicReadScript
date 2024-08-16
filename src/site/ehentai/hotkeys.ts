@@ -1,10 +1,16 @@
 import { linstenKeydown, querySelector } from 'helper';
 
+import { setEscHandler } from './other';
+
 import { type PageType } from '.';
 
 /** 快捷键翻页 */
 export const hotkeysPageTurn = (pageType: PageType) => {
   if (pageType === 'gallery') {
+    setEscHandler(0, () =>
+      unsafeWindow.selected_tagname ? unsafeWindow.toggle_tagmenu() : true,
+    );
+
     linstenKeydown((e) => {
       switch (e.key) {
         case 'ArrowRight':
@@ -16,12 +22,6 @@ export const hotkeysPageTurn = (pageType: PageType) => {
         case 'a':
           e.preventDefault();
           return querySelector('.ptt td:first-child:not(.ptdd)')?.click();
-
-        case 'Escape':
-          if (unsafeWindow.selected_tagname) {
-            unsafeWindow.toggle_tagmenu();
-            return e.stopImmediatePropagation();
-          }
       }
 
       // 使用上下方向键进行投票

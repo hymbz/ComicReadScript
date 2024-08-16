@@ -3,7 +3,9 @@ import { createSignal, type JSX, Show } from 'solid-js';
 import { render } from 'solid-js/web';
 import { createMutable } from 'solid-js/store';
 import { request } from 'main';
-import { linstenKeydown, querySelector, domParse } from 'helper';
+import { querySelector, domParse } from 'helper';
+
+import { setEscHandler } from './other';
 
 import { type PageType } from '.';
 
@@ -140,9 +142,5 @@ export const quickTagDefine = (pageType: PageType) => {
   };
 
   // Esc 关闭
-  linstenKeydown((e) => {
-    if (e.key !== 'Escape' || !show()) return;
-    setShow(false);
-    e.stopImmediatePropagation();
-  });
+  setEscHandler(2, () => (show() ? setShow(false) : true));
 };

@@ -16,8 +16,10 @@ import {
   useStyle,
   createRootMemo,
   requestIdleCallback,
+  linstenKeydown,
 } from 'helper';
 
+import { escHandler } from './other';
 import { quickFavorite } from './quickFavorite';
 import { associateNhentai } from './associateNhentai';
 import { hotkeysPageTurn } from './hotkeys';
@@ -113,6 +115,13 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       return dynamicLoad(loadImgList, imgEleList.length)();
     });
   }
+
+  // 按顺序处理 esc 按键
+  linstenKeydown((e) => {
+    if (e.key !== 'Escape') return;
+    for (const handler of escHandler)
+      if (handler() !== true) return e.stopImmediatePropagation();
+  });
 
   // 标签染色
   if (options.colorize_tag) colorizeTag(pageType);
