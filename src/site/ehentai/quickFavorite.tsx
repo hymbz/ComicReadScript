@@ -199,19 +199,15 @@ export const quickFavorite = (pageType: PageType) => {
   switch (pageType) {
     case 't': {
       for (const item of querySelectorAll('.gl1t')) {
-        const button = item.querySelector<HTMLElement>('[id][onclick]')!;
+        const button = item.querySelector<HTMLElement>('[id^=posted_]')!;
         const top =
           item.firstElementChild!.getBoundingClientRect().bottom -
           item.getBoundingClientRect().top;
         const bottom =
           item.lastElementChild!.getBoundingClientRect().top -
           item.getBoundingClientRect().top;
-        addQuickFavorite(
-          button,
-          item,
-          /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0],
-          [top, bottom],
-        );
+        const apiUrl = /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0];
+        addQuickFavorite(button, item, apiUrl, [top, bottom]);
       }
       break;
     }
@@ -219,13 +215,10 @@ export const quickFavorite = (pageType: PageType) => {
     case 'e': {
       for (const item of querySelectorAll('.gl1e')) {
         const button =
-          item.nextElementSibling!.querySelector<HTMLElement>('[id][onclick]')!;
-        addQuickFavorite(
-          button,
-          item,
-          /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0],
-          [0, Number.parseInt(getComputedStyle(item).height, 10)],
-        );
+          item.nextElementSibling!.querySelector<HTMLElement>('[id^=posted_]')!;
+        const bottom = Number.parseInt(getComputedStyle(item).height, 10);
+        const apiUrl = /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0];
+        addQuickFavorite(button, item, apiUrl, [0, bottom]);
       }
       break;
     }

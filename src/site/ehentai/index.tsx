@@ -49,8 +49,9 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   else if (location.pathname === '/mytags') pageType = 'mytags';
   else if (Reflect.has(unsafeWindow, 'mpvkey')) pageType = 'mpv';
   else
-    pageType = querySelector<HTMLSelectElement>('#ujumpbox ~ div > select')
-      ?.value as PageType | undefined;
+    pageType = (
+      querySelector('option[value="t"]')?.parentElement as HTMLSelectElement
+    )?.value as PageType | undefined;
 
   if (!pageType) return;
 
@@ -118,10 +119,11 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   // 快捷键
   if (options.hotkeys) hotkeysPageTurn(pageType);
   // 悬浮标签列表
-  if (options.float_tag_list) floatTagList(pageType, mangaProps);
+  if (options.float_tag_list)
+    requestIdleCallback(() => floatTagList(pageType, mangaProps));
   // 快捷收藏。必须处于登录状态
   if (unsafeWindow.apiuid !== -1 && options.quick_favorite)
-    quickFavorite(pageType);
+    requestIdleCallback(() => quickFavorite(pageType));
   // 快捷评分
   if (options.quick_rating)
     requestIdleCallback(() => quickRating(pageType), 1000);
