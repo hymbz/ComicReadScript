@@ -1,25 +1,15 @@
-import {
-  Show,
-  type Component,
-  createSignal,
-  onMount,
-  onCleanup,
-} from 'solid-js';
+import { type Component, onMount, onCleanup } from 'solid-js';
 
 export const EmptyTip: Component = () => {
-  const [show, setShow] = createSignal(false);
+  let ref: HTMLHeadingElement;
 
   onMount(() => {
     let timeoutId = window.setTimeout(() => {
-      setShow(true);
+      ref?.style.removeProperty('display');
       timeoutId = 0;
     }, 2000);
     onCleanup(() => timeoutId && clearTimeout(timeoutId));
   });
 
-  return (
-    <Show when={show()}>
-      <h1>NULL</h1>
-    </Show>
-  );
+  return <h1 ref={ref!} style={{ display: 'none' }} textContent="NULL" />;
 };

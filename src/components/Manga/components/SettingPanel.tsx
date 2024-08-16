@@ -2,9 +2,20 @@ import { type Component, For, createSignal } from 'solid-js';
 import { lang, createRootMemo } from 'helper';
 
 import { defaultSettingList } from '../defaultSettingList';
-import { store } from '../store';
+import { refs, store } from '../store';
 import { stopPropagation } from '../helper';
+import { bindRef } from '../actions';
 import classes from '../index.module.css';
+
+/** 判断滚动事件是否会导致滚动 */
+const canScroll = (e: WheelEvent, container: HTMLElement) => {
+  const { scrollHeight, clientHeight, scrollTop } = container;
+  return (
+    scrollHeight > clientHeight &&
+    ((e.deltaY < 0 && scrollTop > 0) ||
+      (e.deltaY > 0 && Math.ceil(scrollTop) < scrollHeight - clientHeight))
+  );
+};
 
 /** 菜单面板 */
 export const SettingPanel: Component = () => {
@@ -14,10 +25,11 @@ export const SettingPanel: Component = () => {
 
   return (
     <div
+      ref={bindRef('settingPanel')}
       class={`${classes.SettingPanel} ${classes.beautifyScrollbar}`}
       style={{ width: lang() === 'zh' ? '15em' : '20em' }}
+      onWheel={(e) => canScroll(e, refs.settingPanel) && e.stopPropagation()}
       onScroll={stopPropagation}
-      onWheel={stopPropagation}
       on:click={stopPropagation}
     >
       <For each={settingList()}>

@@ -91,7 +91,7 @@ export const Manga: Component<MangaProps> = (props) => {
         ref={bindRef('root')}
         on:click={stopPropagation}
         on:mousedown={handleMouseDown}
-        oncapture:wheel={handleWheel}
+        on:wheel={handleWheel}
         oncapture:keydown={handleKeyDown}
         oncapture:keypress={stopPropagation}
         oncapture:keyup={stopPropagation}

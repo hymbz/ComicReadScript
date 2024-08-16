@@ -33,6 +33,7 @@ export const refs = {
   mangaFlow: undefined as unknown as HTMLElement,
   touchArea: undefined as unknown as HTMLElement,
   scrollbar: undefined as unknown as HTMLElement,
+  settingPanel: undefined as unknown as HTMLElement,
 
   // 结束页上的按钮
   prev: undefined as unknown as HTMLButtonElement,

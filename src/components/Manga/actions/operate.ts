@@ -260,7 +260,7 @@ export const handleWheel = (e: WheelEvent) => {
   }
 
   // 防止滚动到网页
-  if (!(isScrollMode() || store.gridMode)) e.preventDefault();
+  if (!isScrollMode()) e.preventDefault();
 
   // 通过`两次滚动距离是否成倍数`和`滚动距离是否过小`来判断是否是触摸板
   if (
