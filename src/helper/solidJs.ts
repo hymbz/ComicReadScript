@@ -27,6 +27,9 @@ export const createEqualsSignal = ((init: any, options?: any) =>
 
 /** 会自动设置 equals 和 createRoot 的 createMemo */
 export const createRootMemo = ((fn: any, init?: any, options?: any) => {
+  // 如果函数已经是 createMemo 创建的，就直接使用
+  if (fn.name === 'bound readSignal') return fn as Accessor<unknown>;
+
   const _init = init ?? fn(undefined);
   // 自动为对象类型设置 equals
   const _options =
@@ -58,11 +61,7 @@ export const createMemoMap = <Return extends Record<string, any>>(fnMap: {
   [P in keyof Return]: Accessor<Return[P]>;
 }) => {
   const memoMap = Object.fromEntries(
-    Object.entries(fnMap).map(([key, fn]) => {
-      // 如果函数已经是 createMemo 创建的，就直接使用
-      if (fn.name === 'bound readSignal') return [key, fn];
-      return [key, createRootMemo(fn, undefined)];
-    }),
+    Object.entries(fnMap).map(([key, fn]) => [key, createRootMemo(fn)]),
   ) as typeof fnMap;
 
   const map = createRootMemo(() => {

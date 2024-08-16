@@ -1,4 +1,3 @@
-import { createRoot } from 'solid-js';
 import { t, inRange, throttle, createEffectOn } from 'helper';
 
 import { type State, _setState, setState, store } from '../store';
@@ -60,32 +59,30 @@ export const getPageTip = (pageIndex: number): string => {
   return pageIndexText.join(store.option.scrollMode.enabled ? '\n' : ' | ');
 };
 
-createRoot(() => {
-  createEffectOn(
-    () => store.activePageIndex,
-    () => store.show.endPage && _setState('show', 'endPage', undefined),
-    { defer: true },
-  );
+createEffectOn(
+  () => store.activePageIndex,
+  () => store.show.endPage && _setState('show', 'endPage', undefined),
+  { defer: true },
+);
 
-  createEffectOn(
-    activePage,
-    throttle(() => store.isDragMode || setState(resetPage)),
-  );
+createEffectOn(
+  activePage,
+  throttle(() => store.isDragMode || setState(resetPage)),
+);
 
-  // 在关闭工具栏的同时关掉滚动条的强制显示
-  createEffectOn(
-    () => store.show.toolbar,
-    () =>
-      store.show.scrollbar &&
-      !store.show.toolbar &&
-      _setState('show', 'scrollbar', false),
-    { defer: true },
-  );
+// 在关闭工具栏的同时关掉滚动条的强制显示
+createEffectOn(
+  () => store.show.toolbar,
+  () =>
+    store.show.scrollbar &&
+    !store.show.toolbar &&
+    _setState('show', 'scrollbar', false),
+  { defer: true },
+);
 
-  // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
-  createEffectOn(
-    () => store.gridMode,
-    () => setState(resetUI),
-    { defer: true },
-  );
-});
+// 在切换网格模式后关掉 滚动条和工具栏 的强制显示
+createEffectOn(
+  () => store.gridMode,
+  () => setState(resetUI),
+  { defer: true },
+);

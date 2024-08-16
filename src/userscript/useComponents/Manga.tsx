@@ -58,11 +58,8 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   const htmlStyle = document.documentElement.style;
   let lastOverflow = htmlStyle.overflow;
 
-  const showManga = createRootMemo(
-    () => props.show && props.imgList.length > 0,
-  );
   createEffectOn(
-    showManga,
+    createRootMemo(() => props.show && props.imgList.length > 0),
     (show) => {
       if (show) {
         dom.setAttribute('show', '');

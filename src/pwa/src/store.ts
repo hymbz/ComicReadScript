@@ -1,6 +1,5 @@
-import { createEffect, createRoot, on } from 'solid-js';
 import { toast } from 'components/Toast';
-import { t, useStore } from 'helper';
+import { createEffectOn, t, useStore } from 'helper';
 
 import { unzip } from './unzip';
 import { isSupportFile } from './helper';
@@ -82,13 +81,9 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
   }
 };
 
-createRoot(() => {
-  // 将 hiddenInstallTip 的变动同步更新到 localStorage
-  createEffect(
-    on(
-      () => store.hiddenInstallTip,
-      (v) => localStorage.setItem('InstallTip', v),
-      { defer: true },
-    ),
-  );
-});
+// 将 hiddenInstallTip 的变动同步更新到 localStorage
+createEffectOn(
+  () => store.hiddenInstallTip,
+  (v) => localStorage.setItem('InstallTip', v),
+  { defer: true },
+);
