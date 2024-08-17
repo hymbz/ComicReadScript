@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.6.3
+// @version         9.7.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -362,21 +362,6 @@ const querySelector = selector => document.querySelector(selector);
  */
 const querySelectorAll = selector => [...document.querySelectorAll(selector)];
 
-/**
- * 添加元素
- * @param node 被添加元素
- * @param textnode 添加元素
- * @param referenceNode 参考元素，添加元素将插在参考元素前
- */
-const insertNode = (node, textnode, referenceNode = null) => {
-  const temp = document.createElement('div');
-  temp.innerHTML = textnode;
-  const frag = document.createDocumentFragment();
-  while (temp.firstChild) frag.append(temp.firstChild);
-  // eslint-disable-next-line unicorn/prefer-modern-dom-apis
-  node.insertBefore(frag, referenceNode);
-};
-
 /** 返回 Dom 的点击函数 */
 const querySelectorClick = (selector, textContent) => {
   let getDom;
@@ -389,7 +374,7 @@ const querySelectorClick = (selector, textContent) => {
 /** 找出数组中出现最多次的元素 */
 const getMostItem = list => {
   const counts = new Map();
-  for (const val of list) counts.set(val, counts.get(val) ?? 0 + 1);
+  for (const val of list) counts.set(val, (counts.get(val) ?? 0) + 1);
 
   // eslint-disable-next-line unicorn/no-array-reduce
   return [...counts.entries()].reduce((maxItem, item) => maxItem[1] > item[1] ? maxItem : item)[0];
@@ -632,18 +617,6 @@ const requestIdleCallback = (callback, timeout) => {
   return window.setTimeout(callback, 16);
 };
 
-/**
- * 通过监视点击等会触发动态加载的事件，在触发后执行指定动作
- * @param update 动态加载后的重新加载
- */
-const autoUpdate = update => {
-  const refresh = singleThreaded(update);
-  for (const eventName of ['click', 'popstate']) window.addEventListener(eventName, refresh, {
-    capture: true
-  });
-  refresh();
-};
-
 /** 获取键盘事件的编码 */
 const getKeyboardCode = e => {
   let {
@@ -684,6 +657,11 @@ const hijackFn = (fnName, fn) => {
   unsafeWindow[fnName] = (...args) => fn(rawFn, args);
 };
 
+let publicOwner;
+solidJs.createRoot(() => {
+  publicOwner = solidJs.getOwner();
+});
+
 /** 会自动设置 equals 的 createSignal */
 const createEqualsSignal = (init, options) => solidJs.createSignal(init, {
   equals: isEqual,
@@ -692,13 +670,15 @@ const createEqualsSignal = (init, options) => solidJs.createSignal(init, {
 
 /** 会自动设置 equals 和 createRoot 的 createMemo */
 const createRootMemo = (fn, init, options) => {
+  // 如果函数已经是 createMemo 创建的，就直接使用
+  if (fn.name === 'bound readSignal') return fn;
   const _init = init ?? fn(undefined);
   // 自动为对象类型设置 equals
   const _options = options?.equals === undefined && typeof init === 'object' ? {
     ...options,
     equals: isEqual
   } : options;
-  return solidJs.getOwner() ? solidJs.createMemo(fn, _init, _options) : solidJs.createRoot(() => solidJs.createMemo(fn, _init, _options));
+  return solidJs.getOwner() ? solidJs.createMemo(fn, _init, _options) : solidJs.runWithOwner(publicOwner, () => solidJs.createMemo(fn, _init, _options));
 };
 
 /** 节流的 createMemo */
@@ -707,11 +687,7 @@ const createThrottleMemo = (fn, wait = 100, init = fn(undefined), options = unde
   return createRootMemo(prev => scheduled() ? fn(prev) : prev, init, options);
 };
 const createMemoMap = fnMap => {
-  const memoMap = Object.fromEntries(Object.entries(fnMap).map(([key, fn]) => {
-    // 如果函数已经是 createMemo 创建的，就直接使用
-    if (fn.name === 'bound readSignal') return [key, fn];
-    return [key, createRootMemo(fn, undefined)];
-  }));
+  const memoMap = Object.fromEntries(Object.entries(fnMap).map(([key, fn]) => [key, createRootMemo(fn)]));
   const map = createRootMemo(() => {
     const obj = {};
     for (const key of Object.keys(memoMap)) Reflect.set(obj, key, memoMap[key]());
@@ -719,7 +695,7 @@ const createMemoMap = fnMap => {
   });
   return map;
 };
-const createRootEffect = (fn, val, options) => solidJs.getOwner() ? solidJs.createEffect(fn, val, options) : solidJs.createRoot(() => solidJs.createEffect(fn, val, options));
+const createRootEffect = (fn, val, options) => solidJs.getOwner() ? solidJs.createEffect(fn, val, options) : solidJs.runWithOwner(publicOwner, () => solidJs.createEffect(fn, val, options));
 const createEffectOn = (deps, fn, options) => createRootEffect(solidJs.on(deps, fn, options));
 const onAutoMount = fn => {
   const owner = solidJs.getOwner();
@@ -861,7 +837,7 @@ const useStyleSheet = e => {
 };
 const useStyle = (css, e) => {
   const styleSheet = useStyleSheet(e);
-  if (typeof css === 'string') styleSheet.replaceSync(css);else helper.createEffectOn(css, style => styleSheet.replaceSync(style));
+  if (typeof css === 'string') styleSheet.replaceSync(css);else helper.createEffectOn(helper.createRootMemo(css), style => styleSheet.replaceSync(style));
 };
 /** 用 CSSStyleSheet 实现和修改 style 一样的效果 */
 const useStyleMemo = (selector, styleMapArg, e) => {
@@ -1776,7 +1752,6 @@ const t = solidJs.createRoot(() => {
 
 exports.approx = approx;
 exports.assign = assign;
-exports.autoUpdate = autoUpdate;
 exports.boolDataVal = boolDataVal;
 exports.byPath = byPath;
 exports.canvasToBlob = canvasToBlob;
@@ -1797,7 +1772,6 @@ exports.getKeyboardCode = getKeyboardCode;
 exports.getMostItem = getMostItem;
 exports.hijackFn = hijackFn;
 exports.inRange = inRange;
-exports.insertNode = insertNode;
 exports.isEqual = isEqual;
 exports.isLanguages = isLanguages;
 exports.isUrl = isUrl;
@@ -1915,17 +1889,6 @@ const optionState = {
 };
 
 const otherState = {
-  /** 监视图片是否出现的 observer */
-  observer: null,
-  flag: {
-    /**
-     * 用于防止滚轮连续滚动导致过快触发事件的锁
-     *
-     * - 在缩放时开启，结束缩放一段时间后关闭。开启时禁止翻页。
-     * - 在首次触发结束页时开启，一段时间关闭。开启时禁止触发结束页的上下话切换功能。
-     */
-    scrollLock: false
-  },
   rootSize: {
     width: 0,
     height: 0
@@ -1996,6 +1959,7 @@ const refs = {
   mangaFlow: undefined,
   touchArea: undefined,
   scrollbar: undefined,
+  settingPanel: undefined,
   // 结束页上的按钮
   prev: undefined,
   next: undefined,
@@ -2386,437 +2350,6 @@ const contentHeight = helper.createRootMemo(() => (imgTopList().at(-1) ?? 0) + (
 var css$1 = ".img img{display:block;object-fit:contain}.img,.img img{height:100%;width:100%}.img{align-content:center;content-visibility:hidden;display:none;margin-left:auto;margin-right:auto;position:relative}.img[data-show]{content-visibility:visible;display:block}.img>picture{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%;display:block;height:auto;margin-left:inherit;margin-right:inherit;max-height:100%;max-width:100%;position:relative;width:auto}.img[data-load-type=error]>picture:after{background:inherit;background-color:#eee;background-image:var(--md-image-not-supported);content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-load-type=loading]>picture{background-image:var(--md-cloud-download)}:is(.img[data-load-type=loading]>picture) img{animation:show 1s forwards}.mangaFlow[dir=ltr] .img[data-show=\\"1\\"],.mangaFlow[dir=rtl] .img[data-show=\\"0\\"]{margin-left:0;margin-right:auto}.mangaFlow[dir=ltr] .img[data-show=\\"0\\"],.mangaFlow[dir=rtl] .img[data-show=\\"1\\"]{margin-left:auto;margin-right:0}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;width:100%}.mangaFlow[data-disable-zoom] .img>picture{height:fit-content;width:fit-content}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-vertical]{grid-auto-flow:row}.mangaBox{contain:layout style;height:100%;transform-origin:0 0;transition-duration:0ms;width:100%}.mangaBox[data-animation=page] .mangaFlow,.mangaBox[data-animation=zoom]{transition-duration:.3s}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}:is(.root:not([data-grid-mode]) .mangaBox)::-webkit-scrollbar{display:none}.root[data-grid-mode] .mangaFlow{grid-auto-columns:1fr;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;grid-row-gap:1.5em;align-items:end;box-sizing:border-box;grid-template-rows:unset}:is(.root[data-grid-mode] .mangaFlow) .img{cursor:pointer;margin-left:auto;margin-right:auto}:is(:is(.root[data-grid-mode] .mangaFlow) .img)>.gridModeTip{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}[data-load-type=error]:is(:is(.root[data-grid-mode] .mangaFlow) .img),[data-load-type=wait]:is(:is(.root[data-grid-mode] .mangaFlow) .img),[src=\\"\\"]:is(:is(.root[data-grid-mode] .mangaFlow) .img){height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}:is(.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox) .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px);height:fit-content}[data-abreast-scroll]:is(.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox){overflow:hidden}[data-abreast-scroll]:is(.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox) .mangaFlow{grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}:is([data-abreast-scroll]:is(.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox) .mangaFlow) .img{height:auto;width:100%;will-change:transform}@keyframes show{0%{opacity:0}90%{opacity:0}to{opacity:1}}@supports (hanging-punctuation:first) and (font:-apple-system-body) and (-webkit-appearance:none){.img>picture{background-color:var(--bg);height:100%;width:100%}.img:not([data-load-type])>picture{background-image:unset}:is(.mangaFlow[dir=ltr] .img[data-show=\\"1\\"],.mangaFlow[dir=rtl] .img[data-show=\\"0\\"]) picture{background-position:5em 50%}:is(:is(.mangaFlow[dir=ltr] .img[data-show=\\"1\\"],.mangaFlow[dir=rtl] .img[data-show=\\"0\\"]) picture) img{object-position:left}:is(.mangaFlow[dir=ltr] .img[data-show=\\"0\\"],.mangaFlow[dir=rtl] .img[data-show=\\"1\\"]) picture{background-position:calc(100% - 5em) 50%}:is(:is(.mangaFlow[dir=ltr] .img[data-show=\\"0\\"],.mangaFlow[dir=rtl] .img[data-show=\\"1\\"]) picture) img{object-position:right}}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}[data-is-end]:is(.endPage>button){font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}:is(.SettingsShowItem>.SettingsShowItemBody)>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}:is(.hotkeysItem>svg):hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}:is(.hotkeysHeader>div[title])>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar,.scrollbar>div{display:flex;flex-direction:column}.scrollbar>div{align-items:center;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:fit-content}.scrollbar:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}:is(.scrollbar:hover,.scrollbar[data-force-show]) .scrollbarPoper,:is(.scrollbar:hover,.scrollbar[data-force-show]) .scrollbarSlider,:is(.scrollbar:hover,.scrollbar[data-force-show]):before{opacity:1}.scrollbar[data-drag] .scrollbarPoper,.scrollbar[data-drag] .scrollbarSlider,.scrollbar[data-drag]:before{transition:opacity .15s}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]):before{border-left:.4em solid #0000}:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}[data-dir=ltr]:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]){--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}[data-dir=ltr]:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]):before{left:0;right:unset}[data-dir=ltr]:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarSlider{transform:translateX(var(--top))}[data-dir=ltr]:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarPoper{transform:translateX(var(--poper-top))}:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarPage{transform:scaleX(1)}[data-type=loaded]:is(:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarPage){transform:scaleX(0)}[data-translation-type]:is(:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarPage){transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}:is(.root[data-mobile] .scrollbar:hover) .scrollbarPoper,:is(.root[data-mobile] .scrollbar:hover):before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}[data-area=PREV]:is(.touchAreaRoot .touchArea),[data-area=prev]:is(.touchAreaRoot .touchArea){background-color:#95e1d3e6}[data-area=MENU]:is(.touchAreaRoot .touchArea),[data-area=menu]:is(.touchAreaRoot .touchArea){background-color:#fce38ae6}[data-area=NEXT]:is(.touchAreaRoot .touchArea),[data-area=next]:is(.touchAreaRoot .touchArea){background-color:#f38181e6}[data-area=PREV]:is(.touchAreaRoot .touchArea):after{content:var(--i18n-touch-area-prev)}[data-area=MENU]:is(.touchAreaRoot .touchArea):after{content:var(--i18n-touch-area-menu)}[data-area=NEXT]:is(.touchAreaRoot .touchArea):after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:#0000}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}:where(div,div:focus,div:focus-within,div:focus-visible,button){border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"img","show":"show","mangaFlow":"mangaFlow","mangaBox":"mangaBox","root":"root","gridModeTip":"gridModeTip","endPage":"endPage","jello":"jello","tip":"tip","comments":"comments","toolbar":"toolbar","toolbarPanel":"toolbarPanel","toolbarBg":"toolbarBg","SettingPanelPopper":"SettingPanelPopper","SettingPanel":"SettingPanel","SettingBlock":"SettingBlock","SettingBlockBody":"SettingBlockBody","SettingBlockSubtitle":"SettingBlockSubtitle","SettingsItem":"SettingsItem","SettingsItemName":"SettingsItemName","SettingsItemSwitch":"SettingsItemSwitch","SettingsItemSwitchRound":"SettingsItemSwitchRound","SettingsItemIconButton":"SettingsItemIconButton","SettingsItemSelect":"SettingsItemSelect","closeCover":"closeCover","SettingsShowItem":"SettingsShowItem","SettingsShowItemBody":"SettingsShowItemBody","hotkeys":"hotkeys","hotkeysItem":"hotkeysItem","hotkeysHeader":"hotkeysHeader","scrollbar":"scrollbar","scrollbarPage":"scrollbarPage","scrollbarSlider":"scrollbarSlider","scrollbarPoper":"scrollbarPoper","touchAreaRoot":"touchAreaRoot","touchArea":"touchArea","hidden":"hidden","invisible":"invisible","beautifyScrollbar":"beautifyScrollbar"};
 
-/** 并排卷轴模式下的全局滚动填充 */
-const [abreastScrollFill, _setAbreastScrollFill] = solidJs.createSignal(0);
-/** 并排卷轴模式下的每列布局 */
-const abreastArea = helper.createRootMemo(prev => {
-  if (!isAbreastMode()) return prev;
-  const columns = [[]];
-  const position = {};
-  let length = 0;
-  const rootHeight = store.rootSize.height;
-  if (!rootHeight || store.imgList.length === 0) return {
-    columns,
-    position,
-    length
-  };
-  const repeatHeight = rootHeight * store.option.scrollMode.abreastDuplicate;
-
-  /** 当前图片在当前列的所在高度 */
-  let top = abreastScrollFill();
-  while (top > rootHeight) {
-    top -= rootHeight - repeatHeight;
-    columns.push([]);
-  }
-  for (let i = 0; i < store.imgList.length; i++) {
-    const imgPosition = [];
-    const imgHeight = store.imgList[i].size.height;
-    length += imgHeight;
-    let height = imgHeight;
-    while (height > 0) {
-      columns.at(-1).push(i);
-      imgPosition.push({
-        column: columns.length - 1,
-        top
-      });
-      if (top < 0 && imgPosition.length > 1) top = 0;
-      const availableHeight = rootHeight - top;
-      top += height;
-      height -= availableHeight;
-
-      // 填满一列后换行
-      if (top < rootHeight) continue;
-      columns.push([]);
-      top = height - imgHeight;
-
-      // 复现上列结尾
-      if (!repeatHeight || columns.length === 1) continue;
-      top += repeatHeight;
-      height = Math.min(imgHeight, height + repeatHeight);
-
-      /** 为了复现而出现的空白部分高度 */
-      let emptyTop = top;
-      let prevImgIndex = i;
-      while (prevImgIndex >= 1 && emptyTop > 0) {
-        prevImgIndex -= 1;
-        // 把上一张图片加进来填补空白
-        columns.at(-1).push(prevImgIndex);
-        const prevImgHeight = store.imgList[prevImgIndex].size.height;
-        emptyTop -= prevImgHeight;
-        position[prevImgIndex].push({
-          column: columns.length - 1,
-          top: emptyTop
-        });
-      }
-    }
-    position[i] = imgPosition;
-  }
-  return {
-    columns,
-    position,
-    length
-  };
-}, {
-  columns: [],
-  position: {},
-  length: 0
-});
-
-/** 头尾滚动的限制值 */
-const scrollFillLimit = helper.createRootMemo(() => abreastArea().length - store.rootSize.height);
-const setAbreastScrollFill = val => _setAbreastScrollFill(helper.clamp(-scrollFillLimit(), val, scrollFillLimit()));
-
-/** 并排卷轴模式下当前要显示的列 */
-const abreastShowColumn = helper.createThrottleMemo(() => {
-  if (!isAbreastMode() || abreastArea().columns.length === 0) return {
-    start: 0,
-    end: 0
-  };
-  const columnWidth = abreastColumnWidth() + store.option.scrollMode.spacing * 7;
-  return {
-    start: helper.clamp(0, Math.floor(store.page.offset.x.px / columnWidth), abreastArea().columns.length - 1),
-    end: helper.clamp(0, Math.floor((store.page.offset.x.px + store.rootSize.width) / columnWidth), abreastArea().columns.length - 1)
-  };
-});
-
-/** 并排卷轴模式下的漫画流宽度 */
-const abreastContentWidth = helper.createRootMemo(() => abreastArea().columns.length * abreastColumnWidth() + (abreastArea().columns.length - 1) * store.option.scrollMode.spacing * 7);
-
-/** 并排卷轴模式下的最大滚动距离 */
-const abreastScrollWidth = helper.createRootMemo(() => abreastContentWidth() - store.rootSize.width);
-
-/** 并排卷轴模式下每个图片所在位置的样式 */
-const imgAreaStyle = helper.createRootMemo(() => {
-  if (!isAbreastMode() || store.gridMode) return '';
-  let styleText = '';
-  const selector = (index, imgNum = 0) => \`#_\${index}\${imgNum === 0 ? '' : \`-\${imgNum}\`}\`;
-  for (const index of store.imgList.keys()) {
-    let imgNum = 0;
-    for (const {
-      column,
-      top
-    } of abreastArea().position[index] ?? []) {
-      const itemStyle = \`grid-area: _\${column} !important; transform: translateY(\${top}px);\`;
-      styleText += \`\${selector(index, imgNum)} { \${itemStyle} }\\n\`;
-      imgNum += 1;
-    }
-  }
-  return styleText;
-});
-
-/** 滚动内容的长度 */
-const scrollLength = helper.createRootMemo(() => {
-  if (isScrollMode()) return contentHeight();
-  if (isAbreastMode()) return abreastContentWidth();
-  return store.pageList.length;
-});
-
-/** 滚动内容的滚动进度 */
-const scrollProgress = helper.createRootMemo(() => {
-  if (isScrollMode()) return scrollTop();
-  if (isAbreastMode()) return store.page.offset.x.px;
-  return store.activePageIndex;
-});
-
-/** 滚动内容的滚动进度百分比 */
-const scrollPercentage = helper.createRootMemo(() => scrollProgress() / scrollLength());
-
-/** 滚动条滑块长度 */
-const sliderHeight = helper.createRootMemo(() => {
-  let itemLength = 1;
-  if (isScrollMode()) itemLength = store.rootSize.height;
-  if (isAbreastMode()) itemLength = store.rootSize.width;
-  return itemLength / scrollLength();
-});
-
-/** 当前是否已经滚动到底部 */
-const isBottom = helper.createRootMemo(() => scrollPercentage() + sliderHeight() >= 0.9999);
-
-/** 当前是否已经滚动到顶部 */
-const isTop = helper.createRootMemo(() => scrollPercentage() === 0);
-
-/** 在卷轴模式下滚动到指定进度 */
-const scrollTo = (x, smooth = false) => {
-  if (!store.option.scrollMode.enabled) return;
-  if (store.option.scrollMode.abreastMode) {
-    refs.mangaBox.scrollTo({
-      top: 0,
-      behavior: 'instant'
-    });
-    const val = helper.clamp(0, x, abreastScrollWidth());
-    return _setState('page', 'offset', 'x', 'px', val);
-  }
-  refs.mangaBox.scrollTo({
-    top: x,
-    behavior: smooth ? 'smooth' : 'instant'
-  });
-};
-
-/** 保存当前滚动进度，并在之后恢复 */
-const saveScrollProgress = () => {
-  const oldScrollPercentage = scrollPercentage();
-  return () => scrollTo(oldScrollPercentage * scrollLength());
-};
-
-/** 在卷轴模式下，滚动到能显示指定图片的位置 */
-const scrollViewImg = i => {
-  if (!store.option.scrollMode.enabled) return;
-  if (store.option.scrollMode.abreastMode) {
-    const columnNum = abreastArea().columns.findIndex(column => column.includes(i));
-    scrollTo(columnNum * abreastColumnWidth());
-  } else scrollTo(imgTopList()[i]);
-};
-
-/** 在卷轴模式下进行缩放，并且保持滚动进度不变 */
-const zoomScrollModeImg = (zoomLevel, set = false) => {
-  const jump = saveScrollProgress();
-  setOption(draftOption => {
-    const newVal = set ? zoomLevel : store.option.scrollMode.imgScale + zoomLevel;
-    draftOption.scrollMode.imgScale = helper.clamp(0.1, Number(newVal.toFixed(2)), 3);
-  });
-  jump();
-
-  // 并排卷轴模式下并没有一个明确直观的滚动进度，
-  // 也想不出有什么实现效果能和普通卷轴模式的效果一致,
-  // 所以就摆烂不管了，反正现在这样也已经能避免乱跳了
-};
-
-/** 找到普通卷轴模式下指定高度上的图片 */
-const findTopImg = (top, initIndex = 0) => {
-  if (top > contentHeight()) return imgTopList().length - 1;
-  let i = initIndex;
-  for (; i < imgTopList().length; i++) if (imgTopList()[i] > top) return i === 0 ? 0 : i - 1;
-  return imgTopList().length - 1;
-};
-
-/** 获取并排卷轴模式下指定列的指定图片 */
-const getAbreastColumnImg = (column, img) => {
-  const {
-    columns
-  } = abreastArea();
-  return columns[helper.clamp(0, column, columns.length - 1)]?.at(img) ?? 0;
-};
-
-/** 计算显示页面 */
-const updateShowRange = state => {
-  if (scrollLength() === 0) {
-    state.showRange = [0, 0];
-    state.renderRange = state.showRange;
-  } else if (!state.option.scrollMode.enabled) {
-    // 翻页模式
-    state.showRange = [state.activePageIndex, state.activePageIndex];
-    state.renderRange = [helper.clamp(0, state.activePageIndex - 1, state.pageList.length - 1), helper.clamp(0, state.activePageIndex + 1, state.pageList.length - 1)];
-  } else if (state.option.scrollMode.abreastMode) {
-    // 并排卷轴模式
-    const {
-      start,
-      end
-    } = abreastShowColumn();
-    state.showRange = [getAbreastColumnImg(start, 0), getAbreastColumnImg(end, -1)];
-    state.renderRange = [getAbreastColumnImg(start - 2, 0), getAbreastColumnImg(end + 2, -1)];
-  } else {
-    // 普通卷轴模式
-    const top = scrollTop();
-    const bottom = scrollTop() + state.rootSize.height;
-    const renderTop = top - state.rootSize.height;
-    const rednerBottom = bottom + state.rootSize.height;
-    const renderTopImg = findTopImg(renderTop);
-    const topImg = findTopImg(top, renderTopImg);
-    const bottomImg = findTopImg(bottom, topImg);
-    const renderBottomImg = findTopImg(rednerBottom, bottomImg);
-    state.showRange = [topImg, bottomImg];
-    state.renderRange = [renderTopImg, renderBottomImg];
-  }
-};
-helper.createEffectOn([scrollLength, () => store.gridMode, () => store.option.scrollMode.enabled, () => store.activePageIndex, () => store.option.scrollMode.abreastMode, () => store.rootSize, abreastShowColumn, scrollTop], helper.throttle(() => setState(updateShowRange))
-// 两种卷轴模式下都可以通过在每次滚动后记录
-// 当前 \`显示的第一张图片的 bottom\` 和 \`最后一张图片的 top\` 作为忽略范围，
-// 在每次滚动后检查是否超出了这个范围，没超出就说明本次滚动不会显示或消失任何图片
-// 以此进行性能优化
-// 不过两个卷轴模式都要这么处理挺麻烦的，姑且先用 throttle 顶上，后面有需要再优化
-);
-
-/** 获取指定范围内页面所包含的图片 */
-const getRangeImgList = range => {
-  if (range[0] === range[1]) return new Set(store.pageList[range[0]]);
-  const list = new Set();
-  for (const [a, b] of store.pageList.slice(range[0], range[1] + 1)) {
-    list.add(a);
-    if (b !== undefined) list.add(b);
-  }
-  list.delete(-1);
-  return list;
-};
-const renderImgList = helper.createRootMemo(() => getRangeImgList(store.renderRange));
-const showImgList = helper.createRootMemo(() => getRangeImgList(store.showRange));
-
-/**
- * 图片显示状态
- *
- * 0 - 页面中的第一张图片
- * 1 - 页面中的最后一张图片
- * '' - 页面中的唯一一张图片
- */
-const imgShowState = helper.createRootMemo(() => {
-  if (store.pageList.length === 0) return new Map();
-  const showRange = store.gridMode ? [0, store.pageList.length - 1] : store.renderRange;
-  const stateList = new Map();
-  for (let i = showRange[0]; i <= showRange[1]; i++) {
-    const page = store.pageList[i];
-    if (!page) continue;
-    const [a, b] = page;
-    if (b === undefined) {
-      stateList.set(a, '');
-    } else {
-      stateList.set(a, 0);
-      stateList.set(b, 1);
-    }
-  }
-  return stateList;
-});
-
-// 卷轴模式下，将当前显示的第一页作为当前页
-helper.createEffectOn(() => store.showRange, ([firstPage]) => {
-  if (!store.gridMode && store.option.scrollMode.enabled) _setState('activePageIndex', firstPage ?? 0);
-});
-
-/** 将页面移回原位 */
-const resetPage = (state, animation = false) => {
-  updateShowRange(state);
-  state.page.offset.x.pct = 0;
-  state.page.offset.y.pct = 0;
-  if (state.option.scrollMode.enabled) {
-    state.page.anima = '';
-    return;
-  }
-  let i = -1;
-  if (helper.inRange(state.renderRange[0], state.activePageIndex, state.renderRange[1])) i = state.activePageIndex - state.renderRange[0];
-  if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i;else state.page.offset.x.pct = i === -1 ? 0 : i;
-  state.page.anima = animation ? 'page' : '';
-};
-
-/** 获取指定图片的提示文本 */
-const getImgTip = i => {
-  if (i === -1) return helper.t('other.fill_page');
-  const img = store.imgList[i];
-
-  // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
-  if (img.loadType !== 'loaded') return \`\${i + 1} (\${helper.t(\`img_status.\${img.loadType}\`)})\`;
-  if (img.translationType && img.translationType !== 'hide' && img.translationMessage) return \`\${i + 1}：\${img.translationMessage}\`;
-  return \`\${i + 1}\`;
-};
-
-/** 获取指定页面的提示文本 */
-const getPageTip = pageIndex => {
-  const page = store.pageList[pageIndex];
-  if (!page) return 'null';
-  const pageIndexText = page.map(index => getImgTip(index));
-  if (pageIndexText.length === 1) return pageIndexText[0];
-  if (store.option.dir === 'rtl') pageIndexText.reverse();
-  return pageIndexText.join(store.option.scrollMode.enabled ? '\\n' : ' | ');
-};
-solidJs.createRoot(() => {
-  helper.createEffectOn(() => store.activePageIndex, () => store.show.endPage && _setState('show', 'endPage', undefined), {
-    defer: true
-  });
-  helper.createEffectOn(activePage, helper.throttle(() => store.isDragMode || setState(resetPage)));
-
-  // 在关闭工具栏的同时关掉滚动条的强制显示
-  helper.createEffectOn(() => store.show.toolbar, () => store.show.scrollbar && !store.show.toolbar && _setState('show', 'scrollbar', false), {
-    defer: true
-  });
-
-  // 在切换网格模式后关掉 滚动条和工具栏 的强制显示
-  helper.createEffectOn(() => store.gridMode, () => setState(resetUI), {
-    defer: true
-  });
-});
-
-const closeScrollLock = helper.debounce(() => _setState('flag', 'scrollLock', false), 200);
-
-/** 翻页。返回是否成功改变了当前页数 */
-const turnPageFn = (state, dir) => {
-  if (state.gridMode) return false;
-  if (dir === 'prev') {
-    switch (state.show.endPage) {
-      case 'start':
-        if (!state.flag.scrollLock && state.option.jumpToNext) state.prop.Prev?.();
-        return false;
-      case 'end':
-        state.show.endPage = undefined;
-        state.flag.scrollLock = true;
-        closeScrollLock();
-        return false;
-      default:
-        // 弹出卷首结束页
-        if (isTop()) {
-          if (!state.prop.Exit) return false;
-          // 没有 onPrev 时不弹出
-          if (!state.prop.Prev || !state.option.jumpToNext) return false;
-          state.show.endPage = 'start';
-          state.flag.scrollLock = true;
-          closeScrollLock();
-          return false;
-        }
-        if (state.option.scrollMode.enabled) return false;
-        state.activePageIndex -= 1;
-        return true;
-    }
-  } else {
-    switch (state.show.endPage) {
-      case 'end':
-        if (state.flag.scrollLock) return false;
-        if (state.prop.Next && state.option.jumpToNext) {
-          state.prop.Next();
-          return false;
-        }
-        state.prop.Exit?.(true);
-        return false;
-      case 'start':
-        state.show.endPage = undefined;
-        state.flag.scrollLock = true;
-        closeScrollLock();
-        return false;
-      default:
-        // 弹出卷尾结束页
-        if (isBottom()) {
-          if (!state.prop.Exit) return false;
-          state.show.endPage = 'end';
-          state.flag.scrollLock = true;
-          closeScrollLock();
-          return false;
-        }
-        if (state.option.scrollMode.enabled) return false;
-        state.activePageIndex += 1;
-        return true;
-    }
-  }
-};
-const turnPage = dir => setState(state => turnPageFn(state, dir));
-const turnPageAnimation = dir => {
-  setState(state => {
-    // 无法翻页就恢复原位
-    if (!turnPageFn(state, dir)) {
-      state.page.offset.x.px = 0;
-      state.page.offset.y.px = 0;
-      resetPage(state, true);
-      state.isDragMode = false;
-      return;
-    }
-    state.isDragMode = true;
-    resetPage(state);
-    if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 1 : -1;else state.page.offset.x.pct += dir === 'next' ? -1 : 1;
-    setTimeout(() => {
-      setState(draftState => {
-        resetPage(draftState, true);
-        draftState.page.offset.x.px = 0;
-        draftState.page.offset.y.px = 0;
-        draftState.isDragMode = false;
-      });
-    }, 16);
-  });
-};
-
 const touches = new Map();
 const bound = helper.createMemoMap({
   x: () => -store.rootSize.width * (store.option.zoom.ratio / 100 - 1),
@@ -2851,12 +2384,6 @@ const zoom = (val, focal, animation = false) => {
     draftOption.zoom.offset.y -= dy;
     checkBound(state);
     if (animation) state.page.anima = 'zoom';
-
-    // 加一个延时锁防止在放大模式下通过滚轮缩小至原尺寸后就立刻跳到下一页
-    if (newScale === 100) {
-      state.flag.scrollLock = true;
-      closeScrollLock();
-    }
   });
 };
 
@@ -3137,30 +2664,49 @@ const selfhostedTranslation = async i => {
   return URL.createObjectURL(await download(\`\${url()}/result/\${task_id}\`));
 };
 
+const handleMessage = (msg, i) => {
+  switch (msg.type) {
+    case 'result':
+      return msg.result.translation_mask;
+    case 'pending':
+      setMessage(i, helper.t('translation.tip.pending', {
+        pos: msg.pos
+      }));
+      break;
+    case 'status':
+      setMessage(i, helper.t(\`translation.status.\${msg.status}\`) || msg.status);
+      break;
+    case 'error':
+      throw new Error(\`\${helper.t('translation.tip.error')}：id \${msg.error_id}\`);
+    case 'not_found':
+      throw new Error(\`\${helper.t('translation.tip.error')}：Not Found\`);
+  }
+};
+const waitTranslationPolling = async (id, i) => {
+  let result;
+  while (result === undefined) {
+    const res = await request(\`https://api.cotrans.touhou.ai/task/\${id}/status/v1\`, {
+      responseType: 'json'
+    });
+    result = handleMessage(res.response, i);
+    await helper.sleep(1000);
+  }
+  return result;
+};
+
 /** 等待翻译完成 */
 const waitTranslation = (id, i) => {
   const ws = new WebSocket(\`wss://api.cotrans.touhou.ai/task/\${id}/event/v1\`);
+
+  // 如果网站设置了 CSP connect-src 就只能轮询了
+  if (ws.readyState > 1) return waitTranslationPolling(id, i);
   return new Promise((resolve, reject) => {
     ws.onmessage = e => {
-      const msg = JSON.parse(e.data);
-      switch (msg.type) {
-        case 'result':
-          resolve(msg.result.translation_mask);
-          break;
-        case 'pending':
-          setMessage(i, helper.t('translation.tip.pending', {
-            pos: msg.pos
-          }));
-          break;
-        case 'status':
-          setMessage(i, helper.t(\`translation.status.\${msg.status}\`) || msg.status);
-          break;
-        case 'error':
-          reject(new Error(\`\${helper.t('translation.tip.error')}：id \${msg.error_id}\`));
-          break;
-        case 'not_found':
-          reject(new Error(\`\${helper.t('translation.tip.error')}：Not Found\`));
-          break;
+      try {
+        const result = handleMessage(JSON.parse(e.data), i);
+        if (result) resolve(result);
+      } catch (error) {
+        reject(error);
       }
     };
   });
@@ -3173,8 +2719,7 @@ const mergeImage = async (rawImage, maskUri) => {
   const canvasCtx = canvas.getContext('2d');
   canvasCtx.drawImage(img, 0, 0);
   const img2 = new Image();
-  img2.src = maskUri;
-  img2.crossOrigin = 'anonymous';
+  img2.src = URL.createObjectURL(await download(maskUri));
   await helper.waitImgLoad(img2);
   canvasCtx.drawImage(img2, 0, 0);
   return URL.createObjectURL(await helper.canvasToBlob(canvas));
@@ -3336,6 +2881,201 @@ helper.createEffectOn([() => store.option.translation.server, () => store.option
 });
 const translatorOptions = helper.createRootMemo(solidJs.on([selfhostedOptions, helper.lang, () => store.option.translation.server], () => store.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
 
+/** 并排卷轴模式下的全局滚动填充 */
+const [abreastScrollFill, _setAbreastScrollFill] = solidJs.createSignal(0);
+/** 并排卷轴模式下的每列布局 */
+const abreastArea = helper.createRootMemo(prev => {
+  if (!isAbreastMode()) return prev;
+  const columns = [[]];
+  const position = {};
+  let length = 0;
+  const rootHeight = store.rootSize.height;
+  if (!rootHeight || store.imgList.length === 0) return {
+    columns,
+    position,
+    length
+  };
+  const repeatHeight = rootHeight * store.option.scrollMode.abreastDuplicate;
+
+  /** 当前图片在当前列的所在高度 */
+  let top = abreastScrollFill();
+  while (top > rootHeight) {
+    top -= rootHeight - repeatHeight;
+    columns.push([]);
+  }
+  for (let i = 0; i < store.imgList.length; i++) {
+    const imgPosition = [];
+    const imgHeight = store.imgList[i].size.height;
+    length += imgHeight;
+    let height = imgHeight;
+    while (height > 0) {
+      columns.at(-1).push(i);
+      imgPosition.push({
+        column: columns.length - 1,
+        top
+      });
+      if (top < 0 && imgPosition.length > 1) top = 0;
+      const availableHeight = rootHeight - top;
+      top += height;
+      height -= availableHeight;
+
+      // 填满一列后换行
+      if (top < rootHeight) continue;
+      columns.push([]);
+      top = height - imgHeight;
+
+      // 复现上列结尾
+      if (!repeatHeight || columns.length === 1) continue;
+      top += repeatHeight;
+      height = Math.min(imgHeight, height + repeatHeight);
+
+      /** 为了复现而出现的空白部分高度 */
+      let emptyTop = top;
+      let prevImgIndex = i;
+      while (prevImgIndex >= 1 && emptyTop > 0) {
+        prevImgIndex -= 1;
+        // 把上一张图片加进来填补空白
+        columns.at(-1).push(prevImgIndex);
+        const prevImgHeight = store.imgList[prevImgIndex].size.height;
+        emptyTop -= prevImgHeight;
+        position[prevImgIndex].push({
+          column: columns.length - 1,
+          top: emptyTop
+        });
+      }
+    }
+    position[i] = imgPosition;
+  }
+  return {
+    columns,
+    position,
+    length
+  };
+}, {
+  columns: [],
+  position: {},
+  length: 0
+});
+
+/** 头尾滚动的限制值 */
+const scrollFillLimit = helper.createRootMemo(() => abreastArea().length - store.rootSize.height);
+const setAbreastScrollFill = val => _setAbreastScrollFill(helper.clamp(-scrollFillLimit(), val, scrollFillLimit()));
+
+/** 并排卷轴模式下当前要显示的列 */
+const abreastShowColumn = helper.createThrottleMemo(() => {
+  if (!isAbreastMode() || abreastArea().columns.length === 0) return {
+    start: 0,
+    end: 0
+  };
+  const columnWidth = abreastColumnWidth() + store.option.scrollMode.spacing * 7;
+  return {
+    start: helper.clamp(0, Math.floor(store.page.offset.x.px / columnWidth), abreastArea().columns.length - 1),
+    end: helper.clamp(0, Math.floor((store.page.offset.x.px + store.rootSize.width) / columnWidth), abreastArea().columns.length - 1)
+  };
+});
+
+/** 并排卷轴模式下的漫画流宽度 */
+const abreastContentWidth = helper.createRootMemo(() => abreastArea().columns.length * abreastColumnWidth() + (abreastArea().columns.length - 1) * store.option.scrollMode.spacing * 7);
+
+/** 并排卷轴模式下的最大滚动距离 */
+const abreastScrollWidth = helper.createRootMemo(() => abreastContentWidth() - store.rootSize.width);
+
+/** 并排卷轴模式下每个图片所在位置的样式 */
+const imgAreaStyle = helper.createRootMemo(() => {
+  if (!isAbreastMode() || store.gridMode) return '';
+  let styleText = '';
+  const selector = (index, imgNum = 0) => \`#_\${index}\${imgNum === 0 ? '' : \`-\${imgNum}\`}\`;
+  for (const index of store.imgList.keys()) {
+    let imgNum = 0;
+    for (const {
+      column,
+      top
+    } of abreastArea().position[index] ?? []) {
+      const itemStyle = \`grid-area: _\${column} !important; transform: translateY(\${top}px);\`;
+      styleText += \`\${selector(index, imgNum)} { \${itemStyle} }\\n\`;
+      imgNum += 1;
+    }
+  }
+  return styleText;
+});
+
+/** 滚动内容的长度 */
+const scrollLength = helper.createRootMemo(() => {
+  if (isScrollMode()) return contentHeight();
+  if (isAbreastMode()) return abreastContentWidth();
+  return store.pageList.length;
+});
+
+/** 滚动内容的滚动进度 */
+const scrollProgress = helper.createRootMemo(() => {
+  if (isScrollMode()) return scrollTop();
+  if (isAbreastMode()) return store.page.offset.x.px;
+  return store.activePageIndex;
+});
+
+/** 滚动内容的滚动进度百分比 */
+const scrollPercentage = helper.createRootMemo(() => scrollProgress() / scrollLength());
+
+/** 滚动条滑块长度 */
+const sliderHeight = helper.createRootMemo(() => {
+  let itemLength = 1;
+  if (isScrollMode()) itemLength = store.rootSize.height;
+  if (isAbreastMode()) itemLength = store.rootSize.width;
+  return itemLength / scrollLength();
+});
+
+/** 当前是否已经滚动到底部 */
+const isBottom = helper.createRootMemo(() => scrollPercentage() + sliderHeight() >= 0.9999);
+
+/** 当前是否已经滚动到顶部 */
+const isTop = helper.createRootMemo(() => scrollPercentage() === 0);
+
+/** 在卷轴模式下滚动到指定进度 */
+const scrollTo = (x, smooth = false) => {
+  if (!store.option.scrollMode.enabled) return;
+  if (store.option.scrollMode.abreastMode) {
+    refs.mangaBox.scrollTo({
+      top: 0,
+      behavior: 'instant'
+    });
+    const val = helper.clamp(0, x, abreastScrollWidth());
+    return _setState('page', 'offset', 'x', 'px', val);
+  }
+  refs.mangaBox.scrollTo({
+    top: x,
+    behavior: smooth ? 'smooth' : 'instant'
+  });
+};
+
+/** 保存当前滚动进度，并在之后恢复 */
+const saveScrollProgress = () => {
+  const oldScrollPercentage = scrollPercentage();
+  return () => scrollTo(oldScrollPercentage * scrollLength());
+};
+
+/** 在卷轴模式下，滚动到能显示指定图片的位置 */
+const scrollViewImg = i => {
+  if (!store.option.scrollMode.enabled) return;
+  if (store.option.scrollMode.abreastMode) {
+    const columnNum = abreastArea().columns.findIndex(column => column.includes(i));
+    scrollTo(columnNum * abreastColumnWidth());
+  } else scrollTo(imgTopList()[i]);
+};
+
+/** 在卷轴模式下进行缩放，并且保持滚动进度不变 */
+const zoomScrollModeImg = (zoomLevel, set = false) => {
+  const jump = saveScrollProgress();
+  setOption(draftOption => {
+    const newVal = set ? zoomLevel : store.option.scrollMode.imgScale + zoomLevel;
+    draftOption.scrollMode.imgScale = helper.clamp(0.1, Number(newVal.toFixed(2)), 3);
+  });
+  jump();
+
+  // 并排卷轴模式下并没有一个明确直观的滚动进度，
+  // 也想不出有什么实现效果能和普通卷轴模式的效果一致,
+  // 所以就摆烂不管了，反正现在这样也已经能避免乱跳了
+};
+
 /** 切换页面填充 */
 const switchFillEffect = () => {
   setState(state => {
@@ -3422,6 +3162,229 @@ const useDoubleClick = (click, doubleClick, timeout = 200) => {
       clickTimeout = null;
     }, timeout);
   };
+};
+
+/** 找到普通卷轴模式下指定高度上的图片 */
+const findTopImg = (top, initIndex = 0) => {
+  if (top > contentHeight()) return imgTopList().length - 1;
+  let i = initIndex;
+  for (; i < imgTopList().length; i++) if (imgTopList()[i] > top) return i === 0 ? 0 : i - 1;
+  return imgTopList().length - 1;
+};
+
+/** 获取并排卷轴模式下指定列的指定图片 */
+const getAbreastColumnImg = (column, img) => {
+  const {
+    columns
+  } = abreastArea();
+  return columns[helper.clamp(0, column, columns.length - 1)]?.at(img) ?? 0;
+};
+
+/** 计算显示页面 */
+const updateShowRange = state => {
+  if (scrollLength() === 0) {
+    state.showRange = [0, 0];
+    state.renderRange = state.showRange;
+  } else if (!state.option.scrollMode.enabled) {
+    // 翻页模式
+    state.showRange = [state.activePageIndex, state.activePageIndex];
+    state.renderRange = [helper.clamp(0, state.activePageIndex - 1, state.pageList.length - 1), helper.clamp(0, state.activePageIndex + 1, state.pageList.length - 1)];
+  } else if (state.option.scrollMode.abreastMode) {
+    // 并排卷轴模式
+    const {
+      start,
+      end
+    } = abreastShowColumn();
+    state.showRange = [getAbreastColumnImg(start, 0), getAbreastColumnImg(end, -1)];
+    state.renderRange = [getAbreastColumnImg(start - 2, 0), getAbreastColumnImg(end + 2, -1)];
+  } else {
+    // 普通卷轴模式
+    const top = scrollTop();
+    const bottom = scrollTop() + state.rootSize.height;
+    const renderTop = top - state.rootSize.height;
+    const rednerBottom = bottom + state.rootSize.height;
+    const renderTopImg = findTopImg(renderTop);
+    const topImg = findTopImg(top, renderTopImg);
+    const bottomImg = findTopImg(bottom, topImg);
+    const renderBottomImg = findTopImg(rednerBottom, bottomImg);
+    state.showRange = [topImg, bottomImg];
+    state.renderRange = [renderTopImg, renderBottomImg];
+  }
+};
+helper.createEffectOn([scrollLength, () => store.gridMode, () => store.option.scrollMode.enabled, () => store.activePageIndex, () => store.option.scrollMode.abreastMode, () => store.rootSize, abreastShowColumn, scrollTop], helper.throttle(() => setState(updateShowRange))
+// 两种卷轴模式下都可以通过在每次滚动后记录
+// 当前 \`显示的第一张图片的 bottom\` 和 \`最后一张图片的 top\` 作为忽略范围，
+// 在每次滚动后检查是否超出了这个范围，没超出就说明本次滚动不会显示或消失任何图片
+// 以此进行性能优化
+// 不过两个卷轴模式都要这么处理挺麻烦的，姑且先用 throttle 顶上，后面有需要再优化
+);
+
+/** 获取指定范围内页面所包含的图片 */
+const getRangeImgList = range => {
+  if (range[0] === range[1]) return new Set(store.pageList[range[0]]);
+  const list = new Set();
+  for (const [a, b] of store.pageList.slice(range[0], range[1] + 1)) {
+    list.add(a);
+    if (b !== undefined) list.add(b);
+  }
+  list.delete(-1);
+  return list;
+};
+const renderImgList = helper.createRootMemo(() => getRangeImgList(store.renderRange));
+const showImgList = helper.createRootMemo(() => getRangeImgList(store.showRange));
+
+/**
+ * 图片显示状态
+ *
+ * 0 - 页面中的第一张图片
+ * 1 - 页面中的最后一张图片
+ * '' - 页面中的唯一一张图片
+ */
+const imgShowState = helper.createRootMemo(() => {
+  if (store.pageList.length === 0) return new Map();
+  const showRange = store.gridMode ? [0, store.pageList.length - 1] : store.renderRange;
+  const stateList = new Map();
+  for (let i = showRange[0]; i <= showRange[1]; i++) {
+    const page = store.pageList[i];
+    if (!page) continue;
+    const [a, b] = page;
+    if (b === undefined) {
+      stateList.set(a, '');
+    } else {
+      stateList.set(a, 0);
+      stateList.set(b, 1);
+    }
+  }
+  return stateList;
+});
+
+// 卷轴模式下，将当前显示的第一页作为当前页
+helper.createEffectOn(() => store.showRange, ([firstPage]) => {
+  if (!store.gridMode && store.option.scrollMode.enabled) _setState('activePageIndex', firstPage ?? 0);
+});
+
+/** 将页面移回原位 */
+const resetPage = (state, animation = false) => {
+  updateShowRange(state);
+  state.page.offset.x.pct = 0;
+  state.page.offset.y.pct = 0;
+  if (state.option.scrollMode.enabled) {
+    state.page.anima = '';
+    return;
+  }
+  let i = -1;
+  if (helper.inRange(state.renderRange[0], state.activePageIndex, state.renderRange[1])) i = state.activePageIndex - state.renderRange[0];
+  if (store.page.vertical) state.page.offset.y.pct = i === -1 ? 0 : -i;else state.page.offset.x.pct = i === -1 ? 0 : i;
+  state.page.anima = animation ? 'page' : '';
+};
+
+/** 获取指定图片的提示文本 */
+const getImgTip = i => {
+  if (i === -1) return helper.t('other.fill_page');
+  const img = store.imgList[i];
+
+  // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
+  if (img.loadType !== 'loaded') return \`\${i + 1} (\${helper.t(\`img_status.\${img.loadType}\`)})\`;
+  if (img.translationType && img.translationType !== 'hide' && img.translationMessage) return \`\${i + 1}：\${img.translationMessage}\`;
+  return \`\${i + 1}\`;
+};
+
+/** 获取指定页面的提示文本 */
+const getPageTip = pageIndex => {
+  const page = store.pageList[pageIndex];
+  if (!page) return 'null';
+  const pageIndexText = page.map(index => getImgTip(index));
+  if (pageIndexText.length === 1) return pageIndexText[0];
+  if (store.option.dir === 'rtl') pageIndexText.reverse();
+  return pageIndexText.join(store.option.scrollMode.enabled ? '\\n' : ' | ');
+};
+helper.createEffectOn(() => store.activePageIndex, () => store.show.endPage && _setState('show', 'endPage', undefined), {
+  defer: true
+});
+helper.createEffectOn(activePage, helper.throttle(() => store.isDragMode || setState(resetPage)));
+
+// 在关闭工具栏的同时关掉滚动条的强制显示
+helper.createEffectOn(() => store.show.toolbar, () => store.show.scrollbar && !store.show.toolbar && _setState('show', 'scrollbar', false), {
+  defer: true
+});
+
+// 在切换网格模式后关掉 滚动条和工具栏 的强制显示
+helper.createEffectOn(() => store.gridMode, () => setState(resetUI), {
+  defer: true
+});
+
+/** 翻页。返回是否成功改变了当前页数 */
+const turnPageFn = (state, dir) => {
+  if (state.gridMode) return false;
+  if (dir === 'prev') {
+    switch (state.show.endPage) {
+      case 'start':
+        if (state.option.jumpToNext) state.prop.Prev?.();
+        return false;
+      case 'end':
+        state.show.endPage = undefined;
+        return false;
+      default:
+        // 弹出卷首结束页
+        if (isTop()) {
+          if (!state.prop.Exit) return false;
+          // 没有 onPrev 时不弹出
+          if (!state.prop.Prev || !state.option.jumpToNext) return false;
+          state.show.endPage = 'start';
+          return false;
+        }
+        if (state.option.scrollMode.enabled) return false;
+        state.activePageIndex -= 1;
+        return true;
+    }
+  } else {
+    switch (state.show.endPage) {
+      case 'end':
+        if (state.prop.Next && state.option.jumpToNext) {
+          state.prop.Next();
+          return false;
+        }
+        state.prop.Exit?.(true);
+        return false;
+      case 'start':
+        state.show.endPage = undefined;
+        return false;
+      default:
+        // 弹出卷尾结束页
+        if (isBottom()) {
+          if (!state.prop.Exit) return false;
+          state.show.endPage = 'end';
+          return false;
+        }
+        if (state.option.scrollMode.enabled) return false;
+        state.activePageIndex += 1;
+        return true;
+    }
+  }
+};
+const turnPage = dir => setState(state => turnPageFn(state, dir));
+const turnPageAnimation = dir => {
+  setState(state => {
+    // 无法翻页就恢复原位
+    if (!turnPageFn(state, dir)) {
+      state.page.offset.x.px = 0;
+      state.page.offset.y.px = 0;
+      resetPage(state, true);
+      state.isDragMode = false;
+      return;
+    }
+    state.isDragMode = true;
+    resetPage(state);
+    if (store.page.vertical) state.page.offset.y.pct += dir === 'next' ? 1 : -1;else state.page.offset.x.pct += dir === 'next' ? -1 : 1;
+    setTimeout(() => {
+      setState(draftState => {
+        resetPage(draftState, true);
+        draftState.page.offset.x.px = 0;
+        draftState.page.offset.y.px = 0;
+        draftState.isDragMode = false;
+      });
+    }, 16);
+  });
 };
 
 /** 根据坐标判断点击的元素 */
@@ -3629,9 +3592,7 @@ const handleMouseDown = e => {
 const scrollModeScrollPage = dir => {
   if (!store.show.endPage) {
     scrollTo(scrollTop() + store.rootSize.height * 0.8 * (dir === 'next' ? 1 : -1));
-    _setState('flag', 'scrollLock', true);
   }
-  closeScrollLock();
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
@@ -3782,7 +3743,6 @@ const handleWheel = e => {
   if (store.gridMode) return;
   e.stopPropagation();
   if (e.ctrlKey || e.altKey) e.preventDefault();
-  if (store.flag.scrollLock || e.deltaY === 0) return closeScrollLock();
   const isWheelDown = e.deltaY > 0;
   if (store.show.endPage) return turnPage(isWheelDown ? 'next' : 'prev');
 
@@ -3805,6 +3765,9 @@ const handleWheel = e => {
     turnPage(isWheelDown ? 'next' : 'prev');
     scrollTo(scrollTop() + e.deltaY);
   }
+
+  // 防止滚动到网页
+  if (!isScrollMode()) e.preventDefault();
 
   // 通过\`两次滚动距离是否成倍数\`和\`滚动距离是否过小\`来判断是否是触摸板
   if (wheelType !== 'trackpad' && (nowDeltaY < 2 || !Number.isInteger(lastDeltaY) && !Number.isInteger(nowDeltaY) && !isMultipleOf(lastDeltaY, nowDeltaY))) {
@@ -4030,14 +3993,16 @@ const imgErrorNum = new Map();
 
 /** 图片加载出错的回调 */
 const handleImgError = (i, e) => {
+  if (!e.isConnected) return;
   imgErrorNum.set(e.src, (imgErrorNum.get(e.src) ?? 0) + 1);
   setState(state => {
     const img = state.imgList[i];
     if (!img) return;
+    helper.log.error(i, helper.t('alert.img_load_failed'), e);
     img.loadType = 'error';
     img.type = undefined;
-    helper.log.error(i, helper.t('alert.img_load_failed'), e);
     state.prop.Loading?.(state.imgList, img);
+    if (renderImgList().has(i) && (imgErrorNum.get(img.src) ?? 0) < 3) img.loadType = 'wait';
   });
   updateImgLoadType();
 };
@@ -4056,11 +4021,7 @@ const loadImgList = new Set();
 const loadImg = index => {
   if (index === -1 || !needLoadImgList().has(index)) return true;
   const img = store.imgList[index];
-  if (img.loadType === 'error') {
-    if (!renderImgList().has(index) || (imgErrorNum.get(img.src) ?? 0) >= 3) return true;
-    _setState('imgList', index, 'loadType', 'wait');
-    return false;
-  }
+  if (img.loadType === 'error') return true;
   loadImgList.add(index);
   return false;
 };
@@ -4148,7 +4109,7 @@ const updateImgLoadType = helper.singleThreaded(() => {
     }
   });
 });
-helper.createEffectOn([preloadNum, () => [...renderImgList()].map(i => store.imgList[i]), () => store.option.alwaysLoadAllImg], updateImgLoadType);
+helper.createEffectOn([preloadNum, helper.createRootMemo(() => [...renderImgList()].map(i => store.imgList[i])), () => store.option.alwaysLoadAllImg], updateImgLoadType);
 helper.createEffectOn(showImgList, helper.debounce(showImgList => {
   // 如果当前显示页面有出错的图片，就重新加载一次
   for (const i of showImgList) {
@@ -4161,22 +4122,34 @@ helper.createEffectOn(showImgList, helper.debounce(showImgList => {
 });
 
 const EmptyTip = () => {
-  const [show, setShow] = solidJs.createSignal(false);
-  solidJs.onMount(() => {
-    let timeoutId = window.setTimeout(() => {
-      setShow(true);
-      timeoutId = 0;
-    }, 2000);
-    solidJs.onCleanup(() => timeoutId && clearTimeout(timeoutId));
+  let ref;
+  helper.onAutoMount(() => {
+    let timeoutId = 0;
+    const observer = new IntersectionObserver(([{
+      isIntersecting
+    }]) => {
+      if (!isIntersecting) return;
+      timeoutId = window.setTimeout(() => {
+        ref?.style.removeProperty('opacity');
+        timeoutId = 0;
+      }, 2000);
+    }, {
+      threshold: 1
+    });
+    observer.observe(ref);
+    return () => {
+      observer.disconnect();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   });
-  return web.createComponent(solidJs.Show, {
-    get when() {
-      return show();
-    },
-    get children() {
-      return web.template(\`<h1>NULL\`)();
-    }
-  });
+  return (() => {
+    var _el$ = web.template(\`<h1>\`)();
+    var _ref$ = ref;
+    typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
+    _el$.style.setProperty("opacity", "0");
+    _el$.textContent = "NULL";
+    return _el$;
+  })();
 };
 
 const ComicImg = img => {
@@ -5486,13 +5459,25 @@ const playAnimation = e => {
 };
 
 
+/** 判断滚动事件是否会导致滚动 */
+const canScroll = (e, container) => {
+  const {
+    scrollHeight,
+    clientHeight,
+    scrollTop
+  } = container;
+  return scrollHeight > clientHeight && (e.deltaY < 0 && scrollTop > 0 || e.deltaY > 0 && Math.ceil(scrollTop) < scrollHeight - clientHeight);
+};
+
 /** 菜单面板 */
 const SettingPanel = () => {
   const settingList = helper.createRootMemo(() => store.prop.editSettingList(defaultSettingList()));
   return (() => {
     var _el$ = web.template(\`<div>\`)();
-    web.addEventListener(_el$, "wheel", stopPropagation);
     web.addEventListener(_el$, "scroll", stopPropagation);
+    _el$.addEventListener("wheel", e => canScroll(e, refs.settingPanel) && e.stopPropagation());
+    var _ref$ = bindRef('settingPanel');
+    typeof _ref$ === "function" && web.use(_ref$, _el$);
     _el$.addEventListener("click", stopPropagation);
     web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
@@ -6078,7 +6063,8 @@ const EndPage = () => {
 };
 
 const createComicImg = url => ({
-  src: url || '',
+  // 使用相对协议路径，防止 Mixed Content 报错
+  src: url.replace(/^http:/, ''),
   loadType: 'wait',
   size: placeholderSize()
 });
@@ -6170,7 +6156,7 @@ const useInit = props => {
       let needUpdatePageData = needResetFillEffect || state.imgList.length !== props.imgList.length;
       /** 传入的是否是新漫画 */
       let isNew = true;
-      const imgMap = new Map(state.imgList.map(img => [img.src, img]));
+      const imgMap = new Map(state.imgList.filter(img => img.src).map(img => [img.src, img]));
       for (let i = 0; i < props.imgList.length; i++) {
         const url = props.imgList[i];
         // 只有旧图一张不剩才算是新漫画
@@ -6291,14 +6277,14 @@ const Manga = props => {
   solidJs.createEffect(() => props.show && focus());
   return (() => {
     var _el$ = web.template(\`<div>\`)();
-    web.addEventListener(_el$, "wheel", handleWheel);
     var _ref$ = bindRef('root');
     typeof _ref$ === "function" && web.use(_ref$, _el$);
+    _el$.addEventListener("click", stopPropagation);
     _el$.addEventListener("mousedown", handleMouseDown);
+    _el$.addEventListener("wheel", handleWheel);
     _el$.addEventListener("keydown", handleKeyDown, true);
     _el$.addEventListener("keypress", stopPropagation, true);
     _el$.addEventListener("keyup", stopPropagation, true);
-    _el$.addEventListener("click", stopPropagation);
     web.insert(_el$, web.createComponent(ComicImgFlow, {}), null);
     web.insert(_el$, web.createComponent(Toolbar, {}), null);
     web.insert(_el$, web.createComponent(Scrollbar, {}), null);
@@ -6348,7 +6334,6 @@ exports.bindScrollTop = bindScrollTop;
 exports.bound = bound;
 exports.buttonListDivider = buttonListDivider;
 exports.checkImgSize = checkImgSize;
-exports.closeScrollLock = closeScrollLock;
 exports.contentHeight = contentHeight;
 exports.createStateSetFn = createStateSetFn;
 exports.defaultHotkeys = defaultHotkeys;
@@ -6918,7 +6903,7 @@ exports.ref = ref;
 exports.toast = toast;
 `;
       break;
-    case 'dmzjApi':
+    case 'userscript/dmzjApi':
       code =`
 const store = require('solid-js/store');
 const solidJs = require('solid-js');
@@ -7086,6 +7071,169 @@ exports.getChapterInfo = getChapterInfo;
 exports.getComicId = getComicId;
 exports.getViewpoint = getViewpoint;
 exports.useComicDetail = useComicDetail;
+`;
+      break;
+    case 'userscript/detectAd':
+      code =`
+const QrScanner = require('qr-scanner');
+const main = require('main');
+const helper = require('helper');
+
+const getAdPage = async (list, isAdPage, adList) => {
+  let i = list.length - 1;
+  let normalNum = 0;
+  // 只检查最后十张
+  for (; i >= list.length - 10; i--) {
+    // 开头肯定不会是广告
+    if (i <= 2) break;
+    if (adList.has(i)) continue;
+    const item = list[i];
+    if (!item) break;
+    if (await isAdPage(item)) adList.add(i);
+    // 找到连续三张正常漫画页后中断
+    else if (normalNum >= 2) break;else normalNum += 1;
+  }
+  let adNum = 0;
+  for (i = Math.min(...adList); i < list.length; i++) {
+    if (adList.has(i)) {
+      adNum += 1;
+      continue;
+    }
+
+    // 连续两张广告后面的肯定也都是广告
+    if (adNum >= 2) adList.add(i);
+    // 夹在两张广告中间的肯定也是广告
+    else if (adList.has(i - 1) && adList.has(i + 1)) adList.add(i);else adNum = 0;
+  }
+  return adList;
+};
+
+/** 判断像素点是否是灰阶 */
+const isGrayscalePixel = (r, g, b) => r === g && r === b;
+
+/** 判断一张图是否是彩图 */
+const isColorImg = imgCanvas => {
+  // 缩小尺寸放弃细节，避免被黑白图上的小段彩色文字干扰
+  const canvas = new OffscreenCanvas(3, 3);
+  const ctx = canvas.getContext('2d', {
+    alpha: false
+  });
+  ctx.drawImage(imgCanvas, 0, 0, canvas.width, canvas.height);
+  const {
+    data
+  } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    if (!isGrayscalePixel(r, g, b)) return true;
+  }
+  return false;
+};
+const imgToCanvas = async img => {
+  if (typeof img !== 'string') {
+    await helper.wait(() => img.naturalHeight && img.naturalWidth, 1000 * 10);
+    try {
+      const canvas = new OffscreenCanvas(img.width, img.height);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      // 没被 CORS 污染就直接使用这个 canvas
+      if (ctx.getImageData(0, 0, 1, 1)) return canvas;
+    } catch {}
+  }
+  const url = typeof img === 'string' ? img : img.src;
+  const res = await main.request(url, {
+    responseType: 'blob'
+  });
+  const image = await helper.waitImgLoad(URL.createObjectURL(res.response));
+  const canvas = new OffscreenCanvas(image.width, image.height);
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(image, 0, 0);
+  return canvas;
+};
+
+/** 二维码白名单 */
+const qrCodeWhiteList = [
+// fanbox
+/^https:\\/\\/[^.]+\\.fanbox\\.cc/,
+// twitter
+/^https:\\/\\/twitter\\.com/, /^https:\\/\\/x\\.com/,
+// fantia
+/^https:\\/\\/fantia\\.jp/,
+// 棉花糖
+/^https:\\/\\/marshmallow-qa\\.com/];
+
+/** 判断是否含有二维码 */
+const hasQrCode = async (imgCanvas, scanRegion, qrEngine, canvas) => {
+  try {
+    const {
+      data
+    } = await QrScanner.scanImage(imgCanvas, {
+      qrEngine,
+      canvas: canvas,
+      scanRegion,
+      alsoTryWithoutScanRegion: true
+    });
+    if (!data) return false;
+    helper.log(\`检测到二维码： \${data}\`);
+    return qrCodeWhiteList.every(reg => !reg.test(data));
+  } catch {
+    return false;
+  }
+};
+const isAdImg = async (imgCanvas, qrEngine, canvas) => {
+  // 黑白图肯定不是广告
+  if (!isColorImg(imgCanvas)) return false;
+  const width = imgCanvas.width / 2;
+  const height = imgCanvas.height / 2;
+
+  // 分区块扫描图片
+  const scanRegionList = [undefined,
+  // 右下
+  {
+    x: width,
+    y: height,
+    width,
+    height
+  },
+  // 左下
+  {
+    x: 0,
+    y: height,
+    width,
+    height
+  },
+  // 右上
+  {
+    x: width,
+    y: 0,
+    width,
+    height
+  },
+  // 左上
+  {
+    x: 0,
+    y: 0,
+    width,
+    height
+  }];
+  for (const scanRegion of scanRegionList) if (await hasQrCode(imgCanvas, scanRegion, qrEngine, canvas)) return true;
+  return false;
+};
+const byContent = (qrEngine, canvas) => async img => isAdImg(await imgToCanvas(img), qrEngine, canvas);
+
+/** 通过图片内容判断是否是广告 */
+const getAdPageByContent = async (imgList, adList) => {
+  const qrEngine = await QrScanner.createQrEngine();
+  const canvas = new OffscreenCanvas(1, 1);
+  return getAdPage(imgList, byContent(qrEngine, canvas), adList);
+};
+
+/** 通过文件名判断是否是广告 */
+const getAdPageByFileName = async (fileNameList, adList) => getAdPage(fileNameList, fileName => /^[zZ]+/.test(fileName), adList);
+
+exports.getAdPageByContent = getAdPageByContent;
+exports.getAdPageByFileName = getAdPageByFileName;
 `;
       break;
     case 'main':
@@ -7272,7 +7420,7 @@ const request = async (url, details, retryNum = 0, errorNum = 0) => {
   try {
     // 虽然 GM_xmlhttpRequest 有 fetch 选项，但在 stay 上不太稳定
     // 为了支持 ios 端只能自己实现一下了
-    if (details?.fetch ?? (url.startsWith('/') || url.startsWith(window.location.origin))) {
+    if (details?.fetch ?? (/^(\\/|blob:)/.test(url) || url.startsWith(window.location.origin))) {
       const res = await fetch(url, {
         method: 'GET',
         headers,
@@ -7361,10 +7509,11 @@ const MdFileDownload = ((props = {}) => (() => {
   return _el$;
 })());
 
+const Accept = 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8';
+
 /** 下载按钮 */
 const DownloadButton = () => {
   const [statu, setStatu] = solidJs.createSignal('button.download');
-  const getFileExt = url => /[^?]+\\.(\\w+)/.exec(url)?.[1] ?? 'jpg';
   const handleDownload = async () => {
     const fileData = {};
     const {
@@ -7374,31 +7523,25 @@ const DownloadButton = () => {
     for (let i = 0; i < imgList.length; i += 1) {
       setStatu(\`\${i}/\${imgList.length}\`);
       if (Manga.store.option.translation.onlyDownloadTranslated && imgList[i].translationType !== 'show') continue;
+      const img = imgList[i];
+      const url = img.translationType === 'show' ? img.translationUrl : img.src;
+      const index = \`\${i}\`.padStart(imgIndexNum, '0');
       let data;
       let fileName;
-      const img = imgList[i];
-      const url = img.translationType === 'show' ? \`\${img.translationUrl}#.\${getFileExt(img.src)}\` : img.src;
-      const index = \`\${i}\`.padStart(imgIndexNum, '0');
-      if (url.startsWith('blob:')) {
-        const res = await fetch(url);
-        const blob = await res.blob();
-        data = await blob.arrayBuffer();
-        const fileExt = blob.type.split('/')[1];
-        fileName = \`\${index}.\${fileExt}\`;
-      } else {
-        const fileExt = getFileExt(url);
-        fileName = \`\${index}.\${fileExt}\`;
-        try {
-          const res = await request(url, {
-            responseType: 'arraybuffer',
-            errorText: \`\${helper.t('alert.download_failed')}: \${fileName}\`
-          });
-          data = res.response;
-        } catch {
-          fileName = \`\${index} - \${helper.t('alert.download_failed')}.\${fileExt}\`;
-        }
+      try {
+        const res = await request(url, {
+          headers: {
+            Accept
+          },
+          responseType: 'blob',
+          errorText: \`\${helper.t('alert.download_failed')}: \${index}\`
+        });
+        data = res.response;
+        fileName = \`\${index}.\${data.type.split('/')[1]}\`;
+      } catch {
+        fileName = \`\${index} - \${helper.t('alert.download_failed')}\`;
       }
-      fileData[fileName] = new Uint8Array(data);
+      fileData[fileName] = new Uint8Array((await data?.arrayBuffer()) ?? []);
     }
     if (Object.keys(fileData).length === 0) {
       toast.warn(helper.t('alert.no_img_download'));
@@ -7427,6 +7570,7 @@ const DownloadButton = () => {
 };
 
 let dom$1;
+
 /**
  * 显示漫画阅读窗口
  */
@@ -7468,23 +7612,23 @@ const useManga = async initProps => {
     show: false,
     ...initProps
   });
-  const imgList = helper.createRootMemo(() => props.adList ? props.imgList.filter((_, i) => !props.adList.has(i)) : props.imgList);
-  helper.createEffectOn([() => imgList().length, () => props.show], () => {
-    if (!dom$1) {
-      dom$1 = mountComponents('comicRead', () => web.createComponent(Manga.Manga, web.mergeProps(props, {
-        get imgList() {
-          return imgList();
-        }
-      })));
-      dom$1.style.setProperty('z-index', '2147483647', 'important');
-    }
-    if (imgList().length > 0 && props.show) {
+  dom$1 = mountComponents('comicRead', () => web.createComponent(Manga.Manga, props));
+  dom$1.style.setProperty('z-index', '2147483647', 'important');
+  const htmlStyle = document.documentElement.style;
+  let lastOverflow = htmlStyle.overflow;
+  helper.createEffectOn(helper.createRootMemo(() => props.show && props.imgList.length > 0), show => {
+    if (show) {
       dom$1.setAttribute('show', '');
-      document.documentElement.style.overflow = 'hidden';
+      lastOverflow = htmlStyle.overflow;
+      htmlStyle.setProperty('overflow', 'hidden', 'important');
+      htmlStyle.setProperty('scrollbar-width', 'none', 'important');
     } else {
       dom$1.removeAttribute('show');
-      document.documentElement.style.overflow = 'unset';
+      htmlStyle.overflow = lastOverflow;
+      htmlStyle.removeProperty('scrollbar-width');
     }
+  }, {
+    defer: true
   });
   const ExitButton = () => web.createComponent(IconButton.IconButton, {
     get tip() {
@@ -7567,21 +7711,16 @@ const useFab = async initProps => {
         }
     }
   };
-  solidJs.createRoot(() => {
-    solidJs.createEffect(() => {
-      if (dom) return;
-      dom = mountComponents('fab', () => web.createComponent(Fab.Fab, web.mergeProps(props, {
-        get children() {
-          return props.children ?? web.createComponent(web.Dynamic, {
-            get component() {
-              return FabIcon();
-            }
-          });
+  dom = mountComponents('fab', () => web.createComponent(Fab.Fab, web.mergeProps(props, {
+    get children() {
+      return props.children ?? web.createComponent(web.Dynamic, {
+        get component() {
+          return FabIcon();
         }
-      })));
-      dom.style.setProperty('z-index', '2147483646', 'important');
-    });
-  });
+      });
+    }
+  })));
+  dom.style.setProperty('z-index', '2147483646', 'important');
   return [setProps, props];
 };
 
@@ -7753,7 +7892,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复简易阅读模式下的异常滚动\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>nhentai 增加识别广告页功能\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 ehentai 与其他脚本的冲突 </p></li><li><p>修复部分网站上无法翻译的 bug </p></li><li><p>修复部分网站下载图片的扩展名错误的 bug\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
@@ -7843,25 +7982,6 @@ const useInit = async (name, defaultOptions = {}) => {
     speedDial: useSpeedDial(options, setOptions),
     show: false
   });
-
-  /** 处理 Manga 组件的 onLoading 回调，将图片加载状态联动到 Fab 上 */
-  const onLoading = (list, img) => {
-    if (list.length === 0 || !img) return;
-    const loadNum = list.filter(image => image.loadType === 'loaded').length;
-
-    /** 图片加载进度 */
-    const progress = 1 + loadNum / list.length;
-    if (progress === 2)
-      // 图片全部加载完成后恢复 Fab 状态
-      setFab({
-        progress,
-        tip: helper.t('other.read_mode'),
-        show: !options.hiddenFAB && undefined
-      });else setFab({
-      progress,
-      tip: \`\${helper.t('other.img_loading')} - \${loadNum}/\${list.length}\`
-    });
-  };
   setHotkeys(await GM.getValue('Hotkeys', {}));
   Manga.setDefaultHotkeys(hotkeys => ({
     ...hotkeys,
@@ -7869,7 +7989,6 @@ const useInit = async (name, defaultOptions = {}) => {
   }));
   const [setManga, mangaProps] = await useManga({
     imgList: [],
-    onLoading,
     option: options.option,
     defaultOption: options.defaultOption,
     onOptionChange: option => setOptions({
@@ -7880,6 +7999,49 @@ const useInit = async (name, defaultOptions = {}) => {
       GM.setValue('Hotkeys', newValue);
       setHotkeys(newValue);
     }
+  });
+  const [comicMap, setComicMap] = store.createStore({});
+  const [nowComic, switchComic] = solidJs.createSignal('');
+  const nowImgList = helper.createRootMemo(() => {
+    const comic = comicMap[nowComic()];
+    if (!comic?.imgList) return undefined;
+    if (!comic.adList?.size) return comic.imgList;
+    return comic.imgList.filter((_, i) => !comic.adList?.has(i));
+  });
+  helper.createEffectOn(nowImgList, list => list && setManga('imgList', list));
+
+  /** 当前加载完成的图片数量 */
+  const imgLoadNum = helper.createRootMemo(() => Manga.store.imgList.filter(img => img.loadType === 'loaded').length);
+
+  /** 当前已取得 url 的图片数量 */
+  const loadImgNum = helper.createRootMemo(() => nowImgList()?.filter(Boolean)?.length);
+
+  // 设置 Fab 的显示进度
+  helper.createEffectOn([loadImgNum, imgLoadNum, () => nowImgList()?.length], ([doneNum, loadNum, totalNum]) => {
+    if (doneNum === undefined || totalNum === undefined) return setFab({
+      progress: undefined
+    });
+    if (totalNum === 0) return setFab({
+      progress: 0,
+      tip: \`\${helper.t('other.loading_img')} - \${doneNum}/\${totalNum}\`
+    });
+
+    // 加载图片 url 阶段的进度
+    if (doneNum < totalNum) return setFab({
+      progress: doneNum / totalNum,
+      tip: \`\${helper.t('other.loading_img')} - \${doneNum}/\${totalNum}\`
+    });
+
+    // 图片加载阶段的进度
+    if (loadNum < totalNum) return setFab({
+      progress: 1 + loadNum / totalNum,
+      tip: \`\${helper.t('other.img_loading')} - \${loadNum}/\${totalNum}\`
+    });
+    return setFab({
+      progress: 1 + loadNum / totalNum,
+      tip: helper.t('other.read_mode'),
+      show: !options.hiddenFAB && undefined
+    });
   });
   let menuId;
   /** 更新显示/隐藏悬浮按钮的菜单项 */
@@ -7909,6 +8071,57 @@ const useInit = async (name, defaultOptions = {}) => {
   const needAutoShow = {
     val: true
   };
+  const loadComic = async (id = nowComic()) => {
+    if (!Reflect.has(comicMap, id)) throw new Error('comic id error');
+    try {
+      setComicMap(id, 'imgList', []);
+      const newImgList = await comicMap[id].getImgList();
+      if (newImgList.length === 0) throw new Error(helper.t('alert.fetch_comic_img_failed'));
+      setComicMap(id, 'imgList', newImgList);
+    } catch (error) {
+      setComicMap(id, 'imgList', undefined);
+      helper.log.error(error);
+      throw error;
+    }
+  };
+  const showComic = async (id = nowComic()) => {
+    if (!Reflect.has(comicMap, id)) throw new Error('comic id error');
+    if (id !== nowComic()) switchComic(id);
+    switch (comicMap[id].imgList?.length) {
+      case 0:
+        return toast.warn(helper.t('alert.repeat_load'), {
+          duration: 1500
+        });
+      case undefined:
+        {
+          try {
+            await loadComic(id);
+            needAutoShow.val = false;
+          } catch (error) {
+            return toast.error(error.message);
+          }
+        }
+    }
+    setManga('show', true);
+  };
+  const init = () => {
+    setFab({
+      onClick: showComic,
+      show: !options.hiddenFAB && undefined
+    });
+    if (needAutoShow.val && options.autoShow) setTimeout(showComic);
+    (async () => {
+      console.debug(helper.t('other.enter_comic_read_mode'), fabProps.onClick);
+      await updateHideFabMenu();
+    })();
+    helper.linstenKeydown(e => {
+      const code = helper.getKeyboardCode(e);
+      if (Manga.hotkeysMap()[code] !== 'enter_read_mode') return;
+      e.stopPropagation();
+      e.preventDefault();
+      fabProps.onClick?.();
+    });
+  };
   return {
     options,
     setOptions,
@@ -7918,94 +8131,46 @@ const useInit = async (name, defaultOptions = {}) => {
     fabProps,
     needAutoShow,
     isStored,
-    /** Manga 组件的默认 onLoading */
-    onLoading,
-    /**
-     * 对 加载图片 和 进入阅读模式 相关初始化的封装
-     * @param getImgList 返回图片列表的函数
-     * @returns 自动加载图片并进入阅读模式的函数
-     */
-    init(getImgList) {
-      const firstRun = menuId === undefined;
-
-      /** 是否正在加载图片中 */
-      let loading = false;
-
-      /** 加载 imgList */
-      const loadImgList = async (initImgList, show) => {
-        loading = true;
-        try {
-          if (!initImgList) setFab({
-            progress: 0,
-            show: true
-          });
-          const newImgList = initImgList ?? (await getImgList());
-          if (newImgList.length === 0) throw new Error(helper.t('alert.fetch_comic_img_failed'));
-          setManga('imgList', newImgList);
-          if (show || needAutoShow.val && options.autoShow) {
-            setManga('show', true);
-            needAutoShow.val = false;
-          }
-        } catch (error) {
-          helper.log.error(error);
-          if (show) toast.error(error.message);
-          setFab({
-            progress: undefined
-          });
-        } finally {
-          loading = false;
-        }
-      };
-
-      /** 进入阅读模式 */
-      const showComic = async () => {
-        if (loading) return toast.warn(helper.t('alert.repeat_load'), {
-          duration: 1500
-        });
-        if (mangaProps.imgList.length === 0) return loadImgList(undefined, true);
-        setManga('show', true);
-      };
-      setFab({
-        onClick: showComic,
-        show: !options.hiddenFAB && undefined
+    comicMap,
+    setComicMap,
+    nowComic,
+    showComic,
+    loadComic,
+    /** 设置对应漫画的加载函数 */
+    setComicLoad(getImgList, id = '') {
+      setComicMap(id, {
+        imgList: undefined,
+        getImgList
       });
-      if (needAutoShow.val && options.autoShow) setTimeout(showComic);
-      if (firstRun) {
-        (async () => {
-          console.debug(helper.t('other.enter_comic_read_mode'), fabProps.onClick);
-          await updateHideFabMenu();
-        })();
-        helper.linstenKeydown(e => {
-          const code = helper.getKeyboardCode(e);
-          if (Manga.hotkeysMap()[code] !== 'enter_read_mode') return;
-          e.stopPropagation();
-          e.preventDefault();
-          fabProps.onClick?.();
-        });
-      }
-      return {
-        /** 进入阅读模式 */
-        showComic,
-        /** 加载 imgList */
-        loadImgList
-      };
+      if (menuId === undefined) return init();
     },
-    /** 使用动态更新来加载 imgList */
-    dynamicUpdate: (work, length) => async () => {
-      if (mangaProps.imgList.length === length) return mangaProps.imgList;
+    dynamicLoad: (loadImgFn, length, id = '') => async () => {
+      if (comicMap[id].imgList?.length) return comicMap[id].imgList;
+      setComicMap(id, 'imgList', Array.from({
+        length
+      }).fill(''));
       await new Promise(resolve => {
-        setManga('imgList', Array.from({
-          length
-        }).fill(''));
-        return work((i, url) => resolve(setManga('imgList', i, url)));
+        loadImgFn((i, url) => resolve(setComicMap(id, 'imgList', i, url)));
       });
-      return mangaProps.imgList;
+      return comicMap[id].imgList;
     }
   };
 };
 
+/**
+ * 通过监视点击等会触发动态加载的事件，在触发后执行指定动作
+ * @param update 动态加载后的重新加载
+ */
+const autoUpdate = update => {
+  const refresh = helper.singleThreaded(update);
+  for (const eventName of ['click', 'popstate']) window.addEventListener(eventName, refresh, {
+    capture: true
+  });
+  refresh();
+};
+
 /** 对简单站点的通用解 */
-const universalInit = async ({
+const universal = async ({
   name,
   wait: waitFn,
   getImgList,
@@ -8020,15 +8185,15 @@ const universalInit = async ({
   if (waitFn) await helper.wait(waitFn);
   const fnMap = await useInit(name, initOptions);
   const {
-    init,
     options,
+    setComicLoad,
     setManga,
     setFab,
-    needAutoShow
+    needAutoShow,
+    setComicMap,
+    showComic
   } = fnMap;
-  const {
-    loadImgList
-  } = init(() => getImgList(fnMap));
+  setComicLoad(() => getImgList(fnMap));
   if (onExit) setManga({
     onExit(isEnd) {
       onExit?.(isEnd);
@@ -8053,15 +8218,15 @@ const universalInit = async ({
     getOnNext
   } = SPA;
   let lastUrl = '';
-  helper.autoUpdate(async () => {
+  autoUpdate(async () => {
     if (!(await helper.wait(() => window.location.href !== lastUrl, 5000))) return;
     lastUrl = window.location.href;
     if (isMangaPage && !(await isMangaPage())) {
       setFab('show', false);
       setManga({
-        show: false,
-        imgList: []
+        show: false
       });
+      setComicMap('', 'imgList', undefined);
       return;
     }
     if (waitFn) await helper.wait(waitFn);
@@ -8070,7 +8235,8 @@ const universalInit = async ({
       onNext: undefined
     });
     needAutoShow.val = options.autoShow;
-    await loadImgList();
+    setComicMap('', 'imgList', undefined);
+    if (needAutoShow.val && options.autoShow) await showComic('');
     await Promise.all([(async () => getCommentList && setManga({
       commentList: await getCommentList()
     }))(), (async () => getOnPrev && setManga({
@@ -8089,7 +8255,7 @@ exports.renameOption = renameOption;
 exports.request = request;
 exports.setHotkeys = setHotkeys;
 exports.toast = toast;
-exports.universalInit = universalInit;
+exports.universal = universal;
 exports.useInit = useInit;
 exports.useManga = useManga;
 exports.useSiteOptions = useSiteOptions;
@@ -8186,13 +8352,17 @@ const solidJs = require('solid-js');
 const main = require('main');
 const helper = require('helper');
 
+
+// 多页
+// https://bbs.yamibo.com/thread-43598-2-694.html
+// 目录页
 (async () => {
   const {
     options,
-    setFab,
+    setComicLoad,
+    showComic,
+    loadComic,
     setManga,
-    init,
-    onLoading,
     needAutoShow
   } = await main.useInit('yamibo', {
     记录阅读进度: true,
@@ -8295,52 +8465,31 @@ const helper = require('helper');
         }
         return imgList.map(img => img.src);
       };
-      updateImgList();
-      const {
-        showComic,
-        loadImgList
-      } = init(() => imgList.map(img => img.src));
+      setComicLoad(updateImgList);
       setManga({
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
         onLoading(_imgList, img) {
-          onLoading(_imgList, img);
-          if (!img) return;
-          if (imgList.length !== updateImgList().length) return loadImgList();
+          if (img && img.width < 500 && img.height < 500) return loadComic();
         },
         onExit(isEnd) {
           if (isEnd) helper.scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
           setManga('show', false);
         }
       });
-      setFab({
-        progress: isFirstPage ? 1 : undefined,
-        tip: '阅读模式',
-        show: undefined
-      });
       if (helper.querySelector('div.pti > div.authi')) {
-        helper.insertNode(helper.querySelector('div.pti > div.authi'), '<span class="pipe show">|</span><a id="comicReadMode" class="show" href="javascript:;">漫画阅读</a>');
-        document.getElementById('comicReadMode')?.addEventListener('click', showComic);
+        helper.querySelector('div.pti > div.authi').insertAdjacentHTML('beforeend', '<span class="pipe show">|</span><a id="comicReadMode" class="show" href="javascript:;">漫画阅读</a>');
+        document.getElementById('comicReadMode')?.addEventListener('click', () => showComic());
       }
 
       // 如果帖子内有设置目录
       if (helper.querySelector('#threadindex')) {
-        let id;
-        for (const dom of helper.querySelectorAll('#threadindex li')) {
-          // eslint-disable-next-line @typescript-eslint/no-loop-func
-          dom.addEventListener('click', () => {
-            if (id) return;
-            id = window.setInterval(() => {
-              imgList = helper.querySelectorAll('.t_fsz img');
-              if (imgList.length === 0 || updateImgList().length === 0) return setFab('progress', undefined);
-              setManga({
-                imgList: updateImgList(),
-                show: options.autoShow ?? undefined
-              });
-              setFab('progress', 1);
-              window.clearInterval(id);
-            }, 100);
-          });
-        }
+        // 在网页通过 ajax 更新对应内容后重新获取漫画图片
+        helper.hijackFn('ajaxinnerhtml', (rawFn, args) => {
+          rawFn(...args);
+          imgList = helper.querySelectorAll('.t_fsz img');
+          if (imgList.length === 0 || updateImgList().length === 0) return;
+          if (options.autoShow) showComic();
+        });
       }
       const tagDom = helper.querySelector('.ptg.mbm.mtn > a');
       // 通过标签确定上/下一话
@@ -8542,17 +8691,12 @@ web.delegateEvents(["click"]);
           const res = await main.request(`https://www.yamibo.com/manga/view-chapter?id=${id}&page=${i}`);
           return /(?<=<img id=['"]imgPic['"].+?src=['"]).+?(?=['"])/.exec(res.responseText)[0].replaceAll('&amp;', '&').replaceAll('http://', 'https://');
         };
+        const loadImgFn = setImg => helper.plimit(helper.createSequence(totalPageNum).map(i => async () => setImg(i, await getImg(i + 1))));
         options = {
           name: 'newYamibo',
           getImgList: ({
-            dynamicUpdate,
-            setFab
-          }) => dynamicUpdate(async setImg => helper.plimit(helper.createSequence(totalPageNum).map(i => async () => setImg(i, await getImg(i + 1))), (doneNum, totalNum) => {
-            setFab({
-              progress: doneNum / totalNum,
-              tip: `加载图片中 - ${doneNum}/${totalNum}`
-            });
-          }), totalPageNum)(),
+            dynamicLoad
+          }) => dynamicLoad(loadImgFn, totalPageNum)(),
           onNext: helper.querySelectorClick('#btnNext'),
           onPrev: helper.querySelectorClick('#btnPrev'),
           onExit: isEnd => isEnd && helper.scrollIntoView('#w1')
@@ -8568,40 +8712,58 @@ web.delegateEvents(["click"]);
       {
 const web = require('solid-js/web');
 const solidJs = require('solid-js');
-const dmzjApi = require('dmzjApi');
 const main = require('main');
+const dmzjApi = require('userscript/dmzjApi');
 const helper = require('helper');
 
 (async () => {
   // 通过 rss 链接，在作者作品页里添加上隐藏漫画的链接
-  if (window.location.pathname.includes('/tags/')) {
-    const res = await main.request(helper.querySelector('a.rss').href, {
-      errorText: '获取作者作品失败'
-    });
+  // TODO: rss 都已失效，过段时间看看还没恢复就可以删了
+  // if (window.location.pathname.includes('/tags/')) {
+  //   const rssUrl = await wait(
+  //     () => querySelector<HTMLAreaElement>('a.rss')?.href,
+  //   );
+  //   const res = await request(rssUrl, { errorText: '获取作者作品失败' });
 
-    // 页面上原有的漫画标题
-    const titleList = new Set(helper.querySelectorAll('#hothit p.t').map(e => e.textContent.replace('[完]', '')));
-    helper.insertNode(document.getElementById('hothit'), res.responseText.split('item').filter((_, i) => i % 2).map(item => {
-      const newComicUrl = /manhua.dmzj.com\/(.+?)\?from=rssReader/.exec(item)[1];
-      return {
-        newComicUrl,
-        comicUrl: newComicUrl.split('/')[0],
-        title: /title><!\[CDATA\[(.+?)]]/.exec(item)[1],
-        imgUrl: /<img src='(.+?)'/.exec(item)[1],
-        newComicTitle: /title='(.+?)'/.exec(item)[1]
-      };
-    }).filter(({
-      title
-    }) => !titleList.has(title)).map(data => `
-            <div class="pic">
-              <a href="/${data.comicUrl}/" target="_blank">
-              <img src="${data.imgUrl}" alt="${data.title}" title="" style="">
-              <p class="t">【*隐藏*】${data.title}</p></a>
-              <p class="d">最新：<a href="/${data.newComicUrl}" target="_blank">${data.newComicTitle}</a></p>
-            </div>
-          `).join(''));
-    return;
-  }
+  //   // 页面上原有的漫画标题
+  //   const titleList = new Set(
+  //     querySelectorAll('p.t').map((e) => e.textContent!.replace('[完]', '')),
+  //   );
+  //   querySelectorAll('div.pic')
+  //     .at(-1)
+  //     ?.insertAdjacentHTML(
+  //       'afterend',
+  //       res.responseText
+  //         .split('item')
+  //         .filter((_, i) => i % 2)
+  //         .map((item) => {
+  //           const newComicUrl = /manhua.dmzj.com\/(.+?)\?from=rssReader/.exec(
+  //             item,
+  //           )![1];
+  //           return {
+  //             newComicUrl,
+  //             comicUrl: newComicUrl.split('/')[0],
+  //             title: /title><!\[CDATA\[(.+?)]]/.exec(item)![1],
+  //             imgUrl: /<img src='(.+?)'/.exec(item)![1],
+  //             newComicTitle: /title='(.+?)'/.exec(item)![1],
+  //           };
+  //         })
+  //         .filter(({ title }) => !titleList.has(title))
+  //         .map(
+  //           (data) => `
+  //           <div class="pic">
+  //             <a href="/${data.comicUrl}/" target="_blank">
+  //             <img src="${data.imgUrl}" alt="${data.title}" title="" style="">
+  //             <p class="t">【*隐藏*】${data.title}</p></a>
+  //             <p class="d">最新：<a href="/${data.newComicUrl}" target="_blank">${data.newComicTitle}</a></p>
+  //           </div>
+  //         `,
+  //         )
+  //         .join(''),
+  //     );
+  //   return;
+  // }
+
   const getId = async () => {
     const [, comicPy, chapterId] = window.location.pathname.split(/\/|\./);
     if (!comicPy) {
@@ -8696,7 +8858,7 @@ const helper = require('helper');
     if (/^\/[^/]*?\/?$/.test(window.location.pathname)) return handleListPage();
     return /^\/.*?\/\d+\.shtml$/.test(window.location.pathname);
   };
-  await main.universalInit({
+  await main.universal({
     name: 'dmzj',
     getImgList,
     onExit: isEnd => isEnd && helper.scrollIntoView('#hd'),
@@ -8721,7 +8883,7 @@ const helper = require('helper');
     case 'm.dmzj.com':
       {
 const dmzjDecrypt = require('dmzjDecrypt');
-const dmzjApi = require('dmzjApi');
+const dmzjApi = require('userscript/dmzjApi');
 const main = require('main');
 const helper = require('helper');
 
@@ -8734,12 +8896,12 @@ const helper = require('helper');
         if (Reflect.has(unsafeWindow, 'obj_id')) return;
         const comicId = Number.parseInt(window.location.pathname.split('/')[2], 10);
         if (Number.isNaN(comicId)) {
-          document.body.childNodes[0].remove();
-          helper.insertNode(document.body, `
-          请手动输入漫画名进行搜索 <br />
-          <input type="search"> <button>搜索</button> <br />
-          <div id="list" />
-        `);
+          document.body.innerHTML = '';
+          document.body.insertAdjacentHTML('beforeend', `
+            请手动输入漫画名进行搜索 <br />
+            <input type="search"> <button>搜索</button> <br />
+            <div id="list" />
+          `);
           helper.querySelector('button').addEventListener('click', async () => {
             const comicName = helper.querySelector('input')?.value;
             if (!comicName) return;
@@ -8771,13 +8933,13 @@ const helper = require('helper');
           }
         } = dmzjDecrypt(res.responseText);
         document.title = title;
-        helper.insertNode(document.body, `<h1>${title}</h1>`);
+        document.body.insertAdjacentHTML('beforeend', `<h1>${title}</h1>`);
         for (const chapter of Object.values(chapters)) {
           // 手动构建添加章节 dom
           let temp = `<h2>${chapter.title}</h2>`;
           let i = chapter.data.length;
           while (i--) temp += `<a target="_blank" title="${chapter.data[i].chapter_title}" href="https://m.dmzj.com/view/${comicId}/${chapter.data[i].chapter_id}.html" ${chapter.data[i].updatetime === last_updatetime ? 'style="color:red"' : ''}>${chapter.data[i].chapter_title}</a>`;
-          helper.insertNode(document.body, temp);
+          document.body.insertAdjacentHTML('beforeend', temp);
         }
         document.body.childNodes[0].remove();
         GM_addStyle(`
@@ -8811,7 +8973,7 @@ const helper = require('helper');
         // 如果不是隐藏漫画，直接进入阅读模式
         if (unsafeWindow.comic_id) {
           GM_addStyle('.subHeader{display:none !important}');
-          await main.universalInit({
+          await main.universal({
             name: 'dmzj',
             getImgList: () => helper.querySelectorAll('#commicBox img').map(e => e.dataset.original).filter(Boolean),
             getCommentList: () => dmzjApi.getViewpoint(unsafeWindow.subId, unsafeWindow.chapterId),
@@ -8848,7 +9010,7 @@ const helper = require('helper');
         document.title = `${chapter_name} ${folder.split('/').at(1)}`;
         const {
           setManga,
-          init
+          setComicLoad
         } = await main.useInit('dmzj');
         setManga({
           // 进入阅读模式后禁止退出，防止返回空白页面
@@ -8861,9 +9023,9 @@ const helper = require('helper');
           } : undefined,
           editButtonList: e => e
         });
-        init(() => {
+        setComicLoad(() => {
           if (page_url.length > 0) return page_url;
-          tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://greasyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
+          tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
           return [];
         });
         setManga('commentList', await dmzjApi.getViewpoint(comicId, chapterId));
@@ -8877,7 +9039,7 @@ const helper = require('helper');
     case 'www.idmzj.com':
     case 'www.dmzj.com':
       {
-const dmzjApi = require('dmzjApi');
+const dmzjApi = require('userscript/dmzjApi');
 const main = require('main');
 const helper = require('helper');
 
@@ -8895,7 +9057,7 @@ const turnPage = chapterId => {
   if (!comicId || !chapterId) return;
   const {
     setManga,
-    init
+    setComicLoad
   } = await main.useInit('dmzj');
   try {
     const {
@@ -8903,7 +9065,7 @@ const turnPage = chapterId => {
       prev_chap_id,
       page_url
     } = await dmzjApi.getChapterInfo(comicId, chapterId);
-    init(() => page_url);
+    setComicLoad(() => page_url);
     setManga({
       onNext: turnPage(next_chap_id),
       onPrev: turnPage(prev_chap_id)
@@ -8922,166 +9084,21 @@ const turnPage = chapterId => {
     case 'exhentai.org':
     case 'e-hentai.org':
       {
-const Manga = require('components/Manga');
-const main = require('main');
-const helper = require('helper');
-const QrScanner = require('qr-scanner');
 const web = require('solid-js/web');
 const solidJs = require('solid-js');
+const main = require('main');
+const Manga = require('components/Manga');
+const detectAd = require('userscript/detectAd');
+const helper = require('helper');
 const store = require('solid-js/store');
 
-const getAdPage = async (list, isAdPage, adList = new Set()) => {
-  let i = list.length - 1;
-  let normalNum = 0;
-  // 只检查最后十张
-  for (; i >= list.length - 10; i--) {
-    // 开头肯定不会是广告
-    if (i <= 2) break;
-    if (adList.has(i)) continue;
-    const item = list[i];
-    if (!item) break;
-    if (await isAdPage(item)) adList.add(i);
-    // 找到连续两张正常漫画页后中断
-    else if (normalNum) break;else normalNum += 1;
-  }
-  let adNum = 0;
-  for (i = Math.min(...adList); i < list.length; i++) {
-    if (adList.has(i)) {
-      adNum += 1;
-      continue;
-    }
-
-    // 连续两张广告后面的肯定也都是广告
-    if (adNum >= 2) adList.add(i);
-    // 夹在两张广告中间的肯定也是广告
-    else if (adList.has(i - 1) && adList.has(i + 1)) adList.add(i);else adNum = 0;
-  }
-  return adList;
+const escHandler = [];
+const setEscHandler = (order, handler) => {
+  escHandler.push(Object.assign(handler, {
+    order
+  }));
+  escHandler.sort((a, b) => b.order - a.order);
 };
-
-/** 判断像素点是否是灰阶 */
-const isGrayscalePixel = (r, g, b) => r === g && r === b;
-
-/** 判断一张图是否是彩图 */
-const isColorImg = imgCanvas => {
-  // 缩小尺寸放弃细节，避免被黑白图上的小段彩色文字干扰
-  const canvas = new OffscreenCanvas(3, 3);
-  const ctx = canvas.getContext('2d', {
-    alpha: false
-  });
-  ctx.drawImage(imgCanvas, 0, 0, canvas.width, canvas.height);
-  const {
-    data
-  } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
-    if (!isGrayscalePixel(r, g, b)) return true;
-  }
-  return false;
-};
-const imgToCanvas = async img => {
-  if (typeof img !== 'string') {
-    await helper.wait(() => img.naturalHeight && img.naturalWidth, 1000 * 10);
-    try {
-      const canvas = new OffscreenCanvas(img.width, img.height);
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      // 没被 CORS 污染就直接使用这个 canvas
-      if (ctx.getImageData(0, 0, 1, 1)) return canvas;
-    } catch {}
-  }
-  const url = typeof img === 'string' ? img : img.src;
-  const res = await main.request(url, {
-    responseType: 'blob'
-  });
-  const image = await helper.waitImgLoad(URL.createObjectURL(res.response));
-  const canvas = new OffscreenCanvas(image.width, image.height);
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(image, 0, 0);
-  return canvas;
-};
-
-/** 二维码白名单 */
-const qrCodeWhiteList = [
-// fanbox
-/^https:\/\/[^.]+\.fanbox\.cc/,
-// twitter
-/^https:\/\/twitter\.com/, /^https:\/\/x\.com/,
-// fantia
-/^https:\/\/fantia\.jp/,
-// 棉花糖
-/^https:\/\/marshmallow-qa\.com/];
-
-/** 判断是否含有二维码 */
-const hasQrCode = async (imgCanvas, scanRegion, qrEngine, canvas) => {
-  try {
-    const {
-      data
-    } = await QrScanner.scanImage(imgCanvas, {
-      qrEngine,
-      canvas: canvas,
-      scanRegion,
-      alsoTryWithoutScanRegion: true
-    });
-    if (!data) return false;
-    helper.log(`检测到二维码： ${data}`);
-    return qrCodeWhiteList.every(reg => !reg.test(data));
-  } catch {
-    return false;
-  }
-};
-const isAdImg = async (imgCanvas, qrEngine, canvas) => {
-  // 黑白图肯定不是广告
-  if (!isColorImg(imgCanvas)) return false;
-  const width = imgCanvas.width / 2;
-  const height = imgCanvas.height / 2;
-
-  // 分区块扫描图片
-  const scanRegionList = [undefined,
-  // 右下
-  {
-    x: width,
-    y: height,
-    width,
-    height
-  },
-  // 左下
-  {
-    x: 0,
-    y: height,
-    width,
-    height
-  },
-  // 右上
-  {
-    x: width,
-    y: 0,
-    width,
-    height
-  },
-  // 左上
-  {
-    x: 0,
-    y: 0,
-    width,
-    height
-  }];
-  for (const scanRegion of scanRegionList) if (await hasQrCode(imgCanvas, scanRegion, qrEngine, canvas)) return true;
-  return false;
-};
-const byContent = (qrEngine, canvas) => async img => isAdImg(await imgToCanvas(img), qrEngine, canvas);
-
-/** 通过图片内容判断是否是广告 */
-const getAdPageByContent = async (imgList, adList = new Set()) => {
-  const qrEngine = await QrScanner.createQrEngine();
-  const canvas = new OffscreenCanvas(1, 1);
-  return getAdPage(imgList, byContent(qrEngine, canvas), adList);
-};
-
-/** 通过文件名判断是否是广告 */
-const getAdPageByFileName = async (fileNameList, adList = new Set()) => getAdPage(fileNameList, fileName => /^[zZ]+/.test(fileName), adList);
 
 let hasStyle = false;
 const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
@@ -9267,18 +9284,21 @@ const quickFavorite = pageType => {
     case 't':
       {
         for (const item of helper.querySelectorAll('.gl1t')) {
-          const button = item.querySelector('[id][onclick]');
+          const button = item.querySelector('[id^=posted_]');
           const top = item.firstElementChild.getBoundingClientRect().bottom - item.getBoundingClientRect().top;
           const bottom = item.lastElementChild.getBoundingClientRect().top - item.getBoundingClientRect().top;
-          addQuickFavorite(button, item, /http.+?(?=')/.exec(button.getAttribute('onclick'))[0], [top, bottom]);
+          const apiUrl = /http.+?(?=')/.exec(button.getAttribute('onclick'))[0];
+          addQuickFavorite(button, item, apiUrl, [top, bottom]);
         }
         break;
       }
     case 'e':
       {
         for (const item of helper.querySelectorAll('.gl1e')) {
-          const button = item.nextElementSibling.querySelector('[id][onclick]');
-          addQuickFavorite(button, item, /http.+?(?=')/.exec(button.getAttribute('onclick'))[0], [0, Number.parseInt(getComputedStyle(item).height, 10)]);
+          const button = item.nextElementSibling.querySelector('[id^=posted_]');
+          const bottom = Number.parseInt(getComputedStyle(item).height, 10);
+          const apiUrl = /http.+?(?=')/.exec(button.getAttribute('onclick'))[0];
+          addQuickFavorite(button, item, apiUrl, [0, bottom]);
         }
         break;
       }
@@ -9287,107 +9307,149 @@ const quickFavorite = pageType => {
 web.delegateEvents(["click"]);
 
 /** 关联 nhentai */
-const associateNhentai = async (init, dynamicUpdate) => {
+const associateNhentai = async (dynamicLoad, setComicLoad, LoadButton) => {
   const titleDom = document.getElementById('gn');
-  const taglistDom = helper.querySelector('#taglist tbody');
-  if (!titleDom || !taglistDom) {
+  if (!titleDom || !helper.querySelector('#taglist tbody')) {
     if ((document.getElementById('taglist')?.children.length ?? 1) > 0) main.toast.error(helper.t('site.ehentai.html_changed_nhentai_failed'));
     return;
   }
-  const title = encodeURI(titleDom.textContent);
-  const newTagLine = document.createElement('tr');
-  let nHentaiComicInfo;
+  const [comicList, setComicList] = solidJs.createSignal();
+  const comicTitle = titleDom.textContent.replaceAll(/\s+-/g, ' ');
+  const tip = () => {
+    if (comicList() === undefined) return 'searching...';
+    if (comicList() === null) {
+      const url = `https://nhentai.net/search/?q=${comicTitle}`;
+      return helper.t('site.ehentai.nhentai_failed', {
+        nhentai: `<a href='${url}' target="_blank"> <u> nhentai </u> </a>`
+      });
+    }
+    if (comicList().length === 0) return 'null';
+  };
+  const nhTagLine = () => (() => {
+    var _el$ = web.template(`<tr><td class=tc>nhentai:`)();
+      _el$.firstChild;
+    web.insert(_el$, web.createComponent(solidJs.Show, {
+      get when() {
+        return comicList()?.length;
+      },
+      get fallback() {
+        return (// eslint-disable-next-line solid/no-innerhtml
+          (() => {
+            var _el$4 = web.template(`<td class=tc>`)();
+            _el$4.style.setProperty("text-align", "left");
+            web.effect(() => _el$4.innerHTML = tip());
+            return _el$4;
+          })()
+        );
+      },
+      get children() {
+        var _el$3 = web.template(`<td>`)();
+        web.insert(_el$3, web.createComponent(solidJs.For, {
+          get each() {
+            return comicList();
+          },
+          children: ({
+            id,
+            title
+          }) => (() => {
+            var _el$5 = web.template(`<div class=gtl><a>`)(),
+              _el$6 = _el$5.firstChild;
+            web.setAttribute(_el$5, "id", `td_nh:${id}`);
+            _el$5.style.setProperty("opacity", "1.0");
+            web.setAttribute(_el$6, "id", `nh:${id}`);
+            web.setAttribute(_el$6, "href", `https://nhentai.net/g/${id}/`);
+            web.setAttribute(_el$6, "onclick", `return toggle_tagmenu(1, 'nh:${id}',this)`);
+            web.insert(_el$6, id);
+            web.effect(() => web.setAttribute(_el$5, "title", title.japanese || title.english));
+            return _el$5;
+          })()
+        }));
+        return _el$3;
+      }
+    }), null);
+    return _el$;
+  })();
+  web.render(nhTagLine, helper.querySelector('#taglist tbody'));
+
+  // 投票后重新渲染
+  helper.hijackFn('tag_update_vote', (rawFn, args) => {
+    rawFn(...args);
+    web.render(nhTagLine, helper.querySelector('#taglist tbody'));
+  });
   try {
-    const res = await main.request(`https://nhentai.net/api/galleries/search?query=${title}`, {
+    const res = await main.request(`https://nhentai.net/api/galleries/search?query=${comicTitle}`, {
       responseType: 'json',
       errorText: helper.t('site.ehentai.nhentai_error'),
       noTip: true
     });
-    nHentaiComicInfo = res.response;
+    setComicList(res.response.result);
   } catch {
-    newTagLine.innerHTML = `
-      <td class="tc">nhentai:</td>
-      <td class="tc" style="text-align: left;">
-        ${helper.t('site.ehentai.nhentai_failed', {
-      nhentai: `<a href='https://nhentai.net/search/?q=${title}' target="_blank" ><u>nhentai</u></a>`
-    })}
-      </td>`;
-    taglistDom.append(newTagLine);
-    return;
+    setComicList(null);
   }
+  if (!comicList()?.length) return;
 
-  // 构建新标签行
-  if (nHentaiComicInfo.result.length > 0) {
-    let temp = '<td class="tc">nhentai:</td><td>';
-    let i = nHentaiComicInfo.result.length;
-    while (i) {
-      i -= 1;
-      const tempComicInfo = nHentaiComicInfo.result[i];
-      const _title = tempComicInfo.title.japanese || tempComicInfo.title.english;
-      temp += `
-          <div id="td_nhentai:${tempComicInfo.id}" class="gtl" style="opacity:1.0" title="${_title}">
-            <a
-              href="https://nhentai.net/g/${tempComicInfo.id}/"
-              onClick="return toggle_tagmenu(1, 'nhentai:${tempComicInfo.id}',this)"
-              nhentai-index=${i}
-            >
-              ${tempComicInfo.id}
-            </a>
-          </div>`;
-    }
-    newTagLine.innerHTML = `${temp}</td>`;
-  } else newTagLine.innerHTML = '<td class="tc">nhentai:</td><td class="tc" style="text-align: left;">Null</td>';
-  taglistDom.append(newTagLine);
-
-  // 重写 _refresh_tagmenu_act 函数，加入脚本的功能
-  const nhentaiImgList = {};
-  const raw_refresh_tagmenu_act = unsafeWindow._refresh_tagmenu_act;
-  // eslint-disable-next-line func-names
-  unsafeWindow._refresh_tagmenu_act = function _refresh_tagmenu_act(a) {
-    if (a.hasAttribute('nhentai-index')) {
-      const tagmenu_act_dom = document.getElementById('tagmenu_act');
-      tagmenu_act_dom.innerHTML = ['', `<a href="${a.href}" target="_blank"> Jump to nhentai</a>`, `<a href="#"> ${nhentaiImgList[selected_tagname] ? 'Read' : 'Load comic'}</a>`].join('<img src="https://ehgt.org/g/mr.gif" class="mr" alt=">">');
-      const nhentaiComicReadButton = tagmenu_act_dom.querySelector('a[href="#"]');
-      const {
-        media_id,
-        num_pages,
-        images
-      } = nHentaiComicInfo.result[Number(a.getAttribute('nhentai-index'))];
-      // nhentai api 对应的扩展名
-      const fileType = {
-        j: 'jpg',
-        p: 'png',
-        g: 'gif'
-      };
-      const showNhentaiComic = init(dynamicUpdate(async setImg => {
-        nhentaiComicReadButton.innerHTML = ` loading - 0/${num_pages}`;
-        nhentaiImgList[selected_tagname] = await helper.plimit(images.pages.map((page, i) => async () => {
-          const imgRes = await main.request(`https://i.nhentai.net/galleries/${media_id}/${i + 1}.${fileType[page.t]}`, {
-            headers: {
-              Referer: `https://nhentai.net/g/${media_id}`
-            },
-            responseType: 'blob'
-          });
-          const blobUrl = URL.createObjectURL(imgRes.response);
-          setImg(i, blobUrl);
-          return blobUrl;
-        }), (doneNum, totalNum) => {
-          nhentaiComicReadButton.innerHTML = ` loading - ${doneNum}/${totalNum}`;
-        });
-        nhentaiComicReadButton.innerHTML = ' Read';
-      }, num_pages)).showComic;
-
-      // 加载 nhentai 漫画
-      nhentaiComicReadButton.addEventListener('click', showNhentaiComic);
-    }
-    // 非 nhentai 标签列的用原函数去处理
-    else raw_refresh_tagmenu_act(a);
+  // nhentai api 对应的扩展名
+  const fileType = {
+    j: 'jpg',
+    p: 'png',
+    g: 'gif'
   };
+  for (const {
+    id,
+    images,
+    num_pages,
+    media_id
+  } of comicList()) {
+    const comicId = `nh:${id}`;
+    const loadImgList = setImg => {
+      helper.plimit(images.pages.map((page, i) => async () => {
+        const imgRes = await main.request(`https://i.nhentai.net/galleries/${media_id}/${i + 1}.${fileType[page.t]}`, {
+          headers: {
+            Referer: `https://nhentai.net/g/${media_id}`
+          },
+          responseType: 'blob'
+        });
+        const url = URL.createObjectURL(imgRes.response);
+        setImg(i, url);
+      }));
+    };
+    setComicLoad(dynamicLoad(loadImgList, num_pages, comicId), comicId);
+  }
+  const tagmenu_act_dom = document.getElementById('tagmenu_act');
+  const icon = () => web.template(`<img src=https://ehgt.org/g/mr.gif class=mr alt=">">`)();
+  const TagMenu = props => web.createComponent(solidJs.For, {
+    get each() {
+      return props.children;
+    },
+    children: item => [icon(), item]
+  });
+  let dispose;
+  helper.hijackFn('_refresh_tagmenu_act', (rawFn, [a]) => {
+    dispose?.();
+    // 非 nhentai 标签列的用原函数去处理
+    if (!a.id.startsWith('nh:')) return rawFn(a);
+    if (tagmenu_act_dom.children.length > 0) tagmenu_act_dom.innerHTML = '';
+    dispose = web.render(() => web.createComponent(TagMenu, {
+      get children() {
+        return [(() => {
+          var _el$8 = web.template(`<a target=_blank>`)();
+          _el$8.innerText = " Jump to nhentai";
+          web.effect(() => web.setAttribute(_el$8, "href", a.href));
+          return _el$8;
+        })(), web.createComponent(LoadButton, {
+          get id() {
+            return a.id;
+          }
+        })];
+      }
+    }), tagmenu_act_dom);
+  });
 };
 
 /** 快捷键翻页 */
 const hotkeysPageTurn = pageType => {
   if (pageType === 'gallery') {
+    setEscHandler(0, () => unsafeWindow.selected_tagname ? unsafeWindow.toggle_tagmenu() : true);
     helper.linstenKeydown(e => {
       switch (e.key) {
         case 'ArrowRight':
@@ -9398,11 +9460,6 @@ const hotkeysPageTurn = pageType => {
         case 'a':
           e.preventDefault();
           return helper.querySelector('.ptt td:first-child:not(.ptdd)')?.click();
-        case 'Escape':
-          if (unsafeWindow.selected_tagname) {
-            unsafeWindow.toggle_tagmenu();
-            return e.stopImmediatePropagation();
-          }
       }
 
       // 使用上下方向键进行投票
@@ -9560,6 +9617,7 @@ const quickRating = pageType => {
   switch (pageType) {
     case 'gallery':
     case 'mytags':
+    case 'mpv':
       return;
     case 'e':
       list = helper.querySelectorAll('#favform > table > tbody > tr');
@@ -9626,7 +9684,7 @@ const quickRating = pageType => {
   const renderQuickRating = (item, ir, index) => {
     let basePosition = ir.style.backgroundPosition;
     web.render(() => (() => {
-      var _el$ = web.template(`<span class=comidread-quick-rating><img src=/img/blank.gif><map>`)(),
+      var _el$ = web.template(`<span class=comidread-quick-rating><img src=https://ehgt.org/g/blank.gif><map>`)(),
         _el$2 = _el$.firstChild,
         _el$3 = _el$2.nextSibling;
       _el$.$$mouseout = () => {
@@ -9777,6 +9835,8 @@ const quickTagDefine = pageType => {
       return _el$4;
     }
   }), root);
+
+  // 直接覆盖原有的函数
   unsafeWindow.tag_define = async () => {
     if (!unsafeWindow.selected_tagname) return;
     if (show()) return setShow(false);
@@ -9790,11 +9850,7 @@ const quickTagDefine = pageType => {
   };
 
   // Esc 关闭
-  helper.linstenKeydown(e => {
-    if (e.key !== 'Escape' || !show()) return;
-    setShow(false);
-    e.stopImmediatePropagation();
-  });
+  setEscHandler(2, () => show() ? setShow(false) : true);
 };
 
 const MdPictureInPicture = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" fill="currentColor" stroke-width="0"><path d="M18 7h-6c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V8c0-.55-.45-1-1-1m3-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98V5c0-1.1-.9-2-2-2m-1 16.01H4c-.55 0-1-.45-1-1V5.98c0-.55.45-1 1-1h16c.55 0 1 .45 1 1v12.03c0 .55-.45 1-1 1"/></svg>`;
@@ -10045,11 +10101,8 @@ const floatTagList = (pageType, mangaProps) => {
     ...hotkeys,
     float_tag_list: ['q']
   }));
+  setEscHandler(0, () => store.open ? _setState('open', false) : true);
   helper.linstenKeydown(e => {
-    if (e.key === 'Escape' && store.open) {
-      _setState('open', false);
-      return e.stopImmediatePropagation();
-    }
     const code = helper.getKeyboardCode(e);
     if (Manga.hotkeysMap()[code] !== 'float_tag_list') return;
     e.stopPropagation();
@@ -10096,18 +10149,22 @@ const floatTagList = (pageType, mangaProps) => {
   taglist.addEventListener('drop', handleDrop);
 };
 
+
 (async () => {
   let pageType;
-  if (Reflect.has(unsafeWindow, 'display_comment_field')) pageType = 'gallery';else if (location.pathname === '/mytags') pageType = 'mytags';else pageType = helper.querySelector('#ujumpbox ~ div > select')?.value;
+  if (Reflect.has(unsafeWindow, 'display_comment_field')) pageType = 'gallery';else if (location.pathname === '/mytags') pageType = 'mytags';else if (Reflect.has(unsafeWindow, 'mpvkey')) pageType = 'mpv';else pageType = helper.querySelector('option[value="t"]')?.parentElement?.value;
   if (!pageType) return;
   const {
     options,
-    init,
+    setComicLoad,
+    dynamicLoad,
+    showComic,
+    comicMap,
+    setComicMap,
     setFab,
     setManga,
-    dynamicUpdate,
-    onLoading,
-    mangaProps
+    mangaProps,
+    nowComic
   } = await main.useInit('ehentai', {
     /** 关联 nhentai */
     associate_nhentai: true,
@@ -10127,26 +10184,41 @@ const floatTagList = (pageType, mangaProps) => {
     float_tag_list: false,
     autoShow: false
   });
-  if (Reflect.has(unsafeWindow, 'mpvkey')) {
-    const imgEleList = helper.querySelectorAll('.mi0[id]');
-    init(dynamicUpdate(setImg => helper.plimit(imgEleList.map((ele, i) => async () => {
-      const getUrl = () => ele.querySelector('img')?.src;
-      if (!getUrl()) unsafeWindow.load_image(i + 1);
-      unsafeWindow.next_possible_request = 0;
-      const imgUrl = await helper.wait(getUrl);
-      setImg(i, imgUrl);
-    }), undefined, 4), imgEleList.length));
-    return;
+  if (pageType === 'mpv') {
+    return setComicLoad(() => {
+      const imgEleList = helper.querySelectorAll('.mimg[id]');
+      const loadImgList = async setImg => {
+        const imagelist = unsafeWindow.imagelist;
+        helper.plimit(imagelist.map((_, i) => async () => {
+          const url = () => imagelist[i].i;
+          while (!url()) {
+            if (!Reflect.has(imagelist[i], 'xhr')) {
+              unsafeWindow.load_image(i + 1);
+              unsafeWindow.next_possible_request = 0;
+            }
+            await helper.wait(url);
+          }
+          setImg(i, url());
+        }), undefined, 4);
+      };
+      return dynamicLoad(loadImgList, imgEleList.length)();
+    });
   }
+
+  // 按顺序处理 esc 按键
+  helper.linstenKeydown(e => {
+    if (e.key !== 'Escape') return;
+    for (const handler of escHandler) if (handler() !== true) return e.stopImmediatePropagation();
+  });
 
   // 标签染色
   if (options.colorize_tag) colorizeTag(pageType);
   // 快捷键
   if (options.hotkeys) hotkeysPageTurn(pageType);
   // 悬浮标签列表
-  if (options.float_tag_list) floatTagList(pageType, mangaProps);
+  if (options.float_tag_list) helper.requestIdleCallback(() => floatTagList(pageType, mangaProps));
   // 快捷收藏。必须处于登录状态
-  if (unsafeWindow.apiuid !== -1 && options.quick_favorite) quickFavorite(pageType);
+  if (unsafeWindow.apiuid !== -1 && options.quick_favorite) helper.requestIdleCallback(() => quickFavorite(pageType));
   // 快捷评分
   if (options.quick_rating) helper.requestIdleCallback(() => quickRating(pageType), 1000);
   // 快捷查看标签定义
@@ -10157,9 +10229,37 @@ const floatTagList = (pageType, mangaProps) => {
   const sidebarDom = document.getElementById('gd5');
   // 表站开启了 Multi-Page Viewer 的话会将点击按钮挤出去，得缩一下位置
   if (sidebarDom.children[6]) sidebarDom.children[6].style.padding = '0';
-  // 虽然有 Fab 了不需要这个按钮，但都点习惯了没有还挺别扭的（
-  helper.insertNode(sidebarDom, '<p class="g2 gsp"><img src="https://ehgt.org/g/mr.gif"><a id="comicReadMode" href="javascript:;"> Load comic</a></p>');
-  const comicReadModeDom = document.getElementById('comicReadMode');
+  const LoadButton = props => {
+    const tip = solidJs.createMemo(() => {
+      const imgList = comicMap[props.id]?.imgList;
+      const progress = imgList?.filter(Boolean).length;
+      switch (imgList?.length) {
+        case undefined:
+          return ' Load comic';
+        case progress:
+          return ' Read';
+        default:
+          return ` loading - ${progress}/${imgList.length}`;
+      }
+    });
+    return (() => {
+      var _el$ = web.template(`<a href=javascript:;>`)();
+      _el$.$$click = () => showComic(props.id);
+      web.insert(_el$, tip);
+      return _el$;
+    })();
+  };
+  web.render(() => (() => {
+    var _el$2 = web.template(`<p class="g2 gsp"><img src=https://ehgt.org/g/mr.gif>`)();
+      _el$2.firstChild;
+    web.insert(_el$2, web.createComponent(LoadButton, {
+      id: ""
+    }), null);
+    return _el$2;
+  })(), sidebarDom);
+
+  // 关联 nhentai
+  if (options.associate_nhentai) helper.requestIdleCallback(() => associateNhentai(dynamicLoad, setComicLoad, LoadButton), 1000);
 
   /** 从图片页获取图片地址 */
   const getImgFromImgPage = async url => {
@@ -10202,43 +10302,7 @@ const floatTagList = (pageType, mangaProps) => {
   const ehImgList = [];
   const ehImgPageList = [];
   const ehImgFileNameList = [];
-  const enableDetectAd = options.detect_ad && document.getElementById('ta_other:extraneous_ads');
-  if (enableDetectAd) {
-    setManga('adList', new main.ReactiveSet());
-    /** 缩略图元素列表 */
-    const thumbnailEleList = [];
-    for (const e of helper.querySelectorAll('#gdt img')) {
-      const index = Number(e.alt) - 1;
-      if (Number.isNaN(index)) return;
-      thumbnailEleList[index] = e;
-      // 根据当前显示的图片获取一部分文件名
-      [, ehImgFileNameList[index]] = e.title.split(/：|: /);
-    }
-    // 先根据文件名判断一次
-    await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
-    // 不行的话再用缩略图识别
-    if (mangaProps.adList.size === 0) await getAdPageByContent(thumbnailEleList, mangaProps.adList);
-
-    // 模糊广告页的缩略图
-    const stylesheet = new CSSStyleSheet();
-    document.adoptedStyleSheets.push(stylesheet);
-    helper.createEffectOn(() => [...(mangaProps.adList ?? [])], adList => {
-      if (adList.length === 0) return;
-      const styleList = adList.map(i => {
-        const alt = `${i + 1}`.padStart(placeValueNum, '0');
-        return `img[alt="${alt}"]:not(:hover) {
-          filter: blur(8px);
-          clip-path: border-box;
-          backdrop-filter: blur(8px);
-        }`;
-      });
-      return stylesheet.replace(styleList.join('\n'));
-    });
-  }
-  const {
-    loadImgList
-  } = init(dynamicUpdate(async setImg => {
-    comicReadModeDom.innerHTML = ` loading`;
+  const loadImgList = async setImg => {
     const totalPageNum = Number(helper.querySelector('.ptt td:nth-last-child(2)').textContent);
     for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
       const startIndex = ehImgList.length;
@@ -10250,23 +10314,45 @@ const floatTagList = (pageType, mangaProps) => {
         ehImgPageList[index] = imgPageUrl;
         ehImgFileNameList[index] = fileName;
         setImg(index, imgUrl);
-      }), async _doneNum => {
-        const doneNum = startIndex + _doneNum;
-        setFab({
-          progress: doneNum / totalImgNum,
-          tip: `${helper.t('other.loading_img')} - ${doneNum}/${totalImgNum}`
-        });
-        comicReadModeDom.innerHTML = ` loading - ${doneNum}/${totalImgNum}`;
-        if (doneNum === totalImgNum) {
-          comicReadModeDom.innerHTML = ` Read`;
-          if (enableDetectAd) {
-            await getAdPageByFileName(ehImgFileNameList, mangaProps.adList);
-            await getAdPageByContent(ehImgList, mangaProps.adList);
-          }
-        }
-      });
+      }));
+      if (enableDetectAd) {
+        await detectAd.getAdPageByFileName(ehImgFileNameList, comicMap[''].adList);
+        await detectAd.getAdPageByContent(ehImgList, comicMap[''].adList);
+      }
     }
-  }, totalImgNum));
+  };
+  setComicLoad(dynamicLoad(loadImgList, totalImgNum));
+  const enableDetectAd = options.detect_ad && document.getElementById('ta_other:extraneous_ads');
+  if (enableDetectAd) {
+    setComicMap('', 'adList', new main.ReactiveSet());
+    /** 缩略图元素列表 */
+    const thumbnailEleList = [];
+    for (const e of helper.querySelectorAll('#gdt img')) {
+      const index = Number(e.alt) - 1;
+      if (Number.isNaN(index)) return;
+      thumbnailEleList[index] = e;
+      // 根据当前显示的图片获取一部分文件名
+      [, ehImgFileNameList[index]] = e.title.split(/：|: /);
+    }
+    // 先根据文件名判断一次
+    await detectAd.getAdPageByFileName(ehImgFileNameList, comicMap[''].adList);
+    // 不行的话再用缩略图识别
+    if (comicMap[''].adList.size === 0) await detectAd.getAdPageByContent(thumbnailEleList, comicMap[''].adList);
+
+    // 模糊广告页的缩略图
+    helper.useStyle(helper.createRootMemo(() => {
+      if (!comicMap['']?.adList?.size) return '';
+      const styleList = [...comicMap[''].adList].map(i => {
+        const alt = `${i + 1}`.padStart(placeValueNum, '0');
+        return `img[alt="${alt}"]:not(:hover) {
+            filter: blur(8px);
+            clip-path: border-box;
+            backdrop-filter: blur(8px);
+          }`;
+      });
+      return styleList.join('\n');
+    }));
+  }
 
   /** 获取新的图片页地址 */
   const getNewImgPageUrl = async url => {
@@ -10290,17 +10376,12 @@ const floatTagList = (pageType, mangaProps) => {
     }
     ehImgList[i] = imgUrl;
     ehImgPageList[i] = pageUrl;
-    setManga('imgList', i, imgUrl);
+    setComicMap('', 'imgList', i, imgUrl);
   };
 
-  /** 判断当前显示的是否是 eh 源 */
-  const isShowEh = () => Manga.store.imgList[0]?.src === ehImgList[0];
-
   /** 刷新所有错误图片 */
-  const reloadErrorImg = helper.singleThreaded(() => helper.plimit(Manga.store.imgList.map(({
-    loadType
-  }, i) => () => {
-    if (loadType !== 'error' || !isShowEh()) return;
+  const reloadErrorImg = helper.singleThreaded(() => helper.plimit(Manga.store.imgList.map((img, i) => () => {
+    if (img.loadType !== 'error' || nowComic() !== '') return;
     return reloadImg(i);
   })));
   setManga({
@@ -10309,19 +10390,14 @@ const floatTagList = (pageType, mangaProps) => {
       setManga('show', false);
     },
     // 在图片加载出错时刷新图片
-    async onLoading(imgList, img) {
-      onLoading(imgList, img);
-      if (!img) return;
-      if (img.loadType !== 'error' || (await helper.testImgUrl(img.src))) return;
+    async onLoading(_, img) {
+      if (!img || img.loadType !== 'error' || (await helper.testImgUrl(img.src))) return;
       return reloadErrorImg();
     }
   });
   setFab('initialShow', options.autoShow);
-  comicReadModeDom.addEventListener('click', () => loadImgList(ehImgList.length > 0 ? ehImgList : undefined, true));
-
-  // 关联 nhentai
-  if (options.associate_nhentai) associateNhentai(init, dynamicUpdate);
 })().catch(error => helper.log.error(error));
+web.delegateEvents(["click"]);
 
         break;
       }
@@ -10329,28 +10405,29 @@ const floatTagList = (pageType, mangaProps) => {
     // #nhentai（彻底屏蔽漫画、无限滚动）
     case 'nhentai.net':
       {
+const web = require('solid-js/web');
 const main = require('main');
+const detectAd = require('userscript/detectAd');
 const helper = require('helper');
 
-/** 用于转换获得图片文件扩展名 */
-const fileType = {
-  j: 'jpg',
-  p: 'png',
-  g: 'gif'
-};
 (async () => {
   const {
     options,
     setFab,
     setManga,
-    init
+    setComicLoad,
+    showComic,
+    comicMap,
+    setComicMap
   } = await main.useInit('nhentai', {
     /** 无限滚动 */
     auto_page_turn: true,
     /** 彻底屏蔽漫画 */
     block_totally: true,
     /** 在新页面中打开链接 */
-    open_link_new_page: true
+    open_link_new_page: true,
+    /** 识别广告页 */
+    detect_ad: true
   });
 
   // 在漫画详情页
@@ -10361,18 +10438,38 @@ const fileType = {
         setManga('show', false);
       }
     });
-
-    // 虽然有 Fab 了不需要这个按钮，但我自己都点习惯了没有还挺别扭的（
-    helper.insertNode(document.getElementById('download').parentNode, '<a href="javascript:;" id="comicReadMode" class="btn btn-secondary"><i class="fa fa-book"></i> Read</a>');
-    const comicReadModeDom = document.getElementById('comicReadMode');
-    const {
-      showComic
-    } = init(() => gallery.images.pages.map(({
+    setComicLoad(() => gallery.images.pages.map(({
       number,
       extension
     }) => `https://i.nhentai.net/galleries/${gallery.media_id}/${number}.${extension}`));
     setFab('initialShow', options.autoShow);
-    comicReadModeDom.addEventListener('click', showComic);
+    const comicReadModeDom = (() => {
+      var _el$ = web.template(`<a href=javascript:; id=comicReadMode class="btn btn-secondary"><i class="fa fa-book"></i> Read`)();
+      _el$.$$click = () => showComic();
+      return _el$;
+    })();
+    document.getElementById('download').after(comicReadModeDom);
+    const enableDetectAd = options.detect_ad && helper.querySelector('#tags .tag.tag-144644');
+    if (enableDetectAd) {
+      setComicMap('', 'adList', new main.ReactiveSet());
+
+      // 先使用缩略图识别
+      await detectAd.getAdPageByContent(helper.querySelectorAll('.thumb-container img').map(img => img.dataset.src), comicMap[''].adList);
+
+      // 加载了原图后再用原图识别
+      helper.createEffectOn(() => comicMap[''].imgList, imgList => imgList?.length && detectAd.getAdPageByContent(imgList, comicMap[''].adList));
+
+      // 模糊广告页的缩略图
+      helper.useStyle(() => {
+        if (!comicMap['']?.adList?.size) return '';
+        const styleList = [...comicMap[''].adList].map(i => `
+            .thumb-container:nth-of-type(${i + 1}):not(:hover) {
+              filter: blur(8px);
+              clip-path: border-box;
+            }`);
+        return styleList.join('\n');
+      });
+    }
     return;
   }
 
@@ -10385,80 +10482,49 @@ const fileType = {
 
     if (options.block_totally && blacklist?.length) GM_addStyle('.blacklisted.gallery { display: none; }');
     if (options.auto_page_turn) {
+      let nextUrl = helper.querySelector('a.next')?.href;
+      if (!nextUrl) return;
       GM_addStyle(`
         hr { bottom: 1px; box-sizing: border-box; margin: -1em auto 2em; }
         hr:last-child { position: relative; animation: load .8s linear alternate infinite; }
         hr:not(:last-child) { display: none; }
         @keyframes load { 0% { width: 100%; } 100% { width: 0; } }
       `);
-      let pageNum = Number(helper.querySelector('.page.current')?.innerHTML ?? '');
-      if (Number.isNaN(pageNum)) return;
+      const blackSet = new Set(blacklist);
       const contentDom = document.getElementById('content');
-      let apiUrl = '';
-      if (window.location.pathname === '/') apiUrl = '/api/galleries/all?';else if (helper.querySelector('a.tag')) apiUrl = `/api/galleries/tagged?tag_id=${helper.querySelector('a.tag')?.classList[1].split('-')[1]}&`;else if (window.location.pathname.includes('search')) apiUrl = `/api/galleries/search?query=${new URLSearchParams(window.location.search).get('q')}&`;
-      let observer; // eslint-disable-line no-autofix/prefer-const
-
-      const loadNewComic = helper.singleThreaded(async () => {
-        pageNum += 1;
-        const res = await main.request(`${apiUrl}page=${pageNum}${window.location.pathname.includes('popular') ? '&sort=popular ' : ''}`, {
+      const loadNextPage = helper.singleThreaded(async () => {
+        if (!nextUrl) return;
+        const res = await main.request(nextUrl, {
           fetch: true,
-          responseType: 'json',
           errorText: helper.t('site.nhentai.fetch_next_page_failed')
         });
-        const {
-          result,
-          num_pages
-        } = res.response;
-        let comicDomHtml = '';
-        for (const comic of result) {
-          const blacklisted = comic.tags.some(tag => blacklist?.includes(tag.id));
-          comicDomHtml += `<div class="gallery${blacklisted ? ' blacklisted' : ''}" data-tags="${comic.tags.map(e => e.id).join(' ')}"><a ${options.open_link_new_page ? 'target="_blank"' : ''} href="/g/${comic.id}/" class="cover" style="padding:0 0 ${comic.images.thumbnail.h / comic.images.thumbnail.w * 100}% 0"><img is="lazyload-image" class="" width="${comic.images.thumbnail.w}" height="${comic.images.thumbnail.h}" src="https://t.nhentai.net/galleries/${comic.media_id}/thumb.${fileType[comic.images.thumbnail.t]}"><div class="caption">${comic.title.english}</div></a></div>`;
-        }
+        const html = helper.domParse(res.responseText);
+        history.replaceState(null, '', nextUrl);
+        const container = html.querySelector('.index-container');
+        for (const gallery of container.querySelectorAll('.gallery')) {
+          for (const img of gallery.getElementsByTagName('img')) img.setAttribute('src', img.dataset.src);
 
-        // 构建页数按钮
-        if (comicDomHtml) {
-          const target = options.open_link_new_page ? 'target="_blank" ' : '';
-          const pageNumDom = [];
-          for (let i = pageNum - 5; i <= pageNum + 5; i += 1) {
-            if (i > 0 && i <= num_pages) pageNumDom.push(`<a ${target}href="?page=${i}" class="page${i === pageNum ? ' current' : ''}">${i}</a>`);
-          }
-          helper.insertNode(contentDom, `<h1>${pageNum}</h1>
-             <div class="container index-container">${comicDomHtml}</div>
-             <section class="pagination">
-              <a ${target}href="?page=1" class="first">
-                <i class="fa fa-chevron-left"></i>
-                <i class="fa fa-chevron-left"></i>
-              </a>
-              <a ${target}href="?page=${pageNum - 1}" class="previous">
-                <i class="fa fa-chevron-left"></i>
-              </a>
-              ${pageNumDom.join('')}
-                ${pageNum === num_pages ? '' : `<a ${target}shref="?page=${pageNum + 1}" class="next">
-                        <i class="fa fa-chevron-right"></i>
-                      </a>
-                      <a ${target}href="?page=${num_pages}" class="last">
-                        <i class="fa fa-chevron-right"></i>
-                        <i class="fa fa-chevron-right"></i>
-                      </a>`}
-              </section>`);
+          // 判断是否有黑名单标签
+          const tags = gallery.dataset.tags.split(' ').map(Number);
+          if (tags.some(tag => blackSet.has(tag))) gallery.classList.add('blacklisted');
         }
-
-        // 添加分隔线
+        const pagination = html.querySelector('.pagination');
+        nextUrl = pagination.querySelector('a.next')?.href;
+        contentDom.append(container, pagination);
         const hr = document.createElement('hr');
         contentDom.append(hr);
         observer.disconnect();
         observer.observe(hr);
-        if (pageNum >= num_pages) hr.style.animationPlayState = 'paused';
-        const urlParams = new URLSearchParams(window.location.search);
-        urlParams.set('page', `${pageNum}`);
-        history.replaceState(null, '', `?${urlParams.toString()}`);
+        if (!nextUrl) hr.style.animationPlayState = 'paused';
       }, false);
-      observer = new IntersectionObserver(entries => entries[0].isIntersecting && loadNewComic());
+      loadNextPage();
+      const observer = new IntersectionObserver(entries => entries[0].isIntersecting && loadNextPage());
       observer.observe(contentDom.lastElementChild);
       if (helper.querySelector('section.pagination')) contentDom.append(document.createElement('hr'));
     }
   }
 })().catch(error => helper.log.error(error));
+web.delegateEvents(["click"]);
 
         break;
       }
@@ -10469,11 +10535,19 @@ const fileType = {
 const main = require('main');
 const helper = require('helper');
 
+// 单篇
+// https://yuri.website/162404/
+// 连载折叠
+// https://yuri.website/148990/
+// 需要购买
+// https://yuri.website/147642/
 (async () => {
   const {
     options,
     setManga,
-    init,
+    setComicLoad,
+    showComic,
+    comicMap,
     needAutoShow
   } = await main.useInit('yurifans', {
     自动签到: true
@@ -10512,39 +10586,33 @@ const helper = require('helper');
   if (helper.querySelector('.content-hidden')) {
     const imgBody = helper.querySelector('.content-hidden');
     const imgList = imgBody.getElementsByTagName('img');
-    if (await helper.wait(() => imgList.length, 1000)) init(() => [...imgList].map(e => e.src));
+    if (await helper.wait(() => imgList.length, 1000)) setComicLoad(() => [...imgList].map(e => e.src));
     return;
   }
 
   // 有折叠内容的漫画
   if (helper.querySelector('.xControl')) {
     needAutoShow.val = false;
-    const {
-      loadImgList
-    } = init(() => []);
-    const imgListMap = [];
-    const loadChapterImg = async i => {
-      const imgList = imgListMap[i];
-      await loadImgList([...imgList].map(e => e.dataset.src), true);
+    const switchChapter = async i => {
+      showComic(i);
       setManga({
-        onPrev: i === 0 ? undefined : () => loadChapterImg(i - 1),
-        onNext: i === imgListMap.length - 1 ? undefined : () => loadChapterImg(i + 1)
+        onPrev: Reflect.has(comicMap, i - 1) ? () => switchChapter(i - 1) : undefined,
+        onNext: Reflect.has(comicMap, i + 1) ? () => switchChapter(i + 1) : undefined
       });
     };
     for (const [i, a] of helper.querySelectorAll('.xControl > a').entries()) {
-      const imgRoot = a.parentElement.nextElementSibling;
-      imgListMap.push(imgRoot.getElementsByTagName('img'));
-      a.addEventListener('click', () => {
-        // 只在打开折叠内容时进入阅读模式
-        if (imgRoot.style.display === 'none' || imgRoot.style.height && imgRoot.style.height.split('.')[0].length <= 2) return loadChapterImg(i);
-      });
+      const item = a.parentElement.nextElementSibling;
+      setComicLoad(() => [...item.getElementsByTagName('img')].map(e => e.dataset.src ?? ''), i);
+
+      // 只在打开折叠内容时进入阅读模式
+      a.addEventListener('click', () => item.getAttribute('style') !== '' && switchChapter(i));
     }
     return;
   }
 
   // 没有折叠的单篇漫画
   await helper.wait(() => helper.querySelectorAll('.entry-content img').length);
-  return init(() => helper.querySelectorAll('.entry-content img').map(e => e.src));
+  setComicLoad(() => helper.querySelectorAll('.entry-content img').map(e => e.src));
 })();
 
         break;
@@ -10693,18 +10761,13 @@ const helper = require('helper');
         options = {
           name: 'terraHistoricus',
           wait: () => Boolean(helper.querySelector('.HG_COMIC_READER_main')),
-          async getImgList({
-            setFab
-          }) {
-            const res = await main.request(apiUrl());
-            const pageList = JSON.parse(res.responseText).data.pageInfos;
-            if (pageList.length === 0 && window.location.pathname.includes('episode')) throw new Error('获取图片列表时出错');
-            return helper.plimit(helper.createSequence(pageList.length).map(getImgUrl), (doneNum, totalNum) => {
-              setFab({
-                progress: doneNum / totalNum,
-                tip: `加载图片中 - ${doneNum}/${totalNum}`
-              });
+          async getImgList() {
+            const res = await main.request(apiUrl(), {
+              responseType: 'json'
             });
+            const pageList = res.response.data.pageInfos;
+            if (pageList.length === 0 && window.location.pathname.includes('episode')) throw new Error('获取图片列表时出错');
+            return helper.plimit(helper.createSequence(pageList.length).map(getImgUrl));
           },
           SPA: {
             isMangaPage: () => window.location.href.includes('episode'),
@@ -10717,28 +10780,20 @@ const helper = require('helper');
 
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic.me':
-    case '18comic-deadp.club':
+    case '18comic-c104.vip':
     case '18comic.org':
     case '18comic.vip':
       {
 const main = require('main');
 const helper = require('helper');
 
-// 已知问题：某些漫画始终会有几页在下载原图时出错
-// 并且这类漫画下即使关掉脚本，也还是会有几页就是加载不出来
-// 比较神秘的是这两种情况下加载不出来的图片还不一样
-// 并且在多次刷新的情况下都是那几张图片加载不出来
-// 另外这类漫画也有概率出现，在关闭脚本的情况下所有图片都加载不出来的情况，只能刷新
-// 就很怪
-// 对此只能放弃
 (async () => {
   // 只在漫画页内运行
   if (!window.location.pathname.includes('/photo/')) return;
   const {
-    init,
+    setComicLoad,
     setManga,
-    setFab,
-    dynamicUpdate
+    dynamicLoad
   } = await main.useInit('jm');
   while (!unsafeWindow?.onImageLoaded) {
     if (document.readyState === 'complete') {
@@ -10757,10 +10812,7 @@ const helper = require('helper');
 
   // 判断当前漫画是否有被分割，没有就直接获取图片链接加载
   // 判断条件来自页面上的 scramble_image 函数
-  if (unsafeWindow.aid < unsafeWindow.scramble_id || unsafeWindow.speed === '1') {
-    init(() => imgEleList.map(e => e.dataset.original));
-    return;
-  }
+  if (unsafeWindow.aid < unsafeWindow.scramble_id || unsafeWindow.speed === '1') return setComicLoad(() => imgEleList.map(e => e.dataset.original ?? ''));
   const downloadImg = async url => {
     try {
       // 使用 fetch 可以复用本地缓存，但有时候会报 cors 问题
@@ -10814,12 +10866,10 @@ const helper = require('helper');
     const loadedNum = helper.querySelectorAll('.lazy-loaded').length;
     return loadedNum > 0 && helper.querySelectorAll('canvas').length - loadedNum <= 1;
   });
-  init(dynamicUpdate(setImg => helper.plimit(imgEleList.map((img, i) => async () => setImg(i, await getImgUrl(img))), (doneNum, totalNum) => {
-    setFab({
-      progress: doneNum / totalNum,
-      tip: `加载图片中 - ${doneNum}/${totalNum}`
-    });
-  }), imgEleList.length));
+  const loadImgList = async setImg => helper.plimit(imgEleList.map((img, i) => async () => {
+    setImg(i, await getImgUrl(img));
+  }));
+  setComicLoad(dynamicLoad(loadImgList, imgEleList.length));
 })().catch(error => helper.log.error(error));
 
         break;
@@ -10925,11 +10975,11 @@ const helper = require('helper');
         options = {
           name: 'dm5',
           getImgList({
-            dynamicUpdate
+            dynamicLoad
           }) {
             // manhuaren 和 1kkk 的移动端上会直接用一个变量存储所有图片的链接
             if (Array.isArray(unsafeWindow.newImgs) && unsafeWindow.newImgs.every(helper.isUrl)) return unsafeWindow.newImgs;
-            return dynamicUpdate(async setImg => {
+            return dynamicLoad(async setImg => {
               const imgList = new Set();
               while (imgList.size < imgNum) {
                 // 因为每次会返回指定页数及上一页的图片链接，所以加个1减少请求次数
@@ -11003,8 +11053,8 @@ const helper = require('helper');
         options = {
           name: 'mangabz',
           getImgList: ({
-            dynamicUpdate
-          }) => dynamicUpdate(async setImg => {
+            dynamicLoad
+          }) => dynamicLoad(async setImg => {
             const imgList = new Set();
             while (imgList.size < imgNum) {
               // 因为每次会返回指定页数及上一页的图片链接，所以加个1减少请求次数
@@ -11166,7 +11216,7 @@ const helper = require('helper');
         options = {
           name: 'koharu',
           async getImgList({
-            dynamicUpdate
+            dynamicLoad
           }) {
             const [,, galleryId, galleryKey] = window.location.pathname.split('/');
             const detailRes = await main.request(`https://api.koharu.to/books/detail/${galleryId}/${galleryKey}`, {
@@ -11176,7 +11226,7 @@ const helper = require('helper');
             const [[w, {
               id,
               public_key
-            }]] = Object.entries(detailRes.response.data).sort(([, a], [, b]) => b.size - a.size);
+            }]] = Object.entries(detailRes.response.data).filter(([, data]) => data.id && data.public_key).sort(([, a], [, b]) => b.size - a.size);
             const {
               created_at,
               updated_at
@@ -11190,13 +11240,14 @@ const helper = require('helper');
               entries
             } = dataRes.response;
             const totalPageNum = entries.length;
-            return dynamicUpdate(async setImg => {
+            return dynamicLoad(async setImg => {
               for (const [i, {
-                path
+                path,
+                dimensions
               }] of entries.entries()) {
                 if (!isMangaPage) break;
                 const startTime = performance.now();
-                setImg(i, await downloadImg(`${base}${path}`));
+                setImg(i, await downloadImg(`${base}${path}?w=${dimensions[0]}`));
                 await helper.sleep(500 - (performance.now() - startTime));
               }
             }, totalPageNum)();
@@ -11217,9 +11268,10 @@ const helper = require('helper');
 
 (async () => {
   const {
-    init,
     options,
-    setManga
+    setComicLoad,
+    showComic,
+    needAutoShow
   } = await main.useInit('kemono', {
     autoShow: false,
     defaultOption: {
@@ -11228,11 +11280,14 @@ const helper = require('helper');
     /** 加载原图 */
     load_original_image: true
   });
-  const getImglist = () => options.load_original_image ? helper.querySelectorAll('.post__thumbnail a').map(e => e.href) : helper.querySelectorAll('.post__thumbnail img').map(e => e.src);
-  init(getImglist);
+  setComicLoad(() => helper.querySelectorAll('.post__thumbnail a').map(e => e.href), 'original');
+  setComicLoad(() => helper.querySelectorAll('.post__thumbnail img').map(e => e.src), 'thumbnail');
 
   // 在切换时重新获取图片
-  helper.createEffectOn(() => options.load_original_image, () => setManga('imgList', getImglist()));
+  helper.createEffectOn(() => options.load_original_image, isOriginal => {
+    needAutoShow.val = options.autoShow;
+    showComic(isOriginal ? 'original' : 'thumbnail');
+  });
 
   // 加上跳转至 pwa 的链接
   const zipExtension = new Set(['zip', 'rar', '7z', 'cbz', 'cbr', 'cb7']);
@@ -11343,9 +11398,9 @@ const createImgData = (oldSrc = '') => ({
 /** 用于判断是否是图片 url 的正则 */
 const isImgUrlRe = /^(((https?|ftp|file):)?\/)?\/[-\w+&@#/%?=~|!:,.;]+[-\w+&@#%=~|]$/;
 
-/** 检查元素属性，将格式为图片 url 的属性值作为 src */
-const tryCorrectUrl = e => {
-  e.getAttributeNames().some(key => {
+/** 找出格式为图片 url 的元素属性 */
+const getDatasetUrl = e => {
+  for (const key of e.getAttributeNames()) {
     // 跳过白名单
     switch (key) {
       case 'src':
@@ -11356,13 +11411,12 @@ const tryCorrectUrl = e => {
       case 'title':
       case 'onload':
       case 'onerror':
-        return false;
+        continue;
     }
     const val = e.getAttribute(key).trim();
-    if (!isImgUrlRe.test(val)) return false;
-    e.setAttribute('src', val);
-    return true;
-  });
+    if (!isImgUrlRe.test(val)) continue;
+    return val;
+  }
 };
 
 /**
@@ -11371,7 +11425,7 @@ const tryCorrectUrl = e => {
  *
  * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
  */
-const triggerEleLazyLoad = async (e, time, isLazyLoaded) => {
+const triggerEleLazyLoad = async (e, time, isLazyLoaded, runCondition) => {
   const nowScroll = window.scrollY;
   e.scrollIntoView({
     behavior: 'instant'
@@ -11382,7 +11436,7 @@ const triggerEleLazyLoad = async (e, time, isLazyLoaded) => {
   try {
     if (isLazyLoaded && time) return await helper.wait(isLazyLoaded, time);
   } finally {
-    window.scroll({
+    if (runCondition()) window.scroll({
       top: nowScroll,
       behavior: 'instant'
     });
@@ -11434,7 +11488,7 @@ imgShowObserver = new IntersectionObserver(entries => {
 });
 const turnPageScheduled = helper.createScheduled(fn => helper.throttle(fn, 1000));
 /** 触发翻页 */
-const triggerTurnPage = async (waitTime = 0) => {
+const triggerTurnPage = async (waitTime, runCondition) => {
   if (!turnPageScheduled()) return;
   const nowScroll = window.scrollY;
   // 滚到底部再滚回来，触发可能存在的自动翻页脚本
@@ -11446,7 +11500,7 @@ const triggerTurnPage = async (waitTime = 0) => {
     bubbles: true
   }));
   if (waitTime) await helper.sleep(waitTime);
-  window.scroll({
+  if (runCondition()) window.scroll({
     top: nowScroll,
     behavior: 'instant'
   });
@@ -11463,12 +11517,13 @@ const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondit
   }
   for (const e of targetImgList) {
     await helper.wait(runCondition);
-    await triggerTurnPage(waitTime);
+    await triggerTurnPage(0, runCondition);
     if (!needTrigged(e)) continue;
-    tryCorrectUrl(e);
-    if (await triggerEleLazyLoad(e, waitTime, () => isLazyLoaded(e, imgMap.get(e)?.oldSrc))) handleTrigged(e);
+    const datasetUrl = getDatasetUrl(e);
+    if (datasetUrl) e.setAttribute('src', datasetUrl);
+    if (await triggerEleLazyLoad(e, waitTime, () => isLazyLoaded(e, imgMap.get(e)?.oldSrc), runCondition)) handleTrigged(e);
   }
-  await triggerTurnPage();
+  await triggerTurnPage(waitTime, runCondition);
   if (targetImgList.length > 0) state.continueRun = true;
 });
 
@@ -11483,10 +11538,11 @@ const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondit
   /** 执行脚本操作。如果中途中断，将返回 true */
   const start = async () => {
     const {
+      options,
+      setComicLoad,
+      setComicMap,
       setManga,
       setFab,
-      init,
-      options,
       setOptions,
       isStored,
       mangaProps
@@ -11550,6 +11606,18 @@ const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondit
       if (url.startsWith('http:') && window.location.protocol === 'https:') return url.replace('http:', 'https:');
       return url;
     };
+
+    /** 重复的加载占位图 */
+    const placeholderImgList = new Set();
+    helper.createEffectOn(() => mangaProps.imgList.filter(url => url && !placeholderImgList.has(url)), helper.throttle(imgList => {
+      if (!imgList?.length || imgList.length - new Set(imgList).size <= 4) return;
+      const repeatNumMap = new Map();
+      for (const url of imgList) {
+        const repeatNum = (repeatNumMap.get(url) ?? 0) + 1;
+        repeatNumMap.set(url, repeatNum);
+        if (repeatNum > 5) placeholderImgList.add(url);
+      }
+    }));
     const imgBlackList = [
     // 东方永夜机的预加载图片
     '#pagetual-preload',
@@ -11588,15 +11656,19 @@ const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondit
       }
       let isEdited = false;
       await helper.plimit(newImgEleList.map((e, i) => async () => {
-        const newUrl = e ? await handleImgUrl(e) : '';
+        let newUrl = '';
+        if (e) {
+          newUrl = await handleImgUrl(e);
+          if (placeholderImgList.has(newUrl)) newUrl = getDatasetUrl(e) ?? '';
+        }
         if (newUrl === mangaProps.imgList[i]) return;
         isEdited ||= true;
-        setManga('imgList', i, newUrl);
+        setComicMap('', 'imgList', i, newUrl);
       }));
       if (isEdited) saveImgEleSelector(imgEleList);
 
       // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要再删掉多余的页数
-      if (mangaProps.imgList.length > newImgEleList.length) setManga('imgList', mangaProps.imgList.slice(0, newImgEleList.length));
+      if (mangaProps.imgList.length > newImgEleList.length) setComicMap('', 'imgList', mangaProps.imgList.slice(0, newImgEleList.length));
       if (isEdited || needTriggedNum || imgEleList.some(e => !e.naturalWidth && !e.naturalHeight)) {
         if (updateImgListTimeout) window.clearTimeout(updateImgListTimeout);
         updateImgListTimeout = window.setTimeout(updateImgList, 1000);
@@ -11612,7 +11684,7 @@ const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondit
       updateImgList();
       triggerAllLazyLoad();
     });
-    init(async () => {
+    setComicLoad(async () => {
       if (!imgEleList) {
         imgEleList = [];
         imgDomObserver.observe(document.body, {
@@ -11659,9 +11731,10 @@ const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondit
     // 在退出阅读模式时跳回之前的滚动位置
     let laseScroll = window.scrollY;
     helper.createEffectOn(() => mangaProps.show, show => {
-      if (show) laseScroll = window.scrollY;
-      // 稍微延迟一下，等之前触发懒加载时的滚动结束
-      else requestAnimationFrame(() => window.scrollTo(0, laseScroll));
+      if (show) laseScroll = window.scrollY;else window.scroll({
+        top: laseScroll,
+        behavior: 'instant'
+      });
     });
   };
   if ((await GM.getValue(window.location.hostname)) !== undefined) return requestIdleCallback(start);
@@ -11675,7 +11748,7 @@ const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondit
 
       }
   }
-  if (options) main.universalInit(options);
+  if (options) main.universal(options);
 } catch (error) {
   helper.log.error(error);
 }
