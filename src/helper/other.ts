@@ -67,7 +67,7 @@ export const querySelectorClick = (
 /** 找出数组中出现最多次的元素 */
 export const getMostItem = <T>(list: T[]) => {
   const counts = new Map<T, number>();
-  for (const val of list) counts.set(val, counts.get(val) ?? 0 + 1);
+  for (const val of list) counts.set(val, (counts.get(val) ?? 0) + 1);
 
   // eslint-disable-next-line unicorn/no-array-reduce
   return [...counts.entries()].reduce((maxItem, item) =>

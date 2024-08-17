@@ -1,4 +1,4 @@
-import { t, log, canvasToBlob, waitImgLoad } from 'helper';
+import { t, log, canvasToBlob, waitImgLoad, sleep } from 'helper';
 
 import { store } from '../../store';
 
@@ -27,33 +27,51 @@ type QueryV1Message =
       type: 'not_found';
     };
 
+const handleMessage = (msg: QueryV1Message, i: number) => {
+  switch (msg.type) {
+    case 'result':
+      return msg.result.translation_mask;
+    case 'pending':
+      setMessage(i, t('translation.tip.pending', { pos: msg.pos }));
+      break;
+    case 'status':
+      setMessage(i, t(`translation.status.${msg.status}`) || msg.status);
+      break;
+
+    case 'error':
+      throw new Error(`${t('translation.tip.error')}：id ${msg.error_id}`);
+    case 'not_found':
+      throw new Error(`${t('translation.tip.error')}：Not Found`);
+  }
+};
+
+const waitTranslationPolling = async (id: string, i: number) => {
+  let result: string | undefined;
+  while (result === undefined) {
+    const res = await request<QueryV1Message>(
+      `https://api.cotrans.touhou.ai/task/${id}/status/v1`,
+      { responseType: 'json' },
+    );
+    result = handleMessage(res.response, i);
+    await sleep(1000);
+  }
+  return result;
+};
+
 /** 等待翻译完成 */
 const waitTranslation = (id: string, i: number) => {
   const ws = new WebSocket(`wss://api.cotrans.touhou.ai/task/${id}/event/v1`);
 
+  // 如果网站设置了 CSP connect-src 就只能轮询了
+  if (ws.readyState > 1) return waitTranslationPolling(id, i);
+
   return new Promise<string>((resolve, reject) => {
     ws.onmessage = (e) => {
-      const msg = JSON.parse(e.data) as QueryV1Message;
-
-      switch (msg.type) {
-        case 'result':
-          resolve(msg.result.translation_mask);
-          break;
-        case 'pending':
-          setMessage(i, t('translation.tip.pending', { pos: msg.pos }));
-          break;
-        case 'status':
-          setMessage(i, t(`translation.status.${msg.status}`) || msg.status);
-          break;
-
-        case 'error':
-          reject(
-            new Error(`${t('translation.tip.error')}：id ${msg.error_id}`),
-          );
-          break;
-        case 'not_found':
-          reject(new Error(`${t('translation.tip.error')}：Not Found`));
-          break;
+      try {
+        const result = handleMessage(JSON.parse(e.data), i);
+        if (result) resolve(result);
+      } catch (error) {
+        reject(error as Error);
       }
     };
   });
@@ -67,8 +85,7 @@ const mergeImage = async (rawImage: Blob, maskUri: string) => {
   canvasCtx.drawImage(img, 0, 0);
 
   const img2 = new Image();
-  img2.src = maskUri;
-  img2.crossOrigin = 'anonymous';
+  img2.src = URL.createObjectURL(await download(maskUri));
   await waitImgLoad(img2);
   canvasCtx.drawImage(img2, 0, 0);
 
