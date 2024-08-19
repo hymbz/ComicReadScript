@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.7.0
+// @version         9.7.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -7892,7 +7892,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>nhentai 增加识别广告页功能\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 ehentai 与其他脚本的冲突 </p></li><li><p>修复部分网站上无法翻译的 bug </p></li><li><p>修复部分网站下载图片的扩展名错误的 bug\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复 kemono 自动进入阅读模式设置失效的 bug\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
@@ -8134,6 +8134,7 @@ const useInit = async (name, defaultOptions = {}) => {
     comicMap,
     setComicMap,
     nowComic,
+    switchComic,
     showComic,
     loadComic,
     /** 设置对应漫画的加载函数 */
@@ -11271,6 +11272,7 @@ const helper = require('helper');
     options,
     setComicLoad,
     showComic,
+    switchComic,
     needAutoShow
   } = await main.useInit('kemono', {
     autoShow: false,
@@ -11284,7 +11286,8 @@ const helper = require('helper');
   setComicLoad(() => helper.querySelectorAll('.post__thumbnail img').map(e => e.src), 'thumbnail');
 
   // 在切换时重新获取图片
-  helper.createEffectOn(() => options.load_original_image, isOriginal => {
+  helper.createEffectOn(() => options.load_original_image, (isOriginal, prev) => {
+    if (!prev) return switchComic(isOriginal ? 'original' : 'thumbnail');
     needAutoShow.val = options.autoShow;
     showComic(isOriginal ? 'original' : 'thumbnail');
   });
