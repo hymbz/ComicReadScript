@@ -232,6 +232,7 @@ export const useInit = async <T extends Record<string, any>>(
     comicMap,
     setComicMap,
     nowComic,
+    switchComic,
 
     showComic,
     loadComic,

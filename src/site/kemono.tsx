@@ -2,15 +2,13 @@ import { useInit } from 'main';
 import { createEffectOn, querySelectorAll } from 'helper';
 
 (async () => {
-  const { options, setComicLoad, showComic, needAutoShow } = await useInit(
-    'kemono',
-    {
+  const { options, setComicLoad, showComic, switchComic, needAutoShow } =
+    await useInit('kemono', {
       autoShow: false,
       defaultOption: { pageNum: 1 },
       /** 加载原图 */
       load_original_image: true,
-    },
-  );
+    });
 
   setComicLoad(
     () =>
@@ -30,7 +28,8 @@ import { createEffectOn, querySelectorAll } from 'helper';
   // 在切换时重新获取图片
   createEffectOn(
     () => options.load_original_image,
-    (isOriginal) => {
+    (isOriginal, prev) => {
+      if (!prev) return switchComic(isOriginal ? 'original' : 'thumbnail');
       needAutoShow.val = options.autoShow;
       showComic(isOriginal ? 'original' : 'thumbnail');
     },
