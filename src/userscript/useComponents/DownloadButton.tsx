@@ -9,14 +9,18 @@ import { request } from '../main/request';
 
 import { toast } from './Toast';
 
-const Accept =
-  'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8';
-
 /** 下载按钮 */
 export const DownloadButton = () => {
   const [statu, setStatu] = createSignal('button.download');
 
   const handleDownload = async () => {
+    const headers = {
+      Accept:
+        'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+      'User-Agent': navigator.userAgent,
+      Referer: window.location.href,
+    };
+
     const fileData: Zippable = {};
 
     const { imgList } = store;
@@ -41,7 +45,7 @@ export const DownloadButton = () => {
       let fileName: string;
       try {
         const res = await request<Blob>(url, {
-          headers: { Accept },
+          headers,
           responseType: 'blob',
           errorText: `${t('alert.download_failed')}: ${index}`,
         });

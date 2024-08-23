@@ -45,7 +45,7 @@ export const request = async <T = any>(
     // 为了支持 ios 端只能自己实现一下了
     if (
       details?.fetch ??
-      (/^(\/|blob:)/.test(url) || url.startsWith(window.location.origin))
+      (url.startsWith('/') || url.startsWith(window.location.origin))
     ) {
       const res = await fetch(url, {
         method: 'GET',
