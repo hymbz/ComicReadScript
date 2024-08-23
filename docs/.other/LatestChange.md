@@ -1,6 +1,6 @@
-## [9.7.1](https://github.com/hymbz/ComicReadScript/compare/v9.7.0...v9.7.1) (2024-08-19)
+## [9.7.2](https://github.com/hymbz/ComicReadScript/compare/v9.7.1...v9.7.2) (2024-08-23)
 
 
 ### Bug Fixes
 
-* :bug: 修复 kemono 自动进入阅读模式设置失效的 bug ([5c552a6](https://github.com/hymbz/ComicReadScript/commit/5c552a62e5c8dcca9f344bb28275b3b0053d9bb2)), closes [#181](https://github.com/hymbz/ComicReadScript/issues/181)
+* :bug: 修复部分网站无法下载漫画的 bug ([46b06a9](https://github.com/hymbz/ComicReadScript/commit/46b06a9617c1257a22ca7a3c256e5f74dba32702))

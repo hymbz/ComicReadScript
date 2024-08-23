@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.7.1
+// @version         9.7.2
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -7354,7 +7354,7 @@ const request = async (url, details, retryNum = 0, errorNum = 0) => {
   try {
     // 虽然 GM_xmlhttpRequest 有 fetch 选项，但在 stay 上不太稳定
     // 为了支持 ios 端只能自己实现一下了
-    if (details?.fetch ?? (/^(\\/|blob:)/.test(url) || url.startsWith(window.location.origin))) {
+    if (details?.fetch ?? (url.startsWith('/') || url.startsWith(window.location.origin))) {
       const res = await fetch(url, {
         method: 'GET',
         headers,
@@ -7443,12 +7443,15 @@ const MdFileDownload = ((props = {}) => (() => {
   return _el$;
 })());
 
-const Accept = 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8';
-
 /** 下载按钮 */
 const DownloadButton = () => {
   const [statu, setStatu] = solidJs.createSignal('button.download');
   const handleDownload = async () => {
+    const headers = {
+      Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+      'User-Agent': navigator.userAgent,
+      Referer: window.location.href
+    };
     const fileData = {};
     const {
       imgList
@@ -7464,9 +7467,7 @@ const DownloadButton = () => {
       let fileName;
       try {
         const res = await request(url, {
-          headers: {
-            Accept
-          },
+          headers,
           responseType: 'blob',
           errorText: \`\${helper.t('alert.download_failed')}: \${index}\`
         });
@@ -7826,7 +7827,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复 kemono 自动进入阅读模式设置失效的 bug\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复部分网站无法下载漫画的 bug\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
@@ -10715,7 +10716,7 @@ const helper = require('helper');
 
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic.me':
-    case '18comic-c104.vip':
+    case '18comic-c104.me':
     case '18comic.org':
     case '18comic.vip':
       {
