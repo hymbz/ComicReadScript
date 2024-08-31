@@ -16,7 +16,13 @@ import { renderImgList } from 'components/Manga';
 import { useInit, toast } from 'main';
 
 import { getEleSelector, isEleSelector } from './eleSelector';
-import { getDatasetUrl, needTrigged, triggerLazyLoad } from './triggerLazyLoad';
+import {
+  getDatasetUrl,
+  imgMap,
+  isLazyLoaded,
+  needTrigged,
+  triggerLazyLoad,
+} from './triggerLazyLoad';
 
 // 测试案例
 // https://www.177picyy.com/html/2023/03/5505307.html
@@ -174,7 +180,11 @@ import { getDatasetUrl, needTrigged, triggerLazyLoad } from './triggerLazyLoad';
         const expectImgList = querySelectorAll<HTMLImageElement>(
           options.selector,
         );
-        expectCount = expectImgList.length;
+        expectCount = expectImgList.filter(
+          (e) =>
+            !imgMap.get(e)?.triggedNum ||
+            isLazyLoaded(e, imgMap.get(e)?.oldSrc),
+        ).length;
         needTriggedNum = expectImgList.filter(needTrigged).length;
         // 根据预计的图片总数补上占位的空图
         const fillImgNum = expectCount - imgEleList.length;

@@ -65,7 +65,7 @@ const triggerEleLazyLoad = async (
 };
 
 /** 判断一个元素是否已经触发完懒加载 */
-const isLazyLoaded = (e: HTMLImageElement, oldSrc?: string) => {
+export const isLazyLoaded = (e: HTMLImageElement, oldSrc?: string) => {
   if (!e.src) return false;
   if (!e.offsetParent) return false;
   // 有些网站会使用 svg 占位
@@ -109,10 +109,10 @@ imgShowObserver = new IntersectionObserver((entries) => {
         ...getImg(ele),
         observerTimeout: window.setTimeout(handleTrigged, 290, ele),
       });
+    } else {
+      const timeoutID = imgMap.get(ele)?.observerTimeout;
+      if (timeoutID) window.clearTimeout(timeoutID);
     }
-
-    const timeoutID = imgMap.get(ele)?.observerTimeout;
-    if (timeoutID) window.clearTimeout(timeoutID);
   }
 });
 
