@@ -62,7 +62,6 @@ export const quickTagDefine = (pageType: PageType) => {
       top: 0;
       left: 0;
       width: 100%;
-      height: 100%;
       text-align: start;
       padding: 0 1em;
       box-sizing: border-box;
@@ -118,7 +117,10 @@ export const quickTagDefine = (pageType: PageType) => {
   render(
     () => (
       <Show when={show()}>
-        <span id="comidread-tag-define" style={{ background }}>
+        <span
+          id="comidread-tag-define"
+          style={{ background, height: `${root.scrollHeight}px` }}
+        >
           {tagContent[unsafeWindow.selected_tagname] ?? <h3>loading...</h3>}
         </span>
       </Show>
