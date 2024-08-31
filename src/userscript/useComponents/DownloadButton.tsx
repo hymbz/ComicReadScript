@@ -9,6 +9,8 @@ import { request } from '../main/request';
 
 import { toast } from './Toast';
 
+const getExtName = (mime: string) => /.+\/([^;]+)/.exec(mime)?.[1] ?? 'jpg';
+
 /** 下载按钮 */
 export const DownloadButton = () => {
   const [statu, setStatu] = createSignal('button.download');
@@ -50,7 +52,7 @@ export const DownloadButton = () => {
           errorText: `${t('alert.download_failed')}: ${index}`,
         });
         data = res.response;
-        fileName = `${index}.${data.type.split('/')[1]}`;
+        fileName = `${index}.${getExtName(data.type)}`;
       } catch {
         fileName = `${index} - ${t('alert.download_failed')}`;
       }
@@ -78,7 +80,11 @@ export const DownloadButton = () => {
   );
 
   return (
-    <IconButton tip={tip()} onClick={handleDownload}>
+    <IconButton
+      tip={tip()}
+      onClick={handleDownload}
+      enabled={statu() !== 'button.download'}
+    >
       <MdFileDownload />
     </IconButton>
   );
