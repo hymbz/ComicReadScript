@@ -2,6 +2,8 @@ import { useInit } from 'main';
 import { createEffectOn, querySelectorAll } from 'helper';
 
 (async () => {
+  if (!location.pathname.includes('/post/')) return;
+
   const { options, setComicLoad, showComic, switchComic, needAutoShow } =
     await useInit('kemono', {
       autoShow: false,

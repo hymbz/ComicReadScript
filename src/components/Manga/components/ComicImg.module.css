@@ -160,6 +160,10 @@
     margin-right: auto;
     margin-left: auto;
 
+    & > picture {
+      position: relative;
+    }
+
     & > .gridModeTip {
       cursor: auto;
 
@@ -207,6 +211,10 @@
         will-change: transform;
         width: 100%;
         height: auto;
+
+        & > picture {
+          position: relative;
+        }
       }
     }
   }
