@@ -1,6 +1,6 @@
 import type { Component } from 'solid-js';
 
-export { Toaster, ref } from './Toaster';
+export { Toaster } from './Toaster';
 export { toast } from './toast';
 
 export interface Toast {

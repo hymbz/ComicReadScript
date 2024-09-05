@@ -14,13 +14,6 @@ export const { store, setState, _state, _setState } = useStore({
   ...otherState,
 });
 
-if (isDevMode)
-  Object.assign((window as any).unsafeWindow ?? window, {
-    store,
-    setState,
-    _setState,
-  });
-
 export type State = typeof imgState &
   typeof showState &
   typeof propState &
@@ -40,3 +33,11 @@ export const refs = {
   next: undefined as unknown as HTMLButtonElement,
   exit: undefined as unknown as HTMLButtonElement,
 };
+
+if (isDevMode)
+  Object.assign((window as any).unsafeWindow ?? window, {
+    store,
+    setState,
+    _setState,
+    refs,
+  });

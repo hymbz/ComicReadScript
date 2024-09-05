@@ -1,5 +1,6 @@
 import { type Accessor, type JSX } from 'solid-js';
-import { createEffectOn, createRootMemo, onAutoMount } from 'helper';
+
+import { createEffectOn, createRootMemo, onAutoMount } from './solidJs';
 
 const useStyleSheet = (e?: Element) => {
   const styleSheet = new CSSStyleSheet();

@@ -1,6 +1,5 @@
 import { sleep, t, log } from 'helper';
-
-import { toast } from '../useComponents/Toast';
+import { toast } from 'components/Toast';
 
 // 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = (
@@ -80,6 +79,9 @@ export const request = async <T = any>(
         responseText: response ? '' : await res.text(),
       };
     }
+
+    if (typeof GM_xmlhttpRequest === 'undefined')
+      throw new Error(t('pwa.alert.userscript_not_installed'));
 
     const res = await xmlHttpRequest({
       method: 'GET',

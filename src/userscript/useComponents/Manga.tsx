@@ -1,11 +1,16 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
-import { t, createEffectOn, createRootMemo } from 'helper';
 import { createStore } from 'solid-js/store';
 import { IconButton } from 'components/IconButton';
 import { type MangaProps, buttonListDivider, Manga } from 'components/Manga';
+import {
+  t,
+  createEffectOn,
+  createRootMemo,
+  mountComponents,
+  querySelector,
+} from 'helper';
 
-import { DownloadButton } from './DownloadButton';
-import { mountComponents } from './helper';
+import { DownloadButton } from '../../components/DownloadButton';
 
 let dom: HTMLDivElement;
 
@@ -54,6 +59,10 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
 
   dom = mountComponents('comicRead', () => <Manga {...props} />);
   dom.style.setProperty('z-index', '2147483647', 'important');
+
+  // 确保 toast 可以显示在漫画之上
+  const toastDom = querySelector('#toast');
+  if (toastDom) dom.after(toastDom);
 
   const htmlStyle = document.documentElement.style;
   let lastOverflow = htmlStyle.overflow;

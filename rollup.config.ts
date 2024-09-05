@@ -65,6 +65,7 @@ const generateScopedName = '[local]';
 /** 单独打包的代码 */
 const packlist = [
   'helper',
+  'request',
   'components/Manga',
   'components/IconButton',
   'components/Fab',
@@ -232,6 +233,25 @@ const optionList: RollupOptions[] = [
   buildOptions(
     'userscript/import',
     packlist.map((path) => `dist/${path}.js`),
+    (options) => {
+      (
+        (options.output as OutputOptions).plugins as OutputPluginOption[]
+      ).unshift({
+        name: 'selfImport',
+        renderChunk(rawCode) {
+          return rawCode.replace(
+            /\s+\/\/ import list/,
+            packlist
+              .map((path) => {
+                if (path === 'userscript/main') return '';
+                return `\ncase '${path}':\ncode = \`inject('${path}')\`;\nbreak;`;
+              })
+              .join(''),
+          );
+        },
+      });
+      return options;
+    },
   ),
 
   buildOptions('index', ['dist/**/*', '!dist/index.*js']),

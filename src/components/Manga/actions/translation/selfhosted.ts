@@ -1,4 +1,5 @@
 import { sleep, t, log } from 'helper';
+import { request } from 'request';
 
 import { store } from '../../store';
 
@@ -6,7 +7,6 @@ import {
   type TaskState,
   setMessage,
   download,
-  request,
   createFormData,
   createOptions,
 } from './helper';

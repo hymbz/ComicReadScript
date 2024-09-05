@@ -1,5 +1,4 @@
-import { onAutoMount } from 'helper';
-
+import { onAutoMount } from './solidJs';
 import { approx } from './other';
 
 export interface PointerState {

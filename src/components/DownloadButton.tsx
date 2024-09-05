@@ -1,13 +1,11 @@
 import MdFileDownload from '@material-design-icons/svg/round/file_download.svg';
 import { zipSync, type Zippable } from 'fflate';
 import { createMemo, createSignal } from 'solid-js';
+import { request } from 'request';
+import { saveAs, t } from 'helper';
 import { store } from 'components/Manga';
 import { IconButton } from 'components/IconButton';
-import { saveAs, t } from 'helper';
-
-import { request } from '../main/request';
-
-import { toast } from './Toast';
+import { toast } from 'components/Toast';
 
 const getExtName = (mime: string) => /.+\/([^;]+)/.exec(mime)?.[1] ?? 'jpg';
 

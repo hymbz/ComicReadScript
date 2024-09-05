@@ -5,13 +5,11 @@ import {
   onCleanup,
   onMount,
 } from 'solid-js';
-import { useStyle } from 'helper';
+import { mountComponents, useStyle } from 'helper';
 
-import { store } from './store';
+import { _setState, store } from './store';
 import { ToastItem } from './ToastItem';
 import classes, { css as style } from './index.module.css';
-
-export const [ref, setRef] = createSignal<HTMLElement>();
 
 export const Toaster: Component = () => {
   const [visible, setVisible] = createSignal(
@@ -19,7 +17,7 @@ export const Toaster: Component = () => {
   );
 
   onMount(() => {
-    useStyle(style, ref());
+    useStyle(style, store.ref!);
 
     const handleVisibilityChange = () => {
       setVisible(document.visibilityState === 'visible');
@@ -33,11 +31,18 @@ export const Toaster: Component = () => {
 
   return (
     <div
-      ref={setRef}
+      ref={(ref) => _setState('ref', ref)}
       class={classes.root}
       data-paused={visible() ? undefined : ''}
     >
       <For each={store.list}>{(id) => <ToastItem {...store.map[id]} />}</For>
     </div>
   );
+};
+
+let dom: HTMLDivElement;
+export const init = () => {
+  if (dom || store.ref) return;
+  dom = mountComponents('toast', () => <Toaster />);
+  dom.style.setProperty('z-index', '2147483647', 'important');
 };

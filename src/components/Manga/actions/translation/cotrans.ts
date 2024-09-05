@@ -1,8 +1,9 @@
 import { t, log, canvasToBlob, waitImgLoad, sleep } from 'helper';
+import { request, type Response } from 'request';
 
 import { store } from '../../store';
 
-import { setMessage, download, request, createFormData } from './helper';
+import { setMessage, download, createFormData } from './helper';
 
 type QueryV1Message =
   | {
@@ -129,7 +130,7 @@ export const cotransTranslation = async (i: number) => {
     throw new Error(t('translation.tip.resize_img_failed'));
   }
 
-  let res: Tampermonkey.Response<any>;
+  let res: Response;
   try {
     res = await request('https://api.cotrans.touhou.ai/task/upload/v1', {
       method: 'POST',

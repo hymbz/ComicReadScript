@@ -1,6 +1,5 @@
 import { byPath, lang, log } from 'helper';
-
-import { toast } from '../useComponents/Toast';
+import { toast } from 'components/Toast';
 
 import { VersionTip } from './versionTip';
 

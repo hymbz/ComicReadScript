@@ -5,8 +5,7 @@ import MdCloudDownload from '@material-design-icons/svg/round/cloud_download.svg
 import { Dynamic } from 'solid-js/web';
 import { createStore } from 'solid-js/store';
 import { type FabProps, Fab } from 'components/Fab';
-
-import { mountComponents } from './helper';
+import { mountComponents } from 'helper';
 
 let dom: HTMLDivElement;
 

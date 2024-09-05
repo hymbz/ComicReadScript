@@ -5,8 +5,7 @@ import MdInfo from '@material-design-icons/svg/round/info.svg';
 import { type Component, createEffect, createMemo, Show } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 
-import { _setState, setState } from './store';
-import { toast } from './toast';
+import { _setState, dismiss, setState } from './store';
 import classes from './index.module.css';
 
 import type { Toast } from '.';
@@ -47,10 +46,10 @@ export const ToastItem: Component<Toast> = (props) => {
       : undefined,
   );
 
-  const dismiss = (e: AnimationEvent | MouseEvent) => {
+  const _dismiss = (e: AnimationEvent | MouseEvent) => {
     e.stopPropagation();
     if (showSchedule() && 'animationName' in e) return;
-    toast.dismiss(props.id);
+    dismiss(props.id);
   };
 
   // 在退出动画结束后才真的删除
@@ -72,7 +71,7 @@ export const ToastItem: Component<Toast> = (props) => {
 
   const handleClick: EventHandler['on:click'] = (e) => {
     props.onClick?.();
-    dismiss(e);
+    _dismiss(e);
   };
 
   return (
@@ -101,7 +100,7 @@ export const ToastItem: Component<Toast> = (props) => {
             'animation-duration': `${props.duration}ms`,
             transform: showSchedule() ? `scaleX(${props.schedule})` : undefined,
           }}
-          onAnimationEnd={dismiss}
+          onAnimationEnd={_dismiss}
         />
       </Show>
     </div>

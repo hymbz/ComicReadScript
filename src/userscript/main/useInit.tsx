@@ -1,6 +1,8 @@
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
 import { createSignal } from 'solid-js';
+import { createStore } from 'solid-js/store';
 import { hotkeysMap, setDefaultHotkeys, store } from 'components/Manga';
+import { toast } from 'components/Toast';
 import {
   getKeyboardCode,
   linstenKeydown,
@@ -10,11 +12,9 @@ import {
   createRootMemo,
   createEffectOn,
 } from 'helper';
-import { createStore } from 'solid-js/store';
 
 import { useManga } from '../useComponents/Manga';
 import { useFab } from '../useComponents/Fab';
-import { toast } from '../useComponents/Toast';
 
 import { useSpeedDial } from './useSpeedDial';
 import { handleVersionUpdate } from './version';

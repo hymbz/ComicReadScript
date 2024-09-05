@@ -1,4 +1,5 @@
 import { t } from 'helper';
+import { request } from 'request';
 
 import { _setState, store } from '../../store';
 
@@ -10,25 +11,6 @@ export type TaskState = {
 
 export const setMessage = (i: number, msg: string) =>
   _setState('imgList', i, 'translationMessage', msg);
-
-export const request = <T = any>(
-  url: string,
-  details?: Partial<Tampermonkey.Request<any>>,
-): Promise<Tampermonkey.Response<T>> =>
-  new Promise((resolve, reject) => {
-    if (typeof GM_xmlhttpRequest === 'undefined')
-      reject(new Error(t('pwa.alert.userscript_not_installed')));
-
-    GM_xmlhttpRequest({
-      method: 'GET',
-      url,
-      headers: { Referer: window.location.href },
-      ...details,
-      onload: resolve,
-      onerror: reject,
-      ontimeout: reject,
-    });
-  });
 
 export const download = async (url: string) => {
   if (url.startsWith('blob:')) {
