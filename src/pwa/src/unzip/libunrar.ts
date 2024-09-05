@@ -1,3 +1,4 @@
+import { fileTypeFromBuffer } from 'file-type';
 import { plimit, t, wait } from 'helper';
 
 import type { ImgFile } from '../store';
@@ -41,7 +42,10 @@ const findImgFile = async (
   if (entry.type === 'file') {
     if (isSupportFile(entry.fullFileName) !== 'img') return [undefined];
 
-    const url = await createObjectURL(new Blob([entry.fileContent]));
+    const filtType = await fileTypeFromBuffer(entry.fileContent);
+    const url = await createObjectURL(
+      new Blob([entry.fileContent], { type: filtType?.mime || 'image/jpeg' }),
+    );
     if (!url) throw new Error(t('pwa.alert.img_data_error'));
     return [{ name: path.join('-'), url }];
   }

@@ -44,6 +44,7 @@ export const selfhostedTranslation = async (i: number) => {
     throw new Error(t('translation.tip.download_img_failed'));
   }
 
+  setMessage(i, t('translation.tip.upload'));
   let task_id: string;
   // 上传图片取得任务 id
   try {

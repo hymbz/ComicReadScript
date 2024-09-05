@@ -255,6 +255,7 @@
       "pending": "Pending, {{pos}} in queue",
       "resize_img_failed": "Failed to resize image",
       "translation_completed": "Translation completed",
+      "upload": "Uploading image",
       "upload_error": "Image upload error",
       "upload_return_error": "Error during server translation",
       "wait_translation": "Waiting for translation"

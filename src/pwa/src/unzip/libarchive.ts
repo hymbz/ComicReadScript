@@ -1,4 +1,5 @@
 import { Archive } from 'libarchive.js';
+import { fileTypeFromBuffer } from 'file-type';
 import { toast } from 'components/Toast';
 import { plimit, t } from 'helper';
 
@@ -40,8 +41,11 @@ export const libarchive = async ({
       .filter(({ file }) => isSupportFile(file.name) === 'img')
       .map(({ file }) => async () => {
         try {
+          const imgFile = 'extract' in file ? await file.extract() : file;
+          const buffer = await imgFile.arrayBuffer();
+          const filtType = await fileTypeFromBuffer(buffer);
           const url = await createObjectURL(
-            'extract' in file ? await file.extract() : file,
+            new Blob([buffer], { type: filtType?.mime || 'image/jpeg' }),
           );
           if (!url) throw new Error(t('pwa.alert.img_data_error'));
           return { name: file.name, url };

@@ -3,6 +3,7 @@ import {
   type Unzipped,
   unzip as unzipCb,
 } from 'fflate';
+import { fileTypeFromBuffer } from 'file-type';
 import { toast } from 'components/Toast';
 import { t } from 'helper';
 
@@ -30,7 +31,10 @@ export const fflate = async ({ zipFile, extension }: ZipData) => {
 
     return await Promise.all(
       Object.entries(res).map(async ([name, data]) => {
-        const url = await createObjectURL(new Blob([data.buffer]));
+        const filtType = await fileTypeFromBuffer(data.buffer);
+        const url = await createObjectURL(
+          new Blob([data.buffer], { type: filtType?.mime || 'image/jpeg' }),
+        );
         if (!url) throw new Error(t('pwa.alert.img_data_error'));
         return { name, url };
       }),

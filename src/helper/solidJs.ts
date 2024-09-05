@@ -33,7 +33,7 @@ export const createRootMemo = ((fn: any, init?: any, options?: any) => {
   const _init = init ?? fn(undefined);
   // 自动为对象类型设置 equals
   const _options =
-    options?.equals === undefined && typeof init === 'object'
+    options?.equals === undefined && typeof _init === 'object'
       ? { ...options, equals: isEqual }
       : options;
 

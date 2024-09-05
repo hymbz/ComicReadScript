@@ -130,6 +130,7 @@ export const cotransTranslation = async (i: number) => {
     throw new Error(t('translation.tip.resize_img_failed'));
   }
 
+  setMessage(i, t('translation.tip.upload'));
   let res: Response;
   try {
     res = await request('https://api.cotrans.touhou.ai/task/upload/v1', {
@@ -154,6 +155,7 @@ export const cotransTranslation = async (i: number) => {
     | { error_id: string };
   try {
     resData = JSON.parse(res.responseText);
+    log(resData);
   } catch {
     throw new Error(
       `${t('translation.tip.upload_return_error')}：${res.responseText}`,
