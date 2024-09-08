@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.7.4
+// @version         9.7.5
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -95,11 +95,10 @@ const selfImportSync = name => {
   // 为了方便打包、减少在无关站点上的运行损耗、顺带隔离下作用域
   // 除站点逻辑外的代码会作为字符串存着，要用时再像外部模块一样导入
   switch (name) {
-    case 'helper':
-      code =`
+case 'helper':
+code =`
 const solidJs = require('solid-js');
 const web = require('solid-js/web');
-const helper = require('helper');
 const store = require('solid-js/store');
 
 // src/index.ts
@@ -608,7 +607,7 @@ const createRootMemo = (fn, init, options) => {
   if (fn.name === 'bound readSignal') return fn;
   const _init = init ?? fn(undefined);
   // 自动为对象类型设置 equals
-  const _options = options?.equals === undefined && typeof init === 'object' ? {
+  const _options = options?.equals === undefined && typeof _init === 'object' ? {
     ...options,
     equals: isEqual
   } : options;
@@ -682,7 +681,7 @@ const useDrag = ({
   skip,
   touches = new Map()
 }) => {
-  helper.onAutoMount(() => {
+  onAutoMount(() => {
     const controller = new AbortController();
     const options = {
       capture: false,
@@ -759,7 +758,7 @@ const useStore = initState => {
 
 const useStyleSheet = e => {
   const styleSheet = new CSSStyleSheet();
-  helper.onAutoMount(() => {
+  onAutoMount(() => {
     const root = e?.getRootNode() ?? document;
     root.adoptedStyleSheets = [...root.adoptedStyleSheets, styleSheet];
     return () => {
@@ -771,7 +770,7 @@ const useStyleSheet = e => {
 };
 const useStyle = (css, e) => {
   const styleSheet = useStyleSheet(e);
-  if (typeof css === 'string') styleSheet.replaceSync(css);else helper.createEffectOn(helper.createRootMemo(css), style => styleSheet.replaceSync(style));
+  if (typeof css === 'string') styleSheet.replaceSync(css);else createEffectOn(createRootMemo(css), style => styleSheet.replaceSync(style));
 };
 /** 用 CSSStyleSheet 实现和修改 style 一样的效果 */
 const useStyleMemo = (selector, styleMapArg, e) => {
@@ -790,12 +789,12 @@ const useStyleMemo = (selector, styleMapArg, e) => {
   for (const styleMap of styleMapList) {
     if (typeof styleMap === 'object') {
       for (const [key, val] of Object.entries(styleMap)) {
-        const styleText = helper.createRootMemo(val);
-        helper.createEffectOn(styleText, newVal => setStyle(key, newVal));
+        const styleText = createRootMemo(val);
+        createEffectOn(styleText, newVal => setStyle(key, newVal));
       }
     } else {
-      const styleMemoMap = helper.createRootMemo(styleMap);
-      helper.createEffectOn(styleMemoMap, map => {
+      const styleMemoMap = createRootMemo(styleMap);
+      createEffectOn(styleMemoMap, map => {
         for (const [key, val] of Object.entries(map)) setStyle(key, val);
       });
     }
@@ -1054,12 +1053,13 @@ const zh = {
       error: "翻译出错",
       get_translator_list_error: "获取可用翻译服务列表时出错",
       id_not_returned: "未返回 id",
-      img_downloading: "正在下载图片",
+      img_downloading: "下载图片中",
       img_not_fully_loaded: "图片未加载完毕",
       pending: "正在等待，列队还有 {{pos}} 张图片",
       resize_img_failed: "缩放图片失败",
       translation_completed: "翻译完成",
-      upload_error: "图片上传出错",
+      upload: "上传图片中",
+      upload_error: "上传图片出错",
       upload_return_error: "服务器翻译出错",
       wait_translation: "等待翻译"
     },
@@ -1333,6 +1333,7 @@ const en = {
       pending: "Pending, {{pos}} in queue",
       resize_img_failed: "Failed to resize image",
       translation_completed: "Translation completed",
+      upload: "Uploading image",
       upload_error: "Image upload error",
       upload_return_error: "Error during server translation",
       wait_translation: "Waiting for translation"
@@ -1607,6 +1608,7 @@ const ru = {
       pending: "Ожидение, позиция в очереди {{pos}}",
       resize_img_failed: "Не удалось изменить размер изображения",
       translation_completed: "Перевод завершён",
+      upload: "Загрузка изображения",
       upload_error: "Ошибка загрузки изображения",
       upload_return_error: "Ошибка перевода на сервере",
       wait_translation: "Ожидание перевода"
@@ -1684,6 +1686,29 @@ const t = solidJs.createRoot(() => {
   };
 });
 
+const getDom = id => {
+  let dom = document.getElementById(id);
+  if (dom) {
+    dom.innerHTML = '';
+    return dom;
+  }
+  dom = document.createElement('div');
+  dom.id = id;
+  document.body.append(dom);
+  return dom;
+};
+
+/** 挂载 solid-js 组件 */
+const mountComponents = (id, fc) => {
+  const dom = getDom(id);
+  dom.style.setProperty('display', 'unset', 'important');
+  const shadowDom = dom.attachShadow({
+    mode: 'closed'
+  });
+  web.render(fc, shadowDom);
+  return dom;
+};
+
 exports.approx = approx;
 exports.assign = assign;
 exports.boolDataVal = boolDataVal;
@@ -1714,6 +1739,7 @@ exports.lang = lang;
 exports.langList = langList;
 exports.linstenKeydown = linstenKeydown;
 exports.log = log;
+exports.mountComponents = mountComponents;
 exports.needDarkMode = needDarkMode;
 exports.onAutoMount = onAutoMount;
 exports.plimit = plimit;
@@ -1740,12 +1766,112 @@ exports.wait = wait;
 exports.waitDom = waitDom;
 exports.waitImgLoad = waitImgLoad;
 `;
-      break;
-    case 'components/Manga':
-      code =`
+break;
+case 'request':
+code =`
+const helper = require('helper');
+const Toast = require('components/Toast');
+
+// 将 xmlHttpRequest 包装为 Promise
+const xmlHttpRequest = details => new Promise((resolve, reject) => {
+  GM_xmlhttpRequest({
+    ...details,
+    onload: resolve,
+    onerror: reject,
+    ontimeout: reject
+  });
+});
+/** 发起请求 */
+const request = async (url, details, retryNum = 0, errorNum = 0) => {
+  const headers = {
+    Referer: window.location.href
+  };
+  const errorText = \`\${details?.errorText ?? helper.t('alert.comic_load_error')}\\nurl: \${url}\`;
+  try {
+    // 虽然 GM_xmlhttpRequest 有 fetch 选项，但在 stay 上不太稳定
+    // 为了支持 ios 端只能自己实现一下了
+    if (details?.fetch ?? (url.startsWith('/') || url.startsWith(window.location.origin))) {
+      const res = await fetch(url, {
+        method: 'GET',
+        headers,
+        ...details,
+        // eslint-disable-next-line unicorn/no-invalid-fetch-options
+        body: details?.data,
+        signal: AbortSignal.timeout?.(details?.timeout ?? 1000 * 10)
+      });
+      if (!details?.noCheckCode && res.status !== 200) {
+        helper.log.error(errorText, res);
+        throw new Error(errorText);
+      }
+      let response = null;
+      switch (details?.responseType) {
+        case 'arraybuffer':
+          response = await res.arrayBuffer();
+          break;
+        case 'blob':
+          response = await res.blob();
+          break;
+        case 'json':
+          response = await res.json();
+          break;
+      }
+      return {
+        status: res.status,
+        statusText: res.statusText,
+        response,
+        responseText: response ? '' : await res.text()
+      };
+    }
+    if (typeof GM_xmlhttpRequest === 'undefined') throw new Error(helper.t('pwa.alert.userscript_not_installed'));
+    const res = await xmlHttpRequest({
+      method: 'GET',
+      url,
+      headers,
+      timeout: 1000 * 10,
+      ...details
+    });
+    if (!details?.noCheckCode && res.status !== 200) {
+      helper.log.error(errorText, res);
+      throw new Error(errorText);
+    }
+    return res;
+  } catch (error) {
+    if (errorNum >= retryNum) {
+      (details?.noTip ? console.error : Toast.toast.error)(errorText);
+      throw new Error(errorText);
+    }
+    helper.log.error(errorText, error);
+    await helper.sleep(1000);
+    return request(url, details, retryNum, errorNum + 1);
+  }
+};
+
+/** 轮流向多个 api 发起请求 */
+const eachApi = async (url, baseUrlList, details) => {
+  for (const baseUrl of baseUrlList) {
+    try {
+      return await request(\`\${baseUrl}\${url}\`, {
+        ...details,
+        noTip: true
+      });
+    } catch {}
+  }
+  const errorText = details?.errorText ?? helper.t('alert.comic_load_error');
+  if (!details?.noTip) Toast.toast.error(errorText);
+  helper.log.error('所有 api 请求均失败', url, baseUrlList, details);
+  throw new Error(errorText);
+};
+
+exports.eachApi = eachApi;
+exports.request = request;
+`;
+break;
+case 'components/Manga':
+code =`
 const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const helper = require('helper');
+const request = require('request');
 
 const imgState = {
   imgList: [],
@@ -2493,31 +2619,17 @@ const handlePinchZoom = ({
 };
 
 const setMessage = (i, msg) => _setState('imgList', i, 'translationMessage', msg);
-const request = (url, details) => new Promise((resolve, reject) => {
-  if (typeof GM_xmlhttpRequest === 'undefined') reject(new Error(helper.t('pwa.alert.userscript_not_installed')));
-  GM_xmlhttpRequest({
-    method: 'GET',
-    url,
-    headers: {
-      Referer: window.location.href
-    },
-    ...details,
-    onload: resolve,
-    onerror: reject,
-    ontimeout: reject
-  });
-});
 const download = async url => {
   if (url.startsWith('blob:')) {
     const res = await fetch(url);
     return res.blob();
   }
-  const res = await request(url, {
+  const res = await request.request(url, {
     responseType: 'blob'
   });
   return res.response;
 };
-const createFormData = imgBlob => {
+const createFormData = (imgBlob, type) => {
   const file = new File([imgBlob], \`image.\${imgBlob.type.split('/').at(-1)}\`, {
     type: imgBlob.type
   });
@@ -2528,8 +2640,7 @@ const createFormData = imgBlob => {
   formData.append('detector', store.option.translation.options.detector);
   formData.append('direction', store.option.translation.options.direction);
   formData.append('translator', store.option.translation.options.translator);
-  formData.append('tgt_lang', store.option.translation.options.targetLanguage);
-  formData.append('target_language', store.option.translation.options.targetLanguage);
+  if (type === 'cotrans') formData.append('target_language', store.option.translation.options.targetLanguage);else formData.append('tgt_lang', store.option.translation.options.targetLanguage);
   formData.append('retry', \`\${store.option.translation.forceRetry}\`);
   return formData;
 };
@@ -2542,7 +2653,7 @@ const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
 /** 获取部署服务的可用翻译 */
 const getValidTranslators = async () => {
   try {
-    const res = await request(\`\${url()}\`);
+    const res = await request.request(\`\${url()}\`);
     const translatorsText = /(?<=validTranslators: ).+?(?=,\\n)/.exec(res.responseText)?.[0];
     if (!translatorsText) return undefined;
     const list = JSON.parse(translatorsText.replaceAll(\`'\`, \`"\`));
@@ -2565,13 +2676,14 @@ const selfhostedTranslation = async i => {
     helper.log.error(error);
     throw new Error(helper.t('translation.tip.download_img_failed'));
   }
+  setMessage(i, helper.t('translation.tip.upload'));
   let task_id;
   // 上传图片取得任务 id
   try {
-    const res = await request(\`\${url()}/submit\`, {
+    const res = await request.request(\`\${url()}/submit\`, {
       method: 'POST',
       responseType: 'json',
-      data: createFormData(imgBlob)
+      data: createFormData(imgBlob, 'selfhosted')
     });
     task_id = res.response.task_id;
   } catch (error) {
@@ -2584,7 +2696,7 @@ const selfhostedTranslation = async i => {
   while (!taskState?.finished) {
     try {
       await helper.sleep(200);
-      const res = await request(\`\${url()}/task-state?taskid=\${task_id}\`, {
+      const res = await request.request(\`\${url()}/task-state?taskid=\${task_id}\`, {
         responseType: 'json'
       });
       taskState = res.response;
@@ -2619,7 +2731,7 @@ const handleMessage = (msg, i) => {
 const waitTranslationPolling = async (id, i) => {
   let result;
   while (result === undefined) {
-    const res = await request(\`https://api.cotrans.touhou.ai/task/\${id}/status/v1\`, {
+    const res = await request.request(\`https://api.cotrans.touhou.ai/task/\${id}/status/v1\`, {
       responseType: 'json'
     });
     result = handleMessage(res.response, i);
@@ -2691,11 +2803,12 @@ const cotransTranslation = async i => {
     helper.log.error(error);
     throw new Error(helper.t('translation.tip.resize_img_failed'));
   }
+  setMessage(i, helper.t('translation.tip.upload'));
   let res;
   try {
-    res = await request('https://api.cotrans.touhou.ai/task/upload/v1', {
+    res = await request.request('https://api.cotrans.touhou.ai/task/upload/v1', {
       method: 'POST',
-      data: createFormData(imgBlob),
+      data: createFormData(imgBlob, 'cotrans'),
       headers: {
         Origin: 'https://cotrans.touhou.ai',
         Referer: 'https://cotrans.touhou.ai/'
@@ -2708,6 +2821,7 @@ const cotransTranslation = async i => {
   let resData;
   try {
     resData = JSON.parse(res.responseText);
+    helper.log(resData);
   } catch {
     throw new Error(\`\${helper.t('translation.tip.upload_return_error')}：\${res.responseText}\`);
   }
@@ -6350,9 +6464,9 @@ exports.watchDomSize = watchDomSize;
 exports.zoom = zoom;
 exports.zoomScrollModeImg = zoomScrollModeImg;
 `;
-      break;
-    case 'components/IconButton':
-      code =`
+break;
+case 'components/IconButton':
+code =`
 const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const helper = require('helper');
@@ -6425,9 +6539,9 @@ const IconButton = _props => {
 
 exports.IconButton = IconButton;
 `;
-      break;
-    case 'components/Fab':
-      code =`
+break;
+case 'components/Fab':
+code =`
 const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const helper = require('helper');
@@ -6576,15 +6690,16 @@ const Fab = _props => {
 
 exports.Fab = Fab;
 `;
-      break;
-    case 'components/Toast':
-      code =`
+break;
+case 'components/Toast':
+code =`
 const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const helper = require('helper');
 const store$1 = require('solid-js/store');
 
 const [_state, _setState] = store$1.createStore({
+  ref: null,
   list: [],
   map: {}
 });
@@ -6594,6 +6709,10 @@ const creatId = () => {
   let id = \`\${Date.now()}\`;
   while (Reflect.has(store.map, id)) id += '_';
   return id;
+};
+const dismiss = id => {
+  if (!Reflect.has(store.map, id)) return;
+  _setState('map', id, 'exit', true);
 };
 
 const MdCheckCircle = ((props = {}) => (() => {
@@ -6619,65 +6738,6 @@ const MdInfo = ((props = {}) => (() => {
   web.spread(_el$, props, true, true);
   return _el$;
 })());
-
-const toast = (msg, options) => {
-  if (!msg) return;
-  const id = options?.id ?? (typeof msg === 'string' ? msg : creatId());
-  setState(state => {
-    if (Reflect.has(state.map, id)) {
-      Object.assign(state.map[id], {
-        msg,
-        ...options,
-        update: true
-      });
-      return;
-    }
-    state.map[id] = {
-      id,
-      type: 'info',
-      duration: 3000,
-      msg,
-      ...options
-    };
-    state.list.push(id);
-  });
-
-  /** 弹窗后记录一下 */
-  let fn = helper.log;
-  switch (options?.type) {
-    case 'warn':
-      fn = helper.log.warn;
-      break;
-    case 'error':
-      fn = helper.log.error;
-      break;
-  }
-  fn('Toast:', msg);
-  if (options?.throw && typeof msg === 'string') throw new Error(msg);
-};
-toast.dismiss = id => {
-  if (!Reflect.has(store.map, id)) return;
-  _setState('map', id, 'exit', true);
-};
-toast.set = (id, options) => {
-  if (!Reflect.has(store.map, id)) return;
-  setState(state => Object.assign(state.map[id], options));
-};
-toast.success = (msg, options) => toast(msg, {
-  ...options,
-  exit: undefined,
-  type: 'success'
-});
-toast.warn = (msg, options) => toast(msg, {
-  ...options,
-  exit: undefined,
-  type: 'warn'
-});
-toast.error = (msg, options) => toast(msg, {
-  ...options,
-  exit: undefined,
-  type: 'error'
-});
 
 var css = ".root{align-items:flex-end;bottom:0;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.item,.root{display:flex}.item{align-items:center;animation:bounceInRight .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:fit-content}.item>svg{color:var(--theme);margin-right:.5em;width:1.5em}.item[data-exit]{animation:bounceOutRight .5s 1}.schedule{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.item[data-schedule] .schedule{transition:transform .1s}.item:not([data-schedule]) .schedule{animation:schedule linear 1 forwards}:is(.item:hover,.item[data-schedule],.root[data-paused]) .schedule{animation-play-state:paused}.msg{line-height:1.4em;text-align:start;white-space:break-spaces;width:fit-content;word-break:break-word}.msg h2{margin:0}.msg h3{margin:.7em 0}.msg ul{margin:0;text-align:left}.msg button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}:is(.msg button):hover{background:#e0e0e0}p{margin:0}@keyframes schedule{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes bounceInRight{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes bounceOutRight{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
 var modules_c21c94f2 = {"root":"root","item":"item","bounceInRight":"bounceInRight","bounceOutRight":"bounceOutRight","schedule":"schedule","msg":"msg"};
@@ -6711,10 +6771,10 @@ const resetToastUpdate = id => _setState('map', id, 'update', undefined);
 const ToastItem = props => {
   /** 是否要显示进度 */
   const showSchedule = solidJs.createMemo(() => props.duration === Number.POSITIVE_INFINITY && props.schedule ? true : undefined);
-  const dismiss = e => {
+  const _dismiss = e => {
     e.stopPropagation();
     if (showSchedule() && 'animationName' in e) return;
-    toast.dismiss(props.id);
+    dismiss(props.id);
   };
 
   // 在退出动画结束后才真的删除
@@ -6734,7 +6794,7 @@ const ToastItem = props => {
   });
   const handleClick = e => {
     props.onClick?.();
-    dismiss(e);
+    _dismiss(e);
   };
   return (() => {
     var _el$ = web.template(\`<div><div>\`)(),
@@ -6756,7 +6816,7 @@ const ToastItem = props => {
       },
       get children() {
         var _el$3 = web.template(\`<div>\`)();
-        _el$3.addEventListener("animationend", dismiss);
+        _el$3.addEventListener("animationend", _dismiss);
         var _ref$ = scheduleRef;
         typeof _ref$ === "function" ? web.use(_ref$, _el$3) : scheduleRef = _el$3;
         web.effect(_p$ => {
@@ -6798,11 +6858,10 @@ const ToastItem = props => {
   })();
 };
 
-const [ref, setRef] = solidJs.createSignal();
 const Toaster = () => {
   const [visible, setVisible] = solidJs.createSignal(document.visibilityState === 'visible');
   solidJs.onMount(() => {
-    helper.useStyle(css, ref());
+    helper.useStyle(css, store.ref);
     const handleVisibilityChange = () => {
       setVisible(document.visibilityState === 'visible');
     };
@@ -6811,7 +6870,7 @@ const Toaster = () => {
   });
   return (() => {
     var _el$ = web.template(\`<div>\`)();
-    web.use(setRef, _el$);
+    web.use(ref => _setState('ref', ref), _el$);
     web.insert(_el$, web.createComponent(solidJs.For, {
       get each() {
         return store.list;
@@ -6831,14 +6890,76 @@ const Toaster = () => {
     return _el$;
   })();
 };
+let dom;
+const init = () => {
+  if (dom || store.ref) return;
+  dom = helper.mountComponents('toast', () => web.createComponent(Toaster, {}));
+  dom.style.setProperty('z-index', '2147483647', 'important');
+};
+
+const toast = (msg, options) => {
+  if (!msg) return;
+  init();
+  const id = options?.id ?? (typeof msg === 'string' ? msg : creatId());
+  setState(state => {
+    if (Reflect.has(state.map, id)) {
+      Object.assign(state.map[id], {
+        msg,
+        ...options,
+        update: true
+      });
+      return;
+    }
+    state.map[id] = {
+      id,
+      type: 'info',
+      duration: 3000,
+      msg,
+      ...options
+    };
+    state.list.push(id);
+  });
+
+  /** 弹窗后记录一下 */
+  let fn = helper.log;
+  switch (options?.type) {
+    case 'warn':
+      fn = helper.log.warn;
+      break;
+    case 'error':
+      fn = helper.log.error;
+      break;
+  }
+  fn('Toast:', msg);
+  if (options?.throw && typeof msg === 'string') throw new Error(msg);
+};
+toast.dismiss = dismiss;
+toast.set = (id, options) => {
+  if (!Reflect.has(store.map, id)) return;
+  setState(state => Object.assign(state.map[id], options));
+};
+toast.success = (msg, options) => toast(msg, {
+  ...options,
+  exit: undefined,
+  type: 'success'
+});
+toast.warn = (msg, options) => toast(msg, {
+  ...options,
+  exit: undefined,
+  type: 'warn'
+});
+toast.error = (msg, options) => toast(msg, {
+  ...options,
+  exit: undefined,
+  type: 'error'
+});
 
 exports.Toaster = Toaster;
-exports.ref = ref;
 exports.toast = toast;
 `;
-      break;
-    case 'userscript/dmzjApi':
-      code =`
+break;
+case 'userscript/dmzjApi':
+code =`
 const store = require('solid-js/store');
 const solidJs = require('solid-js');
 const main = require('main');
@@ -7006,9 +7127,9 @@ exports.getComicId = getComicId;
 exports.getViewpoint = getViewpoint;
 exports.useComicDetail = useComicDetail;
 `;
-      break;
-    case 'userscript/detectAd':
-      code =`
+break;
+case 'userscript/detectAd':
+code =`
 const QrScanner = require('qr-scanner');
 const main = require('main');
 const helper = require('helper');
@@ -7169,17 +7290,18 @@ const getAdPageByFileName = async (fileNameList, adList) => getAdPage(fileNameLi
 exports.getAdPageByContent = getAdPageByContent;
 exports.getAdPageByFileName = getAdPageByFileName;
 `;
-      break;
+break;
     case 'main':
       code =`
 const solidJs = require('solid-js');
 const web = require('solid-js/web');
 const helper = require('helper');
-const Toast = require('components/Toast');
-const Manga = require('components/Manga');
 const store = require('solid-js/store');
+const Manga = require('components/Manga');
+const Toast = require('components/Toast');
 const IconButton = require('components/IconButton');
 const fflate = require('fflate');
+const request = require('request');
 const Fab = require('components/Fab');
 
 // src/index.ts
@@ -7288,143 +7410,6 @@ var ReactiveSet = class extends Set {
   }
 };
 
-const getDom = id => {
-  let dom = document.getElementById(id);
-  if (dom) {
-    dom.innerHTML = '';
-    return dom;
-  }
-  dom = document.createElement('div');
-  dom.id = id;
-  document.body.append(dom);
-  return dom;
-};
-
-/** 挂载 solid-js 组件 */
-const mountComponents = (id, fc) => {
-  const dom = getDom(id);
-  dom.style.setProperty('display', 'unset', 'important');
-  const shadowDom = dom.attachShadow({
-    mode: 'closed'
-  });
-  web.render(fc, shadowDom);
-  return dom;
-};
-
-let dom$2;
-const init = () => {
-  if (dom$2 || Toast.ref()) return;
-
-  // 提前挂载漫画节点，防止 toast 没法显示在漫画上层
-  if (!document.getElementById('comicRead')) {
-    const _dom = document.createElement('div');
-    _dom.id = 'comicRead';
-    document.body.append(_dom);
-  }
-  dom$2 = mountComponents('toast', () => web.createComponent(Toast.Toaster, {}));
-  dom$2.style.setProperty('z-index', '2147483647', 'important');
-};
-const toast = new Proxy(Toast.toast, {
-  get(target, propKey) {
-    init();
-    return target[propKey];
-  },
-  apply(target, propKey, args) {
-    init();
-    const fn = propKey in target ? target[propKey] : target;
-    return fn(...args);
-  }
-});
-
-// 将 xmlHttpRequest 包装为 Promise
-const xmlHttpRequest = details => new Promise((resolve, reject) => {
-  GM_xmlhttpRequest({
-    ...details,
-    onload: resolve,
-    onerror: reject,
-    ontimeout: reject
-  });
-});
-/** 发起请求 */
-const request = async (url, details, retryNum = 0, errorNum = 0) => {
-  const headers = {
-    Referer: window.location.href
-  };
-  const errorText = \`\${details?.errorText ?? helper.t('alert.comic_load_error')}\\nurl: \${url}\`;
-  try {
-    // 虽然 GM_xmlhttpRequest 有 fetch 选项，但在 stay 上不太稳定
-    // 为了支持 ios 端只能自己实现一下了
-    if (details?.fetch ?? (url.startsWith('/') || url.startsWith(window.location.origin))) {
-      const res = await fetch(url, {
-        method: 'GET',
-        headers,
-        ...details,
-        // eslint-disable-next-line unicorn/no-invalid-fetch-options
-        body: details?.data,
-        signal: AbortSignal.timeout?.(details?.timeout ?? 1000 * 10)
-      });
-      if (!details?.noCheckCode && res.status !== 200) {
-        helper.log.error(errorText, res);
-        throw new Error(errorText);
-      }
-      let response = null;
-      switch (details?.responseType) {
-        case 'arraybuffer':
-          response = await res.arrayBuffer();
-          break;
-        case 'blob':
-          response = await res.blob();
-          break;
-        case 'json':
-          response = await res.json();
-          break;
-      }
-      return {
-        status: res.status,
-        statusText: res.statusText,
-        response,
-        responseText: response ? '' : await res.text()
-      };
-    }
-    const res = await xmlHttpRequest({
-      method: 'GET',
-      url,
-      headers,
-      timeout: 1000 * 10,
-      ...details
-    });
-    if (!details?.noCheckCode && res.status !== 200) {
-      helper.log.error(errorText, res);
-      throw new Error(errorText);
-    }
-    return res;
-  } catch (error) {
-    if (errorNum >= retryNum) {
-      (details?.noTip ? console.error : toast.error)(errorText);
-      throw new Error(errorText);
-    }
-    helper.log.error(errorText, error);
-    await helper.sleep(1000);
-    return request(url, details, retryNum, errorNum + 1);
-  }
-};
-
-/** 轮流向多个 api 发起请求 */
-const eachApi = async (url, baseUrlList, details) => {
-  for (const baseUrl of baseUrlList) {
-    try {
-      return await request(\`\${baseUrl}\${url}\`, {
-        ...details,
-        noTip: true
-      });
-    } catch {}
-  }
-  const errorText = details?.errorText ?? helper.t('alert.comic_load_error');
-  if (!details?.noTip) toast.error(errorText);
-  helper.log.error('所有 api 请求均失败', url, baseUrlList, details);
-  throw new Error(errorText);
-};
-
 const MdSettings = ((props = {}) => (() => {
   var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M19.5 12c0-.23-.01-.45-.03-.68l1.86-1.41c.4-.3.51-.86.26-1.3l-1.87-3.23a.987.987 0 0 0-1.25-.42l-2.15.91c-.37-.26-.76-.49-1.17-.68l-.29-2.31c-.06-.5-.49-.88-.99-.88h-3.73c-.51 0-.94.38-1 .88l-.29 2.31c-.41.19-.8.42-1.17.68l-2.15-.91c-.46-.2-1-.02-1.25.42L2.41 8.62c-.25.44-.14.99.26 1.3l1.86 1.41a7.3 7.3 0 0 0 0 1.35l-1.86 1.41c-.4.3-.51.86-.26 1.3l1.87 3.23c.25.44.79.62 1.25.42l2.15-.91c.37.26.76.49 1.17.68l.29 2.31c.06.5.49.88.99.88h3.73c.5 0 .93-.38.99-.88l.29-2.31c.41-.19.8-.42 1.17-.68l2.15.91c.46.2 1 .02 1.25-.42l1.87-3.23c.25-.44.14-.99-.26-1.3l-1.86-1.41c.03-.23.04-.45.04-.68m-7.46 3.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5">\`)();
   web.spread(_el$, props, true, true);
@@ -7468,7 +7453,7 @@ const DownloadButton = () => {
       let data;
       let fileName;
       try {
-        const res = await request(url, {
+        const res = await request.request(url, {
           headers,
           responseType: 'blob',
           errorText: \`\${helper.t('alert.download_failed')}: \${index}\`
@@ -7481,7 +7466,7 @@ const DownloadButton = () => {
       fileData[fileName] = new Uint8Array((await data?.arrayBuffer()) ?? []);
     }
     if (Object.keys(fileData).length === 0) {
-      toast.warn(helper.t('alert.no_img_download'));
+      Toast.toast.warn(helper.t('alert.no_img_download'));
       setStatu('button.download');
       return;
     }
@@ -7492,7 +7477,7 @@ const DownloadButton = () => {
     });
     helper.saveAs(new Blob([zipped]), \`\${document.title}.zip\`);
     setStatu('button.download_completed');
-    toast.success(helper.t('button.download_completed'));
+    Toast.toast.success(helper.t('button.download_completed'));
   };
   const tip = solidJs.createMemo(() => helper.t(statu()) || \`\${helper.t('button.downloading')} - \${statu()}\`);
   return web.createComponent(IconButton.IconButton, {
@@ -7552,8 +7537,12 @@ const useManga = async initProps => {
     show: false,
     ...initProps
   });
-  dom$1 = mountComponents('comicRead', () => web.createComponent(Manga.Manga, props));
+  dom$1 = helper.mountComponents('comicRead', () => web.createComponent(Manga.Manga, props));
   dom$1.style.setProperty('z-index', '2147483647', 'important');
+
+  // 确保 toast 可以显示在漫画之上
+  const toastDom = helper.querySelector('#toast');
+  if (toastDom) dom$1.after(toastDom);
   const htmlStyle = document.documentElement.style;
   let lastOverflow = htmlStyle.overflow;
   helper.createEffectOn(helper.createRootMemo(() => props.show && props.imgList.length > 0), show => {
@@ -7651,7 +7640,7 @@ const useFab = async initProps => {
         }
     }
   };
-  dom = mountComponents('fab', () => web.createComponent(Fab.Fab, web.mergeProps(props, {
+  dom = helper.mountComponents('fab', () => web.createComponent(Fab.Fab, web.mergeProps(props, {
     get children() {
       return props.children ?? web.createComponent(web.Dynamic, {
         get component() {
@@ -7827,12 +7816,12 @@ const handleVersionUpdate = async () => {
 
   // 只在语言为中文时弹窗提示最新更新内容
   if (helper.lang() === 'zh') {
-    toast(() => /* eslint-disable i18next/no-literal-string */[(() => {
+    Toast.toast(() => /* eslint-disable i18next/no-literal-string */[(() => {
       var _el$ = web.template(\`<h2>🥳 ComicRead 已更新到 v\`)();
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复网格模式和并排卷轴模式下的显示错误\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复自部署翻译的目标语言始终为中文的 bug (<a href=https://github.com/hymbz/ComicReadScript/commit/95b0b86478746d6c32b6126d1da837340aabe9db>95b0b86</a> ), closes <a href=https://github.com/hymbz/ComicReadScript/issues/186>#186\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
@@ -7850,7 +7839,7 @@ const handleVersionUpdate = async () => {
     // 防止在更新版本后一次性打开多个页面，不得不一个一个关过去
     const listenerId = await GM.addValueChangeListener('Version', async (_, __, newVersion) => {
       if (newVersion !== GM.info.script.version) return;
-      toast.dismiss('Version Tip');
+      Toast.toast.dismiss('Version Tip');
       await GM.removeValueChangeListener(listenerId);
     });
   } else await GM.setValue('Version', GM.info.script.version);
@@ -8029,7 +8018,7 @@ const useInit = async (name, defaultOptions = {}) => {
     if (id !== nowComic()) switchComic(id);
     switch (comicMap[id].imgList?.length) {
       case 0:
-        return toast.warn(helper.t('alert.repeat_load'), {
+        return Toast.toast.warn(helper.t('alert.repeat_load'), {
           duration: 1500
         });
       case undefined:
@@ -8038,7 +8027,7 @@ const useInit = async (name, defaultOptions = {}) => {
             await loadComic(id);
             needAutoShow.val = false;
           } catch (error) {
-            return toast.error(error.message);
+            return Toast.toast.error(error.message);
           }
         }
     }
@@ -8188,17 +8177,21 @@ const universal = async ({
   });
 };
 
+Object.defineProperty(exports, "toast", {
+  enumerable: true,
+  get: () => Toast.toast
+});
+Object.defineProperty(exports, "request", {
+  enumerable: true,
+  get: () => request.request
+});
 exports.ReactiveSet = ReactiveSet;
-exports.eachApi = eachApi;
 exports.handleVersionUpdate = handleVersionUpdate;
 exports.hotkeys = hotkeys;
 exports.renameOption = renameOption;
-exports.request = request;
 exports.setHotkeys = setHotkeys;
-exports.toast = toast;
 exports.universal = universal;
 exports.useInit = useInit;
-exports.useManga = useManga;
 exports.useSiteOptions = useSiteOptions;
 exports.useSpeedDial = useSpeedDial;
 `;
@@ -8253,11 +8246,6 @@ const require = name => {
       if (prop === 'default') return selfDefault;
       if (!crsLib[name]) selfImportSync(name);
       const module = crsLib[name];
-      // try {
-      //   console.log(module.default?.[prop] ?? module?.[prop]);
-      // } catch {
-      //   debugger;
-      // }
       return module.default?.[prop] ?? module?.[prop];
     },
     apply(_, __, args) {
@@ -10721,7 +10709,7 @@ const helper = require('helper');
 
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic.me':
-    case '18comic-jjks.me':
+    case '18comic-jjks.cc':
     case '18comic.org':
     case '18comic.vip':
       {
