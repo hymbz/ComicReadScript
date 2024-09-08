@@ -135,7 +135,7 @@ export const cotransTranslation = async (i: number) => {
   try {
     res = await request('https://api.cotrans.touhou.ai/task/upload/v1', {
       method: 'POST',
-      data: createFormData(imgBlob),
+      data: createFormData(imgBlob, 'cotrans'),
       headers: {
         Origin: 'https://cotrans.touhou.ai',
         Referer: 'https://cotrans.touhou.ai/',

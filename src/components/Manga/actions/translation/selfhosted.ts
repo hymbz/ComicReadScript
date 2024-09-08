@@ -55,7 +55,7 @@ export const selfhostedTranslation = async (i: number) => {
     const res = await request<resData>(`${url()}/submit`, {
       method: 'POST',
       responseType: 'json',
-      data: createFormData(imgBlob),
+      data: createFormData(imgBlob, 'selfhosted'),
     });
     task_id = res.response.task_id;
   } catch (error) {

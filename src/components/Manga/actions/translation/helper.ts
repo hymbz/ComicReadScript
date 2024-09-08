@@ -22,7 +22,10 @@ export const download = async (url: string) => {
   return res.response;
 };
 
-export const createFormData = (imgBlob: Blob) => {
+export const createFormData = (
+  imgBlob: Blob,
+  type: 'selfhosted' | 'cotrans',
+) => {
   const file = new File([imgBlob], `image.${imgBlob.type.split('/').at(-1)}`, {
     type: imgBlob.type,
   });
@@ -34,11 +37,16 @@ export const createFormData = (imgBlob: Blob) => {
   formData.append('detector', store.option.translation.options.detector);
   formData.append('direction', store.option.translation.options.direction);
   formData.append('translator', store.option.translation.options.translator);
-  formData.append('tgt_lang', store.option.translation.options.targetLanguage);
-  formData.append(
-    'target_language',
-    store.option.translation.options.targetLanguage,
-  );
+  if (type === 'cotrans')
+    formData.append(
+      'target_language',
+      store.option.translation.options.targetLanguage,
+    );
+  else
+    formData.append(
+      'tgt_lang',
+      store.option.translation.options.targetLanguage,
+    );
   formData.append('retry', `${store.option.translation.forceRetry}`);
 
   return formData;
