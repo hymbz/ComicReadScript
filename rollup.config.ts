@@ -45,10 +45,7 @@ const latestChangeHtml = await (() => {
             .replaceAll('Bug Fixes', '修复')
             .replaceAll('Performance Improvements', '优化');
         case '*':
-          return mdText.replaceAll(
-            /(?<=^\* ):\w+?: |(?<=^.*)\(\[\w+]\(.+?\)\).*/g,
-            '',
-          );
+          return mdText.replaceAll(/(?<=^\* ):\w+?: |(?<=^.*)\(\[.*/g, '');
         default:
           return '';
       }
