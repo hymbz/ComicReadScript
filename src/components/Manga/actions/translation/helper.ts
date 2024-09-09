@@ -29,26 +29,19 @@ export const createFormData = (
   const file = new File([imgBlob], `image.${imgBlob.type.split('/').at(-1)}`, {
     type: imgBlob.type,
   });
+  const { size, detector, direction, translator, targetLanguage } =
+    store.option.translation.options;
 
   const formData = new FormData();
   formData.append('file', file);
   formData.append('mime', file.type);
-  formData.append('size', store.option.translation.options.size);
-  formData.append('detector', store.option.translation.options.detector);
-  formData.append('direction', store.option.translation.options.direction);
-  formData.append('translator', store.option.translation.options.translator);
-  if (type === 'cotrans')
-    formData.append(
-      'target_language',
-      store.option.translation.options.targetLanguage,
-    );
-  else
-    formData.append(
-      'tgt_lang',
-      store.option.translation.options.targetLanguage,
-    );
+  formData.append('size', size);
+  formData.append('detector', detector);
+  formData.append('direction', direction);
+  formData.append('translator', translator);
+  if (type === 'cotrans') formData.append('target_language', targetLanguage);
+  else formData.append('target_lang', targetLanguage);
   formData.append('retry', `${store.option.translation.forceRetry}`);
-
   return formData;
 };
 
