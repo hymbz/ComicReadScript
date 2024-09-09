@@ -18,7 +18,10 @@ export const download = async (url: string) => {
     return res.blob();
   }
 
-  const res = await request<Blob>(url, { responseType: 'blob' });
+  const res = await request<Blob>(url, {
+    responseType: 'blob',
+    errorText: t('translation.tip.download_img_failed'),
+  });
   return res.response;
 };
 

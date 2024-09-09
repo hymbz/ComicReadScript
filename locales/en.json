@@ -225,6 +225,7 @@
   },
   "translation": {
     "status": {
+      "colorizing": "Colorizing",
       "default": "Unknown status",
       "detection": "Detecting text",
       "downscaling": "Downscaling",
@@ -238,8 +239,11 @@
       "ocr": "Scanning text",
       "pending": "Pending",
       "pending-pos": "Pending",
+      "preparing": "Waiting for idle window",
       "rendering": "Rendering",
       "saved": "Saved",
+      "skip-no-regions": "No text regions detected in the image",
+      "skip-no-text": "No text detected in the image",
       "textline_merge": "Merging text lines",
       "translating": "Translating",
       "upscaling": "Upscaling"
