@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.7.5
+// @version         9.7.6
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -1094,6 +1094,7 @@ const zh = {
   },
   translation: {
     status: {
+      colorizing: "正在上色",
       "default": "未知状态",
       detection: "正在检测文本",
       downscaling: "正在缩小图片",
@@ -1107,8 +1108,11 @@ const zh = {
       ocr: "正在识别文本",
       pending: "正在等待",
       "pending-pos": "正在等待",
+      preparing: "等待空闲窗口",
       rendering: "正在渲染",
       saved: "保存结果",
+      "skip-no-regions": "图片中没有检测到文本区域",
+      "skip-no-text": "图片中没有检测到文本",
       textline_merge: "正在整合文本",
       translating: "正在翻译文本",
       upscaling: "正在放大图片"
@@ -1369,6 +1373,7 @@ const en = {
   },
   translation: {
     status: {
+      colorizing: "Colorizing",
       "default": "Unknown status",
       detection: "Detecting text",
       downscaling: "Downscaling",
@@ -1382,8 +1387,11 @@ const en = {
       ocr: "Scanning text",
       pending: "Pending",
       "pending-pos": "Pending",
+      preparing: "Waiting for idle window",
       rendering: "Rendering",
       saved: "Saved",
+      "skip-no-regions": "No text regions detected in the image",
+      "skip-no-text": "No text detected in the image",
       textline_merge: "Merging text lines",
       translating: "Translating",
       upscaling: "Upscaling"
@@ -1644,6 +1652,7 @@ const ru = {
   },
   translation: {
     status: {
+      colorizing: "Раскрашивание",
       "default": "Неизвестный статус",
       detection: "Распознавание текста",
       downscaling: "Уменьшение масштаба",
@@ -1657,8 +1666,11 @@ const ru = {
       ocr: "Распознавание текста",
       pending: "Ожидание",
       "pending-pos": "Ожидание",
+      preparing: "Ожидание окна бездействия",
       rendering: "Отрисовка",
       saved: "Сохранено",
+      "skip-no-regions": "На изображении не обнаружено текстовых областей.",
+      "skip-no-text": "Текст на изображении не обнаружен",
       textline_merge: "Обьединение текста",
       translating: "Переводится",
       upscaling: "Увеличение изображения"
@@ -2691,7 +2703,8 @@ const download = async url => {
     return res.blob();
   }
   const res = await request.request(url, {
-    responseType: 'blob'
+    responseType: 'blob',
+    errorText: helper.t('translation.tip.download_img_failed')
   });
   return res.response;
 };
@@ -2699,14 +2712,21 @@ const createFormData = (imgBlob, type) => {
   const file = new File([imgBlob], \`image.\${imgBlob.type.split('/').at(-1)}\`, {
     type: imgBlob.type
   });
+  const {
+    size,
+    detector,
+    direction,
+    translator,
+    targetLanguage
+  } = store.option.translation.options;
   const formData = new FormData();
   formData.append('file', file);
   formData.append('mime', file.type);
-  formData.append('size', store.option.translation.options.size);
-  formData.append('detector', store.option.translation.options.detector);
-  formData.append('direction', store.option.translation.options.direction);
-  formData.append('translator', store.option.translation.options.translator);
-  if (type === 'cotrans') formData.append('target_language', store.option.translation.options.targetLanguage);else formData.append('tgt_lang', store.option.translation.options.targetLanguage);
+  formData.append('size', size);
+  formData.append('detector', detector);
+  formData.append('direction', direction);
+  formData.append('translator', translator);
+  if (type === 'cotrans') formData.append('target_language', targetLanguage);else formData.append('target_lang', targetLanguage);
   formData.append('retry', \`\${store.option.translation.forceRetry}\`);
   return formData;
 };
@@ -7887,7 +7907,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复自部署翻译的目标语言始终为中文的 bug (<a href=https://github.com/hymbz/ComicReadScript/commit/95b0b86478746d6c32b6126d1da837340aabe9db>95b0b86</a> ), closes <a href=https://github.com/hymbz/ComicReadScript/issues/186>#186\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复使用自部署翻译服务时目标语言配置失效的 bug\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
