@@ -64,10 +64,10 @@ export function solidSvg(): Plugin {
       let code = rawCode;
 
       // 将结尾带有 `?raw` 的导入替换成对应的字符串变量
-      for (const [raw, name, path] of rawCode.matchAll(
+      for (const [raw, name, _path] of rawCode.matchAll(
         /import (\w+) from '(.+.svg)\?raw';/g,
       )) {
-        const svgPath = (await this.resolve(path))!.id;
+        const svgPath = (await this.resolve(_path))!.id;
         const svgCode = await getSvgCode(svgPath);
         code = code.replaceAll(raw, `const ${name} = \`${svgCode}\`;\n`);
       }

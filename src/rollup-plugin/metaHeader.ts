@@ -27,6 +27,9 @@ const resourceList: Record<string, [string, string] | [string]> = {
   'qr-scanner': [
     'https://registry.npmmirror.com/qr-scanner/1.4.2/files/qr-scanner.legacy.min.js',
   ],
+  comlink: [
+    'https://registry.npmmirror.com/comlink/4.4.1/files/dist/umd/comlink.js',
+  ],
   dmzjDecrypt: [
     'https://greasyfork.org/scripts/467177/code/dmzjDecrypt.js?version=1207199',
   ],

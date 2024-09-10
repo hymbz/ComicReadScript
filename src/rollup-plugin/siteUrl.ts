@@ -30,11 +30,10 @@ const initSiteUrlMap = async () =>
 /** 根据发布页自动获取可用网址 */
 export const siteUrl: OutputPluginOption = {
   name: 'self-siteUrl',
-  async renderChunk(rawCode) {
+  async renderChunk(code) {
     siteUrlMap ||= await initSiteUrlMap();
 
-    let code = rawCode;
-    code = code.replaceAll(
+    return code.replaceAll(
       /case 'siteUrl#(.+?)':(.+?)(?={)/gs,
       (_, name, other) => {
         if (!Reflect.has(siteUrlMap!, name))
@@ -55,6 +54,5 @@ export const siteUrl: OutputPluginOption = {
           .join('\n    ')}${other}`;
       },
     );
-    return code;
   },
 };
