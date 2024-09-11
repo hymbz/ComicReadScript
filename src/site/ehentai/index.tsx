@@ -1,7 +1,7 @@
 import { createMemo, type Component } from 'solid-js';
 import { render } from 'solid-js/web';
 import { request, useInit, toast, ReactiveSet, type LoadImgFn } from 'main';
-import { store } from 'components/Manga';
+import { imgList } from 'components/Manga';
 import { getAdPageByFileName, getAdPageByContent } from 'userscript/detectAd';
 import {
   t,
@@ -150,16 +150,16 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
 
   const LoadButton: Component<{ id: string }> = (props) => {
     const tip = createMemo(() => {
-      const imgList = comicMap[props.id]?.imgList;
-      const progress = imgList?.filter(Boolean).length;
+      const _imgList = comicMap[props.id]?.imgList;
+      const progress = _imgList?.filter(Boolean).length;
 
-      switch (imgList?.length) {
+      switch (_imgList?.length) {
         case undefined:
           return ' Load comic';
         case progress:
           return ' Read';
         default:
-          return ` loading - ${progress}/${imgList!.length}`;
+          return ` loading - ${progress}/${_imgList!.length}`;
       }
     });
 
@@ -346,7 +346,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   /** 刷新所有错误图片 */
   const reloadErrorImg = singleThreaded(() =>
     plimit(
-      store.imgList.map((img, i) => () => {
+      imgList().map((img, i) => () => {
         if (img.loadType !== 'error' || nowComic() !== '') return;
         return reloadImg(i);
       }),

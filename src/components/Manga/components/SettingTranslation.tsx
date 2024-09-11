@@ -1,7 +1,12 @@
 import { createMemo, Show } from 'solid-js';
 import { t } from 'helper';
 
-import { activeImgIndex, createStateSetFn, setOption } from '../actions';
+import {
+  activeImgIndex,
+  createStateSetFn,
+  imgList,
+  setOption,
+} from '../actions';
 import {
   setImgTranslationEnbale,
   translatorOptions,
@@ -24,7 +29,7 @@ export const SettingTranslation = () => {
   const isTranslationAll = createMemo(
     () =>
       isTranslationEnable() &&
-      store.imgList.every(
+      imgList().every(
         (img) =>
           img.translationType === 'show' || img.translationType === 'wait',
       ),
@@ -34,7 +39,7 @@ export const SettingTranslation = () => {
   const isTranslationAfterCurrent = createMemo(
     () =>
       isTranslationEnable() &&
-      store.imgList
+      imgList()
         .slice(activeImgIndex())
         .every(
           (img) =>

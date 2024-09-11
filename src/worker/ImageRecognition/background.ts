@@ -150,7 +150,10 @@ export const getImgBackground = async (
   imgData: Uint8ClampedArray,
   width: number,
   height: number,
+  imgUrl?: string,
 ): Promise<string> => {
+  const startTime = isDevMode ? Date.now() : undefined;
+
   const { w, h, data } = resizeImg(imgData, width, height);
   if (isDevMode) mainFn.showCanvas?.(data, w, h);
 
@@ -161,5 +164,10 @@ export const getImgBackground = async (
   if (isDevMode) mainFn.showColorArea?.(data, w, h, ...areaList);
   if (areaList.length === 0) return '';
 
-  return getAreaColor(data, areaList[0]);
+  const res = getAreaColor(data, areaList[0]);
+  if (isDevMode)
+    mainFn.log?.(
+      `${imgUrl}\n背景色识别完成：${res}, 耗时：${Date.now() - startTime!}ms`,
+    );
+  return res;
 };

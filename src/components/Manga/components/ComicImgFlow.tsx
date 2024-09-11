@@ -31,6 +31,8 @@ import {
   abreastArea,
   imgAreaStyle,
   activeImgIndex,
+  imgList,
+  getImg,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -172,7 +174,7 @@ export const ComicImgFlow: Component = () => {
     },
     'grid-template-rows'() {
       if (!isScrollMode() || store.gridMode) return undefined;
-      return store.imgList
+      return imgList()
         .map(({ size: { height } }) => `${height}px`)
         .join(' ');
     },
@@ -184,9 +186,7 @@ export const ComicImgFlow: Component = () => {
     <div
       ref={bindRef('mangaBox')}
       class={`${classes.mangaBox} ${classes.beautifyScrollbar}`}
-      style={{
-        'background-color': store.imgList[activeImgIndex()]?.background,
-      }}
+      style={{ 'background-color': getImg(activeImgIndex())?.background }}
       data-animation={store.page.anima}
       data-abreast-scroll={boolDataVal(store.option.scrollMode.abreastMode)}
       tabIndex={-1}
@@ -208,7 +208,7 @@ export const ComicImgFlow: Component = () => {
         tabIndex={-1}
       >
         <Show when={store.imgList.length === 0} children={<EmptyTip />} />
-        <Index each={store.imgList}>
+        <Index each={imgList()}>
           {(img, i) => <ComicImg index={i} {...img()} />}
         </Index>
       </div>

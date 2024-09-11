@@ -4,6 +4,16 @@ import { difference, byPath, throttle } from 'helper';
 import { type State, store, setState, refs } from '../store';
 import { type Option } from '../store/option';
 
+export const getImg = (i: number, state = store) =>
+  state.imgMap[state.imgList[i]];
+
+export const getImgIndex = (url: string) => {
+  const indexList: number[] = [];
+  for (const [i, imgUrl] of store.imgList.entries())
+    if (imgUrl === url) indexList.push(i);
+  return indexList;
+};
+
 /** 触发 onOptionChange */
 const triggerOnOptionChange = throttle(
   () =>

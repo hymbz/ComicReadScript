@@ -4,6 +4,7 @@ import { createRootMemo, createThrottleMemo, clamp } from 'helper';
 import { store } from '../store';
 
 import { abreastColumnWidth, isAbreastMode } from './memo/common';
+import { getImg } from './helper';
 
 /** 并排卷轴模式下的全局滚动填充 */
 export const [abreastScrollFill, _setAbreastScrollFill] = createSignal(0);
@@ -40,9 +41,10 @@ export const abreastArea = createRootMemo<Area>(
     }
 
     for (let i = 0; i < store.imgList.length; i++) {
+      const img = getImg(i);
       const imgPosition: Position = [];
 
-      const imgHeight = store.imgList[i].size.height;
+      const imgHeight = img.size.height;
       length += imgHeight;
       let height = imgHeight;
 
@@ -75,7 +77,7 @@ export const abreastArea = createRootMemo<Area>(
           // 把上一张图片加进来填补空白
           columns.at(-1)!.push(prevImgIndex);
 
-          const prevImgHeight = store.imgList[prevImgIndex].size.height;
+          const prevImgHeight = getImg(prevImgIndex).size.height;
           emptyTop -= prevImgHeight;
 
           position[prevImgIndex].push({

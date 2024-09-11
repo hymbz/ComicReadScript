@@ -31,11 +31,11 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
         request<Blob>(img.src, {
           responseType: 'blob',
           fetch: false,
-          onerror: () => handleImgError(img.index),
+          onerror: () => handleImgError(img.src),
           onload({ response }) {
             _setState(
-              'imgList',
-              img.index,
+              'imgMap',
+              img.src,
               'blobUrl',
               URL.createObjectURL(response),
             );
@@ -78,8 +78,8 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
           <img
             src={src()}
             alt={`${img.index}`}
-            onLoad={(e) => handleImgLoaded(img.index, e.currentTarget)}
-            onError={(e) => handleImgError(img.index, e.currentTarget)}
+            onLoad={(e) => handleImgLoaded(img.src, e.currentTarget)}
+            onError={(e) => handleImgError(img.src, e.currentTarget)}
             draggable="false"
             // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
             decoding="sync"

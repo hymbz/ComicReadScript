@@ -116,48 +116,44 @@ export const useInit = (props: MangaProps) => {
 
       /** 修改前的当前显示图片 */
       const oldActiveImg =
-        state.pageList[state.activePageIndex]?.map(
-          (i) => state.imgList?.[i]?.src,
-        ) ?? [];
+        state.pageList[state.activePageIndex]?.map((i) => state.imgList?.[i]) ??
+        [];
 
       /** 是否需要重置页面填充 */
       let needResetFillEffect = false;
       const fillEffectList = Object.keys(state.fillEffect).map(Number);
       for (const pageIndex of fillEffectList) {
         if (pageIndex === -1) continue;
-        if (state.imgList[pageIndex].src === props.imgList[pageIndex]) continue;
+        if (state.imgList[pageIndex] === props.imgList[pageIndex]) continue;
         needResetFillEffect = true;
         break;
       }
 
-      /** 是否需要更新页面 */
-      let needUpdatePageData =
-        needResetFillEffect || state.imgList.length !== props.imgList.length;
+      const newImgList = new Set(props.imgList);
+      const oldImgList = new Set(state.imgList);
+
+      /** 删除的旧图数 */
+      const deleteNum = [...oldImgList].filter(
+        (url) => !newImgList.has(url),
+      ).length;
+
       /** 传入的是否是新漫画 */
-      let isNew = true;
+      const isNew = deleteNum === oldImgList.size; // 旧图一张不剩才算是新漫画
 
-      const imgMap = new Map(
-        state.imgList.filter((img) => img.src).map((img) => [img.src, img]),
-      );
-      for (let i = 0; i < props.imgList.length; i++) {
-        const url = props.imgList[i];
-        // 只有旧图一张不剩才算是新漫画
-        if (isNew && imgMap.has(url)) isNew = false;
-        // 只要有加载好的旧图被删就要更新页面
-        const img = url && !needUpdatePageData && state.imgList[i];
-        if (img && img.loadType !== 'wait' && img.src && img.src !== url)
-          needUpdatePageData = true;
-        state.imgList[i] = imgMap.get(url) ?? createComicImg(url);
-      }
+      /** 是否需要更新页面 */
+      const needUpdatePageData =
+        needResetFillEffect ||
+        state.imgList.length !== props.imgList.length ||
+        deleteNum > 0;
 
-      if (state.imgList.length > props.imgList.length) {
-        state.imgList.length = props.imgList.length;
-        needUpdatePageData = true;
-      }
+      const newImgMap: State['imgMap'] = {};
+      for (const url of props.imgList)
+        newImgMap[url] = state.imgMap[url] ?? createComicImg(url);
 
-      if (isNew) state.imgList = [...state.imgList];
+      state.imgMap = newImgMap;
+      state.imgList = props.imgList;
 
-      state.prop.Loading?.(state.imgList);
+      state.prop.Loading?.(state.imgList.map((url) => state.imgMap[url]));
 
       if (isNew || needResetFillEffect) {
         state.fillEffect = props.fillEffect ?? { '-1': true };
@@ -186,7 +182,7 @@ export const useInit = (props: MangaProps) => {
         if (!url || props.imgList.includes(url)) return false;
 
         const newPageIndex = state.pageList.findIndex((page) =>
-          page.some((index) => state.imgList?.[index]?.src === url),
+          page.some((index) => state.imgList?.[index] === url),
         );
         if (newPageIndex === -1) return false;
 

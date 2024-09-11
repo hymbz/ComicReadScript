@@ -3,7 +3,7 @@ import { zipSync, type Zippable } from 'fflate';
 import { createMemo, createSignal } from 'solid-js';
 import { request } from 'request';
 import { saveAs, t } from 'helper';
-import { store } from 'components/Manga';
+import { store, imgList } from 'components/Manga';
 import { IconButton } from 'components/IconButton';
 import { toast } from 'components/Toast';
 
@@ -23,23 +23,22 @@ export const DownloadButton = () => {
 
     const fileData: Zippable = {};
 
-    const { imgList } = store;
-    const imgIndexNum = `${imgList.length}`.length;
+    const { length } = imgList();
+    const imgIndexNum = `${length}`.length;
 
-    for (let i = 0; i < imgList.length; i += 1) {
-      setStatu(`${i}/${imgList.length}`);
+    for (let i = 0; i < length; i += 1) {
+      setStatu(`${i}/${length}`);
+      const img = imgList()[i];
 
       if (
         store.option.translation.onlyDownloadTranslated &&
-        imgList[i].translationType !== 'show'
+        img.translationType !== 'show'
       )
         continue;
 
-      const img = imgList[i];
+      const index = `${i}`.padStart(imgIndexNum, '0');
       const url =
         img.translationType === 'show' ? img.translationUrl! : img.src;
-
-      const index = `${i}`.padStart(imgIndexNum, '0');
 
       let data: Blob | undefined;
       let fileName: string;

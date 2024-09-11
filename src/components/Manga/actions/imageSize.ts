@@ -2,12 +2,18 @@ import { createEffectOn, createRootMemo } from 'helper';
 
 import { type State, store, setState } from '../store';
 
-import { abreastColumnWidth, isAbreastMode, placeholderSize } from './memo';
+import {
+  abreastColumnWidth,
+  imgList,
+  isAbreastMode,
+  placeholderSize,
+} from './memo';
 import { updateImgType } from './imageType';
+import { getImg } from './helper';
 
 /** 获取指定图片的显示尺寸 */
-const getImgDisplaySize = (state: State, index: number) => {
-  const img = state.imgList[index];
+const getImgDisplaySize = (state: State, url: string) => {
+  const img = state.imgMap[url];
 
   let height = img.height ?? placeholderSize().height;
   let width = img.width ?? placeholderSize().width;
@@ -33,21 +39,21 @@ const getImgDisplaySize = (state: State, index: number) => {
 /** 更新图片尺寸 */
 export const updateImgSize = (
   state: State,
-  index: number,
+  url: string,
   width: number,
   height: number,
 ) => {
-  const img = state.imgList[index];
+  const img = state.imgMap[url];
   if (img.width === width && img.height === height) return;
   img.width = width;
   img.height = height;
-  img.size = getImgDisplaySize(state, index);
+  img.size = getImgDisplaySize(state, url);
   updateImgType(state, img);
 };
 
 createEffectOn(
   [
-    () => store.imgList,
+    imgList,
     () => store.option.scrollMode.enabled,
     () => store.option.scrollMode.abreastMode,
     () => store.option.scrollMode.fitToWidth,
@@ -55,11 +61,11 @@ createEffectOn(
     () => store.rootSize,
     placeholderSize,
   ],
-  ([imgList]) => {
-    if (imgList.length === 0) return;
+  ([{ length }]) => {
+    if (length === 0) return;
     setState((state) => {
-      for (const [index, img] of state.imgList.entries())
-        img.size = getImgDisplaySize(state, index);
+      for (const url of state.imgList)
+        state.imgMap[url].size = getImgDisplaySize(state, url);
     });
   },
 );
@@ -72,14 +78,14 @@ export const imgTopList = createRootMemo(() => {
   let top = 0;
   for (let i = 0; i < store.imgList.length; i++) {
     list[i] = top;
-    top += store.imgList[i].size.height + store.option.scrollMode.spacing * 7;
+    top += getImg(i).size.height + store.option.scrollMode.spacing * 7;
   }
   return list;
 });
 
 /** 卷轴模式下漫画流的总高度 */
 export const contentHeight = createRootMemo(
-  () => (imgTopList().at(-1) ?? 0) + (store.imgList.at(-1)?.size.height ?? 0),
+  () => (imgTopList().at(-1) ?? 0) + (imgList().at(-1)?.size.height ?? 0),
 );
 
 // /** 预加载图片尺寸 */

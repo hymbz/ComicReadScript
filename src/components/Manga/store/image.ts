@@ -24,7 +24,8 @@ declare global {
 export type FillEffect = Record<number, boolean | number>;
 
 export const imgState = {
-  imgList: [] as ComicImg[],
+  imgMap: {} as Record<string, ComicImg>,
+  imgList: [] as string[],
   pageList: [] as PageList,
 
   fillEffect: { '-1': true } as FillEffect,

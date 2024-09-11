@@ -3,6 +3,10 @@ import { createRootMemo, createThrottleMemo } from 'helper';
 import { store } from '../../store';
 import { findFillIndex } from '../../handleComicData';
 
+export const imgList = createRootMemo(() =>
+  store.imgList.map((url) => store.imgMap[url]),
+);
+
 /** 当前是否为并排卷轴模式 */
 export const isAbreastMode = createRootMemo(
   () => store.option.scrollMode.enabled && store.option.scrollMode.abreastMode,
@@ -36,7 +40,7 @@ export const preloadNum = createRootMemo(() => ({
 
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = (sizeFn: (value: ComicImg) => number) => {
-  const list = store.imgList
+  const list = imgList()
     .filter((img) => img.loadType === 'loaded' && img.width)
     .map(sizeFn)
     .sort((a, b) => a - b);

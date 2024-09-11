@@ -12,7 +12,10 @@ export const updatePageData = (state: State) => {
   let newPageList: PageList = [];
   newPageList = isOnePageMode()
     ? state.imgList.map((_, i) => [i])
-    : handleComicData(state.imgList, state.fillEffect);
+    : handleComicData(
+        state.imgList.map((url) => state.imgMap[url]),
+        state.fillEffect,
+      );
   if (isEqual(state.pageList, newPageList)) return;
   state.pageList = newPageList;
 
