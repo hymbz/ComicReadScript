@@ -7,6 +7,6 @@
   "i18n-ally.pathMatcher": "{locale}.{ext}",
   "i18n-ally.keystyle": "nested",
   "i18n-ally.sortKeys": true,
-  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.importModuleSpecifier": "relative",
   "typescript.tsdk": "node_modules\\typescript\\lib"
 }

@@ -5,21 +5,18 @@ import { type State, store, setState } from '../store';
 import { abreastColumnWidth, isAbreastMode, placeholderSize } from './memo';
 import { updateImgType } from './imageType';
 
-let height = 0;
-let width = 0;
-
-const setWidth = (w: number) => {
-  height *= w / width;
-  width = w;
-  return { height, width };
-};
-
 /** 获取指定图片的显示尺寸 */
 const getImgDisplaySize = (state: State, index: number) => {
   const img = state.imgList[index];
 
-  height = img.height ?? placeholderSize().height;
-  width = img.width ?? placeholderSize().width;
+  let height = img.height ?? placeholderSize().height;
+  let width = img.width ?? placeholderSize().width;
+
+  const setWidth = (w: number) => {
+    height *= w / width;
+    width = w;
+    return { height, width };
+  };
 
   if (!state.option.scrollMode.enabled) return { height, width };
   if (isAbreastMode()) return setWidth(abreastColumnWidth());
