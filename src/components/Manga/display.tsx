@@ -129,6 +129,20 @@ const imgList = [
     'https://hi77-overseas.mangafuna.xyz/hmymvdkt/02e58/1650141217260078.jpg.c800x.jpg',
     // '',
   ],
+  // 测试识别图片背景色
+  [
+    'https://images.dmzj.com/m/梦幻女仆的茶点时光/第01话/001.jpg',
+    'https://images.dmzj.com/m/梦幻女仆的茶点时光/第01话/002+3.jpg',
+    'https://images.dmzj.com/m/梦幻女仆的茶点时光/第01话/004.jpg',
+    'https://images.dmzj.com/m/梦幻女仆的茶点时光/第01话/005.jpg',
+    'https://images.dmzj.com/m/梦幻女仆的茶点时光/第01话/006.jpg',
+    'https://images.dmzj.com/m/梦幻女仆的茶点时光/第01话/007.jpg',
+    'https://images.dmzj.com/m/梦幻女仆的茶点时光/第01话/008.jpg',
+    'https://images.dmzj.com/m/梦幻女仆的茶点时光/第01话/staff.jpg',
+    'https://images.dmzj.com/m/梦幻女仆的茶点时光/第01话/阿云-2.jpg',
+    'https://images.dmzj.com/g/广井菊里的深酒日记/第01话/033.jpg',
+    'https://img5.qy0.ru/data/2656/71/51.jpg',
+  ],
   createSequence(70).map(
     (i) => `http://127.0.0.1:3000/${`${i + 1}`.padStart(4, '0')}.jpg`,
   ),
@@ -148,7 +162,7 @@ export default function DisplayManga() {
       ...Array.from<string[]>({ length: count }).fill(arr),
     );
 
-  const _imgList = duplicateArray(imgList[0], 1);
+  const _imgList = duplicateArray(imgList[2], 1);
   log.warn('个数', _imgList.length);
 
   return <Manga imgList={_imgList} onExit={onExit} option={option} />;

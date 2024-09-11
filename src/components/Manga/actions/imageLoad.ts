@@ -8,11 +8,12 @@ import {
   log,
 } from 'helper';
 
-import { store, setState, _setState, refs } from '../store';
+import { store, setState, _setState } from '../store';
 
 import { preloadNum } from './memo/common';
 import { updateImgSize } from './imageSize';
 import { renderImgList, showImgList } from './renderPage';
+import { handleImg } from './imageRecognition';
 
 /** 图片加载完毕的回调 */
 export const handleImgLoaded = (i: number, e: HTMLImageElement) => {
@@ -27,16 +28,19 @@ export const handleImgLoaded = (i: number, e: HTMLImageElement) => {
     state.prop.Loading?.(state.imgList, img);
   });
   updateImgLoadType();
-  e.decode().catch(() => {});
+
+  if (store.option.imgRecognition.enabled) setTimeout(async () => handleImg(e));
 };
 
 /** 图片加载出错的次数 */
 const imgErrorNum = new Map<string, number>();
 
 /** 图片加载出错的回调 */
-export const handleImgError = (i: number, e: HTMLImageElement) => {
-  if (!e.isConnected) return;
-  imgErrorNum.set(e.src, (imgErrorNum.get(e.src) ?? 0) + 1);
+export const handleImgError = (i: number, e?: HTMLImageElement) => {
+  if (e) {
+    if (!e.isConnected) return;
+    imgErrorNum.set(e.src, (imgErrorNum.get(e.src) ?? 0) + 1);
+  }
   setState((state) => {
     const img = state.imgList[i];
     if (!img) return;
@@ -116,24 +120,25 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
   return hasUnloadedImg;
 };
 
-/** 加载期间尽快获取图片尺寸 */
-export const checkImgSize = (index: number) => {
-  const imgDom = refs.mangaFlow.querySelector<HTMLImageElement>(
-    `#_${index} img`,
-  )!;
-  const timeoutId = setInterval(() => {
-    if (!imgDom?.isConnected) return clearInterval(timeoutId);
-    const img = store.imgList[index];
-    if (!img || img.loadType !== 'loading') return clearInterval(timeoutId);
+// TODO:
+// /** 加载期间尽快获取图片尺寸 */
+// export const checkImgSize = (index: number) => {
+//   const imgDom = refs.mangaFlow.querySelector<HTMLImageElement>(
+//     `#_${index} img`,
+//   )!;
+//   const timeoutId = setInterval(() => {
+//     if (!imgDom?.isConnected) return clearInterval(timeoutId);
+//     const img = store.imgList[index];
+//     if (!img || img.loadType !== 'loading') return clearInterval(timeoutId);
 
-    if (imgDom.naturalWidth && imgDom.naturalHeight) {
-      setState((state) =>
-        updateImgSize(state, index, imgDom.naturalWidth, imgDom.naturalHeight),
-      );
-      return clearInterval(timeoutId);
-    }
-  }, 200);
-};
+//     if (imgDom.naturalWidth && imgDom.naturalHeight) {
+//       setState((state) =>
+//         updateImgSize(state, index, imgDom.naturalWidth, imgDom.naturalHeight),
+//       );
+//       return clearInterval(timeoutId);
+//     }
+//   }, 200);
+// };
 
 const updateImgLoadType = singleThreaded(() => {
   if (needLoadImgList().size === 0) return;
@@ -161,7 +166,7 @@ const updateImgLoadType = singleThreaded(() => {
       if (loadImgList.has(index)) {
         if (img.loadType !== 'loading') {
           img.loadType = 'loading';
-          if (img.width === undefined) setTimeout(checkImgSize, 0, index);
+          // if (img.width === undefined) setTimeout(checkImgSize, 0, index);
         }
       } else if (img.loadType === 'loading') img.loadType = 'wait';
     }
@@ -179,9 +184,9 @@ createEffectOn(
 
 createEffectOn(
   showImgList,
-  debounce((showImgList) => {
+  debounce((_showImgList) => {
     // 如果当前显示页面有出错的图片，就重新加载一次
-    for (const i of showImgList) {
+    for (const i of _showImgList) {
       if (store.imgList[i]?.loadType !== 'error') continue;
       _setState('imgList', i, 'loadType', 'wait');
       updateImgLoadType();
@@ -189,3 +194,37 @@ createEffectOn(
   }, 500),
   { defer: true },
 );
+
+/** 加载中的图片 */
+export const loadingImgList = createRootMemo(() =>
+  store.imgList.filter((img) => img.loadType === 'loading'),
+);
+
+// TODO:
+// export const abortMap = new Map<string, Blob>();
+
+// createEffectOn(loadingImgList, (imgList, prevImgList) => {
+//   // if (prevImgList) {
+//   //   /** 需要取消加载的图片 */
+//   //   const cancelList = [...prevImgList].filter((i) => !imgList.includes(i));
+//   // }
+
+//   for (const [i, img] of imgList.entries()) {
+//     if (img.blobUrl) continue;
+//     // if (loadingImg.has(img.src)) continue;
+//     // const imgData: ImgData = { buffer: Buffer.alloc(0) };
+
+//     request<Blob>(img.src, {
+//       responseType: 'blob',
+//       fetch: false,
+//       onerror: () => handleImgError(i),
+//       onload({ response }) {
+//         debugger;
+//         _setState('imgList', i, 'blobUrl', URL.createObjectURL(response));
+//       },
+//       onprogress({ loaded, total }) {
+//         console.log(loaded, total);
+//       },
+//     });
+//   }
+// });

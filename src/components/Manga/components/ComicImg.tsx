@@ -1,6 +1,8 @@
 import { type Component, Show, createMemo, For } from 'solid-js';
+import { request } from 'request';
+import { createEffectOn } from 'helper';
 
-import { store } from '../store';
+import { _setState, store } from '../store';
 import {
   getImgTip,
   imgShowState,
@@ -17,8 +19,31 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   const src = () => {
     if (img.loadType === 'wait') return '';
     if (img.translationType === 'show') return img.translationUrl;
+    if (store.option.imgRecognition.enabled) return img.blobUrl;
     return img.src;
   };
+
+  // TODO:
+  createEffectOn(
+    () => img.loadType,
+    (loadType) => {
+      if (loadType === 'loading') {
+        request<Blob>(img.src, {
+          responseType: 'blob',
+          fetch: false,
+          onerror: () => handleImgError(img.index),
+          onload({ response }) {
+            _setState(
+              'imgList',
+              img.index,
+              'blobUrl',
+              URL.createObjectURL(response),
+            );
+          },
+        });
+      }
+    },
+  );
 
   /** 并排卷轴模式下需要复制的图片数量 */
   const cloneNum = createMemo(() => {
@@ -36,7 +61,10 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   const _ComicImg: Component<{ cloneIndex?: number }> = (props) => (
     <div
       class={classes.img}
-      style={{ 'grid-area': `_${img.index}` }}
+      style={{
+        'grid-area': `_${img.index}`,
+        'background-color': img.background || 'var(--bg)',
+      }}
       id={`_${props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index}`}
       data-show={showState()}
       data-type={img.type ?? store.defaultImgType}
@@ -55,6 +83,7 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
             draggable="false"
             // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
             decoding="sync"
+            data-src={img.src}
           />
         </Show>
       </picture>

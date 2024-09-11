@@ -30,6 +30,7 @@ import {
   abreastColumnWidth,
   abreastArea,
   imgAreaStyle,
+  activeImgIndex,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -183,6 +184,9 @@ export const ComicImgFlow: Component = () => {
     <div
       ref={bindRef('mangaBox')}
       class={`${classes.mangaBox} ${classes.beautifyScrollbar}`}
+      style={{
+        'background-color': store.imgList[activeImgIndex()]?.background,
+      }}
       data-animation={store.page.anima}
       data-abreast-scroll={boolDataVal(store.option.scrollMode.abreastMode)}
       tabIndex={-1}

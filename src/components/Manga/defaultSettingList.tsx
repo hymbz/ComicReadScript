@@ -235,6 +235,34 @@ export const defaultSettingList: () => SettingList = () => [
     ),
   ],
   [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true],
+  [
+    t('setting.option.img_recognition'),
+    () => (
+      <>
+        <SettingsItemSwitch
+          name={t('other.enabled')}
+          value={store.option.imgRecognition.enabled}
+          onChange={createStateSetFn('imgRecognition.enabled')}
+        />
+
+        <Show when={typeof Worker === 'undefined'}>
+          <blockquote>
+            {/* eslint-disable-next-line solid/no-innerhtml */}
+            <p innerHTML={t('setting.option.img_recognition_warn')} />
+          </blockquote>
+        </Show>
+
+        <SettingsShowItem when={store.option.imgRecognition.enabled}>
+          <SettingsItemSwitch
+            name={t('setting.option.img_recognition_background')}
+            value={store.option.imgRecognition.background}
+            onChange={createStateSetFn('imgRecognition.background')}
+          />
+        </SettingsShowItem>
+      </>
+    ),
+    true,
+  ],
   [t('setting.option.paragraph_translation'), SettingTranslation, true],
   [
     t('setting.option.paragraph_other'),
