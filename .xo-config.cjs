@@ -203,7 +203,7 @@ module.exports = {
       },
     },
     {
-      files: "**/!(display)*.tsx",
+      files: ["!**/*.stories.tsx"],
       rules: {
         "i18next/no-literal-string": [
           "error",

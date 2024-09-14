@@ -6,12 +6,16 @@ import { otherState } from './other';
 import { propState } from './prop';
 import { showState } from './show';
 
-export const { store, setState, _state, _setState } = useStore({
+export const initStore = {
   ...imgState,
   ...showState,
   ...propState,
   ...optionState,
   ...otherState,
+};
+
+export const { store, setState, _state, _setState } = useStore({
+  ...initStore,
 });
 
 export type State = typeof imgState &

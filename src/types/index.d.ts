@@ -20,8 +20,6 @@ declare global {
   /** 将指定的 i18n 字段在打包时单独提取为一个函数，避免导入 main */
   declare const extractI18n: (key: string) => (lang: string) => string;
 
-  declare const DEV_PORT: number;
-
   declare module '*.module.css' {
     export const css: string;
     const classes: CSSModuleClasses;

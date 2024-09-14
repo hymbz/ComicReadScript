@@ -30,7 +30,8 @@ export const handleImgLoaded = (url: string, e: HTMLImageElement) => {
   updateImgLoadType();
   store.prop.Loading?.(imgList(), store.imgMap[url]);
 
-  if (store.option.imgRecognition.enabled) setTimeout(async () => handleImg(e));
+  if (store.option.imgRecognition.enabled)
+    setTimeout(async () => handleImg(e, url));
 };
 
 /** 图片加载出错的次数 */

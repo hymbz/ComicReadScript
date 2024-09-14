@@ -13,7 +13,7 @@ import {
   updateShowRange,
   placeholderSize,
 } from '../actions';
-import { defaultOption } from '../store/option';
+import { defaultOption, type Option } from '../store/option';
 import { playAnimation } from '../helper';
 import { autoCloseFill } from '../handleComicData';
 
@@ -31,10 +31,19 @@ export const useInit = (props: MangaProps) => {
     Record<keyof MangaProps, (state: State) => unknown>
   > = {
     option(state) {
-      state.option = assign(state.option, props.defaultOption, props.option);
+      state.option = props.option
+        ? assign(
+            defaultOption(),
+            props.defaultOption as Partial<Option>,
+            props.option as Partial<Option>,
+          )
+        : state.defaultOption;
     },
     defaultOption(state) {
-      state.defaultOption = assign(defaultOption(), props.defaultOption);
+      state.defaultOption = assign(
+        defaultOption(),
+        props.defaultOption as Partial<Option>,
+      );
     },
     fillEffect(state) {
       state.fillEffect = props.fillEffect ?? { '-1': true };

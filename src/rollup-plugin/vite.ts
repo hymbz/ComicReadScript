@@ -46,6 +46,8 @@ Comlink.expose({ ${exports.join(', ')} });`;
   },
 ];
 
+const isVitest = process.env.VITEST === 'true';
+
 export const vitePlugins: PluginOption[] = [
   tsconfigPaths(),
   ...worker,
@@ -57,16 +59,16 @@ export const vitePlugins: PluginOption[] = [
 
       return (
         code
-          .replace('isDevMode', 'true')
+          .replace('isDevMode', `${!isVitest}`)
           // 将 vite 不支持的 rollup-plugin-styles 相关 css 导出代码改成正常的代码
-          .replace(/(\n.+?), { css as style }(.+?\n)/, '$1$2const style = ""')
-          .replace(
-            /\nimport { css as style } from .+?;\n/,
-            '\nconst style = ""\n',
+          .replaceAll(
+            /import classes(, { css as style })? from '(.+?)'/g,
+            (_, styleVar, path) =>
+              `import classes from '${path}';${styleVar ? `\nimport style from '${path}?inline'` : ''}`,
           )
       );
     },
   },
   solidSvg(),
-  solidPlugin(),
+  !isVitest && solidPlugin(),
 ];

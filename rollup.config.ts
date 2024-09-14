@@ -16,16 +16,12 @@ import type {
   OutputPluginOption,
   RollupOptions,
 } from 'rollup';
-import { createServer } from 'vite';
 import { parse as parseMd } from 'marked';
 
 import { inputPlugins, outputPlugins, solidSvg } from './src/rollup-plugin';
 import { getMetaData, updateReadme } from './src/rollup-plugin/metaHeader';
-import { vitePlugins } from './src/rollup-plugin/vite';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const DEV_PORT = 2405;
 
 const isDevMode = process.env.NODE_ENV === 'development';
 
@@ -124,7 +120,6 @@ export const buildOptions = (
   options.plugins = [
     replace({
       values: {
-        DEV_PORT: `${DEV_PORT}`,
         isDevMode: `${isDevMode}`,
         'process.env.NODE_ENV': isDevMode ? `'development'` : `'production'`,
         'inject@LatestChange': latestChangeHtml,
@@ -211,25 +206,8 @@ export const buildOptions = (
 
 // 清空 dist 文件夹
 shell.rm('-rf', resolve(__dirname, 'dist/*'));
-
-(async () => {
-  if (!isDevMode) return;
-  // 创建一个 dist 文件夹的文件服务器，用于在浏览器获取最新的脚本代码
-  const server = await createServer({
-    root: 'src',
-    css: { modules: { generateScopedName } },
-    server: {
-      host: true,
-      port: DEV_PORT,
-      cors: false,
-    },
-    define: { isDevMode },
-    plugins: vitePlugins,
-  });
-  // 开启组件的测试服务器
-  await server.listen();
-  server.printUrls();
-})();
+// 创建 dist 的文件服务器
+shell.exec('serve dist --cors -l 2405', { async: true, silent: true });
 
 const optionList: RollupOptions[] = [
   buildOptions('dev'),

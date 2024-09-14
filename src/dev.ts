@@ -1,6 +1,6 @@
 GM_xmlhttpRequest({
   method: 'GET',
-  url: `http://localhost:${DEV_PORT}/index.js?${Date.now()}`,
+  url: `http://localhost:2405/index.js?${Date.now()}`,
   timeout: 1000 * 5,
   onload(r) {
     if (r.status !== 200)

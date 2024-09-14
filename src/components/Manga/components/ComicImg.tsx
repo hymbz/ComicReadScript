@@ -27,7 +27,7 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   createEffectOn(
     () => img.loadType,
     (loadType) => {
-      if (loadType === 'loading') {
+      if (store.option.imgRecognition.enabled && loadType === 'loading') {
         request<Blob>(img.src, {
           responseType: 'blob',
           fetch: false,
