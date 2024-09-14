@@ -1,18 +1,10 @@
 import { on } from 'solid-js';
-import {
-  lang,
-  t,
-  singleThreaded,
-  createEffectOn,
-  createEqualsSignal,
-  createRootMemo,
-} from 'helper';
+import { lang, t, singleThreaded, createRootMemo } from 'helper';
 
 import { store, setState, _setState } from '../../store';
-import { setOption } from '../helper';
 
 import { createOptions, setMessage } from './helper';
-import { getValidTranslators, selfhostedTranslation } from './selfhosted';
+import { selfhostedOptions, selfhostedTranslation } from './selfhosted';
 import { cotransTranslation, cotransTranslators } from './cotrans';
 
 declare const toast: typeof import('components/Toast/toast').toast | undefined;
@@ -109,34 +101,6 @@ export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
 
   return translationAll();
 };
-
-const [selfhostedOptions, setSelfOptions] = createEqualsSignal<
-  Array<[string, string]>
->([]);
-
-// 在切换翻译服务器的同时切换可用翻译的选项列表
-createEffectOn(
-  [
-    () => store.option.translation.server,
-    () => store.option.translation.localUrl,
-  ],
-  async () => {
-    if (store.option.translation.server !== 'selfhosted') return;
-
-    setSelfOptions((await getValidTranslators()) ?? []);
-
-    // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
-    if (
-      !selfhostedOptions().some(
-        ([val]) => val === store.option.translation.options.translator,
-      )
-    ) {
-      setOption((draftOption) => {
-        draftOption.translation.options.translator = 'google';
-      });
-    }
-  },
-);
 
 export const translatorOptions = createRootMemo(
   on([selfhostedOptions, lang, () => store.option.translation.server], () =>

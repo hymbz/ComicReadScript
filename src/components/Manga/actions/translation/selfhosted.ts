@@ -1,7 +1,8 @@
-import { sleep, t, log } from 'helper';
+import { sleep, t, log, createEqualsSignal, createEffectOn } from 'helper';
 import { request } from 'request';
 
 import { store } from '../../store';
+import { setOption } from '../helper';
 
 import {
   type TaskState,
@@ -14,26 +15,12 @@ import {
 const apiUrl = () =>
   store.option.translation.localUrl || 'http://127.0.0.1:5003';
 
-/** 获取部署服务的可用翻译 */
-export const getValidTranslators = async () => {
-  try {
-    const res = await request(`${apiUrl()}`);
-    const translatorsText = /(?<=validTranslators: ).+?(?=,\n)/.exec(
-      res.responseText,
-    )?.[0];
-    if (!translatorsText) return undefined;
-    const list = JSON.parse(translatorsText.replaceAll(`'`, `"`)) as string[];
-    return createOptions(list);
-  } catch (error) {
-    log.error(t('translation.tip.get_translator_list_error'), error);
-    return undefined;
-  }
-};
-
 /** 使用自部署服务器翻译指定图片 */
 export const selfhostedTranslation = async (url: string) => {
-  if (!(await getValidTranslators()))
-    throw new Error(t('alert.server_connect_failed'));
+  await request(`${apiUrl()}`, {
+    method: 'HEAD',
+    errorText: t('alert.server_connect_failed'),
+  });
 
   setMessage(url, t('translation.tip.img_downloading'));
   let imgBlob: Blob;
@@ -88,3 +75,49 @@ export const selfhostedTranslation = async (url: string) => {
 
   return URL.createObjectURL(await download(`${apiUrl()}/result/${task_id}`));
 };
+
+export const [selfhostedOptions, setSelfOptions] = createEqualsSignal<
+  Array<[string, string]>
+>([]);
+
+/** 更新部署服务的可用翻译 */
+export const updateSelfhostedOptions = async (noTip: boolean) => {
+  if (store.option.translation.server !== 'selfhosted') return;
+
+  try {
+    const res = await request(`${apiUrl()}`, {
+      noTip,
+      errorText: t('alert.server_connect_failed'),
+    });
+    const translatorsText = /(?<=validTranslators: ).+?(?=,\n)/.exec(
+      res.responseText,
+    )?.[0];
+    if (!translatorsText) return undefined;
+    const list = JSON.parse(translatorsText.replaceAll(`'`, `"`)) as string[];
+    setSelfOptions(createOptions(list));
+  } catch (error) {
+    log.error(t('translation.tip.get_translator_list_error'), error);
+    setSelfOptions([]);
+  }
+
+  // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
+  if (
+    !selfhostedOptions().some(
+      ([val]) => val === store.option.translation.options.translator,
+    )
+  ) {
+    setOption((draftOption) => {
+      draftOption.translation.options.translator = 'google';
+    });
+  }
+};
+
+// 在切换翻译服务器的同时切换可用翻译的选项列表
+createEffectOn(
+  [
+    () => store.option.translation.server,
+    () => store.option.translation.localUrl,
+  ],
+  () => updateSelfhostedOptions(true),
+  { defer: true },
+);
