@@ -1,0 +1,8 @@
+version: 2
+percy:
+  defer-uploads: true
+snapshot:
+  widths:
+    - 384
+    - 1920
+  minHeight: 1080

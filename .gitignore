@@ -5,3 +5,4 @@ cache
 rollup.config-*.mjs
 storybook-static
 *storybook.log
+.env

@@ -1,4 +1,10 @@
+import { wait } from 'helper';
+
+import { refs } from '../components/Manga/store';
+import classes from '../components/Manga/index.module.css';
+
 import MangaMeta, { type Props } from './Manga.stories';
+import { waitImgLoaded } from './helper';
 
 export default {
   ...MangaMeta,
@@ -23,4 +29,26 @@ export const 识别背景色 = {
     ],
     option: { imgRecognition: { enabled: true } },
   } satisfies Props,
+  async play() {
+    await wait(
+      () =>
+        refs.mangaFlow.querySelector<HTMLElement>(`.${classes.img}`)?.style
+          .backgroundColor !== 'var(--bg)',
+      1000 * 5,
+    );
+
+    // 将 blobURL 转换为 dataURL，以便 percy 能正确显示
+    const imgElement = refs.mangaFlow.querySelector<HTMLImageElement>(
+      `.${classes.img} img`,
+    )!;
+    const canvas = document.createElement('canvas');
+    canvas.width = imgElement.naturalWidth;
+    canvas.height = imgElement.naturalHeight;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(imgElement, 0, 0);
+    const dataURL = canvas.toDataURL();
+    imgElement.src = dataURL;
+
+    await waitImgLoaded();
+  },
 };

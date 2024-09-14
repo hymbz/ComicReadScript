@@ -1,13 +1,17 @@
 import { userEvent } from '@storybook/test';
-import { t, wait } from 'helper';
+import { sleep, t, wait } from 'helper';
 
 import { refs } from '../components/Manga/store';
 import classes from '../components/Manga/index.module.css';
 
-export const clickSettingButton = () =>
-  userEvent.click(
-    refs.root.querySelector(`[aria-label="${t('button.setting')}"]`)!,
-  );
+/** 点击侧边栏按钮 */
+export const clickToolbarButton = (name = t('button.setting')) => {
+  const button = refs.root.querySelector<HTMLElement>(
+    `[aria-label="${name}"]`,
+  )!;
+  button.style.pointerEvents = 'auto';
+  return userEvent.click(button);
+};
 
 export const getByText = (selector: string, text: string) => {
   for (const e of refs.root.querySelectorAll(selector))
@@ -15,7 +19,7 @@ export const getByText = (selector: string, text: string) => {
 };
 
 export const clickSettingItem = async (...nameList: string[]) => {
-  await clickSettingButton();
+  await clickToolbarButton();
   await wait(() => refs.root.querySelector(`.${classes.SettingPanel}`));
 
   let dom: Element | undefined | null;
@@ -32,6 +36,15 @@ export const clickSettingItem = async (...nameList: string[]) => {
 
   await userEvent.click(dom);
   return dom;
+};
+
+export const waitImgLoaded = async () => {
+  await wait(() =>
+    [...refs.root.querySelectorAll<HTMLImageElement>(`.${classes.img}`)].every(
+      (e) => !Reflect.has(e.dataset, 'loadType'),
+    ),
+  );
+  await sleep(1000);
 };
 
 export const imgList = {

@@ -3,6 +3,7 @@ import { debounce, type UseDrag } from 'helper';
 import { type Area } from '../components/TouchArea';
 import { useDoubleClick } from '../hooks/useDoubleClick';
 import { store, setState, refs } from '../store';
+import classes from '../index.module.css';
 
 import { resetUI } from './helper';
 import { imgPageMap } from './memo';
@@ -46,7 +47,7 @@ export const handlePageClick = (e: MouseEvent) => {
 
 /** 网格模式下点击图片跳到对应页 */
 export const handleGridClick = (e: MouseEvent) => {
-  const target = findClickEle(refs.root.getElementsByClassName('img'), e);
+  const target = findClickEle(refs.root.getElementsByClassName(classes.img), e);
   if (!target) return;
   const pageNum = imgPageMap()[Number(target.id.slice(1))];
   if (pageNum === undefined) return;
