@@ -107,6 +107,8 @@ declare namespace Tampermonkey {
     user?: string | undefined;
     password?: string | undefined;
 
+    signal?: AbortSignal | undefined;
+
     // Events
 
     /** Callback to be executed if the request ended up with an error */

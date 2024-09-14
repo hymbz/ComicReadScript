@@ -98,7 +98,7 @@ export const useInit = async <T extends Record<string, any>>(
 
   // 设置 Fab 的显示进度
   createEffectOn(
-    [loadImgNum, () => loadingImgList().length, () => nowImgList()?.length],
+    [loadImgNum, () => loadingImgList().size, () => nowImgList()?.length],
     ([doneNum, loadNum, totalNum]) => {
       if (doneNum === undefined || totalNum === undefined)
         return setFab({ progress: undefined });
@@ -253,7 +253,13 @@ export const useInit = async <T extends Record<string, any>>(
 
         setComicMap(id, 'imgList', Array.from<string>({ length }).fill(''));
         await new Promise((resolve) => {
-          loadImgFn((i, url) => resolve(setComicMap(id, 'imgList', i, url)));
+          loadImgFn((i, url) => {
+            // XXX: 之后用 Array.with() 替换
+            const newImgList = [...comicMap[id].imgList!];
+            newImgList[i] = url;
+            setComicMap(id, 'imgList', newImgList);
+            resolve(null);
+          });
         });
         return comicMap[id].imgList!;
       },

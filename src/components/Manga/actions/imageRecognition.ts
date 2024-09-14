@@ -30,7 +30,7 @@ const handleBackground = async (imgData: ImageData, imgUrl: string) => {
     _setState('imgMap', imgUrl, 'background', bgColor);
 };
 
-export const handleImg = async (img: HTMLImageElement, url: string) => {
+export const handleImg = (img: HTMLImageElement, url: string) => {
   const imgData = getImageData(img);
 
   if (store.option.imgRecognition.background) handleBackground(imgData, url);

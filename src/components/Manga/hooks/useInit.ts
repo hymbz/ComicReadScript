@@ -1,5 +1,11 @@
 import { createEffect, on } from 'solid-js';
-import { assign, debounce, throttle, createEffectOn } from 'helper';
+import {
+  assign,
+  debounce,
+  throttle,
+  createEffectOn,
+  createRootMemo,
+} from 'helper';
 
 import { type MangaProps } from '..';
 import { type State, refs, setState } from '../store';
@@ -160,7 +166,7 @@ export const useInit = (props: MangaProps) => {
         newImgMap[url] = state.imgMap[url] ?? createComicImg(url);
 
       state.imgMap = newImgMap;
-      state.imgList = props.imgList;
+      state.imgList = [...props.imgList];
 
       state.prop.Loading?.(state.imgList.map((url) => state.imgMap[url]));
 
@@ -206,7 +212,10 @@ export const useInit = (props: MangaProps) => {
   };
 
   // 处理 imgList 参数的初始化和修改
-  createEffectOn(() => props.imgList.join(','), throttle(handleImgList, 500));
+  createEffectOn(
+    createRootMemo(() => props.imgList),
+    throttle(handleImgList, 500),
+  );
 
   focus();
 };

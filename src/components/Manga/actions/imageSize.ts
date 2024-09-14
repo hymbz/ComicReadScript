@@ -37,19 +37,15 @@ const getImgDisplaySize = (state: State, url: string) => {
 };
 
 /** 更新图片尺寸 */
-export const updateImgSize = (
-  state: State,
-  url: string,
-  width: number,
-  height: number,
-) => {
-  const img = state.imgMap[url];
-  if (img.width === width && img.height === height) return;
-  img.width = width;
-  img.height = height;
-  img.size = getImgDisplaySize(state, url);
-  updateImgType(state, img);
-};
+export const updateImgSize = (url: string, width: number, height: number) =>
+  setState((state) => {
+    const img = state.imgMap[url];
+    if (img.width === width && img.height === height) return;
+    img.width = width;
+    img.height = height;
+    img.size = getImgDisplaySize(state, url);
+    updateImgType(state, img);
+  });
 
 createEffectOn(
   [

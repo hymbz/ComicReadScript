@@ -6,7 +6,7 @@ const xmlHttpRequest = <T = any>(
   details: Tampermonkey.Request<T>,
 ): Promise<Tampermonkey.Response<T>> =>
   new Promise((resolve, reject) => {
-    GM_xmlhttpRequest<T>({
+    const abort = GM_xmlhttpRequest<T>({
       ...details,
       onload(res) {
         details.onload?.call(res, res);
@@ -18,12 +18,13 @@ const xmlHttpRequest = <T = any>(
       },
       ontimeout: reject,
     });
+    details.signal?.addEventListener('abort', abort.abort);
   });
 
 export type RequestDetails<T> = Partial<Tampermonkey.Request<T>> & {
   errorText?: string;
-  noTip?: true;
-  noCheckCode?: true;
+  noTip?: boolean;
+  noCheckCode?: boolean;
 };
 
 export type Response<T = any> = {

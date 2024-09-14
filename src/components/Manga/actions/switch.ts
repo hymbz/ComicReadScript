@@ -6,6 +6,8 @@ import { zoom } from './zoom';
 import { getImg, setOption } from './helper';
 import { updatePageData } from './image';
 import { setImgTranslationEnbale } from './translation';
+import { saveScrollProgress, scrollViewImg } from './scroll';
+import { updateImgLoadType } from './imageLoad';
 import {
   activeImgIndex,
   nowFillIndex,
@@ -13,7 +15,6 @@ import {
   pageNum,
   autoPageNum,
 } from './memo';
-import { saveScrollProgress, scrollViewImg } from './scroll';
 
 /** 切换页面填充 */
 export const switchFillEffect = () => {
@@ -96,3 +97,16 @@ export const isTranslatingImage = createRootMemo(() =>
 /** 切换当前页的翻译状态 */
 export const switchTranslation = () =>
   setImgTranslationEnbale(activePage(), !isTranslatingImage());
+
+/** 切换图片识别 */
+export const switchImgRecognition = () => {
+  setOption((draftOption, state) => {
+    const enabled = !draftOption.imgRecognition.enabled;
+    draftOption.imgRecognition.enabled = enabled;
+
+    if (!enabled) return;
+    for (const img of Object.values(state.imgMap))
+      if (!img.blobUrl) img.loadType = 'wait';
+    updateImgLoadType();
+  });
+};

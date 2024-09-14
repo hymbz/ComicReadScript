@@ -1,3 +1,4 @@
+import { request } from 'request';
 import {
   clamp,
   debounce,
@@ -17,20 +18,22 @@ import { handleImg } from './imageRecognition';
 import { getImg, getImgIndex } from './helper';
 
 /** 图片加载完毕的回调 */
-export const handleImgLoaded = (url: string, e: HTMLImageElement) => {
+export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
   // 内联图片元素被创建后立刻就会触发 load 事件，如果在调用这个函数前 url 发生改变
   // 就会导致这里获得的是上个 url 图片的尺寸
-  if (!e.isConnected) return;
-  setState((state) => {
-    const img = state.imgMap[url];
-    if (img.width !== e.naturalWidth || img.height !== e.naturalHeight)
-      updateImgSize(state, url, e.naturalWidth, e.naturalHeight);
-    img.loadType = 'loaded';
-  });
-  updateImgLoadType();
-  store.prop.Loading?.(imgList(), store.imgMap[url]);
+  if (e && !e.isConnected) return;
 
-  if (store.option.imgRecognition.enabled)
+  const img = store.imgMap[url];
+  if (img.loadType !== 'loaded') {
+    _setState('imgMap', url, 'loadType', 'loaded');
+    updateImgLoadType();
+    store.prop.Loading?.(imgList(), store.imgMap[url]);
+  }
+  if (!e) return;
+
+  updateImgSize(url, e.naturalWidth, e.naturalHeight);
+
+  if (store.option.imgRecognition.enabled && e.src === img.blobUrl)
     setTimeout(async () => handleImg(e, url));
 };
 
@@ -144,7 +147,7 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
 //   }, 200);
 // };
 
-const updateImgLoadType = singleThreaded(() => {
+export const updateImgLoadType = singleThreaded(() => {
   if (needLoadImgList().size === 0) return;
 
   loadImgList.clear();
@@ -200,35 +203,43 @@ createEffectOn(
 );
 
 /** 加载中的图片 */
-export const loadingImgList = createRootMemo(() =>
-  imgList().filter((img) => img.loadType === 'loading'),
-);
+export const loadingImgList = createRootMemo(() => {
+  const list = new Set<string>();
+  for (const [url, img] of Object.entries(store.imgMap))
+    if (img.loadType === 'loading') list.add(url);
+  return list;
+});
 
-// TODO:
-// export const abortMap = new Map<string, Blob>();
+const abortMap = new Map<string, AbortController>();
 
-// createEffectOn(loadingImgList, (imgList, prevImgList) => {
-//   // if (prevImgList) {
-//   //   /** 需要取消加载的图片 */
-//   //   const cancelList = [...prevImgList].filter((i) => !imgList.includes(i));
-//   // }
+createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
+  if (!store.option.imgRecognition.enabled) return;
 
-//   for (const [i, img] of imgList.entries()) {
-//     if (img.blobUrl) continue;
-//     // if (loadingImg.has(img.src)) continue;
-//     // const imgData: ImgData = { buffer: Buffer.alloc(0) };
+  if (prevImgList) {
+    // 中断取消下载的图片
+    for (const url of prevImgList) {
+      if (downImgList.has(url) || !abortMap.has(url)) continue;
+      abortMap.get(url)?.abort();
+      abortMap.delete(url);
+      log(`中断下载 ${url}`);
+    }
+  }
 
-//     request<Blob>(img.src, {
-//       responseType: 'blob',
-//       fetch: false,
-//       onerror: () => handleImgError(i),
-//       onload({ response }) {
-//         debugger;
-//         _setState('imgList', i, 'blobUrl', URL.createObjectURL(response));
-//       },
-//       onprogress({ loaded, total }) {
-//         console.log(loaded, total);
-//       },
-//     });
-//   }
-// });
+  for (const url of downImgList.values()) {
+    if (abortMap.has(url) || store.imgMap[url].blobUrl) continue;
+
+    const controller = new AbortController();
+    request<Blob>(url, {
+      responseType: 'blob',
+      fetch: false,
+      signal: controller.signal,
+      onerror: () => handleImgError(url),
+      onload({ response }) {
+        abortMap.delete(url);
+        _setState('imgMap', url, 'blobUrl', URL.createObjectURL(response));
+        handleImgLoaded(url);
+      },
+    });
+    abortMap.set(url, controller);
+  }
+});

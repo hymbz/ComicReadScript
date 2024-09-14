@@ -1,6 +1,4 @@
 import { type Component, Show, createMemo, For } from 'solid-js';
-import { request } from 'request';
-import { createEffectOn } from 'helper';
 
 import { _setState, store } from '../store';
 import {
@@ -22,28 +20,6 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     if (store.option.imgRecognition.enabled) return img.blobUrl;
     return img.src;
   };
-
-  // TODO:
-  createEffectOn(
-    () => img.loadType,
-    (loadType) => {
-      if (store.option.imgRecognition.enabled && loadType === 'loading') {
-        request<Blob>(img.src, {
-          responseType: 'blob',
-          fetch: false,
-          onerror: () => handleImgError(img.src),
-          onload({ response }) {
-            _setState(
-              'imgMap',
-              img.src,
-              'blobUrl',
-              URL.createObjectURL(response),
-            );
-          },
-        });
-      }
-    },
-  );
 
   /** 并排卷轴模式下需要复制的图片数量 */
   const cloneNum = createMemo(() => {

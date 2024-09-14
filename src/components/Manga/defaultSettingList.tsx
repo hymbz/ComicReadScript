@@ -16,6 +16,7 @@ import {
   setOption,
   switchDir,
   switchFitToWidth,
+  switchImgRecognition,
   zoom,
   zoomScrollModeImg,
 } from './actions';
@@ -242,7 +243,7 @@ export const defaultSettingList: () => SettingList = () => [
         <SettingsItemSwitch
           name={t('other.enabled')}
           value={store.option.imgRecognition.enabled}
-          onChange={createStateSetFn('imgRecognition.enabled')}
+          onChange={switchImgRecognition}
         />
 
         <Show when={typeof Worker === 'undefined'}>
