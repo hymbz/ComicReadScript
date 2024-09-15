@@ -127,7 +127,7 @@ module.exports = {
       "warn",
       {
         patterns: [
-          { group: ["helper/**/*"], message: "只能直接通过 helper 导入" },
+          { group: ["helper/**/*", "!helper/languages"], message: "只能直接通过 helper 导入" },
           { group: ["**/request", "!request"], message: "必须直接导入" },
         ],
       },

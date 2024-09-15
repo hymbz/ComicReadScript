@@ -59,6 +59,7 @@ const generateScopedName = '[local]___[hash:base64:5]';
 
 /** 单独打包的代码 */
 const packlist = [
+  'helper/languages',
   'helper',
   'request',
   'components/Manga',
@@ -69,6 +70,7 @@ const packlist = [
   'userscript/detectAd',
   'userscript/main',
   'worker/ImageRecognition',
+  'userscript/otherSite',
 ];
 
 const babelConfig = {

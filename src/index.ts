@@ -1,3 +1,5 @@
+import { getInitLang } from 'helper/languages';
+import { otherSite } from 'userscript/otherSite';
 import {
   createSequence,
   isUrl,
@@ -736,7 +738,15 @@ try {
     }
 
     default: {
-      inject('site/other');
+      (async () => {
+        if ((await GM.getValue(window.location.hostname)) !== undefined)
+          return requestIdleCallback(otherSite);
+
+        const menuId = await GM.registerMenuCommand(
+          extractI18n('site.simple.simple_read_mode')(await getInitLang()),
+          async () => !(await otherSite()) && GM.unregisterMenuCommand(menuId),
+        );
+      })();
     }
   }
 

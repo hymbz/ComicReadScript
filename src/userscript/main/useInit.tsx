@@ -82,6 +82,13 @@ export const useInit = async <T extends Record<string, any>>(
   );
   const [nowComic, switchComic] = createSignal<string | number>('');
 
+  const setImgList = (id: string | number, i: number, url: string) => {
+    // XXX: 之后用 Array.with() 替换
+    const newImgList = [...comicMap[id].imgList!];
+    newImgList[i] = url;
+    setComicMap(id, 'imgList', newImgList);
+  };
+
   const nowImgList = createRootMemo(() => {
     const comic = comicMap[nowComic()];
     if (!comic?.imgList) return undefined;
@@ -230,6 +237,7 @@ export const useInit = async <T extends Record<string, any>>(
 
     comicMap,
     setComicMap,
+    setImgList,
     nowComic,
     switchComic,
 
@@ -252,15 +260,9 @@ export const useInit = async <T extends Record<string, any>>(
         if (comicMap[id].imgList?.length) return comicMap[id].imgList;
 
         setComicMap(id, 'imgList', Array.from<string>({ length }).fill(''));
-        await new Promise((resolve) => {
-          loadImgFn((i, url) => {
-            // XXX: 之后用 Array.with() 替换
-            const newImgList = [...comicMap[id].imgList!];
-            newImgList[i] = url;
-            setComicMap(id, 'imgList', newImgList);
-            resolve(null);
-          });
-        });
+        await new Promise((resolve) =>
+          loadImgFn((i, url) => resolve(setImgList(id, i, url))),
+        );
         return comicMap[id].imgList!;
       },
   };

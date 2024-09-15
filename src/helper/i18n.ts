@@ -1,3 +1,4 @@
+import { type Languages, getInitLang, setSaveLang } from 'helper/languages';
 import {
   createEffect,
   createMemo,
@@ -12,7 +13,6 @@ import ru from '../../locales/ru.json' assert { type: 'json' };
 
 import { byPath } from './other';
 import { log } from './logger';
-import { type Languages, getInitLang, setSaveLang } from './languages';
 
 export const [lang, setLang] = createSignal<Languages>('zh');
 

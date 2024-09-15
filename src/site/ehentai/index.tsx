@@ -64,6 +64,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     showComic,
     comicMap,
     setComicMap,
+    setImgList,
     setFab,
     setManga,
     mangaProps,
@@ -340,7 +341,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     }
     ehImgList[i] = imgUrl;
     ehImgPageList[i] = pageUrl;
-    setComicMap('', 'imgList', i, imgUrl);
+    setImgList('', i, imgUrl);
   };
 
   /** 刷新所有错误图片 */
