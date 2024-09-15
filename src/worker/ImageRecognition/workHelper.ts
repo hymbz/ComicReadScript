@@ -70,6 +70,11 @@ export type MainFn = {
   showColorArea: typeof showColorArea;
   showGrayList: typeof showGrayList;
   log: typeof log;
+  setImg: <K extends keyof ComicImg>(
+    url: string,
+    key: K,
+    val: ComicImg[K],
+  ) => void;
 };
 export const mainFn = {} as MainFn;
 export const setMainFn = (helper: MainFn, keys: string[]) => {

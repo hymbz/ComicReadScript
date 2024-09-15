@@ -1,11 +1,5 @@
 import { type PixelList } from './helper';
-import {
-  forEachEdge,
-  getEdgeScope,
-  mainFn,
-  resizeImg,
-  toGrayList,
-} from './workHelper';
+import { forEachEdge, getEdgeScope } from './workHelper';
 
 /** 获取颜色区域在边缘区域上的占比 */
 export const getAreaEdgeRatio = (
@@ -143,31 +137,4 @@ export const getAreaColor = (
   }
 
   return maxColor;
-};
-
-/** 获取图片背景色 */
-export const getImgBackground = async (
-  imgData: Uint8ClampedArray,
-  width: number,
-  height: number,
-  imgUrl?: string,
-): Promise<string> => {
-  const startTime = isDevMode ? Date.now() : undefined;
-
-  const { w, h, data } = resizeImg(imgData, width, height);
-  if (isDevMode) mainFn.showCanvas?.(data, w, h);
-
-  const grayList = toGrayList(data, 5);
-  if (isDevMode) mainFn.showGrayList?.(grayList, w, h);
-
-  const areaList = getEdgeArea(grayList, w, h);
-  if (isDevMode) mainFn.showColorArea?.(data, w, h, ...areaList);
-  if (areaList.length === 0) return '';
-
-  const res = getAreaColor(data, areaList[0]);
-  if (isDevMode)
-    mainFn.log?.(
-      `${imgUrl}\n背景色识别完成：${res}, 耗时：${Date.now() - startTime!}ms`,
-    );
-  return res;
 };

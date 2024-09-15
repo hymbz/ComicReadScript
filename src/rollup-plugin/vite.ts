@@ -31,10 +31,15 @@ export default worker;`;
       // 为加载的 worker 代码增加 comlink 包装
       if (path.endsWith('?worker_file&type=module')) {
         const exports: string[] = [];
-        let newCode = code.replaceAll(/export {\s+(.+?)\s+}/g, (_, varName) => {
-          exports.push(varName);
-          return `import { ${varName} }`;
-        });
+        let newCode = code
+          .replaceAll(/export {\s+(.+?)\s+}/g, (_, varName) => {
+            exports.push(varName);
+            return `import { ${varName} }`;
+          })
+          .replaceAll(/export const (.+?) =/g, (_, varName) => {
+            exports.push(varName);
+            return `const ${varName} =`;
+          });
         newCode += `
 import * as Comlink from 'comlink';
 Comlink.expose({ ${exports.join(', ')} });`;
