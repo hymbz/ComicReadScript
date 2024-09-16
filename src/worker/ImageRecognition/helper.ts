@@ -1,4 +1,4 @@
-import { getAreaEdgeRatio } from './background';
+import { getAreaEdgeRatio } from './colorArea';
 
 export type PixelList = Set<number>;
 

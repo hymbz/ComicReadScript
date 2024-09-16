@@ -22,9 +22,7 @@ export const getEdgeArea = (
   width: number,
   height: number,
 ): PixelList[] => {
-  const imgSize = width * height;
-  const maximum = imgSize * 0.4;
-  const minimum = imgSize * 0.02;
+  const maximum = width * height * 0.4;
 
   const areaMap = new Map<number, Set<number>>();
 
@@ -94,19 +92,12 @@ export const getEdgeArea = (
     if (areaPixelList.size > maximum) return [areaPixelList];
   }
 
-  const areaList = new Map<PixelList, number>();
-
-  // 过滤总体占比和边缘占比过小的区域
+  const areaList: PixelList[] = [];
   for (const pixelList of areaMap.values()) {
-    if (pixelList.size < minimum) continue;
-    const edgeRatio = getAreaEdgeRatio(pixelList, width, height);
-    if (edgeRatio < 0.1) continue;
-    areaList.set(pixelList, edgeRatio);
+    if (pixelList.size < 100) continue;
+    areaList.push(pixelList);
   }
-
-  return [...areaList.keys()].sort(
-    (a, b) => areaList.get(b)! - areaList.get(a)!,
-  );
+  return areaList;
 };
 
 /** 获取图像区域中的主色 */
