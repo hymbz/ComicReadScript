@@ -26,6 +26,7 @@ export const 识别背景色 = {
       '/饮茶之时、女仆之梦/30.webp',
       '/杂/复杂纹路背景.jpg',
       '/杂/纯黑背景.jpg',
+      '/杂/渐变背景.jpg',
     ],
     option: { imgRecognition: { enabled: true } },
   } satisfies Props,

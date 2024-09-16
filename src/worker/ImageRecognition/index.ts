@@ -40,6 +40,11 @@ export const handleImg = async (
   let bgColor: string | undefined;
   if (option.background) {
     // XXX: 在有足够大的空白边缘时，直接取边缘颜色
+
+    // 虽然也想支持渐变背景，但不像手机端只需要显示上下背景，可以无视中间的渐变
+    // 浏览器上大部分时候都要显示左右区域的背景，不能和实际背景一致的话就会很突兀
+    // 要是图片能一直占满屏幕的话，那还能通过单独显示上下或左右部分的背景色来实现
+    // 但偏偏又有「禁止图片自动放大」功能，需要把图片的四边背景都显示出来
     const areaList = getEdgeArea(grayList, w, h);
     // if (isDevMode) mainFn.showColorArea?.(data, w, h, maxArea);
 
