@@ -2,7 +2,7 @@ import { unwrap } from 'solid-js/store';
 import * as Comlink from 'comlink';
 import * as worker from 'worker/ImageRecognition';
 import { type MainFn } from 'worker/ImageRecognition';
-import { log } from 'helper';
+import { log, throttle } from 'helper';
 import {
   getImageData,
   showCanvas,
@@ -10,16 +10,9 @@ import {
   showGrayList,
 } from 'worker/ImageRecognition/helper';
 
-import { _setState, store } from '../store';
+import { _setState, setState, store } from '../store';
 
-const mainFn = {
-  log,
-  setImg: (url, key, val) =>
-    Reflect.has(store.imgMap, url) && _setState('imgMap', url, key, val),
-} as MainFn;
-if (isDevMode)
-  Object.assign(mainFn, { showCanvas, showColorArea, showGrayList });
-worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
+import { updatePageData } from './image';
 
 export const handleImg = (img: HTMLImageElement, url: string) => {
   const { data, width, height } = getImageData(img);
@@ -32,3 +25,13 @@ export const handleImg = (img: HTMLImageElement, url: string) => {
     unwrap(store.option.imgRecognition),
   );
 };
+
+const mainFn = {
+  log,
+  updatePageData: throttle(() => setState(updatePageData), 1000),
+  setImg: (url, key, val) =>
+    Reflect.has(store.imgMap, url) && _setState('imgMap', url, key, val),
+} as MainFn;
+if (isDevMode)
+  Object.assign(mainFn, { showCanvas, showColorArea, showGrayList });
+worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));

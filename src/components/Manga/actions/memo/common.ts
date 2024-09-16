@@ -1,7 +1,7 @@
 import { createRootMemo, createThrottleMemo } from 'helper';
 
 import { store } from '../../store';
-import { findFillIndex } from '../../handleComicData';
+import { findFillIndex } from '../helper';
 
 export const imgList = createRootMemo(() =>
   store.imgList.map((url) => store.imgMap[url]),

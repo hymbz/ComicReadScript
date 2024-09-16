@@ -3,6 +3,7 @@ import { difference, byPath, throttle } from 'helper';
 
 import { type State, store, setState, refs } from '../store';
 import { type Option } from '../store/option';
+import { type FillEffect } from '../store/image';
 
 export const getImg = (i: number, state = store) =>
   state.imgMap[state.imgList[i]];
@@ -12,6 +13,13 @@ export const getImgIndex = (url: string) => {
   for (const [i, imgUrl] of store.imgList.entries())
     if (imgUrl === url) indexList.push(i);
   return indexList;
+};
+
+/** 找到指定页面所处的图片流 */
+export const findFillIndex = (pageIndex: number, fillEffect: FillEffect) => {
+  let nowFillIndex = pageIndex;
+  while (!Reflect.has(fillEffect, nowFillIndex)) nowFillIndex -= 1;
+  return nowFillIndex;
 };
 
 /** 触发 onOptionChange */

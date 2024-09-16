@@ -15,6 +15,7 @@ export const updatePageData = (state: State) => {
     : handleComicData(
         state.imgList.map((url) => state.imgMap[url]),
         state.fillEffect,
+        state.option.imgRecognition.pageFill,
       );
   if (isEqual(state.pageList, newPageList)) return;
   state.pageList = newPageList;

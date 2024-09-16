@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { beforeEach, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { handleComicData, autoCloseFill } from './handleComicData';
 import type { FillEffect } from './store/image';
@@ -11,20 +11,13 @@ import type { FillEffect } from './store/image';
 // https://bbs.yamibo.com/thread-257258-1-1.html
 // https://bbs.yamibo.com/thread-499050-1-1.html
 
-const mock = (
+const testWide = (
   imgTypeList: Array<ComicImg['type']>,
   initFillEffect?: FillEffect,
 ) => {
   const fillEffect = { '-1': true, ...initFillEffect };
   const pageList = handleComicData(
-    imgTypeList.map(
-      (type): ComicImg => ({
-        type,
-        loadType: 'loaded',
-        src: '',
-        size: { height: 0, width: 0 },
-      }),
-    ),
+    imgTypeList.map((type) => ({ type }) as ComicImg),
     fillEffect,
   );
   return { pageList, fillEffect };
@@ -33,53 +26,53 @@ const mock = (
 beforeEach(() => autoCloseFill.clear());
 
 it('跨页在开头', () => {
-  const { pageList, fillEffect } = mock(['wide', '', '', '']);
+  const { pageList, fillEffect } = testWide(['wide', '', '', '']);
   expect(pageList).toStrictEqual([[0], [1, 2], [3, -1]]);
   expect(fillEffect).toStrictEqual({ '-1': false, 0: false });
 });
 
 it('跨页在中间', () => {
-  const { pageList, fillEffect } = mock(['', '', 'wide', '', '', '']);
+  const { pageList, fillEffect } = testWide(['', '', 'wide', '', '', '']);
   expect(pageList).toStrictEqual([[0, 1], [2], [3, 4], [5, -1]]);
   expect(fillEffect).toStrictEqual({ '-1': false, 2: false });
 });
 it('跨页在中间，且会导致缺页', () => {
-  const { pageList, fillEffect } = mock(['', '', '', 'wide', '', '', '']);
+  const { pageList, fillEffect } = testWide(['', '', '', 'wide', '', '', '']);
   // 正常进度中出现的跨页应该代表页序的「正确答案」，导致了缺页的话就说明在这之前缺少填充页
   expect(pageList).toStrictEqual([[-1, 0], [1, 2], [3], [4, 5], [6, -1]]);
   expect(fillEffect).toStrictEqual({ '-1': true, 3: false });
 });
 
 it('跨页在结尾', () => {
-  const { pageList, fillEffect } = mock(['', '', '', 'wide']);
+  const { pageList, fillEffect } = testWide(['', '', '', 'wide']);
   expect(pageList).toStrictEqual([[-1, 0], [1, 2], [3]]);
   expect(fillEffect).toStrictEqual({ '-1': true, 3: false });
 });
 it('跨页在结尾，且会导致缺页', () => {
-  const { pageList, fillEffect } = mock(['', '', '', '', 'wide']);
+  const { pageList, fillEffect } = testWide(['', '', '', '', 'wide']);
   // 跨页在倒数两张的话大概率是汉化组加的图，应该将填充页放在后面
   expect(pageList).toStrictEqual([[-1, 0], [1, 2], [3, -1], [4]]);
   expect(fillEffect).toStrictEqual({ '-1': true, 4: false });
 });
 
 it('跨页在开头和结尾，且会导致缺页', () => {
-  const { pageList, fillEffect } = mock(['wide', '', '', '', 'wide']);
+  const { pageList, fillEffect } = testWide(['wide', '', '', '', 'wide']);
   expect(pageList).toStrictEqual([[0], [1, 2], [3, -1], [4]]);
   expect(fillEffect).toStrictEqual({ '-1': false, 0: false, 4: false });
 });
 it('跨页在开头和中间，且会导致缺页', () => {
-  const { pageList, fillEffect } = mock(['wide', '', '', '', 'wide', '']);
+  const { pageList, fillEffect } = testWide(['wide', '', '', '', 'wide', '']);
   expect(pageList).toStrictEqual([[0], [1, 2], [3, -1], [4], [5, -1]]);
   expect(fillEffect).toStrictEqual({ '-1': false, 0: false, 4: false });
 });
 it('跨页在中间和结尾，且会导致缺页', () => {
-  const { pageList, fillEffect } = mock(['', 'wide', '', '', '', 'wide']);
+  const { pageList, fillEffect } = testWide(['', 'wide', '', '', '', 'wide']);
   expect(pageList).toStrictEqual([[-1, 0], [1], [2, 3], [4, -1], [5]]);
   expect(fillEffect).toStrictEqual({ '-1': true, 1: false, 5: false });
 });
 
 it('没有跨页', () => {
-  const { pageList, fillEffect } = mock(['', '', '']);
+  const { pageList, fillEffect } = testWide(['', '', '']);
   expect(pageList).toStrictEqual([
     [-1, 0],
     [1, 2],
@@ -87,11 +80,95 @@ it('没有跨页', () => {
   expect(fillEffect).toStrictEqual({ '-1': true });
 });
 it('没有跨页，但有缺页', () => {
-  const { pageList, fillEffect } = mock(['', '', '', '']);
+  const { pageList, fillEffect } = testWide(['', '', '', '']);
   expect(pageList).toStrictEqual([
     [-1, 0],
     [1, 2],
     [3, -1],
   ]);
   expect(fillEffect).toStrictEqual({ '-1': true });
+});
+
+const testFill = (
+  imgTypeList: Array<'' | 'left' | 'right' | 'both'>,
+  initFillEffect?: FillEffect,
+) => {
+  const fillEffect = { '-1': true, ...initFillEffect };
+  const pageList = handleComicData(
+    imgTypeList.map((type) => {
+      const img = { type: '' } as ComicImg;
+      switch (type) {
+        case 'left':
+          img.blankMargin = { left: 99, right: 0 };
+          break;
+        case 'right':
+          img.blankMargin = { left: 0, right: 99 };
+          break;
+        case 'both':
+          img.blankMargin = { left: 99, right: 99 };
+          break;
+      }
+      return img;
+    }),
+    fillEffect,
+    true,
+  );
+  return { pageList, fillEffect };
+};
+
+describe('根据白边切换页面填充', () => {
+  it('无需调整', () => {
+    const { pageList, fillEffect } = testFill(['right', 'left', 'right']);
+    expect(pageList).toStrictEqual([
+      [-1, 0],
+      [1, 2],
+    ]);
+    expect(fillEffect).toStrictEqual({ '-1': true });
+  });
+
+  it('没有边框数据', () => {
+    const { pageList, fillEffect } = testFill(['', '', '']);
+    expect(pageList).toStrictEqual([
+      [-1, 0],
+      [1, 2],
+    ]);
+    expect(fillEffect).toStrictEqual({ '-1': true });
+  });
+
+  it('调整一次', () => {
+    const { pageList, fillEffect } = testFill(['left', 'right', 'left']);
+    expect(pageList).toStrictEqual([
+      [0, 1],
+      [2, -1],
+    ]);
+    expect(fillEffect).toStrictEqual({ '-1': false });
+  });
+
+  it('全白边', () => {
+    const { pageList, fillEffect } = testFill(['both', 'both', 'both']);
+    expect(pageList).toStrictEqual([
+      [-1, 0],
+      [1, 2],
+    ]);
+    expect(fillEffect).toStrictEqual({ '-1': true });
+  });
+
+  it('混合，无需调整', () => {
+    const { pageList, fillEffect } = testFill(['right', 'both', 'right', '']);
+    expect(pageList).toStrictEqual([
+      [-1, 0],
+      [1, 2],
+      [3, -1],
+    ]);
+    expect(fillEffect).toStrictEqual({ '-1': true });
+  });
+
+  it('混合，调整一次', () => {
+    const { pageList, fillEffect } = testFill(['left', 'both', 'left', '']);
+    expect(pageList).toStrictEqual([
+      [0, 1],
+      [2, 3],
+    ]);
+    expect(fillEffect).toStrictEqual({ '-1': false });
+  });
 });

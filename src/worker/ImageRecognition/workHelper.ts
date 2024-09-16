@@ -1,5 +1,7 @@
 import type { log } from 'helper';
 
+import type { updatePageData } from '../../components/Manga/actions/image';
+
 import type { showCanvas, showColorArea, showGrayList } from './helper';
 
 export const getEdgeScope = (width: number, height: number) =>
@@ -31,7 +33,7 @@ export const toGrayList = (imgData: Uint8ClampedArray, roundNum: number) => {
 export const forEachRows = (
   width: number,
   y: number,
-  fn: (x: number) => void,
+  fn: (x: number) => unknown,
   start = 0,
   end = width,
 ) => {
@@ -75,6 +77,7 @@ export type MainFn = {
     key: K,
     val: ComicImg[K],
   ) => void;
+  updatePageData: typeof updatePageData.throttle;
 };
 export const mainFn = {} as MainFn;
 export const setMainFn = (helper: MainFn, keys: string[]) => {
@@ -90,7 +93,8 @@ export const resizeImg = (
   width: number,
   height: number,
 ) => {
-  const scale = Math.min(100 / width, 100 / height);
+  // const scale = 1;
+  const scale = Math.min(500 / width, 500 / height);
   const w = Math.floor(width * scale);
   const h = Math.floor(height * scale);
 
