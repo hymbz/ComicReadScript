@@ -259,6 +259,11 @@ export const defaultSettingList: () => SettingList = () => [
             value={store.option.imgRecognition.background}
             onChange={createStateSetFn('imgRecognition.background')}
           />
+          <SettingsItemSwitch
+            name={t('setting.option.img_recognition_pageFill')}
+            value={store.option.imgRecognition.pageFill}
+            onChange={createStateSetFn('imgRecognition.pageFill')}
+          />
         </SettingsShowItem>
       </>
     ),

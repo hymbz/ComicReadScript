@@ -81,3 +81,8 @@ export const isOnePageMode = createRootMemo(
     store.isMobile ||
     store.imgList.length <= 1,
 );
+
+if (isDevMode)
+  Object.assign((window as any).unsafeWindow ?? window, {
+    _imgList: imgList,
+  });

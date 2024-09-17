@@ -10,7 +10,7 @@ import type { FillEffect } from './store/image';
 export const autoCloseFill = new Set<number>();
 
 /** 判断图片是否是跨页图 */
-export const isWideImg = (img: ComicImg) => {
+const isWideImg = (img: ComicImg) => {
   switch (img.type ?? store.defaultImgType) {
     case 'long':
     case 'wide':
@@ -22,6 +22,7 @@ export const isWideImg = (img: ComicImg) => {
 
 /** 根据填充页设置双页排列单页图片 */
 const arrangeImg = (pageList: number[], fill: boolean): PageList => {
+  if (pageList.length === 0) return [];
   const newPageList: PageList = [];
   let imgCache: number[] = fill ? [-1] : [];
   for (const i of pageList) {
@@ -118,10 +119,11 @@ export const handleComicData = (
     nowFillIndex = i;
   }
 
-  pageList = [
-    ...pageList,
-    ...arrangePage(cacheList, imgList, fillEffect, nowFillIndex, switchFill),
-  ];
+  if (cacheList.length > 0)
+    pageList = [
+      ...pageList,
+      ...arrangePage(cacheList, imgList, fillEffect, nowFillIndex, switchFill),
+    ];
 
   return pageList;
 };

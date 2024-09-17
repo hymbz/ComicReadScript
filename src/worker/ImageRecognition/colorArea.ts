@@ -100,7 +100,7 @@ export const getEdgeArea = (
   return areaList;
 };
 
-/** 获取图像区域中的主色 */
+/** 获取图像指定区域中的主色 */
 export const getAreaColor = (
   imgData: Uint8ClampedArray,
   pixelList: PixelList,
@@ -125,6 +125,41 @@ export const getAreaColor = (
       maxCount = colorCount;
     }
     if (colorCount > maximum) break;
+  }
+
+  return maxColor;
+};
+
+/** 获取图像指定矩形区域中的主色 */
+export const getSquareAreaColor = (
+  imgData: Uint8ClampedArray,
+  topLeftX: number,
+  topLeftY: number,
+  bottomRightX: number,
+  bottomRightY: number,
+) => {
+  const colorMap = new Map<string, number>();
+  const maximum = (bottomRightX - topLeftX) * (bottomRightY - topLeftY) * 0.5;
+
+  let maxColor = '';
+  let maxCount = 0;
+
+  for (let x = topLeftX; x < bottomRightX; x++) {
+    for (let y = topLeftY; y < bottomRightY; y++) {
+      const index = (x + y * bottomRightX) * 4;
+      const r = imgData[index];
+      const g = imgData[index + 1];
+      const b = imgData[index + 2];
+      const color = `rgb(${r}, ${g}, ${b})`;
+      if (!colorMap.has(color)) colorMap.set(color, 0);
+      const colorCount = colorMap.get(color)! + 1;
+      colorMap.set(color, colorCount);
+      if (colorCount > maxCount) {
+        maxColor = color;
+        maxCount = colorCount;
+      }
+      if (colorCount > maximum) break;
+    }
   }
 
   return maxColor;

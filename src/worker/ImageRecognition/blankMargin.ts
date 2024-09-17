@@ -1,11 +1,16 @@
-import { forEachCols, forEachRows, mainFn } from './workHelper';
+import { forEachCols, forEachRows } from './workHelper';
 
 /** 获取图片空白边缘的长度 */
 export const getBlankMargin = (
   grayList: Uint8ClampedArray,
   width: number,
   height: number,
-) => {
+): {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+} | null => {
   let blankColor: undefined | number;
 
   const isBlankLine = (x: number, y: number) => {
@@ -14,7 +19,7 @@ export const getBlankMargin = (
     const eachFn = (i: number) => {
       const gray = grayList[i];
       colorMap.set(gray, (colorMap.get(gray) || 0) + 1);
-      grayList[i] = Math.abs(gray - 255);
+      // grayList[i] = Math.abs(gray - 255);
     };
 
     if (x < 0) forEachRows(width, y, eachFn);
@@ -63,7 +68,8 @@ export const getBlankMargin = (
     bottom += 1;
   }
 
-  if (isDevMode) mainFn.showGrayList?.(grayList, width, height);
+  // if (isDevMode) mainFn.showGrayList?.(grayList, width, height);
 
-  return { left, right, top, bottom };
+  if (left || right || top || bottom) return { left, right, top, bottom };
+  return null;
 };

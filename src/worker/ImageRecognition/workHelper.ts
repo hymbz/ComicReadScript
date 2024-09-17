@@ -9,6 +9,7 @@ export const getEdgeScope = (width: number, height: number) =>
 
 /** 对指定数值取整 */
 export const round = (n: number, int: number) => {
+  if (int <= 0) return n;
   const remainder = n % int;
   return remainder < int / 2 ? n - remainder : n + (int - remainder);
 };
@@ -94,7 +95,7 @@ export const resizeImg = (
   height: number,
 ) => {
   // const scale = 1;
-  const scale = Math.min(500 / width, 500 / height);
+  const scale = Math.min(100 / width, 100 / height);
   const w = Math.floor(width * scale);
   const h = Math.floor(height * scale);
 
@@ -118,4 +119,13 @@ export const resizeImg = (
   }
 
   return { scale, w, h, data };
+};
+
+/** 通过互相比较数组项求出最终项 */
+export const boil = <T>(
+  array: readonly T[],
+  compareFunc: (a: T, b: T) => T,
+) => {
+  if (!array || (array.length ?? 0) === 0) return null;
+  return array.reduce(compareFunc); // eslint-disable-line unicorn/no-array-reduce
 };
