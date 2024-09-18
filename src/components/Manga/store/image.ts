@@ -8,6 +8,7 @@ declare global {
 
     size: { height: number; width: number };
     blobUrl?: string;
+    progress?: number;
 
     background?: string;
     blankMargin?: { left: number; right: number };

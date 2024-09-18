@@ -9,7 +9,7 @@ import {
   log,
 } from 'helper';
 
-import { store, setState, _setState } from '../store';
+import { store, setState, _setState, refs } from '../store';
 
 import { imgList, preloadNum } from './memo/common';
 import { updateImgSize } from './imageSize';
@@ -34,7 +34,7 @@ export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
   updateImgSize(url, e.naturalWidth, e.naturalHeight);
 
   if (store.option.imgRecognition.enabled && e.src === img.blobUrl)
-    setTimeout(async () => handleImg(e, url));
+    setTimeout(handleImg, 0, e, url);
 };
 
 /** 图片加载出错的次数 */
@@ -127,25 +127,24 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
   return hasUnloadedImg;
 };
 
-// TODO:
-// /** 加载期间尽快获取图片尺寸 */
-// export const checkImgSize = (index: number) => {
-//   const imgDom = refs.mangaFlow.querySelector<HTMLImageElement>(
-//     `#_${index} img`,
-//   )!;
-//   const timeoutId = setInterval(() => {
-//     if (!imgDom?.isConnected) return clearInterval(timeoutId);
-//     const img = store.imgList[index];
-//     if (!img || img.loadType !== 'loading') return clearInterval(timeoutId);
+/** 加载期间尽快获取图片尺寸 */
+export const checkImgSize = (url: string) => {
+  const imgDom = refs.mangaFlow.querySelector<HTMLImageElement>(
+    `img[data-src="${url}"]`,
+  )!;
+  const timeoutId = setInterval(() => {
+    if (!imgDom?.isConnected || store.option.imgRecognition.enabled)
+      return clearInterval(timeoutId);
 
-//     if (imgDom.naturalWidth && imgDom.naturalHeight) {
-//       setState((state) =>
-//         updateImgSize(state, index, imgDom.naturalWidth, imgDom.naturalHeight),
-//       );
-//       return clearInterval(timeoutId);
-//     }
-//   }, 200);
-// };
+    const img = store.imgMap[url];
+    if (!img || img.loadType !== 'loading') return clearInterval(timeoutId);
+
+    if (imgDom.naturalWidth && imgDom.naturalHeight) {
+      updateImgSize(url, imgDom.naturalWidth, imgDom.naturalHeight);
+      return clearInterval(timeoutId);
+    }
+  }, 200);
+};
 
 export const updateImgLoadType = singleThreaded(() => {
   if (needLoadImgList().size === 0) return;
@@ -173,7 +172,8 @@ export const updateImgLoadType = singleThreaded(() => {
       if (loadImgList.has(index)) {
         if (img.loadType !== 'loading') {
           img.loadType = 'loading';
-          // if (img.width === undefined) setTimeout(checkImgSize, 0, index);
+          if (!store.option.imgRecognition.enabled && img.width === undefined)
+            setTimeout(checkImgSize, 0, img.src);
         }
       } else if (img.loadType === 'loading') img.loadType = 'wait';
     }
@@ -212,6 +212,13 @@ export const loadingImgList = createRootMemo(() => {
 
 const abortMap = new Map<string, AbortController>();
 
+const timeoutAbort = (url: string) => {
+  if (!abortMap.has(url)) return;
+  abortMap.get(url)!.abort();
+  abortMap.delete(url);
+  handleImgError(url);
+};
+
 createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
   if (!store.option.imgRecognition.enabled) return;
 
@@ -229,17 +236,28 @@ createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
     if (abortMap.has(url) || store.imgMap[url].blobUrl) continue;
 
     const controller = new AbortController();
+    const handleTimeout = debounce(() => timeoutAbort(url), 1000 * 5);
+    controller.signal.addEventListener('abort', handleTimeout.clear);
     request<Blob>(url, {
       responseType: 'blob',
       fetch: false,
       signal: controller.signal,
       onerror: () => handleImgError(url),
+      onprogress({ loaded, total }) {
+        _setState('imgMap', url, 'progress', (loaded / total) * 100);
+        // 连续5秒没进度后超时中断
+        handleTimeout();
+      },
       onload({ response }) {
         abortMap.delete(url);
-        _setState('imgMap', url, 'blobUrl', URL.createObjectURL(response));
+        _setState('imgMap', url, {
+          blobUrl: URL.createObjectURL(response),
+          progress: undefined,
+        });
         handleImgLoaded(url);
       },
     });
     abortMap.set(url, controller);
+    handleTimeout();
   }
 });

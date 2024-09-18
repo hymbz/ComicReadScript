@@ -48,18 +48,27 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     >
       {/* 因为 img 无法使用 ::after，所以得用 picture 包一下 */}
       <picture
-        style={{ 'aspect-ratio': `${img.size.width} / ${img.size.height}` }}
+        style={{
+          'aspect-ratio': `${img.size.width} / ${img.size.height}`,
+          background:
+            img.progress &&
+            `linear-gradient(
+              to bottom,
+              var(--secondary-bg) ${img.progress}%,
+              var(--hover-bg-color,#fff3)${img.progress}%
+            )`,
+        }}
       >
         <Show when={img.loadType !== 'wait' && src()}>
           <img
             src={src()}
             alt={`${img.index}`}
+            data-src={img.src}
             onLoad={(e) => handleImgLoaded(img.src, e.currentTarget)}
             onError={(e) => handleImgError(img.src, e.currentTarget)}
             draggable="false"
             // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
             decoding="sync"
-            data-src={img.src}
           />
         </Show>
       </picture>

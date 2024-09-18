@@ -33,23 +33,22 @@ const createComicImg = (url: string): ComicImg => ({
 export const useInit = (props: MangaProps) => {
   watchDomSize('rootSize', refs.root);
 
+  const updateOption = (state: State) => {
+    state.option = props.option
+      ? assign(state.defaultOption, props.option as Partial<Option>)
+      : state.defaultOption;
+  };
+
   const watchProps: Partial<
     Record<keyof MangaProps, (state: State) => unknown>
   > = {
-    option(state) {
-      state.option = props.option
-        ? assign(
-            defaultOption(),
-            props.defaultOption as Partial<Option>,
-            props.option as Partial<Option>,
-          )
-        : state.defaultOption;
-    },
+    option: updateOption,
     defaultOption(state) {
       state.defaultOption = assign(
         defaultOption(),
         props.defaultOption as Partial<Option>,
       );
+      updateOption(state);
     },
     fillEffect(state) {
       state.fillEffect = props.fillEffect ?? { '-1': true };
@@ -147,10 +146,14 @@ export const useInit = (props: MangaProps) => {
       const newImgList = new Set(props.imgList);
       const oldImgList = new Set(state.imgList);
 
-      /** 删除的旧图数 */
-      const deleteNum = [...oldImgList].filter(
-        (url) => !newImgList.has(url),
-      ).length;
+      /** 被删除的图片 */
+      const deleteList = [...oldImgList].filter((url) => !newImgList.has(url));
+      for (const url of deleteList)
+        if (state.imgMap[url].blobUrl)
+          URL.revokeObjectURL(state.imgMap[url].blobUrl);
+
+      /** 删除图片数 */
+      const deleteNum = deleteList.length;
 
       /** 传入的是否是新漫画 */
       const isNew = deleteNum === oldImgList.size; // 旧图一张不剩才算是新漫画
