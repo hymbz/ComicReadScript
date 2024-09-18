@@ -1,3 +1,5 @@
+let supportWorker = typeof Worker !== 'undefined';
+
 const gmApi = {
   GM,
   GM_addElement:
@@ -49,19 +51,17 @@ const selfImportSync = (name: string) => {
 
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
-  unsafeWindow[tempName] = crsLib;
-  unsafeWindow[tempName][name] = {};
-
-  if (name.startsWith('worker/') && typeof Worker !== 'undefined') {
-    // 如果浏览器支持 worker，就将模块转为 worker
-    const workerCode = `
+  if (name.startsWith('worker/') && supportWorker) {
+    try {
+      // 如果浏览器支持 worker，就将模块转为 worker
+      const workerCode = `
 const exports = {};
 const Comlink = require('comlink');
 ${code}
 Comlink.expose(exports);
 `.replaceAll(
-      /const (\w+?) = require\('(.+?)'\);/g,
-      (_, varName, module) => `
+        /const (\w+?) = require\('(.+?)'\);/g,
+        (_, varName, module) => `
 const ${varName} = {};
 (function (exports, module) { ${GM_getResourceText(module)} }) (
   ${varName},
@@ -70,20 +70,20 @@ const ${varName} = {};
     get exports() { return ${varName} }
   }
 );`,
-    );
+      );
 
-    unsafeWindow[tempName][name] = (
-      require('comlink') as typeof import('comlink')
-    ).wrap(
-      new Worker(
-        URL.createObjectURL(
-          new Blob([workerCode], { type: 'text/javascript' }),
-        ),
-      ),
-    );
-
-    Reflect.deleteProperty(unsafeWindow, tempName);
-    return;
+      const codeUrl = URL.createObjectURL(
+        new Blob([workerCode], { type: 'text/javascript' }),
+      );
+      setTimeout(URL.revokeObjectURL, 0, codeUrl);
+      const worker = new Worker(codeUrl);
+      unsafeWindow[tempName][name] = (
+        require('comlink') as typeof import('comlink')
+      ).wrap(worker);
+      return;
+    } catch {
+      supportWorker = false;
+    }
   }
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
@@ -116,6 +116,8 @@ const ${varName} = {};
       `console.timeEnd('导入 ${name}');`,
     ].join('\n');
 
+  unsafeWindow[tempName] = crsLib;
+  unsafeWindow[tempName][name] = {};
   evalCode(runCode);
   Reflect.deleteProperty(unsafeWindow, tempName);
 };

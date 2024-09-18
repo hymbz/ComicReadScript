@@ -8,7 +8,7 @@ import {
 } from 'helper';
 
 import { type MangaProps } from '..';
-import { type State, refs, setState } from '../store';
+import { type State, _setState, refs, setState } from '../store';
 import {
   defaultHotkeys,
   focus,
@@ -219,6 +219,15 @@ export const useInit = (props: MangaProps) => {
     createRootMemo(() => props.imgList),
     throttle(handleImgList, 500),
   );
+
+  // 通过手动创建一个 Worker 来检测是否支持 Worker，避免因为 CSP 限制而出错
+  setTimeout(() => {
+    const codeUrl = URL.createObjectURL(
+      new Blob(['self.close();'], { type: 'text/javascript' }),
+    );
+    setTimeout(URL.revokeObjectURL, 0, codeUrl);
+    _setState('supportWorker', Boolean(new Worker(codeUrl)));
+  }, 0);
 
   focus();
 };

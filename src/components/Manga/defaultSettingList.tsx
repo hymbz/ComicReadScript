@@ -253,6 +253,13 @@ export const defaultSettingList: () => SettingList = () => [
           </blockquote>
         </Show>
 
+        <Show when={!store.supportWorker}>
+          <blockquote>
+            {/* eslint-disable-next-line solid/no-innerhtml */}
+            <p innerHTML={t('setting.option.img_recognition_warn_2')} />
+          </blockquote>
+        </Show>
+
         <SettingsShowItem when={store.option.imgRecognition.enabled}>
           <SettingsItemSwitch
             name={t('setting.option.img_recognition_background')}
