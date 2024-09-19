@@ -1,18 +1,19 @@
-import { forEachCols, forEachRows } from './workHelper';
+import {
+  forEachCols,
+  forEachRows,
+  type ImgContextBase,
+  type TBLR,
+} from './workHelper';
 
 /** 获取图片空白边缘的长度 */
-export const getBlankMargin = (
-  grayList: Uint8ClampedArray,
-  width: number,
-  height: number,
-): {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
-} | null => {
+export const getBlankMargin = ({
+  grayList,
+  width,
+  height,
+}: ImgContextBase): Record<TBLR, number> | undefined => {
   let blankColor: undefined | number;
 
+  // 检查指定行或列上是否全是相同颜色
   const isBlankLine = (x: number, y: number) => {
     const colorMap = new Map<number, number>();
 
@@ -26,6 +27,7 @@ export const getBlankMargin = (
     else forEachCols(width, height, x, eachFn);
 
     let maxColor: undefined | number;
+    // 为了能跳过些微色差和漫画水印，阈值就只设为 90%
     let maxNum = height * 0.9;
     for (const [gray, num] of colorMap.entries()) {
       if (num < maxNum) continue;
@@ -42,34 +44,26 @@ export const getBlankMargin = (
   };
 
   let left = 0;
-  for (let x = 0, end = width * 0.4; x < end; x++) {
+  for (let x = 0, end = width * 0.4; x < end; x++, left++)
     if (!isBlankLine(x, -1)) break;
-    left += 1;
-  }
 
   blankColor = undefined;
   let right = 0;
-  for (let x = width - 1, end = width * 0.6; x >= end; x--) {
+  for (let x = width - 1, end = width * 0.6; x >= end; x--, right++)
     if (!isBlankLine(x, -1)) break;
-    right += 1;
-  }
 
   blankColor = undefined;
   let top = 0;
-  for (let y = 0, end = height * 0.4; y < end; y++) {
+  for (let y = 0, end = height * 0.4; y < end; y++, top++)
     if (!isBlankLine(-1, y)) break;
-    top += 1;
-  }
 
   blankColor = undefined;
   let bottom = 0;
-  for (let y = height - 1, end = height * 0.6; y >= end; y--) {
+  for (let y = height - 1, end = height * 0.6; y >= end; y--, bottom++)
     if (!isBlankLine(-1, y)) break;
-    bottom += 1;
-  }
 
   // if (isDevMode) mainFn.showGrayList?.(grayList, width, height);
 
   if (left || right || top || bottom) return { left, right, top, bottom };
-  return null;
+  return undefined;
 };

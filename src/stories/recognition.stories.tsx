@@ -65,12 +65,12 @@ export const 自动调整页面填充 = {
     option: { imgRecognition: { enabled: true, background: false } },
   } satisfies Props,
   async play() {
-    await wait(
-      () =>
-        refs.mangaFlow.querySelector<HTMLElement>(`.${classes.img}`)?.style
-          .backgroundColor !== 'var(--bg)',
-      1000 * 5,
-    );
+    await wait(() => {
+      const bg = refs.mangaFlow.querySelector<HTMLElement>(
+        `.${classes.img} img`,
+      )?.parentElement?.style.backgroundColor;
+      return bg && bg !== 'var(--bg)';
+    }, 1000 * 5);
 
     // 将 blobURL 转换为 dataURL，以便 percy 能正确显示
     const imgElement = refs.mangaFlow.querySelector<HTMLImageElement>(

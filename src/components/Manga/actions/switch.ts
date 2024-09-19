@@ -24,7 +24,7 @@ export const switchFillEffect = () => {
 
     state.fillEffect[nowFillIndex()] = Number(
       !state.fillEffect[nowFillIndex()],
-    );
+    ) as 0 | 1;
     updatePageData(state);
   });
 };

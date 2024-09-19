@@ -3,6 +3,22 @@ import type { log } from 'helper';
 import type { updatePageData } from '../../components/Manga/actions/image';
 
 import type { showCanvas, showColorArea, showGrayList } from './helper';
+import type { getBlankMargin } from './blankMargin';
+
+export type TBLR = 'top' | 'bottom' | 'left' | 'right';
+
+export type ImgContextBase = {
+  data: Uint8ClampedArray;
+  grayList: Uint8ClampedArray;
+  width: number;
+  height: number;
+};
+
+export type ImgContextMargin = ImgContextBase & {
+  blankMargin: NonNullable<ReturnType<typeof getBlankMargin>>;
+};
+
+export type ImgContext = ImgContextBase | ImgContextMargin;
 
 export const getEdgeScope = (width: number, height: number) =>
   Math.min(Math.ceil((width + height) * 0.01), 10);

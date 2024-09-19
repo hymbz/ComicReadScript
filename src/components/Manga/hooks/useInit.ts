@@ -21,7 +21,6 @@ import {
 } from '../actions';
 import { defaultOption, type Option } from '../store/option';
 import { playAnimation } from '../helper';
-import { autoCloseFill } from '../handleComicData';
 
 const createComicImg = (url: string): ComicImg => ({
   // 使用相对协议路径，防止 Mixed Content 报错
@@ -173,10 +172,8 @@ export const useInit = (props: MangaProps) => {
 
       state.prop.Loading?.(state.imgList.map((url) => state.imgMap[url]));
 
-      if (isNew || needResetFillEffect) {
+      if (isNew || needResetFillEffect)
         state.fillEffect = props.fillEffect ?? { '-1': true };
-        autoCloseFill.clear();
-      }
 
       if (isNew || needUpdatePageData) {
         updatePageData(state);

@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { handleComicData, autoCloseFill } from './handleComicData';
+import { handleComicData } from './handleComicData';
 import type { FillEffect } from './store/image';
 
 // 例子
@@ -22,8 +22,6 @@ const testWide = (
   );
   return { pageList, fillEffect };
 };
-
-beforeEach(() => autoCloseFill.clear());
 
 it('跨页在开头', () => {
   const { pageList, fillEffect } = testWide(['wide', '', '', '']);
@@ -89,14 +87,14 @@ it('没有跨页，但有缺页', () => {
   expect(fillEffect).toStrictEqual({ '-1': true });
 });
 
-const testFill = (
+const testMargin = (
   imgTypeList: Array<'' | 'left' | 'right' | 'both'>,
   initFillEffect?: FillEffect,
 ) => {
   const fillEffect = { '-1': true, ...initFillEffect };
   const pageList = handleComicData(
     imgTypeList.map((type) => {
-      const img = { type: '' } as ComicImg;
+      const img = { type: '', width: 99 } as ComicImg;
       switch (type) {
         case 'left':
           img.blankMargin = { left: 99, right: 0 };
@@ -118,7 +116,7 @@ const testFill = (
 
 describe('根据白边切换页面填充', () => {
   it('无需调整', () => {
-    const { pageList, fillEffect } = testFill(['right', 'left', 'right']);
+    const { pageList, fillEffect } = testMargin(['right', 'left', 'right']);
     expect(pageList).toStrictEqual([
       [-1, 0],
       [1, 2],
@@ -126,8 +124,8 @@ describe('根据白边切换页面填充', () => {
     expect(fillEffect).toStrictEqual({ '-1': true });
   });
 
-  it('没有边框数据', () => {
-    const { pageList, fillEffect } = testFill(['', '', '']);
+  it('没有白边数据', () => {
+    const { pageList, fillEffect } = testMargin(['', '', '']);
     expect(pageList).toStrictEqual([
       [-1, 0],
       [1, 2],
@@ -136,7 +134,7 @@ describe('根据白边切换页面填充', () => {
   });
 
   it('调整一次', () => {
-    const { pageList, fillEffect } = testFill(['left', 'right', 'left']);
+    const { pageList, fillEffect } = testMargin(['left', 'right', 'left']);
     expect(pageList).toStrictEqual([
       [0, 1],
       [2, -1],
@@ -145,7 +143,7 @@ describe('根据白边切换页面填充', () => {
   });
 
   it('全白边', () => {
-    const { pageList, fillEffect } = testFill(['both', 'both', 'both']);
+    const { pageList, fillEffect } = testMargin(['both', 'both', 'both']);
     expect(pageList).toStrictEqual([
       [-1, 0],
       [1, 2],
@@ -154,7 +152,7 @@ describe('根据白边切换页面填充', () => {
   });
 
   it('混合，无需调整', () => {
-    const { pageList, fillEffect } = testFill(['right', 'both', 'right', '']);
+    const { pageList, fillEffect } = testMargin(['right', 'both', 'right', '']);
     expect(pageList).toStrictEqual([
       [-1, 0],
       [1, 2],
@@ -164,7 +162,7 @@ describe('根据白边切换页面填充', () => {
   });
 
   it('混合，调整一次', () => {
-    const { pageList, fillEffect } = testFill(['left', 'both', 'left', '']);
+    const { pageList, fillEffect } = testMargin(['left', 'both', 'left', '']);
     expect(pageList).toStrictEqual([
       [0, 1],
       [2, 3],

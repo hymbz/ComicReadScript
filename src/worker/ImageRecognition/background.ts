@@ -1,4 +1,3 @@
-import type { getBlankMargin } from './blankMargin';
 import {
   getAreaColor,
   getAreaEdgeRatio,
@@ -6,15 +5,15 @@ import {
   getSquareAreaColor,
 } from './colorArea';
 import type { PixelList } from './helper';
-import { boil } from './workHelper';
+import {
+  boil,
+  type ImgContext,
+  type ImgContextMargin,
+  type TBLR,
+} from './workHelper';
 
 /** 根据边缘颜色区域获取背景颜色 */
-const byEdgeArea = (
-  data: Uint8ClampedArray,
-  grayList: Uint8ClampedArray,
-  width: number,
-  height: number,
-) => {
+const byEdgeArea = ({ data, grayList, width, height }: ImgContext) => {
   const areaList = getEdgeArea(grayList, width, height);
   // if (isDevMode) mainFn.showColorArea?.(data, w, h, maxArea);
 
@@ -36,60 +35,39 @@ const byEdgeArea = (
   return getAreaColor(data, maxArea);
 };
 
-/** 从足够大的空白边缘中获取背景颜色 */
-const byBlankMargin = (
-  data: Uint8ClampedArray,
-  blankMargin: ReturnType<typeof getBlankMargin>,
-  width: number,
-  height: number,
+const getPosAreaColor = (
+  pos: TBLR,
+  { data, blankMargin, width: w, height: h }: ImgContextMargin,
 ) => {
+  switch (pos) {
+    case 'top':
+      return getSquareAreaColor(data, 0, 0, w, blankMargin.top * h);
+    case 'bottom':
+      return getSquareAreaColor(data, 0, h - blankMargin.bottom * h, w, h);
+    case 'left':
+      return getSquareAreaColor(data, 0, 0, blankMargin.left * w, h);
+    case 'right':
+      return getSquareAreaColor(data, w - blankMargin.right * w, 0, w, h);
+  }
+};
+
+/** 从足够大的空白边缘中获取背景颜色 */
+const byBlankMargin = (context: ImgContextMargin) => {
   const colorMap: Record<string, number> = {};
-  const minimum = 5;
 
-  if (blankMargin.top > minimum) {
-    const color = getSquareAreaColor(data, 0, 0, width, blankMargin.top);
-    if (color) colorMap[color] = (colorMap[color] || 0) + blankMargin.top;
+  for (const pos of ['top', 'bottom', 'left', 'right'] as const) {
+    if (!context.blankMargin[pos]) continue;
+    const color = getPosAreaColor(pos, context);
+    if (!color) continue;
+    colorMap[color] = (colorMap[color] || 0) + context.blankMargin[pos];
   }
 
-  if (blankMargin.bottom > minimum) {
-    const color = getSquareAreaColor(
-      data,
-      0,
-      height - blankMargin.bottom,
-      width,
-      height,
-    );
-    if (color) colorMap[color] = (colorMap[color] || 0) + blankMargin.bottom;
-  }
-
-  if (blankMargin.left > minimum) {
-    const color = getSquareAreaColor(data, 0, 0, blankMargin.left, height);
-    if (color) colorMap[color] = (colorMap[color] || 0) + blankMargin.left;
-  }
-
-  if (blankMargin.right > minimum) {
-    const color = getSquareAreaColor(
-      data,
-      width - blankMargin.right,
-      0,
-      width,
-      height,
-    );
-    if (color) colorMap[color] = (colorMap[color] || 0) + blankMargin.right;
-  }
-
-  const colorList = Object.entries(colorMap);
+  // 过滤占比过低的空白边缘
+  const colorList = Object.entries(colorMap).filter(([, v]) => v > 0.04);
   if (colorList.length === 0) return undefined;
   return boil(colorList, (a, b) => (a[1] > b[1] ? a : b))?.[0];
 };
 
 /** 判断图像的背景色 */
-export const getBackground = (
-  data: Uint8ClampedArray,
-  grayList: Uint8ClampedArray,
-  width: number,
-  height: number,
-  blankMargin?: ReturnType<typeof getBlankMargin>,
-) =>
-  (blankMargin && byBlankMargin(data, blankMargin, width, height)) ||
-  byEdgeArea(data, grayList, width, height);
+export const getBackground = (context: ImgContext) =>
+  ('blankMargin' in context && byBlankMargin(context)) || byEdgeArea(context);
