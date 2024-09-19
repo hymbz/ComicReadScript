@@ -58,7 +58,7 @@ export const ComicImgFlow: Component = () => {
   const handleTransitionEnd = () => {
     if (store.isDragMode) return;
     setState((state) => {
-      if (store.option.zoom.ratio === 100) resetPage(state, true);
+      if (store.option.zoom.ratio === 100) resetPage(state, false);
       else state.page.anima = '';
     });
   };

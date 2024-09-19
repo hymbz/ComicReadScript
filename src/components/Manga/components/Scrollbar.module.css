@@ -93,7 +93,7 @@
   height: var(--slider-height);
 
   opacity: 1;
-  background-color: var(--scrollbar-slider);
+  background-color: #fff5;
   border-radius: 1em;
 
   transition:

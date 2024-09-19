@@ -1,4 +1,5 @@
 import {
+  type JSX,
   type Component,
   createSignal,
   createMemo,
@@ -88,9 +89,13 @@ export const Scrollbar: Component = () => {
     '--slider-top': sliderTop,
   });
 
-  return (
+  const _Scrollbar: Component<{
+    children: JSX.Element;
+    style?: JSX.CSSProperties;
+    ref?: JSX.HTMLAttributes<HTMLDivElement>['ref'];
+  }> = (props) => (
     <div
-      ref={bindRef('scrollbar')}
+      ref={props.ref}
       class={classes.scrollbar}
       role="scrollbar"
       tabIndex={-1}
@@ -103,16 +108,29 @@ export const Scrollbar: Component = () => {
       data-is-abreast-mode={boolDataVal(isAbreastMode())}
       data-drag={boolDataVal(isDrag())}
       onWheel={handleWheel}
-    >
-      <div
-        class={classes.scrollbarSlider}
-        classList={{ [classes.hidden]: store.gridMode }}
-      />
-      <div class={classes.scrollbarPoper} children={tipText()} />
+      style={props.style}
+      children={props.children}
+    />
+  );
 
-      <Show when={store.option.scrollbar.showImgStatus}>
-        <ScrollbarPageStatus />
-      </Show>
-    </div>
+  return (
+    <>
+      <_Scrollbar ref={bindRef('scrollbar')}>
+        <div class={classes.scrollbarPoper} children={tipText()} />
+        <Show when={store.option.scrollbar.showImgStatus}>
+          <ScrollbarPageStatus />
+        </Show>
+      </_Scrollbar>
+
+      {/* 使用 mix-blend-mode 让滚动条颜色自适应背景 */}
+      <_Scrollbar
+        style={{ 'mix-blend-mode': 'difference', 'pointer-events': 'none' }}
+      >
+        <div
+          class={classes.scrollbarSlider}
+          classList={{ [classes.hidden]: store.gridMode }}
+        />
+      </_Scrollbar>
+    </>
   );
 };

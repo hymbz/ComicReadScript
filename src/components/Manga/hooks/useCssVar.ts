@@ -13,7 +13,6 @@ const darkStyle: JSX.CSSProperties = {
 
   '--switch': '#BDBDBD',
   '--switch-bg': '#6E6E6E',
-  '--scrollbar-slider': '#FFF6',
 
   '--page-bg': '#303030',
 
@@ -34,7 +33,6 @@ const lightStyle: JSX.CSSProperties = {
 
   '--switch': '#FAFAFA',
   '--switch-bg': '#9C9C9C',
-  '--scrollbar-slider': '#0006',
 
   '--page-bg': 'white',
 
