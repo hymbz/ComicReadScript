@@ -507,49 +507,28 @@ try {
       break;
     }
 
-    // #[无限动漫](https://www.comicabc.com)
+    // #[無限動漫](https://www.comicabc.com)
     case '8.twobili.com':
     case 'a.twobili.com':
+    case 'articles.onemoreplace.tw':
     case 'www.comicabc.com': {
       const pathStartList = ['/online/', '/ReadComic/', '/comic/'];
       if (!pathStartList.some((path) => location.pathname.startsWith(path)))
         break;
 
+      // by: https://sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/241035
       const getImgList = () => {
-        const imgList: string[] = [];
-
-        if (Reflect.has(unsafeWindow, 'ss')) {
-          const { ss, c, ti, nn, mm, f } = unsafeWindow;
-          for (let i = 1; i <= unsafeWindow.ps; i++) {
-            imgList.push(
-              [
-                `https://img${ss(c, 4, 2)}.8comic.com`,
-                ss(c, 6, 1),
-                ti,
-                ss(c, 0, 4),
-                // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                `${nn([i])}_${ss(c, mm([i]) + 10, 3, f)}.jpg`,
-              ].join('/'),
-            );
-          }
-        } else {
-          const mainCode = [...document.scripts].find((s) =>
-            s.textContent!.includes('ge(e)'),
-          )!.textContent!;
-          // 取得混淆過的關鍵代碼
-          const [, keyCode] = /ge\([^.]+\.src\s?=\s?([^;]+)/.exec(mainCode)!;
-
-          const total: number = unsafeWindow.ps;
-          for (let i = 1; i <= total; i++) {
-            // 把關鍵代碼裡的(p)或(pp)替換成頁數(1)
-            const code = keyCode.replaceAll(/\(pp?\)/g, `(${i})`);
-            // 使用 eval 來取得圖片網址
-            // eslint-disable-next-line no-eval
-            imgList.push(`${location.protocol}${eval(code)}`);
-          }
-        }
-
-        return imgList;
+        const { ps, su, ti, nn, mm } = unsafeWindow;
+        const code = [...document.scripts].find((script) =>
+          script.textContent!.includes('ge(e)'),
+        )!.textContent!;
+        const [, chapterId] = /img\s+s="(.{15})/.exec(code)!;
+        const b = unsafeWindow[chapterId.slice(0, 5)];
+        const c = unsafeWindow[chapterId.slice(5, 10)];
+        const d = unsafeWindow[chapterId.slice(10, 15)];
+        const getSrc = (a: number) =>
+          `https://img${su(b, 0, 1)}.8comic.com/${su(b, 1, 1)}/${ti}/${c}/${nn(a)}_${su(d, mm(a), 3)}.jpg`;
+        return Array.from({ length: ps }).map((_, i) => getSrc(i + 1));
       };
 
       options = {
