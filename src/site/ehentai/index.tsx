@@ -1,7 +1,6 @@
 import { createMemo, type Component } from 'solid-js';
 import { render } from 'solid-js/web';
 import { request, useInit, toast, ReactiveSet, type LoadImgFn } from 'main';
-import { imgList } from 'components/Manga';
 import { getAdPageByFileName, getAdPageByContent } from 'userscript/detectAd';
 import {
   t,
@@ -68,7 +67,6 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     setFab,
     setManga,
     mangaProps,
-    nowComic,
   } = await useInit('ehentai', {
     /** 关联 nhentai */
     associate_nhentai: true,
@@ -332,7 +330,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   };
 
   /** 刷新指定图片 */
-  const reloadImg = async (i: number) => {
+  const reloadImg = singleThreaded(async (_, i: number) => {
     const pageUrl = await getNewImgPageUrl(ehImgPageList[i]);
     let imgUrl = '';
     while (!imgUrl || !(await testImgUrl(imgUrl))) {
@@ -342,17 +340,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     ehImgList[i] = imgUrl;
     ehImgPageList[i] = pageUrl;
     setImgList('', i, imgUrl);
-  };
-
-  /** 刷新所有错误图片 */
-  const reloadErrorImg = singleThreaded(() =>
-    plimit(
-      imgList().map((img, i) => () => {
-        if (img.loadType !== 'error' || nowComic() !== '') return;
-        return reloadImg(i);
-      }),
-    ),
-  );
+  });
 
   setManga({
     onExit(isEnd) {
@@ -360,10 +348,11 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       setManga('show', false);
     },
     // 在图片加载出错时刷新图片
-    async onLoading(_, img) {
-      if (!img || img.loadType !== 'error' || (await testImgUrl(img.src)))
-        return;
-      return reloadErrorImg();
+    onLoading(_, img) {
+      if (!img || img.loadType !== 'error') return;
+      const i = ehImgList.indexOf(img.src);
+      if (i === -1) return;
+      return reloadImg(i);
     },
   });
 

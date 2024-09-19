@@ -237,6 +237,8 @@ createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
     const controller = new AbortController();
     const handleTimeout = debounce(() => timeoutAbort(url), 1000 * 5);
     controller.signal.addEventListener('abort', handleTimeout.clear);
+    abortMap.set(url, controller);
+    handleTimeout();
     request<Blob>(url, {
       responseType: 'blob',
       fetch: false,
@@ -256,7 +258,5 @@ createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
         handleImgLoaded(url);
       },
     });
-    abortMap.set(url, controller);
-    handleTimeout();
   }
 });
