@@ -14,7 +14,7 @@ import { _setState, setState, store } from '../store';
 
 import { updatePageData } from './image';
 
-export const handleImg = (img: HTMLImageElement, url: string) => {
+export const handleImgRecognition = (img: HTMLImageElement, url: string) => {
   const { data, width, height } = getImageData(img);
 
   return worker.handleImg(

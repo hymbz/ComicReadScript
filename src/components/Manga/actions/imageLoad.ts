@@ -9,13 +9,13 @@ import {
   log,
 } from 'helper';
 
-import { store, setState, _setState, refs } from '../store';
+import { store, setState, _setState } from '../store';
 
 import { imgList, preloadNum } from './memo/common';
 import { updateImgSize } from './imageSize';
 import { renderImgList, showImgList } from './renderPage';
-import { handleImg } from './imageRecognition';
-import { getImg, getImgIndex } from './helper';
+import { handleImgRecognition } from './imageRecognition';
+import { getImg, getImgEle, getImgIndex } from './helper';
 
 /** 图片加载完毕的回调 */
 export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
@@ -34,7 +34,7 @@ export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
   updateImgSize(url, e.naturalWidth, e.naturalHeight);
 
   if (store.option.imgRecognition.enabled && e.src === img.blobUrl)
-    setTimeout(handleImg, 0, e, url);
+    setTimeout(handleImgRecognition, 0, e, url);
 };
 
 /** 图片加载出错的次数 */
@@ -129,9 +129,8 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
 
 /** 加载期间尽快获取图片尺寸 */
 export const checkImgSize = (url: string) => {
-  const imgDom = refs.mangaFlow.querySelector<HTMLImageElement>(
-    `img[data-src="${url}"]`,
-  )!;
+  const imgDom = getImgEle(url);
+  if (!imgDom) return;
   const timeoutId = setInterval(() => {
     if (!imgDom?.isConnected || store.option.imgRecognition.enabled)
       return clearInterval(timeoutId);

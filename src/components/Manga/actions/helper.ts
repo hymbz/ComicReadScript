@@ -15,6 +15,9 @@ export const getImgIndex = (url: string) => {
   return indexList;
 };
 
+export const getImgEle = (url: string) =>
+  refs.mangaFlow.querySelector<HTMLImageElement>(`img[data-src="${url}"]`);
+
 /** 找到指定页面所处的图片流 */
 export const findFillIndex = (pageIndex: number, fillEffect: FillEffect) => {
   let nowFillIndex = pageIndex;

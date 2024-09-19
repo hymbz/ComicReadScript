@@ -42,7 +42,7 @@ export const handleImg = async (
       });
       mainFn.updatePageData();
       (context as ImgContextMargin).blankMargin = blankMargin;
-    }
+    } else mainFn.setImg(url, 'blankMargin', null);
   }
 
   let bgColor: string | undefined;

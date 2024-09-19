@@ -11,7 +11,7 @@ declare global {
     progress?: number;
 
     background?: string;
-    blankMargin?: { left: number; right: number };
+    blankMargin?: { left: number; right: number } | null;
 
     translationUrl?: string;
     translationMessage?: string;
