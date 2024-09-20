@@ -61,7 +61,6 @@
     "wait": "Waiting for load"
   },
   "other": {
-    "auto_enter_read_mode": "Auto enter reading mode",
     "default": "Default",
     "disable": "Disable",
     "enabled": "Enabled",
@@ -178,12 +177,14 @@
     "add_feature": {
       "associate_nhentai": "Associate nhentai",
       "auto_page_turn": "Infinite scroll",
+      "auto_show": "Auto enter reading mode",
       "block_totally": "Totally block comics",
       "colorize_tag": "Colorize tags",
       "detect_ad": "Detect advertise page",
       "float_tag_list": "Floating tag list",
       "hotkeys": "Hotkeys",
       "load_original_image": "Load original image",
+      "lock_option": "Lock site option",
       "open_link_new_page": "Open links in a new page",
       "quick_favorite": "Quick favorite",
       "quick_rating": "Quick rating",

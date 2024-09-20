@@ -61,7 +61,6 @@
     "wait": "Ожидание загрузки"
   },
   "other": {
-    "auto_enter_read_mode": "Автоматически включать режим чтения",
     "default": "Дефолт",
     "disable": "Отключить",
     "enabled": "Включено",
@@ -178,12 +177,14 @@
     "add_feature": {
       "associate_nhentai": "Ассоциация с nhentai",
       "auto_page_turn": "Автопереворот страниц",
+      "auto_show": "Автоматически включать режим чтения",
       "block_totally": "Глобально заблокировать комиксы",
       "colorize_tag": "Раскрасить теги",
       "detect_ad": "Detect advertise page",
       "float_tag_list": "Плавающий список тегов",
       "hotkeys": "Горячие клавиши",
       "load_original_image": "Загружать оригинальное изображение",
+      "lock_option": "Блокировка опции сайта",
       "open_link_new_page": "Открывать ссылки в новой вкладке",
       "quick_favorite": "Быстрый фаворит",
       "quick_rating": "Быстрый рейтинг",
