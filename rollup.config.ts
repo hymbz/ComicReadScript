@@ -70,6 +70,7 @@ const packlist = [
   'userscript/detectAd',
   'userscript/main',
   'worker/ImageRecognition',
+  'worker/detectAd',
   'userscript/otherSite',
 ];
 
@@ -209,7 +210,8 @@ export const buildOptions = (
 // 清空 dist 文件夹
 shell.rm('-rf', resolve(__dirname, 'dist/*'));
 // 创建 dist 的文件服务器
-shell.exec('serve dist --cors -l 2405', { async: true, silent: true });
+if (isDevMode)
+  shell.exec('serve dist --cors -l 2405', { async: true, silent: true });
 
 const optionList: RollupOptions[] = [
   buildOptions('dev'),

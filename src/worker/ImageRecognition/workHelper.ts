@@ -1,8 +1,8 @@
 import type { log } from 'helper';
 
 import type { updatePageData } from '../../components/Manga/actions/image';
+import type { showCanvas, showColorArea, showGrayList } from '../helper';
 
-import type { showCanvas, showColorArea, showGrayList } from './helper';
 import type { getBlankMargin } from './blankMargin';
 
 export type TBLR = 'top' | 'bottom' | 'left' | 'right';
@@ -124,12 +124,9 @@ export const resizeImg = (
       const ty = Math.floor(y / scale);
       const target = (width * ty + tx) * 4;
 
-      const r = rawImgData[target];
-      const g = rawImgData[target + 1];
-      const b = rawImgData[target + 2];
-      data[i] = r;
-      data[i + 1] = g;
-      data[i + 2] = b;
+      data[i] = rawImgData[target];
+      data[i + 1] = rawImgData[target + 1];
+      data[i + 2] = rawImgData[target + 2];
       data[i + 3] = 255;
     }
   }

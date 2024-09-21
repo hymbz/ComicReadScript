@@ -24,9 +24,7 @@ const resourceList: Record<string, [string, string] | [string]> = {
     'https://registry.npmmirror.com/solid-js/1.8.19/files/web/dist/dev.cjs',
   ],
   fflate: ['https://registry.npmmirror.com/fflate/0.8.2/files/umd/index.js'],
-  'qr-scanner': [
-    'https://registry.npmmirror.com/qr-scanner/1.4.2/files/qr-scanner.legacy.min.js',
-  ],
+  jsqr: ['https://registry.npmmirror.com/jsqr/1.4.0/files/dist/jsQR.js'],
   comlink: [
     'https://registry.npmmirror.com/comlink/4.4.1/files/dist/umd/comlink.js',
   ],

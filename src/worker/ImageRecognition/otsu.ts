@@ -1,12 +1,12 @@
-import { toGray } from './workHelper';
+import { toGrayList } from './workHelper';
 
-const histogram = (grayList: number[]) => {
+const histogram = (grayList: Uint8ClampedArray) => {
   const hist = Array.from<number>({ length: 256 }).fill(0);
   for (const pixel of grayList) hist[pixel]++;
   return hist;
 };
 
-const otsu = (grayList: number[]) => {
+const otsu = (grayList: Uint8ClampedArray) => {
   /** 直方图 */
   const hist = histogram(grayList);
 
@@ -39,19 +39,10 @@ const otsu = (grayList: number[]) => {
 
 /** 图片二值化 */
 export const thresholding = (imageData: ImageData) => {
-  const grayList: number[] = [];
-
-  for (let i = 0; i < imageData.data.length; i += 4) {
-    const r = imageData.data[i];
-    const g = imageData.data[i + 1];
-    const b = imageData.data[i + 2];
-    grayList.push(toGray(r, g, b));
-  }
-
+  const grayList = toGrayList(imageData.data, 0);
   const threshold = otsu(grayList);
 
   for (let i = 0; i < grayList.length; i++)
-    grayList[i] = grayList[i] < threshold ? 0 : 1;
-
+    grayList[i] = grayList[i] < threshold ? 0 : 255;
   return grayList;
 };

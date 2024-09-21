@@ -62,7 +62,7 @@ Comlink.expose(exports);
 `.replaceAll(
         /const (\w+?) = require\('(.+?)'\);/g,
         (_, varName, module) => `
-const ${varName} = {};
+let ${varName} = {};
 (function (exports, module) { ${GM_getResourceText(module)} }) (
   ${varName},
   {

@@ -38,6 +38,9 @@ importers:
       jsencrypt:
         specifier: ^3.3.2
         version: 3.3.2
+      jsqr:
+        specifier: ^1.4.0
+        version: 1.4.0
       libarchive.js:
         specifier: 2.0.2
         version: 2.0.2
@@ -56,9 +59,6 @@ importers:
       pwa-install-handler:
         specifier: ^2.6.0
         version: 2.6.0
-      qr-scanner:
-        specifier: ^1.4.2
-        version: 1.4.2
       solid-js:
         specifier: ^1.8.19
         version: 1.8.19
@@ -2303,9 +2303,6 @@ packages:
 
   '@types/object-path@0.11.4':
     resolution: {integrity: sha512-4tgJ1Z3elF/tOMpA8JLVuR9spt9Ynsf7+JjqsQ2IqtiPJtcLoHoXcT6qU4E10cPFqyXX5HDm9QwIzZhBSkLxsw==}
-
-  '@types/offscreencanvas@2019.7.3':
-    resolution: {integrity: sha512-ieXiYmgSRXUDeOntE1InxjWyvEelZGP63M+cGuquuRLuIKKT1osnkXjxev9B7d1nXSug5vpunx+gNlbVxMlC9A==}
 
   '@types/parse-json@4.0.2':
     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
@@ -5383,6 +5380,9 @@ packages:
     resolution: {integrity: sha512-p/nXbhSEcu3pZRdkW1OfJhpsVtW1gd4Wa1fnQc9YLiTfAjn0312eMKimbdIQzuZl9aa9xUGaRlP9T/CJE/ditQ==}
     engines: {node: '>=0.10.0'}
 
+  jsqr@1.4.0:
+    resolution: {integrity: sha512-dxLob7q65Xg2DvstYkRpkYtmKm2sPJ9oFhrhmudT1dZvNFFTlroai3AWSpLey/w5vMcLBXRgOJsbXpdN9HzU/A==}
+
   kebab-case@1.0.2:
     resolution: {integrity: sha512-7n6wXq4gNgBELfDCpzKc+mRrZFs7D+wgfF5WRFLNAr4DA/qtr9Js8uOAVAfHhuLMfAcQ0pRKqbpjx+TcJVdE1Q==}
 
@@ -6644,9 +6644,6 @@ packages:
 
   pwa-install-handler@2.6.0:
     resolution: {integrity: sha512-bJ7kv8fY6lNlrz2T96OZz+sUiAiwR5zZ1a1PqV0AeKaRcgoCcGuXhD8itZMAmStaa8w44MGtId/pDk6Qc5knnQ==}
-
-  qr-scanner@1.4.2:
-    resolution: {integrity: sha512-kV1yQUe2FENvn59tMZW6mOVfpq9mGxGf8l6+EGaXUOd4RBOLg7tRC83OrirM5AtDvZRpdjdlXURsHreAOSPOUw==}
 
   qs@6.11.0:
     resolution: {integrity: sha512-MvjoMCJwEarSbUYk5O+nmoSzSutSsTwF85zcHPQ9OrlFoZOYIjaqBAJIqIXjptyD5vThxGq52Xu/MaJzRkIk4Q==}
@@ -10744,8 +10741,6 @@ snapshots:
 
   '@types/object-path@0.11.4': {}
 
-  '@types/offscreencanvas@2019.7.3': {}
-
   '@types/parse-json@4.0.2': {}
 
   '@types/prop-types@15.7.12': {}
@@ -14496,6 +14491,8 @@ snapshots:
 
   jsonpointer@5.0.1: {}
 
+  jsqr@1.4.0: {}
+
   kebab-case@1.0.2: {}
 
   keyv@4.5.4:
@@ -15807,10 +15804,6 @@ snapshots:
   pure-rand@6.1.0: {}
 
   pwa-install-handler@2.6.0: {}
-
-  qr-scanner@1.4.2:
-    dependencies:
-      '@types/offscreencanvas': 2019.7.3
 
   qs@6.11.0:
     dependencies:

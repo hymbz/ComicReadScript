@@ -3,16 +3,19 @@ import * as Comlink from 'comlink';
 import * as worker from 'worker/ImageRecognition';
 import { type MainFn } from 'worker/ImageRecognition';
 import { log, throttle } from 'helper';
-import {
-  getImageData,
-  showCanvas,
-  showColorArea,
-  showGrayList,
-} from 'worker/ImageRecognition/helper';
+import { showCanvas, showColorArea, showGrayList } from 'worker/helper';
 
 import { _setState, setState, store } from '../store';
 
 import { updatePageData } from './image';
+
+const getImageData = (img: HTMLImageElement) => {
+  const { naturalWidth: width, naturalHeight: height } = img;
+  const canvas = new OffscreenCanvas(width, height);
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+  ctx.drawImage(img, 0, 0);
+  return ctx.getImageData(0, 0, width, height);
+};
 
 export const handleImgRecognition = (img: HTMLImageElement, url: string) => {
   const { data, width, height } = getImageData(img);

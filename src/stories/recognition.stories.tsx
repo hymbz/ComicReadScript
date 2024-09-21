@@ -1,14 +1,39 @@
 import { wait } from 'helper';
+import { isAdImg } from 'userscript/detectAd';
 
 import { refs } from '../components/Manga/store';
 import classes from '../components/Manga/index.module.css';
 
 import MangaMeta, { type Props } from './Manga.stories';
-import { imgList, waitImgLoaded } from './helper';
+import { imgList } from './helper';
 
 export default {
   ...MangaMeta,
   title: '图像识别功能',
+};
+
+const setDataUrl = (img: HTMLImageElement) => {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(img, 0, 0);
+  img.src = canvas.toDataURL();
+};
+
+const allImg = () =>
+  refs.mangaFlow.querySelectorAll<HTMLImageElement>(`.${classes.img} img`);
+
+const waitAllImg = () =>
+  wait(
+    () =>
+      allImg().length > 0 && [...allImg()].every((img) => img.naturalWidth > 0),
+    1000 * 5,
+  );
+
+const play = async () => {
+  await waitAllImg();
+  for (const img of allImg()) setDataUrl(img);
 };
 
 export const 识别背景色 = {
@@ -30,28 +55,7 @@ export const 识别背景色 = {
     ],
     option: { imgRecognition: { enabled: true } },
   } satisfies Props,
-  async play() {
-    await wait(
-      () =>
-        refs.mangaFlow.querySelector<HTMLElement>(`.${classes.img}`)?.style
-          .backgroundColor !== 'var(--bg)',
-      1000 * 5,
-    );
-
-    // 将 blobURL 转换为 dataURL，以便 percy 能正确显示
-    const imgElement = refs.mangaFlow.querySelector<HTMLImageElement>(
-      `.${classes.img} img`,
-    )!;
-    const canvas = document.createElement('canvas');
-    canvas.width = imgElement.naturalWidth;
-    canvas.height = imgElement.naturalHeight;
-    const ctx = canvas.getContext('2d')!;
-    ctx.drawImage(imgElement, 0, 0);
-    const dataURL = canvas.toDataURL();
-    imgElement.src = dataURL;
-
-    await waitImgLoaded();
-  },
+  play,
 };
 
 export const 自动调整页面填充 = {
@@ -64,26 +68,29 @@ export const 自动调整页面填充 = {
     // ],
     option: { imgRecognition: { enabled: true, background: false } },
   } satisfies Props,
+  play,
+};
+
+export const 识别广告 = {
+  args: {
+    图源: undefined,
+    imgList: [
+      '/杂/二维码/广告1.jpg',
+      '/杂/二维码/广告2.png',
+      '/杂/二维码/广告3.jpg',
+      '/杂/二维码/广告4.jpg',
+      '/杂/二维码/1.jpg',
+      '/杂/二维码/2.jpg',
+      '/杂/二维码/3.jpg',
+      '/杂/二维码/4.jpg',
+    ],
+    option: { firstPageFill: false },
+  } satisfies Props,
   async play() {
-    await wait(() => {
-      const bg = refs.mangaFlow.querySelector<HTMLElement>(
-        `.${classes.img} img`,
-      )?.parentElement?.style.backgroundColor;
-      return bg && bg !== 'var(--bg)';
-    }, 1000 * 5);
+    await play();
 
-    // 将 blobURL 转换为 dataURL，以便 percy 能正确显示
-    const imgElement = refs.mangaFlow.querySelector<HTMLImageElement>(
-      `.${classes.img} img`,
-    )!;
-    const canvas = document.createElement('canvas');
-    canvas.width = imgElement.naturalWidth;
-    canvas.height = imgElement.naturalHeight;
-    const ctx = canvas.getContext('2d')!;
-    ctx.drawImage(imgElement, 0, 0);
-    const dataURL = canvas.toDataURL();
-    imgElement.src = dataURL;
-
-    await waitImgLoaded();
+    for (const img of allImg())
+      if (await isAdImg(await createImageBitmap(img)))
+        img.classList.add('blur');
   },
 };

@@ -1,10 +1,11 @@
+import type { PixelList } from '../helper';
+
 import {
   getAreaColor,
   getAreaEdgeRatio,
   getEdgeArea,
   getSquareAreaColor,
 } from './colorArea';
-import type { PixelList } from './helper';
 import {
   boil,
   type ImgContext,
