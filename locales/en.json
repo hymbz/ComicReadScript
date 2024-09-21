@@ -176,6 +176,7 @@
   "site": {
     "add_feature": {
       "associate_nhentai": "Associate nhentai",
+      "auto_adjust_option": "Auto adjust reading option",
       "auto_page_turn": "Infinite scroll",
       "auto_show": "Auto enter reading mode",
       "block_totally": "Totally block comics",

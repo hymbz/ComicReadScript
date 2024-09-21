@@ -176,6 +176,7 @@
   "site": {
     "add_feature": {
       "associate_nhentai": "关联nhentai",
+      "auto_adjust_option": "自动调整阅读配置",
       "auto_page_turn": "无限滚动",
       "auto_show": "自动进入阅读模式",
       "block_totally": "彻底屏蔽漫画",

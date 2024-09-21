@@ -1,6 +1,7 @@
 import { createMemo, type Component } from 'solid-js';
 import { render } from 'solid-js/web';
 import { request, useInit, toast, ReactiveSet, type LoadImgFn } from 'main';
+import { type MangaProps } from 'components/Manga';
 import { getAdPageByFileName, getAdPageByContent } from 'userscript/detectAd';
 import {
   t,
@@ -16,6 +17,7 @@ import {
   createRootMemo,
   requestIdleCallback,
   linstenKeydown,
+  assign,
 } from 'helper';
 
 import { escHandler } from './other';
@@ -84,6 +86,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     quick_tag_define: true,
     /** 悬浮标签列表 */
     float_tag_list: false,
+    /** 自动调整配置 */
+    auto_adjust_option: false,
     autoShow: false,
   });
 
@@ -138,6 +142,22 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   // 快捷查看标签定义
   if (options.quick_tag_define)
     requestIdleCallback(() => quickTagDefine(pageType), 1000);
+
+  // 自动调整阅读配置
+  if (
+    options.auto_adjust_option &&
+    // 在「Doujinshi」「Manga」「Non-H」以外的分类下
+    !querySelector('#gdc > .cs:is(.ct2, .ct3, .ct9)')
+  ) {
+    let option: MangaProps['defaultOption'] = {
+      // 使用单页模式
+      pageNum: 1,
+      // 关闭图像识别
+      imgRecognition: { enabled: false },
+    };
+    if (options.option) option = assign(options.option, option);
+    setManga({ option });
+  }
 
   // 不是漫画页的话
   if (pageType !== 'gallery') return;

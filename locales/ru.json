@@ -176,6 +176,7 @@
   "site": {
     "add_feature": {
       "associate_nhentai": "Ассоциация с nhentai",
+      "auto_adjust_option": "Автоматическая настройка параметра чтения",
       "auto_page_turn": "Автопереворот страниц",
       "auto_show": "Автоматически включать режим чтения",
       "block_totally": "Глобально заблокировать комиксы",
