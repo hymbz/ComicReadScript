@@ -35,6 +35,8 @@ const qrCodeWhiteList = [
   /^https:\/\/fantia\.jp/,
   // 棉花糖
   /^https:\/\/marshmallow-qa\.com/,
+  // dlsite
+  /^https:\/\/www\.dlsite\.com/,
   // hitomi
   /^https:\/\/hitomi\.la/,
 ];
@@ -152,8 +154,7 @@ export const isAdImg = async (imgBitmap: ImageBitmap) => {
     imgData.data[i + 3] = 255;
   }
 
-  if (isDevMode)
-    mainFn.showCanvas?.(imgData.data, imgBitmap.width, imgBitmap.height);
+  // mainFn.showCanvas?.(imgData.data, imgBitmap.width, imgBitmap.height);
 
   let text = getQrCode(imgData.data, imgData.width, imgData.height);
 

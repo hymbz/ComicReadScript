@@ -29,7 +29,7 @@ export default worker;`;
       }
 
       // 为加载的 worker 代码增加 comlink 包装
-      if (path.endsWith('?worker_file&type=module')) {
+      if (/src\/worker\/.+?\/index.ts/.test(path)) {
         const exports: string[] = [];
         let newCode = code
           .replaceAll(/export {\s+(.+?)\s+}/g, (_, varName) => {

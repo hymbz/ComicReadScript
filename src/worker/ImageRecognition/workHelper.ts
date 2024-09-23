@@ -111,7 +111,7 @@ export const resizeImg = (
   height: number,
 ) => {
   // const scale = 1;
-  const scale = Math.min(100 / width, 100 / height);
+  const scale = Math.min(200 / width, 200 / height);
   const w = Math.floor(width * scale);
   const h = Math.floor(height * scale);
 

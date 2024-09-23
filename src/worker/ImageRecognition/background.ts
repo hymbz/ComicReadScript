@@ -16,7 +16,7 @@ import {
 /** 根据边缘颜色区域获取背景颜色 */
 const byEdgeArea = ({ data, grayList, width, height }: ImgContext) => {
   const areaList = getEdgeArea(grayList, width, height);
-  // if (isDevMode) mainFn.showColorArea?.(data, w, h, maxArea);
+  // if (isDevMode) mainFn.showColorArea?.(data, width, height, ...areaList);
 
   if (areaList.length === 0) return undefined;
   const minimum = width * height * 0.02;

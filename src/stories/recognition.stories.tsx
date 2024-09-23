@@ -1,11 +1,11 @@
-import { wait } from 'helper';
+import { sleep, wait } from 'helper';
 import { isAdImg } from 'userscript/detectAd';
 
-import { refs } from '../components/Manga/store';
-import classes from '../components/Manga/index.module.css';
+import { store } from '../components/Manga/store';
+import { activePage, getImgEle } from '../components/Manga';
 
 import MangaMeta, { type Props } from './Manga.stories';
-import { imgList } from './helper';
+import { imgList, waitImgLoaded } from './helper';
 
 export default {
   ...MangaMeta,
@@ -21,19 +21,23 @@ const setDataUrl = (img: HTMLImageElement) => {
   img.src = canvas.toDataURL();
 };
 
-const allImg = () =>
-  refs.mangaFlow.querySelectorAll<HTMLImageElement>(`.${classes.img} img`);
+/** 为了 percy 能正确显示，将当前显示的图片转成 Data url */
+const handlePercy = async (waitFn?: (url: string) => boolean) => {
+  let doneNum = 0;
 
-const waitAllImg = () =>
-  wait(
-    () =>
-      allImg().length > 0 && [...allImg()].every((img) => img.naturalWidth > 0),
-    1000 * 5,
-  );
+  for (const i of activePage()) {
+    if (i === -1) {
+      doneNum += 1;
+    } else if (getImgEle(store.imgList[i])!.src.startsWith('data:')) {
+      doneNum += 1;
+    } else {
+      const url = store.imgList[i];
+      if (waitFn) await wait(() => waitFn(url));
+      setDataUrl(getImgEle(url)!);
+    }
+  }
 
-const play = async () => {
-  await waitAllImg();
-  for (const img of allImg()) setDataUrl(img);
+  if (doneNum !== activePage().length) return handlePercy(waitFn);
 };
 
 export const 识别背景色 = {
@@ -43,54 +47,62 @@ export const 识别背景色 = {
       '/饮茶之时、女仆之梦/00.webp',
       '/饮茶之时、女仆之梦/01.webp',
       '/饮茶之时、女仆之梦/02.webp',
-      '/饮茶之时、女仆之梦/03.jpeg',
+      '/饮茶之时、女仆之梦/03.webp',
       '/饮茶之时、女仆之梦/04.webp',
-      '/饮茶之时、女仆之梦/05.jpeg',
+      '/饮茶之时、女仆之梦/05.webp',
       '/饮茶之时、女仆之梦/06.webp',
       '/饮茶之时、女仆之梦/29.webp',
       '/饮茶之时、女仆之梦/30.webp',
-      '/杂/复杂纹路背景.jpg',
-      '/杂/纯黑背景.jpg',
-      '/杂/渐变背景.jpg',
+      '/杂/复杂纹路背景.webp',
+      '/杂/纯黑背景.webp',
+      '/杂/渐变背景.webp',
     ],
     option: { imgRecognition: { enabled: true } },
   } satisfies Props,
-  play,
+  async play() {
+    await waitImgLoaded();
+    await handlePercy((url) => store.imgMap[url].background !== undefined);
+  },
 };
 
 export const 自动调整页面填充 = {
   args: {
     图源: undefined,
     imgList: imgList['饮茶之时、女仆之梦（彩图）'].slice(2),
-    // imgList: [
-    //   '/饮茶之时、女仆之梦/08.jpeg',
-    //   // '/杂/纯黑背景.jpg',
-    // ],
     option: { imgRecognition: { enabled: true, background: false } },
   } satisfies Props,
-  play,
+  async play() {
+    await waitImgLoaded();
+    await handlePercy();
+  },
 };
 
 export const 识别广告 = {
   args: {
     图源: undefined,
     imgList: [
-      '/杂/二维码/广告1.jpg',
-      '/杂/二维码/广告2.png',
-      '/杂/二维码/广告3.jpg',
-      '/杂/二维码/广告4.jpg',
-      '/杂/二维码/1.jpg',
-      '/杂/二维码/2.jpg',
-      '/杂/二维码/3.jpg',
-      '/杂/二维码/4.jpg',
+      '/杂/二维码/广告1.webp',
+      '/杂/二维码/广告2.webp',
+      '/杂/二维码/广告3.webp',
+      '/杂/二维码/广告4.webp',
+      '/杂/二维码/1.webp',
+      '/杂/二维码/2.webp',
+      '/杂/二维码/3.webp',
+      '/杂/二维码/4.webp',
     ],
     option: { firstPageFill: false },
   } satisfies Props,
   async play() {
-    await play();
+    await sleep(1000);
 
-    for (const img of allImg())
+    for (const url of store.imgList) {
+      await wait(() => store.imgMap[url].loadType === 'loaded');
+
+      const img = getImgEle(url)!;
       if (await isAdImg(await createImageBitmap(img)))
         img.classList.add('blur');
+    }
+
+    await handlePercy();
   },
 };

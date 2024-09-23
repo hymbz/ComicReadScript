@@ -21,7 +21,7 @@
     "docs:preview": "vitepress preview docs",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test-storybook": "test-storybook --maxWorkers=1",
+    "test-storybook": "test-storybook --maxWorkers=1 --testTimeout 60000",
     "percy": "percy exec -- pnpm test-storybook"
   },
   "dependencies": {

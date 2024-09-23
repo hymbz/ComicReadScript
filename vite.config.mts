@@ -8,4 +8,5 @@ export default defineConfig({
   css: { modules: { generateScopedName: '[local]___[hash:base64:5]' } },
   define: { isDevMode: true },
   plugins: vitePlugins,
+  worker: { plugins: () => vitePlugins },
 });

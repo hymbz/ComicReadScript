@@ -55,7 +55,7 @@ export const handleImg = async (
     if (bgColor) mainFn.setImg(url, 'background', bgColor);
   }
 
-  let logText = `${url} 耗时 ${Date.now() - startTime}ms 处理完成`;
+  let logText = `${url}\n耗时 ${Date.now() - startTime}ms 处理完成`;
   const resList: string[] = [];
   if (blankMargin)
     resList.push(
