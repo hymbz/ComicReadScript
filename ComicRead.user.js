@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         9.7.6
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、无限动漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
+// @version         10.0.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、無限動漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
@@ -45,7 +45,8 @@
 // @icon            data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAACBUExURUxpcWB9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i2B9i////198il17idng49DY3PT297/K0MTP1M3X27rHzaCxupmstbTByK69xOfr7bfFy3WOmqi4wPz9/X+XomSBjqW1vZOmsN/l6GmFkomeqe7x8vn6+kv+1vUAAAAOdFJOUwDsAoYli9zV+lIqAZEDwV05SQAAAUZJREFUOMuFk+eWgjAUhGPBiLohjZACUqTp+z/gJkqJy4rzg3Nn+MjhwB0AANjv4BEtdITBHjhtQ4g+CIZbC4Qb9FGb0J4P0YrgCezQqgIA14EDGN8fYz+f3BGMASFkTJ+GDAYMUSONzrFL7SVvjNQIz4B9VERRmV0rbJWbrIwidnsd6ACMlEoip3uad3X2HJmqb3gCkkJELwk5DExRDxA6HnKaDEPSsBnAsZoANgJaoAkg12IJqBiPACImXQKF9IDULIHUkOk7kDpeAMykHqCEWACy8ACdSM7LGSg5F3HtAU1rrkaK9uGAshXS2lZ5QH/nVhmlD8rKlmbO3ZsZwLe8qnpdxJRnLaci1X1V5R32fjd5CndVkfYdGpy3D+htU952C/ypzPtdt3JflzZYBy7fi/O1euvl/XH1Pp+Cw3/1P1xOZwB+AWMcP/iw0AlKAAAAV3pUWHRSYXcgcHJvZmlsZSB0eXBlIGlwdGMAAHic4/IMCHFWKCjKT8vMSeVSAAMjCy5jCxMjE0uTFAMTIESANMNkAyOzVCDL2NTIxMzEHMQHy4BIoEouAOoXEXTyQjWVAAAAAElFTkSuQmCC
 // @resource        solid-js https://registry.npmmirror.com/solid-js/1.8.19/files/dist/solid.cjs
 // @resource        fflate https://registry.npmmirror.com/fflate/0.8.2/files/umd/index.js
-// @resource        qr-scanner https://registry.npmmirror.com/qr-scanner/1.4.2/files/qr-scanner.legacy.min.js
+// @resource        jsqr https://registry.npmmirror.com/jsqr/1.4.0/files/dist/jsQR.js
+// @resource        comlink https://registry.npmmirror.com/comlink/4.4.1/files/dist/umd/comlink.js
 // @resource        dmzjDecrypt https://greasyfork.org/scripts/467177/code/dmzjDecrypt.js?version=1207199
 // @resource        solid-js|store https://registry.npmmirror.com/solid-js/1.8.19/files/store/dist/store.cjs
 // @resource        solid-js|web https://registry.npmmirror.com/solid-js/1.8.19/files/web/dist/web.cjs
@@ -55,6 +56,7 @@
 // ==/UserScript==
 
 
+let supportWorker = typeof Worker !== 'undefined';
 const gmApi = {
   GM,
   GM_addElement: typeof GM_addElement === 'undefined' ? undefined : GM_addElement,
@@ -75,14 +77,14 @@ const crsLib = {
 };
 const tempName = Math.random().toString(36).slice(2);
 const evalCode = code => {
+  if (!code) return;
+
   // 因为部分网站会对 eval 进行限制，比如推特（CSP）、hitomi（代理 window.eval 进行拦截）
   // 所以优先使用最通用的 GM_addElement 来加载
   if (gmApi.GM_addElement) return GM_addElement('script', {
     textContent: code
   })?.remove();
-
-  // eslint-disable-next-line no-eval
-  eval.call(unsafeWindow, code);
+  eval.call(unsafeWindow, code); // eslint-disable-line no-eval
 };
 
 /**
@@ -95,11 +97,47 @@ const selfImportSync = name => {
   // 为了方便打包、减少在无关站点上的运行损耗、顺带隔离下作用域
   // 除站点逻辑外的代码会作为字符串存着，要用时再像外部模块一样导入
   switch (name) {
+case 'helper/languages':
+code =`
+const langList = ['zh', 'en', 'ru'];
+/** 判断传入的字符串是否是支持的语言类型代码 */
+const isLanguages = lang => Boolean(lang) && langList.includes(lang);
+
+/** 返回浏览器偏好语言 */
+const getBrowserLang = () => {
+  let newLang;
+  for (let i = 0; i < navigator.languages.length; i++) {
+    const language = navigator.languages[i];
+    const matchLang = langList.find(l => l === language || l === language.split('-')[0]);
+    if (matchLang) {
+      newLang = matchLang;
+      break;
+    }
+  }
+  return newLang;
+};
+const getSaveLang = async () => typeof GM === 'undefined' ? localStorage.getItem('Languages') : GM.getValue('Languages');
+const setSaveLang = async val => typeof GM === 'undefined' ? localStorage.setItem('Languages', val) : GM.setValue('Languages', val);
+const getInitLang = async () => {
+  const saveLang = await getSaveLang();
+  if (isLanguages(saveLang)) return saveLang;
+  const lang = getBrowserLang() ?? 'zh';
+  setSaveLang(lang);
+  return lang;
+};
+
+exports.getInitLang = getInitLang;
+exports.isLanguages = isLanguages;
+exports.langList = langList;
+exports.setSaveLang = setSaveLang;
+`
+break;
 case 'helper':
 code =`
 const solidJs = require('solid-js');
 const web = require('solid-js/web');
 const store = require('solid-js/store');
+const languages = require('helper/languages');
 
 // src/index.ts
 var debounce$1 = (callback, wait) => {
@@ -511,7 +549,7 @@ const _assign = (a, b) => {
  */
 const assign = (target, ...sources) => {
   let res = target;
-  for (let i = 0; i < sources.length; i += 1) if (sources[i] !== undefined) res = _assign(res, sources[i]);
+  for (const source of sources) if (typeof source === 'object') res = _assign(res, source);
   return res;
 };
 
@@ -864,9 +902,9 @@ const zh = {
     wait: "等待加载"
   },
   other: {
-    auto_enter_read_mode: "自动进入阅读模式",
     "default": "默认",
     disable: "禁用",
+    enabled: "启用",
     enter_comic_read_mode: "进入漫画阅读模式",
     fab_hidden: "隐藏悬浮按钮",
     fab_show: "显示悬浮按钮",
@@ -925,6 +963,11 @@ const zh = {
       disable_auto_enlarge: "禁止图片自动放大",
       first_page_fill: "默认启用首页填充",
       fit_to_width: "图片适合宽度",
+      img_recognition: "图像识别",
+      img_recognition_background: "识别背景色",
+      img_recognition_pageFill: "自动调整页面填充",
+      img_recognition_warn: "❗ 当前浏览器不支持 Web Worker，开启此功能可能导致页面卡顿，建议升级或更换浏览器。",
+      img_recognition_warn_2: "❗ 当前网站不支持 Web Worker，开启此功能可能导致页面卡顿。",
       jump_to_next_chapter: "翻页至上/下一话",
       paragraph_dir: "阅读方向",
       paragraph_display: "显示",
@@ -974,13 +1017,16 @@ const zh = {
   site: {
     add_feature: {
       associate_nhentai: "关联nhentai",
+      auto_adjust_option: "自动调整阅读配置",
       auto_page_turn: "无限滚动",
+      auto_show: "自动进入阅读模式",
       block_totally: "彻底屏蔽漫画",
       colorize_tag: "标签染色",
       detect_ad: "识别广告页",
       float_tag_list: "悬浮标签列表",
       hotkeys: "快捷键",
       load_original_image: "加载原图",
+      lock_option: "锁定站点配置",
       open_link_new_page: "在新页面中打开链接",
       quick_favorite: "快捷收藏",
       quick_rating: "快捷评分",
@@ -1143,9 +1189,9 @@ const en = {
     wait: "Waiting for load"
   },
   other: {
-    auto_enter_read_mode: "Auto enter reading mode",
     "default": "Default",
     disable: "Disable",
+    enabled: "Enabled",
     enter_comic_read_mode: "Enter comic reading mode",
     fab_hidden: "Hide floating button",
     fab_show: "Show floating button",
@@ -1204,6 +1250,11 @@ const en = {
       disable_auto_enlarge: "Disable automatic image enlarge",
       first_page_fill: "Enable first page fill by default",
       fit_to_width: "Fit to width",
+      img_recognition: "Image Recognition",
+      img_recognition_background: "Recognition background color",
+      img_recognition_pageFill: "Auto switch page fill",
+      img_recognition_warn: "❗ The current browser does not support Web Workers. Enabling this feature may cause page lag. It's recommended to upgrade or switch browsers.",
+      img_recognition_warn_2: "❗ The current website does not support Web Workers. Enabling this feature may cause page lag.",
       jump_to_next_chapter: "Turn to the next/previous chapter",
       paragraph_dir: "Reading direction",
       paragraph_display: "Display",
@@ -1253,13 +1304,16 @@ const en = {
   site: {
     add_feature: {
       associate_nhentai: "Associate nhentai",
+      auto_adjust_option: "Auto adjust reading option",
       auto_page_turn: "Infinite scroll",
+      auto_show: "Auto enter reading mode",
       block_totally: "Totally block comics",
       colorize_tag: "Colorize tags",
       detect_ad: "Detect advertise page",
       float_tag_list: "Floating tag list",
       hotkeys: "Hotkeys",
       load_original_image: "Load original image",
+      lock_option: "Lock site option",
       open_link_new_page: "Open links in a new page",
       quick_favorite: "Quick favorite",
       quick_rating: "Quick rating",
@@ -1422,9 +1476,9 @@ const ru = {
     wait: "Ожидание загрузки"
   },
   other: {
-    auto_enter_read_mode: "Автоматически включать режим чтения",
     "default": "Дефолт",
     disable: "Отключить",
+    enabled: "Включено",
     enter_comic_read_mode: "Режим чтения комиксов",
     fab_hidden: "Скрыть плавающую кнопку",
     fab_show: "Показать плавающую кнопку",
@@ -1483,6 +1537,11 @@ const ru = {
       disable_auto_enlarge: "Отключить автоматическое масштабирование изображений",
       first_page_fill: "Включить заполнение первой страницы по умолчанию",
       fit_to_width: "По ширине",
+      img_recognition: "распознавание изображений",
+      img_recognition_background: "Определить цвет фона",
+      img_recognition_pageFill: "Автоматическое переключение заполнения страницы",
+      img_recognition_warn: "❗ Текущий браузер не поддерживает Web Workers. Включение этой функции может вызвать задержку страницы. Рекомендуется обновить или сменить браузер.",
+      img_recognition_warn_2: "❗ Текущий веб-сайт не поддерживает Web Workers. Включение этой функции может привести к задержке страницы.",
       jump_to_next_chapter: "Перелистнуть главу",
       paragraph_dir: "Направление чтения",
       paragraph_display: "Отображение",
@@ -1532,13 +1591,16 @@ const ru = {
   site: {
     add_feature: {
       associate_nhentai: "Ассоциация с nhentai",
+      auto_adjust_option: "Автоматическая настройка параметра чтения",
       auto_page_turn: "Автопереворот страниц",
+      auto_show: "Автоматически включать режим чтения",
       block_totally: "Глобально заблокировать комиксы",
       colorize_tag: "Раскрасить теги",
       detect_ad: "Detect advertise page",
       float_tag_list: "Плавающий список тегов",
       hotkeys: "Горячие клавиши",
       load_original_image: "Загружать оригинальное изображение",
+      lock_option: "Блокировка опции сайта",
       open_link_new_page: "Открывать ссылки в новой вкладке",
       quick_favorite: "Быстрый фаворит",
       quick_rating: "Быстрый рейтинг",
@@ -1648,37 +1710,10 @@ log.error = (...args) => {
   if (args[0] instanceof Error) throw args[0];
 };
 
-const langList = ['zh', 'en', 'ru'];
-/** 判断传入的字符串是否是支持的语言类型代码 */
-const isLanguages = lang => Boolean(lang) && langList.includes(lang);
-
-/** 返回浏览器偏好语言 */
-const getBrowserLang = () => {
-  let newLang;
-  for (let i = 0; i < navigator.languages.length; i++) {
-    const language = navigator.languages[i];
-    const matchLang = langList.find(l => l === language || l === language.split('-')[0]);
-    if (matchLang) {
-      newLang = matchLang;
-      break;
-    }
-  }
-  return newLang;
-};
-const getSaveLang = async () => typeof GM === 'undefined' ? localStorage.getItem('Languages') : GM.getValue('Languages');
-const setSaveLang = async val => typeof GM === 'undefined' ? localStorage.setItem('Languages', val) : GM.setValue('Languages', val);
-const getInitLang = async () => {
-  const saveLang = await getSaveLang();
-  if (isLanguages(saveLang)) return saveLang;
-  const lang = getBrowserLang() ?? 'zh';
-  setSaveLang(lang);
-  return lang;
-};
-
 const [lang, setLang] = solidJs.createSignal('zh');
-const setInitLang = async () => setLang(await getInitLang());
+const setInitLang = async () => setLang(await languages.getInitLang());
 const t = solidJs.createRoot(() => {
-  solidJs.createEffect(solidJs.on(lang, async () => setSaveLang(lang()), {
+  solidJs.createEffect(solidJs.on(lang, async () => languages.setSaveLang(lang()), {
     defer: true
   }));
   const locales = solidJs.createMemo(() => {
@@ -1738,17 +1773,14 @@ exports.createThrottleMemo = createThrottleMemo;
 exports.debounce = debounce;
 exports.difference = difference;
 exports.domParse = domParse;
-exports.getInitLang = getInitLang;
 exports.getKeyboardCode = getKeyboardCode;
 exports.getMostItem = getMostItem;
 exports.hijackFn = hijackFn;
 exports.inRange = inRange;
 exports.isEqual = isEqual;
-exports.isLanguages = isLanguages;
 exports.isUrl = isUrl;
 exports.keyboardCodeToText = keyboardCodeToText;
 exports.lang = lang;
-exports.langList = langList;
 exports.linstenKeydown = linstenKeydown;
 exports.log = log;
 exports.mountComponents = mountComponents;
@@ -1763,7 +1795,6 @@ exports.saveAs = saveAs;
 exports.scrollIntoView = scrollIntoView;
 exports.setInitLang = setInitLang;
 exports.setLang = setLang;
-exports.setSaveLang = setSaveLang;
 exports.singleThreaded = singleThreaded;
 exports.sleep = sleep;
 exports.t = t;
@@ -1777,7 +1808,7 @@ exports.useStyleMemo = useStyleMemo;
 exports.wait = wait;
 exports.waitDom = waitDom;
 exports.waitImgLoad = waitImgLoad;
-`;
+`
 break;
 case 'request':
 code =`
@@ -1786,12 +1817,19 @@ const Toast = require('components/Toast');
 
 // 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = details => new Promise((resolve, reject) => {
-  GM_xmlhttpRequest({
+  const abort = GM_xmlhttpRequest({
     ...details,
-    onload: resolve,
-    onerror: reject,
+    onload(res) {
+      details.onload?.call(res, res);
+      resolve(res);
+    },
+    onerror(error) {
+      details.onerror?.call(error, error);
+      reject(new Error(error.responseText));
+    },
     ontimeout: reject
   });
+  details.signal?.addEventListener('abort', abort.abort);
 });
 /** 发起请求 */
 const request = async (url, details, retryNum = 0, errorNum = 0) => {
@@ -1849,7 +1887,7 @@ const request = async (url, details, retryNum = 0, errorNum = 0) => {
     return res;
   } catch (error) {
     if (errorNum >= retryNum) {
-      (details?.noTip ? console.error : Toast.toast.error)(errorText);
+      (details?.noTip ? console.error : Toast.toast.error)(\`\${errorText}\\nerror: \${error.message}\`);
       throw new Error(errorText);
     }
     helper.log.error(errorText, error);
@@ -1876,7 +1914,7 @@ const eachApi = async (url, baseUrlList, details) => {
 
 exports.eachApi = eachApi;
 exports.request = request;
-`;
+`
 break;
 case 'components/Manga':
 code =`
@@ -1884,8 +1922,12 @@ const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const helper = require('helper');
 const request = require('request');
+const store$1 = require('solid-js/store');
+const Comlink = require('comlink');
+const worker = require('worker/ImageRecognition');
 
 const imgState = {
+  imgMap: {},
   imgList: [],
   pageList: [],
   fillEffect: {
@@ -1940,6 +1982,11 @@ const _defaultOption = {
     abreastMode: false,
     abreastDuplicate: 0.1
   },
+  imgRecognition: {
+    enabled: false,
+    background: true,
+    pageFill: true
+  },
   translation: {
     server: 'disable',
     localUrl: undefined,
@@ -1968,7 +2015,8 @@ const otherState = {
   scrollbarSize: {
     width: 0,
     height: 0
-  }
+  },
+  supportWorker: false
 };
 
 const propState = {
@@ -2013,17 +2061,20 @@ const showState = {
   }
 };
 
+const initStore = {
+  ...imgState,
+  ...showState,
+  ...propState,
+  ...optionState,
+  ...otherState
+};
 const {
   store,
   setState,
   _state,
   _setState
 } = helper.useStore({
-  ...imgState,
-  ...showState,
-  ...propState,
-  ...optionState,
-  ...otherState
+  ...initStore
 });
 const refs = {
   root: undefined,
@@ -2053,6 +2104,21 @@ const useHiddenMouse = () => {
       hidden();
     }
   };
+};
+
+const getImg = (i, state = store) => state.imgMap[state.imgList[i]];
+const getImgIndex = url => {
+  const indexList = [];
+  for (const [i, imgUrl] of store.imgList.entries()) if (imgUrl === url) indexList.push(i);
+  return indexList;
+};
+const getImgEle = url => refs.mangaFlow.querySelector(\`img[data-src="\${url}"]\`);
+
+/** 找到指定页面所处的图片流 */
+const findFillIndex = (pageIndex, fillEffect) => {
+  let nowFillIndex = pageIndex;
+  while (!Reflect.has(fillEffect, nowFillIndex)) nowFillIndex -= 1;
+  return nowFillIndex;
 };
 
 /** 触发 onOptionChange */
@@ -2116,16 +2182,6 @@ const [defaultHotkeys, setDefaultHotkeys] = solidJs.createSignal({
 const hotkeysMap = helper.createRootMemo(() => Object.fromEntries(Object.entries(store.hotkeys).flatMap(([name, key]) => key.map(k => [k, name]))));
 
 // 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
-/** 记录自动修改过页面填充的图片流 */
-const autoCloseFill = new Set();
-
-/** 找到指定页面所处的图片流 */
-const findFillIndex = (pageIndex, fillEffect) => {
-  let nowFillIndex = pageIndex;
-  while (!Reflect.has(fillEffect, nowFillIndex)) nowFillIndex -= 1;
-  return nowFillIndex;
-};
-
 /** 判断图片是否是跨页图 */
 const isWideImg = img => {
   switch (img.type ?? store.defaultImgType) {
@@ -2137,50 +2193,90 @@ const isWideImg = img => {
   }
 };
 
+/** 根据填充页设置双页排列单页图片 */
+const arrangeImg = (pageList, fill) => {
+  if (pageList.length === 0) return [];
+  const newPageList = [];
+  let imgCache = fill ? [-1] : [];
+  for (const i of pageList) {
+    imgCache.push(i);
+    if (imgCache.length === 2) {
+      newPageList.push(imgCache);
+      imgCache = [];
+    }
+  }
+  if (imgCache.length === 1 && imgCache[0] !== -1) {
+    imgCache.push(-1);
+    newPageList.push(imgCache);
+  }
+  return newPageList;
+};
+
+/** 计算指定图片流中的左右页位置正确的页数 */
+const computeAccuracy = (imgList, pageList) => {
+  let accuracy = 0;
+  for (const [a, b] of pageList) {
+    if ((imgList[a]?.blankMargin?.left ?? 0) > 0.04) accuracy += 1;
+    if (b === undefined) break;
+    if ((imgList[b]?.blankMargin?.right ?? 0) > 0.04) accuracy += 1;
+  }
+  return accuracy;
+};
+
+/** 自动切换填充页设置到左右页正确率更高的情况 */
+const arrangePage = (pageList, {
+  imgList,
+  fillEffect,
+  nowFillIndex,
+  switchFill
+}) => {
+  const fill = Boolean(fillEffect[nowFillIndex]);
+  const newPageList = arrangeImg(pageList, fill);
+  if (!switchFill || typeof fillEffect[nowFillIndex] === 'number') return newPageList;
+  const anotherPageList = arrangeImg(pageList, !fill);
+  const anotherAccuracy = computeAccuracy(imgList, anotherPageList);
+  if (anotherAccuracy === 0) return newPageList;
+  const nowAccuracy = computeAccuracy(imgList, newPageList);
+  if (anotherAccuracy <= nowAccuracy) return newPageList;
+  helper.log(\`\${nowFillIndex} 自动切换页面填充\`);
+  fillEffect[nowFillIndex] = !fill;
+  return anotherPageList;
+};
+
 /** 根据图片比例和填充页设置对漫画图片进行排列 */
-const handleComicData = (imgList, fillEffect) => {
-  const pageList = [];
-  let imgCache = null;
+const handleComicData = (imgList, fillEffect, switchFill) => {
+  const context = {
+    imgList,
+    fillEffect,
+    nowFillIndex: -1,
+    switchFill
+  };
+  let pageList = [];
+  let cacheList = [];
   for (let i = 0; i < imgList.length; i += 1) {
     const img = imgList[i];
-    if (fillEffect[i - 1]) {
-      if (imgCache !== null) pageList.push([imgCache]);
-      imgCache = -1;
-    }
-    if (isWideImg(img)) {
-      if (imgCache !== null) {
-        const nowFillIndex = findFillIndex(i, fillEffect);
-
-        // 在除结尾外的位置出现了跨页图的话，那张跨页图大概率是页序的「正确答案」
-        // 如果这张跨页导致了上面一页缺页，就说明在这之前的填充有误，应该据此调整之前的填充
-        // 排除结尾是防止被结尾汉化组图误导
-        // 自动调整毕竟有可能误判，所以每个跨页都应该只调整一次，不能重复修改
-        if (!autoCloseFill.has(i) && i < imgList.length - 2) {
-          autoCloseFill.add(i);
-          fillEffect[nowFillIndex] = !fillEffect[nowFillIndex];
-          return handleComicData(imgList, fillEffect);
-        }
-        if (imgCache !== -1) pageList.push([imgCache, -1]);
-        imgCache = null;
-      }
-      if (fillEffect[i] === undefined) fillEffect[i] = false;
-      pageList.push([i]);
-    } else {
-      if (imgCache === null) {
-        imgCache = i;
-      } else {
-        pageList.push([imgCache, i]);
-        imgCache = null;
-      }
+    if (!isWideImg(img)) {
+      cacheList.push(i);
       if (Reflect.has(fillEffect, i)) Reflect.deleteProperty(fillEffect, i);
+      continue;
     }
+
+    // 在除结尾（可能是汉化组图）外的位置出现了跨页图的话，那张跨页图大概率是页序的「正确答案」
+    // 如果这张跨页导致了上面一页缺页，就说明在这之前的填充有误，应该据此调整之前的填充
+    if (typeof fillEffect[context.nowFillIndex] === 'boolean' && i < imgList.length - 2 && (cacheList.length + (fillEffect[context.nowFillIndex] ? 1 : 0)) % 2 === 1) {
+      fillEffect[context.nowFillIndex] = !fillEffect[context.nowFillIndex];
+      return handleComicData(imgList, fillEffect);
+    }
+    pageList = [...pageList, ...arrangePage(cacheList, context), [i]];
+    cacheList = [];
+    if (fillEffect[i] === undefined) fillEffect[i] = false;
+    context.nowFillIndex = i;
   }
-  if (imgCache !== null && imgCache !== -1) {
-    pageList.push([imgCache, -1]);
-    imgCache = null;
-  }
+  if (cacheList.length > 0) pageList = [...pageList, ...arrangePage(cacheList, context)];
   return pageList;
 };
+
+const imgList = helper.createRootMemo(() => store.imgList.map(url => store.imgMap[url]));
 
 /** 当前是否为并排卷轴模式 */
 const isAbreastMode = helper.createRootMemo(() => store.option.scrollMode.enabled && store.option.scrollMode.abreastMode);
@@ -2205,7 +2301,7 @@ const preloadNum = helper.createRootMemo(() => ({
 
 /** 获取图片列表中指定属性的中位数 */
 const getImgMedian = sizeFn => {
-  const list = store.imgList.filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort((a, b) => a - b);
+  const list = imgList().filter(img => img.loadType === 'loaded' && img.width).map(sizeFn).sort((a, b) => a - b);
   // 因为涉及到图片默认类型的计算，所以至少等到加载完三张图片再计算，避免被首页大图干扰
   if (list.length < 3) return null;
   return list[Math.floor(list.length / 2)];
@@ -2229,7 +2325,7 @@ const isOnePageMode = helper.createRootMemo(() => pageNum() === 1 || store.optio
 const updatePageData = state => {
   const lastActiveImgIndex = activeImgIndex();
   let newPageList = [];
-  newPageList = isOnePageMode() ? state.imgList.map((_, i) => [i]) : handleComicData(state.imgList, state.fillEffect);
+  newPageList = isOnePageMode() ? state.imgList.map((_, i) => [i]) : handleComicData(state.imgList.map(url => state.imgMap[url]), state.fillEffect, state.option.imgRecognition.pageFill);
   if (helper.isEqual(state.pageList, newPageList)) return;
   state.pageList = newPageList;
 
@@ -2250,7 +2346,6 @@ updatePageData.throttle = helper.throttle(() => setState(updatePageData), 100);
  * 3. updatePageData
  */
 const resetImgState = state => {
-  autoCloseFill.clear();
   // 如果用户没有手动修改过首页填充，才将其恢复初始
   if (typeof state.fillEffect['-1'] === 'boolean') state.fillEffect['-1'] = state.option.firstPageFill && state.imgList.length > 3;
 };
@@ -2334,22 +2429,19 @@ helper.createRootEffect(prevIsWide => {
   return isWide;
 }, false);
 
-let height = 0;
-let width = 0;
-const setWidth = w => {
-  height *= w / width;
-  width = w;
-  return {
-    height,
-    width
-  };
-};
-
 /** 获取指定图片的显示尺寸 */
-const getImgDisplaySize = (state, index) => {
-  const img = state.imgList[index];
-  height = img.height ?? placeholderSize().height;
-  width = img.width ?? placeholderSize().width;
+const getImgDisplaySize = (state, url) => {
+  const img = state.imgMap[url];
+  let height = img.height ?? placeholderSize().height;
+  let width = img.width ?? placeholderSize().width;
+  const setWidth = w => {
+    height *= w / width;
+    width = w;
+    return {
+      height,
+      width
+    };
+  };
   if (!state.option.scrollMode.enabled) return {
     height,
     width
@@ -2366,18 +2458,20 @@ const getImgDisplaySize = (state, index) => {
 };
 
 /** 更新图片尺寸 */
-const updateImgSize = (state, index, width, height) => {
-  const img = state.imgList[index];
+const updateImgSize = (url, width, height) => setState(state => {
+  const img = state.imgMap[url];
   if (img.width === width && img.height === height) return;
   img.width = width;
   img.height = height;
-  img.size = getImgDisplaySize(state, index);
+  img.size = getImgDisplaySize(state, url);
   updateImgType(state, img);
-};
-helper.createEffectOn([() => store.imgList, () => store.option.scrollMode.enabled, () => store.option.scrollMode.abreastMode, () => store.option.scrollMode.fitToWidth, () => store.option.scrollMode.imgScale, () => store.rootSize, placeholderSize], ([imgList]) => {
-  if (imgList.length === 0) return;
+});
+helper.createEffectOn([imgList, () => store.option.scrollMode.enabled, () => store.option.scrollMode.abreastMode, () => store.option.scrollMode.fitToWidth, () => store.option.scrollMode.imgScale, () => store.rootSize, placeholderSize], ([{
+  length
+}]) => {
+  if (length === 0) return;
   setState(state => {
-    for (const [index, img] of state.imgList.entries()) img.size = getImgDisplaySize(state, index);
+    for (const url of state.imgList) state.imgMap[url].size = getImgDisplaySize(state, url);
   });
 });
 
@@ -2390,13 +2484,13 @@ const imgTopList = helper.createRootMemo(() => {
   let top = 0;
   for (let i = 0; i < store.imgList.length; i++) {
     list[i] = top;
-    top += store.imgList[i].size.height + store.option.scrollMode.spacing * 7;
+    top += getImg(i).size.height + store.option.scrollMode.spacing * 7;
   }
   return list;
 });
 
 /** 卷轴模式下漫画流的总高度 */
-const contentHeight = helper.createRootMemo(() => (imgTopList().at(-1) ?? 0) + (store.imgList.at(-1)?.size.height ?? 0));
+const contentHeight = helper.createRootMemo(() => (imgTopList().at(-1) ?? 0) + (imgList().at(-1)?.size.height ?? 0));
 
 // /** 预加载图片尺寸 */
 // const preloadImgSize = singleThreaded(async () => {
@@ -2419,8 +2513,8 @@ const contentHeight = helper.createRootMemo(() => (imgTopList().at(-1) ?? 0) + (
 // 卷轴模式下需要提前知道尺寸方便正确布局
 // 翻页模式下也需要提前发现跨页图重新排序
 // requestIdleCallback(preloadImgSize);
-var css$1 = ".img img{display:block;object-fit:contain}.img,.img img{height:100%;width:100%}.img{align-content:center;content-visibility:hidden;display:none;margin-left:auto;margin-right:auto;position:relative}.img[data-show]{content-visibility:visible;display:block}.img>picture{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%;display:block;height:auto;inset:0;margin-bottom:auto;margin-left:inherit;margin-right:inherit;margin-top:auto;max-height:100%;max-width:100%;position:absolute;width:auto}.img[data-load-type=error]>picture:after{background:inherit;background-color:#eee;background-image:var(--md-image-not-supported);content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img[data-load-type=loading]>picture{background-image:var(--md-cloud-download)}:is(.img[data-load-type=loading]>picture) img{animation:show 1s forwards}.mangaFlow[dir=ltr] .img[data-show=\\"1\\"],.mangaFlow[dir=rtl] .img[data-show=\\"0\\"]{margin-left:0;margin-right:auto}.mangaFlow[dir=ltr] .img[data-show=\\"0\\"],.mangaFlow[dir=rtl] .img[data-show=\\"1\\"]{margin-left:auto;margin-right:0}.mangaFlow{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;width:100%}.mangaFlow[data-disable-zoom] .img>picture{height:fit-content;width:fit-content}.mangaFlow[data-hidden-mouse=true]{cursor:none}.mangaFlow[data-vertical]{grid-auto-flow:row}.mangaBox{contain:layout style;height:100%;transform-origin:0 0;transition-duration:0ms;width:100%}.mangaBox[data-animation=page] .mangaFlow,.mangaBox[data-animation=zoom]{transition-duration:.3s}.root:not([data-grid-mode]) .mangaBox{scrollbar-width:none}:is(.root:not([data-grid-mode]) .mangaBox)::-webkit-scrollbar{display:none}.root[data-grid-mode] .mangaFlow{grid-auto-columns:1fr;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;grid-row-gap:1.5em;align-items:end;box-sizing:border-box;grid-template-rows:unset}:is(.root[data-grid-mode] .mangaFlow) .img{cursor:pointer;margin-left:auto;margin-right:auto}:is(:is(.root[data-grid-mode] .mangaFlow) .img)>picture{position:relative}:is(:is(.root[data-grid-mode] .mangaFlow) .img)>.gridModeTip{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}[data-load-type=error]:is(:is(.root[data-grid-mode] .mangaFlow) .img),[data-load-type=wait]:is(:is(.root[data-grid-mode] .mangaFlow) .img),[src=\\"\\"]:is(:is(.root[data-grid-mode] .mangaFlow) .img){height:100%}.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox{overflow:auto}:is(.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox) .mangaFlow{grid-row-gap:calc(var(--scroll-mode-spacing)*7px);height:fit-content}[data-abreast-scroll]:is(.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox){overflow:hidden}[data-abreast-scroll]:is(.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox) .mangaFlow{grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}:is([data-abreast-scroll]:is(.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox) .mangaFlow) .img{height:auto;width:100%;will-change:transform}:is(:is([data-abreast-scroll]:is(.root[data-scroll-mode]:not([data-grid-mode]) .mangaBox) .mangaFlow) .img)>picture{position:relative}@keyframes show{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPage{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage>button{animation:jello .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}[data-is-end]:is(.endPage>button){font-size:3em;margin:2em}.endPage>.tip{margin:auto;position:absolute}.endPage[data-show]{opacity:1;pointer-events:all}.endPage[data-type=start]>.tip{transform:translateY(-10em)}.endPage[data-type=end]>.tip{transform:translateY(10em)}.root[data-mobile] .endPage>button{width:1em}.comments{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments:hover{opacity:1}.root[data-mobile] .comments{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar[data-show],.toolbar:hover) .toolbarPanel{transform:none}.toolbar[data-close] .toolbarPanel{transform:translateX(-100%);visibility:hidden}.toolbarBg{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root[data-mobile] .toolbar{font-size:1.3em}.root[data-mobile] .toolbar:not([data-show]){pointer-events:none}.root[data-mobile] .toolbarBg{filter:opacity(.8)}.SettingPanelPopper{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel hr{color:#fff;margin:0}.SettingBlock{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock .SettingBlockBody{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock .SettingBlockBody)>div+:is(.SettingBlock .SettingBlockBody)>div{margin-top:1em}.SettingBlock[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock[data-show=false] .SettingBlockBody{padding:unset}.SettingBlockSubtitle{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem{align-items:center;display:flex;justify-content:space-between}.SettingsItem+.SettingsItem{margin-top:1em}.SettingsItemName{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch[data-checked=true] .SettingsItemSwitchRound{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem>.SettingsShowItemBody{overflow:hidden}:is(.SettingsShowItem>.SettingsShowItemBody)>.SettingsItem{margin-top:1em}.hotkeys{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys+.hotkeys{margin-top:.5em}.hotkeys:last-child{border-bottom:none}.hotkeysItem{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}:is(.hotkeysItem>svg):hover{opacity:.9}.hotkeysItem:hover{padding:.2em .5em}.hotkeysItem:hover>svg{display:unset}.hotkeysItem:focus,.hotkeysItem:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}:is(.hotkeysHeader>div[title])>svg{width:1.6em}.hotkeys:hover div[title]{transform:scale(1)}.scrollbar{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar,.scrollbar>div{display:flex;flex-direction:column}.scrollbar>div{align-items:center;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage[data-type=loaded]{transform:scaleY(0)}.scrollbarPage[data-type=wait]{opacity:.5}.scrollbarPage[data-type=error]{background-color:#f005}.scrollbarPage[data-null]{background-color:#fbc02d}.scrollbarPage[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.scrollbarPage[data-translation-type=wait]{background-color:#81c784}.scrollbarPage[data-translation-type=show]{background-color:#4caf50}.scrollbarPage[data-translation-type=error]{background-color:#f005}.scrollbarSlider{background-color:var(--scrollbar-slider);border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:fit-content}.scrollbar:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbar:before,.scrollbarPoper{opacity:0;transition:opacity .15s,transform .15s}:is(.scrollbar:hover,.scrollbar[data-force-show]) .scrollbarPoper,:is(.scrollbar:hover,.scrollbar[data-force-show]) .scrollbarSlider,:is(.scrollbar:hover,.scrollbar[data-force-show]):before{opacity:1}.scrollbar[data-drag] .scrollbarPoper,.scrollbar[data-drag] .scrollbarSlider,.scrollbar[data-drag]:before{transition:opacity .15s}.scrollbar[data-auto-hidden]:not([data-force-show]) .scrollbarSlider{opacity:0}.scrollbar[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider{opacity:1}.scrollbar[data-position=hidden]{display:none}.scrollbar[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.scrollbar[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar[data-position=top] .scrollbarPoper{top:1.2em}.scrollbar[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.scrollbar[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar[data-position=bottom] .scrollbarPoper{bottom:1.2em}.scrollbar[data-position=bottom],.scrollbar[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]):before{border-left:.4em solid #0000}:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarSlider{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarPoper{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}[data-dir=ltr]:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]){--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}[data-dir=ltr]:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]):before{left:0;right:unset}[data-dir=ltr]:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarSlider{transform:translateX(var(--top))}[data-dir=ltr]:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarPoper{transform:translateX(var(--poper-top))}:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarPage{transform:scaleX(1)}[data-type=loaded]:is(:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarPage){transform:scaleX(0)}[data-translation-type]:is(:is(.scrollbar[data-position=top],.scrollbar[data-position=bottom]) .scrollbarPage){transform:scaleX(1)}.scrollbar[data-is-abreast-mode] .scrollbarPoper{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper{writing-mode:vertical-lr}.root[data-scroll-mode] .scrollbar:before,.root[data-scroll-mode] :is(.scrollbarSlider,.scrollbarPoper){transition:opacity .15s}:is(.root[data-mobile] .scrollbar:hover) .scrollbarPoper,:is(.root[data-mobile] .scrollbar:hover):before{opacity:0}.touchAreaRoot{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot[data-show]{opacity:1}.touchAreaRoot .touchArea{align-items:center;display:flex;justify-content:center;text-align:center}[data-area=PREV]:is(.touchAreaRoot .touchArea),[data-area=prev]:is(.touchAreaRoot .touchArea){background-color:#95e1d3e6}[data-area=MENU]:is(.touchAreaRoot .touchArea),[data-area=menu]:is(.touchAreaRoot .touchArea){background-color:#fce38ae6}[data-area=NEXT]:is(.touchAreaRoot .touchArea),[data-area=next]:is(.touchAreaRoot .touchArea){background-color:#f38181e6}[data-area=PREV]:is(.touchAreaRoot .touchArea):after{content:var(--i18n-touch-area-prev)}[data-area=MENU]:is(.touchAreaRoot .touchArea):after{content:var(--i18n-touch-area-menu)}[data-area=NEXT]:is(.touchAreaRoot .touchArea):after{content:var(--i18n-touch-area-next)}.touchAreaRoot[data-vert=true]{flex-direction:column!important}.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=NEXT],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=PREV],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=next],.touchAreaRoot:not([data-turn-page]) .touchArea[data-area=prev]{visibility:hidden}.touchAreaRoot[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root[data-mobile] .touchAreaRoot{flex-direction:column!important;letter-spacing:0}.root[data-mobile] [data-area]:after{font-size:.8em}.root{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root a{color:var(--text-secondary)}.root[data-mobile]{font-size:.8em}.hidden{display:none!important}.invisible{visibility:hidden!important}.beautifyScrollbar{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.beautifyScrollbar::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar::-webkit-scrollbar-track{background:#0000}.beautifyScrollbar::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}:where(div,div:focus,div:focus-within,div:focus-visible,button){border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
-var modules_c21c94f2$1 = {"img":"img","show":"show","mangaFlow":"mangaFlow","mangaBox":"mangaBox","root":"root","gridModeTip":"gridModeTip","endPage":"endPage","jello":"jello","tip":"tip","comments":"comments","toolbar":"toolbar","toolbarPanel":"toolbarPanel","toolbarBg":"toolbarBg","SettingPanelPopper":"SettingPanelPopper","SettingPanel":"SettingPanel","SettingBlock":"SettingBlock","SettingBlockBody":"SettingBlockBody","SettingBlockSubtitle":"SettingBlockSubtitle","SettingsItem":"SettingsItem","SettingsItemName":"SettingsItemName","SettingsItemSwitch":"SettingsItemSwitch","SettingsItemSwitchRound":"SettingsItemSwitchRound","SettingsItemIconButton":"SettingsItemIconButton","SettingsItemSelect":"SettingsItemSelect","closeCover":"closeCover","SettingsShowItem":"SettingsShowItem","SettingsShowItemBody":"SettingsShowItemBody","hotkeys":"hotkeys","hotkeysItem":"hotkeysItem","hotkeysHeader":"hotkeysHeader","scrollbar":"scrollbar","scrollbarPage":"scrollbarPage","scrollbarSlider":"scrollbarSlider","scrollbarPoper":"scrollbarPoper","touchAreaRoot":"touchAreaRoot","touchArea":"touchArea","hidden":"hidden","invisible":"invisible","beautifyScrollbar":"beautifyScrollbar"};
+var css$1 = ".img____hash_base64_5_ img{display:block;height:100%;object-fit:contain;width:100%}.img____hash_base64_5_{align-content:center;content-visibility:hidden;display:none;height:100%;margin-left:auto;margin-right:auto;position:relative;width:100%}.img____hash_base64_5_[data-show]{content-visibility:visible;display:block}.img____hash_base64_5_>picture{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%;display:block;height:auto;inset:0;margin-bottom:auto;margin-left:inherit;margin-right:inherit;margin-top:auto;max-height:100%;max-width:100%;position:absolute;width:auto}.img____hash_base64_5_[data-load-type=error]>picture:after{background:inherit;background-color:#eee;background-image:var(--md-image-not-supported);content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img____hash_base64_5_[data-load-type=loading]>picture{background-image:var(--md-cloud-download)}:is(.img____hash_base64_5_[data-load-type=loading]>picture) img{animation:show____hash_base64_5_ .1s forwards}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"1\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"0\\"]{margin-left:0;margin-right:auto}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"0\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"1\\"]{margin-left:auto;margin-right:0}.mangaFlow____hash_base64_5_{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;width:100%}.mangaFlow____hash_base64_5_[data-disable-zoom] .img____hash_base64_5_>picture{height:fit-content;width:fit-content}.mangaFlow____hash_base64_5_[data-hidden-mouse=true]{cursor:none}.mangaFlow____hash_base64_5_[data-vertical]{grid-auto-flow:row}.mangaBox____hash_base64_5_{contain:layout style;height:100%;transform-origin:0 0;transition-duration:0ms;width:100%}.mangaBox____hash_base64_5_[data-animation=page] .mangaFlow____hash_base64_5_,.mangaBox____hash_base64_5_[data-animation=zoom]{transition-duration:.3s}.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_{scrollbar-width:none}:is(.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_)::-webkit-scrollbar{display:none}.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_{grid-auto-columns:1fr;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;grid-row-gap:1.5em;align-items:end;box-sizing:border-box;grid-template-rows:unset}:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_{cursor:pointer;margin-left:auto;margin-right:auto}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>.gridModeTip____hash_base64_5_{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}[data-load-type=error]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[data-load-type=wait]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[src=\\"\\"]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_){height:100%}.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_{overflow:auto}:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{grid-row-gap:calc(var(--scroll-mode-spacing)*7px);height:fit-content}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_){overflow:hidden}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_{height:auto;width:100%;will-change:transform}:is(:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}@keyframes show____hash_base64_5_{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPage____hash_base64_5_{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage____hash_base64_5_>button{animation:jello____hash_base64_5_ .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}[data-is-end]:is(.endPage____hash_base64_5_>button){font-size:3em;margin:2em}.endPage____hash_base64_5_>.tip____hash_base64_5_{margin:auto;position:absolute}.endPage____hash_base64_5_[data-show]{opacity:1;pointer-events:all}.endPage____hash_base64_5_[data-type=start]>.tip____hash_base64_5_{transform:translateY(-10em)}.endPage____hash_base64_5_[data-type=end]>.tip____hash_base64_5_{transform:translateY(10em)}.root____hash_base64_5_[data-mobile] .endPage____hash_base64_5_>button{width:1em}.comments____hash_base64_5_{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments____hash_base64_5_>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments____hash_base64_5_:hover{opacity:1}.root____hash_base64_5_[data-mobile] .comments____hash_base64_5_{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello____hash_base64_5_{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar____hash_base64_5_{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel____hash_base64_5_{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar____hash_base64_5_[data-show],.toolbar____hash_base64_5_:hover) .toolbarPanel____hash_base64_5_{transform:none}.toolbar____hash_base64_5_[data-close] .toolbarPanel____hash_base64_5_{transform:translateX(-100%);visibility:hidden}.toolbarBg____hash_base64_5_{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_{font-size:1.3em}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_:not([data-show]){pointer-events:none}.root____hash_base64_5_[data-mobile] .toolbarBg____hash_base64_5_{filter:opacity(.8)}.SettingPanelPopper____hash_base64_5_{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel____hash_base64_5_{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel____hash_base64_5_ hr{color:#fff;margin:0}.SettingBlock____hash_base64_5_{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div+:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div{margin-top:1em}.SettingBlock____hash_base64_5_[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock____hash_base64_5_[data-show=false] .SettingBlockBody____hash_base64_5_{padding:unset}.SettingBlockSubtitle____hash_base64_5_{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem____hash_base64_5_{align-items:center;display:flex;justify-content:space-between}:is(.SettingsItem____hash_base64_5_,.SettingsShowItem____hash_base64_5_)+.SettingsItem____hash_base64_5_{margin-top:1em}.SettingsItemName____hash_base64_5_{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch____hash_base64_5_{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound____hash_base64_5_{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch____hash_base64_5_[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch____hash_base64_5_[data-checked=true] .SettingsItemSwitchRound____hash_base64_5_{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton____hash_base64_5_{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect____hash_base64_5_{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover____hash_base64_5_{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem____hash_base64_5_{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_{overflow:hidden}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>.SettingsItem____hash_base64_5_{margin-top:1em}.hotkeys____hash_base64_5_{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys____hash_base64_5_+.hotkeys____hash_base64_5_{margin-top:.5em}.hotkeys____hash_base64_5_:last-child{border-bottom:none}.hotkeysItem____hash_base64_5_{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem____hash_base64_5_>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}:is(.hotkeysItem____hash_base64_5_>svg):hover{opacity:.9}.hotkeysItem____hash_base64_5_:hover{padding:.2em .5em}.hotkeysItem____hash_base64_5_:hover>svg{display:unset}.hotkeysItem____hash_base64_5_:focus,.hotkeysItem____hash_base64_5_:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader____hash_base64_5_{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader____hash_base64_5_>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader____hash_base64_5_>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}:is(.hotkeysHeader____hash_base64_5_>div[title])>svg{width:1.6em}.hotkeys____hash_base64_5_:hover div[title]{transform:scale(1)}.scrollbar____hash_base64_5_{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar____hash_base64_5_>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage____hash_base64_5_{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage____hash_base64_5_[data-type=loaded]{transform:scaleY(0)}.scrollbarPage____hash_base64_5_[data-type=wait]{opacity:.5}.scrollbarPage____hash_base64_5_[data-type=error]{background-color:#f005}.scrollbarPage____hash_base64_5_[data-null]{background-color:#fbc02d}.scrollbarPage____hash_base64_5_[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.scrollbarPage____hash_base64_5_[data-translation-type=wait]{background-color:#81c784}.scrollbarPage____hash_base64_5_[data-translation-type=show]{background-color:#4caf50}.scrollbarPage____hash_base64_5_[data-translation-type=error]{background-color:#f005}.scrollbarSlider____hash_base64_5_{background-color:#fff5;border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper____hash_base64_5_{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:fit-content}.scrollbar____hash_base64_5_:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_:before{opacity:0;transition:opacity .15s,transform .15s}:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarPoper____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarSlider____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]):before{opacity:1}.scrollbar____hash_base64_5_[data-drag] .scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag] .scrollbarSlider____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag]:before{transition:opacity .15s}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]) .scrollbarSlider____hash_base64_5_{opacity:0}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider____hash_base64_5_{opacity:1}.scrollbar____hash_base64_5_[data-position=hidden]{display:none}.scrollbar____hash_base64_5_[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.scrollbar____hash_base64_5_[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar____hash_base64_5_[data-position=top] .scrollbarPoper____hash_base64_5_{top:1.2em}.scrollbar____hash_base64_5_[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.scrollbar____hash_base64_5_[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar____hash_base64_5_[data-position=bottom] .scrollbarPoper____hash_base64_5_{bottom:1.2em}.scrollbar____hash_base64_5_[data-position=bottom],.scrollbar____hash_base64_5_[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{border-left:.4em solid #0000}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]){--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{left:0;right:unset}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{transform:translateX(var(--top))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{transform:translateX(var(--poper-top))}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_{transform:scaleX(1)}[data-type=loaded]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(0)}[data-translation-type]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(1)}.scrollbar____hash_base64_5_[data-is-abreast-mode] .scrollbarPoper____hash_base64_5_{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar____hash_base64_5_[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper____hash_base64_5_{writing-mode:vertical-lr}.root____hash_base64_5_[data-scroll-mode] .scrollbar____hash_base64_5_:before,.root____hash_base64_5_[data-scroll-mode] :is(.scrollbarSlider____hash_base64_5_,.scrollbarPoper____hash_base64_5_){transition:opacity .15s}:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover) .scrollbarPoper____hash_base64_5_,:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover):before{opacity:0}.touchAreaRoot____hash_base64_5_{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot____hash_base64_5_[data-show]{opacity:1}.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_{align-items:center;display:flex;justify-content:center;text-align:center}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=prev]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#95e1d3e6}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=menu]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#fce38ae6}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=next]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#f38181e6}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-prev)}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-menu)}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-next)}.touchAreaRoot____hash_base64_5_[data-vert=true]{flex-direction:column!important}.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=NEXT],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=PREV],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=next],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=prev]{visibility:hidden}.touchAreaRoot____hash_base64_5_[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root____hash_base64_5_[data-mobile] .touchAreaRoot____hash_base64_5_{flex-direction:column!important;letter-spacing:0}.root____hash_base64_5_[data-mobile] [data-area]:after{font-size:.8em}.root____hash_base64_5_{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root____hash_base64_5_ a{color:var(--text-secondary)}.root____hash_base64_5_[data-mobile]{font-size:.8em}.hidden____hash_base64_5_{display:none!important}.invisible____hash_base64_5_{visibility:hidden!important}.beautifyScrollbar____hash_base64_5_{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-track{background:#0000}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}:where(div,div:focus,div:focus-within,div:focus-visible,button){border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-size:.9em;font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var modules_c21c94f2$1 = {"img":"img____hash_base64_5_","show":"show____hash_base64_5_","mangaFlow":"mangaFlow____hash_base64_5_","mangaBox":"mangaBox____hash_base64_5_","root":"root____hash_base64_5_","gridModeTip":"gridModeTip____hash_base64_5_","endPage":"endPage____hash_base64_5_","jello":"jello____hash_base64_5_","tip":"tip____hash_base64_5_","comments":"comments____hash_base64_5_","toolbar":"toolbar____hash_base64_5_","toolbarPanel":"toolbarPanel____hash_base64_5_","toolbarBg":"toolbarBg____hash_base64_5_","SettingPanelPopper":"SettingPanelPopper____hash_base64_5_","SettingPanel":"SettingPanel____hash_base64_5_","SettingBlock":"SettingBlock____hash_base64_5_","SettingBlockBody":"SettingBlockBody____hash_base64_5_","SettingBlockSubtitle":"SettingBlockSubtitle____hash_base64_5_","SettingsItem":"SettingsItem____hash_base64_5_","SettingsShowItem":"SettingsShowItem____hash_base64_5_","SettingsItemName":"SettingsItemName____hash_base64_5_","SettingsItemSwitch":"SettingsItemSwitch____hash_base64_5_","SettingsItemSwitchRound":"SettingsItemSwitchRound____hash_base64_5_","SettingsItemIconButton":"SettingsItemIconButton____hash_base64_5_","SettingsItemSelect":"SettingsItemSelect____hash_base64_5_","closeCover":"closeCover____hash_base64_5_","SettingsShowItemBody":"SettingsShowItemBody____hash_base64_5_","hotkeys":"hotkeys____hash_base64_5_","hotkeysItem":"hotkeysItem____hash_base64_5_","hotkeysHeader":"hotkeysHeader____hash_base64_5_","scrollbar":"scrollbar____hash_base64_5_","scrollbarPage":"scrollbarPage____hash_base64_5_","scrollbarSlider":"scrollbarSlider____hash_base64_5_","scrollbarPoper":"scrollbarPoper____hash_base64_5_","touchAreaRoot":"touchAreaRoot____hash_base64_5_","touchArea":"touchArea____hash_base64_5_","hidden":"hidden____hash_base64_5_","invisible":"invisible____hash_base64_5_","beautifyScrollbar":"beautifyScrollbar____hash_base64_5_"};
 
 const touches = new Map();
 const bound = helper.createMemoMap({
@@ -2630,7 +2724,7 @@ const handlePinchZoom = ({
   }
 };
 
-const setMessage = (i, msg) => _setState('imgList', i, 'translationMessage', msg);
+const setMessage = (url, msg) => _setState('imgMap', url, 'translationMessage', msg);
 const download = async url => {
   if (url.startsWith('blob:')) {
     const res = await fetch(url);
@@ -2668,39 +2762,27 @@ const createFormData = (imgBlob, type) => {
 /** 将站点列表转为选择器中的选项 */
 const createOptions = list => list.map(name => [name, helper.t(\`translation.translator.\${name}\`) || name]);
 
-const url = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
-
-/** 获取部署服务的可用翻译 */
-const getValidTranslators = async () => {
-  try {
-    const res = await request.request(\`\${url()}\`);
-    const translatorsText = /(?<=validTranslators: ).+?(?=,\\n)/.exec(res.responseText)?.[0];
-    if (!translatorsText) return undefined;
-    const list = JSON.parse(translatorsText.replaceAll(\`'\`, \`"\`));
-    return createOptions(list);
-  } catch (error) {
-    helper.log.error(helper.t('translation.tip.get_translator_list_error'), error);
-    return undefined;
-  }
-};
+const apiUrl = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
 
 /** 使用自部署服务器翻译指定图片 */
-const selfhostedTranslation = async i => {
-  if (!(await getValidTranslators())) throw new Error(helper.t('alert.server_connect_failed'));
-  const img = store.imgList[i];
-  setMessage(i, helper.t('translation.tip.img_downloading'));
+const selfhostedTranslation = async url => {
+  await request.request(\`\${apiUrl()}\`, {
+    method: 'HEAD',
+    errorText: helper.t('alert.server_connect_failed')
+  });
+  setMessage(url, helper.t('translation.tip.img_downloading'));
   let imgBlob;
   try {
-    imgBlob = await download(img.src);
+    imgBlob = await download(url);
   } catch (error) {
     helper.log.error(error);
     throw new Error(helper.t('translation.tip.download_img_failed'));
   }
-  setMessage(i, helper.t('translation.tip.upload'));
+  setMessage(url, helper.t('translation.tip.upload'));
   let task_id;
   // 上传图片取得任务 id
   try {
-    const res = await request.request(\`\${url()}/submit\`, {
+    const res = await request.request(\`\${apiUrl()}/submit\`, {
       method: 'POST',
       responseType: 'json',
       data: createFormData(imgBlob, 'selfhosted')
@@ -2716,31 +2798,62 @@ const selfhostedTranslation = async i => {
   while (!taskState?.finished) {
     try {
       await helper.sleep(200);
-      const res = await request.request(\`\${url()}/task-state?taskid=\${task_id}\`, {
+      const res = await request.request(\`\${apiUrl()}/task-state?taskid=\${task_id}\`, {
         responseType: 'json'
       });
       taskState = res.response;
-      setMessage(i, \`\${helper.t(\`translation.status.\${taskState.state}\`) || taskState.state}\`);
+      setMessage(url, \`\${helper.t(\`translation.status.\${taskState.state}\`) || taskState.state}\`);
     } catch (error) {
       helper.log.error(error);
       if (errorNum > 5) throw new Error(helper.t('translation.tip.check_img_status_failed'));
       errorNum += 1;
     }
   }
-  return URL.createObjectURL(await download(\`\${url()}/result/\${task_id}\`));
+  return URL.createObjectURL(await download(\`\${apiUrl()}/result/\${task_id}\`));
+};
+const [selfhostedOptions, setSelfOptions] = helper.createEqualsSignal([]);
+
+/** 更新部署服务的可用翻译 */
+const updateSelfhostedOptions = async noTip => {
+  if (store.option.translation.server !== 'selfhosted') return;
+  try {
+    const res = await request.request(\`\${apiUrl()}\`, {
+      noTip,
+      errorText: helper.t('alert.server_connect_failed')
+    });
+    const translatorsText = /(?<=validTranslators: ).+?(?=,\\n)/.exec(res.responseText)?.[0];
+    if (!translatorsText) return undefined;
+    const list = JSON.parse(translatorsText.replaceAll(\`'\`, \`"\`));
+    setSelfOptions(createOptions(list));
+  } catch (error) {
+    helper.log.error(helper.t('translation.tip.get_translator_list_error'), error);
+    setSelfOptions([]);
+  }
+
+  // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
+  if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
+    setOption(draftOption => {
+      draftOption.translation.options.translator = 'google';
+    });
+  }
 };
 
-const handleMessage = (msg, i) => {
+// 在切换翻译服务器的同时切换可用翻译的选项列表
+helper.createEffectOn([() => store.option.translation.server, () => store.option.translation.localUrl], () => updateSelfhostedOptions(true), {
+  defer: true
+});
+
+const handleMessage = (msg, url) => {
   switch (msg.type) {
     case 'result':
       return msg.result.translation_mask;
     case 'pending':
-      setMessage(i, helper.t('translation.tip.pending', {
+      setMessage(url, helper.t('translation.tip.pending', {
         pos: msg.pos
       }));
       break;
     case 'status':
-      setMessage(i, helper.t(\`translation.status.\${msg.status}\`) || msg.status);
+      setMessage(url, helper.t(\`translation.status.\${msg.status}\`) || msg.status);
       break;
     case 'error':
       throw new Error(\`\${helper.t('translation.tip.error')}：id \${msg.error_id}\`);
@@ -2748,28 +2861,28 @@ const handleMessage = (msg, i) => {
       throw new Error(\`\${helper.t('translation.tip.error')}：Not Found\`);
   }
 };
-const waitTranslationPolling = async (id, i) => {
+const waitTranslationPolling = async (id, url) => {
   let result;
   while (result === undefined) {
     const res = await request.request(\`https://api.cotrans.touhou.ai/task/\${id}/status/v1\`, {
       responseType: 'json'
     });
-    result = handleMessage(res.response, i);
+    result = handleMessage(res.response, url);
     await helper.sleep(1000);
   }
   return result;
 };
 
 /** 等待翻译完成 */
-const waitTranslation = (id, i) => {
+const waitTranslation = (id, url) => {
   const ws = new WebSocket(\`wss://api.cotrans.touhou.ai/task/\${id}/event/v1\`);
 
   // 如果网站设置了 CSP connect-src 就只能轮询了
-  if (ws.readyState > 1) return waitTranslationPolling(id, i);
+  if (ws.readyState > 1) return waitTranslationPolling(id, url);
   return new Promise((resolve, reject) => {
     ws.onmessage = e => {
       try {
-        const result = handleMessage(JSON.parse(e.data), i);
+        const result = handleMessage(JSON.parse(e.data), url);
         if (result) resolve(result);
       } catch (error) {
         reject(error);
@@ -2807,9 +2920,9 @@ const resize = async (blob, w, h) => {
 };
 
 /** 使用 cotrans 翻译指定图片 */
-const cotransTranslation = async i => {
-  const img = store.imgList[i];
-  setMessage(i, helper.t('translation.tip.img_downloading'));
+const cotransTranslation = async url => {
+  const img = store.imgMap[url];
+  setMessage(url, helper.t('translation.tip.img_downloading'));
   let imgBlob;
   try {
     imgBlob = await download(img.src);
@@ -2823,7 +2936,7 @@ const cotransTranslation = async i => {
     helper.log.error(error);
     throw new Error(helper.t('translation.tip.resize_img_failed'));
   }
-  setMessage(i, helper.t('translation.tip.upload'));
+  setMessage(url, helper.t('translation.tip.upload'));
   let res;
   try {
     res = await request.request('https://api.cotrans.touhou.ai/task/upload/v1', {
@@ -2847,43 +2960,40 @@ const cotransTranslation = async i => {
   }
   if ('error_id' in resData) throw new Error(\`\${helper.t('translation.tip.upload_return_error')}：\${resData.error_id}\`);
   if (!resData.id) throw new Error(helper.t('translation.tip.id_not_returned'));
-  const translation_mask = resData.result?.translation_mask || (await waitTranslation(resData.id, i));
+  const translation_mask = resData.result?.translation_mask || (await waitTranslation(resData.id, url));
   return mergeImage(imgBlob, translation_mask);
 };
 const cotransTranslators = ['google', 'youdao', 'baidu', 'deepl', 'gpt3.5', 'offline', 'none'];
 
 /** 翻译指定图片 */
-const translationImage = async i => {
+const translationImage = async url => {
   try {
     if (typeof GM_xmlhttpRequest === 'undefined') {
       toast?.error(helper.t('pwa.alert.userscript_not_installed'));
       throw new Error(helper.t('pwa.alert.userscript_not_installed'));
     }
-    const img = store.imgList[i];
-    if (!img?.src) return;
+    if (!url) return;
+    const img = store.imgMap[url];
     if (img.translationType !== 'wait') return;
-    if (img.translationUrl) return _setState('imgList', i, 'translationType', 'show');
-    if (img.loadType !== 'loaded') return setMessage(i, helper.t('translation.tip.img_not_fully_loaded'));
-    const translationUrl = await (store.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(i);
-    setState(state => {
-      state.imgList[i].translationUrl = translationUrl;
-      state.imgList[i].translationMessage = helper.t('translation.tip.translation_completed');
-      state.imgList[i].translationType = 'show';
+    if (img.translationUrl) return _setState('imgMap', url, 'translationType', 'show');
+    if (img.loadType !== 'loaded') return setMessage(url, helper.t('translation.tip.img_not_fully_loaded'));
+    const translationUrl = await (store.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(url);
+    _setState('imgMap', url, {
+      translationUrl,
+      translationMessage: helper.t('translation.tip.translation_completed'),
+      translationType: 'show'
     });
   } catch (error) {
-    setState(state => {
-      state.imgList[i].translationType = 'error';
-      if (error.message) state.imgList[i].translationMessage = error.message;
-    });
+    _setState('imgMap', url, 'translationType', 'error');
+    if (error?.message) _setState('imgMap', url, 'translationMessage', error.message);
   }
 };
 
 /** 逐个翻译状态为等待翻译的图片 */
 const translationAll = helper.singleThreaded(async () => {
-  for (let i = 0; i < store.imgList.length; i++) {
-    const img = store.imgList[i];
+  for (const img of Object.values(store.imgMap)) {
     if (img.loadType !== 'loaded' || img.translationType !== 'wait') continue;
-    await translationImage(i);
+    await translationImage(img.src);
   }
 });
 
@@ -2891,13 +3001,14 @@ const translationAll = helper.singleThreaded(async () => {
 const setImgTranslationEnbale = (list, enbale) => {
   setState(state => {
     for (const i of list) {
-      const img = state.imgList[i];
+      const img = state.imgMap[state.imgList[i]];
       if (!img) continue;
+      const url = img.src;
       if (enbale) {
         if (state.option.translation.forceRetry) {
           img.translationType = 'wait';
           img.translationUrl = undefined;
-          setMessage(i, helper.t('translation.tip.wait_translation'));
+          setMessage(url, helper.t('translation.tip.wait_translation'));
         } else {
           switch (img.translationType) {
             case 'hide':
@@ -2909,7 +3020,7 @@ const setImgTranslationEnbale = (list, enbale) => {
             case undefined:
               {
                 img.translationType = 'wait';
-                setMessage(i, helper.t('translation.tip.wait_translation'));
+                setMessage(url, helper.t('translation.tip.wait_translation'));
                 break;
               }
           }
@@ -2933,20 +3044,6 @@ const setImgTranslationEnbale = (list, enbale) => {
   });
   return translationAll();
 };
-const [selfhostedOptions, setSelfOptions] = helper.createEqualsSignal([]);
-
-// 在切换翻译服务器的同时切换可用翻译的选项列表
-helper.createEffectOn([() => store.option.translation.server, () => store.option.translation.localUrl], async () => {
-  if (store.option.translation.server !== 'selfhosted') return;
-  setSelfOptions((await getValidTranslators()) ?? []);
-
-  // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
-  if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
-    setOption(draftOption => {
-      draftOption.translation.options.translator = 'google';
-    });
-  }
-});
 const translatorOptions = helper.createRootMemo(solidJs.on([selfhostedOptions, helper.lang, () => store.option.translation.server], () => store.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
 
 /** 并排卷轴模式下的全局滚动填充 */
@@ -2972,8 +3069,9 @@ const abreastArea = helper.createRootMemo(prev => {
     columns.push([]);
   }
   for (let i = 0; i < store.imgList.length; i++) {
+    const img = getImg(i);
     const imgPosition = [];
-    const imgHeight = store.imgList[i].size.height;
+    const imgHeight = img.size.height;
     length += imgHeight;
     let height = imgHeight;
     while (height > 0) {
@@ -3004,7 +3102,7 @@ const abreastArea = helper.createRootMemo(prev => {
         prevImgIndex -= 1;
         // 把上一张图片加进来填补空白
         columns.at(-1).push(prevImgIndex);
-        const prevImgHeight = store.imgList[prevImgIndex].size.height;
+        const prevImgHeight = getImg(prevImgIndex).size.height;
         emptyTop -= prevImgHeight;
         position[prevImgIndex].push({
           column: columns.length - 1,
@@ -3208,7 +3306,10 @@ const switchFitToWidth = () => {
 };
 
 /** 当前显示的图片是否正在翻译 */
-const isTranslatingImage = helper.createRootMemo(() => activePage().some(i => store.imgList[i]?.translationType && store.imgList[i].translationType !== 'hide'));
+const isTranslatingImage = helper.createRootMemo(() => activePage().some(i => {
+  const img = getImg(i);
+  return img?.translationType && img.translationType !== 'hide';
+}));
 
 /** 切换当前页的翻译状态 */
 const switchTranslation = () => setImgTranslationEnbale(activePage(), !isTranslatingImage());
@@ -3349,7 +3450,7 @@ const resetPage = (state, animation = false) => {
 /** 获取指定图片的提示文本 */
 const getImgTip = i => {
   if (i === -1) return helper.t('other.fill_page');
-  const img = store.imgList[i];
+  const img = getImg(i);
 
   // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
   if (img.loadType !== 'loaded') return \`\${i + 1} (\${helper.t(\`img_status.\${img.loadType}\`)})\`;
@@ -3483,7 +3584,7 @@ const handlePageClick = e => {
 
 /** 网格模式下点击图片跳到对应页 */
 const handleGridClick = e => {
-  const target = findClickEle(refs.root.getElementsByClassName('img'), e);
+  const target = findClickEle(refs.root.getElementsByClassName(modules_c21c94f2$1.img), e);
   if (!target) return;
   const pageNum = imgPageMap()[Number(target.id.slice(1))];
   if (pageNum === undefined) return;
@@ -4026,10 +4127,10 @@ const handleScrollModeDrag = ({
     case 'move':
       {
         if (store.option.scrollMode.abreastMode) {
-          const dx = x - ix;
-          const dy = y - iy;
-          scrollTo((initLeft + dx) * (store.option.dir === 'rtl' ? 1 : -1));
-          setAbreastScrollFill(initAbreastScrollFill + dy);
+          const _dx = x - ix;
+          const _dy = y - iy;
+          scrollTo((initLeft + _dx) * (store.option.dir === 'rtl' ? 1 : -1));
+          setAbreastScrollFill(initAbreastScrollFill + _dy);
         } else scrollTo(initTop + iy - y);
         return;
       }
@@ -4041,44 +4142,73 @@ const handleScrollModeDrag = ({
   }
 };
 
+const getImageData = img => {
+  const {
+    naturalWidth: width,
+    naturalHeight: height
+  } = img;
+  const canvas = new OffscreenCanvas(width, height);
+  const ctx = canvas.getContext('2d', {
+    willReadFrequently: true
+  });
+  ctx.drawImage(img, 0, 0);
+  return ctx.getImageData(0, 0, width, height);
+};
+const handleImgRecognition = (img, url) => {
+  const {
+    data,
+    width,
+    height
+  } = getImageData(img);
+  return worker.handleImg(Comlink.transfer(data, [data.buffer]), width, height, url, store$1.unwrap(store.option.imgRecognition));
+};
+const mainFn = {
+  log: helper.log,
+  updatePageData: helper.throttle(() => setState(updatePageData), 1000),
+  setImg: (url, key, val) => Reflect.has(store.imgMap, url) && _setState('imgMap', url, key, val)
+};
+worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
+
 /** 图片加载完毕的回调 */
-const handleImgLoaded = (i, e) => {
+const handleImgLoaded = (url, e) => {
   // 内联图片元素被创建后立刻就会触发 load 事件，如果在调用这个函数前 url 发生改变
   // 就会导致这里获得的是上个 url 图片的尺寸
-  if (!e.isConnected) return;
-  setState(state => {
-    const img = state.imgList[i];
-    if (img.width !== e.naturalWidth || img.height !== e.naturalHeight) updateImgSize(state, i, e.naturalWidth, e.naturalHeight);
-    img.loadType = 'loaded';
-    state.prop.Loading?.(state.imgList, img);
-  });
-  updateImgLoadType();
-  e.decode().catch(() => {});
+  if (e && !e.isConnected) return;
+  const img = store.imgMap[url];
+  if (img.loadType !== 'loaded') {
+    _setState('imgMap', url, 'loadType', 'loaded');
+    updateImgLoadType();
+    store.prop.Loading?.(imgList(), store.imgMap[url]);
+  }
+  if (!e) return;
+  updateImgSize(url, e.naturalWidth, e.naturalHeight);
+  if (store.option.imgRecognition.enabled && e.src === img.blobUrl) setTimeout(handleImgRecognition, 0, e, url);
 };
 
 /** 图片加载出错的次数 */
 const imgErrorNum = new Map();
 
 /** 图片加载出错的回调 */
-const handleImgError = (i, e) => {
-  if (!e.isConnected) return;
-  imgErrorNum.set(e.src, (imgErrorNum.get(e.src) ?? 0) + 1);
+const handleImgError = (url, e) => {
+  if (e && !e.isConnected) return;
+  imgErrorNum.set(url, (imgErrorNum.get(url) ?? 0) + 1);
   setState(state => {
-    const img = state.imgList[i];
+    const img = state.imgMap[url];
     if (!img) return;
-    helper.log.error(i, helper.t('alert.img_load_failed'), e);
+    const imgIndex = getImgIndex(url);
+    helper.log.error(imgIndex, helper.t('alert.img_load_failed'), e);
     img.loadType = 'error';
     img.type = undefined;
-    state.prop.Loading?.(state.imgList, img);
-    if (renderImgList().has(i) && (imgErrorNum.get(img.src) ?? 0) < 3) img.loadType = 'wait';
+    if (imgIndex.some(i => renderImgList().has(i)) && (imgErrorNum.get(img.src) ?? 0) < 3) img.loadType = 'wait';
   });
+  store.prop.Loading?.(imgList(), store.imgMap[url]);
   updateImgLoadType();
 };
 
 /** 需要加载的图片 */
 const needLoadImgList = helper.createRootMemo(() => {
   const list = new Set();
-  for (const [index, img] of store.imgList.entries()) if (img.loadType !== 'loaded' && img.src) list.add(index);
+  for (const [index, img] of imgList().entries()) if (img.loadType !== 'loaded' && img.src) list.add(index);
   return list;
 });
 
@@ -4088,7 +4218,7 @@ const loadImgList = new Set();
 /** 加载指定图片。返回是否已加载完成 */
 const loadImg = index => {
   if (index === -1 || !needLoadImgList().has(index)) return true;
-  const img = store.imgList[index];
+  const img = getImg(index);
   if (img.loadType === 'error') return true;
   loadImgList.add(index);
   return false;
@@ -4136,14 +4266,15 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
 };
 
 /** 加载期间尽快获取图片尺寸 */
-const checkImgSize = index => {
-  const imgDom = refs.mangaFlow.querySelector(\`#_\${index} img\`);
+const checkImgSize = url => {
+  const imgDom = getImgEle(url);
+  if (!imgDom) return;
   const timeoutId = setInterval(() => {
-    if (!imgDom?.isConnected) return clearInterval(timeoutId);
-    const img = store.imgList[index];
+    if (!imgDom?.isConnected || store.option.imgRecognition.enabled) return clearInterval(timeoutId);
+    const img = store.imgMap[url];
     if (!img || img.loadType !== 'loading') return clearInterval(timeoutId);
     if (imgDom.naturalWidth && imgDom.naturalHeight) {
-      setState(state => updateImgSize(state, index, imgDom.naturalWidth, imgDom.naturalHeight));
+      updateImgSize(url, imgDom.naturalWidth, imgDom.naturalHeight);
       return clearInterval(timeoutId);
     }
   }, 200);
@@ -4167,26 +4298,84 @@ const updateImgLoadType = helper.singleThreaded(() => {
   }
   setState(state => {
     for (const index of needLoadImgList()) {
-      const img = state.imgList[index];
+      const img = getImg(index, state);
       if (loadImgList.has(index)) {
         if (img.loadType !== 'loading') {
           img.loadType = 'loading';
-          if (img.width === undefined) setTimeout(checkImgSize, 0, index);
+          if (!store.option.imgRecognition.enabled && img.width === undefined) setTimeout(checkImgSize, 0, img.src);
         }
       } else if (img.loadType === 'loading') img.loadType = 'wait';
     }
   });
 });
 helper.createEffectOn([preloadNum, helper.createRootMemo(() => [...renderImgList()].map(i => store.imgList[i])), () => store.option.alwaysLoadAllImg], updateImgLoadType);
-helper.createEffectOn(showImgList, helper.debounce(showImgList => {
+helper.createEffectOn(showImgList, helper.debounce(_showImgList => {
   // 如果当前显示页面有出错的图片，就重新加载一次
-  for (const i of showImgList) {
-    if (store.imgList[i]?.loadType !== 'error') continue;
-    _setState('imgList', i, 'loadType', 'wait');
+  for (const img of [..._showImgList].map(i => getImg(i))) {
+    if (img?.loadType !== 'error') continue;
+    _setState('imgMap', img.src, 'loadType', 'wait');
     updateImgLoadType();
   }
 }, 500), {
   defer: true
+});
+
+/** 加载中的图片 */
+const loadingImgList = helper.createRootMemo(() => {
+  const list = new Set();
+  for (const [url, img] of Object.entries(store.imgMap)) if (img.loadType === 'loading') list.add(url);
+  return list;
+});
+const abortMap = new Map();
+const timeoutAbort = url => {
+  if (!abortMap.has(url)) return;
+  abortMap.get(url).abort();
+  abortMap.delete(url);
+  handleImgError(url);
+};
+helper.createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
+  if (!store.option.imgRecognition.enabled) return;
+  if (prevImgList) {
+    // 中断取消下载的图片
+    for (const url of prevImgList) {
+      if (downImgList.has(url) || !abortMap.has(url)) continue;
+      abortMap.get(url)?.abort();
+      abortMap.delete(url);
+      helper.log(\`中断下载 \${url}\`);
+    }
+  }
+  for (const url of downImgList.values()) {
+    if (abortMap.has(url) || store.imgMap[url].blobUrl) continue;
+    const controller = new AbortController();
+    const handleTimeout = helper.debounce(() => timeoutAbort(url), 1000 * 5);
+    controller.signal.addEventListener('abort', handleTimeout.clear);
+    abortMap.set(url, controller);
+    handleTimeout();
+    request.request(url, {
+      responseType: 'blob',
+      fetch: false,
+      signal: controller.signal,
+      onerror: () => handleImgError(url),
+      onprogress({
+        loaded,
+        total
+      }) {
+        _setState('imgMap', url, 'progress', loaded / total * 100);
+        // 连续5秒没进度后超时中断
+        handleTimeout();
+      },
+      onload({
+        response
+      }) {
+        abortMap.delete(url);
+        _setState('imgMap', url, {
+          blobUrl: URL.createObjectURL(response),
+          progress: undefined
+        });
+        handleImgLoaded(url);
+      }
+    });
+  }
 });
 
 const EmptyTip = () => {
@@ -4225,6 +4414,7 @@ const ComicImg = img => {
   const src = () => {
     if (img.loadType === 'wait') return '';
     if (img.translationType === 'show') return img.translationUrl;
+    if (store.option.imgRecognition.enabled) return img.blobUrl;
     return img.src;
   };
 
@@ -4247,17 +4437,20 @@ const ComicImg = img => {
       },
       get children() {
         var _el$3 = web.template(\`<img draggable=false decoding=sync>\`)();
-        _el$3.addEventListener("error", e => handleImgError(img.index, e.currentTarget));
-        _el$3.addEventListener("load", e => handleImgLoaded(img.index, e.currentTarget));
+        _el$3.addEventListener("error", e => handleImgError(img.src, e.currentTarget));
+        _el$3.addEventListener("load", e => handleImgLoaded(img.src, e.currentTarget));
         web.effect(_p$ => {
           var _v$ = src(),
-            _v$2 = \`\${img.index}\`;
+            _v$2 = \`\${img.index}\`,
+            _v$3 = img.src;
           _v$ !== _p$.e && web.setAttribute(_el$3, "src", _p$.e = _v$);
           _v$2 !== _p$.t && web.setAttribute(_el$3, "alt", _p$.t = _v$2);
+          _v$3 !== _p$.a && web.setAttribute(_el$3, "data-src", _p$.a = _v$3);
           return _p$;
         }, {
           e: undefined,
-          t: undefined
+          t: undefined,
+          a: undefined
         });
         return _el$3;
       }
@@ -4277,20 +4470,28 @@ const ComicImg = img => {
       }
     }), null);
     web.effect(_p$ => {
-      var _v$3 = modules_c21c94f2$1.img,
-        _v$4 = \`_\${img.index}\`,
-        _v$5 = \`_\${props.cloneIndex ? \`\${img.index}-\${props.cloneIndex}\` : img.index}\`,
-        _v$6 = showState(),
-        _v$7 = img.type ?? store.defaultImgType,
-        _v$8 = img.loadType === 'loaded' ? undefined : img.loadType,
-        _v$9 = \`\${img.size.width} / \${img.size.height}\`;
-      _v$3 !== _p$.e && web.className(_el$, _p$.e = _v$3);
-      _v$4 !== _p$.t && ((_p$.t = _v$4) != null ? _el$.style.setProperty("grid-area", _v$4) : _el$.style.removeProperty("grid-area"));
-      _v$5 !== _p$.a && web.setAttribute(_el$, "id", _p$.a = _v$5);
-      _v$6 !== _p$.o && web.setAttribute(_el$, "data-show", _p$.o = _v$6);
-      _v$7 !== _p$.i && web.setAttribute(_el$, "data-type", _p$.i = _v$7);
-      _v$8 !== _p$.n && web.setAttribute(_el$, "data-load-type", _p$.n = _v$8);
-      _v$9 !== _p$.s && ((_p$.s = _v$9) != null ? _el$2.style.setProperty("aspect-ratio", _v$9) : _el$2.style.removeProperty("aspect-ratio"));
+      var _v$4 = modules_c21c94f2$1.img,
+        _v$5 = \`_\${img.index}\`,
+        _v$6 = img.background || 'var(--bg)',
+        _v$7 = \`_\${props.cloneIndex ? \`\${img.index}-\${props.cloneIndex}\` : img.index}\`,
+        _v$8 = showState(),
+        _v$9 = img.type ?? store.defaultImgType,
+        _v$10 = img.loadType === 'loaded' ? undefined : img.loadType,
+        _v$11 = \`\${img.size.width} / \${img.size.height}\`,
+        _v$12 = img.progress && \`linear-gradient(
+              to bottom,
+              var(--secondary-bg) \${img.progress}%,
+              var(--hover-bg-color,#fff3)\${img.progress}%
+            )\`;
+      _v$4 !== _p$.e && web.className(_el$, _p$.e = _v$4);
+      _v$5 !== _p$.t && ((_p$.t = _v$5) != null ? _el$.style.setProperty("grid-area", _v$5) : _el$.style.removeProperty("grid-area"));
+      _v$6 !== _p$.a && ((_p$.a = _v$6) != null ? _el$.style.setProperty("background-color", _v$6) : _el$.style.removeProperty("background-color"));
+      _v$7 !== _p$.o && web.setAttribute(_el$, "id", _p$.o = _v$7);
+      _v$8 !== _p$.i && web.setAttribute(_el$, "data-show", _p$.i = _v$8);
+      _v$9 !== _p$.n && web.setAttribute(_el$, "data-type", _p$.n = _v$9);
+      _v$10 !== _p$.s && web.setAttribute(_el$, "data-load-type", _p$.s = _v$10);
+      _v$11 !== _p$.h && ((_p$.h = _v$11) != null ? _el$2.style.setProperty("aspect-ratio", _v$11) : _el$2.style.removeProperty("aspect-ratio"));
+      _v$12 !== _p$.r && ((_p$.r = _v$12) != null ? _el$2.style.setProperty("background", _v$12) : _el$2.style.removeProperty("background"));
       return _p$;
     }, {
       e: undefined,
@@ -4299,7 +4500,9 @@ const ComicImg = img => {
       o: undefined,
       i: undefined,
       n: undefined,
-      s: undefined
+      s: undefined,
+      h: undefined,
+      r: undefined
     });
     return _el$;
   })();
@@ -4353,7 +4556,7 @@ const ComicImgFlow = () => {
   const handleTransitionEnd = () => {
     if (store.isDragMode) return;
     setState(state => {
-      if (store.option.zoom.ratio === 100) resetPage(state, true);else state.page.anima = '';
+      if (store.option.zoom.ratio === 100) resetPage(state, false);else state.page.anima = '';
     });
   };
 
@@ -4419,7 +4622,7 @@ const ComicImgFlow = () => {
     },
     'grid-template-rows'() {
       if (!isScrollMode() || store.gridMode) return undefined;
-      return store.imgList.map(({
+      return imgList().map(({
         size: {
           height
         }
@@ -4446,7 +4649,7 @@ const ComicImgFlow = () => {
     }), null);
     web.insert(_el$2, web.createComponent(solidJs.Index, {
       get each() {
-        return store.imgList;
+        return imgList();
       },
       children: (img, i) => web.createComponent(ComicImg, web.mergeProps({
         index: i
@@ -4454,27 +4657,29 @@ const ComicImgFlow = () => {
     }), null);
     web.effect(_p$ => {
       var _v$ = \`\${modules_c21c94f2$1.mangaBox} \${modules_c21c94f2$1.beautifyScrollbar}\`,
-        _v$2 = store.page.anima,
-        _v$3 = helper.boolDataVal(store.option.scrollMode.abreastMode),
-        _v$4 = modules_c21c94f2$1.mangaFlow,
-        _v$5 = store.option.dir,
-        _v$6 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
-        _v$7 = helper.boolDataVal(store.option.disableZoom && !store.option.scrollMode.enabled),
-        _v$8 = helper.boolDataVal(store.option.zoom.ratio !== 100),
-        _v$9 = helper.boolDataVal(store.page.vertical),
-        _v$10 = !store.gridMode && hiddenMouse(),
-        _v$11 = helper.boolDataVal(store.option.scrollMode.fitToWidth);
+        _v$2 = getImg(activeImgIndex())?.background,
+        _v$3 = store.page.anima,
+        _v$4 = helper.boolDataVal(store.option.scrollMode.abreastMode),
+        _v$5 = modules_c21c94f2$1.mangaFlow,
+        _v$6 = store.option.dir,
+        _v$7 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
+        _v$8 = helper.boolDataVal(store.option.disableZoom && !store.option.scrollMode.enabled),
+        _v$9 = helper.boolDataVal(store.option.zoom.ratio !== 100),
+        _v$10 = helper.boolDataVal(store.page.vertical),
+        _v$11 = !store.gridMode && hiddenMouse(),
+        _v$12 = helper.boolDataVal(store.option.scrollMode.fitToWidth);
       _v$ !== _p$.e && web.className(_el$, _p$.e = _v$);
-      _v$2 !== _p$.t && web.setAttribute(_el$, "data-animation", _p$.t = _v$2);
-      _v$3 !== _p$.a && web.setAttribute(_el$, "data-abreast-scroll", _p$.a = _v$3);
-      _v$4 !== _p$.o && web.setAttribute(_el$2, "id", _p$.o = _v$4);
-      _v$5 !== _p$.i && web.setAttribute(_el$2, "dir", _p$.i = _v$5);
-      _v$6 !== _p$.n && web.className(_el$2, _p$.n = _v$6);
-      _v$7 !== _p$.s && web.setAttribute(_el$2, "data-disable-zoom", _p$.s = _v$7);
-      _v$8 !== _p$.h && web.setAttribute(_el$2, "data-scale-mode", _p$.h = _v$8);
-      _v$9 !== _p$.r && web.setAttribute(_el$2, "data-vertical", _p$.r = _v$9);
-      _v$10 !== _p$.d && web.setAttribute(_el$2, "data-hidden-mouse", _p$.d = _v$10);
-      _v$11 !== _p$.l && web.setAttribute(_el$2, "data-fit-width", _p$.l = _v$11);
+      _v$2 !== _p$.t && ((_p$.t = _v$2) != null ? _el$.style.setProperty("background-color", _v$2) : _el$.style.removeProperty("background-color"));
+      _v$3 !== _p$.a && web.setAttribute(_el$, "data-animation", _p$.a = _v$3);
+      _v$4 !== _p$.o && web.setAttribute(_el$, "data-abreast-scroll", _p$.o = _v$4);
+      _v$5 !== _p$.i && web.setAttribute(_el$2, "id", _p$.i = _v$5);
+      _v$6 !== _p$.n && web.setAttribute(_el$2, "dir", _p$.n = _v$6);
+      _v$7 !== _p$.s && web.className(_el$2, _p$.s = _v$7);
+      _v$8 !== _p$.h && web.setAttribute(_el$2, "data-disable-zoom", _p$.h = _v$8);
+      _v$9 !== _p$.r && web.setAttribute(_el$2, "data-scale-mode", _p$.r = _v$9);
+      _v$10 !== _p$.d && web.setAttribute(_el$2, "data-vertical", _p$.d = _v$10);
+      _v$11 !== _p$.l && web.setAttribute(_el$2, "data-hidden-mouse", _p$.l = _v$11);
+      _v$12 !== _p$.u && web.setAttribute(_el$2, "data-fit-width", _p$.u = _v$12);
       return _p$;
     }, {
       e: undefined,
@@ -4487,7 +4692,8 @@ const ComicImgFlow = () => {
       h: undefined,
       r: undefined,
       d: undefined,
-      l: undefined
+      l: undefined,
+      u: undefined
     });
     return _el$;
   })();
@@ -4547,8 +4753,8 @@ const MdZoomOut = ((props = {}) => (() => {
   return _el$;
 })());
 
-var css = ".iconButtonItem{position:relative}.iconButton,.iconButtonItem{align-items:center;display:flex}.iconButton{background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.iconButton:focus,.iconButton:hover{background-color:var(--hover-bg-color,#fff3)}.iconButton.enabled{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.iconButton.enabled:focus,.iconButton.enabled:hover{background-color:var(--hover-bg-color-enable,#fffa)}.iconButton>svg{width:1em}.iconButtonPopper{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.iconButtonPopper[data-placement=right]{left:calc(100% + 1.5em)}.iconButtonPopper[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.iconButtonPopper[data-placement=left]{right:calc(100% + 1.5em)}.iconButtonPopper[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.iconButtonPopper:before{background-color:initial;border:.4em solid #0000;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.iconButtonItem:is(:hover,:focus,[data-show=true]) .iconButtonPopper{opacity:1}.hidden{display:none}";
-var modules_c21c94f2 = {"iconButtonItem":"iconButtonItem","iconButton":"iconButton","enabled":"enabled","iconButtonPopper":"iconButtonPopper","hidden":"hidden"};
+var css = ".iconButtonItem____hash_base64_5_{align-items:center;display:flex;position:relative}.iconButton____hash_base64_5_{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.iconButton____hash_base64_5_:focus,.iconButton____hash_base64_5_:hover{background-color:var(--hover-bg-color,#fff3)}.iconButton____hash_base64_5_.enabled____hash_base64_5_{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.iconButton____hash_base64_5_.enabled____hash_base64_5_:focus,.iconButton____hash_base64_5_.enabled____hash_base64_5_:hover{background-color:var(--hover-bg-color-enable,#fffa)}.iconButton____hash_base64_5_>svg{width:1em}.iconButtonPopper____hash_base64_5_{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.iconButtonPopper____hash_base64_5_[data-placement=right]{left:calc(100% + 1.5em)}.iconButtonPopper____hash_base64_5_[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.iconButtonPopper____hash_base64_5_[data-placement=left]{right:calc(100% + 1.5em)}.iconButtonPopper____hash_base64_5_[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.iconButtonPopper____hash_base64_5_:before{background-color:initial;border:.4em solid #0000;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.iconButtonItem____hash_base64_5_:is(:hover,:focus,[data-show=true]) .iconButtonPopper____hash_base64_5_{opacity:1}.hidden____hash_base64_5_{display:none}";
+var modules_c21c94f2 = {"iconButtonItem":"iconButtonItem____hash_base64_5_","iconButton":"iconButton____hash_base64_5_","enabled":"enabled____hash_base64_5_","iconButtonPopper":"iconButtonPopper____hash_base64_5_","hidden":"hidden____hash_base64_5_"};
 
 /** 图标按钮 */
 const IconButton = _props => {
@@ -4869,10 +5075,10 @@ const SettingTranslation = () => {
   const isTranslationEnable = solidJs.createMemo(() => store.option.translation.server !== 'disable' && translatorOptions().length > 0);
 
   /** 是否正在翻译全部图片 */
-  const isTranslationAll = solidJs.createMemo(() => isTranslationEnable() && store.imgList.every(img => img.translationType === 'show' || img.translationType === 'wait'));
+  const isTranslationAll = solidJs.createMemo(() => isTranslationEnable() && imgList().every(img => img.translationType === 'show' || img.translationType === 'wait'));
 
   /** 是否正在翻译当前页以后的全部图片 */
-  const isTranslationAfterCurrent = solidJs.createMemo(() => isTranslationEnable() && store.imgList.slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
+  const isTranslationAfterCurrent = solidJs.createMemo(() => isTranslationEnable() && imgList().slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
   return [web.createComponent(SettingsItemSelect, {
     get name() {
       return helper.t('setting.translation.server');
@@ -4935,14 +5141,7 @@ const SettingTranslation = () => {
         get onChange() {
           return createStateSetFn('translation.options.translator');
         },
-        onClick: () => {
-          if (store.option.translation.server !== 'selfhosted') return;
-          // 通过手动触发变更，以便在点击时再获取一下翻译列表
-          setState(state => {
-            state.option.translation.server = 'disable';
-            state.option.translation.server = 'selfhosted';
-          });
-        }
+        onClick: () => updateSelfhostedOptions(false)
       }), web.createComponent(SettingsItemSelect, {
         get name() {
           return helper.t('setting.translation.options.direction');
@@ -5236,14 +5435,6 @@ const defaultSettingList = () => [[helper.t('setting.option.paragraph_dir'), () 
   }
 }), web.createComponent(SettingsItemSwitch, {
   get name() {
-    return helper.t('setting.option.show_clickable_area');
-  },
-  get value() {
-    return store.show.touchArea;
-  },
-  onChange: () => _setState('show', 'touchArea', !store.show.touchArea)
-}), web.createComponent(SettingsItemSwitch, {
-  get name() {
     return helper.t('setting.option.click_page_turn_enabled');
   },
   get value() {
@@ -5282,6 +5473,14 @@ const defaultSettingList = () => [[helper.t('setting.option.paragraph_dir'), () 
       }
     })];
   }
+}), web.createComponent(SettingsItemSwitch, {
+  get name() {
+    return helper.t('setting.option.show_clickable_area');
+  },
+  get value() {
+    return store.show.touchArea;
+  },
+  onChange: () => _setState('show', 'touchArea', !store.show.touchArea)
 })]], [helper.t('setting.option.paragraph_display'), () => [web.createComponent(SettingsItemSwitch, {
   get name() {
     return helper.t('setting.option.dark_mode');
@@ -5428,7 +5627,72 @@ const defaultSettingList = () => [[helper.t('setting.option.paragraph_dir'), () 
       }
     });
   }
-})]], [helper.t('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [helper.t('setting.option.paragraph_translation'), SettingTranslation, true], [helper.t('setting.option.paragraph_other'), () => [web.createComponent(SettingsItemSwitch, {
+})]], [helper.t('setting.option.paragraph_hotkeys'), SettingHotkeys, true], [helper.t('setting.option.img_recognition'), () => [web.createComponent(SettingsItemSwitch, {
+  get name() {
+    return helper.t('other.enabled');
+  },
+  get value() {
+    return store.option.imgRecognition.enabled;
+  },
+  onChange: () => setOption((draftOption, state) => {
+    const enabled = !draftOption.imgRecognition.enabled;
+    draftOption.imgRecognition.enabled = enabled;
+    if (!enabled) return;
+    for (const img of Object.values(state.imgMap)) if (!img.blobUrl) img.loadType = 'wait';
+    updateImgLoadType();
+  })
+}), web.createComponent(solidJs.Show, {
+  when: typeof Worker === 'undefined',
+  get children() {
+    var _el$2 = web.template(\`<blockquote><p>\`)(),
+      _el$3 = _el$2.firstChild;
+    web.effect(() => _el$3.innerHTML = helper.t('setting.option.img_recognition_warn'));
+    return _el$2;
+  }
+}), web.createComponent(solidJs.Show, {
+  get when() {
+    return !store.supportWorker;
+  },
+  get children() {
+    var _el$4 = web.template(\`<blockquote><p>\`)(),
+      _el$5 = _el$4.firstChild;
+    web.effect(() => _el$5.innerHTML = helper.t('setting.option.img_recognition_warn_2'));
+    return _el$4;
+  }
+}), web.createComponent(SettingsShowItem, {
+  get when() {
+    return store.option.imgRecognition.enabled;
+  },
+  get children() {
+    return [web.createComponent(SettingsItemSwitch, {
+      get name() {
+        return helper.t('setting.option.img_recognition_background');
+      },
+      get value() {
+        return store.option.imgRecognition.background;
+      },
+      onChange: () => setOption((draftOption, state) => {
+        const enabled = !draftOption.imgRecognition.background;
+        draftOption.imgRecognition.background = enabled;
+        if (!enabled) return;
+        for (const img of Object.values(state.imgMap)) if (img.background === undefined) handleImgRecognition(getImgEle(img.src), img.src);
+      })
+    }), web.createComponent(SettingsItemSwitch, {
+      get name() {
+        return helper.t('setting.option.img_recognition_pageFill');
+      },
+      get value() {
+        return store.option.imgRecognition.pageFill;
+      },
+      onChange: () => setOption((draftOption, state) => {
+        const enabled = !draftOption.imgRecognition.pageFill;
+        draftOption.imgRecognition.pageFill = enabled;
+        if (!enabled) return;
+        for (const img of Object.values(state.imgMap)) if (img.blankMargin === undefined) handleImgRecognition(getImgEle(img.src), img.src);
+      })
+    })];
+  }
+})], true], [helper.t('setting.option.paragraph_translation'), SettingTranslation, true], [helper.t('setting.option.paragraph_other'), () => [web.createComponent(SettingsItemSwitch, {
   get name() {
     return helper.t('setting.option.always_load_all_img');
   },
@@ -5487,10 +5751,10 @@ const defaultSettingList = () => [[helper.t('setting.option.paragraph_dir'), () 
     return helper.t('setting.option.background_color');
   },
   get children() {
-    var _el$2 = web.template(\`<input type=color>\`)();
-    _el$2.style.setProperty("width", "2em");
-    _el$2.style.setProperty("margin-right", ".4em");
-    _el$2.addEventListener("input", helper.throttle(e => {
+    var _el$6 = web.template(\`<input type=color>\`)();
+    _el$6.style.setProperty("width", "2em");
+    _el$6.style.setProperty("margin-right", ".4em");
+    _el$6.addEventListener("input", helper.throttle(e => {
       if (!e.target.value) return;
       setOption(draftOption => {
         // 在拉到纯黑或纯白时改回初始值
@@ -5498,8 +5762,8 @@ const defaultSettingList = () => [[helper.t('setting.option.paragraph_dir'), () 
         if (draftOption.customBackground) draftOption.darkMode = helper.needDarkMode(draftOption.customBackground);
       });
     }, 20));
-    web.effect(() => _el$2.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
-    return _el$2;
+    web.effect(() => _el$6.value = store.option.customBackground ?? (store.option.darkMode ? '#000000' : '#ffffff'));
+    return _el$6;
   }
 }), web.createComponent(SettingsItemSelect, {
   get name() {
@@ -5739,6 +6003,7 @@ const defaultButtonList = [
     _setState('show', 'toolbar', _showPanel);
     setShowPanel(_showPanel);
   };
+  helper.createEffectOn(() => store.show.toolbar, showToolbar => showToolbar || setShowPanel(false));
   const popper = solidJs.createMemo(() => [web.createComponent(SettingPanel, {}), (() => {
     var _el$2 = web.template(\`<div role=button tabindex=-1>\`)();
     _el$2.addEventListener("wheel", e => {
@@ -5816,7 +6081,7 @@ const Toolbar = () => {
 
 const getScrollbarPage = (img, i, double = false) => {
   let num;
-  if (store.option.scrollMode.enabled) num = store.imgList[i].size.height;else num = double ? 2 : 1;
+  if (store.option.scrollMode.enabled) num = getImg(i).size.height;else num = double ? 2 : 1;
   return {
     num,
     loadType: img.loadType,
@@ -5859,13 +6124,13 @@ const ScrollbarPageStatus = () => {
     const list = [];
     let item;
     const handleImg = (i, double = false) => {
-      const img = store.imgList[i];
+      const img = getImg(i);
       if (!item) {
         item = getScrollbarPage(img, i, double);
         return;
       }
       if (img.loadType === item.loadType && !img.src === item.isNull && img.translationType === item.translationType) {
-        if (store.option.scrollMode.enabled) item.num += store.imgList[i].size.height;else item.num += double ? 2 : 1;
+        if (store.option.scrollMode.enabled) item.num += img.size.height;else item.num += double ? 2 : 1;
       } else {
         list.push(item);
         item = getScrollbarPage(img, i, double);
@@ -5942,22 +6207,12 @@ const Scrollbar = () => {
     '--slider-height': () => \`\${sliderHeight() * scrollDomLength()}px\`,
     '--slider-top': sliderTop
   });
-  return (() => {
-    var _el$ = web.template(\`<div role=scrollbar tabindex=-1><div></div><div>\`)(),
-      _el$2 = _el$.firstChild,
-      _el$3 = _el$2.nextSibling;
+  const _Scrollbar = props => (() => {
+    var _el$ = web.template(\`<div role=scrollbar tabindex=-1>\`)();
     _el$.addEventListener("wheel", handleWheel);
-    var _ref$ = bindRef('scrollbar');
-    typeof _ref$ === "function" && web.use(_ref$, _el$);
-    web.insert(_el$3, tipText);
-    web.insert(_el$, web.createComponent(solidJs.Show, {
-      get when() {
-        return store.option.scrollbar.showImgStatus;
-      },
-      get children() {
-        return web.createComponent(ScrollbarPageStatus, {});
-      }
-    }), null);
+    var _ref$ = props.ref;
+    typeof _ref$ === "function" ? web.use(_ref$, _el$) : props.ref = _el$;
+    web.insert(_el$, () => props.children);
     web.effect(_p$ => {
       var _v$ = modules_c21c94f2$1.scrollbar,
         _v$2 = modules_c21c94f2$1.mangaFlow,
@@ -5968,11 +6223,7 @@ const Scrollbar = () => {
         _v$7 = scrollPosition(),
         _v$8 = helper.boolDataVal(isAbreastMode()),
         _v$9 = helper.boolDataVal(isDrag()),
-        _v$10 = modules_c21c94f2$1.scrollbarSlider,
-        _v$11 = {
-          [modules_c21c94f2$1.hidden]: store.gridMode
-        },
-        _v$12 = modules_c21c94f2$1.scrollbarPoper;
+        _v$10 = props.style;
       _v$ !== _p$.e && web.className(_el$, _p$.e = _v$);
       _v$2 !== _p$.t && web.setAttribute(_el$, "aria-controls", _p$.t = _v$2);
       _v$3 !== _p$.a && web.setAttribute(_el$, "aria-valuenow", _p$.a = _v$3);
@@ -5982,9 +6233,7 @@ const Scrollbar = () => {
       _v$7 !== _p$.s && web.setAttribute(_el$, "data-position", _p$.s = _v$7);
       _v$8 !== _p$.h && web.setAttribute(_el$, "data-is-abreast-mode", _p$.h = _v$8);
       _v$9 !== _p$.r && web.setAttribute(_el$, "data-drag", _p$.r = _v$9);
-      _v$10 !== _p$.d && web.className(_el$2, _p$.d = _v$10);
-      _p$.l = web.classList(_el$2, _v$11, _p$.l);
-      _v$12 !== _p$.u && web.className(_el$3, _p$.u = _v$12);
+      _p$.d = web.style(_el$, _v$10, _p$.d);
       return _p$;
     }, {
       e: undefined,
@@ -5996,12 +6245,52 @@ const Scrollbar = () => {
       s: undefined,
       h: undefined,
       r: undefined,
-      d: undefined,
-      l: undefined,
-      u: undefined
+      d: undefined
     });
     return _el$;
   })();
+  return [web.createComponent(_Scrollbar, {
+    ref(r$) {
+      var _ref$2 = bindRef('scrollbar');
+      typeof _ref$2 === "function" && _ref$2(r$);
+    },
+    get children() {
+      return [(() => {
+        var _el$2 = web.template(\`<div>\`)();
+        web.insert(_el$2, tipText);
+        web.effect(() => web.className(_el$2, modules_c21c94f2$1.scrollbarPoper));
+        return _el$2;
+      })(), web.createComponent(solidJs.Show, {
+        get when() {
+          return store.option.scrollbar.showImgStatus;
+        },
+        get children() {
+          return web.createComponent(ScrollbarPageStatus, {});
+        }
+      })];
+    }
+  }), web.createComponent(_Scrollbar, {
+    style: {
+      'mix-blend-mode': 'difference',
+      'pointer-events': 'none'
+    },
+    get children() {
+      var _el$3 = web.template(\`<div>\`)();
+      web.effect(_p$ => {
+        var _v$11 = modules_c21c94f2$1.scrollbarSlider,
+          _v$12 = {
+            [modules_c21c94f2$1.hidden]: store.gridMode
+          };
+        _v$11 !== _p$.e && web.className(_el$3, _p$.e = _v$11);
+        _p$.t = web.classList(_el$3, _v$12, _p$.t);
+        return _p$;
+      }, {
+        e: undefined,
+        t: undefined
+      });
+      return _el$3;
+    }
+  })];
 };
 
 let delayTypeTimer = 0;
@@ -6138,12 +6427,14 @@ const createComicImg = url => ({
 });
 const useInit = props => {
   watchDomSize('rootSize', refs.root);
+  const updateOption = state => {
+    state.option = props.option ? helper.assign(state.defaultOption, props.option) : state.defaultOption;
+  };
   const watchProps = {
-    option(state) {
-      state.option = helper.assign(state.option, props.defaultOption, props.option);
-    },
+    option: updateOption,
     defaultOption(state) {
       state.defaultOption = helper.assign(defaultOption(), props.defaultOption);
+      updateOption(state);
     },
     fillEffect(state) {
       state.fillEffect = props.fillEffect ?? {
@@ -6208,44 +6499,40 @@ const useInit = props => {
       state.show.endPage = undefined;
 
       /** 修改前的当前显示图片 */
-      const oldActiveImg = state.pageList[state.activePageIndex]?.map(i => state.imgList?.[i]?.src) ?? [];
+      const oldActiveImg = state.pageList[state.activePageIndex]?.map(i => state.imgList?.[i]) ?? [];
 
       /** 是否需要重置页面填充 */
       let needResetFillEffect = false;
       const fillEffectList = Object.keys(state.fillEffect).map(Number);
       for (const pageIndex of fillEffectList) {
         if (pageIndex === -1) continue;
-        if (state.imgList[pageIndex].src === props.imgList[pageIndex]) continue;
+        if (state.imgList[pageIndex] === props.imgList[pageIndex]) continue;
         needResetFillEffect = true;
         break;
       }
+      const newImgList = new Set(props.imgList);
+      const oldImgList = new Set(state.imgList);
+
+      /** 被删除的图片 */
+      const deleteList = [...oldImgList].filter(url => !newImgList.has(url));
+      for (const url of deleteList) if (state.imgMap[url].blobUrl) URL.revokeObjectURL(state.imgMap[url].blobUrl);
+
+      /** 删除图片数 */
+      const deleteNum = deleteList.length;
+
+      /** 传入的是否是新漫画 */
+      const isNew = deleteNum === oldImgList.size; // 旧图一张不剩才算是新漫画
 
       /** 是否需要更新页面 */
-      let needUpdatePageData = needResetFillEffect || state.imgList.length !== props.imgList.length;
-      /** 传入的是否是新漫画 */
-      let isNew = true;
-      const imgMap = new Map(state.imgList.filter(img => img.src).map(img => [img.src, img]));
-      for (let i = 0; i < props.imgList.length; i++) {
-        const url = props.imgList[i];
-        // 只有旧图一张不剩才算是新漫画
-        if (isNew && imgMap.has(url)) isNew = false;
-        // 只要有加载好的旧图被删就要更新页面
-        const img = url && !needUpdatePageData && state.imgList[i];
-        if (img && img.loadType !== 'wait' && img.src && img.src !== url) needUpdatePageData = true;
-        state.imgList[i] = imgMap.get(url) ?? createComicImg(url);
-      }
-      if (state.imgList.length > props.imgList.length) {
-        state.imgList.length = props.imgList.length;
-        needUpdatePageData = true;
-      }
-      if (isNew) state.imgList = [...state.imgList];
-      state.prop.Loading?.(state.imgList);
-      if (isNew || needResetFillEffect) {
-        state.fillEffect = props.fillEffect ?? {
-          '-1': true
-        };
-        autoCloseFill.clear();
-      }
+      const needUpdatePageData = needResetFillEffect || state.imgList.length !== props.imgList.length || deleteNum > 0;
+      const newImgMap = {};
+      for (const url of props.imgList) newImgMap[url] = state.imgMap[url] ?? createComicImg(url);
+      state.imgMap = newImgMap;
+      state.imgList = [...props.imgList];
+      state.prop.Loading?.(state.imgList.map(url => state.imgMap[url]));
+      if (isNew || needResetFillEffect) state.fillEffect = props.fillEffect ?? {
+        '-1': true
+      };
       if (isNew || needUpdatePageData) {
         updatePageData(state);
 
@@ -6264,7 +6551,7 @@ const useInit = props => {
       oldActiveImg.some(url => {
         // 跳过填充页和已被删除的图片
         if (!url || props.imgList.includes(url)) return false;
-        const newPageIndex = state.pageList.findIndex(page => page.some(index => state.imgList?.[index]?.src === url));
+        const newPageIndex = state.pageList.findIndex(page => page.some(index => state.imgList?.[index] === url));
         if (newPageIndex === -1) return false;
         state.activePageIndex = newPageIndex;
         return true;
@@ -6276,7 +6563,16 @@ const useInit = props => {
   };
 
   // 处理 imgList 参数的初始化和修改
-  helper.createEffectOn(() => props.imgList.join(','), helper.throttle(handleImgList, 500));
+  helper.createEffectOn(helper.createRootMemo(() => props.imgList), helper.throttle(handleImgList, 500));
+
+  // 通过手动创建一个 Worker 来检测是否支持 Worker，避免因为 CSP 限制而出错
+  setTimeout(() => {
+    const codeUrl = URL.createObjectURL(new Blob(['self.close();'], {
+      type: 'text/javascript'
+    }));
+    setTimeout(URL.revokeObjectURL, 0, codeUrl);
+    _setState('supportWorker', Boolean(new Worker(codeUrl)));
+  }, 0);
   focus();
 };
 
@@ -6286,7 +6582,6 @@ const darkStyle = {
   '--hover-bg-color-enable': '#FFFa',
   '--switch': '#BDBDBD',
   '--switch-bg': '#6E6E6E',
-  '--scrollbar-slider': '#FFF6',
   '--page-bg': '#303030',
   '--secondary': '#7A909A',
   '--secondary-bg': '#556065',
@@ -6302,7 +6597,6 @@ const lightStyle = {
   '--hover-bg-color-enable': '#0009',
   '--switch': '#FAFAFA',
   '--switch-bg': '#9C9C9C',
-  '--scrollbar-slider': '#0006',
   '--page-bg': 'white',
   '--secondary': '#7A909A',
   '--secondary-bg': '#BAC5CA',
@@ -6325,9 +6619,9 @@ const useCssVar = () => {
     };
   };
   const i18n = () => ({
-    '--i18n-touch-area-prev': \`\${helper.t('touch_area.prev')}\`,
-    '--i18n-touch-area-next': \`\${helper.t('touch_area.next')}\`,
-    '--i18n-touch-area-menu': \`\${helper.t('touch_area.menu')}\`
+    '--i18n-touch-area-prev': \`"\${helper.t('touch_area.prev')}"\`,
+    '--i18n-touch-area-next': \`"\${helper.t('touch_area.next')}"\`,
+    '--i18n-touch-area-menu': \`"\${helper.t('touch_area.menu')}"\`
   });
   useStyleMemo(\`.\${modules_c21c94f2$1.root}\`, [{
     '--bg': () => \`\${store.option.customBackground ?? (store.option.darkMode ? '#000' : '#fff')}\`,
@@ -6387,6 +6681,7 @@ const Manga = props => {
 
 exports.Manga = Manga;
 exports._setAbreastScrollFill = _setAbreastScrollFill;
+exports._setState = _setState;
 exports.abreastArea = abreastArea;
 exports.abreastColumnWidth = abreastColumnWidth;
 exports.abreastContentWidth = abreastContentWidth;
@@ -6395,7 +6690,6 @@ exports.abreastScrollWidth = abreastScrollWidth;
 exports.abreastShowColumn = abreastShowColumn;
 exports.activeImgIndex = activeImgIndex;
 exports.activePage = activePage;
-exports.autoCloseFill = autoCloseFill;
 exports.autoPageNum = autoPageNum;
 exports.bindRef = bindRef;
 exports.bindScrollTop = bindScrollTop;
@@ -6408,6 +6702,9 @@ exports.defaultHotkeys = defaultHotkeys;
 exports.doubleClickZoom = doubleClickZoom;
 exports.findFillIndex = findFillIndex;
 exports.focus = focus;
+exports.getImg = getImg;
+exports.getImgEle = getImgEle;
+exports.getImgIndex = getImgIndex;
 exports.getImgTip = getImgTip;
 exports.getPageTip = getPageTip;
 exports.handleClick = handleClick;
@@ -6427,6 +6724,7 @@ exports.handleWheel = handleWheel;
 exports.handleZoomDrag = handleZoomDrag;
 exports.hotkeysMap = hotkeysMap;
 exports.imgAreaStyle = imgAreaStyle;
+exports.imgList = imgList;
 exports.imgPageMap = imgPageMap;
 exports.imgShowState = imgShowState;
 exports.imgTopList = imgTopList;
@@ -6437,7 +6735,7 @@ exports.isOnePageMode = isOnePageMode;
 exports.isScrollMode = isScrollMode;
 exports.isTop = isTop;
 exports.isTranslatingImage = isTranslatingImage;
-exports.isWideImg = isWideImg;
+exports.loadingImgList = loadingImgList;
 exports.nowFillIndex = nowFillIndex;
 exports.pageNum = pageNum;
 exports.placeholderSize = placeholderSize;
@@ -6460,6 +6758,7 @@ exports.setAbreastScrollFill = setAbreastScrollFill;
 exports.setDefaultHotkeys = setDefaultHotkeys;
 exports.setIsDrag = setIsDrag;
 exports.setOption = setOption;
+exports.setState = setState;
 exports.showImgList = showImgList;
 exports.sliderHeight = sliderHeight;
 exports.sliderMidpoint = sliderMidpoint;
@@ -6476,6 +6775,7 @@ exports.touches = touches;
 exports.turnPage = turnPage;
 exports.turnPageAnimation = turnPageAnimation;
 exports.turnPageFn = turnPageFn;
+exports.updateImgLoadType = updateImgLoadType;
 exports.updateImgSize = updateImgSize;
 exports.updateImgType = updateImgType;
 exports.updatePageData = updatePageData;
@@ -6483,7 +6783,7 @@ exports.updateShowRange = updateShowRange;
 exports.watchDomSize = watchDomSize;
 exports.zoom = zoom;
 exports.zoomScrollModeImg = zoomScrollModeImg;
-`;
+`
 break;
 case 'components/IconButton':
 code =`
@@ -6491,8 +6791,8 @@ const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const helper = require('helper');
 
-var css = ".iconButtonItem{position:relative}.iconButton,.iconButtonItem{align-items:center;display:flex}.iconButton{background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.iconButton:focus,.iconButton:hover{background-color:var(--hover-bg-color,#fff3)}.iconButton.enabled{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.iconButton.enabled:focus,.iconButton.enabled:hover{background-color:var(--hover-bg-color-enable,#fffa)}.iconButton>svg{width:1em}.iconButtonPopper{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.iconButtonPopper[data-placement=right]{left:calc(100% + 1.5em)}.iconButtonPopper[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.iconButtonPopper[data-placement=left]{right:calc(100% + 1.5em)}.iconButtonPopper[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.iconButtonPopper:before{background-color:initial;border:.4em solid #0000;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.iconButtonItem:is(:hover,:focus,[data-show=true]) .iconButtonPopper{opacity:1}.hidden{display:none}";
-var modules_c21c94f2 = {"iconButtonItem":"iconButtonItem","iconButton":"iconButton","enabled":"enabled","iconButtonPopper":"iconButtonPopper","hidden":"hidden"};
+var css = ".iconButtonItem____hash_base64_5_{align-items:center;display:flex;position:relative}.iconButton____hash_base64_5_{align-items:center;background-color:initial;border-radius:9999px;border-style:none;color:var(--text,#fff);cursor:pointer;display:flex;font-size:1.5em;height:1.5em;justify-content:center;margin:.1em;outline:none;padding:0;width:1.5em}.iconButton____hash_base64_5_:focus,.iconButton____hash_base64_5_:hover{background-color:var(--hover-bg-color,#fff3)}.iconButton____hash_base64_5_.enabled____hash_base64_5_{background-color:var(--text,#fff);color:var(--text-bg,#121212)}.iconButton____hash_base64_5_.enabled____hash_base64_5_:focus,.iconButton____hash_base64_5_.enabled____hash_base64_5_:hover{background-color:var(--hover-bg-color-enable,#fffa)}.iconButton____hash_base64_5_>svg{width:1em}.iconButtonPopper____hash_base64_5_{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;top:50%;transform:translateY(-50%);-webkit-user-select:none;user-select:none;white-space:nowrap}.iconButtonPopper____hash_base64_5_[data-placement=right]{left:calc(100% + 1.5em)}.iconButtonPopper____hash_base64_5_[data-placement=right]:before{border-right-color:var(--switch-bg,#6e6e6e);border-right-width:.5em;right:calc(100% + .5em)}.iconButtonPopper____hash_base64_5_[data-placement=left]{right:calc(100% + 1.5em)}.iconButtonPopper____hash_base64_5_[data-placement=left]:before{border-left-color:var(--switch-bg,#6e6e6e);border-left-width:.5em;left:calc(100% + .5em)}.iconButtonPopper____hash_base64_5_:before{background-color:initial;border:.4em solid #0000;content:\\"\\";pointer-events:none;position:absolute;transition:opacity .15s}.iconButtonItem____hash_base64_5_:is(:hover,:focus,[data-show=true]) .iconButtonPopper____hash_base64_5_{opacity:1}.hidden____hash_base64_5_{display:none}";
+var modules_c21c94f2 = {"iconButtonItem":"iconButtonItem____hash_base64_5_","iconButton":"iconButton____hash_base64_5_","enabled":"enabled____hash_base64_5_","iconButtonPopper":"iconButtonPopper____hash_base64_5_","hidden":"hidden____hash_base64_5_"};
 
 /** 图标按钮 */
 const IconButton = _props => {
@@ -6558,7 +6858,7 @@ const IconButton = _props => {
 };
 
 exports.IconButton = IconButton;
-`;
+`
 break;
 case 'components/Fab':
 code =`
@@ -6572,8 +6872,8 @@ const MdMenuBook = ((props = {}) => (() => {
   return _el$;
 })());
 
-var css = ".fabRoot{font-size:1.1em;transition:transform .2s}.fabRoot[data-show=false]{pointer-events:none}.fabRoot[data-show=false]>button{transform:scale(0)}.fabRoot[data-trans=true]{opacity:.8}.fabRoot[data-trans=true]:focus,.fabRoot[data-trans=true]:focus-visible,.fabRoot[data-trans=true]:hover{opacity:1}.fab{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.fab>svg{font-size:1.5em;width:1em}.fab:focus,.fab:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.progress{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.progress>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.progress:hover{color:#cfd8dc}.progress[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.popper{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%) scale(0);transform-origin:right;transition:transform .23s,opacity .15s;transition-delay:var(--hide-delay);white-space:nowrap}:is(.fab:hover,.fabRoot[data-focus=true]) .popper{opacity:1;transform:translateY(-50%) scale(1);transition-delay:0ms}.speedDial{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.speedDialItem{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.speedDial:hover,:is(.fabRoot:hover:not([data-show=false]),.fabRoot[data-focus=true])>.speedDial{pointer-events:all}:is(:is(.fabRoot:hover:not([data-show=false]),.fabRoot[data-focus=true])>.speedDial)>.speedDialItem{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.backdrop{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.fabRoot[data-focus=true] .backdrop{pointer-events:unset}:is(.fabRoot:hover:not([data-show=false]),.fabRoot[data-focus=true],.speedDial:hover) .backdrop{opacity:.4}";
-var modules_c21c94f2 = {"fabRoot":"fabRoot","fab":"fab","progress":"progress","popper":"popper","speedDial":"speedDial","speedDialItem":"speedDialItem","backdrop":"backdrop"};
+var css = ".fabRoot____hash_base64_5_{font-size:1.1em;transition:transform .2s}.fabRoot____hash_base64_5_[data-show=false]{pointer-events:none}.fabRoot____hash_base64_5_[data-show=false]>button{transform:scale(0)}.fabRoot____hash_base64_5_[data-trans=true]{opacity:.8}.fabRoot____hash_base64_5_[data-trans=true]:focus,.fabRoot____hash_base64_5_[data-trans=true]:focus-visible,.fabRoot____hash_base64_5_[data-trans=true]:hover{opacity:1}.fab____hash_base64_5_{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.fab____hash_base64_5_>svg{font-size:1.5em;width:1em}.fab____hash_base64_5_:focus,.fab____hash_base64_5_:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.progress____hash_base64_5_{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0ms;width:100%}.progress____hash_base64_5_>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0ms}.progress____hash_base64_5_:hover{color:#cfd8dc}.progress____hash_base64_5_[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.popper____hash_base64_5_{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%) scale(0);transform-origin:right;transition:transform .23s,opacity .15s;transition-delay:var(--hide-delay);white-space:nowrap}:is(.fab____hash_base64_5_:hover,.fabRoot____hash_base64_5_[data-focus=true]) .popper____hash_base64_5_{opacity:1;transform:translateY(-50%) scale(1);transition-delay:0ms}.speedDial____hash_base64_5_{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.speedDialItem____hash_base64_5_{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.speedDial____hash_base64_5_:hover,:is(.fabRoot____hash_base64_5_:hover:not([data-show=false]),.fabRoot____hash_base64_5_[data-focus=true])>.speedDial____hash_base64_5_{pointer-events:all}:is(:is(.fabRoot____hash_base64_5_:hover:not([data-show=false]),.fabRoot____hash_base64_5_[data-focus=true])>.speedDial____hash_base64_5_)>.speedDialItem____hash_base64_5_{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.backdrop____hash_base64_5_{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.fabRoot____hash_base64_5_[data-focus=true] .backdrop____hash_base64_5_{pointer-events:unset}:is(.fabRoot____hash_base64_5_:hover:not([data-show=false]),.fabRoot____hash_base64_5_[data-focus=true],.speedDial____hash_base64_5_:hover) .backdrop____hash_base64_5_{opacity:.4}";
+var modules_c21c94f2 = {"fabRoot":"fabRoot____hash_base64_5_","fab":"fab____hash_base64_5_","progress":"progress____hash_base64_5_","popper":"popper____hash_base64_5_","speedDial":"speedDial____hash_base64_5_","speedDialItem":"speedDialItem____hash_base64_5_","backdrop":"backdrop____hash_base64_5_"};
 
 /**
  * Fab 按钮
@@ -6709,7 +7009,7 @@ const Fab = _props => {
 };
 
 exports.Fab = Fab;
-`;
+`
 break;
 case 'components/Toast':
 code =`
@@ -6759,8 +7059,8 @@ const MdInfo = ((props = {}) => (() => {
   return _el$;
 })());
 
-var css = ".root{align-items:flex-end;bottom:0;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.item,.root{display:flex}.item{align-items:center;animation:bounceInRight .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:fit-content}.item>svg{color:var(--theme);margin-right:.5em;width:1.5em}.item[data-exit]{animation:bounceOutRight .5s 1}.schedule{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.item[data-schedule] .schedule{transition:transform .1s}.item:not([data-schedule]) .schedule{animation:schedule linear 1 forwards}:is(.item:hover,.item[data-schedule],.root[data-paused]) .schedule{animation-play-state:paused}.msg{line-height:1.4em;text-align:start;white-space:break-spaces;width:fit-content;word-break:break-word}.msg h2{margin:0}.msg h3{margin:.7em 0}.msg ul{margin:0;text-align:left}.msg button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}:is(.msg button):hover{background:#e0e0e0}p{margin:0}@keyframes schedule{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes bounceInRight{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes bounceOutRight{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
-var modules_c21c94f2 = {"root":"root","item":"item","bounceInRight":"bounceInRight","bounceOutRight":"bounceOutRight","schedule":"schedule","msg":"msg"};
+var css = ".root____hash_base64_5_{align-items:flex-end;bottom:0;display:flex;flex-direction:column;font-size:16px;pointer-events:none;position:fixed;right:0;z-index:2147483647}.item____hash_base64_5_{align-items:center;animation:bounceInRight____hash_base64_5_ .5s 1;background:#fff;border-radius:4px;box-shadow:0 1px 10px 0 #0000001a,0 2px 15px 0 #0000000d;color:#000;cursor:pointer;display:flex;margin:1em;max-width:min(30em,100vw);overflow:hidden;padding:.8em 1em;pointer-events:auto;position:relative;width:fit-content}.item____hash_base64_5_>svg{color:var(--theme);margin-right:.5em;width:1.5em}.item____hash_base64_5_[data-exit]{animation:bounceOutRight____hash_base64_5_ .5s 1}.schedule____hash_base64_5_{background-color:var(--theme);bottom:0;height:.2em;left:0;position:absolute;transform-origin:left;width:100%}.item____hash_base64_5_[data-schedule] .schedule____hash_base64_5_{transition:transform .1s}.item____hash_base64_5_:not([data-schedule]) .schedule____hash_base64_5_{animation:schedule____hash_base64_5_ linear 1 forwards}:is(.item____hash_base64_5_:hover,.item____hash_base64_5_[data-schedule],.root____hash_base64_5_[data-paused]) .schedule____hash_base64_5_{animation-play-state:paused}.msg____hash_base64_5_{line-height:1.4em;text-align:start;white-space:break-spaces;width:fit-content;word-break:break-word}.msg____hash_base64_5_ h2{margin:0}.msg____hash_base64_5_ h3{margin:.7em 0}.msg____hash_base64_5_ ul{margin:0;text-align:left}.msg____hash_base64_5_ button{background-color:#eee;border:none;border-radius:.4em;cursor:pointer;font-size:inherit;margin:0 .5em;outline:none;padding:.2em .6em}:is(.msg____hash_base64_5_ button):hover{background:#e0e0e0}p{margin:0}@keyframes schedule____hash_base64_5_{0%{transform:scaleX(1)}to{transform:scaleX(0)}}@keyframes bounceInRight____hash_base64_5_{0%,60%,75%,90%,to{animation-timing-function:cubic-bezier(.215,.61,.355,1)}0%{opacity:0;transform:translate3d(3000px,0,0) scaleX(3)}60%{opacity:1;transform:translate3d(-25px,0,0) scaleX(1)}75%{transform:translate3d(10px,0,0) scaleX(.98)}90%{transform:translate3d(-5px,0,0) scaleX(.995)}to{transform:translateZ(0)}}@keyframes bounceOutRight____hash_base64_5_{20%{opacity:1;transform:translate3d(-20px,0,0) scaleX(.9)}to{opacity:0;transform:translate3d(2000px,0,0) scaleX(2)}}";
+var modules_c21c94f2 = {"root":"root____hash_base64_5_","item":"item____hash_base64_5_","bounceInRight":"bounceInRight____hash_base64_5_","bounceOutRight":"bounceOutRight____hash_base64_5_","schedule":"schedule____hash_base64_5_","msg":"msg____hash_base64_5_"};
 
 const iconMap = {
   info: MdInfo,
@@ -6976,7 +7276,7 @@ toast.error = (msg, options) => toast(msg, {
 
 exports.Toaster = Toaster;
 exports.toast = toast;
-`;
+`
 break;
 case 'userscript/dmzjApi':
 code =`
@@ -7146,12 +7446,13 @@ exports.getChapterInfo = getChapterInfo;
 exports.getComicId = getComicId;
 exports.getViewpoint = getViewpoint;
 exports.useComicDetail = useComicDetail;
-`;
+`
 break;
 case 'userscript/detectAd':
 code =`
-const QrScanner = require('qr-scanner');
 const main = require('main');
+const Comlink = require('comlink');
+const worker = require('worker/detectAd');
 const helper = require('helper');
 
 const getAdPage = async (list, isAdPage, adList) => {
@@ -7182,49 +7483,451 @@ const getAdPage = async (list, isAdPage, adList) => {
   }
   return adList;
 };
-
-/** 判断像素点是否是灰阶 */
-const isGrayscalePixel = (r, g, b) => r === g && r === b;
-
-/** 判断一张图是否是彩图 */
-const isColorImg = imgCanvas => {
-  // 缩小尺寸放弃细节，避免被黑白图上的小段彩色文字干扰
-  const canvas = new OffscreenCanvas(3, 3);
-  const ctx = canvas.getContext('2d', {
-    alpha: false
-  });
-  ctx.drawImage(imgCanvas, 0, 0, canvas.width, canvas.height);
-  const {
-    data
-  } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
-    if (!isGrayscalePixel(r, g, b)) return true;
-  }
-  return false;
-};
 const imgToCanvas = async img => {
   if (typeof img !== 'string') {
-    await helper.wait(() => img.naturalHeight && img.naturalWidth, 1000 * 10);
+    await helper.waitImgLoad(img);
     try {
       const canvas = new OffscreenCanvas(img.width, img.height);
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0);
-      // 没被 CORS 污染就直接使用这个 canvas
-      if (ctx.getImageData(0, 0, 1, 1)) return canvas;
+      // 没被 CORS 污染就直接使用
+      if (ctx.getImageData(0, 0, 1, 1)) {
+        const imgBitmap = canvas.transferToImageBitmap();
+        return Comlink.transfer(imgBitmap, [imgBitmap]);
+      }
     } catch {}
   }
   const url = typeof img === 'string' ? img : img.src;
   const res = await main.request(url, {
     responseType: 'blob'
   });
-  const image = await helper.waitImgLoad(URL.createObjectURL(res.response));
-  const canvas = new OffscreenCanvas(image.width, image.height);
-  const ctx = canvas.getContext('2d');
-  ctx.drawImage(image, 0, 0);
-  return canvas;
+  const imgBitmap = await createImageBitmap(res.response);
+  return Comlink.transfer(imgBitmap, [imgBitmap]);
+};
+
+/** 通过文件名判断是否是广告 */
+const getAdPageByFileName = async (fileNameList, adList) => getAdPage(fileNameList, fileName => /^[zZ]+/.test(fileName), adList);
+const isAdImg = imgBitmap => worker.isAdImg(Comlink.transfer(imgBitmap, [imgBitmap]));
+
+/** 通过图片内容判断是否是广告 */
+const getAdPageByContent = async (imgList, adList) => getAdPage(imgList, async img => isAdImg(await imgToCanvas(img)), adList);
+const mainFn = {
+  log: helper.log
+};
+worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
+
+exports.getAdPageByContent = getAdPageByContent;
+exports.getAdPageByFileName = getAdPageByFileName;
+exports.isAdImg = isAdImg;
+`
+break;
+case 'worker/ImageRecognition':
+code =`
+const getEdgeScope = (width, height) => Math.min(Math.ceil((width + height) * 0.01), 10);
+
+/** 对指定数值取整 */
+const round = (n, int) => {
+  const remainder = n % int;
+  return remainder < int / 2 ? n - remainder : n + (int - remainder);
+};
+
+/** 计算 rgb 的灰度 */
+const toGray = (r, g, b) => Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+
+/** 获取图片的灰度表 */
+const toGrayList = (imgData, roundNum) => {
+  const grayList = new Uint8ClampedArray(new ArrayBuffer(imgData.length / 4));
+  for (let i = 0, gi = 0; i < imgData.length; i += 4, gi++) {
+    const r = imgData[i];
+    const g = imgData[i + 1];
+    const b = imgData[i + 2];
+    grayList[gi] = round(toGray(r, g, b), roundNum);
+  }
+  return grayList;
+};
+
+/** 遍历图片的指定行 */
+const forEachRows = (width, y, fn, start = 0, end = width) => {
+  for (let i = start; i < end; i++) fn(width * y + i);
+};
+
+/** 遍历图片的指定列 */
+const forEachCols = (width, height, x, fn, start = 0, end = height) => {
+  for (let i = start; i < end; i++) fn(i * width + x);
+};
+
+/** 遍历图片的边缘 */
+const forEachEdge = (width, height, scope, fn) => {
+  for (let i = 0; i < scope; i++) {
+    forEachRows(width, i, fn);
+    forEachRows(width, height - i - 1, fn);
+    forEachCols(width, height, i, fn, scope, height - scope);
+    forEachCols(width, height, width - i - 1, fn, scope, height - scope);
+  }
+};
+const mainFn = {};
+const setMainFn = (helper, keys) => {
+  for (const name of keys) Reflect.set(mainFn, name, (...args) => Reflect.apply(helper[name], helper, args));
+};
+
+/** 缩小图像 */
+const resizeImg = (rawImgData, width, height) => {
+  // const scale = 1;
+  const scale = Math.min(200 / width, 200 / height);
+  const w = Math.floor(width * scale);
+  const h = Math.floor(height * scale);
+  const data = new Uint8ClampedArray(new ArrayBuffer(w * h * 4));
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      // 使用最简单的采样方式，避免出现原图所没有的颜色
+      const i = (y * w + x) * 4;
+      const tx = Math.floor(x / scale);
+      const ty = Math.floor(y / scale);
+      const target = (width * ty + tx) * 4;
+      data[i] = rawImgData[target];
+      data[i + 1] = rawImgData[target + 1];
+      data[i + 2] = rawImgData[target + 2];
+      data[i + 3] = 255;
+    }
+  }
+  return {
+    scale,
+    w,
+    h,
+    data
+  };
+};
+
+/** 通过互相比较数组项求出最终项 */
+const boil = (array, compareFunc) => {
+  if (!array || (array.length ?? 0) === 0) return null;
+  return array.reduce(compareFunc); // eslint-disable-line unicorn/no-array-reduce
+};
+
+/** 获取颜色区域在边缘区域上的占比 */
+const getAreaEdgeRatio = (pixelList, width, height) => {
+  let size = 0;
+  const edgeScope = getEdgeScope(width, height);
+  const add = i => pixelList.has(i) && size++;
+  forEachEdge(width, height, edgeScope, add);
+  return size / (width * edgeScope * 2 + (height - 2 * edgeScope) * edgeScope * 2);
+};
+
+/** 根据灰度值获取图片边缘相似颜色的区域 */
+const getEdgeArea = (grayList, width, height) => {
+  const maximum = width * height * 0.4;
+  const areaMap = new Map();
+
+  /** 待检查相邻像素的像素 */
+  const seedPixel = new Set();
+  const addSeedPixel = index => {
+    const gray = grayList[index];
+    if (gray === undefined) return;
+    seedPixel.add(index);
+    if (!areaMap.has(gray)) areaMap.set(gray, new Set());
+    areaMap.get(gray).add(index);
+  };
+  const popSeedPixel = () => {
+    if (seedPixel.size === 0) return undefined;
+    const index = seedPixel.values().next().value;
+    seedPixel.delete(index);
+    return index;
+  };
+
+  // 将边缘区域的像素设为种子
+  const edgeScope = getEdgeScope(width, height);
+  forEachEdge(width, height, edgeScope, addSeedPixel);
+
+  /** 获取相邻像素 */
+  const getAdjacentPixel = i => {
+    const adjacentPixel = [];
+    const x = i % width;
+    const y = Math.floor(i / width);
+    const left = x !== 0;
+    const up = y >= 1;
+    const right = x < width - 1;
+    const down = y < height - 1;
+    if (left) adjacentPixel.push(i - 1); // ←
+    if (up) adjacentPixel.push(i - width); // ↑
+    if (right) adjacentPixel.push(i + 1); // →
+    if (down) adjacentPixel.push(i + width); // ↓
+    if (left && up) adjacentPixel.push(i - width - 1); // ↖
+    if (left && down) adjacentPixel.push(i + width - 1); // ↙
+    if (right && up) adjacentPixel.push(i - width + 1); // ↗
+    if (right && down) adjacentPixel.push(i + width + 1); // ↘
+
+    return adjacentPixel;
+  };
+
+  // 从种子像素开始不断合并相同灰度的像素形成区域
+  for (let i = popSeedPixel(); i !== undefined; i = popSeedPixel()) {
+    const gray = grayList[i];
+    const areaPixelList = areaMap.get(gray);
+    const adjacentPixelList = getAdjacentPixel(i);
+    for (const adjacentPixel of adjacentPixelList) {
+      if (areaPixelList.has(adjacentPixel)) continue;
+      const pixelGray = grayList[adjacentPixel];
+      if (pixelGray !== gray) continue;
+      addSeedPixel(adjacentPixel);
+    }
+
+    // 如果当前区域像素数量超过阈值，就直接认定其为背景
+    if (areaPixelList.size > maximum) return [areaPixelList];
+  }
+  const areaList = [];
+  for (const pixelList of areaMap.values()) {
+    if (pixelList.size < 100) continue;
+    areaList.push(pixelList);
+  }
+  return areaList;
+};
+
+/** 获取图像指定区域中的主色 */
+const getAreaColor = (imgData, pixelList) => {
+  const colorMap = new Map();
+  const maximum = pixelList.size * 0.5;
+  let maxColor = '';
+  let maxCount = 0;
+  for (const i of pixelList.values()) {
+    const index = i * 4;
+    const r = imgData[index];
+    const g = imgData[index + 1];
+    const b = imgData[index + 2];
+    const color = \`rgb(\${r}, \${g}, \${b})\`;
+    if (!colorMap.has(color)) colorMap.set(color, 0);
+    const colorCount = colorMap.get(color) + 1;
+    colorMap.set(color, colorCount);
+    if (colorCount > maxCount) {
+      maxColor = color;
+      maxCount = colorCount;
+    }
+    if (colorCount > maximum) break;
+  }
+  return maxColor;
+};
+
+/** 获取图像指定矩形区域中的主色 */
+const getSquareAreaColor = (imgData, topLeftX, topLeftY, bottomRightX, bottomRightY) => {
+  const colorMap = new Map();
+  const maximum = (bottomRightX - topLeftX) * (bottomRightY - topLeftY) * 0.5;
+  let maxColor = '';
+  let maxCount = 0;
+  for (let x = topLeftX; x < bottomRightX; x++) {
+    for (let y = topLeftY; y < bottomRightY; y++) {
+      const index = (x + y * bottomRightX) * 4;
+      const r = imgData[index];
+      const g = imgData[index + 1];
+      const b = imgData[index + 2];
+      const color = \`rgb(\${r}, \${g}, \${b})\`;
+      if (!colorMap.has(color)) colorMap.set(color, 0);
+      const colorCount = colorMap.get(color) + 1;
+      colorMap.set(color, colorCount);
+      if (colorCount > maxCount) {
+        maxColor = color;
+        maxCount = colorCount;
+      }
+      if (colorCount > maximum) break;
+    }
+  }
+  return maxColor;
+};
+
+/** 根据边缘颜色区域获取背景颜色 */
+const byEdgeArea = ({
+  data,
+  grayList,
+  width,
+  height
+}) => {
+  const areaList = getEdgeArea(grayList, width, height);
+  // if (false) mainFn.showColorArea?.(data, width, height, ...areaList);
+
+  if (areaList.length === 0) return undefined;
+  const minimum = width * height * 0.02;
+  let maxArea;
+  let maxRatio = 0.1;
+
+  // 过滤总体占比和边缘占比过小的区域
+  for (const pixelList of areaList) {
+    if (pixelList.size < minimum) continue;
+    const edgeRatio = getAreaEdgeRatio(pixelList, width, height);
+    if (edgeRatio < maxRatio) continue;
+    maxArea = pixelList;
+    maxRatio = edgeRatio;
+  }
+  if (!maxArea) return undefined;
+  return getAreaColor(data, maxArea);
+};
+const getPosAreaColor = (pos, {
+  data,
+  blankMargin,
+  width: w,
+  height: h
+}) => {
+  switch (pos) {
+    case 'top':
+      return getSquareAreaColor(data, 0, 0, w, blankMargin.top * h);
+    case 'bottom':
+      return getSquareAreaColor(data, 0, h - blankMargin.bottom * h, w, h);
+    case 'left':
+      return getSquareAreaColor(data, 0, 0, blankMargin.left * w, h);
+    case 'right':
+      return getSquareAreaColor(data, w - blankMargin.right * w, 0, w, h);
+  }
+};
+
+/** 从足够大的空白边缘中获取背景颜色 */
+const byBlankMargin = context => {
+  const colorMap = {};
+  for (const pos of ['top', 'bottom', 'left', 'right']) {
+    if (!context.blankMargin[pos]) continue;
+    const color = getPosAreaColor(pos, context);
+    if (!color) continue;
+    colorMap[color] = (colorMap[color] || 0) + context.blankMargin[pos];
+  }
+
+  // 过滤占比过低的空白边缘
+  const colorList = Object.entries(colorMap).filter(([, v]) => v > 0.04);
+  if (colorList.length === 0) return undefined;
+  return boil(colorList, (a, b) => a[1] > b[1] ? a : b)?.[0];
+};
+
+/** 判断图像的背景色 */
+const getBackground = context => 'blankMargin' in context && byBlankMargin(context) || byEdgeArea(context);
+
+/** 获取图片空白边缘的长度 */
+const getBlankMargin = ({
+  grayList,
+  width,
+  height
+}) => {
+  let blankColor;
+
+  // 检查指定行或列上是否全是相同颜色
+  const isBlankLine = (x, y) => {
+    const colorMap = new Map();
+    const eachFn = i => {
+      const gray = grayList[i];
+      colorMap.set(gray, (colorMap.get(gray) || 0) + 1);
+      // grayList[i] = Math.abs(gray - 255);
+    };
+    if (x < 0) forEachRows(width, y, eachFn);else forEachCols(width, height, x, eachFn);
+    let maxColor;
+    // 为了能跳过些微色差和漫画水印，阈值就只设为 90%
+    let maxNum = height * 0.9;
+    for (const [gray, num] of colorMap.entries()) {
+      if (num < maxNum) continue;
+      maxColor = gray;
+      maxNum = num;
+    }
+    if (maxColor === undefined) return false;
+    blankColor ||= maxColor;
+    if (maxColor !== blankColor) return false;
+    return true;
+  };
+  let left = 0;
+  for (let x = 0, end = width * 0.4; x < end; x++, left++) if (!isBlankLine(x, -1)) break;
+  blankColor = undefined;
+  let right = 0;
+  for (let x = width - 1, end = width * 0.6; x >= end; x--, right++) if (!isBlankLine(x, -1)) break;
+  blankColor = undefined;
+  let top = 0;
+  for (let y = 0, end = height * 0.4; y < end; y++, top++) if (!isBlankLine(-1, y)) break;
+  blankColor = undefined;
+  let bottom = 0;
+  for (let y = height - 1, end = height * 0.6; y >= end; y--, bottom++) if (!isBlankLine(-1, y)) break;
+
+  // if (false) mainFn.showGrayList?.(grayList, width, height);
+
+  if (left || right || top || bottom) return {
+    left,
+    right,
+    top,
+    bottom
+  };
+  return undefined;
+};
+
+const handleImg = async (imgData, width, height, url, option) => {
+  const startTime = Date.now();
+  const {
+    w,
+    h,
+    data
+  } = resizeImg(imgData, width, height);
+  // if (false) mainFn.showCanvas?.(data, w, h);
+
+  const grayList = toGrayList(data, 5);
+  // if (false) mainFn.showGrayList?.(grayList, w, h);
+
+  const context = {
+    data,
+    grayList,
+    width: w,
+    height: h
+  };
+  let blankMargin;
+  if (option.pageFill || option.background) {
+    blankMargin = getBlankMargin(context);
+    if (blankMargin) {
+      for (const key of ['top', 'bottom', 'left', 'right']) blankMargin[key] &&= blankMargin[key] / w;
+      mainFn.setImg(url, 'blankMargin', {
+        left: blankMargin.left,
+        right: blankMargin.right
+      });
+      mainFn.updatePageData();
+      context.blankMargin = blankMargin;
+    } else mainFn.setImg(url, 'blankMargin', null);
+  }
+  let bgColor;
+  if (option.background) {
+    // 虽然也想支持渐变背景，但浏览器上不像手机端那样只需要显示上下背景，可以无视中间的渐变
+    // 大部分时候都要显示左右区域的背景，不能和实际背景一致的话就会很突兀
+    // 要是图片能一直占满屏幕的话，那还能通过单独显示上下或左右部分的背景色来实现
+    // 但偏偏又有「禁止图片自动放大」功能，需要把图片的四边背景都显示出来
+    bgColor = getBackground(context);
+    if (bgColor) mainFn.setImg(url, 'background', bgColor);
+  }
+  let logText = \`\${url}\\n耗时 \${Date.now() - startTime}ms 处理完成\`;
+  const resList = [];
+  if (blankMargin) resList.push(\`空白边缘：\${Object.entries(blankMargin).filter(([, v]) => v).map(([k, v]) => \`\${k}:\${v && (v * 100).toFixed(2)}%\`).join(' ')}\`);
+  if (bgColor) resList.push(\`背景色: \${bgColor}\`);
+  if (resList.length > 0) logText += \`\\n\${resList.join('\\n')}\`;
+  mainFn.log?.(logText);
+};
+
+exports.handleImg = handleImg;
+exports.setMainFn = setMainFn;
+`
+break;
+case 'worker/detectAd':
+code =`
+const jsQR = require('jsqr');
+
+const mainFn = {};
+const setMainFn = (helper, keys) => {
+  for (const name of keys) Reflect.set(mainFn, name, (...args) => Reflect.apply(helper[name], helper, args));
+};
+
+/** 计算 rgb 的灰度 */
+const toGray = (r, g, b) => Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+
+// jsQR 最为简洁，但不支持包含多个二维码的图片
+// https://github.com/cozmo/jsQR/issues/24
+//
+// ZXing 可以扫描包含多个二维码的图片，但因为同时支持多种编码，
+// 包含了很多根本不需要的代码，用在这里感觉太牛刀杀鸡了
+//
+// qr-scanner 基于上述两个库进行开发，是最优选。但会收到 CSP 限制而无法使用
+/** 判断一张图是否是彩图 */
+const isColorImg = data => {
+  for (let i = 0; i < data.length; i += 16) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+    if (!(r === g && r === b)) return true;
+  }
+  return false;
 };
 
 /** 二维码白名单 */
@@ -7236,80 +7939,529 @@ const qrCodeWhiteList = [
 // fantia
 /^https:\\/\\/fantia\\.jp/,
 // 棉花糖
-/^https:\\/\\/marshmallow-qa\\.com/];
+/^https:\\/\\/marshmallow-qa\\.com/,
+// dlsite
+/^https:\\/\\/www\\.dlsite\\.com/,
+// hitomi
+/^https:\\/\\/hitomi\\.la/];
+const options = {
+  inversionAttempts: 'attemptBoth'
+};
 
-/** 判断是否含有二维码 */
-const hasQrCode = async (imgCanvas, scanRegion, qrEngine, canvas) => {
+/** 识别图像上的二维码 */
+const getQrCode = (img, width, height) => {
   try {
-    const {
-      data
-    } = await QrScanner.scanImage(imgCanvas, {
-      qrEngine,
-      canvas: canvas,
-      scanRegion,
-      alsoTryWithoutScanRegion: true
-    });
-    if (!data) return false;
-    helper.log(\`检测到二维码： \${data}\`);
-    return qrCodeWhiteList.every(reg => !reg.test(data));
+    const binaryData = jsQR(img, width, height, options)?.binaryData;
+    if (!binaryData) return false;
+    // 因为 jsqr 默认的输出不支持特殊符号，为以防万一，手动进行转换
+    const text = new TextDecoder().decode(Uint8Array.from(binaryData));
+    mainFn.log(\`检测到二维码： \${text}\`);
+    return text;
   } catch {
-    return false;
+    return undefined;
   }
 };
-const isAdImg = async (imgCanvas, qrEngine, canvas) => {
+
+// zxing 方案
+//
+// import {
+//   MultiFormatReader,
+//   BarcodeFormat,
+//   DecodeHintType,
+//   RGBLuminanceSource,
+//   BinaryBitmap,
+//   HybridBinarizer,
+// } from '@zxing/library';
+//
+// const hints = new Map();
+// // 只识别二维码
+// hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+//   BarcodeFormat.QR_CODE,
+//   BarcodeFormat.DATA_MATRIX,
+// ]);
+// // 花更多时间尝试寻找条形码
+// hints.set(DecodeHintType.TRY_HARDER, true);
+//
+// /** 识别图像上的二维码 */
+// const getQrCode = (
+//   data: Uint8ClampedArray,
+//   width: number,
+//   height: number,
+// ) => {
+//   try {
+//     const luminance = new Uint8ClampedArray(width * height);
+//     for (let i = 0; i < data.length; i += 4) {
+//       const r = data[i];
+//       const g = data[i + 1];
+//       const b = data[i + 2];
+//       luminance[i / 4] = (r + g + b) / 3;
+//     }
+//     const luminanceSource = new RGBLuminanceSource(luminance, width, height);
+//     const binaryBitmap = new BinaryBitmap(new HybridBinarizer(luminanceSource));
+//     const res = new MultiFormatReader().decode(binaryBitmap, hints);
+//     const text = res.getText();
+//     if (!text) return false;
+//     mainFn.log(\`检测到二维码： \${text}\`);
+//     return text;
+//   } catch (error) {
+//     console.log(error);
+//     debugger;
+//     return false;
+//   }
+const getImgData = img => {
+  const canvas = new OffscreenCanvas(img.width, img.height);
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  return ctx.getImageData(0, 0, canvas.width, canvas.height);
+};
+const scanImgBlock = (img, sx, sy, w, h) => {
+  if (w === img.width && h === img.height) return getQrCode(img.data, w, h);
+  const data = new Uint8ClampedArray(new ArrayBuffer(w * h * 4));
+  for (let y = 0, height = sy + h; y < height; y++) for (let x = 0, width = sx + w; x < width; x++) {
+    const i = (y * w + x) * 4;
+    const target = ((y + sy) * img.width + (x + sx)) * 4;
+    data[i] = img.data[target];
+    data[i + 1] = img.data[target + 1];
+    data[i + 2] = img.data[target + 2];
+    data[i + 3] = img.data[target + 3];
+  }
+  return getQrCode(data, w, h);
+};
+const isAdImg = async imgBitmap => {
+  const imgData = getImgData(imgBitmap);
+
   // 黑白图肯定不是广告
-  if (!isColorImg(imgCanvas)) return false;
-  const width = imgCanvas.width / 2;
-  const height = imgCanvas.height / 2;
+  if (!isColorImg(imgData.data)) return false;
+
+  // 以 200 灰度为阈值，将图片二值化，以便识别彩色二维码
+  for (let i = 0; i < imgData.data.length; i += 4) {
+    const gray = toGray(imgData.data[i], imgData.data[i + 1], imgData.data[i + 2]);
+    const val = gray < 200 ? 0 : 255;
+    imgData.data[i] = val;
+    imgData.data[i + 1] = val;
+    imgData.data[i + 2] = val;
+    imgData.data[i + 3] = 255;
+  }
+
+  // mainFn.showCanvas?.(imgData.data, imgBitmap.width, imgBitmap.height);
+
+  let text = getQrCode(imgData.data, imgData.width, imgData.height);
 
   // 分区块扫描图片
-  const scanRegionList = [undefined,
-  // 右下
-  {
-    x: width,
-    y: height,
-    width,
-    height
-  },
-  // 左下
-  {
-    x: 0,
-    y: height,
-    width,
-    height
-  },
-  // 右上
-  {
-    x: width,
-    y: 0,
-    width,
-    height
-  },
-  // 左上
-  {
-    x: 0,
-    y: 0,
-    width,
-    height
-  }];
-  for (const scanRegion of scanRegionList) if (await hasQrCode(imgCanvas, scanRegion, qrEngine, canvas)) return true;
+  if (!text) {
+    const w = Math.floor(imgData.width / 2);
+    const h = Math.floor(imgData.height / 2);
+    for (const args of [[w, h],
+    // ↘
+    [0, h],
+    // ↙
+    [w, 0],
+    // ↗
+    [0, 0] // ↖
+    ]) {
+      text = scanImgBlock(imgData, ...args, w, h);
+      if (text) break;
+    }
+  }
+  if (text) return qrCodeWhiteList.every(reg => !reg.test(text));
   return false;
 };
-const byContent = (qrEngine, canvas) => async img => isAdImg(await imgToCanvas(img), qrEngine, canvas);
 
-/** 通过图片内容判断是否是广告 */
-const getAdPageByContent = async (imgList, adList) => {
-  const qrEngine = await QrScanner.createQrEngine();
-  const canvas = new OffscreenCanvas(1, 1);
-  return getAdPage(imgList, byContent(qrEngine, canvas), adList);
+exports.isAdImg = isAdImg;
+exports.setMainFn = setMainFn;
+`
+break;
+case 'userscript/otherSite':
+code =`
+const web = require('solid-js/web');
+const helper = require('helper');
+const Manga = require('components/Manga');
+const main = require('main');
+
+const getTagText = ele => {
+  let text = ele.nodeName;
+  if (ele.id && !/\\d/.test(ele.id)) text += \`#\${ele.id}\`;
+  return text;
 };
 
-/** 通过文件名判断是否是广告 */
-const getAdPageByFileName = async (fileNameList, adList) => getAdPage(fileNameList, fileName => /^[zZ]+/.test(fileName), adList);
+/** 获取元素仅记录了层级结构关系的选择器 */
+const getEleSelector = ele => {
+  const parents = [ele.nodeName];
+  const root = ele.getRootNode();
+  let e = ele;
+  while (e.parentNode && e.parentNode !== root) {
+    e = e.parentNode;
+    parents.push(getTagText(e));
+  }
+  return parents.reverse().join('>');
+};
 
-exports.getAdPageByContent = getAdPageByContent;
-exports.getAdPageByFileName = getAdPageByFileName;
-`;
+/** 判断指定元素是否符合选择器 */
+const isEleSelector = (ele, selector) => {
+  const parents = selector.split('>').reverse();
+  let e = ele;
+  for (let i = 0; e && i < parents.length; i++) {
+    if (getTagText(e) !== parents[i]) return false;
+    e = e.parentNode;
+  }
+  return e === e.getRootNode();
+};
+
+// 目录页和漫画页的图片层级相同
+// https://www.biliplus.com/manga/
+// 图片路径上有 id 元素并且 id 含有漫画 id，不同话数 id 也不同
+const createImgData = (oldSrc = '') => ({
+  triggedNum: 0,
+  observerTimeout: 0,
+  oldSrc
+});
+
+/** 用于判断是否是图片 url 的正则 */
+const isImgUrlRe = /^(((https?|ftp|file):)?\\/)?\\/[-\\w+&@#/%?=~|!:,.;]+[-\\w+&@#%=~|]$/;
+
+/** 找出格式为图片 url 的元素属性 */
+const getDatasetUrl = e => {
+  for (const key of e.getAttributeNames()) {
+    // 跳过白名单
+    switch (key) {
+      case 'src':
+      case 'alt':
+      case 'class':
+      case 'style':
+      case 'id':
+      case 'title':
+      case 'onload':
+      case 'onerror':
+        continue;
+    }
+    const val = e.getAttribute(key).trim();
+    if (!isImgUrlRe.test(val)) continue;
+    return val;
+  }
+};
+
+/**
+ *
+ * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
+ *
+ * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
+ */
+const triggerEleLazyLoad = async (e, time, isLazyLoaded, runCondition) => {
+  const nowScroll = window.scrollY;
+  e.scrollIntoView({
+    behavior: 'instant'
+  });
+  e.dispatchEvent(new Event('scroll', {
+    bubbles: true
+  }));
+  try {
+    if (isLazyLoaded && time) return await helper.wait(isLazyLoaded, time);
+  } finally {
+    if (runCondition()) window.scroll({
+      top: nowScroll,
+      behavior: 'instant'
+    });
+  }
+};
+
+/** 判断一个元素是否已经触发完懒加载 */
+const isLazyLoaded = (e, oldSrc) => {
+  if (!e.src) return false;
+  if (!e.offsetParent) return false;
+  // 有些网站会使用 svg 占位
+  if (e.src.startsWith('data:image/svg')) return false;
+  if (oldSrc !== undefined && e.src !== oldSrc) return true;
+  if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
+  return false;
+};
+const imgMap = new WeakMap();
+// eslint-disable-next-line no-autofix/prefer-const
+let imgShowObserver;
+const getImg = e => imgMap.get(e) ?? createImgData();
+const MAX_TRIGGED_NUM = 5;
+
+/** 判断图片元素是否需要触发懒加载 */
+const needTrigged = e => !isLazyLoaded(e, imgMap.get(e)?.oldSrc) && (imgMap.get(e)?.triggedNum ?? 0) < MAX_TRIGGED_NUM;
+
+/** 图片懒加载触发完后调用 */
+const handleTrigged = e => {
+  const img = getImg(e);
+  img.observerTimeout = 0;
+  img.triggedNum += 1;
+  if (isLazyLoaded(e, img.oldSrc) && img.triggedNum < MAX_TRIGGED_NUM) img.triggedNum = MAX_TRIGGED_NUM;
+  imgMap.set(e, img);
+  if (!needTrigged(e)) imgShowObserver.unobserve(e);
+};
+
+/** 监视图片是否被显示的 Observer */
+imgShowObserver = new IntersectionObserver(entries => {
+  for (const img of entries) {
+    const ele = img.target;
+    if (img.isIntersecting) {
+      imgMap.set(ele, {
+        ...getImg(ele),
+        observerTimeout: window.setTimeout(handleTrigged, 290, ele)
+      });
+    } else {
+      const timeoutID = imgMap.get(ele)?.observerTimeout;
+      if (timeoutID) window.clearTimeout(timeoutID);
+    }
+  }
+});
+const turnPageScheduled = helper.createScheduled(fn => helper.throttle(fn, 1000));
+/** 触发翻页 */
+const triggerTurnPage = async (waitTime, runCondition) => {
+  if (!turnPageScheduled()) return;
+  const nowScroll = window.scrollY;
+  // 滚到底部再滚回来，触发可能存在的自动翻页脚本
+  window.scroll({
+    top: document.body.scrollHeight,
+    behavior: 'instant'
+  });
+  document.body.dispatchEvent(new Event('scroll', {
+    bubbles: true
+  }));
+  if (waitTime) await helper.sleep(waitTime);
+  if (runCondition()) window.scroll({
+    top: nowScroll,
+    behavior: 'instant'
+  });
+};
+const waitTime = 300;
+
+/** 触发页面上所有图片元素的懒加载 */
+const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondition) => {
+  // 过滤掉已经被触发过懒加载的图片
+  const targetImgList = getAllImg().filter(needTrigged).sort((a, b) => a.getBoundingClientRect().y - b.getBoundingClientRect().y);
+  for (const e of targetImgList) {
+    imgShowObserver.observe(e);
+    if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));
+  }
+  for (const e of targetImgList) {
+    await helper.wait(runCondition);
+    await triggerTurnPage(0, runCondition);
+    if (!needTrigged(e)) continue;
+    const datasetUrl = getDatasetUrl(e);
+    if (datasetUrl) e.setAttribute('src', datasetUrl);
+    if (await triggerEleLazyLoad(e, waitTime, () => isLazyLoaded(e, imgMap.get(e)?.oldSrc), runCondition)) handleTrigged(e);
+  }
+  await triggerTurnPage(waitTime, runCondition);
+  if (targetImgList.length > 0) state.continueRun = true;
+});
+
+
+// 测试案例
+// https://www.177picyy.com/html/2023/03/5505307.html
+// 需要配合其他翻页脚本使用
+// https://www.colamanga.com/manga-za76213/1/5.html
+// 直接跳转到图片元素不会立刻触发，还需要停留20ms
+// https://www.colamanga.com/manga-kg45140/1/2.html
+/** 执行脚本操作。如果中途中断，将返回 true */
+const otherSite = async () => {
+  const {
+    options,
+    setComicLoad,
+    setComicMap,
+    setImgList,
+    setManga,
+    setFab,
+    setOptions,
+    isStored,
+    mangaProps
+  } = await main.useInit(window.location.hostname, {
+    remember_current_site: true,
+    selector: ''
+  });
+
+  // 通过 options 来迂回的实现禁止记住当前站点
+  if (!options.remember_current_site) {
+    await GM.deleteValue(window.location.hostname);
+    return true;
+  }
+  if (!isStored) main.toast(() => (() => {
+    var _el$ = web.template(\`<div><button>\`)(),
+      _el$2 = _el$.firstChild;
+    web.insert(_el$, () => helper.t('site.simple.auto_read_mode_message'), _el$2);
+    _el$2.addEventListener("click", () => setOptions({
+      autoShow: false
+    }));
+    web.insert(_el$2, () => helper.t('other.disable'));
+    return _el$;
+  })(), {
+    duration: 1000 * 7
+  });
+
+  // 为避免卡死，提供一个删除 selector 的菜单项
+  const menuId = await GM.registerMenuCommand(helper.t('site.simple.simple_read_mode'), () => setOptions({
+    selector: ''
+  }));
+
+  // 等待 selector 匹配到目标后再继续执行，避免在漫画页外的其他地方运行
+  await helper.wait(() => !options.selector || helper.querySelectorAll(options.selector).length >= 2);
+  await GM.unregisterMenuCommand(menuId);
+
+  /** 记录传入的图片元素中最常见的那个 selector */
+  const saveImgEleSelector = imgEleList => {
+    if (imgEleList.length < 7) return;
+    const selector = helper.getMostItem(imgEleList.map(getEleSelector));
+    if (selector !== options.selector) setOptions({
+      selector
+    });
+  };
+  const blobUrlMap = new Map();
+  // 处理那些 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片
+  const handleBlobImg = async e => {
+    if (blobUrlMap.has(e.src)) return blobUrlMap.get(e.src);
+    if (!e.src.startsWith('blob:')) return e.src;
+    if (await helper.testImgUrl(e.src)) return e.src;
+    const canvas = document.createElement('canvas');
+    const canvasCtx = canvas.getContext('2d');
+    canvas.width = e.naturalWidth;
+    canvas.height = e.naturalHeight;
+    canvasCtx.drawImage(e, 0, 0);
+    const url = URL.createObjectURL(await helper.canvasToBlob(canvas));
+    blobUrlMap.set(e.src, url);
+    return url;
+  };
+  const handleImgUrl = async e => {
+    const url = await handleBlobImg(e);
+    if (url.startsWith('http:') && window.location.protocol === 'https:') return url.replace('http:', 'https:');
+    return url;
+  };
+
+  /** 重复的加载占位图 */
+  const placeholderImgList = new Set();
+  helper.createEffectOn(() => mangaProps.imgList.filter(url => url && !placeholderImgList.has(url)), helper.throttle(imgList => {
+    if (!imgList?.length || imgList.length - new Set(imgList).size <= 4) return;
+    const repeatNumMap = new Map();
+    for (const url of imgList) {
+      const repeatNum = (repeatNumMap.get(url) ?? 0) + 1;
+      repeatNumMap.set(url, repeatNum);
+      if (repeatNum > 5) placeholderImgList.add(url);
+    }
+  }));
+  const imgBlackList = [
+  // 东方永夜机的预加载图片
+  '#pagetual-preload',
+  // 177picyy 上会在图片下加一个 noscript
+  // 本来只是图片元素的 html 代码，但经过东方永夜机加载后就会变成真的图片元素，导致重复
+  'noscript'];
+  const getAllImg = () => helper.querySelectorAll(\`:not(\${imgBlackList.join(',')}) > img\`);
+  let imgEleList;
+  let updateImgListTimeout;
+  /** 检查筛选符合标准的图片元素用于更新 imgList */
+  const updateImgList = helper.singleThreaded(async () => {
+    imgEleList = await helper.wait(() => {
+      const newImgList = getAllImg().filter(e => e.offsetHeight > 100 && e.offsetWidth > 100 && (e.naturalHeight > 500 && e.naturalWidth > 500 || isEleSelector(e, options.selector))).sort((a, b) => a.getBoundingClientRect().y - b.getBoundingClientRect().y);
+      return newImgList.length >= 2 && newImgList;
+    });
+    if (imgEleList.length === 0) {
+      setFab('show', false);
+      setManga('show', false);
+      return;
+    }
+    let newImgEleList = imgEleList;
+
+    /** 预计的图片总数 */
+    let expectCount = 0;
+    /** 还需要继续触发懒加载的图片个数 */
+    let needTriggedNum = 0;
+    if (options.selector) {
+      const expectImgList = helper.querySelectorAll(options.selector);
+      expectCount = expectImgList.filter(e => !imgMap.get(e)?.triggedNum || isLazyLoaded(e, imgMap.get(e)?.oldSrc)).length;
+      needTriggedNum = expectImgList.filter(needTrigged).length;
+      // 根据预计的图片总数补上占位的空图
+      const fillImgNum = expectCount - imgEleList.length;
+      if (fillImgNum > 0) newImgEleList = [...imgEleList, ...Array.from({
+        length: fillImgNum
+      })];
+    }
+    let isEdited = false;
+    await helper.plimit(newImgEleList.map((e, i) => async () => {
+      let newUrl = '';
+      if (e) {
+        newUrl = await handleImgUrl(e);
+        if (placeholderImgList.has(newUrl)) newUrl = getDatasetUrl(e) ?? '';
+      }
+      if (newUrl === mangaProps.imgList[i]) return;
+      isEdited ||= true;
+      setImgList('', i, newUrl);
+    }));
+    if (isEdited) saveImgEleSelector(imgEleList);
+
+    // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要再删掉多余的页数
+    if (mangaProps.imgList.length > newImgEleList.length) setComicMap('', 'imgList', mangaProps.imgList.slice(0, newImgEleList.length));
+    if (isEdited || needTriggedNum || imgEleList.some(e => !e.naturalWidth && !e.naturalHeight)) {
+      if (updateImgListTimeout) window.clearTimeout(updateImgListTimeout);
+      updateImgListTimeout = window.setTimeout(updateImgList, 1000);
+    }
+  });
+  let timeout = false;
+  const triggerAllLazyLoad = () => triggerLazyLoad(getAllImg,
+  // 只在\`开启了阅读模式\`和\`当前可显示图片数量不足\`时通过滚动触发懒加载
+  () => mangaProps.show || !timeout && mangaProps.imgList.length === 0);
+
+  /** 监视页面元素发生变化的 Observer */
+  const imgDomObserver = new MutationObserver(() => {
+    updateImgList();
+    triggerAllLazyLoad();
+  });
+  setComicLoad(async () => {
+    if (!imgEleList) {
+      imgEleList = [];
+      imgDomObserver.observe(document.body, {
+        subtree: true,
+        childList: true,
+        attributes: true,
+        attributeFilter: ['src']
+      });
+      updateImgList();
+      triggerAllLazyLoad();
+      setTimeout(() => {
+        timeout = true;
+        if (mangaProps.imgList.length > 0) return;
+        main.toast.warn(helper.t('site.simple.no_img'), {
+          id: 'no_img',
+          duration: Number.POSITIVE_INFINITY,
+          async onClick() {
+            await setOptions({
+              remember_current_site: false
+            });
+            window.location.reload();
+          }
+        });
+      }, 3000);
+    }
+    await helper.wait(() => mangaProps.imgList.length);
+    main.toast.dismiss('no_img');
+    return mangaProps.imgList;
+  });
+
+  // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
+  helper.createEffectOn(Manga.renderImgList, helper.throttle(list => {
+    if (list.size === 0 || !mangaProps.show) return;
+    const lastImgIndex = [...list].at(-1);
+    if (lastImgIndex === undefined) return;
+    imgEleList[lastImgIndex]?.scrollIntoView({
+      behavior: 'instant',
+      block: 'end'
+    });
+  }, 1000), {
+    defer: true
+  });
+
+  // 在退出阅读模式时跳回之前的滚动位置
+  let laseScroll = window.scrollY;
+  helper.createEffectOn(() => mangaProps.show, show => {
+    if (show) laseScroll = window.scrollY;else window.scroll({
+      top: laseScroll,
+      behavior: 'instant'
+    });
+  });
+};
+
+exports.otherSite = otherSite;
+`
 break;
     case 'main':
       code =`
@@ -7461,15 +8613,15 @@ const DownloadButton = () => {
     };
     const fileData = {};
     const {
-      imgList
-    } = Manga.store;
-    const imgIndexNum = \`\${imgList.length}\`.length;
-    for (let i = 0; i < imgList.length; i += 1) {
-      setStatu(\`\${i}/\${imgList.length}\`);
-      if (Manga.store.option.translation.onlyDownloadTranslated && imgList[i].translationType !== 'show') continue;
-      const img = imgList[i];
-      const url = img.translationType === 'show' ? img.translationUrl : img.src;
+      length
+    } = Manga.imgList();
+    const imgIndexNum = \`\${length}\`.length;
+    for (let i = 0; i < length; i += 1) {
+      setStatu(\`\${i}/\${length}\`);
+      const img = Manga.imgList()[i];
+      if (Manga.store.option.translation.onlyDownloadTranslated && img.translationType !== 'show') continue;
       const index = \`\${i}\`.padStart(imgIndexNum, '0');
+      const url = img.translationType === 'show' ? img.translationUrl : img.src;
       let data;
       let fileName;
       try {
@@ -7685,25 +8837,37 @@ const MdAutoFixOff = ((props = {}) => (() => {
   return _el$;
 })());
 
-const MdAutoFlashOn = ((props = {}) => (() => {
+const MdFlashOn = ((props = {}) => (() => {
   var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M7 3v9c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l5.19-8.9a.995.995 0 0 0-.86-1.5H13l2.49-6.65A.994.994 0 0 0 14.56 2H8c-.55 0-1 .45-1 1">\`)();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
-const MdAutoFlashOff = ((props = {}) => (() => {
+const MdFlashOff = ((props = {}) => (() => {
   var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M16.12 11.5a.995.995 0 0 0-.86-1.5h-1.87l2.28 2.28zm.16-8.05c.33-.67-.15-1.45-.9-1.45H8c-.55 0-1 .45-1 1v.61l6.13 6.13zm2.16 14.43L4.12 3.56a.996.996 0 1 0-1.41 1.41L7 9.27V12c0 .55.45 1 1 1h2v7.15c0 .51.67.69.93.25l2.65-4.55 3.44 3.44c.39.39 1.02.39 1.41 0 .4-.39.4-1.02.01-1.41">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const MdLockOpen = ((props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M12 13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2m6-5h-1V6c0-2.76-2.24-5-5-5-2.28 0-4.27 1.54-4.84 3.75-.14.54.18 1.08.72 1.22a1 1 0 0 0 1.22-.72A2.996 2.996 0 0 1 12 3c1.65 0 3 1.35 3 3v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m0 11c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-8c0-.55.45-1 1-1h10c.55 0 1 .45 1 1z">\`)();
+  web.spread(_el$, props, true, true);
+  return _el$;
+})());
+
+const MdLock = ((props = {}) => (() => {
+  var _el$ = web.template(\`<svg xmlns=http://www.w3.org/2000/svg viewBox="0 0 24 24"stroke=currentColor fill=currentColor stroke-width=0><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2M9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2z">\`)();
   web.spread(_el$, props, true, true);
   return _el$;
 })());
 
 const useSpeedDial = (options, setOptions) => {
   const DefaultButton = props => web.createComponent(IconButton.IconButton, {
+    placement: "left",
+    showTip: true,
     get tip() {
       return props.showName ?? (helper.t(\`site.add_feature.\${props.optionName}\`) || props.optionName);
     },
-    placement: "left",
-    showTip: true,
     onClick: () => setOptions({
       ...options,
       [props.optionName]: !options[props.optionName]
@@ -7721,10 +8885,20 @@ const useSpeedDial = (options, setOptions) => {
         return () => web.createComponent(DefaultButton, {
           optionName: "autoShow",
           get showName() {
-            return helper.t('other.auto_enter_read_mode');
+            return helper.t('site.add_feature.auto_show');
           },
           get children() {
-            return web.memo(() => !!options.autoShow)() ? web.createComponent(MdAutoFlashOn, {}) : web.createComponent(MdAutoFlashOff, {});
+            return web.memo(() => !!options.autoShow)() ? web.createComponent(MdFlashOn, {}) : web.createComponent(MdFlashOff, {});
+          }
+        });
+      case 'lockOption':
+        return () => web.createComponent(DefaultButton, {
+          optionName: "lockOption",
+          get showName() {
+            return helper.t('site.add_feature.lock_option');
+          },
+          get children() {
+            return web.memo(() => !!options.lockOption)() ? web.createComponent(MdLock, {}) : web.createComponent(MdLockOpen, {});
           }
         });
       default:
@@ -7841,7 +9015,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复使用自部署翻译服务时目标语言配置失效的 bug\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>增加识别背景色功能 </p></li><li><p>实现自动调整页面填充功能 </p></li><li><p>增加锁定站点配置功能 </p></li><li><p>ehentai 增加自动调整阅读配置功能\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>支持改版后的無限動漫\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
@@ -7886,13 +9060,15 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     option: undefined,
     defaultOption: undefined,
     autoShow: true,
+    lockOption: false,
     hiddenFAB: false,
     ...defaultOptions
   };
   const saveOptions = await GM.getValue(name);
   const options = store.createMutable(helper.assign(_defaultOptions, saveOptions));
-  const setOptions = async newValue => {
-    if (newValue) Object.assign(options, newValue);
+  const setOptions = async newOptions => {
+    if (options.lockOption && newOptions?.lockOption !== false) return;
+    if (newOptions) Object.assign(options, newOptions);
     // 只保存和默认设置不同的部分
     return GM.setValue(name, helper.difference(options, _defaultOptions));
   };
@@ -7932,8 +9108,8 @@ const useInit = async (name, defaultOptions = {}) => {
     show: false
   });
   setHotkeys(await GM.getValue('Hotkeys', {}));
-  Manga.setDefaultHotkeys(hotkeys => ({
-    ...hotkeys,
+  Manga.setDefaultHotkeys(_hotkeys => ({
+    ..._hotkeys,
     enter_read_mode: ['v']
   }));
   const [setManga, mangaProps] = await useManga({
@@ -7951,6 +9127,12 @@ const useInit = async (name, defaultOptions = {}) => {
   });
   const [comicMap, setComicMap] = store.createStore({});
   const [nowComic, switchComic] = solidJs.createSignal('');
+  const setImgList = (id, i, url) => {
+    // XXX: 之后用 Array.with() 替换
+    const newImgList = [...comicMap[id].imgList];
+    newImgList[i] = url;
+    setComicMap(id, 'imgList', newImgList);
+  };
   const nowImgList = helper.createRootMemo(() => {
     const comic = comicMap[nowComic()];
     if (!comic?.imgList) return undefined;
@@ -7959,14 +9141,11 @@ const useInit = async (name, defaultOptions = {}) => {
   });
   helper.createEffectOn(nowImgList, list => list && setManga('imgList', list));
 
-  /** 当前加载完成的图片数量 */
-  const imgLoadNum = helper.createRootMemo(() => Manga.store.imgList.filter(img => img.loadType === 'loaded').length);
-
   /** 当前已取得 url 的图片数量 */
   const loadImgNum = helper.createRootMemo(() => nowImgList()?.filter(Boolean)?.length);
 
   // 设置 Fab 的显示进度
-  helper.createEffectOn([loadImgNum, imgLoadNum, () => nowImgList()?.length], ([doneNum, loadNum, totalNum]) => {
+  helper.createEffectOn([loadImgNum, () => Manga.loadingImgList().size, () => nowImgList()?.length], ([doneNum, loadNum, totalNum]) => {
     if (doneNum === undefined || totalNum === undefined) return setFab({
       progress: undefined
     });
@@ -8082,6 +9261,7 @@ const useInit = async (name, defaultOptions = {}) => {
     isStored,
     comicMap,
     setComicMap,
+    setImgList,
     nowComic,
     switchComic,
     showComic,
@@ -8099,9 +9279,7 @@ const useInit = async (name, defaultOptions = {}) => {
       setComicMap(id, 'imgList', Array.from({
         length
       }).fill(''));
-      await new Promise(resolve => {
-        loadImgFn((i, url) => resolve(setComicMap(id, 'imgList', i, url)));
-      });
+      await new Promise(resolve => loadImgFn((i, url) => resolve(setImgList(id, i, url))));
       return comicMap[id].imgList;
     }
   };
@@ -8214,38 +9392,63 @@ exports.universal = universal;
 exports.useInit = useInit;
 exports.useSiteOptions = useSiteOptions;
 exports.useSpeedDial = useSpeedDial;
-`;
+`
       break;
     default:
       code = GM_getResourceText(name.replaceAll('/', '|'));
   }
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
+  if (name.startsWith('worker/') && supportWorker) {
+    try {
+      // 如果浏览器支持 worker，就将模块转为 worker
+      const workerCode = `
+const exports = {};
+const Comlink = require('comlink');
+${code}
+Comlink.expose(exports);
+`.replaceAll(/const (\w+?) = require\('(.+?)'\);/g, (_, varName, module) => `
+let ${varName} = {};
+(function (exports, module) { ${GM_getResourceText(module)} }) (
+  ${varName},
+  {
+    set exports(value) { ${varName} = value },
+    get exports() { return ${varName} }
+  }
+);`);
+      const codeUrl = URL.createObjectURL(new Blob([workerCode], {
+        type: 'text/javascript'
+      }));
+      setTimeout(URL.revokeObjectURL, 0, codeUrl);
+      const worker = new Worker(codeUrl);
+      unsafeWindow[tempName][name] = require('comlink').wrap(worker);
+      return;
+    } catch {
+      supportWorker = false;
+    }
+  }
 
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
   // 将模块导出变量放到 crsLib 对象里，防止污染全局作用域和网站自身的模块产生冲突
-  const runCode = `
-    window['${tempName}']['${name}'] = {};
-    ${''}
+  let runCode = `
     (function (process, require, exports, module, ${gmApiList.join(', ')}) {
       ${code}
     })(
       window['${tempName}'].process,
       window['${tempName}'].require,
       window['${tempName}']['${name}'],
-      {
+      ((module) => ({
         set exports(value) {
-          window['${tempName}']['${name}'] = value;
+          module['${name}'] = value;
         },
         get exports() {
-          return window['${tempName}']['${name}'];
+          return module['${name}'];
         },
-      },
+      }))(window['${tempName}']),
       ${gmApiList.map(apiName => `window['${tempName}'].${apiName}`).join(', ')}
     );
-    ${''}
   `;
-  Reflect.deleteProperty(unsafeWindow, tempName);
   unsafeWindow[tempName] = crsLib;
+  unsafeWindow[tempName][name] = {};
   evalCode(runCode);
   Reflect.deleteProperty(unsafeWindow, tempName);
 };
@@ -8266,7 +9469,8 @@ const require = name => {
       if (prop === 'default') return selfDefault;
       if (!crsLib[name]) selfImportSync(name);
       const module = crsLib[name];
-      return module.default?.[prop] ?? module?.[prop];
+      if (Reflect.has(crsLib[name], 'default') && Reflect.has(crsLib[name].default, prop)) return module.default?.[prop];
+      return module?.[prop];
     },
     apply(_, __, args) {
       if (!crsLib[name]) selfImportSync(name);
@@ -8285,6 +9489,8 @@ const require = name => {
 };
 crsLib.require = require;
 
+const languages = require('helper/languages');
+const otherSite = require('userscript/otherSite');
 const helper = require('helper');
 const main = require('main');
 
@@ -9036,10 +10242,10 @@ const turnPage = chapterId => {
 const web = require('solid-js/web');
 const solidJs = require('solid-js');
 const main = require('main');
-const Manga = require('components/Manga');
 const detectAd = require('userscript/detectAd');
 const helper = require('helper');
 const store = require('solid-js/store');
+const Manga = require('components/Manga');
 
 const escHandler = [];
 const setEscHandler = (order, handler) => {
@@ -10110,10 +11316,10 @@ const floatTagList = (pageType, mangaProps) => {
     showComic,
     comicMap,
     setComicMap,
+    setImgList,
     setFab,
     setManga,
-    mangaProps,
-    nowComic
+    mangaProps
   } = await main.useInit('ehentai', {
     /** 关联 nhentai */
     associate_nhentai: true,
@@ -10131,6 +11337,8 @@ const floatTagList = (pageType, mangaProps) => {
     quick_tag_define: true,
     /** 悬浮标签列表 */
     float_tag_list: false,
+    /** 自动调整配置 */
+    auto_adjust_option: false,
     autoShow: false
   });
   if (pageType === 'mpv') {
@@ -10173,6 +11381,24 @@ const floatTagList = (pageType, mangaProps) => {
   // 快捷查看标签定义
   if (options.quick_tag_define) helper.requestIdleCallback(() => quickTagDefine(pageType), 1000);
 
+  // 自动调整阅读配置
+  if (options.auto_adjust_option &&
+  // 在「Doujinshi」「Manga」「Non-H」以外的分类下
+  !helper.querySelector('#gdc > .cs:is(.ct2, .ct3, .ct9)')) {
+    let option = {
+      // 使用单页模式
+      pageNum: 1,
+      // 关闭图像识别
+      imgRecognition: {
+        enabled: false
+      }
+    };
+    if (options.option) option = helper.assign(options.option, option);
+    setManga({
+      option
+    });
+  }
+
   // 不是漫画页的话
   if (pageType !== 'gallery') return;
   const sidebarDom = document.getElementById('gd5');
@@ -10180,15 +11406,15 @@ const floatTagList = (pageType, mangaProps) => {
   if (sidebarDom.children[6]) sidebarDom.children[6].style.padding = '0';
   const LoadButton = props => {
     const tip = solidJs.createMemo(() => {
-      const imgList = comicMap[props.id]?.imgList;
-      const progress = imgList?.filter(Boolean).length;
-      switch (imgList?.length) {
+      const _imgList = comicMap[props.id]?.imgList;
+      const progress = _imgList?.filter(Boolean).length;
+      switch (_imgList?.length) {
         case undefined:
           return ' Load comic';
         case progress:
           return ' Read';
         default:
-          return ` loading - ${progress}/${imgList.length}`;
+          return ` loading - ${progress}/${_imgList.length}`;
       }
     });
     return (() => {
@@ -10316,7 +11542,7 @@ const floatTagList = (pageType, mangaProps) => {
   };
 
   /** 刷新指定图片 */
-  const reloadImg = async i => {
+  const reloadImg = helper.singleThreaded(async (_, i) => {
     const pageUrl = await getNewImgPageUrl(ehImgPageList[i]);
     let imgUrl = '';
     while (!imgUrl || !(await helper.testImgUrl(imgUrl))) {
@@ -10325,23 +11551,19 @@ const floatTagList = (pageType, mangaProps) => {
     }
     ehImgList[i] = imgUrl;
     ehImgPageList[i] = pageUrl;
-    setComicMap('', 'imgList', i, imgUrl);
-  };
-
-  /** 刷新所有错误图片 */
-  const reloadErrorImg = helper.singleThreaded(() => helper.plimit(Manga.store.imgList.map((img, i) => () => {
-    if (img.loadType !== 'error' || nowComic() !== '') return;
-    return reloadImg(i);
-  })));
+    setImgList('', i, imgUrl);
+  });
   setManga({
     onExit(isEnd) {
       if (isEnd) helper.scrollIntoView('#cdiv');
       setManga('show', false);
     },
     // 在图片加载出错时刷新图片
-    async onLoading(_, img) {
-      if (!img || img.loadType !== 'error' || (await helper.testImgUrl(img.src))) return;
-      return reloadErrorImg();
+    onLoading(_, img) {
+      if (!img || img.loadType !== 'error') return;
+      const i = ehImgList.indexOf(img.src);
+      if (i === -1) return;
+      return reloadImg(i);
     }
   });
   setFab('initialShow', options.autoShow);
@@ -10450,12 +11672,12 @@ const helper = require('helper');
         const html = helper.domParse(res.responseText);
         history.replaceState(null, '', nextUrl);
         const container = html.querySelector('.index-container');
-        for (const gallery of container.querySelectorAll('.gallery')) {
-          for (const img of gallery.getElementsByTagName('img')) img.setAttribute('src', img.dataset.src);
+        for (const galleryDom of container.querySelectorAll('.gallery')) {
+          for (const img of galleryDom.getElementsByTagName('img')) img.setAttribute('src', img.dataset.src);
 
           // 判断是否有黑名单标签
-          const tags = gallery.dataset.tags.split(' ').map(Number);
-          if (tags.some(tag => blackSet.has(tag))) gallery.classList.add('blacklisted');
+          const tags = galleryDom.dataset.tags.split(' ').map(Number);
+          if (tags.some(tag => blackSet.has(tag))) galleryDom.classList.add('blacklisted');
         }
         const pagination = html.querySelector('.pagination');
         nextUrl = pagination.querySelector('a.next')?.href;
@@ -10729,7 +11951,7 @@ const helper = require('helper');
 
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic.me':
-    case '18comic-jjks.cc':
+    case '18comic-16promax.vip':
     case '18comic.org':
     case '18comic.vip':
       {
@@ -11071,43 +12293,33 @@ const helper = require('helper');
         break;
       }
 
-    // #[无限动漫](https://www.comicabc.com)
+    // #[無限動漫](https://www.comicabc.com)
     case '8.twobili.com':
     case 'a.twobili.com':
+    case 'articles.onemoreplace.tw':
     case 'www.comicabc.com':
       {
         const pathStartList = ['/online/', '/ReadComic/', '/comic/'];
         if (!pathStartList.some(path => location.pathname.startsWith(path))) break;
+
+        // by: https://sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/241035
         const getImgList = () => {
-          const imgList = [];
-          if (Reflect.has(unsafeWindow, 'ss')) {
-            const {
-              ss,
-              c,
-              ti,
-              nn,
-              mm,
-              f
-            } = unsafeWindow;
-            for (let i = 1; i <= unsafeWindow.ps; i++) {
-              imgList.push([`https://img${ss(c, 4, 2)}.8comic.com`, ss(c, 6, 1), ti, ss(c, 0, 4),
-              // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-              `${nn([i])}_${ss(c, mm([i]) + 10, 3, f)}.jpg`].join('/'));
-            }
-          } else {
-            const mainCode = [...document.scripts].find(s => s.textContent.includes('ge(e)')).textContent;
-            // 取得混淆過的關鍵代碼
-            const [, keyCode] = /ge\([^.]+\.src\s?=\s?([^;]+)/.exec(mainCode);
-            const total = unsafeWindow.ps;
-            for (let i = 1; i <= total; i++) {
-              // 把關鍵代碼裡的(p)或(pp)替換成頁數(1)
-              const code = keyCode.replaceAll(/\(pp?\)/g, `(${i})`);
-              // 使用 eval 來取得圖片網址
-              // eslint-disable-next-line no-eval
-              imgList.push(`${location.protocol}${eval(code)}`);
-            }
-          }
-          return imgList;
+          const {
+            ps,
+            su,
+            ti,
+            nn,
+            mm
+          } = unsafeWindow;
+          const code = [...document.scripts].find(script => script.textContent.includes('ge(e)')).textContent;
+          const [, chapterId] = /img\s+s="(.{15})/.exec(code);
+          const b = unsafeWindow[chapterId.slice(0, 5)];
+          const c = unsafeWindow[chapterId.slice(5, 10)];
+          const d = unsafeWindow[chapterId.slice(10, 15)];
+          const getSrc = a => `https://img${su(b, 0, 1)}.8comic.com/${su(b, 1, 1)}/${ti}/${c}/${nn(a)}_${su(d, mm(a), 3)}.jpg`;
+          return Array.from({
+            length: ps
+          }).map((_, i) => getSrc(i + 1));
         };
         options = {
           name: '8comic',
@@ -11305,401 +12517,15 @@ const helper = require('helper');
       }
     default:
       {
-const web = require('solid-js/web');
-const helper = require('helper');
-const Manga = require('components/Manga');
-const main = require('main');
-
-const getTagText = ele => {
-  let text = ele.nodeName;
-  if (ele.id && !/\d/.test(ele.id)) text += `#${ele.id}`;
-  return text;
-};
-
-/** 获取元素仅记录了层级结构关系的选择器 */
-const getEleSelector = ele => {
-  const parents = [ele.nodeName];
-  const root = ele.getRootNode();
-  let e = ele;
-  while (e.parentNode && e.parentNode !== root) {
-    e = e.parentNode;
-    parents.push(getTagText(e));
-  }
-  return parents.reverse().join('>');
-};
-
-/** 判断指定元素是否符合选择器 */
-const isEleSelector = (ele, selector) => {
-  const parents = selector.split('>').reverse();
-  let e = ele;
-  for (let i = 0; e && i < parents.length; i++) {
-    if (getTagText(e) !== parents[i]) return false;
-    e = e.parentNode;
-  }
-  return e === e.getRootNode();
-};
-
-// 目录页和漫画页的图片层级相同
-// https://www.biliplus.com/manga/
-// 图片路径上有 id 元素并且 id 含有漫画 id，不同话数 id 也不同
-const createImgData = (oldSrc = '') => ({
-  triggedNum: 0,
-  observerTimeout: 0,
-  oldSrc
-});
-
-/** 用于判断是否是图片 url 的正则 */
-const isImgUrlRe = /^(((https?|ftp|file):)?\/)?\/[-\w+&@#/%?=~|!:,.;]+[-\w+&@#%=~|]$/;
-
-/** 找出格式为图片 url 的元素属性 */
-const getDatasetUrl = e => {
-  for (const key of e.getAttributeNames()) {
-    // 跳过白名单
-    switch (key) {
-      case 'src':
-      case 'alt':
-      case 'class':
-      case 'style':
-      case 'id':
-      case 'title':
-      case 'onload':
-      case 'onerror':
-        continue;
-    }
-    const val = e.getAttribute(key).trim();
-    if (!isImgUrlRe.test(val)) continue;
-    return val;
-  }
-};
-
-/**
- *
- * 通过滚动到指定图片元素位置并停留一会来触发图片的懒加载，返回图片 src 是否发生变化
- *
- * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
- */
-const triggerEleLazyLoad = async (e, time, isLazyLoaded, runCondition) => {
-  const nowScroll = window.scrollY;
-  e.scrollIntoView({
-    behavior: 'instant'
-  });
-  e.dispatchEvent(new Event('scroll', {
-    bubbles: true
-  }));
-  try {
-    if (isLazyLoaded && time) return await helper.wait(isLazyLoaded, time);
-  } finally {
-    if (runCondition()) window.scroll({
-      top: nowScroll,
-      behavior: 'instant'
-    });
-  }
-};
-
-/** 判断一个元素是否已经触发完懒加载 */
-const isLazyLoaded = (e, oldSrc) => {
-  if (!e.src) return false;
-  if (!e.offsetParent) return false;
-  // 有些网站会使用 svg 占位
-  if (e.src.startsWith('data:image/svg')) return false;
-  if (oldSrc !== undefined && e.src !== oldSrc) return true;
-  if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
-  return false;
-};
-const imgMap = new WeakMap();
-// eslint-disable-next-line no-autofix/prefer-const
-let imgShowObserver;
-const getImg = e => imgMap.get(e) ?? createImgData();
-const MAX_TRIGGED_NUM = 5;
-
-/** 判断图片元素是否需要触发懒加载 */
-const needTrigged = e => !isLazyLoaded(e, imgMap.get(e)?.oldSrc) && (imgMap.get(e)?.triggedNum ?? 0) < MAX_TRIGGED_NUM;
-
-/** 图片懒加载触发完后调用 */
-const handleTrigged = e => {
-  const img = getImg(e);
-  img.observerTimeout = 0;
-  img.triggedNum += 1;
-  if (isLazyLoaded(e, img.oldSrc) && img.triggedNum < MAX_TRIGGED_NUM) img.triggedNum = MAX_TRIGGED_NUM;
-  imgMap.set(e, img);
-  if (!needTrigged(e)) imgShowObserver.unobserve(e);
-};
-
-/** 监视图片是否被显示的 Observer */
-imgShowObserver = new IntersectionObserver(entries => {
-  for (const img of entries) {
-    const ele = img.target;
-    if (img.isIntersecting) {
-      imgMap.set(ele, {
-        ...getImg(ele),
-        observerTimeout: window.setTimeout(handleTrigged, 290, ele)
-      });
-    } else {
-      const timeoutID = imgMap.get(ele)?.observerTimeout;
-      if (timeoutID) window.clearTimeout(timeoutID);
-    }
-  }
-});
-const turnPageScheduled = helper.createScheduled(fn => helper.throttle(fn, 1000));
-/** 触发翻页 */
-const triggerTurnPage = async (waitTime, runCondition) => {
-  if (!turnPageScheduled()) return;
-  const nowScroll = window.scrollY;
-  // 滚到底部再滚回来，触发可能存在的自动翻页脚本
-  window.scroll({
-    top: document.body.scrollHeight,
-    behavior: 'instant'
-  });
-  document.body.dispatchEvent(new Event('scroll', {
-    bubbles: true
-  }));
-  if (waitTime) await helper.sleep(waitTime);
-  if (runCondition()) window.scroll({
-    top: nowScroll,
-    behavior: 'instant'
-  });
-};
-const waitTime = 300;
-
-/** 触发页面上所有图片元素的懒加载 */
-const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondition) => {
-  // 过滤掉已经被触发过懒加载的图片
-  const targetImgList = getAllImg().filter(needTrigged).sort((a, b) => a.getBoundingClientRect().y - b.getBoundingClientRect().y);
-  for (const e of targetImgList) {
-    imgShowObserver.observe(e);
-    if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));
-  }
-  for (const e of targetImgList) {
-    await helper.wait(runCondition);
-    await triggerTurnPage(0, runCondition);
-    if (!needTrigged(e)) continue;
-    const datasetUrl = getDatasetUrl(e);
-    if (datasetUrl) e.setAttribute('src', datasetUrl);
-    if (await triggerEleLazyLoad(e, waitTime, () => isLazyLoaded(e, imgMap.get(e)?.oldSrc), runCondition)) handleTrigged(e);
-  }
-  await triggerTurnPage(waitTime, runCondition);
-  if (targetImgList.length > 0) state.continueRun = true;
-});
-
-
-// 测试案例
-// https://www.177picyy.com/html/2023/03/5505307.html
-// 需要配合其他翻页脚本使用
-// https://www.colamanga.com/manga-za76213/1/5.html
-// 直接跳转到图片元素不会立刻触发，还需要停留20ms
-// https://www.colamanga.com/manga-kg45140/1/2.html
-(async () => {
-  /** 执行脚本操作。如果中途中断，将返回 true */
-  const start = async () => {
-    const {
-      options,
-      setComicLoad,
-      setComicMap,
-      setManga,
-      setFab,
-      setOptions,
-      isStored,
-      mangaProps
-    } = await main.useInit(window.location.hostname, {
-      remember_current_site: true,
-      selector: ''
-    });
-
-    // 通过 options 来迂回的实现禁止记住当前站点
-    if (!options.remember_current_site) {
-      await GM.deleteValue(window.location.hostname);
-      return true;
-    }
-    if (!isStored) main.toast(() => (() => {
-      var _el$ = web.template(`<div><button>`)(),
-        _el$2 = _el$.firstChild;
-      web.insert(_el$, () => helper.t('site.simple.auto_read_mode_message'), _el$2);
-      _el$2.addEventListener("click", () => setOptions({
-        autoShow: false
-      }));
-      web.insert(_el$2, () => helper.t('other.disable'));
-      return _el$;
-    })(), {
-      duration: 1000 * 7
-    });
-
-    // 为避免卡死，提供一个删除 selector 的菜单项
-    const menuId = await GM.registerMenuCommand(helper.t('site.simple.simple_read_mode'), () => setOptions({
-      selector: ''
-    }));
-
-    // 等待 selector 匹配到目标后再继续执行，避免在漫画页外的其他地方运行
-    await helper.wait(() => !options.selector || helper.querySelectorAll(options.selector).length >= 2);
-    await GM.unregisterMenuCommand(menuId);
-
-    /** 记录传入的图片元素中最常见的那个 selector */
-    const saveImgEleSelector = imgEleList => {
-      if (imgEleList.length < 7) return;
-      const selector = helper.getMostItem(imgEleList.map(getEleSelector));
-      if (selector !== options.selector) setOptions({
-        selector
-      });
-    };
-    const blobUrlMap = new Map();
-    // 处理那些 URL.createObjectURL 后马上 URL.revokeObjectURL 的图片
-    const handleBlobImg = async e => {
-      if (blobUrlMap.has(e.src)) return blobUrlMap.get(e.src);
-      if (!e.src.startsWith('blob:')) return e.src;
-      if (await helper.testImgUrl(e.src)) return e.src;
-      const canvas = document.createElement('canvas');
-      const canvasCtx = canvas.getContext('2d');
-      canvas.width = e.naturalWidth;
-      canvas.height = e.naturalHeight;
-      canvasCtx.drawImage(e, 0, 0);
-      const url = URL.createObjectURL(await helper.canvasToBlob(canvas));
-      blobUrlMap.set(e.src, url);
-      return url;
-    };
-    const handleImgUrl = async e => {
-      const url = await handleBlobImg(e);
-      if (url.startsWith('http:') && window.location.protocol === 'https:') return url.replace('http:', 'https:');
-      return url;
-    };
-
-    /** 重复的加载占位图 */
-    const placeholderImgList = new Set();
-    helper.createEffectOn(() => mangaProps.imgList.filter(url => url && !placeholderImgList.has(url)), helper.throttle(imgList => {
-      if (!imgList?.length || imgList.length - new Set(imgList).size <= 4) return;
-      const repeatNumMap = new Map();
-      for (const url of imgList) {
-        const repeatNum = (repeatNumMap.get(url) ?? 0) + 1;
-        repeatNumMap.set(url, repeatNum);
-        if (repeatNum > 5) placeholderImgList.add(url);
-      }
-    }));
-    const imgBlackList = [
-    // 东方永夜机的预加载图片
-    '#pagetual-preload',
-    // 177picyy 上会在图片下加一个 noscript
-    // 本来只是图片元素的 html 代码，但经过东方永夜机加载后就会变成真的图片元素，导致重复
-    'noscript'];
-    const getAllImg = () => helper.querySelectorAll(`:not(${imgBlackList.join(',')}) > img`);
-    let imgEleList;
-    let updateImgListTimeout;
-    /** 检查筛选符合标准的图片元素用于更新 imgList */
-    const updateImgList = helper.singleThreaded(async () => {
-      imgEleList = await helper.wait(() => {
-        const newImgList = getAllImg().filter(e => e.offsetHeight > 100 && e.offsetWidth > 100 && (e.naturalHeight > 500 && e.naturalWidth > 500 || isEleSelector(e, options.selector))).sort((a, b) => a.getBoundingClientRect().y - b.getBoundingClientRect().y);
-        return newImgList.length >= 2 && newImgList;
-      });
-      if (imgEleList.length === 0) {
-        setFab('show', false);
-        setManga('show', false);
-        return;
-      }
-      let newImgEleList = imgEleList;
-
-      /** 预计的图片总数 */
-      let expectCount = 0;
-      /** 还需要继续触发懒加载的图片个数 */
-      let needTriggedNum = 0;
-      if (options.selector) {
-        const expectImgList = helper.querySelectorAll(options.selector);
-        expectCount = expectImgList.filter(e => !imgMap.get(e)?.triggedNum || isLazyLoaded(e, imgMap.get(e)?.oldSrc)).length;
-        needTriggedNum = expectImgList.filter(needTrigged).length;
-        // 根据预计的图片总数补上占位的空图
-        const fillImgNum = expectCount - imgEleList.length;
-        if (fillImgNum > 0) newImgEleList = [...imgEleList, ...Array.from({
-          length: fillImgNum
-        })];
-      }
-      let isEdited = false;
-      await helper.plimit(newImgEleList.map((e, i) => async () => {
-        let newUrl = '';
-        if (e) {
-          newUrl = await handleImgUrl(e);
-          if (placeholderImgList.has(newUrl)) newUrl = getDatasetUrl(e) ?? '';
-        }
-        if (newUrl === mangaProps.imgList[i]) return;
-        isEdited ||= true;
-        setComicMap('', 'imgList', i, newUrl);
-      }));
-      if (isEdited) saveImgEleSelector(imgEleList);
-
-      // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要再删掉多余的页数
-      if (mangaProps.imgList.length > newImgEleList.length) setComicMap('', 'imgList', mangaProps.imgList.slice(0, newImgEleList.length));
-      if (isEdited || needTriggedNum || imgEleList.some(e => !e.naturalWidth && !e.naturalHeight)) {
-        if (updateImgListTimeout) window.clearTimeout(updateImgListTimeout);
-        updateImgListTimeout = window.setTimeout(updateImgList, 1000);
-      }
-    });
-    let timeout = false;
-    const triggerAllLazyLoad = () => triggerLazyLoad(getAllImg,
-    // 只在`开启了阅读模式`和`当前可显示图片数量不足`时通过滚动触发懒加载
-    () => mangaProps.show || !timeout && mangaProps.imgList.length === 0);
-
-    /** 监视页面元素发生变化的 Observer */
-    const imgDomObserver = new MutationObserver(() => {
-      updateImgList();
-      triggerAllLazyLoad();
-    });
-    setComicLoad(async () => {
-      if (!imgEleList) {
-        imgEleList = [];
-        imgDomObserver.observe(document.body, {
-          subtree: true,
-          childList: true,
-          attributes: true,
-          attributeFilter: ['src']
-        });
-        updateImgList();
-        triggerAllLazyLoad();
-        setTimeout(() => {
-          timeout = true;
-          if (mangaProps.imgList.length > 0) return;
-          main.toast.warn(helper.t('site.simple.no_img'), {
-            id: 'no_img',
-            duration: Number.POSITIVE_INFINITY,
-            async onClick() {
-              await setOptions({
-                remember_current_site: false
-              });
-              window.location.reload();
-            }
-          });
-        }, 3000);
-      }
-      await helper.wait(() => mangaProps.imgList.length);
-      main.toast.dismiss('no_img');
-      return mangaProps.imgList;
-    });
-
-    // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
-    helper.createEffectOn(Manga.renderImgList, helper.throttle(list => {
-      if (list.size === 0 || !mangaProps.show) return;
-      const lastImgIndex = [...list].at(-1);
-      if (lastImgIndex === undefined) return;
-      imgEleList[lastImgIndex]?.scrollIntoView({
-        behavior: 'instant',
-        block: 'end'
-      });
-    }, 1000), {
-      defer: true
-    });
-
-    // 在退出阅读模式时跳回之前的滚动位置
-    let laseScroll = window.scrollY;
-    helper.createEffectOn(() => mangaProps.show, show => {
-      if (show) laseScroll = window.scrollY;else window.scroll({
-        top: laseScroll,
-        behavior: 'instant'
-      });
-    });
-  };
-  if ((await GM.getValue(window.location.hostname)) !== undefined) return requestIdleCallback(start);
-  const menuId = await GM.registerMenuCommand(((lang) => {
-            switch (lang) {
-              case 'en': return 'Enter simple reading mode';case 'ru': return 'Включить простой режим чтения';
-              default: return '使用简易阅读模式';
-            }
-          })(await helper.getInitLang()), async () => !(await start()) && GM.unregisterMenuCommand(menuId));
-})().catch(error => helper.log.error(error));
-
+        (async () => {
+          if ((await GM.getValue(window.location.hostname)) !== undefined) return requestIdleCallback(otherSite.otherSite);
+          const menuId = await GM.registerMenuCommand(((lang) => {
+switch (lang) {
+  case 'en': return 'Enter simple reading mode';case 'ru': return 'Включить простой режим чтения';
+  default: return '使用简易阅读模式';
+}
+})(await languages.getInitLang()), async () => !(await otherSite.otherSite()) && GM.unregisterMenuCommand(menuId));
+        })();
       }
   }
   if (options) main.universal(options);
