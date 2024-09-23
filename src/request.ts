@@ -2,22 +2,29 @@ import { sleep, t, log } from 'helper';
 import { toast } from 'components/Toast';
 
 // 将 xmlHttpRequest 包装为 Promise
-const xmlHttpRequest = (
-  details: Tampermonkey.Request<any>,
-): Promise<Tampermonkey.Response<any>> =>
+const xmlHttpRequest = <T = any>(
+  details: Tampermonkey.Request<T>,
+): Promise<Tampermonkey.Response<T>> =>
   new Promise((resolve, reject) => {
-    GM_xmlhttpRequest({
+    const abort = GM_xmlhttpRequest<T>({
       ...details,
-      onload: resolve,
-      onerror: reject,
+      onload(res) {
+        details.onload?.call(res, res);
+        resolve(res);
+      },
+      onerror(error) {
+        details.onerror?.call(error, error);
+        reject(new Error(error.responseText));
+      },
       ontimeout: reject,
     });
+    details.signal?.addEventListener('abort', abort.abort);
   });
 
-export type RequestDetails = Partial<Tampermonkey.Request<any>> & {
+export type RequestDetails<T> = Partial<Tampermonkey.Request<T>> & {
   errorText?: string;
-  noTip?: true;
-  noCheckCode?: true;
+  noTip?: boolean;
+  noCheckCode?: boolean;
 };
 
 export type Response<T = any> = {
@@ -30,7 +37,7 @@ export type Response<T = any> = {
 /** 发起请求 */
 export const request = async <T = any>(
   url: string,
-  details?: RequestDetails,
+  details?: RequestDetails<T>,
   retryNum = 0,
   errorNum = 0,
 ): Promise<Response<T>> => {
@@ -83,7 +90,7 @@ export const request = async <T = any>(
     if (typeof GM_xmlhttpRequest === 'undefined')
       throw new Error(t('pwa.alert.userscript_not_installed'));
 
-    const res = await xmlHttpRequest({
+    const res = await xmlHttpRequest<T>({
       method: 'GET',
       url,
       headers,
@@ -98,7 +105,9 @@ export const request = async <T = any>(
     return res;
   } catch (error) {
     if (errorNum >= retryNum) {
-      (details?.noTip ? console.error : toast.error)(errorText);
+      (details?.noTip ? console.error : toast.error)(
+        `${errorText}\nerror: ${(error as Error).message}`,
+      );
       throw new Error(errorText);
     }
 
@@ -112,7 +121,7 @@ export const request = async <T = any>(
 export const eachApi = async <T = any>(
   url: string,
   baseUrlList: string[],
-  details?: RequestDetails,
+  details?: RequestDetails<T>,
 ) => {
   for (const baseUrl of baseUrlList) {
     try {

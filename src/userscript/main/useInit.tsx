@@ -1,7 +1,11 @@
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
 import { createSignal } from 'solid-js';
 import { createStore } from 'solid-js/store';
-import { hotkeysMap, setDefaultHotkeys, store } from 'components/Manga';
+import {
+  hotkeysMap,
+  loadingImgList,
+  setDefaultHotkeys,
+} from 'components/Manga';
 import { toast } from 'components/Toast';
 import {
   getKeyboardCode,
@@ -49,7 +53,7 @@ export const useInit = async <T extends Record<string, any>>(
   });
 
   setHotkeys(await GM.getValue<Record<string, string[]>>('Hotkeys', {}));
-  setDefaultHotkeys((hotkeys) => ({ ...hotkeys, enter_read_mode: ['v'] }));
+  setDefaultHotkeys((_hotkeys) => ({ ..._hotkeys, enter_read_mode: ['v'] }));
 
   const [setManga, mangaProps] = await useManga({
     imgList: [],
@@ -78,6 +82,13 @@ export const useInit = async <T extends Record<string, any>>(
   );
   const [nowComic, switchComic] = createSignal<string | number>('');
 
+  const setImgList = (id: string | number, i: number, url: string) => {
+    // XXX: 之后用 Array.with() 替换
+    const newImgList = [...comicMap[id].imgList!];
+    newImgList[i] = url;
+    setComicMap(id, 'imgList', newImgList);
+  };
+
   const nowImgList = createRootMemo(() => {
     const comic = comicMap[nowComic()];
     if (!comic?.imgList) return undefined;
@@ -87,11 +98,6 @@ export const useInit = async <T extends Record<string, any>>(
 
   createEffectOn(nowImgList, (list) => list && setManga('imgList', list));
 
-  /** 当前加载完成的图片数量 */
-  const imgLoadNum = createRootMemo(
-    () => store.imgList.filter((img) => img.loadType === 'loaded').length,
-  );
-
   /** 当前已取得 url 的图片数量 */
   const loadImgNum = createRootMemo(
     () => nowImgList()?.filter(Boolean)?.length,
@@ -99,7 +105,7 @@ export const useInit = async <T extends Record<string, any>>(
 
   // 设置 Fab 的显示进度
   createEffectOn(
-    [loadImgNum, imgLoadNum, () => nowImgList()?.length],
+    [loadImgNum, () => loadingImgList().size, () => nowImgList()?.length],
     ([doneNum, loadNum, totalNum]) => {
       if (doneNum === undefined || totalNum === undefined)
         return setFab({ progress: undefined });
@@ -217,7 +223,7 @@ export const useInit = async <T extends Record<string, any>>(
     });
   };
 
-  if (isDevMode) Object.assign(unsafeWindow, { comicMap, mangaProps });
+  if (isDevMode) Object.assign(unsafeWindow, { comicMap, mangaProps, toast });
 
   return {
     options,
@@ -231,6 +237,7 @@ export const useInit = async <T extends Record<string, any>>(
 
     comicMap,
     setComicMap,
+    setImgList,
     nowComic,
     switchComic,
 
@@ -253,9 +260,9 @@ export const useInit = async <T extends Record<string, any>>(
         if (comicMap[id].imgList?.length) return comicMap[id].imgList;
 
         setComicMap(id, 'imgList', Array.from<string>({ length }).fill(''));
-        await new Promise((resolve) => {
-          loadImgFn((i, url) => resolve(setComicMap(id, 'imgList', i, url)));
-        });
+        await new Promise((resolve) =>
+          loadImgFn((i, url) => resolve(setImgList(id, i, url))),
+        );
         return comicMap[id].imgList!;
       },
   };

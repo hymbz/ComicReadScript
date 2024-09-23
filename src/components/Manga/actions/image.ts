@@ -1,6 +1,6 @@
 import { isEqual, throttle, createEffectOn } from 'helper';
 
-import { autoCloseFill, handleComicData } from '../handleComicData';
+import { handleComicData } from '../handleComicData';
 import { setState, type State } from '../store';
 
 import { activeImgIndex, isOnePageMode, pageNum } from './memo/common';
@@ -12,7 +12,11 @@ export const updatePageData = (state: State) => {
   let newPageList: PageList = [];
   newPageList = isOnePageMode()
     ? state.imgList.map((_, i) => [i])
-    : handleComicData(state.imgList, state.fillEffect);
+    : handleComicData(
+        state.imgList.map((url) => state.imgMap[url]),
+        state.fillEffect,
+        state.option.imgRecognition.pageFill,
+      );
   if (isEqual(state.pageList, newPageList)) return;
   state.pageList = newPageList;
 
@@ -35,7 +39,6 @@ updatePageData.throttle = throttle(() => setState(updatePageData), 100);
  * 3. updatePageData
  */
 export const resetImgState = (state: State) => {
-  autoCloseFill.clear();
   // 如果用户没有手动修改过首页填充，才将其恢复初始
   if (typeof state.fillEffect['-1'] === 'boolean')
     state.fillEffect['-1'] =

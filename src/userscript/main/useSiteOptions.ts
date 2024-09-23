@@ -8,6 +8,8 @@ export interface SiteOptions {
 
   /** 自动进入阅读模式 */
   autoShow: boolean;
+  /** 锁定站点配置 */
+  lockOption: boolean;
   /** 隐藏 FAB */
   hiddenFAB: boolean;
 }
@@ -41,6 +43,7 @@ export const useSiteOptions = async <T = Record<string, any>>(
     option: undefined,
     defaultOption: undefined,
     autoShow: true,
+    lockOption: false,
     hiddenFAB: false,
     ...defaultOptions,
   } as SaveOptions;
@@ -51,8 +54,9 @@ export const useSiteOptions = async <T = Record<string, any>>(
     assign(_defaultOptions, saveOptions),
   );
 
-  const setOptions = async (newValue?: Partial<SaveOptions>) => {
-    if (newValue) Object.assign(options, newValue);
+  const setOptions = async (newOptions?: Partial<SaveOptions>) => {
+    if (options.lockOption && newOptions?.lockOption !== false) return;
+    if (newOptions) Object.assign(options, newOptions);
     // 只保存和默认设置不同的部分
     return GM.setValue(name, difference(options, _defaultOptions));
   };

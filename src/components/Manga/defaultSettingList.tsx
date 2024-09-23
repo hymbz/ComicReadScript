@@ -1,7 +1,7 @@
 import MdOutlineFormatTextdirectionLToR from '@material-design-icons/svg/round/format_textdirection_l_to_r.svg';
 import MdOutlineFormatTextdirectionRToL from '@material-design-icons/svg/round/format_textdirection_r_to_l.svg';
 import { Show, type Component } from 'solid-js';
-import { lang, setLang, t, needDarkMode, clamp, throttle } from 'helper';
+import { lang, setLang, t, clamp, throttle, needDarkMode } from 'helper';
 
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
@@ -12,10 +12,12 @@ import { SettingsItemSelect } from './components/SettingsItemSelect';
 import {
   autoPageNum,
   createStateSetFn,
+  getImgEle,
   saveScrollProgress,
   setOption,
   switchDir,
   switchFitToWidth,
+  updateImgLoadType,
   zoom,
   zoomScrollModeImg,
 } from './actions';
@@ -23,6 +25,7 @@ import { _setState, store } from './store';
 import classes from './index.module.css';
 import { SettingsItemNumber } from './components/SettingsItemNumber';
 import { areaArrayMap } from './components/TouchArea';
+import { handleImgRecognition } from './actions/imageRecognition';
 
 export type SettingList = Array<
   [string, Component] | [string, Component, boolean]
@@ -105,12 +108,6 @@ export const defaultSettingList: () => SettingList = () => [
         />
 
         <SettingsItemSwitch
-          name={t('setting.option.show_clickable_area')}
-          value={store.show.touchArea}
-          onChange={() => _setState('show', 'touchArea', !store.show.touchArea)}
-        />
-
-        <SettingsItemSwitch
           name={t('setting.option.click_page_turn_enabled')}
           value={store.option.clickPageTurn.enabled}
           onChange={createStateSetFn('clickPageTurn.enabled')}
@@ -130,6 +127,12 @@ export const defaultSettingList: () => SettingList = () => [
             onChange={createStateSetFn('clickPageTurn.reverse')}
           />
         </SettingsShowItem>
+
+        <SettingsItemSwitch
+          name={t('setting.option.show_clickable_area')}
+          value={store.show.touchArea}
+          onChange={() => _setState('show', 'touchArea', !store.show.touchArea)}
+        />
       </>
     ),
   ],
@@ -235,6 +238,76 @@ export const defaultSettingList: () => SettingList = () => [
     ),
   ],
   [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true],
+  [
+    t('setting.option.img_recognition'),
+    () => (
+      <>
+        <SettingsItemSwitch
+          name={t('other.enabled')}
+          value={store.option.imgRecognition.enabled}
+          onChange={() =>
+            setOption((draftOption, state) => {
+              const enabled = !draftOption.imgRecognition.enabled;
+              draftOption.imgRecognition.enabled = enabled;
+
+              if (!enabled) return;
+              for (const img of Object.values(state.imgMap))
+                if (!img.blobUrl) img.loadType = 'wait';
+              updateImgLoadType();
+            })
+          }
+        />
+
+        <Show when={typeof Worker === 'undefined'}>
+          <blockquote>
+            {/* eslint-disable-next-line solid/no-innerhtml */}
+            <p innerHTML={t('setting.option.img_recognition_warn')} />
+          </blockquote>
+        </Show>
+
+        <Show when={!store.supportWorker}>
+          <blockquote>
+            {/* eslint-disable-next-line solid/no-innerhtml */}
+            <p innerHTML={t('setting.option.img_recognition_warn_2')} />
+          </blockquote>
+        </Show>
+
+        <SettingsShowItem when={store.option.imgRecognition.enabled}>
+          <SettingsItemSwitch
+            name={t('setting.option.img_recognition_background')}
+            value={store.option.imgRecognition.background}
+            onChange={() =>
+              setOption((draftOption, state) => {
+                const enabled = !draftOption.imgRecognition.background;
+                draftOption.imgRecognition.background = enabled;
+
+                if (!enabled) return;
+                for (const img of Object.values(state.imgMap))
+                  if (img.background === undefined)
+                    handleImgRecognition(getImgEle(img.src)!, img.src);
+              })
+            }
+          />
+          <SettingsItemSwitch
+            name={t('setting.option.img_recognition_pageFill')}
+            value={store.option.imgRecognition.pageFill}
+            onChange={() =>
+              setOption((draftOption, state) => {
+                const enabled = !draftOption.imgRecognition.pageFill;
+                draftOption.imgRecognition.pageFill = enabled;
+
+                if (!enabled) return;
+                for (const img of Object.values(state.imgMap))
+                  if (img.blankMargin === undefined)
+                    handleImgRecognition(getImgEle(img.src)!, img.src);
+              })
+            }
+          />
+        </SettingsShowItem>
+      </>
+    ),
+    true,
+  ],
   [t('setting.option.paragraph_translation'), SettingTranslation, true],
   [
     t('setting.option.paragraph_other'),

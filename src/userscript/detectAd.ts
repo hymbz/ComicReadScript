@@ -1,6 +1,9 @@
-import QrScanner from 'qr-scanner';
 import { request } from 'main';
-import { log, wait, waitImgLoad } from 'helper';
+import * as Comlink from 'comlink';
+import * as worker from 'worker/detectAd';
+import { log, waitImgLoad } from 'helper';
+
+import { showCanvas, showGrayList } from '../worker/helper';
 
 const getAdPage = async <T>(
   list: Array<T | undefined>,
@@ -41,133 +44,28 @@ const getAdPage = async <T>(
   return adList;
 };
 
-/** 判断像素点是否是灰阶 */
-const isGrayscalePixel = (r: number, g: number, b: number) =>
-  r === g && r === b;
-
-/** 判断一张图是否是彩图 */
-const isColorImg = (imgCanvas: HTMLCanvasElement | OffscreenCanvas) => {
-  // 缩小尺寸放弃细节，避免被黑白图上的小段彩色文字干扰
-  const canvas = new OffscreenCanvas(3, 3);
-  const ctx = canvas.getContext('2d', { alpha: false })!;
-  ctx.drawImage(imgCanvas, 0, 0, canvas.width, canvas.height);
-
-  const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  for (let i = 0; i < data.length; i += 4) {
-    const r = data[i];
-    const g = data[i + 1];
-    const b = data[i + 2];
-    if (!isGrayscalePixel(r, g, b)) return true;
-  }
-
-  return false;
-};
-
-const imgToCanvas = async (img: HTMLImageElement | string) => {
+const imgToCanvas = async (
+  img: HTMLImageElement | string,
+): Promise<ImageBitmap> => {
   if (typeof img !== 'string') {
-    await wait(() => img.naturalHeight && img.naturalWidth, 1000 * 10);
+    await waitImgLoad(img);
 
     try {
       const canvas = new OffscreenCanvas(img.width, img.height);
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0);
-      // 没被 CORS 污染就直接使用这个 canvas
-      if (ctx.getImageData(0, 0, 1, 1)) return canvas;
+      // 没被 CORS 污染就直接使用
+      if (ctx.getImageData(0, 0, 1, 1)) {
+        const imgBitmap = canvas.transferToImageBitmap();
+        return Comlink.transfer(imgBitmap, [imgBitmap]);
+      }
     } catch {}
   }
 
   const url = typeof img === 'string' ? img : img.src;
   const res = await request<Blob>(url, { responseType: 'blob' });
-
-  const image = await waitImgLoad(URL.createObjectURL(res.response));
-  const canvas = new OffscreenCanvas(image.width, image.height);
-  const ctx = canvas.getContext('2d')!;
-  ctx.drawImage(image, 0, 0);
-
-  return canvas;
-};
-
-/** 二维码白名单 */
-const qrCodeWhiteList = [
-  // fanbox
-  /^https:\/\/[^.]+\.fanbox\.cc/,
-  // twitter
-  /^https:\/\/twitter\.com/,
-  /^https:\/\/x\.com/,
-  // fantia
-  /^https:\/\/fantia\.jp/,
-  // 棉花糖
-  /^https:\/\/marshmallow-qa\.com/,
-];
-
-/** 判断是否含有二维码 */
-const hasQrCode = async (
-  imgCanvas: HTMLCanvasElement | OffscreenCanvas,
-  scanRegion?: QrScanner.ScanRegion,
-  qrEngine?: AsyncReturnType<typeof QrScanner.createQrEngine>,
-  canvas?: HTMLCanvasElement | OffscreenCanvas,
-) => {
-  try {
-    const { data } = await QrScanner.scanImage(imgCanvas, {
-      qrEngine,
-      canvas: canvas as HTMLCanvasElement,
-      scanRegion,
-      alsoTryWithoutScanRegion: true,
-    });
-    if (!data) return false;
-    log(`检测到二维码： ${data}`);
-    return qrCodeWhiteList.every((reg) => !reg.test(data));
-  } catch {
-    return false;
-  }
-};
-
-const isAdImg = async (
-  imgCanvas: HTMLCanvasElement | OffscreenCanvas,
-  qrEngine?: AsyncReturnType<typeof QrScanner.createQrEngine>,
-  canvas?: HTMLCanvasElement | OffscreenCanvas,
-) => {
-  // 黑白图肯定不是广告
-  if (!isColorImg(imgCanvas)) return false;
-
-  const width = imgCanvas.width / 2;
-  const height = imgCanvas.height / 2;
-
-  // 分区块扫描图片
-  const scanRegionList: Array<QrScanner.ScanRegion | undefined> = [
-    undefined,
-    // 右下
-    { x: width, y: height, width, height },
-    // 左下
-    { x: 0, y: height, width, height },
-    // 右上
-    { x: width, y: 0, width, height },
-    // 左上
-    { x: 0, y: 0, width, height },
-  ];
-
-  for (const scanRegion of scanRegionList)
-    if (await hasQrCode(imgCanvas, scanRegion, qrEngine, canvas)) return true;
-
-  return false;
-};
-
-const byContent =
-  (
-    qrEngine?: AsyncReturnType<typeof QrScanner.createQrEngine>,
-    canvas?: HTMLCanvasElement | OffscreenCanvas,
-  ) =>
-  async (img: HTMLImageElement | string) =>
-    isAdImg(await imgToCanvas(img), qrEngine, canvas);
-
-/** 通过图片内容判断是否是广告 */
-export const getAdPageByContent = async (
-  imgList: Array<HTMLImageElement | string | undefined>,
-  adList: Set<number>,
-) => {
-  const qrEngine = await QrScanner.createQrEngine();
-  const canvas = new OffscreenCanvas(1, 1);
-  return getAdPage(imgList, byContent(qrEngine, canvas), adList);
+  const imgBitmap = await createImageBitmap(res.response);
+  return Comlink.transfer(imgBitmap, [imgBitmap]);
 };
 
 /** 通过文件名判断是否是广告 */
@@ -180,3 +78,21 @@ export const getAdPageByFileName = async (
     (fileName: string) => /^[zZ]+/.test(fileName),
     adList,
   );
+
+export const isAdImg = (imgBitmap: ImageBitmap) =>
+  worker.isAdImg(Comlink.transfer(imgBitmap, [imgBitmap]));
+
+/** 通过图片内容判断是否是广告 */
+export const getAdPageByContent = async (
+  imgList: Array<HTMLImageElement | string | undefined>,
+  adList: Set<number>,
+) =>
+  getAdPage(
+    imgList,
+    async (img: HTMLImageElement | string) => isAdImg(await imgToCanvas(img)),
+    adList,
+  );
+
+const mainFn = { log };
+if (isDevMode) Object.assign(mainFn, { showCanvas, showGrayList });
+worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));

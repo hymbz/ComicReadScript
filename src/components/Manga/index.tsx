@@ -5,6 +5,7 @@ import {
   onMount,
 } from 'solid-js';
 import { boolDataVal } from 'helper';
+import { type PartialDeep } from 'type-fest';
 
 import { ComicImgFlow } from './components/ComicImgFlow';
 import { Toolbar } from './components/Toolbar';
@@ -38,9 +39,9 @@ export interface MangaProps {
   /** 页面填充数据 */
   fillEffect?: FillEffect;
   /** 初始化配置 */
-  option?: Partial<Option>;
+  option?: PartialDeep<Option>;
   /** 默认配置 */
-  defaultOption?: Partial<Option>;
+  defaultOption?: PartialDeep<Option>;
   /** 快捷键配置 */
   hotkeys?: State['hotkeys'];
   /** 是否显示 */
@@ -110,5 +111,5 @@ export const Manga: Component<MangaProps> = (props) => {
 };
 
 export { buttonListDivider } from './defaultButtonList';
-export { store } from './store/index';
+export { store, setState, _setState } from './store/index';
 export * from './actions';

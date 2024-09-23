@@ -71,6 +71,15 @@ export interface Option {
     abreastDuplicate: number;
   };
 
+  /** 图像识别 */
+  imgRecognition: {
+    enabled: boolean;
+    /** 识别背景色 */
+    background: boolean;
+    /** 自动调整页面填充 */
+    pageFill: boolean;
+  };
+
   /** 翻译 */
   translation: {
     /** 翻译服务器 */
@@ -131,6 +140,12 @@ const _defaultOption: Readonly<Option> = {
     fitToWidth: false,
     abreastMode: false,
     abreastDuplicate: 0.1,
+  },
+
+  imgRecognition: {
+    enabled: false,
+    background: true,
+    pageFill: true,
   },
 
   translation: {

@@ -1,3 +1,4 @@
+import { request } from 'request';
 import {
   clamp,
   debounce,
@@ -8,52 +9,62 @@ import {
   log,
 } from 'helper';
 
-import { store, setState, _setState, refs } from '../store';
+import { store, setState, _setState } from '../store';
 
-import { preloadNum } from './memo/common';
+import { imgList, preloadNum } from './memo/common';
 import { updateImgSize } from './imageSize';
 import { renderImgList, showImgList } from './renderPage';
+import { handleImgRecognition } from './imageRecognition';
+import { getImg, getImgEle, getImgIndex } from './helper';
 
 /** 图片加载完毕的回调 */
-export const handleImgLoaded = (i: number, e: HTMLImageElement) => {
+export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
   // 内联图片元素被创建后立刻就会触发 load 事件，如果在调用这个函数前 url 发生改变
   // 就会导致这里获得的是上个 url 图片的尺寸
-  if (!e.isConnected) return;
-  setState((state) => {
-    const img = state.imgList[i];
-    if (img.width !== e.naturalWidth || img.height !== e.naturalHeight)
-      updateImgSize(state, i, e.naturalWidth, e.naturalHeight);
-    img.loadType = 'loaded';
-    state.prop.Loading?.(state.imgList, img);
-  });
-  updateImgLoadType();
-  e.decode().catch(() => {});
+  if (e && !e.isConnected) return;
+
+  const img = store.imgMap[url];
+  if (img.loadType !== 'loaded') {
+    _setState('imgMap', url, 'loadType', 'loaded');
+    updateImgLoadType();
+    store.prop.Loading?.(imgList(), store.imgMap[url]);
+  }
+  if (!e) return;
+
+  updateImgSize(url, e.naturalWidth, e.naturalHeight);
+
+  if (store.option.imgRecognition.enabled && e.src === img.blobUrl)
+    setTimeout(handleImgRecognition, 0, e, url);
 };
 
 /** 图片加载出错的次数 */
 const imgErrorNum = new Map<string, number>();
 
 /** 图片加载出错的回调 */
-export const handleImgError = (i: number, e: HTMLImageElement) => {
-  if (!e.isConnected) return;
-  imgErrorNum.set(e.src, (imgErrorNum.get(e.src) ?? 0) + 1);
+export const handleImgError = (url: string, e?: HTMLImageElement) => {
+  if (e && !e.isConnected) return;
+  imgErrorNum.set(url, (imgErrorNum.get(url) ?? 0) + 1);
   setState((state) => {
-    const img = state.imgList[i];
+    const img = state.imgMap[url];
     if (!img) return;
-    log.error(i, t('alert.img_load_failed'), e);
+    const imgIndex = getImgIndex(url);
+    log.error(imgIndex, t('alert.img_load_failed'), e);
     img.loadType = 'error';
     img.type = undefined;
-    state.prop.Loading?.(state.imgList, img);
-    if (renderImgList().has(i) && (imgErrorNum.get(img.src) ?? 0) < 3)
+    if (
+      imgIndex.some((i) => renderImgList().has(i)) &&
+      (imgErrorNum.get(img.src) ?? 0) < 3
+    )
       img.loadType = 'wait';
   });
+  store.prop.Loading?.(imgList(), store.imgMap[url]);
   updateImgLoadType();
 };
 
 /** 需要加载的图片 */
 const needLoadImgList = createRootMemo(() => {
   const list = new Set<number>();
-  for (const [index, img] of store.imgList.entries())
+  for (const [index, img] of imgList().entries())
     if (img.loadType !== 'loaded' && img.src) list.add(index);
   return list;
 });
@@ -64,7 +75,7 @@ const loadImgList = new Set<number>();
 /** 加载指定图片。返回是否已加载完成 */
 const loadImg = (index: number) => {
   if (index === -1 || !needLoadImgList().has(index)) return true;
-  const img = store.imgList[index];
+  const img = getImg(index);
   if (img.loadType === 'error') return true;
   loadImgList.add(index);
   return false;
@@ -117,25 +128,24 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
 };
 
 /** 加载期间尽快获取图片尺寸 */
-export const checkImgSize = (index: number) => {
-  const imgDom = refs.mangaFlow.querySelector<HTMLImageElement>(
-    `#_${index} img`,
-  )!;
+export const checkImgSize = (url: string) => {
+  const imgDom = getImgEle(url);
+  if (!imgDom) return;
   const timeoutId = setInterval(() => {
-    if (!imgDom?.isConnected) return clearInterval(timeoutId);
-    const img = store.imgList[index];
+    if (!imgDom?.isConnected || store.option.imgRecognition.enabled)
+      return clearInterval(timeoutId);
+
+    const img = store.imgMap[url];
     if (!img || img.loadType !== 'loading') return clearInterval(timeoutId);
 
     if (imgDom.naturalWidth && imgDom.naturalHeight) {
-      setState((state) =>
-        updateImgSize(state, index, imgDom.naturalWidth, imgDom.naturalHeight),
-      );
+      updateImgSize(url, imgDom.naturalWidth, imgDom.naturalHeight);
       return clearInterval(timeoutId);
     }
   }, 200);
 };
 
-const updateImgLoadType = singleThreaded(() => {
+export const updateImgLoadType = singleThreaded(() => {
   if (needLoadImgList().size === 0) return;
 
   loadImgList.clear();
@@ -157,11 +167,12 @@ const updateImgLoadType = singleThreaded(() => {
 
   setState((state) => {
     for (const index of needLoadImgList()) {
-      const img = state.imgList[index];
+      const img = getImg(index, state);
       if (loadImgList.has(index)) {
         if (img.loadType !== 'loading') {
           img.loadType = 'loading';
-          if (img.width === undefined) setTimeout(checkImgSize, 0, index);
+          if (!store.option.imgRecognition.enabled && img.width === undefined)
+            setTimeout(checkImgSize, 0, img.src);
         }
       } else if (img.loadType === 'loading') img.loadType = 'wait';
     }
@@ -179,13 +190,73 @@ createEffectOn(
 
 createEffectOn(
   showImgList,
-  debounce((showImgList) => {
+  debounce((_showImgList) => {
     // 如果当前显示页面有出错的图片，就重新加载一次
-    for (const i of showImgList) {
-      if (store.imgList[i]?.loadType !== 'error') continue;
-      _setState('imgList', i, 'loadType', 'wait');
+    for (const img of [..._showImgList].map((i) => getImg(i))) {
+      if (img?.loadType !== 'error') continue;
+      _setState('imgMap', img.src, 'loadType', 'wait');
       updateImgLoadType();
     }
   }, 500),
   { defer: true },
 );
+
+/** 加载中的图片 */
+export const loadingImgList = createRootMemo(() => {
+  const list = new Set<string>();
+  for (const [url, img] of Object.entries(store.imgMap))
+    if (img.loadType === 'loading') list.add(url);
+  return list;
+});
+
+const abortMap = new Map<string, AbortController>();
+
+const timeoutAbort = (url: string) => {
+  if (!abortMap.has(url)) return;
+  abortMap.get(url)!.abort();
+  abortMap.delete(url);
+  handleImgError(url);
+};
+
+createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
+  if (!store.option.imgRecognition.enabled) return;
+
+  if (prevImgList) {
+    // 中断取消下载的图片
+    for (const url of prevImgList) {
+      if (downImgList.has(url) || !abortMap.has(url)) continue;
+      abortMap.get(url)?.abort();
+      abortMap.delete(url);
+      log(`中断下载 ${url}`);
+    }
+  }
+
+  for (const url of downImgList.values()) {
+    if (abortMap.has(url) || store.imgMap[url].blobUrl) continue;
+
+    const controller = new AbortController();
+    const handleTimeout = debounce(() => timeoutAbort(url), 1000 * 5);
+    controller.signal.addEventListener('abort', handleTimeout.clear);
+    abortMap.set(url, controller);
+    handleTimeout();
+    request<Blob>(url, {
+      responseType: 'blob',
+      fetch: false,
+      signal: controller.signal,
+      onerror: () => handleImgError(url),
+      onprogress({ loaded, total }) {
+        _setState('imgMap', url, 'progress', (loaded / total) * 100);
+        // 连续5秒没进度后超时中断
+        handleTimeout();
+      },
+      onload({ response }) {
+        abortMap.delete(url);
+        _setState('imgMap', url, {
+          blobUrl: URL.createObjectURL(response),
+          progress: undefined,
+        });
+        handleImgLoaded(url);
+      },
+    });
+  }
+});

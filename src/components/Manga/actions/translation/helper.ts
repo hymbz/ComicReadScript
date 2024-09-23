@@ -9,8 +9,8 @@ export type TaskState = {
   waiting: number;
 };
 
-export const setMessage = (i: number, msg: string) =>
-  _setState('imgList', i, 'translationMessage', msg);
+export const setMessage = (url: string, msg: string) =>
+  _setState('imgMap', url, 'translationMessage', msg);
 
 export const download = async (url: string) => {
   if (url.startsWith('blob:')) {

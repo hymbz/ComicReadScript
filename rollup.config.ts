@@ -13,20 +13,15 @@ import replace from '@rollup/plugin-replace';
 import { watchExternal } from 'rollup-plugin-watch-external';
 import type {
   InputPluginOption,
-  OutputOptions,
   OutputPluginOption,
   RollupOptions,
 } from 'rollup';
-import { createServer } from 'vite';
 import { parse as parseMd } from 'marked';
 
-import { selfPlugins, solidSvg } from './src/rollup-plugin';
+import { inputPlugins, outputPlugins, solidSvg } from './src/rollup-plugin';
 import { getMetaData, updateReadme } from './src/rollup-plugin/metaHeader';
-import { vitePlugins } from './src/rollup-plugin/vite';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const DEV_PORT = 2405;
 
 const isDevMode = process.env.NODE_ENV === 'development';
 
@@ -57,10 +52,11 @@ const latestChangeHtml = await (() => {
 
 const { meta, createMetaHeader } = getMetaData(isDevMode);
 
-const generateScopedName = '[local]';
+const generateScopedName = '[local]___[hash:base64:5]';
 
 /** 单独打包的代码 */
 const packlist = [
+  'helper/languages',
   'helper',
   'request',
   'components/Manga',
@@ -70,6 +66,9 @@ const packlist = [
   'userscript/dmzjApi',
   'userscript/detectAd',
   'userscript/main',
+  'worker/ImageRecognition',
+  'worker/detectAd',
+  'userscript/otherSite',
 ];
 
 const babelConfig = {
@@ -83,111 +82,123 @@ const babelConfig = {
   ],
 };
 
+const baseOptions = {
+  treeshake: true,
+  external: [
+    ...Object.keys(meta.resource ?? {}),
+    ...packlist,
+    'dmzjDecrypt',
+    'dmzjApi',
+    'main',
+    /^solid/,
+  ],
+  input: '',
+  // 忽略使用 eval 的警告
+  onwarn: undefined as RollupOptions['onwarn'],
+  plugins: [] as InputPluginOption,
+  output: {
+    file: '',
+    format: 'cjs',
+    strict: false,
+    generatedCode: 'es2015',
+    extend: true,
+    plugins: [] as OutputPluginOption[],
+  },
+} satisfies RollupOptions;
+
 export const buildOptions = (
   path: string,
   watchFiles?: string[],
-  fn?: (options: RollupOptions) => RollupOptions,
+  fn?: (options: typeof baseOptions) => RollupOptions,
 ): RollupOptions => {
-  const outPath = `dist/${path.replace(/(\/index)?\.tsx?/, '')}.js`;
+  const options = structuredClone(baseOptions);
 
-  const options: RollupOptions = {
-    treeshake: true,
-    external: [
-      ...Object.keys(meta.resource ?? {}),
-      ...packlist,
-      'dmzjDecrypt',
-      'dmzjApi',
-      'main',
-      /^solid/,
-    ],
-    input: resolve(__dirname, 'src', path),
-    // 忽略使用 eval 的警告
-    onwarn(warning, warn) {
-      if (warning.code !== 'EVAL') warn(warning);
-    },
+  options.input = path.startsWith('src')
+    ? path
+    : resolve(__dirname, 'src', path);
+
+  options.plugins = [
+    replace({
+      values: {
+        isDevMode: `${isDevMode}`,
+        'process.env.NODE_ENV': isDevMode ? `'development'` : `'production'`,
+        'inject@LatestChange': latestChangeHtml,
+      },
+      preventAssignment: true,
+    }),
+    alias({
+      entries: {
+        helper: resolve(__dirname, 'src/helper'),
+        worker: resolve(__dirname, 'src/worker'),
+      },
+    }),
+    json({ namedExports: false, indent: '  ' }),
+    nodeResolve({ browser: true, extensions: ['.js', '.ts', '.tsx'] }),
+    commonjs(),
+    styles({ mode: 'extract', modules: { generateScopedName } }),
+    solidSvg(),
+
+    // ts({ transpiler: 'babel', transpileOnly: true, babelConfig }),
+
+    babel({
+      babelHelpers: 'runtime',
+      extensions: ['.ts', '.tsx'],
+      exclude: ['node_modules/**'],
+      ...babelConfig,
+    }),
+
+    ...inputPlugins,
+    watchFiles && isDevMode && watchExternal({ entries: watchFiles }),
+  ];
+
+  Object.assign(options.output, {
+    file: `dist/${path.replace(/(\/index)?\.tsx?/, '')}.js`,
     plugins: [
-      replace({
-        values: {
-          DEV_PORT: `${DEV_PORT}`,
-          isDevMode: `${isDevMode}`,
-          'process.env.NODE_ENV': isDevMode ? `'development'` : `'production'`,
-          'inject@LatestChange': latestChangeHtml,
-        },
+      ...outputPlugins,
+      {
+        name: 'selfPlugin',
+        renderChunk(rawCode) {
+          let code = rawCode;
 
-        preventAssignment: true,
-      }),
-      alias({ entries: { helper: resolve(__dirname, 'src/helper') } }),
-
-      json({ namedExports: false, indent: '  ' }),
-      nodeResolve({ browser: true, extensions: ['.js', '.ts', '.tsx'] }),
-      commonjs(),
-      styles({
-        mode: 'extract',
-        modules: { generateScopedName },
-      }),
-
-      solidSvg() as InputPluginOption,
-
-      // ts({ transpiler: 'babel', transpileOnly: true, babelConfig }),
-
-      babel({
-        babelHelpers: 'runtime',
-        extensions: ['.ts', '.tsx'],
-        exclude: ['node_modules/**'],
-        ...babelConfig,
-      }),
-
-      watchFiles && isDevMode && watchExternal({ entries: watchFiles }),
-    ],
-    output: {
-      file: outPath,
-      format: 'cjs',
-      strict: false,
-      generatedCode: 'es2015',
-      extend: true,
-      plugins: [
-        ...selfPlugins,
-        {
-          name: 'selfPlugin',
-          renderChunk(rawCode) {
-            let code = rawCode;
-
-            switch (path) {
-              case 'index': {
-                updateReadme();
-                if (isDevMode)
-                  code = `
+          switch (path) {
+            case 'index': {
+              updateReadme();
+              if (isDevMode)
+                code = `
                   console.time('脚本启动消耗时间');
                   ${code}
                   console.timeEnd('脚本启动消耗时间');
                 `;
 
-                const importCode = fs
-                  .readFileSync(`dist/userscript/import.js`)
-                  .toString()
-                  .replaceAll('require$1', 'require');
-                code = `${createMetaHeader(meta)}\n${importCode}\n${code}`;
+              const importCode = fs
+                .readFileSync(`dist/userscript/import.js`)
+                .toString()
+                .replaceAll('require$1', 'require');
+              code = `${createMetaHeader(meta)}\n${importCode}\n${code}`;
 
-                break;
-              }
-
-              case 'dev':
-                code =
-                  createMetaHeader({
-                    ...meta,
-                    name: `${meta.name}Test`,
-                    namespace: `${meta.namespace}Test`,
-                    updateURL: undefined,
-                    downloadURL: undefined,
-                  }) + code;
-                break;
+              break;
             }
 
-            return code;
-          },
+            case 'dev':
+              code =
+                createMetaHeader({
+                  ...meta,
+                  name: `${meta.name}Test`,
+                  namespace: `${meta.namespace}Test`,
+                  updateURL: undefined,
+                  downloadURL: undefined,
+                }) + code;
+              break;
+          }
+
+          return code;
         },
-      ],
-    },
+      },
+    ],
+  });
+
+  options.onwarn = (warning, warn) => {
+    if (warning.code !== 'EVAL') warn(warning);
   };
 
   return fn ? fn(options) : options;
@@ -195,24 +206,9 @@ export const buildOptions = (
 
 // 清空 dist 文件夹
 shell.rm('-rf', resolve(__dirname, 'dist/*'));
-
-(async () => {
-  if (!isDevMode) return;
-  // 创建一个 dist 文件夹的文件服务器，用于在浏览器获取最新的脚本代码
-  const server = await createServer({
-    root: resolve(__dirname, 'src'),
-    css: { modules: { generateScopedName } },
-    server: {
-      host: true,
-      port: DEV_PORT,
-      cors: false,
-    },
-    plugins: vitePlugins,
-  });
-  // 开启组件的测试服务器
-  await server.listen();
-  server.printUrls();
-})();
+// 创建 dist 的文件服务器
+if (isDevMode)
+  shell.exec('serve dist --cors -l 2405', { async: true, silent: true });
 
 const optionList: RollupOptions[] = [
   buildOptions('dev'),
@@ -231,9 +227,7 @@ const optionList: RollupOptions[] = [
     'userscript/import',
     packlist.map((path) => `dist/${path}.js`),
     (options) => {
-      (
-        (options.output as OutputOptions).plugins as OutputPluginOption[]
-      ).unshift({
+      options.output.plugins.unshift({
         name: 'selfImport',
         renderChunk(rawCode) {
           return rawCode.replace(
@@ -257,9 +251,9 @@ const optionList: RollupOptions[] = [
 if (!isDevMode)
   optionList.push(
     buildOptions('index', ['dist/**/*', '!dist/index.js'], (options) => {
-      (options.output as OutputOptions).file = 'dist/adguard.js';
-      Reflect.deleteProperty(options.output!, 'dir');
-      ((options.output as OutputOptions).plugins as OutputPluginOption[]).push({
+      options.output.file = 'dist/adguard.js';
+      Reflect.deleteProperty(options.output, 'dir');
+      options.output.plugins.push({
         name: 'selfAdGuardPlugin',
         renderChunk(rawCode) {
           let code = rawCode;

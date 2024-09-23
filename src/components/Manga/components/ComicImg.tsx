@@ -1,6 +1,6 @@
 import { type Component, Show, createMemo, For } from 'solid-js';
 
-import { store } from '../store';
+import { _setState, store } from '../store';
 import {
   getImgTip,
   imgShowState,
@@ -17,6 +17,7 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   const src = () => {
     if (img.loadType === 'wait') return '';
     if (img.translationType === 'show') return img.translationUrl;
+    if (store.option.imgRecognition.enabled) return img.blobUrl;
     return img.src;
   };
 
@@ -36,7 +37,10 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   const _ComicImg: Component<{ cloneIndex?: number }> = (props) => (
     <div
       class={classes.img}
-      style={{ 'grid-area': `_${img.index}` }}
+      style={{
+        'grid-area': `_${img.index}`,
+        'background-color': img.background || 'var(--bg)',
+      }}
       id={`_${props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index}`}
       data-show={showState()}
       data-type={img.type ?? store.defaultImgType}
@@ -44,14 +48,24 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     >
       {/* 因为 img 无法使用 ::after，所以得用 picture 包一下 */}
       <picture
-        style={{ 'aspect-ratio': `${img.size.width} / ${img.size.height}` }}
+        style={{
+          'aspect-ratio': `${img.size.width} / ${img.size.height}`,
+          background:
+            img.progress &&
+            `linear-gradient(
+              to bottom,
+              var(--secondary-bg) ${img.progress}%,
+              var(--hover-bg-color,#fff3)${img.progress}%
+            )`,
+        }}
       >
         <Show when={img.loadType !== 'wait' && src()}>
           <img
             src={src()}
             alt={`${img.index}`}
-            onLoad={(e) => handleImgLoaded(img.index, e.currentTarget)}
-            onError={(e) => handleImgError(img.index, e.currentTarget)}
+            data-src={img.src}
+            onLoad={(e) => handleImgLoaded(img.src, e.currentTarget)}
+            onError={(e) => handleImgError(img.src, e.currentTarget)}
             draggable="false"
             // 让浏览器提前解码防止在火狐和 Safari 上的翻页闪烁
             decoding="sync"

@@ -1,3 +1,5 @@
+let supportWorker = typeof Worker !== 'undefined';
+
 const gmApi = {
   GM,
   GM_addElement:
@@ -18,13 +20,14 @@ const crsLib: Window['crsLib'] = {
 const tempName = Math.random().toString(36).slice(2);
 
 const evalCode = (code: string) => {
+  if (!code) return;
+
   // 因为部分网站会对 eval 进行限制，比如推特（CSP）、hitomi（代理 window.eval 进行拦截）
   // 所以优先使用最通用的 GM_addElement 来加载
   if (gmApi.GM_addElement)
     return GM_addElement('script', { textContent: code })?.remove();
 
-  // eslint-disable-next-line no-eval
-  eval.call(unsafeWindow, code);
+  eval.call(unsafeWindow, code); // eslint-disable-line no-eval
 };
 
 /**
@@ -48,34 +51,73 @@ const selfImportSync = (name: string) => {
 
   if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
+  if (name.startsWith('worker/') && supportWorker) {
+    try {
+      // 如果浏览器支持 worker，就将模块转为 worker
+      const workerCode = `
+const exports = {};
+const Comlink = require('comlink');
+${code}
+Comlink.expose(exports);
+`.replaceAll(
+        /const (\w+?) = require\('(.+?)'\);/g,
+        (_, varName, module) => `
+let ${varName} = {};
+(function (exports, module) { ${GM_getResourceText(module)} }) (
+  ${varName},
+  {
+    set exports(value) { ${varName} = value },
+    get exports() { return ${varName} }
+  }
+);`,
+      );
+
+      const codeUrl = URL.createObjectURL(
+        new Blob([workerCode], { type: 'text/javascript' }),
+      );
+      setTimeout(URL.revokeObjectURL, 0, codeUrl);
+      const worker = new Worker(codeUrl);
+      unsafeWindow[tempName][name] = (
+        require('comlink') as typeof import('comlink')
+      ).wrap(worker);
+      return;
+    } catch {
+      supportWorker = false;
+    }
+  }
+
   // 通过提供 cjs 环境的变量来兼容 umd 模块加载器
   // 将模块导出变量放到 crsLib 对象里，防止污染全局作用域和网站自身的模块产生冲突
-  const runCode = `
-    window['${tempName}']['${name}'] = {};
-    ${isDevMode ? `console.time('导入 ${name}');` : ''}
+  let runCode = `
     (function (process, require, exports, module, ${gmApiList.join(', ')}) {
       ${code}
     })(
       window['${tempName}'].process,
       window['${tempName}'].require,
       window['${tempName}']['${name}'],
-      {
+      ((module) => ({
         set exports(value) {
-          window['${tempName}']['${name}'] = value;
+          module['${name}'] = value;
         },
         get exports() {
-          return window['${tempName}']['${name}'];
+          return module['${name}'];
         },
-      },
+      }))(window['${tempName}']),
       ${gmApiList
         .map((apiName) => `window['${tempName}'].${apiName}`)
         .join(', ')}
     );
-    ${isDevMode ? `console.timeEnd('导入 ${name}');` : ''}
   `;
 
-  Reflect.deleteProperty(unsafeWindow, tempName);
+  if (isDevMode)
+    runCode = [
+      `console.time('导入 ${name}');`,
+      runCode,
+      `console.timeEnd('导入 ${name}');`,
+    ].join('\n');
+
   unsafeWindow[tempName] = crsLib;
+  unsafeWindow[tempName][name] = {};
   evalCode(runCode);
   Reflect.deleteProperty(unsafeWindow, tempName);
 };
@@ -105,7 +147,12 @@ export const require = (name: string) => {
       if (prop === 'default') return selfDefault as unknown;
       if (!crsLib[name]) selfImportSync(name);
       const module: SelfModule = crsLib[name];
-      return module.default?.[prop] ?? module?.[prop];
+      if (
+        Reflect.has(crsLib[name], 'default') &&
+        Reflect.has(crsLib[name].default, prop)
+      )
+        return module.default?.[prop];
+      return module?.[prop];
     },
     apply(_, __, args) {
       if (!crsLib[name]) selfImportSync(name);

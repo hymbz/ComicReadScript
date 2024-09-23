@@ -277,7 +277,6 @@ const utilsDmzjDecrypt = (str: string) => {
   return Uint8Array.from(bytes);
 };
 
-// eslint-disable-next-line import/no-anonymous-default-export, unicorn/no-anonymous-default-export
 export default <T = ComicDetailInfo>(str: string) => {
   const bytes = utilsDmzjDecrypt(str);
   return message.decode(bytes) as T;

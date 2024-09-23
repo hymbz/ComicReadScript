@@ -28,15 +28,15 @@ type QueryV1Message =
       type: 'not_found';
     };
 
-const handleMessage = (msg: QueryV1Message, i: number) => {
+const handleMessage = (msg: QueryV1Message, url: string) => {
   switch (msg.type) {
     case 'result':
       return msg.result.translation_mask;
     case 'pending':
-      setMessage(i, t('translation.tip.pending', { pos: msg.pos }));
+      setMessage(url, t('translation.tip.pending', { pos: msg.pos }));
       break;
     case 'status':
-      setMessage(i, t(`translation.status.${msg.status}`) || msg.status);
+      setMessage(url, t(`translation.status.${msg.status}`) || msg.status);
       break;
 
     case 'error':
@@ -46,30 +46,30 @@ const handleMessage = (msg: QueryV1Message, i: number) => {
   }
 };
 
-const waitTranslationPolling = async (id: string, i: number) => {
+const waitTranslationPolling = async (id: string, url: string) => {
   let result: string | undefined;
   while (result === undefined) {
     const res = await request<QueryV1Message>(
       `https://api.cotrans.touhou.ai/task/${id}/status/v1`,
       { responseType: 'json' },
     );
-    result = handleMessage(res.response, i);
+    result = handleMessage(res.response, url);
     await sleep(1000);
   }
   return result;
 };
 
 /** 等待翻译完成 */
-const waitTranslation = (id: string, i: number) => {
+const waitTranslation = (id: string, url: string) => {
   const ws = new WebSocket(`wss://api.cotrans.touhou.ai/task/${id}/event/v1`);
 
   // 如果网站设置了 CSP connect-src 就只能轮询了
-  if (ws.readyState > 1) return waitTranslationPolling(id, i);
+  if (ws.readyState > 1) return waitTranslationPolling(id, url);
 
   return new Promise<string>((resolve, reject) => {
     ws.onmessage = (e) => {
       try {
-        const result = handleMessage(JSON.parse(e.data), i);
+        const result = handleMessage(JSON.parse(e.data), url);
         if (result) resolve(result);
       } catch (error) {
         reject(error as Error);
@@ -112,9 +112,9 @@ const resize = async (blob: Blob, w: number, h: number): Promise<Blob> => {
 };
 
 /** 使用 cotrans 翻译指定图片 */
-export const cotransTranslation = async (i: number) => {
-  const img = store.imgList[i];
-  setMessage(i, t('translation.tip.img_downloading'));
+export const cotransTranslation = async (url: string) => {
+  const img = store.imgMap[url];
+  setMessage(url, t('translation.tip.img_downloading'));
   let imgBlob: Blob;
   try {
     imgBlob = await download(img.src);
@@ -130,7 +130,7 @@ export const cotransTranslation = async (i: number) => {
     throw new Error(t('translation.tip.resize_img_failed'));
   }
 
-  setMessage(i, t('translation.tip.upload'));
+  setMessage(url, t('translation.tip.upload'));
   let res: Response;
   try {
     res = await request('https://api.cotrans.touhou.ai/task/upload/v1', {
@@ -169,7 +169,8 @@ export const cotransTranslation = async (i: number) => {
   if (!resData.id) throw new Error(t('translation.tip.id_not_returned'));
 
   const translation_mask =
-    resData.result?.translation_mask || (await waitTranslation(resData.id, i));
+    resData.result?.translation_mask ||
+    (await waitTranslation(resData.id, url));
 
   return mergeImage(imgBlob, translation_mask);
 };

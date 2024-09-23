@@ -332,8 +332,8 @@ export const assign = <T extends object>(
   ...sources: Array<Partial<T> | undefined>
 ): T => {
   let res = target;
-  for (let i = 0; i < sources.length; i += 1)
-    if (sources[i] !== undefined) res = _assign(res, sources[i]!);
+  for (const source of sources)
+    if (typeof source === 'object') res = _assign(res, source);
   return res;
 };
 

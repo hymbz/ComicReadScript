@@ -2,7 +2,7 @@ import { t, inRange, throttle, createEffectOn } from 'helper';
 
 import { type State, _setState, setState, store } from '../store';
 
-import { resetUI } from './helper';
+import { getImg, resetUI } from './helper';
 import { activePage } from './memo';
 import { updateShowRange } from './renderPage';
 
@@ -31,7 +31,7 @@ export const resetPage = (state: State, animation = false) => {
 /** 获取指定图片的提示文本 */
 export const getImgTip = (i: number) => {
   if (i === -1) return t('other.fill_page');
-  const img = store.imgList[i];
+  const img = getImg(i);
 
   // 如果图片未加载完毕则在其 index 后增加显示当前加载状态
   if (img.loadType !== 'loaded')

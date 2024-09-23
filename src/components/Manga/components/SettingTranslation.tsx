@@ -1,13 +1,19 @@
 import { createMemo, Show } from 'solid-js';
 import { t } from 'helper';
 
-import { activeImgIndex, createStateSetFn, setOption } from '../actions';
+import {
+  activeImgIndex,
+  createStateSetFn,
+  imgList,
+  setOption,
+} from '../actions';
 import {
   setImgTranslationEnbale,
   translatorOptions,
 } from '../actions/translation';
-import { setState, store } from '../store';
+import { store } from '../store';
 import classes from '../index.module.css';
+import { updateSelfhostedOptions } from '../actions/translation/selfhosted';
 
 import { SettingsItemSelect } from './SettingsItemSelect';
 import { SettingsItemSwitch } from './SettingsItemSwitch';
@@ -24,7 +30,7 @@ export const SettingTranslation = () => {
   const isTranslationAll = createMemo(
     () =>
       isTranslationEnable() &&
-      store.imgList.every(
+      imgList().every(
         (img) =>
           img.translationType === 'show' || img.translationType === 'wait',
       ),
@@ -34,7 +40,7 @@ export const SettingTranslation = () => {
   const isTranslationAfterCurrent = createMemo(
     () =>
       isTranslationEnable() &&
-      store.imgList
+      imgList()
         .slice(activeImgIndex())
         .every(
           (img) =>
@@ -83,14 +89,7 @@ export const SettingTranslation = () => {
           options={translatorOptions()}
           value={store.option.translation.options.translator}
           onChange={createStateSetFn('translation.options.translator')}
-          onClick={() => {
-            if (store.option.translation.server !== 'selfhosted') return;
-            // 通过手动触发变更，以便在点击时再获取一下翻译列表
-            setState((state) => {
-              state.option.translation.server = 'disable';
-              state.option.translation.server = 'selfhosted';
-            });
-          }}
+          onClick={() => updateSelfhostedOptions(false)}
         />
         <SettingsItemSelect
           name={t('setting.translation.options.direction')}

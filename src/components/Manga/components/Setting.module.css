@@ -86,7 +86,7 @@
   align-items: center;
   justify-content: space-between;
 
-  & + & {
+  :is(&, .SettingsShowItem) + & {
     margin-top: 1em;
   }
 }

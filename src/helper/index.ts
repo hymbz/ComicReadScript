@@ -5,6 +5,5 @@ export * from './useDrag';
 export * from './useStore';
 export * from './useStyle';
 export * from './i18n';
-export * from './languages';
 export * from './logger';
 export * from './components';

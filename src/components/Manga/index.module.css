@@ -72,6 +72,7 @@ blockquote {
   padding: 0;
   padding-left: 1em;
 
+  font-size: 0.9em;
   font-style: italic;
   line-height: 1.2em;
   color: var(--text-secondary);

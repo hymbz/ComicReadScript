@@ -1,5 +1,23 @@
 ## TODO
 
+- 双页卷轴模式
+
+## 暂不考虑实现的功能
+
+- 切白边
+  除非在切掉白边后禁止恢复回来，否则必须存储两套长宽、长宽类型、图片 url、图片数据，并在所有相关的地方根据当前显示哪个来判断用哪套来计算。
+  双倍占内存的同时还会提高代码的复杂度，而且感觉也没什么人需要。
+
+- 自动调整首页填充
+  在漫画页数大于10时，检查漫画前5页，找出相似的图片（封面图）、空白图片，统计这类「非正片」的漫画页的页数。为奇数时开启首页填充，否则关闭。
+  有重复封面的漫画不算多，而且在识别空白图片时也很难分辨出「前记」和「留白超大的漫画页」(https://exhentai.org/g/3057496/76f42fcfa9/)
+  准确度低、可用场景少。
+
+## 油猴扩展 API
+
+- https://violentmonkey.github.io/api/gm/
+- https://www.tampermonkey.net/documentation.php?locale=zh
+- https://adguard.com/kb/zh-CN/general/userscripts/#supported-gm-functions
 
 ## 调试
 

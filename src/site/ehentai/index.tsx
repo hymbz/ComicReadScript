@@ -1,7 +1,7 @@
 import { createMemo, type Component } from 'solid-js';
 import { render } from 'solid-js/web';
 import { request, useInit, toast, ReactiveSet, type LoadImgFn } from 'main';
-import { store } from 'components/Manga';
+import { type MangaProps } from 'components/Manga';
 import { getAdPageByFileName, getAdPageByContent } from 'userscript/detectAd';
 import {
   t,
@@ -17,6 +17,7 @@ import {
   createRootMemo,
   requestIdleCallback,
   linstenKeydown,
+  assign,
 } from 'helper';
 
 import { escHandler } from './other';
@@ -64,10 +65,10 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     showComic,
     comicMap,
     setComicMap,
+    setImgList,
     setFab,
     setManga,
     mangaProps,
-    nowComic,
   } = await useInit('ehentai', {
     /** 关联 nhentai */
     associate_nhentai: true,
@@ -85,6 +86,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     quick_tag_define: true,
     /** 悬浮标签列表 */
     float_tag_list: false,
+    /** 自动调整配置 */
+    auto_adjust_option: false,
     autoShow: false,
   });
 
@@ -140,6 +143,22 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   if (options.quick_tag_define)
     requestIdleCallback(() => quickTagDefine(pageType), 1000);
 
+  // 自动调整阅读配置
+  if (
+    options.auto_adjust_option &&
+    // 在「Doujinshi」「Manga」「Non-H」以外的分类下
+    !querySelector('#gdc > .cs:is(.ct2, .ct3, .ct9)')
+  ) {
+    let option: MangaProps['defaultOption'] = {
+      // 使用单页模式
+      pageNum: 1,
+      // 关闭图像识别
+      imgRecognition: { enabled: false },
+    };
+    if (options.option) option = assign(options.option, option);
+    setManga({ option });
+  }
+
   // 不是漫画页的话
   if (pageType !== 'gallery') return;
 
@@ -150,16 +169,16 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
 
   const LoadButton: Component<{ id: string }> = (props) => {
     const tip = createMemo(() => {
-      const imgList = comicMap[props.id]?.imgList;
-      const progress = imgList?.filter(Boolean).length;
+      const _imgList = comicMap[props.id]?.imgList;
+      const progress = _imgList?.filter(Boolean).length;
 
-      switch (imgList?.length) {
+      switch (_imgList?.length) {
         case undefined:
           return ' Load comic';
         case progress:
           return ' Read';
         default:
-          return ` loading - ${progress}/${imgList!.length}`;
+          return ` loading - ${progress}/${_imgList!.length}`;
       }
     });
 
@@ -331,7 +350,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   };
 
   /** 刷新指定图片 */
-  const reloadImg = async (i: number) => {
+  const reloadImg = singleThreaded(async (_, i: number) => {
     const pageUrl = await getNewImgPageUrl(ehImgPageList[i]);
     let imgUrl = '';
     while (!imgUrl || !(await testImgUrl(imgUrl))) {
@@ -340,18 +359,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     }
     ehImgList[i] = imgUrl;
     ehImgPageList[i] = pageUrl;
-    setComicMap('', 'imgList', i, imgUrl);
-  };
-
-  /** 刷新所有错误图片 */
-  const reloadErrorImg = singleThreaded(() =>
-    plimit(
-      store.imgList.map((img, i) => () => {
-        if (img.loadType !== 'error' || nowComic() !== '') return;
-        return reloadImg(i);
-      }),
-    ),
-  );
+    setImgList('', i, imgUrl);
+  });
 
   setManga({
     onExit(isEnd) {
@@ -359,10 +368,11 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       setManga('show', false);
     },
     // 在图片加载出错时刷新图片
-    async onLoading(_, img) {
-      if (!img || img.loadType !== 'error' || (await testImgUrl(img.src)))
-        return;
-      return reloadErrorImg();
+    onLoading(_, img) {
+      if (!img || img.loadType !== 'error') return;
+      const i = ehImgList.indexOf(img.src);
+      if (i === -1) return;
+      return reloadImg(i);
     },
   });
 

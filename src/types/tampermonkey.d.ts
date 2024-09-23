@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable jsdoc/require-param-description */
 // Type definitions for non-npm package Tampermonkey 4.x
 // Project: https://tampermonkey.net
@@ -105,6 +106,8 @@ declare namespace Tampermonkey {
     /** Username for authentication */
     user?: string | undefined;
     password?: string | undefined;
+
+    signal?: AbortSignal | undefined;
 
     // Events
 

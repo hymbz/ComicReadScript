@@ -5,8 +5,20 @@ module.exports = {
   ignores: ["*.js", "*.mjs"],
 
   rules: {
-    // 提示未使用的变量
-    "@typescript-eslint/no-unused-vars": "warn",
+    // 允许不使用 _ 命名的变量
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "args": "all",
+        "argsIgnorePattern": "_+",
+        "caughtErrors": "all",
+        "caughtErrorsIgnorePattern": "_+",
+        "destructuredArrayIgnorePattern": "_+",
+        "varsIgnorePattern": "_+",
+        "ignoreRestSiblings": true
+      }
+    ],
+
     // 提示使用了 console
     "no-console": ["warn", { allow: ["warn", "error"] }],
     "no-debugger": "warn",
@@ -31,6 +43,8 @@ module.exports = {
     "capitalized-comments": "off",
     // 不限制代码复杂性
     complexity: "off",
+    // 不限制函数参数数
+    "max-params": "off",
     // 不强制使用 querySelector
     "unicorn/prefer-query-selector": "off",
     // 不限制在 switch case 中使用大括号
@@ -58,12 +72,18 @@ module.exports = {
     "unicorn/no-negation-in-equality-check": "off",
     // structured 无法处理代理对象
     "unicorn/prefer-structured-clone": "off",
+    // 允许默认导出匿名函数
+    "unicorn/no-anonymous-default-export": "off",
+    // 允许匿名默认导出
+    "import/no-anonymous-default-export": "off",
 
     // import 不同分组之间加上空行
     "import/order": ["warn", { "newlines-between": "always" }],
 
     // 使用 process
     "n/prefer-global/process": ["error", "always"],
+    // 禁止变量遮蔽
+    "no-shadow": ["error", { "ignoreOnInitialization": true, "allow": ["_"] }],
 
     //
     // 项目特有的规则
@@ -107,7 +127,7 @@ module.exports = {
       "warn",
       {
         patterns: [
-          { group: ["helper/**/*"], message: "只能直接通过 helper 导入" },
+          { group: ["helper/**/*", "!helper/languages"], message: "只能直接通过 helper 导入" },
           { group: ["**/request", "!request"], message: "必须直接导入" },
         ],
       },
@@ -183,7 +203,7 @@ module.exports = {
       },
     },
     {
-      files: "**/!(display)*.tsx",
+      files: ["!**/*.stories.tsx"],
       rules: {
         "i18next/no-literal-string": [
           "error",

@@ -3,9 +3,10 @@ import { createRootMemo } from 'helper';
 import { refs, setState, store } from '../store';
 
 import { zoom } from './zoom';
-import { setOption } from './helper';
+import { getImg, setOption } from './helper';
 import { updatePageData } from './image';
 import { setImgTranslationEnbale } from './translation';
+import { saveScrollProgress, scrollViewImg } from './scroll';
 import {
   activeImgIndex,
   nowFillIndex,
@@ -13,7 +14,6 @@ import {
   pageNum,
   autoPageNum,
 } from './memo';
-import { saveScrollProgress, scrollViewImg } from './scroll';
 
 /** 切换页面填充 */
 export const switchFillEffect = () => {
@@ -23,7 +23,7 @@ export const switchFillEffect = () => {
 
     state.fillEffect[nowFillIndex()] = Number(
       !state.fillEffect[nowFillIndex()],
-    );
+    ) as 0 | 1;
     updatePageData(state);
   });
 };
@@ -87,11 +87,10 @@ export const switchFitToWidth = () => {
 
 /** 当前显示的图片是否正在翻译 */
 export const isTranslatingImage = createRootMemo(() =>
-  activePage().some(
-    (i) =>
-      store.imgList[i]?.translationType &&
-      store.imgList[i].translationType !== 'hide',
-  ),
+  activePage().some((i) => {
+    const img = getImg(i);
+    return img?.translationType && img.translationType !== 'hide';
+  }),
 );
 
 /** 切换当前页的翻译状态 */

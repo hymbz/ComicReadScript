@@ -1,8 +1,14 @@
 import { createEffect, on } from 'solid-js';
-import { assign, debounce, throttle, createEffectOn } from 'helper';
+import {
+  assign,
+  debounce,
+  throttle,
+  createEffectOn,
+  createRootMemo,
+} from 'helper';
 
 import { type MangaProps } from '..';
-import { type State, refs, setState } from '../store';
+import { type State, _setState, refs, setState } from '../store';
 import {
   defaultHotkeys,
   focus,
@@ -13,9 +19,8 @@ import {
   updateShowRange,
   placeholderSize,
 } from '../actions';
-import { defaultOption } from '../store/option';
+import { defaultOption, type Option } from '../store/option';
 import { playAnimation } from '../helper';
-import { autoCloseFill } from '../handleComicData';
 
 const createComicImg = (url: string): ComicImg => ({
   // 使用相对协议路径，防止 Mixed Content 报错
@@ -27,14 +32,22 @@ const createComicImg = (url: string): ComicImg => ({
 export const useInit = (props: MangaProps) => {
   watchDomSize('rootSize', refs.root);
 
+  const updateOption = (state: State) => {
+    state.option = props.option
+      ? assign(state.defaultOption, props.option as Partial<Option>)
+      : state.defaultOption;
+  };
+
   const watchProps: Partial<
     Record<keyof MangaProps, (state: State) => unknown>
   > = {
-    option(state) {
-      state.option = assign(state.option, props.defaultOption, props.option);
-    },
+    option: updateOption,
     defaultOption(state) {
-      state.defaultOption = assign(defaultOption(), props.defaultOption);
+      state.defaultOption = assign(
+        defaultOption(),
+        props.defaultOption as Partial<Option>,
+      );
+      updateOption(state);
     },
     fillEffect(state) {
       state.fillEffect = props.fillEffect ?? { '-1': true };
@@ -116,53 +129,51 @@ export const useInit = (props: MangaProps) => {
 
       /** 修改前的当前显示图片 */
       const oldActiveImg =
-        state.pageList[state.activePageIndex]?.map(
-          (i) => state.imgList?.[i]?.src,
-        ) ?? [];
+        state.pageList[state.activePageIndex]?.map((i) => state.imgList?.[i]) ??
+        [];
 
       /** 是否需要重置页面填充 */
       let needResetFillEffect = false;
       const fillEffectList = Object.keys(state.fillEffect).map(Number);
       for (const pageIndex of fillEffectList) {
         if (pageIndex === -1) continue;
-        if (state.imgList[pageIndex].src === props.imgList[pageIndex]) continue;
+        if (state.imgList[pageIndex] === props.imgList[pageIndex]) continue;
         needResetFillEffect = true;
         break;
       }
 
-      /** 是否需要更新页面 */
-      let needUpdatePageData =
-        needResetFillEffect || state.imgList.length !== props.imgList.length;
+      const newImgList = new Set(props.imgList);
+      const oldImgList = new Set(state.imgList);
+
+      /** 被删除的图片 */
+      const deleteList = [...oldImgList].filter((url) => !newImgList.has(url));
+      for (const url of deleteList)
+        if (state.imgMap[url].blobUrl)
+          URL.revokeObjectURL(state.imgMap[url].blobUrl);
+
+      /** 删除图片数 */
+      const deleteNum = deleteList.length;
+
       /** 传入的是否是新漫画 */
-      let isNew = true;
+      const isNew = deleteNum === oldImgList.size; // 旧图一张不剩才算是新漫画
 
-      const imgMap = new Map(
-        state.imgList.filter((img) => img.src).map((img) => [img.src, img]),
-      );
-      for (let i = 0; i < props.imgList.length; i++) {
-        const url = props.imgList[i];
-        // 只有旧图一张不剩才算是新漫画
-        if (isNew && imgMap.has(url)) isNew = false;
-        // 只要有加载好的旧图被删就要更新页面
-        const img = url && !needUpdatePageData && state.imgList[i];
-        if (img && img.loadType !== 'wait' && img.src && img.src !== url)
-          needUpdatePageData = true;
-        state.imgList[i] = imgMap.get(url) ?? createComicImg(url);
-      }
+      /** 是否需要更新页面 */
+      const needUpdatePageData =
+        needResetFillEffect ||
+        state.imgList.length !== props.imgList.length ||
+        deleteNum > 0;
 
-      if (state.imgList.length > props.imgList.length) {
-        state.imgList.length = props.imgList.length;
-        needUpdatePageData = true;
-      }
+      const newImgMap: State['imgMap'] = {};
+      for (const url of props.imgList)
+        newImgMap[url] = state.imgMap[url] ?? createComicImg(url);
 
-      if (isNew) state.imgList = [...state.imgList];
+      state.imgMap = newImgMap;
+      state.imgList = [...props.imgList];
 
-      state.prop.Loading?.(state.imgList);
+      state.prop.Loading?.(state.imgList.map((url) => state.imgMap[url]));
 
-      if (isNew || needResetFillEffect) {
+      if (isNew || needResetFillEffect)
         state.fillEffect = props.fillEffect ?? { '-1': true };
-        autoCloseFill.clear();
-      }
 
       if (isNew || needUpdatePageData) {
         updatePageData(state);
@@ -186,7 +197,7 @@ export const useInit = (props: MangaProps) => {
         if (!url || props.imgList.includes(url)) return false;
 
         const newPageIndex = state.pageList.findIndex((page) =>
-          page.some((index) => state.imgList?.[index]?.src === url),
+          page.some((index) => state.imgList?.[index] === url),
         );
         if (newPageIndex === -1) return false;
 
@@ -201,7 +212,19 @@ export const useInit = (props: MangaProps) => {
   };
 
   // 处理 imgList 参数的初始化和修改
-  createEffectOn(() => props.imgList.join(','), throttle(handleImgList, 500));
+  createEffectOn(
+    createRootMemo(() => props.imgList),
+    throttle(handleImgList, 500),
+  );
+
+  // 通过手动创建一个 Worker 来检测是否支持 Worker，避免因为 CSP 限制而出错
+  setTimeout(() => {
+    const codeUrl = URL.createObjectURL(
+      new Blob(['self.close();'], { type: 'text/javascript' }),
+    );
+    setTimeout(URL.revokeObjectURL, 0, codeUrl);
+    _setState('supportWorker', Boolean(new Worker(codeUrl)));
+  }, 0);
 
   focus();
 };

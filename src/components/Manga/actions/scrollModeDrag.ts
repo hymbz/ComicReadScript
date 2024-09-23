@@ -71,11 +71,11 @@ export const handleScrollModeDrag: UseDrag = (
 
     case 'move': {
       if (store.option.scrollMode.abreastMode) {
-        const dx = x - ix;
-        const dy = y - iy;
+        const _dx = x - ix;
+        const _dy = y - iy;
 
-        scrollTo((initLeft + dx) * (store.option.dir === 'rtl' ? 1 : -1));
-        setAbreastScrollFill(initAbreastScrollFill + dy);
+        scrollTo((initLeft + _dx) * (store.option.dir === 'rtl' ? 1 : -1));
+        setAbreastScrollFill(initAbreastScrollFill + _dy);
       } else scrollTo(initTop + iy - y);
       return;
     }

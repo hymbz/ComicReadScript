@@ -67,7 +67,7 @@
 
     /* 加载中的图片先隐藏一下，避免出错图片的元素被直接显示出来 */
     img {
-      animation: show 1s forwards;
+      animation: show 100ms forwards;
     }
   }
 }

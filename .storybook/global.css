@@ -1,0 +1,17 @@
+root,
+html,
+body,
+#storybook-root {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+.blur {
+  clip-path: border-box;
+  filter: blur(2em);
+}
+
+.blur:hover {
+  filter: unset;
+}

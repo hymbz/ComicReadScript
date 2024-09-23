@@ -2,7 +2,7 @@ import { type Component, For, createMemo } from 'solid-js';
 import { boolDataVal, createThrottleMemo } from 'helper';
 
 import { store } from '../store';
-import { contentHeight, isOnePageMode } from '../actions';
+import { contentHeight, getImg, isOnePageMode } from '../actions';
 import classes from '../index.module.css';
 
 interface ScrollbarPageItem {
@@ -19,7 +19,7 @@ const getScrollbarPage = (
   double = false,
 ): ScrollbarPageItem => {
   let num: number;
-  if (store.option.scrollMode.enabled) num = store.imgList[i].size.height;
+  if (store.option.scrollMode.enabled) num = getImg(i).size.height;
   else num = double ? 2 : 1;
 
   return {
@@ -60,7 +60,7 @@ export const ScrollbarPageStatus = () => {
     let item: ScrollbarPageItem | undefined;
 
     const handleImg = (i: number, double = false) => {
-      const img = store.imgList[i];
+      const img = getImg(i);
 
       if (!item) {
         item = getScrollbarPage(img, i, double);
@@ -72,8 +72,7 @@ export const ScrollbarPageStatus = () => {
         !img.src === item.isNull &&
         img.translationType === item.translationType
       ) {
-        if (store.option.scrollMode.enabled)
-          item.num += store.imgList[i].size.height;
+        if (store.option.scrollMode.enabled) item.num += img.size.height;
         else item.num += double ? 2 : 1;
       } else {
         list.push(item);

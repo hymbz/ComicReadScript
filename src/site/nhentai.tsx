@@ -148,16 +148,16 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
         history.replaceState(null, '', nextUrl);
 
         const container = html.querySelector('.index-container')!;
-        for (const gallery of container.querySelectorAll<HTMLElement>(
+        for (const galleryDom of container.querySelectorAll<HTMLElement>(
           '.gallery',
         )) {
-          for (const img of gallery.getElementsByTagName('img'))
+          for (const img of galleryDom.getElementsByTagName('img'))
             img.setAttribute('src', img.dataset.src!);
 
           // 判断是否有黑名单标签
-          const tags = gallery.dataset.tags!.split(' ').map(Number);
+          const tags = galleryDom.dataset.tags!.split(' ').map(Number);
           if (tags.some((tag) => blackSet.has(tag)))
-            gallery.classList.add('blacklisted');
+            galleryDom.classList.add('blacklisted');
         }
 
         const pagination = html.querySelector<HTMLElement>('.pagination')!;
