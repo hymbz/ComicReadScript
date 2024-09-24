@@ -2,6 +2,8 @@ import { on } from 'solid-js';
 import { lang, t, singleThreaded, createRootMemo } from 'helper';
 
 import { store, setState, _setState } from '../../store';
+import { activeImgIndex, activePage, imgList } from '../memo';
+import { getImg } from '../helper';
 
 import { createOptions, setMessage } from './helper';
 import { selfhostedOptions, selfhostedTranslation } from './selfhosted';
@@ -109,3 +111,61 @@ export const translatorOptions = createRootMemo(
       : createOptions(cotransTranslators),
   ),
 );
+
+/** 是否开启了翻译功能 */
+const isTranslationEnable = createRootMemo(
+  () =>
+    store.option.translation.server !== 'disable' &&
+    translatorOptions().length > 0,
+);
+
+/** 当前显示的图片是否正在翻译 */
+export const isTranslatingImage = createRootMemo(() =>
+  activePage().some((i) => {
+    const img = getImg(i);
+    return img?.translationType && img.translationType !== 'hide';
+  }),
+);
+
+/** 是否正在翻译全部图片 */
+export const isTranslatingAll = createRootMemo(
+  () =>
+    isTranslationEnable() &&
+    imgList().every(
+      (img) => img.translationType === 'show' || img.translationType === 'wait',
+    ),
+);
+
+/** 是否正在翻译当前页以后的全部图片 */
+export const isTranslatingToEnd = createRootMemo(
+  () =>
+    isTranslationEnable() &&
+    imgList()
+      .slice(activeImgIndex())
+      .every(
+        (img) =>
+          img.translationType === 'show' || img.translationType === 'wait',
+      ),
+);
+
+/** 翻译当前页 */
+export const translateCurrent = () =>
+  setImgTranslationEnbale(activePage(), !isTranslatingImage());
+
+/** 翻译全部图片 */
+export const translateAll = () => {
+  if (store.option.translation.server !== 'selfhosted') return;
+  setImgTranslationEnbale(
+    Array.from({ length: store.imgList.length }, (_, i) => i),
+    !isTranslatingAll(),
+  );
+};
+
+/** 翻译当前页至结尾 */
+export const translateToEnd = () => {
+  if (store.option.translation.server !== 'selfhosted') return;
+  setImgTranslationEnbale(
+    store.pageList.slice(store.activePageIndex).flat(),
+    !isTranslatingToEnd(),
+  );
+};

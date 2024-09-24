@@ -15,7 +15,6 @@ import {
   switchOnePageMode,
   switchDir,
   switchGridMode,
-  switchTranslation,
 } from './switch';
 import { handleTrackpadWheel } from './pointer';
 import { setOption } from './helper';
@@ -29,6 +28,7 @@ import {
   zoomScrollModeImg,
 } from './scroll';
 import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
+import { translateAll, translateCurrent, translateToEnd } from './translation';
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 // （虽然因为使用了 shadow dom 的缘故实际还是不能兼容，但说不定之后就改了呢
@@ -195,7 +195,11 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return switchGridMode();
 
     case 'translate_current_page':
-      return switchTranslation();
+      return translateCurrent();
+    case 'translate_all':
+      return translateAll();
+    case 'translate_to_end':
+      return translateToEnd();
 
     case 'switch_auto_enlarge':
       return setOption((draftOption) => {

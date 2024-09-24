@@ -1,8 +1,14 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
 import MdRefresh from '@material-design-icons/svg/round/refresh.svg';
 import MdAdd from '@material-design-icons/svg/round/add.svg';
-import { type Component, For, Index } from 'solid-js';
-import { getKeyboardCode, isEqual, keyboardCodeToText, t } from 'helper';
+import { type Component, For, Index, Show } from 'solid-js';
+import {
+  createRootMemo,
+  getKeyboardCode,
+  isEqual,
+  keyboardCodeToText,
+  t,
+} from 'helper';
 
 import { _setState, store } from '../store';
 import { defaultHotkeys, focus, hotkeysMap } from '../actions';
@@ -30,6 +36,12 @@ const delHotkeys = (code: string) => {
     setHotkeys(name, newKeys);
   }
 };
+
+const getHotkeyName = (code: string) =>
+  t(`hotkeys.${code}`) ||
+  t(`button.${code}`) ||
+  t(`setting.translation.${code}`) ||
+  code;
 
 const KeyItem: Component<{
   operateName: string;
@@ -76,12 +88,12 @@ const KeyItem: Component<{
   );
 };
 
-export const SettingHotkeys: Component = () => (
-  <For each={Object.keys(defaultHotkeys())}>
+const ShowHotkeys: Component<{ keys: string[] }> = (props) => (
+  <For each={props.keys}>
     {(name) => (
       <div class={classes.hotkeys}>
         <div class={classes.hotkeysHeader}>
-          <p>{t(`hotkeys.${name}`) || name}</p>
+          <p>{getHotkeyName(name)}</p>
           <span style={{ 'flex-grow': 1 }} />
           <div
             title={t('setting.hotkeys.add')}
@@ -108,3 +120,50 @@ export const SettingHotkeys: Component = () => (
     )}
   </For>
 );
+
+const OtherHotkeys: Component<{ keys: string[] }> = (props) => {
+  let ref: HTMLSelectElement;
+
+  const handleChange: EventHandler<HTMLSelectElement>['onChange'] = (e) => {
+    const name = e.target.value;
+    setHotkeys(name, store.hotkeys[name].length, '');
+    ref.value = '';
+  };
+
+  return (
+    <div class={classes.hotkeys}>
+      <select
+        ref={ref!}
+        class={classes.hotkeysHeader}
+        style={{ height: '100%' }}
+        onChange={handleChange}
+      >
+        <option value="" disabled hidden selected>
+          {t('setting.option.paragraph_other')} …
+        </option>
+        <For each={props.keys}>
+          {(name) => <option value={name}>{getHotkeyName(name)}</option>}
+        </For>
+      </select>
+    </div>
+  );
+};
+
+export const SettingHotkeys: Component = () => {
+  const hotkeys = createRootMemo(() => {
+    const show: string[] = [];
+    const other: string[] = [];
+    for (const [name, keys] of Object.entries(store.hotkeys))
+      (keys.length > 0 ? show : other).push(name);
+    return { show, other };
+  });
+
+  return (
+    <>
+      <ShowHotkeys keys={hotkeys().show} />
+      <Show when={hotkeys().other.length}>
+        <OtherHotkeys keys={hotkeys().other} />
+      </Show>
+    </>
+  );
+};

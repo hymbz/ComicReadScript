@@ -22,7 +22,7 @@ import {
   switchOnePageMode,
   doubleClickZoom,
   switchGridMode,
-  switchTranslation,
+  translateCurrent,
   isTranslatingImage,
   isOnePageMode,
   isScrollMode,
@@ -126,7 +126,7 @@ export const defaultButtonList: ToolbarButtonList = [
       }
       enabled={isTranslatingImage()}
       hidden={store.option.translation.server === 'disable'}
-      onClick={switchTranslation}
+      onClick={translateCurrent}
       children={<MdTranslate />}
     />
   ),

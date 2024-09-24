@@ -37,7 +37,6 @@
   },
   "hotkeys": {
     "enter_read_mode": "Enter reading mode",
-    "exit": "Exit",
     "float_tag_list": "Floating tag list",
     "jump_to_end": "Jump to the last page",
     "jump_to_home": "Jump to the first page",
@@ -52,8 +51,7 @@
     "switch_grid_mode": "Switch grid mode",
     "switch_page_fill": "Switch page fill",
     "switch_scroll_mode": "Switch scroll mode",
-    "switch_single_double_page_mode": "Switch single/double page mode",
-    "translate_current_page": "Translate current page"
+    "switch_single_double_page_mode": "Switch single/double page mode"
   },
   "img_status": {
     "error": "Load Error",
@@ -169,8 +167,8 @@
       },
       "server": "Translation server",
       "server_selfhosted": "Selfhosted",
-      "translate_after_current": "Translate the current page to the end",
-      "translate_all_img": "Translate all images"
+      "translate_all": "Translate all images",
+      "translate_to_end": "Translate the current page to the end"
     }
   },
   "site": {

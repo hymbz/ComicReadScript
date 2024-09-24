@@ -37,7 +37,6 @@
   },
   "hotkeys": {
     "enter_read_mode": "Режим чтения",
-    "exit": "Выход",
     "float_tag_list": "Плавающий список тегов",
     "jump_to_end": "Перейти к последней странице",
     "jump_to_home": "Перейти к первой странице",
@@ -52,8 +51,7 @@
     "switch_grid_mode": "Режим сетки",
     "switch_page_fill": "Заполнение страницы",
     "switch_scroll_mode": "Режим прокрутки",
-    "switch_single_double_page_mode": "Одностраничный/Двухстраничный режим",
-    "translate_current_page": "Перевести текущую страницу"
+    "switch_single_double_page_mode": "Одностраничный/Двухстраничный режим"
   },
   "img_status": {
     "error": "Ошибка загрузки",
@@ -169,8 +167,8 @@
       },
       "server": "Сервер",
       "server_selfhosted": "Свой",
-      "translate_after_current": "Переводить страницу до конца",
-      "translate_all_img": "Перевести все изображения"
+      "translate_all": "Перевести все изображения",
+      "translate_to_end": "Переводить страницу до конца"
     }
   },
   "site": {

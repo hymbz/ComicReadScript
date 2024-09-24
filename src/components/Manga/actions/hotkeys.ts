@@ -22,6 +22,8 @@ export const [defaultHotkeys, setDefaultHotkeys] = createSignal<
   switch_dir: [],
   switch_auto_enlarge: [],
   translate_current_page: [],
+  translate_all: [],
+  translate_to_end: [],
 });
 
 /** 快捷键配置 */

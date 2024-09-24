@@ -37,7 +37,6 @@
   },
   "hotkeys": {
     "enter_read_mode": "进入阅读模式",
-    "exit": "退出",
     "float_tag_list": "悬浮标签列表",
     "jump_to_end": "跳至尾页",
     "jump_to_home": "跳至首页",
@@ -52,8 +51,7 @@
     "switch_grid_mode": "切换网格模式",
     "switch_page_fill": "切换页面填充",
     "switch_scroll_mode": "切换卷轴模式",
-    "switch_single_double_page_mode": "切换单双页模式",
-    "translate_current_page": "翻译当前页"
+    "switch_single_double_page_mode": "切换单双页模式"
   },
   "img_status": {
     "error": "加载出错",
@@ -169,8 +167,8 @@
       },
       "server": "翻译服务器",
       "server_selfhosted": "本地部署",
-      "translate_after_current": "翻译当前页至结尾",
-      "translate_all_img": "翻译全部图片"
+      "translate_all": "翻译全部图片",
+      "translate_to_end": "翻译当前页至结尾"
     }
   },
   "site": {
