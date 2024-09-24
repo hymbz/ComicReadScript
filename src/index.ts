@@ -518,14 +518,17 @@ try {
 
       // by: https://sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/241035
       const getImgList = () => {
-        const { ps, su, ti, nn, mm } = unsafeWindow;
-        const code = [...document.scripts].find((script) =>
-          script.textContent!.includes('ge(e)'),
-        )!.textContent!;
-        const [, chapterId] = /img\s+s="(.{15})/.exec(code)!;
+        let chapterId = '';
+        for (const img of querySelectorAll('img[s]')) {
+          if (!img.getAttribute('s')) continue;
+          chapterId = img.getAttribute('s')!.slice(0, 15);
+          break;
+        }
+        if (!chapterId) throw new Error(t('site.changed_load_failed'));
         const b = unsafeWindow[chapterId.slice(0, 5)];
         const c = unsafeWindow[chapterId.slice(5, 10)];
         const d = unsafeWindow[chapterId.slice(10, 15)];
+        const { ps, su, ti, nn, mm } = unsafeWindow;
         const getSrc = (a: number) =>
           `https://img${su(b, 0, 1)}.8comic.com/${su(b, 1, 1)}/${ti}/${c}/${nn(a)}_${su(d, mm(a), 3)}.jpg`;
         return Array.from({ length: ps }).map((_, i) => getSrc(i + 1));
