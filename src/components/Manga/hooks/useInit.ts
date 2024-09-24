@@ -22,9 +22,8 @@ import {
 import { defaultOption, type Option } from '../store/option';
 import { playAnimation } from '../helper';
 
-const createComicImg = (url: string): ComicImg => ({
-  // 使用相对协议路径，防止 Mixed Content 报错
-  src: url?.replace(/^http:/, ''),
+const createComicImg = (src: string): ComicImg => ({
+  src,
   loadType: 'wait',
   size: placeholderSize(),
 });
@@ -125,6 +124,9 @@ export const useInit = (props: MangaProps) => {
 
   const handleImgList = () => {
     setState((state) => {
+      // 使用相对协议路径，防止 Mixed Content 报错
+      props.imgList = props.imgList.map((url) => url?.replace(/^http:/, ''));
+
       state.show.endPage = undefined;
 
       /** 修改前的当前显示图片 */
