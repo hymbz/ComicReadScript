@@ -134,11 +134,16 @@ export const getAreaColor = (
 /** 获取图像指定矩形区域中的主色 */
 export const getSquareAreaColor = (
   imgData: Uint8ClampedArray,
-  topLeftX: number,
-  topLeftY: number,
-  bottomRightX: number,
-  bottomRightY: number,
+  _topLeftX: number,
+  _topLeftY: number,
+  _bottomRightX: number,
+  _bottomRightY: number,
 ) => {
+  const topLeftX = Math.floor(_topLeftX);
+  const topLeftY = Math.floor(_topLeftY);
+  const bottomRightX = Math.floor(_bottomRightX);
+  const bottomRightY = Math.floor(_bottomRightY);
+
   const colorMap = new Map<string, number>();
   const maximum = (bottomRightX - topLeftX) * (bottomRightY - topLeftY) * 0.5;
 
