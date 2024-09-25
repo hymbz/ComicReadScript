@@ -10,6 +10,8 @@ declare const b2token: string;
 // 需要购买
 // https://yuri.website/147642/
 // https://yuri.website/122684/
+// 在线区
+// https://yuri.website/40064/
 
 (async () => {
   const { options, setManga, setComicLoad, showComic, comicMap, needAutoShow } =
@@ -93,6 +95,8 @@ declare const b2token: string;
   // 没有折叠的单篇漫画
   await wait(() => querySelectorAll('.entry-content img').length);
   setComicLoad(() =>
-    querySelectorAll<HTMLImageElement>('.entry-content img').map((e) => e.src),
+    querySelectorAll<HTMLImageElement>('.entry-content img').map(
+      (e) => e.dataset.src || e.src,
+    ),
   );
 })();
