@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         10.0.0
+// @version         10.1.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、無限動漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -878,7 +878,6 @@ const zh = {
   },
   hotkeys: {
     enter_read_mode: "进入阅读模式",
-    exit: "退出",
     float_tag_list: "悬浮标签列表",
     jump_to_end: "跳至尾页",
     jump_to_home: "跳至首页",
@@ -893,8 +892,7 @@ const zh = {
     switch_grid_mode: "切换网格模式",
     switch_page_fill: "切换页面填充",
     switch_scroll_mode: "切换卷轴模式",
-    switch_single_double_page_mode: "切换单双页模式",
-    translate_current_page: "翻译当前页"
+    switch_single_double_page_mode: "切换单双页模式"
   },
   img_status: {
     error: "加载出错",
@@ -1010,8 +1008,8 @@ const zh = {
       },
       server: "翻译服务器",
       server_selfhosted: "本地部署",
-      translate_after_current: "翻译当前页至结尾",
-      translate_all_img: "翻译全部图片"
+      translate_all: "翻译全部图片",
+      translate_to_end: "翻译当前页至结尾"
     }
   },
   site: {
@@ -1165,7 +1163,6 @@ const en = {
   },
   hotkeys: {
     enter_read_mode: "Enter reading mode",
-    exit: "Exit",
     float_tag_list: "Floating tag list",
     jump_to_end: "Jump to the last page",
     jump_to_home: "Jump to the first page",
@@ -1180,8 +1177,7 @@ const en = {
     switch_grid_mode: "Switch grid mode",
     switch_page_fill: "Switch page fill",
     switch_scroll_mode: "Switch scroll mode",
-    switch_single_double_page_mode: "Switch single/double page mode",
-    translate_current_page: "Translate current page"
+    switch_single_double_page_mode: "Switch single/double page mode"
   },
   img_status: {
     error: "Load Error",
@@ -1297,8 +1293,8 @@ const en = {
       },
       server: "Translation server",
       server_selfhosted: "Selfhosted",
-      translate_after_current: "Translate the current page to the end",
-      translate_all_img: "Translate all images"
+      translate_all: "Translate all images",
+      translate_to_end: "Translate the current page to the end"
     }
   },
   site: {
@@ -1452,7 +1448,6 @@ const ru = {
   },
   hotkeys: {
     enter_read_mode: "Режим чтения",
-    exit: "Выход",
     float_tag_list: "Плавающий список тегов",
     jump_to_end: "Перейти к последней странице",
     jump_to_home: "Перейти к первой странице",
@@ -1467,8 +1462,7 @@ const ru = {
     switch_grid_mode: "Режим сетки",
     switch_page_fill: "Заполнение страницы",
     switch_scroll_mode: "Режим прокрутки",
-    switch_single_double_page_mode: "Одностраничный/Двухстраничный режим",
-    translate_current_page: "Перевести текущую страницу"
+    switch_single_double_page_mode: "Одностраничный/Двухстраничный режим"
   },
   img_status: {
     error: "Ошибка загрузки",
@@ -1584,8 +1578,8 @@ const ru = {
       },
       server: "Сервер",
       server_selfhosted: "Свой",
-      translate_after_current: "Переводить страницу до конца",
-      translate_all_img: "Перевести все изображения"
+      translate_all: "Перевести все изображения",
+      translate_to_end: "Переводить страницу до конца"
     }
   },
   site: {
@@ -2175,7 +2169,9 @@ const [defaultHotkeys, setDefaultHotkeys] = solidJs.createSignal({
   switch_single_double_page_mode: [],
   switch_dir: [],
   switch_auto_enlarge: [],
-  translate_current_page: []
+  translate_current_page: [],
+  translate_all: [],
+  translate_to_end: []
 });
 
 /** 快捷键配置 */
@@ -2724,328 +2720,6 @@ const handlePinchZoom = ({
   }
 };
 
-const setMessage = (url, msg) => _setState('imgMap', url, 'translationMessage', msg);
-const download = async url => {
-  if (url.startsWith('blob:')) {
-    const res = await fetch(url);
-    return res.blob();
-  }
-  const res = await request.request(url, {
-    responseType: 'blob',
-    errorText: helper.t('translation.tip.download_img_failed')
-  });
-  return res.response;
-};
-const createFormData = (imgBlob, type) => {
-  const file = new File([imgBlob], \`image.\${imgBlob.type.split('/').at(-1)}\`, {
-    type: imgBlob.type
-  });
-  const {
-    size,
-    detector,
-    direction,
-    translator,
-    targetLanguage
-  } = store.option.translation.options;
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('mime', file.type);
-  formData.append('size', size);
-  formData.append('detector', detector);
-  formData.append('direction', direction);
-  formData.append('translator', translator);
-  if (type === 'cotrans') formData.append('target_language', targetLanguage);else formData.append('target_lang', targetLanguage);
-  formData.append('retry', \`\${store.option.translation.forceRetry}\`);
-  return formData;
-};
-
-/** 将站点列表转为选择器中的选项 */
-const createOptions = list => list.map(name => [name, helper.t(\`translation.translator.\${name}\`) || name]);
-
-const apiUrl = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
-
-/** 使用自部署服务器翻译指定图片 */
-const selfhostedTranslation = async url => {
-  await request.request(\`\${apiUrl()}\`, {
-    method: 'HEAD',
-    errorText: helper.t('alert.server_connect_failed')
-  });
-  setMessage(url, helper.t('translation.tip.img_downloading'));
-  let imgBlob;
-  try {
-    imgBlob = await download(url);
-  } catch (error) {
-    helper.log.error(error);
-    throw new Error(helper.t('translation.tip.download_img_failed'));
-  }
-  setMessage(url, helper.t('translation.tip.upload'));
-  let task_id;
-  // 上传图片取得任务 id
-  try {
-    const res = await request.request(\`\${apiUrl()}/submit\`, {
-      method: 'POST',
-      responseType: 'json',
-      data: createFormData(imgBlob, 'selfhosted')
-    });
-    task_id = res.response.task_id;
-  } catch (error) {
-    helper.log.error(error);
-    throw new Error(helper.t('translation.tip.upload_error'));
-  }
-  let errorNum = 0;
-  let taskState;
-  // 等待翻译完成
-  while (!taskState?.finished) {
-    try {
-      await helper.sleep(200);
-      const res = await request.request(\`\${apiUrl()}/task-state?taskid=\${task_id}\`, {
-        responseType: 'json'
-      });
-      taskState = res.response;
-      setMessage(url, \`\${helper.t(\`translation.status.\${taskState.state}\`) || taskState.state}\`);
-    } catch (error) {
-      helper.log.error(error);
-      if (errorNum > 5) throw new Error(helper.t('translation.tip.check_img_status_failed'));
-      errorNum += 1;
-    }
-  }
-  return URL.createObjectURL(await download(\`\${apiUrl()}/result/\${task_id}\`));
-};
-const [selfhostedOptions, setSelfOptions] = helper.createEqualsSignal([]);
-
-/** 更新部署服务的可用翻译 */
-const updateSelfhostedOptions = async noTip => {
-  if (store.option.translation.server !== 'selfhosted') return;
-  try {
-    const res = await request.request(\`\${apiUrl()}\`, {
-      noTip,
-      errorText: helper.t('alert.server_connect_failed')
-    });
-    const translatorsText = /(?<=validTranslators: ).+?(?=,\\n)/.exec(res.responseText)?.[0];
-    if (!translatorsText) return undefined;
-    const list = JSON.parse(translatorsText.replaceAll(\`'\`, \`"\`));
-    setSelfOptions(createOptions(list));
-  } catch (error) {
-    helper.log.error(helper.t('translation.tip.get_translator_list_error'), error);
-    setSelfOptions([]);
-  }
-
-  // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
-  if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
-    setOption(draftOption => {
-      draftOption.translation.options.translator = 'google';
-    });
-  }
-};
-
-// 在切换翻译服务器的同时切换可用翻译的选项列表
-helper.createEffectOn([() => store.option.translation.server, () => store.option.translation.localUrl], () => updateSelfhostedOptions(true), {
-  defer: true
-});
-
-const handleMessage = (msg, url) => {
-  switch (msg.type) {
-    case 'result':
-      return msg.result.translation_mask;
-    case 'pending':
-      setMessage(url, helper.t('translation.tip.pending', {
-        pos: msg.pos
-      }));
-      break;
-    case 'status':
-      setMessage(url, helper.t(\`translation.status.\${msg.status}\`) || msg.status);
-      break;
-    case 'error':
-      throw new Error(\`\${helper.t('translation.tip.error')}：id \${msg.error_id}\`);
-    case 'not_found':
-      throw new Error(\`\${helper.t('translation.tip.error')}：Not Found\`);
-  }
-};
-const waitTranslationPolling = async (id, url) => {
-  let result;
-  while (result === undefined) {
-    const res = await request.request(\`https://api.cotrans.touhou.ai/task/\${id}/status/v1\`, {
-      responseType: 'json'
-    });
-    result = handleMessage(res.response, url);
-    await helper.sleep(1000);
-  }
-  return result;
-};
-
-/** 等待翻译完成 */
-const waitTranslation = (id, url) => {
-  const ws = new WebSocket(\`wss://api.cotrans.touhou.ai/task/\${id}/event/v1\`);
-
-  // 如果网站设置了 CSP connect-src 就只能轮询了
-  if (ws.readyState > 1) return waitTranslationPolling(id, url);
-  return new Promise((resolve, reject) => {
-    ws.onmessage = e => {
-      try {
-        const result = handleMessage(JSON.parse(e.data), url);
-        if (result) resolve(result);
-      } catch (error) {
-        reject(error);
-      }
-    };
-  });
-};
-
-/** 将翻译后的内容覆盖到原图上 */
-const mergeImage = async (rawImage, maskUri) => {
-  const img = await helper.waitImgLoad(URL.createObjectURL(rawImage));
-  const canvas = new OffscreenCanvas(img.width, img.height);
-  const canvasCtx = canvas.getContext('2d');
-  canvasCtx.drawImage(img, 0, 0);
-  const img2 = new Image();
-  img2.src = URL.createObjectURL(await download(maskUri));
-  await helper.waitImgLoad(img2);
-  canvasCtx.drawImage(img2, 0, 0);
-  return URL.createObjectURL(await helper.canvasToBlob(canvas));
-};
-
-/** 缩小过大的图片 */
-const resize = async (blob, w, h) => {
-  if (w <= 4096 && h <= 4096) return blob;
-  const scale = Math.min(4096 / w, 4096 / h);
-  const width = Math.floor(w * scale);
-  const height = Math.floor(h * scale);
-  const img = await helper.waitImgLoad(URL.createObjectURL(blob));
-  const canvas = new OffscreenCanvas(width, height);
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, 0, 0, width, height);
-  URL.revokeObjectURL(img.src);
-  return helper.canvasToBlob(canvas);
-};
-
-/** 使用 cotrans 翻译指定图片 */
-const cotransTranslation = async url => {
-  const img = store.imgMap[url];
-  setMessage(url, helper.t('translation.tip.img_downloading'));
-  let imgBlob;
-  try {
-    imgBlob = await download(img.src);
-  } catch (error) {
-    helper.log.error(error);
-    throw new Error(helper.t('translation.tip.download_img_failed'));
-  }
-  try {
-    imgBlob = await resize(imgBlob, img.width, img.height);
-  } catch (error) {
-    helper.log.error(error);
-    throw new Error(helper.t('translation.tip.resize_img_failed'));
-  }
-  setMessage(url, helper.t('translation.tip.upload'));
-  let res;
-  try {
-    res = await request.request('https://api.cotrans.touhou.ai/task/upload/v1', {
-      method: 'POST',
-      data: createFormData(imgBlob, 'cotrans'),
-      headers: {
-        Origin: 'https://cotrans.touhou.ai',
-        Referer: 'https://cotrans.touhou.ai/'
-      }
-    });
-  } catch (error) {
-    helper.log.error(error);
-    throw new Error(helper.t('translation.tip.upload_error'));
-  }
-  let resData;
-  try {
-    resData = JSON.parse(res.responseText);
-    helper.log(resData);
-  } catch {
-    throw new Error(\`\${helper.t('translation.tip.upload_return_error')}：\${res.responseText}\`);
-  }
-  if ('error_id' in resData) throw new Error(\`\${helper.t('translation.tip.upload_return_error')}：\${resData.error_id}\`);
-  if (!resData.id) throw new Error(helper.t('translation.tip.id_not_returned'));
-  const translation_mask = resData.result?.translation_mask || (await waitTranslation(resData.id, url));
-  return mergeImage(imgBlob, translation_mask);
-};
-const cotransTranslators = ['google', 'youdao', 'baidu', 'deepl', 'gpt3.5', 'offline', 'none'];
-
-/** 翻译指定图片 */
-const translationImage = async url => {
-  try {
-    if (typeof GM_xmlhttpRequest === 'undefined') {
-      toast?.error(helper.t('pwa.alert.userscript_not_installed'));
-      throw new Error(helper.t('pwa.alert.userscript_not_installed'));
-    }
-    if (!url) return;
-    const img = store.imgMap[url];
-    if (img.translationType !== 'wait') return;
-    if (img.translationUrl) return _setState('imgMap', url, 'translationType', 'show');
-    if (img.loadType !== 'loaded') return setMessage(url, helper.t('translation.tip.img_not_fully_loaded'));
-    const translationUrl = await (store.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(url);
-    _setState('imgMap', url, {
-      translationUrl,
-      translationMessage: helper.t('translation.tip.translation_completed'),
-      translationType: 'show'
-    });
-  } catch (error) {
-    _setState('imgMap', url, 'translationType', 'error');
-    if (error?.message) _setState('imgMap', url, 'translationMessage', error.message);
-  }
-};
-
-/** 逐个翻译状态为等待翻译的图片 */
-const translationAll = helper.singleThreaded(async () => {
-  for (const img of Object.values(store.imgMap)) {
-    if (img.loadType !== 'loaded' || img.translationType !== 'wait') continue;
-    await translationImage(img.src);
-  }
-});
-
-/** 开启或关闭指定图片的翻译 */
-const setImgTranslationEnbale = (list, enbale) => {
-  setState(state => {
-    for (const i of list) {
-      const img = state.imgMap[state.imgList[i]];
-      if (!img) continue;
-      const url = img.src;
-      if (enbale) {
-        if (state.option.translation.forceRetry) {
-          img.translationType = 'wait';
-          img.translationUrl = undefined;
-          setMessage(url, helper.t('translation.tip.wait_translation'));
-        } else {
-          switch (img.translationType) {
-            case 'hide':
-              {
-                img.translationType = 'show';
-                break;
-              }
-            case 'error':
-            case undefined:
-              {
-                img.translationType = 'wait';
-                setMessage(url, helper.t('translation.tip.wait_translation'));
-                break;
-              }
-          }
-        }
-      } else {
-        switch (img.translationType) {
-          case 'show':
-            {
-              img.translationType = 'hide';
-              break;
-            }
-          case 'error':
-          case 'wait':
-            {
-              img.translationType = undefined;
-              break;
-            }
-        }
-      }
-    }
-  });
-  return translationAll();
-};
-const translatorOptions = helper.createRootMemo(solidJs.on([selfhostedOptions, helper.lang, () => store.option.translation.server], () => store.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
-
 /** 并排卷轴模式下的全局滚动填充 */
 const [abreastScrollFill, _setAbreastScrollFill] = solidJs.createSignal(0);
 /** 并排卷轴模式下的每列布局 */
@@ -3304,15 +2978,6 @@ const switchFitToWidth = () => {
   });
   jump();
 };
-
-/** 当前显示的图片是否正在翻译 */
-const isTranslatingImage = helper.createRootMemo(() => activePage().some(i => {
-  const img = getImg(i);
-  return img?.translationType && img.translationType !== 'hide';
-}));
-
-/** 切换当前页的翻译状态 */
-const switchTranslation = () => setImgTranslationEnbale(activePage(), !isTranslatingImage());
 
 let clickTimeout = null;
 const useDoubleClick = (click, doubleClick, timeout = 200) => {
@@ -3744,6 +3409,360 @@ const handleTrackpadWheel = e => {
   handleDragEnd.debounce();
 };
 
+const setMessage = (url, msg) => _setState('imgMap', url, 'translationMessage', msg);
+const download = async url => {
+  if (url.startsWith('blob:')) {
+    const res = await fetch(url);
+    return res.blob();
+  }
+  const res = await request.request(url, {
+    responseType: 'blob',
+    errorText: helper.t('translation.tip.download_img_failed')
+  });
+  return res.response;
+};
+const createFormData = (imgBlob, type) => {
+  const file = new File([imgBlob], \`image.\${imgBlob.type.split('/').at(-1)}\`, {
+    type: imgBlob.type
+  });
+  const {
+    size,
+    detector,
+    direction,
+    translator,
+    targetLanguage
+  } = store.option.translation.options;
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('mime', file.type);
+  formData.append('size', size);
+  formData.append('detector', detector);
+  formData.append('direction', direction);
+  formData.append('translator', translator);
+  if (type === 'cotrans') formData.append('target_language', targetLanguage);else formData.append('target_lang', targetLanguage);
+  formData.append('retry', \`\${store.option.translation.forceRetry}\`);
+  return formData;
+};
+
+/** 将站点列表转为选择器中的选项 */
+const createOptions = list => list.map(name => [name, helper.t(\`translation.translator.\${name}\`) || name]);
+
+const apiUrl = () => store.option.translation.localUrl || 'http://127.0.0.1:5003';
+
+/** 使用自部署服务器翻译指定图片 */
+const selfhostedTranslation = async url => {
+  await request.request(\`\${apiUrl()}\`, {
+    method: 'HEAD',
+    errorText: helper.t('alert.server_connect_failed')
+  });
+  setMessage(url, helper.t('translation.tip.img_downloading'));
+  let imgBlob;
+  try {
+    imgBlob = await download(url);
+  } catch (error) {
+    helper.log.error(error);
+    throw new Error(helper.t('translation.tip.download_img_failed'));
+  }
+  setMessage(url, helper.t('translation.tip.upload'));
+  let task_id;
+  // 上传图片取得任务 id
+  try {
+    const res = await request.request(\`\${apiUrl()}/submit\`, {
+      method: 'POST',
+      responseType: 'json',
+      data: createFormData(imgBlob, 'selfhosted')
+    });
+    task_id = res.response.task_id;
+  } catch (error) {
+    helper.log.error(error);
+    throw new Error(helper.t('translation.tip.upload_error'));
+  }
+  let errorNum = 0;
+  let taskState;
+  // 等待翻译完成
+  while (!taskState?.finished) {
+    try {
+      await helper.sleep(200);
+      const res = await request.request(\`\${apiUrl()}/task-state?taskid=\${task_id}\`, {
+        responseType: 'json'
+      });
+      taskState = res.response;
+      setMessage(url, \`\${helper.t(\`translation.status.\${taskState.state}\`) || taskState.state}\`);
+    } catch (error) {
+      helper.log.error(error);
+      if (errorNum > 5) throw new Error(helper.t('translation.tip.check_img_status_failed'));
+      errorNum += 1;
+    }
+  }
+  return URL.createObjectURL(await download(\`\${apiUrl()}/result/\${task_id}\`));
+};
+const [selfhostedOptions, setSelfOptions] = helper.createEqualsSignal([]);
+
+/** 更新部署服务的可用翻译 */
+const updateSelfhostedOptions = async noTip => {
+  if (store.option.translation.server !== 'selfhosted') return;
+  try {
+    const res = await request.request(\`\${apiUrl()}\`, {
+      noTip,
+      errorText: helper.t('alert.server_connect_failed')
+    });
+    const translatorsText = /(?<=validTranslators: ).+?(?=,\\n)/.exec(res.responseText)?.[0];
+    if (!translatorsText) return undefined;
+    const list = JSON.parse(translatorsText.replaceAll(\`'\`, \`"\`));
+    setSelfOptions(createOptions(list));
+  } catch (error) {
+    helper.log.error(helper.t('translation.tip.get_translator_list_error'), error);
+    setSelfOptions([]);
+  }
+
+  // 如果切换服务器后原先选择的翻译服务失效了，就换成谷歌翻译
+  if (!selfhostedOptions().some(([val]) => val === store.option.translation.options.translator)) {
+    setOption(draftOption => {
+      draftOption.translation.options.translator = 'google';
+    });
+  }
+};
+
+// 在切换翻译服务器的同时切换可用翻译的选项列表
+helper.createEffectOn([() => store.option.translation.server, () => store.option.translation.localUrl], () => updateSelfhostedOptions(true), {
+  defer: true
+});
+
+const handleMessage = (msg, url) => {
+  switch (msg.type) {
+    case 'result':
+      return msg.result.translation_mask;
+    case 'pending':
+      setMessage(url, helper.t('translation.tip.pending', {
+        pos: msg.pos
+      }));
+      break;
+    case 'status':
+      setMessage(url, helper.t(\`translation.status.\${msg.status}\`) || msg.status);
+      break;
+    case 'error':
+      throw new Error(\`\${helper.t('translation.tip.error')}：id \${msg.error_id}\`);
+    case 'not_found':
+      throw new Error(\`\${helper.t('translation.tip.error')}：Not Found\`);
+  }
+};
+const waitTranslationPolling = async (id, url) => {
+  let result;
+  while (result === undefined) {
+    const res = await request.request(\`https://api.cotrans.touhou.ai/task/\${id}/status/v1\`, {
+      responseType: 'json'
+    });
+    result = handleMessage(res.response, url);
+    await helper.sleep(1000);
+  }
+  return result;
+};
+
+/** 等待翻译完成 */
+const waitTranslation = (id, url) => {
+  const ws = new WebSocket(\`wss://api.cotrans.touhou.ai/task/\${id}/event/v1\`);
+
+  // 如果网站设置了 CSP connect-src 就只能轮询了
+  if (ws.readyState > 1) return waitTranslationPolling(id, url);
+  return new Promise((resolve, reject) => {
+    ws.onmessage = e => {
+      try {
+        const result = handleMessage(JSON.parse(e.data), url);
+        if (result) resolve(result);
+      } catch (error) {
+        reject(error);
+      }
+    };
+  });
+};
+
+/** 将翻译后的内容覆盖到原图上 */
+const mergeImage = async (rawImage, maskUri) => {
+  const img = await helper.waitImgLoad(URL.createObjectURL(rawImage));
+  const canvas = new OffscreenCanvas(img.width, img.height);
+  const canvasCtx = canvas.getContext('2d');
+  canvasCtx.drawImage(img, 0, 0);
+  const img2 = new Image();
+  img2.src = URL.createObjectURL(await download(maskUri));
+  await helper.waitImgLoad(img2);
+  canvasCtx.drawImage(img2, 0, 0);
+  return URL.createObjectURL(await helper.canvasToBlob(canvas));
+};
+
+/** 缩小过大的图片 */
+const resize = async (blob, w, h) => {
+  if (w <= 4096 && h <= 4096) return blob;
+  const scale = Math.min(4096 / w, 4096 / h);
+  const width = Math.floor(w * scale);
+  const height = Math.floor(h * scale);
+  const img = await helper.waitImgLoad(URL.createObjectURL(blob));
+  const canvas = new OffscreenCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, width, height);
+  URL.revokeObjectURL(img.src);
+  return helper.canvasToBlob(canvas);
+};
+
+/** 使用 cotrans 翻译指定图片 */
+const cotransTranslation = async url => {
+  const img = store.imgMap[url];
+  setMessage(url, helper.t('translation.tip.img_downloading'));
+  let imgBlob;
+  try {
+    imgBlob = await download(img.src);
+  } catch (error) {
+    helper.log.error(error);
+    throw new Error(helper.t('translation.tip.download_img_failed'));
+  }
+  try {
+    imgBlob = await resize(imgBlob, img.width, img.height);
+  } catch (error) {
+    helper.log.error(error);
+    throw new Error(helper.t('translation.tip.resize_img_failed'));
+  }
+  setMessage(url, helper.t('translation.tip.upload'));
+  let res;
+  try {
+    res = await request.request('https://api.cotrans.touhou.ai/task/upload/v1', {
+      method: 'POST',
+      data: createFormData(imgBlob, 'cotrans'),
+      headers: {
+        Origin: 'https://cotrans.touhou.ai',
+        Referer: 'https://cotrans.touhou.ai/'
+      }
+    });
+  } catch (error) {
+    helper.log.error(error);
+    throw new Error(helper.t('translation.tip.upload_error'));
+  }
+  let resData;
+  try {
+    resData = JSON.parse(res.responseText);
+    helper.log(resData);
+  } catch {
+    throw new Error(\`\${helper.t('translation.tip.upload_return_error')}：\${res.responseText}\`);
+  }
+  if ('error_id' in resData) throw new Error(\`\${helper.t('translation.tip.upload_return_error')}：\${resData.error_id}\`);
+  if (!resData.id) throw new Error(helper.t('translation.tip.id_not_returned'));
+  const translation_mask = resData.result?.translation_mask || (await waitTranslation(resData.id, url));
+  return mergeImage(imgBlob, translation_mask);
+};
+const cotransTranslators = ['google', 'youdao', 'baidu', 'deepl', 'gpt3.5', 'offline', 'none'];
+
+/** 翻译指定图片 */
+const translationImage = async url => {
+  try {
+    if (typeof GM_xmlhttpRequest === 'undefined') {
+      toast?.error(helper.t('pwa.alert.userscript_not_installed'));
+      throw new Error(helper.t('pwa.alert.userscript_not_installed'));
+    }
+    if (!url) return;
+    const img = store.imgMap[url];
+    if (img.translationType !== 'wait') return;
+    if (img.translationUrl) return _setState('imgMap', url, 'translationType', 'show');
+    if (img.loadType !== 'loaded') return setMessage(url, helper.t('translation.tip.img_not_fully_loaded'));
+    const translationUrl = await (store.option.translation.server === 'cotrans' ? cotransTranslation : selfhostedTranslation)(url);
+    _setState('imgMap', url, {
+      translationUrl,
+      translationMessage: helper.t('translation.tip.translation_completed'),
+      translationType: 'show'
+    });
+  } catch (error) {
+    _setState('imgMap', url, 'translationType', 'error');
+    if (error?.message) _setState('imgMap', url, 'translationMessage', error.message);
+  }
+};
+
+/** 逐个翻译状态为等待翻译的图片 */
+const translationAll = helper.singleThreaded(async () => {
+  for (const img of Object.values(store.imgMap)) {
+    if (img.loadType !== 'loaded' || img.translationType !== 'wait') continue;
+    await translationImage(img.src);
+  }
+});
+
+/** 开启或关闭指定图片的翻译 */
+const setImgTranslationEnbale = (list, enbale) => {
+  setState(state => {
+    for (const i of list) {
+      const img = state.imgMap[state.imgList[i]];
+      if (!img) continue;
+      const url = img.src;
+      if (enbale) {
+        if (state.option.translation.forceRetry) {
+          img.translationType = 'wait';
+          img.translationUrl = undefined;
+          setMessage(url, helper.t('translation.tip.wait_translation'));
+        } else {
+          switch (img.translationType) {
+            case 'hide':
+              {
+                img.translationType = 'show';
+                break;
+              }
+            case 'error':
+            case undefined:
+              {
+                img.translationType = 'wait';
+                setMessage(url, helper.t('translation.tip.wait_translation'));
+                break;
+              }
+          }
+        }
+      } else {
+        switch (img.translationType) {
+          case 'show':
+            {
+              img.translationType = 'hide';
+              break;
+            }
+          case 'error':
+          case 'wait':
+            {
+              img.translationType = undefined;
+              break;
+            }
+        }
+      }
+    }
+  });
+  return translationAll();
+};
+const translatorOptions = helper.createRootMemo(solidJs.on([selfhostedOptions, helper.lang, () => store.option.translation.server], () => store.option.translation.server === 'selfhosted' ? selfhostedOptions() : createOptions(cotransTranslators)));
+
+/** 是否开启了翻译功能 */
+const isTranslationEnable = helper.createRootMemo(() => store.option.translation.server !== 'disable' && translatorOptions().length > 0);
+
+/** 当前显示的图片是否正在翻译 */
+const isTranslatingImage = helper.createRootMemo(() => activePage().some(i => {
+  const img = getImg(i);
+  return img?.translationType && img.translationType !== 'hide';
+}));
+
+/** 是否正在翻译全部图片 */
+const isTranslatingAll = helper.createRootMemo(() => isTranslationEnable() && imgList().every(img => img.translationType === 'show' || img.translationType === 'wait'));
+
+/** 是否正在翻译当前页以后的全部图片 */
+const isTranslatingToEnd = helper.createRootMemo(() => isTranslationEnable() && imgList().slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
+
+/** 翻译当前页 */
+const translateCurrent = () => setImgTranslationEnbale(activePage(), !isTranslatingImage());
+
+/** 翻译全部图片 */
+const translateAll = () => {
+  if (store.option.translation.server !== 'selfhosted') return;
+  setImgTranslationEnbale(Array.from({
+    length: store.imgList.length
+  }, (_, i) => i), !isTranslatingAll());
+};
+
+/** 翻译当前页至结尾 */
+const translateToEnd = () => {
+  if (store.option.translation.server !== 'selfhosted') return;
+  setImgTranslationEnbale(store.pageList.slice(store.activePageIndex).flat(), !isTranslatingToEnd());
+};
+
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 // （虽然因为使用了 shadow dom 的缘故实际还是不能兼容，但说不定之后就改了呢
 const focus = () => requestAnimationFrame(() => {
@@ -3882,7 +3901,11 @@ const handleKeyDown = e => {
     case 'switch_grid_mode':
       return switchGridMode();
     case 'translate_current_page':
-      return switchTranslation();
+      return translateCurrent();
+    case 'translate_all':
+      return translateAll();
+    case 'translate_to_end':
+      return translateToEnd();
     case 'switch_auto_enlarge':
       return setOption(draftOption => {
         draftOption.disableZoom = !draftOption.disableZoom;
@@ -4928,6 +4951,7 @@ const delHotkeys = code => {
     setHotkeys(name, newKeys);
   }
 };
+const getHotkeyName = code => helper.t(\`hotkeys.\${code}\`) || helper.t(\`button.\${code}\`) || helper.t(\`setting.translation.\${code}\`) || code;
 const KeyItem = props => {
   const code = () => store.hotkeys[props.operateName][props.i];
   const del = () => delHotkeys(code());
@@ -4960,9 +4984,9 @@ const KeyItem = props => {
     return _el$;
   })();
 };
-const SettingHotkeys = () => web.createComponent(solidJs.For, {
+const ShowHotkeys = props => web.createComponent(solidJs.For, {
   get each() {
-    return Object.keys(defaultHotkeys());
+    return props.keys;
   },
   children: name => (() => {
     var _el$2 = web.template(\`<div><div><p></p><span></span><div></div><div>\`)(),
@@ -4971,7 +4995,7 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
       _el$5 = _el$4.nextSibling,
       _el$6 = _el$5.nextSibling,
       _el$7 = _el$6.nextSibling;
-    web.insert(_el$4, () => helper.t(\`hotkeys.\${name}\`) || name);
+    web.insert(_el$4, () => getHotkeyName(name));
     _el$5.style.setProperty("flex-grow", "1");
     _el$6.addEventListener("click", () => setHotkeys(name, store.hotkeys[name].length, ''));
     web.insert(_el$6, web.createComponent(MdAdd, {}));
@@ -5009,6 +5033,74 @@ const SettingHotkeys = () => web.createComponent(solidJs.For, {
     return _el$2;
   })()
 });
+const OtherHotkeys = props => {
+  let ref;
+  const handleChange = e => {
+    const name = e.target.value;
+    setHotkeys(name, store.hotkeys[name].length, '');
+    ref.value = '';
+  };
+  return (() => {
+    var _el$8 = web.template(\`<div><select><option value=""disabled hidden selected> …\`)(),
+      _el$9 = _el$8.firstChild,
+      _el$10 = _el$9.firstChild,
+      _el$11 = _el$10.firstChild;
+    _el$9.addEventListener("change", handleChange);
+    var _ref$ = ref;
+    typeof _ref$ === "function" ? web.use(_ref$, _el$9) : ref = _el$9;
+    _el$9.style.setProperty("height", "100%");
+    web.insert(_el$10, () => helper.t('setting.option.paragraph_other'), _el$11);
+    web.insert(_el$9, web.createComponent(solidJs.For, {
+      get each() {
+        return props.keys;
+      },
+      children: name => (() => {
+        var _el$12 = web.template(\`<option>\`)();
+        _el$12.value = name;
+        web.insert(_el$12, () => getHotkeyName(name));
+        return _el$12;
+      })()
+    }), null);
+    web.effect(_p$ => {
+      var _v$5 = modules_c21c94f2$1.hotkeys,
+        _v$6 = modules_c21c94f2$1.hotkeysHeader;
+      _v$5 !== _p$.e && web.className(_el$8, _p$.e = _v$5);
+      _v$6 !== _p$.t && web.className(_el$9, _p$.t = _v$6);
+      return _p$;
+    }, {
+      e: undefined,
+      t: undefined
+    });
+    return _el$8;
+  })();
+};
+const SettingHotkeys = () => {
+  const hotkeys = helper.createRootMemo(() => {
+    const show = [];
+    const other = [];
+    for (const [name, keys] of Object.entries(store.hotkeys)) (keys.length > 0 ? show : other).push(name);
+    return {
+      show,
+      other
+    };
+  });
+  return [web.createComponent(ShowHotkeys, {
+    get keys() {
+      return hotkeys().show;
+    }
+  }), web.createComponent(solidJs.Show, {
+    get when() {
+      return hotkeys().other.length;
+    },
+    get children() {
+      return web.createComponent(OtherHotkeys, {
+        get keys() {
+          return hotkeys().other;
+        }
+      });
+    }
+  })];
+};
 
 /** 选择器式菜单项 */
 const SettingsItemSelect = props => {
@@ -5071,181 +5163,168 @@ const SettingsShowItem = props => (() => {
   return _el$;
 })();
 
-const SettingTranslation = () => {
-  const isTranslationEnable = solidJs.createMemo(() => store.option.translation.server !== 'disable' && translatorOptions().length > 0);
-
-  /** 是否正在翻译全部图片 */
-  const isTranslationAll = solidJs.createMemo(() => isTranslationEnable() && imgList().every(img => img.translationType === 'show' || img.translationType === 'wait'));
-
-  /** 是否正在翻译当前页以后的全部图片 */
-  const isTranslationAfterCurrent = solidJs.createMemo(() => isTranslationEnable() && imgList().slice(activeImgIndex()).every(img => img.translationType === 'show' || img.translationType === 'wait'));
-  return [web.createComponent(SettingsItemSelect, {
-    get name() {
-      return helper.t('setting.translation.server');
-    },
-    get options() {
-      return [['disable', helper.t('other.disable')], ['selfhosted', helper.t('setting.translation.server_selfhosted')], ['cotrans']];
-    },
-    get value() {
-      return store.option.translation.server;
-    },
-    get onChange() {
-      return createStateSetFn('translation.server');
-    }
-  }), web.createComponent(SettingsShowItem, {
-    get when() {
-      return store.option.translation.server === 'cotrans';
-    },
-    get children() {
-      var _el$ = web.template(\`<blockquote>\`)();
-      web.effect(() => _el$.innerHTML = helper.t('setting.translation.cotrans_tip'));
-      return _el$;
-    }
-  }), web.createComponent(SettingsShowItem, {
-    get when() {
-      return store.option.translation.server !== 'disable';
-    },
-    get children() {
-      return [web.createComponent(SettingsItemSelect, {
-        get name() {
-          return helper.t('setting.translation.options.detection_resolution');
-        },
-        options: [['S', '1024px'], ['M', '1536px'], ['L', '2048px'], ['X', '2560px']],
-        get value() {
-          return store.option.translation.options.size;
-        },
-        get onChange() {
-          return createStateSetFn('translation.options.size');
-        }
-      }), web.createComponent(SettingsItemSelect, {
-        get name() {
-          return helper.t('setting.translation.options.text_detector');
-        },
-        options: [['default'], ['ctd', 'Comic Text Detector']],
-        get value() {
-          return store.option.translation.options.detector;
-        },
-        get onChange() {
-          return createStateSetFn('translation.options.detector');
-        }
-      }), web.createComponent(SettingsItemSelect, {
-        get name() {
-          return helper.t('setting.translation.options.translator');
-        },
-        get options() {
-          return translatorOptions();
-        },
-        get value() {
-          return store.option.translation.options.translator;
-        },
-        get onChange() {
-          return createStateSetFn('translation.options.translator');
-        },
-        onClick: () => updateSelfhostedOptions(false)
-      }), web.createComponent(SettingsItemSelect, {
-        get name() {
-          return helper.t('setting.translation.options.direction');
-        },
-        get options() {
-          return [['auto', helper.t('setting.translation.options.direction_auto')], ['h', helper.t('setting.translation.options.direction_horizontal')], ['v', helper.t('setting.translation.options.direction_vertical')]];
-        },
-        get value() {
-          return store.option.translation.options.direction;
-        },
-        get onChange() {
-          return createStateSetFn('translation.options.direction');
-        }
-      }), web.createComponent(SettingsItemSelect, {
-        get name() {
-          return helper.t('setting.translation.options.target_language');
-        },
-        options: [['CHS', '简体中文'], ['CHT', '繁體中文'], ['JPN', '日本語'], ['ENG', 'English'], ['KOR', '한국어'], ['VIN', 'Tiếng Việt'], ['CSY', 'čeština'], ['NLD', 'Nederlands'], ['FRA', 'français'], ['DEU', 'Deutsch'], ['HUN', 'magyar nyelv'], ['ITA', 'italiano'], ['PLK', 'polski'], ['PTB', 'português'], ['ROM', 'limba română'], ['RUS', 'русский язык'], ['ESP', 'español'], ['TRK', 'Türk dili']],
-        get value() {
-          return store.option.translation.options.targetLanguage;
-        },
-        get onChange() {
-          return createStateSetFn('translation.options.targetLanguage');
-        }
-      }), web.createComponent(SettingsItemSwitch, {
-        get name() {
-          return helper.t('setting.translation.options.forceRetry');
-        },
-        get value() {
-          return store.option.translation.forceRetry;
-        },
-        get onChange() {
-          return createStateSetFn('translation.forceRetry');
-        }
-      }), web.createComponent(solidJs.Show, {
-        get when() {
-          return store.option.translation.server === 'selfhosted';
-        },
-        get children() {
-          return [web.createComponent(SettingsItemSwitch, {
-            get name() {
-              return helper.t('setting.translation.translate_all_img');
-            },
-            get value() {
-              return isTranslationAll();
-            },
-            onChange: () => {
-              setImgTranslationEnbale(store.imgList.map((_, i) => i), !isTranslationAll());
-            }
-          }), web.createComponent(SettingsItemSwitch, {
-            get name() {
-              return helper.t('setting.translation.translate_after_current');
-            },
-            get value() {
-              return isTranslationAfterCurrent();
-            },
-            onChange: () => {
-              setImgTranslationEnbale(store.pageList.slice(store.activePageIndex).flat(), !isTranslationAfterCurrent());
-            }
-          }), web.createComponent(SettingsItemSwitch, {
-            get name() {
-              return helper.t('setting.translation.options.localUrl');
-            },
-            get value() {
-              return store.option.translation.localUrl !== undefined;
-            },
-            onChange: val => {
+const SettingTranslation = () => [web.createComponent(SettingsItemSelect, {
+  get name() {
+    return helper.t('setting.translation.server');
+  },
+  get options() {
+    return [['disable', helper.t('other.disable')], ['selfhosted', helper.t('setting.translation.server_selfhosted')], ['cotrans']];
+  },
+  get value() {
+    return store.option.translation.server;
+  },
+  get onChange() {
+    return createStateSetFn('translation.server');
+  }
+}), web.createComponent(SettingsShowItem, {
+  get when() {
+    return store.option.translation.server === 'cotrans';
+  },
+  get children() {
+    var _el$ = web.template(\`<blockquote>\`)();
+    web.effect(() => _el$.innerHTML = helper.t('setting.translation.cotrans_tip'));
+    return _el$;
+  }
+}), web.createComponent(SettingsShowItem, {
+  get when() {
+    return store.option.translation.server !== 'disable';
+  },
+  get children() {
+    return [web.createComponent(SettingsItemSelect, {
+      get name() {
+        return helper.t('setting.translation.options.detection_resolution');
+      },
+      options: [['S', '1024px'], ['M', '1536px'], ['L', '2048px'], ['X', '2560px']],
+      get value() {
+        return store.option.translation.options.size;
+      },
+      get onChange() {
+        return createStateSetFn('translation.options.size');
+      }
+    }), web.createComponent(SettingsItemSelect, {
+      get name() {
+        return helper.t('setting.translation.options.text_detector');
+      },
+      options: [['default'], ['ctd', 'Comic Text Detector']],
+      get value() {
+        return store.option.translation.options.detector;
+      },
+      get onChange() {
+        return createStateSetFn('translation.options.detector');
+      }
+    }), web.createComponent(SettingsItemSelect, {
+      get name() {
+        return helper.t('setting.translation.options.translator');
+      },
+      get options() {
+        return translatorOptions();
+      },
+      get value() {
+        return store.option.translation.options.translator;
+      },
+      get onChange() {
+        return createStateSetFn('translation.options.translator');
+      },
+      onClick: () => updateSelfhostedOptions(false)
+    }), web.createComponent(SettingsItemSelect, {
+      get name() {
+        return helper.t('setting.translation.options.direction');
+      },
+      get options() {
+        return [['auto', helper.t('setting.translation.options.direction_auto')], ['h', helper.t('setting.translation.options.direction_horizontal')], ['v', helper.t('setting.translation.options.direction_vertical')]];
+      },
+      get value() {
+        return store.option.translation.options.direction;
+      },
+      get onChange() {
+        return createStateSetFn('translation.options.direction');
+      }
+    }), web.createComponent(SettingsItemSelect, {
+      get name() {
+        return helper.t('setting.translation.options.target_language');
+      },
+      options: [['CHS', '简体中文'], ['CHT', '繁體中文'], ['JPN', '日本語'], ['ENG', 'English'], ['KOR', '한국어'], ['VIN', 'Tiếng Việt'], ['CSY', 'čeština'], ['NLD', 'Nederlands'], ['FRA', 'français'], ['DEU', 'Deutsch'], ['HUN', 'magyar nyelv'], ['ITA', 'italiano'], ['PLK', 'polski'], ['PTB', 'português'], ['ROM', 'limba română'], ['RUS', 'русский язык'], ['ESP', 'español'], ['TRK', 'Türk dili']],
+      get value() {
+        return store.option.translation.options.targetLanguage;
+      },
+      get onChange() {
+        return createStateSetFn('translation.options.targetLanguage');
+      }
+    }), web.createComponent(SettingsItemSwitch, {
+      get name() {
+        return helper.t('setting.translation.options.forceRetry');
+      },
+      get value() {
+        return store.option.translation.forceRetry;
+      },
+      get onChange() {
+        return createStateSetFn('translation.forceRetry');
+      }
+    }), web.createComponent(solidJs.Show, {
+      get when() {
+        return store.option.translation.server === 'selfhosted';
+      },
+      get children() {
+        return [web.createComponent(SettingsItemSwitch, {
+          get name() {
+            return helper.t('setting.translation.translate_all');
+          },
+          get value() {
+            return isTranslatingAll();
+          },
+          onChange: translateAll
+        }), web.createComponent(SettingsItemSwitch, {
+          get name() {
+            return helper.t('setting.translation.translate_to_end');
+          },
+          get value() {
+            return isTranslatingToEnd();
+          },
+          onChange: translateToEnd
+        }), web.createComponent(SettingsItemSwitch, {
+          get name() {
+            return helper.t('setting.translation.options.localUrl');
+          },
+          get value() {
+            return store.option.translation.localUrl !== undefined;
+          },
+          onChange: val => {
+            setOption(draftOption => {
+              draftOption.translation.localUrl = val ? '' : undefined;
+            });
+          }
+        }), web.createComponent(solidJs.Show, {
+          get when() {
+            return store.option.translation.localUrl !== undefined;
+          },
+          get children() {
+            var _el$2 = web.template(\`<input type=url>\`)();
+            _el$2.addEventListener("change", e => {
               setOption(draftOption => {
-                draftOption.translation.localUrl = val ? '' : undefined;
+                // 删掉末尾的斜杠
+                const url = e.target.value.replace(/\\/$/, '');
+                draftOption.translation.localUrl = url;
               });
-            }
-          }), web.createComponent(solidJs.Show, {
-            get when() {
-              return store.option.translation.localUrl !== undefined;
-            },
-            get children() {
-              var _el$2 = web.template(\`<input type=url>\`)();
-              _el$2.addEventListener("change", e => {
-                setOption(draftOption => {
-                  // 删掉末尾的斜杠
-                  const url = e.target.value.replace(/\\/$/, '');
-                  draftOption.translation.localUrl = url;
-                });
-              });
-              web.effect(() => web.className(_el$2, modules_c21c94f2$1.SettingsItem));
-              web.effect(() => _el$2.value = store.option.translation.localUrl);
-              return _el$2;
-            }
-          })];
-        }
-      }), web.createComponent(SettingsItemSwitch, {
-        get name() {
-          return helper.t('setting.translation.options.onlyDownloadTranslated');
-        },
-        get value() {
-          return store.option.translation.onlyDownloadTranslated;
-        },
-        get onChange() {
-          return createStateSetFn('translation.onlyDownloadTranslated');
-        }
-      })];
-    }
-  })];
-};
+            });
+            web.effect(() => web.className(_el$2, modules_c21c94f2$1.SettingsItem));
+            web.effect(() => _el$2.value = store.option.translation.localUrl);
+            return _el$2;
+          }
+        })];
+      }
+    }), web.createComponent(SettingsItemSwitch, {
+      get name() {
+        return helper.t('setting.translation.options.onlyDownloadTranslated');
+      },
+      get value() {
+        return store.option.translation.onlyDownloadTranslated;
+      },
+      get onChange() {
+        return createStateSetFn('translation.onlyDownloadTranslated');
+      }
+    })];
+  }
+})];
 
 /** 数值输入框菜单项 */
 const SettingsItemNumber = props => {
@@ -5990,7 +6069,7 @@ const defaultButtonList = [
   get hidden() {
     return store.option.translation.server === 'disable';
   },
-  onClick: switchTranslation,
+  onClick: translateCurrent,
   get children() {
     return web.createComponent(MdTranslate, {});
   }
@@ -6419,9 +6498,8 @@ const EndPage = () => {
   })();
 };
 
-const createComicImg = url => ({
-  // 使用相对协议路径，防止 Mixed Content 报错
-  src: url?.replace(/^http:/, ''),
+const createComicImg = src => ({
+  src,
   loadType: 'wait',
   size: placeholderSize()
 });
@@ -6496,6 +6574,8 @@ const useInit = props => {
   });
   const handleImgList = () => {
     setState(state => {
+      // 使用相对协议路径，防止 Mixed Content 报错
+      props.imgList = props.imgList.map(url => url?.replace(/^http:/, ''));
       state.show.endPage = undefined;
 
       /** 修改前的当前显示图片 */
@@ -6734,7 +6814,9 @@ exports.isDrag = isDrag;
 exports.isOnePageMode = isOnePageMode;
 exports.isScrollMode = isScrollMode;
 exports.isTop = isTop;
+exports.isTranslatingAll = isTranslatingAll;
 exports.isTranslatingImage = isTranslatingImage;
+exports.isTranslatingToEnd = isTranslatingToEnd;
 exports.loadingImgList = loadingImgList;
 exports.nowFillIndex = nowFillIndex;
 exports.pageNum = pageNum;
@@ -6756,6 +6838,7 @@ exports.scrollTop = scrollTop;
 exports.scrollViewImg = scrollViewImg;
 exports.setAbreastScrollFill = setAbreastScrollFill;
 exports.setDefaultHotkeys = setDefaultHotkeys;
+exports.setImgTranslationEnbale = setImgTranslationEnbale;
 exports.setIsDrag = setIsDrag;
 exports.setOption = setOption;
 exports.setState = setState;
@@ -6770,8 +6853,12 @@ exports.switchFitToWidth = switchFitToWidth;
 exports.switchGridMode = switchGridMode;
 exports.switchOnePageMode = switchOnePageMode;
 exports.switchScrollMode = switchScrollMode;
-exports.switchTranslation = switchTranslation;
 exports.touches = touches;
+exports.translateAll = translateAll;
+exports.translateCurrent = translateCurrent;
+exports.translateToEnd = translateToEnd;
+exports.translationImage = translationImage;
+exports.translatorOptions = translatorOptions;
 exports.turnPage = turnPage;
 exports.turnPageAnimation = turnPageAnimation;
 exports.turnPageFn = turnPageFn;
@@ -7707,7 +7794,11 @@ const getAreaColor = (imgData, pixelList) => {
 };
 
 /** 获取图像指定矩形区域中的主色 */
-const getSquareAreaColor = (imgData, topLeftX, topLeftY, bottomRightX, bottomRightY) => {
+const getSquareAreaColor = (imgData, _topLeftX, _topLeftY, _bottomRightX, _bottomRightY) => {
+  const topLeftX = Math.floor(_topLeftX);
+  const topLeftY = Math.floor(_topLeftY);
+  const bottomRightX = Math.floor(_bottomRightX);
+  const bottomRightY = Math.floor(_bottomRightY);
   const colorMap = new Map();
   const maximum = (bottomRightX - topLeftX) * (bottomRightY - topLeftY) * 0.5;
   let maxColor = '';
@@ -9015,7 +9106,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>增加识别背景色功能 </p></li><li><p>实现自动调整页面填充功能 </p></li><li><p>增加锁定站点配置功能 </p></li><li><p>ehentai 增加自动调整阅读配置功能\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>支持改版后的無限動漫\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>增加「翻译全部图片」「翻译当前页至结尾」的快捷键\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复部分网站无法正常翻译的 bug </p></li><li><p>修复無限動漫失效的 bug\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
@@ -11712,6 +11803,8 @@ const helper = require('helper');
 // https://yuri.website/148990/
 // 需要购买
 // https://yuri.website/147642/
+// https://yuri.website/122684/
+// 在线区
 (async () => {
   const {
     options,
@@ -11783,7 +11876,7 @@ const helper = require('helper');
 
   // 没有折叠的单篇漫画
   await helper.wait(() => helper.querySelectorAll('.entry-content img').length);
-  setComicLoad(() => helper.querySelectorAll('.entry-content img').map(e => e.src));
+  setComicLoad(() => helper.querySelectorAll('.entry-content img').map(e => e.dataset.src || e.src));
 })();
 
         break;
@@ -12304,6 +12397,16 @@ const helper = require('helper');
 
         // by: https://sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/241035
         const getImgList = () => {
+          let chapterId = '';
+          for (const img of helper.querySelectorAll('img[s]')) {
+            if (!img.getAttribute('s')) continue;
+            chapterId = img.getAttribute('s').slice(0, 15);
+            break;
+          }
+          if (!chapterId) throw new Error(helper.t('site.changed_load_failed'));
+          const b = unsafeWindow[chapterId.slice(0, 5)];
+          const c = unsafeWindow[chapterId.slice(5, 10)];
+          const d = unsafeWindow[chapterId.slice(10, 15)];
           const {
             ps,
             su,
@@ -12311,11 +12414,6 @@ const helper = require('helper');
             nn,
             mm
           } = unsafeWindow;
-          const code = [...document.scripts].find(script => script.textContent.includes('ge(e)')).textContent;
-          const [, chapterId] = /img\s+s="(.{15})/.exec(code);
-          const b = unsafeWindow[chapterId.slice(0, 5)];
-          const c = unsafeWindow[chapterId.slice(5, 10)];
-          const d = unsafeWindow[chapterId.slice(10, 15)];
           const getSrc = a => `https://img${su(b, 0, 1)}.8comic.com/${su(b, 1, 1)}/${ti}/${c}/${nn(a)}_${su(d, mm(a), 3)}.jpg`;
           return Array.from({
             length: ps

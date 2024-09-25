@@ -1,5 +1,20 @@
 
 
+## [10.1.0](https://github.com/hymbz/ComicReadScript/compare/v10.0.0...v10.1.0) (2024-09-25)
+
+
+### Features
+
+* :sparkles: 增加「翻译全部图片」「翻译当前页至结尾」的快捷键 ([4b5391d](https://github.com/hymbz/ComicReadScript/commit/4b5391db6d5947f5755182c6cf1290d32035a361)), closes [#188](https://github.com/hymbz/ComicReadScript/issues/188)
+
+
+### Bug Fixes
+
+* :bug: 修复 yurifans 在线区失效的 bug ([8a7f6ea](https://github.com/hymbz/ComicReadScript/commit/8a7f6ea16f461c85cda5502757cd4238fb41fb64))
+* :bug: 修复背景色识别结果异常的 bug ([8e9c240](https://github.com/hymbz/ComicReadScript/commit/8e9c2404fbd2a512d4d5542cc01d2e53a60f818c))
+* :bug: 修复部分网站无法正常翻译的 bug ([fab1109](https://github.com/hymbz/ComicReadScript/commit/fab1109d173a5bdb817bfeb22c234daba2058907)), closes [#190](https://github.com/hymbz/ComicReadScript/issues/190)
+* :bug: 修复無限動漫失效的 bug ([9dabfae](https://github.com/hymbz/ComicReadScript/commit/9dabfae5abf0768de7cd3ff4c72e991b7123f6d3))
+
 ## [9.8.0](https://github.com/hymbz/ComicReadScript/compare/v9.7.6...v9.8.0) (2024-09-23)
 
 
