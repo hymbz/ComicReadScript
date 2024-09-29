@@ -52,6 +52,7 @@ Comlink.expose({ ${exports.join(', ')} });`;
 ];
 
 const isVitest = process.env.VITEST === 'true';
+const isDevMode = !isVitest && process.env.NODE_ENV === 'development';
 
 export const vitePlugins: PluginOption[] = [
   tsconfigPaths(),
@@ -64,7 +65,7 @@ export const vitePlugins: PluginOption[] = [
 
       return (
         code
-          .replace('isDevMode', `${!isVitest}`)
+          .replace('isDevMode', `${isDevMode}`)
           // 将 vite 不支持的 rollup-plugin-styles 相关 css 导出代码改成正常的代码
           .replaceAll(
             /import classes(, { css as style })? from '(.+?)'/g,

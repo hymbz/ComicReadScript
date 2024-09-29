@@ -1,6 +1,14 @@
 import { testImgUrl } from 'helper';
 
-export const imgExtension = new Set(['.png', '.gif', '.jpeg', '.jpg', '.webp']);
+export const imgExtension = new Set([
+  '.png',
+  '.gif',
+  '.jpeg',
+  '.jpg',
+  '.webp',
+  '.jfif',
+  '.apng',
+]);
 
 export type ZipExtension = '.zip' | '.rar' | '.7z' | '.cbz' | '.cbr' | '.cb7';
 export const zipExtension = new Set<ZipExtension>([

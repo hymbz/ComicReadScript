@@ -125,7 +125,7 @@ export const useInit = (props: MangaProps) => {
   const handleImgList = () => {
     setState((state) => {
       // 使用相对协议路径，防止 Mixed Content 报错
-      props.imgList = props.imgList.map((url) => url?.replace(/^http:/, ''));
+      const imgList = props.imgList.map((url) => url?.replace(/^http:/, ''));
 
       state.show.endPage = undefined;
 
@@ -139,12 +139,12 @@ export const useInit = (props: MangaProps) => {
       const fillEffectList = Object.keys(state.fillEffect).map(Number);
       for (const pageIndex of fillEffectList) {
         if (pageIndex === -1) continue;
-        if (state.imgList[pageIndex] === props.imgList[pageIndex]) continue;
+        if (state.imgList[pageIndex] === imgList[pageIndex]) continue;
         needResetFillEffect = true;
         break;
       }
 
-      const newImgList = new Set(props.imgList);
+      const newImgList = new Set(imgList);
       const oldImgList = new Set(state.imgList);
 
       /** 被删除的图片 */
@@ -162,15 +162,15 @@ export const useInit = (props: MangaProps) => {
       /** 是否需要更新页面 */
       const needUpdatePageData =
         needResetFillEffect ||
-        state.imgList.length !== props.imgList.length ||
+        state.imgList.length !== imgList.length ||
         deleteNum > 0;
 
       const newImgMap: State['imgMap'] = {};
-      for (const url of props.imgList)
+      for (const url of imgList)
         newImgMap[url] = state.imgMap[url] ?? createComicImg(url);
 
       state.imgMap = newImgMap;
-      state.imgList = [...props.imgList];
+      state.imgList = imgList;
 
       state.prop.Loading?.(state.imgList.map((url) => state.imgMap[url]));
 
@@ -196,7 +196,7 @@ export const useInit = (props: MangaProps) => {
       // 尽量使当前显示的图片在修改后依然不变
       oldActiveImg.some((url) => {
         // 跳过填充页和已被删除的图片
-        if (!url || props.imgList.includes(url)) return false;
+        if (!url || imgList.includes(url)) return false;
 
         const newPageIndex = state.pageList.findIndex((page) =>
           page.some((index) => state.imgList?.[index] === url),
