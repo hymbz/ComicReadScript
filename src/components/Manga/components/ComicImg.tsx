@@ -8,6 +8,7 @@ import {
   abreastArea,
   handleImgError,
   handleImgLoaded,
+  isEnableBg,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -39,7 +40,9 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
       class={classes.img}
       style={{
         'grid-area': `_${img.index}`,
-        'background-color': img.background || 'var(--bg)',
+        'background-color': isEnableBg()
+          ? img.background || 'var(--bg)'
+          : undefined,
       }}
       id={`_${props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index}`}
       data-show={showState()}

@@ -17,6 +17,13 @@ export const isScrollMode = createRootMemo(
   () => store.option.scrollMode.enabled && !store.option.scrollMode.abreastMode,
 );
 
+/** 当前是否开启了识别背景色 */
+export const isEnableBg = createRootMemo(
+  () =>
+    store.option.imgRecognition.enabled &&
+    store.option.imgRecognition.background,
+);
+
 /** 当前显示页面 */
 export const activePage = createRootMemo(
   () => store.pageList[store.activePageIndex] ?? [],

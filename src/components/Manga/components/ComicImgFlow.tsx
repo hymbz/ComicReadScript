@@ -33,6 +33,7 @@ import {
   activeImgIndex,
   imgList,
   getImg,
+  isEnableBg,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -178,6 +179,8 @@ export const ComicImgFlow: Component = () => {
         .map(({ size: { height } }) => `${height}px`)
         .join(' ');
     },
+    'background-color': () =>
+      isEnableBg() ? getImg(activeImgIndex())?.background : undefined,
   });
 
   useStyle(imgAreaStyle);
@@ -186,7 +189,6 @@ export const ComicImgFlow: Component = () => {
     <div
       ref={bindRef('mangaBox')}
       class={`${classes.mangaBox} ${classes.beautifyScrollbar}`}
-      style={{ 'background-color': getImg(activeImgIndex())?.background }}
       data-animation={store.page.anima}
       data-abreast-scroll={boolDataVal(store.option.scrollMode.abreastMode)}
       tabIndex={-1}
