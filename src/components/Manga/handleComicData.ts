@@ -109,7 +109,7 @@ export const handleComicData = (
       (cacheList.length + (fillEffect[context.nowFillIndex] ? 1 : 0)) % 2 === 1
     ) {
       fillEffect[context.nowFillIndex] = !fillEffect[context.nowFillIndex];
-      return handleComicData(imgList, fillEffect);
+      return handleComicData(imgList, fillEffect, switchFill);
     }
 
     pageList = [...pageList, ...arrangePage(cacheList, context), [i]];

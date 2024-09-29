@@ -88,7 +88,7 @@ it('没有跨页，但有缺页', () => {
 });
 
 const testMargin = (
-  imgTypeList: Array<'' | 'left' | 'right' | 'both'>,
+  imgTypeList: Array<'' | 'left' | 'right' | 'both' | 'wide'>,
   initFillEffect?: FillEffect,
 ) => {
   const fillEffect = { '-1': true, ...initFillEffect };
@@ -104,6 +104,9 @@ const testMargin = (
           break;
         case 'both':
           img.blankMargin = { left: 99, right: 99 };
+          break;
+        case 'wide':
+          img.type = 'wide';
           break;
       }
       return img;
@@ -168,5 +171,17 @@ describe('根据白边切换页面填充', () => {
       [2, 3],
     ]);
     expect(fillEffect).toStrictEqual({ '-1': false });
+  });
+
+  it('有跨页图时', () => {
+    const { pageList, fillEffect } = testMargin([
+      'left',
+      'right',
+      'wide',
+      'right',
+      'left',
+    ]);
+    expect(pageList).toStrictEqual([[0, 1], [2], [-1, 3], [4, -1]]);
+    expect(fillEffect).toStrictEqual({ '-1': false, 2: true });
   });
 });
