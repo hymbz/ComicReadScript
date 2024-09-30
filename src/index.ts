@@ -524,6 +524,7 @@ try {
           chapterId = img.getAttribute('s')!.slice(0, 15);
           break;
         }
+        chapterId ||= unsafeWindow.xx?.match(/(?<= s=").{15}/)?.[0];
         if (!chapterId) throw new Error(t('site.changed_load_failed'));
         const b = unsafeWindow[chapterId.slice(0, 5)];
         const c = unsafeWindow[chapterId.slice(5, 10)];
