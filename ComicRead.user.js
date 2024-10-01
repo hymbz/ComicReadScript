@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         10.1.0
+// @version         10.1.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、無限動漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -458,12 +458,12 @@ const needDarkMode = hexColor => {
   return yiq < 128;
 };
 
-async function wait(fn, timeout = Number.POSITIVE_INFINITY) {
+async function wait(fn, timeout = Number.POSITIVE_INFINITY, waitTime = 100) {
   let res = await fn();
   let _timeout = timeout;
   while (_timeout > 0 && !res) {
-    await sleep(100);
-    _timeout -= 10;
+    await sleep(waitTime);
+    _timeout -= waitTime;
     res = await fn();
   }
   return res;
@@ -755,7 +755,7 @@ const useDrag = ({
       state.xy = [e.clientX, e.clientY];
 
       // 判断单击
-      if (handleClick && touches.size === 0 && approx(state.xy[0] - state.initial[0], 0, 5) && approx(state.xy[1] - state.initial[1], 0, 5) && performance.now() - state.startTime < 200) handleClick(e, state.target);
+      if (handleClick && touches.size === 0 && approx(state.xy[0] - state.initial[0], 0, 5) && approx(state.xy[1] - state.initial[1], 0, 5) && performance.now() - state.startTime < 300) handleClick(e, state.target);
       handleDrag(state, e);
     };
     ref.addEventListener('pointerdown', handleDown, options);
@@ -2261,7 +2261,7 @@ const handleComicData = (imgList, fillEffect, switchFill) => {
     // 如果这张跨页导致了上面一页缺页，就说明在这之前的填充有误，应该据此调整之前的填充
     if (typeof fillEffect[context.nowFillIndex] === 'boolean' && i < imgList.length - 2 && (cacheList.length + (fillEffect[context.nowFillIndex] ? 1 : 0)) % 2 === 1) {
       fillEffect[context.nowFillIndex] = !fillEffect[context.nowFillIndex];
-      return handleComicData(imgList, fillEffect);
+      return handleComicData(imgList, fillEffect, switchFill);
     }
     pageList = [...pageList, ...arrangePage(cacheList, context), [i]];
     cacheList = [];
@@ -2279,6 +2279,9 @@ const isAbreastMode = helper.createRootMemo(() => store.option.scrollMode.enable
 
 /** 当前是否为普通卷轴模式 */
 const isScrollMode = helper.createRootMemo(() => store.option.scrollMode.enabled && !store.option.scrollMode.abreastMode);
+
+/** 当前是否开启了识别背景色 */
+const isEnableBg = helper.createRootMemo(() => store.option.imgRecognition.enabled && store.option.imgRecognition.background);
 
 /** 当前显示页面 */
 const activePage = helper.createRootMemo(() => store.pageList[store.activePageIndex] ?? []);
@@ -3230,7 +3233,7 @@ const findClickEle = (eleList, {
   return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
 });
 
-/** 触发 touchArea 操作 */
+/** 触发点击区域操作 */
 const handlePageClick = e => {
   const targetArea = findClickEle(refs.touchArea.children, e);
   if (!targetArea) return;
@@ -4370,10 +4373,10 @@ helper.createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
   for (const url of downImgList.values()) {
     if (abortMap.has(url) || store.imgMap[url].blobUrl) continue;
     const controller = new AbortController();
-    const handleTimeout = helper.debounce(() => timeoutAbort(url), 1000 * 5);
+    const handleTimeout = helper.debounce(timeoutAbort, 1000 * 5);
     controller.signal.addEventListener('abort', handleTimeout.clear);
     abortMap.set(url, controller);
-    handleTimeout();
+    handleTimeout(url);
     request.request(url, {
       responseType: 'blob',
       fetch: false,
@@ -4385,7 +4388,7 @@ helper.createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
       }) {
         _setState('imgMap', url, 'progress', loaded / total * 100);
         // 连续5秒没进度后超时中断
-        handleTimeout();
+        handleTimeout(url);
       },
       onload({
         response
@@ -4495,7 +4498,7 @@ const ComicImg = img => {
     web.effect(_p$ => {
       var _v$4 = modules_c21c94f2$1.img,
         _v$5 = \`_\${img.index}\`,
-        _v$6 = img.background || 'var(--bg)',
+        _v$6 = isEnableBg() ? img.background || 'var(--bg)' : undefined,
         _v$7 = \`_\${props.cloneIndex ? \`\${img.index}-\${props.cloneIndex}\` : img.index}\`,
         _v$8 = showState(),
         _v$9 = img.type ?? store.defaultImgType,
@@ -4650,7 +4653,8 @@ const ComicImgFlow = () => {
           height
         }
       }) => \`\${height}px\`).join(' ');
-    }
+    },
+    'background-color': () => isEnableBg() ? getImg(activeImgIndex())?.background : undefined
   });
   useStyle(imgAreaStyle);
   return (() => {
@@ -4680,29 +4684,27 @@ const ComicImgFlow = () => {
     }), null);
     web.effect(_p$ => {
       var _v$ = \`\${modules_c21c94f2$1.mangaBox} \${modules_c21c94f2$1.beautifyScrollbar}\`,
-        _v$2 = getImg(activeImgIndex())?.background,
-        _v$3 = store.page.anima,
-        _v$4 = helper.boolDataVal(store.option.scrollMode.abreastMode),
-        _v$5 = modules_c21c94f2$1.mangaFlow,
-        _v$6 = store.option.dir,
-        _v$7 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
-        _v$8 = helper.boolDataVal(store.option.disableZoom && !store.option.scrollMode.enabled),
-        _v$9 = helper.boolDataVal(store.option.zoom.ratio !== 100),
-        _v$10 = helper.boolDataVal(store.page.vertical),
-        _v$11 = !store.gridMode && hiddenMouse(),
-        _v$12 = helper.boolDataVal(store.option.scrollMode.fitToWidth);
+        _v$2 = store.page.anima,
+        _v$3 = helper.boolDataVal(store.option.scrollMode.abreastMode),
+        _v$4 = modules_c21c94f2$1.mangaFlow,
+        _v$5 = store.option.dir,
+        _v$6 = \`\${modules_c21c94f2$1.mangaFlow} \${modules_c21c94f2$1.beautifyScrollbar}\`,
+        _v$7 = helper.boolDataVal(store.option.disableZoom && !store.option.scrollMode.enabled),
+        _v$8 = helper.boolDataVal(store.option.zoom.ratio !== 100),
+        _v$9 = helper.boolDataVal(store.page.vertical),
+        _v$10 = !store.gridMode && hiddenMouse(),
+        _v$11 = helper.boolDataVal(store.option.scrollMode.fitToWidth);
       _v$ !== _p$.e && web.className(_el$, _p$.e = _v$);
-      _v$2 !== _p$.t && ((_p$.t = _v$2) != null ? _el$.style.setProperty("background-color", _v$2) : _el$.style.removeProperty("background-color"));
-      _v$3 !== _p$.a && web.setAttribute(_el$, "data-animation", _p$.a = _v$3);
-      _v$4 !== _p$.o && web.setAttribute(_el$, "data-abreast-scroll", _p$.o = _v$4);
-      _v$5 !== _p$.i && web.setAttribute(_el$2, "id", _p$.i = _v$5);
-      _v$6 !== _p$.n && web.setAttribute(_el$2, "dir", _p$.n = _v$6);
-      _v$7 !== _p$.s && web.className(_el$2, _p$.s = _v$7);
-      _v$8 !== _p$.h && web.setAttribute(_el$2, "data-disable-zoom", _p$.h = _v$8);
-      _v$9 !== _p$.r && web.setAttribute(_el$2, "data-scale-mode", _p$.r = _v$9);
-      _v$10 !== _p$.d && web.setAttribute(_el$2, "data-vertical", _p$.d = _v$10);
-      _v$11 !== _p$.l && web.setAttribute(_el$2, "data-hidden-mouse", _p$.l = _v$11);
-      _v$12 !== _p$.u && web.setAttribute(_el$2, "data-fit-width", _p$.u = _v$12);
+      _v$2 !== _p$.t && web.setAttribute(_el$, "data-animation", _p$.t = _v$2);
+      _v$3 !== _p$.a && web.setAttribute(_el$, "data-abreast-scroll", _p$.a = _v$3);
+      _v$4 !== _p$.o && web.setAttribute(_el$2, "id", _p$.o = _v$4);
+      _v$5 !== _p$.i && web.setAttribute(_el$2, "dir", _p$.i = _v$5);
+      _v$6 !== _p$.n && web.className(_el$2, _p$.n = _v$6);
+      _v$7 !== _p$.s && web.setAttribute(_el$2, "data-disable-zoom", _p$.s = _v$7);
+      _v$8 !== _p$.h && web.setAttribute(_el$2, "data-scale-mode", _p$.h = _v$8);
+      _v$9 !== _p$.r && web.setAttribute(_el$2, "data-vertical", _p$.r = _v$9);
+      _v$10 !== _p$.d && web.setAttribute(_el$2, "data-hidden-mouse", _p$.d = _v$10);
+      _v$11 !== _p$.l && web.setAttribute(_el$2, "data-fit-width", _p$.l = _v$11);
       return _p$;
     }, {
       e: undefined,
@@ -4715,8 +4717,7 @@ const ComicImgFlow = () => {
       h: undefined,
       r: undefined,
       d: undefined,
-      l: undefined,
-      u: undefined
+      l: undefined
     });
     return _el$;
   })();
@@ -6575,7 +6576,7 @@ const useInit = props => {
   const handleImgList = () => {
     setState(state => {
       // 使用相对协议路径，防止 Mixed Content 报错
-      props.imgList = props.imgList.map(url => url?.replace(/^http:/, ''));
+      const imgList = props.imgList.map(url => url?.replace(/^http:/, ''));
       state.show.endPage = undefined;
 
       /** 修改前的当前显示图片 */
@@ -6586,11 +6587,11 @@ const useInit = props => {
       const fillEffectList = Object.keys(state.fillEffect).map(Number);
       for (const pageIndex of fillEffectList) {
         if (pageIndex === -1) continue;
-        if (state.imgList[pageIndex] === props.imgList[pageIndex]) continue;
+        if (state.imgList[pageIndex] === imgList[pageIndex]) continue;
         needResetFillEffect = true;
         break;
       }
-      const newImgList = new Set(props.imgList);
+      const newImgList = new Set(imgList);
       const oldImgList = new Set(state.imgList);
 
       /** 被删除的图片 */
@@ -6604,11 +6605,11 @@ const useInit = props => {
       const isNew = deleteNum === oldImgList.size; // 旧图一张不剩才算是新漫画
 
       /** 是否需要更新页面 */
-      const needUpdatePageData = needResetFillEffect || state.imgList.length !== props.imgList.length || deleteNum > 0;
+      const needUpdatePageData = needResetFillEffect || state.imgList.length !== imgList.length || deleteNum > 0;
       const newImgMap = {};
-      for (const url of props.imgList) newImgMap[url] = state.imgMap[url] ?? createComicImg(url);
+      for (const url of imgList) newImgMap[url] = state.imgMap[url] ?? createComicImg(url);
       state.imgMap = newImgMap;
-      state.imgList = [...props.imgList];
+      state.imgList = imgList;
       state.prop.Loading?.(state.imgList.map(url => state.imgMap[url]));
       if (isNew || needResetFillEffect) state.fillEffect = props.fillEffect ?? {
         '-1': true
@@ -6630,7 +6631,7 @@ const useInit = props => {
       // 尽量使当前显示的图片在修改后依然不变
       oldActiveImg.some(url => {
         // 跳过填充页和已被删除的图片
-        if (!url || props.imgList.includes(url)) return false;
+        if (!url || imgList.includes(url)) return false;
         const newPageIndex = state.pageList.findIndex(page => page.some(index => state.imgList?.[index] === url));
         if (newPageIndex === -1) return false;
         state.activePageIndex = newPageIndex;
@@ -6789,13 +6790,11 @@ exports.getImgTip = getImgTip;
 exports.getPageTip = getPageTip;
 exports.handleClick = handleClick;
 exports.handleComicData = handleComicData;
-exports.handleGridClick = handleGridClick;
 exports.handleImgError = handleImgError;
 exports.handleImgLoaded = handleImgLoaded;
 exports.handleKeyDown = handleKeyDown;
 exports.handleMangaFlowDrag = handleMangaFlowDrag;
 exports.handleMouseDown = handleMouseDown;
-exports.handlePageClick = handlePageClick;
 exports.handlePinchZoom = handlePinchZoom;
 exports.handleScrollModeDrag = handleScrollModeDrag;
 exports.handleScrollbarSlider = handleScrollbarSlider;
@@ -6811,6 +6810,7 @@ exports.imgTopList = imgTopList;
 exports.isAbreastMode = isAbreastMode;
 exports.isBottom = isBottom;
 exports.isDrag = isDrag;
+exports.isEnableBg = isEnableBg;
 exports.isOnePageMode = isOnePageMode;
 exports.isScrollMode = isScrollMode;
 exports.isTop = isTop;
@@ -9106,7 +9106,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>增加「翻译全部图片」「翻译当前页至结尾」的快捷键\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复部分网站无法正常翻译的 bug </p></li><li><p>修复無限動漫失效的 bug\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复触摸板需要双击才能翻页的 bug </p></li><li><p>修复关闭识别背景色功能后背景色未恢复原样的 bug </p></li><li><p>修复無限動漫失效的 bug\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
@@ -12396,29 +12396,7 @@ const helper = require('helper');
         if (!pathStartList.some(path => location.pathname.startsWith(path))) break;
 
         // by: https://sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/241035
-        const getImgList = () => {
-          let chapterId = '';
-          for (const img of helper.querySelectorAll('img[s]')) {
-            if (!img.getAttribute('s')) continue;
-            chapterId = img.getAttribute('s').slice(0, 15);
-            break;
-          }
-          if (!chapterId) throw new Error(helper.t('site.changed_load_failed'));
-          const b = unsafeWindow[chapterId.slice(0, 5)];
-          const c = unsafeWindow[chapterId.slice(5, 10)];
-          const d = unsafeWindow[chapterId.slice(10, 15)];
-          const {
-            ps,
-            su,
-            ti,
-            nn,
-            mm
-          } = unsafeWindow;
-          const getSrc = a => `https://img${su(b, 0, 1)}.8comic.com/${su(b, 1, 1)}/${ti}/${c}/${nn(a)}_${su(d, mm(a), 3)}.jpg`;
-          return Array.from({
-            length: ps
-          }).map((_, i) => getSrc(i + 1));
-        };
+        const getImgList = () => [...unsafeWindow.xx.matchAll(/(?<= s=").+?(?=")/g)].map(([text]) => decodeURIComponent(text));
         options = {
           name: '8comic',
           getImgList,
