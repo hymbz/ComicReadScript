@@ -212,16 +212,18 @@ export async function wait<T>(
 export async function wait<T>(
   fn: () => T | undefined | Promise<T | undefined>,
   timeout?: number,
+  waitTime?: number,
 ): Promise<T>;
 export async function wait<T>(
   fn: () => T | undefined | Promise<T | undefined>,
   timeout = Number.POSITIVE_INFINITY,
+  waitTime = 100,
 ) {
   let res: T | undefined = await fn();
   let _timeout = timeout;
   while (_timeout > 0 && !res) {
-    await sleep(100);
-    _timeout -= 10;
+    await sleep(waitTime);
+    _timeout -= waitTime;
     res = await fn();
   }
 
