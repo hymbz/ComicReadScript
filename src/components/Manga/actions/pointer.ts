@@ -24,8 +24,8 @@ const findClickEle = <T extends Element>(
     );
   });
 
-/** 触发 touchArea 操作 */
-export const handlePageClick = (e: MouseEvent) => {
+/** 触发点击区域操作 */
+const handlePageClick = (e: MouseEvent) => {
   const targetArea = findClickEle(refs.touchArea.children, e);
   if (!targetArea) return;
   const areaName = (targetArea as HTMLElement).dataset.area as Area | undefined;
@@ -46,7 +46,7 @@ export const handlePageClick = (e: MouseEvent) => {
 };
 
 /** 网格模式下点击图片跳到对应页 */
-export const handleGridClick = (e: MouseEvent) => {
+const handleGridClick = (e: MouseEvent) => {
   const target = findClickEle(refs.root.getElementsByClassName(classes.img), e);
   if (!target) return;
   const pageNum = imgPageMap()[Number(target.id.slice(1))];

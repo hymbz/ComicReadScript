@@ -106,7 +106,7 @@ export const useDrag = ({
         touches.size === 0 &&
         approx(state.xy[0] - state.initial[0], 0, 5) &&
         approx(state.xy[1] - state.initial[1], 0, 5) &&
-        performance.now() - state.startTime < 200
+        performance.now() - state.startTime < 300
       )
         handleClick(e, state.target);
 
