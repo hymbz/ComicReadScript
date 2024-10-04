@@ -556,6 +556,38 @@ try {
       break;
     }
 
+    // #[熱辣漫畫](https://www.relamanhua.org/)
+    case 'relamanhua.org':
+    case 'www.relamanhua.org':
+    case 'www.2024manga.com': {
+      if (
+        !window.location.pathname.includes('/chapter/') &&
+        !document.querySelector('.disData[contentkey]')
+      )
+        break;
+      const getImgList = async () => {
+        const [, , word, , id] = window.location.pathname.split('/');
+        const res = await request<{
+          results: { chapter: { contents: Array<{ url: string }> } };
+        }>(
+          `https://mapi.fgjfghkk.club/api/v3/comic/${word}/chapter/${id}?platform=1&_update=true`,
+          { responseType: 'json' },
+        );
+        return res.response.results.chapter.contents.map(({ url }) =>
+          url.replace('.h800x.', '.h1500x.'),
+        );
+      };
+      options = {
+        name: 'relamanhua',
+        getImgList,
+        onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
+        onPrev: querySelectorClick(
+          '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
+        ),
+      };
+      break;
+    }
+
     // #[hitomi](https://hitomi.la)
     case 'hitomi.la': {
       options = {
