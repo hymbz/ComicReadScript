@@ -64,14 +64,14 @@ const triggerEleLazyLoad = async (
   }
 };
 
-/** 判断一个元素是否已经触发完懒加载 */
+/** 判断一个元素是否已经成功触发完懒加载 */
 export const isLazyLoaded = (e: HTMLImageElement, oldSrc?: string) => {
   if (!e.src) return false;
   if (!e.offsetParent) return false;
   // 有些网站会使用 svg 占位
   if (e.src.startsWith('data:image/svg')) return false;
-  if (oldSrc !== undefined && e.src !== oldSrc) return true;
   if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
+  if (oldSrc !== undefined && e.src !== oldSrc) return true;
   return false;
 };
 
@@ -103,16 +103,13 @@ const handleTrigged = (e: HTMLImageElement) => {
 /** 监视图片是否被显示的 Observer */
 imgShowObserver = new IntersectionObserver((entries) => {
   for (const img of entries) {
-    const ele = img.target as HTMLImageElement;
+    const e = img.target as HTMLImageElement;
     if (img.isIntersecting) {
-      imgMap.set(ele, {
-        ...getImg(ele),
-        observerTimeout: window.setTimeout(handleTrigged, 290, ele),
+      imgMap.set(e, {
+        ...getImg(e),
+        observerTimeout: window.setTimeout(handleTrigged, 290, e),
       });
-    } else {
-      const timeoutID = imgMap.get(ele)?.observerTimeout;
-      if (timeoutID) window.clearTimeout(timeoutID);
-    }
+    } else window.clearTimeout(imgMap.get(e)?.observerTimeout);
   }
 });
 
@@ -133,20 +130,13 @@ const triggerTurnPage = async (
 
 const waitTime = 300;
 
-/** 触发页面上所有图片元素的懒加载 */
+/** 触发页面上图片元素的懒加载 */
 export const triggerLazyLoad = singleThreaded(
   async (
     state,
-    getAllImg: () => HTMLImageElement[],
+    targetImgList: HTMLImageElement[],
     runCondition: () => boolean,
   ) => {
-    // 过滤掉已经被触发过懒加载的图片
-    const targetImgList = getAllImg()
-      .filter(needTrigged)
-      .sort(
-        (a, b) => a.getBoundingClientRect().y - b.getBoundingClientRect().y,
-      );
-
     for (const e of targetImgList) {
       imgShowObserver.observe(e);
       if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));

@@ -9,6 +9,7 @@ import {
   singleThreaded,
   throttle,
   createEffectOn,
+  sleep,
 } from 'helper';
 import { renderImgList } from 'components/Manga';
 import { useInit, toast } from 'main';
@@ -32,6 +33,8 @@ import {
 
 /** 执行脚本操作。如果中途中断，将返回 true */
 export const otherSite = async () => {
+  let laseScroll = window.scrollY;
+
   const {
     options,
     setComicLoad,
@@ -93,11 +96,8 @@ export const otherSite = async () => {
     if (!e.src.startsWith('blob:')) return e.src;
     if (await testImgUrl(e.src)) return e.src;
 
-    const canvas = document.createElement('canvas');
+    const canvas = new OffscreenCanvas(e.naturalWidth, e.naturalHeight);
     const canvasCtx = canvas.getContext('2d')!;
-
-    canvas.width = e.naturalWidth;
-    canvas.height = e.naturalHeight;
     canvasCtx.drawImage(e, 0, 0);
 
     const url = URL.createObjectURL(await canvasToBlob(canvas));
@@ -130,6 +130,12 @@ export const otherSite = async () => {
     }),
   );
 
+  /** 根据元素所在高度进行排序 */
+  const eleSortFn = (a?: HTMLElement, b?: HTMLElement) =>
+    a === undefined || b === undefined
+      ? 0
+      : a.getBoundingClientRect().y - b.getBoundingClientRect().y;
+
   const imgBlackList = [
     // 东方永夜机的预加载图片
     '#pagetual-preload',
@@ -140,24 +146,41 @@ export const otherSite = async () => {
   const getAllImg = () =>
     querySelectorAll<HTMLImageElement>(`:not(${imgBlackList.join(',')}) > img`);
 
-  let imgEleList: HTMLImageElement[];
+  /** 获取大概率是漫画图片的图片元素 */
+  const getExpectImgList = () =>
+    querySelectorAll<HTMLImageElement>(options.selector).filter(
+      (e) =>
+        isLazyLoaded(e, imgMap.get(e)?.oldSrc) ||
+        !imgMap.has(e) ||
+        imgMap.get(e)!.triggedNum <= 5,
+    );
 
-  let updateImgListTimeout: number;
+  /** 判断一个图片元素是否符合标准 */
+  const isDisplayImg = (e: HTMLImageElement) =>
+    e.offsetHeight > 100 &&
+    e.offsetWidth > 100 &&
+    ((e.naturalHeight > 500 && e.naturalWidth > 500) ||
+      isEleSelector(e, options.selector));
+
+  let imgEleList: Array<HTMLImageElement | undefined>;
+
   /** 检查筛选符合标准的图片元素用于更新 imgList */
-  const updateImgList = singleThreaded(async () => {
+  const updateImgList = singleThreaded(async (state) => {
     imgEleList = await wait(() => {
-      const newImgList = getAllImg()
-        .filter(
-          (e) =>
-            e.offsetHeight > 100 &&
-            e.offsetWidth > 100 &&
-            ((e.naturalHeight > 500 && e.naturalWidth > 500) ||
-              isEleSelector(e, options.selector)),
-        )
-        .sort(
-          (a, b) => a.getBoundingClientRect().y - b.getBoundingClientRect().y,
-        );
-      return newImgList.length >= 2 && newImgList;
+      /** 大概率是漫画图片的图片元素 */
+      const expectImgs = options.selector
+        ? new Set(getExpectImgList())
+        : undefined;
+      let imgNum = 0;
+      const newImgList: typeof imgEleList = [];
+      for (const e of getAllImg()) {
+        if (isDisplayImg(e)) {
+          newImgList.push(e);
+          imgNum += 1;
+        } else if (expectImgs?.has(e) && needTrigged(e))
+          newImgList.push(undefined);
+      }
+      return imgNum >= 2 && newImgList.sort(eleSortFn);
     });
 
     if (imgEleList.length === 0) {
@@ -166,33 +189,26 @@ export const otherSite = async () => {
       return;
     }
 
-    let newImgEleList: Array<HTMLImageElement | undefined> = imgEleList;
-
-    /** 预计的图片总数 */
-    let expectCount = 0;
-    /** 还需要继续触发懒加载的图片个数 */
-    let needTriggedNum = 0;
-    if (options.selector) {
-      const expectImgList = querySelectorAll<HTMLImageElement>(
-        options.selector,
+    // 随着图片的增加，需要补上空缺位置，避免变成稀疏数组
+    if (mangaProps.imgList.length < imgEleList.length)
+      setComicMap('', 'imgList', [
+        ...mangaProps.imgList,
+        ...Array.from(
+          { length: imgEleList.length - mangaProps.imgList.length },
+          () => '',
+        ),
+      ]);
+    // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要删掉多余的页数
+    else if (mangaProps.imgList.length > imgEleList.length)
+      setComicMap(
+        '',
+        'imgList',
+        mangaProps.imgList.slice(0, imgEleList.length),
       );
-      expectCount = expectImgList.filter(
-        (e) =>
-          !imgMap.get(e)?.triggedNum || isLazyLoaded(e, imgMap.get(e)?.oldSrc),
-      ).length;
-      needTriggedNum = expectImgList.filter(needTrigged).length;
-      // 根据预计的图片总数补上占位的空图
-      const fillImgNum = expectCount - imgEleList.length;
-      if (fillImgNum > 0)
-        newImgEleList = [
-          ...imgEleList,
-          ...Array.from<undefined>({ length: fillImgNum }),
-        ];
-    }
 
     let isEdited = false;
     await plimit(
-      newImgEleList.map((e, i) => async () => {
+      imgEleList.map((e, i) => async () => {
         let newUrl = '';
         if (e) {
           newUrl = await handleImgUrl(e);
@@ -204,34 +220,41 @@ export const otherSite = async () => {
         setImgList('', i, newUrl);
       }),
     );
-    if (isEdited) saveImgEleSelector(imgEleList);
+    if (isEdited)
+      saveImgEleSelector(imgEleList.filter(Boolean) as HTMLElement[]);
 
-    // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要再删掉多余的页数
-    if (mangaProps.imgList.length > newImgEleList.length)
-      setComicMap(
-        '',
-        'imgList',
-        mangaProps.imgList.slice(0, newImgEleList.length),
-      );
-
-    if (
-      isEdited ||
-      needTriggedNum ||
-      imgEleList.some((e) => !e.naturalWidth && !e.naturalHeight)
-    ) {
-      if (updateImgListTimeout) window.clearTimeout(updateImgListTimeout);
-      updateImgListTimeout = window.setTimeout(updateImgList, 1000);
+    if (isEdited || imgEleList.some((e) => !e || needTrigged(e))) {
+      await sleep(1000);
+      state.continueRun = true;
     }
   });
 
   let timeout = false;
 
-  const triggerAllLazyLoad = () =>
-    triggerLazyLoad(
-      getAllImg,
-      // 只在`开启了阅读模式`和`当前可显示图片数量不足`时通过滚动触发懒加载
-      () => mangaProps.show || (!timeout && mangaProps.imgList.length === 0),
+  /** 只在`开启了阅读模式`和`当前可显示图片数量不足`时通过滚动触发懒加载 */
+  const runCondition = () =>
+    mangaProps.show || (!timeout && mangaProps.imgList.length === 0);
+
+  /** 触发大概率是漫画图片的懒加载 */
+  const triggerExpectImg = (num?: number, time?: number) =>
+    wait(async () => {
+      let expectImgList = getExpectImgList().filter(needTrigged);
+      if (num) expectImgList = expectImgList.slice(0, num);
+      await triggerLazyLoad(expectImgList, runCondition);
+      return expectImgList.every((e) => !needTrigged(e));
+    }, time);
+
+  const triggerAllLazyLoad = singleThreaded(async () => {
+    // 优先触发大概率是漫画图片的懒加载
+    if (options.selector) {
+      await triggerExpectImg(3, 1000 * 5);
+      await triggerExpectImg();
+    }
+    await triggerLazyLoad(
+      getAllImg().filter(needTrigged).sort(eleSortFn),
+      runCondition,
     );
+  });
 
   /** 监视页面元素发生变化的 Observer */
   const imgDomObserver = new MutationObserver(() => {
@@ -289,7 +312,6 @@ export const otherSite = async () => {
   );
 
   // 在退出阅读模式时跳回之前的滚动位置
-  let laseScroll = window.scrollY;
   createEffectOn(
     () => mangaProps.show,
     (show) => {

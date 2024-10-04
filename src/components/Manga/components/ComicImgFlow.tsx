@@ -1,4 +1,4 @@
-import { type Component, Show, createMemo, onMount, Index } from 'solid-js';
+import { type Component, createMemo, onMount, Index } from 'solid-js';
 import {
   boolDataVal,
   createSequence,
@@ -209,8 +209,7 @@ export const ComicImgFlow: Component = () => {
         onTransitionEnd={handleTransitionEnd}
         tabIndex={-1}
       >
-        <Show when={store.imgList.length === 0} children={<EmptyTip />} />
-        <Index each={imgList()}>
+        <Index each={imgList()} fallback={<EmptyTip />}>
           {(img, i) => <ComicImg index={i} {...img()} />}
         </Index>
       </div>

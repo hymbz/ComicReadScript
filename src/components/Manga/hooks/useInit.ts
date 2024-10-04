@@ -26,6 +26,7 @@ const createComicImg = (src: string): ComicImg => ({
   src,
   loadType: 'wait',
   size: placeholderSize(),
+  blobUrl: src.startsWith('blob:') ? src : undefined,
 });
 
 export const useInit = (props: MangaProps) => {
@@ -150,7 +151,7 @@ export const useInit = (props: MangaProps) => {
       /** 被删除的图片 */
       const deleteList = [...oldImgList].filter((url) => !newImgList.has(url));
       for (const url of deleteList)
-        if (state.imgMap[url].blobUrl)
+        if (state.imgMap[url].blobUrl && state.imgMap[url].blobUrl !== url)
           URL.revokeObjectURL(state.imgMap[url].blobUrl);
 
       /** 删除图片数 */
