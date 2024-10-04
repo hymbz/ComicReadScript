@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         10.1.1
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、無限動漫、新新漫画、hitomi、koharu、kemono、nekohouse、welovemanga
+// @version         10.2.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、無限動漫、新新漫画、熱辣漫畫、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
@@ -67,6 +67,9 @@
 // @match           *://www.77mh.xyz/*
 // @match           *://m.77mh.nl/*
 // @match           *://www.77mh.nl/*
+// @match           *://relamanhua.org/*
+// @match           *://www.relamanhua.org/*
+// @match           *://www.2024manga.com/*
 // @match           *://hitomi.la/*
 // @match           *://koharu.to/*
 // @match           *://kemono.su/*
@@ -3480,12 +3483,14 @@ const handleTrackpadWheel = e => {
 };
 
 const setMessage = (url, msg) => _setState('imgMap', url, 'translationMessage', msg);
-const download = async url => {
+const download = async imgUrl => {
+  const url = store.imgMap[imgUrl]?.blobUrl ?? imgUrl;
   if (url.startsWith('blob:')) {
     const res = await fetch(url);
     return res.blob();
   }
   const res = await request.request(url, {
+    fetch: false,
     responseType: 'blob',
     errorText: helper.t('translation.tip.download_img_failed')
   });
@@ -4733,22 +4738,17 @@ const ComicImgFlow = () => {
     var _ref$2 = bindRef('mangaFlow');
     typeof _ref$2 === "function" && web.use(_ref$2, _el$2);
     _el$2.addEventListener("mousemove", onMouseMove);
-    web.insert(_el$2, web.createComponent(solidJs.Show, {
-      get when() {
-        return store.imgList.length === 0;
-      },
-      get children() {
-        return web.createComponent(EmptyTip, {});
-      }
-    }), null);
     web.insert(_el$2, web.createComponent(solidJs.Index, {
       get each() {
         return imgList();
       },
+      get fallback() {
+        return web.createComponent(EmptyTip, {});
+      },
       children: (img, i) => web.createComponent(ComicImg, web.mergeProps({
         index: i
       }, img))
-    }), null);
+    }));
     web.effect(_p$ => {
       var _v$ = \`\${modules_c21c94f2$1.mangaBox} \${modules_c21c94f2$1.beautifyScrollbar}\`,
         _v$2 = store.page.anima,
@@ -6569,7 +6569,8 @@ const EndPage = () => {
 const createComicImg = src => ({
   src,
   loadType: 'wait',
-  size: placeholderSize()
+  size: placeholderSize(),
+  blobUrl: src.startsWith('blob:') ? src : undefined
 });
 const useInit = props => {
   watchDomSize('rootSize', refs.root);
@@ -6663,7 +6664,7 @@ const useInit = props => {
 
       /** 被删除的图片 */
       const deleteList = [...oldImgList].filter(url => !newImgList.has(url));
-      for (const url of deleteList) if (state.imgMap[url].blobUrl) URL.revokeObjectURL(state.imgMap[url].blobUrl);
+      for (const url of deleteList) if (state.imgMap[url].blobUrl && state.imgMap[url].blobUrl !== url) URL.revokeObjectURL(state.imgMap[url].blobUrl);
 
       /** 删除图片数 */
       const deleteNum = deleteList.length;
@@ -8322,14 +8323,14 @@ const triggerEleLazyLoad = async (e, time, isLazyLoaded, runCondition) => {
   }
 };
 
-/** 判断一个元素是否已经触发完懒加载 */
+/** 判断一个元素是否已经成功触发完懒加载 */
 const isLazyLoaded = (e, oldSrc) => {
   if (!e.src) return false;
   if (!e.offsetParent) return false;
   // 有些网站会使用 svg 占位
   if (e.src.startsWith('data:image/svg')) return false;
-  if (oldSrc !== undefined && e.src !== oldSrc) return true;
   if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
+  if (oldSrc !== undefined && e.src !== oldSrc) return true;
   return false;
 };
 const imgMap = new WeakMap();
@@ -8354,16 +8355,13 @@ const handleTrigged = e => {
 /** 监视图片是否被显示的 Observer */
 imgShowObserver = new IntersectionObserver(entries => {
   for (const img of entries) {
-    const ele = img.target;
+    const e = img.target;
     if (img.isIntersecting) {
-      imgMap.set(ele, {
-        ...getImg(ele),
-        observerTimeout: window.setTimeout(handleTrigged, 290, ele)
+      imgMap.set(e, {
+        ...getImg(e),
+        observerTimeout: window.setTimeout(handleTrigged, 290, e)
       });
-    } else {
-      const timeoutID = imgMap.get(ele)?.observerTimeout;
-      if (timeoutID) window.clearTimeout(timeoutID);
-    }
+    } else window.clearTimeout(imgMap.get(e)?.observerTimeout);
   }
 });
 const turnPageScheduled = helper.createScheduled(fn => helper.throttle(fn, 1000));
@@ -8387,10 +8385,8 @@ const triggerTurnPage = async (waitTime, runCondition) => {
 };
 const waitTime = 300;
 
-/** 触发页面上所有图片元素的懒加载 */
-const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondition) => {
-  // 过滤掉已经被触发过懒加载的图片
-  const targetImgList = getAllImg().filter(needTrigged).sort((a, b) => a.getBoundingClientRect().y - b.getBoundingClientRect().y);
+/** 触发页面上图片元素的懒加载 */
+const triggerLazyLoad = helper.singleThreaded(async (state, targetImgList, runCondition) => {
   for (const e of targetImgList) {
     imgShowObserver.observe(e);
     if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));
@@ -8416,6 +8412,7 @@ const triggerLazyLoad = helper.singleThreaded(async (state, getAllImg, runCondit
 // https://www.colamanga.com/manga-kg45140/1/2.html
 /** 执行脚本操作。如果中途中断，将返回 true */
 const otherSite = async () => {
+  let laseScroll = window.scrollY;
   const {
     options,
     setComicLoad,
@@ -8472,10 +8469,8 @@ const otherSite = async () => {
     if (blobUrlMap.has(e.src)) return blobUrlMap.get(e.src);
     if (!e.src.startsWith('blob:')) return e.src;
     if (await helper.testImgUrl(e.src)) return e.src;
-    const canvas = document.createElement('canvas');
+    const canvas = new OffscreenCanvas(e.naturalWidth, e.naturalHeight);
     const canvasCtx = canvas.getContext('2d');
-    canvas.width = e.naturalWidth;
-    canvas.height = e.naturalHeight;
     canvasCtx.drawImage(e, 0, 0);
     const url = URL.createObjectURL(await helper.canvasToBlob(canvas));
     blobUrlMap.set(e.src, url);
@@ -8498,6 +8493,9 @@ const otherSite = async () => {
       if (repeatNum > 5) placeholderImgList.add(url);
     }
   }));
+
+  /** 根据元素所在高度进行排序 */
+  const eleSortFn = (a, b) => a === undefined || b === undefined ? 0 : a.getBoundingClientRect().y - b.getBoundingClientRect().y;
   const imgBlackList = [
   // 东方永夜机的预加载图片
   '#pagetual-preload',
@@ -8505,37 +8503,43 @@ const otherSite = async () => {
   // 本来只是图片元素的 html 代码，但经过东方永夜机加载后就会变成真的图片元素，导致重复
   'noscript'];
   const getAllImg = () => helper.querySelectorAll(\`:not(\${imgBlackList.join(',')}) > img\`);
+
+  /** 获取大概率是漫画图片的图片元素 */
+  const getExpectImgList = () => helper.querySelectorAll(options.selector).filter(e => isLazyLoaded(e, imgMap.get(e)?.oldSrc) || !imgMap.has(e) || imgMap.get(e).triggedNum <= 5);
+
+  /** 判断一个图片元素是否符合标准 */
+  const isDisplayImg = e => e.offsetHeight > 100 && e.offsetWidth > 100 && (e.naturalHeight > 500 && e.naturalWidth > 500 || isEleSelector(e, options.selector));
   let imgEleList;
-  let updateImgListTimeout;
+
   /** 检查筛选符合标准的图片元素用于更新 imgList */
-  const updateImgList = helper.singleThreaded(async () => {
+  const updateImgList = helper.singleThreaded(async state => {
     imgEleList = await helper.wait(() => {
-      const newImgList = getAllImg().filter(e => e.offsetHeight > 100 && e.offsetWidth > 100 && (e.naturalHeight > 500 && e.naturalWidth > 500 || isEleSelector(e, options.selector))).sort((a, b) => a.getBoundingClientRect().y - b.getBoundingClientRect().y);
-      return newImgList.length >= 2 && newImgList;
+      /** 大概率是漫画图片的图片元素 */
+      const expectImgs = options.selector ? new Set(getExpectImgList()) : undefined;
+      let imgNum = 0;
+      const newImgList = [];
+      for (const e of getAllImg()) {
+        if (isDisplayImg(e)) {
+          newImgList.push(e);
+          imgNum += 1;
+        } else if (expectImgs?.has(e) && needTrigged(e)) newImgList.push(undefined);
+      }
+      return imgNum >= 2 && newImgList.sort(eleSortFn);
     });
     if (imgEleList.length === 0) {
       setFab('show', false);
       setManga('show', false);
       return;
     }
-    let newImgEleList = imgEleList;
 
-    /** 预计的图片总数 */
-    let expectCount = 0;
-    /** 还需要继续触发懒加载的图片个数 */
-    let needTriggedNum = 0;
-    if (options.selector) {
-      const expectImgList = helper.querySelectorAll(options.selector);
-      expectCount = expectImgList.filter(e => !imgMap.get(e)?.triggedNum || isLazyLoaded(e, imgMap.get(e)?.oldSrc)).length;
-      needTriggedNum = expectImgList.filter(needTrigged).length;
-      // 根据预计的图片总数补上占位的空图
-      const fillImgNum = expectCount - imgEleList.length;
-      if (fillImgNum > 0) newImgEleList = [...imgEleList, ...Array.from({
-        length: fillImgNum
-      })];
-    }
+    // 随着图片的增加，需要补上空缺位置，避免变成稀疏数组
+    if (mangaProps.imgList.length < imgEleList.length) setComicMap('', 'imgList', [...mangaProps.imgList, ...Array.from({
+      length: imgEleList.length - mangaProps.imgList.length
+    }, () => '')]);
+    // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要删掉多余的页数
+    else if (mangaProps.imgList.length > imgEleList.length) setComicMap('', 'imgList', mangaProps.imgList.slice(0, imgEleList.length));
     let isEdited = false;
-    await helper.plimit(newImgEleList.map((e, i) => async () => {
+    await helper.plimit(imgEleList.map((e, i) => async () => {
       let newUrl = '';
       if (e) {
         newUrl = await handleImgUrl(e);
@@ -8545,19 +8549,32 @@ const otherSite = async () => {
       isEdited ||= true;
       setImgList('', i, newUrl);
     }));
-    if (isEdited) saveImgEleSelector(imgEleList);
-
-    // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要再删掉多余的页数
-    if (mangaProps.imgList.length > newImgEleList.length) setComicMap('', 'imgList', mangaProps.imgList.slice(0, newImgEleList.length));
-    if (isEdited || needTriggedNum || imgEleList.some(e => !e.naturalWidth && !e.naturalHeight)) {
-      if (updateImgListTimeout) window.clearTimeout(updateImgListTimeout);
-      updateImgListTimeout = window.setTimeout(updateImgList, 1000);
+    if (isEdited) saveImgEleSelector(imgEleList.filter(Boolean));
+    if (isEdited || imgEleList.some(e => !e || needTrigged(e))) {
+      await helper.sleep(1000);
+      state.continueRun = true;
     }
   });
   let timeout = false;
-  const triggerAllLazyLoad = () => triggerLazyLoad(getAllImg,
-  // 只在\`开启了阅读模式\`和\`当前可显示图片数量不足\`时通过滚动触发懒加载
-  () => mangaProps.show || !timeout && mangaProps.imgList.length === 0);
+
+  /** 只在\`开启了阅读模式\`和\`当前可显示图片数量不足\`时通过滚动触发懒加载 */
+  const runCondition = () => mangaProps.show || !timeout && mangaProps.imgList.length === 0;
+
+  /** 触发大概率是漫画图片的懒加载 */
+  const triggerExpectImg = (num, time) => helper.wait(async () => {
+    let expectImgList = getExpectImgList().filter(needTrigged);
+    if (num) expectImgList = expectImgList.slice(0, num);
+    await triggerLazyLoad(expectImgList, runCondition);
+    return expectImgList.every(e => !needTrigged(e));
+  }, time);
+  const triggerAllLazyLoad = helper.singleThreaded(async () => {
+    // 优先触发大概率是漫画图片的懒加载
+    if (options.selector) {
+      await triggerExpectImg(3, 1000 * 5);
+      await triggerExpectImg();
+    }
+    await triggerLazyLoad(getAllImg().filter(needTrigged).sort(eleSortFn), runCondition);
+  });
 
   /** 监视页面元素发生变化的 Observer */
   const imgDomObserver = new MutationObserver(() => {
@@ -8609,7 +8626,6 @@ const otherSite = async () => {
   });
 
   // 在退出阅读模式时跳回之前的滚动位置
-  let laseScroll = window.scrollY;
   helper.createEffectOn(() => mangaProps.show, show => {
     if (show) laseScroll = window.scrollY;else window.scroll({
       top: laseScroll,
@@ -9076,7 +9092,7 @@ const versionLt = (version1, version2) => {
   for (let i = 0; i < 3; i++) {
     const num1 = v1[i] ?? 0;
     const num2 = v2[i] ?? 0;
-    if (num1 < num2) return true;
+    if (num1 !== num2) return num1 < num2;
   }
   return false;
 };
@@ -9173,7 +9189,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复触摸板需要双击才能翻页的 bug </p></li><li><p>修复关闭识别背景色功能后背景色未恢复原样的 bug </p></li><li><p>修复無限動漫失效的 bug\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>支持熱辣漫畫\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复在部分网站上简易模式无法翻译图片的 bug </p></li><li><p>修复在部分网站上简易模式无法正常显示图片的 bug\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
@@ -12490,6 +12506,30 @@ const helper = require('helper');
           },
           onNext: helper.querySelectorClick('#pnpage > a', '下一'),
           onPrev: helper.querySelectorClick('#pnpage > a', '上一')
+        };
+        break;
+      }
+
+    // #[熱辣漫畫](https://www.relamanhua.org/)
+    case 'relamanhua.org':
+    case 'www.relamanhua.org':
+    case 'www.2024manga.com':
+      {
+        if (!window.location.pathname.includes('/chapter/') && !document.querySelector('.disData[contentkey]')) break;
+        const getImgList = async () => {
+          const [,, word,, id] = window.location.pathname.split('/');
+          const res = await main.request(`https://mapi.fgjfghkk.club/api/v3/comic/${word}/chapter/${id}?platform=1&_update=true`, {
+            responseType: 'json'
+          });
+          return res.response.results.chapter.contents.map(({
+            url
+          }) => url.replace('.h800x.', '.h1500x.'));
+        };
+        options = {
+          name: 'relamanhua',
+          getImgList,
+          onNext: helper.querySelectorClick('.comicContent-next a:not(.prev-null)'),
+          onPrev: helper.querySelectorClick('.comicContent-prev:not(.index,.list) a:not(.prev-null)')
         };
         break;
       }

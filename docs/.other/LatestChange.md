@@ -1,8 +1,12 @@
-## [10.1.1](https://github.com/hymbz/ComicReadScript/compare/v10.1.0...v10.1.1) (2024-10-01)
+## [10.2.0](https://github.com/hymbz/ComicReadScript/compare/v10.1.1...v10.2.0) (2024-10-04)
+
+
+### Features
+
+* :sparkles: 支持熱辣漫畫 ([5ce6b39](https://github.com/hymbz/ComicReadScript/commit/5ce6b3955d7b5f30c1f964ca49799a82ac028643))
 
 
 ### Bug Fixes
 
-* :bug: 修复触摸板需要双击才能翻页的 bug ([bdce356](https://github.com/hymbz/ComicReadScript/commit/bdce356098a1dc6db2d8d94bd8bca51833a2de28)), closes [#194](https://github.com/hymbz/ComicReadScript/issues/194)
-* :bug: 修复关闭识别背景色功能后背景色未恢复原样的 bug ([1762c07](https://github.com/hymbz/ComicReadScript/commit/1762c0715527e51038bf08a43ac0491045fd0d78))
-* :bug: 修复無限動漫失效的 bug ([ef188cb](https://github.com/hymbz/ComicReadScript/commit/ef188cba18270ce028fc282312c430ca74168ea6))
+* :bug: 修复在部分网站上简易模式无法翻译图片的 bug ([546df2e](https://github.com/hymbz/ComicReadScript/commit/546df2e0e4b77da68e5f8bbdaca343da37846121)), closes [#195](https://github.com/hymbz/ComicReadScript/issues/195)
+* :bug: 修复在部分网站上简易模式无法正常显示图片的 bug ([ae1db7e](https://github.com/hymbz/ComicReadScript/commit/ae1db7eee8a9532210f18583a7eea0143fa167ac))
