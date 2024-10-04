@@ -12,13 +12,16 @@ export type TaskState = {
 export const setMessage = (url: string, msg: string) =>
   _setState('imgMap', url, 'translationMessage', msg);
 
-export const download = async (url: string) => {
+export const download = async (imgUrl: string) => {
+  const url = store.imgMap[imgUrl]?.blobUrl ?? imgUrl;
+
   if (url.startsWith('blob:')) {
     const res = await fetch(url);
     return res.blob();
   }
 
   const res = await request<Blob>(url, {
+    fetch: false,
     responseType: 'blob',
     errorText: t('translation.tip.download_img_failed'),
   });
