@@ -40,7 +40,7 @@ export const getEdgeArea = (
 
   const popSeedPixel = () => {
     if (seedPixel.size === 0) return undefined;
-    const index = seedPixel.values().next().value as number;
+    const index = seedPixel.values().next().value!;
     seedPixel.delete(index);
     return index;
   };

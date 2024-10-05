@@ -27,7 +27,7 @@ export const IconButton: Component<IconButtonProps> = (_props) => {
   const props = mergeProps({ placement: 'right' }, _props);
   let buttonRef: HTMLButtonElement;
   const handleClick: EventHandler['on:click'] = (e) => {
-    props.onClick?.(e);
+    (props.onClick as JSX.EventHandler<HTMLElement, MouseEvent>)?.(e);
     // 在每次点击后取消焦点
     buttonRef?.blur();
   };
