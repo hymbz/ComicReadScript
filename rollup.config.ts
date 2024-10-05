@@ -134,7 +134,7 @@ export const buildOptions = (
     }),
     json({ namedExports: false, indent: '  ' }),
     nodeResolve({ browser: true, extensions: ['.js', '.ts', '.tsx'] }),
-    commonjs(),
+    commonjs({ strictRequires: 'auto' }),
     styles({ mode: 'extract', modules: { generateScopedName } }),
     solidSvg(),
 
