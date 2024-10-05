@@ -92,7 +92,12 @@ export const request = async <T = any>(
 
     const res = await xmlHttpRequest<T>({
       method: 'GET',
-      url,
+      // https://github.com/hymbz/ComicReadScript/issues/195
+      // 在某些情况下 Tampermonkey 无法正确处理相对协议的 url
+      // 实际 finalUrl 会变成 `///xxx.xxx` 莫名多了一个斜杠
+      // 然而在修改代码发出正确的请求后，就再也无法复现了
+      // 不过以防万一还是在这里手动处理下
+      url: url.startsWith('//') ? `http:${url}` : url,
       headers,
       timeout: 1000 * 10,
       ...details,
