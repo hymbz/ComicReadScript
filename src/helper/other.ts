@@ -428,11 +428,22 @@ export const linstenKeydown = (handler: (e: KeyboardEvent) => unknown) =>
     return handler(e);
   });
 
-/** 劫持修改原网页上的函数 */
+/**
+ * 劫持修改原网页上的函数
+ *
+ * 如果传入函数的所需参数为零，将在原函数执行完后自动调用
+ */
 export const hijackFn = <T extends unknown[] = unknown[], R = unknown>(
   fnName: string,
   fn: (rawFn: (...args: T) => R, args: T) => R,
 ) => {
-  const rawFn = unsafeWindow[fnName];
-  unsafeWindow[fnName] = (...args: T) => fn(rawFn, args);
+  const rawFn = unsafeWindow[fnName] as (...args: T) => R;
+  unsafeWindow[fnName] =
+    fn.length === 0
+      ? (...args: T) => {
+          const res = rawFn(...args);
+          (fn as () => R)();
+          return res;
+        }
+      : (...args: T) => fn(rawFn, args);
 };

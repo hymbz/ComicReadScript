@@ -1,5 +1,7 @@
 import { request } from 'main';
-import { domParse } from 'helper';
+import { debounce, domParse, hijackFn } from 'helper';
+
+import { sortTags } from './sortTags';
 
 import { type PageType } from '.';
 
@@ -129,18 +131,11 @@ export const colorizeTag = async (pageType: PageType) => {
     }
 
     case 'mytags': {
-      // 进入时更新
-      updateTagColor();
-      // 增删标签时会自动刷新页面触发这个更新
+      sortTags();
+      hijackFn('usertag_callback', debounce(sortTags));
 
-      // 点击保存按钮时删除保存的 css，以便在下次需要时重新获取
-      document.addEventListener(
-        'click',
-        (e) =>
-          (e.target as HTMLElement).tagName === 'BUTTON' &&
-          (e.target as HTMLElement).id.startsWith('tagsave_') &&
-          GM.deleteValue('ehTagColorizeCss'),
-      );
+      updateTagColor();
+      hijackFn('usertag_callback', debounce(updateTagColor));
     }
 
     // 除了在 mytags 里更新外，还可以在列表页检查高亮的标签和脚本存储的标签颜色数据是否对应，

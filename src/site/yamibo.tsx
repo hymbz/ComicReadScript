@@ -197,8 +197,7 @@ interface History {
       // 如果帖子内有设置目录
       if (querySelector('#threadindex')) {
         // 在网页通过 ajax 更新对应内容后重新获取漫画图片
-        hijackFn('ajaxinnerhtml', (rawFn, args) => {
-          rawFn(...args);
+        hijackFn('ajaxinnerhtml', () => {
           imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
           if (imgList.length === 0 || updateImgList().length === 0) return;
           if (options.autoShow) showComic();

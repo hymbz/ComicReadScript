@@ -78,10 +78,9 @@ export const associateNhentai = async (
   render(nhTagLine, querySelector('#taglist tbody')!);
 
   // 投票后重新渲染
-  hijackFn('tag_update_vote', (rawFn, args) => {
-    rawFn(...args);
-    render(nhTagLine, querySelector('#taglist tbody')!);
-  });
+  hijackFn('tag_update_vote', () =>
+    render(nhTagLine, querySelector('#taglist tbody')!),
+  );
 
   try {
     const res = await request<{ result: ComicInfo[] }>(

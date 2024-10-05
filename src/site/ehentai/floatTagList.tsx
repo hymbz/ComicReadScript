@@ -240,12 +240,12 @@ export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
     }
 
     // 只在当前有标签被选中时显示 ehs 的标签介绍
-    hijackFn('toggle_tagmenu', (rawFn, args) => {
-      const res = rawFn(...args);
-      if (!unsafeWindow.selected_tagname)
-        querySelector('#ehs-introduce-box .ehs-close')?.click();
-      return res;
-    });
+    hijackFn(
+      'toggle_tagmenu',
+      () =>
+        (unsafeWindow.selected_tagname as string) ||
+        querySelector('#ehs-introduce-box .ehs-close')?.click(),
+    );
   };
 
   createEffectOn(
