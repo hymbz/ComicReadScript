@@ -1,12 +1,11 @@
-## [10.2.0](https://github.com/hymbz/ComicReadScript/compare/v10.1.1...v10.2.0) (2024-10-04)
+## [10.3.0](https://github.com/hymbz/ComicReadScript/compare/v10.2.0...v10.3.0) (2024-10-05)
 
 
 ### Features
 
-* :sparkles: 支持熱辣漫畫 ([5ce6b39](https://github.com/hymbz/ComicReadScript/commit/5ce6b3955d7b5f30c1f964ca49799a82ac028643))
+* :sparkles: 增加 ehentai My Tags 页标签排序功能 ([06c354a](https://github.com/hymbz/ComicReadScript/commit/06c354a3bacd5586c173b744d4a27ef3f0ae6aa6))
 
 
 ### Bug Fixes
 
-* :bug: 修复在部分网站上简易模式无法翻译图片的 bug ([546df2e](https://github.com/hymbz/ComicReadScript/commit/546df2e0e4b77da68e5f8bbdaca343da37846121)), closes [#195](https://github.com/hymbz/ComicReadScript/issues/195)
-* :bug: 修复在部分网站上简易模式无法正常显示图片的 bug ([ae1db7e](https://github.com/hymbz/ComicReadScript/commit/ae1db7eee8a9532210f18583a7eea0143fa167ac))
+* :bug: 修复在部分网站上简易模式无法翻译图片的 bug ([01211f3](https://github.com/hymbz/ComicReadScript/commit/01211f39ab77b34f51ca1c31d459da170b1ff613)), closes [#195](https://github.com/hymbz/ComicReadScript/issues/195)
