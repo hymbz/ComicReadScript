@@ -14,6 +14,7 @@ import {
 import { renderImgList } from 'components/Manga';
 import { useInit, toast } from 'main';
 
+import { handleSwitchChapter } from './switchChapter';
 import { getEleSelector, isEleSelector } from './eleSelector';
 import {
   getDatasetUrl,
@@ -256,11 +257,13 @@ export const otherSite = async () => {
     );
   });
 
-  /** 监视页面元素发生变化的 Observer */
-  const imgDomObserver = new MutationObserver(() => {
+  const handleMutation = () => {
     updateImgList();
     triggerAllLazyLoad();
-  });
+    handleSwitchChapter(setManga);
+  };
+  /** 监视页面元素发生变化的 Observer */
+  const imgDomObserver = new MutationObserver(handleMutation);
 
   setComicLoad(async () => {
     if (!imgEleList) {
@@ -271,8 +274,7 @@ export const otherSite = async () => {
         attributes: true,
         attributeFilter: ['src'],
       });
-      updateImgList();
-      triggerAllLazyLoad();
+      handleMutation();
 
       setTimeout(() => {
         timeout = true;
