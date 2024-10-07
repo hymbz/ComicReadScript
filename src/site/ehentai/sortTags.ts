@@ -3,6 +3,8 @@ import { querySelector } from 'helper';
 interface Tag {
   e: HTMLElement;
   id: number;
+  group: string;
+  name: string;
   weight: number;
   watch: boolean;
   hidden: boolean;
@@ -40,11 +42,23 @@ export const sortTags = () => {
         defaultColor,
       16,
     );
+    let [group, name] = e
+      .querySelector<HTMLElement>(`#tagpreview_${id}`)!
+      .title.split(':');
+    // 合并性别相关的命名空间，以便不同命名空间下的相同标签可以排在一起
+    switch (group) {
+      case 'female':
+      case 'male':
+      case 'mixed':
+        group = 'gender';
+    }
 
     tagList[color] ||= [];
     tagList[color].push({
       e,
       id: Number(id),
+      group,
+      name,
       weight: Number(
         e.querySelector<HTMLInputElement>('input[id^=tagweight_]')!.value,
       ),
@@ -54,11 +68,13 @@ export const sortTags = () => {
   }
 
   const sortDom = () => {
+    const collator = new Intl.Collator();
     const sortFn = (a: Tag, b: Tag) => {
       if (a.weight !== b.weight) return a.weight - b.weight;
       if (a.watch !== b.watch) return a.watch ? 1 : -1;
       if (a.hidden !== b.hidden) return a.hidden ? -1 : 1;
-      return a.id - b.id;
+      if (a.group !== b.group) return collator.compare(a.group, b.group);
+      return collator.compare(a.name, b.name);
     };
 
     let i = tagEleList.length;

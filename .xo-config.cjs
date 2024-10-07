@@ -30,7 +30,7 @@ module.exports = {
     "no-param-reassign": "error",
     // 禁用 prefer-const 的自动修复
     "prefer-const": "off",
-    "no-autofix/prefer-const": "warn",
+    "no-autofix/prefer-const": ["warn", { "destructuring": "all" }],
 
     // 不限制代码深度
     "max-depth": "off",
