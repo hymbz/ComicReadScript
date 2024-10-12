@@ -53,7 +53,7 @@ export const handleImgError = (url: string, e?: HTMLImageElement) => {
     img.type = undefined;
     if (
       imgIndex.some((i) => renderImgList().has(i)) &&
-      (imgErrorNum.get(img.src) ?? 0) < 3
+      (imgErrorNum.get(img.src) ?? 0) < 2
     )
       img.loadType = 'wait';
   });
@@ -235,7 +235,7 @@ createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
     if (abortMap.has(url) || store.imgMap[url].blobUrl) continue;
 
     const controller = new AbortController();
-    const handleTimeout = debounce(timeoutAbort, 1000 * 5);
+    const handleTimeout = debounce(timeoutAbort, 1000 * 3);
     controller.signal.addEventListener('abort', handleTimeout.clear);
     abortMap.set(url, controller);
     handleTimeout(url);

@@ -37,7 +37,10 @@
     margin-right: inherit;
     margin-bottom: auto;
     margin-left: inherit;
+  }
 
+  & > picture,
+  & > picture::after {
     background-color: var(--hover-bg-color, #fff3);
     background-image: var(--md-photo);
     background-repeat: no-repeat;
