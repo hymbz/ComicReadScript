@@ -55,8 +55,9 @@ export const useSiteOptions = async <T = Record<string, any>>(
   );
 
   const setOptions = async (newOptions?: Partial<SaveOptions>) => {
-    if (options.lockOption && newOptions?.lockOption !== false) return;
+    const lockOption = options.lockOption;
     if (newOptions) Object.assign(options, newOptions);
+    if (lockOption && newOptions?.lockOption !== false) return;
     // 只保存和默认设置不同的部分
     return GM.setValue(name, difference(options, _defaultOptions));
   };

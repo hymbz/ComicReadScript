@@ -10,15 +10,15 @@ import { t } from 'helper';
 
 import type { SiteOptions } from './useSiteOptions';
 
-export const useSpeedDial = <T extends Record<string, any>>(
-  options: T & SiteOptions,
-  setOptions: (
-    newOptions: Partial<T & SiteOptions>,
-    trigger?: boolean,
-  ) => Promise<void>,
+export const useSpeedDial = <
+  T extends Record<string, any>,
+  SaveOptions extends T & SiteOptions = T & SiteOptions,
+>(
+  options: SaveOptions,
+  setOptions: (newOptions: Partial<SaveOptions>) => Promise<void>,
 ) => {
   const DefaultButton: Component<{
-    optionName: keyof (T & SiteOptions) & string;
+    optionName: keyof SaveOptions & string;
     showName?: string;
     children?: JSX.Element;
   }> = (props) => (
@@ -31,9 +31,8 @@ export const useSpeedDial = <T extends Record<string, any>>(
       }
       onClick={() =>
         setOptions({
-          ...options,
           [props.optionName]: !options[props.optionName],
-        })
+        } as Partial<SaveOptions>)
       }
       children={
         props.children ??
