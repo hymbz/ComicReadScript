@@ -241,7 +241,7 @@ export const waitImgLoad = (
 ) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
     const img = typeof target === 'string' ? new Image() : target;
-    if (img.complete) resolve(img);
+    if (img.complete && img.naturalHeight) resolve(img);
 
     const id = timeout
       ? window.setTimeout(() => reject(new Error('timeout')), timeout)

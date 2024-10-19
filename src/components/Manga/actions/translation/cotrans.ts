@@ -81,7 +81,7 @@ const waitTranslation = (id: string, url: string) => {
 /** 将翻译后的内容覆盖到原图上 */
 const mergeImage = async (rawImage: Blob, maskUri: string) => {
   const img = await waitImgLoad(URL.createObjectURL(rawImage));
-  const canvas = new OffscreenCanvas(img.width, img.height);
+  const canvas = new OffscreenCanvas(img.naturalWidth, img.naturalHeight);
   const canvasCtx = canvas.getContext('2d')!;
   canvasCtx.drawImage(img, 0, 0);
 
