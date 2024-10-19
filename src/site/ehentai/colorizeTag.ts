@@ -1,7 +1,6 @@
-import { request } from 'main';
-import { debounce, domParse, hijackFn } from 'helper';
+import { debounce, getGmValue, hijackFn } from 'helper';
 
-import { sortTags } from './sortTags';
+import { updateMyTags, handleMyTagsChange, type Tag } from './myTags';
 
 import { type PageType } from '.';
 
@@ -19,70 +18,40 @@ import { type PageType } from '.';
 // `;
 
 const buildTagList = (tagList: Set<string>, prefix: string) =>
-  `\n${[...tagList].map((tag) => `${prefix}${tag}`).join(',\n')}\n`;
-
-const getTagSetHtml = async (tagset?: string) => {
-  const url = tagset ? `/mytags?tagset=${tagset}` : '/mytags';
-  const res = await request(url, { fetch: true });
-  return domParse(res.responseText);
-};
+  `\n${[...tagList].map((tag) => `${prefix}${CSS.escape(tag)}`).join(',\n')}\n`;
 
 /** 获取最新的标签颜色数据 */
-export const updateTagColor = async () => {
+export const updateTagColor = async (tagList: Tag[]) => {
   const backgroundMap: Record<string, Set<string>> = {};
   const borderMap: Record<string, Set<string>> = {};
   const colorMap: Record<string, Set<string>> = {};
 
-  const tagSetList: Document[] = [];
-  // 获取所有标签集的 html
-  const defaultTagSet = await getTagSetHtml();
-  await Promise.all(
-    [
-      ...defaultTagSet.querySelectorAll<HTMLOptionElement>(
-        '#tagset_outer select option',
-      ),
-    ].map(async (option) => {
-      const tagSet = option.selected
-        ? defaultTagSet
-        : await getTagSetHtml(option.value);
-      if (tagSet.querySelector<HTMLInputElement>('#tagset_enable')?.checked)
-        tagSetList.push(tagSet);
-    }),
-  );
-
-  for (const html of tagSetList) {
-    for (const tagDom of html.querySelectorAll<HTMLElement>(
-      '#usertags_outer [id^=tagpreview_]',
-    )) {
-      const { color, borderColor, background } = tagDom.style;
-      const tag = tagDom.title.replaceAll(' ', '_').replaceAll(':', '\\:');
-      if (!tag) continue;
-
-      backgroundMap[background] ||= new Set();
-      backgroundMap[background].add(tag);
-      borderMap[borderColor] ||= new Set();
-      borderMap[borderColor].add(tag);
-      colorMap[color] ||= new Set();
-      colorMap[color].add(tag);
-    }
+  for (const tag of tagList) {
+    const { title, color, borderColor, fontColor } = tag;
+    backgroundMap[color] ||= new Set();
+    backgroundMap[color].add(title);
+    borderMap[borderColor] ||= new Set();
+    borderMap[borderColor].add(title);
+    colorMap[fontColor] ||= new Set();
+    colorMap[fontColor].add(title);
   }
 
   let css = '';
-  for (const [background, tagList] of Object.entries(backgroundMap)) {
-    css += `:is(${buildTagList(tagList, '#td_')})`;
-    css += `{ background: ${background}; }\n\n`;
+  for (const [background, tags] of Object.entries(backgroundMap)) {
+    css += `:is(${buildTagList(tags, '#td_')})`;
+    css += `{ background: #${Number(background).toString(16).padStart(6, '0')}; }\n\n`;
   }
-  for (const [border, tagList] of Object.entries(borderMap)) {
+  for (const [border, tags] of Object.entries(borderMap)) {
     // 强标签直接覆盖边框颜色
-    css += `:is(${buildTagList(tagList, '#td_')}).gt`;
+    css += `:is(${buildTagList(tags, '#td_')}).gt`;
     css += `{ border-color: ${border}; }\n\n`;
   }
-  for (const [color, tagList] of Object.entries(colorMap)) {
+  for (const [color, tags] of Object.entries(colorMap)) {
     // 弱标签将边框颜色改为字体颜色突出显示
-    css += `:is(${buildTagList(tagList, '#td_')}):not(.gt)`;
+    css += `:is(${buildTagList(tags, '#td_')}):not(.gt)`;
     css += `{ border-color: ${color}; }\n\n`;
 
-    css += `#taglist a:is(${buildTagList(tagList, '#ta_')})`;
+    css += `#taglist a:is(${buildTagList(tags, '#ta_')})`;
     css += `{ color: ${color} !important; position: relative; }\n\n`;
   }
 
@@ -112,30 +81,24 @@ export const updateTagColor = async () => {
   return css;
 };
 
-const getTagColorizeCss = async () => {
-  let colorizeCss = await GM.getValue<string>('ehTagColorizeCss');
-  colorizeCss ||= await updateTagColor();
-  return colorizeCss;
-};
-
 /** 标签染色 */
 export const colorizeTag = async (pageType: PageType) => {
+  handleMyTagsChange.add(updateTagColor);
+
   switch (pageType) {
     case 'gallery': {
       let css =
         location.origin === 'https://exhentai.org'
           ? '--tag: #DDDDDD; --tag-hover: #EEEEEE; --tup: #00E639; --tdn: #FF3333;'
           : '--tag: #5C0D11; --tag-hover: #8F4701; --tup: green; --tdn: red;';
-      css = `#taglist { ${css} }\n\n${await getTagColorizeCss()}`;
+      css = `#taglist { ${css} }\n\n`;
+      css += await getGmValue('ehTagColorizeCss', updateMyTags);
       return GM_addStyle(css);
     }
 
     case 'mytags': {
-      sortTags();
-      hijackFn('usertag_callback', debounce(sortTags));
-
-      updateTagColor();
-      hijackFn('usertag_callback', debounce(updateTagColor));
+      updateMyTags();
+      hijackFn('usertag_callback', debounce(updateMyTags));
     }
 
     // 除了在 mytags 里更新外，还可以在列表页检查高亮的标签和脚本存储的标签颜色数据是否对应，

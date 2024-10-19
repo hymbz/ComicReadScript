@@ -568,13 +568,13 @@ declare function GM_setClipboard(
   info?: Tampermonkey.ContentType,
 ): void;
 
-declare function GM_addElement(
+declare function GM_addElement<T extends HTMLElement = HTMLElement>(
   tag_name: string,
   attributes: {
     [key: string]: any;
     textContent: string;
   },
-): HTMLElement;
+): T;
 
 // GM.*
 

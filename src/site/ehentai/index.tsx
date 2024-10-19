@@ -28,20 +28,16 @@ import { colorizeTag } from './colorizeTag';
 import { quickRating } from './quickRating';
 import { quickTagDefine } from './quickTagDefine';
 import { floatTagList } from './floatTagList';
+import { sortTags } from './sortTags';
 
 // [ehentai 图像限额](https://github.com/ccloli/E-Hentai-Downloader/wiki/E−Hentai-Image-Viewing-Limits-(Chinese))
 
 type ListPageType =
-  /** 最小化 */
-  | 'm'
-  /** 最小化 + 关注标签 */
-  | 'p'
-  /** 紧凑 + 标签 */
-  | 'l'
-  /** 扩展 */
-  | 'e'
-  /** 缩略图 */
-  | 't';
+  | 'm' // 最小化
+  | 'p' // 最小化 + 关注标签
+  | 'l' // 紧凑 + 标签
+  | 'e' // 扩展
+  | 't'; // 缩略图;
 
 export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
 
@@ -127,7 +123,10 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   });
 
   // 标签染色
-  if (options.colorize_tag) colorizeTag(pageType);
+  if (options.colorize_tag) {
+    colorizeTag(pageType);
+    sortTags(pageType);
+  }
   // 快捷键
   if (options.hotkeys) hotkeysPageTurn(pageType);
   // 悬浮标签列表

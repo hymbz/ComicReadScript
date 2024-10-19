@@ -448,3 +448,13 @@ export const hijackFn = <T extends unknown[] = unknown[], R = unknown>(
         }
       : (...args: T) => fn(rawFn, args);
 };
+
+export async function getGmValue<T extends string | number | object = string>(
+  name: string,
+  setValueFn: () => unknown | Promise<unknown>,
+) {
+  const value = await GM.getValue<T>(name);
+  if (value !== undefined) return value;
+  await setValueFn();
+  return (await GM.getValue<T>(name))!;
+}

@@ -34,6 +34,7 @@ export const renameOption = async (name: string, list: string[]) =>
 const migration = async () => {
   // 任何样式修改都得更新 css 才行，干脆直接删了
   GM.deleteValue('ehTagColorizeCss');
+  GM.deleteValue('ehTagSortCss');
 
   const values = await GM.listValues();
 
@@ -43,6 +44,7 @@ const migration = async () => {
       case 'Version':
       case 'Languages':
       case 'ehTagColorizeCss':
+      case 'ehTagSortCss':
         continue;
 
       case 'Hotkeys': {

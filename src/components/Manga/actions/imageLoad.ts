@@ -235,10 +235,10 @@ createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
     if (abortMap.has(url) || store.imgMap[url].blobUrl) continue;
 
     const controller = new AbortController();
-    const handleTimeout = debounce(timeoutAbort, 1000 * 3);
+    const handleTimeout = debounce(() => timeoutAbort(url), 1000 * 3);
     controller.signal.addEventListener('abort', handleTimeout.clear);
     abortMap.set(url, controller);
-    handleTimeout(url);
+    handleTimeout();
     request<Blob>(url, {
       responseType: 'blob',
       fetch: false,
@@ -246,8 +246,8 @@ createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
       onerror: () => handleImgError(url),
       onprogress({ loaded, total }) {
         _setState('imgMap', url, 'progress', (loaded / total) * 100);
-        // 连续5秒没进度后超时中断
-        handleTimeout(url);
+        // 一段时间内都没进度后超时中断
+        handleTimeout();
       },
       onload({ response }) {
         abortMap.delete(url);
