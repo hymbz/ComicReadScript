@@ -4231,8 +4231,7 @@ const handleScrollModeDrag = ({
   type,
   xy: [x, y],
   initial: [ix, iy]
-}, e) => {
-  if (e.pointerType !== 'mouse') return;
+}) => {
   switch (type) {
     case 'down':
       {
@@ -4660,7 +4659,7 @@ const ComicImgFlow = () => {
     if (store.gridMode) return;
     if (touches.size > 1) return handlePinchZoom(state);
     if (store.option.zoom.ratio !== 100) return handleZoomDrag(state);
-    if (store.option.scrollMode.enabled) return handleScrollModeDrag(state, e);
+    if (store.option.scrollMode.enabled) return handleScrollModeDrag(state);
     return handleMangaFlowDrag(state);
   };
   solidJs.onMount(() => {
@@ -4729,7 +4728,6 @@ const ComicImgFlow = () => {
         if (store.option.zoom.offset.y === 0) return 'pan-up';
         if (store.option.zoom.offset.y === bound().y) return 'pan-down';
       }
-      if (store.option.scrollMode.enabled) return store.option.scrollMode.abreastMode ? 'pan-x' : 'pan-y';
     },
     'grid-template-areas': gridAreas,
     'grid-template-columns'() {
@@ -10945,17 +10943,14 @@ const updateTagColor = async tagList => {
   const colorMap = {};
   for (const tag of tagList) {
     const {
-      title,
       color,
       borderColor,
       fontColor
     } = tag;
-    backgroundMap[color] ||= new Set();
-    backgroundMap[color].add(title);
-    borderMap[borderColor] ||= new Set();
-    borderMap[borderColor].add(title);
-    colorMap[fontColor] ||= new Set();
-    colorMap[fontColor].add(title);
+    const title = tag.title.replaceAll(' ', '_');
+    (backgroundMap[color] ||= new Set()).add(title);
+    (borderMap[borderColor] ||= new Set()).add(title);
+    (colorMap[fontColor] ||= new Set()).add(title);
   }
   let css = '';
   for (const [background, tags] of Object.entries(backgroundMap)) {

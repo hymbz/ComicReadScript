@@ -160,9 +160,6 @@ export const ComicImgFlow: Component = () => {
         if (store.option.zoom.offset.y === 0) return 'pan-up';
         if (store.option.zoom.offset.y === bound().y) return 'pan-down';
       }
-
-      if (store.option.scrollMode.enabled)
-        return store.option.scrollMode.abreastMode ? 'pan-x' : 'pan-y';
     },
     'grid-template-areas': gridAreas,
     'grid-template-columns'() {
