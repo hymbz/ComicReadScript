@@ -27,13 +27,11 @@ export const updateTagColor = async (tagList: Tag[]) => {
   const colorMap: Record<string, Set<string>> = {};
 
   for (const tag of tagList) {
-    const { title, color, borderColor, fontColor } = tag;
-    backgroundMap[color] ||= new Set();
-    backgroundMap[color].add(title);
-    borderMap[borderColor] ||= new Set();
-    borderMap[borderColor].add(title);
-    colorMap[fontColor] ||= new Set();
-    colorMap[fontColor].add(title);
+    const { color, borderColor, fontColor } = tag;
+    const title = tag.title.replaceAll(' ', '_');
+    (backgroundMap[color] ||= new Set()).add(title);
+    (borderMap[borderColor] ||= new Set()).add(title);
+    (colorMap[fontColor] ||= new Set()).add(title);
   }
 
   let css = '';
