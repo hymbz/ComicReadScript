@@ -233,11 +233,14 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       `${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
       { fetch: true, errorText: t('site.ehentai.fetch_img_page_url_failed') },
     );
-    // 从详情页获取图片页的地址
-    const reRes = res.responseText.matchAll(
-      /<a href="(.{20,50})"><img alt=.+?title=".+?: (.+?)"/gm,
-    );
-    if (reRes === null) {
+    const pageUrlList: Array<[string, string]> = [
+      ...res.responseText.matchAll(
+        // 缩略图有三种显示方式：
+        // 使用 img 的旧版，不显示页码的单个 div，显示页码的嵌套 div
+        /<a href="(.{20,50})"><(img alt=.+?|div><div |div )title=".+?: (.+?)"/gm,
+      ),
+    ].map(([, url, fileName]) => [url, fileName]);
+    if (pageUrlList.length === 0) {
       if (
         res.responseText.includes(
           'Your IP address has been temporarily banned for excessive',
@@ -246,8 +249,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
         throw new Error(t('site.ehentai.ip_banned'));
       throw new Error(t('site.ehentai.fetch_img_page_url_failed'));
     }
-
-    return [...reRes].map(([, url, fileName]) => [url, fileName]);
+    return pageUrlList;
   };
 
   const getImgNum = async () => {
@@ -268,8 +270,6 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   };
 
   const totalImgNum = await getImgNum();
-  const placeValueNum = `${totalImgNum}`.length;
-
   const ehImgList: string[] = [];
   const ehImgPageList: string[] = [];
   const ehImgFileNameList: string[] = [];
@@ -303,35 +303,40 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     options.detect_ad && document.getElementById('ta_other:extraneous_ads');
   if (enableDetectAd) {
     setComicMap('', 'adList', new ReactiveSet());
-    /** 缩略图元素列表 */
-    const thumbnailEleList: HTMLImageElement[] = [];
-
-    for (const e of querySelectorAll<HTMLImageElement>('#gdt img')) {
-      const index = Number(e.alt) - 1;
+    /** 缩略图列表 */
+    const thumbnailList: Array<string | HTMLImageElement> = [];
+    for (const e of querySelectorAll<HTMLAnchorElement>('#gdt a')) {
+      const index = Number(/.+-(\d+)/.exec(e.href)?.[1]) - 1;
       if (Number.isNaN(index)) return;
-      thumbnailEleList[index] = e;
-      // 根据当前显示的图片获取一部分文件名
-      [, ehImgFileNameList[index]] = e.title.split(/：|: /);
+      ehImgPageList[index] = e.href;
+
+      const thumbnail = e.querySelector<HTMLElement>('[title]')!;
+      ehImgFileNameList[index] = thumbnail.title.split(/：|: /)[1];
+      thumbnailList[index] =
+        thumbnail.tagName === 'IMG'
+          ? (thumbnail as HTMLImageElement)
+          : /url\("(.+)"\)/.exec(thumbnail.style.backgroundImage)![1];
     }
+
     // 先根据文件名判断一次
     await getAdPageByFileName(ehImgFileNameList, comicMap[''].adList!);
     // 不行的话再用缩略图识别
     if (comicMap[''].adList!.size === 0)
-      await getAdPageByContent(thumbnailEleList, comicMap[''].adList!);
+      await getAdPageByContent(thumbnailList, comicMap[''].adList!);
 
     // 模糊广告页的缩略图
     useStyle(
       createRootMemo(() => {
         if (!comicMap['']?.adList?.size) return '';
-        const styleList = [...comicMap[''].adList].map((i) => {
-          const alt = `${i + 1}`.padStart(placeValueNum, '0');
-          return `img[alt="${alt}"]:not(:hover) {
-            filter: blur(8px);
-            clip-path: border-box;
-            backdrop-filter: blur(8px);
-          }`;
-        });
-        return styleList.join('\n');
+        return [...comicMap[''].adList]
+          .map(
+            (i) => `a[href="${ehImgPageList[i]}"] [title]:not(:hover) {
+              filter: blur(8px);
+              clip-path: border-box;
+              backdrop-filter: blur(8px);
+            }`,
+          )
+          .join('\n');
       }),
     );
   }
