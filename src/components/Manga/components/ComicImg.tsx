@@ -1,6 +1,7 @@
 import { type Component, Show, createMemo, For } from 'solid-js';
 
 import { _setState, store } from '../store';
+import { useStyleMemo } from '../hooks/useStyle';
 import {
   getImgTip,
   imgShowState,
@@ -25,43 +26,40 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
   /** 并排卷轴模式下需要复制的图片数量 */
   const cloneNum = createMemo(() => {
     if (!isAbreastMode()) return 0;
-
     const imgPosition = abreastArea().position[img.index];
-    if (!imgPosition) return 0;
-    return imgPosition.length - 1;
+    return imgPosition ? imgPosition.length - 1 : 0;
   });
 
   /** 是否要渲染复制图片 */
   const renderClone = () =>
     !store.gridMode && showState() !== undefined && cloneNum() > 0;
 
+  const selector = `.${classes.img}[id^="_${img.index}_"]`;
+  useStyleMemo(selector, {
+    'grid-area': () => (isAbreastMode() ? 'none' : `_${img.index}`),
+    'background-color': () => (isEnableBg() ? img.background : undefined),
+  });
+  useStyleMemo(`${selector} > picture`, {
+    'aspect-ratio': () => `${img.size.width} / ${img.size.height}`,
+    background: () =>
+      img.progress &&
+      `linear-gradient(
+          to bottom,
+          var(--secondary-bg) ${img.progress}%,
+          var(--hover-bg-color,#fff3) ${img.progress}%
+        )`,
+  });
+
   const _ComicImg: Component<{ cloneIndex?: number }> = (props) => (
     <div
       class={classes.img}
-      style={{
-        'grid-area': `_${img.index}`,
-        'background-color': isEnableBg()
-          ? img.background || 'var(--bg)'
-          : undefined,
-      }}
-      id={`_${props.cloneIndex ? `${img.index}-${props.cloneIndex}` : img.index}`}
+      id={`_${img.index}_${props.cloneIndex ?? 0}`}
       data-show={showState()}
       data-type={img.type ?? store.defaultImgType}
       data-load-type={img.loadType === 'loaded' ? undefined : img.loadType}
     >
       {/* 因为 img 无法使用 ::after，所以得用 picture 包一下 */}
-      <picture
-        style={{
-          'aspect-ratio': `${img.size.width} / ${img.size.height}`,
-          background:
-            img.progress &&
-            `linear-gradient(
-              to bottom,
-              var(--secondary-bg) ${img.progress}%,
-              var(--hover-bg-color,#fff3)${img.progress}%
-            )`,
-        }}
-      >
+      <picture>
         <Show when={img.loadType !== 'wait' && src()}>
           <img
             src={src()}

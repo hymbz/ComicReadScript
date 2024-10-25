@@ -101,10 +101,10 @@ export const Manga: Component<MangaProps> = (props) => {
         data-grid-mode={boolDataVal(store.gridMode)}
       >
         <ComicImgFlow />
-        <Toolbar />
-        <Scrollbar />
         <TouchArea />
+        <Scrollbar />
         <EndPage />
+        <Toolbar />
       </div>
     </>
   );
