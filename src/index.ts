@@ -154,6 +154,19 @@ try {
       break;
     }
 
+    // #[再漫画](https://manhua.zaimanhua.com/)
+    case 'manhua.zaimanhua.com': {
+      const getImgList = () =>
+        unsafeWindow.__NUXT__.data.getChapters?.data?.chapterInfo
+          ?.page_url as string[];
+      options = {
+        name: 'zaiManHua',
+        wait: getImgList,
+        getImgList,
+      };
+      break;
+    }
+
     // #[明日方舟泰拉记事社](https://terra-historicus.hypergryph.com)
     case 'terra-historicus.hypergryph.com': {
       const apiUrl = () =>

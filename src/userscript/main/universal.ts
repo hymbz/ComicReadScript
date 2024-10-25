@@ -9,7 +9,7 @@ export type UseInitFnMap = AsyncReturnType<typeof useInit>;
 export interface InitOptions {
   name: string;
   /** 等待返回 true 后才开始运行。用于等待元素渲染 */
-  wait?: () => boolean | Promise<boolean>;
+  wait?: () => unknown | Promise<unknown>;
 
   getImgList: (fnMap: UseInitFnMap) => Promise<string[]> | string[];
   onPrev?: MangaProps['onPrev'];

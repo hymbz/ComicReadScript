@@ -187,6 +187,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 <!-- supportSiteList -->
 
 - [PonpomuYuri](https://www.ponpomu.com)
+- [再漫画](https://manhua.zaimanhua.com/)
 - [明日方舟泰拉记事社](https://terra-historicus.hypergryph.com)
 - [禁漫天堂](https://18comic.vip)
 - [漫画柜(manhuagui)](https://www.manhuagui.com)
