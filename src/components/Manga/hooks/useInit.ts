@@ -104,6 +104,9 @@ export const useInit = (props: MangaProps) => {
     commentList(state) {
       state.commentList = props.commentList;
     },
+    title(state) {
+      state.title = props.title ?? '';
+    },
   };
   for (const [key, fn] of Object.entries(watchProps)) {
     createEffect(

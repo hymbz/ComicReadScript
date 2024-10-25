@@ -48,6 +48,8 @@ export interface MangaProps {
   show?: boolean;
   /** 评论列表 */
   commentList?: string[];
+  /** 漫画标题 */
+  title?: string | null;
 
   /** 点击结束页按钮时触发的回调 */
   onExit?: State['prop']['Exit'];

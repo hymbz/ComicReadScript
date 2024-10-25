@@ -378,6 +378,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       if (i === -1) return;
       return reloadImg(i);
     },
+    title:
+      querySelector('#gj')?.textContent || querySelector('#gn')?.textContent,
   });
 
   setFab('initialShow', options.autoShow);
