@@ -1,12 +1,11 @@
-## [10.4.0](https://github.com/hymbz/ComicReadScript/compare/v10.3.0...v10.4.0) (2024-10-19)
+## [10.5.0](https://github.com/hymbz/ComicReadScript/compare/v10.4.0...v10.5.0) (2024-10-25)
 
 
 ### Features
 
-* :sparkles: 简易阅读模式支持上/下一话切换 ([f6689b4](https://github.com/hymbz/ComicReadScript/commit/f6689b478ee9dbbe26c7ebc421d7faabfa68a69d))
-* :sparkles: ehentai 标签染色功能同时会对列表页显示的标签进行排序 ([1b69ffb](https://github.com/hymbz/ComicReadScript/commit/1b69ffba0026af4ee07c2126225f84ec2900ebdd))
+* :sparkles: 支持再漫画 ([a6d8320](https://github.com/hymbz/ComicReadScript/commit/a6d83200a623a75b1f309b2a4943d3c5e57a77be)), closes [#197](https://github.com/hymbz/ComicReadScript/issues/197)
 
 
 ### Bug Fixes
 
-* :bug: 修复 cotrans 翻译出错 ([78af6e9](https://github.com/hymbz/ComicReadScript/commit/78af6e918a5a556a3d1ed6c14f2e8096f562c061)), closes [#196](https://github.com/hymbz/ComicReadScript/issues/196)
+* :bug: 修复 ehentai 改版后失效的 bug ([e2ea67a](https://github.com/hymbz/ComicReadScript/commit/e2ea67a4ba66e0bde915fcbd0153848f80e73090)), closes [#198](https://github.com/hymbz/ComicReadScript/issues/198)
