@@ -243,6 +243,8 @@ createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
       responseType: 'blob',
       fetch: false,
       signal: controller.signal,
+      timeout: undefined,
+      noTip: true,
       onerror: () => handleImgError(url),
       onprogress({ loaded, total }) {
         _setState('imgMap', url, 'progress', (loaded / total) * 100);

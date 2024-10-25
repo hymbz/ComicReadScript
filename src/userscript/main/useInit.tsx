@@ -250,7 +250,6 @@ export const useInit = async <T extends Record<string, any>>(
       id: string | number = '',
     ) {
       setComicMap(id, { imgList: undefined, getImgList });
-
       if (menuId === undefined) return init();
     },
 
@@ -260,9 +259,14 @@ export const useInit = async <T extends Record<string, any>>(
         if (comicMap[id].imgList?.length) return comicMap[id].imgList;
 
         setComicMap(id, 'imgList', Array.from<string>({ length }).fill(''));
-        await new Promise((resolve) =>
-          loadImgFn((i, url) => resolve(setImgList(id, i, url))),
-        );
+        // eslint-disable-next-line no-async-promise-executor
+        await new Promise(async (resolve) => {
+          try {
+            await loadImgFn((i, url) => resolve(setImgList(id, i, url)));
+          } catch (error) {
+            toast.error((error as Error).message);
+          }
+        });
         return comicMap[id].imgList!;
       },
   };

@@ -6,17 +6,19 @@ const xmlHttpRequest = <T = any>(
   details: Tampermonkey.Request<T>,
 ): Promise<Tampermonkey.Response<T>> =>
   new Promise((resolve, reject) => {
+    const handleError = (error?: Tampermonkey.ErrorResponse) => {
+      details.onerror?.(error);
+      reject(new Error(error?.responseText));
+    };
     const abort = GM_xmlhttpRequest<T>({
       ...details,
       onload(res) {
         details.onload?.call(res, res);
         resolve(res);
       },
-      onerror(error) {
-        details.onerror?.call(error, error);
-        reject(new Error(error.responseText));
-      },
-      ontimeout: reject,
+      onerror: handleError,
+      ontimeout: handleError,
+      onabort: handleError,
     });
     details.signal?.addEventListener('abort', abort.abort);
   });
@@ -56,10 +58,10 @@ export const request = async <T = any>(
       const res = await fetch(url, {
         method: 'GET',
         headers,
-        ...details,
+        signal: AbortSignal.timeout?.(details?.timeout ?? 1000 * 10),
         // eslint-disable-next-line unicorn/no-invalid-fetch-options
         body: details?.data,
-        signal: AbortSignal.timeout?.(details?.timeout ?? 1000 * 10),
+        ...details,
       });
       if (!details?.noCheckCode && res.status !== 200) {
         log.error(errorText, res);

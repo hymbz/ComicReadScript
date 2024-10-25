@@ -112,7 +112,9 @@ declare namespace Tampermonkey {
     // Events
 
     /** Callback to be executed if the request ended up with an error */
-    onerror?: RequestEventListener<ErrorResponse> | undefined;
+    onerror?: ((res?: ErrorResponse) => void) | undefined;
+    /** Callback to be executed if the request failed due to a timeout */
+    ontimeout?: ((res: ErrorResponse) => void) | undefined;
     /** Callback to be executed if the request started to load */
     onloadstart?: RequestEventListener<Response<TContext>> | undefined;
     /** Callback to be executed if the request made some progress */
@@ -123,8 +125,6 @@ declare namespace Tampermonkey {
     onload?: RequestEventListener<Response<TContext>> | undefined;
     /** Callback to be executed if the request was aborted */
     onabort?(): void;
-    /** Callback to be executed if the request failed due to a timeout */
-    ontimeout?(): void;
   }
 
   // Download Response

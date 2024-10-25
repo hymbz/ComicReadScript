@@ -9,7 +9,7 @@ GM_xmlhttpRequest({
     eval(`(async () => {${r.responseText}})();`);
   },
   onerror(e) {
-    if (e.status === 0) throw new Error('dev server not running');
+    if (e?.status === 0) throw new Error('dev server not running');
     throw new Error(String(e));
   },
 });
