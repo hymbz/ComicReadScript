@@ -16,8 +16,8 @@ export const handleSwitchChapter = (
   for (const element of querySelectorAll('a, button')) {
     const text = element.textContent?.trim();
     if (!text) continue;
-    if (!onPrev && prevRe.test(text)) onPrev = element.click;
-    if (!onNext && nextRe.test(text)) onNext = element.click;
+    if (!onPrev && prevRe.test(text)) onPrev = () => element.click();
+    if (!onNext && nextRe.test(text)) onNext = () => element.click();
     if (onPrev && onNext) break;
   }
 

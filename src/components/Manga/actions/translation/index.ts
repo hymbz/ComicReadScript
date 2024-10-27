@@ -128,7 +128,7 @@ export const createTranslateRange = (
 ) => {
   const isTranslating = createRootMemo(() => {
     for (let i = start(); i < end(); i++)
-      if (imgList()[i].translationType === undefined) return false;
+      if (imgList()[i]?.translationType === undefined) return false;
     return true;
   });
   const translateRange = () => {
