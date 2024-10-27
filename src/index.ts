@@ -163,6 +163,8 @@ try {
         name: 'zaiManHua',
         wait: getImgList,
         getImgList,
+        onNext: querySelectorClick('#prev_chapter'),
+        onPrev: querySelectorClick('#next_chapter'),
       };
       break;
     }
