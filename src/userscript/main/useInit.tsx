@@ -1,5 +1,5 @@
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
-import { createSignal } from 'solid-js';
+import { createSignal, type Accessor } from 'solid-js';
 import { createStore } from 'solid-js/store';
 import {
   hotkeysMap,
@@ -254,11 +254,21 @@ export const useInit = async <T extends Record<string, any>>(
     },
 
     dynamicLoad:
-      (loadImgFn: LoadImgFn, length: number, id: string | number = '') =>
+      (
+        loadImgFn: LoadImgFn,
+        length: number | Accessor<number>,
+        id: string | number = '',
+      ) =>
       async () => {
         if (comicMap[id].imgList?.length) return comicMap[id].imgList;
 
-        setComicMap(id, 'imgList', Array.from<string>({ length }).fill(''));
+        setComicMap(
+          id,
+          'imgList',
+          Array.from<string>({
+            length: typeof length === 'number' ? length : length(),
+          }).fill(''),
+        );
         // eslint-disable-next-line no-async-promise-executor
         await new Promise(async (resolve) => {
           try {

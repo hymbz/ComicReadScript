@@ -1,4 +1,4 @@
-import { createMemo, type Component } from 'solid-js';
+import { createMemo, createSignal, type Component } from 'solid-js';
 import { render } from 'solid-js/web';
 import { request, useInit, toast, ReactiveSet, type LoadImgFn } from 'main';
 import { type MangaProps } from 'components/Manga';
@@ -18,6 +18,8 @@ import {
   requestIdleCallback,
   linstenKeydown,
   assign,
+  createSequence,
+  inRange,
 } from 'helper';
 
 import { escHandler } from './other';
@@ -162,11 +164,11 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   if (pageType !== 'gallery') return;
 
   const sidebarDom = document.getElementById('gd5')!;
-  // 表站开启了 Multi-Page Viewer 的话会将点击按钮挤出去，得缩一下位置
-  if (sidebarDom.children[6])
-    (sidebarDom.children[6] as HTMLElement).style.padding = '0';
 
-  const LoadButton: Component<{ id: string }> = (props) => {
+  const LoadButton: Component<{
+    id: string;
+    onClick?: (e: MouseEvent) => unknown;
+  }> = (props) => {
     const tip = createMemo(() => {
       const _imgList = comicMap[props.id]?.imgList;
       const progress = _imgList?.filter(Boolean).length;
@@ -184,21 +186,14 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     return (
       <a
         href="javascript:;"
-        onClick={() => showComic(props.id)}
+        onClick={async (e) => {
+          await props.onClick?.(e);
+          showComic(props.id);
+        }}
         children={tip()}
       />
     );
   };
-
-  render(
-    () => (
-      <p class="g2 gsp">
-        <img src="https://ehgt.org/g/mr.gif" />
-        <LoadButton id="" />
-      </p>
-    ),
-    sidebarDom,
-  );
 
   // 关联 nhentai
   if (options.associate_nhentai)
@@ -207,102 +202,30 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       1000,
     );
 
-  /** 从图片页获取图片地址 */
-  const getImgFromImgPage = async (url: string): Promise<string> => {
-    const res = await request(
-      url,
-      {
-        fetch: true,
-        errorText: t('site.ehentai.fetch_img_page_source_failed'),
-      },
-      10,
-    );
-
-    try {
-      return /id="img" src="(.+?)"/.exec(res.responseText)![1];
-    } catch {
-      throw new Error(t('site.ehentai.fetch_img_url_failed'));
-    }
-  };
-
-  /** 从详情页获取图片页的地址 */
-  const getImgFromDetailsPage = async (
-    pageNum = 0,
-  ): Promise<Array<[string, string]>> => {
-    const res = await request(
-      `${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
-      { fetch: true, errorText: t('site.ehentai.fetch_img_page_url_failed') },
-    );
-    const pageUrlList: Array<[string, string]> = [
-      ...res.responseText.matchAll(
-        // 缩略图有三种显示方式：
-        // 使用 img 的旧版，不显示页码的单个 div，显示页码的嵌套 div
-        /<a href="(.{20,50})"><(img alt=.+?|div><div |div )title=".+?: (.+?)"/gm,
-      ),
-    ].map(([, url, fileName]) => [url, fileName]);
-    if (pageUrlList.length === 0) {
-      if (
-        res.responseText.includes(
-          'Your IP address has been temporarily banned for excessive',
-        )
-      )
-        throw new Error(t('site.ehentai.ip_banned'));
-      throw new Error(t('site.ehentai.fetch_img_page_url_failed'));
-    }
-    return pageUrlList;
-  };
-
-  const getImgNum = async () => {
-    let numText = querySelector('.gtb .gpc')
+  let totalImgNum = 0;
+  totalImgNum = Number(
+    querySelector('.gtb .gpc')
       ?.textContent?.replaceAll(',', '')
       .match(/\d+/g)
-      ?.at(-1);
-    if (numText) return Number(numText);
+      ?.at(-1),
+  );
+  if (Number.isNaN(totalImgNum)) {
+    totalImgNum = Number(
+      /(?<=<td class="gdt2">)\d+(?= pages<\/td>)/.exec(
+        (await request(window.location.href)).responseText,
+      )?.[0],
+    );
+  }
+  if (Number.isNaN(totalImgNum)) toast.error(t('site.changed_load_failed'));
 
-    const res = await request(window.location.href);
-    numText = /(?<=<td class="gdt2">)\d+(?= pages<\/td>)/.exec(
-      res.responseText,
-    )?.[0];
-    if (numText) return Number(numText);
-
-    toast.error(t('site.changed_load_failed'));
-    return 0;
-  };
-
-  const totalImgNum = await getImgNum();
   const ehImgList: string[] = [];
   const ehImgPageList: string[] = [];
   const ehImgFileNameList: string[] = [];
 
-  const loadImgList: LoadImgFn = async (setImg) => {
-    const totalPageNum = Number(
-      querySelector('.ptt td:nth-last-child(2)')!.textContent!,
-    );
-    for (let pageNum = 0; pageNum < totalPageNum; pageNum++) {
-      const startIndex = ehImgList.length;
-      const imgPageUrlList = await getImgFromDetailsPage(pageNum);
-      await plimit(
-        imgPageUrlList.map(([imgPageUrl, fileName], i) => async () => {
-          const imgUrl = await getImgFromImgPage(imgPageUrl);
-          const index = startIndex + i;
-          ehImgList[index] = imgUrl;
-          ehImgPageList[index] = imgPageUrl;
-          ehImgFileNameList[index] = fileName;
-          setImg(index, imgUrl);
-        }),
-      );
-      if (enableDetectAd) {
-        await getAdPageByFileName(ehImgFileNameList, comicMap[''].adList!);
-        await getAdPageByContent(ehImgList, comicMap[''].adList!);
-      }
-    }
-  };
-  setComicLoad(dynamicLoad(loadImgList, totalImgNum));
-
   const enableDetectAd =
     options.detect_ad && document.getElementById('ta_other:extraneous_ads');
   if (enableDetectAd) {
-    setComicMap('', 'adList', new ReactiveSet());
+    setComicMap('', { adList: new ReactiveSet() });
     /** 缩略图列表 */
     const thumbnailList: Array<string | HTMLImageElement> = [];
     for (const e of querySelectorAll<HTMLAnchorElement>('#gdt a')) {
@@ -341,6 +264,129 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     );
   }
 
+  /** 从图片页获取图片地址 */
+  const getImgUrl = async (imgPageUrl: string): Promise<string> => {
+    const res = await request(
+      imgPageUrl,
+      {
+        fetch: true,
+        errorText: t('site.ehentai.fetch_img_page_source_failed'),
+      },
+      10,
+    );
+
+    try {
+      return /id="img" src="(.+?)"/.exec(res.responseText)![1];
+    } catch {
+      throw new Error(t('site.ehentai.fetch_img_url_failed'));
+    }
+  };
+
+  /** 从详情页获取图片页的地址 */
+  const getImgPageUrl = async (
+    pageNum = 0,
+  ): Promise<Array<[string, string]>> => {
+    const res = await request(
+      `${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
+      { fetch: true, errorText: t('site.ehentai.fetch_img_page_url_failed') },
+    );
+    const pageList: Array<[string, string]> = [
+      ...res.responseText.matchAll(
+        // 缩略图有三种显示方式：
+        // 使用 img 的旧版，不显示页码的单个 div，显示页码的嵌套 div
+        /<a href="(.{20,50})"><(img alt=.+?|div><div |div )title=".+?: (.+?)"/gm,
+      ),
+    ].map(([, url, fileName]) => [url, fileName]);
+    if (pageList.length === 0) {
+      if (
+        res.responseText.includes(
+          'Your IP address has been temporarily banned for excessive',
+        )
+      )
+        throw new Error(t('site.ehentai.ip_banned'));
+      throw new Error(t('site.ehentai.fetch_img_page_url_failed'));
+    }
+    return pageList;
+  };
+
+  const [loadImgsText, setLoadImgsText] = createSignal(`1-${totalImgNum}`);
+
+  const loadImgs = createRootMemo(() => {
+    const list = new Set<number>();
+    for (const text of loadImgsText().replaceAll(' ', '').split(',')) {
+      if (/^\d+$/.test(text)) list.add(Number(text) - 1);
+      else if (/^\d+-\d*$/.test(text)) {
+        let [i, end] = text.split('-').map(Number);
+        end ||= totalImgNum;
+        for (i--, end--; i <= end; i++) list.add(i);
+      }
+    }
+    for (const i of list) if (!inRange(0, i, totalImgNum)) list.delete(i);
+    return [...list];
+  });
+
+  const loadImgList: LoadImgFn = async (setImg) => {
+    // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
+    // 所以只能一次性获取所有页数上的图片页地址
+    if (ehImgPageList.length === 0) {
+      const totalPageNum = Number(
+        querySelector('.ptt td:nth-last-child(2)')!.textContent!,
+      );
+      const allPageList = await plimit(
+        createSequence(totalPageNum).map(
+          (pageNum) => () => getImgPageUrl(pageNum),
+        ),
+      );
+      for (const pageList of allPageList) {
+        for (const [url, fileName] of pageList) {
+          ehImgPageList.push(url);
+          ehImgFileNameList.push(fileName);
+        }
+      }
+    }
+
+    await plimit(
+      loadImgs().map((i, order) => async () => {
+        ehImgList[i] ||= await getImgUrl(ehImgPageList[i]);
+        setImg(order, ehImgList[i]);
+      }),
+    );
+    if (enableDetectAd) {
+      await getAdPageByFileName(ehImgFileNameList, comicMap[''].adList!);
+      await getAdPageByContent(ehImgList, comicMap[''].adList!);
+    }
+  };
+  setComicLoad(dynamicLoad(loadImgList, () => loadImgs().length));
+
+  render(() => {
+    const hasMultiPage = sidebarDom.children[6]?.classList.contains('gsp');
+
+    const handleClick = (e: MouseEvent) => {
+      if (!e.shiftKey) return;
+      setLoadImgsText(
+        // eslint-disable-next-line no-alert
+        prompt(t('site.add_feature.load_range')) ?? `1-${totalImgNum}`,
+      );
+      // 删掉当前的图片列表以便触发重新加载
+      setComicMap('', 'imgList', undefined);
+    };
+
+    return (
+      <p
+        class="g2 gsp"
+        style={{
+          'padding-bottom': 0,
+          // 表站开启了 Multi-Page Viewer 的话会将点击按钮挤出去，得缩一下位置
+          'padding-top': hasMultiPage ? 0 : undefined,
+        }}
+        onClick={handleClick}
+      >
+        <img src="https://ehgt.org/g/mr.gif" />
+        <LoadButton id="" />
+      </p>
+    );
+  }, sidebarDom);
+
   /** 获取新的图片页地址 */
   const getNewImgPageUrl = async (url: string) => {
     const res = await request(url, {
@@ -358,7 +404,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     const pageUrl = await getNewImgPageUrl(ehImgPageList[i]);
     let imgUrl = '';
     while (!imgUrl || !(await testImgUrl(imgUrl))) {
-      imgUrl = await getImgFromImgPage(pageUrl);
+      imgUrl = await getImgUrl(pageUrl);
       log(`刷新图片 ${i}\n${ehImgList[i]} ->\n${imgUrl}`);
     }
     ehImgList[i] = imgUrl;

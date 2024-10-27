@@ -76,6 +76,8 @@ module.exports = {
     "unicorn/no-anonymous-default-export": "off",
     // 允许匿名默认导出
     "import/no-anonymous-default-export": "off",
+    // 允许括号 await
+    "unicorn/no-await-expression-member": "off",
 
     // import 不同分组之间加上空行
     "import/order": ["warn", { "newlines-between": "always" }],
