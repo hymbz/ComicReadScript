@@ -197,3 +197,11 @@
     }
   }
 }
+
+[data-only-number] {
+  padding: 0 0.2em;
+
+  & + span {
+    margin-left: -0.1em;
+  }
+}

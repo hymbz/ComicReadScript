@@ -168,6 +168,7 @@
       "server": "Сервер",
       "server_selfhosted": "Свой",
       "translate_all": "Перевести все изображения",
+      "translate_range": "Перевести страницы с 1 по 9",
       "translate_to_end": "Переводить страницу до конца"
     }
   },

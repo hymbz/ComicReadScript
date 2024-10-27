@@ -168,6 +168,7 @@
       "server": "翻译服务器",
       "server_selfhosted": "本地部署",
       "translate_all": "翻译全部图片",
+      "translate_range": "翻译 1 至 9 页",
       "translate_to_end": "翻译当前页至结尾"
     }
   },

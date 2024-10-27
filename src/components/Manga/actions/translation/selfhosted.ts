@@ -1,4 +1,11 @@
-import { sleep, t, log, createEqualsSignal, createEffectOn } from 'helper';
+import {
+  sleep,
+  t,
+  log,
+  createEqualsSignal,
+  createEffectOn,
+  lang,
+} from 'helper';
 import { request } from 'request';
 
 import { store } from '../../store';
@@ -117,6 +124,7 @@ createEffectOn(
   [
     () => store.option.translation.server,
     () => store.option.translation.localUrl,
+    lang,
   ],
   () => updateSelfhostedOptions(true),
   { defer: true },

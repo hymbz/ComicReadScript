@@ -1,5 +1,5 @@
-import { on } from 'solid-js';
-import { lang, t, singleThreaded, createRootMemo } from 'helper';
+import { type Accessor } from 'solid-js';
+import { t, singleThreaded, createRootMemo } from 'helper';
 
 import { store, setState, _setState } from '../../store';
 import { activeImgIndex, activePage, imgList } from '../memo';
@@ -104,19 +104,10 @@ export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
   return translationAll();
 };
 
-export const translatorOptions = createRootMemo(
-  on([selfhostedOptions, lang, () => store.option.translation.server], () =>
-    store.option.translation.server === 'selfhosted'
-      ? selfhostedOptions()
-      : createOptions(cotransTranslators),
-  ),
-);
-
-/** 是否开启了翻译功能 */
-const isTranslationEnable = createRootMemo(
-  () =>
-    store.option.translation.server !== 'disable' &&
-    translatorOptions().length > 0,
+export const translatorOptions = createRootMemo(() =>
+  store.option.translation.server === 'selfhosted'
+    ? selfhostedOptions()
+    : createOptions(cotransTranslators),
 );
 
 /** 当前显示的图片是否正在翻译 */
@@ -127,45 +118,37 @@ export const isTranslatingImage = createRootMemo(() =>
   }),
 );
 
-/** 是否正在翻译全部图片 */
-export const isTranslatingAll = createRootMemo(
-  () =>
-    isTranslationEnable() &&
-    imgList().every(
-      (img) => img.translationType === 'show' || img.translationType === 'wait',
-    ),
-);
-
-/** 是否正在翻译当前页以后的全部图片 */
-export const isTranslatingToEnd = createRootMemo(
-  () =>
-    isTranslationEnable() &&
-    imgList()
-      .slice(activeImgIndex())
-      .every(
-        (img) =>
-          img.translationType === 'show' || img.translationType === 'wait',
-      ),
-);
-
 /** 翻译当前页 */
 export const translateCurrent = () =>
   setImgTranslationEnbale(activePage(), !isTranslatingImage());
 
-/** 翻译全部图片 */
-export const translateAll = () => {
-  if (store.option.translation.server !== 'selfhosted') return;
-  setImgTranslationEnbale(
-    Array.from({ length: store.imgList.length }, (_, i) => i),
-    !isTranslatingAll(),
-  );
+export const createTranslateRange = (
+  start: Accessor<number>,
+  end: Accessor<number>,
+) => {
+  const isTranslating = createRootMemo(() => {
+    for (let i = start(); i < end(); i++)
+      if (imgList()[i].translationType === undefined) return false;
+    return true;
+  });
+  const translateRange = () => {
+    if (store.option.translation.server !== 'selfhosted') return;
+    setImgTranslationEnbale(
+      Array.from({ length: end() - start() }, (_, i) => start() + i),
+      !isTranslating(),
+    );
+  };
+  return [isTranslating, translateRange] as const;
 };
 
-/** 翻译当前页至结尾 */
-export const translateToEnd = () => {
-  if (store.option.translation.server !== 'selfhosted') return;
-  setImgTranslationEnbale(
-    store.pageList.slice(store.activePageIndex).flat(),
-    !isTranslatingToEnd(),
-  );
-};
+// 翻译全部图片
+export const [isTranslatingAll, translateAll] = createTranslateRange(
+  () => 0,
+  () => store.imgList.length,
+);
+
+// 翻译当前页以后的全部图片
+export const [isTranslatingToEnd, translateToEnd] = createTranslateRange(
+  activeImgIndex,
+  () => store.imgList.length,
+);

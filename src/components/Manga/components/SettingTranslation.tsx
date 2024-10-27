@@ -1,5 +1,5 @@
-import { Show } from 'solid-js';
-import { t } from 'helper';
+import { createSignal, Show, type Component } from 'solid-js';
+import { clamp, createEffectOn, t } from 'helper';
 
 import { createStateSetFn, setOption } from '../actions';
 import {
@@ -8,14 +8,64 @@ import {
   translateToEnd,
   translateAll,
   translatorOptions,
+  createTranslateRange,
 } from '../actions/translation';
 import { store } from '../store';
 import classes from '../index.module.css';
 import { updateSelfhostedOptions } from '../actions/translation/selfhosted';
+import { NumberInput } from '../../NumberInput';
 
 import { SettingsItemSelect } from './SettingsItemSelect';
 import { SettingsItemSwitch } from './SettingsItemSwitch';
 import { SettingsShowItem } from './SettingsShowItem';
+
+const TranslateRange: Component = () => {
+  const [before, middle, after] = t(
+    'setting.translation.translate_range',
+  ).split(/\d/);
+
+  const [start, setStart] = createSignal(0);
+  const [end, setEnd] = createSignal(1);
+
+  const [isTranslating, translate] = createTranslateRange(start, end);
+
+  createEffectOn(
+    () => store.imgList.length,
+    (length) => !isTranslating() && setEnd(length),
+  );
+
+  return (
+    <div class={classes.SettingsItem}>
+      <div class={classes.SettingsItemName}>
+        {` ${before}`}
+        <NumberInput
+          value={start() + 1}
+          maxLength={4}
+          onChange={(val) => {
+            setStart(clamp(0, val - 1, end() - 1));
+          }}
+        />
+        {`${middle}`}
+        <NumberInput
+          value={end() + 1}
+          maxLength={4}
+          onChange={(val) =>
+            setEnd(clamp(start() + 1, val - 1, store.imgList.length))
+          }
+        />
+        {`${after}`}
+      </div>
+      <button
+        class={classes.SettingsItemSwitch}
+        type="button"
+        on:click={translate}
+        data-checked={isTranslating()}
+      >
+        <div class={classes.SettingsItemSwitchRound} />
+      </button>
+    </div>
+  );
+};
 
 export const SettingTranslation = () => (
   <>
@@ -108,12 +158,12 @@ export const SettingTranslation = () => (
           value={isTranslatingAll()}
           onChange={translateAll}
         />
-
         <SettingsItemSwitch
           name={t('setting.translation.translate_to_end')}
           value={isTranslatingToEnd()}
           onChange={translateToEnd}
         />
+        <TranslateRange />
 
         <SettingsItemSwitch
           name={t('setting.translation.options.localUrl')}
