@@ -67,7 +67,7 @@ export const DownloadButton = () => {
       level: 0,
       comment: window.location.href,
     });
-    saveAs(new Blob([zipped]), `${store.title ?? document.title}.zip`);
+    saveAs(new Blob([zipped]), `${store.title || document.title}.zip`);
     setStatu('button.download_completed');
     toast.success(t('button.download_completed'));
   };
