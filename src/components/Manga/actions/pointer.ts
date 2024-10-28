@@ -49,7 +49,7 @@ const handlePageClick = (e: MouseEvent) => {
 const handleGridClick = (e: MouseEvent) => {
   const target = findClickEle(refs.root.getElementsByClassName(classes.img), e);
   if (!target) return;
-  const pageNum = imgPageMap()[Number(target.id.slice(1))];
+  const pageNum = imgPageMap()[Number(/_(\d+)_/.exec(target.id)?.[1])];
   if (pageNum === undefined) return;
   setState((state) => {
     state.activePageIndex = pageNum;
