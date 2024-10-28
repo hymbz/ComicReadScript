@@ -282,9 +282,10 @@ export const defaultSettingList: () => SettingList = () => [
                 draftOption.imgRecognition.background = enabled;
 
                 if (!enabled) return;
-                for (const img of Object.values(state.imgMap))
-                  if (img.background === undefined)
+                for (const img of Object.values(state.imgMap)) {
+                  if (img.background === undefined && img.loadType === 'loaded')
                     handleImgRecognition(getImgEle(img.src)!, img.src);
+                }
               })
             }
           />
@@ -297,9 +298,13 @@ export const defaultSettingList: () => SettingList = () => [
                 draftOption.imgRecognition.pageFill = enabled;
 
                 if (!enabled) return;
-                for (const img of Object.values(state.imgMap))
-                  if (img.blankMargin === undefined)
+                for (const img of Object.values(state.imgMap)) {
+                  if (
+                    img.blankMargin === undefined &&
+                    img.loadType === 'loaded'
+                  )
                     handleImgRecognition(getImgEle(img.src)!, img.src);
+                }
               })
             }
           />
