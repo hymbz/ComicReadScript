@@ -19,7 +19,7 @@ import {
   linstenKeydown,
   assign,
   createSequence,
-  inRange,
+  extractRange,
 } from 'helper';
 
 import { escHandler } from './other';
@@ -311,19 +311,9 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
 
   const [loadImgsText, setLoadImgsText] = createSignal(`1-${totalImgNum}`);
 
-  const loadImgs = createRootMemo(() => {
-    const list = new Set<number>();
-    for (const text of loadImgsText().replaceAll(' ', '').split(',')) {
-      if (/^\d+$/.test(text)) list.add(Number(text) - 1);
-      else if (/^\d+-\d*$/.test(text)) {
-        let [i, end] = text.split('-').map(Number);
-        end ||= totalImgNum;
-        for (i--, end--; i <= end; i++) list.add(i);
-      }
-    }
-    for (const i of list) if (!inRange(0, i, totalImgNum)) list.delete(i);
-    return [...list];
-  });
+  const loadImgs = createRootMemo(() =>
+    extractRange(loadImgsText(), ehImgList.length),
+  );
 
   const loadImgList: LoadImgFn = async (setImg) => {
     // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
@@ -346,7 +336,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     }
 
     await plimit(
-      loadImgs().map((i, order) => async () => {
+      [...loadImgs()].map((i, order) => async () => {
         ehImgList[i] ||= await getImgUrl(ehImgPageList[i]);
         setImg(order, ehImgList[i]);
       }),
@@ -356,7 +346,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       await getAdPageByContent(ehImgList, comicMap[''].adList!);
     }
   };
-  setComicLoad(dynamicLoad(loadImgList, () => loadImgs().length));
+  setComicLoad(dynamicLoad(loadImgList, () => loadImgs().size));
 
   render(() => {
     const hasMultiPage = sidebarDom.children[6]?.classList.contains('gsp');
@@ -365,7 +355,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       if (!e.shiftKey) return;
       setLoadImgsText(
         // eslint-disable-next-line no-alert
-        prompt(t('site.add_feature.load_range')) ?? `1-${totalImgNum}`,
+        prompt(t('other.page_range')) ?? `1-${totalImgNum}`,
       );
       // 删掉当前的图片列表以便触发重新加载
       setComicMap('', 'imgList', undefined);

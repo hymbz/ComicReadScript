@@ -25,6 +25,8 @@ export const NumberInput: Component<NumberInputProps> = (props) => {
         return props.onChange(
           Number(e.target.textContent!) - (props.step ?? 1),
         );
+      case 'Enter':
+        return (e.target as HTMLElement).blur();
     }
   };
 

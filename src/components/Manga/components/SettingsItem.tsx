@@ -8,7 +8,7 @@ export interface SettingsItemProps {
   classList?: ClassList;
   style?: JSX.CSSProperties;
 
-  children: JSX.Element | JSX.Element[];
+  children?: JSX.Element | JSX.Element[];
 }
 
 /** 设置菜单项 */

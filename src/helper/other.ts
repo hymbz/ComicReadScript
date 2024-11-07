@@ -30,6 +30,36 @@ export const inRange = (min: number, val: number, max: number) =>
 export const approx = (val: number, target: number, range: number) =>
   Math.abs(target - val) <= range;
 
+/** 创建顺序递增的数组 */
+export function range(a: number, b?: number): number[];
+export function range<T = number>(a: number, b: (K: number) => T): T[];
+export function range<T = number>(
+  a: number,
+  b: number,
+  c: (K: number) => T,
+): T[] | number[];
+export function range<T = number>(
+  a: number,
+  b?: number | T | ((K: number) => T),
+  c?: (K: number) => T,
+) {
+  switch (typeof b) {
+    case 'undefined':
+      return [...Array.from({ length: a + 1 }).keys()];
+
+    case 'number': {
+      const list: Array<T | number> = [];
+      for (let i = a; i <= b; i++) list.push(c ? c(i) : i);
+      return list;
+    }
+
+    case 'function':
+      return Array.from<T, T>({ length: a }, (_, i) =>
+        (b as (K: number) => T)(i),
+      );
+  }
+}
+
 /**
  * 对 document.querySelector 的封装
  * 将默认返回类型改为 HTMLElement
@@ -458,3 +488,58 @@ export async function getGmValue<T extends string | number | object = string>(
   await setValueFn();
   return (await GM.getValue<T>(name))!;
 }
+
+/** 根据范围文本提取指定范围的元素的 index */
+export const extractRange = (rangeText: string, length: number) => {
+  const list = new Set<number>();
+  for (const text of rangeText.replaceAll(/[^\d,-]/g, '').split(',')) {
+    if (/^\d+$/.test(text)) list.add(Number(text) - 1);
+    else if (/^\d*-\d*$/.test(text)) {
+      let [start, end] = text.split('-').map(Number);
+      end ||= length;
+      for (start--, end--; start <= end; start++) list.add(start);
+    }
+  }
+  return list;
+};
+
+/** extractRange 的逆向，按照相同的语法表述一个结果数组 */
+export const descRange = (list: Iterable<number>, length: number) => {
+  let text = '';
+  const nowRange: number[] = [];
+  const pushRange = (newIndex?: number) => {
+    if (nowRange.length === 0) return;
+
+    if (text.length > 0) text += ', ';
+    if (nowRange.length === 1) text += nowRange[0] + 1;
+    else {
+      const end =
+        newIndex === undefined && nowRange[1] === length - 1
+          ? ''
+          : nowRange[1] + 1;
+      text += `${nowRange[0] + 1}-${end}`;
+    }
+
+    nowRange.length = 0;
+    if (newIndex !== undefined) nowRange[0] = newIndex;
+  };
+
+  for (const i of list) {
+    switch (nowRange.length) {
+      case 0:
+        nowRange[0] = i;
+        break;
+      case 1:
+        if (i === nowRange[0] + 1) nowRange[1] = i;
+        else pushRange(i);
+        break;
+      case 2:
+        if (i === nowRange[1] + 1) nowRange[1] = i;
+        else pushRange(i);
+        break;
+    }
+  }
+
+  pushRange();
+  return text;
+};

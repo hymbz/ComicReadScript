@@ -68,6 +68,7 @@
     "fill_page": "Fill Page",
     "img_loading": "Image loading",
     "loading_img": "Loading image",
+    "page_range": "Please enter the page range.:\n (e.g., \"1, 3-5, 9-\")",
     "read_mode": "Reading mode"
   },
   "pwa": {
@@ -165,10 +166,10 @@
         "text_detector": "Text detector",
         "translator": "Translator"
       },
+      "range": "Scope of Translation",
       "server": "Translation server",
       "server_selfhosted": "Selfhosted",
       "translate_all": "Translate all images",
-      "translate_range": "Translate pages 1 to 9",
       "translate_to_end": "Translate the current page to the end"
     }
   },
@@ -184,7 +185,6 @@
       "float_tag_list": "Floating tag list",
       "hotkeys": "Hotkeys",
       "load_original_image": "Load original image",
-      "load_range": "Please enter page numbers to load:\n (e.g., \"1, 3-5, 9-\")",
       "lock_option": "Lock site option",
       "open_link_new_page": "Open links in a new page",
       "quick_favorite": "Quick favorite",

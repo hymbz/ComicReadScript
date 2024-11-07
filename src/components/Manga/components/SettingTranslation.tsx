@@ -1,69 +1,70 @@
 import { createSignal, Show, type Component } from 'solid-js';
-import { clamp, createEffectOn, t } from 'helper';
+import { createEffectOn, descRange, extractRange, t } from 'helper';
 
-import { createStateSetFn, setOption } from '../actions';
+import { createStateSetFn, imgList, setOption } from '../actions';
 import {
   isTranslatingToEnd,
   isTranslatingAll,
   translateToEnd,
   translateAll,
   translatorOptions,
-  createTranslateRange,
+  setImgTranslationEnbale,
 } from '../actions/translation';
 import { store } from '../store';
-import classes from '../index.module.css';
 import { updateSelfhostedOptions } from '../actions/translation/selfhosted';
-import { NumberInput } from '../../NumberInput';
+import { RangeInput } from '../../RangeInput';
+import classes from '../index.module.css';
 
 import { SettingsItemSelect } from './SettingsItemSelect';
 import { SettingsItemSwitch } from './SettingsItemSwitch';
 import { SettingsShowItem } from './SettingsShowItem';
+import { SettingsItem } from './SettingsItem';
 
 const TranslateRange: Component = () => {
-  const [before, middle, after] = t(
-    'setting.translation.translate_range',
-  ).split(/\d/);
+  const [rangeText, setRangeText] = createSignal('');
 
-  const [start, setStart] = createSignal(0);
-  const [end, setEnd] = createSignal(1);
+  createEffectOn(rangeText, () => {
+    const imgImgs = extractRange(rangeText(), store.imgList.length);
+    setImgTranslationEnbale(imgImgs, true);
 
-  const [isTranslating, translate] = createTranslateRange(start, end);
+    const closeImgs: number[] = [];
+    for (let i = 0; i < store.imgList.length; i++)
+      if (!imgImgs.has(i)) closeImgs.push(i);
+    setImgTranslationEnbale(closeImgs, false);
 
+    setRangeText(descRange(imgImgs, store.imgList.length));
+  });
+
+  // 实时更新翻译范围
   createEffectOn(
-    () => store.imgList.length,
-    (length) => !isTranslating() && setEnd(length),
+    () => {
+      const list = new Set<number>();
+      for (const [i, img] of imgList().entries()) {
+        switch (img.translationType) {
+          case 'error':
+          case 'show':
+          case 'wait':
+            list.add(i);
+            break;
+        }
+      }
+      return list;
+    },
+    (translationImgs) => {
+      setRangeText(descRange(translationImgs, store.imgList.length));
+    },
   );
 
   return (
-    <div class={classes.SettingsItem}>
-      <div class={classes.SettingsItemName}>
-        {` ${before}`}
-        <NumberInput
-          value={start() + 1}
-          maxLength={4}
-          onChange={(val) => {
-            setStart(clamp(0, val - 1, end() - 1));
-          }}
-        />
-        {`${middle}`}
-        <NumberInput
-          value={end() + 1}
-          maxLength={4}
-          onChange={(val) =>
-            setEnd(clamp(start() + 1, val - 1, store.imgList.length))
-          }
-        />
-        {`${after}`}
-      </div>
-      <button
-        class={classes.SettingsItemSwitch}
-        type="button"
-        on:click={translate}
-        data-checked={isTranslating()}
-      >
-        <div class={classes.SettingsItemSwitchRound} />
-      </button>
-    </div>
+    <>
+      <SettingsItem name={t('setting.translation.range')} />
+      <RangeInput
+        class={classes.SettingsItem}
+        placeholder={t('other.page_range')}
+        value={rangeText()}
+        onChange={setRangeText}
+      />
+    </>
   );
 };
 
@@ -152,7 +153,36 @@ export const SettingTranslation = () => (
         onChange={createStateSetFn('translation.forceRetry')}
       />
 
+      <SettingsItemSwitch
+        name={t('setting.translation.options.onlyDownloadTranslated')}
+        value={store.option.translation.onlyDownloadTranslated}
+        onChange={createStateSetFn('translation.onlyDownloadTranslated')}
+      />
+
       <Show when={store.option.translation.server === 'selfhosted'}>
+        <SettingsItemSwitch
+          name={t('setting.translation.options.localUrl')}
+          value={store.option.translation.localUrl !== undefined}
+          onChange={(val) => {
+            setOption((draftOption) => {
+              draftOption.translation.localUrl = val ? '' : undefined;
+            });
+          }}
+        />
+        <Show when={store.option.translation.localUrl !== undefined}>
+          <input
+            type="url"
+            value={store.option.translation.localUrl}
+            onChange={(e) => {
+              setOption((draftOption) => {
+                // 删掉末尾的斜杠
+                const url = e.target.value.replace(/\/$/, '');
+                draftOption.translation.localUrl = url;
+              });
+            }}
+          />
+        </Show>
+
         <SettingsItemSwitch
           name={t('setting.translation.translate_all')}
           value={isTranslatingAll()}
@@ -164,38 +194,7 @@ export const SettingTranslation = () => (
           onChange={translateToEnd}
         />
         <TranslateRange />
-
-        <SettingsItemSwitch
-          name={t('setting.translation.options.localUrl')}
-          value={store.option.translation.localUrl !== undefined}
-          onChange={(val) => {
-            setOption((draftOption) => {
-              draftOption.translation.localUrl = val ? '' : undefined;
-            });
-          }}
-        />
-
-        <Show when={store.option.translation.localUrl !== undefined}>
-          <input
-            type="url"
-            class={classes.SettingsItem}
-            value={store.option.translation.localUrl}
-            onChange={(e) => {
-              setOption((draftOption) => {
-                // 删掉末尾的斜杠
-                const url = e.target.value.replace(/\/$/, '');
-                draftOption.translation.localUrl = url;
-              });
-            }}
-          />
-        </Show>
       </Show>
-
-      <SettingsItemSwitch
-        name={t('setting.translation.options.onlyDownloadTranslated')}
-        value={store.option.translation.onlyDownloadTranslated}
-        onChange={createStateSetFn('translation.onlyDownloadTranslated')}
-      />
     </SettingsShowItem>
   </>
 );

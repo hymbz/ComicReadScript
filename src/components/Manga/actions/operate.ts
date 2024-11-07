@@ -60,15 +60,13 @@ const handleSwapPageTurnKey = (nextPage: boolean) => {
   return next ? 'next' : 'prev';
 };
 
-/** 判断按键代码是否可以输入字母 */
-const isAlphabetKey = /^(Shift \+ )?[a-zA-Z]$/;
-
 export const handleKeyDown = (e: KeyboardEvent) => {
-  if (
-    (e.target as HTMLElement).tagName === 'INPUT' ||
-    (e.target as HTMLElement).className === classes.hotkeysItem
-  )
-    return;
+  switch ((e.target as HTMLElement).tagName) {
+    case 'INPUT':
+    case 'TEXTAREA':
+      return;
+  }
+  if ((e.target as HTMLElement).className === classes.hotkeysItem) return;
 
   const code = getKeyboardCode(e);
 
@@ -90,10 +88,10 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   // 处理标注了 data-only-number 的元素
   if ((e.target as HTMLElement).dataset.onlyNumber !== undefined) {
     // 拦截能输入数字外的按键
-    if (isAlphabetKey.test(code)) {
+    if (/^(Shift \+ )?[a-zA-Z]$/.test(code)) {
       e.stopPropagation();
       e.preventDefault();
-    } else if (code.includes('Enter')) (e.target as HTMLElement).blur();
+    }
     return;
   }
 

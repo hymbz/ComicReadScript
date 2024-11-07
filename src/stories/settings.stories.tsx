@@ -49,3 +49,13 @@ export const 禁止图片自动放大 = {
     await waitImgLoaded();
   },
 };
+
+// export const 翻译 = {
+//   args: {
+//     option: { translation: { server: 'selfhosted' } },
+//   } satisfies Props,
+//   async play() {
+//     await clickSettingItem(t('setting.option.dark_mode'));
+//     await waitImgLoaded();
+//   },
+// };

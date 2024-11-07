@@ -191,9 +191,16 @@
 
   & > .SettingsShowItemBody {
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
     & > .SettingsItem {
       margin-top: 1em;
+    }
+
+    & > :is(textarea, input) {
+      margin: 0.4em 0.2em 0;
+      line-height: 1.2;
     }
   }
 }

@@ -1,5 +1,5 @@
 import { type Accessor } from 'solid-js';
-import { t, singleThreaded, createRootMemo } from 'helper';
+import { t, singleThreaded, createRootMemo, range } from 'helper';
 
 import { store, setState, _setState } from '../../store';
 import { activeImgIndex, activePage, imgList } from '../memo';
@@ -57,7 +57,10 @@ const translationAll = singleThreaded(async (): Promise<void> => {
 });
 
 /** 开启或关闭指定图片的翻译 */
-export const setImgTranslationEnbale = (list: number[], enbale: boolean) => {
+export const setImgTranslationEnbale = (
+  list: Iterable<number>,
+  enbale: boolean,
+) => {
   setState((state) => {
     for (const i of list) {
       const img = state.imgMap[state.imgList[i]];
@@ -122,33 +125,25 @@ export const isTranslatingImage = createRootMemo(() =>
 export const translateCurrent = () =>
   setImgTranslationEnbale(activePage(), !isTranslatingImage());
 
-export const createTranslateRange = (
-  start: Accessor<number>,
-  end: Accessor<number>,
-) => {
+export const createTranslateRange = (imgs: Accessor<Iterable<number>>) => {
   const isTranslating = createRootMemo(() => {
-    for (let i = start(); i < end(); i++)
+    for (const i of imgs())
       if (imgList()[i]?.translationType === undefined) return false;
     return true;
   });
   const translateRange = () => {
     if (store.option.translation.server !== 'selfhosted') return;
-    setImgTranslationEnbale(
-      Array.from({ length: end() - start() }, (_, i) => start() + i),
-      !isTranslating(),
-    );
+    setImgTranslationEnbale(imgs(), !isTranslating());
   };
   return [isTranslating, translateRange] as const;
 };
 
 // 翻译全部图片
 export const [isTranslatingAll, translateAll] = createTranslateRange(
-  () => 0,
-  () => store.imgList.length,
+  createRootMemo(() => range(store.imgList.length - 1)),
 );
 
 // 翻译当前页以后的全部图片
 export const [isTranslatingToEnd, translateToEnd] = createTranslateRange(
-  activeImgIndex,
-  () => store.imgList.length,
+  createRootMemo(() => range(activeImgIndex(), store.imgList.length - 1)),
 );
