@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         10.6.0
+// @version         10.7.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、無限動漫、新新漫画、熱辣漫畫、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -392,6 +392,25 @@ const inRange = (min, val, max) => val >= min && val <= max;
 /** 判断两个数是否在指定误差范围内相等 */
 const approx = (val, target, range) => Math.abs(target - val) <= range;
 
+function range(a, b, c) {
+  switch (typeof b) {
+    case 'undefined':
+      return [...Array.from({
+        length: a + 1
+      }).keys()];
+    case 'number':
+      {
+        const list = [];
+        for (let i = a; i <= b; i++) list.push(c ? c(i) : i);
+        return list;
+      }
+    case 'function':
+      return Array.from({
+        length: a
+      }, (_, i) => b(i));
+  }
+}
+
 /**
  * 对 document.querySelector 的封装
  * 将默认返回类型改为 HTMLElement
@@ -714,6 +733,50 @@ async function getGmValue(name, setValueFn) {
   return await GM.getValue(name);
 }
 
+/** 根据范围文本提取指定范围的元素的 index */
+const extractRange = (rangeText, length) => {
+  const list = new Set();
+  for (const text of rangeText.replaceAll(/[^\\d,-]/g, '').split(',')) {
+    if (/^\\d+$/.test(text)) list.add(Number(text) - 1);else if (/^\\d*-\\d*$/.test(text)) {
+      let [start, end] = text.split('-').map(Number);
+      end ||= length;
+      for (start--, end--; start <= end; start++) list.add(start);
+    }
+  }
+  return list;
+};
+
+/** extractRange 的逆向，按照相同的语法表述一个结果数组 */
+const descRange = (list, length) => {
+  let text = '';
+  const nowRange = [];
+  const pushRange = newIndex => {
+    if (nowRange.length === 0) return;
+    if (text.length > 0) text += ', ';
+    if (nowRange.length === 1) text += nowRange[0] + 1;else {
+      const end = newIndex === undefined && nowRange[1] === length - 1 ? '' : nowRange[1] + 1;
+      text += \`\${nowRange[0] + 1}-\${end}\`;
+    }
+    nowRange.length = 0;
+    if (newIndex !== undefined) nowRange[0] = newIndex;
+  };
+  for (const i of list) {
+    switch (nowRange.length) {
+      case 0:
+        nowRange[0] = i;
+        break;
+      case 1:
+        if (i === nowRange[0] + 1) nowRange[1] = i;else pushRange(i);
+        break;
+      case 2:
+        if (i === nowRange[1] + 1) nowRange[1] = i;else pushRange(i);
+        break;
+    }
+  }
+  pushRange();
+  return text;
+};
+
 let publicOwner;
 solidJs.createRoot(() => {
   publicOwner = solidJs.getOwner();
@@ -995,6 +1058,7 @@ const zh = {
     fill_page: "填充页",
     img_loading: "图片加载中",
     loading_img: "加载图片中",
+    page_range: "请输入页码范围：\\n（例如：「1, 3-5, 9-」)",
     read_mode: "阅读模式"
   },
   pwa: {
@@ -1092,10 +1156,10 @@ const zh = {
         text_detector: "文本扫描器",
         translator: "翻译服务"
       },
+      range: "翻译范围",
       server: "翻译服务器",
       server_selfhosted: "本地部署",
       translate_all: "翻译全部图片",
-      translate_range: "翻译 1 至 9 页",
       translate_to_end: "翻译当前页至结尾"
     }
   },
@@ -1111,7 +1175,6 @@ const zh = {
       float_tag_list: "悬浮标签列表",
       hotkeys: "快捷键",
       load_original_image: "加载原图",
-      load_range: "请输入加载页码：\\n（例如：「1, 3-5, 9-」)",
       lock_option: "锁定站点配置",
       open_link_new_page: "在新页面中打开链接",
       quick_favorite: "快捷收藏",
@@ -1282,6 +1345,7 @@ const en = {
     fill_page: "Fill Page",
     img_loading: "Image loading",
     loading_img: "Loading image",
+    page_range: "Please enter the page range.:\\n (e.g., \\"1, 3-5, 9-\\")",
     read_mode: "Reading mode"
   },
   pwa: {
@@ -1379,10 +1443,10 @@ const en = {
         text_detector: "Text detector",
         translator: "Translator"
       },
+      range: "Scope of Translation",
       server: "Translation server",
       server_selfhosted: "Selfhosted",
       translate_all: "Translate all images",
-      translate_range: "Translate pages 1 to 9",
       translate_to_end: "Translate the current page to the end"
     }
   },
@@ -1398,7 +1462,6 @@ const en = {
       float_tag_list: "Floating tag list",
       hotkeys: "Hotkeys",
       load_original_image: "Load original image",
-      load_range: "Please enter page numbers to load:\\n (e.g., \\"1, 3-5, 9-\\")",
       lock_option: "Lock site option",
       open_link_new_page: "Open links in a new page",
       quick_favorite: "Quick favorite",
@@ -1569,6 +1632,7 @@ const ru = {
     fill_page: "Заполнить страницу",
     img_loading: "Изображение загружается",
     loading_img: "Загрузка изображения",
+    page_range: "Введите диапазон страниц.:\\n (например, \\"1, 3-5, 9-\\")",
     read_mode: "Режим чтения"
   },
   pwa: {
@@ -1666,10 +1730,10 @@ const ru = {
         text_detector: "Детектор текста",
         translator: "Переводчик"
       },
+      range: "Объем перевода",
       server: "Сервер",
       server_selfhosted: "Свой",
       translate_all: "Перевести все изображения",
-      translate_range: "Перевести страницы с 1 по 9",
       translate_to_end: "Переводить страницу до конца"
     }
   },
@@ -1685,7 +1749,6 @@ const ru = {
       float_tag_list: "Плавающий список тегов",
       hotkeys: "Горячие клавиши",
       load_original_image: "Загружать оригинальное изображение",
-      load_range: "Введите номера страниц для загрузки:\\n (например, \\"1, 3-5, 9-\\")",
       lock_option: "Блокировка опции сайта",
       open_link_new_page: "Открывать ссылки в новой вкладке",
       quick_favorite: "Быстрый фаворит",
@@ -1857,8 +1920,10 @@ exports.createScheduled = createScheduled;
 exports.createSequence = createSequence;
 exports.createThrottleMemo = createThrottleMemo;
 exports.debounce = debounce;
+exports.descRange = descRange;
 exports.difference = difference;
 exports.domParse = domParse;
+exports.extractRange = extractRange;
 exports.getGmValue = getGmValue;
 exports.getKeyboardCode = getKeyboardCode;
 exports.getMostItem = getMostItem;
@@ -1877,6 +1942,7 @@ exports.plimit = plimit;
 exports.querySelector = querySelector;
 exports.querySelectorAll = querySelectorAll;
 exports.querySelectorClick = querySelectorClick;
+exports.range = range;
 exports.requestIdleCallback = requestIdleCallback;
 exports.saveAs = saveAs;
 exports.scrollIntoView = scrollIntoView;
@@ -2613,7 +2679,7 @@ const contentHeight = helper.createRootMemo(() => (imgTopList().at(-1) ?? 0) + (
 // 卷轴模式下需要提前知道尺寸方便正确布局
 // 翻页模式下也需要提前发现跨页图重新排序
 // requestIdleCallback(preloadImgSize);
-var css$1 = ".img____hash_base64_5_ img{display:block;height:100%;object-fit:contain;width:100%}.img____hash_base64_5_{align-content:center;content-visibility:hidden;display:none;height:100%;margin-left:auto;margin-right:auto;position:relative;width:100%}.img____hash_base64_5_[data-show]{content-visibility:visible;display:block}.img____hash_base64_5_>picture{display:block;height:auto;inset:0;margin-bottom:auto;margin-left:inherit;margin-right:inherit;margin-top:auto;max-height:100%;max-width:100%;position:absolute;width:auto}.img____hash_base64_5_>picture,.img____hash_base64_5_>picture:after{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%}.img____hash_base64_5_[data-load-type=error]>picture:after{background-color:#eee;background-image:var(--md-image-not-supported);content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img____hash_base64_5_[data-load-type=loading]>picture{background-image:var(--md-cloud-download)}:is(.img____hash_base64_5_[data-load-type=loading]>picture) img{animation:show____hash_base64_5_ .1s forwards}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"1\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"0\\"]{margin-left:0;margin-right:auto}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"0\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"1\\"]{margin-left:auto;margin-right:0}.mangaFlow____hash_base64_5_{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;width:100%}.mangaFlow____hash_base64_5_[data-disable-zoom] .img____hash_base64_5_>picture{height:fit-content;width:fit-content}.mangaFlow____hash_base64_5_[data-hidden-mouse=true]{cursor:none}.mangaFlow____hash_base64_5_[data-vertical]{grid-auto-flow:row}.mangaBox____hash_base64_5_{contain:layout style;height:100%;transform-origin:0 0;transition-duration:0s;width:100%}.mangaBox____hash_base64_5_[data-animation=page] .mangaFlow____hash_base64_5_,.mangaBox____hash_base64_5_[data-animation=zoom]{transition-duration:.3s}.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_{scrollbar-width:none}:is(.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_)::-webkit-scrollbar{display:none}.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_{grid-auto-columns:1fr;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;grid-row-gap:1.5em;align-items:end;box-sizing:border-box;grid-template-rows:unset}:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_{cursor:pointer;margin-left:auto;margin-right:auto}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>.gridModeTip____hash_base64_5_{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}[data-load-type=error]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[data-load-type=wait]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[src=\\"\\"]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_){height:100%}.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_{overflow:auto}:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{grid-row-gap:calc(var(--scroll-mode-spacing)*7px);height:fit-content}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_){overflow:hidden}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_{height:auto;width:100%;will-change:transform}:is(:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}@keyframes show____hash_base64_5_{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPage____hash_base64_5_{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage____hash_base64_5_>button{animation:jello____hash_base64_5_ .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}[data-is-end]:is(.endPage____hash_base64_5_>button){font-size:3em;margin:2em}.endPage____hash_base64_5_>.tip____hash_base64_5_{margin:auto;position:absolute}.endPage____hash_base64_5_[data-show]{opacity:1;pointer-events:all}.endPage____hash_base64_5_[data-type=start]>.tip____hash_base64_5_{transform:translateY(-10em)}.endPage____hash_base64_5_[data-type=end]>.tip____hash_base64_5_{transform:translateY(10em)}.root____hash_base64_5_[data-mobile] .endPage____hash_base64_5_>button{width:1em}.comments____hash_base64_5_{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments____hash_base64_5_>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments____hash_base64_5_:hover{opacity:1}.root____hash_base64_5_[data-mobile] .comments____hash_base64_5_{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello____hash_base64_5_{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar____hash_base64_5_{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel____hash_base64_5_{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar____hash_base64_5_[data-show],.toolbar____hash_base64_5_:hover) .toolbarPanel____hash_base64_5_{transform:none}.toolbar____hash_base64_5_[data-close] .toolbarPanel____hash_base64_5_{transform:translateX(-100%);visibility:hidden}.toolbarBg____hash_base64_5_{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_{font-size:1.3em}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_:not([data-show]){pointer-events:none}.root____hash_base64_5_[data-mobile] .toolbarBg____hash_base64_5_{filter:opacity(.8)}.SettingPanelPopper____hash_base64_5_{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel____hash_base64_5_{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel____hash_base64_5_ hr{color:#fff;margin:0}.SettingBlock____hash_base64_5_{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div+:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div{margin-top:1em}.SettingBlock____hash_base64_5_[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock____hash_base64_5_[data-show=false] .SettingBlockBody____hash_base64_5_{padding:unset}.SettingBlockSubtitle____hash_base64_5_{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem____hash_base64_5_{align-items:center;display:flex;justify-content:space-between}:is(.SettingsItem____hash_base64_5_,.SettingsShowItem____hash_base64_5_)+.SettingsItem____hash_base64_5_{margin-top:1em}.SettingsItemName____hash_base64_5_{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch____hash_base64_5_{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound____hash_base64_5_{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch____hash_base64_5_[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch____hash_base64_5_[data-checked=true] .SettingsItemSwitchRound____hash_base64_5_{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton____hash_base64_5_{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect____hash_base64_5_{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover____hash_base64_5_{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem____hash_base64_5_{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_{overflow:hidden}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>.SettingsItem____hash_base64_5_{margin-top:1em}[data-only-number]{padding:0 .2em}[data-only-number]+span{margin-left:-.1em}.hotkeys____hash_base64_5_{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys____hash_base64_5_+.hotkeys____hash_base64_5_{margin-top:.5em}.hotkeys____hash_base64_5_:last-child{border-bottom:none}.hotkeysItem____hash_base64_5_{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem____hash_base64_5_>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}:is(.hotkeysItem____hash_base64_5_>svg):hover{opacity:.9}.hotkeysItem____hash_base64_5_:hover{padding:.2em .5em}.hotkeysItem____hash_base64_5_:hover>svg{display:unset}.hotkeysItem____hash_base64_5_:focus,.hotkeysItem____hash_base64_5_:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader____hash_base64_5_{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader____hash_base64_5_>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader____hash_base64_5_>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}:is(.hotkeysHeader____hash_base64_5_>div[title])>svg{width:1.6em}.hotkeys____hash_base64_5_:hover div[title]{transform:scale(1)}.scrollbar____hash_base64_5_{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar____hash_base64_5_>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage____hash_base64_5_{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage____hash_base64_5_[data-type=loaded]{transform:scaleY(0)}.scrollbarPage____hash_base64_5_[data-type=wait]{opacity:.5}.scrollbarPage____hash_base64_5_[data-type=error]{background-color:#f005}.scrollbarPage____hash_base64_5_[data-null]{background-color:#fbc02d}.scrollbarPage____hash_base64_5_[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.scrollbarPage____hash_base64_5_[data-translation-type=wait]{background-color:#81c784}.scrollbarPage____hash_base64_5_[data-translation-type=show]{background-color:#4caf50}.scrollbarPage____hash_base64_5_[data-translation-type=error]{background-color:#f005}.scrollbarSlider____hash_base64_5_{background-color:#fff5;border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper____hash_base64_5_{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:fit-content}.scrollbar____hash_base64_5_:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_:before{opacity:0;transition:opacity .15s,transform .15s}:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarPoper____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarSlider____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]):before{opacity:1}.scrollbar____hash_base64_5_[data-drag] .scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag] .scrollbarSlider____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag]:before{transition:opacity .15s}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]) .scrollbarSlider____hash_base64_5_{opacity:0}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider____hash_base64_5_{opacity:1}.scrollbar____hash_base64_5_[data-position=hidden]{display:none}.scrollbar____hash_base64_5_[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.scrollbar____hash_base64_5_[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar____hash_base64_5_[data-position=top] .scrollbarPoper____hash_base64_5_{top:1.2em}.scrollbar____hash_base64_5_[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.scrollbar____hash_base64_5_[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar____hash_base64_5_[data-position=bottom] .scrollbarPoper____hash_base64_5_{bottom:1.2em}.scrollbar____hash_base64_5_[data-position=bottom],.scrollbar____hash_base64_5_[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{border-left:.4em solid #0000}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]){--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{left:0;right:unset}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{transform:translateX(var(--top))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{transform:translateX(var(--poper-top))}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_{transform:scaleX(1)}[data-type=loaded]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(0)}[data-translation-type]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(1)}.scrollbar____hash_base64_5_[data-is-abreast-mode] .scrollbarPoper____hash_base64_5_{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar____hash_base64_5_[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper____hash_base64_5_{writing-mode:vertical-lr}.root____hash_base64_5_[data-scroll-mode] .scrollbar____hash_base64_5_:before,.root____hash_base64_5_[data-scroll-mode] :is(.scrollbarSlider____hash_base64_5_,.scrollbarPoper____hash_base64_5_){transition:opacity .15s}:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover) .scrollbarPoper____hash_base64_5_,:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover):before{opacity:0}.touchAreaRoot____hash_base64_5_{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot____hash_base64_5_[data-show]{opacity:1}.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_{align-items:center;display:flex;justify-content:center;text-align:center}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=prev]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#95e1d3e6}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=menu]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#fce38ae6}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=next]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#f38181e6}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-prev)}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-menu)}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-next)}.touchAreaRoot____hash_base64_5_[data-vert=true]{flex-direction:column!important}.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=NEXT],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=PREV],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=next],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=prev]{visibility:hidden}.touchAreaRoot____hash_base64_5_[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root____hash_base64_5_[data-mobile] .touchAreaRoot____hash_base64_5_{flex-direction:column!important;letter-spacing:0}.root____hash_base64_5_[data-mobile] [data-area]:after{font-size:.8em}.root____hash_base64_5_{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root____hash_base64_5_ a{color:var(--text-secondary)}.root____hash_base64_5_[data-mobile]{font-size:.8em}.hidden____hash_base64_5_{display:none!important}.invisible____hash_base64_5_{visibility:hidden!important}.beautifyScrollbar____hash_base64_5_{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-track{background:#0000}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}:where(div,div:focus,div:focus-within,div:focus-visible,button){border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-size:.9em;font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
+var css$1 = ".img____hash_base64_5_ img{display:block;height:100%;object-fit:contain;width:100%}.img____hash_base64_5_{align-content:center;content-visibility:hidden;display:none;height:100%;margin-left:auto;margin-right:auto;position:relative;width:100%}.img____hash_base64_5_[data-show]{content-visibility:visible;display:block}.img____hash_base64_5_>picture{display:block;height:auto;inset:0;margin-bottom:auto;margin-left:inherit;margin-right:inherit;margin-top:auto;max-height:100%;max-width:100%;position:absolute;width:auto}.img____hash_base64_5_>picture,.img____hash_base64_5_>picture:after{background-color:var(--hover-bg-color,#fff3);background-image:var(--md-photo);background-position:50%;background-repeat:no-repeat;background-size:30%}.img____hash_base64_5_[data-load-type=error]>picture:after{background-color:#eee;background-image:var(--md-image-not-supported);content:\\"\\";height:100%;pointer-events:none;position:absolute;right:0;top:0;width:100%}.img____hash_base64_5_[data-load-type=loading]>picture{background-image:var(--md-cloud-download)}:is(.img____hash_base64_5_[data-load-type=loading]>picture) img{animation:show____hash_base64_5_ .1s forwards}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"1\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"0\\"]{margin-left:0;margin-right:auto}.mangaFlow____hash_base64_5_[dir=ltr] .img____hash_base64_5_[data-show=\\"0\\"],.mangaFlow____hash_base64_5_[dir=rtl] .img____hash_base64_5_[data-show=\\"1\\"]{margin-left:auto;margin-right:0}.mangaFlow____hash_base64_5_{display:grid;grid-auto-columns:100%;grid-auto-flow:column;grid-auto-rows:100%;touch-action:none;transform-origin:0 0;-webkit-user-select:none;user-select:none;grid-row-gap:0;backface-visibility:hidden;color:var(--text);height:100%;place-items:center;width:100%}.mangaFlow____hash_base64_5_[data-disable-zoom] .img____hash_base64_5_>picture{height:fit-content;width:fit-content}.mangaFlow____hash_base64_5_[data-hidden-mouse=true]{cursor:none}.mangaFlow____hash_base64_5_[data-vertical]{grid-auto-flow:row}.mangaBox____hash_base64_5_{contain:layout style;height:100%;transform-origin:0 0;transition-duration:0s;width:100%}.mangaBox____hash_base64_5_[data-animation=page] .mangaFlow____hash_base64_5_,.mangaBox____hash_base64_5_[data-animation=zoom]{transition-duration:.3s}.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_{scrollbar-width:none}:is(.root____hash_base64_5_:not([data-grid-mode]) .mangaBox____hash_base64_5_)::-webkit-scrollbar{display:none}.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_{grid-auto-columns:1fr;grid-auto-flow:row;grid-auto-rows:max-content;overflow:auto;grid-row-gap:1.5em;align-items:end;box-sizing:border-box;grid-template-rows:unset}:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_{cursor:pointer;margin-left:auto;margin-right:auto}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>.gridModeTip____hash_base64_5_{bottom:-1.5em;cursor:auto;direction:ltr;line-height:1.5em;opacity:.5;overflow:hidden;position:absolute;text-align:center;text-overflow:ellipsis;white-space:nowrap;width:100%}[data-load-type=error]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[data-load-type=wait]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_),[src=\\"\\"]:is(:is(.root____hash_base64_5_[data-grid-mode] .mangaFlow____hash_base64_5_) .img____hash_base64_5_){height:100%}.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_{overflow:auto}:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{grid-row-gap:calc(var(--scroll-mode-spacing)*7px);height:fit-content}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_){overflow:hidden}[data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_{grid-column-gap:calc(var(--scroll-mode-spacing)*7px);align-items:start;height:100%}:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_{height:auto;width:100%;will-change:transform}:is(:is([data-abreast-scroll]:is(.root____hash_base64_5_[data-scroll-mode]:not([data-grid-mode]) .mangaBox____hash_base64_5_) .mangaFlow____hash_base64_5_) .img____hash_base64_5_)>picture{position:relative}@keyframes show____hash_base64_5_{0%{opacity:0}90%{opacity:0}to{opacity:1}}.endPage____hash_base64_5_{align-items:center;background-color:#333d;color:#fff;display:flex;height:100%;justify-content:center;left:0;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .5s;width:100%;z-index:10}.endPage____hash_base64_5_>button{animation:jello____hash_base64_5_ .3s forwards;background-color:initial;color:inherit;cursor:pointer;font-size:1.2em;transform-origin:center}[data-is-end]:is(.endPage____hash_base64_5_>button){font-size:3em;margin:2em}.endPage____hash_base64_5_>.tip____hash_base64_5_{margin:auto;position:absolute}.endPage____hash_base64_5_[data-show]{opacity:1;pointer-events:all}.endPage____hash_base64_5_[data-type=start]>.tip____hash_base64_5_{transform:translateY(-10em)}.endPage____hash_base64_5_[data-type=end]>.tip____hash_base64_5_{transform:translateY(10em)}.root____hash_base64_5_[data-mobile] .endPage____hash_base64_5_>button{width:1em}.comments____hash_base64_5_{align-items:flex-end;display:flex;flex-direction:column;max-height:80%;opacity:.3;overflow:auto;padding-right:.5em;position:absolute;right:1em;width:20em}.comments____hash_base64_5_>p{background-color:#333b;border-radius:.5em;margin:.5em .1em;padding:.2em .5em}.comments____hash_base64_5_:hover{opacity:1}.root____hash_base64_5_[data-mobile] .comments____hash_base64_5_{max-height:15em;opacity:.8;top:calc(50% + 15em)}@keyframes jello____hash_base64_5_{0%,11.1%,to{transform:translateZ(0)}22.2%{transform:skewX(-12.5deg) skewY(-12.5deg)}33.3%{transform:skewX(6.25deg) skewY(6.25deg)}44.4%{transform:skewX(-3.125deg) skewY(-3.125deg)}55.5%{transform:skewX(1.5625deg) skewY(1.5625deg)}66.6%{transform:skewX(-.7812deg) skewY(-.7812deg)}77.7%{transform:skewX(.3906deg) skewY(.3906deg)}88.8%{transform:skewX(-.1953deg) skewY(-.1953deg)}}.toolbar____hash_base64_5_{align-items:center;display:flex;height:100%;justify-content:flex-start;position:fixed;top:0;z-index:9}.toolbarPanel____hash_base64_5_{display:flex;flex-direction:column;padding:.5em;position:relative;transform:translateX(-100%);transition:transform .2s}:is(.toolbar____hash_base64_5_[data-show],.toolbar____hash_base64_5_:hover) .toolbarPanel____hash_base64_5_{transform:none}.toolbar____hash_base64_5_[data-close] .toolbarPanel____hash_base64_5_{transform:translateX(-100%);visibility:hidden}.toolbarBg____hash_base64_5_{background-color:var(--page-bg);border-bottom-right-radius:1em;border-top-right-radius:1em;filter:opacity(.8);height:100%;position:absolute;right:0;top:0;width:100%}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_{font-size:1.3em}.root____hash_base64_5_[data-mobile] .toolbar____hash_base64_5_:not([data-show]){pointer-events:none}.root____hash_base64_5_[data-mobile] .toolbarBg____hash_base64_5_{filter:opacity(.8)}.SettingPanelPopper____hash_base64_5_{height:0!important;padding:0!important;pointer-events:unset!important;transform:none!important}.SettingPanel____hash_base64_5_{background-color:var(--page-bg);border-radius:.3em;bottom:0;box-shadow:0 3px 1px -2px #0003,0 2px 2px 0 #00000024,0 1px 5px 0 #0000001f;color:var(--text);font-size:1.2em;height:fit-content;margin:auto;max-height:95%;max-width:calc(100% - 5em);overflow:auto;position:fixed;top:0;-webkit-user-select:text;user-select:text;z-index:1}.SettingPanel____hash_base64_5_ hr{color:#fff;margin:0}.SettingBlock____hash_base64_5_{display:grid;grid-template-rows:max-content 1fr;transition:grid-template-rows .2s ease-out}.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_{overflow:hidden;padding:0 .5em 1em;z-index:0}:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div+:is(.SettingBlock____hash_base64_5_ .SettingBlockBody____hash_base64_5_)>div{margin-top:1em}.SettingBlock____hash_base64_5_[data-show=false]{grid-template-rows:max-content 0fr;padding-bottom:unset}.SettingBlock____hash_base64_5_[data-show=false] .SettingBlockBody____hash_base64_5_{padding:unset}.SettingBlockSubtitle____hash_base64_5_{background-color:var(--page-bg);color:var(--text-secondary);cursor:pointer;font-size:.7em;height:3em;line-height:3em;margin-bottom:.1em;position:sticky;text-align:center;top:0;z-index:1}.SettingsItem____hash_base64_5_{align-items:center;display:flex;justify-content:space-between}:is(.SettingsItem____hash_base64_5_,.SettingsShowItem____hash_base64_5_)+.SettingsItem____hash_base64_5_{margin-top:1em}.SettingsItemName____hash_base64_5_{font-size:.9em;max-width:calc(100% - 4em);overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.SettingsItemSwitch____hash_base64_5_{align-items:center;background-color:var(--switch-bg);border:0;border-radius:1em;cursor:pointer;display:inline-flex;height:.8em;margin:.3em;padding:0;width:2.3em}.SettingsItemSwitchRound____hash_base64_5_{background:var(--switch);border-radius:100%;box-shadow:0 2px 1px -1px #0003,0 1px 1px 0 #00000024,0 1px 3px 0 #0000001f;height:1.15em;transform:translateX(-10%);transition:transform .1s;width:1.15em}.SettingsItemSwitch____hash_base64_5_[data-checked=true]{background:var(--secondary-bg)}.SettingsItemSwitch____hash_base64_5_[data-checked=true] .SettingsItemSwitchRound____hash_base64_5_{background:var(--secondary);transform:translateX(110%)}.SettingsItemIconButton____hash_base64_5_{background-color:initial;border:none;color:var(--text);cursor:pointer;font-size:1.7em;height:1em;margin:0 .2em 0 0;padding:0}.SettingsItemSelect____hash_base64_5_{background-color:var(--hover-bg-color);border:none;border-radius:5px;cursor:pointer;font-size:.9em;margin:0;max-width:6.5em;outline:none;padding:.3em}.closeCover____hash_base64_5_{height:100%;left:0;position:fixed;top:0;width:100%}.SettingsShowItem____hash_base64_5_{display:grid;transition:grid-template-rows .2s ease-out}.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_{display:flex;flex-direction:column;overflow:hidden}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>.SettingsItem____hash_base64_5_{margin-top:1em}:is(.SettingsShowItem____hash_base64_5_>.SettingsShowItemBody____hash_base64_5_)>:is(textarea,input){line-height:1.2;margin:.4em .2em 0}[data-only-number]{padding:0 .2em}[data-only-number]+span{margin-left:-.1em}.hotkeys____hash_base64_5_{align-items:center;border-bottom:1px solid var(--secondary-bg);color:var(--text);display:flex;flex-grow:1;flex-wrap:wrap;font-size:.9em;padding:2em .2em .2em;position:relative;z-index:1}.hotkeys____hash_base64_5_+.hotkeys____hash_base64_5_{margin-top:.5em}.hotkeys____hash_base64_5_:last-child{border-bottom:none}.hotkeysItem____hash_base64_5_{align-items:center;border-radius:.3em;box-sizing:initial;cursor:pointer;display:flex;font-family:serif;height:1em;margin:.3em;outline:1px solid;outline-color:var(--secondary-bg);padding:.2em 1.2em}.hotkeysItem____hash_base64_5_>svg{background-color:var(--text);border-radius:1em;color:var(--page-bg);display:none;height:1em;margin-left:.4em;opacity:.5}:is(.hotkeysItem____hash_base64_5_>svg):hover{opacity:.9}.hotkeysItem____hash_base64_5_:hover{padding:.2em .5em}.hotkeysItem____hash_base64_5_:hover>svg{display:unset}.hotkeysItem____hash_base64_5_:focus,.hotkeysItem____hash_base64_5_:focus-visible{outline:var(--text) solid 2px}.hotkeysHeader____hash_base64_5_{align-items:center;box-sizing:border-box;display:flex;left:0;padding:0 .5em;position:absolute;top:0;width:100%}.hotkeysHeader____hash_base64_5_>p{background-color:var(--page-bg);line-height:1em;overflow-wrap:anywhere;text-align:start;white-space:pre-wrap}.hotkeysHeader____hash_base64_5_>div[title]{background-color:var(--page-bg);cursor:pointer;display:flex;transform:scale(0);transition:transform .1s}:is(.hotkeysHeader____hash_base64_5_>div[title])>svg{width:1.6em}.hotkeys____hash_base64_5_:hover div[title]{transform:scale(1)}.scrollbar____hash_base64_5_{--arrow-y:clamp(0.45em,calc(var(--slider-midpoint)),calc(var(--scroll-length) - 0.45em));border-left:max(6vw,1em) solid #0000;display:flex;flex-direction:column;height:98%;position:absolute;right:3px;top:1%;touch-action:none;-webkit-user-select:none;user-select:none;width:5px;z-index:9}.scrollbar____hash_base64_5_>div{align-items:center;display:flex;flex-direction:column;flex-grow:1;justify-content:center;pointer-events:none}.scrollbarPage____hash_base64_5_{background-color:var(--secondary);flex-grow:1;height:100%;transform:scaleY(1);transform-origin:bottom;transition:transform 1s;width:100%}.scrollbarPage____hash_base64_5_[data-type=loaded]{transform:scaleY(0)}.scrollbarPage____hash_base64_5_[data-type=wait]{opacity:.5}.scrollbarPage____hash_base64_5_[data-type=error]{background-color:#f005}.scrollbarPage____hash_base64_5_[data-null]{background-color:#fbc02d}.scrollbarPage____hash_base64_5_[data-translation-type]{background-color:initial;transform:scaleY(1);transform-origin:top}.scrollbarPage____hash_base64_5_[data-translation-type=wait]{background-color:#81c784}.scrollbarPage____hash_base64_5_[data-translation-type=show]{background-color:#4caf50}.scrollbarPage____hash_base64_5_[data-translation-type=error]{background-color:#f005}.scrollbarSlider____hash_base64_5_{background-color:#fff5;border-radius:1em;height:var(--slider-height);justify-content:center;opacity:1;position:absolute;transform:translateY(var(--slider-top));transition:transform .15s,opacity .15s;width:100%;z-index:1}.scrollbarPoper____hash_base64_5_{--poper-top:clamp(0%,calc(var(--slider-midpoint) - 50%),calc(var(--scroll-length) - 100%));background-color:#303030;border-radius:.3em;color:#fff;font-size:.8em;line-height:1.5em;min-height:1.5em;min-width:1em;padding:.2em .5em;position:absolute;right:2em;text-align:center;transform:translateY(var(--poper-top));white-space:pre;width:fit-content}.scrollbar____hash_base64_5_:before{background-color:initial;border:.4em solid #0000;border-left:.5em solid #303030;content:\\"\\";position:absolute;right:2em;transform:translate(140%,calc(var(--arrow-y) - 50%))}.scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_:before{opacity:0;transition:opacity .15s,transform .15s}:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarPoper____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]) .scrollbarSlider____hash_base64_5_,:is(.scrollbar____hash_base64_5_:hover,.scrollbar____hash_base64_5_[data-force-show]):before{opacity:1}.scrollbar____hash_base64_5_[data-drag] .scrollbarPoper____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag] .scrollbarSlider____hash_base64_5_,.scrollbar____hash_base64_5_[data-drag]:before{transition:opacity .15s}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]) .scrollbarSlider____hash_base64_5_{opacity:0}.scrollbar____hash_base64_5_[data-auto-hidden]:not([data-force-show]):hover .scrollbarSlider____hash_base64_5_{opacity:1}.scrollbar____hash_base64_5_[data-position=hidden]{display:none}.scrollbar____hash_base64_5_[data-position=top]{border-bottom:max(6vh,1em) solid #0000;top:1px}.scrollbar____hash_base64_5_[data-position=top]:before{border-bottom:.5em solid #303030;right:0;top:1.2em;transform:translate(var(--arrow-x),-120%)}.scrollbar____hash_base64_5_[data-position=top] .scrollbarPoper____hash_base64_5_{top:1.2em}.scrollbar____hash_base64_5_[data-position=bottom]{border-top:max(6vh,1em) solid #0000;bottom:1px;top:unset}.scrollbar____hash_base64_5_[data-position=bottom]:before{border-top:.5em solid #303030;bottom:1.2em;right:0;transform:translate(var(--arrow-x),120%)}.scrollbar____hash_base64_5_[data-position=bottom] .scrollbarPoper____hash_base64_5_{bottom:1.2em}.scrollbar____hash_base64_5_[data-position=bottom],.scrollbar____hash_base64_5_[data-position=top]{--arrow-x:calc(var(--arrow-y)*-1 + 50%);border-left:none;flex-direction:row-reverse;height:5px;right:1%;width:98%}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{border-left:.4em solid #0000}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{height:100%;transform:translateX(calc(var(--slider-top)*-1));width:var(--slider-height)}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{padding:.1em .3em;right:unset;transform:translateX(calc(var(--poper-top)*-1))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]){--arrow-x:calc(var(--arrow-y) - 50%);flex-direction:row}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]):before{left:0;right:unset}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarSlider____hash_base64_5_{transform:translateX(var(--top))}[data-dir=ltr]:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPoper____hash_base64_5_{transform:translateX(var(--poper-top))}:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_{transform:scaleX(1)}[data-type=loaded]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(0)}[data-translation-type]:is(:is(.scrollbar____hash_base64_5_[data-position=top],.scrollbar____hash_base64_5_[data-position=bottom]) .scrollbarPage____hash_base64_5_){transform:scaleX(1)}.scrollbar____hash_base64_5_[data-is-abreast-mode] .scrollbarPoper____hash_base64_5_{line-height:1.5em;text-orientation:upright;writing-mode:vertical-rl}.scrollbar____hash_base64_5_[data-is-abreast-mode][data-dir=ltr] .scrollbarPoper____hash_base64_5_{writing-mode:vertical-lr}.root____hash_base64_5_[data-scroll-mode] .scrollbar____hash_base64_5_:before,.root____hash_base64_5_[data-scroll-mode] :is(.scrollbarSlider____hash_base64_5_,.scrollbarPoper____hash_base64_5_){transition:opacity .15s}:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover) .scrollbarPoper____hash_base64_5_,:is(.root____hash_base64_5_[data-mobile] .scrollbar____hash_base64_5_:hover):before{opacity:0}.touchAreaRoot____hash_base64_5_{color:#fff;display:grid;font-size:3em;grid-template-columns:1fr min(30%,10em) 1fr;grid-template-rows:1fr min(20%,10em) 1fr;height:100%;letter-spacing:.5em;opacity:0;pointer-events:none;position:absolute;top:0;transition:opacity .4s;-webkit-user-select:none;user-select:none;width:100%}.touchAreaRoot____hash_base64_5_[data-show]{opacity:1}.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_{align-items:center;display:flex;justify-content:center;text-align:center}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=prev]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#95e1d3e6}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=menu]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#fce38ae6}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_),[data-area=next]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_){background-color:#f38181e6}[data-area=PREV]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-prev)}[data-area=MENU]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-menu)}[data-area=NEXT]:is(.touchAreaRoot____hash_base64_5_ .touchArea____hash_base64_5_):after{content:var(--i18n-touch-area-next)}.touchAreaRoot____hash_base64_5_[data-vert=true]{flex-direction:column!important}.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=NEXT],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=PREV],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=next],.touchAreaRoot____hash_base64_5_:not([data-turn-page]) .touchArea____hash_base64_5_[data-area=prev]{visibility:hidden}.touchAreaRoot____hash_base64_5_[data-area=edge]{grid-template-columns:1fr min(30%,10em) 1fr}.root____hash_base64_5_[data-mobile] .touchAreaRoot____hash_base64_5_{flex-direction:column!important;letter-spacing:0}.root____hash_base64_5_[data-mobile] [data-area]:after{font-size:.8em}.root____hash_base64_5_{background-color:var(--bg);font-size:1em;height:100%;outline:0;overflow:hidden;position:relative;width:100%}.root____hash_base64_5_ a{color:var(--text-secondary)}.root____hash_base64_5_[data-mobile]{font-size:.8em}.hidden____hash_base64_5_{display:none!important}.invisible____hash_base64_5_{visibility:hidden!important}.beautifyScrollbar____hash_base64_5_{scrollbar-color:var(--scrollbar-slider) #0000;scrollbar-width:thin}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar{height:10px;width:5px}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-track{background:#0000}.beautifyScrollbar____hash_base64_5_::-webkit-scrollbar-thumb{background:var(--scrollbar-slider)}img,p{margin:0}:where(div,div:focus,div:focus-within,div:focus-visible,button){border:none;outline:none}blockquote{border-left:.25em solid var(--text-secondary,#607d8b);color:var(--text-secondary);font-size:.9em;font-style:italic;line-height:1.2em;margin:.5em 0 0;overflow-wrap:anywhere;padding:0 0 0 1em;text-align:start;white-space:pre-wrap}svg{width:1em}";
 var modules_c21c94f2$1 = {"img":"img____hash_base64_5_","show":"show____hash_base64_5_","mangaFlow":"mangaFlow____hash_base64_5_","mangaBox":"mangaBox____hash_base64_5_","root":"root____hash_base64_5_","gridModeTip":"gridModeTip____hash_base64_5_","endPage":"endPage____hash_base64_5_","jello":"jello____hash_base64_5_","tip":"tip____hash_base64_5_","comments":"comments____hash_base64_5_","toolbar":"toolbar____hash_base64_5_","toolbarPanel":"toolbarPanel____hash_base64_5_","toolbarBg":"toolbarBg____hash_base64_5_","SettingPanelPopper":"SettingPanelPopper____hash_base64_5_","SettingPanel":"SettingPanel____hash_base64_5_","SettingBlock":"SettingBlock____hash_base64_5_","SettingBlockBody":"SettingBlockBody____hash_base64_5_","SettingBlockSubtitle":"SettingBlockSubtitle____hash_base64_5_","SettingsItem":"SettingsItem____hash_base64_5_","SettingsShowItem":"SettingsShowItem____hash_base64_5_","SettingsItemName":"SettingsItemName____hash_base64_5_","SettingsItemSwitch":"SettingsItemSwitch____hash_base64_5_","SettingsItemSwitchRound":"SettingsItemSwitchRound____hash_base64_5_","SettingsItemIconButton":"SettingsItemIconButton____hash_base64_5_","SettingsItemSelect":"SettingsItemSelect____hash_base64_5_","closeCover":"closeCover____hash_base64_5_","SettingsShowItemBody":"SettingsShowItemBody____hash_base64_5_","hotkeys":"hotkeys____hash_base64_5_","hotkeysItem":"hotkeysItem____hash_base64_5_","hotkeysHeader":"hotkeysHeader____hash_base64_5_","scrollbar":"scrollbar____hash_base64_5_","scrollbarPage":"scrollbarPage____hash_base64_5_","scrollbarSlider":"scrollbarSlider____hash_base64_5_","scrollbarPoper":"scrollbarPoper____hash_base64_5_","touchAreaRoot":"touchAreaRoot____hash_base64_5_","touchArea":"touchArea____hash_base64_5_","hidden":"hidden____hash_base64_5_","invisible":"invisible____hash_base64_5_","beautifyScrollbar":"beautifyScrollbar____hash_base64_5_"};
 
 const touches = new Map();
@@ -3844,25 +3910,23 @@ const isTranslatingImage = helper.createRootMemo(() => activePage().some(i => {
 
 /** 翻译当前页 */
 const translateCurrent = () => setImgTranslationEnbale(activePage(), !isTranslatingImage());
-const createTranslateRange = (start, end) => {
+const createTranslateRange = imgs => {
   const isTranslating = helper.createRootMemo(() => {
-    for (let i = start(); i < end(); i++) if (imgList()[i]?.translationType === undefined) return false;
+    for (const i of imgs()) if (imgList()[i]?.translationType === undefined) return false;
     return true;
   });
   const translateRange = () => {
     if (store.option.translation.server !== 'selfhosted') return;
-    setImgTranslationEnbale(Array.from({
-      length: end() - start()
-    }, (_, i) => start() + i), !isTranslating());
+    setImgTranslationEnbale(imgs(), !isTranslating());
   };
   return [isTranslating, translateRange];
 };
 
 // 翻译全部图片
-const [isTranslatingAll, translateAll] = createTranslateRange(() => 0, () => store.imgList.length);
+const [isTranslatingAll, translateAll] = createTranslateRange(helper.createRootMemo(() => helper.range(store.imgList.length - 1)));
 
 // 翻译当前页以后的全部图片
-const [isTranslatingToEnd, translateToEnd] = createTranslateRange(activeImgIndex, () => store.imgList.length);
+const [isTranslatingToEnd, translateToEnd] = createTranslateRange(helper.createRootMemo(() => helper.range(activeImgIndex(), store.imgList.length - 1)));
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 // （虽然因为使用了 shadow dom 的缘故实际还是不能兼容，但说不定之后就改了呢
@@ -3889,11 +3953,13 @@ const handleSwapPageTurnKey = nextPage => {
   const next = store.option.swapPageTurnKey ? !nextPage : nextPage;
   return next ? 'next' : 'prev';
 };
-
-/** 判断按键代码是否可以输入字母 */
-const isAlphabetKey = /^(Shift \\+ )?[a-zA-Z]$/;
 const handleKeyDown = e => {
-  if (e.target.tagName === 'INPUT' || e.target.className === modules_c21c94f2$1.hotkeysItem) return;
+  switch (e.target.tagName) {
+    case 'INPUT':
+    case 'TEXTAREA':
+      return;
+  }
+  if (e.target.className === modules_c21c94f2$1.hotkeysItem) return;
   const code = helper.getKeyboardCode(e);
 
   // esc 在触发配置操作前，先用于退出一些界面
@@ -3913,10 +3979,10 @@ const handleKeyDown = e => {
   // 处理标注了 data-only-number 的元素
   if (e.target.dataset.onlyNumber !== undefined) {
     // 拦截能输入数字外的按键
-    if (isAlphabetKey.test(code)) {
+    if (/^(Shift \\+ )?[a-zA-Z]$/.test(code)) {
       e.stopPropagation();
       e.preventDefault();
-    } else if (code.includes('Enter')) e.target.blur();
+    }
     return;
   }
 
@@ -5192,38 +5258,55 @@ const SettingHotkeys = () => {
   })];
 };
 
-/** 数值输入框 */
-const NumberInput = props => {
-  const handleInput = e => props.maxLength !== undefined && e.currentTarget.textContent.length > props.maxLength && e.currentTarget.blur();
+/** 范围输入框 */
+const RangeInput = props => {
+  let ref;
+
+  /** 在保持光标位置不变的情况下修改文本 */
+  const editText = text => {
+    const offset = ref.selectionStart;
+    ref.value = text;
+    if (offset) requestAnimationFrame(() => {
+      ref.selectionStart = offset;
+      ref.selectionEnd = offset;
+    });
+  };
+
+  /** 修改文本中的数字 */
+  const replaceTextNumer = (text, offset, fn) => {
+    const isNumber = num => /\\d/.test(text[num]);
+    let start = offset;
+    if (!isNumber(offset)) {
+      if (isNumber(start - 1)) start--;else if (isNumber(start + 1)) start++;else return text;
+    }
+    let end = start;
+    while (isNumber(start - 1)) start--;
+    while (isNumber(end + 1)) end++;
+    return text.slice(0, start) + fn(Number(text.slice(start, end + 1))) + text.slice(end + 1);
+  };
   const handleKeyDown = e => {
     switch (e.key) {
       case 'ArrowUp':
-        return props.onChange(Number(e.target.textContent) + (props.step ?? 1));
       case 'ArrowDown':
-        return props.onChange(Number(e.target.textContent) - (props.step ?? 1));
+        editText(replaceTextNumer(ref.value, ref.selectionStart, num => e.key === 'ArrowUp' ? num + 1 : num - 1));
     }
   };
-  return [(() => {
-    var _el$ = web.template(\`<span contenteditable data-only-number>\`)();
-    _el$.addEventListener("blur", e => {
+  return (() => {
+    var _el$ = web.template(\`<textarea autocomplete=off rows=2>\`)();
+    _el$.addEventListener("blur", () => {
       try {
-        props.onChange(Number(e.currentTarget.textContent));
+        props.onChange?.(ref.value);
       } finally {
-        e.currentTarget.textContent = \`\${props.value}\`;
+        ref.value = props.value;
       }
     });
     web.addEventListener(_el$, "keydown", handleKeyDown);
-    web.addEventListener(_el$, "input", handleInput);
-    web.insert(_el$, () => \`\${props.value}\`);
+    var _ref$ = ref;
+    typeof _ref$ === "function" ? web.use(_ref$, _el$) : ref = _el$;
+    web.effect(() => web.setAttribute(_el$, "placeholder", props.placeholder));
+    web.effect(() => _el$.value = props.value);
     return _el$;
-  })(), web.createComponent(solidJs.Show, {
-    get when() {
-      return props.suffix;
-    },
-    get children() {
-      return props.suffix;
-    }
-  })];
+  })();
 };
 
 /** 选择器式菜单项 */
@@ -5288,57 +5371,48 @@ const SettingsShowItem = props => (() => {
 })();
 
 const TranslateRange = () => {
-  const [before, middle, after] = helper.t('setting.translation.translate_range').split(/\\d/);
-  const [start, setStart] = solidJs.createSignal(0);
-  const [end, setEnd] = solidJs.createSignal(1);
-  const [isTranslating, translate] = createTranslateRange(start, end);
-  helper.createEffectOn(() => store.imgList.length, length => !isTranslating() && setEnd(length));
-  return (() => {
-    var _el$ = web.template(\`<div><div></div><button type=button><div>\`)(),
-      _el$2 = _el$.firstChild,
-      _el$3 = _el$2.nextSibling,
-      _el$4 = _el$3.firstChild;
-    web.insert(_el$2, \` \${before}\`, null);
-    web.insert(_el$2, web.createComponent(NumberInput, {
-      get value() {
-        return start() + 1;
-      },
-      maxLength: 4,
-      onChange: val => {
-        setStart(helper.clamp(0, val - 1, end() - 1));
+  const [rangeText, setRangeText] = solidJs.createSignal('');
+  helper.createEffectOn(rangeText, () => {
+    const imgImgs = helper.extractRange(rangeText(), store.imgList.length);
+    setImgTranslationEnbale(imgImgs, true);
+    const closeImgs = [];
+    for (let i = 0; i < store.imgList.length; i++) if (!imgImgs.has(i)) closeImgs.push(i);
+    setImgTranslationEnbale(closeImgs, false);
+    setRangeText(helper.descRange(imgImgs, store.imgList.length));
+  });
+
+  // 实时更新翻译范围
+  helper.createEffectOn(() => {
+    const list = new Set();
+    for (const [i, img] of imgList().entries()) {
+      switch (img.translationType) {
+        case 'error':
+        case 'show':
+        case 'wait':
+          list.add(i);
+          break;
       }
-    }), null);
-    web.insert(_el$2, \`\${middle}\`, null);
-    web.insert(_el$2, web.createComponent(NumberInput, {
-      get value() {
-        return end() + 1;
-      },
-      maxLength: 4,
-      onChange: val => setEnd(helper.clamp(start() + 1, val - 1, store.imgList.length))
-    }), null);
-    web.insert(_el$2, \`\${after}\`, null);
-    web.addEventListener(_el$3, "click", translate);
-    web.effect(_p$ => {
-      var _v$ = modules_c21c94f2$1.SettingsItem,
-        _v$2 = modules_c21c94f2$1.SettingsItemName,
-        _v$3 = modules_c21c94f2$1.SettingsItemSwitch,
-        _v$4 = isTranslating(),
-        _v$5 = modules_c21c94f2$1.SettingsItemSwitchRound;
-      _v$ !== _p$.e && web.className(_el$, _p$.e = _v$);
-      _v$2 !== _p$.t && web.className(_el$2, _p$.t = _v$2);
-      _v$3 !== _p$.a && web.className(_el$3, _p$.a = _v$3);
-      _v$4 !== _p$.o && web.setAttribute(_el$3, "data-checked", _p$.o = _v$4);
-      _v$5 !== _p$.i && web.className(_el$4, _p$.i = _v$5);
-      return _p$;
-    }, {
-      e: undefined,
-      t: undefined,
-      a: undefined,
-      o: undefined,
-      i: undefined
-    });
-    return _el$;
-  })();
+    }
+    return list;
+  }, translationImgs => {
+    setRangeText(helper.descRange(translationImgs, store.imgList.length));
+  });
+  return [web.createComponent(SettingsItem, {
+    get name() {
+      return helper.t('setting.translation.range');
+    }
+  }), web.createComponent(RangeInput, {
+    get ["class"]() {
+      return modules_c21c94f2$1.SettingsItem;
+    },
+    get placeholder() {
+      return helper.t('other.page_range');
+    },
+    get value() {
+      return rangeText();
+    },
+    onChange: setRangeText
+  })];
 };
 const SettingTranslation = () => [web.createComponent(SettingsItemSelect, {
   get name() {
@@ -5358,9 +5432,9 @@ const SettingTranslation = () => [web.createComponent(SettingsItemSelect, {
     return store.option.translation.server === 'cotrans';
   },
   get children() {
-    var _el$5 = web.template(\`<blockquote>\`)();
-    web.effect(() => _el$5.innerHTML = helper.t('setting.translation.cotrans_tip'));
-    return _el$5;
+    var _el$ = web.template(\`<blockquote>\`)();
+    web.effect(() => _el$.innerHTML = helper.t('setting.translation.cotrans_tip'));
+    return _el$;
   }
 }), web.createComponent(SettingsShowItem, {
   get when() {
@@ -5437,28 +5511,22 @@ const SettingTranslation = () => [web.createComponent(SettingsItemSelect, {
       get onChange() {
         return createStateSetFn('translation.forceRetry');
       }
+    }), web.createComponent(SettingsItemSwitch, {
+      get name() {
+        return helper.t('setting.translation.options.onlyDownloadTranslated');
+      },
+      get value() {
+        return store.option.translation.onlyDownloadTranslated;
+      },
+      get onChange() {
+        return createStateSetFn('translation.onlyDownloadTranslated');
+      }
     }), web.createComponent(solidJs.Show, {
       get when() {
         return store.option.translation.server === 'selfhosted';
       },
       get children() {
         return [web.createComponent(SettingsItemSwitch, {
-          get name() {
-            return helper.t('setting.translation.translate_all');
-          },
-          get value() {
-            return isTranslatingAll();
-          },
-          onChange: translateAll
-        }), web.createComponent(SettingsItemSwitch, {
-          get name() {
-            return helper.t('setting.translation.translate_to_end');
-          },
-          get value() {
-            return isTranslatingToEnd();
-          },
-          onChange: translateToEnd
-        }), web.createComponent(TranslateRange, {}), web.createComponent(SettingsItemSwitch, {
           get name() {
             return helper.t('setting.translation.options.localUrl');
           },
@@ -5475,33 +5543,74 @@ const SettingTranslation = () => [web.createComponent(SettingsItemSelect, {
             return store.option.translation.localUrl !== undefined;
           },
           get children() {
-            var _el$6 = web.template(\`<input type=url>\`)();
-            _el$6.addEventListener("change", e => {
+            var _el$2 = web.template(\`<input type=url>\`)();
+            _el$2.addEventListener("change", e => {
               setOption(draftOption => {
                 // 删掉末尾的斜杠
                 const url = e.target.value.replace(/\\/$/, '');
                 draftOption.translation.localUrl = url;
               });
             });
-            web.effect(() => web.className(_el$6, modules_c21c94f2$1.SettingsItem));
-            web.effect(() => _el$6.value = store.option.translation.localUrl);
-            return _el$6;
+            web.effect(() => _el$2.value = store.option.translation.localUrl);
+            return _el$2;
           }
-        })];
-      }
-    }), web.createComponent(SettingsItemSwitch, {
-      get name() {
-        return helper.t('setting.translation.options.onlyDownloadTranslated');
-      },
-      get value() {
-        return store.option.translation.onlyDownloadTranslated;
-      },
-      get onChange() {
-        return createStateSetFn('translation.onlyDownloadTranslated');
+        }), web.createComponent(SettingsItemSwitch, {
+          get name() {
+            return helper.t('setting.translation.translate_all');
+          },
+          get value() {
+            return isTranslatingAll();
+          },
+          onChange: translateAll
+        }), web.createComponent(SettingsItemSwitch, {
+          get name() {
+            return helper.t('setting.translation.translate_to_end');
+          },
+          get value() {
+            return isTranslatingToEnd();
+          },
+          onChange: translateToEnd
+        }), web.createComponent(TranslateRange, {})];
       }
     })];
   }
 })];
+
+/** 数值输入框 */
+const NumberInput = props => {
+  const handleInput = e => props.maxLength !== undefined && e.currentTarget.textContent.length > props.maxLength && e.currentTarget.blur();
+  const handleKeyDown = e => {
+    switch (e.key) {
+      case 'ArrowUp':
+        return props.onChange(Number(e.target.textContent) + (props.step ?? 1));
+      case 'ArrowDown':
+        return props.onChange(Number(e.target.textContent) - (props.step ?? 1));
+      case 'Enter':
+        return e.target.blur();
+    }
+  };
+  return [(() => {
+    var _el$ = web.template(\`<span contenteditable data-only-number>\`)();
+    _el$.addEventListener("blur", e => {
+      try {
+        props.onChange(Number(e.currentTarget.textContent));
+      } finally {
+        e.currentTarget.textContent = \`\${props.value}\`;
+      }
+    });
+    web.addEventListener(_el$, "keydown", handleKeyDown);
+    web.addEventListener(_el$, "input", handleInput);
+    web.insert(_el$, () => \`\${props.value}\`);
+    return _el$;
+  })(), web.createComponent(solidJs.Show, {
+    get when() {
+      return props.suffix;
+    },
+    get children() {
+      return props.suffix;
+    }
+  })];
+};
 
 /** 数值输入框菜单项 */
 const SettingsItemNumber = props => web.createComponent(SettingsItem, {
@@ -9292,7 +9401,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>本地翻译支持指定页数范围 </p></li><li><p>ehentai 支持只加载指定页码范围的图片\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复图片加载中打开 页面识别 相关功能会出错的 bug </p></li><li><p>修复网格模式点击失效的 bug </p></li><li><p>修复下载文件名变为 zip.txt 的 bug </p></li><li><p>修复简易阅读模式下上/下话切换功能失效的 bug\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>使用更精细的文本格式设置翻译范围\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复拷贝漫画高清画质替换失效的 bug\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
@@ -9517,7 +9626,7 @@ const useInit = async (name, defaultOptions = {}) => {
     });
     if (needAutoShow.val && options.autoShow) setTimeout(showComic);
     (async () => {
-      console.debug(helper.t('other.enter_comic_read_mode'), fabProps.onClick);
+      console.debug(helper.t('other.enter_comic_read_mode'), () => fabProps.onClick?.());
       await updateHideFabMenu();
     })();
     helper.linstenKeydown(e => {
@@ -11869,18 +11978,7 @@ const sortTags = async pageType => {
     return pageList;
   };
   const [loadImgsText, setLoadImgsText] = solidJs.createSignal(`1-${totalImgNum}`);
-  const loadImgs = helper.createRootMemo(() => {
-    const list = new Set();
-    for (const text of loadImgsText().replaceAll(' ', '').split(',')) {
-      if (/^\d+$/.test(text)) list.add(Number(text) - 1);else if (/^\d+-\d*$/.test(text)) {
-        let [i, end] = text.split('-').map(Number);
-        end ||= totalImgNum;
-        for (i--, end--; i <= end; i++) list.add(i);
-      }
-    }
-    for (const i of list) if (!helper.inRange(0, i, totalImgNum)) list.delete(i);
-    return [...list];
-  });
+  const loadImgs = helper.createRootMemo(() => helper.extractRange(loadImgsText(), ehImgList.length));
   const loadImgList = async setImg => {
     // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
     // 所以只能一次性获取所有页数上的图片页地址
@@ -11894,7 +11992,7 @@ const sortTags = async pageType => {
         }
       }
     }
-    await helper.plimit(loadImgs().map((i, order) => async () => {
+    await helper.plimit([...loadImgs()].map((i, order) => async () => {
       ehImgList[i] ||= await getImgUrl(ehImgPageList[i]);
       setImg(order, ehImgList[i]);
     }));
@@ -11903,14 +12001,14 @@ const sortTags = async pageType => {
       await detectAd.getAdPageByContent(ehImgList, comicMap[''].adList);
     }
   };
-  setComicLoad(dynamicLoad(loadImgList, () => loadImgs().length));
+  setComicLoad(dynamicLoad(loadImgList, () => loadImgs().size));
   web.render(() => {
     const hasMultiPage = sidebarDom.children[6]?.classList.contains('gsp');
     const handleClick = e => {
       if (!e.shiftKey) return;
       setLoadImgsText(
       // eslint-disable-next-line no-alert
-      prompt(helper.t('site.add_feature.load_range')) ?? `1-${totalImgNum}`);
+      prompt(helper.t('other.page_range')) ?? `1-${totalImgNum}`);
       // 删掉当前的图片列表以便触发重新加载
       setComicMap('', 'imgList', undefined);
     };
@@ -12234,7 +12332,7 @@ const helper = require('helper');
         words,
         contents
       } = res.response.results.chapter;
-      for (let i = 0; i < contents.length; i++) imgList[words[i]] = contents[i].url.replace('.c800x.', '.c1500x.');
+      for (let i = 0; i < contents.length; i++) imgList[words[i]] = contents[i].url.replace(/(?<=.*\/)c800x/, 'c1500x');
       return imgList;
     };
     options = {
