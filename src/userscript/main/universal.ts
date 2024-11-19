@@ -26,6 +26,8 @@ export interface InitOptions {
     isMangaPage?: () => Promise<boolean> | boolean;
     getOnPrev?: () => Promise<MangaProps['onPrev']> | MangaProps['onPrev'];
     getOnNext?: () => Promise<MangaProps['onNext']> | MangaProps['onNext'];
+    /** 有些 SPA 会在页数变更时修改 url，导致脚本误以为换章节了，需要处理下 */
+    handlePageurl?: (location: Location) => string;
   };
 }
 
@@ -83,11 +85,13 @@ export const universal = async ({
   }
 
   const { isMangaPage, getOnPrev, getOnNext } = SPA;
+  const handlePageurl = SPA?.handlePageurl ?? ((location) => location.href);
 
   let lastUrl = '';
   autoUpdate(async () => {
-    if (!(await wait(() => window.location.href !== lastUrl, 5000))) return;
-    lastUrl = window.location.href;
+    if (!(await wait(() => handlePageurl(window.location) !== lastUrl, 5000)))
+      return;
+    lastUrl = handlePageurl(window.location);
 
     if (isMangaPage && !(await isMangaPage())) {
       setFab('show', false);

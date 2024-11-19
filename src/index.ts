@@ -522,6 +522,43 @@ try {
       break;
     }
 
+    // #[MangaDex](https://mangadex.org)
+    case 'mangadex.org': {
+      options = {
+        name: 'mangadex',
+        async getImgList() {
+          const chapter_id = window.location.pathname.split('/').at(2);
+          const {
+            response: {
+              baseUrl,
+              chapter: { data, hash },
+            },
+          } = await request<{
+            baseUrl: string;
+            chapter: { data: string[]; hash: string };
+          }>(
+            `https://api.mangadex.org/at-home/server/${chapter_id}?forcePort443=false`,
+            { responseType: 'json' },
+          );
+          return data.map((e) => baseUrl + '/data/' + hash + '/' + e);
+        },
+        SPA: {
+          isMangaPage: () => /^\/chapter\/.+/.test(window.location.pathname),
+          getOnPrev: () =>
+            querySelectorClick(
+              `#chapter-selector > a[href^="/chapter/"]:nth-of-type(1)`,
+            ),
+          getOnNext: () =>
+            querySelectorClick(
+              `#chapter-selector > a[href^="/chapter/"]:nth-of-type(2)`,
+            ),
+          handlePageurl: (location) =>
+            location.href.replace(/(?<=\/chapter\/.+?)\/.*/, ''),
+        },
+      };
+      break;
+    }
+
     // #[無限動漫](https://www.comicabc.com)
     case '8.twobili.com':
     case 'a.twobili.com':

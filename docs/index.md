@@ -196,6 +196,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - [绅士漫画(wnacg)](https://www.wnacg.com)
 - [mangabz](https://mangabz.com)
 - [komiic](https://komiic.com)
+- [MangaDex](https://mangadex.org)
 - [無限動漫](https://www.comicabc.com)
 - [新新漫画](https://www.77mh.nl)
 - [熱辣漫畫](https://www.relamanhua.org/)
