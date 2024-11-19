@@ -337,6 +337,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
 
     await plimit(
       [...loadImgs()].map((i, order) => async () => {
+        if (i < 0) return;
         ehImgList[i] ||= await getImgUrl(ehImgPageList[i]);
         setImg(order, ehImgList[i]);
       }),
