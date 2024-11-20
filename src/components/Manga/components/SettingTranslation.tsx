@@ -25,12 +25,23 @@ const TranslateRange: Component = () => {
 
   createEffectOn(rangeText, () => {
     const imgImgs = extractRange(rangeText(), store.imgList.length);
-    setImgTranslationEnbale(imgImgs, true);
 
-    const closeImgs: number[] = [];
+    const openImgs = [...imgImgs].filter((i) => {
+      // 过滤掉翻译完成和等待翻译的图片，避免因为范围变化而重新发起翻译
+      switch (imgList()[i].translationType) {
+        case 'show':
+        case 'wait':
+          return false;
+        default:
+          return true;
+      }
+    });
+    if (openImgs.length > 0) setImgTranslationEnbale(openImgs, true);
+
+    const closeImgs = new Set<number>();
     for (let i = 0; i < store.imgList.length; i++)
-      if (!imgImgs.has(i)) closeImgs.push(i);
-    setImgTranslationEnbale(closeImgs, false);
+      if (!imgImgs.has(i)) closeImgs.add(i);
+    if (closeImgs.size > 0) setImgTranslationEnbale(closeImgs, false);
 
     setRangeText(descRange(imgImgs, store.imgList.length));
   });
