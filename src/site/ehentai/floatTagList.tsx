@@ -167,10 +167,11 @@ export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
   ref.classList.add('comicread-ignore');
   document.body.append(ref);
 
-  // 使用滚轮调整透明度
+  // 使用 shift + 滚轮调整透明度
   ref.addEventListener(
     'wheel',
     (e) => {
+      if (!e.shiftKey) return;
       e.stopPropagation();
       e.preventDefault();
       setOpacity(store.opacity + (e.deltaY > 0 ? -0.05 : 0.05));

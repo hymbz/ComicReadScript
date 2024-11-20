@@ -108,6 +108,16 @@ export const handleVersionUpdate = async () => {
               </li>
             </ul>
           </VersionTip>
+          <VersionTip v1={version} v2={'10.8.0'}>
+            <h3>改动</h3>
+            <ul>
+              <li>
+                ehentai 悬浮标签列表的透明度调节
+                <br />
+                由「鼠标滚轮」改为「Shift + 鼠标滚轮」
+              </li>
+            </ul>
+          </VersionTip>
         </>
         /* eslint-enable i18next/no-literal-string */
       ),

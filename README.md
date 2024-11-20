@@ -287,7 +287,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 ![eh悬浮标签列表](/docs/public/eh悬浮标签列表.webp)
 
-相较原脚本增加了快捷键 `q` 以便在阅读模式下唤出（可在设置中修改），并能同时显示「[EhSyringe](https://github.com/EhTagTranslation/EhSyringe)」的标签描述，透明度改用鼠标滚轮调节。
+相较原脚本增加了快捷键 `q` 以便在阅读模式下唤出（可在设置中修改），并能同时显示「[EhSyringe](https://github.com/EhTagTranslation/EhSyringe)」的标签描述，透明度改用 `Shift + 鼠标滚轮` 调节。
 
 在悬浮状态下：打完标签后输入框会自动失焦以便能快速用快捷键关掉、输入框只要用鼠标划过就会自动聚焦省去鼠标点击。
 
