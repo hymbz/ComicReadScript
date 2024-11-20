@@ -117,7 +117,7 @@ try {
       break;
     }
 
-    // #拷贝漫画(copymanga)（显示最后阅读记录）
+    // #拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）
     case 'mangacopy.com':
     case 'copymanga.site':
     case 'copymanga.info':
