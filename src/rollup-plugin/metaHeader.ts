@@ -114,6 +114,7 @@ export const getMetaData = (isDevMode: boolean) => {
       'copymanga.tv',
       'mangacopy.com',
       'xsskc.com',
+      'schale.network',
       'self',
       '127.0.0.1',
       '*',

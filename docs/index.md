@@ -201,7 +201,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - [新新漫画](https://www.77mh.nl)
 - [熱辣漫畫](https://www.relamanhua.org/)
 - [hitomi](https://hitomi.la)
-- [koharu](https://koharu.to)
+- [SchaleNetwork](https://schale.network/)
 - [kemono](https://kemono.su)
 - [nekohouse](https://nekohouse.su)
 - [welovemanga](https://welovemanga.one)

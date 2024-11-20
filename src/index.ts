@@ -660,8 +660,10 @@ try {
       break;
     }
 
-    // #[koharu](https://koharu.to)
-    case 'koharu.to': {
+    // #[SchaleNetwork](https://schale.network/)
+    case 'shupogaki.moe':
+    case 'hoshino.one':
+    case 'niyaniya.moe': {
       const downloadImg = async (url: string) =>
         new Promise<string>((resolve) => {
           const xhr = new XMLHttpRequest();
@@ -676,7 +678,7 @@ try {
       const isMangaPage = () => window.location.href.includes('/g/');
 
       options = {
-        name: 'koharu',
+        name: 'schale',
         async getImgList({ dynamicLoad }) {
           const [, , galleryId, galleryKey] =
             window.location.pathname.split('/');
@@ -691,7 +693,7 @@ try {
             }>;
           };
           const detailRes = await request<DetailRes>(
-            `https://api.koharu.to/books/detail/${galleryId}/${galleryKey}`,
+            `https://api.schale.network/books/detail/${galleryId}/${galleryKey}`,
             { fetch: true, responseType: 'json' },
           );
           const [[w, { id, public_key }]] = Object.entries(
@@ -706,7 +708,7 @@ try {
             entries: Array<{ path: string; dimensions: [number, number] }>;
           };
           const dataRes = await request<DataRes>(
-            `https://api.koharu.to/books/data/${galleryId}/${galleryKey}/${
+            `https://api.schale.network/books/data/${galleryId}/${galleryKey}/${
               id
             }/${public_key}?v=${updated_at ?? created_at}&w=${w}`,
             { fetch: true, responseType: 'json' },
