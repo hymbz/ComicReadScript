@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         10.8.0
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、無限動漫、新新漫画、熱辣漫畫、hitomi、koharu、kemono、nekohouse、welovemanga
+// @version         10.9.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
@@ -25,6 +25,7 @@
 // @connect         copymanga.tv
 // @connect         mangacopy.com
 // @connect         xsskc.com
+// @connect         schale.network
 // @connect         self
 // @connect         127.0.0.1
 // @connect         *
@@ -9340,7 +9341,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>支持 MangaDex\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复动漫之家隐藏漫画解锁功能失效的 bug </p></li><li><p>修复修改翻译范围会导致所有图片重新翻译的 bug\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>解锁拷贝漫画的隐藏漫画\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>支持 koharu 的新域名 SchaleNetwork\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
@@ -12190,7 +12191,7 @@ const helper = require('helper');
         break;
       }
 
-    // #拷贝漫画(copymanga)（显示最后阅读记录）
+    // #拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）
     case 'mangacopy.com':
     case 'copymanga.site':
     case 'copymanga.info':
@@ -12206,29 +12207,228 @@ const helper = require('helper');
     case 'www.copymanga.tv':
     case 'www.copymanga.com':
       {
+const web = require('solid-js/web');
+const solidJs = require('solid-js');
 const main = require('main');
 const helper = require('helper');
 
-(() => {
-  const headers = {
-    webp: '1',
-    region: '1',
-    'User-Agent': 'COPY/2.0.7|',
-    version: '2.0.7',
-    source: 'copyApp',
-    referer: 'com.copymanga.app-2.0.7'
+
+const headers = {
+  webp: '1',
+  region: '1',
+  'User-Agent': 'COPY/2.0.7|',
+  version: '2.0.7',
+  source: 'copyApp',
+  referer: 'com.copymanga.app-2.0.7'
+};
+
+// 在目录页显示上次阅读记录
+const handleLastChapter = comicName => {
+  let a;
+  const stylesheet = new CSSStyleSheet();
+  document.adoptedStyleSheets.push(stylesheet);
+  const updateLastChapter = async () => {
+    // 因为拷贝漫画的目录是动态加载的，所以要等目录加载出来再往上添加
+    if (!a) (async () => {
+      a = document.createElement('a');
+      const tableRight = await helper.wait(() => helper.querySelector('.table-default-right'));
+      a.target = '_blank';
+      tableRight.insertBefore(a, tableRight.firstElementChild);
+      const span = document.createElement('span');
+      span.textContent = '最後閱讀：';
+      tableRight.insertBefore(span, tableRight.firstElementChild);
+    })();
+    a.textContent = '獲取中';
+    a.removeAttribute('href');
+    const res = await main.request(`/api/v3/comic2/${comicName}/query?platform=3`, {
+      responseType: 'json',
+      fetch: false,
+      headers
+    });
+    const data = res.response?.results?.browse;
+    if (!data) {
+      a.textContent = data === null ? '無' : '未返回數據';
+      return;
+    }
+    const lastChapterId = data.chapter_id;
+    if (!lastChapterId) {
+      a.textContent = '接口異常';
+      return;
+    }
+    await stylesheet.replace(`ul a[href*="${lastChapterId}"] {
+        color: #fff !important;
+        background: #1790E6;
+      }`);
+    a.href = `${window.location.pathname}/chapter/${lastChapterId}`;
+    a.textContent = data.chapter_name;
   };
+  setTimeout(updateLastChapter);
+  document.addEventListener('visibilitychange', updateLastChapter);
+};
+
+// 生成目录
+const buildChapters = async (comicName, rootDom) => {
+  // 拷贝有些漫画虽然可以通过 api 获取到数据，但网页上的目录被隐藏了
+  // 举例：https://mangacopy.com/comic/yueguangxiadeyishijiezhilv
+
+  const {
+    response: {
+      results
+    }
+  } = await main.request(`/comicdetail/${comicName}/chapters`, {
+    responseType: 'json',
+    errorText: '加載漫畫目錄失敗',
+    headers
+  });
+  // 解码 api 返回的数据
+  const decryptData = async (cipher, key, iv) => {
+    const decryptedBuffer = await crypto.subtle.decrypt({
+      name: 'AES-CBC',
+      iv: new TextEncoder().encode(iv)
+    }, await crypto.subtle.importKey('raw', new TextEncoder().encode(key), {
+      name: 'AES-CBC'
+    }, false, ['decrypt']), new Uint8Array(cipher.match(/.{1,2}/g).map(byte => Number.parseInt(byte, 16))).buffer);
+    return JSON.parse(new TextDecoder().decode(decryptedBuffer));
+  };
+  const data = await decryptData(results.slice(16), unsafeWindow.dio || 'xxxmanga.woo.key', results.slice(0, 16));
+  helper.log(data);
+  const {
+    build: {
+      type
+    },
+    groups
+  } = data;
+  const Group = props => {
+    const chapters = Object.fromEntries(type.map(({
+      id
+    }) => [id, []]));
+    for (const chapter of props.chapters) chapters[chapter.type].push(chapter);
+    return [(() => {
+      var _el$ = web.template(`<span>`)();
+      web.insert(_el$, () => props.name);
+      return _el$;
+    })(), (() => {
+      var _el$2 = web.template(`<div class=table-default><div class=table-default-title><ul class="nav nav-tabs"role=tablist></ul><div class=table-default-right><span>更新內容：</span><a target=_blank></a><span>更新時間：</span><span></span></div></div><div class=table-default-box><div class=tab-content>`)(),
+        _el$3 = _el$2.firstChild,
+        _el$4 = _el$3.firstChild,
+        _el$5 = _el$4.nextSibling,
+        _el$6 = _el$5.firstChild,
+        _el$7 = _el$6.nextSibling,
+        _el$8 = _el$7.nextSibling,
+        _el$9 = _el$8.nextSibling,
+        _el$10 = _el$3.nextSibling,
+        _el$11 = _el$10.firstChild;
+      web.insert(_el$4, web.createComponent(solidJs.For, {
+        each: type,
+        children: ({
+          id,
+          name
+        }) => (() => {
+          var _el$12 = web.template(`<li class=nav-item><a class=nav-link data-toggle=tab role=tab aria-selected=false>`)(),
+            _el$13 = _el$12.firstChild;
+          web.insert(_el$13, name);
+          web.effect(_p$ => {
+            var _v$ = !!(chapters[id].length === 0),
+              _v$2 = `#${props.path_word}${name}`;
+            _v$ !== _p$.e && _el$13.classList.toggle("disabled", _p$.e = _v$);
+            _v$2 !== _p$.t && web.setAttribute(_el$13, "href", _p$.t = _v$2);
+            return _p$;
+          }, {
+            e: undefined,
+            t: undefined
+          });
+          return _el$12;
+        })()
+      }));
+      web.insert(_el$7, () => props.last_chapter.name);
+      web.insert(_el$9, () => props.last_chapter.datetime_created);
+      web.insert(_el$11, web.createComponent(solidJs.For, {
+        each: type,
+        children: ({
+          id,
+          name
+        }) => (() => {
+          var _el$14 = web.template(`<div role=tabpanel class="tab-pane fade"><ul>`)(),
+            _el$15 = _el$14.firstChild;
+          web.insert(_el$15, web.createComponent(solidJs.For, {
+            get each() {
+              return chapters[id];
+            },
+            children: chapter => (() => {
+              var _el$16 = web.template(`<a target=_blank><li>`)(),
+                _el$17 = _el$16.firstChild;
+              _el$16.style.setProperty("display", "block");
+              web.insert(_el$17, () => chapter.name);
+              web.effect(_p$ => {
+                var _v$3 = `/comic/${comicName}/chapter/${chapter.id}`,
+                  _v$4 = chapter.name;
+                _v$3 !== _p$.e && web.setAttribute(_el$16, "href", _p$.e = _v$3);
+                _v$4 !== _p$.t && web.setAttribute(_el$16, "title", _p$.t = _v$4);
+                return _p$;
+              }, {
+                e: undefined,
+                t: undefined
+              });
+              return _el$16;
+            })()
+          }));
+          web.effect(() => web.setAttribute(_el$14, "id", `${props.path_word}${name}`));
+          return _el$14;
+        })()
+      }));
+      web.effect(() => web.setAttribute(_el$7, "href", `/comic/${comicName}/chapter/${props.last_chapter.comic_id}`));
+      return _el$2;
+    })()];
+  };
+  web.render(() => web.createComponent(solidJs.For, {
+    get each() {
+      return Object.values(groups);
+    },
+    children: Group
+  }), rootDom);
+
+  // 点击每个分组下第一个激活的标签
+  for (const group of helper.querySelectorAll('.upLoop .table-default-title')) group.querySelector('.nav-link:not(.disabled)')?.click();
+};
+(async () => {
   const token = document.cookie.split('; ').find(cookie => cookie.startsWith('token='))?.replace('token=', '');
   if (token) Reflect.set(headers, 'Authorization', `Token ${token}`);
-  let name = '';
+  let comicName = '';
   let id = '';
-  if (window.location.href.includes('/chapter/')) [,, name,, id] = window.location.pathname.split('/');else if (window.location.href.includes('/comicContent/')) [,,, name, id] = window.location.pathname.split('/');
-  if (name && id) {
-    const getImgList = async () => {
-      const res = await main.request(`/api/v3/comic/${name}/chapter2/${id}?platform=3`, {
+  if (window.location.href.includes('/chapter/')) [,, comicName,, id] = window.location.pathname.split('/');else if (window.location.href.includes('/comicContent/')) [,,, comicName, id] = window.location.pathname.split('/');
+  if (comicName && id) {
+    const {
+      setComicLoad,
+      setManga
+    } = await main.useInit('copymanga');
+
+    /** 漫画不存在时才会出现的提示 */
+    const titleDom = helper.querySelector('main .img+.title');
+    if (titleDom) titleDom.textContent = 'ComicRead 提示您：你訪問的內容暫不存在，請點選右下角按鈕嘗試加載漫畫';
+    setComicLoad(async () => {
+      if (titleDom) titleDom.textContent = '漫畫加載中，請坐和放寬';
+      const res = await main.request(`/api/v3/comic/${comicName}/chapter2/${id}?platform=3`, {
         responseType: 'json',
         headers
       });
+      if (titleDom) {
+        titleDom.textContent = '漫畫加載成功🥳';
+        const {
+          chapter: {
+            next,
+            prev,
+            name: chapterName
+          },
+          comic: {
+            name
+          }
+        } = res.response.results;
+        document.title = `${name} - ${chapterName} - 拷貝漫畫 拷贝漫画`;
+        setManga({
+          onNext: next ? () => window.location.assign(`/comic/${comicName}/chapter/${next}`) : undefined,
+          onPrev: prev ? () => window.location.assign(`/comic/${comicName}/chapter/${prev}`) : undefined
+        });
+      }
       const imgList = [];
       const {
         words,
@@ -12236,70 +12436,35 @@ const helper = require('helper');
       } = res.response.results.chapter;
       for (let i = 0; i < contents.length; i++) imgList[words[i]] = contents[i].url.replace(/(?<=.*\/)c800x/, 'c1500x');
       return imgList;
-    };
-    options = {
-      name: 'copymanga',
-      getImgList,
+    });
+    setManga({
       onNext: helper.querySelectorClick('.comicContent-next a:not(.prev-null)'),
-      onPrev: helper.querySelectorClick('.comicContent-prev:not(.index,.list) a:not(.prev-null)'),
-      async getCommentList() {
-        const chapter_id = window.location.pathname.split('/').at(-1);
-        const res = await main.request(`/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`, {
-          responseType: 'json',
-          errorText: '获取漫画评论失败'
-        });
-        return res.response.results.list.map(({
-          comment
-        }) => comment);
-      }
+      onPrev: helper.querySelectorClick('.comicContent-prev:not(.index,.list) a:not(.prev-null)')
+    });
+    const getCommentList = async () => {
+      const chapter_id = window.location.pathname.split('/').at(-1);
+      const res = await main.request(`/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`, {
+        responseType: 'json',
+        errorText: '获取漫画评论失败'
+      });
+      return res.response.results.list.map(({
+        comment
+      }) => comment);
     };
+    setManga({
+      commentList: await getCommentList()
+    });
     return;
   }
 
-  // 在目录页显示上次阅读记录
-  if (window.location.href.includes('/comic/')) {
-    const comicName = window.location.href.split('/comic/')[1];
-    if (!comicName || !token) return;
-    let a;
-    const stylesheet = new CSSStyleSheet();
-    document.adoptedStyleSheets.push(stylesheet);
-    const updateLastChapter = async () => {
-      // 因为拷贝漫画的目录是动态加载的，所以要等目录加载出来再往上添加
-      if (!a) (async () => {
-        a = document.createElement('a');
-        const tableRight = await helper.wait(() => helper.querySelector('.table-default-right'));
-        a.target = '_blank';
-        tableRight.insertBefore(a, tableRight.firstElementChild);
-        const span = document.createElement('span');
-        span.textContent = '最後閱讀：';
-        tableRight.insertBefore(span, tableRight.firstElementChild);
-      })();
-      a.textContent = '獲取中';
-      a.removeAttribute('href');
-      const res = await main.request(`${window.location.origin}/api/v3/comic2/${comicName}/query?platform=3`, {
-        responseType: 'json',
-        fetch: false,
-        headers
-      });
-      const data = res.response?.results?.browse;
-      if (!data) {
-        a.textContent = data === null ? '無' : '未返回數據';
-        return;
-      }
-      const lastChapterId = data.chapter_id;
-      if (!lastChapterId) {
-        a.textContent = '接口異常';
-        return;
-      }
-      await stylesheet.replace(`ul a[href*="${lastChapterId}"] {
-        color: #fff !important;
-        background: #1790E6;
-      }`);
-      a.href = `${window.location.pathname}/chapter/${lastChapterId}`;
-      a.textContent = data.chapter_name;
-    };
-    setTimeout(updateLastChapter);
-    document.addEventListener('visibilitychange', updateLastChapter);
+  // 目录页
+  if (!id && window.location.href.includes('/comic/')) {
+    comicName = window.location.href.split('/comic/')[1];
+    if (!comicName) return;
+
+    // 稍等看有没有目录加载出来，没有就自己生成
+    if (!(await helper.wait(() => helper.querySelector('.upLoop .table-default-title'), 1000))) await buildChapters(comicName, helper.querySelector('.upLoop'));
+    if (token) handleLastChapter(comicName);
   }
 })();
 
@@ -12817,8 +12982,10 @@ const helper = require('helper');
         break;
       }
 
-    // #[koharu](https://koharu.to)
-    case 'koharu.to':
+    // #[SchaleNetwork](https://schale.network/)
+    case 'shupogaki.moe':
+    case 'hoshino.one':
+    case 'niyaniya.moe':
       {
         const downloadImg = async url => new Promise(resolve => {
           const xhr = new XMLHttpRequest();
@@ -12831,12 +12998,12 @@ const helper = require('helper');
         });
         const isMangaPage = () => window.location.href.includes('/g/');
         options = {
-          name: 'koharu',
+          name: 'schale',
           async getImgList({
             dynamicLoad
           }) {
             const [,, galleryId, galleryKey] = window.location.pathname.split('/');
-            const detailRes = await main.request(`https://api.koharu.to/books/detail/${galleryId}/${galleryKey}`, {
+            const detailRes = await main.request(`https://api.schale.network/books/detail/${galleryId}/${galleryKey}`, {
               fetch: true,
               responseType: 'json'
             });
@@ -12848,7 +13015,7 @@ const helper = require('helper');
               created_at,
               updated_at
             } = detailRes.response;
-            const dataRes = await main.request(`https://api.koharu.to/books/data/${galleryId}/${galleryKey}/${id}/${public_key}?v=${updated_at ?? created_at}&w=${w}`, {
+            const dataRes = await main.request(`https://api.schale.network/books/data/${galleryId}/${galleryKey}/${id}/${public_key}?v=${updated_at ?? created_at}&w=${w}`, {
               fetch: true,
               responseType: 'json'
             });

@@ -1,12 +1,11 @@
-## [10.8.0](https://github.com/hymbz/ComicReadScript/compare/v10.7.0...v10.8.0) (2024-11-20)
+## [10.9.0](https://github.com/hymbz/ComicReadScript/compare/v10.8.0...v10.9.0) (2024-11-20)
 
 
 ### Features
 
-* :sparkles: 支持 MangaDex ([1aad74f](https://github.com/hymbz/ComicReadScript/commit/1aad74fc5c2660de578e22604ae598313dae3d3b))
+* :sparkles: 解锁拷贝漫画的隐藏漫画 ([5ef3fe9](https://github.com/hymbz/ComicReadScript/commit/5ef3fe9653ef646c1151062c195bc3687949a1e9)), closes [#202](https://github.com/hymbz/ComicReadScript/issues/202)
 
 
 ### Bug Fixes
 
-* :bug: 修复动漫之家隐藏漫画解锁功能失效的 bug ([6a0f787](https://github.com/hymbz/ComicReadScript/commit/6a0f787620e6c60f3f1dde4457dd9f328a02a985)), closes [#201](https://github.com/hymbz/ComicReadScript/issues/201)
-* :bug: 修复修改翻译范围会导致所有图片重新翻译的 bug ([e1ea9ea](https://github.com/hymbz/ComicReadScript/commit/e1ea9ea7e481c162eacd0118e5c21ed044384938))
+* :bug: 支持 koharu 的新域名 SchaleNetwork ([86eb97c](https://github.com/hymbz/ComicReadScript/commit/86eb97c336189081280db79ff9d407d78b8e8e03)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/212527#comment-546453](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/212527/issues/comment-546453)
