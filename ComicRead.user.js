@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         10.7.0
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、無限動漫、新新漫画、熱辣漫畫、hitomi、koharu、kemono、nekohouse、welovemanga
+// @version         10.8.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、無限動漫、新新漫画、熱辣漫畫、hitomi、koharu、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
@@ -5303,10 +5303,20 @@ const TranslateRange = () => {
   const [rangeText, setRangeText] = solidJs.createSignal('');
   helper.createEffectOn(rangeText, () => {
     const imgImgs = helper.extractRange(rangeText(), store.imgList.length);
-    setImgTranslationEnbale(imgImgs, true);
-    const closeImgs = [];
-    for (let i = 0; i < store.imgList.length; i++) if (!imgImgs.has(i)) closeImgs.push(i);
-    setImgTranslationEnbale(closeImgs, false);
+    const openImgs = [...imgImgs].filter(i => {
+      // 过滤掉翻译完成和等待翻译的图片，避免因为范围变化而重新发起翻译
+      switch (imgList()[i].translationType) {
+        case 'show':
+        case 'wait':
+          return false;
+        default:
+          return true;
+      }
+    });
+    if (openImgs.length > 0) setImgTranslationEnbale(openImgs, true);
+    const closeImgs = new Set();
+    for (let i = 0; i < store.imgList.length; i++) if (!imgImgs.has(i)) closeImgs.add(i);
+    if (closeImgs.size > 0) setImgTranslationEnbale(closeImgs, false);
     setRangeText(helper.descRange(imgImgs, store.imgList.length));
   });
 
@@ -9330,11 +9340,17 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>使用更精细的文本格式设置翻译范围\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复拷贝漫画高清画质替换失效的 bug\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>支持 MangaDex\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复动漫之家隐藏漫画解锁功能失效的 bug </p></li><li><p>修复修改翻译范围会导致所有图片重新翻译的 bug\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '9.5.0',
       get children() {
         return [web.template(\`<h3>改动\`)(), web.template(\`<ul><li>原本缩放后可以单独使用滚轮调整缩放比例，<br>现在还需要同时按下 <code>Ctrl/Alt\`)()];
+      }
+    }), web.createComponent(VersionTip, {
+      v1: version,
+      v2: '10.8.0',
+      get children() {
+        return [web.template(\`<h3>改动\`)(), web.template(\`<ul><li>ehentai 悬浮标签列表的透明度调节<br>由「鼠标滚轮」改为「Shift + 鼠标滚轮」\`)()];
       }
     })] /* eslint-enable i18next/no-literal-string */, {
       id: 'Version Tip',
@@ -9668,10 +9684,11 @@ const universal = async ({
     getOnPrev,
     getOnNext
   } = SPA;
+  const handlePageurl = SPA?.handlePageurl ?? (location => location.href);
   let lastUrl = '';
   autoUpdate(async () => {
-    if (!(await helper.wait(() => window.location.href !== lastUrl, 5000))) return;
-    lastUrl = window.location.href;
+    if (!(await helper.wait(() => handlePageurl(window.location) !== lastUrl, 5000))) return;
+    lastUrl = handlePageurl(window.location);
     if (isMangaPage && !(await isMangaPage())) {
       setFab('show', false);
       setManga({
@@ -10194,53 +10211,6 @@ const dmzjApi = require('userscript/dmzjApi');
 const helper = require('helper');
 
 (async () => {
-  // 通过 rss 链接，在作者作品页里添加上隐藏漫画的链接
-  // TODO: rss 都已失效，过段时间看看还没恢复就可以删了
-  // if (window.location.pathname.includes('/tags/')) {
-  //   const rssUrl = await wait(
-  //     () => querySelector<HTMLAreaElement>('a.rss')?.href,
-  //   );
-  //   const res = await request(rssUrl, { errorText: '获取作者作品失败' });
-
-  //   // 页面上原有的漫画标题
-  //   const titleList = new Set(
-  //     querySelectorAll('p.t').map((e) => e.textContent!.replace('[完]', '')),
-  //   );
-  //   querySelectorAll('div.pic')
-  //     .at(-1)
-  //     ?.insertAdjacentHTML(
-  //       'afterend',
-  //       res.responseText
-  //         .split('item')
-  //         .filter((_, i) => i % 2)
-  //         .map((item) => {
-  //           const newComicUrl = /manhua.dmzj.com\/(.+?)\?from=rssReader/.exec(
-  //             item,
-  //           )![1];
-  //           return {
-  //             newComicUrl,
-  //             comicUrl: newComicUrl.split('/')[0],
-  //             title: /title><!\[CDATA\[(.+?)]]/.exec(item)![1],
-  //             imgUrl: /<img src='(.+?)'/.exec(item)![1],
-  //             newComicTitle: /title='(.+?)'/.exec(item)![1],
-  //           };
-  //         })
-  //         .filter(({ title }) => !titleList.has(title))
-  //         .map(
-  //           (data) => `
-  //           <div class="pic">
-  //             <a href="/${data.comicUrl}/" target="_blank">
-  //             <img src="${data.imgUrl}" alt="${data.title}" title="" style="">
-  //             <p class="t">【*隐藏*】${data.title}</p></a>
-  //             <p class="d">最新：<a href="/${data.newComicUrl}" target="_blank">${data.newComicTitle}</a></p>
-  //           </div>
-  //         `,
-  //         )
-  //         .join(''),
-  //     );
-  //   return;
-  // }
-
   const getId = async () => {
     const [, comicPy, chapterId] = window.location.pathname.split(/\/|\./);
     if (!comicPy) {
@@ -10256,7 +10226,8 @@ const helper = require('helper');
     };
   };
   const handleListPage = async () => {
-    await helper.waitDom('.newpl_ans');
+    await helper.waitDom('.commentBox');
+
     // 判断漫画被禁
     // 测试例子：https://manhua.dmzj.com/yanquan/
     if (!helper.querySelector('.cartoon_online_border > img')) return false;
@@ -10331,7 +10302,7 @@ const helper = require('helper');
     const dom = helper.querySelector(selector);
     if (dom?.textContent) return () => dom.click();
   };
-  const isMangaPage = async () => {
+  const isMangaPage = () => {
     if (/^\/[^/]*?\/?$/.test(window.location.pathname)) return handleListPage();
     return /^\/.*?\/\d+\.shtml$/.test(window.location.pathname);
   };
@@ -11523,8 +11494,9 @@ const floatTagList = (pageType, mangaProps) => {
   ref.classList.add('comicread-ignore');
   document.body.append(ref);
 
-  // 使用滚轮调整透明度
+  // 使用 shift + 滚轮调整透明度
   ref.addEventListener('wheel', e => {
+    if (!e.shiftKey) return;
     e.stopPropagation();
     e.preventDefault();
     setOpacity(store.opacity + (e.deltaY > 0 ? -0.05 : 0.05));
@@ -11922,6 +11894,7 @@ const sortTags = async pageType => {
       }
     }
     await helper.plimit([...loadImgs()].map((i, order) => async () => {
+      if (i < 0) return;
       ehImgList[i] ||= await getImgUrl(ehImgPageList[i]);
       setImg(order, ehImgList[i]);
     }));
@@ -12395,7 +12368,7 @@ const helper = require('helper');
     case 'jmcomic.me':
     case 'jmcomic1.me':
     case 'jmcomic-zzz.one':
-    case '18comic-idv.WORK':
+    case '18comic-idv.org':
     case '18comic.org':
     case '18comic.vip':
       {
@@ -12733,6 +12706,36 @@ const helper = require('helper');
             isMangaPage: () => /comic\/\d+\/chapter\/\d+\/images\//.test(window.location.href),
             getOnPrev: handlePrevNext('上一'),
             getOnNext: handlePrevNext('下一')
+          }
+        };
+        break;
+      }
+
+    // #[MangaDex](https://mangadex.org)
+    case 'mangadex.org':
+      {
+        options = {
+          name: 'mangadex',
+          async getImgList() {
+            const chapter_id = window.location.pathname.split('/').at(2);
+            const {
+              response: {
+                baseUrl,
+                chapter: {
+                  data,
+                  hash
+                }
+              }
+            } = await main.request(`https://api.mangadex.org/at-home/server/${chapter_id}?forcePort443=false`, {
+              responseType: 'json'
+            });
+            return data.map(e => baseUrl + '/data/' + hash + '/' + e);
+          },
+          SPA: {
+            isMangaPage: () => /^\/chapter\/.+/.test(window.location.pathname),
+            getOnPrev: () => helper.querySelectorClick(`#chapter-selector > a[href^="/chapter/"]:nth-of-type(1)`),
+            getOnNext: () => helper.querySelectorClick(`#chapter-selector > a[href^="/chapter/"]:nth-of-type(2)`),
+            handlePageurl: location => location.href.replace(/(?<=\/chapter\/.+?)\/.*/, '')
           }
         };
         break;
