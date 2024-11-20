@@ -27,7 +27,7 @@ import {
   };
 
   const handleListPage = async () => {
-    await waitDom('.cartoon_online_border');
+    await waitDom('.commentBox');
 
     // 判断漫画被禁
     // 测试例子：https://manhua.dmzj.com/yanquan/
@@ -114,7 +114,7 @@ import {
     if (dom?.textContent) return () => dom.click();
   };
 
-  const isMangaPage = async () => {
+  const isMangaPage = () => {
     if (/^\/[^/]*?\/?$/.test(window.location.pathname)) return handleListPage();
     return /^\/.*?\/\d+\.shtml$/.test(window.location.pathname);
   };
