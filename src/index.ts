@@ -699,7 +699,21 @@ try {
           const [[w, { id, public_key }]] = Object.entries(
             detailRes.response.data,
           )
-            .filter(([, data]) => data.id && data.public_key)
+            // 以某个时间为分界线，更早之前的漫画返回的格式是：
+            // "0": { "id": 104981, "public_key": "512b76025139", "size": 185635578},
+            // "780": { "id": 105099, "public_key": "e7404779e2ad", "size": 27643333 },
+            // 但实际使用 0 的 id 和 key 就会报错
+            // > https://niyaniya.moe/g/24388/6c159e552eb3 [Mira] EARTH GIRLS 果實 後篇 (CHINESE)
+            //
+            // 分界时间之后的漫画则是：
+            // "0": { "size": 29206268 },
+            // "780": { "id": 105242, "public_key": "577d6d6558ac", "size": 4237537, "watermarked": true },
+            // 没有权限的 0 不再返回 id 和 key
+            // > https://niyaniya.moe/g/24410/3f37324296e2 [Pikachi] 同性交際俱樂部 (CHINESE)
+            //
+            // 考虑到这可能只是更换域名迁移数据导致的临时问题
+            // 所以暂且用 `Number(px) &&` 的方式忽略掉 0，等过段时间再视情况而定
+            .filter(([px, data]) => Number(px) && data.id && data.public_key)
             .sort(([, a], [, b]) => b.size - a.size);
           const { created_at, updated_at } = detailRes.response;
 
