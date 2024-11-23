@@ -315,18 +315,21 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     extractRange(loadImgsText(), ehImgList.length),
   );
 
+  const totalPageNum = Number(
+    querySelector('.ptt td:nth-last-child(2)')!.textContent!,
+  );
+
   const loadImgList: LoadImgFn = async (setImg) => {
     // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
     // 所以只能一次性获取所有页数上的图片页地址
-    if (ehImgPageList.length === 0) {
-      const totalPageNum = Number(
-        querySelector('.ptt td:nth-last-child(2)')!.textContent!,
-      );
+    if (ehImgPageList.length !== totalPageNum) {
       const allPageList = await plimit(
         createSequence(totalPageNum).map(
           (pageNum) => () => getImgPageUrl(pageNum),
         ),
       );
+      ehImgPageList.length = 0;
+      ehImgFileNameList.length = 0;
       for (const pageList of allPageList) {
         for (const [url, fileName] of pageList) {
           ehImgPageList.push(url);
