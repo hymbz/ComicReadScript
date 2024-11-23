@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         10.9.0
+// @version         10.9.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -9341,13 +9341,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>解锁拷贝漫画的隐藏漫画\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>支持 koharu 的新域名 SchaleNetwork\`)(), web.createComponent(VersionTip, {
-      v1: version,
-      v2: '9.5.0',
-      get children() {
-        return [web.template(\`<h3>改动\`)(), web.template(\`<ul><li>原本缩放后可以单独使用滚轮调整缩放比例，<br>现在还需要同时按下 <code>Ctrl/Alt\`)()];
-      }
-    }), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 ehentai 识别广告页功能导致的加载异常 </p></li><li><p>修复 SchaleNetwork 部分漫画无法正常加载的 bug\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '10.8.0',
       get children() {
@@ -11881,12 +11875,14 @@ const sortTags = async pageType => {
   };
   const [loadImgsText, setLoadImgsText] = solidJs.createSignal(`1-${totalImgNum}`);
   const loadImgs = helper.createRootMemo(() => helper.extractRange(loadImgsText(), ehImgList.length));
+  const totalPageNum = Number(helper.querySelector('.ptt td:nth-last-child(2)').textContent);
   const loadImgList = async setImg => {
     // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
     // 所以只能一次性获取所有页数上的图片页地址
-    if (ehImgPageList.length === 0) {
-      const totalPageNum = Number(helper.querySelector('.ptt td:nth-last-child(2)').textContent);
+    if (ehImgPageList.length !== totalPageNum) {
       const allPageList = await helper.plimit(helper.createSequence(totalPageNum).map(pageNum => () => getImgPageUrl(pageNum)));
+      ehImgPageList.length = 0;
+      ehImgFileNameList.length = 0;
       for (const pageList of allPageList) {
         for (const [url, fileName] of pageList) {
           ehImgPageList.push(url);
@@ -12533,7 +12529,7 @@ const buildChapters = async (comicName, rootDom) => {
     case 'jmcomic.me':
     case 'jmcomic1.me':
     case 'jmcomic-zzz.one':
-    case '18comic-idv.org':
+    case '18comic-wilds.org':
     case '18comic.org':
     case '18comic.vip':
       {
@@ -13010,7 +13006,22 @@ const helper = require('helper');
             const [[w, {
               id,
               public_key
-            }]] = Object.entries(detailRes.response.data).filter(([, data]) => data.id && data.public_key).sort(([, a], [, b]) => b.size - a.size);
+            }]] = Object.entries(detailRes.response.data)
+            // 以某个时间为分界线，更早之前的漫画返回的格式是：
+            // "0": { "id": 104981, "public_key": "512b76025139", "size": 185635578},
+            // "780": { "id": 105099, "public_key": "e7404779e2ad", "size": 27643333 },
+            // 但实际使用 0 的 id 和 key 就会报错
+            // > https://niyaniya.moe/g/24388/6c159e552eb3 [Mira] EARTH GIRLS 果實 後篇 (CHINESE)
+            //
+            // 分界时间之后的漫画则是：
+            // "0": { "size": 29206268 },
+            // "780": { "id": 105242, "public_key": "577d6d6558ac", "size": 4237537, "watermarked": true },
+            // 没有权限的 0 不再返回 id 和 key
+            // > https://niyaniya.moe/g/24410/3f37324296e2 [Pikachi] 同性交際俱樂部 (CHINESE)
+            //
+            // 考虑到这可能只是更换域名迁移数据导致的临时问题
+            // 所以暂且用 `Number(px) &&` 的方式忽略掉 0，等过段时间再视情况而定
+            .filter(([px, data]) => Number(px) && data.id && data.public_key).sort(([, a], [, b]) => b.size - a.size);
             const {
               created_at,
               updated_at

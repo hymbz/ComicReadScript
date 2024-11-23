@@ -98,16 +98,6 @@ export const handleVersionUpdate = async () => {
         <>
           <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
           inject@LatestChange
-          <VersionTip v1={version} v2={'9.5.0'}>
-            <h3>改动</h3>
-            <ul>
-              <li>
-                原本缩放后可以单独使用滚轮调整缩放比例，
-                <br />
-                现在还需要同时按下 <code>Ctrl/Alt</code>
-              </li>
-            </ul>
-          </VersionTip>
           <VersionTip v1={version} v2={'10.8.0'}>
             <h3>改动</h3>
             <ul>
