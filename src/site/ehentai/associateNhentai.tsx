@@ -18,6 +18,9 @@ export const associateNhentai = async (
   setComicLoad: AsyncReturnType<typeof useInit>['setComicLoad'],
   LoadButton: Component<{ id: string }>,
 ) => {
+  /** 只处理「Doujinshi」「Manga」 */
+  if (!querySelector('#gdc > .cs:is(.ct2, .ct3)')) return;
+
   const titleDom = document.getElementById('gn');
   if (!titleDom || !querySelector('#taglist tbody')) {
     if ((document.getElementById('taglist')?.children.length ?? 1) > 0)

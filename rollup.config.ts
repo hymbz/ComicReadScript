@@ -69,6 +69,7 @@ const packlist = [
   'worker/ImageRecognition',
   'worker/detectAd',
   'userscript/otherSite',
+  'userscript/ehTagRules',
 ];
 
 const babelConfig = {
@@ -132,7 +133,7 @@ export const buildOptions = (
         worker: resolve(__dirname, 'src/worker'),
       },
     }),
-    json({ namedExports: false, indent: '  ' }),
+    json({ namedExports: false, compact: true }),
     nodeResolve({ browser: true, extensions: ['.js', '.ts', '.tsx'] }),
     commonjs({ strictRequires: 'auto' }),
     styles({ mode: 'extract', modules: { generateScopedName } }),

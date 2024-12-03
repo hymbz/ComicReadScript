@@ -6,6 +6,7 @@ import { byPath } from '../helper/other';
 import { langList } from '../helper/languages';
 
 import { siteUrl } from './siteUrl';
+import { ehRules } from './ehRules';
 
 export { solidSvg } from './rollup-solid-svg';
 
@@ -97,6 +98,7 @@ switch (lang) {
     },
   },
   siteUrl,
+  ehRules,
 ];
 
 export const inputPlugins: InputPluginOption[] = [

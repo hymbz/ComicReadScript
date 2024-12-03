@@ -1,9 +1,7 @@
 {
-  "vitest.enable": true,
-  "vitest.commandLine": "pnpm run test",
   "todo-tree.filtering.excludeGlobs": ["**/node_modules/*/**", "**/*.js"],
-  "i18n-ally.displayLanguage": "zh",
-  "i18n-ally.localesPaths": ["locales"],
+  // "i18n-ally.localesPaths": ["locales"],
+  "i18n-ally.localesPaths": ["locales", "src/userscript/ehTagRules"],
   "i18n-ally.pathMatcher": "{locale}.{ext}",
   "i18n-ally.keystyle": "nested",
   "i18n-ally.sortKeys": true,

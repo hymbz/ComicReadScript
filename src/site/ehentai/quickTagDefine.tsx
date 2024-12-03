@@ -59,6 +59,7 @@ export const quickTagDefine = (pageType: PageType) => {
   GM_addStyle(`
     #comidread-tag-define {
       position: absolute;
+      z-index: 1;
       top: 0;
       left: 0;
       width: 100%;

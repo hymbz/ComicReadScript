@@ -31,6 +31,7 @@ import { quickRating } from './quickRating';
 import { quickTagDefine } from './quickTagDefine';
 import { floatTagList } from './floatTagList';
 import { sortTags } from './sortTags';
+import { tagLint } from './tagLint';
 
 // [ehentai 图像限额](https://github.com/ccloli/E-Hentai-Downloader/wiki/E−Hentai-Image-Viewing-Limits-(Chinese))
 
@@ -86,6 +87,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     float_tag_list: false,
     /** 自动调整配置 */
     auto_adjust_option: false,
+    /** 标签检查 */
+    tag_lint: false,
     autoShow: false,
   });
 
@@ -129,8 +132,6 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     colorizeTag(pageType);
     sortTags(pageType);
   }
-  // 快捷键
-  if (options.hotkeys) hotkeysPageTurn(pageType);
   // 悬浮标签列表
   if (options.float_tag_list)
     requestIdleCallback(() => floatTagList(pageType, mangaProps));
@@ -143,6 +144,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   // 快捷查看标签定义
   if (options.quick_tag_define)
     requestIdleCallback(() => quickTagDefine(pageType), 1000);
+  // 标签检查
+  if (options.tag_lint) requestIdleCallback(() => tagLint(pageType), 1000);
 
   // 自动调整阅读配置
   if (
@@ -380,6 +383,9 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       </p>
     );
   }, sidebarDom);
+
+  // 等加载按钮渲染好后再绑定快捷键，防止在还没准备好时就触发加载导致出错
+  if (options.hotkeys) hotkeysPageTurn(pageType);
 
   /** 获取新的图片页地址 */
   const getNewImgPageUrl = async (url: string) => {

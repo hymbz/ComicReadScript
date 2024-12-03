@@ -26,6 +26,14 @@
     "zoom_out": "缩小"
   },
   "description": "为漫画站增加双页阅读、翻译等优化体验的增强功能。",
+  "eh_tag_lint": {
+    "combo": "存在 [tag] 时，一般也存在 [tag]",
+    "conflict": "存在 [tag] 时，不应该存在 [tag]",
+    "miss_female": "缺少男性标签，可能需要",
+    "miss_parody": "缺少原作标签，可能需要",
+    "possible_conflict": "存在 [tag] 时，一般不应该存在 [tag]",
+    "prerequisite": "[tag] 的前置标签 [tag] 不存在"
+  },
   "end_page": {
     "next_button": "下一话",
     "prev_button": "上一话",
@@ -68,6 +76,7 @@
     "fill_page": "填充页",
     "img_loading": "图片加载中",
     "loading_img": "加载图片中",
+    "or": "或",
     "page_range": "请输入页码范围：\n（例如：「1, 3-5, 9-」)",
     "read_mode": "阅读模式"
   },
@@ -190,7 +199,8 @@
       "quick_favorite": "快捷收藏",
       "quick_rating": "快捷评分",
       "quick_tag_define": "快捷查看标签定义",
-      "remember_current_site": "记住当前站点"
+      "remember_current_site": "记住当前站点",
+      "tag_lint": "标签检查"
     },
     "changed_load_failed": "网站发生变化，无法加载漫画",
     "ehentai": {

@@ -211,7 +211,8 @@ module.exports = {
           "error",
           {
             mode: "jsx-only",
-            "jsx-attributes": { include: ["^name", "children", "textContent"] },
+            "jsx-attributes": { include: ["^name", "children", "textContent", "text"] },
+            "words": { exclude: ['「','」'] },
           },
         ],
       },

@@ -221,7 +221,9 @@ export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
     },
     handleClick: (_, target) => target.click(),
     skip: (e) =>
-      !(e.target as HTMLElement).matches('#gd4, #taglist, #gwrd, td+td'),
+      !(e.target as HTMLElement).matches(
+        '#gd4, #taglist, #gwrd, td+td, [id^=comidread] *:not(a)',
+      ),
   });
 
   let ehs: HTMLElement | null;
