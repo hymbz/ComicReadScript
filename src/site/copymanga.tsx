@@ -275,7 +275,10 @@ const buildChapters = async (comicName: string, rootDom: HTMLElement) => {
       const imgList: string[] = [];
       const { words, contents } = res.response.results.chapter;
       for (let i = 0; i < contents.length; i++)
-        imgList[words[i]] = contents[i].url.replace(/(?<=.*\/)c800x/, 'c1500x');
+        imgList[words[i]] = contents[i].url.replace(
+          /(?<=.*(\/|\.))c800x/,
+          'c1500x',
+        );
       return imgList;
     });
 
