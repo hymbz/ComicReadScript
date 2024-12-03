@@ -1,7 +1,12 @@
-## [10.9.1](https://github.com/hymbz/ComicReadScript/compare/v10.9.0...v10.9.1) (2024-11-23)
+## [10.10.0](https://github.com/hymbz/ComicReadScript/compare/v10.9.1...v10.10.0) (2024-12-03)
+
+
+### Features
+
+* :sparkles: 增加 ehentai 标签检查功能 ([7eaa07f](https://github.com/hymbz/ComicReadScript/commit/7eaa07fe936d262a9424b6d8d53f058788a44ff9))
 
 
 ### Bug Fixes
 
-* :bug: 修复 ehentai 识别广告页功能导致的加载异常 ([a892ca9](https://github.com/hymbz/ComicReadScript/commit/a892ca9ff209104d5f27537c6fb718cb89668fc5)), closes [#203](https://github.com/hymbz/ComicReadScript/issues/203)
-* :bug: 修复 SchaleNetwork 部分漫画无法正常加载的 bug ([c67fca3](https://github.com/hymbz/ComicReadScript/commit/c67fca32c422ab0a9b0c9e0e4732d42f91e4660a))
+* :bug: 修复 ehentai 上与其他脚本冲突导致的显示异常 ([72e4c99](https://github.com/hymbz/ComicReadScript/commit/72e4c9906c4c7d0926d70540c282470ef9c97439))
+* :bug: 修复拷贝漫画高清画质替换失效的 bug ([32f58a0](https://github.com/hymbz/ComicReadScript/commit/32f58a0ada25aa6ddf274f1c6a6ecf611b1a57ea))
