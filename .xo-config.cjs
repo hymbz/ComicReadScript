@@ -212,7 +212,6 @@ module.exports = {
           {
             mode: "jsx-only",
             "jsx-attributes": { include: ["^name", "children", "textContent", "text"] },
-            "words": { exclude: ['「','」'] },
           },
         ],
       },

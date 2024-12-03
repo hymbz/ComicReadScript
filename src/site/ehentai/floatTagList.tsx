@@ -81,6 +81,9 @@ export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
         border-left: ${border};
       }
 
+      /* 确保始终显示在最上层，防止和其他脚本冲突 */
+      #ehs-introduce-box { z-index: 1; }
+
       #comicread-tag-box-placeholder {
         cursor: pointer;
 

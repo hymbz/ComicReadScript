@@ -61,7 +61,7 @@ export const tagLint = (pageType: PageType) => {
     return (
       <Show when={tags.length > 1} fallback={_Tag(props)}>
         <span>
-          「
+          {/* eslint-disable-line i18next/no-literal-string */}「
           <For each={tags}>
             {(name, i) => (
               <>
@@ -70,7 +70,7 @@ export const tagLint = (pageType: PageType) => {
               </>
             )}
           </For>
-          」
+          {/* eslint-disable-line i18next/no-literal-string */} 」
         </span>
       </Show>
     );
