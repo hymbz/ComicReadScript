@@ -27,6 +27,8 @@ export interface Option {
   pageNum: 1 | 2 | 0;
   /** 自动切换单双页模式 */
   autoSwitchPageMode: boolean;
+  /** 自动隐藏鼠标 */
+  autoHiddenMouse: boolean;
 
   zoom: {
     /** 缩放大小 */
@@ -127,6 +129,7 @@ const _defaultOption: Readonly<Option> = {
   preloadPageNum: 20,
   pageNum: 0,
   autoSwitchPageMode: true,
+  autoHiddenMouse: true,
 
   zoom: {
     ratio: 100,

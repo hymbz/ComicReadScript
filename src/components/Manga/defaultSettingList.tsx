@@ -341,6 +341,11 @@ export const defaultSettingList: () => SettingList = () => [
           value={store.option.swapPageTurnKey}
           onChange={createStateSetFn('swapPageTurnKey')}
         />
+        <SettingsItemSwitch
+          name={t('setting.option.autoHiddenMouse')}
+          value={store.option.autoHiddenMouse}
+          onChange={createStateSetFn('autoHiddenMouse')}
+        />
 
         <SettingsItemNumber
           name={t('setting.option.preload_page_num')}
