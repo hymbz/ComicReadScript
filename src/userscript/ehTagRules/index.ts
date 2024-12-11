@@ -135,6 +135,8 @@ const rules = {
     'm:swimsuit': ['m:bikini'],
 
     'f:crossdressing': ['f:schoolboy_uniform'],
+
+    'f:monster_girl': ['f:zombie'],
   },
 
   // 存在第一个标签时，就不应该存在其他标签
@@ -184,6 +186,7 @@ const rules = {
   },
 
   // 存在第一个标签时，「大概率」可能存在第二个标签
+  // 如果第二个标签含有前置标签，则应该省略，以便减少标签数增加可读性
   combo: {
     'f:horse_girl': ['f:kemonomimi', 'f:tail'],
     'f:dog_girl': ['f:kemonomimi'],
@@ -196,6 +199,7 @@ const rules = {
     // 作品
     'p:uma_musume_pretty_derby': ['f:horse_girl'],
     'p:blue_archive': ['f:halo'],
+    'p:zombie_land_saga': ['f:zombie'],
 
     // 角色
 
@@ -230,6 +234,10 @@ const rules = {
     'c:reona_nyubara': ['f:twintails'],
 
     'c:tsukushi_futaba': ['f:twintails'],
+
+    // 孤独摇滚
+    'c:hitori_gotou': ['f:very_long_hair'],
+    'c:nijika_ijichi': ['f:ponytail', 'f:very_long_hair'],
 
     // 方舟
     'c:amiya': ['f:kemonomimi'],
