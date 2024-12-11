@@ -13,13 +13,13 @@ import {
 } from 'helper';
 
 /** 用于转换获得图片文件扩展名 */
-const fileType = { j: 'jpg', p: 'png', g: 'gif' };
+const fileType = { j: 'jpg', p: 'png', g: 'gif', w: 'webp', b: 'bmp' } as const;
 
 type Images = {
   thumbnail: { h: number; w: number; t: keyof typeof fileType };
-  pages: Array<{ number: number; extension: string }>;
+  pages: Array<{ t: keyof typeof fileType }>;
 };
-declare const gallery: { num_pages: number; media_id: string; images: Images };
+declare const _gallery: { num_pages: number; media_id: string; images: Images };
 
 (async () => {
   const {
@@ -50,10 +50,14 @@ declare const gallery: { num_pages: number; media_id: string; images: Images };
       },
     });
 
+    // 图片域名编号目前是完全随机的，每次刷新都会出现不同的编号
+    // 在图片元素的 data-src 里也是随机的，加载图片时还要用 get_cdn_url 函数替换
+    // 但目前实测 i1 到 i4 都能直接用，或许是反爬虫的新机制？
+    const hostIndex = unsafeWindow._n_app.options.media_server as number;
     setComicLoad(() =>
-      gallery.images.pages.map(
-        ({ number, extension }) =>
-          `https://i.nhentai.net/galleries/${gallery.media_id}/${number}.${extension}`,
+      _gallery.images.pages.map(
+        (img, i) =>
+          `https://i${hostIndex}.nhentai.net/galleries/${_gallery.media_id}/${i + 1}.${fileType[img.t]}`,
       ),
     );
     setFab('initialShow', options.autoShow);

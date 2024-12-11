@@ -102,7 +102,13 @@ export const associateNhentai = async (
   if (!comicList()?.length) return;
 
   // nhentai api 对应的扩展名
-  const fileType = { j: 'jpg', p: 'png', g: 'gif' };
+  const fileType = {
+    j: 'jpg',
+    p: 'png',
+    g: 'gif',
+    w: 'webp',
+    b: 'bmp',
+  } as const;
 
   for (const { id, images, num_pages, media_id } of comicList()!) {
     const comicId = `nh:${id}`;
