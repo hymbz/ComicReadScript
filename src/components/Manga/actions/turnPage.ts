@@ -1,7 +1,14 @@
-import { type State, store, setState } from '../store';
+import { debounce } from 'helper';
+
+import { type State, store, setState, _setState } from '../store';
 
 import { resetPage } from './show';
 import { isBottom, isTop } from './scroll';
+
+export const closeScrollLock = debounce(
+  () => _setState('scrollLock', false),
+  100,
+);
 
 /** 翻页。返回是否成功改变了当前页数 */
 export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
@@ -10,7 +17,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
   if (dir === 'prev') {
     switch (state.show.endPage) {
       case 'start':
-        if (state.option.jumpToNext) state.prop.Prev?.();
+        if (!state.scrollLock && state.option.jumpToNext) state.prop.Prev?.();
         return false;
       case 'end':
         state.show.endPage = undefined;
@@ -24,6 +31,8 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
           if (!state.prop.Prev || !state.option.jumpToNext) return false;
 
           state.show.endPage = 'start';
+          state.scrollLock = true;
+          closeScrollLock();
           return false;
         }
 
@@ -34,6 +43,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
   } else {
     switch (state.show.endPage) {
       case 'end':
+        if (state.scrollLock) return false;
         if (state.prop.Next && state.option.jumpToNext) {
           state.prop.Next();
           return false;
@@ -50,6 +60,8 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
         if (isBottom()) {
           if (!state.prop.Exit) return false;
           state.show.endPage = 'end';
+          state.scrollLock = true;
+          closeScrollLock();
           return false;
         }
 

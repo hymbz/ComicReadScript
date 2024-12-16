@@ -20,7 +20,7 @@ import { handleTrackpadWheel } from './pointer';
 import { setOption } from './helper';
 import { hotkeysMap } from './hotkeys';
 import { zoom } from './zoom';
-import { turnPage } from './turnPage';
+import { closeScrollLock, turnPage } from './turnPage';
 import {
   scrollLength,
   scrollProgress,
@@ -51,7 +51,9 @@ const scrollModeScrollPage = (dir: 'next' | 'prev') => {
     scrollTo(
       scrollTop() + store.rootSize.height * 0.8 * (dir === 'next' ? 1 : -1),
     );
+    _setState('scrollLock', true);
   }
+  closeScrollLock();
 };
 
 /** 根据是否开启了 左右翻页键交换 来切换翻页方向 */
