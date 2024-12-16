@@ -191,7 +191,7 @@ const rules = {
     'f:horse_girl': ['f:kemonomimi', 'f:tail'],
     'f:dog_girl': ['f:kemonomimi'],
     'f:mouse_girl': ['f:kemonomimi'],
-    'f:bunny_girl': ['f:kemonomimi'],
+    'f:bunny_girl': ['f:kemonomimi', 'f:leotard'],
     'f:catgirl': ['f:kemonomimi'],
     'f:cowgirl': ['f:kemonomimi'],
     'f:oni': ['f:horns'],
@@ -254,6 +254,9 @@ const rules = {
     'c:suletta_mercury': ['f:thick_eyebrows'],
     'c:junna_hoshimi': ['f:glasses'],
     'c:euphyllia_magenta': ['f:very_long_hair'],
+    'c:misuzu_hataya': ['f:beauty_mark'],
+    'c:kotone_fujita': ['f:twintails'],
+    'c:mizuki_akiyama': ['m:crossdressing'],
   },
 };
 
