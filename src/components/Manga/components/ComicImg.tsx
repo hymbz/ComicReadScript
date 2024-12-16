@@ -20,6 +20,8 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
     if (img.loadType === 'wait') return '';
     if (img.translationType === 'show') return img.translationUrl;
     if (store.option.imgRecognition.enabled) return img.blobUrl;
+    // 有些浏览器不支持显示带有 hash 标识的图片 url
+    if (img.src.startsWith('blob:')) return img.src.replace(/#\..+/, '');
     return img.src;
   };
 
