@@ -3,7 +3,7 @@ import type { OutputPluginOption } from 'rollup';
 
 const siteUrlFnMap = {
   async jm() {
-    const res = await axios<string>('https://jmcomicgo.xyz');
+    const res = await axios<string>('https://jmcomicgo.me');
     return [
       ...res.data
         .replaceAll('&nbsp;', '')
@@ -11,7 +11,7 @@ const siteUrlFnMap = {
     ].flat();
   },
   async wnacg() {
-    const res = await axios<string>('https://wnacg01.org');
+    const res = await axios<string>('https://wnacg.date');
     return [...res.data.matchAll(/(?<=<i>)[-A-Za-z\d.]+?(?=<\/i>)/g)].flat();
   },
 };
