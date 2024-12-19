@@ -181,6 +181,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
   - 自动签到
 - [拷贝漫画](https://www.copymanga.com)
   - 在目录页显示上次阅读记录
+  - 解锁隐藏漫画
 
 <!-- 根据 src/index.ts 自动生成 -->
 <!-- supportSiteList -->
@@ -196,6 +197,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - [mangabz](https://mangabz.com)
 - [komiic](https://komiic.com)
 - [MangaDex](https://mangadex.org)
+- [NoyAcg](https://noy1.top)
 - [無限動漫](https://www.comicabc.com)
 - [新新漫画](https://www.77mh.nl)
 - [熱辣漫畫](https://www.relamanhua.org/)

@@ -8,9 +8,11 @@ import {
   querySelector,
   querySelectorAll,
   querySelectorClick,
+  range,
   scrollIntoView,
   sleep,
   t,
+  wait,
   waitDom,
 } from 'helper';
 import {
@@ -555,6 +557,29 @@ try {
           handlePageurl: (location) =>
             location.href.replace(/(?<=\/chapter\/.+?)\/.*/, ''),
         },
+      };
+      break;
+    }
+
+    // #[NoyAcg](https://noy1.top)
+    case 'noy1.top': {
+      options = {
+        name: 'NoyAcg',
+        async getImgList() {
+          const [, , id] = window.location.hash.split('/');
+
+          // 随便拿一个图片来获取 cdn url
+          const img = await wait(() =>
+            querySelector<HTMLImageElement>('.lazy-load-image-background img'),
+          );
+          const cdn = img.src.split(id)[0];
+
+          const imgNum = await wait(
+            () => querySelectorAll('.lazy-load-image-background').length,
+          );
+          return range(imgNum, (i) => `${cdn}${id}/${i + 1}.webp`);
+        },
+        SPA: { isMangaPage: () => window.location.hash.startsWith('#/read/') },
       };
       break;
     }
