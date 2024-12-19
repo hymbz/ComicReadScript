@@ -18,14 +18,21 @@ const siteUrlFnMap = {
 
 let siteUrlMap: Record<string, string[]> | undefined;
 
-const initSiteUrlMap = async () =>
-  Object.fromEntries(
-    await Promise.all(
-      Object.entries(siteUrlFnMap).map(
-        async ([name, fn]) => [name, await fn()] as const,
-      ),
-    ),
+const initSiteUrlMap = async () => {
+  const map = {} as Record<string, string[]>;
+  await Promise.all(
+    Object.entries(siteUrlFnMap).map(async ([name, fn]) => {
+      try {
+        const list = await fn();
+        if (list.length === 0) throw new Error(`未找到可用网址`);
+        map[name] = list;
+      } catch {
+        console.error(`获取可用网址失败，${name}发布页已失效`);
+      }
+    }),
   );
+  return map;
+};
 
 /** 根据发布页自动获取可用网址 */
 export const siteUrl: OutputPluginOption = {
@@ -36,13 +43,13 @@ export const siteUrl: OutputPluginOption = {
     return code.replaceAll(
       /case 'siteUrl#(.+?)':(.+?)(?={)/gs,
       (_, name, other) => {
-        if (!Reflect.has(siteUrlMap!, name))
-          throw new Error(`未知站点：${name}`);
+        if (!Reflect.has(siteUrlMap!, name)) {
+          console.error(`未知站点: ${name}`);
+          return '';
+        }
         const list = siteUrlMap![name].filter((url) =>
           URL.canParse(`https://${url}`),
         );
-        if (list.length === 0)
-          throw new Error(`未找到可用网址，${name}发布页已失效`);
 
         const otherUrlList = new Set<string>(
           [...other.matchAll(/(?<=case ').+?(?=':)/g)].flat(),
