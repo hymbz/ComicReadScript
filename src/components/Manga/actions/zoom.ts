@@ -4,6 +4,7 @@ import {
   createMemoMap,
   type PointerState,
   type UseDrag,
+  debounce,
 } from 'helper';
 
 import { type State, store, refs } from '../store';
@@ -125,6 +126,12 @@ const handleDragAnima = () => {
   animationId = requestAnimationFrame(handleDragAnima);
 };
 
+/** 一段时间没有移动后应该将速率归零 */
+const resetVelocity = debounce(() => {
+  velocity.x = 0;
+  velocity.y = 0;
+}, 200);
+
 /** 是否正在双指捏合缩放中 */
 let pinchZoom = false;
 
@@ -150,10 +157,13 @@ export const handleZoomDrag: UseDrag = ({
       mouse.y += y - ly;
       if (animationId === null)
         animationId = requestAnimationFrame(handleDragAnima);
+      resetVelocity();
       break;
     }
 
     case 'up': {
+      resetVelocity.clear();
+
       // 当双指捏合结束，一个手指抬起时，将剩余的指针当作刚点击来处理
       if (pinchZoom) {
         pinchZoom = false;

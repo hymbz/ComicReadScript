@@ -188,6 +188,7 @@ export const ComicImgFlow: Component = () => {
       class={`${classes.mangaBox} ${classes.beautifyScrollbar}`}
       data-animation={store.page.anima}
       data-abreast-scroll={boolDataVal(store.option.scrollMode.abreastMode)}
+      onTransitionEnd={handleTransitionEnd}
       tabIndex={-1}
     >
       <div
