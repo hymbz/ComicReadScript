@@ -92,14 +92,19 @@ export const request = async <T = any>(
     if (typeof GM_xmlhttpRequest === 'undefined')
       throw new Error(t('pwa.alert.userscript_not_installed'));
 
+    let targetUrl = url;
+    // https://github.com/hymbz/ComicReadScript/issues/195
+    // 在某些情况下 Tampermonkey 无法正确处理相对协议的 url
+    // 实际 finalUrl 会变成 `///xxx.xxx` 莫名多了一个斜杠
+    // 然而在修改代码发出正确的请求后，就再也无法复现了
+    // 不过以防万一还是在这里手动处理下
+    if (url.startsWith('//')) targetUrl = `http:${url}`;
+    // stay 没法处理相对路径，也得转换一下
+    else if (url.startsWith('/')) targetUrl = `${window.location.origin}${url}`;
+
     const res = await xmlHttpRequest<T>({
       method: 'GET',
-      // https://github.com/hymbz/ComicReadScript/issues/195
-      // 在某些情况下 Tampermonkey 无法正确处理相对协议的 url
-      // 实际 finalUrl 会变成 `///xxx.xxx` 莫名多了一个斜杠
-      // 然而在修改代码发出正确的请求后，就再也无法复现了
-      // 不过以防万一还是在这里手动处理下
-      url: url.startsWith('//') ? `http:${url}` : url,
+      url: targetUrl,
       headers,
       timeout: 1000 * 10,
       ...details,
@@ -107,6 +112,17 @@ export const request = async <T = any>(
     if (!details?.noCheckCode && res.status !== 200) {
       log.error(errorText, res);
       throw new Error(errorText);
+    }
+
+    // stay 好像没有正确处理 json，只能再单独判断处理一下
+    if (
+      details?.responseType === 'json' &&
+      (typeof res.response !== 'object' ||
+        Object.keys(res.response as object).length === 0)
+    ) {
+      try {
+        Reflect.set(res, 'response', JSON.parse(res.responseText));
+      } catch {}
     }
 
     return res;
