@@ -4,6 +4,7 @@ import pkg from '../../package.json' assert { type: 'json' };
 import zh from '../../locales/zh.json' assert { type: 'json' };
 import en from '../../locales/en.json' assert { type: 'json' };
 import ru from '../../locales/ru.json' assert { type: 'json' };
+import ta from '../../locales/ta.json' assert { type: 'json' };
 
 /**
  * 脚本依赖库与对应的 cdn url
@@ -93,6 +94,7 @@ export const getMetaData = (isDevMode: boolean) => {
       .join('、')}`,
     'description:en': `${en.description} ${enSupportSite.join(' | ')}.`,
     'description:ru': ru.description,
+    'description:ta': ta.description,
     author: pkg.author,
     license: pkg.license,
     noframes: true,
