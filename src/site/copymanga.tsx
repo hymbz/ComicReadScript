@@ -1,5 +1,5 @@
 /* eslint-disable i18next/no-literal-string */
-import { For, type Component } from 'solid-js';
+import { For, type Component, Show } from 'solid-js';
 import { request, useInit } from 'main';
 import {
   querySelectorClick,
@@ -77,7 +77,7 @@ const handleLastChapter = (comicName: string) => {
 };
 
 // 生成目录
-const buildChapters = async (comicName: string, rootDom: HTMLElement) => {
+const buildChapters = async (comicName: string, isMobile: boolean) => {
   // 拷贝有些漫画虽然可以通过 api 获取到数据，但网页上的目录被隐藏了
   // 举例：https://mangacopy.com/comic/yueguangxiadeyishijiezhilv
 
@@ -87,13 +87,19 @@ const buildChapters = async (comicName: string, rootDom: HTMLElement) => {
     responseType: 'json',
     errorText: '加載漫畫目錄失敗',
     headers,
+    fetch: false,
   });
 
   interface ChaptersGroup {
     name: string;
     path_word: string;
     chapters: Array<{ type: number; name: string; id: string }>;
-    last_chapter: { comic_id: string; name: string; datetime_created: string };
+    last_chapter: {
+      comic_id: string;
+      name: string;
+      datetime_created: string;
+      uuid: string;
+    };
   }
   interface Chapters {
     build: { type: Array<{ id: number; name: string }> };
@@ -133,6 +139,75 @@ const buildChapters = async (comicName: string, rootDom: HTMLElement) => {
     const chapters: Record<number, ChaptersGroup['chapters']> =
       Object.fromEntries(type.map(({ id }) => [id, []]));
     for (const chapter of props.chapters) chapters[chapter.type].push(chapter);
+
+    if (isMobile) {
+      // 删掉占位置的分隔线
+      for (const dom of querySelectorAll('.van-divider')) dom.remove();
+
+      return (
+        <div class="detailsTextContentTabs van-tabs van-tabs--line">
+          <For each={type}>
+            {({ id, name }) => (
+              <Show when={chapters[id].length}>
+                <div class="van-tabs__wrap">
+                  <div
+                    role="tablist"
+                    class="van-tabs__nav van-tabs__nav--line"
+                    style={{ background: 'transparent' }}
+                  >
+                    <div role="tab" class="van-tab van-tab--active">
+                      <span class="van-tab__text van-tab__text--ellipsis">
+                        <span>{name}</span>
+                      </span>
+                    </div>
+                    <div
+                      class="van-tabs__line"
+                      style={{
+                        width: '0.24rem',
+                        transform: 'translateX(187.5px) translateX(-50%)',
+                        'transition-duration': '0.3s',
+                      }}
+                    />
+                  </div>
+                </div>
+                <div class="van-tab__pane">
+                  <div
+                    class="chapterList van-grid"
+                    style={{ 'padding-left': '0.24rem' }}
+                  >
+                    <For each={chapters[id]}>
+                      {(chapter) => (
+                        <div
+                          class="chapterItem oneLines van-grid-item"
+                          classList={{
+                            red: props.last_chapter.uuid === chapter.id,
+                          }}
+                          style={{
+                            'flex-basis': '25%',
+                            'padding-right': '0.24rem',
+                            'margin-top': '0.24rem',
+                          }}
+                        >
+                          <a
+                            class="van-grid-item__content van-grid-item__content--center"
+                            href={`/comic/${comicName}/chapter/${chapter.id}`}
+                          >
+                            <span
+                              class="van-grid-item__text"
+                              children={chapter.name}
+                            />
+                          </a>
+                        </div>
+                      )}
+                    </For>
+                  </div>
+                </div>
+              </Show>
+            )}
+          </For>
+        </div>
+      );
+    }
 
     return (
       <>
@@ -201,7 +276,12 @@ const buildChapters = async (comicName: string, rootDom: HTMLElement) => {
     );
   };
 
-  render(() => <For each={Object.values(groups)} children={Group} />, rootDom);
+  render(
+    () => <For each={Object.values(groups)} children={Group} />,
+    isMobile
+      ? querySelector('.detailsTextContent')!
+      : querySelector('.upLoop')!,
+  );
 
   // 点击每个分组下第一个激活的标签
   for (const group of querySelectorAll('.upLoop .table-default-title'))
@@ -309,12 +389,45 @@ const buildChapters = async (comicName: string, rootDom: HTMLElement) => {
     comicName = window.location.href.split('/comic/')[1];
     if (!comicName) return;
 
-    // 稍等看有没有目录加载出来，没有就自己生成
-    if (
-      !(await wait(() => querySelector('.upLoop .table-default-title'), 1000))
-    )
-      await buildChapters(comicName, querySelector('.upLoop')!);
+    let isHidden = false;
+    const isMobile = window.location.href.includes('/h5/');
+    if (isMobile) {
+      // 等到加载提示框消失
+      await wait(
+        () =>
+          querySelector('.van-toast__text')?.parentElement?.style.display ===
+          'none',
+      );
+      // 再等一秒看有没有屏蔽提示
+      if (
+        await wait(
+          () => querySelector('.isBan')?.textContent?.includes('不提供閱覽'),
+          1000,
+        )
+      ) {
+        isHidden = true;
+      }
+    } else {
+      isHidden =
+        // 先检查有没有屏蔽提示
+        Boolean(
+          querySelector('.wargin')?.textContent?.includes('不提供閱覽'),
+        ) ||
+        // 再等一秒看目录有没有加载出来
+        !(await wait(
+          () => querySelector('.upLoop .table-default-title'),
+          1000,
+        ));
+    }
 
-    if (token) handleLastChapter(comicName);
+    // 如果漫画被隐藏了，就自己生成目录
+    if (isHidden) {
+      // 给屏蔽提示加个删除线
+      const tip = querySelector('.isBan, .wargin');
+      if (tip) tip.style.textDecoration = 'line-through';
+      await buildChapters(comicName, isMobile);
+    }
+
+    if (!isMobile && token) handleLastChapter(comicName);
   }
 })();
