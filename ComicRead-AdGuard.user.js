@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         10.10.2
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、welovemanga
+// @version         10.11.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @author          hymbz
@@ -59,6 +59,7 @@
 // @match           *://mangabz.com/*
 // @match           *://komiic.com/*
 // @match           *://mangadex.org/*
+// @match           *://noy1.top/*
 // @match           *://8.twobili.com/*
 // @match           *://a.twobili.com/*
 // @match           *://articles.onemoreplace.tw/*
@@ -1177,14 +1178,18 @@ const request = async (url, details, retryNum = 0, errorNum = 0) => {
       };
     }
     if (typeof GM_xmlhttpRequest === 'undefined') throw new Error(helper.t('pwa.alert.userscript_not_installed'));
+    let targetUrl = url;
+    // https://github.com/hymbz/ComicReadScript/issues/195
+    // 在某些情况下 Tampermonkey 无法正确处理相对协议的 url
+    // 实际 finalUrl 会变成 \`///xxx.xxx\` 莫名多了一个斜杠
+    // 然而在修改代码发出正确的请求后，就再也无法复现了
+    // 不过以防万一还是在这里手动处理下
+    if (url.startsWith('//')) targetUrl = \`http:\${url}\`;
+    // stay 没法处理相对路径，也得转换一下
+    else if (url.startsWith('/')) targetUrl = \`\${window.location.origin}\${url}\`;
     const res = await xmlHttpRequest({
       method: 'GET',
-      // https://github.com/hymbz/ComicReadScript/issues/195
-      // 在某些情况下 Tampermonkey 无法正确处理相对协议的 url
-      // 实际 finalUrl 会变成 \`///xxx.xxx\` 莫名多了一个斜杠
-      // 然而在修改代码发出正确的请求后，就再也无法复现了
-      // 不过以防万一还是在这里手动处理下
-      url: url.startsWith('//') ? \`http:\${url}\` : url,
+      url: targetUrl,
       headers,
       timeout: 1000 * 10,
       ...details
@@ -1192,6 +1197,13 @@ const request = async (url, details, retryNum = 0, errorNum = 0) => {
     if (!details?.noCheckCode && res.status !== 200) {
       helper.log.error(errorText, res);
       throw new Error(errorText);
+    }
+
+    // stay 好像没有正确处理 json，只能再单独判断处理一下
+    if (details?.responseType === 'json' && (typeof res.response !== 'object' || Object.keys(res.response).length === 0)) {
+      try {
+        Reflect.set(res, 'response', JSON.parse(res.responseText));
+      } catch {}
     }
     return res;
   } catch (error) {
@@ -1944,6 +1956,12 @@ const handleDragAnima$1 = () => {
   animationId$2 = requestAnimationFrame(handleDragAnima$1);
 };
 
+/** 一段时间没有移动后应该将速率归零 */
+const resetVelocity = helper.debounce(() => {
+  velocity.x = 0;
+  velocity.y = 0;
+}, 200);
+
 /** 是否正在双指捏合缩放中 */
 let pinchZoom = false;
 
@@ -1968,10 +1986,13 @@ const handleZoomDrag = ({
         mouse.x += x - lx;
         mouse.y += y - ly;
         if (animationId$2 === null) animationId$2 = requestAnimationFrame(handleDragAnima$1);
+        resetVelocity();
         break;
       }
     case 'up':
       {
+        resetVelocity.clear();
+
         // 当双指捏合结束，一个手指抬起时，将剩余的指针当作刚点击来处理
         if (pinchZoom) {
           pinchZoom = false;
@@ -3987,6 +4008,7 @@ const ComicImgFlow = () => {
   return (() => {
     var _el$ = web.template(\`<div tabindex=-1><div tabindex=-1>\`)(),
       _el$2 = _el$.firstChild;
+    _el$.addEventListener("transitionend", handleTransitionEnd);
     var _ref$ = bindRef('mangaBox');
     typeof _ref$ === "function" && web.use(_ref$, _el$);
     _el$2.addEventListener("transitionend", handleTransitionEnd);
@@ -8666,7 +8688,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复部分手机浏览器在禁漫天堂等网站上无法正常显示图片的 bug\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>支持 NoyAcg\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复放大后拖拽不跟手的 bug </p></li><li><p>修复拷贝漫画解锁隐藏漫画不支持移动端的 bug\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '10.8.0',
       get children() {
@@ -11843,7 +11865,7 @@ const handleLastChapter = comicName => {
 };
 
 // 生成目录
-const buildChapters = async (comicName, rootDom) => {
+const buildChapters = async (comicName, isMobile) => {
   // 拷贝有些漫画虽然可以通过 api 获取到数据，但网页上的目录被隐藏了
   // 举例：https://mangacopy.com/comic/yueguangxiadeyishijiezhilv
 
@@ -11854,7 +11876,8 @@ const buildChapters = async (comicName, rootDom) => {
   } = await main.request(`/comicdetail/${comicName}/chapters`, {
     responseType: 'json',
     errorText: '加載漫畫目錄失敗',
-    headers
+    headers,
+    fetch: false
   });
   // 解码 api 返回的数据
   const decryptData = async (cipher, key, iv) => {
@@ -11879,81 +11902,146 @@ const buildChapters = async (comicName, rootDom) => {
       id
     }) => [id, []]));
     for (const chapter of props.chapters) chapters[chapter.type].push(chapter);
+    if (isMobile) {
+      // 删掉占位置的分隔线
+      for (const dom of helper.querySelectorAll('.van-divider')) dom.remove();
+      return (() => {
+        var _el$ = web.template(`<div class="detailsTextContentTabs van-tabs van-tabs--line">`)();
+        web.insert(_el$, web.createComponent(solidJs.For, {
+          each: type,
+          children: ({
+            id,
+            name
+          }) => web.createComponent(solidJs.Show, {
+            get when() {
+              return chapters[id].length;
+            },
+            get children() {
+              return [(() => {
+                var _el$2 = web.template(`<div class=van-tabs__wrap><div role=tablist class="van-tabs__nav van-tabs__nav--line"><div role=tab class="van-tab van-tab--active"><span class="van-tab__text van-tab__text--ellipsis"><span></span></span></div><div class=van-tabs__line>`)(),
+                  _el$3 = _el$2.firstChild,
+                  _el$4 = _el$3.firstChild,
+                  _el$5 = _el$4.firstChild,
+                  _el$6 = _el$5.firstChild,
+                  _el$7 = _el$4.nextSibling;
+                _el$3.style.setProperty("background", "transparent");
+                web.insert(_el$6, name);
+                _el$7.style.setProperty("width", "0.24rem");
+                _el$7.style.setProperty("transform", "translateX(187.5px) translateX(-50%)");
+                _el$7.style.setProperty("transition-duration", "0.3s");
+                return _el$2;
+              })(), (() => {
+                var _el$8 = web.template(`<div class=van-tab__pane><div class="chapterList van-grid">`)(),
+                  _el$9 = _el$8.firstChild;
+                _el$9.style.setProperty("padding-left", "0.24rem");
+                web.insert(_el$9, web.createComponent(solidJs.For, {
+                  get each() {
+                    return chapters[id];
+                  },
+                  children: chapter => (() => {
+                    var _el$10 = web.template(`<div class="chapterItem oneLines van-grid-item"><a class="van-grid-item__content van-grid-item__content--center"><span class=van-grid-item__text>`)(),
+                      _el$11 = _el$10.firstChild,
+                      _el$12 = _el$11.firstChild;
+                    _el$10.style.setProperty("flex-basis", "25%");
+                    _el$10.style.setProperty("padding-right", "0.24rem");
+                    _el$10.style.setProperty("margin-top", "0.24rem");
+                    web.insert(_el$12, () => chapter.name);
+                    web.effect(_p$ => {
+                      var _v$ = !!(props.last_chapter.uuid === chapter.id),
+                        _v$2 = `/comic/${comicName}/chapter/${chapter.id}`;
+                      _v$ !== _p$.e && _el$10.classList.toggle("red", _p$.e = _v$);
+                      _v$2 !== _p$.t && web.setAttribute(_el$11, "href", _p$.t = _v$2);
+                      return _p$;
+                    }, {
+                      e: undefined,
+                      t: undefined
+                    });
+                    return _el$10;
+                  })()
+                }));
+                return _el$8;
+              })()];
+            }
+          })
+        }));
+        return _el$;
+      })();
+    }
     return [(() => {
-      var _el$ = web.template(`<span>`)();
-      web.insert(_el$, () => props.name);
-      return _el$;
+      var _el$13 = web.template(`<span>`)();
+      web.insert(_el$13, () => props.name);
+      return _el$13;
     })(), (() => {
-      var _el$2 = web.template(`<div class=table-default><div class=table-default-title><ul class="nav nav-tabs"role=tablist></ul><div class=table-default-right><span>更新內容：</span><a target=_blank></a><span>更新時間：</span><span></span></div></div><div class=table-default-box><div class=tab-content>`)(),
-        _el$3 = _el$2.firstChild,
-        _el$4 = _el$3.firstChild,
-        _el$5 = _el$4.nextSibling,
-        _el$6 = _el$5.firstChild,
-        _el$7 = _el$6.nextSibling,
-        _el$8 = _el$7.nextSibling,
-        _el$9 = _el$8.nextSibling,
-        _el$10 = _el$3.nextSibling,
-        _el$11 = _el$10.firstChild;
-      web.insert(_el$4, web.createComponent(solidJs.For, {
+      var _el$14 = web.template(`<div class=table-default><div class=table-default-title><ul class="nav nav-tabs"role=tablist></ul><div class=table-default-right><span>更新內容：</span><a target=_blank></a><span>更新時間：</span><span></span></div></div><div class=table-default-box><div class=tab-content>`)(),
+        _el$15 = _el$14.firstChild,
+        _el$16 = _el$15.firstChild,
+        _el$17 = _el$16.nextSibling,
+        _el$18 = _el$17.firstChild,
+        _el$19 = _el$18.nextSibling,
+        _el$20 = _el$19.nextSibling,
+        _el$21 = _el$20.nextSibling,
+        _el$22 = _el$15.nextSibling,
+        _el$23 = _el$22.firstChild;
+      web.insert(_el$16, web.createComponent(solidJs.For, {
         each: type,
         children: ({
           id,
           name
         }) => (() => {
-          var _el$12 = web.template(`<li class=nav-item><a class=nav-link data-toggle=tab role=tab aria-selected=false>`)(),
-            _el$13 = _el$12.firstChild;
-          web.insert(_el$13, name);
+          var _el$24 = web.template(`<li class=nav-item><a class=nav-link data-toggle=tab role=tab aria-selected=false>`)(),
+            _el$25 = _el$24.firstChild;
+          web.insert(_el$25, name);
           web.effect(_p$ => {
-            var _v$ = !!(chapters[id].length === 0),
-              _v$2 = `#${props.path_word}${name}`;
-            _v$ !== _p$.e && _el$13.classList.toggle("disabled", _p$.e = _v$);
-            _v$2 !== _p$.t && web.setAttribute(_el$13, "href", _p$.t = _v$2);
+            var _v$3 = !!(chapters[id].length === 0),
+              _v$4 = `#${props.path_word}${name}`;
+            _v$3 !== _p$.e && _el$25.classList.toggle("disabled", _p$.e = _v$3);
+            _v$4 !== _p$.t && web.setAttribute(_el$25, "href", _p$.t = _v$4);
             return _p$;
           }, {
             e: undefined,
             t: undefined
           });
-          return _el$12;
+          return _el$24;
         })()
       }));
-      web.insert(_el$7, () => props.last_chapter.name);
-      web.insert(_el$9, () => props.last_chapter.datetime_created);
-      web.insert(_el$11, web.createComponent(solidJs.For, {
+      web.insert(_el$19, () => props.last_chapter.name);
+      web.insert(_el$21, () => props.last_chapter.datetime_created);
+      web.insert(_el$23, web.createComponent(solidJs.For, {
         each: type,
         children: ({
           id,
           name
         }) => (() => {
-          var _el$14 = web.template(`<div role=tabpanel class="tab-pane fade"><ul>`)(),
-            _el$15 = _el$14.firstChild;
-          web.insert(_el$15, web.createComponent(solidJs.For, {
+          var _el$26 = web.template(`<div role=tabpanel class="tab-pane fade"><ul>`)(),
+            _el$27 = _el$26.firstChild;
+          web.insert(_el$27, web.createComponent(solidJs.For, {
             get each() {
               return chapters[id];
             },
             children: chapter => (() => {
-              var _el$16 = web.template(`<a target=_blank><li>`)(),
-                _el$17 = _el$16.firstChild;
-              _el$16.style.setProperty("display", "block");
-              web.insert(_el$17, () => chapter.name);
+              var _el$28 = web.template(`<a target=_blank><li>`)(),
+                _el$29 = _el$28.firstChild;
+              _el$28.style.setProperty("display", "block");
+              web.insert(_el$29, () => chapter.name);
               web.effect(_p$ => {
-                var _v$3 = `/comic/${comicName}/chapter/${chapter.id}`,
-                  _v$4 = chapter.name;
-                _v$3 !== _p$.e && web.setAttribute(_el$16, "href", _p$.e = _v$3);
-                _v$4 !== _p$.t && web.setAttribute(_el$16, "title", _p$.t = _v$4);
+                var _v$5 = `/comic/${comicName}/chapter/${chapter.id}`,
+                  _v$6 = chapter.name;
+                _v$5 !== _p$.e && web.setAttribute(_el$28, "href", _p$.e = _v$5);
+                _v$6 !== _p$.t && web.setAttribute(_el$28, "title", _p$.t = _v$6);
                 return _p$;
               }, {
                 e: undefined,
                 t: undefined
               });
-              return _el$16;
+              return _el$28;
             })()
           }));
-          web.effect(() => web.setAttribute(_el$14, "id", `${props.path_word}${name}`));
-          return _el$14;
+          web.effect(() => web.setAttribute(_el$26, "id", `${props.path_word}${name}`));
+          return _el$26;
         })()
       }));
-      web.effect(() => web.setAttribute(_el$7, "href", `/comic/${comicName}/chapter/${props.last_chapter.comic_id}`));
-      return _el$2;
+      web.effect(() => web.setAttribute(_el$19, "href", `/comic/${comicName}/chapter/${props.last_chapter.comic_id}`));
+      return _el$14;
     })()];
   };
   web.render(() => web.createComponent(solidJs.For, {
@@ -11961,7 +12049,7 @@ const buildChapters = async (comicName, rootDom) => {
       return Object.values(groups);
     },
     children: Group
-  }), rootDom);
+  }), isMobile ? helper.querySelector('.detailsTextContent') : helper.querySelector('.upLoop'));
 
   // 点击每个分组下第一个激活的标签
   for (const group of helper.querySelectorAll('.upLoop .table-default-title')) group.querySelector('.nav-link:not(.disabled)')?.click();
@@ -12037,10 +12125,31 @@ const buildChapters = async (comicName, rootDom) => {
   if (!id && window.location.href.includes('/comic/')) {
     comicName = window.location.href.split('/comic/')[1];
     if (!comicName) return;
+    let isHidden = false;
+    const isMobile = window.location.href.includes('/h5/');
+    if (isMobile) {
+      // 等到加载提示框消失
+      await helper.wait(() => helper.querySelector('.van-toast__text')?.parentElement?.style.display === 'none');
+      // 再等一秒看有没有屏蔽提示
+      if (await helper.wait(() => helper.querySelector('.isBan')?.textContent?.includes('不提供閱覽'), 1000)) {
+        isHidden = true;
+      }
+    } else {
+      isHidden =
+      // 先检查有没有屏蔽提示
+      Boolean(helper.querySelector('.wargin')?.textContent?.includes('不提供閱覽')) ||
+      // 再等一秒看目录有没有加载出来
+      !(await helper.wait(() => helper.querySelector('.upLoop .table-default-title'), 1000));
+    }
 
-    // 稍等看有没有目录加载出来，没有就自己生成
-    if (!(await helper.wait(() => helper.querySelector('.upLoop .table-default-title'), 1000))) await buildChapters(comicName, helper.querySelector('.upLoop'));
-    if (token) handleLastChapter(comicName);
+    // 如果漫画被隐藏了，就自己生成目录
+    if (isHidden) {
+      // 给屏蔽提示加个删除线
+      const tip = helper.querySelector('.isBan, .wargin');
+      if (tip) tip.style.textDecoration = 'line-through';
+      await buildChapters(comicName, isMobile);
+    }
+    if (!isMobile && token) handleLastChapter(comicName);
   }
 })();
 
@@ -12106,13 +12215,7 @@ const buildChapters = async (comicName, rootDom) => {
       }
 
     // #[禁漫天堂](https://18comic.vip)
-    case 'jmcomic.me':
-    case 'jmcomic1.me':
-    case 'jmcomic-zzz.one':
-    case '18comic-dwo.cc':
-    case '18comic.org':
-    case '18comic.vip':
-      {
+    {
 const main = require('main');
 const helper = require('helper');
 
@@ -12477,6 +12580,27 @@ const helper = require('helper');
             getOnPrev: () => helper.querySelectorClick(`#chapter-selector > a[href^="/chapter/"]:nth-of-type(1)`),
             getOnNext: () => helper.querySelectorClick(`#chapter-selector > a[href^="/chapter/"]:nth-of-type(2)`),
             handlePageurl: location => location.href.replace(/(?<=\/chapter\/.+?)\/.*/, '')
+          }
+        };
+        break;
+      }
+
+    // #[NoyAcg](https://noy1.top)
+    case 'noy1.top':
+      {
+        options = {
+          name: 'NoyAcg',
+          async getImgList() {
+            const [,, id] = window.location.hash.split('/');
+
+            // 随便拿一个图片来获取 cdn url
+            const img = await helper.wait(() => helper.querySelector('.lazy-load-image-background img'));
+            const cdn = img.src.split(id)[0];
+            const imgNum = await helper.wait(() => helper.querySelectorAll('.lazy-load-image-background').length);
+            return helper.range(imgNum, i => `${cdn}${id}/${i + 1}.webp`);
+          },
+          SPA: {
+            isMangaPage: () => window.location.hash.startsWith('#/read/')
           }
         };
         break;
