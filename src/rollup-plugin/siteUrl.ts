@@ -45,7 +45,7 @@ export const siteUrl: OutputPluginOption = {
       (_, name, other) => {
         if (!Reflect.has(siteUrlMap!, name)) {
           console.error(`未知站点: ${name}`);
-          return '';
+          return other as string;
         }
         const list = siteUrlMap![name].filter((url) =>
           URL.canParse(`https://${url}`),
