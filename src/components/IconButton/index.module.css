@@ -29,7 +29,7 @@
     background-color: var(--hover-bg-color, #fff3);
   }
 
-  &.enabled {
+  &.enabled:not(.disable) {
     color: var(--text-bg, #121212);
     background-color: var(--text, white);
 
@@ -37,6 +37,12 @@
     &:hover {
       background-color: var(--hover-bg-color-enable, #fffa);
     }
+  }
+
+  &.disable {
+    cursor: not-allowed;
+    opacity: 0.5;
+    background-color: unset;
   }
 
   & > svg {

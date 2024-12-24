@@ -14,6 +14,8 @@ interface IconButtonProps {
   hidden?: boolean;
   /** 是否启用 */
   enabled?: boolean;
+  /** 是否禁用 */
+  disable?: boolean;
   /** 自定义悬浮显示内容 */
   popper?: JSX.Element;
 
@@ -27,6 +29,7 @@ export const IconButton: Component<IconButtonProps> = (_props) => {
   const props = mergeProps({ placement: 'right' }, _props);
   let buttonRef: HTMLButtonElement;
   const handleClick: EventHandler['on:click'] = (e) => {
+    if (props.disable) return;
     (props.onClick as JSX.EventHandler<HTMLElement, MouseEvent>)?.(e);
     // 在每次点击后取消焦点
     buttonRef?.blur();
@@ -46,6 +49,7 @@ export const IconButton: Component<IconButtonProps> = (_props) => {
         classList={{
           [classes.hidden]: props.hidden,
           [classes.enabled]: props.enabled,
+          [classes.disable]: props.disable,
         }}
         tabIndex={0}
         on:click={handleClick}
