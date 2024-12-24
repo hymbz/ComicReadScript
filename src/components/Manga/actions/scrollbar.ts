@@ -10,7 +10,6 @@ import {
 import { type State, store, refs, _setState } from '../store';
 
 import { isAbreastMode } from './memo';
-import { focus } from './operate';
 import {
   scrollLength,
   scrollPercentage,
@@ -97,8 +96,7 @@ export const handleScrollbarSlider: UseDrag = ({ type, xy, initial }, e) => {
   lastType = type;
 
   // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
-  if (type === 'up') return focus();
-
+  if (type === 'up') return;
   if (!refs.mangaFlow) return;
 
   const scrollbarDom = e.target as HTMLElement;

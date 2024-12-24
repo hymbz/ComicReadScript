@@ -8,14 +8,18 @@ import {
   abreastArea,
 } from './abreastScroll';
 import { isScrollMode, isAbreastMode, abreastColumnWidth } from './memo/common';
-import { contentHeight, imgTopList } from './imageSize';
+import { contentHeight, doubleScrollLineHeight, imgTopList } from './imageSize';
 import { scrollTop } from './memo/observer';
 import { setOption } from './helper';
 
-/** 滚动内容的长度 */
+/** 滚动内容的总长度 */
 export const scrollLength = createRootMemo(() => {
-  if (isScrollMode()) return contentHeight();
-  if (isAbreastMode()) return abreastContentWidth();
+  if (store.option.scrollMode.enabled) {
+    if (store.option.scrollMode.abreastMode) return abreastContentWidth();
+    if (store.option.scrollMode.doubleMode)
+      return doubleScrollLineHeight().reduce((sum, height) => sum + height, 0);
+    return contentHeight();
+  }
   return store.pageList.length;
 });
 

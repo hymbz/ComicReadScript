@@ -8,6 +8,7 @@ import { type FillEffect } from '../store/image';
 export const getImg = (i: number, state = store) =>
   state.imgMap[state.imgList[i]];
 
+/** 找到指定 url 图片在 imgList 里的 index */
 export const getImgIndex = (url: string) => {
   const indexList: number[] = [];
   for (const [i, imgUrl] of store.imgList.entries())
@@ -15,6 +16,7 @@ export const getImgIndex = (url: string) => {
   return indexList;
 };
 
+/** 找到指定 url 图片的 dom */
 export const getImgEle = (url: string) =>
   refs.mangaFlow.querySelector<HTMLImageElement>(`img[data-src="${url}"]`);
 

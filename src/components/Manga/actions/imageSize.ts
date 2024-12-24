@@ -6,6 +6,7 @@ import {
   abreastColumnWidth,
   imgList,
   isAbreastMode,
+  isDoubleMode,
   placeholderSize,
 } from './memo';
 import { updateImgType } from './imageType';
@@ -80,9 +81,38 @@ export const imgTopList = createRootMemo(() => {
 });
 
 /** 卷轴模式下漫画流的总高度 */
-export const contentHeight = createRootMemo(
-  () => (imgTopList().at(-1) ?? 0) + (imgList().at(-1)?.size.height ?? 0),
+export const contentHeight = createRootMemo(() =>
+  store.option.scrollMode.enabled
+    ? (imgTopList().at(-1) ?? 0) + (imgList().at(-1)?.size.height ?? 0)
+    : 0,
 );
+
+/** 双页卷轴模式下的每行高度 */
+export const doubleScrollLineHeight = createRootMemo(() => {
+  if (!isDoubleMode()) return [];
+
+  const doubleWidth = store.rootSize.width / 2;
+
+  return store.pageList.map((indexs) => {
+    if (indexs.length === 1) return getImg(indexs[0]).size.height;
+
+    // 选择更高的那张图片作为行高度，尽量放大图片
+    let targetImg: ComicImg | undefined;
+    for (const i of indexs) {
+      if (i === -1) continue;
+      const img = getImg(i);
+      if (!targetImg || img.size.height > targetImg.size.height)
+        targetImg = img;
+    }
+    if (!targetImg) throw new Error('找不到图片');
+    if (
+      targetImg.size.width < doubleWidth &&
+      !store.option.scrollMode.fitToWidth
+    )
+      return targetImg.size.height;
+    return targetImg.size.height * (doubleWidth / targetImg.size.width);
+  });
+});
 
 // /** 预加载图片尺寸 */
 // const preloadImgSize = singleThreaded(async () => {

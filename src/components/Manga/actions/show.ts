@@ -56,7 +56,7 @@ export const getPageTip = (pageIndex: number): string => {
     | [string, string];
   if (pageIndexText.length === 1) return pageIndexText[0];
   if (store.option.dir === 'rtl') pageIndexText.reverse();
-  return pageIndexText.join(store.option.scrollMode.enabled ? '\n' : ' | ');
+  return pageIndexText.join(' | ');
 };
 
 createEffectOn(

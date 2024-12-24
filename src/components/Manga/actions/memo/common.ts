@@ -12,7 +12,12 @@ export const isAbreastMode = createRootMemo(
   () => store.option.scrollMode.enabled && store.option.scrollMode.abreastMode,
 );
 
-/** 当前是否为普通卷轴模式 */
+/** 当前是否为双页卷轴模式 */
+export const isDoubleMode = createRootMemo(
+  () => store.option.scrollMode.enabled && store.option.scrollMode.doubleMode,
+);
+
+/** 当前是否为普通卷轴模式（包含了双页卷轴模式） */
 export const isScrollMode = createRootMemo(
   () => store.option.scrollMode.enabled && !store.option.scrollMode.abreastMode,
 );
@@ -84,7 +89,7 @@ export const pageNum = createRootMemo(
 export const isOnePageMode = createRootMemo(
   () =>
     pageNum() === 1 ||
-    store.option.scrollMode.enabled ||
+    (store.option.scrollMode.enabled && !store.option.scrollMode.doubleMode) ||
     store.isMobile ||
     store.imgList.length <= 1,
 );

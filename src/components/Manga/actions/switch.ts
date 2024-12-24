@@ -34,11 +34,15 @@ export const switchScrollMode = () => {
 /** 切换单双页模式 */
 export const switchOnePageMode = () => {
   setOption((draftOption, state) => {
-    const newPageNum = pageNum() === 1 ? 2 : 1;
-    draftOption.pageNum =
-      state.option.autoSwitchPageMode && newPageNum === autoPageNum()
-        ? 0
-        : newPageNum;
+    if (draftOption.scrollMode.enabled)
+      draftOption.scrollMode.doubleMode = !draftOption.scrollMode.doubleMode;
+    else {
+      const newPageNum = pageNum() === 1 ? 2 : 1;
+      draftOption.pageNum =
+        state.option.autoSwitchPageMode && newPageNum === autoPageNum()
+          ? 0
+          : newPageNum;
+    }
   });
 };
 

@@ -71,6 +71,8 @@ export interface Option {
     abreastMode: boolean;
     /** 并排模式下重新显示上列结尾部分的比例 */
     abreastDuplicate: number;
+    /** 双页模式 */
+    doubleMode: boolean;
   };
 
   /** 图像识别 */
@@ -143,6 +145,7 @@ const _defaultOption: Readonly<Option> = {
     fitToWidth: false,
     abreastMode: false,
     abreastDuplicate: 0.1,
+    doubleMode: false,
   },
 
   imgRecognition: {

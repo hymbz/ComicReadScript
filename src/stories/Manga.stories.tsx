@@ -84,9 +84,17 @@ export const 并排卷轴模式: Story = {
   play: waitImgLoaded,
 };
 
-export const 网格模式: Story = {
+export const 双页卷轴模式: Story = {
   args: {
     图源: '若爱在眼前（跨页+小图）',
+    option: { scrollMode: { enabled: true, doubleMode: true } },
+  } satisfies Props,
+  play: waitImgLoaded,
+};
+
+export const 网格模式: Story = {
+  args: {
+    图源: '饮茶之时、女仆之梦（彩图）',
   } satisfies Props,
   async play() {
     _setState('gridMode', true);

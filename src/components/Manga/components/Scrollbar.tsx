@@ -26,6 +26,7 @@ import {
   sliderTop,
   watchDomSize,
   isDrag,
+  isDoubleMode,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -74,7 +75,7 @@ export const Scrollbar: Component = () => {
     for (let i = store.showRange[0]; i <= store.showRange[1]; i++)
       tipList.push(getPageTip(i));
 
-    if (isOnePageMode()) return tipList.join('\n');
+    if (isOnePageMode() || isDoubleMode()) return tipList.join('\n');
     if (tipList.length === 1) return tipList[0];
     if (store.option.dir === 'rtl') tipList.reverse();
     return tipList.join('   ');

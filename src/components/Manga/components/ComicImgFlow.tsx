@@ -25,7 +25,6 @@ import {
   scrollTo,
   scrollTop,
   isOnePageMode,
-  isAbreastMode,
   isScrollMode,
   abreastColumnWidth,
   abreastArea,
@@ -34,6 +33,9 @@ import {
   imgList,
   getImg,
   isEnableBg,
+  isDoubleMode,
+  doubleScrollLineHeight,
+  focus,
 } from '../actions';
 import classes from '../index.module.css';
 
@@ -113,13 +115,15 @@ export const ComicImgFlow: Component = () => {
     }
 
     if (store.option.scrollMode.enabled) {
-      if (!store.option.scrollMode.abreastMode)
-        return createSequence(store.imgList.length)
-          .map((i) => `"_${i}"`)
-          .join('\n');
-      return `"${createSequence(abreastArea().columns.length)
-        .map((i) => `_${i}`)
-        .join(' ')}"`;
+      if (store.option.scrollMode.abreastMode)
+        return `"${createSequence(abreastArea().columns.length)
+          .map((i) => `_${i}`)
+          .join(' ')}"`;
+      if (store.option.scrollMode.doubleMode)
+        return store.pageList.map((page) => `"${pageToText(page)}"`).join('\n');
+      return createSequence(store.imgList.length)
+        .map((i) => `"_${i}"`)
+        .join('\n');
     }
 
     return store.page.vertical
@@ -164,17 +168,24 @@ export const ComicImgFlow: Component = () => {
     'grid-template-areas': gridAreas,
     'grid-template-columns'() {
       if (store.imgList.length === 0 || store.gridMode) return undefined;
-      if (isAbreastMode())
-        return `repeat(${abreastArea().columns.length}, ${abreastColumnWidth()}px)`;
-      if (isScrollMode()) return undefined;
+      if (store.option.scrollMode.enabled) {
+        if (store.option.scrollMode.abreastMode)
+          return `repeat(${abreastArea().columns.length}, ${abreastColumnWidth()}px)`;
+        if (store.option.scrollMode.doubleMode) return `50% 50%`;
+        return undefined;
+      }
       if (store.page.vertical) return '50% 50%';
       return `repeat(${gridAreas()?.split(' ').length ?? 0}, 50%)`;
     },
     'grid-template-rows'() {
-      if (!isScrollMode() || store.gridMode) return undefined;
-      return imgList()
-        .map(({ size: { height } }) => `${height}px`)
-        .join(' ');
+      if (isDoubleMode())
+        return doubleScrollLineHeight()
+          .map((num) => `${num}px`)
+          .join(' ');
+      if (isScrollMode())
+        return imgList()
+          .map(({ size: { height } }) => `${height}px`)
+          .join(' ');
     },
     'background-color': () =>
       isEnableBg() ? getImg(activeImgIndex())?.background : undefined,
@@ -189,6 +200,7 @@ export const ComicImgFlow: Component = () => {
       data-animation={store.page.anima}
       data-abreast-scroll={boolDataVal(store.option.scrollMode.abreastMode)}
       onTransitionEnd={handleTransitionEnd}
+      onScrollEnd={focus}
       tabIndex={-1}
     >
       <div
