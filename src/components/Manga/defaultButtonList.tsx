@@ -7,6 +7,8 @@ import MdTranslate from '@material-design-icons/svg/round/translate.svg';
 import MdGrid from '@material-design-icons/svg/round/grid_4x4.svg';
 import MdZoomIn from '@material-design-icons/svg/round/zoom_in.svg';
 import MdZoomOut from '@material-design-icons/svg/round/zoom_out.svg';
+import MdFullscreen from '@material-design-icons/svg/round/fullscreen.svg';
+import MdFullscreenExit from '@material-design-icons/svg/round/fullscreen_exit.svg';
 import { createMemo, type Component, createSignal, Show } from 'solid-js';
 import { createEffectOn, t } from 'helper';
 
@@ -26,6 +28,7 @@ import {
   isTranslatingImage,
   isOnePageMode,
   isScrollMode,
+  switchFullscreen,
 } from './actions';
 import classes from './index.module.css';
 
@@ -115,6 +118,17 @@ export const defaultButtonList: ToolbarButtonList = [
         children={<MdZoomOut />}
       />
     </Show>
+  ),
+  // 全屏
+  () => (
+    <IconButton
+      tip={
+        store.fullscreen ? t('button.fullscreen_exit') : t('button.fullscreen')
+      }
+      hidden={!refs.root.requestFullscreen}
+      onClick={switchFullscreen}
+      children={store.fullscreen ? <MdFullscreenExit /> : <MdFullscreen />}
+    />
   ),
   // 翻译设置
   () => (

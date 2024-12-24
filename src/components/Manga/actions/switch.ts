@@ -79,3 +79,9 @@ export const switchFitToWidth = () => {
   });
   jump();
 };
+
+/** 切换全屏 */
+export const switchFullscreen = () => {
+  if (document.fullscreenElement) document.exitFullscreen();
+  else refs.root.requestFullscreen();
+};

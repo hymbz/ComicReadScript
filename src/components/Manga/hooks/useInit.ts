@@ -21,6 +21,7 @@ import {
 } from '../actions';
 import { defaultOption, type Option } from '../store/option';
 import { playAnimation } from '../helper';
+import classes from '../index.module.css';
 
 const createComicImg = (src: string): ComicImg => ({
   src,
@@ -231,6 +232,15 @@ export const useInit = (props: MangaProps) => {
     setTimeout(URL.revokeObjectURL, 0, codeUrl);
     _setState('supportWorker', Boolean(new Worker(codeUrl)));
   }, 0);
+
+  refs.root.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement) return _setState('fullscreen', false);
+    if (
+      document.fullscreenElement.id === 'comicRead' ||
+      document.fullscreenElement.classList.contains(classes.root)
+    )
+      _setState('fullscreen', true);
+  });
 
   focus();
 };
