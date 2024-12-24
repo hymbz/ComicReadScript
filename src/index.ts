@@ -634,8 +634,8 @@ try {
     }
 
     // #[熱辣漫畫](https://www.relamanhua.org/)
-    case 'relamanhua.org':
     case 'www.relamanhua.org':
+    case 'www.manga2024.com':
     case 'www.2024manga.com': {
       if (
         !window.location.pathname.includes('/chapter/') &&
