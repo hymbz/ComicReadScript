@@ -1,12 +1,7 @@
-## [10.11.0](https://github.com/hymbz/ComicReadScript/compare/v10.10.2...v10.11.0) (2024-12-19)
+## [11.0.0](https://github.com/hymbz/ComicReadScript/compare/v10.11.0...v11.0.0) (2024-12-24)
 
 
 ### Features
 
-* :sparkles: 支持 NoyAcg ([9367d49](https://github.com/hymbz/ComicReadScript/commit/9367d49072e28852e15d2d63a92683a29155c2e6))
-
-
-### Bug Fixes
-
-* :bug: 修复放大后拖拽不跟手的 bug ([500afb6](https://github.com/hymbz/ComicReadScript/commit/500afb6188932194c5a13c7dd4e0b1720ccfe72b))
-* :bug: 修复拷贝漫画解锁隐藏漫画不支持移动端的 bug ([9b0770a](https://github.com/hymbz/ComicReadScript/commit/9b0770ad56f35735bbd629c3a8f18c5710f9d98e))
+* :sparkles: 增加全屏按钮 ([8cf5069](https://github.com/hymbz/ComicReadScript/commit/8cf5069b0a4ef0b7801087e39c03c908d03826a0)), closes [#209](https://github.com/hymbz/ComicReadScript/issues/209)
+* :sparkles: 增加双页卷轴模式 ([4d8f03b](https://github.com/hymbz/ComicReadScript/commit/4d8f03b75d456546fcd8500a306bc320fe422b28))
