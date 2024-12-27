@@ -361,7 +361,8 @@ nhentai 的屏蔽机制是在被屏蔽漫画封面加上一层半透明遮罩，
 
 同时非常感谢以下已经为脚本提供了翻译的贡献者
 
-- русский язык - [@EnergoStalin](https://github.com/EnergoStalin)
+- русский - [@EnergoStalin](https://github.com/EnergoStalin)
+- தமிழ் - [@TamilNeram](https://github.com/TamilNeram)
 
 <a href="https://hosted.weblate.org/engage/comic_read_script/" align="left"><img src="https://hosted.weblate.org/widget/comic_read_script/main/287x66-grey.png" alt="翻译状态" /></a>
 <a href="https://hosted.weblate.org/engage/comic_read_script/" align="right"><img src="https://hosted.weblate.org/widget/comic_read_script/main/multi-auto.svg" alt="翻译状态" /></a>
