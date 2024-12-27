@@ -3,16 +3,16 @@ import type { OutputPluginOption } from 'rollup';
 
 const siteUrlFnMap = {
   async jm() {
-    const res = await axios<string>('https://jmcomicgo.me');
-    return [
-      ...res.data
-        .replaceAll('&nbsp;', '')
-        .matchAll(/(?<=\n\s*)[-A-Za-z\d.]+?(?=<br)/g),
-    ].flat();
+    const res = await axios<string>('https://jmcomic6.org');
+    return [...res.data.matchAll(/(?<=<span>)[\da-z-.]+(?=<\/span>)/g)].flat();
   },
   async wnacg() {
     const res = await axios<string>('https://wnacg.date');
     return [...res.data.matchAll(/(?<=<i>)[-A-Za-z\d.]+?(?=<\/i>)/g)].flat();
+  },
+  async noy() {
+    const res = await axios<string>('https://noy.icu/atom.xml');
+    return [.../(?<=<link href="https:\/\/).+(?=\/")/.exec(res.data)!];
   },
 };
 
