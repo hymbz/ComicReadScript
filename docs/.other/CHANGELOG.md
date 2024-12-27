@@ -1,5 +1,12 @@
 
 
+## [11.1.0](https://github.com/hymbz/ComicReadScript/compare/v11.0.0...v11.1.0) (2024-12-27)
+
+
+### Features
+
+* :sparkles: 支持 コミックグロウル（comic-growl.com） ([ef3e7fb](https://github.com/hymbz/ComicReadScript/commit/ef3e7fbcf769e32963da3158e2c8b531c88f596a))
+
 ## [11.0.0](https://github.com/hymbz/ComicReadScript/compare/v10.11.0...v11.0.0) (2024-12-24)
 
 

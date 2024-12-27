@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         11.0.0
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、welovemanga
+// @version         11.1.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、コミックグロウル、welovemanga
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @description:ta  காமிக் நிலையத்தில் இரட்டை -பக்க வாசிப்பு மற்றும் மொழிபெயர்ப்பு போன்ற உகந்த அனுபவத்தின் மேம்பாட்டு செயல்பாட்டைச் சேர்க்கவும்.
@@ -8727,7 +8727,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>增加全屏按钮 </p></li><li><p>增加双页卷轴模式\`)(), web.createComponent(VersionTip, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li>支持 コミックグロウル（MyGO 简中官漫连载平台）\`)(), web.createComponent(VersionTip, {
       v1: version,
       v2: '10.8.0',
       get children() {
@@ -12346,9 +12346,10 @@ const buildChapters = async (comicName, hiddenType) => {
       }
 
     // #[禁漫天堂](https://18comic.vip)
-    case 'jmcomic.me':
-    case 'jmcomic1.me':
     case 'jmcomic-zzz.one':
+    case 'jmcomic-zzz.org':
+    case '18comic-daima.vip':
+    case '18comic-daima.org':
     case '18comic-dwo.cc':
     case '18comic.org':
     case '18comic.vip':
@@ -12723,6 +12724,7 @@ const helper = require('helper');
       }
 
     // #[NoyAcg](https://noy1.top)
+    
     case 'noy1.top':
       {
         options = {
@@ -12955,6 +12957,77 @@ const helper = require('helper');
             defaultOption: {
               pageNum: 1
             }
+          }
+        };
+        break;
+      }
+
+    // #[コミックグロウル](https://comic-growl.com)
+    case 'comic-growl.com':
+      {
+        options = {
+          name: 'welovemanga',
+          async getImgList({
+            dynamicLoad
+          }) {
+            const json = helper.querySelector('#episode-json')?.dataset.value;
+            if (!json) throw new Error(helper.t('site.changed_load_failed'));
+            const data = JSON.parse(json);
+            // 「公開終了しました」的漫画
+            if (!data.readableProduct.pageStructure?.pages) return [];
+            const pages = data.readableProduct.pageStructure.pages.filter(({
+              type
+            }) => type === 'main');
+
+            // 有些情况下图片并没有被分割打乱
+            // 比如：https://comic-growl.com/episode/14079602755149645069
+            // 不过只找到这一个例子，姑且先猜测是通过 choJuGiga 这个字段来判断的
+            if (data.readableProduct.pageStructure.choJuGiga !== 'baku') return pages.map(({
+              src
+            }) => src);
+            const loadImgList = async setImg => {
+              for (const [i, page] of pages.entries()) {
+                // by: https://greasyfork.org/zh-CN/scripts/428282-漫画下载
+                // 另外网站使用的 GigaViewer 阅读器在其他很多网站上也都使用的同款
+                // 之后或许可以统一适配一下
+                // 除上面的脚本外也可以参考：https://github.com/eggplants/getjump
+                const blob = await fetch(page.src).then(r => r.blob());
+                const img = await helper.waitImgLoad(URL.createObjectURL(blob));
+                const canvas = new OffscreenCanvas(page.width, page.height);
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                const raw = ctx.getImageData(0, 0, page.width, page.height);
+                const target = ctx.getImageData(0, 0, page.width, page.height);
+                const cellWidth = Math.floor(page.width / 32) * 8;
+                const cellHeight = Math.floor(page.height / 32) * 8;
+                for (let l = 0; l < 4; l++) {
+                  for (let j = 0; j < 4; j++) {
+                    const srcX = l * cellWidth;
+                    const srcY = j * cellHeight;
+                    const targetX = j * cellWidth;
+                    const targetY = l * cellHeight;
+                    for (let y = 0; y < cellHeight; y++) {
+                      for (let x = 0; x < cellWidth; x++) {
+                        const srcIndex = ((srcY + y) * page.width + (srcX + x)) * 4;
+                        const targetIndex = ((targetY + y) * page.width + (targetX + x)) * 4;
+                        target.data[targetIndex] = raw.data[srcIndex];
+                        target.data[targetIndex + 1] = raw.data[srcIndex + 1];
+                        target.data[targetIndex + 2] = raw.data[srcIndex + 2];
+                        target.data[targetIndex + 3] = raw.data[srcIndex + 3];
+                      }
+                    }
+                  }
+                }
+                ctx.putImageData(target, 0, 0);
+                setImg(i, URL.createObjectURL(await helper.canvasToBlob(canvas)));
+              }
+            };
+            return dynamicLoad(loadImgList, pages.length)();
+          },
+          onNext: helper.querySelectorClick('a.next-link'),
+          onPrev: helper.querySelectorClick('a.previous-link'),
+          SPA: {
+            isMangaPage: () => window.location.pathname.startsWith('/episode/')
           }
         };
         break;
