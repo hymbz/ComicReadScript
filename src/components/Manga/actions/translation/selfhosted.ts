@@ -24,10 +24,11 @@ const apiUrl = () =>
 
 /** 使用自部署服务器翻译指定图片 */
 export const selfhostedTranslation = async (url: string) => {
-  await request(`${apiUrl()}`, {
-    method: 'HEAD',
-    errorText: t('alert.server_connect_failed'),
-  });
+  // await request(`${apiUrl()}`, {
+  //   method: 'HEAD',
+  //   errorText: t('alert.server_connect_failed'),
+  // });
+  // 新版本的 selfhosted 服务无法使用head请求检查是否健康，此处需要引入其他方式检查
 
   setMessage(url, t('translation.tip.img_downloading'));
   let imgBlob: Blob;
@@ -39,48 +40,55 @@ export const selfhostedTranslation = async (url: string) => {
   }
 
   setMessage(url, t('translation.tip.upload'));
-  let task_id: string;
-  // 上传图片取得任务 id
-  try {
-    type resData = {
-      task_id: string;
-      status: string;
-    };
-    const res = await request<resData>(`${apiUrl()}/submit`, {
-      method: 'POST',
-      responseType: 'json',
-      data: createFormData(imgBlob, 'selfhosted'),
-    });
-    task_id = res.response.task_id;
-  } catch (error) {
-    log.error(error);
-    throw new Error(t('translation.tip.upload_error'));
-  }
+  const uploadUrl = `${apiUrl()}/translate/with-form/image`;
+  const res = await request<Blob>(uploadUrl, {
+    method: 'POST',
+    responseType: 'blob',
+    data: createFormData(imgBlob, 'selfhosted'),
+  });
+  return URL.createObjectURL(res.response);
+  // let task_id: string;
+  // // 上传图片取得任务 id
+  // try {
+  //   type resData = {
+  //     task_id: string;
+  //     status: string;
+  //   };
+  //   const res = await request<resData>(`${apiUrl()}/submit`, {
+  //     method: 'POST',
+  //     responseType: 'json',
+  //     data: createFormData(imgBlob, 'selfhosted'),
+  //   });
+  //   task_id = res.response.task_id;
+  // } catch (error) {
+  //   log.error(error);
+  //   throw new Error(t('translation.tip.upload_error'));
+  // }
 
-  let errorNum = 0;
-  let taskState: TaskState | undefined;
-  // 等待翻译完成
-  while (!taskState?.finished) {
-    try {
-      await sleep(200);
-      const res = await request<TaskState>(
-        `${apiUrl()}/task-state?taskid=${task_id}`,
-        { responseType: 'json' },
-      );
-      taskState = res.response;
-      setMessage(
-        url,
-        `${t(`translation.status.${taskState.state}`) || taskState.state}`,
-      );
-    } catch (error) {
-      log.error(error);
-      if (errorNum > 5)
-        throw new Error(t('translation.tip.check_img_status_failed'));
-      errorNum += 1;
-    }
-  }
+  // let errorNum = 0;
+  // let taskState: TaskState | undefined;
+  // // 等待翻译完成
+  // while (!taskState?.finished) {
+  //   try {
+  //     await sleep(200);
+  //     const res = await request<TaskState>(
+  //       `${apiUrl()}/task-state?taskid=${task_id}`,
+  //       { responseType: 'json' },
+  //     );
+  //     taskState = res.response;
+  //     setMessage(
+  //       url,
+  //       `${t(`translation.status.${taskState.state}`) || taskState.state}`,
+  //     );
+  //   } catch (error) {
+  //     log.error(error);
+  //     if (errorNum > 5)
+  //       throw new Error(t('translation.tip.check_img_status_failed'));
+  //     errorNum += 1;
+  //   }
+  // }
 
-  return URL.createObjectURL(await download(`${apiUrl()}/result/${task_id}`));
+ 
 };
 
 export const [selfhostedOptions, setSelfOptions] = createEqualsSignal<
