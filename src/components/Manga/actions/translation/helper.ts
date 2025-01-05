@@ -52,7 +52,7 @@ export const createFormData = (
     formData.append('image', file);
     formData.append('config', JSON.stringify({
       detector: {
-        detector: 'default',
+        detector: detector,
         detection_size: SizeLists.find((item) => item[0] === size)?.[1] ?? 0,
       },
       render: {
