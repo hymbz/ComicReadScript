@@ -159,7 +159,7 @@ const _defaultOption: Readonly<Option> = {
     localUrl: undefined,
     forceRetry: false,
     options: {
-      size: 'M',
+      size: '1536',
       detector: 'default',
       translator: 'gpt3.5',
       direction: 'auto',

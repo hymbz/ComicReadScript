@@ -101,10 +101,10 @@ export const SettingTranslation = () => (
       <SettingsItemSelect
         name={t('setting.translation.options.detection_resolution')}
         options={[
-          ['S', '1024px'],
-          ['M', '1536px'],
-          ['L', '2048px'],
-          ['X', '2560px'],
+          ['1024', '1024px'],
+          ['1536', '1536px'],
+          ['2048', '2048px'],
+          ['2560', '2560px'],
         ]}
         value={store.option.translation.options.size}
         onChange={createStateSetFn('translation.options.size')}
@@ -120,14 +120,14 @@ export const SettingTranslation = () => (
         options={translatorOptions()}
         value={store.option.translation.options.translator}
         onChange={createStateSetFn('translation.options.translator')}
-        onClick={() => updateSelfhostedOptions(false)}
+        onClick={updateSelfhostedOptions}
       />
       <SettingsItemSelect
         name={t('setting.translation.options.direction')}
         options={[
           ['auto', t('setting.translation.options.direction_auto')],
-          ['h', t('setting.translation.options.direction_horizontal')],
-          ['v', t('setting.translation.options.direction_vertical')],
+          ['horizontal', t('setting.translation.options.direction_horizontal')],
+          ['vertical', t('setting.translation.options.direction_vertical')],
         ]}
         value={store.option.translation.options.direction}
         onChange={createStateSetFn('translation.options.direction')}
@@ -153,6 +153,7 @@ export const SettingTranslation = () => (
           ['RUS', 'русский язык'],
           ['ESP', 'español'],
           ['TRK', 'Türk dili'],
+          ['IND', 'Indonesia'],
         ]}
         value={store.option.translation.options.targetLanguage}
         onChange={createStateSetFn('translation.options.targetLanguage')}

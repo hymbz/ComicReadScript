@@ -8,7 +8,8 @@ const xmlHttpRequest = <T = any>(
   new Promise((resolve, reject) => {
     const handleError = (error?: Tampermonkey.ErrorResponse) => {
       details.onerror?.(error);
-      reject(new Error(error?.responseText));
+      console.error('GM_xmlhttpRequest Error', error);
+      reject(new Error(error?.responseText || 'GM_xmlhttpRequest Error'));
     };
     const abort = GM_xmlhttpRequest<T>({
       ...details,

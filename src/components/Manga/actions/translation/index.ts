@@ -61,6 +61,8 @@ export const setImgTranslationEnbale = (
   list: Iterable<number>,
   enbale: boolean,
 ) => {
+  if (store.option.translation.server === 'disable' && enbale) return;
+
   setState((state) => {
     for (const i of list) {
       const img = state.imgMap[state.imgList[i]];
