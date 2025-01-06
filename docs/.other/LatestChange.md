@@ -1,6 +1,6 @@
-## [11.1.0](https://github.com/hymbz/ComicReadScript/compare/v11.0.0...v11.1.0) (2024-12-27)
+## [11.1.1](https://github.com/hymbz/ComicReadScript/compare/v11.1.0...v11.1.1) (2025-01-06)
 
 
-### Features
+### Bug Fixes
 
-* :sparkles: 支持 コミックグロウル（MyGO 简中官漫连载平台） ([ef3e7fb](https://github.com/hymbz/ComicReadScript/commit/ef3e7fbcf769e32963da3158e2c8b531c88f596a))
+* :bug: 适配新版 manga-image-translator ([76995a0](https://github.com/hymbz/ComicReadScript/commit/76995a03fdaec544729ea64bf0027b65b5d928c5)), closes [#211](https://github.com/hymbz/ComicReadScript/issues/211)
