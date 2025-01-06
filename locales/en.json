@@ -279,6 +279,7 @@
       "img_not_fully_loaded": "Image has not finished loading",
       "pending": "Pending, {{pos}} in queue",
       "resize_img_failed": "Failed to resize image",
+      "translating": "Translating image",
       "translation_completed": "Translation completed",
       "upload": "Uploading image",
       "upload_error": "Image upload error",

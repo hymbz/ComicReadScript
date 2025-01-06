@@ -279,6 +279,7 @@
       "img_not_fully_loaded": "图片未加载完毕",
       "pending": "正在等待，列队还有 {{pos}} 张图片",
       "resize_img_failed": "缩放图片失败",
+      "translating": "翻译图片中",
       "translation_completed": "翻译完成",
       "upload": "上传图片中",
       "upload_error": "上传图片出错",

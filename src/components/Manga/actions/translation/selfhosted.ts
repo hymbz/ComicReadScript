@@ -78,7 +78,7 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
   } catch (error) {
     // 如果因为 cors 无法使用 fetch，就只能使用拿不到翻译状态的非流式接口了
     if ((error as Error).message.includes('Failed to fetch')) {
-      setMessage(url, '翻译图片中');
+      setMessage(url, t('translation.tip.translating'));
       // 在拷贝漫画上莫名有概率报错
       // 虽然猜测可能是 cors connect-src 导致的，但在类似的 fantia 上却也无法复现
       // 也找不到第二个同样问题的网站，考虑到应该没人会在拷贝上翻译，就暂且不管了
