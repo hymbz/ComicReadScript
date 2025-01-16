@@ -16,6 +16,7 @@ import {
   wait,
   waitDom,
   waitImgLoad,
+  requestIdleCallback,
 } from 'helper';
 import {
   request,
