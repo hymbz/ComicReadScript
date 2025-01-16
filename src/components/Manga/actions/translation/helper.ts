@@ -28,6 +28,8 @@ export const download = async (imgUrl: string) => {
   return res.response;
 };
 
+const sizeDict = { '1024': 'S', '1536': 'M', '2048': 'L', '2560': 'X' };
+
 export const createFormData = (
   imgBlob: Blob,
   type: 'selfhosted' | 'cotrans',
@@ -41,7 +43,7 @@ export const createFormData = (
   if (type === 'cotrans') {
     formData.append('file', file);
     formData.append('mime', file.type);
-    formData.append('size', size);
+    formData.append('size', sizeDict[size]);
     formData.append('detector', detector);
     formData.append('direction', direction);
     formData.append('translator', translator);
