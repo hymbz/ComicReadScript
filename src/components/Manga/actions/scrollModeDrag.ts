@@ -5,6 +5,7 @@ import { refs, store } from '../store';
 import { scrollTop } from './memo';
 import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
 import { scrollTo } from './scroll';
+import { saveReadProgress } from './readProgress';
 
 /** 摩擦系数 */
 const FRICTION_COEFF = 0.96;
@@ -83,6 +84,7 @@ export const handleScrollModeDrag: UseDrag = ({
     case 'up': {
       if (animationId) cancelAnimationFrame(animationId);
       animationId = requestAnimationFrame(handleSlide);
+      saveReadProgress();
     }
   }
 };

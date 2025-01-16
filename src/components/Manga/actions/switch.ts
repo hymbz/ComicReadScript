@@ -3,7 +3,7 @@ import { refs, setState, store } from '../store';
 import { zoom } from './zoom';
 import { setOption } from './helper';
 import { updatePageData } from './image';
-import { saveScrollProgress, scrollViewImg } from './scroll';
+import { jumpToImg, saveScrollProgress } from './scroll';
 import { activeImgIndex, nowFillIndex, pageNum, autoPageNum } from './memo';
 
 /** 切换页面填充 */
@@ -21,22 +21,27 @@ export const switchFillEffect = () => {
 
 /** 切换卷轴模式 */
 export const switchScrollMode = () => {
+  const index = activeImgIndex();
   zoom(100);
   setOption((draftOption, state) => {
     draftOption.scrollMode.enabled = !draftOption.scrollMode.enabled;
     state.page.offset.x.px = 0;
     state.page.offset.y.px = 0;
   });
-  // 切换到卷轴模式后自动定位到对应页
-  scrollViewImg(store.activePageIndex);
+  jumpToImg(index);
 };
 
 /** 切换单双页模式 */
 export const switchOnePageMode = () => {
+  const index = activeImgIndex();
   setOption((draftOption, state) => {
-    if (draftOption.scrollMode.enabled)
-      draftOption.scrollMode.doubleMode = !draftOption.scrollMode.doubleMode;
-    else {
+    if (draftOption.scrollMode.enabled) {
+      if (draftOption.scrollMode.abreastMode) {
+        draftOption.scrollMode.abreastMode = false;
+        draftOption.scrollMode.doubleMode = true;
+      } else
+        draftOption.scrollMode.doubleMode = !draftOption.scrollMode.doubleMode;
+    } else {
       const newPageNum = pageNum() === 1 ? 2 : 1;
       draftOption.pageNum =
         state.option.autoSwitchPageMode && newPageNum === autoPageNum()
@@ -44,6 +49,7 @@ export const switchOnePageMode = () => {
           : newPageNum;
     }
   });
+  jumpToImg(index);
 };
 
 /** 切换阅读方向 */

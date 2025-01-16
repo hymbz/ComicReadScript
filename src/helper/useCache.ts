@@ -3,7 +3,7 @@ export type UseStore = <T>(
   callback: (store: IDBObjectStore) => T | PromiseLike<T>,
 ) => Promise<T>;
 
-const promisifyRequest = <T>(request: IDBRequest<T>): Promise<T> =>
+export const promisifyRequest = <T>(request: IDBRequest<T>): Promise<T> =>
   new Promise<T>((resolve, reject) => {
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error as Error);
@@ -53,5 +53,25 @@ export const useCache = async <Schema extends Record<string, unknown>>(
           .objectStore(storeName)
           .delete(query),
       ),
+
+    async each<K extends keyof Schema & string>(
+      storeName: K,
+      callback: (
+        value: Schema[K],
+        cursor: IDBCursorWithValue,
+      ) => void | Promise<void>,
+    ) {
+      const request = db
+        .transaction(storeName, 'readwrite')
+        .objectStore(storeName)
+        .openCursor();
+      request.onsuccess = async function (event) {
+        const cursor = (event.target as IDBRequest<IDBCursorWithValue | null>)
+          .result;
+        if (!cursor) return;
+        await callback(cursor.value, cursor);
+        cursor.continue();
+      };
+    },
   };
 };

@@ -16,6 +16,7 @@ import {
   scrollTo,
   sliderHeight,
 } from './scroll';
+import { saveReadProgress } from './readProgress';
 
 /** 滚动条元素的长度 */
 export const scrollDomLength = createRootMemo(() =>
@@ -96,7 +97,7 @@ export const handleScrollbarSlider: UseDrag = ({ type, xy, initial }, e) => {
   lastType = type;
 
   // 跳过拖拽结束事件（单击时会同时触发开始和结束，就用开始事件来完成单击的效果
-  if (type === 'up') return;
+  if (type === 'up') return saveReadProgress();
   if (!refs.mangaFlow) return;
 
   const scrollbarDom = e.target as HTMLElement;

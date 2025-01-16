@@ -4,6 +4,7 @@ import { type State, store, setState, _setState } from '../store';
 
 import { resetPage } from './show';
 import { isBottom, isTop } from './scroll';
+import { saveReadProgress } from './readProgress';
 
 export const closeScrollLock = debounce(
   () => _setState('scrollLock', false),
@@ -36,6 +37,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
           return false;
         }
 
+        saveReadProgress();
         if (state.option.scrollMode.enabled) return false;
         state.activePageIndex -= 1;
         return true;
@@ -65,6 +67,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
           return false;
         }
 
+        saveReadProgress();
         if (state.option.scrollMode.enabled) return false;
         state.activePageIndex += 1;
         return true;

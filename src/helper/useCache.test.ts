@@ -1,6 +1,6 @@
 import { expect, it, beforeEach } from 'vitest';
 
-import { useCache } from './useCache';
+import { promisifyRequest, useCache } from './useCache';
 import 'fake-indexeddb/auto';
 
 const cache = await useCache<{
@@ -15,6 +15,7 @@ beforeEach(async () => {
   await cache.set('comic', { id: 'a', imgList: ['fdsfs'], num: 23 });
   await cache.set('comic', { id: 'b', imgList: ['hrthr'], num: 7 });
   await cache.set('comic', { id: 'c', imgList: ['teege'], num: 1 });
+  await cache.set('comic', { id: 'd', imgList: ['teege'], num: 12 });
 });
 
 it('存入', async () => {
@@ -28,6 +29,15 @@ it('存入', async () => {
 
 it('根据主键删除', async () => {
   await cache.del('comic', 'a');
-  expect(await cache.get('comic', 'a')).toStrictEqual(undefined);
-  await cache.del('comic', 'a');
+  expect(await cache.get('comic', 'a')).toBeUndefined();
+});
+
+it('根据条件遍历删除', async () => {
+  await cache.each('comic', async (cursor) => {
+    if (cursor.value.num > 10) await promisifyRequest(cursor.delete());
+  });
+  expect(await cache.get('comic', 'a')).toBeUndefined();
+  expect(await cache.get('comic', 'b')).toBeDefined();
+  expect(await cache.get('comic', 'c')).toBeDefined();
+  expect(await cache.get('comic', 'd')).toBeUndefined();
 });

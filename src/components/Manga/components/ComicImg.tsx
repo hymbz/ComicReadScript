@@ -38,7 +38,8 @@ export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
 
   const selector = `.${classes.img}[id^="_${img.index}_"]`;
   useStyleMemo(selector, {
-    'grid-area': () => (isAbreastMode() ? 'none' : `_${img.index}`),
+    'grid-area': () =>
+      isAbreastMode() && !store.gridMode ? 'none' : `_${img.index}`,
     'background-color': () => (isEnableBg() ? img.background : undefined),
   });
   useStyleMemo(`${selector} > picture`, {

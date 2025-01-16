@@ -178,6 +178,7 @@ export const ComicImgFlow: Component = () => {
       return `repeat(${gridAreas()?.split(' ').length ?? 0}, 50%)`;
     },
     'grid-template-rows'() {
+      if (store.gridMode) return undefined;
       if (isDoubleMode())
         return doubleScrollLineHeight()
           .map((num) => `${num}px`)

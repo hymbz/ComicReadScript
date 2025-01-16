@@ -86,13 +86,14 @@ export const pageNum = createRootMemo(
 );
 
 /** 是否为单页模式 */
-export const isOnePageMode = createRootMemo(
-  () =>
-    pageNum() === 1 ||
-    (store.option.scrollMode.enabled && !store.option.scrollMode.doubleMode) ||
-    store.isMobile ||
-    store.imgList.length <= 1,
-);
+export const isOnePageMode = createRootMemo(() => {
+  if (store.isMobile || store.imgList.length <= 1) return true;
+  if (store.option.scrollMode.enabled) {
+    if (store.option.scrollMode.abreastMode) return true;
+    return !store.option.scrollMode.doubleMode;
+  }
+  return pageNum() === 1;
+});
 
 if (isDevMode)
   Object.assign((window as any).unsafeWindow ?? window, {

@@ -1,6 +1,6 @@
 import { clamp, createRootMemo } from 'helper';
 
-import { _setState, refs, store } from '../store';
+import { _setState, refs, setState, store } from '../store';
 
 import {
   abreastScrollWidth,
@@ -9,7 +9,7 @@ import {
 } from './abreastScroll';
 import { isScrollMode, isAbreastMode, abreastColumnWidth } from './memo/common';
 import { contentHeight, doubleScrollLineHeight, imgTopList } from './imageSize';
-import { scrollTop } from './memo/observer';
+import { imgPageMap, scrollTop } from './memo/observer';
 import { setOption } from './helper';
 
 /** 滚动内容的总长度 */
@@ -75,8 +75,19 @@ export const scrollViewImg = (i: number) => {
     const columnNum = abreastArea().columns.findIndex((column) =>
       column.includes(i),
     );
-    scrollTo(columnNum * abreastColumnWidth());
-  } else scrollTo(imgTopList()[i]);
+    scrollTo(columnNum * abreastColumnWidth() + 1);
+  } else scrollTo(imgTopList()[i] + 1);
+};
+
+/** 跳转到指定图片的显示位置 */
+export const jumpToImg = (index: number) => {
+  const pageNum = imgPageMap()[index];
+  if (pageNum === undefined) return;
+  setState((state) => {
+    state.activePageIndex = pageNum;
+    state.gridMode = false;
+  });
+  scrollViewImg(pageNum);
 };
 
 /** 在卷轴模式下进行缩放，并且保持滚动进度不变 */

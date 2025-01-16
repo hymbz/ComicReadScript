@@ -18,6 +18,7 @@ import {
   updatePageData,
   updateShowRange,
   placeholderSize,
+  resumeReadProgress,
 } from '../actions';
 import { defaultOption, type Option } from '../store/option';
 import { playAnimation } from '../helper';
@@ -152,6 +153,9 @@ export const useInit = (props: MangaProps) => {
       const newImgList = new Set(imgList);
       const oldImgList = new Set(state.imgList);
 
+      // 只在初始化新漫画时恢复上次进度
+      if (oldImgList.size === 0 && newImgList.size > 0) resumeReadProgress();
+
       /** 被删除的图片 */
       const deleteList = [...oldImgList].filter((url) => !newImgList.has(url));
       for (const url of deleteList)
@@ -233,6 +237,7 @@ export const useInit = (props: MangaProps) => {
     _setState('supportWorker', Boolean(new Worker(codeUrl)));
   }, 0);
 
+  // 更新 fullscreen 参数
   refs.root.addEventListener('fullscreenchange', () => {
     if (!document.fullscreenElement) return _setState('fullscreen', false);
     if (

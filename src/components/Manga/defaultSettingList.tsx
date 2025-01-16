@@ -173,6 +173,7 @@ export const defaultSettingList: () => SettingList = () => [
               const jump = saveScrollProgress();
               setOption((draftOption) => {
                 draftOption.scrollMode.abreastMode = val;
+                draftOption.scrollMode.doubleMode = false;
               });
               jump();
             }}

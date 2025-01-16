@@ -6,11 +6,10 @@ import { store, setState, refs } from '../store';
 import classes from '../index.module.css';
 
 import { resetUI } from './helper';
-import { imgPageMap } from './memo';
 import { resetPage } from './show';
 import { zoom } from './zoom';
 import { turnPageFn, turnPageAnimation, turnPage } from './turnPage';
-import { isBottom, isTop, scrollViewImg } from './scroll';
+import { isBottom, isTop, jumpToImg } from './scroll';
 
 /** 根据坐标判断点击的元素 */
 const findClickEle = <T extends Element>(
@@ -48,14 +47,7 @@ const handlePageClick = (e: MouseEvent) => {
 /** 网格模式下点击图片跳到对应页 */
 const handleGridClick = (e: MouseEvent) => {
   const target = findClickEle(refs.root.getElementsByClassName(classes.img), e);
-  if (!target) return;
-  const pageNum = imgPageMap()[Number(/_(\d+)_/.exec(target.id)?.[1])];
-  if (pageNum === undefined) return;
-  setState((state) => {
-    state.activePageIndex = pageNum;
-    state.gridMode = false;
-  });
-  scrollViewImg(pageNum);
+  if (target) jumpToImg(Number(/_(\d+)_/.exec(target.id)?.[1]));
 };
 
 /** 双击放大 */
