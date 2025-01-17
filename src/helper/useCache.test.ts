@@ -33,8 +33,8 @@ it('根据主键删除', async () => {
 });
 
 it('根据条件遍历删除', async () => {
-  await cache.each('comic', async (cursor) => {
-    if (cursor.value.num > 10) await promisifyRequest(cursor.delete());
+  await cache.each('comic', async (value, cursor) => {
+    if (value.num > 10) await promisifyRequest(cursor.delete());
   });
   expect(await cache.get('comic', 'a')).toBeUndefined();
   expect(await cache.get('comic', 'b')).toBeDefined();
