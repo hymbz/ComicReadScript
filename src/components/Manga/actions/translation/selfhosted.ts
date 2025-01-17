@@ -1,10 +1,23 @@
-import { t, log, createEqualsSignal, createEffectOn, lang } from 'helper';
+import {
+  t,
+  log,
+  createEqualsSignal,
+  createEffectOn,
+  lang,
+  sleep,
+} from 'helper';
 import { request } from 'request';
 
 import { store } from '../../store';
 import { setOption } from '../helper';
 
-import { setMessage, download, createFormData, createOptions } from './helper';
+import {
+  setMessage,
+  download,
+  createFormData,
+  createOptions,
+  type TaskState,
+} from './helper';
 
 const apiUrl = () =>
   store.option.translation.localUrl || 'http://127.0.0.1:5003';
@@ -13,7 +26,7 @@ const apiUrl = () =>
 
 /** 使用自部署服务器翻译指定图片 */
 export const selfhostedTranslation = async (url: string): Promise<string> => {
-  await request(apiUrl(), {
+  const html = await request(apiUrl(), {
     errorText: t('alert.server_connect_failed'),
   });
 
@@ -24,6 +37,53 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
   } catch (error) {
     log.error(error);
     throw new Error(t('translation.tip.download_img_failed'));
+  }
+
+  // 支持旧版 manga-image-translator
+  // https://sleazyfork.org/zh-CN/scripts/374903/discussions/273466
+  if (html.responseText.includes('value="S">1024px</')) {
+    let task_id: string;
+    // 上传图片取得任务 id
+    try {
+      type resData = {
+        task_id: string;
+        status: string;
+      };
+      const res = await request<resData>(`${apiUrl()}/submit`, {
+        method: 'POST',
+        responseType: 'json',
+        data: createFormData(imgBlob, 'selfhosted-old'),
+      });
+      task_id = res.response.task_id;
+    } catch (error) {
+      log.error(error);
+      throw new Error(t('translation.tip.upload_error'));
+    }
+
+    let errorNum = 0;
+    let taskState: TaskState | undefined;
+    // 等待翻译完成
+    while (!taskState?.finished) {
+      try {
+        await sleep(200);
+        const res = await request<TaskState>(
+          `${apiUrl()}/task-state?taskid=${task_id}`,
+          { responseType: 'json' },
+        );
+        taskState = res.response;
+        setMessage(
+          url,
+          `${t(`translation.status.${taskState.state}`) || taskState.state}`,
+        );
+      } catch (error) {
+        log.error(error);
+        if (errorNum > 5)
+          throw new Error(t('translation.tip.check_img_status_failed'));
+        errorNum += 1;
+      }
+    }
+
+    return URL.createObjectURL(await download(`${apiUrl()}/result/${task_id}`));
   }
 
   try {

@@ -32,7 +32,7 @@ const sizeDict = { '1024': 'S', '1536': 'M', '2048': 'L', '2560': 'X' };
 
 export const createFormData = (
   imgBlob: Blob,
-  type: 'selfhosted' | 'cotrans',
+  type: 'selfhosted' | 'cotrans' | 'selfhosted-old',
 ) => {
   const file = new File([imgBlob], `image.${imgBlob.type.split('/').at(-1)}`, {
     type: imgBlob.type,
@@ -40,16 +40,8 @@ export const createFormData = (
   const { size, detector, direction, translator, targetLanguage } =
     store.option.translation.options;
   const formData = new FormData();
-  if (type === 'cotrans') {
-    formData.append('file', file);
-    formData.append('mime', file.type);
-    formData.append('size', sizeDict[size]);
-    formData.append('detector', detector);
-    formData.append('direction', direction);
-    formData.append('translator', translator);
-    formData.append('target_language', targetLanguage);
-    formData.append('retry', `${store.option.translation.forceRetry}`);
-  } else if (type === 'selfhosted') {
+
+  if (type === 'selfhosted') {
     formData.append('image', file);
     formData.append(
       'config',
@@ -59,6 +51,18 @@ export const createFormData = (
         translator: { translator, target_lang: targetLanguage },
       }),
     );
+  } else {
+    formData.append('file', file);
+    formData.append('mime', file.type);
+    formData.append('size', sizeDict[size]);
+    formData.append('detector', detector);
+    formData.append('direction', direction);
+    formData.append('translator', translator);
+    formData.append(
+      type === 'cotrans' ? 'target_language' : 'target_lang',
+      targetLanguage,
+    );
+    formData.append('retry', `${store.option.translation.forceRetry}`);
   }
   return formData;
 };
