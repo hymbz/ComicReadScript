@@ -673,7 +673,9 @@ try {
     case 'hitomi.la': {
       options = {
         name: 'hitomi',
-        wait: () => Reflect.has(unsafeWindow.galleryinfo, 'files'),
+        wait: () =>
+          Reflect.has(unsafeWindow.galleryinfo, 'files') &&
+          unsafeWindow.galleryinfo.type !== 'anime',
         getImgList: () =>
           (unsafeWindow.galleryinfo?.files as object[]).map(
             (img) =>
