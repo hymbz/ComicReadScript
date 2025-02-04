@@ -25,8 +25,8 @@ import {
   handleMouseDown,
   handleWheel,
 } from './actions';
-import { stopPropagation } from './helper';
 import classes, { css as style } from './index.module.css';
+import { stopPropagation } from './helper';
 
 enableScheduling();
 
@@ -96,8 +96,6 @@ export const Manga: Component<MangaProps> = (props) => {
         on:mousedown={handleMouseDown}
         on:wheel={handleWheel}
         oncapture:keydown={handleKeyDown}
-        oncapture:keypress={stopPropagation}
-        oncapture:keyup={stopPropagation}
         data-mobile={boolDataVal(store.isMobile)}
         data-scroll-mode={boolDataVal(store.option.scrollMode.enabled)}
         data-grid-mode={boolDataVal(store.gridMode)}

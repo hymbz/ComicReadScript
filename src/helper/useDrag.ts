@@ -42,6 +42,7 @@ type UseDragOptions = {
   handleClick?: (e: PointerEvent, target: HTMLElement) => boolean | void;
   touches?: Map<number, PointerState>;
   skip?: (e: PointerEvent) => boolean;
+  setCapture?: boolean;
 };
 
 export type UseDrag = (state: PointerState, e: PointerEvent) => void;
@@ -52,6 +53,7 @@ export const useDrag = ({
   easyMode,
   handleClick,
   skip,
+  setCapture,
   touches = new Map(),
 }: UseDragOptions) => {
   onAutoMount(() => {
@@ -67,7 +69,7 @@ export const useDrag = ({
 
       e.stopPropagation();
       if (!easyMode?.() && e.buttons !== 1) return;
-      ref.setPointerCapture(e.pointerId);
+      if (setCapture) ref.setPointerCapture(e.pointerId);
 
       const state = createPointerState(e);
       touches.set(e.pointerId, state);
@@ -113,28 +115,24 @@ export const useDrag = ({
       handleDrag(state, e);
     };
 
-    ref.addEventListener('pointerdown', handleDown, options);
+    const handleCancel = (e: PointerEvent) => {
+      e.stopPropagation();
+      ref.releasePointerCapture(e.pointerId);
+      const state = touches.get(e.pointerId);
+      if (!state) return;
 
+      state.type = 'cancel';
+      handleDrag(state, e);
+      touches.clear();
+    };
+
+    ref.addEventListener('pointerdown', handleDown, options);
     ref.addEventListener('pointermove', handleMove, {
       ...options,
       passive: false,
     });
-
     ref.addEventListener('pointerup', handleUp, options);
-
-    ref.addEventListener(
-      'pointercancel',
-      (e) => {
-        e.stopPropagation();
-        const state = touches.get(e.pointerId);
-        if (!state) return;
-
-        state.type = 'cancel';
-        handleDrag(state, e);
-        touches.clear();
-      },
-      { capture: false, passive: true, signal: controller.signal },
-    );
+    ref.addEventListener('pointercancel', handleCancel, options);
 
     if (easyMode) {
       ref.addEventListener('pointerover', handleDown, options);

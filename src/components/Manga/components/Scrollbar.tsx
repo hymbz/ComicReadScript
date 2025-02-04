@@ -39,6 +39,7 @@ export const Scrollbar: Component = () => {
       ref: refs.scrollbar,
       handleDrag: handleScrollbarSlider,
       easyMode: () => isScrollMode() && store.option.scrollbar.easyScroll,
+      setCapture: true,
     });
     watchDomSize('scrollbarSize', refs.scrollbar);
   });

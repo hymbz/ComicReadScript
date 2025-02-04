@@ -21,7 +21,7 @@ import {
   resumeReadProgress,
 } from '../actions';
 import { defaultOption, type Option } from '../store/option';
-import { playAnimation } from '../helper';
+import { playAnimation, stopPropagation } from '../helper';
 import classes from '../index.module.css';
 
 const createComicImg = (src: string): ComicImg => ({
@@ -246,6 +246,15 @@ export const useInit = (props: MangaProps) => {
     )
       _setState('fullscreen', true);
   });
+
+  for (const eventName of [
+    'keypress',
+    'keyup',
+    'touchstart',
+    'touchmove',
+    'touchend',
+  ] as Array<keyof HTMLElementEventMap>)
+    refs.root.addEventListener(eventName, stopPropagation, { capture: true });
 
   focus();
 };
