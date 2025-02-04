@@ -12,14 +12,24 @@ export const handleSwitchChapter = (
   let onPrev: MangaProps['onPrev'];
   let onNext: MangaProps['onNext'];
 
-  for (const element of querySelectorAll('a, button')) {
-    // 删除可能混在其中的特殊符号
-    const text = element.textContent
-      ?.replaceAll(/[<>()《》（）「」『』]/g, '')
-      .trim();
-    if (!text) continue;
-    if (!onPrev && prevRe.test(text)) onPrev = () => element.click();
-    if (!onNext && nextRe.test(text)) onNext = () => element.click();
+  for (const e of querySelectorAll('a, button')) {
+    const texts = [e.textContent!, e.ariaLabel!]
+      .filter(Boolean)
+      // 删除可能混在其中的特殊符号
+      .map((text) => text.replaceAll(/[<>()《》（）「」『』]/g, '').trim());
+    if (texts.length === 0) continue;
+
+    for (const text of texts) {
+      if (!onPrev && prevRe.test(text)) {
+        onPrev = () => e.click();
+        break;
+      }
+      if (!onNext && nextRe.test(text)) {
+        onNext = () => e.click();
+        break;
+      }
+    }
+
     if (onPrev && onNext) break;
   }
 
