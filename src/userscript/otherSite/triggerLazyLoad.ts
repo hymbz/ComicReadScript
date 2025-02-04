@@ -48,7 +48,7 @@ export const getDatasetUrl = (e: Element) => {
  * 会在触发后重新滚回原位，当 time 为 0 时，因为滚动速度很快所以是无感的
  */
 const triggerEleLazyLoad = async (
-  e: HTMLImageElement,
+  e: HTMLElement,
   time: number,
   isLazyLoaded: () => boolean | Promise<boolean>,
   runCondition: () => boolean,
@@ -64,32 +64,42 @@ const triggerEleLazyLoad = async (
   }
 };
 
+function isImageElement(e: HTMLElement): e is HTMLImageElement {
+  return e.tagName === 'IMG';
+}
+
 /** 判断一个元素是否已经成功触发完懒加载 */
-export const isLazyLoaded = (e: HTMLImageElement, oldSrc?: string) => {
-  if (!e.src) return false;
-  if (!e.offsetParent) return false;
-  // 有些网站会使用 svg 占位
-  if (e.src.startsWith('data:image/svg')) return false;
-  if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
-  if (oldSrc !== undefined && e.src !== oldSrc) return true;
+export const isLazyLoaded = (e: HTMLElement, oldSrc?: string) => {
+  if (isImageElement(e)) {
+    if (!e.src) return false;
+    if (!e.offsetParent) return false;
+    // 有些网站会使用 svg 占位
+    if (e.src.startsWith('data:image/svg')) return false;
+    if (e.naturalWidth > 500 || e.naturalHeight > 500) return true;
+    if (oldSrc !== undefined && e.src !== oldSrc) return true;
+  } else {
+    const imgDomList = e.querySelectorAll('img');
+    for (const imgDom of imgDomList)
+      if (isLazyLoaded(imgDom, oldSrc)) return true;
+  }
   return false;
 };
 
-export const imgMap = new WeakMap<HTMLImageElement, ImgData>();
+export const imgMap = new WeakMap<HTMLElement, ImgData>();
 // eslint-disable-next-line no-autofix/prefer-const
 let imgShowObserver: IntersectionObserver;
 
-const getImg = (e: HTMLImageElement) => imgMap.get(e) ?? createImgData();
+const getImg = (e: HTMLElement) => imgMap.get(e) ?? createImgData();
 
 const MAX_TRIGGED_NUM = 5;
 
 /** 判断图片元素是否需要触发懒加载 */
-export const needTrigged = (e: HTMLImageElement) =>
+export const needTrigged = (e: HTMLElement) =>
   !isLazyLoaded(e, imgMap.get(e)?.oldSrc) &&
   (imgMap.get(e)?.triggedNum ?? 0) < MAX_TRIGGED_NUM;
 
 /** 图片懒加载触发完后调用 */
-const handleTrigged = (e: HTMLImageElement) => {
+const handleTrigged = (e: HTMLElement) => {
   const img = getImg(e);
   img.observerTimeout = 0;
   img.triggedNum += 1;
@@ -103,7 +113,7 @@ const handleTrigged = (e: HTMLImageElement) => {
 /** 监视图片是否被显示的 Observer */
 imgShowObserver = new IntersectionObserver((entries) => {
   for (const img of entries) {
-    const e = img.target as HTMLImageElement;
+    const e = img.target as HTMLElement;
     if (img.isIntersecting) {
       imgMap.set(e, {
         ...getImg(e),
@@ -132,16 +142,12 @@ const waitTime = 300;
 
 /** 触发页面上图片元素的懒加载 */
 export const triggerLazyLoad = singleThreaded(
-  async (
-    state,
-    targetImgList: HTMLImageElement[],
-    runCondition: () => boolean,
-  ) => {
+  async (state, targetImgList: HTMLElement[], runCondition: () => boolean) => {
     for (const e of targetImgList) {
       imgShowObserver.observe(e);
-      if (!imgMap.has(e)) imgMap.set(e, createImgData(e.src));
+      if (!imgMap.has(e))
+        imgMap.set(e, createImgData(isImageElement(e) ? e.src : ''));
     }
-
     for (const e of targetImgList) {
       await wait(runCondition);
 

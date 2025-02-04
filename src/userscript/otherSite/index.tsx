@@ -10,6 +10,7 @@ import {
   throttle,
   createEffectOn,
   sleep,
+  isEqual,
 } from 'helper';
 import { renderImgList } from 'components/Manga';
 import { useInit, toast } from 'main';
@@ -255,6 +256,38 @@ export const otherSite = async () => {
       getAllImg().filter(needTrigged).sort(eleSortFn),
       runCondition,
     );
+
+    // 针对不使用 img 来触发懒加载的网站，要找到图片容器元素再尝试触发懒加载
+    // https://www.twmanga.com/comic/chapter/sanjiaoguanxirumen-founai/0_0.html
+    if (imgEleList.length > 3) {
+      let parent: HTMLElement = imgEleList[0]!;
+      // 从现有的图片元素开始冒泡查找，检查每个层级上是否有超过5个相似的兄弟元素
+      while (parent?.parentElement) {
+        const siblingList = parent.parentElement.children;
+        if (siblingList.length >= 5) {
+          const dataset = parent.dataset;
+          let sameNum = 0;
+          for (const siblingDom of siblingList) {
+            if (siblingDom === parent) continue;
+            if (
+              'dataset' in siblingDom &&
+              isEqual(siblingDom.dataset, dataset)
+            ) {
+              sameNum++;
+              if (sameNum >= 5) break;
+            }
+          }
+          if (sameNum >= 5) {
+            await triggerLazyLoad(
+              querySelectorAll(getEleSelector(parent)),
+              runCondition,
+            );
+            break;
+          }
+        }
+        parent = parent.parentElement;
+      }
+    }
   });
 
   const handleMutation = () => {
