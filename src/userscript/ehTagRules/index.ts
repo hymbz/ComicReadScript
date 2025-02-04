@@ -209,6 +209,7 @@ const rules = {
 
     'c:rurino_osawa': ['f:twintails'],
     'c:sayaka_murano': ['f:twintails'],
+    'c:hime_anyoji': ['f:ponytail'],
 
     'c:nico_yazawa': ['f:twintails'],
     'c:eli_ayase': ['f:ponytail'],
@@ -250,6 +251,7 @@ const rules = {
     // other
     'c:remilia_scarlet': ['f:wings', 'f:vampire'],
     'c:flandre_scarlet': ['f:wings', 'f:vampire'],
+    'c:koakuma': ['f:wings', 'f:demon_girl'],
     'c:yuko_yoshida': ['f:horns', 'f:tail', 'f:demon_girl'],
     'c:suletta_mercury': ['f:thick_eyebrows'],
     'c:junna_hoshimi': ['f:glasses'],
