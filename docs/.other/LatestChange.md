@@ -1,13 +1,15 @@
-## [11.2.0](https://github.com/hymbz/ComicReadScript/compare/v11.1.1...v11.2.0) (2025-01-17)
+## [11.3.0](https://github.com/hymbz/ComicReadScript/compare/v11.2.0...v11.3.0) (2025-02-04)
 
 
 ### Features
 
-* :sparkles: 记录50页以上漫画的阅读进度，在下次打开时自动跳转至上次阅读进度 ([dfc4ea3](https://github.com/hymbz/ComicReadScript/commit/dfc4ea31e1a2884f6b3236cd7cbde9d09881ccd6))
-* :sparkles: 兼容旧版 manga-image-translator ([c50a1d0](https://github.com/hymbz/ComicReadScript/commit/c50a1d0123ab6c9ea441fe5613a7002fcea69921))
+* :sparkles: 支持 Tachidesk ([822f617](https://github.com/hymbz/ComicReadScript/commit/822f6177e87451485e4b6654d8e537a119ac207e)), closes [#214](https://github.com/hymbz/ComicReadScript/issues/214)
+* :sparkles: ehentai 范围加载功能将自动记住上次输入的范围文本 ([753221d](https://github.com/hymbz/ComicReadScript/commit/753221d51d6678e378b038aa116b13b0d9b4399a))
 
 
 ### Bug Fixes
 
-* :bug: 修复 cotrans 翻译出错的 bug ([a07bd52](https://github.com/hymbz/ComicReadScript/commit/a07bd528c8887b0a786de7724d9a62a95f4b0784)), closes [#213](https://github.com/hymbz/ComicReadScript/issues/213)
-* :bug: 修复 safari 浏览器上简易模式无法正常运行的 bug ([29cda77](https://github.com/hymbz/ComicReadScript/commit/29cda776bbfaaedf59f427e8f08ab991a2970637)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/272526#comment-556399](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/272526/issues/comment-556399)
+* :bug: 修复会在 hitomi 视频页进入阅读模式的 bug ([15366b7](https://github.com/hymbz/ComicReadScript/commit/15366b74275f45b489ce2b5f5dadf15038168401))
+* :bug: 修复简易模式在部分网站上加载不全图片的 bug ([75da1e9](https://github.com/hymbz/ComicReadScript/commit/75da1e9b5307af1401ee862d274bbc649625d5ea))
+* :bug: 修复在 Safari 上简易模式会闪屏的 bug ([0ccf952](https://github.com/hymbz/ComicReadScript/commit/0ccf95225d57dcd052e0f496ac02fc23d96e086f))
+* :bug: 修复在 Safari 上有时会触摸失效的 bug ([619a640](https://github.com/hymbz/ComicReadScript/commit/619a6404c19262e64b5680fd481880117433ea6c))
