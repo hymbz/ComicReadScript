@@ -920,15 +920,78 @@ try {
     }
 
     default: {
-      (async () => {
-        if ((await GM.getValue(window.location.hostname)) !== undefined)
-          return requestIdleCallback(otherSite);
+      // #[Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi)
+      if (
+        document.querySelector(
+          `head > meta[content="A manga reader that runs tachiyomi's extensions"]`,
+        )
+      ) {
+        const jump = (mangaId: number, chapterId: number) => {
+          window.location.pathname = `/manga/${mangaId}/chapter/${chapterId}`;
+        };
 
-        const menuId = await GM.registerMenuCommand(
-          extractI18n('site.simple.simple_read_mode')(await getInitLang()),
-          async () => !(await otherSite()) && GM.unregisterMenuCommand(menuId),
-        );
-      })();
+        options = {
+          name: 'Tachidesk',
+          SPA: {
+            isMangaPage: () =>
+              /\/manga\/\d+\/chapter\/\d+/.test(window.location.pathname),
+          },
+          async getImgList({ setManga }) {
+            const [, , mangaId, , chapterId] = window.location.pathname
+              .split('/')
+              .map(Number);
+
+            type ChapterDataRes = {
+              data: {
+                chapters: { nodes: Array<{ pageCount: number }> };
+                manga: { chapters: { totalCount: number } };
+              };
+            };
+            const res = await request<ChapterDataRes>('/api/graphql', {
+              method: 'POST',
+              data: JSON.stringify({
+                operationName: 'GET_CHAPTERS',
+                query: `query GET_CHAPTERS($mangaId: Int!, $chapterId: Int!) {
+                chapters(condition: {
+                  mangaId: $mangaId, sourceOrder: $chapterId}
+                ) { nodes { pageCount } }
+                manga(id: $mangaId) { chapters { totalCount } }
+              }`,
+                variables: { mangaId, chapterId },
+              }),
+              responseType: 'json',
+            });
+
+            const pageCount = res.response.data.chapters.nodes[0].pageCount;
+            const chapterCount = res.response.data.manga.chapters.totalCount;
+
+            setManga({
+              onPrev:
+                chapterId > 0 ? () => jump(mangaId, chapterId - 1) : undefined,
+              onNext:
+                chapterId < chapterCount
+                  ? () => jump(mangaId, chapterId + 1)
+                  : undefined,
+            });
+
+            return range(
+              pageCount,
+              (i) => `/api/v1/manga/${mangaId}/chapter/${chapterId}/page/${i}`,
+            );
+          },
+        };
+      } else {
+        (async () => {
+          if ((await GM.getValue(window.location.hostname)) !== undefined)
+            return requestIdleCallback(otherSite);
+
+          const menuId = await GM.registerMenuCommand(
+            extractI18n('site.simple.simple_read_mode')(await getInitLang()),
+            async () =>
+              !(await otherSite()) && GM.unregisterMenuCommand(menuId),
+          );
+        })();
+      }
     }
   }
 

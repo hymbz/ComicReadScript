@@ -207,6 +207,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - [nekohouse](https://nekohouse.su)
 - [コミックグロウル](https://comic-growl.com)
 - [welovemanga](https://welovemanga.one)
+- [Tachidesk](https://github.com/Suwayomi/Tachidesk-Sorayomi)
 
 <!-- supportSiteList -->
 
