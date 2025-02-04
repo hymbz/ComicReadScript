@@ -22,9 +22,7 @@ let cache = undefined as unknown as Awaited<
 >;
 
 const initCache = async () => {
-  cache = await useCache((db) =>
-    db.createObjectStore('progress', { keyPath: 'id' }),
-  );
+  cache ||= await useCache({ progress: 'id' }, 'ReadProgress');
 };
 
 let lastIndex = -1;
@@ -82,8 +80,4 @@ export const resumeReadProgress = async () => {
     if (nowTime - data.time < 1000 * 60 * 60 * 24 * 29) return;
     await promisifyRequest(cursor.delete());
   });
-};
-
-export const clearReadProgress = async () => {
-  await initCache();
 };

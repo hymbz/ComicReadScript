@@ -9,9 +9,13 @@ export const promisifyRequest = <T>(request: IDBRequest<T>): Promise<T> =>
     request.onerror = () => reject(request.error as Error);
   });
 
-const openDb = (version: number, initSchema: (db: IDBDatabase) => void) =>
+const openDb = (
+  name: string,
+  version: number,
+  initSchema: (db: IDBDatabase) => void,
+) =>
   new Promise<IDBDatabase>((resolve, reject) => {
-    const request = indexedDB.open('ComicReadScript', version);
+    const request = indexedDB.open(`ComicReadScript${name}`, version);
     request.onupgradeneeded = () => initSchema(request.result);
     request.onsuccess = () => resolve(request.result);
     request.onerror = (error) => {
@@ -21,10 +25,25 @@ const openDb = (version: number, initSchema: (db: IDBDatabase) => void) =>
   });
 
 export const useCache = async <Schema extends Record<string, unknown>>(
-  initSchema: (db: IDBDatabase) => void,
-  version = 1,
+  schema: Record<string, string> | ((db: IDBDatabase) => void),
+  name = '',
+  version = 2,
 ) => {
-  const db = await openDb(version, initSchema);
+  const db = await openDb(
+    name,
+    version,
+    typeof schema === 'function'
+      ? schema
+      : (db: IDBDatabase) => {
+          for (const storeName of db.objectStoreNames)
+            if (!Reflect.has(schema, storeName))
+              db.deleteObjectStore(storeName);
+          for (const storeName of Object.keys(schema)) {
+            if (!db.objectStoreNames.contains(storeName))
+              db.createObjectStore(storeName, { keyPath: schema[storeName] });
+          }
+        },
+  );
 
   return {
     set: <K extends keyof Schema & string>(storeName: K, value: Schema[K]) =>

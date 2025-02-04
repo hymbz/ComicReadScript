@@ -278,9 +278,7 @@ interface History {
         10,
       );
 
-      const cache = await useCache<{ history: History }>((db: IDBDatabase) => {
-        db.createObjectStore('history', { keyPath: 'tid' });
-      });
+      const cache = await useCache<{ history: History }>({ history: 'tid' });
       const data = await cache.get('history', `${tid}`);
       // 如果是在翻阅之前页数的内容，则跳过不处理
       if (data && currentPageNum < data.lastPageNum) return;
@@ -344,9 +342,7 @@ interface History {
     }
 
     if (options.记录阅读进度) {
-      const cache = await useCache<{ history: History }>((db: IDBDatabase) => {
-        db.createObjectStore('history', { keyPath: 'tid' });
-      });
+      const cache = await useCache<{ history: History }>({ history: 'tid' });
 
       const isMobile = !document.querySelector('#flk');
 

@@ -20,6 +20,7 @@ import {
   assign,
   createSequence,
   extractRange,
+  useCache,
 } from 'helper';
 
 import { escHandler } from './other';
@@ -355,17 +356,32 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   };
   setComicLoad(dynamicLoad(loadImgList, () => loadImgs().size));
 
+  const cache = await useCache<{ pageRange: { id: number; range: string } }>({
+    pageRange: 'id',
+  });
+
   render(() => {
     const hasMultiPage = sidebarDom.children[6]?.classList.contains('gsp');
 
-    const handleClick = (e: MouseEvent) => {
+    const handleClick = async (e: MouseEvent) => {
       if (!e.shiftKey) return;
-      setLoadImgsText(
-        // eslint-disable-next-line no-alert
-        prompt(t('other.page_range')) ?? `1-${totalImgNum}`,
+      e.stopPropagation();
+
+      // eslint-disable-next-line no-alert
+      const range = prompt(
+        t('other.page_range'),
+        (await cache.get('pageRange', unsafeWindow.gid))?.range,
       );
+      if (!range) return;
+      await cache.set('pageRange', {
+        id: unsafeWindow.gid ?? Number(location.pathname.split('/')[2]),
+        range,
+      });
+
+      setLoadImgsText(range ?? `1-${totalImgNum}`);
       // 删掉当前的图片列表以便触发重新加载
       setComicMap('', 'imgList', undefined);
+      showComic();
     };
 
     return (
@@ -376,7 +392,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
           // 表站开启了 Multi-Page Viewer 的话会将点击按钮挤出去，得缩一下位置
           'padding-top': hasMultiPage ? 0 : undefined,
         }}
-        onClick={handleClick}
+        oncapture:click={handleClick}
       >
         <img src="https://ehgt.org/g/mr.gif" />
         <LoadButton id="" />
