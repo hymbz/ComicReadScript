@@ -24,6 +24,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
       top: 0;
       left: 0;
       transform: scale(0);
+      contain: strict;
 
       width: 100%;
       height: 100%;

@@ -152,11 +152,12 @@ export const ComicImgFlow: Component = () => {
   });
 
   useStyleMemo(`#${classes.mangaFlow}`, {
-    transform: () =>
-      `translate(
-        ${pageX()}px,
-        ${store.page.offset.y.pct * store.rootSize.height + store.page.offset.y.px}px
-      ) translateZ(0)`,
+    // 不能使用 transform 来移动，不然在 Safari 浏览器上悬浮显示时
+    // 每次滚动底下的网页时 mangaFlow 都会闪烁一下，在简易模式下会频繁触发
+    left: () => `${pageX()}px`,
+    top: () =>
+      `${store.page.offset.y.pct * store.rootSize.height + store.page.offset.y.px}px`,
+
     'touch-action'() {
       if (store.gridMode) return 'auto';
       if (store.option.zoom.ratio !== 100) {

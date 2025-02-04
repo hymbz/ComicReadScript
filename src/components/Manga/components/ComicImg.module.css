@@ -88,10 +88,14 @@
 
 .mangaFlow {
   touch-action: none;
+  will-change: left, top;
   user-select: none;
 
+  position: absolute;
   transform-origin: 0 0;
 
+  contain: layout;
+  overflow: visible;
   display: grid;
   grid-auto-columns: 100%;
   grid-auto-flow: column;
