@@ -151,7 +151,9 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
         const html = domParse(res.responseText);
         history.replaceState(null, '', nextUrl);
 
-        const container = html.querySelector('.index-container')!;
+        const container = html.querySelector(
+          '.index-container, #favcontainer',
+        )!;
         for (const galleryDom of container.querySelectorAll<HTMLElement>(
           '.gallery',
         )) {
