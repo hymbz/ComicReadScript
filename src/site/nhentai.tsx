@@ -140,6 +140,10 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
 
       const blackSet = new Set(blacklist);
       const contentDom = document.getElementById('content')!;
+      const getObserveDom = () =>
+        contentDom.querySelector(
+          ':is(.index-container, #favcontainer):last-of-type',
+        )!;
 
       const loadNextPage = singleThreaded(async (): Promise<void> => {
         if (!nextUrl) return;
@@ -174,7 +178,7 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
         const hr = document.createElement('hr');
         contentDom.append(hr);
         observer.disconnect();
-        observer.observe(hr);
+        observer.observe(getObserveDom());
         if (!nextUrl) hr.style.animationPlayState = 'paused';
       }, false);
 
@@ -183,7 +187,7 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
       const observer = new IntersectionObserver(
         (entries) => entries[0].isIntersecting && loadNextPage(),
       );
-      observer.observe(contentDom.lastElementChild!);
+      observer.observe(getObserveDom());
 
       if (querySelector('section.pagination'))
         contentDom.append(document.createElement('hr'));
