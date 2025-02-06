@@ -79,7 +79,7 @@
     "img_loading": "图片加载中",
     "loading_img": "加载图片中",
     "or": "或",
-    "page_range": "请输入页码范围：\n（例如：「1, 3-5, 9-」)",
+    "page_range": "请输入页码范围：\n（例如：1, 3-5, 9-)",
     "read_mode": "阅读模式"
   },
   "pwa": {
@@ -121,7 +121,7 @@
       "abreast_mode": "并排卷轴模式",
       "always_load_all_img": "始终加载所有图片",
       "autoHiddenMouse": "自动隐藏鼠标",
-      "auto_switch_page_mode": "自动切换单双页模式",
+      "auto_switch_page_mode": "根据屏幕比例切换单双页",
       "background_color": "背景颜色",
       "click_page_turn_area": "点击区域",
       "click_page_turn_enabled": "点击翻页",
@@ -139,10 +139,10 @@
       "img_recognition_warn": "❗ 当前浏览器不支持 Web Worker，开启此功能可能导致页面卡顿，建议升级或更换浏览器。",
       "img_recognition_warn_2": "❗ 当前网站不支持 Web Worker，开启此功能可能导致页面卡顿。",
       "jump_to_next_chapter": "翻页至上/下一话",
+      "paragraph_appearance": "外观",
       "paragraph_dir": "阅读方向",
       "paragraph_display": "显示",
       "paragraph_hotkeys": "快捷键",
-      "paragraph_operation": "操作",
       "paragraph_other": "其他",
       "paragraph_scrollbar": "滚动条",
       "paragraph_translation": "翻译",
@@ -173,7 +173,7 @@
         "direction_vertical": "仅限垂直",
         "forceRetry": "忽略缓存强制重试",
         "localUrl": "自定义服务器 URL",
-        "onlyDownloadTranslated": "只下载完成翻译的图片",
+        "onlyDownloadTranslated": "只下载翻译完的图片",
         "target_language": "目标语言",
         "text_detector": "文本扫描器",
         "translator": "翻译服务"

@@ -56,96 +56,12 @@ export const defaultSettingList: () => SettingList = () => [
         </button>
       </SettingsItem>
     ),
-  ],
-  [
-    t('setting.option.paragraph_scrollbar'),
-    () => (
-      <>
-        <SettingsItemSelect
-          name={t('setting.option.scrollbar_position')}
-          options={[
-            ['auto', t('setting.option.scrollbar_position_auto')],
-            ['right', t('setting.option.scrollbar_position_right')],
-            ['top', t('setting.option.scrollbar_position_top')],
-            ['bottom', t('setting.option.scrollbar_position_bottom')],
-            ['hidden', t('setting.option.scrollbar_position_hidden')],
-          ]}
-          value={store.option.scrollbar.position}
-          onChange={createStateSetFn('scrollbar.position')}
-        />
-        <SettingsShowItem when={store.option.scrollbar.position !== 'hidden'}>
-          <Show when={!store.isMobile}>
-            <SettingsItemSwitch
-              name={t('setting.option.scrollbar_auto_hidden')}
-              value={store.option.scrollbar.autoHidden}
-              onChange={createStateSetFn('scrollbar.autoHidden')}
-            />
-          </Show>
-          <SettingsItemSwitch
-            name={t('setting.option.scrollbar_show_img_status')}
-            value={store.option.scrollbar.showImgStatus}
-            onChange={createStateSetFn('scrollbar.showImgStatus')}
-          />
-          <Show when={store.option.scrollMode.enabled}>
-            <SettingsItemSwitch
-              name={t('setting.option.scrollbar_easy_scroll')}
-              value={store.option.scrollbar.easyScroll}
-              onChange={createStateSetFn('scrollbar.easyScroll')}
-            />
-          </Show>
-        </SettingsShowItem>
-      </>
-    ),
-  ],
-  [
-    t('setting.option.paragraph_operation'),
-    () => (
-      <>
-        <SettingsItemSwitch
-          name={t('setting.option.jump_to_next_chapter')}
-          value={store.option.jumpToNext}
-          onChange={createStateSetFn('jumpToNext')}
-        />
-
-        <SettingsItemSwitch
-          name={t('setting.option.click_page_turn_enabled')}
-          value={store.option.clickPageTurn.enabled}
-          onChange={createStateSetFn('clickPageTurn.enabled')}
-        />
-        <SettingsShowItem when={store.option.clickPageTurn.enabled}>
-          <SettingsItemSelect
-            name={t('setting.option.click_page_turn_area')}
-            options={Object.keys(areaArrayMap).map(
-              (key) => [key, t(`touch_area.type.${key}`)] as [string, string],
-            )}
-            value={store.option.clickPageTurn.area}
-            onChange={createStateSetFn('clickPageTurn.area')}
-          />
-          <SettingsItemSwitch
-            name={t('setting.option.click_page_turn_swap_area')}
-            value={store.option.clickPageTurn.reverse}
-            onChange={createStateSetFn('clickPageTurn.reverse')}
-          />
-        </SettingsShowItem>
-
-        <SettingsItemSwitch
-          name={t('setting.option.show_clickable_area')}
-          value={store.show.touchArea}
-          onChange={() => _setState('show', 'touchArea', !store.show.touchArea)}
-        />
-      </>
-    ),
+    true,
   ],
   [
     t('setting.option.paragraph_display'),
     () => (
       <>
-        <SettingsItemSwitch
-          name={t('setting.option.dark_mode')}
-          value={store.option.darkMode}
-          onChange={createStateSetFn('darkMode')}
-        />
-
         <Show when={!store.option.scrollMode.enabled}>
           <SettingsItemSwitch
             name={t('setting.option.disable_auto_enlarge')}
@@ -153,17 +69,6 @@ export const defaultSettingList: () => SettingList = () => [
             onChange={createStateSetFn('disableZoom')}
           />
         </Show>
-
-        <SettingsItemSwitch
-          name={t('setting.option.auto_switch_page_mode')}
-          value={store.option.autoSwitchPageMode}
-          onChange={(val) => {
-            setOption((draftOption, state) => {
-              draftOption.autoSwitchPageMode = val;
-              state.option.pageNum = val ? 0 : autoPageNum();
-            });
-          }}
-        />
 
         <Show when={store.option.scrollMode.enabled}>
           <SettingsItemSwitch
@@ -237,8 +142,140 @@ export const defaultSettingList: () => SettingList = () => [
         </Show>
       </>
     ),
+    true,
   ],
-  [t('setting.option.paragraph_hotkeys'), SettingHotkeys, true],
+  [
+    t('setting.option.paragraph_appearance'),
+    () => (
+      <>
+        <SettingsItemSwitch
+          name={t('setting.option.dark_mode')}
+          value={store.option.darkMode}
+          onChange={createStateSetFn('darkMode')}
+        />
+        <SettingsItemSwitch
+          name={t('setting.option.show_comments')}
+          value={store.option.showComment}
+          onChange={createStateSetFn('showComment')}
+        />
+        <SettingsItemSwitch
+          name={t('setting.option.autoHiddenMouse')}
+          value={store.option.autoHiddenMouse}
+          onChange={createStateSetFn('autoHiddenMouse')}
+        />
+
+        <SettingsItem name={t('setting.option.background_color')}>
+          <input
+            type="color"
+            style={{ width: '2em', 'margin-right': '.4em' }}
+            value={
+              store.option.customBackground ??
+              (store.option.darkMode ? '#000000' : '#ffffff')
+            }
+            on:input={throttle((e) => {
+              if (!e.target.value) return;
+              setOption((draftOption) => {
+                // 在拉到纯黑或纯白时改回初始值
+                draftOption.customBackground =
+                  e.target.value === '#000000' || e.target.value === '#ffffff'
+                    ? undefined
+                    : e.target.value;
+                if (draftOption.customBackground)
+                  draftOption.darkMode = needDarkMode(
+                    draftOption.customBackground,
+                  );
+              });
+            }, 20)}
+          />
+        </SettingsItem>
+
+        <SettingsItemSelect
+          name={t('setting.language')}
+          options={[
+            ['zh', '中文'],
+            ['en', 'English'],
+            ['ru', 'Русский'],
+            ['ta', 'தமிழ்'],
+          ]}
+          value={lang()}
+          onChange={setLang}
+        />
+      </>
+    ),
+  ],
+  [
+    t('setting.option.paragraph_scrollbar'),
+    () => (
+      <>
+        <SettingsItemSelect
+          name={t('setting.option.scrollbar_position')}
+          options={[
+            ['auto', t('setting.option.scrollbar_position_auto')],
+            ['right', t('setting.option.scrollbar_position_right')],
+            ['top', t('setting.option.scrollbar_position_top')],
+            ['bottom', t('setting.option.scrollbar_position_bottom')],
+            ['hidden', t('setting.option.scrollbar_position_hidden')],
+          ]}
+          value={store.option.scrollbar.position}
+          onChange={createStateSetFn('scrollbar.position')}
+        />
+        <SettingsShowItem when={store.option.scrollbar.position !== 'hidden'}>
+          <Show when={!store.isMobile}>
+            <SettingsItemSwitch
+              name={t('setting.option.scrollbar_auto_hidden')}
+              value={store.option.scrollbar.autoHidden}
+              onChange={createStateSetFn('scrollbar.autoHidden')}
+            />
+          </Show>
+          <SettingsItemSwitch
+            name={t('setting.option.scrollbar_show_img_status')}
+            value={store.option.scrollbar.showImgStatus}
+            onChange={createStateSetFn('scrollbar.showImgStatus')}
+          />
+          <Show when={store.option.scrollMode.enabled}>
+            <SettingsItemSwitch
+              name={t('setting.option.scrollbar_easy_scroll')}
+              value={store.option.scrollbar.easyScroll}
+              onChange={createStateSetFn('scrollbar.easyScroll')}
+            />
+          </Show>
+        </SettingsShowItem>
+      </>
+    ),
+  ],
+  [
+    t('setting.option.click_page_turn_enabled'),
+    () => (
+      <>
+        <SettingsItemSwitch
+          name={t('other.enabled')}
+          value={store.option.clickPageTurn.enabled}
+          onChange={createStateSetFn('clickPageTurn.enabled')}
+        />
+        <SettingsShowItem when={store.option.clickPageTurn.enabled}>
+          <SettingsItemSelect
+            name={t('setting.option.click_page_turn_area')}
+            options={Object.keys(areaArrayMap).map(
+              (key) => [key, t(`touch_area.type.${key}`)] as [string, string],
+            )}
+            value={store.option.clickPageTurn.area}
+            onChange={createStateSetFn('clickPageTurn.area')}
+          />
+          <SettingsItemSwitch
+            name={t('setting.option.click_page_turn_swap_area')}
+            value={store.option.clickPageTurn.reverse}
+            onChange={createStateSetFn('clickPageTurn.reverse')}
+          />
+        </SettingsShowItem>
+
+        <SettingsItemSwitch
+          name={t('setting.option.show_clickable_area')}
+          value={store.show.touchArea}
+          onChange={() => _setState('show', 'touchArea', !store.show.touchArea)}
+        />
+      </>
+    ),
+  ],
   [
     t('setting.option.img_recognition'),
     () => (
@@ -312,29 +349,31 @@ export const defaultSettingList: () => SettingList = () => [
         </SettingsShowItem>
       </>
     ),
-    true,
   ],
-  [t('setting.option.paragraph_translation'), SettingTranslation, true],
+  [
+    t('setting.option.paragraph_translation'),
+    SettingTranslation,
+    store.option.translation.server !== 'disable',
+  ],
+  [t('setting.option.paragraph_hotkeys'), SettingHotkeys],
   [
     t('setting.option.paragraph_other'),
     () => (
       <>
         <SettingsItemSwitch
-          name={t('setting.option.always_load_all_img')}
-          value={store.option.alwaysLoadAllImg}
-          onChange={createStateSetFn('alwaysLoadAllImg')}
-        />
-
-        <SettingsItemSwitch
           name={t('setting.option.first_page_fill')}
           value={store.option.firstPageFill}
           onChange={createStateSetFn('firstPageFill')}
         />
-
         <SettingsItemSwitch
-          name={t('setting.option.show_comments')}
-          value={store.option.showComment}
-          onChange={createStateSetFn('showComment')}
+          name={t('setting.option.auto_switch_page_mode')}
+          value={store.option.autoSwitchPageMode}
+          onChange={(val) => {
+            setOption((draftOption, state) => {
+              draftOption.autoSwitchPageMode = val;
+              state.option.pageNum = val ? 0 : autoPageNum();
+            });
+          }}
         />
 
         <SettingsItemSwitch
@@ -343,9 +382,15 @@ export const defaultSettingList: () => SettingList = () => [
           onChange={createStateSetFn('swapPageTurnKey')}
         />
         <SettingsItemSwitch
-          name={t('setting.option.autoHiddenMouse')}
-          value={store.option.autoHiddenMouse}
-          onChange={createStateSetFn('autoHiddenMouse')}
+          name={t('setting.option.jump_to_next_chapter')}
+          value={store.option.jumpToNext}
+          onChange={createStateSetFn('jumpToNext')}
+        />
+
+        <SettingsItemSwitch
+          name={t('setting.option.always_load_all_img')}
+          value={store.option.alwaysLoadAllImg}
+          onChange={createStateSetFn('alwaysLoadAllImg')}
         />
 
         <SettingsItemNumber
@@ -359,45 +404,7 @@ export const defaultSettingList: () => SettingList = () => [
           }}
           value={store.option.preloadPageNum}
         />
-
-        <SettingsItem name={t('setting.option.background_color')}>
-          <input
-            type="color"
-            style={{ width: '2em', 'margin-right': '.4em' }}
-            value={
-              store.option.customBackground ??
-              (store.option.darkMode ? '#000000' : '#ffffff')
-            }
-            on:input={throttle((e) => {
-              if (!e.target.value) return;
-              setOption((draftOption) => {
-                // 在拉到纯黑或纯白时改回初始值
-                draftOption.customBackground =
-                  e.target.value === '#000000' || e.target.value === '#ffffff'
-                    ? undefined
-                    : e.target.value;
-                if (draftOption.customBackground)
-                  draftOption.darkMode = needDarkMode(
-                    draftOption.customBackground,
-                  );
-              });
-            }, 20)}
-          />
-        </SettingsItem>
-
-        <SettingsItemSelect
-          name={t('setting.language')}
-          options={[
-            ['zh', '中文'],
-            ['en', 'English'],
-            ['ru', 'Русский'],
-            ['ta', 'தமிழ்'],
-          ]}
-          value={lang()}
-          onChange={setLang}
-        />
       </>
     ),
-    true,
   ],
 ];

@@ -33,8 +33,8 @@ export const SettingPanel: Component = () => {
       on:click={stopPropagation}
     >
       <For each={settingList()}>
-        {([name, SettingItem, hidden], i) => {
-          const [show, setShwo] = createSignal(!hidden);
+        {([name, SettingItem, initShow], i) => {
+          const [show, setShwo] = createSignal(Boolean(initShow));
           return (
             <>
               {i() ? <hr /> : null}
