@@ -9,6 +9,7 @@ import MdZoomIn from '@material-design-icons/svg/round/zoom_in.svg';
 import MdZoomOut from '@material-design-icons/svg/round/zoom_out.svg';
 import MdFullscreen from '@material-design-icons/svg/round/fullscreen.svg';
 import MdFullscreenExit from '@material-design-icons/svg/round/fullscreen_exit.svg';
+import MdLowPriority from '@material-design-icons/svg/round/low_priority.svg';
 import { createMemo, type Component, createSignal, Show } from 'solid-js';
 import { createEffectOn, t } from 'helper';
 
@@ -29,15 +30,12 @@ import {
   isOnePageMode,
   isScrollMode,
   switchFullscreen,
+  isTranslatingToEnd,
+  translateToEnd,
 } from './actions';
 import classes from './index.module.css';
 
 export type ToolbarButtonList = Component[];
-
-/** 工具栏按钮分隔栏 */
-export const buttonListDivider: Component = () => (
-  <div style={{ height: '1em' }} />
-);
 
 const ZoomButton = () => (
   <IconButton
@@ -101,7 +99,30 @@ export const defaultButtonList: ToolbarButtonList = [
       children={<MdGrid />}
     />
   ),
-  buttonListDivider,
+  // 翻译
+  () => (
+    <Show when={store.option.translation.server !== 'disable'}>
+      <hr />
+      <IconButton
+        tip={
+          isTranslatingImage()
+            ? t('button.close_current_page_translation')
+            : t('button.translate_current_page')
+        }
+        enabled={isTranslatingImage()}
+        onClick={translateCurrent}
+        children={<MdTranslate />}
+      />
+      <IconButton
+        tip={t('setting.translation.translate_to_end')}
+        enabled={isTranslatingToEnd()}
+        hidden={store.option.translation.server !== 'selfhosted'}
+        onClick={translateToEnd}
+        children={<MdLowPriority />}
+      />
+    </Show>
+  ),
+  () => <hr />,
   // 放大模式
   () => (
     <Show when={store.option.scrollMode.enabled} fallback={<ZoomButton />}>
@@ -128,20 +149,6 @@ export const defaultButtonList: ToolbarButtonList = [
       hidden={!refs.root.requestFullscreen}
       onClick={switchFullscreen}
       children={store.fullscreen ? <MdFullscreenExit /> : <MdFullscreen />}
-    />
-  ),
-  // 翻译设置
-  () => (
-    <IconButton
-      tip={
-        isTranslatingImage()
-          ? t('button.close_current_page_translation')
-          : t('button.translate_current_page')
-      }
-      enabled={isTranslatingImage()}
-      hidden={store.option.translation.server === 'disable'}
-      onClick={translateCurrent}
-      children={<MdTranslate />}
     />
   ),
   // 设置

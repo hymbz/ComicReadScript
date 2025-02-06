@@ -1,7 +1,7 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
 import { createStore } from 'solid-js/store';
 import { IconButton } from 'components/IconButton';
-import { type MangaProps, buttonListDivider, Manga } from 'components/Manga';
+import { type MangaProps, Manga } from 'components/Manga';
 import {
   t,
   createEffectOn,
@@ -99,7 +99,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
       return [
         ...list,
         // 再在最下面添加分隔栏和退出按钮
-        buttonListDivider,
+        () => <hr />,
         ExitButton,
       ];
     },

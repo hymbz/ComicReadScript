@@ -110,6 +110,5 @@ export const Manga: Component<MangaProps> = (props) => {
   );
 };
 
-export { buttonListDivider } from './defaultButtonList';
 export { store, setState, _setState } from './store/index';
 export * from './actions';
