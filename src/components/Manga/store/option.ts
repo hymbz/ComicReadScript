@@ -13,6 +13,8 @@ export interface Option {
   disableZoom: boolean;
   /** 黑暗模式 */
   darkMode: boolean;
+  /** 黑暗模式跟随系统 */
+  autoDarkMode: boolean;
   /** 左右翻页键交换 */
   swapPageTurnKey: boolean;
   /** 滚动到底后继续滚动会跳至下一话 */
@@ -124,6 +126,7 @@ const _defaultOption: Readonly<Option> = {
   firstPageFill: true,
   disableZoom: false,
   darkMode: false,
+  autoDarkMode: false,
   swapPageTurnKey: false,
   jumpToNext: true,
   alwaysLoadAllImg: false,

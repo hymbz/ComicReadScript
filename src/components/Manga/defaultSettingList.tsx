@@ -154,6 +154,11 @@ export const defaultSettingList: () => SettingList = () => [
           onChange={createStateSetFn('darkMode')}
         />
         <SettingsItemSwitch
+          name={t('setting.option.dark_mode_auto')}
+          value={store.option.autoDarkMode}
+          onChange={createStateSetFn('autoDarkMode')}
+        />
+        <SettingsItemSwitch
           name={t('setting.option.show_comments')}
           value={store.option.showComment}
           onChange={createStateSetFn('showComment')}

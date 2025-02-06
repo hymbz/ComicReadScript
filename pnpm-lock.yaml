@@ -219,6 +219,9 @@ importers:
       storybook:
         specifier: ^8.5.3
         version: 8.5.3(prettier@3.4.2)
+      storybook-dark-mode:
+        specifier: ^4.0.2
+        version: 4.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.5.3(prettier@3.4.2))
       storybook-solidjs:
         specifier: 1.0.0-beta.6
         version: 1.0.0-beta.6(solid-js@1.9.4)
@@ -2246,6 +2249,16 @@ packages:
       storybook: ^8.6.0-alpha.4
       vite: ^4.0.0 || ^5.0.0 || ^6.0.0
 
+  '@storybook/components@8.5.3':
+    resolution: {integrity: sha512-iC9VbpM8Equ8wXI2syBzov+8wys4sGYW7Xfz67LdSVbCMhsH9FRtvgbDppJQC/ZDCofg4sTAHhWpDV/KAQ385A==}
+    peerDependencies:
+      storybook: ^8.2.0 || ^8.3.0-0 || ^8.4.0-0 || ^8.5.0-0 || ^8.6.0-0
+
+  '@storybook/core-events@8.5.3':
+    resolution: {integrity: sha512-os2ddayQjBFH8/yZOHdxHIWXIq8MwfhaaPa74ogRCuwCO7qe2E5WBWpt2vTrC0ZJR7RPVKH9zEFqviOzHvz+uA==}
+    peerDependencies:
+      storybook: ^8.2.0 || ^8.3.0-0 || ^8.4.0-0 || ^8.5.0-0 || ^8.6.0-0
+
   '@storybook/core@8.5.3':
     resolution: {integrity: sha512-ZLlr2pltbj/hmC54lggJTnh09FCAJR62lIdiXNwa+V+/eJz0CfD8tfGmZGKPSmaQeZBpMwAOeRM97k2oLPF+0w==}
     peerDependencies:
@@ -2290,6 +2303,11 @@ packages:
     peerDependencies:
       storybook: ^8.5.3
 
+  '@storybook/manager-api@8.5.3':
+    resolution: {integrity: sha512-JtfuMgQpKIPU0ARn1jNPce8FmknpM0Ap0mppWl+KGAWWGadJPDaX/nrY/19dT1kRgIhyOnbX6tgJxII4E9dE5w==}
+    peerDependencies:
+      storybook: ^8.2.0 || ^8.3.0-0 || ^8.4.0-0 || ^8.5.0-0 || ^8.6.0-0
+
   '@storybook/react-dom-shim@8.5.3':
     resolution: {integrity: sha512-kNIGk6mpXW3Wy+uS9pH9b9w/54EPJnH+QXA6MX4EQgmxhMQlGlS/l/YZp+3jsVQW4YgTmqe740qB+ccJAKZxBQ==}
     peerDependencies:
@@ -2308,6 +2326,11 @@ packages:
     resolution: {integrity: sha512-2smoDbtU6Qh4yk0uD18qGfW6ll7lZBzKlF58Ha1CgWR4o+jpeeTQcfDLH9gG6sNrpojF7AVzMh/aN9BDHD+Chg==}
     peerDependencies:
       storybook: ^8.5.3
+
+  '@storybook/theming@8.5.3':
+    resolution: {integrity: sha512-Jvzw+gT1HNarkJo21WZBq5pU89qDN8u/pD3woSh/1c2h5RS6UylWjQHotPFpcBIQiUSrDFtvCU9xugJm4MD0+w==}
+    peerDependencies:
+      storybook: ^8.2.0 || ^8.3.0-0 || ^8.4.0-0 || ^8.5.0-0 || ^8.6.0-0
 
   '@surma/rollup-plugin-off-main-thread@2.2.3':
     resolution: {integrity: sha512-lR8q/9W7hZpMWweNiAKU7NQerBnzQQLvi8qnTDU/fxItPhtZVMbPV3lbCwjhIlNBe9Bbr5V+KHshvWmVSG9cxQ==}
@@ -7299,6 +7322,9 @@ packages:
     resolution: {integrity: sha512-UhDfHmA92YAlNnCfhmq0VeNL5bDbiZGg7sZ2IvPsXubGkiNa9EC+tUTsjBRsYUAz87btI6/1wf4XoVvQ3uRnmQ==}
     engines: {node: '>=18'}
 
+  storybook-dark-mode@4.0.2:
+    resolution: {integrity: sha512-zjcwwQ01R5t1VsakA6alc2JDIRVtavryW8J3E3eKLDIlAMcvsgtpxlelWkZs2cuNspk6Z10XzhQVrUWtYc3F0w==}
+
   storybook-solidjs-vite@1.0.0-beta.6:
     resolution: {integrity: sha512-+gggXbzmM+p1dA5EdvlfzMPzIB6Nar1WAzDND63wJeDfqHfpL+yYZqewEJm5woLhMLCqhBIMjfei/TXgjVDJXg==}
     engines: {node: '>=18'}
@@ -10571,6 +10597,14 @@ snapshots:
       ts-dedent: 2.2.0
       vite: 6.1.0(@types/node@22.13.1)(terser@5.38.0)(yaml@2.5.1)
 
+  '@storybook/components@8.5.3(storybook@8.5.3(prettier@3.4.2))':
+    dependencies:
+      storybook: 8.5.3(prettier@3.4.2)
+
+  '@storybook/core-events@8.5.3(storybook@8.5.3(prettier@3.4.2))':
+    dependencies:
+      storybook: 8.5.3(prettier@3.4.2)
+
   '@storybook/core@8.5.3(prettier@3.4.2)':
     dependencies:
       '@storybook/csf': 0.1.12
@@ -10626,6 +10660,10 @@ snapshots:
       '@vitest/utils': 2.1.2
       storybook: 8.5.3(prettier@3.4.2)
 
+  '@storybook/manager-api@8.5.3(storybook@8.5.3(prettier@3.4.2))':
+    dependencies:
+      storybook: 8.5.3(prettier@3.4.2)
+
   '@storybook/react-dom-shim@8.5.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.5.3(prettier@3.4.2))':
     dependencies:
       react: 18.3.1
@@ -10673,6 +10711,10 @@ snapshots:
       '@testing-library/user-event': 14.5.2(@testing-library/dom@10.4.0)
       '@vitest/expect': 2.0.5
       '@vitest/spy': 2.0.5
+      storybook: 8.5.3(prettier@3.4.2)
+
+  '@storybook/theming@8.5.3(storybook@8.5.3(prettier@3.4.2))':
+    dependencies:
       storybook: 8.5.3(prettier@3.4.2)
 
   '@surma/rollup-plugin-off-main-thread@2.2.3':
@@ -16553,6 +16595,21 @@ snapshots:
   std-env@3.8.0: {}
 
   stdin-discarder@0.2.2: {}
+
+  storybook-dark-mode@4.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@8.5.3(prettier@3.4.2)):
+    dependencies:
+      '@storybook/components': 8.5.3(storybook@8.5.3(prettier@3.4.2))
+      '@storybook/core-events': 8.5.3(storybook@8.5.3(prettier@3.4.2))
+      '@storybook/global': 5.0.0
+      '@storybook/icons': 1.3.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@storybook/manager-api': 8.5.3(storybook@8.5.3(prettier@3.4.2))
+      '@storybook/theming': 8.5.3(storybook@8.5.3(prettier@3.4.2))
+      fast-deep-equal: 3.1.3
+      memoizerific: 1.11.3
+    transitivePeerDependencies:
+      - react
+      - react-dom
+      - storybook
 
   storybook-solidjs-vite@1.0.0-beta.6(@testing-library/jest-dom@6.5.0)(solid-js@1.9.4)(storybook@8.5.3(prettier@3.4.2))(vite@6.1.0(@types/node@22.13.1)(terser@5.38.0)(yaml@2.5.1)):
     dependencies:

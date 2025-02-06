@@ -97,6 +97,7 @@
     "serve": "^14.2.4",
     "shelljs": "^0.8.5",
     "storybook": "^8.5.3",
+    "storybook-dark-mode": "^4.0.2",
     "storybook-solidjs": "1.0.0-beta.6",
     "storybook-solidjs-vite": "1.0.0-beta.6",
     "stylelint": "^16.14.1",
