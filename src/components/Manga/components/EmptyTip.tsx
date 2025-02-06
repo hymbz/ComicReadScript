@@ -2,7 +2,7 @@ import { onAutoMount } from 'helper';
 import { type Component } from 'solid-js';
 
 export const EmptyTip: Component = () => {
-  let ref: HTMLHeadingElement;
+  let ref!: HTMLHeadingElement;
 
   onAutoMount(() => {
     let timeoutId = 0;
@@ -24,5 +24,5 @@ export const EmptyTip: Component = () => {
     };
   });
 
-  return <h1 ref={ref!} style={{ opacity: 0 }} textContent="NULL" />;
+  return <h1 ref={ref} style={{ opacity: 0 }} textContent="NULL" />;
 };

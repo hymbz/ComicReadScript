@@ -19,7 +19,7 @@ export interface SettingsItemSelectProps<T> {
 export const SettingsItemSelect = <T extends string = string>(
   props: SettingsItemSelectProps<T>,
 ): JSX.Element => {
-  let ref: HTMLSelectElement;
+  let ref!: HTMLSelectElement;
 
   createEffect(() => {
     ref.value = props.options?.some(([val]) => val === props.value)
@@ -34,7 +34,7 @@ export const SettingsItemSelect = <T extends string = string>(
       classList={props.classList}
     >
       <select
-        ref={ref!}
+        ref={ref}
         class={classes.SettingsItemSelect}
         onChange={(e) => props.onChange(e.target.value as T)}
         on:click={() => props.onClick?.()}

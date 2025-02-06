@@ -31,9 +31,11 @@ export const fflate = async ({ zipFile, extension }: ZipData) => {
 
     return await Promise.all(
       Object.entries(res).map(async ([name, data]) => {
-        const filtType = await fileTypeFromBuffer(data.buffer);
+        const filtType = await fileTypeFromBuffer(data.buffer as ArrayBuffer);
         const url = await createObjectURL(
-          new Blob([data.buffer], { type: filtType?.mime || 'image/jpeg' }),
+          new Blob([data.buffer as ArrayBuffer], {
+            type: filtType?.mime || 'image/jpeg',
+          }),
         );
         if (!url) throw new Error(t('pwa.alert.img_data_error'));
         return { name, url };

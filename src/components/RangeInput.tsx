@@ -10,7 +10,7 @@ export interface RangeInputProps {
 
 /** 范围输入框 */
 export const RangeInput: Component<RangeInputProps> = (props) => {
-  let ref: HTMLTextAreaElement;
+  let ref!: HTMLTextAreaElement;
 
   /** 在保持光标位置不变的情况下修改文本 */
   const editText = (text: string) => {
@@ -62,7 +62,7 @@ export const RangeInput: Component<RangeInputProps> = (props) => {
 
   return (
     <textarea
-      ref={ref!}
+      ref={ref}
       value={props.value}
       placeholder={props.placeholder}
       autocomplete="off"

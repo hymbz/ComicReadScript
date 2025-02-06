@@ -26,7 +26,7 @@ export const EndPage: Component = () => {
     focus();
   };
 
-  let ref: HTMLDivElement;
+  let ref!: HTMLDivElement;
 
   onMount(() => {
     ref.addEventListener(
@@ -73,7 +73,7 @@ export const EndPage: Component = () => {
 
   return (
     <div
-      ref={ref!}
+      ref={ref}
       class={classes.endPage}
       data-show={store.show.endPage}
       data-type={delayType()}

@@ -486,7 +486,7 @@ export async function getGmValue<T extends string | number | object = string>(
   const value = await GM.getValue<T>(name);
   if (value !== undefined) return value;
   await setValueFn();
-  return (await GM.getValue<T>(name))!;
+  return await GM.getValue<T>(name);
 }
 
 /** 根据范围文本提取指定范围的元素的 index */

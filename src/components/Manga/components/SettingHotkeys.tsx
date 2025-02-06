@@ -122,7 +122,7 @@ const ShowHotkeys: Component<{ keys: string[] }> = (props) => (
 );
 
 const OtherHotkeys: Component<{ keys: string[] }> = (props) => {
-  let ref: HTMLSelectElement;
+  let ref!: HTMLSelectElement;
 
   const handleChange: EventHandler<HTMLSelectElement>['onChange'] = (e) => {
     const name = e.target.value;
@@ -133,7 +133,7 @@ const OtherHotkeys: Component<{ keys: string[] }> = (props) => {
   return (
     <div class={classes.hotkeys}>
       <select
-        ref={ref!}
+        ref={ref}
         class={classes.hotkeysHeader}
         style={{ height: '100%' }}
         onChange={handleChange}

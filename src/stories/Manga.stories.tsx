@@ -15,9 +15,11 @@ const cloneArray = (arr: string[], count: number) =>
 
 const deepClone = rfdc({ proto: true, circles: false });
 
-export type Props = Partial<
-  MangaProps & { 图源: keyof typeof imgList; cloneImgList?: number }
->;
+export type Props = MangaProps & {
+  图源: keyof typeof imgList;
+  cloneImgList?: number;
+};
+export type PartialProps = Partial<Props>;
 
 window.GM_xmlhttpRequest = (async (details: Tampermonkey.Request) => {
   const res = await request(details.url, { ...details, fetch: true });
@@ -32,6 +34,7 @@ const meta = {
     option: { control: 'object', name: '配置' },
   },
   args: {
+    imgList: [],
     图源: '饮茶之时、女仆之梦（彩图）',
   } satisfies Props,
   component: Manga,
@@ -42,7 +45,7 @@ const meta = {
           {...mergeProps(props, {
             imgList: props.图源
               ? cloneArray(imgList[props.图源], props.cloneImgList ?? 1)
-              : props.imgList!,
+              : props.imgList,
             option: Object.assign(defaultOption(), props.option ?? {}, {
               alwaysLoadAllImg: true,
             }),
@@ -64,7 +67,7 @@ type Story = StoryObj<typeof meta>;
 export const 翻页模式: Story = {
   args: {
     图源: '透过百合SM能否连结两人的身心呢（跨页）',
-  } satisfies Props,
+  } satisfies PartialProps,
   play: waitImgLoaded,
 };
 
@@ -72,7 +75,7 @@ export const 卷轴模式: Story = {
   args: {
     图源: '方便的陪跑友（四格）',
     option: { scrollMode: { enabled: true, imgScale: 0.3 } },
-  } satisfies Props,
+  } satisfies PartialProps,
   play: waitImgLoaded,
 };
 
@@ -80,7 +83,7 @@ export const 并排卷轴模式: Story = {
   args: {
     图源: '方便的陪跑友（四格）',
     option: { scrollMode: { enabled: true, abreastMode: true, imgScale: 0.3 } },
-  } satisfies Props,
+  } satisfies PartialProps,
   play: waitImgLoaded,
 };
 
@@ -88,16 +91,25 @@ export const 双页卷轴模式: Story = {
   args: {
     图源: '若爱在眼前（跨页+小图）',
     option: { scrollMode: { enabled: true, doubleMode: true } },
-  } satisfies Props,
+  } satisfies PartialProps,
   play: waitImgLoaded,
 };
 
 export const 网格模式: Story = {
   args: {
     图源: '饮茶之时、女仆之梦（彩图）',
-  } satisfies Props,
+  } satisfies PartialProps,
   async play() {
     _setState('gridMode', true);
     await waitImgLoaded();
   },
 };
+
+// export const 翻译 = {
+//   args: {
+//     option: { translation: { server: 'selfhosted' } },
+//   } satisfies PartialProps,
+//   async play() {
+//     await waitImgLoaded();
+//   },
+// };

@@ -47,6 +47,8 @@ module.exports = {
     "max-params": "off",
     // 不强制使用 querySelector
     "unicorn/prefer-query-selector": "off",
+    // 不强制使用 globalThis
+    "unicorn/prefer-global-this": "off",
     // 不限制在 switch case 中使用大括号
     "unicorn/switch-case-braces": "off",
 

@@ -84,5 +84,5 @@
     "jsxImportSource": "solid-js"
   },
   "include": ["src", "*.ts"],
-  "exclude": ["**/dist/**", "**/public/**"]
+  "exclude": ["**/dist/**", "**/public/**", "**/dev-dist/**"]
 }

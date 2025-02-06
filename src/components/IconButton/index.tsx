@@ -27,7 +27,7 @@ interface IconButtonProps {
 /** 图标按钮 */
 export const IconButton: Component<IconButtonProps> = (_props) => {
   const props = mergeProps({ placement: 'right' }, _props);
-  let buttonRef: HTMLButtonElement;
+  let buttonRef!: HTMLButtonElement;
   const handleClick: EventHandler['on:click'] = (e) => {
     if (props.disable) return;
     (props.onClick as JSX.EventHandler<HTMLElement, MouseEvent>)?.(e);
@@ -42,7 +42,7 @@ export const IconButton: Component<IconButtonProps> = (_props) => {
       data-show={props.showTip}
     >
       <button
-        ref={buttonRef!}
+        ref={buttonRef}
         aria-label={props.tip}
         type="button"
         class={classes.iconButton}

@@ -4,7 +4,7 @@ import { isAdImg } from 'userscript/detectAd';
 import { store } from '../components/Manga/store';
 import { activePage, getImgEle } from '../components/Manga';
 
-import MangaMeta, { type Props } from './Manga.stories';
+import MangaMeta, { type PartialProps } from './Manga.stories';
 import { imgList, waitImgLoaded } from './helper';
 
 export default {
@@ -58,7 +58,7 @@ export const 识别背景色 = {
       '/杂/渐变背景.webp',
     ],
     option: { imgRecognition: { enabled: true } },
-  } satisfies Props,
+  } satisfies PartialProps,
   async play() {
     await waitImgLoaded();
     await handlePercy((url) => store.imgMap[url].background !== undefined);
@@ -70,7 +70,7 @@ export const 自动调整页面填充 = {
     图源: undefined,
     imgList: imgList['饮茶之时、女仆之梦（彩图）'].slice(2),
     option: { imgRecognition: { enabled: true, background: false } },
-  } satisfies Props,
+  } satisfies PartialProps,
   async play() {
     await waitImgLoaded();
     await handlePercy();
@@ -91,7 +91,7 @@ export const 识别广告 = {
       '/杂/二维码/4.webp',
     ],
     option: { firstPageFill: false },
-  } satisfies Props,
+  } satisfies PartialProps,
   async play() {
     await sleep(1000);
 

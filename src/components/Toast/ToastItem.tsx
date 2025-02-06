@@ -58,7 +58,7 @@ export const ToastItem: Component<Toast> = (props) => {
     dismissToast(props.id);
   };
 
-  let scheduleRef: HTMLDivElement;
+  let scheduleRef!: HTMLDivElement;
   createEffect(() => {
     if (!props.update) return;
     resetToastUpdate(props.id);
@@ -94,7 +94,7 @@ export const ToastItem: Component<Toast> = (props) => {
         }
       >
         <div
-          ref={scheduleRef!}
+          ref={scheduleRef}
           class={classes.schedule}
           style={{
             'animation-duration': `${props.duration}ms`,
