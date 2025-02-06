@@ -204,7 +204,7 @@ export const useInit = async <T extends Record<string, any>>(
   const init = () => {
     setFab({ onClick: showComic, show: !options.hiddenFAB && undefined });
 
-    if (needAutoShow.val && options.autoShow) setTimeout(showComic);
+    if (needAutoShow.val && options.autoShow) showComic();
 
     (async () => {
       await GM.registerMenuCommand(t('other.enter_comic_read_mode'), () =>

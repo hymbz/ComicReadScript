@@ -61,6 +61,8 @@ export interface MangaProps {
   onOptionChange?: State['prop']['OptionChange'];
   /** 快捷键配置发生变化时触发的回调 */
   onHotkeysChange?: State['prop']['HotkeysChange'];
+  /** 显示图片发生变化时触发的回调 */
+  onShowImgsChange?: State['prop']['ShowImgsChange'];
   /**
    * 图片加载状态发生变化时触发的回调
    *

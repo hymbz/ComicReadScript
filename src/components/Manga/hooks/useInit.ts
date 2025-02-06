@@ -103,6 +103,9 @@ export const useInit = (props: MangaProps) => {
         ? debounce(props.onHotkeysChange)
         : undefined;
     },
+    onShowImgsChange(state) {
+      state.prop.ShowImgsChange = props.onShowImgsChange;
+    },
     commentList(state) {
       state.commentList = props.commentList;
     },

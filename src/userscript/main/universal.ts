@@ -15,6 +15,7 @@ export interface InitOptions {
   onPrev?: MangaProps['onPrev'];
   onNext?: MangaProps['onNext'];
   onExit?: MangaProps['onExit'];
+  onShowImgsChange?: MangaProps['onShowImgsChange'];
   getCommentList?: () => Promise<string[]> | string[];
 
   /** 初始站点配置 */
@@ -50,6 +51,7 @@ export const universal = async ({
   onPrev,
   onNext,
   onExit,
+  onShowImgsChange,
   getCommentList,
   initOptions,
   SPA,
@@ -70,6 +72,7 @@ export const universal = async ({
 
   setComicLoad(() => getImgList(fnMap));
 
+  setManga({ onShowImgsChange });
   if (onExit)
     setManga({
       onExit(isEnd) {

@@ -12,7 +12,6 @@ import {
   sleep,
   isEqual,
 } from 'helper';
-import { renderImgList } from 'components/Manga';
 import { useInit, toast } from 'main';
 
 import { handleSwitchChapter } from './switchChapter';
@@ -332,19 +331,15 @@ export const otherSite = async () => {
   });
 
   // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
-  createEffectOn(
-    renderImgList,
-    throttle((list) => {
-      if (list.size === 0 || !mangaProps.show) return;
-      const lastImgIndex = [...list].at(-1);
-      if (lastImgIndex === undefined) return;
-      imgEleList[lastImgIndex]?.scrollIntoView({
+  setManga({
+    onShowImgsChange: throttle((showImgs) => {
+      if (!mangaProps.show) return;
+      imgEleList[[...showImgs].at(-1)!]?.scrollIntoView({
         behavior: 'instant',
         block: 'end',
       });
     }, 1000),
-    { defer: true },
-  );
+  });
 
   // 在退出阅读模式时跳回之前的滚动位置
   createEffectOn(

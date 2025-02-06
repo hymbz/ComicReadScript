@@ -6,6 +6,7 @@ import { abreastArea, abreastShowColumn } from './abreastScroll';
 import { scrollLength } from './scroll';
 import { scrollTop } from './memo/observer';
 import { contentHeight, doubleScrollLineHeight, imgTopList } from './imageSize';
+import { imgList } from './memo';
 
 /** 找到普通卷轴模式下指定高度上的图片 */
 const findTopImg = (top: number, initIndex = 0) => {
@@ -122,12 +123,14 @@ createEffectOn(
 
 /** 获取指定范围内页面所包含的图片 */
 const getRangeImgList = (range: [number, number]) => {
-  if (range[0] === range[1]) return new Set(store.pageList[range[0]]);
-
-  const list = new Set<number>();
-  for (const [a, b] of store.pageList.slice(range[0], range[1] + 1)) {
-    list.add(a);
-    if (b !== undefined) list.add(b);
+  let list: Set<number>;
+  if (range[0] === range[1]) list = new Set(store.pageList[range[0]]);
+  else {
+    list = new Set<number>();
+    for (const [a, b] of store.pageList.slice(range[0], range[1] + 1)) {
+      list.add(a);
+      if (b !== undefined) list.add(b);
+    }
   }
   list.delete(-1);
   return list;
@@ -178,4 +181,14 @@ createEffectOn(
     if (!store.gridMode && store.option.scrollMode.enabled)
       _setState('activePageIndex', firstPage ?? 0);
   },
+);
+
+// 图片发生变化时触发回调
+createEffectOn(
+  showImgList,
+  (showImgs) => {
+    if (showImgs.size === 0) return;
+    store.prop.ShowImgsChange?.(showImgs, imgList());
+  },
+  { defer: true },
 );
