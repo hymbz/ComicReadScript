@@ -85,6 +85,10 @@ export const associateNhentai = async (
     render(nhTagLine, querySelector('#taglist tbody')!),
   );
 
+  // 只要带上 cf_clearance cookie 就能通过 Cloudflare 验证，但其是 httpOnly
+  // 目前暴力猴还不支持 GM_Cookie，篡改猴也需要去设置里手动设置才能支持 httpOnly
+  // 所以暂不处理，就嗯等
+  // https://github.com/violentmonkey/violentmonkey/issues/603
   try {
     const res = await request<{ result: ComicInfo[] }>(
       `https://nhentai.net/api/galleries/search?query=${comicTitle}`,
@@ -92,6 +96,7 @@ export const associateNhentai = async (
         responseType: 'json',
         errorText: t('site.ehentai.nhentai_error'),
         noTip: true,
+        headers: { 'User-Agent': navigator.userAgent },
       },
     );
     setComicList(res.response.result);
