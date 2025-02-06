@@ -104,3 +104,29 @@ export const turnPageAnimation = (dir: 'next' | 'prev') => {
     }, 16);
   });
 };
+
+/** 判断翻页方向 */
+export const getTurnPageDir = (
+  move: number,
+  total: number,
+  startTime?: number,
+): undefined | 'prev' | 'next' => {
+  let dir: undefined | 'prev' | 'next';
+
+  // 处理无关速度不考虑时间单纯根据当前滚动距离来判断的情况
+  if (!startTime) {
+    if (Math.abs(move) > total / 2) dir = move > 0 ? 'next' : 'prev';
+    return dir;
+  }
+
+  // 滑动距离超过总长度三分之一判定翻页
+  if (Math.abs(move) > total / 3) dir = move > 0 ? 'next' : 'prev';
+  if (dir) return dir;
+
+  // 滑动速度超过 0.4 判定翻页
+  const velocity = move / (performance.now() - startTime);
+  if (velocity < -0.4) dir = 'prev';
+  if (velocity > 0.4) dir = 'next';
+
+  return dir;
+};

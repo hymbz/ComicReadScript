@@ -69,3 +69,16 @@ export const 并排卷轴模式分隔 = {
   } satisfies PartialProps,
   play: waitImgLoaded,
 };
+
+export const 尾页 = {
+  args: {
+    图源: undefined,
+    imgList: [''],
+    onPrev() {},
+    onNext() {},
+  } satisfies PartialProps,
+  async play() {
+    _setState('show', 'endPage', 'end');
+    await sleep(1000);
+  },
+};

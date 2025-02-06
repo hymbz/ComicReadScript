@@ -7,11 +7,11 @@ import {
   For,
   Show,
 } from 'solid-js';
-import { t } from 'helper';
+import { boolDataVal, t, useDrag, type UseDrag } from 'helper';
 
 import { stopPropagation } from '../helper';
 import { _setState, store } from '../store';
-import { bindRef, focus, turnPage } from '../actions';
+import { bindRef, focus, getTurnPageDir, turnPage } from '../actions';
 import classes from '../index.module.css';
 
 import { dir } from './TouchArea';
@@ -28,6 +28,31 @@ export const EndPage: Component = () => {
 
   let ref!: HTMLDivElement;
 
+  const [isDrag, setIsDrag] = createSignal(false);
+  const [dragY, setDragY] = createSignal(0);
+  const handleDrag: UseDrag = ({
+    type,
+    xy: [, y],
+    initial: [, iy],
+    startTime,
+  }) => {
+    switch (type) {
+      case 'down':
+        return setIsDrag(true);
+      case 'move':
+        return setDragY(y - iy);
+    }
+
+    const pageDir = getTurnPageDir(
+      -dragY(),
+      store.rootSize.height / 2,
+      startTime,
+    );
+    if (pageDir) turnPage(pageDir);
+    setDragY(0);
+    setIsDrag(false);
+  };
+
   onMount(() => {
     ref.addEventListener(
       'wheel',
@@ -38,6 +63,7 @@ export const EndPage: Component = () => {
       },
       { passive: false },
     );
+    useDrag({ ref, handleDrag });
   });
 
   // state.show.endPage 变量的延时版本，在隐藏的动画效果结束之后才会真正改变
@@ -77,47 +103,56 @@ export const EndPage: Component = () => {
       class={classes.endPage}
       data-show={store.show.endPage}
       data-type={delayType()}
+      data-drag={boolDataVal(isDrag())}
       on:click={handleClick}
       role="button"
       tabIndex={-1}
       style={{ 'flex-direction': dir() === 'rtl' ? 'row-reverse' : undefined }}
     >
-      <p class={classes.tip}>{tip()}</p>
-      <button
-        ref={bindRef('prev')}
-        type="button"
-        classList={{ [classes.invisible]: !store.prop.Prev }}
-        tabIndex={store.show.endPage ? 0 : -1}
-        on:click={() => store.prop.Prev?.()}
-      >
-        {t('end_page.prev_button')}
-      </button>
-      <button
-        ref={bindRef('exit')}
-        type="button"
-        data-is-end
-        tabIndex={store.show.endPage ? 0 : -1}
-        on:click={() => store.prop.Exit?.(store.show.endPage === 'end')}
-      >
-        {t('button.exit')}
-      </button>
-      <button
-        ref={bindRef('next')}
-        type="button"
-        classList={{ [classes.invisible]: !store.prop.Next }}
-        tabIndex={store.show.endPage ? 0 : -1}
-        on:click={() => store.prop.Next?.()}
-      >
-        {t('end_page.next_button')}
-      </button>
-      <Show when={store.option.showComment && delayType() === 'end'}>
-        <div
-          class={`${classes.comments} ${classes.beautifyScrollbar}`}
-          onWheel={stopPropagation}
+      <div class={classes.endPageBody} style={{ '--drag-y': `${dragY()}px` }}>
+        <p class={classes.tip}>{tip()}</p>
+        <button
+          ref={bindRef('prev')}
+          type="button"
+          classList={{ [classes.invisible]: !store.prop.Prev }}
+          tabIndex={store.show.endPage ? 0 : -1}
+          on:click={() => store.prop.Prev?.()}
         >
-          <For each={store.commentList}>{(comment) => <p>{comment}</p>}</For>
-        </div>
-      </Show>
+          {t('end_page.prev_button')}
+        </button>
+        <button
+          ref={bindRef('exit')}
+          type="button"
+          data-is-end
+          tabIndex={store.show.endPage ? 0 : -1}
+          on:click={() => store.prop.Exit?.(store.show.endPage === 'end')}
+        >
+          {t('button.exit')}
+        </button>
+        <button
+          ref={bindRef('next')}
+          type="button"
+          classList={{ [classes.invisible]: !store.prop.Next }}
+          tabIndex={store.show.endPage ? 0 : -1}
+          on:click={() => store.prop.Next?.()}
+        >
+          {t('end_page.next_button')}
+        </button>
+        <Show
+          when={
+            store.option.showComment &&
+            delayType() === 'end' &&
+            store.commentList?.length
+          }
+        >
+          <div
+            class={`${classes.comments} ${classes.beautifyScrollbar}`}
+            onWheel={stopPropagation}
+          >
+            <For each={store.commentList}>{(comment) => <p>{comment}</p>}</For>
+          </div>
+        </Show>
+      </div>
     </div>
   );
 };

@@ -8,7 +8,12 @@ import classes from '../index.module.css';
 import { resetUI } from './helper';
 import { resetPage } from './show';
 import { zoom } from './zoom';
-import { turnPageFn, turnPageAnimation, turnPage } from './turnPage';
+import {
+  turnPageFn,
+  turnPageAnimation,
+  turnPage,
+  getTurnPageDir,
+} from './turnPage';
 import { isBottom, isTop, jumpToImg } from './scroll';
 
 /** 根据坐标判断点击的元素 */
@@ -59,38 +64,6 @@ export const handleClick = useDoubleClick(
   doubleClickZoom,
 );
 
-/** 判断翻页方向 */
-const getTurnPageDir = (startTime?: number): undefined | 'prev' | 'next' => {
-  let dir: undefined | 'prev' | 'next';
-  let move: number;
-  let total: number;
-
-  if (store.page.vertical) {
-    move = -store.page.offset.y.px;
-    total = refs.root.clientHeight;
-  } else {
-    move = store.page.offset.x.px;
-    total = refs.root.clientWidth;
-  }
-
-  // 处理无关速度不考虑时间单纯根据当前滚动距离来判断的情况
-  if (!startTime) {
-    if (Math.abs(move) > total / 2) dir = move > 0 ? 'next' : 'prev';
-    return dir;
-  }
-
-  // 滑动距离超过总长度三分之一判定翻页
-  if (Math.abs(move) > total / 3) dir = move > 0 ? 'next' : 'prev';
-  if (dir) return dir;
-
-  // 滑动速度超过 0.4 判定翻页
-  const velocity = move / (performance.now() - startTime);
-  if (velocity < -0.4) dir = 'prev';
-  if (velocity > 0.4) dir = 'next';
-
-  return dir;
-};
-
 let dx = 0;
 let dy = 0;
 let animationId: number | null = null;
@@ -119,7 +92,9 @@ const handleDragEnd = (startTime?: number) => {
   }
 
   // 将拖动的页面移回正常位置
-  const dir = getTurnPageDir(startTime);
+  const dir = store.page.vertical
+    ? getTurnPageDir(-store.page.offset.y.px, store.rootSize.height, startTime)
+    : getTurnPageDir(store.page.offset.x.px, store.rootSize.width, startTime);
   if (dir) return turnPageAnimation(dir);
   setState((state) => {
     state.page.offset.x.px = 0;

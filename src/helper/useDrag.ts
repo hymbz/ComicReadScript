@@ -64,6 +64,8 @@ export const useDrag = ({
       signal: controller.signal,
     };
 
+    let allowClick = 0;
+
     const handleDown = (e: PointerEvent) => {
       if (skip?.(e)) return;
 
@@ -74,6 +76,11 @@ export const useDrag = ({
       const state = createPointerState(e);
       touches.set(e.pointerId, state);
       handleDrag(state, e);
+
+      // 在时限内松手才触发 click 事件
+      allowClick = window.setTimeout(() => {
+        allowClick = 0;
+      }, 300);
     };
 
     const handleMove = (e: PointerEvent) => {
@@ -104,6 +111,7 @@ export const useDrag = ({
 
       // 判断单击
       if (
+        allowClick &&
         handleClick &&
         touches.size === 0 &&
         approx(state.xy[0] - state.initial[0], 0, 5) &&
@@ -111,6 +119,7 @@ export const useDrag = ({
         performance.now() - state.startTime < 300
       )
         handleClick(e, state.target);
+      window.clearTimeout(allowClick);
 
       handleDrag(state, e);
     };
@@ -138,6 +147,10 @@ export const useDrag = ({
       ref.addEventListener('pointerover', handleDown, options);
       ref.addEventListener('pointerout', handleUp, options);
     }
+
+    ref.addEventListener('click', (e) => allowClick || e.stopPropagation(), {
+      capture: true,
+    });
 
     return () => controller.abort();
   });
