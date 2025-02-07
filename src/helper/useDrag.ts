@@ -64,7 +64,7 @@ export const useDrag = ({
       signal: controller.signal,
     };
 
-    let allowClick = 0;
+    let allowClick = -1;
 
     const handleDown = (e: PointerEvent) => {
       if (skip?.(e)) return;
