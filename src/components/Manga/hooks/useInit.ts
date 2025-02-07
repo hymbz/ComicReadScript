@@ -136,8 +136,6 @@ export const useInit = (props: MangaProps) => {
       // 使用相对协议路径，防止 Mixed Content 报错
       const imgList = props.imgList.map((url) => url?.replace(/^http:/, ''));
 
-      state.show.endPage = undefined;
-
       /** 修改前的当前显示图片 */
       const oldActiveImg =
         state.pageList[state.activePageIndex]?.map((i) => state.imgList?.[i]) ??
@@ -185,6 +183,8 @@ export const useInit = (props: MangaProps) => {
       state.imgList = imgList;
 
       state.prop.Loading?.(state.imgList.map((url) => state.imgMap[url]));
+
+      if (isNew) state.show.endPage = undefined;
 
       if (isNew || needResetFillEffect)
         state.fillEffect = props.fillEffect ?? { '-1': true };
