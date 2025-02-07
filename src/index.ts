@@ -868,10 +868,10 @@ try {
           };
           return dynamicLoad(loadImgList, pages.length)();
         },
-        onNext: querySelectorClick('a.next-link'),
-        onPrev: querySelectorClick('a.previous-link'),
         SPA: {
           isMangaPage: () => window.location.pathname.startsWith('/episode/'),
+          getOnPrev: () => querySelectorClick('a.previous-link'),
+          getOnNext: () => querySelectorClick('a.next-link'),
         },
       };
       break;
