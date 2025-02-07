@@ -1,7 +1,5 @@
 .endPage,
 .endPageBody {
-  pointer-events: none;
-
   z-index: 10;
 
   display: flex;
@@ -13,6 +11,8 @@
 }
 
 .endPage {
+  pointer-events: none;
+
   position: absolute;
   top: 0;
   left: 0;
