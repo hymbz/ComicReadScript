@@ -675,6 +675,7 @@ try {
       options = {
         name: 'hitomi',
         wait: () =>
+          (unsafeWindow.galleryinfo as object | undefined) &&
           Reflect.has(unsafeWindow.galleryinfo, 'files') &&
           unsafeWindow.galleryinfo.type !== 'anime',
         getImgList: () =>
