@@ -17,5 +17,6 @@ export * from './imageLoad';
 export * from './imageType';
 export * from './renderPage';
 export * from './translation';
+export * from './translation/selfhosted';
 export * from './readProgress';
 export * from '../handleComicData';

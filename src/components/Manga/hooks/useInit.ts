@@ -19,6 +19,7 @@ import {
   updateShowRange,
   placeholderSize,
   resumeReadProgress,
+  updateSelfhostedOptions,
 } from '../actions';
 import { defaultOption, type Option } from '../store/option';
 import { playAnimation, stopPropagation } from '../helper';
@@ -154,8 +155,10 @@ export const useInit = (props: MangaProps) => {
       const newImgList = new Set(imgList);
       const oldImgList = new Set(state.imgList);
 
-      // 只在初始化新漫画时恢复上次进度
-      if (oldImgList.size === 0 && newImgList.size > 0) resumeReadProgress();
+      if (oldImgList.size === 0 && newImgList.size > 0) {
+        resumeReadProgress();
+        updateSelfhostedOptions(true);
+      }
 
       /** 被删除的图片 */
       const deleteList = [...oldImgList].filter((url) => !newImgList.has(url));

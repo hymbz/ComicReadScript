@@ -187,7 +187,7 @@ export const updateSelfhostedOptions = async (noTip = false) => {
     )
   ) {
     setOption((draftOption) => {
-      draftOption.translation.options.translator = selfhostedOptions()[0][0];
+      draftOption.translation.options.translator = selfhostedOptions()[0]?.[0];
     });
   }
 };
@@ -199,6 +199,6 @@ createEffectOn(
     () => store.option.translation.localUrl,
     lang,
   ],
-  () => updateSelfhostedOptions(true),
+  () => store.imgList.length > 0 && updateSelfhostedOptions(true),
   { defer: true },
 );
