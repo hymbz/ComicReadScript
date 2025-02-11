@@ -47,6 +47,7 @@ export const DownloadButton = () => {
           headers,
           responseType: 'blob',
           errorText: `${t('alert.download_failed')}: ${index}`,
+          retryFetch: true,
         });
         data = res.response;
         fileName = `${index}.${getExtName(data.type)}`;
