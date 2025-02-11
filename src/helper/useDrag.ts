@@ -41,7 +41,7 @@ type UseDragOptions = {
   easyMode?: () => boolean;
   handleClick?: (e: PointerEvent, target: HTMLElement) => boolean | void;
   touches?: Map<number, PointerState>;
-  skip?: (e: PointerEvent) => boolean;
+  skip?: (e: PointerEvent | MouseEvent) => boolean;
   setCapture?: boolean;
 };
 
@@ -111,12 +111,11 @@ export const useDrag = ({
 
       // 判断单击
       if (
-        allowClick &&
         handleClick &&
+        allowClick &&
         touches.size === 0 &&
         approx(state.xy[0] - state.initial[0], 0, 5) &&
-        approx(state.xy[1] - state.initial[1], 0, 5) &&
-        performance.now() - state.startTime < 300
+        approx(state.xy[1] - state.initial[1], 0, 5)
       )
         handleClick(e, state.target);
       window.clearTimeout(allowClick);
@@ -148,9 +147,15 @@ export const useDrag = ({
       ref.addEventListener('pointerout', handleUp, options);
     }
 
-    ref.addEventListener('click', (e) => allowClick || e.stopPropagation(), {
-      capture: true,
-    });
+    ref.addEventListener(
+      'click',
+      (e) => {
+        if ((allowClick && touches.size === 0) || skip?.(e)) return;
+        e.stopPropagation();
+        e.preventDefault();
+      },
+      { capture: true },
+    );
 
     return () => controller.abort();
   });
