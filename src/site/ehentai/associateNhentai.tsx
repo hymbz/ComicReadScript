@@ -1,6 +1,6 @@
 /* eslint-disable i18next/no-literal-string */
 import { request, type useInit, toast, type LoadImgFn } from 'main';
-import { t, querySelector, plimit, hijackFn } from 'helper';
+import { t, querySelector, plimit, hijackFn, querySelectorAll } from 'helper';
 import { createSignal, For, Show, type Component, type JSX } from 'solid-js';
 import { render } from 'solid-js/web';
 
@@ -46,7 +46,7 @@ export const associateNhentai = async (
   };
 
   const nhTagLine = () => (
-    <tr>
+    <tr id="nh_tagline">
       <td class="tc">nhentai:</td>
       <Show
         when={comicList()?.length}
@@ -81,9 +81,10 @@ export const associateNhentai = async (
   render(nhTagLine, querySelector('#taglist tbody')!);
 
   // 投票后重新渲染
-  hijackFn('tag_update_vote', () =>
-    render(nhTagLine, querySelector('#taglist tbody')!),
-  );
+  hijackFn('tag_update_vote', () => {
+    for (const e of querySelectorAll('#nh_tagline')) e.remove();
+    render(nhTagLine, querySelector('#taglist tbody')!);
+  });
 
   // 只要带上 cf_clearance cookie 就能通过 Cloudflare 验证，但其是 httpOnly
   // 目前暴力猴还不支持 GM_Cookie，篡改猴也需要去设置里手动设置才能支持 httpOnly
