@@ -105,7 +105,7 @@ export const tagLint = (pageType: PageType) => {
   const getTaglist = () => {
     const lockTags = new Set<string>();
     const weakTags = new Set<string>();
-    for (const tag of querySelectorAll('#taglist [id^=td_]')) {
+    for (const tag of querySelectorAll('#taglist table [id^=td_]')) {
       const [a] = tag.getElementsByTagName('a');
       // 跳过点踩的标签
       if (a.classList.contains('tdn')) continue;
@@ -149,6 +149,23 @@ export const tagLint = (pageType: PageType) => {
       newWarnList.other.push([text, tags]);
     };
 
+    const correctTags: string[] = [];
+    for (const tag of weakTags) {
+      // 作者、社团则要检查漫画标题中是否包含其名字
+      if (/^(artist|group):/.test(tag)) {
+        const title = querySelector('#gd2')!.textContent!.toLowerCase();
+        if (title.includes(tag.replaceAll(/^(artist|group):|_/g, ' ').trim()))
+          correctTags.push(tag);
+        // 也检查经过翻译的标签名
+        const showName = document.getElementById(
+          'ta_artist:kisaragi_sonami',
+        )?.textContent;
+        if (showName && title.includes(showName)) correctTags.push(tag);
+      }
+    }
+    if (correctTags.length > 0)
+      addOtherWarn(t('eh_tag_lint.correct_tag'), correctTags);
+
     // 涉及到图库类型的，比较复杂的检查
     if (
       querySelector('#gdc > .cs.ct2') &&
@@ -158,7 +175,7 @@ export const tagLint = (pageType: PageType) => {
     if (
       isManga &&
       isMissingTags(
-        tagList,
+        lockTags,
         'female:females_only',
         'female:futanari',
         'female:shemale',

@@ -32,6 +32,7 @@
   "eh_tag_lint": {
     "combo": "[tag]: In most cases, Should coexist with [tag]",
     "conflict": "[tag]: Should not coexist with [tag]",
+    "correct_tag": "Should be the correct tag",
     "miss_female": "Missing male tag, might need",
     "miss_parody": "Missing parody tag, might need",
     "possible_conflict": "[tag]: In most cases, Should not coexist with [tag]",

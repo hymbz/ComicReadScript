@@ -32,6 +32,7 @@
   "eh_tag_lint": {
     "combo": "存在 [tag] 时，一般也存在 [tag]",
     "conflict": "存在 [tag] 时，不应该存在 [tag]",
+    "correct_tag": "应该是正确的标签",
     "miss_female": "缺少男性标签，可能需要",
     "miss_parody": "缺少原作标签，可能需要",
     "possible_conflict": "存在 [tag] 时，一般不应该存在 [tag]",
