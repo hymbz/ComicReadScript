@@ -12,6 +12,7 @@
     "close_current_page_translation": "关闭当前页的翻译",
     "download": "下载",
     "download_completed": "下载完成",
+    "download_completed_error": "下载完成，但有 {{errorNum}} 张图片下载失败",
     "downloading": "下载中",
     "exit": "退出",
     "fullscreen": "全屏",
@@ -273,7 +274,6 @@
     "tip": {
       "check_img_status_failed": "检查图片状态失败",
       "download_img_failed": "下载图片失败",
-      "error": "翻译出错",
       "get_translator_list_error": "获取可用翻译服务列表时出错",
       "id_not_returned": "未返回 id",
       "img_downloading": "下载图片中",

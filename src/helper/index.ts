@@ -7,3 +7,4 @@ export * from './useStyle';
 export * from './i18n';
 export * from './logger';
 export * from './components';
+export * from './faviconProgress';

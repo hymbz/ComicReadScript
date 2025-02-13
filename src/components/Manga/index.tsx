@@ -113,4 +113,5 @@ export const Manga: Component<MangaProps> = (props) => {
 };
 
 export { store, setState, _setState } from './store/index';
+export { downloadImg } from './helper';
 export * from './actions';

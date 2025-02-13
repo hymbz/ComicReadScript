@@ -12,6 +12,7 @@
     "close_current_page_translation": "Скрыть перевод текущей страницы",
     "download": "Скачать",
     "download_completed": "Загрузка завершена",
+    "download_completed_error": "Загрузка завершена, но {{errorNum}} изображений не удалось загрузить",
     "downloading": "Скачивание",
     "exit": "Выход",
     "fullscreen": "полноэкранный",
@@ -273,7 +274,6 @@
     "tip": {
       "check_img_status_failed": "Не удалось проверить статус изображения",
       "download_img_failed": "Не удалось скачать изображение",
-      "error": "Ошибка перевода",
       "get_translator_list_error": "Произошла ошибка во время получения списка доступных переводчиков",
       "id_not_returned": "ID не вернули(",
       "img_downloading": "Скачивание изображений",

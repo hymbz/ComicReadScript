@@ -12,6 +12,7 @@
     "close_current_page_translation": "Close translation of the current page",
     "download": "Download",
     "download_completed": "Download completed",
+    "download_completed_error": "Download complete, but {{errorNum}} images failed to download",
     "downloading": "Downloading",
     "exit": "Exit",
     "fullscreen": "Fullscreen",
@@ -273,7 +274,6 @@
     "tip": {
       "check_img_status_failed": "Failed to check image status",
       "download_img_failed": "Failed to download image",
-      "error": "Translation error",
       "get_translator_list_error": "Error occurred while getting the list of available translation services",
       "id_not_returned": "No id returned",
       "img_downloading": "Downloading images",

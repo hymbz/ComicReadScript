@@ -2,8 +2,9 @@ import { t, log, canvasToBlob, waitImgLoad, sleep } from 'helper';
 import { request, type Response } from 'request';
 
 import { store } from '../../store';
+import { downloadImg } from '../../helper';
 
-import { setMessage, download, createFormData } from './helper';
+import { setMessage, createFormData } from './helper';
 
 type QueryV1Message =
   | {
@@ -40,9 +41,9 @@ const handleMessage = (msg: QueryV1Message, url: string) => {
       break;
 
     case 'error':
-      throw new Error(`${t('translation.tip.error')}：id ${msg.error_id}`);
+      throw new Error(`${t('translation.status.error')}：id ${msg.error_id}`);
     case 'not_found':
-      throw new Error(`${t('translation.tip.error')}：Not Found`);
+      throw new Error(`${t('translation.status.error')}：Not Found`);
   }
 };
 
@@ -86,7 +87,7 @@ const mergeImage = async (rawImage: Blob, maskUri: string) => {
   canvasCtx.drawImage(img, 0, 0);
 
   const img2 = new Image();
-  img2.src = URL.createObjectURL(await download(maskUri));
+  img2.src = URL.createObjectURL(await downloadImg(maskUri));
   await waitImgLoad(img2);
   canvasCtx.drawImage(img2, 0, 0);
 
@@ -117,7 +118,7 @@ export const cotransTranslation = async (url: string) => {
   setMessage(url, t('translation.tip.img_downloading'));
   let imgBlob: Blob;
   try {
-    imgBlob = await download(img.src);
+    imgBlob = await downloadImg(img.src);
   } catch (error) {
     log.error(error);
     throw new Error(t('translation.tip.download_img_failed'));

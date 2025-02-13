@@ -12,6 +12,7 @@
     "close_current_page_translation": "தற்போதைய பக்கத்தின் மொழிபெயர்ப்பை அணைக்கவும்",
     "download": "பதிவிறக்குங்கள்",
     "download_completed": "பதிவிறக்குங்கள்",
+    "download_completed_error": "பதிவிறக்கம் முடிந்தது, ஆனால் {{errorNum}} படங்களை பதிவிறக்க முடியவில்லை",
     "downloading": "பதிவிறக்குங்கள்",
     "exit": "வெளியேறு",
     "fullscreen": "முழுத்திரை",
@@ -273,7 +274,6 @@
     "tip": {
       "check_img_status_failed": "படத்தின் நிலை தோல்வியடைந்தது",
       "download_img_failed": "படம் தோல்வியுற்றது",
-      "error": "மொழிபெயர்க்கவும்",
       "get_translator_list_error": "மொழிபெயர்ப்பு சேவைகளின் பட்டியலைப் பெறும்போது, பிழைகள் ஏற்படுகின்றன.",
       "id_not_returned": "ஐடியைத் திரும்ப முடியவில்லை",
       "img_downloading": "படத்தைப் பதிவிறக்கவும்",

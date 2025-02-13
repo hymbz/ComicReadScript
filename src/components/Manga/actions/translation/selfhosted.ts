@@ -10,10 +10,10 @@ import { request } from 'request';
 
 import { store } from '../../store';
 import { setOption } from '../helper';
+import { downloadImg } from '../../helper';
 
 import {
   setMessage,
-  download,
   createFormData,
   createOptions,
   type TaskState,
@@ -33,7 +33,7 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
   setMessage(url, t('translation.tip.img_downloading'));
   let imgBlob: Blob;
   try {
-    imgBlob = await download(url);
+    imgBlob = await downloadImg(url);
   } catch (error) {
     log.error(error);
     throw new Error(t('translation.tip.download_img_failed'));
@@ -83,7 +83,9 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
       }
     }
 
-    return URL.createObjectURL(await download(`${apiUrl()}/result/${task_id}`));
+    return URL.createObjectURL(
+      await downloadImg(`${apiUrl()}/result/${task_id}`),
+    );
   }
 
   try {

@@ -1,5 +1,4 @@
 import { t } from 'helper';
-import { request } from 'request';
 
 import { _setState, store } from '../../store';
 
@@ -11,22 +10,6 @@ export type TaskState = {
 
 export const setMessage = (url: string, msg: string) =>
   _setState('imgMap', url, 'translationMessage', msg);
-
-export const download = async (imgUrl: string) => {
-  const url = store.imgMap[imgUrl]?.blobUrl ?? imgUrl;
-
-  if (url.startsWith('blob:')) {
-    const res = await fetch(url);
-    return res.blob();
-  }
-
-  const res = await request<Blob>(url, {
-    fetch: false,
-    responseType: 'blob',
-    errorText: t('translation.tip.download_img_failed'),
-  });
-  return res.response;
-};
 
 const sizeDict = { '1024': 'S', '1536': 'M', '2048': 'L', '2560': 'X' };
 

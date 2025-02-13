@@ -241,7 +241,7 @@ createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
     handleTimeout();
     request<Blob>(url, {
       responseType: 'blob',
-      fetch: false,
+      retryFetch: true,
       signal: controller.signal,
       timeout: undefined,
       noTip: true,
