@@ -419,7 +419,6 @@ export const requestIdleCallback = (
 /** 获取键盘事件的编码 */
 export const getKeyboardCode = (e: KeyboardEvent) => {
   let { key } = e;
-
   switch (key) {
     case 'Shift':
     case 'Control':
@@ -427,6 +426,7 @@ export const getKeyboardCode = (e: KeyboardEvent) => {
       return key;
   }
 
+  key = key.replaceAll(/\b[A-Z]\b/g, (match) => match.toLowerCase());
   if (e.ctrlKey) key = `Ctrl + ${key}`;
   if (e.altKey) key = `Alt + ${key}`;
   if (e.shiftKey) key = `Shift + ${key}`;

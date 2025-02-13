@@ -1,7 +1,18 @@
+import { Show } from 'solid-js';
 import { byPath, lang, log } from 'helper';
 import { toast } from 'components/Toast';
 
-import { VersionTip } from './versionTip';
+/** 判断版本号1是否小于版本号2 */
+const versionLt = (version1: string, version2: string) => {
+  const v1 = version1.split('.').map(Number);
+  const v2 = version2.split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    const num1 = v1[i] ?? 0;
+    const num2 = v2[i] ?? 0;
+    if (num1 !== num2) return num1 < num2;
+  }
+  return false;
+};
 
 const migrationOption = async (
   name: string,
@@ -31,54 +42,21 @@ export const renameOption = async (name: string, list: string[]) =>
   });
 
 /** 旧版本配置迁移 */
-const migration = async () => {
+const migration = async (version: string) => {
   // 任何样式修改都得更新 css 才行，干脆直接删了
   GM.deleteValue('ehTagColorizeCss');
   GM.deleteValue('ehTagSortCss');
 
-  const values = await GM.listValues();
-
-  // 8 => 9
-  for (const key of values) {
-    switch (key) {
-      case 'Version':
-      case 'Languages':
-      case 'ehTagColorizeCss':
-      case 'ehTagSortCss':
-        continue;
-
-      case 'Hotkeys': {
-        await renameOption(key, [
-          // 原本上下快捷键是混在一起的，现在分开后要迁移太麻烦了，应该也没多少人改，就直接删了
-          'turn_page_up => ',
-          'turn_page_down => ',
-          'turn_page_right => scroll_right',
-          'turn_page_left => scroll_left',
-        ]);
-        break;
+  // 11.4.2 => 11.5
+  if (versionLt(version, '11.5.0'))
+    await migrationOption('Hotkeys', (option, save) => {
+      for (const [name, hotkeys] of Object.entries(option)) {
+        option[name] = hotkeys.map((key: string) =>
+          key.replaceAll(/\b[A-Z]\b/g, (match) => match.toLowerCase()),
+        );
       }
-
-      default:
-        await migrationOption(key, (option, save) => {
-          if (typeof option.option?.scrollMode !== 'boolean') return;
-          option.option.scrollMode = {
-            enabled: option.option.scrollMode,
-            spacing: option.option.scrollModeSpacing,
-            imgScale: option.option.scrollModeImgScale,
-            fitToWidth: option.option.scrollModeFitToWidth,
-          };
-          return save();
-        });
-    }
-  }
-
-  // 9.3 => 9.4
-  await migrationOption('ehentai', (option, save) => {
-    if (!Reflect.has(option, 'hotkeys_page_turn')) return;
-    option.hotkeys = option.hotkeys_page_turn;
-    Reflect.deleteProperty(option, 'hotkeys_page_turn');
-    return save();
-  });
+      return save();
+    });
 };
 
 /** 处理版本更新相关 */
@@ -87,8 +65,7 @@ export const handleVersionUpdate = async () => {
   if (!version) return GM.setValue('Version', GM.info.script.version);
   if (version === GM.info.script.version) return;
 
-  // 每次版本更新都执行一遍迁移
-  await migration();
+  await migration(version); // 每次版本更新都执行一遍迁移
 
   // 只在语言为中文时弹窗提示最新更新内容
   if (lang() === 'zh') {
@@ -98,7 +75,7 @@ export const handleVersionUpdate = async () => {
         <>
           <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
           inject@LatestChange
-          <VersionTip v1={version} v2={'10.8.0'}>
+          <Show when={versionLt(version, '10.8.0')}>
             <h3>改动</h3>
             <ul>
               <li>
@@ -107,7 +84,7 @@ export const handleVersionUpdate = async () => {
                 由「鼠标滚轮」改为「Shift + 鼠标滚轮」
               </li>
             </ul>
-          </VersionTip>
+          </Show>
         </>
         /* eslint-enable i18next/no-literal-string */
       ),
