@@ -157,9 +157,7 @@ export const tagLint = (pageType: PageType) => {
         if (title.includes(tag.replaceAll(/^(artist|group):|_/g, ' ').trim()))
           correctTags.push(tag);
         // 也检查经过翻译的标签名
-        const showName = document.getElementById(
-          'ta_artist:kisaragi_sonami',
-        )?.textContent;
+        const showName = document.getElementById(`ta_${tag}`)?.textContent;
         if (showName && title.includes(showName)) correctTags.push(tag);
       }
     }
