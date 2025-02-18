@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         11.5.0
+// @version         11.6.0
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、コミックグロウル、welovemanga、Tachidesk
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -9241,7 +9241,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>使用网页图标和标题显示下载进度 </p></li><li><p>增加 ehentai 标签检查功能对作者社团标签的检查\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复快捷键会区分大小写的 bug\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>限定 ehentai 漫画页右侧按钮框的高度 </p></li><li><p>ehentai 悬浮标签列表可以挪到显示区域外\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 ehentai 标签检查功能出现双重标签的 bug </p></li><li><p>修复 ehentai 打开标签定义再点击「添加新标签」后无法关闭标签定义页的 bug\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '10.8.0');
       },
@@ -11256,6 +11256,7 @@ const quickTagDefine = pageType => {
       setShow(false);
     }
   };
+  helper.hijackFn('toggle_tagmenu', () => setShow(false));
 
   // Esc 关闭
   setEscHandler(2, () => show() ? setShow(false) : true);
@@ -11366,8 +11367,8 @@ const floatTagList = (pageType, mangaProps) => {
     }
   });
   const setPos = (state, top, left) => {
-    state.top = helper.clamp(0, top, state.bound.height);
-    state.left = helper.clamp(0, left, state.bound.width);
+    state.top = helper.clamp(-gd4.clientHeight * 0.75, top, state.bound.height);
+    state.left = helper.clamp(-gd4.clientWidth * 0.75, left, state.bound.width);
   };
   const setOpacity = opacity => {
     _setState('opacity', helper.clamp(0.5, opacity, 1));
@@ -11383,10 +11384,9 @@ const floatTagList = (pageType, mangaProps) => {
   });
   const hadnleResize = () => {
     setState(state => {
-      state.bound.width = window.innerWidth - gd4.clientWidth;
-      state.bound.height = window.innerHeight - gd4.clientHeight;
-      state.top = helper.clamp(0, state.top, state.bound.height);
-      state.left = helper.clamp(0, state.left, state.bound.width);
+      state.bound.width = window.innerWidth - gd4.clientWidth / 4;
+      state.bound.height = window.innerHeight - gd4.clientHeight / 4;
+      setPos(state, state.top, state.left);
     });
   };
   window.addEventListener('resize', hadnleResize);
@@ -11746,10 +11746,11 @@ const tagLint = pageType => {
       // 作者、社团则要检查漫画标题中是否包含其名字
       if (/^(artist|group):/.test(tag)) {
         const title = helper.querySelector('#gd2').textContent.toLowerCase();
-        if (title.includes(tag.replaceAll(/^(artist|group):|_/g, ' ').trim())) correctTags.push(tag);
-        // 也检查经过翻译的标签名
-        const showName = document.getElementById('ta_artist:kisaragi_sonami')?.textContent;
-        if (showName && title.includes(showName)) correctTags.push(tag);
+        if (title.includes(tag.replaceAll(/^(artist|group):|_/g, ' ').trim())) correctTags.push(tag);else {
+          // 也检查经过翻译的标签名
+          const showName = document.getElementById(`ta_${tag}`)?.textContent;
+          if (showName && title.includes(showName)) correctTags.push(tag);
+        }
       }
     }
     if (correctTags.length > 0) addOtherWarn(helper.t('eh_tag_lint.correct_tag'), correctTags);
@@ -11937,6 +11938,10 @@ web.delegateEvents(["click"]);
   // 不是漫画页的话
   if (pageType !== 'gallery') return;
   const sidebarDom = document.getElementById('gd5');
+
+  // 限定右侧按钮框的高度，避免因为按钮太多而突出界面
+  sidebarDom.style.overflow = 'auto';
+  sidebarDom.style.maxHeight = '352px';
   const LoadButton = props => {
     const tip = solidJs.createMemo(() => {
       const _imgList = comicMap[props.id]?.imgList;
@@ -12898,7 +12903,7 @@ const buildChapters = async (comicName, hiddenType) => {
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic-zzz.one':
     case 'jmcomic-zzz.org':
-    case '18comic-uc.club':
+    case '18comic-uc.org':
     case '18comic-gquu.cc':
     case '18comic-uc.cc':
     case '18comic.org':
