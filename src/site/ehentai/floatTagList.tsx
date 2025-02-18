@@ -122,8 +122,8 @@ export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
   type State = typeof _state;
 
   const setPos = (state: State, top: number, left: number) => {
-    state.top = clamp(0, top, state.bound.height);
-    state.left = clamp(0, left, state.bound.width);
+    state.top = clamp(-gd4.clientHeight * 0.75, top, state.bound.height);
+    state.left = clamp(-gd4.clientWidth * 0.75, left, state.bound.width);
   };
 
   const setOpacity = (opacity: number) => {
@@ -141,10 +141,9 @@ export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
 
   const hadnleResize = () => {
     setState((state) => {
-      state.bound.width = window.innerWidth - gd4.clientWidth;
-      state.bound.height = window.innerHeight - gd4.clientHeight;
-      state.top = clamp(0, state.top, state.bound.height);
-      state.left = clamp(0, state.left, state.bound.width);
+      state.bound.width = window.innerWidth - gd4.clientWidth / 4;
+      state.bound.height = window.innerHeight - gd4.clientHeight / 4;
+      setPos(state, state.top, state.left);
     });
   };
   window.addEventListener('resize', hadnleResize);
