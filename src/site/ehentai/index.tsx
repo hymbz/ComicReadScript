@@ -320,7 +320,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   const [loadImgsText, setLoadImgsText] = createSignal(`1-${totalImgNum}`);
 
   const loadImgs = createRootMemo(() =>
-    extractRange(loadImgsText(), ehImgList.length),
+    // eslint-disable-next-line unicorn/explicit-length-check
+    extractRange(loadImgsText(), ehImgList.length || totalImgNum),
   );
 
   const totalPageNum = Number(
