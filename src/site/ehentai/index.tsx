@@ -169,6 +169,10 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
 
   const sidebarDom = document.getElementById('gd5')!;
 
+  // 限定右侧按钮框的高度，避免因为按钮太多而突出界面
+  sidebarDom.style.overflow = 'auto';
+  sidebarDom.style.maxHeight = '352px';
+
   const LoadButton: Component<{
     id: string;
     onClick?: (e: MouseEvent) => unknown;
