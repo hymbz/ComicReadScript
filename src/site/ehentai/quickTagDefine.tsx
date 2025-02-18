@@ -3,7 +3,7 @@ import { createSignal, type JSX, Show } from 'solid-js';
 import { render } from 'solid-js/web';
 import { createMutable } from 'solid-js/store';
 import { request } from 'main';
-import { querySelector, domParse } from 'helper';
+import { querySelector, domParse, hijackFn } from 'helper';
 
 import { setEscHandler } from './other';
 
@@ -143,6 +143,8 @@ export const quickTagDefine = (pageType: PageType) => {
       setShow(false);
     }
   };
+
+  hijackFn('toggle_tagmenu', () => setShow(false));
 
   // Esc 关闭
   setEscHandler(2, () => (show() ? setShow(false) : true));
