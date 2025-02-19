@@ -146,7 +146,7 @@ export const checkImgSize = (url: string) => {
 };
 
 export const updateImgLoadType = singleThreaded(() => {
-  if (needLoadImgList().size === 0) return;
+  if (store.activePageIndex < 0 || needLoadImgList().size === 0) return;
 
   loadImgList.clear();
 
