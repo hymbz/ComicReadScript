@@ -170,7 +170,7 @@ export const useInit = (props: MangaProps) => {
       const deleteNum = deleteList.length;
 
       /** 传入的是否是新漫画 */
-      const isNew = deleteNum === oldImgList.size; // 旧图一张不剩才算是新漫画
+      const isNew = deleteNum >= oldImgList.size * 0.8; // 删掉8成图就算是新漫画
 
       /** 是否需要更新页面 */
       const needUpdatePageData =
