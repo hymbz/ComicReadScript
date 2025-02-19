@@ -887,14 +887,16 @@ try {
       const getImgList = async (): Promise<string[]> => {
         const imgList = querySelectorAll<HTMLImageElement>(
           'img.chapter-img:not(.ls-is-cached)',
-        ).map((e) =>
-          (
-            e.dataset.src ??
-            e.dataset.srcset ??
-            e.dataset.original ??
-            e.src
-          ).trim(),
-        );
+        )
+          .map((e) =>
+            (
+              e.dataset.src ||
+              e.dataset.srcset ||
+              e.dataset.original ||
+              e.src
+            ).trim(),
+          )
+          .filter(Boolean);
         if (
           imgList.length > 0 &&
           imgList.every((url) => !/loading.*\.gif/.test(url))
