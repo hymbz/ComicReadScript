@@ -236,9 +236,9 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     setComicMap('', { adList: new ReactiveSet() });
     /** 缩略图列表 */
     const thumbnailList: Array<string | HTMLImageElement> = [];
-    for (const e of querySelectorAll<HTMLAnchorElement>('#gdt a')) {
+    for (const e of querySelectorAll<HTMLAnchorElement>('#gdt > a')) {
       const index = Number(/.+-(\d+)/.exec(e.href)?.[1]) - 1;
-      if (Number.isNaN(index)) return;
+      if (Number.isNaN(index)) continue;
       ehImgPageList[index] = e.href;
 
       const thumbnail = e.querySelector<HTMLElement>('[title]')!;
