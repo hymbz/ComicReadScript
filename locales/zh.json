@@ -6,6 +6,7 @@
     "img_load_failed": "图片加载失败",
     "no_img_download": "没有能下载的图片",
     "repeat_load": "加载图片中，请稍候",
+    "retry_get_img_url": "重新获取第 {{i}} 页图片的地址",
     "server_connect_failed": "无法连接到服务器"
   },
   "button": {

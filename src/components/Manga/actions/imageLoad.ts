@@ -15,13 +15,17 @@ import { imgList, preloadNum } from './memo/common';
 import { updateImgSize } from './imageSize';
 import { renderImgList, showImgList } from './renderPage';
 import { handleImgRecognition } from './imageRecognition';
-import { getImg, getImgEle, getImgIndex } from './helper';
+import { getImg, getImgEle, getImgIndexs } from './helper';
+
+/** 图片上次加载出错的时间 */
+const imgErrorTime = new Map<string, number>();
 
 /** 图片加载完毕的回调 */
 export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
   // 内联图片元素被创建后立刻就会触发 load 事件，如果在调用这个函数前 url 发生改变
   // 就会导致这里获得的是上个 url 图片的尺寸
   if (e && !e.isConnected) return;
+  imgErrorTime.delete(url);
 
   const img = store.imgMap[url];
   if (img.loadType !== 'loaded') {
@@ -37,24 +41,19 @@ export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
     setTimeout(handleImgRecognition, 0, e, url);
 };
 
-/** 图片加载出错的次数 */
-const imgErrorNum = new Map<string, number>();
-
 /** 图片加载出错的回调 */
 export const handleImgError = (url: string, e?: HTMLImageElement) => {
   if (e && !e.isConnected) return;
-  imgErrorNum.set(url, (imgErrorNum.get(url) ?? 0) + 1);
+  const isRetry = !imgErrorTime.has(url);
+  imgErrorTime.set(url, Date.now());
   setState((state) => {
     const img = state.imgMap[url];
     if (!img) return;
-    const imgIndex = getImgIndex(url);
-    log.error(imgIndex, t('alert.img_load_failed'), e);
+    const imgIndexs = getImgIndexs(url);
+    log.error(imgIndexs, t('alert.img_load_failed'), e);
     img.loadType = 'error';
     img.type = undefined;
-    if (
-      imgIndex.some((i) => renderImgList().has(i)) &&
-      (imgErrorNum.get(img.src) ?? 0) < 2
-    )
+    if (imgIndexs.some((i) => renderImgList().has(i)) && isRetry)
       img.loadType = 'wait';
   });
   store.prop.Loading?.(imgList(), store.imgMap[url]);
@@ -146,7 +145,7 @@ export const checkImgSize = (url: string) => {
 };
 
 export const updateImgLoadType = singleThreaded(() => {
-  if (store.activePageIndex < 0 || needLoadImgList().size === 0) return;
+  if (store.showRange[0] < 0 || needLoadImgList().size === 0) return;
 
   loadImgList.clear();
 
@@ -192,6 +191,7 @@ createEffectOn(
   showImgList,
   debounce((_showImgList) => {
     // 如果当前显示页面有出错的图片，就重新加载一次
+    if (imgErrorTime.size === 0) return;
     for (const img of [..._showImgList].map((i) => getImg(i))) {
       if (img?.loadType !== 'error') continue;
       _setState('imgMap', img.src, 'loadType', 'wait');
@@ -200,6 +200,21 @@ createEffectOn(
   }, 500),
   { defer: true },
 );
+
+/** 隔一段时间重新加载出错的图片 */
+const retryErrorImg = () => {
+  if (imgErrorTime.size > 0) {
+    const retryTime = Date.now() - 1000 * 60 * 3;
+    for (const [url, time] of imgErrorTime.entries()) {
+      if (time > retryTime) continue;
+      _setState('imgMap', url, 'loadType', 'wait');
+      updateImgLoadType();
+    }
+  }
+  // 重新加载间隔一定时间，避免因为短时间频繁加载而失败
+  setTimeout(retryErrorImg, 1000 * 5);
+};
+retryErrorImg();
 
 /** 加载中的图片 */
 export const loadingImgList = createRootMemo(() => {

@@ -21,6 +21,7 @@ import {
   createSequence,
   extractRange,
   useCache,
+  sleep,
 } from 'helper';
 
 import { escHandler } from './other';
@@ -435,21 +436,18 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   };
 
   /** 刷新指定图片 */
-  const reloadImg = singleThreaded(async (_, i: number) => {
-    // TODO: 使用 nl 参数获取新图片将消耗 50 额度，只是一两张还好
-    // 但如果因为 bug 等原因导致大量刷新的话会导致额度迅速耗尽
-    // 虽然目前没有问题，但以防万一应该在这加个限制
-    // 在刷新了十页图片后弹个提示框，点掉提示框后才继续刷新
-    const pageUrl = await getNewImgPageUrl(ehImgPageList[i]);
-    let imgUrl = '';
-    while (!imgUrl || !(await testImgUrl(imgUrl))) {
-      imgUrl = await getImgUrl(pageUrl);
-      log(`重新获取第 ${i} 页图片的地址\n${ehImgList[i]} ->\n${imgUrl}`);
-      toast(`重新获取第 ${i} 页图片的地址`);
+  const reloadImg = singleThreaded(async (_, i: number): Promise<void> => {
+    ehImgList[i] = await getImgUrl(ehImgPageList[i]);
+    if (!(await testImgUrl(ehImgList[i]))) {
+      ehImgPageList[i] = await getNewImgPageUrl(ehImgPageList[i]);
+      ehImgList[i] = await getImgUrl(ehImgPageList[i]);
+      toast.warn(t('alert.retry_get_img_url', { i }));
+      if (!(await testImgUrl(ehImgList[i]))) {
+        await sleep(500);
+        return reloadImg(i);
+      }
     }
-    ehImgList[i] = imgUrl;
-    ehImgPageList[i] = pageUrl;
-    setImgList('', i, imgUrl);
+    setImgList('', i, ehImgList[i]);
   });
 
   setManga({

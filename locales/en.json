@@ -6,6 +6,7 @@
     "img_load_failed": "Image loading failed",
     "no_img_download": "No images available for download",
     "repeat_load": "Loading image, please wait",
+    "retry_get_img_url": "Retrieve the URL of the image on page {{i}} again",
     "server_connect_failed": "Unable to connect to the server"
   },
   "button": {

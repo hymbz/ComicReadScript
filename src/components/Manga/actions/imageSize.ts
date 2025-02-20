@@ -7,6 +7,7 @@ import {
   imgList,
   isAbreastMode,
   isDoubleMode,
+  isScrollMode,
   placeholderSize,
 } from './memo';
 import { updateImgType } from './imageType';
@@ -69,7 +70,7 @@ createEffectOn(
 
 /** 卷轴模式下每张图片的位置 */
 export const imgTopList = createRootMemo(() => {
-  if (!store.option.scrollMode.enabled) return [];
+  if (!isScrollMode()) return [];
 
   const list = Array.from<number>({ length: store.imgList.length });
   let top = 0;
