@@ -1,16 +1,29 @@
 # Changelog
 
+## [11.7.0](https://github.com/hymbz/ComicReadScript/compare/v11.6.0...v11.7.0) (2025-02-20)
+
+### Features
+
+* :sparkles: 出错图片间隔一段时间自动重试 ([f97af5f](https://github.com/hymbz/ComicReadScript/commit/f97af5f3b5c8f992f2f31de340c6043221c145ca))
+* :sparkles: 简易模式可以自动识别更多网站的上/下话切换 ([879365a](https://github.com/hymbz/ComicReadScript/commit/879365a5c1c554ae47b879f94555a5e000abc940))
+
+### Bug Fixes
+
+* :bug: 修复 ehentai 和 EhSyringe 同时使用时标签介绍框出现双重滚动条的 bug ([bb53f0c](https://github.com/hymbz/ComicReadScript/commit/bb53f0c9e3e2874fe4318612b7ab5fef7167c822)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/280978#comment-571248](https://sleazyfork.org/zh-CN/scripts/374903/discussions/280978/#comment-571248)
+* :bug: 修复 nicomanga 失效的 bug ([1d760a1](https://github.com/hymbz/ComicReadScript/commit/1d760a11dc86f1a4a42ee271b1a6e761f8059daf)), closes [#220](https://github.com/hymbz/ComicReadScript/issues/220)
+* :bug: 修复恢复阅读进度功能在双页卷轴模式下失效的 bug ([35c4b2c](https://github.com/hymbz/ComicReadScript/commit/35c4b2c3eef1d3ce2639d51be18fbc2860b502e2)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/280978#comment-571248](https://sleazyfork.org/zh-CN/scripts/374903/discussions/280978/#comment-571248)
+
 ## [11.6.0](https://github.com/hymbz/ComicReadScript/compare/v11.5.0...v11.6.0) (2025-02-18)
 
 ### Features
 
-* :sparkles: 限定 ehentai 漫画页右侧按钮框的高度 ([c6dcaf4](https://github.com/hymbz/ComicReadScript/commit/c6dcaf4d3acfd79e5cb708cc61ca80a2f2878aa9)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/280978#comment-568074](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/280978/issues/comment-568074)
-* :sparkles: ehentai 悬浮标签列表可以挪到显示区域外 ([fbd82af](https://github.com/hymbz/ComicReadScript/commit/fbd82af0d0e31b19b8cabfb25eb62167b03162f8)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/280978#comment-568074](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/280978/issues/comment-568074)
+* :sparkles: 限定 ehentai 漫画页右侧按钮框的高度 ([c6dcaf4](https://github.com/hymbz/ComicReadScript/commit/c6dcaf4d3acfd79e5cb708cc61ca80a2f2878aa9)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/280978#comment-568074](https://sleazyfork.org/zh-CN/scripts/374903/discussions/280978/#comment-568074)
+* :sparkles: ehentai 悬浮标签列表可以挪到显示区域外 ([fbd82af](https://github.com/hymbz/ComicReadScript/commit/fbd82af0d0e31b19b8cabfb25eb62167b03162f8)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/280978#comment-568074](https://sleazyfork.org/zh-CN/scripts/374903/discussions/280978/#comment-568074)
 
 ### Bug Fixes
 
-* :bug: 修复 ehentai 标签检查功能出现双重标签的 bug ([1f54947](https://github.com/hymbz/ComicReadScript/commit/1f54947ea14c8eda2c9f2f2c79cf69e06dabcbe3)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/280978#comment-568074](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/280978/issues/comment-568074)
-* :bug: 修复 ehentai 打开标签定义再点击「添加新标签」后无法关闭标签定义页的 bug ([2940a78](https://github.com/hymbz/ComicReadScript/commit/2940a78fbe02e07b02417acc51b34185033c5ff3)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/280978#comment-568074](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/280978/issues/comment-568074)
+* :bug: 修复 ehentai 标签检查功能出现双重标签的 bug ([1f54947](https://github.com/hymbz/ComicReadScript/commit/1f54947ea14c8eda2c9f2f2c79cf69e06dabcbe3)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/280978#comment-568074](https://sleazyfork.org/zh-CN/scripts/374903/discussions/280978/#comment-568074)
+* :bug: 修复 ehentai 打开标签定义再点击「添加新标签」后无法关闭标签定义页的 bug ([2940a78](https://github.com/hymbz/ComicReadScript/commit/2940a78fbe02e07b02417acc51b34185033c5ff3)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/280978#comment-568074](https://sleazyfork.org/zh-CN/scripts/374903/discussions/280978/#comment-568074)
 
 ## [11.5.0](https://github.com/hymbz/ComicReadScript/compare/v11.4.2...v11.5.0) (2025-02-13)
 
@@ -21,7 +34,7 @@
 
 ### Bug Fixes
 
-* :bug: 修复快捷键会区分大小写的 bug ([92283a4](https://github.com/hymbz/ComicReadScript/commit/92283a42ba8ee220e1c33ce2f7965751df23885b)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/272526#comment-566245](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/272526/issues/comment-566245)
+* :bug: 修复快捷键会区分大小写的 bug ([92283a4](https://github.com/hymbz/ComicReadScript/commit/92283a42ba8ee220e1c33ce2f7965751df23885b)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/272526#comment-566245](https://sleazyfork.org/zh-CN/scripts/374903/discussions/272526/#comment-566245)
 
 ## [11.4.1](https://github.com/hymbz/ComicReadScript/compare/v11.4.0...v11.4.1) (2025-02-08)
 
@@ -72,7 +85,7 @@
 ### Bug Fixes
 
 * :bug: 修复 cotrans 翻译出错的 bug ([a07bd52](https://github.com/hymbz/ComicReadScript/commit/a07bd528c8887b0a786de7724d9a62a95f4b0784)), closes [#213](https://github.com/hymbz/ComicReadScript/issues/213)
-* :bug: 修复 safari 浏览器上简易模式无法正常运行的 bug ([29cda77](https://github.com/hymbz/ComicReadScript/commit/29cda776bbfaaedf59f427e8f08ab991a2970637)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/272526#comment-556399](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/272526/issues/comment-556399)
+* :bug: 修复 safari 浏览器上简易模式无法正常运行的 bug ([29cda77](https://github.com/hymbz/ComicReadScript/commit/29cda776bbfaaedf59f427e8f08ab991a2970637)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/272526#comment-556399](https://sleazyfork.org/zh-CN/scripts/374903/discussions/272526/#comment-556399)
 
 ## [11.1.1](https://github.com/hymbz/ComicReadScript/compare/v11.1.0...v11.1.1) (2025-01-06)
 
@@ -159,7 +172,7 @@
 
 ### Bug Fixes
 
-* :bug: 支持 koharu 的新域名 SchaleNetwork ([86eb97c](https://github.com/hymbz/ComicReadScript/commit/86eb97c336189081280db79ff9d407d78b8e8e03)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/212527#comment-546453](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/212527/issues/comment-546453)
+* :bug: 支持 koharu 的新域名 SchaleNetwork ([86eb97c](https://github.com/hymbz/ComicReadScript/commit/86eb97c336189081280db79ff9d407d78b8e8e03)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/212527#comment-546453](https://sleazyfork.org/zh-CN/scripts/374903/discussions/212527/#comment-546453)
 
 ## [10.8.0](https://github.com/hymbz/ComicReadScript/compare/v10.7.0...v10.8.0) (2024-11-20)
 
@@ -418,7 +431,7 @@
 
 ### Bug Fixes
 
-* :bug: 修复并排卷轴模式下图片会过早消失的 bug ([17fea28](https://github.com/hymbz/ComicReadScript/commit/17fea2833bc70c8883dcbddb5151132ef184a128)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/252039#comment-516623](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/252039/issues/comment-516623)
+* :bug: 修复并排卷轴模式下图片会过早消失的 bug ([17fea28](https://github.com/hymbz/ComicReadScript/commit/17fea2833bc70c8883dcbddb5151132ef184a128)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/252039#comment-516623](https://sleazyfork.org/zh-CN/scripts/374903/discussions/252039/#comment-516623)
 * :bug: 修复放大功能异常 ([b0a98e7](https://github.com/hymbz/ComicReadScript/commit/b0a98e78ed4f2e9a4d30593a0a0162833f712791)), closes [#173](https://github.com/hymbz/ComicReadScript/issues/173)
 
 
@@ -471,7 +484,7 @@
 ### Bug Fixes
 
 * :bug: 修复 ehentai 无法正常加载图片的 bug ([f843e84](https://github.com/hymbz/ComicReadScript/commit/f843e842d6905f9eb80bbff18d3010ec7adca735))
-* :bug: 修复在 safari 上图片加载完毕依然不显示的 bug ([510c524](https://github.com/hymbz/ComicReadScript/commit/510c5241706d438f111c65afd4861b4cc5b420fe)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/249178#comment-512383](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903/discussions/249178/issues/comment-512383)
+* :bug: 修复在 safari 上图片加载完毕依然不显示的 bug ([510c524](https://github.com/hymbz/ComicReadScript/commit/510c5241706d438f111c65afd4861b4cc5b420fe)), closes [/sleazyfork.org/zh-CN/scripts/374903/discussions/249178#comment-512383](https://sleazyfork.org/zh-CN/scripts/374903/discussions/249178/#comment-512383)
 
 ## [9.2.0](https://github.com/hymbz/ComicReadScript/compare/v9.1.2...v9.2.0) (2024-07-04)
 
@@ -626,7 +639,7 @@
 
 ### Bug Fixes
 
-* :bug: 修复简易模式下图片未正确加载的 bug ([2efed4f](https://github.com/hymbz/ComicReadScript/commit/2efed4f847eb9f34f861bf507cf9117be6b2d3ed)), closes [/sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/212387#comment-481215](https://github.com/hymbz//sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/212387/issues/comment-481215)
+* :bug: 修复简易模式下图片未正确加载的 bug ([2efed4f](https://github.com/hymbz/ComicReadScript/commit/2efed4f847eb9f34f861bf507cf9117be6b2d3ed)), closes [/sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/212387#comment-481215](https://sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/212387/#comment-481215)
 * :bug: 增加拷贝漫画的支持域名 ([9f0a7fc](https://github.com/hymbz/ComicReadScript/commit/9f0a7fcb923af69ceffe703ddba8e180b81c3989))
 
 
