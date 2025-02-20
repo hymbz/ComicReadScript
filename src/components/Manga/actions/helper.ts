@@ -9,7 +9,7 @@ export const getImg = (i: number, state = store) =>
   state.imgMap[state.imgList[i]];
 
 /** 找到指定 url 图片在 imgList 里的 index */
-export const getImgIndex = (url: string) => {
+export const getImgIndexs = (url: string) => {
   const indexList: number[] = [];
   for (const [i, imgUrl] of store.imgList.entries())
     if (imgUrl === url) indexList.push(i);

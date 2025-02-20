@@ -71,23 +71,31 @@ export const saveScrollProgress = () => {
 /** 在卷轴模式下，滚动到能显示指定图片的位置 */
 export const scrollViewImg = (i: number) => {
   if (!store.option.scrollMode.enabled) return;
+  let top: number;
   if (store.option.scrollMode.abreastMode) {
     const columnNum = abreastArea().columns.findIndex((column) =>
       column.includes(i),
     );
-    scrollTo(columnNum * abreastColumnWidth() + 1);
-  } else scrollTo(imgTopList()[i] + 1);
+    top = columnNum * abreastColumnWidth() + 1;
+  } else if (store.option.scrollMode.doubleMode) {
+    const pageNum = imgPageMap()[i];
+    top = doubleScrollLineHeight()
+      .slice(0, pageNum)
+      .reduce((sum, height) => sum + height, 0);
+  } else top = imgTopList()[i] + 1;
+  scrollTo(top);
 };
 
 /** 跳转到指定图片的显示位置 */
 export const jumpToImg = (index: number) => {
+  if (store.option.scrollMode.enabled) return scrollViewImg(index);
+
   const pageNum = imgPageMap()[index];
   if (pageNum === undefined) return;
   setState((state) => {
     state.activePageIndex = pageNum;
     state.gridMode = false;
   });
-  scrollViewImg(pageNum);
 };
 
 /** 在卷轴模式下进行缩放，并且保持滚动进度不变 */

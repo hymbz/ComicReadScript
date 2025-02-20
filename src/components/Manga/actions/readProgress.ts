@@ -1,11 +1,11 @@
 import { promisifyRequest, throttle, useCache } from 'helper';
 import { unwrap } from 'solid-js/store';
 
-import { _setState, setState, store } from '../store';
+import { _setState, store, type State } from '../store';
 import type { FillEffect } from '../store/image';
 
 import { activeImgIndex, imgList } from './memo';
-import { jumpToImg } from './scroll';
+import { jumpToImg, scrollViewImg } from './scroll';
 import { updateImgSize } from './imageSize';
 import { updatePageData } from './image';
 
@@ -56,23 +56,23 @@ export const saveReadProgress = throttle(async () => {
 }, 1000);
 
 /** 恢复阅读进度 */
-export const resumeReadProgress = async () => {
+export const resumeReadProgress = async (state: State) => {
   await initCache();
   const progress = await cache.get('progress', location.pathname);
   if (!progress) return;
 
   // 目前卷轴模式下无法避免因图片加载导致的抖动，
   // 为了避免在恢复阅读进度时出现问题，只能将图片显示相关的数据也存着用于恢复
-  let i = store.imgList.length;
+  let i = state.imgList.length;
   while (i--) {
     const imgSize = progress.imgSize[i];
-    if (imgSize) updateImgSize(store.imgList[i], ...imgSize);
+    if (imgSize) updateImgSize(state.imgList[i], ...imgSize);
   }
-  setState((state) => {
-    state.fillEffect = progress.fillEffect;
-    updatePageData(state);
-  });
-  jumpToImg(progress.index);
+  state.fillEffect = progress.fillEffect;
+  updatePageData(state);
+  if (state.option.scrollMode.enabled)
+    setTimeout(scrollViewImg, 500, progress.index);
+  else jumpToImg(progress.index);
 
   // 清除过时的进度
   const nowTime = Date.now();

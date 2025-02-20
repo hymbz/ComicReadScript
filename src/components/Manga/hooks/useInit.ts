@@ -156,7 +156,7 @@ export const useInit = (props: MangaProps) => {
       const oldImgList = new Set(state.imgList);
 
       if (oldImgList.size === 0 && newImgList.size > 0) {
-        resumeReadProgress();
+        resumeReadProgress(state);
         updateSelfhostedOptions(true);
       }
 
