@@ -170,8 +170,22 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   const sidebarDom = document.getElementById('gd5')!;
 
   // 限定右侧按钮框的高度，避免因为按钮太多而突出界面
-  sidebarDom.style.overflow = 'auto';
-  sidebarDom.style.maxHeight = '352px';
+  GM_addStyle(`
+    #gd5 {
+      --scrollbar-slider: ${getComputedStyle(querySelector('.gm')!).borderColor};
+      scrollbar-color: var(--scrollbar-slider) transparent;
+      scrollbar-width: thin;
+      overflow: auto;
+      max-height: 352px;
+      &::-webkit-scrollbar { width: 5px; height: 10px; }
+      &::-webkit-scrollbar-track { background: transparent; }
+      &::-webkit-scrollbar-thumb { background: var(--scrollbar-slider); }
+    }
+
+    /* 关掉 ehs 的滚动条，避免双重滚动条 */
+    #ehs-introduce-box, .ehs-content { overflow: visible !important; }
+    #ehs-introduce-box { width: 100%; }
+  `);
 
   const LoadButton: Component<{
     id: string;
