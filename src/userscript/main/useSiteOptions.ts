@@ -12,6 +12,8 @@ export interface SiteOptions {
   lockOption: boolean;
   /** 隐藏 FAB */
   hiddenFAB: boolean;
+  /** FAB 位置偏移 */
+  fabPosition: { top: number; left: number };
 }
 
 /** 清理多余的配置项 */
@@ -45,6 +47,7 @@ export const useSiteOptions = async <T = Record<string, any>>(
     autoShow: true,
     lockOption: false,
     hiddenFAB: false,
+    fabPosition: { top: 0, left: 0 },
     ...defaultOptions,
   } as SaveOptions;
 

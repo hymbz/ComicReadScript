@@ -29,9 +29,14 @@ export interface FabProps {
   autoTrans?: boolean;
   /** 是否保持聚焦状态 */
   focus?: boolean;
+  /** 文字提示位置 */
+  placement?: () => 'left' | 'right';
+  /** 快速拨号按钮位置 */
+  speedDialPlacement?: () => 'top' | 'bottom';
 
   children?: JSX.Element;
   style?: JSX.CSSProperties;
+  ref?: (val: HTMLElement) => void;
   onClick?: () => void;
   onBackdropClick?: () => void;
 }
@@ -70,11 +75,15 @@ export const Fab: Component<FabProps> = (_props) => {
 
   return (
     <div
-      ref={(ref) => useStyle(style, ref)}
+      ref={(ref) => {
+        useStyle(style, ref);
+        props.ref?.(ref);
+      }}
       class={classes.fabRoot}
       data-show={props.show ?? show()}
       data-trans={props.autoTrans}
       data-focus={props.focus}
+      data-placement={props.placement?.()}
       style={{
         ...props.style,
         '--hide-delay': `${props.speedDial!.length * 50}ms`,
@@ -107,7 +116,10 @@ export const Fab: Component<FabProps> = (_props) => {
 
       {/* 快捷操作栏 */}
       <Show when={props.speedDial?.length}>
-        <div class={classes.speedDial}>
+        <div
+          class={classes.speedDial}
+          data-placement={props.speedDialPlacement?.()}
+        >
           <div
             class={classes.backdrop}
             on:click={() => props.onBackdropClick?.()}

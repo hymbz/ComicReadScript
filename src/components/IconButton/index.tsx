@@ -8,7 +8,7 @@ interface IconButtonProps {
   tip?: string;
   /** 是否显示文字提示 */
   showTip?: boolean;
-  /** 将文字提示移到左边 */
+  /** 文字提示位置 */
   placement?: 'left' | 'right';
   /** 是否隐藏 */
   hidden?: boolean;

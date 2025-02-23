@@ -16,6 +16,7 @@ export const useSpeedDial = <
 >(
   options: SaveOptions,
   setOptions: (newOptions: Partial<SaveOptions>) => Promise<void>,
+  placement: () => 'left' | 'right',
 ) => {
   const DefaultButton: Component<{
     optionName: keyof SaveOptions & string;
@@ -23,7 +24,7 @@ export const useSpeedDial = <
     children?: JSX.Element;
   }> = (props) => (
     <IconButton
-      placement="left"
+      placement={placement()}
       showTip={true}
       tip={
         props.showName ??

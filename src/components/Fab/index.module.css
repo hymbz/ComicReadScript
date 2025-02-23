@@ -1,4 +1,5 @@
 .fabRoot {
+  touch-action: none;
   font-size: 1.1em;
   transition: transform 200ms;
 
@@ -32,13 +33,13 @@
 
   width: 3.6em;
   height: 3.6em;
+  border: none;
+  border-radius: 100%;
 
   font-size: 1em;
   color: white;
 
   background-color: var(--fab, #607d8b);
-  border: none;
-  border-radius: 100%;
   box-shadow:
     0 3px 5px -1px rgb(0 0 0 / 20%),
     0 6px 10px 0 rgb(0 0 0 / 14%),
@@ -109,6 +110,7 @@
   align-items: center;
 
   padding: 0.4em 0.5em;
+  border-radius: 0.3em;
 
   font-size: 0.8em;
   color: white;
@@ -116,7 +118,6 @@
 
   opacity: 0;
   background-color: #303030;
-  border-radius: 0.3em;
 
   transition:
     transform 230ms,
@@ -124,7 +125,13 @@
   transition-delay: var(--hide-delay);
 }
 
-:is(.fab:hover, .fabRoot[data-focus="true"]) .popper {
+.fabRoot[data-placement="right"] .popper {
+  right: unset;
+  left: calc(100% + 1.5em);
+  transform-origin: left;
+}
+
+.fabRoot:is(:hover, [data-focus="true"]) .popper {
   transform: translateY(-50%) scale(1);
   opacity: 1;
   transition-delay: 0ms;
@@ -136,16 +143,21 @@
 
   position: absolute;
   z-index: -1;
-  bottom: 0;
+  bottom: 120%;
 
   display: flex;
   flex-direction: column-reverse;
   align-items: center;
 
   width: 100%;
-  padding-bottom: 120%;
 
   font-size: 1.1em;
+
+  &[data-placement="bottom"] {
+    top: 120%;
+    bottom: unset;
+    flex-direction: column;
+  }
 }
 
 .speedDialItem {

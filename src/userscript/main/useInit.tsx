@@ -46,11 +46,20 @@ export const useInit = async <T extends Record<string, any>>(
     defaultOptions,
   );
 
-  const [setFab, fabProps] = await useFab({
-    tip: t('other.read_mode'),
-    speedDial: useSpeedDial(options, setOptions),
-    show: false,
-  });
+  const placement = () =>
+    -options.fabPosition.left < window.innerWidth / 2 ? 'left' : 'right';
+  const [setFab, fabProps] = await useFab(
+    {
+      tip: t('other.read_mode'),
+      speedDial: useSpeedDial(options, setOptions, placement),
+      show: false,
+      placement,
+      speedDialPlacement: () =>
+        -options.fabPosition.top < window.innerHeight / 2 ? 'top' : 'bottom',
+    },
+    options,
+    setOptions,
+  );
 
   setHotkeys(await GM.getValue<Record<string, string[]>>('Hotkeys', {}));
   setDefaultHotkeys((_hotkeys) => ({ ..._hotkeys, enter_read_mode: ['v'] }));
