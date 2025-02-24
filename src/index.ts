@@ -142,6 +142,26 @@ try {
       break;
     }
 
+    // #[Pixiv](https://www.pixiv.net)
+    case 'www.pixiv.net': {
+      options = {
+        name: 'pixiv',
+        async getImgList() {
+          await waitDom('#viewerWarpper img', 1000);
+          return querySelectorAll<HTMLImageElement>('#viewerWarpper img').map(
+            (e) => e.src.replaceAll(/\/c\/\d+x\d+_\d+(?=\/)/g, ''),
+          );
+        },
+        SPA: {
+          isMangaPage: () =>
+            window.location.pathname.startsWith('/artworks/') &&
+            waitDom('#viewerWarpper img', 1000),
+        },
+        initOptions: { autoShow: false, defaultOption: { pageNum: 1 } },
+      };
+      break;
+    }
+
     // #[PonpomuYuri](https://www.ponpomu.com)
     case 'www.ponpomu.com': {
       options = {

@@ -24,7 +24,7 @@ export interface InitOptions {
   /** 用于适配单页应用的配置项 */
   SPA?: {
     /** 判断当前页面是否是漫画页 */
-    isMangaPage?: () => Promise<boolean> | boolean;
+    isMangaPage?: () => Promise<unknown> | unknown;
     getOnPrev?: () => Promise<MangaProps['onPrev']> | MangaProps['onPrev'];
     getOnNext?: () => Promise<MangaProps['onNext']> | MangaProps['onNext'];
     /** 有些 SPA 会在页数变更时修改 url，导致脚本误以为换章节了，需要处理下 */

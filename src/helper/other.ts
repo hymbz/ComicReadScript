@@ -261,8 +261,8 @@ export async function wait<T>(
 }
 
 /** 等到指定的 dom 出现 */
-export const waitDom = (selector: string) =>
-  wait(() => querySelector(selector));
+export const waitDom = (selector: string, timeout?: number) =>
+  wait(() => querySelector(selector), timeout);
 
 /** 等待指定的图片元素加载完成 */
 export const waitImgLoad = (
