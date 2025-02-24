@@ -166,7 +166,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   }
 
   // 不是漫画页的话
-  if (pageType !== 'gallery') return;
+  if (pageType !== 'gallery')
+    return options.hotkeys && hotkeysPageTurn(pageType);
 
   const sidebarDom = document.getElementById('gd5')!;
 
