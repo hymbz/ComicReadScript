@@ -1,63 +1,8 @@
 import { Show } from 'solid-js';
-import { byPath, lang, log } from 'helper';
+import { lang } from 'helper';
 import { toast } from 'components/Toast';
 
-/** 判断版本号1是否小于版本号2 */
-const versionLt = (version1: string, version2: string) => {
-  const v1 = version1.split('.').map(Number);
-  const v2 = version2.split('.').map(Number);
-  for (let i = 0; i < 3; i++) {
-    const num1 = v1[i] ?? 0;
-    const num2 = v2[i] ?? 0;
-    if (num1 !== num2) return num1 < num2;
-  }
-  return false;
-};
-
-const migrationOption = async (
-  name: string,
-  editFn: (option: Record<any, any>, save: () => Promise<void>) => unknown,
-) => {
-  try {
-    const option = await GM.getValue<object>(name);
-    if (!option) throw new Error(`GM.getValue Error: not found ${name}`);
-    await editFn(option, () => GM.setValue(name, option));
-  } catch (error) {
-    log.error(`migration ${name} option error:`, error);
-  }
-};
-
-/** 重命名配置项 */
-export const renameOption = async (name: string, list: string[]) =>
-  migrationOption(name, (option, save) => {
-    for (const itemText of list) {
-      const [path, newName] = itemText.split(' => ');
-      byPath(option, path, (parent, key) => {
-        log('rename Option', itemText);
-        if (newName) Reflect.set(parent, newName, parent[key]);
-        Reflect.deleteProperty(parent, key);
-      });
-    }
-    return save();
-  });
-
-/** 旧版本配置迁移 */
-const migration = async (version: string) => {
-  // 任何样式修改都得更新 css 才行，干脆直接删了
-  GM.deleteValue('ehTagColorizeCss');
-  GM.deleteValue('ehTagSortCss');
-
-  // 11.4.2 => 11.5
-  if (versionLt(version, '11.5.0'))
-    await migrationOption('Hotkeys', (option, save) => {
-      for (const [name, hotkeys] of Object.entries(option)) {
-        option[name] = hotkeys.map((key: string) =>
-          key.replaceAll(/\b[A-Z]\b/g, (match) => match.toLowerCase()),
-        );
-      }
-      return save();
-    });
-};
+import { migration, versionLt } from './migration';
 
 /** 处理版本更新相关 */
 export const handleVersionUpdate = async () => {
