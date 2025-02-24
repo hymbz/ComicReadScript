@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         11.7.0
-// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、コミックグロウル、welovemanga、Tachidesk
+// @version         11.8.0
+// @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、コミックグロウル、welovemanga、Tachidesk
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
 // @description:ta  காமிக் நிலையத்தில் இரட்டை -பக்க வாசிப்பு மற்றும் மொழிபெயர்ப்பு போன்ற உகந்த அனுபவத்தின் மேம்பாட்டு செயல்பாட்டைச் சேர்க்கவும்.
@@ -568,7 +568,7 @@ async function wait(fn, timeout = Number.POSITIVE_INFINITY, waitTime = 100) {
 }
 
 /** 等到指定的 dom 出现 */
-const waitDom = selector => wait(() => querySelector(selector));
+const waitDom = (selector, timeout) => wait(() => querySelector(selector), timeout);
 
 /** 等待指定的图片元素加载完成 */
 const waitImgLoad = (target, timeout) => new Promise((resolve, reject) => {
@@ -6941,7 +6941,7 @@ const MdMenuBook = (props = {}) => (() => {
   return _el$;
 })();
 
-var css = ".fabRoot____hash_base64_5_{font-size:1.1em;transition:transform .2s}.fabRoot____hash_base64_5_[data-show=false]{pointer-events:none}.fabRoot____hash_base64_5_[data-show=false]>button{transform:scale(0)}.fabRoot____hash_base64_5_[data-trans=true]{opacity:.8}.fabRoot____hash_base64_5_[data-trans=true]:focus,.fabRoot____hash_base64_5_[data-trans=true]:focus-visible,.fabRoot____hash_base64_5_[data-trans=true]:hover{opacity:1}.fab____hash_base64_5_{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.fab____hash_base64_5_>svg{font-size:1.5em;width:1em}.fab____hash_base64_5_:focus,.fab____hash_base64_5_:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.progress____hash_base64_5_{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0s;width:100%}.progress____hash_base64_5_>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0s}.progress____hash_base64_5_:hover{color:#cfd8dc}.progress____hash_base64_5_[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.popper____hash_base64_5_{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%) scale(0);transform-origin:right;transition:transform .23s,opacity .15s;transition-delay:var(--hide-delay);white-space:nowrap}:is(.fab____hash_base64_5_:hover,.fabRoot____hash_base64_5_[data-focus=true]) .popper____hash_base64_5_{opacity:1;transform:translateY(-50%) scale(1);transition-delay:0s}.speedDial____hash_base64_5_{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;width:100%;z-index:-1}.speedDialItem____hash_base64_5_{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.speedDial____hash_base64_5_:hover,:is(.fabRoot____hash_base64_5_:hover:not([data-show=false]),.fabRoot____hash_base64_5_[data-focus=true])>.speedDial____hash_base64_5_{pointer-events:all}:is(:is(.fabRoot____hash_base64_5_:hover:not([data-show=false]),.fabRoot____hash_base64_5_[data-focus=true])>.speedDial____hash_base64_5_)>.speedDialItem____hash_base64_5_{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.backdrop____hash_base64_5_{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.fabRoot____hash_base64_5_[data-focus=true] .backdrop____hash_base64_5_{pointer-events:unset}:is(.fabRoot____hash_base64_5_:hover:not([data-show=false]),.fabRoot____hash_base64_5_[data-focus=true],.speedDial____hash_base64_5_:hover) .backdrop____hash_base64_5_{opacity:.4}";
+var css = ".fabRoot____hash_base64_5_{font-size:1.1em;touch-action:none;transition:transform .2s}.fabRoot____hash_base64_5_[data-show=false]{pointer-events:none}.fabRoot____hash_base64_5_[data-show=false]>button{transform:scale(0)}.fabRoot____hash_base64_5_[data-trans=true]{opacity:.8}.fabRoot____hash_base64_5_[data-trans=true]:focus,.fabRoot____hash_base64_5_[data-trans=true]:focus-visible,.fabRoot____hash_base64_5_[data-trans=true]:hover{opacity:1}.fab____hash_base64_5_{align-items:center;background-color:var(--fab,#607d8b);border:none;border-radius:100%;box-shadow:0 3px 5px -1px #0003,0 6px 10px 0 #00000024,0 1px 18px 0 #0000001f;color:#fff;cursor:pointer;display:flex;font-size:1em;height:3.6em;justify-content:center;transform:scale(1);transition:transform .2s;width:3.6em}.fab____hash_base64_5_>svg{font-size:1.5em;width:1em}.fab____hash_base64_5_:focus,.fab____hash_base64_5_:focus-visible{box-shadow:0 3px 5px -1px #00000080,0 6px 10px 0 #00000057,0 1px 18px 0 #00000052;outline:none}.progress____hash_base64_5_{color:#b0bec5;display:inline-block;height:100%;position:absolute;transform:rotate(-90deg);transition:transform .3s cubic-bezier(.4,0,.2,1) 0s;width:100%}.progress____hash_base64_5_>svg{stroke:currentcolor;stroke-dasharray:290%;stroke-dashoffset:100%;stroke-linecap:round;transition:stroke-dashoffset .3s cubic-bezier(.4,0,.2,1) 0s}.progress____hash_base64_5_:hover{color:#cfd8dc}.progress____hash_base64_5_[aria-valuenow=\\"1\\"]{opacity:0;transition:opacity .2s .15s}.popper____hash_base64_5_{align-items:center;background-color:#303030;border-radius:.3em;color:#fff;display:flex;font-size:.8em;opacity:0;padding:.4em .5em;pointer-events:none;position:absolute;right:calc(100% + 1.5em);top:50%;transform:translateY(-50%) scale(0);transform-origin:right;transition:transform .23s,opacity .15s;transition-delay:var(--hide-delay);white-space:nowrap}.fabRoot____hash_base64_5_[data-placement=right] .popper____hash_base64_5_{left:calc(100% + 1.5em);right:unset;transform-origin:left}.fabRoot____hash_base64_5_:is(:hover,[data-focus=true]) .popper____hash_base64_5_{opacity:1;transform:translateY(-50%) scale(1);transition-delay:0s}.speedDial____hash_base64_5_{align-items:center;bottom:0;display:flex;flex-direction:column-reverse;font-size:1.1em;padding-bottom:120%;pointer-events:none;position:absolute;touch-action:none;width:100%;z-index:-1}.speedDial____hash_base64_5_[data-placement=bottom]{bottom:unset;flex-direction:column;padding-bottom:unset;padding-top:120%;top:0}.speedDialItem____hash_base64_5_{margin:.1em 0;opacity:0;transform:scale(0);transition-delay:var(--hide-delay);transition-duration:.23s;transition-property:transform,opacity}.fabRoot____hash_base64_5_:is(:hover:not([data-show=false]),[data-focus=true]) .speedDial____hash_base64_5_,.speedDial____hash_base64_5_:hover{pointer-events:all}:is(.fabRoot____hash_base64_5_:is(:hover:not([data-show=false]),[data-focus=true]) .speedDial____hash_base64_5_)>.speedDialItem____hash_base64_5_{opacity:unset;transform:unset;transition-delay:var(--show-delay)}.backdrop____hash_base64_5_{background:#000;height:100vh;left:0;opacity:0;pointer-events:none;position:fixed;top:0;transition:opacity .5s;width:100vw}.fabRoot____hash_base64_5_[data-focus=true] .backdrop____hash_base64_5_{pointer-events:unset}:is(.fabRoot____hash_base64_5_:hover:not([data-show=false]),.fabRoot____hash_base64_5_[data-focus=true],.speedDial____hash_base64_5_:hover) .backdrop____hash_base64_5_{opacity:.4}";
 var modules_c21c94f2 = {"fabRoot":"fabRoot____hash_base64_5_","fab":"fab____hash_base64_5_","progress":"progress____hash_base64_5_","popper":"popper____hash_base64_5_","speedDial":"speedDial____hash_base64_5_","speedDialItem":"speedDialItem____hash_base64_5_","backdrop":"backdrop____hash_base64_5_"};
 
 /**
@@ -6980,7 +6980,10 @@ const Fab = _props => {
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild,
       _el$4 = _el$3.firstChild;
-    web.use(ref => helper.useStyle(css, ref), _el$);
+    web.use(ref => {
+      helper.useStyle(css, ref);
+      props.ref?.(ref);
+    }, _el$);
     web.addEventListener(_el$2, "click", () => props.onClick?.());
     web.insert(_el$2, () => props.children ?? web.createComponent(MdMenuBook, {}), _el$3);
     web.insert(_el$2, (() => {
@@ -7008,14 +7011,14 @@ const Fab = _props => {
             var _el$8 = web.template(\`<div>\`)();
             web.insert(_el$8, web.createComponent(SpeedDialItem, {}));
             web.effect(_p$ => {
-              var _v$12 = modules_c21c94f2.speedDialItem,
-                _v$13 = \`\${(i() + 1) * 30}ms\`,
-                _v$14 = \`\${(props.speedDial.length - 1 - i()) * 50}ms\`,
-                _v$15 = i() * 30;
-              _v$12 !== _p$.e && web.className(_el$8, _p$.e = _v$12);
-              _v$13 !== _p$.t && ((_p$.t = _v$13) != null ? _el$8.style.setProperty("--show-delay", _v$13) : _el$8.style.removeProperty("--show-delay"));
-              _v$14 !== _p$.a && ((_p$.a = _v$14) != null ? _el$8.style.setProperty("--hide-delay", _v$14) : _el$8.style.removeProperty("--hide-delay"));
-              _v$15 !== _p$.o && web.setAttribute(_el$8, "data-i", _p$.o = _v$15);
+              var _v$14 = modules_c21c94f2.speedDialItem,
+                _v$15 = \`\${(i() + 1) * 30}ms\`,
+                _v$16 = \`\${(props.speedDial.length - 1 - i()) * 50}ms\`,
+                _v$17 = i() * 30;
+              _v$14 !== _p$.e && web.className(_el$8, _p$.e = _v$14);
+              _v$15 !== _p$.t && ((_p$.t = _v$15) != null ? _el$8.style.setProperty("--show-delay", _v$15) : _el$8.style.removeProperty("--show-delay"));
+              _v$16 !== _p$.a && ((_p$.a = _v$16) != null ? _el$8.style.setProperty("--hide-delay", _v$16) : _el$8.style.removeProperty("--hide-delay"));
+              _v$17 !== _p$.o && web.setAttribute(_el$8, "data-i", _p$.o = _v$17);
               return _p$;
             }, {
               e: undefined,
@@ -7028,39 +7031,44 @@ const Fab = _props => {
         }), null);
         web.effect(_p$ => {
           var _v$ = modules_c21c94f2.speedDial,
-            _v$2 = modules_c21c94f2.backdrop;
+            _v$2 = props.speedDialPlacement?.(),
+            _v$3 = modules_c21c94f2.backdrop;
           _v$ !== _p$.e && web.className(_el$5, _p$.e = _v$);
-          _v$2 !== _p$.t && web.className(_el$6, _p$.t = _v$2);
+          _v$2 !== _p$.t && web.setAttribute(_el$5, "data-placement", _p$.t = _v$2);
+          _v$3 !== _p$.a && web.className(_el$6, _p$.a = _v$3);
           return _p$;
         }, {
           e: undefined,
-          t: undefined
+          t: undefined,
+          a: undefined
         });
         return _el$5;
       }
     }), null);
     web.effect(_p$ => {
-      var _v$3 = modules_c21c94f2.fabRoot,
-        _v$4 = props.show ?? show(),
-        _v$5 = props.autoTrans,
-        _v$6 = props.focus,
-        _v$7 = {
+      var _v$4 = modules_c21c94f2.fabRoot,
+        _v$5 = props.show ?? show(),
+        _v$6 = props.autoTrans,
+        _v$7 = props.focus,
+        _v$8 = props.placement?.(),
+        _v$9 = {
           ...props.style,
           '--hide-delay': \`\${props.speedDial.length * 50}ms\`
         },
-        _v$8 = modules_c21c94f2.fab,
-        _v$9 = modules_c21c94f2.progress,
-        _v$10 = props.progress,
-        _v$11 = \`\${(1 - props.progress) * 290}%\`;
-      _v$3 !== _p$.e && web.className(_el$, _p$.e = _v$3);
-      _v$4 !== _p$.t && web.setAttribute(_el$, "data-show", _p$.t = _v$4);
-      _v$5 !== _p$.a && web.setAttribute(_el$, "data-trans", _p$.a = _v$5);
-      _v$6 !== _p$.o && web.setAttribute(_el$, "data-focus", _p$.o = _v$6);
-      _p$.i = web.style(_el$, _v$7, _p$.i);
-      _v$8 !== _p$.n && web.className(_el$2, _p$.n = _v$8);
-      _v$9 !== _p$.s && web.className(_el$3, _p$.s = _v$9);
-      _v$10 !== _p$.h && web.setAttribute(_el$3, "aria-valuenow", _p$.h = _v$10);
-      _v$11 !== _p$.r && ((_p$.r = _v$11) != null ? _el$4.style.setProperty("stroke-dashoffset", _v$11) : _el$4.style.removeProperty("stroke-dashoffset"));
+        _v$10 = modules_c21c94f2.fab,
+        _v$11 = modules_c21c94f2.progress,
+        _v$12 = props.progress,
+        _v$13 = \`\${(1 - props.progress) * 290}%\`;
+      _v$4 !== _p$.e && web.className(_el$, _p$.e = _v$4);
+      _v$5 !== _p$.t && web.setAttribute(_el$, "data-show", _p$.t = _v$5);
+      _v$6 !== _p$.a && web.setAttribute(_el$, "data-trans", _p$.a = _v$6);
+      _v$7 !== _p$.o && web.setAttribute(_el$, "data-focus", _p$.o = _v$7);
+      _v$8 !== _p$.i && web.setAttribute(_el$, "data-placement", _p$.i = _v$8);
+      _p$.n = web.style(_el$, _v$9, _p$.n);
+      _v$10 !== _p$.s && web.className(_el$2, _p$.s = _v$10);
+      _v$11 !== _p$.h && web.className(_el$3, _p$.h = _v$11);
+      _v$12 !== _p$.r && web.setAttribute(_el$3, "aria-valuenow", _p$.r = _v$12);
+      _v$13 !== _p$.d && ((_p$.d = _v$13) != null ? _el$4.style.setProperty("stroke-dashoffset", _v$13) : _el$4.style.removeProperty("stroke-dashoffset"));
       return _p$;
     }, {
       e: undefined,
@@ -7071,7 +7079,8 @@ const Fab = _props => {
       n: undefined,
       s: undefined,
       h: undefined,
-      r: undefined
+      r: undefined,
+      d: undefined
     });
     return _el$;
   })();
@@ -9073,41 +9082,72 @@ const MdCloudDownload = (props = {}) => (() => {
 })();
 
 let dom;
-const useFab = async initProps => {
+const useFab = async (initProps, options, setOptions) => {
   GM_addStyle(\`
     #fab {
       --text-bg: transparent;
 
       position: fixed;
-      right: 3vw;
-      bottom: 6vh;
+      right: calc(3vw - var(--left, 0px));
+      bottom: calc(6vh - var(--top, 0px));
 
       font-size: clamp(12px, 1.5vw, 16px);
     }
   \`);
-  const [props, setProps] = store.createStore({
-    ...initProps
+  const [props, setProps] = store.createStore(initProps);
+  helper.useStyleMemo('#fab', {
+    '--left': () => \`\${options.fabPosition.left}px\`,
+    '--top': () => \`\${options.fabPosition.top}px\`
   });
   const FabIcon = () => {
     switch (props.progress) {
       case undefined:
-        {
-          // 没有内容的书
-          return MdImportContacts;
-        }
+        return MdImportContacts;
+      // 没有内容的书
       case 1:
       case 2:
-        {
-          // 有内容的书
-          return MdMenuBook;
-        }
+        return MdMenuBook;
+      // 有内容的书
       default:
-        {
-          return props.progress > 1 ? MdCloudDownload : MdImageSearch;
-        }
+        return props.progress > 1 ? MdCloudDownload : MdImageSearch;
     }
   };
-  dom = helper.mountComponents('fab', () => web.createComponent(Fab.Fab, web.mergeProps(props, {
+  const handleMount = ref => {
+    const handleDrag = ({
+      xy: [x, y],
+      last: [lx, ly]
+    }) => {
+      const left = options.fabPosition.left + x - lx;
+      const top = options.fabPosition.top + y - ly;
+      setOptions({
+        fabPosition: {
+          left,
+          top
+        }
+      });
+    };
+    const [fabButton] = ref.children;
+    helper.useDrag({
+      ref,
+      handleDrag,
+      setCapture: true,
+      skip: e => !fabButton.contains(e.target)
+    });
+
+    // 超出显示范围就恢复原位
+    const observer = new IntersectionObserver(() => setOptions({
+      fabPosition: {
+        left: 0,
+        top: 0
+      }
+    }), {
+      threshold: 0.5
+    });
+    observer.observe(ref);
+  };
+  dom = helper.mountComponents('fab', () => web.createComponent(Fab.Fab, web.mergeProps({
+    ref: handleMount
+  }, props, {
     get children() {
       return props.children ?? web.createComponent(web.Dynamic, {
         get component() {
@@ -9156,9 +9196,11 @@ const MdLock = (props = {}) => (() => {
   return _el$;
 })();
 
-const useSpeedDial = (options, setOptions) => {
+const useSpeedDial = (options, setOptions, placement) => {
   const DefaultButton = props => web.createComponent(IconButton.IconButton, {
-    placement: "left",
+    get placement() {
+      return placement();
+    },
     showTip: true,
     get tip() {
       return props.showName ?? (helper.t(\`site.add_feature.\${props.optionName}\`) || props.optionName);
@@ -9205,7 +9247,6 @@ const useSpeedDial = (options, setOptions) => {
   return list;
 };
 
-
 /** 判断版本号1是否小于版本号2 */
 const versionLt = (version1, version2) => {
   const v1 = version1.split('.').map(Number);
@@ -9245,15 +9286,74 @@ const migration = async version => {
   // 任何样式修改都得更新 css 才行，干脆直接删了
   GM.deleteValue('ehTagColorizeCss');
   GM.deleteValue('ehTagSortCss');
+  const values = await GM.listValues();
+
+  // 6 => 7
+  if (versionLt(version, '7')) for (const key of values) {
+    switch (key) {
+      case 'Version':
+      case 'Languages':
+        continue;
+      case 'HotKeys':
+        {
+          await renameOption(key, ['向上翻页 => turn_page_up', '向下翻页 => turn_page_down', '向右翻页 => turn_page_right', '向左翻页 => turn_page_left', '跳至首页 => jump_to_home', '跳至尾页 => jump_to_end', '退出 => exit', '切换页面填充 => switch_page_fill', '切换卷轴模式 => switch_scroll_mode', '切换单双页模式 => switch_single_double_page_mode', '切换阅读方向 => switch_dir', '进入阅读模式 => enter_read_mode']);
+          break;
+        }
+      default:
+        await renameOption(key, ['option.scrollbar.showProgress => showImgStatus', 'option.clickPage => clickPageTurn', 'option.clickPage.overturn => reverse', 'option.swapTurnPage => swapPageTurnKey', 'option.flipToNext => jumpToNext',
+        // ehentai
+        '匹配nhentai => associate_nhentai', '快捷键翻页 => hotkeys_page_turn',
+        // nhentai
+        '自动翻页 => auto_page_turn', '彻底屏蔽漫画 => block_totally', '在新页面中打开链接 => open_link_new_page',
+        // other
+        '记住当前站点 => remember_current_site']);
+    }
+  }
+
+  // 8 => 9
+  if (versionLt(version, '9')) for (const key of values) {
+    switch (key) {
+      case 'Version':
+      case 'Languages':
+        continue;
+      case 'Hotkeys':
+        {
+          await renameOption(key, [
+          // 原本上下快捷键是混在一起的，现在分开后要迁移太麻烦了，应该也没多少人改，就直接删了
+          'turn_page_up => ', 'turn_page_down => ', 'turn_page_right => scroll_right', 'turn_page_left => scroll_left']);
+          break;
+        }
+      default:
+        await migrationOption(key, (option, save) => {
+          if (typeof option.option?.scrollMode !== 'boolean') return;
+          option.option.scrollMode = {
+            enabled: option.option.scrollMode,
+            spacing: option.option.scrollModeSpacing,
+            imgScale: option.option.scrollModeImgScale,
+            fitToWidth: option.option.scrollModeFitToWidth
+          };
+          return save();
+        });
+    }
+  }
+
+  // 9.3 => 9.4
+  if (versionLt(version, '9.4')) await migrationOption('ehentai', (option, save) => {
+    if (!Reflect.has(option, 'hotkeys_page_turn')) return;
+    option.hotkeys = option.hotkeys_page_turn;
+    Reflect.deleteProperty(option, 'hotkeys_page_turn');
+    return save();
+  });
 
   // 11.4.2 => 11.5
-  if (versionLt(version, '11.5.0')) await migrationOption('Hotkeys', (option, save) => {
+  if (versionLt(version, '11.5')) await migrationOption('Hotkeys', (option, save) => {
     for (const [name, hotkeys] of Object.entries(option)) {
       option[name] = hotkeys.map(key => key.replaceAll(/\\b[A-Z]\\b/g, match => match.toLowerCase()));
     }
     return save();
   });
 };
+
 
 /** 处理版本更新相关 */
 const handleVersionUpdate = async () => {
@@ -9269,7 +9369,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>出错图片间隔一段时间自动重试 </p></li><li><p>简易模式可以自动识别更多网站的上/下话切换\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 ehentai 和 EhSyringe 同时使用时标签介绍框出现双重滚动条的 bug </p></li><li><p>修复 nicomanga 失效的 bug </p></li><li><p>修复恢复阅读进度功能在双页卷轴模式下失效的 bug\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>右下角悬浮按钮可以被拖动调整位置 </p></li><li><p>支持 pixiv\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 ehentai 翻页快捷键功能失效的 bug </p></li><li><p>修复因太久未更新或运行脚本导致的配置结构错误\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '10.8.0');
       },
@@ -9317,6 +9417,10 @@ const useSiteOptions = async (name, defaultOptions = {}) => {
     autoShow: true,
     lockOption: false,
     hiddenFAB: false,
+    fabPosition: {
+      top: 0,
+      left: 0
+    },
     ...defaultOptions
   };
   const saveOptions = await GM.getValue(name);
@@ -9358,11 +9462,14 @@ const useInit = async (name, defaultOptions = {}) => {
     setOptions,
     isStored
   } = await useSiteOptions(name, defaultOptions);
+  const placement = () => -options.fabPosition.left < window.innerWidth / 2 ? 'left' : 'right';
   const [setFab, fabProps] = await useFab({
     tip: helper.t('other.read_mode'),
-    speedDial: useSpeedDial(options, setOptions),
-    show: false
-  });
+    speedDial: useSpeedDial(options, setOptions, placement),
+    show: false,
+    placement,
+    speedDialPlacement: () => -options.fabPosition.top < window.innerHeight / 2 ? 'top' : 'bottom'
+  }, options, setOptions);
   setHotkeys(await GM.getValue('Hotkeys', {}));
   Manga.setDefaultHotkeys(_hotkeys => ({
     ..._hotkeys,
@@ -9654,7 +9761,6 @@ Object.defineProperty(exports, "request", {
 exports.ReactiveSet = ReactiveSet;
 exports.handleVersionUpdate = handleVersionUpdate;
 exports.hotkeys = hotkeys;
-exports.renameOption = renameOption;
 exports.setHotkeys = setHotkeys;
 exports.universal = universal;
 exports.useInit = useInit;
@@ -11964,7 +12070,7 @@ web.delegateEvents(["click"]);
   }
 
   // 不是漫画页的话
-  if (pageType !== 'gallery') return;
+  if (pageType !== 'gallery') return options.hotkeys && hotkeysPageTurn(pageType);
   const sidebarDom = document.getElementById('gd5');
 
   // 限定右侧按钮框的高度，避免因为按钮太多而突出界面
@@ -12882,6 +12988,28 @@ const buildChapters = async (comicName, hiddenType) => {
   }
 })();
 
+        break;
+      }
+
+    // #[Pixiv](https://www.pixiv.net)
+    case 'www.pixiv.net':
+      {
+        options = {
+          name: 'pixiv',
+          async getImgList() {
+            await helper.waitDom('#viewerWarpper img', 1000);
+            return helper.querySelectorAll('#viewerWarpper img').map(e => e.src.replaceAll(/\/c\/\d+x\d+_\d+(?=\/)/g, ''));
+          },
+          SPA: {
+            isMangaPage: () => window.location.pathname.startsWith('/artworks/') && helper.waitDom('#viewerWarpper img', 1000)
+          },
+          initOptions: {
+            autoShow: false,
+            defaultOption: {
+              pageNum: 1
+            }
+          }
+        };
         break;
       }
 
