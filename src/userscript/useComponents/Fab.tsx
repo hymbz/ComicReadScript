@@ -53,7 +53,13 @@ export const useFab = async <T = Record<string, any>,>(
       const top = options.fabPosition.top + y - ly;
       setOptions({ fabPosition: { left, top } });
     };
-    useDrag({ ref, handleDrag, setCapture: true });
+    const [fabButton] = ref.children;
+    useDrag({
+      ref,
+      handleDrag,
+      setCapture: true,
+      skip: (e) => !fabButton.contains(e.target as HTMLElement),
+    });
 
     // 超出显示范围就恢复原位
     const observer = new IntersectionObserver(
