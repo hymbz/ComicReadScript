@@ -288,6 +288,13 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     );
   }
 
+  const checkIpBanned = (text: string) =>
+    text.includes('IP address has been temporarily banned') &&
+    toast.error(t('site.ehentai.ip_banned'), {
+      throw: true,
+      duration: Number.POSITIVE_INFINITY,
+    });
+
   /** 从图片页获取图片地址 */
   const getImgUrl = async (imgPageUrl: string): Promise<string> => {
     const res = await request(
@@ -298,7 +305,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       },
       10,
     );
-
+    checkIpBanned(res.responseText);
     try {
       return /id="img" src="(.+?)"/.exec(res.responseText)![1];
     } catch {
@@ -314,6 +321,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       `${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
       { fetch: true, errorText: t('site.ehentai.fetch_img_page_url_failed') },
     );
+    checkIpBanned(res.responseText);
     const pageList: Array<[string, string]> = [
       ...res.responseText.matchAll(
         // 缩略图有三种显示方式：
@@ -321,15 +329,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
         /<a href="(.{20,50})"><(img alt=.+?|div><div |div )title=".+?: (.+?)"/gm,
       ),
     ].map(([, url, fileName]) => [url, fileName]);
-    if (pageList.length === 0) {
-      if (
-        res.responseText.includes(
-          'Your IP address has been temporarily banned for excessive',
-        )
-      )
-        throw new Error(t('site.ehentai.ip_banned'));
+    if (pageList.length === 0)
       throw new Error(t('site.ehentai.fetch_img_page_url_failed'));
-    }
     return pageList;
   };
 
@@ -429,6 +430,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     const res = await request(url, {
       errorText: t('site.ehentai.fetch_img_page_source_failed'),
     });
+    checkIpBanned(res.responseText);
     const nl = /nl\('(.+?)'\)/.exec(res.responseText)?.[1];
     if (!nl) throw new Error(t('site.ehentai.fetch_img_url_failed'));
     const newUrl = new URL(url);
