@@ -187,10 +187,95 @@ try {
           ?.page_url as string[];
       options = {
         name: 'zaiManHua',
-        wait: getImgList,
+        wait: () => Boolean(querySelector('.scrollbar-demo-item')),
         getImgList,
-        onNext: querySelectorClick('#prev_chapter'),
-        onPrev: querySelectorClick('#next_chapter'),
+        SPA: {
+          isMangaPage: () => window.location.pathname.startsWith('/view/'),
+          getOnNext: () => querySelectorClick('#prev_chapter'),
+          getOnPrev: () => querySelectorClick('#next_chapter'),
+        },
+      };
+      break;
+    }
+    case 'm.zaimanhua.com': {
+      const getPageData = async (comicId: number, chapterId: number) => {
+        const res = await request(
+          `https://v4api.zaimanhua.com/app/v1/comic/chapter/${comicId}/${chapterId}`,
+          { responseType: 'json' },
+        );
+        if (res.response.errno)
+          toast.error(
+            `${t('alert.comic_load_error')}: ${res.response.errmsg}`,
+            { throw: true },
+          );
+        return res.response.data.data as {
+          page_url: string[];
+          page_url_hd: string[];
+        };
+      };
+
+      const getComicData = async (comicId: number) => {
+        const res = await request(
+          `https://v4api.zaimanhua.com/app/v1/comic/detail/${comicId}`,
+          { responseType: 'json' },
+        );
+        if (res.response.errno)
+          toast.error(
+            `${t('alert.comic_load_error')}: ${res.response.errmsg}`,
+            { throw: true },
+          );
+        return res.response.data.data as {
+          chapters: Array<{
+            data: Array<{ chapter_id: number; chapter_order: number }>;
+          }>;
+        };
+      };
+
+      options = {
+        name: 'zaiManHua',
+        async getImgList({ setManga }) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const comicId = Number(urlParams.get('comic_id'));
+          const chapterId = Number(urlParams.get('chapter_id'));
+          if (!comicId || !chapterId)
+            throw new Error(t('site.changed_load_failed'));
+
+          // 设置上/下话跳转
+          const comicData = await getComicData(comicId);
+          const chapter = (
+            comicData.chapters.length === 1
+              ? comicData.chapters[0]
+              : comicData.chapters.find((chapter) =>
+                  chapter.data.find((data) => data.chapter_id === chapterId),
+                )!
+          ).data;
+          chapter.sort((a, b) => a.chapter_order - b.chapter_order);
+          const chapterIndex = chapter.findIndex(
+            (data) => data.chapter_id === chapterId,
+          );
+          setManga({
+            onPrev:
+              chapterIndex > 0
+                ? () =>
+                    window.location.assign(
+                      `/pages/comic/page?comic_id=${comicId}&chapter_id=${chapter[chapterIndex - 1].chapter_id}`,
+                    )
+                : undefined,
+            onNext:
+              chapterIndex + 1 < chapter.length
+                ? () =>
+                    window.location.assign(
+                      `/pages/comic/page?comic_id=${comicId}&chapter_id=${chapter[chapterIndex + 1].chapter_id}`,
+                    )
+                : undefined,
+          });
+
+          const pageData = await getPageData(comicId, chapterId);
+          return pageData.page_url_hd;
+        },
+        SPA: {
+          isMangaPage: () => window.location.pathname === '/pages/comic/page',
+        },
       };
       break;
     }
