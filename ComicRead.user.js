@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         11.8.0
+// @version         11.8.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、コミックグロウル、welovemanga、Tachidesk
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -6980,11 +6980,9 @@ const Fab = _props => {
       _el$2 = _el$.firstChild,
       _el$3 = _el$2.firstChild,
       _el$4 = _el$3.firstChild;
-    web.use(ref => {
-      helper.useStyle(css, ref);
-      props.ref?.(ref);
-    }, _el$);
+    web.use(ref => helper.useStyle(css, ref), _el$);
     web.addEventListener(_el$2, "click", () => props.onClick?.());
+    web.use(ref => props.ref?.(ref), _el$2);
     web.insert(_el$2, () => props.children ?? web.createComponent(MdMenuBook, {}), _el$3);
     web.insert(_el$2, (() => {
       var _c$ = web.memo(() => !!props.tip);
@@ -9126,12 +9124,10 @@ const useFab = async (initProps, options, setOptions) => {
         }
       });
     };
-    const [fabButton] = ref.children;
     helper.useDrag({
       ref,
       handleDrag,
-      setCapture: true,
-      skip: e => !fabButton.contains(e.target)
+      setCapture: true
     });
 
     // 超出显示范围就恢复原位
@@ -9369,7 +9365,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>右下角悬浮按钮可以被拖动调整位置 </p></li><li><p>支持 pixiv\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 ehentai 翻页快捷键功能失效的 bug </p></li><li><p>修复因太久未更新或运行脚本导致的配置结构错误\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 ehentai 未提醒 IP 被禁的 bug </p></li><li><p>修复悬浮按钮点击失效的 bug </p></li><li><p>修复在再漫画上失效的 bug\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '10.8.0');
       },
@@ -12156,6 +12152,10 @@ web.delegateEvents(["click"]);
             }`).join('\n');
     }));
   }
+  const checkIpBanned = text => text.includes('IP address has been temporarily banned') && main.toast.error(helper.t('site.ehentai.ip_banned'), {
+    throw: true,
+    duration: Number.POSITIVE_INFINITY
+  });
 
   /** 从图片页获取图片地址 */
   const getImgUrl = async imgPageUrl => {
@@ -12163,6 +12163,7 @@ web.delegateEvents(["click"]);
       fetch: true,
       errorText: helper.t('site.ehentai.fetch_img_page_source_failed')
     }, 10);
+    checkIpBanned(res.responseText);
     try {
       return /id="img" src="(.+?)"/.exec(res.responseText)[1];
     } catch {
@@ -12176,14 +12177,12 @@ web.delegateEvents(["click"]);
       fetch: true,
       errorText: helper.t('site.ehentai.fetch_img_page_url_failed')
     });
+    checkIpBanned(res.responseText);
     const pageList = [...res.responseText.matchAll(
     // 缩略图有三种显示方式：
     // 使用 img 的旧版，不显示页码的单个 div，显示页码的嵌套 div
     /<a href="(.{20,50})"><(img alt=.+?|div><div |div )title=".+?: (.+?)"/gm)].map(([, url, fileName]) => [url, fileName]);
-    if (pageList.length === 0) {
-      if (res.responseText.includes('Your IP address has been temporarily banned for excessive')) throw new Error(helper.t('site.ehentai.ip_banned'));
-      throw new Error(helper.t('site.ehentai.fetch_img_page_url_failed'));
-    }
+    if (pageList.length === 0) throw new Error(helper.t('site.ehentai.fetch_img_page_url_failed'));
     return pageList;
   };
   const [loadImgsText, setLoadImgsText] = solidJs.createSignal(`1-${totalImgNum}`);
@@ -12258,6 +12257,7 @@ web.delegateEvents(["click"]);
     const res = await main.request(url, {
       errorText: helper.t('site.ehentai.fetch_img_page_source_failed')
     });
+    checkIpBanned(res.responseText);
     const nl = /nl\('(.+?)'\)/.exec(res.responseText)?.[1];
     if (!nl) throw new Error(helper.t('site.ehentai.fetch_img_url_failed'));
     const newUrl = new URL(url);
@@ -13035,10 +13035,61 @@ const buildChapters = async (comicName, hiddenType) => {
         const getImgList = () => unsafeWindow.__NUXT__.data.getChapters?.data?.chapterInfo?.page_url;
         options = {
           name: 'zaiManHua',
-          wait: getImgList,
+          wait: () => Boolean(helper.querySelector('.scrollbar-demo-item')),
           getImgList,
-          onNext: helper.querySelectorClick('#prev_chapter'),
-          onPrev: helper.querySelectorClick('#next_chapter')
+          SPA: {
+            isMangaPage: () => window.location.pathname.startsWith('/view/'),
+            getOnNext: () => helper.querySelectorClick('#prev_chapter'),
+            getOnPrev: () => helper.querySelectorClick('#next_chapter')
+          }
+        };
+        break;
+      }
+    case 'm.zaimanhua.com':
+      {
+        const getPageData = async (comicId, chapterId) => {
+          const res = await main.request(`https://v4api.zaimanhua.com/app/v1/comic/chapter/${comicId}/${chapterId}`, {
+            responseType: 'json'
+          });
+          if (res.response.errno) main.toast.error(`${helper.t('alert.comic_load_error')}: ${res.response.errmsg}`, {
+            throw: true
+          });
+          return res.response.data.data;
+        };
+        const getComicData = async comicId => {
+          const res = await main.request(`https://v4api.zaimanhua.com/app/v1/comic/detail/${comicId}`, {
+            responseType: 'json'
+          });
+          if (res.response.errno) main.toast.error(`${helper.t('alert.comic_load_error')}: ${res.response.errmsg}`, {
+            throw: true
+          });
+          return res.response.data.data;
+        };
+        options = {
+          name: 'zaiManHua',
+          async getImgList({
+            setManga
+          }) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const comicId = Number(urlParams.get('comic_id'));
+            const chapterId = Number(urlParams.get('chapter_id'));
+            if (!comicId || !chapterId) throw new Error(helper.t('site.changed_load_failed'));
+
+            // 设置上/下话跳转
+            const comicData = await getComicData(comicId);
+            const chapter = (comicData.chapters.length === 1 ? comicData.chapters[0] : comicData.chapters.find(chapter => chapter.data.find(data => data.chapter_id === chapterId))).data;
+            chapter.sort((a, b) => a.chapter_order - b.chapter_order);
+            const chapterIndex = chapter.findIndex(data => data.chapter_id === chapterId);
+            setManga({
+              onPrev: chapterIndex > 0 ? () => window.location.assign(`/pages/comic/page?comic_id=${comicId}&chapter_id=${chapter[chapterIndex - 1].chapter_id}`) : undefined,
+              onNext: chapterIndex + 1 < chapter.length ? () => window.location.assign(`/pages/comic/page?comic_id=${comicId}&chapter_id=${chapter[chapterIndex + 1].chapter_id}`) : undefined
+            });
+            const pageData = await getPageData(comicId, chapterId);
+            return pageData.page_url_hd;
+          },
+          SPA: {
+            isMangaPage: () => window.location.pathname === '/pages/comic/page'
+          }
         };
         break;
       }
