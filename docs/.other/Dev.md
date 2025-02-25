@@ -17,6 +17,10 @@
 - https://www.tampermonkey.net/documentation.php?locale=zh
 - https://adguard.com/kb/zh-CN/general/userscripts/#supported-gm-functions
 
+## 参考
+
+- https://github.dev/keiyoushi/extensions-source
+
 ## 调试
 
 ```bash
