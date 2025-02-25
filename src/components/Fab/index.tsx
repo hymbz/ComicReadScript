@@ -75,10 +75,7 @@ export const Fab: Component<FabProps> = (_props) => {
 
   return (
     <div
-      ref={(ref) => {
-        useStyle(style, ref);
-        props.ref?.(ref);
-      }}
+      ref={(ref) => useStyle(style, ref)}
       class={classes.fabRoot}
       data-show={props.show ?? show()}
       data-trans={props.autoTrans}
@@ -92,6 +89,7 @@ export const Fab: Component<FabProps> = (_props) => {
       <button
         type="button"
         class={classes.fab}
+        ref={(ref) => props.ref?.(ref)}
         on:click={() => props.onClick?.()}
         tabIndex={-1}
       >
