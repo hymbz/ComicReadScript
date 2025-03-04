@@ -49,7 +49,7 @@ export const translationImage = async (url: string) => {
 };
 
 /** 逐个翻译状态为等待翻译的图片 */
-const translationAll = singleThreaded(async (): Promise<void> => {
+export const translationAll = singleThreaded(async (): Promise<void> => {
   for (const img of Object.values(store.imgMap)) {
     if (img.loadType !== 'loaded' || img.translationType !== 'wait') continue;
     await translationImage(img.src);

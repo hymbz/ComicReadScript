@@ -16,6 +16,7 @@ import { updateImgSize } from './imageSize';
 import { renderImgList, showImgList } from './renderPage';
 import { handleImgRecognition } from './imageRecognition';
 import { getImg, getImgEle, getImgIndexs } from './helper';
+import { translationAll } from './translation';
 
 /** 图片上次加载出错的时间 */
 const imgErrorTime = new Map<string, number>();
@@ -39,6 +40,8 @@ export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
 
   if (store.option.imgRecognition.enabled && e.src === img.blobUrl)
     setTimeout(handleImgRecognition, 0, e, url);
+
+  translationAll();
 };
 
 /** 图片加载出错的回调 */
