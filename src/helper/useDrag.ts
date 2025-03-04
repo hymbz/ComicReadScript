@@ -97,6 +97,16 @@ export const useDrag = ({
       handleDrag(state, e);
 
       state.last = state.xy;
+
+      // 拖拽一段距离后就不触发 click 了
+      if (
+        allowClick > 0 &&
+        (Math.abs(e.clientX - state.initial[0]) > 5 ||
+          Math.abs(e.clientY - state.initial[1]) > 5)
+      ) {
+        window.clearTimeout(allowClick);
+        allowClick = -2;
+      }
     };
 
     const handleUp = (e: PointerEvent) => {
@@ -150,7 +160,7 @@ export const useDrag = ({
     ref.addEventListener(
       'click',
       (e) => {
-        if ((allowClick && touches.size === 0) || skip?.(e)) return;
+        if ((allowClick > 0 && touches.size === 0) || skip?.(e)) return;
         e.stopPropagation();
         e.preventDefault();
       },
