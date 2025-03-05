@@ -16,7 +16,7 @@ import classes from '../index.module.css';
 
 const setHotkeys = (...args: any[]) => {
   _setState(...(['hotkeys', ...args] as [any]));
-  store.prop.HotkeysChange?.(
+  store.prop.onHotkeysChange?.(
     Object.fromEntries(
       Object.entries(store.hotkeys).filter(
         ([name, keys]) =>

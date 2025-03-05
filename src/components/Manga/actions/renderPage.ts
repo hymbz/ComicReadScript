@@ -188,7 +188,7 @@ createEffectOn(
   showImgList,
   (showImgs) => {
     if (showImgs.size === 0) return;
-    store.prop.ShowImgsChange?.(showImgs, imgList());
+    store.prop.onShowImgsChange?.(showImgs, imgList());
   },
   { defer: true },
 );

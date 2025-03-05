@@ -41,10 +41,19 @@ export const useInit = (props: MangaProps) => {
       : state.defaultOption;
   };
 
+  const bindDebounce = (key: keyof MangaProps) => (state: State) => {
+    state.prop[key] = props[key] ? debounce(props[key] as any) : undefined;
+  };
+
   const watchProps: Partial<
     Record<keyof MangaProps, (state: State) => unknown>
   > = {
     option: updateOption,
+    onLoading: bindDebounce('onLoading'),
+    onOptionChange: bindDebounce('onOptionChange'),
+    onHotkeysChange: bindDebounce('onHotkeysChange'),
+    onShowImgsChange: bindDebounce('onShowImgsChange'),
+
     defaultOption(state) {
       state.defaultOption = assign(
         defaultOption(),
@@ -58,7 +67,7 @@ export const useInit = (props: MangaProps) => {
     },
 
     onExit(state) {
-      state.prop.Exit = (isEnd?: boolean | Event) => {
+      state.prop.onExit = (isEnd?: boolean | Event) => {
         playAnimation(refs.exit);
         props.onExit?.(Boolean(isEnd));
         setState((draftState) => {
@@ -68,7 +77,7 @@ export const useInit = (props: MangaProps) => {
       };
     },
     onPrev(state) {
-      state.prop.Prev = props.onPrev
+      state.prop.onPrev = props.onPrev
         ? throttle(() => {
             playAnimation(refs.prev);
             props.onPrev?.();
@@ -76,7 +85,7 @@ export const useInit = (props: MangaProps) => {
         : undefined;
     },
     onNext(state) {
-      state.prop.Next = props.onNext
+      state.prop.onNext = props.onNext
         ? throttle(() => {
             playAnimation(refs.next);
             props.onNext?.();
@@ -88,24 +97,6 @@ export const useInit = (props: MangaProps) => {
     },
     editSettingList(state) {
       state.prop.editSettingList = props.editSettingList ?? ((list) => list);
-    },
-    onLoading(state) {
-      state.prop.Loading = props.onLoading
-        ? debounce(props.onLoading)
-        : undefined;
-    },
-    onOptionChange(state) {
-      state.prop.OptionChange = props.onOptionChange
-        ? debounce(props.onOptionChange)
-        : undefined;
-    },
-    onHotkeysChange(state) {
-      state.prop.HotkeysChange = props.onHotkeysChange
-        ? debounce(props.onHotkeysChange)
-        : undefined;
-    },
-    onShowImgsChange(state) {
-      state.prop.ShowImgsChange = props.onShowImgsChange;
     },
     commentList(state) {
       state.commentList = props.commentList;
@@ -185,7 +176,7 @@ export const useInit = (props: MangaProps) => {
       state.imgMap = newImgMap;
       state.imgList = imgList;
 
-      state.prop.Loading?.(state.imgList.map((url) => state.imgMap[url]));
+      state.prop.onLoading?.(state.imgList.map((url) => state.imgMap[url]));
 
       if (isNew) state.show.endPage = undefined;
 

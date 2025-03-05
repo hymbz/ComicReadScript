@@ -84,13 +84,13 @@ export const EndPage: Component = () => {
   const tip = createMemo(() => {
     switch (delayType()) {
       case 'start':
-        if (store.prop.Prev && store.option.jumpToNext)
+        if (store.prop.onPrev && store.option.jumpToNext)
           return t('end_page.tip.start_jump');
         break;
       case 'end':
-        if (store.prop.Next && store.option.jumpToNext)
+        if (store.prop.onNext && store.option.jumpToNext)
           return t('end_page.tip.end_jump');
-        if (store.prop.Exit) return t('end_page.tip.exit');
+        if (store.prop.onExit) return t('end_page.tip.exit');
         break;
     }
 
@@ -114,9 +114,9 @@ export const EndPage: Component = () => {
         <button
           ref={bindRef('prev')}
           type="button"
-          classList={{ [classes.invisible]: !store.prop.Prev }}
+          classList={{ [classes.invisible]: !store.prop.onPrev }}
           tabIndex={store.show.endPage ? 0 : -1}
-          on:click={() => store.prop.Prev?.()}
+          on:click={() => store.prop.onPrev?.()}
         >
           {t('end_page.prev_button')}
         </button>
@@ -125,16 +125,16 @@ export const EndPage: Component = () => {
           type="button"
           data-is-end
           tabIndex={store.show.endPage ? 0 : -1}
-          on:click={() => store.prop.Exit?.(store.show.endPage === 'end')}
+          on:click={() => store.prop.onExit?.(store.show.endPage === 'end')}
         >
           {t('button.exit')}
         </button>
         <button
           ref={bindRef('next')}
           type="button"
-          classList={{ [classes.invisible]: !store.prop.Next }}
+          classList={{ [classes.invisible]: !store.prop.onNext }}
           tabIndex={store.show.endPage ? 0 : -1}
-          on:click={() => store.prop.Next?.()}
+          on:click={() => store.prop.onNext?.()}
         >
           {t('end_page.next_button')}
         </button>

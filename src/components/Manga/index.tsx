@@ -30,7 +30,7 @@ import { stopPropagation } from './helper';
 
 enableScheduling();
 
-export interface MangaProps {
+export type MangaProps = {
   class?: string;
   classList?: ClassList;
 
@@ -51,30 +51,11 @@ export interface MangaProps {
   /** 漫画标题 */
   title?: string | null;
 
-  /** 点击结束页按钮时触发的回调 */
-  onExit?: State['prop']['Exit'];
-  /** 点击上一话按钮时触发的回调 */
-  onPrev?: State['prop']['Prev'];
-  /** 点击下一话按钮时触发的回调 */
-  onNext?: State['prop']['Next'];
-  /** 配置发生变化时触发的回调 */
-  onOptionChange?: State['prop']['OptionChange'];
-  /** 快捷键配置发生变化时触发的回调 */
-  onHotkeysChange?: State['prop']['HotkeysChange'];
-  /** 显示图片发生变化时触发的回调 */
-  onShowImgsChange?: State['prop']['ShowImgsChange'];
-  /**
-   * 图片加载状态发生变化时触发的回调
-   *
-   * 当 imgList 发生改变时也会触发，此时 img 参数将为空
-   */
-  onLoading?: (imgList: ComicImg[], img?: ComicImg) => unknown;
-
   /** 修改默认工具栏按钮列表 */
   editButtonList?: State['prop']['editButtonList'];
   /** 修改默认设置项列表 */
   editSettingList?: State['prop']['editSettingList'];
-}
+} & Partial<State['prop']>;
 
 /** 漫画组件 */
 export const Manga: Component<MangaProps> = (props) => {

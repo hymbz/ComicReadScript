@@ -32,7 +32,7 @@ export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
   if (img.loadType !== 'loaded') {
     _setState('imgMap', url, 'loadType', 'loaded');
     updateImgLoadType();
-    store.prop.Loading?.(imgList(), store.imgMap[url]);
+    store.prop.onLoading?.(imgList(), store.imgMap[url]);
   }
   if (!e) return;
 
@@ -59,7 +59,7 @@ export const handleImgError = (url: string, e?: HTMLImageElement) => {
     if (imgIndexs.some((i) => renderImgList().has(i)) && isRetry)
       img.loadType = 'wait';
   });
-  store.prop.Loading?.(imgList(), store.imgMap[url]);
+  store.prop.onLoading?.(imgList(), store.imgMap[url]);
   updateImgLoadType();
 };
 

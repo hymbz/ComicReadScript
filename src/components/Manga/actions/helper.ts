@@ -30,7 +30,7 @@ export const findFillIndex = (pageIndex: number, fillEffect: FillEffect) => {
 /** 触发 onOptionChange */
 const triggerOnOptionChange = throttle(
   () =>
-    store.prop.OptionChange?.(difference(store.option, store.defaultOption)),
+    store.prop.onOptionChange?.(difference(store.option, store.defaultOption)),
   1000,
 );
 

@@ -207,7 +207,7 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       });
 
     case 'exit':
-      return store.prop.Exit?.();
+      return store.prop.onExit?.();
 
     // 阅读模式以外的快捷键转发到网页上去处理
     default:

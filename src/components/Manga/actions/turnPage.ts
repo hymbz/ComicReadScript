@@ -18,7 +18,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
   if (dir === 'prev') {
     switch (state.show.endPage) {
       case 'start':
-        if (!state.scrollLock && state.option.jumpToNext) state.prop.Prev?.();
+        if (!state.scrollLock && state.option.jumpToNext) state.prop.onPrev?.();
         return false;
       case 'end':
         state.show.endPage = undefined;
@@ -27,9 +27,9 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
       default:
         // 弹出卷首结束页
         if (isTop()) {
-          if (!state.prop.Exit) return false;
+          if (!state.prop.onExit) return false;
           // 没有 onPrev 时不弹出
-          if (!state.prop.Prev || !state.option.jumpToNext) return false;
+          if (!state.prop.onPrev || !state.option.jumpToNext) return false;
 
           state.show.endPage = 'start';
           state.scrollLock = true;
@@ -46,12 +46,12 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
     switch (state.show.endPage) {
       case 'end':
         if (state.scrollLock) return false;
-        if (state.prop.Next && state.option.jumpToNext) {
-          state.prop.Next();
+        if (state.prop.onNext && state.option.jumpToNext) {
+          state.prop.onNext();
           return false;
         }
 
-        state.prop.Exit?.(true);
+        state.prop.onExit?.(true);
         return false;
       case 'start':
         state.show.endPage = undefined;
@@ -60,7 +60,7 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
       default:
         // 弹出卷尾结束页
         if (isBottom()) {
-          if (!state.prop.Exit) return false;
+          if (!state.prop.onExit) return false;
           state.show.endPage = 'end';
           state.scrollLock = true;
           closeScrollLock();
