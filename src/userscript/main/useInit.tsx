@@ -228,7 +228,7 @@ export const useInit = async <T extends Record<string, any>>(
       e.stopPropagation();
       e.preventDefault();
       fabProps.onClick?.();
-    });
+    }, true);
   };
 
   if (isDevMode) Object.assign(unsafeWindow, { comicMap, mangaProps, toast });

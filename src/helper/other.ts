@@ -448,16 +448,23 @@ export const domParse = (html: string) =>
   new DOMParser().parseFromString(html, 'text/html');
 
 /** 监听键盘事件 */
-export const linstenKeydown = (handler: (e: KeyboardEvent) => unknown) =>
-  window.addEventListener('keydown', (e) => {
-    // 跳过输入框的键盘事件
-    switch ((e.target as HTMLElement).tagName) {
-      case 'INPUT':
-      case 'TEXTAREA':
-        return;
-    }
-    return handler(e);
-  });
+export const linstenKeydown = (
+  handler: (e: KeyboardEvent) => unknown,
+  capture?: boolean,
+) =>
+  window.addEventListener(
+    'keydown',
+    (e) => {
+      // 跳过输入框的键盘事件
+      switch ((e.target as HTMLElement).tagName) {
+        case 'INPUT':
+        case 'TEXTAREA':
+          return;
+      }
+      return handler(e);
+    },
+    { capture },
+  );
 
 /**
  * 劫持修改原网页上的函数
@@ -542,4 +549,40 @@ export const descRange = (list: Iterable<number>, length: number) => {
 
   pushRange();
   return text;
+};
+
+/** 监听 url 变化 */
+export const onUrlChange = async (
+  fn: () => unknown,
+  handleUrl = (location: Location) => location.href,
+) => {
+  let lastUrl = '';
+  const refresh = singleThreaded(async () => {
+    if (!(await wait(() => handleUrl(window.location) !== lastUrl, 5000)))
+      return;
+    lastUrl = handleUrl(window.location);
+    await fn();
+  });
+
+  const controller = new AbortController();
+  for (const eventName of ['click', 'popstate'])
+    window.addEventListener(eventName, refresh, {
+      capture: true,
+      signal: controller.signal,
+    });
+  refresh();
+
+  return () => controller.abort();
+};
+
+/** wait，但是只在 url 变化时判断 */
+export const waitUrlChange = async (isValidUrl: () => unknown) => {
+  // eslint-disable-next-line no-async-promise-executor
+  return new Promise<void>(async (resolve) => {
+    const abort = await onUrlChange(() => {
+      if (!isValidUrl()) return;
+      resolve();
+      abort();
+    });
+  });
 };

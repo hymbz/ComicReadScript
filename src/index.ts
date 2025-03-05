@@ -144,18 +144,26 @@ try {
 
     // #[Pixiv](https://www.pixiv.net)
     case 'www.pixiv.net': {
+      let imgList: string[] = [];
+
       options = {
         name: 'pixiv',
-        async getImgList() {
-          await waitDom('#viewerWarpper img', 1000);
-          return querySelectorAll<HTMLImageElement>('#viewerWarpper img').map(
-            (e) => e.src.replaceAll(/\/c\/\d+x\d+_\d+(?=\/)/g, ''),
-          );
-        },
+        getImgList: () => imgList,
         SPA: {
-          isMangaPage: () =>
-            window.location.pathname.startsWith('/artworks/') &&
-            waitDom('#viewerWarpper img', 1000),
+          async isMangaPage() {
+            const id = Number(window.location.pathname.split('/')[2]);
+            if (!id) {
+              imgList.length = 0;
+              return false;
+            }
+
+            type resData = { body: Array<{ urls: { original: string } }> };
+            const res = await request<resData>(`/ajax/illust/${id}/pages`, {
+              responseType: 'json',
+            });
+            imgList = res.response.body.map((e) => e.urls.original);
+            return imgList.length > 1;
+          },
         },
         initOptions: { autoShow: false, defaultOption: { pageNum: 1 } },
       };
@@ -663,7 +671,7 @@ try {
             querySelectorClick(
               `#chapter-selector > a[href^="/chapter/"]:nth-of-type(2)`,
             ),
-          handlePageurl: (location) =>
+          handleUrl: (location) =>
             location.href.replace(/(?<=\/chapter\/.+?)\/.*/, ''),
         },
       };

@@ -1,5 +1,5 @@
 import { type MangaProps } from 'components/Manga';
-import { singleThreaded, wait } from 'helper';
+import { onUrlChange, wait, waitUrlChange } from 'helper';
 
 import { useInit } from './useInit';
 import { type SiteOptions } from './useSiteOptions';
@@ -23,25 +23,14 @@ export interface InitOptions {
 
   /** 用于适配单页应用的配置项 */
   SPA?: {
-    /** 判断当前页面是否是漫画页 */
+    /** 在 URL 发生变化后判断当前页面是否是漫画页 */
     isMangaPage?: () => Promise<unknown> | unknown;
     getOnPrev?: () => Promise<MangaProps['onPrev']> | MangaProps['onPrev'];
     getOnNext?: () => Promise<MangaProps['onNext']> | MangaProps['onNext'];
     /** 有些 SPA 会在页数变更时修改 url，导致脚本误以为换章节了，需要处理下 */
-    handlePageurl?: (location: Location) => string;
+    handleUrl?: (location: Location) => string;
   };
 }
-
-/**
- * 通过监视点击等会触发动态加载的事件，在触发后执行指定动作
- * @param update 动态加载后的重新加载
- */
-const autoUpdate = (update: () => Promise<void>) => {
-  const refresh = singleThreaded(update);
-  for (const eventName of ['click', 'popstate'])
-    window.addEventListener(eventName, refresh, { capture: true });
-  refresh();
-};
 
 /** 对简单站点的通用解 */
 export const universal = async ({
@@ -56,7 +45,7 @@ export const universal = async ({
   initOptions,
   SPA,
 }: InitOptions) => {
-  if (SPA?.isMangaPage) await wait(SPA?.isMangaPage);
+  if (SPA?.isMangaPage) waitUrlChange(SPA.isMangaPage);
   if (waitFn) await wait(waitFn);
 
   const fnMap = await useInit(name, initOptions);
@@ -88,14 +77,8 @@ export const universal = async ({
   }
 
   const { isMangaPage, getOnPrev, getOnNext } = SPA;
-  const handlePageurl = SPA?.handlePageurl ?? ((location) => location.href);
 
-  let lastUrl = '';
-  autoUpdate(async () => {
-    if (!(await wait(() => handlePageurl(window.location) !== lastUrl, 5000)))
-      return;
-    lastUrl = handlePageurl(window.location);
-
+  onUrlChange(async () => {
     if (isMangaPage && !(await isMangaPage())) {
       setFab('show', false);
       setManga({ show: false });
@@ -105,6 +88,7 @@ export const universal = async ({
 
     if (waitFn) await wait(waitFn);
 
+    setFab('show', undefined);
     setManga({ onPrev: undefined, onNext: undefined });
     needAutoShow.val = options.autoShow;
     setComicMap('', 'imgList', undefined);
@@ -118,5 +102,5 @@ export const universal = async ({
       (async () =>
         getOnNext && setManga({ onNext: await wait(getOnNext, 5000) }))(),
     ]);
-  });
+  }, SPA?.handleUrl);
 };
