@@ -226,7 +226,7 @@ export const otherSite = async () => {
 
     if (isEdited || imgEleList.some((e) => !e || needTrigged(e))) {
       await sleep(1000);
-      state.argList.push([]);
+      state.continueRun();
     }
   });
 

@@ -9,5 +9,5 @@ export const log = (...args: unknown[]) => console.log(...prefix, ...args);
 log.warn = (...args: unknown[]) => console.warn(...prefix, ...args);
 log.error = (...args: unknown[]) => {
   console.error(...prefix, ...args);
-  if (isDevMode) debugger; // eslint-disable-line no-debugger
+  // if (isDevMode) debugger; // eslint-disable-line no-debugger
 };

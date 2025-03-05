@@ -55,7 +55,7 @@ export const translationAll = singleThreaded(async (state): Promise<void> => {
   );
   if (!targetImg) return;
   await translationImage(targetImg.src);
-  state.argList.push([]);
+  state.continueRun();
 });
 
 /** 开启或关闭指定图片的翻译 */

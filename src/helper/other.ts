@@ -143,6 +143,8 @@ type SingleThreadedState<T extends any[]> = {
   abandon?: boolean;
   /** 连续调用的间隔 */
   timeout?: number;
+  /** 确保本次运行完后再运行一次 */
+  continueRun: () => void;
 };
 /** 确保函数在同一时间下只有一个在运行 */
 export const singleThreaded = <T extends any[]>(
@@ -155,6 +157,8 @@ export const singleThreaded = <T extends any[]>(
   const state: SingleThreadedState<T> = {
     running: false,
     argList: [],
+    continueRun: (...args: T) =>
+      state.argList.length > 0 || state.argList.push(args),
     ...initState,
   };
 
