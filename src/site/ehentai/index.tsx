@@ -172,8 +172,14 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   const sidebarDom = document.getElementById('gd5')!;
 
   // 限定右侧按钮框的高度，避免因为按钮太多而突出界面
+  const resizeObserver = new ResizeObserver(() => {
+    // 只在超出正常高度时才使用 css 限制，避免和其他脚本（如：EhAria2下载助手）冲突
+    Reflect.deleteProperty(sidebarDom.dataset, 'long');
+    if (sidebarDom.scrollHeight > 352) sidebarDom.dataset.long = '';
+  });
+  resizeObserver.observe(sidebarDom);
   GM_addStyle(`
-    #gd5 {
+    #gd5[data-long] {
       --scrollbar-slider: ${getComputedStyle(querySelector('.gm')!).borderColor};
       scrollbar-color: var(--scrollbar-slider) transparent;
       scrollbar-width: thin;
@@ -183,10 +189,9 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       &::-webkit-scrollbar-track { background: transparent; }
       &::-webkit-scrollbar-thumb { background: var(--scrollbar-slider); }
     }
-
-    /* 关掉 ehs 的滚动条，避免双重滚动条 */
-    #ehs-introduce-box, .ehs-content { overflow: visible !important; }
-    #ehs-introduce-box { width: 100%; }
+    /* 在显示 ehs 时隐藏 gd5 上的滚动条，避免同时显示两个滚动条 */
+    #gd5[data-long]:has(#ehs-introduce-box .ehs-content) { overflow: hidden; }
+    #gmid #ehs-introduce-box { width: 100%; }
   `);
 
   const LoadButton: Component<{
