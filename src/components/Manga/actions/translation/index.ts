@@ -49,11 +49,13 @@ export const translationImage = async (url: string) => {
 };
 
 /** 逐个翻译状态为等待翻译的图片 */
-export const translationAll = singleThreaded(async (): Promise<void> => {
-  for (const img of Object.values(store.imgMap)) {
-    if (img.loadType !== 'loaded' || img.translationType !== 'wait') continue;
-    await translationImage(img.src);
-  }
+export const translationAll = singleThreaded(async (state): Promise<void> => {
+  const targetImg = imgList().find(
+    (img) => img.translationType === 'wait' && img.loadType === 'loaded',
+  );
+  if (!targetImg) return;
+  await translationImage(targetImg.src);
+  state.argList.push([]);
 });
 
 /** 开启或关闭指定图片的翻译 */

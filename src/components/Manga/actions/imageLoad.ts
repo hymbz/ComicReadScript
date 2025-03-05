@@ -29,6 +29,7 @@ export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
   imgErrorTime.delete(url);
 
   const img = store.imgMap[url];
+  if (img.translationType === 'show') return;
   if (img.loadType !== 'loaded') {
     _setState('imgMap', url, 'loadType', 'loaded');
     updateImgLoadType();
