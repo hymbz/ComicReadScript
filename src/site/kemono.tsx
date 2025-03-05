@@ -1,16 +1,30 @@
 import { useInit } from 'main';
-import { createEffectOn, querySelectorAll } from 'helper';
+import {
+  createEffectOn,
+  onUrlChange,
+  querySelectorAll,
+  waitUrlChange,
+} from 'helper';
 
 (async () => {
-  if (!location.pathname.includes('/post/')) return;
+  const isMangaPage = () => location.pathname.includes('/post/');
+  await waitUrlChange(isMangaPage);
 
-  const { options, setComicLoad, showComic, switchComic, needAutoShow } =
-    await useInit('kemono', {
-      autoShow: false,
-      defaultOption: { pageNum: 1 },
-      /** 加载原图 */
-      load_original_image: true,
-    });
+  const {
+    options,
+    setComicLoad,
+    showComic,
+    switchComic,
+    needAutoShow,
+    setFab,
+    setManga,
+    setComicMap,
+  } = await useInit('kemono', {
+    autoShow: false,
+    defaultOption: { pageNum: 1 },
+    /** 加载原图 */
+    load_original_image: true,
+  });
 
   setComicLoad(
     () =>
@@ -48,4 +62,20 @@ import { createEffectOn, querySelectorAll } from 'helper';
     a.style.opacity = '.6';
     e.parentNode!.insertBefore(a, e.nextElementSibling);
   }
+
+  onUrlChange(async () => {
+    if (!isMangaPage()) {
+      setFab('show', false);
+      setManga({ show: false });
+      setComicMap('original', 'imgList', undefined);
+      setComicMap('thumbnail', 'imgList', undefined);
+      return;
+    }
+
+    setFab('show', undefined);
+    setManga({ onPrev: undefined, onNext: undefined });
+    needAutoShow.val = options.autoShow;
+    setComicMap('', 'imgList', undefined);
+    if (needAutoShow.val && options.autoShow) await showComic('');
+  });
 })();
