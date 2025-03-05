@@ -171,6 +171,6 @@ export const triggerLazyLoad = singleThreaded(
 
     await triggerTurnPage(waitTime, runCondition);
 
-    if (targetImgList.length > 0) state.continueRun = true;
+    if (targetImgList.length > 0) state.argList.push([]);
   },
 );

@@ -145,42 +145,45 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
           ':is(.index-container, #favcontainer):last-of-type',
         )!;
 
-      const loadNextPage = singleThreaded(async (): Promise<void> => {
-        if (!nextUrl) return;
+      const loadNextPage = singleThreaded(
+        async (): Promise<void> => {
+          if (!nextUrl) return;
 
-        const res = await request(nextUrl, {
-          fetch: true,
-          errorText: t('site.nhentai.fetch_next_page_failed'),
-        });
-        const html = domParse(res.responseText);
-        history.replaceState(null, '', nextUrl);
+          const res = await request(nextUrl, {
+            fetch: true,
+            errorText: t('site.nhentai.fetch_next_page_failed'),
+          });
+          const html = domParse(res.responseText);
+          history.replaceState(null, '', nextUrl);
 
-        const container = html.querySelector(
-          '.index-container, #favcontainer',
-        )!;
-        for (const galleryDom of container.querySelectorAll<HTMLElement>(
-          '.gallery',
-        )) {
-          for (const img of galleryDom.getElementsByTagName('img'))
-            img.setAttribute('src', img.dataset.src!);
+          const container = html.querySelector(
+            '.index-container, #favcontainer',
+          )!;
+          for (const galleryDom of container.querySelectorAll<HTMLElement>(
+            '.gallery',
+          )) {
+            for (const img of galleryDom.getElementsByTagName('img'))
+              img.setAttribute('src', img.dataset.src!);
 
-          // 判断是否有黑名单标签
-          const tags = galleryDom.dataset.tags!.split(' ').map(Number);
-          if (tags.some((tag) => blackSet.has(tag)))
-            galleryDom.classList.add('blacklisted');
-        }
+            // 判断是否有黑名单标签
+            const tags = galleryDom.dataset.tags!.split(' ').map(Number);
+            if (tags.some((tag) => blackSet.has(tag)))
+              galleryDom.classList.add('blacklisted');
+          }
 
-        const pagination = html.querySelector<HTMLElement>('.pagination')!;
-        nextUrl = pagination.querySelector<HTMLAnchorElement>('a.next')?.href;
+          const pagination = html.querySelector<HTMLElement>('.pagination')!;
+          nextUrl = pagination.querySelector<HTMLAnchorElement>('a.next')?.href;
 
-        contentDom.append(container, pagination);
+          contentDom.append(container, pagination);
 
-        const hr = document.createElement('hr');
-        contentDom.append(hr);
-        observer.disconnect();
-        observer.observe(getObserveDom());
-        if (!nextUrl) hr.style.animationPlayState = 'paused';
-      }, false);
+          const hr = document.createElement('hr');
+          contentDom.append(hr);
+          observer.disconnect();
+          observer.observe(getObserveDom());
+          if (!nextUrl) hr.style.animationPlayState = 'paused';
+        },
+        { abandon: true },
+      );
 
       loadNextPage();
 

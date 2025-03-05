@@ -16,9 +16,7 @@ export const debounce: ScheduleCallback = (fn, wait = 100) =>
   _debounce(fn, wait);
 
 export const sleep = (ms: number) =>
-  new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 export const clamp = (min: number, val: number, max: number) =>
   Math.max(Math.min(max, val), min);
@@ -138,48 +136,49 @@ export const scrollIntoView = (
   behavior: ScrollBehavior = 'instant',
 ) => querySelector(selector)?.scrollIntoView({ behavior });
 
-/** 使指定函数延迟运行期间的多次调用直到运行结束 */
-export const singleThreaded = <T extends any[], R>(
+type SingleThreadedState<T extends any[]> = {
+  running: boolean;
+  argList: T[];
+  /** 是否保留运行期间的调用到当此运行结束后调用 */
+  abandon?: boolean;
+  /** 连续调用的间隔 */
+  timeout?: number;
+};
+/** 确保函数在同一时间下只有一个在运行 */
+export const singleThreaded = <T extends any[]>(
   callback: (
-    state: { running: boolean; continueRun: boolean },
+    state: SingleThreadedState<T>,
     ...args: T
-  ) => R | Promise<R>,
-  defaultContinueRun = true,
+  ) => void | undefined | Promise<void | undefined>,
+  initState?: Partial<SingleThreadedState<T>>,
 ) => {
-  const state = {
+  const state: SingleThreadedState<T> = {
     running: false,
-    continueRun: false,
+    argList: [],
+    ...initState,
   };
 
-  const fn = async (...args: T) => {
-    if (state.continueRun) return;
-    if (state.running) {
-      state.continueRun = defaultContinueRun;
-      return;
-    }
-
-    let res: R | undefined;
+  const work = async () => {
+    if (state.argList.length === 0) return;
+    const args = state.argList.shift()!;
 
     try {
       state.running = true;
-      res = await callback(state, ...args);
+      await callback(state, ...args);
     } catch (error) {
-      state.continueRun = false;
       await sleep(100);
-      throw error;
+      if (state.argList.length === 0) throw error;
     } finally {
-      state.running = false;
+      if (state.abandon) state.argList.length = 0;
+      if (state.argList.length > 0) setTimeout(work, state.timeout);
+      else state.running = false;
     }
-
-    if (state.continueRun) {
-      state.continueRun = false;
-      setTimeout(fn, 0, ...args);
-    } else state.running = false;
-
-    return res;
   };
 
-  return fn;
+  return (...args: T) => {
+    state.argList.push(args);
+    if (!state.running) return work();
+  };
 };
 
 /**
