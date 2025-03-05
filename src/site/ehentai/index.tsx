@@ -328,7 +328,7 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
         // 使用 img 的旧版，不显示页码的单个 div，显示页码的嵌套 div
         /<a href="(.{20,50})"><(img alt=.+?|div><div |div )title=".+?: (.+?)"/gm,
       ),
-    ].map(([, url, fileName]) => [url, fileName]);
+    ].map(([, url, , fileName]) => [url, fileName]);
     if (pageList.length === 0)
       throw new Error(t('site.ehentai.fetch_img_page_url_failed'));
     return pageList;
@@ -439,7 +439,9 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   };
 
   /** 刷新指定图片 */
-  const reloadImg = singleThreaded(async (_, i: number): Promise<void> => {
+  const reloadImg = singleThreaded(async (_, url: string): Promise<void> => {
+    const i = ehImgList.indexOf(url);
+    if (i === -1) return;
     ehImgList[i] = await getImgUrl(ehImgPageList[i]);
     if (!(await testImgUrl(ehImgList[i]))) {
       ehImgPageList[i] = await getNewImgPageUrl(ehImgPageList[i]);
@@ -447,26 +449,20 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       toast.warn(t('alert.retry_get_img_url', { i }));
       if (!(await testImgUrl(ehImgList[i]))) {
         await sleep(500);
-        return reloadImg(i);
+        return reloadImg(url);
       }
     }
     setImgList('', i, ehImgList[i]);
   });
 
   setManga({
+    title:
+      querySelector('#gj')?.textContent || querySelector('#gn')?.textContent,
     onExit(isEnd) {
       if (isEnd) scrollIntoView('#cdiv');
       setManga('show', false);
     },
-    // 在图片加载出错时刷新图片
-    onLoading(_, img) {
-      if (!img || img.loadType !== 'error') return;
-      const i = ehImgList.indexOf(img.src);
-      if (i === -1) return;
-      return reloadImg(i);
-    },
-    title:
-      querySelector('#gj')?.textContent || querySelector('#gn')?.textContent,
+    onImgError: reloadImg,
   });
 
   setFab('initialShow', options.autoShow);

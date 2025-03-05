@@ -54,10 +54,6 @@
     opacity: 0.5;
   }
 
-  &[data-type="error"] {
-    background-color: #f005;
-  }
-
   &[data-null] {
     background-color: #fbc02d;
   }
@@ -79,6 +75,10 @@
   &[data-translation-type="error"] {
     background-color: #f005;
   }
+
+  &[data-type="error"] {
+    background-color: #f005;
+  }
 }
 
 /* 滚动条滑块 */
@@ -91,10 +91,10 @@
 
   width: 100%;
   height: var(--slider-height);
+  border-radius: 1em;
 
   opacity: 1;
   background-color: #fff5;
-  border-radius: 1em;
 
   transition:
     transform 150ms,
@@ -117,6 +117,7 @@
   min-width: 1em;
   min-height: 1.5em;
   padding: 0.2em 0.5em;
+  border-radius: 0.3em;
 
   font-size: 0.8em;
   line-height: 1.5em;
@@ -125,7 +126,6 @@
   white-space: pre;
 
   background-color: #303030;
-  border-radius: 0.3em;
 }
 
 /* 悬浮框箭头 */
@@ -136,9 +136,10 @@
   right: 2em;
   transform: translate(140%, calc(var(--arrow-y) - 50%));
 
-  background-color: transparent;
   border: 0.4em solid transparent;
   border-left: 0.5em solid #303030;
+
+  background-color: transparent;
 }
 
 /*
@@ -239,7 +240,6 @@
 
   width: 98%;
   height: 5px;
-
   border-left: none;
 
   &::before {

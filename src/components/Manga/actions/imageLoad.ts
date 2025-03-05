@@ -60,6 +60,7 @@ export const handleImgError = (url: string, e?: HTMLImageElement) => {
       img.loadType = 'wait';
   });
   store.prop.onLoading?.(imgList(), store.imgMap[url]);
+  store.prop.onImgError?.(url);
   updateImgLoadType();
 };
 

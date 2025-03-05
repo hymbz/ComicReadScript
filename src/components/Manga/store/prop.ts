@@ -19,6 +19,8 @@ interface PropState {
 
     /** 图片加载状态发生变化时触发的回调 */
     onLoading?: (imgList: ComicImg[], img?: ComicImg) => void | Promise<void>;
+    /** 图片加载失败时触发的回调 */
+    onImgError?: (url: string) => void | Promise<void>;
     /** 配置发生变化时触发的回调 */
     onOptionChange?: (option: Partial<Option>) => void | Promise<void>;
     /** 快捷键配置发生变化时触发的回调 */

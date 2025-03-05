@@ -92,6 +92,9 @@ export const useInit = (props: MangaProps) => {
           }, 1000)
         : undefined;
     },
+    onImgError(state) {
+      state.prop.onImgError = props.onImgError;
+    },
     editButtonList(state) {
       state.prop.editButtonList = props.editButtonList ?? ((list) => list);
     },

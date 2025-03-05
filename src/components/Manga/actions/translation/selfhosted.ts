@@ -35,7 +35,8 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
   try {
     imgBlob = await downloadImg(url);
   } catch (error) {
-    log.error(error);
+    log.error(error, url);
+    store.prop.onImgError?.(url);
     throw new Error(t('translation.tip.download_img_failed'));
   }
 

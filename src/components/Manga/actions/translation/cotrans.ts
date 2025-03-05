@@ -121,6 +121,7 @@ export const cotransTranslation = async (url: string) => {
     imgBlob = await downloadImg(img.src);
   } catch (error) {
     log.error(error);
+    store.prop.onImgError?.(url);
     throw new Error(t('translation.tip.download_img_failed'));
   }
 
