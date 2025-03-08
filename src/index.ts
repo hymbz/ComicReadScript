@@ -152,7 +152,7 @@ try {
         SPA: {
           async isMangaPage() {
             const id = Number(window.location.pathname.split('/')[2]);
-            if (!id) {
+            if (!id || !window.location.pathname.startsWith('/artworks/')) {
               imgList.length = 0;
               return false;
             }
