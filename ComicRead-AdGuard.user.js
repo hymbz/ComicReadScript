@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         11.8.2
+// @version         11.8.3
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、コミックグロウル、welovemanga、Tachidesk
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -9246,7 +9246,7 @@ const useFab = async (initProps, options, setOptions) => {
 
     // 超出显示范围就恢复原位
     const observer = new IntersectionObserver(entries => {
-      if (entries.length !== 1) return;
+      if (entries.length !== 1 || entries[0].isIntersecting) return;
       setOptions({
         fabPosition: {
           left: 0,
@@ -9482,7 +9482,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>翻译多张图片时，始终优先翻译靠前的页面 </p></li><li><p>修复 kemono.su 失效的 bug </p></li><li><p>修复和「EhAria2下载助手」的显示冲突 </p></li><li><p>修复在 pixiv 上未正常运行的 bug\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复在 pixiv 非作品页出现悬浮按钮的 bug </p></li><li><p>修复在火狐浏览器上悬浮按钮未正确保存移动位置的 bug\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '10.8.0');
       },
@@ -13106,7 +13106,7 @@ const buildChapters = async (comicName, hiddenType) => {
           SPA: {
             async isMangaPage() {
               const id = Number(window.location.pathname.split('/')[2]);
-              if (!id) {
+              if (!id || !window.location.pathname.startsWith('/artworks/')) {
                 imgList.length = 0;
                 return false;
               }
