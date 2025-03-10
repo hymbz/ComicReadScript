@@ -58,7 +58,7 @@ export const useFab = async <T = Record<string, any>,>(
     // 超出显示范围就恢复原位
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.length !== 1) return;
+        if (entries.length !== 1 || entries[0].isIntersecting) return;
         setOptions({ fabPosition: { left: 0, top: 0 } });
       },
       { threshold: 0.5 },
