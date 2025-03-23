@@ -63,7 +63,14 @@ export const EndPage: Component = () => {
       },
       { passive: false },
     );
-    useDrag({ ref, handleDrag });
+    useDrag({
+      ref,
+      handleDrag,
+      skip: (e) =>
+        (e.target as HTMLElement).matches(
+          `.${classes.comments}, .${classes.comments} *`,
+        ),
+    });
   });
 
   // state.show.endPage 变量的延时版本，在隐藏的动画效果结束之后才会真正改变

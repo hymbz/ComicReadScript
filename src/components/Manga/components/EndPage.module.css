@@ -102,7 +102,7 @@
 }
 
 .root[data-mobile] .comments {
-  top: calc(50% + 15em);
+  bottom: 0;
   max-height: 15em;
   opacity: 0.8;
 }
