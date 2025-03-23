@@ -1,0 +1,303 @@
+{
+  "alert": {
+    "comic_load_error": "",
+    "download_failed": "",
+    "fetch_comic_img_failed": "",
+    "img_load_failed": "",
+    "no_img_download": "",
+    "repeat_load": "",
+    "retry_get_img_url": "",
+    "server_connect_failed": ""
+  },
+  "button": {
+    "close_current_page_translation": "",
+    "download": "",
+    "download_completed": "",
+    "download_completed_error": "",
+    "downloading": "",
+    "exit": "",
+    "fullscreen": "",
+    "fullscreen_exit": "",
+    "grid_mode": "",
+    "packaging": "",
+    "page_fill": "",
+    "page_mode_double": "",
+    "page_mode_single": "",
+    "scroll_mode": "",
+    "setting": "",
+    "translate_current_page": "",
+    "zoom_in": "",
+    "zoom_out": ""
+  },
+  "description": "",
+  "eh_tag_lint": {
+    "combo": "",
+    "conflict": "",
+    "correct_tag": "",
+    "miss_female": "",
+    "miss_parody": "",
+    "possible_conflict": "",
+    "prerequisite": ""
+  },
+  "end_page": {
+    "next_button": "",
+    "prev_button": "",
+    "tip": {
+      "end_jump": "",
+      "exit": "",
+      "start_jump": ""
+    }
+  },
+  "hotkeys": {
+    "enter_read_mode": "",
+    "float_tag_list": "",
+    "jump_to_end": "",
+    "jump_to_home": "",
+    "page_down": "",
+    "page_up": "",
+    "scroll_down": "",
+    "scroll_left": "",
+    "scroll_right": "",
+    "scroll_up": "",
+    "switch_auto_enlarge": "",
+    "switch_dir": "",
+    "switch_grid_mode": "",
+    "switch_page_fill": "",
+    "switch_scroll_mode": "",
+    "switch_single_double_page_mode": ""
+  },
+  "img_status": {
+    "error": "",
+    "loading": "",
+    "wait": ""
+  },
+  "other": {
+    "default": "",
+    "disable": "",
+    "enabled": "",
+    "enter_comic_read_mode": "",
+    "fab_hidden": "",
+    "fab_show": "",
+    "fill_page": "",
+    "img_loading": "",
+    "loading_img": "",
+    "or": "",
+    "page_range": "",
+    "read_mode": ""
+  },
+  "pwa": {
+    "alert": {
+      "img_data_error": "",
+      "img_not_found": "",
+      "img_not_found_files": "",
+      "img_not_found_folder": "",
+      "not_valid_url": "",
+      "repeat_load": "",
+      "unzip_error": "",
+      "unzip_password_error": "",
+      "userscript_not_installed": ""
+    },
+    "button": {
+      "enter_url": "",
+      "install": "",
+      "no_more_prompt": "",
+      "resume_read": "",
+      "select_files": "",
+      "select_folder": ""
+    },
+    "install_md": "",
+    "message": {
+      "enter_password": "",
+      "unzipping": ""
+    },
+    "tip_enter_url": "",
+    "tip_md": ""
+  },
+  "setting": {
+    "hotkeys": {
+      "add": "",
+      "restore": ""
+    },
+    "language": "",
+    "option": {
+      "abreast_duplicate": "",
+      "abreast_mode": "",
+      "always_load_all_img": "",
+      "autoHiddenMouse": "",
+      "auto_switch_page_mode": "",
+      "background_color": "",
+      "click_page_turn_area": "",
+      "click_page_turn_enabled": "",
+      "click_page_turn_swap_area": "",
+      "click_page_turn_vertical": "",
+      "dark_mode": "",
+      "dark_mode_auto": "",
+      "dir_ltr": "",
+      "dir_rtl": "",
+      "disable_auto_enlarge": "",
+      "first_page_fill": "",
+      "fit_to_width": "",
+      "img_recognition": "",
+      "img_recognition_background": "",
+      "img_recognition_pageFill": "",
+      "img_recognition_warn": "",
+      "img_recognition_warn_2": "",
+      "jump_to_next_chapter": "",
+      "paragraph_appearance": "",
+      "paragraph_dir": "",
+      "paragraph_display": "",
+      "paragraph_hotkeys": "",
+      "paragraph_other": "",
+      "paragraph_scrollbar": "",
+      "paragraph_translation": "",
+      "preload_page_num": "",
+      "scroll_mode_img_scale": "",
+      "scroll_mode_img_spacing": "",
+      "scrollbar_auto_hidden": "",
+      "scrollbar_easy_scroll": "",
+      "scrollbar_position": "",
+      "scrollbar_position_auto": "",
+      "scrollbar_position_bottom": "",
+      "scrollbar_position_hidden": "",
+      "scrollbar_position_right": "",
+      "scrollbar_position_top": "",
+      "scrollbar_show_img_status": "",
+      "show_clickable_area": "",
+      "show_comments": "",
+      "swap_page_turn_key": "",
+      "zoom": ""
+    },
+    "translation": {
+      "cotrans_tip": "",
+      "options": {
+        "detection_resolution": "",
+        "direction": "",
+        "direction_auto": "",
+        "direction_horizontal": "",
+        "direction_vertical": "",
+        "forceRetry": "",
+        "localUrl": "",
+        "onlyDownloadTranslated": "",
+        "target_language": "",
+        "text_detector": "",
+        "translator": ""
+      },
+      "range": "",
+      "server": "",
+      "server_selfhosted": "",
+      "translate_all": "",
+      "translate_to_end": ""
+    }
+  },
+  "site": {
+    "add_feature": {
+      "associate_nhentai": "",
+      "auto_adjust_option": "",
+      "auto_page_turn": "",
+      "auto_show": "",
+      "block_totally": "",
+      "colorize_tag": "",
+      "detect_ad": "",
+      "float_tag_list": "",
+      "hotkeys": "",
+      "load_original_image": "",
+      "lock_option": "",
+      "open_link_new_page": "",
+      "quick_favorite": "",
+      "quick_rating": "",
+      "quick_tag_define": "",
+      "remember_current_site": "",
+      "tag_lint": ""
+    },
+    "changed_load_failed": "",
+    "ehentai": {
+      "change_favorite_failed": "",
+      "change_favorite_success": "",
+      "change_rating_failed": "",
+      "change_rating_success": "",
+      "fetch_favorite_failed": "",
+      "fetch_img_page_source_failed": "",
+      "fetch_img_page_url_failed": "",
+      "fetch_img_url_failed": "",
+      "html_changed_nhentai_failed": "",
+      "ip_banned": "",
+      "nhentai_error": "",
+      "nhentai_failed": ""
+    },
+    "need_captcha": "",
+    "nhentai": {
+      "fetch_next_page_failed": "",
+      "tag_blacklist_fetch_failed": ""
+    },
+    "settings_tip": "",
+    "show_settings_menu": "",
+    "simple": {
+      "auto_read_mode_message": "",
+      "no_img": "",
+      "simple_read_mode": ""
+    }
+  },
+  "touch_area": {
+    "menu": "",
+    "next": "",
+    "prev": "",
+    "type": {
+      "edge": "",
+      "l": "",
+      "left_right": "",
+      "up_down": ""
+    }
+  },
+  "translation": {
+    "status": {
+      "colorizing": "",
+      "default": "",
+      "detection": "",
+      "downscaling": "",
+      "error": "",
+      "error-lang": "",
+      "error-translating": "",
+      "error-with-id": "",
+      "finished": "",
+      "inpainting": "",
+      "mask-generation": "",
+      "ocr": "",
+      "pending": "",
+      "pending-pos": "",
+      "preparing": "",
+      "rendering": "",
+      "saved": "",
+      "skip-no-regions": "",
+      "skip-no-text": "",
+      "textline_merge": "",
+      "translating": "",
+      "upscaling": ""
+    },
+    "tip": {
+      "check_img_status_failed": "",
+      "download_img_failed": "",
+      "get_translator_list_error": "",
+      "id_not_returned": "",
+      "img_downloading": "",
+      "img_not_fully_loaded": "",
+      "pending": "",
+      "resize_img_failed": "",
+      "translating": "",
+      "translation_completed": "",
+      "upload": "",
+      "upload_error": "",
+      "upload_return_error": "",
+      "wait_translation": ""
+    },
+    "translator": {
+      "baidu": "",
+      "deepl": "",
+      "google": "",
+      "gpt3.5": "",
+      "none": "",
+      "offline": "",
+      "original": "",
+      "youdao": ""
+    }
+  }
+}
