@@ -1,6 +1,6 @@
-## [11.8.3](https://github.com/hymbz/ComicReadScript/compare/v11.8.2...v11.8.3) (2025-03-10)
+## [11.9.0](https://github.com/hymbz/ComicReadScript/compare/v11.8.3...v11.9.0) (2025-03-23)
 
 ### Bug Fixes
 
-* :bug: 修复在 pixiv 非作品页出现悬浮按钮的 bug ([3c45b78](https://github.com/hymbz/ComicReadScript/commit/3c45b78e4542291e1eba9b8beae10664dfb04f84)), closes [#229](https://github.com/hymbz/ComicReadScript/issues/229)
-* :bug: 修复在火狐浏览器上悬浮按钮未正确保存移动位置的 bug ([f2ab90c](https://github.com/hymbz/ComicReadScript/commit/f2ab90c60a6bc603b3513164ae6a0600007be1f1)), closes [#221](https://github.com/hymbz/ComicReadScript/issues/221)
+* :bug: 修复 hitomi 失效的 bug ([b24ddbc](https://github.com/hymbz/ComicReadScript/commit/b24ddbcea66751be33a608cc695ad4b72748ad56))
+* :bug: 修复拷贝漫画移动端未正常显示上/下一话按钮的 bug ([29359e0](https://github.com/hymbz/ComicReadScript/commit/29359e05d7cbc2577b2f8d42691711f8fc08f069))
