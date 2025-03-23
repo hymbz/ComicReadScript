@@ -400,10 +400,17 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
       if (titleDom) {
         titleDom.textContent = '漫畫加載成功🥳';
         const {
-          chapter: { next, prev, name: chapterName },
+          chapter: { name: chapterName },
           comic: { name },
         } = res.response.results;
         document.title = `${name} - ${chapterName} - 拷貝漫畫 拷贝漫画`;
+      }
+
+      if (titleDom ?? !querySelector('.comicContent-next')) {
+        const {
+          chapter: { next, prev },
+        } = res.response.results;
+
         setManga({
           onNext: next
             ? () =>
@@ -414,7 +421,13 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
                 window.location.assign(`/comic/${comicName}/chapter/${prev}`)
             : undefined,
         });
-      }
+      } else
+        setManga({
+          onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
+          onPrev: querySelectorClick(
+            '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
+          ),
+        });
 
       const imgList: string[] = [];
       const { words, contents } = res.response.results.chapter;
@@ -424,13 +437,6 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
           'c1500x',
         );
       return imgList;
-    });
-
-    setManga({
-      onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
-      onPrev: querySelectorClick(
-        '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
-      ),
     });
 
     const getCommentList = async () => {
