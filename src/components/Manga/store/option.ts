@@ -17,8 +17,6 @@ export interface Option {
   autoDarkMode: boolean;
   /** 左右翻页键交换 */
   swapPageTurnKey: boolean;
-  /** 滚动到底后继续滚动会跳至下一话 */
-  jumpToNext: boolean;
   /** 始终加载所有图片 */
   alwaysLoadAllImg: boolean;
   /** 在结束页显示评论 */
@@ -31,6 +29,8 @@ export interface Option {
   autoSwitchPageMode: boolean;
   /** 自动隐藏鼠标 */
   autoHiddenMouse: boolean;
+  /** 翻页至尽头后继续翻页的操作 */
+  scroolEnd: 'none' | 'exit' | 'auto';
 
   zoom: {
     /** 缩放大小 */
@@ -128,7 +128,7 @@ const _defaultOption: Readonly<Option> = {
   darkMode: false,
   autoDarkMode: false,
   swapPageTurnKey: false,
-  jumpToNext: true,
+  scroolEnd: 'auto',
   alwaysLoadAllImg: false,
   showComment: true,
   preloadPageNum: 20,

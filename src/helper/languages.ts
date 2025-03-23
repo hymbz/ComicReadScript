@@ -8,20 +8,10 @@ export const isLanguages = (
 
 /** 返回浏览器偏好语言 */
 const getBrowserLang = () => {
-  let newLang: Languages | undefined;
-
-  for (let i = 0; i < navigator.languages.length; i++) {
-    const language = navigator.languages[i];
-    const matchLang = langList.find(
-      (l) => l === language || l === language.split('-')[0],
-    );
-    if (matchLang) {
-      newLang = matchLang;
-      break;
-    }
+  for (const language of navigator.languages) {
+    const matchLang = langList.find((l) => l === language.split('-')[0]);
+    if (matchLang) return matchLang;
   }
-
-  return newLang;
 };
 
 const getSaveLang = async () =>

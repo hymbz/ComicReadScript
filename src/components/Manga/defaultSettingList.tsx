@@ -26,6 +26,7 @@ import classes from './index.module.css';
 import { SettingsItemNumber } from './components/SettingsItemNumber';
 import { areaArrayMap } from './components/TouchArea';
 import { handleImgRecognition } from './actions/imageRecognition';
+import type { Option } from './store/option';
 
 export type SettingList = Array<
   [string, Component] | [string, Component, boolean]
@@ -386,10 +387,18 @@ export const defaultSettingList: () => SettingList = () => [
           value={store.option.swapPageTurnKey}
           onChange={createStateSetFn('swapPageTurnKey')}
         />
-        <SettingsItemSwitch
-          name={t('setting.option.jump_to_next_chapter')}
-          value={store.option.jumpToNext}
-          onChange={createStateSetFn('jumpToNext')}
+
+        <SettingsItemSelect
+          name={t('setting.option.scroll_end')}
+          options={
+            [
+              ['none', t('other.none')],
+              ['exit', t('button.exit')],
+              ['auto', t('setting.option.scroll_end_auto')],
+            ] satisfies Array<[Option['scroolEnd'], string]>
+          }
+          value={store.option.scroolEnd}
+          onChange={createStateSetFn('scroolEnd')}
         />
 
         <SettingsItemSwitch

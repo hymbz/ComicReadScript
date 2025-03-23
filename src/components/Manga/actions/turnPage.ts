@@ -18,7 +18,8 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
   if (dir === 'prev') {
     switch (state.show.endPage) {
       case 'start':
-        if (!state.scrollLock && state.option.jumpToNext) state.prop.onPrev?.();
+        if (!state.scrollLock && store.option.scroolEnd === 'auto')
+          state.prop.onPrev?.();
         return false;
       case 'end':
         state.show.endPage = undefined;
@@ -29,7 +30,8 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
         if (isTop()) {
           if (!state.prop.onExit) return false;
           // 没有 onPrev 时不弹出
-          if (!state.prop.onPrev || !state.option.jumpToNext) return false;
+          if (!state.prop.onPrev || store.option.scroolEnd !== 'auto')
+            return false;
 
           state.show.endPage = 'start';
           state.scrollLock = true;
@@ -46,12 +48,12 @@ export const turnPageFn = (state: State, dir: 'next' | 'prev'): boolean => {
     switch (state.show.endPage) {
       case 'end':
         if (state.scrollLock) return false;
-        if (state.prop.onNext && state.option.jumpToNext) {
+        if (state.prop.onNext && store.option.scroolEnd === 'auto') {
           state.prop.onNext();
           return false;
         }
 
-        state.prop.onExit?.(true);
+        if (store.option.scroolEnd !== 'none') state.prop.onExit?.(true);
         return false;
       case 'start':
         state.show.endPage = undefined;

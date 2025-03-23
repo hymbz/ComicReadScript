@@ -82,18 +82,16 @@ export const EndPage: Component = () => {
   });
 
   const tip = createMemo(() => {
+    if (store.option.scroolEnd === 'none') return '';
     switch (delayType()) {
       case 'start':
-        if (store.prop.onPrev && store.option.jumpToNext)
-          return t('end_page.tip.start_jump');
-        break;
+        if (!store.prop.onPrev || store.option.scroolEnd !== 'auto') break;
+        return t('end_page.tip.start_jump');
       case 'end':
-        if (store.prop.onNext && store.option.jumpToNext)
+        if (store.prop.onNext && store.option.scroolEnd === 'auto')
           return t('end_page.tip.end_jump');
         if (store.prop.onExit) return t('end_page.tip.exit');
-        break;
     }
-
     return '';
   });
 
