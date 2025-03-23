@@ -143,7 +143,6 @@
       "img_recognition_pageFill": "自动调整页面填充",
       "img_recognition_warn": "❗ 当前浏览器不支持 Web Worker，开启此功能可能导致页面卡顿，建议升级或更换浏览器。",
       "img_recognition_warn_2": "❗ 当前网站不支持 Web Worker，开启此功能可能导致页面卡顿。",
-      "jump_to_next_chapter": "翻页至上/下一话",
       "paragraph_appearance": "外观",
       "paragraph_dir": "阅读方向",
       "paragraph_display": "显示",
