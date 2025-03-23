@@ -798,8 +798,6 @@ try {
                 unsafeWindow.galleryinfo.id,
                 img,
                 'webp',
-                undefined,
-                'a',
               ) as string,
           ),
       };
