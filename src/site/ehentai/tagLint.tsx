@@ -1,9 +1,11 @@
 import {
+  createRootMemo,
   hijackFn,
   querySelector,
-  querySelectorAll,
+  useStyle,
   singleThreaded,
   t,
+  createEqualsSignal,
 } from 'helper';
 import { createSignal, For, Show, type Component } from 'solid-js';
 import { render } from 'solid-js/web';
@@ -14,6 +16,8 @@ import {
   isMissingTags,
   splitTagNamespace,
 } from 'userscript/ehTagRules';
+
+import { getTaglist, getTagNameFull } from './other';
 
 import type { PageType } from '.';
 
@@ -99,21 +103,6 @@ export const tagLint = (pageType: PageType) => {
         </For>
       </Show>
     );
-  };
-
-  /** 获取所有标签 */
-  const getTaglist = () => {
-    const lockTags = new Set<string>();
-    const weakTags = new Set<string>();
-    for (const tag of querySelectorAll('#taglist table [id^=td_]')) {
-      const [a] = tag.getElementsByTagName('a');
-      // 跳过点踩的标签
-      if (a.classList.contains('tdn')) continue;
-      if (a.classList.contains('tup') || tag.classList.contains('gt'))
-        lockTags.add(tag.id.slice(3));
-      else if (tag.classList.contains('gtl')) weakTags.add(tag.id.slice(3));
-    }
-    return [lockTags, weakTags] as const;
   };
 
   let root: HTMLDivElement;
@@ -236,4 +225,28 @@ export const tagLint = (pageType: PageType) => {
 
   // 投票后重新渲染
   hijackFn('tag_update_vote', updateLint);
+
+  // 输入标签高亮
+  const newTagInput = querySelector<HTMLInputElement>('#newtagfield')!;
+  const [inputTagList, setInputTagList] = createEqualsSignal<string[]>([]);
+  useStyle(
+    createRootMemo(() =>
+      inputTagList()
+        .map(
+          (tag) =>
+            `#td_${CSS.escape(tag.replaceAll(' ', '_'))} { box-shadow: 0px 0px 4px var(--tag); }`,
+        )
+        .join('\n'),
+    ),
+  );
+  const updateInputTagList = () =>
+    setInputTagList(
+      newTagInput.value
+        .split(',')
+        .map((tag) => getTagNameFull(tag.trim()))
+        .filter(Boolean),
+    );
+  newTagInput.addEventListener('input', updateInputTagList);
+  newTagInput.addEventListener('keydown', updateInputTagList);
+  hijackFn('tag_update_vote', updateInputTagList);
 };

@@ -324,6 +324,8 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 
 具体规则详见：[ehTagRules.ts](https://github.com/hymbz/ComicReadScript/blob/master/src/userscript/ehTagRules/index.ts)，欢迎反馈补充或直接 PR。
 
+为了方便对照关联，填入输入框里的标签会自动高亮。
+
 ### 识别广告页
 
 简单识别下广告页并自动排除，只会在有`extraneous ads(外部广告)`标签时生效。

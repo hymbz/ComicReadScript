@@ -126,9 +126,8 @@ export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
     state.left = clamp(-gd4.clientWidth * 0.75, left, state.bound.width);
   };
 
-  const setOpacity = (opacity: number) => {
+  const setOpacity = (opacity: number) =>
     _setState('opacity', clamp(0.5, opacity, 1));
-  };
   setOpacity(Number(localStorage.getItem('floatTagListOpacity')) || 1);
 
   // 监视鼠标位置，以便在通过快捷键唤出时出现在鼠标所在位置
@@ -326,6 +325,8 @@ export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
     if (!tag) return;
     e.preventDefault();
     if (!newTagInput.value.includes(tag)) newTagInput.value += `${tag}, `;
+    // 触发一下 input 事件
+    newTagInput.dispatchEvent(new Event('input'));
   };
   newTagInput.addEventListener('drop', handleDrop);
 
