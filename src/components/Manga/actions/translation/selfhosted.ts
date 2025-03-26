@@ -172,11 +172,13 @@ export const updateSelfhostedOptions = async (noTip = false) => {
       noTip,
       errorText: t('alert.server_connect_failed'),
     });
-    const translatorsText = /(?<=validTranslators: ).+?(?=,\n)/.exec(
+    const translatorsText = /(?<=validTranslators: )\[.+?](?=,)/s.exec(
       res.responseText,
     )?.[0];
     if (!translatorsText) return undefined;
-    const list = JSON.parse(translatorsText.replaceAll(`'`, `"`)) as string[];
+    const list = JSON.parse(
+      translatorsText.replaceAll(/\s|,\s*(?=])/g, ``).replaceAll(`'`, `"`),
+    ) as string[];
     setSelfOptions(createOptions(list));
   } catch (error) {
     log.error(t('translation.tip.get_translator_list_error'), error);
