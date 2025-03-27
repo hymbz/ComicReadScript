@@ -1,4 +1,4 @@
-import { type Component } from 'solid-js';
+import { type Component, type JSX } from 'solid-js';
 
 export interface RangeInputProps {
   value: string;
@@ -6,6 +6,7 @@ export interface RangeInputProps {
   onChange?: (val: string) => void;
 
   class?: string;
+  style?: JSX.CSSProperties;
 }
 
 /** 范围输入框 */
@@ -63,6 +64,7 @@ export const RangeInput: Component<RangeInputProps> = (props) => {
   return (
     <textarea
       ref={ref}
+      style={props.style}
       value={props.value}
       placeholder={props.placeholder}
       autocomplete="off"

@@ -24,7 +24,6 @@
     "page_mode_double": "Double page mode",
     "page_mode_single": "Single page mode",
     "scroll_mode": "Scroll mode",
-    "setting": "Settings",
     "translate_current_page": "Translate current page",
     "zoom_in": "Zoom in",
     "zoom_out": "Zoom out"
@@ -84,7 +83,8 @@
     "none": "None",
     "or": "or",
     "page_range": "Please enter the page range.:\n (e.g., 1, 3-5, 9-)",
-    "read_mode": "Reading mode"
+    "read_mode": "Reading mode",
+    "setting": "Settings"
   },
   "pwa": {
     "alert": {
@@ -172,17 +172,22 @@
     "translation": {
       "cotrans_tip": "<p>Using the interface provided by <a href=\"https://cotrans.touhou.ai\" target=\"_blank\">Cotrans</a> to translate images, which is maintained by its maintainer at their own expense.</p>\n<p>When multiple people use it at the same time, they need to queue and wait. If the waiting queue reaches its limit, uploading new images will result in an error. Please try again after a while.</p>\n<p>So please <b>mind the frequency of use</b>.</p>\n<p>It is highly recommended to use your own locally deployed project, as it does not consume server resources and does not require queuing.</p>",
       "options": {
+        "box_threshold": "Box threshold",
         "detection_resolution": "Text detection resolution",
         "direction": "Render text orientation",
         "direction_auto": "Follow source",
         "direction_horizontal": "Horizontal only",
         "direction_vertical": "Vertical only",
-        "forceRetry": "Force retry (ignore cache)",
-        "localUrl": "customize server URL",
-        "onlyDownloadTranslated": "Download only the translated images",
+        "force_retry": "Force retry (ignore cache)",
+        "inpainter": "Inpainter",
+        "inpainting_size": "Inpainting size",
+        "local_url": "customize server URL",
+        "mask_dilation_offset": "Mask dilation offset",
+        "only_download_translated": "Download only the translated images",
         "target_language": "Target language",
         "text_detector": "Text detector",
-        "translator": "Translator"
+        "translator": "Translator",
+        "unclip_ratio": "Unclip ratio"
       },
       "range": "Scope of Translation",
       "server": "Translation server",
@@ -231,7 +236,6 @@
       "fetch_next_page_failed": "Failed to get next page of comic data",
       "tag_blacklist_fetch_failed": "Failed to fetch tag blacklist"
     },
-    "settings_tip": "Settings",
     "show_settings_menu": "Show settings menu",
     "simple": {
       "auto_read_mode_message": "\"Auto enter reading mode\" is enabled by default",

@@ -27,7 +27,7 @@ const apiUrl = () =>
 /** 使用自部署服务器翻译指定图片 */
 export const selfhostedTranslation = async (url: string): Promise<string> => {
   const html = await request(apiUrl(), {
-    errorText: t('alert.server_connect_failed'),
+    errorText: `${t('setting.option.paragraph_translation')} - ${t('alert.server_connect_failed')}`,
   });
 
   setMessage(url, t('translation.tip.img_downloading'));
@@ -170,7 +170,7 @@ export const updateSelfhostedOptions = async (noTip = false) => {
   try {
     const res = await request(`${apiUrl()}`, {
       noTip,
-      errorText: t('alert.server_connect_failed'),
+      errorText: `${t('setting.option.paragraph_translation')} - ${t('alert.server_connect_failed')}`,
     });
     const translatorsText = /(?<=validTranslators: )\[.+?](?=,)/s.exec(
       res.responseText,
@@ -188,11 +188,12 @@ export const updateSelfhostedOptions = async (noTip = false) => {
   // 如果更新后原先选择的翻译服务失效了，就换成第一个翻译
   if (
     !selfhostedOptions().some(
-      ([val]) => val === store.option.translation.options.translator,
+      ([val]) => val === store.option.translation.options.translator.translator,
     )
   ) {
     setOption((draftOption) => {
-      draftOption.translation.options.translator = selfhostedOptions()[0]?.[0];
+      draftOption.translation.options.translator.translator =
+        selfhostedOptions()[0]?.[0];
     });
   }
 };

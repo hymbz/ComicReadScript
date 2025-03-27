@@ -17,7 +17,7 @@ import classes from '../index.module.css';
 
 import { SettingsItemSelect } from './SettingsItemSelect';
 import { SettingsItemSwitch } from './SettingsItemSwitch';
-import { SettingsShowItem } from './SettingsShowItem';
+import { SettingsItemNumber } from './SettingsItemNumber';
 import { SettingsItem } from './SettingsItem';
 
 const TranslateRange: Component = () => {
@@ -92,46 +92,28 @@ export const SettingTranslation = () => (
       onChange={createStateSetFn('translation.server')}
     />
 
-    <SettingsShowItem when={store.option.translation.server === 'cotrans'}>
+    <Show when={store.option.translation.server === 'cotrans'}>
       {/* eslint-disable-next-line solid/no-innerhtml */}
       <blockquote innerHTML={t('setting.translation.cotrans_tip')} />
-    </SettingsShowItem>
+    </Show>
 
-    <SettingsShowItem when={store.option.translation.server !== 'disable'}>
-      <SettingsItemSelect
-        name={t('setting.translation.options.detection_resolution')}
-        options={[
-          ['1024', '1024px'],
-          ['1536', '1536px'],
-          ['2048', '2048px'],
-          ['2560', '2560px'],
-        ]}
-        value={store.option.translation.options.size}
-        onChange={createStateSetFn('translation.options.size')}
+    <Show when={store.option.translation.server === 'selfhosted'}>
+      <SettingsItemSwitch
+        name={t('setting.translation.translate_all')}
+        value={isTranslatingAll()}
+        onChange={translateAll}
       />
-      <SettingsItemSelect
-        name={t('setting.translation.options.text_detector')}
-        options={[['default'], ['ctd', 'Comic Text Detector']]}
-        value={store.option.translation.options.detector}
-        onChange={createStateSetFn('translation.options.detector')}
+      <SettingsItemSwitch
+        name={t('setting.translation.translate_to_end')}
+        value={isTranslatingToEnd()}
+        onChange={translateToEnd}
       />
-      <SettingsItemSelect
-        name={t('setting.translation.options.translator')}
-        options={translatorOptions()}
-        value={store.option.translation.options.translator}
-        onChange={createStateSetFn('translation.options.translator')}
-        onClick={updateSelfhostedOptions}
-      />
-      <SettingsItemSelect
-        name={t('setting.translation.options.direction')}
-        options={[
-          ['auto', t('setting.translation.options.direction_auto')],
-          ['horizontal', t('setting.translation.options.direction_horizontal')],
-          ['vertical', t('setting.translation.options.direction_vertical')],
-        ]}
-        value={store.option.translation.options.direction}
-        onChange={createStateSetFn('translation.options.direction')}
-      />
+      <TranslateRange />
+
+      <hr style={{ margin: '1em 0' }} />
+    </Show>
+
+    <Show when={store.option.translation.server !== 'disable'}>
       <SettingsItemSelect
         name={t('setting.translation.options.target_language')}
         options={[
@@ -155,25 +137,115 @@ export const SettingTranslation = () => (
           ['TRK', 'Türk dili'],
           ['IND', 'Indonesia'],
         ]}
-        value={store.option.translation.options.targetLanguage}
-        onChange={createStateSetFn('translation.options.targetLanguage')}
+        value={store.option.translation.options.translator.target_lang}
+        onChange={createStateSetFn(
+          'translation.options.translator.target_lang',
+        )}
       />
-
-      <SettingsItemSwitch
-        name={t('setting.translation.options.forceRetry')}
-        value={store.option.translation.forceRetry}
-        onChange={createStateSetFn('translation.forceRetry')}
+      <SettingsItemSelect
+        name={t('setting.translation.options.translator')}
+        options={translatorOptions()}
+        value={store.option.translation.options.translator.translator}
+        onChange={createStateSetFn('translation.options.translator.translator')}
+        onClick={updateSelfhostedOptions}
       />
-
-      <SettingsItemSwitch
-        name={t('setting.translation.options.onlyDownloadTranslated')}
-        value={store.option.translation.onlyDownloadTranslated}
-        onChange={createStateSetFn('translation.onlyDownloadTranslated')}
+      <SettingsItemSelect
+        name={t('setting.translation.options.direction')}
+        options={[
+          ['auto', t('setting.translation.options.direction_auto')],
+          ['horizontal', t('setting.translation.options.direction_horizontal')],
+          ['vertical', t('setting.translation.options.direction_vertical')],
+        ]}
+        value={store.option.translation.options.render.direction}
+        onChange={createStateSetFn('translation.options.render.direction')}
+      />
+      <SettingsItemSelect
+        name={t('setting.translation.options.detection_resolution')}
+        options={[
+          ['1024', '1024px'],
+          ['1536', '1536px'],
+          ['2048', '2048px'],
+          ['2560', '2560px'],
+        ]}
+        value={store.option.translation.options.detector.detection_size}
+        onChange={createStateSetFn(
+          'translation.options.detector.detection_size',
+        )}
+      />
+      <SettingsItemSelect
+        name={t('setting.translation.options.text_detector')}
+        options={[['default'], ['ctd', 'Comic Text Detector']]}
+        value={store.option.translation.options.detector.detector}
+        onChange={createStateSetFn('translation.options.detector.detector')}
       />
 
       <Show when={store.option.translation.server === 'selfhosted'}>
+        <SettingsItemSelect
+          name={t('setting.translation.options.inpainting_size')}
+          options={[
+            ['516', '516px'],
+            ['1024', '1024px'],
+            ['2048', '2048px'],
+            ['2560', '2560px'],
+          ]}
+          value={store.option.translation.options.inpainter.inpainting_size}
+          onChange={createStateSetFn(
+            'translation.options.inpainter.inpainting_size',
+          )}
+        />
+        <SettingsItemSelect
+          name={t('setting.translation.options.inpainter')}
+          options={[
+            ['default', 'Default'],
+            ['lama_large', 'Lama Large'],
+            ['lama_mpe', 'Lama MPE'],
+            ['sd', 'SD'],
+            ['none', 'None'],
+            ['original', 'Original'],
+          ]}
+          value={store.option.translation.options.inpainter.inpainter}
+          onChange={createStateSetFn('translation.options.inpainter.inpainter')}
+        />
+        <SettingsItemNumber
+          name={t('setting.translation.options.unclip_ratio')}
+          step={0.01}
+          value={store.option.translation.options.detector.unclip_ratio}
+          onChange={createStateSetFn('translation.options.unclipRatio')}
+        />
+        <SettingsItemNumber
+          name={t('setting.translation.options.box_threshold')}
+          step={0.01}
+          value={store.option.translation.options.detector.box_threshold}
+          onChange={createStateSetFn(
+            'translation.options.detector.box_threshold',
+          )}
+        />
+        <SettingsItemNumber
+          name={t('setting.translation.options.mask_dilation_offset')}
+          value={store.option.translation.options.mask_dilation_offset}
+          onChange={createStateSetFn(
+            'translation.options.mask_dilation_offset',
+          )}
+        />
+      </Show>
+    </Show>
+
+    <Show when={store.option.translation.server !== 'disable'}>
+      <hr style={{ margin: '1em 0' }} />
+
+      <SettingsItemSwitch
+        name={t('setting.translation.options.force_retry')}
+        value={store.option.translation.forceRetry}
+        onChange={createStateSetFn('translation.forceRetry')}
+      />
+      <SettingsItemSwitch
+        name={t('setting.translation.options.only_download_translated')}
+        value={store.option.translation.onlyDownloadTranslated}
+        onChange={createStateSetFn('translation.onlyDownloadTranslated')}
+      />
+      <Show when={store.option.translation.server === 'selfhosted'}>
         <SettingsItemSwitch
-          name={t('setting.translation.options.localUrl')}
+          name={t('setting.translation.options.local_url')}
           value={store.option.translation.localUrl !== undefined}
           onChange={(val) => {
             setOption((draftOption) => {
@@ -194,19 +266,7 @@ export const SettingTranslation = () => (
             }}
           />
         </Show>
-
-        <SettingsItemSwitch
-          name={t('setting.translation.translate_all')}
-          value={isTranslatingAll()}
-          onChange={translateAll}
-        />
-        <SettingsItemSwitch
-          name={t('setting.translation.translate_to_end')}
-          value={isTranslatingToEnd()}
-          onChange={translateToEnd}
-        />
-        <TranslateRange />
       </Show>
-    </SettingsShowItem>
+    </Show>
   </>
 );

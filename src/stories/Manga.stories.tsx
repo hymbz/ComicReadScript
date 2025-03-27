@@ -110,6 +110,6 @@ export const 网格模式: Story = {
 //     option: { translation: { server: 'selfhosted' } },
 //   } satisfies PartialProps,
 //   async play() {
-//     await waitImgLoaded();
+//     await clickSettingItem(t('setting.option.disable_auto_enlarge'));
 //   },
 // };

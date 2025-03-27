@@ -10,7 +10,7 @@ import MdZoomOut from '@material-design-icons/svg/round/zoom_out.svg';
 import MdFullscreen from '@material-design-icons/svg/round/fullscreen.svg';
 import MdFullscreenExit from '@material-design-icons/svg/round/fullscreen_exit.svg';
 import MdLowPriority from '@material-design-icons/svg/round/low_priority.svg';
-import { createMemo, type Component, createSignal, Show } from 'solid-js';
+import { type Component, createSignal, Show } from 'solid-js';
 import { createEffectOn, t } from 'helper';
 
 import { IconButton } from '../IconButton';
@@ -166,7 +166,7 @@ export const defaultButtonList: ToolbarButtonList = [
       (showToolbar) => showToolbar || setShowPanel(false),
     );
 
-    const popper = createMemo(() => (
+    const Popper = (
       <>
         <SettingPanel />
         <div
@@ -179,16 +179,16 @@ export const defaultButtonList: ToolbarButtonList = [
           tabIndex={-1}
         />
       </>
-    ));
+    );
 
     return (
       <IconButton
-        tip={t('button.setting')}
+        tip={t('other.setting')}
         enabled={showPanel()}
         showTip={showPanel()}
         onClick={handleClick}
         popperClassName={showPanel() && classes.SettingPanelPopper}
-        popper={showPanel() && popper()}
+        popper={showPanel() && Popper}
         children={<MdSettings />}
       />
     );

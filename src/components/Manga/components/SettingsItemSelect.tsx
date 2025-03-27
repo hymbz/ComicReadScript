@@ -4,7 +4,7 @@ import classes from '../index.module.css';
 
 import { SettingsItem } from './SettingsItem';
 
-export interface SettingsItemSelectProps<T> {
+export interface SettingsItemSelectProps<T extends string = string> {
   options: Array<[string, string] | [string]>;
   name: string;
   value: T;

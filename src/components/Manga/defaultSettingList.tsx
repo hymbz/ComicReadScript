@@ -29,7 +29,7 @@ import { handleImgRecognition } from './actions/imageRecognition';
 import type { Option } from './store/option';
 
 export type SettingList = Array<
-  [string, Component] | [string, Component, boolean]
+  [string, Component] | [string, Component, boolean | (() => boolean)]
 >;
 
 /** 默认菜单项 */
@@ -359,7 +359,7 @@ export const defaultSettingList: () => SettingList = () => [
   [
     t('setting.option.paragraph_translation'),
     SettingTranslation,
-    store.option.translation.server !== 'disable',
+    () => store.option.translation.server !== 'disable',
   ],
   [t('setting.option.paragraph_hotkeys'), SettingHotkeys],
   [

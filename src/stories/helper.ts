@@ -6,7 +6,7 @@ import classes from '../components/Manga/index.module.css';
 import { imgList as comicImgList } from '../components/Manga';
 
 /** 点击侧边栏按钮 */
-export const clickToolbarButton = (name = t('button.setting')) => {
+export const clickToolbarButton = (name = t('other.setting')) => {
   const button = refs.root.querySelector<HTMLElement>(
     `[aria-label="${name}"]`,
   )!;

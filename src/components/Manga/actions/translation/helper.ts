@@ -17,33 +17,25 @@ export const createFormData = (
   imgBlob: Blob,
   type: 'selfhosted' | 'cotrans' | 'selfhosted-old',
 ) => {
+  const formData = new FormData();
+  const { options } = store.option.translation;
   const file = new File([imgBlob], `image.${imgBlob.type.split('/').at(-1)}`, {
     type: imgBlob.type,
   });
-  const { size, detector, direction, translator, targetLanguage } =
-    store.option.translation.options;
-  const formData = new FormData();
 
   if (type === 'selfhosted') {
     formData.append('image', file);
-    formData.append(
-      'config',
-      JSON.stringify({
-        detector: { detector, detection_size: size },
-        render: { direction },
-        translator: { translator, target_lang: targetLanguage },
-      }),
-    );
+    formData.append('config', JSON.stringify(options));
   } else {
     formData.append('file', file);
     formData.append('mime', file.type);
-    formData.append('size', sizeDict[size]);
-    formData.append('detector', detector);
-    formData.append('direction', direction);
-    formData.append('translator', translator);
+    formData.append('size', sizeDict[options.detector.detection_size]);
+    formData.append('detector', options.detector.detector);
+    formData.append('direction', options.render.direction);
+    formData.append('translator', options.translator.translator);
     formData.append(
       type === 'cotrans' ? 'target_language' : 'target_lang',
-      targetLanguage,
+      options.translator.target_lang,
     );
     formData.append('retry', `${store.option.translation.forceRetry}`);
   }

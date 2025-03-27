@@ -145,4 +145,17 @@ export const migration = async (version: string) => {
       }
       return save();
     });
+
+  if (versionLt(version, '11.8'))
+    for (const key of values) {
+      switch (key) {
+        case 'Version':
+        case 'Languages':
+        case 'HotKeys':
+          continue;
+
+        default:
+          await renameOption(key, ['option.translation => ']);
+      }
+    }
 };

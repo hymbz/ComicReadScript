@@ -96,11 +96,16 @@ export interface Option {
     forceRetry: boolean;
     /** manga-image-translator 配置 */
     options: {
-      size: string;
+      detectionSize: string;
       detector: string;
       direction: string;
       translator: string;
       targetLanguage: string;
+      inpaintingSize: string;
+      unclipRatio: number;
+      boxThreshold: number;
+      maskDilationOffset: number;
+      inpainter: string;
     };
     /** 只下载完成翻译的图片 */
     onlyDownloadTranslated: boolean;
@@ -161,12 +166,19 @@ const _defaultOption: Readonly<Option> = {
     server: 'disable',
     localUrl: undefined,
     forceRetry: false,
+    // 一些参数没有使用默认值，而是直接使用文档的推荐值
+    // https://github.com/zyddnys/manga-image-translator?tab=readme-ov-file#recommended-modules
     options: {
-      size: '1536',
-      detector: 'default',
+      detectionSize: '1536',
+      detector: 'ctd',
       translator: 'gpt3.5',
       direction: 'auto',
       targetLanguage,
+      inpaintingSize: '2048',
+      unclipRatio: 2.3,
+      boxThreshold: 0.7,
+      maskDilationOffset: 30,
+      inpainter: 'lama_large',
     },
     onlyDownloadTranslated: false,
   },

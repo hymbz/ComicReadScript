@@ -20,12 +20,12 @@
   height: fit-content;
   max-height: 95%;
   margin: auto;
+  border-radius: 0.3em;
 
   font-size: 1.2em;
   color: var(--text);
 
   background-color: var(--page-bg);
-  border-radius: 0.3em;
   box-shadow:
     rgb(0 0 0 / 20%) 0 3px 1px -2px,
     rgb(0 0 0 / 14%) 0 2px 2px 0,
@@ -50,6 +50,12 @@
 
     & > div + & > div {
       margin-top: 1em;
+    }
+
+    input,
+    textarea {
+      width: 97%;
+      margin-top: 0.3em;
     }
   }
 
@@ -111,10 +117,10 @@
   height: 0.8em;
   margin: 0.3em;
   padding: 0;
-
-  background-color: var(--switch-bg);
   border: 0;
   border-radius: 1em;
+
+  background-color: var(--switch-bg);
 }
 
 /* 开关里的圆形按钮 */
@@ -123,9 +129,9 @@
 
   width: 1.15em;
   height: 1.15em;
+  border-radius: 100%;
 
   background: var(--switch);
-  border-radius: 100%;
   box-shadow:
     0 2px 1px -1px rgb(0 0 0 / 20%),
     0 1px 1px 0 rgb(0 0 0 / 14%),
@@ -151,12 +157,12 @@
   margin: 0;
   margin-right: 0.2em;
   padding: 0;
+  border: none;
 
   font-size: 1.7em;
   color: var(--text);
 
   background-color: transparent;
-  border: none;
 }
 
 /* 选择器设置项 */
@@ -166,12 +172,12 @@
   max-width: 6.5em;
   margin: 0;
   padding: 0.3em;
+  border: none;
+  border-radius: 5px;
 
   font-size: 0.9em;
 
   background-color: var(--hover-bg-color);
-  border: none;
-  border-radius: 5px;
   outline: none;
 }
 

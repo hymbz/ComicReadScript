@@ -165,7 +165,7 @@ export const useInit = async <T extends Record<string, any>>(
     setFab({
       show: true,
       focus: true,
-      tip: t('site.settings_tip'),
+      tip: t('other.setting'),
       children: <MdSettings />,
       onBackdropClick: () => setFab({ show: false, focus: false }),
     }),
