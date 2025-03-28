@@ -45,7 +45,7 @@ export const universal = async ({
   initOptions,
   SPA,
 }: InitOptions) => {
-  if (SPA?.isMangaPage) waitUrlChange(SPA.isMangaPage);
+  if (SPA?.isMangaPage) await waitUrlChange(SPA.isMangaPage);
   if (waitFn) await wait(waitFn);
 
   const fnMap = await useInit(name, initOptions);
