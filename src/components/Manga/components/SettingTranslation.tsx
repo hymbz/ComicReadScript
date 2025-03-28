@@ -14,6 +14,7 @@ import {
   translateAll,
   translatorOptions,
   setImgTranslationEnbale,
+  translationImgs,
 } from '../actions/translation';
 import { store } from '../store';
 import { updateSelfhostedOptions } from '../actions/translation/selfhosted';
@@ -57,23 +58,8 @@ const TranslateRange: Component = () => {
   });
 
   // 实时更新翻译范围
-  createEffectOn(
-    () => {
-      const list = new Set<number>();
-      for (const [i, img] of imgList().entries()) {
-        switch (img.translationType) {
-          case 'error':
-          case 'show':
-          case 'wait':
-            list.add(i);
-            break;
-        }
-      }
-      return list;
-    },
-    (translationImgs) => {
-      setRangeText(descRange(translationImgs, store.imgList.length));
-    },
+  createEffectOn(translationImgs, (imgs) =>
+    setRangeText(descRange(imgs, store.imgList.length)),
   );
 
   return (

@@ -3,7 +3,6 @@ import { t, singleThreaded, createRootMemo, range } from 'helper';
 
 import { store, setState, _setState } from '../../store';
 import { activeImgIndex, activePage, imgList } from '../memo';
-import { getImg } from '../helper';
 
 import { createOptions, setMessage } from './helper';
 import { selfhostedOptions, selfhostedTranslation } from './selfhosted';
@@ -117,24 +116,33 @@ export const translatorOptions = createRootMemo(() =>
     : createOptions(cotransTranslators),
 );
 
+/** 翻译范围的图片 */
+export const translationImgs = createRootMemo(() => {
+  const list = new Set<number>();
+  for (const [i, img] of imgList().entries()) {
+    switch (img.translationType) {
+      case 'error':
+      case 'show':
+      case 'wait':
+        list.add(i);
+    }
+  }
+  return list;
+});
+
 /** 当前显示的图片是否正在翻译 */
 export const isTranslatingImage = createRootMemo(() =>
-  activePage().some((i) => {
-    const img = getImg(i);
-    return img?.translationType && img.translationType !== 'hide';
-  }),
+  activePage().some((i) => translationImgs().has(i)),
 );
 
 /** 翻译当前页 */
 export const translateCurrent = () =>
   setImgTranslationEnbale(activePage(), !isTranslatingImage());
 
-export const createTranslateRange = (imgs: Accessor<Iterable<number>>) => {
-  const isTranslating = createRootMemo(() => {
-    for (const i of imgs())
-      if (imgList()[i]?.translationType === undefined) return false;
-    return true;
-  });
+const createTranslateRange = (imgs: Accessor<number[]>) => {
+  const isTranslating = createRootMemo(() =>
+    imgs().every((i) => translationImgs().has(i)),
+  );
   const translateRange = () => {
     if (store.option.translation.server !== 'selfhosted') return;
     setImgTranslationEnbale(imgs(), !isTranslating());
