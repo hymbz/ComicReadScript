@@ -55,11 +55,11 @@ let initTop = 0;
 let initLeft = 0;
 let initAbreastScrollFill = 0;
 
-export const handleScrollModeDrag: UseDrag = ({
-  type,
-  xy: [x, y],
-  initial: [ix, iy],
-}) => {
+export const handleScrollModeDrag: UseDrag = (
+  { type, xy: [x, y], initial: [ix, iy] },
+  e,
+) => {
+  if (e.pointerType !== 'mouse') return;
   switch (type) {
     case 'down': {
       if (animationId) cancelAnimationFrame(animationId);

@@ -201,11 +201,13 @@
   overflow: auto;
 
   .mangaFlow {
+    touch-action: pan-y;
     grid-row-gap: calc(var(--scroll-mode-spacing) * 7px);
     height: fit-content;
   }
 
   &[data-abreast-scroll] {
+    touch-action: pan-x pan-y;
     overflow: hidden;
 
     .mangaFlow {
