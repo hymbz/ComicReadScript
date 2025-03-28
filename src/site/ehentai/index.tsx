@@ -1,7 +1,7 @@
 import { createMemo, createSignal, type Component } from 'solid-js';
 import { render } from 'solid-js/web';
 import { request, useInit, toast, ReactiveSet, type LoadImgFn } from 'main';
-import { type MangaProps } from 'components/Manga';
+import { type MangaProps, imgList } from 'components/Manga';
 import { getAdPageByFileName, getAdPageByContent } from 'userscript/detectAd';
 import {
   t,
@@ -458,6 +458,9 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       }
     }
     setImgList('', i, ehImgList[i]);
+
+    for (const img of imgList())
+      if (img.loadType === 'error') return reloadImg(img.src);
   });
 
   setManga({
