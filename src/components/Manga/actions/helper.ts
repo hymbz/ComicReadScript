@@ -1,5 +1,7 @@
 import { onCleanup } from 'solid-js';
 import { difference, byPath, throttle } from 'helper';
+import type { NotWrappable } from 'solid-js/store';
+import type { Part } from 'solid-js/store/types/store';
 
 import { type State, store, setState, refs } from '../store';
 import { type Option } from '../store/option';
@@ -40,12 +42,6 @@ export const setOption = (fn: (option: Option, state: State) => void) => {
   triggerOnOptionChange();
 };
 
-/** 创建一个专门用于修改指定配置项的函数 */
-export const createStateSetFn =
-  <T = unknown>(name: string) =>
-  (val: T) =>
-    setOption((draftOption) => byPath(draftOption, name, () => val));
-
 /** 创建用于将 ref 绑定到对应 state 上的工具函数 */
 export const bindRef =
   <T extends HTMLElement = HTMLElement>(name: keyof typeof refs) =>
@@ -76,3 +72,54 @@ export const resetUI = (state: State) => {
   state.show.scrollbar = false;
   state.show.touchArea = false;
 };
+
+type SetOptionsFunctionReturn<T> = {
+  value: T;
+  onChange: (val: T) => void;
+};
+
+export interface SetOptionsFunction<T> {
+  <
+    K1 extends keyof T,
+    K2 extends keyof T[K1],
+    K3 extends keyof T[K1][K2],
+    K4 extends keyof T[K1][K2][K3],
+    K5 extends keyof T[K1][K2][K3][K4],
+  >(
+    k1: K1,
+    k2: K2,
+    k3: K3,
+    k4: K4,
+    k5: K5,
+  ): SetOptionsFunctionReturn<T[K1][K2][K3][K4][K5]>;
+
+  <
+    K1 extends keyof T,
+    K2 extends keyof T[K1],
+    K3 extends keyof T[K1][K2],
+    K4 extends keyof T[K1][K2][K3],
+  >(
+    k1: K1,
+    k2: K2,
+    k3: K3,
+    k4: K4,
+  ): SetOptionsFunctionReturn<T[K1][K2][K3][K4]>;
+
+  <K1 extends keyof T, K2 extends keyof T[K1], K3 extends keyof T[K1][K2]>(
+    k1: K1,
+    k2: K2,
+    k3: K3,
+  ): SetOptionsFunctionReturn<T[K1][K2][K3]>;
+
+  <K1 extends keyof T, K2 extends keyof T[K1]>(
+    k1: K1,
+    k2: K2,
+  ): SetOptionsFunctionReturn<T[K1][K2]>;
+
+  <K1 extends keyof T>(k1: K1): SetOptionsFunctionReturn<T[K1]>;
+}
+export const bindOption: SetOptionsFunction<Option> = (...path: string[]) => ({
+  value: byPath(store.option, path),
+  onChange: (val: unknown) =>
+    setOption((draftOption) => byPath(draftOption, path, () => val)),
+});

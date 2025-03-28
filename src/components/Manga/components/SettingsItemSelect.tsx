@@ -1,16 +1,13 @@
-import { type JSX, For, createEffect } from 'solid-js';
+import { For, createEffect } from 'solid-js';
 
 import classes from '../index.module.css';
 
-import { SettingsItem } from './SettingsItem';
+import { SettingsItem, type SettingsItemProps } from './SettingsItem';
 
-export interface SettingsItemSelectProps<T extends string = string> {
+export interface SettingsItemSelectProps<T extends string>
+  extends SettingsItemProps {
   options: Array<[string, string] | [string]>;
-  name: string;
   value: T;
-  class?: string;
-  classList?: ClassList;
-
   onChange: (val: T) => void;
   onClick?: () => void;
 }
@@ -18,7 +15,7 @@ export interface SettingsItemSelectProps<T extends string = string> {
 /** 选择器式菜单项 */
 export const SettingsItemSelect = <T extends string = string>(
   props: SettingsItemSelectProps<T>,
-): JSX.Element => {
+) => {
   let ref!: HTMLSelectElement;
 
   createEffect(() => {

@@ -376,10 +376,10 @@ export const assign = <T extends object>(
 /** 根据路径获取对象下的指定值 */
 export const byPath = <T = object>(
   obj: object,
-  path: string,
+  path: string | string[],
   handleVal?: (parentObj: object, key: string) => unknown,
 ) => {
-  const keys = path.split('.');
+  const keys = typeof path === 'string' ? path.split('.') : path;
   let target: object = obj;
   for (let i = 0; i < keys.length; i++) {
     let key = keys[i];

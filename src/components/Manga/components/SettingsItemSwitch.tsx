@@ -2,14 +2,10 @@ import type { Component } from 'solid-js';
 
 import classes from '../index.module.css';
 
-import { SettingsItem } from './SettingsItem';
+import { SettingsItem, type SettingsItemProps } from './SettingsItem';
 
-export interface SettingsItemSwitchProps {
-  name: string;
+export interface SettingsItemSwitchProps extends SettingsItemProps {
   value: boolean;
-  class?: string;
-  classList?: ClassList;
-
   onChange: (val: boolean) => void;
 }
 

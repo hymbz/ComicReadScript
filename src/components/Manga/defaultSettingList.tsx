@@ -11,7 +11,7 @@ import { SettingsShowItem } from './components/SettingsShowItem';
 import { SettingsItemSelect } from './components/SettingsItemSelect';
 import {
   autoPageNum,
-  createStateSetFn,
+  bindOption,
   getImgEle,
   saveScrollProgress,
   setOption,
@@ -66,8 +66,7 @@ export const defaultSettingList: () => SettingList = () => [
         <Show when={!store.option.scrollMode.enabled}>
           <SettingsItemSwitch
             name={t('setting.option.disable_auto_enlarge')}
-            value={store.option.disableZoom}
-            onChange={createStateSetFn('disableZoom')}
+            {...bindOption('disableZoom')}
           />
         </Show>
 
@@ -151,23 +150,19 @@ export const defaultSettingList: () => SettingList = () => [
       <>
         <SettingsItemSwitch
           name={t('setting.option.dark_mode')}
-          value={store.option.darkMode}
-          onChange={createStateSetFn('darkMode')}
+          {...bindOption('darkMode')}
         />
         <SettingsItemSwitch
           name={t('setting.option.dark_mode_auto')}
-          value={store.option.autoDarkMode}
-          onChange={createStateSetFn('autoDarkMode')}
+          {...bindOption('autoDarkMode')}
         />
         <SettingsItemSwitch
           name={t('setting.option.show_comments')}
-          value={store.option.showComment}
-          onChange={createStateSetFn('showComment')}
+          {...bindOption('showComment')}
         />
         <SettingsItemSwitch
           name={t('setting.option.autoHiddenMouse')}
-          value={store.option.autoHiddenMouse}
-          onChange={createStateSetFn('autoHiddenMouse')}
+          {...bindOption('autoHiddenMouse')}
         />
 
         <SettingsItem name={t('setting.option.background_color')}>
@@ -222,27 +217,23 @@ export const defaultSettingList: () => SettingList = () => [
             ['bottom', t('setting.option.scrollbar_position_bottom')],
             ['hidden', t('setting.option.scrollbar_position_hidden')],
           ]}
-          value={store.option.scrollbar.position}
-          onChange={createStateSetFn('scrollbar.position')}
+          {...bindOption('scrollbar', 'position')}
         />
         <SettingsShowItem when={store.option.scrollbar.position !== 'hidden'}>
           <Show when={!store.isMobile}>
             <SettingsItemSwitch
               name={t('setting.option.scrollbar_auto_hidden')}
-              value={store.option.scrollbar.autoHidden}
-              onChange={createStateSetFn('scrollbar.autoHidden')}
+              {...bindOption('scrollbar', 'autoHidden')}
             />
           </Show>
           <SettingsItemSwitch
             name={t('setting.option.scrollbar_show_img_status')}
-            value={store.option.scrollbar.showImgStatus}
-            onChange={createStateSetFn('scrollbar.showImgStatus')}
+            {...bindOption('scrollbar', 'showImgStatus')}
           />
           <Show when={store.option.scrollMode.enabled}>
             <SettingsItemSwitch
               name={t('setting.option.scrollbar_easy_scroll')}
-              value={store.option.scrollbar.easyScroll}
-              onChange={createStateSetFn('scrollbar.easyScroll')}
+              {...bindOption('scrollbar', 'easyScroll')}
             />
           </Show>
         </SettingsShowItem>
@@ -255,8 +246,7 @@ export const defaultSettingList: () => SettingList = () => [
       <>
         <SettingsItemSwitch
           name={t('other.enabled')}
-          value={store.option.clickPageTurn.enabled}
-          onChange={createStateSetFn('clickPageTurn.enabled')}
+          {...bindOption('clickPageTurn', 'enabled')}
         />
         <SettingsShowItem when={store.option.clickPageTurn.enabled}>
           <SettingsItemSelect
@@ -264,13 +254,11 @@ export const defaultSettingList: () => SettingList = () => [
             options={Object.keys(areaArrayMap).map(
               (key) => [key, t(`touch_area.type.${key}`)] as [string, string],
             )}
-            value={store.option.clickPageTurn.area}
-            onChange={createStateSetFn('clickPageTurn.area')}
+            {...bindOption('clickPageTurn', 'area')}
           />
           <SettingsItemSwitch
             name={t('setting.option.click_page_turn_swap_area')}
-            value={store.option.clickPageTurn.reverse}
-            onChange={createStateSetFn('clickPageTurn.reverse')}
+            {...bindOption('clickPageTurn', 'reverse')}
           />
         </SettingsShowItem>
 
@@ -368,8 +356,7 @@ export const defaultSettingList: () => SettingList = () => [
       <>
         <SettingsItemSwitch
           name={t('setting.option.first_page_fill')}
-          value={store.option.firstPageFill}
-          onChange={createStateSetFn('firstPageFill')}
+          {...bindOption('firstPageFill')}
         />
         <SettingsItemSwitch
           name={t('setting.option.auto_switch_page_mode')}
@@ -384,8 +371,7 @@ export const defaultSettingList: () => SettingList = () => [
 
         <SettingsItemSwitch
           name={t('setting.option.swap_page_turn_key')}
-          value={store.option.swapPageTurnKey}
-          onChange={createStateSetFn('swapPageTurnKey')}
+          {...bindOption('swapPageTurnKey')}
         />
 
         <SettingsItemSelect
@@ -397,14 +383,12 @@ export const defaultSettingList: () => SettingList = () => [
               ['auto', t('setting.option.scroll_end_auto')],
             ] satisfies Array<[Option['scroolEnd'], string]>
           }
-          value={store.option.scroolEnd}
-          onChange={createStateSetFn('scroolEnd')}
+          {...bindOption('scroolEnd')}
         />
 
         <SettingsItemSwitch
           name={t('setting.option.always_load_all_img')}
-          value={store.option.alwaysLoadAllImg}
-          onChange={createStateSetFn('alwaysLoadAllImg')}
+          {...bindOption('alwaysLoadAllImg')}
         />
 
         <SettingsItemNumber

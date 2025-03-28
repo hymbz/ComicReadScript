@@ -4,11 +4,11 @@ import classes from '../index.module.css';
 
 export interface SettingsItemProps {
   name: string;
+  children?: JSX.Element | JSX.Element[];
+
   class?: string;
   classList?: ClassList;
   style?: JSX.CSSProperties;
-
-  children?: JSX.Element | JSX.Element[];
 }
 
 /** 设置菜单项 */
