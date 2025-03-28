@@ -139,7 +139,7 @@ const OtherHotkeys: Component<{ keys: string[] }> = (props) => {
         onChange={handleChange}
       >
         <option value="" disabled hidden selected>
-          {t('setting.option.paragraph_other')} …
+          {t('other.other')} …
         </option>
         <For each={props.keys}>
           {(name) => <option value={name}>{getHotkeyName(name)}</option>}

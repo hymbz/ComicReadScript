@@ -86,7 +86,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   );
 
   const ExitButton = () => (
-    <IconButton tip={t('button.exit')} onClick={() => props.onExit?.()}>
+    <IconButton tip={t('other.exit')} onClick={() => props.onExit?.()}>
       <MdClose />
     </IconButton>
   );

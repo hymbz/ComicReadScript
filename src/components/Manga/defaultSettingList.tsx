@@ -211,7 +211,7 @@ export const defaultSettingList: () => SettingList = () => [
         <SettingsItemSelect
           name={t('setting.option.scrollbar_position')}
           options={[
-            ['auto', t('setting.option.scrollbar_position_auto')],
+            ['auto', t('other.auto')],
             ['right', t('setting.option.scrollbar_position_right')],
             ['top', t('setting.option.scrollbar_position_top')],
             ['bottom', t('setting.option.scrollbar_position_bottom')],
@@ -349,9 +349,9 @@ export const defaultSettingList: () => SettingList = () => [
     SettingTranslation,
     () => store.option.translation.server !== 'disable',
   ],
-  [t('setting.option.paragraph_hotkeys'), SettingHotkeys],
+  [t('other.hotkeys'), SettingHotkeys],
   [
-    t('setting.option.paragraph_other'),
+    t('other.other'),
     () => (
       <>
         <SettingsItemSwitch
@@ -379,7 +379,7 @@ export const defaultSettingList: () => SettingList = () => [
           options={
             [
               ['none', t('other.none')],
-              ['exit', t('button.exit')],
+              ['exit', t('other.exit')],
               ['auto', t('setting.option.scroll_end_auto')],
             ] satisfies Array<[Option['scroolEnd'], string]>
           }

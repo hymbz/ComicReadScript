@@ -7,7 +7,7 @@ import { t } from 'helper';
 import { handleExit } from './store';
 
 const ExitButton = () => (
-  <IconButton tip={t('button.exit')} onClick={handleExit}>
+  <IconButton tip={t('other.exit')} onClick={handleExit}>
     <MdClose />
   </IconButton>
 );

@@ -132,7 +132,7 @@ export const EndPage: Component = () => {
           tabIndex={store.show.endPage ? 0 : -1}
           on:click={() => store.prop.onExit?.(store.show.endPage === 'end')}
         >
-          {t('button.exit')}
+          {t('other.exit')}
         </button>
         <button
           ref={bindRef('next')}

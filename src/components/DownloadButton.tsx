@@ -85,7 +85,7 @@ export const DownloadButton = () => {
   const tip = createMemo(() => {
     switch (state.completedNum) {
       case undefined:
-        return t('button.download');
+        return t('other.download');
       case state.length:
         return t('button.packaging');
       case -1:
