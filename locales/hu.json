@@ -84,7 +84,7 @@
     "or": "或",
     "page_range": "请输入页码范围：\n（例如：1, 3-5, 9-)",
     "read_mode": "阅读模式",
-    "setting": "设置"
+    "setting": "Beállítások"
   },
   "pwa": {
     "alert": {
@@ -102,14 +102,14 @@
       "enter_url": "输入 URL",
       "install": "安装",
       "no_more_prompt": "不再提示",
-      "resume_read": "恢复阅读",
-      "select_files": "选择文件",
-      "select_folder": "选择文件夹"
+      "resume_read": "Olvasás visszaállítása",
+      "select_files": "Fájl kiválasztása",
+      "select_folder": "Mappa kiválasztása"
     },
-    "install_md": "### 每次都要打开这个网页很麻烦？\n如果你希望\n1. 能有独立的窗口，像是在使用本地软件一样\n1. 加入本地压缩文件的打开方式之中，方便直接打开\n1. 离线使用~~（主要是担心国内网络抽风无法访问这个网页~~\n### 欢迎将本页面作为 PWA 应用安装到电脑上😃👍",
+    "install_md": "### inden alkalommal megnyitni ezt az oldalt fárasztó?\nHa szeretnéd, hogy:\n1. Különálló ablakban fusson, mintha egy helyi alkalmazás lenne.\n1. Hozzá lehessen adni a helyi tömörített fájlok megnyitási lehetőségeihez, így közvetlenül megnyitható legyen.\n1. Offline is használható legyen~~ (főleg arra az esetre, ha a hálózat instabil és nem éred el az oldalt)~~\n### Telepítsd ezt az oldalt PWA alkalmazásként a számítógépedre! 😃👍",
     "message": {
-      "enter_password": "请输入密码",
-      "unzipping": "解压缩中"
+      "enter_password": "add meg a jelszavad",
+      "unzipping": "Kicsomagolás"
     },
     "tip_enter_url": "请输入压缩包 URL",
     "tip_md": "# ComicRead PWA\n使用 [ComicRead](https://github.com/hymbz/ComicReadScript) 的阅读模式阅读**本地**漫画\n---\n### 将图片文件、文件夹、压缩包直接拖入即可开始阅读\n*也可以选择**直接粘贴**或**输入**压缩包 URL 下载阅读*"
