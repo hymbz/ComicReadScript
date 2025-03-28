@@ -1,7 +1,5 @@
 import { onCleanup } from 'solid-js';
 import { difference, byPath, throttle } from 'helper';
-import type { NotWrappable } from 'solid-js/store';
-import type { Part } from 'solid-js/store/types/store';
 
 import { type State, store, setState, refs } from '../store';
 import { type Option } from '../store/option';
