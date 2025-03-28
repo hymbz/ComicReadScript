@@ -207,7 +207,7 @@
   }
 
   &[data-abreast-scroll] {
-    touch-action: pan-x pan-y;
+    touch-action: none;
     overflow: hidden;
 
     .mangaFlow {

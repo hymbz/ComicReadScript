@@ -59,7 +59,7 @@ export const handleScrollModeDrag: UseDrag = (
   { type, xy: [x, y], initial: [ix, iy] },
   e,
 ) => {
-  if (e.pointerType !== 'mouse') return;
+  if (!store.option.scrollMode.abreastMode && e.pointerType !== 'mouse') return;
   switch (type) {
     case 'down': {
       if (animationId) cancelAnimationFrame(animationId);
