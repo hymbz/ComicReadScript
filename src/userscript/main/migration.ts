@@ -146,7 +146,7 @@ export const migration = async (version: string) => {
       return save();
     });
 
-  if (versionLt(version, '11.8'))
+  if (versionLt(version, '11.9.1'))
     for (const key of values) {
       switch (key) {
         case 'Version':
