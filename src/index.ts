@@ -820,7 +820,7 @@ try {
         });
 
       const isMangaPage = () => window.location.href.includes('/g/');
-
+      const crt = localStorage.getItem("clearance");
       options = {
         name: 'schale',
         async getImgList({ dynamicLoad }) {
@@ -832,15 +832,15 @@ try {
             updated_at: number;
             data: Array<{
               id: number;
-              public_key: string;
+              key: string;
               size: number;
             }>;
           };
           const detailRes = await request<DetailRes>(
-            `https://api.schale.network/books/detail/${galleryId}/${galleryKey}`,
-            { fetch: true, responseType: 'json' },
+            `https://api.schale.network/books/detail/${galleryId}/${galleryKey}?crt=${crt}`,
+            { fetch: true, responseType: 'json', method: "POST" }
           );
-          const [[w, { id, public_key }]] = Object.entries(
+          const [[w, { id, key }]] = Object.entries(
             detailRes.response.data,
           )
             // 以某个时间为分界线，更早之前的漫画返回的格式是：
@@ -857,7 +857,7 @@ try {
             //
             // 考虑到这可能只是更换域名迁移数据导致的临时问题
             // 所以暂且用 `Number(px) &&` 的方式忽略掉 0，等过段时间再视情况而定
-            .filter(([px, data]) => Number(px) && data.id && data.public_key)
+            .filter(([px, data]) => data.id && data.key)
             .sort(([, a], [, b]) => b.size - a.size);
           const { created_at, updated_at } = detailRes.response;
 
@@ -868,7 +868,7 @@ try {
           const dataRes = await request<DataRes>(
             `https://api.schale.network/books/data/${galleryId}/${galleryKey}/${
               id
-            }/${public_key}?v=${updated_at ?? created_at}&w=${w}`,
+            }/${key}/${w}?crt=${crt}`,
             { fetch: true, responseType: 'json' },
           );
           const { base, entries } = dataRes.response;
