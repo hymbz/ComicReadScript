@@ -166,20 +166,24 @@ export const defaultButtonList: ToolbarButtonList = [
       (showToolbar) => showToolbar || setShowPanel(false),
     );
 
-    const Popper = (
-      <>
-        <SettingPanel />
-        <div
-          class={classes.closeCover}
-          on:click={handleClick}
-          onWheel={(e) => {
-            if (isScrollMode()) refs.mangaBox.scrollBy({ top: e.deltaY });
-          }}
-          role="button"
-          tabIndex={-1}
-        />
-      </>
-    );
+    let popper: Element | undefined;
+    const Popper = () => {
+      popper ||= (
+        <>
+          <SettingPanel />
+          <div
+            class={classes.closeCover}
+            on:click={handleClick}
+            onWheel={(e) => {
+              if (isScrollMode()) refs.mangaBox.scrollBy({ top: e.deltaY });
+            }}
+            role="button"
+            tabIndex={-1}
+          />
+        </>
+      ) as Element;
+      return popper;
+    };
 
     return (
       <IconButton
@@ -188,7 +192,7 @@ export const defaultButtonList: ToolbarButtonList = [
         showTip={showPanel()}
         onClick={handleClick}
         popperClassName={showPanel() && classes.SettingPanelPopper}
-        popper={showPanel() && Popper}
+        popper={showPanel() && Popper()}
         children={<MdSettings />}
       />
     );
