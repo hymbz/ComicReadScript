@@ -10,6 +10,7 @@ import { store, handleExit, loadNewImglist, _setState } from './store';
 import { FileSystemToFile, imgExtension } from './helper';
 import { handleDrag } from './handleDrag';
 import { editButtonList } from './handleButtonList';
+import { getSaveOption } from './option';
 import { DownloadButton, loadUrl } from './DownloadButton';
 import classes from './index.module.css';
 
@@ -43,32 +44,14 @@ const handleSelectDir = async () => {
 };
 
 // 实现从本地文件的打开方式启动时加载文件
-window.launchQueue?.setConsumer(async (launchParams) => {
-  return loadNewImglist(await FileSystemToFile(launchParams.files));
-});
+window.launchQueue?.setConsumer(async (launchParams) =>
+  loadNewImglist(await FileSystemToFile(launchParams.files)),
+);
 
 // 支持粘贴 url
 window.addEventListener('paste', (event) =>
   loadUrl(event.clipboardData?.getData('text/plain')),
 );
-
-const getSaveOption = (): MangaProps['option'] => {
-  const saveJson = localStorage.getItem('option');
-  if (!saveJson) return undefined;
-
-  const option = JSON.parse(saveJson);
-
-  // TODO: pwa 版也需要有个迁移配置的步骤，这次版本更新忘记加了，下次一定要补上
-  if (typeof option?.scrollMode === 'boolean')
-    option.scrollMode = {
-      enabled: option.scrollMode,
-      spacing: option.scrollModeSpacing,
-      imgScale: option.scrollModeImgScale,
-      fitToWidth: option.scrollModeFitToWidth,
-    };
-
-  return option as MangaProps['option'];
-};
 
 const handleOptionChange: MangaProps['onOptionChange'] = (option) =>
   localStorage.setItem('option', JSON.stringify(option));
