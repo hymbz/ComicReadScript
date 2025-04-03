@@ -1,7 +1,6 @@
 import { getInitLang } from 'helper/languages';
 import { otherSite } from 'userscript/otherSite';
 import {
-  canvasToBlob,
   createSequence,
   isUrl,
   log,
@@ -15,7 +14,6 @@ import {
   t,
   wait,
   waitDom,
-  waitImgLoad,
   requestIdleCallback,
   debounce,
 } from 'helper';
@@ -887,87 +885,6 @@ try {
             (e) => e.getAttribute('href')!,
           ),
         initOptions: { autoShow: false, defaultOption: { pageNum: 1 } },
-      };
-      break;
-    }
-
-    // #[コミックグロウル](https://comic-growl.com)
-    case 'comic-growl.com': {
-      options = {
-        name: 'welovemanga',
-        async getImgList({ dynamicLoad }) {
-          const json = querySelector('#episode-json')?.dataset.value;
-          if (!json) throw new Error(t('site.changed_load_failed'));
-          const data = JSON.parse(json);
-          // 「公開終了しました」的漫画
-          if (!data.readableProduct.pageStructure?.pages) return [];
-          const pages: Array<{
-            src: string;
-            type: string;
-            width: number;
-            height: number;
-          }> = data.readableProduct.pageStructure.pages.filter(
-            ({ type }) => type === 'main',
-          );
-
-          // 有些情况下图片并没有被分割打乱
-          // 比如：https://comic-growl.com/episode/14079602755149645069
-          // 不过只找到这一个例子，姑且先猜测是通过 choJuGiga 这个字段来判断的
-          if (data.readableProduct.pageStructure.choJuGiga !== 'baku')
-            return pages.map(({ src }) => src);
-
-          const loadImgList: LoadImgFn = async (setImg) => {
-            for (const [i, page] of pages.entries()) {
-              // by: https://greasyfork.org/zh-CN/scripts/428282-漫画下载
-              // 另外网站使用的 GigaViewer 阅读器在其他很多网站上也都使用的同款
-              // 之后或许可以统一适配一下
-              // 除上面的脚本外也可以参考：https://github.com/eggplants/getjump
-              const blob = await fetch(page.src).then((r) => r.blob());
-              const img = await waitImgLoad(URL.createObjectURL(blob));
-              const canvas = new OffscreenCanvas(page.width, page.height);
-              const ctx = canvas.getContext('2d')!;
-              ctx.drawImage(img, 0, 0);
-
-              const raw = ctx.getImageData(0, 0, page.width, page.height);
-              const target = ctx.getImageData(0, 0, page.width, page.height);
-
-              const cellWidth = Math.floor(page.width / 32) * 8;
-              const cellHeight = Math.floor(page.height / 32) * 8;
-
-              for (let l = 0; l < 4; l++) {
-                for (let j = 0; j < 4; j++) {
-                  const srcX = l * cellWidth;
-                  const srcY = j * cellHeight;
-                  const targetX = j * cellWidth;
-                  const targetY = l * cellHeight;
-
-                  for (let y = 0; y < cellHeight; y++) {
-                    for (let x = 0; x < cellWidth; x++) {
-                      const srcIndex =
-                        ((srcY + y) * page.width + (srcX + x)) * 4;
-                      const targetIndex =
-                        ((targetY + y) * page.width + (targetX + x)) * 4;
-
-                      target.data[targetIndex] = raw.data[srcIndex];
-                      target.data[targetIndex + 1] = raw.data[srcIndex + 1];
-                      target.data[targetIndex + 2] = raw.data[srcIndex + 2];
-                      target.data[targetIndex + 3] = raw.data[srcIndex + 3];
-                    }
-                  }
-                }
-              }
-              ctx.putImageData(target, 0, 0);
-
-              setImg(i, URL.createObjectURL(await canvasToBlob(canvas)));
-            }
-          };
-          return dynamicLoad(loadImgList, pages.length)();
-        },
-        SPA: {
-          isMangaPage: () => window.location.pathname.startsWith('/episode/'),
-          getOnPrev: () => querySelectorClick('a.previous-link'),
-          getOnNext: () => querySelectorClick('a.next-link'),
-        },
       };
       break;
     }
