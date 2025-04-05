@@ -31,9 +31,13 @@ const bindOption: SetOptionsFunction<Option['translation']> = (
   ...args: [any]
 ) => _bindOption('translation', ...args);
 
-const TranslateRange: Component = () => {
-  const [rangeText, setRangeText] = createSignal('');
+const [rangeText, setRangeText] = createSignal('');
+// 实时更新翻译范围
+createEffectOn(translationImgs, (imgs) =>
+  setRangeText(descRange(imgs, store.imgList.length)),
+);
 
+const TranslateRange: Component = () => {
   createEffectOn(rangeText, () => {
     const imgImgs = extractRange(rangeText(), store.imgList.length);
 
@@ -56,11 +60,6 @@ const TranslateRange: Component = () => {
 
     setRangeText(descRange(imgImgs, store.imgList.length));
   });
-
-  // 实时更新翻译范围
-  createEffectOn(translationImgs, (imgs) =>
-    setRangeText(descRange(imgs, store.imgList.length)),
-  );
 
   return (
     <>
