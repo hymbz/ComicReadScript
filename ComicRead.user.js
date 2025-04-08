@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         11.9.2
+// @version         11.9.3
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、welovemanga、Tachidesk
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -5068,8 +5068,10 @@ const SettingsItemNumber = props => web.createComponent(SettingsItem, {
 });
 
 const bindOption = (...args) => bindOption$1('translation', ...args);
+const [rangeText, setRangeText] = solidJs.createSignal('');
+// 实时更新翻译范围
+helper.createEffectOn(translationImgs, imgs => setRangeText(helper.descRange(imgs, store.imgList.length)));
 const TranslateRange = () => {
-  const [rangeText, setRangeText] = solidJs.createSignal('');
   helper.createEffectOn(rangeText, () => {
     const imgImgs = helper.extractRange(rangeText(), store.imgList.length);
     const openImgs = [...imgImgs].filter(i => {
@@ -5088,9 +5090,6 @@ const TranslateRange = () => {
     if (closeImgs.size > 0) setImgTranslationEnbale(closeImgs, false);
     setRangeText(helper.descRange(imgImgs, store.imgList.length));
   });
-
-  // 实时更新翻译范围
-  helper.createEffectOn(translationImgs, imgs => setRangeText(helper.descRange(imgs, store.imgList.length)));
   return [web.createComponent(SettingsItem, {
     get name() {
       return helper.t('setting.translation.range');
@@ -7523,14 +7522,15 @@ const imgToCanvas = async img => {
   }
   const url = typeof img === 'string' ? img : img.src;
   const res = await main.request(url, {
-    responseType: 'blob'
+    responseType: 'blob',
+    retryFetch: true
   });
   const imgBitmap = await createImageBitmap(res.response);
   return Comlink.transfer(imgBitmap, [imgBitmap]);
 };
 
 /** 通过文件名判断是否是广告 */
-const getAdPageByFileName = async (fileNameList, adList) => getAdPage(fileNameList, fileName => /^[zZ]+/.test(fileName), adList);
+const getAdPageByFileName = (fileNameList, adList) => getAdPage(fileNameList, fileName => /^[zZ]+/.test(fileName), adList);
 const isAdImg = imgBitmap => worker.isAdImg(Comlink.transfer(imgBitmap, [imgBitmap]));
 
 /** 通过图片内容判断是否是广告 */
@@ -9326,7 +9326,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 pwa 上设置面板的显示 bug </p></li><li><p>修复设置面板的显示 bug </p></li><li><p>放弃支持 コミックグロウル（comic-growl.com）\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 ehentai 因识别广告图出错导致无法正常运行的 bug </p></li><li><p>修复打开设置面板会取消所有翻译的 bug\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '10.8.0');
       },
@@ -12111,21 +12111,22 @@ web.delegateEvents(["click"]);
       ehImgFileNameList[index] = thumbnail.title.split(/：|: /)[1];
       thumbnailList[index] = thumbnail.tagName === 'IMG' ? thumbnail : /url\("(.+)"\)/.exec(thumbnail.style.backgroundImage)[1];
     }
+    (async () => {
+      // 先根据文件名判断一次
+      await detectAd.getAdPageByFileName(ehImgFileNameList, comicMap[''].adList);
+      // 不行的话再用缩略图识别
+      if (comicMap[''].adList.size === 0) await detectAd.getAdPageByContent(thumbnailList, comicMap[''].adList);
 
-    // 先根据文件名判断一次
-    await detectAd.getAdPageByFileName(ehImgFileNameList, comicMap[''].adList);
-    // 不行的话再用缩略图识别
-    if (comicMap[''].adList.size === 0) await detectAd.getAdPageByContent(thumbnailList, comicMap[''].adList);
-
-    // 模糊广告页的缩略图
-    helper.useStyle(helper.createRootMemo(() => {
-      if (!comicMap['']?.adList?.size) return '';
-      return [...comicMap[''].adList].map(i => `a[href="${ehImgPageList[i]}"] [title]:not(:hover) {
+      // 模糊广告页的缩略图
+      helper.useStyle(helper.createRootMemo(() => {
+        if (!comicMap['']?.adList?.size) return '';
+        return [...comicMap[''].adList].map(i => `a[href="${ehImgPageList[i]}"] [title]:not(:hover) {
               filter: blur(8px);
               clip-path: border-box;
               backdrop-filter: blur(8px);
             }`).join('\n');
-    }));
+      }));
+    })();
   }
   const checkIpBanned = text => text.includes('IP address has been temporarily banned') && main.toast.error(helper.t('site.ehentai.ip_banned'), {
     throw: true,
@@ -12185,8 +12186,8 @@ web.delegateEvents(["click"]);
       setImg(order, ehImgList[i]);
     }));
     if (enableDetectAd) {
-      await detectAd.getAdPageByFileName(ehImgFileNameList, comicMap[''].adList);
-      await detectAd.getAdPageByContent(ehImgList, comicMap[''].adList);
+      detectAd.getAdPageByFileName(ehImgFileNameList, comicMap[''].adList);
+      detectAd.getAdPageByContent(ehImgList, comicMap[''].adList);
     }
   };
   setComicLoad(dynamicLoad(loadImgList, () => loadImgs().size));
