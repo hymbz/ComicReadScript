@@ -246,7 +246,11 @@ const optionList: RollupOptions[] = [
     },
   ),
 
-  buildOptions('index', ['dist/**/*', '!dist/index.*js']),
+  buildOptions('index', [
+    'dist/**/*',
+    '!dist/index.*js',
+    ...packlist.map((path) => `dist/${path}.js`),
+  ]),
 ];
 
 if (!isDevMode)

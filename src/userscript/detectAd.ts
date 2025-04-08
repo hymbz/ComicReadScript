@@ -63,13 +63,16 @@ const imgToCanvas = async (
   }
 
   const url = typeof img === 'string' ? img : img.src;
-  const res = await request<Blob>(url, { responseType: 'blob' });
+  const res = await request<Blob>(url, {
+    responseType: 'blob',
+    retryFetch: true,
+  });
   const imgBitmap = await createImageBitmap(res.response);
   return Comlink.transfer(imgBitmap, [imgBitmap]);
 };
 
 /** 通过文件名判断是否是广告 */
-export const getAdPageByFileName = async (
+export const getAdPageByFileName = (
   fileNameList: Array<string | undefined>,
   adList: Set<number>,
 ) =>

@@ -270,27 +270,29 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
           : /url\("(.+)"\)/.exec(thumbnail.style.backgroundImage)![1];
     }
 
-    // 先根据文件名判断一次
-    await getAdPageByFileName(ehImgFileNameList, comicMap[''].adList!);
-    // 不行的话再用缩略图识别
-    if (comicMap[''].adList!.size === 0)
-      await getAdPageByContent(thumbnailList, comicMap[''].adList!);
+    (async () => {
+      // 先根据文件名判断一次
+      await getAdPageByFileName(ehImgFileNameList, comicMap[''].adList!);
+      // 不行的话再用缩略图识别
+      if (comicMap[''].adList!.size === 0)
+        await getAdPageByContent(thumbnailList, comicMap[''].adList!);
 
-    // 模糊广告页的缩略图
-    useStyle(
-      createRootMemo(() => {
-        if (!comicMap['']?.adList?.size) return '';
-        return [...comicMap[''].adList]
-          .map(
-            (i) => `a[href="${ehImgPageList[i]}"] [title]:not(:hover) {
+      // 模糊广告页的缩略图
+      useStyle(
+        createRootMemo(() => {
+          if (!comicMap['']?.adList?.size) return '';
+          return [...comicMap[''].adList]
+            .map(
+              (i) => `a[href="${ehImgPageList[i]}"] [title]:not(:hover) {
               filter: blur(8px);
               clip-path: border-box;
               backdrop-filter: blur(8px);
             }`,
-          )
-          .join('\n');
-      }),
-    );
+            )
+            .join('\n');
+        }),
+      );
+    })();
   }
 
   const checkIpBanned = (text: string) =>
@@ -377,8 +379,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       }),
     );
     if (enableDetectAd) {
-      await getAdPageByFileName(ehImgFileNameList, comicMap[''].adList!);
-      await getAdPageByContent(ehImgList, comicMap[''].adList!);
+      getAdPageByFileName(ehImgFileNameList, comicMap[''].adList!);
+      getAdPageByContent(ehImgList, comicMap[''].adList!);
     }
   };
   setComicLoad(dynamicLoad(loadImgList, () => loadImgs().size));
