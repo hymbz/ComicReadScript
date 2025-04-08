@@ -424,6 +424,7 @@ try {
     case 'www.1kkk.com':
     case 'tel.dm5.com':
     case 'en.dm5.com':
+    case 'cnc.dm5.com':
     case 'www.dm5.cn':
     case 'www.dm5.com': {
       if (!Reflect.has(unsafeWindow, 'DM5_CID')) break;
