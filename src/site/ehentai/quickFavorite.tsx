@@ -71,6 +71,7 @@ const addQuickFavorite = (
   const [show, setShow] = createSignal(false);
 
   const [favorites, setFavorites] = createSignal<HTMLElement[]>([]);
+  const [favnote, setFavnote] = createSignal('');
 
   const updateFavorite = async () => {
     try {
@@ -80,6 +81,11 @@ const addQuickFavorite = (
       const dom = domParse(res.responseText);
       const list = [...dom.querySelectorAll('.nosel > div')] as HTMLElement[];
       if (list.length === 10) list[0].querySelector('input')!.checked = false;
+      setFavnote(
+        dom.querySelector<HTMLTextAreaElement>(
+          '#galpop textarea[name="favnote"]',
+        )?.value ?? '',
+      );
       setFavorites(list);
     } catch {
       toast.error(t('site.ehentai.fetch_favorite_failed'));
@@ -103,7 +109,7 @@ const addQuickFavorite = (
         const formData = new FormData();
         formData.append('favcat', index() === 10 ? 'favdel' : `${index()}`);
         formData.append('apply', 'Apply Changes');
-        formData.append('favnote', '');
+        formData.append('favnote', favnote());
         formData.append('update', '1');
         const res = await request(apiUrl, {
           method: 'POST',
