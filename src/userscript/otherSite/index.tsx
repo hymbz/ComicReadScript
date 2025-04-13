@@ -354,4 +354,10 @@ export const otherSite = async () => {
       else window.scroll({ top: laseScroll, behavior: 'instant' });
     },
   );
+
+  // 针对 SPA 网站，在网址改变后清空图片
+  onUrlChange((lastUrl, nowUrl) => {
+    if (lastUrl.split('/').length === nowUrl.split('/').length) return;
+    setComicMap('', 'imgList', undefined);
+  });
 };

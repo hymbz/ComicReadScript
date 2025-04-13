@@ -556,15 +556,16 @@ export const descRange = (list: Iterable<number>, length: number) => {
 
 /** 监听 url 变化 */
 export const onUrlChange = async (
-  fn: () => unknown,
+  fn: (lastUrl: string, nowUrl: string) => unknown,
   handleUrl = (location: Location) => location.href,
 ) => {
   let lastUrl = '';
   const refresh = singleThreaded(async () => {
     if (!(await wait(() => handleUrl(window.location) !== lastUrl, 5000)))
       return;
-    lastUrl = handleUrl(window.location);
-    await fn();
+    const nowUrl = handleUrl(window.location);
+    await fn(lastUrl, nowUrl);
+    lastUrl = nowUrl;
   });
 
   const controller = new AbortController();

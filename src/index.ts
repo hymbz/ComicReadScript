@@ -1018,10 +1018,9 @@ try {
           if ((await GM.getValue(window.location.hostname)) !== undefined)
             return requestIdleCallback(otherSite);
 
-          const menuId = await GM.registerMenuCommand(
+          await GM.registerMenuCommand(
             extractI18n('site.simple.simple_read_mode')(await getInitLang()),
-            async () =>
-              !(await otherSite()) && GM.unregisterMenuCommand(menuId),
+            otherSite,
           );
         })();
       }
