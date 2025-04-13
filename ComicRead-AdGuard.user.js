@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         11.9.3
+// @version         11.9.4
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、welovemanga、Tachidesk
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -858,8 +858,9 @@ const onUrlChange = async (fn, handleUrl = location => location.href) => {
   let lastUrl = '';
   const refresh = singleThreaded(async () => {
     if (!(await wait(() => handleUrl(window.location) !== lastUrl, 5000))) return;
-    lastUrl = handleUrl(window.location);
-    await fn();
+    const nowUrl = handleUrl(window.location);
+    await fn(lastUrl, nowUrl);
+    lastUrl = nowUrl;
   });
   const controller = new AbortController();
   for (const eventName of ['click', 'popstate']) window.addEventListener(eventName, refresh, {
@@ -8417,11 +8418,12 @@ const otherSite = async () => {
     selector: ''
   });
 
-  // 通过 options 来迂回的实现禁止记住当前站点
-  if (!options.remember_current_site) {
+  // 点击按钮后立刻删掉记住当前站点的配置
+  helper.createEffectOn(() => options.remember_current_site, async remember => {
+    if (remember) return;
     await GM.deleteValue(window.location.hostname);
-    return true;
-  }
+    location.reload();
+  });
   if (!isStored) main.toast(() => (() => {
     var _el$ = web.template(\`<div><button>\`)(),
       _el$2 = _el$.firstChild;
@@ -8644,6 +8646,12 @@ const otherSite = async () => {
       top: laseScroll,
       behavior: 'instant'
     });
+  });
+
+  // 针对 SPA 网站，在网址改变后清空图片
+  helper.onUrlChange((lastUrl, nowUrl) => {
+    if (lastUrl.split('/').length === nowUrl.split('/').length) return;
+    setComicMap('', 'imgList', undefined);
   });
 };
 
@@ -9404,7 +9412,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 ehentai 因识别广告图出错导致无法正常运行的 bug </p></li><li><p>修复打开设置面板会取消所有翻译的 bug\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复 ehentai 使用快捷收藏修改收藏夹时会丢失备注的 bug\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '10.8.0');
       },
@@ -10686,6 +10694,7 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
   root.style.height = '100%';
   const [show, setShow] = solidJs.createSignal(false);
   const [favorites, setFavorites] = solidJs.createSignal([]);
+  const [favnote, setFavnote] = solidJs.createSignal('');
   const updateFavorite = async () => {
     try {
       const res = await main.request(apiUrl, {
@@ -10694,6 +10703,7 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
       const dom = helper.domParse(res.responseText);
       const list = [...dom.querySelectorAll('.nosel > div')];
       if (list.length === 10) list[0].querySelector('input').checked = false;
+      setFavnote(dom.querySelector('#galpop textarea[name="favnote"]')?.value ?? '');
       setFavorites(list);
     } catch {
       main.toast.error(helper.t('site.ehentai.fetch_favorite_failed'));
@@ -10712,7 +10722,7 @@ const addQuickFavorite = (favoriteButton, root, apiUrl, position) => {
         const formData = new FormData();
         formData.append('favcat', index() === 10 ? 'favdel' : `${index()}`);
         formData.append('apply', 'Apply Changes');
-        formData.append('favnote', '');
+        formData.append('favnote', favnote());
         formData.append('update', '1');
         const res = await main.request(apiUrl, {
           method: 'POST',
@@ -13192,8 +13202,9 @@ const buildChapters = async (comicName, hiddenType) => {
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic-zzz.one':
     case 'jmcomic-zzz.org':
-    case '18comic-mygo.org':
+    case '18comic-rajang.org':
     case '18comic-rajang.cc':
+    case '18comic-mhws.cc':
     case '18comic.org':
     case '18comic.vip':
       {
@@ -13904,12 +13915,12 @@ const helper = require('helper');
         } else {
           (async () => {
             if ((await GM.getValue(window.location.hostname)) !== undefined) return helper.requestIdleCallback(otherSite.otherSite);
-            const menuId = console.debug(((lang) => {
+            console.debug(((lang) => {
 switch (lang) {
   case 'en': return 'Enter simple reading mode';case 'ru': return 'Включить простой режим чтения';case 'ta': return 'எளிய வாசிப்பு பயன்முறையைப் பயன்படுத்தவும்';
   default: return '使用简易阅读模式';
 }
-})(await languages.getInitLang()), async () => !(await otherSite.otherSite()) && GM.unregisterMenuCommand(menuId));
+})(await languages.getInitLang()), otherSite.otherSite);
           })();
         }
       }
