@@ -11,6 +11,7 @@ import {
   createEffectOn,
   sleep,
   isEqual,
+  onUrlChange,
 } from 'helper';
 import { useInit, toast } from 'main';
 
@@ -51,11 +52,15 @@ export const otherSite = async () => {
     selector: '',
   });
 
-  // 通过 options 来迂回的实现禁止记住当前站点
-  if (!options.remember_current_site) {
-    await GM.deleteValue(window.location.hostname);
-    return true;
-  }
+  // 点击按钮后立刻删掉记住当前站点的配置
+  createEffectOn(
+    () => options.remember_current_site,
+    async (remember) => {
+      if (remember) return;
+      await GM.deleteValue(window.location.hostname);
+      location.reload();
+    },
+  );
 
   if (!isStored)
     toast(
