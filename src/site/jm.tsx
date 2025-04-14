@@ -66,14 +66,14 @@ import {
   const getImgUrl = async (imgEle: HTMLImageElement) => {
     if (imgEle.src.startsWith('blob:')) return imgEle.src;
 
-    const originalUrl = imgEle.src;
+    const originalUrl = imgEle.dataset.original!;
     const res = await downloadImg(imgEle.dataset.original!);
     if (res.response.size === 0) {
       toast.warn(`下载原图时出错: ${imgEle.dataset.page}`);
       return '';
     }
 
-    imgEle.src = URL.createObjectURL(res.response);
+    imgEle.src = `${URL.createObjectURL(res.response)}#${imgEle.src}`;
     try {
       await waitImgLoad(imgEle, 1000 * 10);
     } catch {
