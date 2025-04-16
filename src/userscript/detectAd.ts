@@ -65,7 +65,7 @@ const imgToCanvas = async (
   const url = typeof img === 'string' ? img : img.src;
   const res = await request<Blob>(url, {
     responseType: 'blob',
-    retryFetch: true,
+    fetch: false,
   });
   const imgBitmap = await createImageBitmap(res.response);
   return Comlink.transfer(imgBitmap, [imgBitmap]);
