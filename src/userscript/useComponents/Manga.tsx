@@ -1,7 +1,7 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
 import { createStore } from 'solid-js/store';
 import { IconButton } from 'components/IconButton';
-import { type MangaProps, Manga } from 'components/Manga';
+import { type MangaProps, Manga, refs, store } from 'components/Manga';
 import {
   t,
   createEffectOn,
@@ -76,6 +76,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
         lastOverflow = htmlStyle.overflow;
         htmlStyle.setProperty('overflow', 'hidden', 'important');
         htmlStyle.setProperty('scrollbar-width', 'none', 'important');
+        if (store.option.autoFullscreen) refs.root.requestFullscreen();
       } else {
         dom.removeAttribute('show');
         htmlStyle.overflow = lastOverflow;
@@ -86,7 +87,7 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   );
 
   const ExitButton = () => (
-    <IconButton tip={t('other.exit')} onClick={() => props.onExit?.()}>
+    <IconButton tip={t('other.exit')} onClick={() => store.prop.onExit?.()}>
       <MdClose />
     </IconButton>
   );

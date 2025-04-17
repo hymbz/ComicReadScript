@@ -126,6 +126,7 @@
       "abreast_duplicate": "Column duplicates ratio",
       "abreast_mode": "Abreast scroll mode",
       "always_load_all_img": "Always load all images",
+      "autoFullscreen": "Auto fullscreen",
       "autoHiddenMouse": "Auto hide mouse",
       "auto_switch_page_mode": "Auto switch single/double page mode by aspect ratio",
       "background_color": "Background Color",

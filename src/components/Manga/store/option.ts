@@ -31,6 +31,8 @@ export interface Option {
   autoHiddenMouse: boolean;
   /** 翻页至尽头后继续翻页的操作 */
   scroolEnd: 'none' | 'exit' | 'auto';
+  /** 自动全屏 */
+  autoFullscreen: boolean;
 
   zoom: {
     /** 缩放大小 */
@@ -137,6 +139,7 @@ const _defaultOption: Readonly<Option> = {
   pageNum: 0,
   autoSwitchPageMode: true,
   autoHiddenMouse: true,
+  autoFullscreen: false,
 
   zoom: {
     ratio: 100,

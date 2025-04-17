@@ -373,6 +373,10 @@ export const defaultSettingList: () => SettingList = () => [
           name={t('setting.option.swap_page_turn_key')}
           {...bindOption('swapPageTurnKey')}
         />
+        <SettingsItemSwitch
+          name={t('setting.option.autoFullscreen')}
+          {...bindOption('autoFullscreen')}
+        />
 
         <SettingsItemSelect
           name={t('setting.option.scroll_end')}
