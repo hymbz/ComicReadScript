@@ -41,6 +41,7 @@ const getHotkeyName = (code: string) =>
   t(`hotkeys.${code}`) ||
   t(`button.${code}`) ||
   t(`setting.translation.${code}`) ||
+  t(`other.${code}`) ||
   code;
 
 const KeyItem: Component<{

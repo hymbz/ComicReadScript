@@ -24,6 +24,7 @@ export const [defaultHotkeys, setDefaultHotkeys] = createSignal<
   translate_current_page: [],
   translate_all: [],
   translate_to_end: [],
+  fullscreen: [''],
 });
 
 /** 快捷键配置 */

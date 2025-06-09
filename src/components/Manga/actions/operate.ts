@@ -15,6 +15,7 @@ import {
   switchOnePageMode,
   switchDir,
   switchGridMode,
+  switchFullscreen,
 } from './switch';
 import { handleTrackpadWheel } from './pointer';
 import { setOption } from './helper';
@@ -200,6 +201,9 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return translateAll();
     case 'translate_to_end':
       return translateToEnd();
+
+    case 'fullscreen':
+      return switchFullscreen();
 
     case 'switch_auto_enlarge':
       return setOption((draftOption) => {
