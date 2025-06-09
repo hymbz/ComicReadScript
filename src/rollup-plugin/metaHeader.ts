@@ -30,7 +30,7 @@ const resourceList: Record<string, [string, string] | [string]> = {
     'https://registry.npmmirror.com/comlink/4.4.1/files/dist/umd/comlink.js',
   ],
   dmzjDecrypt: [
-    'https://greasyfork.org/scripts/467177/code/dmzjDecrypt.js?version=1207199',
+    'https://update.sleazyfork.org/scripts/467177/1207199/dmzjDecrypt.js',
   ],
 };
 
