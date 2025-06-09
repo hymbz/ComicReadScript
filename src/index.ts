@@ -186,8 +186,8 @@ try {
         getImgList,
         SPA: {
           isMangaPage: () => window.location.pathname.startsWith('/view/'),
-          getOnNext: () => querySelectorClick('#prev_chapter'),
-          getOnPrev: () => querySelectorClick('#next_chapter'),
+          getOnNext: () => querySelectorClick('#next_chapter'),
+          getOnPrev: () => querySelectorClick('#prev_chapter'),
         },
       };
       break;
