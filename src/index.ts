@@ -122,20 +122,9 @@ try {
     }
 
     // #拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）
+    case 'www.copy20.com':
     case 'mangacopy.com':
-    case 'copymanga.site':
-    case 'copymanga.info':
-    case 'copymanga.net':
-    case 'copymanga.org':
-    case 'copymanga.tv':
-    case 'copymanga.com':
-    case 'www.mangacopy.com':
-    case 'www.copymanga.site':
-    case 'www.copymanga.info':
-    case 'www.copymanga.net':
-    case 'www.copymanga.org':
-    case 'www.copymanga.tv':
-    case 'www.copymanga.com': {
+    case 'www.mangacopy.com': {
       inject('site/copymanga');
       break;
     }
