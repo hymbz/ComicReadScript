@@ -51,6 +51,7 @@ const scrollModeScrollPage = (dir: 'next' | 'prev') => {
   if (!store.show.endPage) {
     scrollTo(
       scrollTop() + store.rootSize.height * 0.8 * (dir === 'next' ? 1 : -1),
+      true,
     );
     _setState('scrollLock', true);
   }

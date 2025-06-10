@@ -51,15 +51,47 @@ export const isBottom = createRootMemo(
 /** 当前是否已经滚动到顶部 */
 export const isTop = createRootMemo(() => scrollPercentage() === 0);
 
+// 动画时长
+const duration = 100;
+let animationId = 0;
+const cancelAnimation = () => {
+  if (!animationId) return;
+  cancelAnimationFrame(animationId);
+  animationId = 0;
+};
+const _scrollTo = (x: number) =>
+  refs.mangaBox.scrollTo({ top: x, behavior: 'instant' });
+
+let startTime = 0;
+let startTop = 0;
+let distance = 0;
+/** 实现卷轴模式下的平滑滚动 */
+const scrollStep = (timestamp: DOMHighResTimeStamp) => {
+  if (animationId) cancelAnimation();
+  startTime ||= timestamp;
+  const elapsed = timestamp - startTime;
+  if (elapsed >= duration) return _scrollTo(startTop + distance);
+  _scrollTo(startTop + distance * Math.min(elapsed / duration, 1));
+  animationId = requestAnimationFrame(scrollStep);
+};
 /** 在卷轴模式下滚动到指定进度 */
 export const scrollTo = (x: number, smooth = false) => {
   if (!store.option.scrollMode.enabled) return;
   if (store.option.scrollMode.abreastMode) {
-    refs.mangaBox.scrollTo({ top: 0, behavior: 'instant' });
+    _scrollTo(0);
     const val = clamp(0, x, abreastScrollWidth());
     return _setState('page', 'offset', 'x', 'px', val);
   }
-  refs.mangaBox.scrollTo({ top: x, behavior: smooth ? 'smooth' : 'instant' });
+  if (animationId || !smooth) {
+    cancelAnimation();
+    _scrollTo(x);
+  }
+  if (smooth) {
+    startTime = 0;
+    startTop = refs.mangaBox.scrollTop;
+    distance = x - startTop;
+    scrollStep(0);
+  }
 };
 
 /** 保存当前滚动进度，并在之后恢复 */
