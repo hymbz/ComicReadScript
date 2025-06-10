@@ -564,7 +564,7 @@ export const onUrlChange = async (
     if (!(await wait(() => handleUrl(window.location) !== lastUrl, 5000)))
       return;
     const nowUrl = handleUrl(window.location);
-    await fn(lastUrl, nowUrl);
+    if (lastUrl) await fn(lastUrl, nowUrl);
     lastUrl = nowUrl;
   });
 
