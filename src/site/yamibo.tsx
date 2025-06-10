@@ -122,16 +122,7 @@ interface History {
     for (const e of querySelectorAll('img[file*="sinaimg.cn"]'))
       e.setAttribute('referrerpolicy', 'no-referrer');
 
-    const fid: number =
-      unsafeWindow.fid ??
-      Number(
-        new URLSearchParams(
-          querySelector<HTMLAnchorElement>('h2 > a')?.href,
-        ).get('fid') ?? '-1',
-      );
-
-    // 限定板块启用
-    if (fid === 30 || fid === 37) {
+    const readMode = () => {
       const isFirstPage = !querySelector('.pg > .prev');
       // 第一页以外不自动加载
       if (!isFirstPage) needAutoShow.val = false;
@@ -244,6 +235,30 @@ interface History {
 
         setTimeout(setPrevNext);
       }
+    };
+
+    const fid: number =
+      unsafeWindow.fid ??
+      Number(
+        new URLSearchParams(
+          querySelector<HTMLAnchorElement>('h2 > a')?.href,
+        ).get('fid') ?? '-1',
+      );
+
+    // 限定板块启用
+    if (fid === 30 || fid === 37) readMode();
+    else {
+      querySelector('div.pti > div.authi')!.insertAdjacentHTML(
+        'beforeend',
+        '<span class="pipe show">|</span><a id="comicReadMode" class="show" href="javascript:;">漫画阅读</a>',
+      );
+      const button = document.getElementById('comicReadMode');
+      button?.addEventListener('click', () => {
+        button.previousElementSibling?.remove();
+        button.remove();
+        readMode();
+        showComic();
+      });
     }
 
     if (options.记录阅读进度) {
