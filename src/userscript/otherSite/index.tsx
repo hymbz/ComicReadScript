@@ -357,7 +357,8 @@ export const otherSite = async () => {
 
   // 针对 SPA 网站，在网址改变后清空图片
   onUrlChange((lastUrl, nowUrl) => {
-    if (lastUrl.split('/').length === nowUrl.split('/').length) return;
+    if (!lastUrl || lastUrl.split('/').length === nowUrl.split('/').length)
+      return;
     setComicMap('', 'imgList', undefined);
   });
 };
