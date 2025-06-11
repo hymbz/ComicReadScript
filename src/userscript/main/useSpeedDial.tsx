@@ -28,7 +28,9 @@ export const useSpeedDial = <
       showTip={true}
       tip={
         props.showName ??
-        (t(`site.add_feature.${props.optionName}`) || props.optionName)
+        (t(`site.add_feature.${props.optionName}`) ||
+          t(`other.${props.optionName}`) ||
+          props.optionName)
       }
       onClick={() =>
         setOptions({
