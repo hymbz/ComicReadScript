@@ -1,12 +1,13 @@
 import { linstenKeydown, querySelector } from 'helper';
 
-import { setEscHandler } from './other';
-
-import { type PageType } from '.';
+import { setEscHandler } from './helper';
+import { type EhContext } from './context';
 
 /** 快捷键翻页 */
-export const hotkeysPageTurn = (pageType: PageType) => {
-  if (pageType === 'gallery') {
+export const hotkeysPageTurn = (context: EhContext) => {
+  if (!context.options.hotkeys) return;
+
+  if (context.type === 'gallery') {
     setEscHandler(0, () =>
       unsafeWindow.selected_tagname ? unsafeWindow.toggle_tagmenu() : true,
     );

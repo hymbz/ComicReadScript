@@ -1,8 +1,7 @@
 import { getGmValue } from 'helper';
 
 import { updateMyTags, handleMyTagsChange, type Tag } from './myTags';
-
-import type { PageType } from '.';
+import { type EhContext } from './context';
 
 const updateSortCss = (tagList: Tag[]) => {
   let css = 'tr a :is(.gltm, .glink + div:not([class])) { display: flex; }';
@@ -11,10 +10,10 @@ const updateSortCss = (tagList: Tag[]) => {
   return GM.setValue('ehTagSortCss', css);
 };
 
-export const sortTags = async (pageType: PageType) => {
+export const sortTags = async (context: EhContext) => {
   handleMyTagsChange.add(updateSortCss);
 
-  switch (pageType) {
+  switch (context.type) {
     case 'p':
     case 'l':
     case 't':

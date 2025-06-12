@@ -5,14 +5,11 @@ import { createMutable } from 'solid-js/store';
 import { request } from 'main';
 import { querySelector, domParse, hijackFn } from 'helper';
 
-import { setEscHandler } from './other';
-
-import { type PageType } from '.';
+import { setEscHandler } from './helper';
+import { type GalleryContext } from './context';
 
 /** 快捷查看标签定义 */
-export const quickTagDefine = (pageType: PageType) => {
-  if (pageType !== 'gallery') return;
-
+export const quickTagDefine = (_: GalleryContext) => {
   const tagContent = createMutable<Record<string, JSX.Element>>({});
 
   const saveTagContent = async (tag: string) => {

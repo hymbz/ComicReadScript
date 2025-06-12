@@ -1,8 +1,10 @@
-import { request, type useInit, toast } from 'main';
+import { request, toast } from 'main';
 import { t, querySelector, plimit, hijackFn, querySelectorAll } from 'helper';
 import { For, Show, type Component, type JSX } from 'solid-js';
 import { render } from 'solid-js/web';
 import { createStore } from 'solid-js/store';
+
+import { type GalleryContext } from './context';
 
 type ItemData = {
   id: string;
@@ -12,11 +14,11 @@ type ItemData = {
   class: string;
 };
 
-const nhentai = async (
-  setComicLoad: AsyncReturnType<typeof useInit>['setComicLoad'],
-  dynamicLoad: AsyncReturnType<typeof useInit>['dynamicLoad'],
-  comicTitle: string,
-): Promise<ItemData[]> => {
+const nhentai = async ({
+  galleryTitle,
+  setComicLoad,
+  dynamicLoad,
+}: GalleryContext): Promise<ItemData[]> => {
   interface ComicInfo {
     id: number;
     media_id: string;
@@ -41,7 +43,7 @@ const nhentai = async (
   const {
     response: { result },
   } = await request<{ result: ComicInfo[] }>(
-    `https://nhentai.net/api/galleries/search?query=${comicTitle}`,
+    `https://nhentai.net/api/galleries/search?query=${galleryTitle}`,
     {
       responseType: 'json',
       errorText: t('site.ehentai.nhentai_error'),
@@ -90,29 +92,28 @@ const nhentai = async (
     };
   });
 };
-nhentai.errorTip = (comicTitle: string) =>
+nhentai.errorTip = (context: GalleryContext) =>
   t('site.ehentai.nhentai_failed', {
-    nhentai: `<a href='https://nhentai.net/search/?q=${comicTitle}' target="_blank"> <u> nhentai </u> </a>`,
+    nhentai: `<a href='https://nhentai.net/search/?q=${context.galleryTitle}' target="_blank"> <u> nhentai </u> </a>`,
   });
 
-const hitomi = async (
-  setComicLoad: AsyncReturnType<typeof useInit>['setComicLoad'],
-  dynamicLoad: AsyncReturnType<typeof useInit>['dynamicLoad'],
-): Promise<ItemData[]> => {
-  const comicId = location.pathname.split('/')[2];
-
+const hitomi = async ({
+  setComicLoad,
+  dynamicLoad,
+  galleryId,
+}: GalleryContext): Promise<ItemData[]> => {
   const domain = 'gold-usergeneratedcontent.net';
 
   const downImg = async (url: string) => {
     const imgRes = await request<Blob>(url, {
-      headers: { Referer: `https://hitomi.la/reader/${comicId}.html` },
+      headers: { Referer: `https://hitomi.la/reader/${galleryId}.html` },
       responseType: 'blob',
       fetch: false,
     });
     return URL.createObjectURL(imgRes.response);
   };
 
-  const res = await request(`https://ltn.${domain}/galleries/${comicId}.js`, {
+  const res = await request(`https://ltn.${domain}/galleries/${galleryId}.js`, {
     errorText: t('site.ehentai.hitomi_error'),
     noTip: true,
   });
@@ -146,8 +147,7 @@ const hitomi = async (
           const imageId = gg.s(hash);
           const m = /[\da-f]{61}([\da-f]{2})([\da-f])/.exec(hash)!;
           const g = Number.parseInt(m[2] + m[1], 16);
-          const subDomainOffset = gg.m(g) + 1;
-          return `https://w${subDomainOffset}.${domain}/${gg.b}${imageId}/${hash}.webp`;
+          return `https://w${gg.m(g) + 1}.${domain}/${gg.b}${imageId}/${hash}.webp`;
         });
 
         // 顺序下载避免触发反爬限制
@@ -172,22 +172,11 @@ const hitomi = async (
 hitomi.errorTip = () => t('site.ehentai.hitomi_error');
 
 /** 关联外站 */
-export const crossSiteLink = async (
-  dynamicLoad: AsyncReturnType<typeof useInit>['dynamicLoad'],
-  setComicLoad: AsyncReturnType<typeof useInit>['setComicLoad'],
-  LoadButton: Component<{ id: string }>,
-) => {
+export const crossSiteLink = async (context: GalleryContext) => {
   /** 只处理「Doujinshi」「Manga」 */
   if (!querySelector('#gdc > .cs:is(.ct2, .ct3)')) return;
-
-  const titleDom = document.getElementById('gn');
-  if (!titleDom || !querySelector('#taglist tbody')) {
-    if ((document.getElementById('taglist')?.children.length ?? 1) > 0)
-      toast.error(t('site.ehentai.html_changed_link_failed'));
-    return;
-  }
-
-  const comicTitle = titleDom.textContent!.replaceAll(/\s+-/g, ' ');
+  if (!context.galleryTitle)
+    return toast.error(t('site.ehentai.html_changed_link_failed'));
 
   const [comicMap, setComicMap] = createStore<
     Record<string, ItemData[] | string>
@@ -262,7 +251,7 @@ export const crossSiteLink = async (
       () => (
         <TagMenu>
           <a href={a.href} target="_blank" innerText=" Jump" />
-          <LoadButton id={a.id} />
+          <context.LoadButton id={a.id} />
         </TagMenu>
       ),
       tagmenu_act_dom,
@@ -273,17 +262,21 @@ export const crossSiteLink = async (
   for (const getSiteComic of [hitomi, nhentai]) {
     setComicMap(getSiteComic.name, 'searching...');
     try {
-      const itemList = await getSiteComic(
-        setComicLoad,
-        dynamicLoad,
-        comicTitle,
-      );
+      const itemList = await getSiteComic(context);
       if (itemList.length > 0) setComicMap(getSiteComic.name, itemList);
       else setComicMap(getSiteComic.name, 'null');
     } catch (error) {
-      const errorTip = getSiteComic.errorTip(comicTitle);
+      const errorTip = getSiteComic.errorTip(context);
       console.error(errorTip, error);
       setComicMap(getSiteComic.name, errorTip);
     }
+  }
+
+  const { adList } = context.comicMap[''];
+  if (!adList) return;
+  // 如果外站源只匹配到了一个漫画，就直接为其加上当前识别出的广告列表
+  for (const itemList of Object.values(comicMap)) {
+    if (typeof itemList === 'string') continue;
+    if (itemList.length === 1) context.setComicMap(itemList[0].id, { adList });
   }
 };

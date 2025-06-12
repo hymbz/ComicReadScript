@@ -1,10 +1,5 @@
 import MdPictureInPicture from '@material-design-icons/svg/round/picture_in_picture.svg?raw';
-import {
-  focus,
-  hotkeysMap,
-  setDefaultHotkeys,
-  type MangaProps,
-} from 'components/Manga';
+import { focus, hotkeysMap, setDefaultHotkeys } from 'components/Manga';
 import {
   approx,
   clamp,
@@ -18,9 +13,8 @@ import {
   hijackFn,
 } from 'helper';
 
-import { setEscHandler } from './other';
-
-import { type PageType } from '.';
+import { setEscHandler } from './helper';
+import type { GalleryContext } from './context';
 
 const getDomPosition = (dom: HTMLElement) => {
   const rect = dom.getBoundingClientRect();
@@ -39,9 +33,10 @@ const getDomPosition = (dom: HTMLElement) => {
   };
 };
 
-export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
-  if (pageType !== 'gallery') return;
-
+export const floatTagList = ({
+  mangaProps,
+  dom: { newTagField },
+}: GalleryContext) => {
   const gd4 = querySelector('#gd4')!;
   const gd4Style = getComputedStyle(gd4);
 
@@ -302,12 +297,10 @@ export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
     return rawFn(...args);
   });
 
-  const newTagInput = querySelector<HTMLInputElement>('#newtagfield')!;
-
   // 悬浮状态下鼠标划过自动聚焦输入框
-  newTagInput.addEventListener(
+  newTagField.addEventListener(
     'pointerenter',
-    () => store.open && newTagInput.focus(),
+    () => store.open && newTagField.focus(),
   );
 
   /** 根据标签链接获取对应的标签名 */
@@ -324,11 +317,11 @@ export const floatTagList = (pageType: PageType, mangaProps: MangaProps) => {
     const tag = getDropTag(text);
     if (!tag) return;
     e.preventDefault();
-    if (!newTagInput.value.includes(tag)) newTagInput.value += `${tag}, `;
+    if (!newTagField.value.includes(tag)) newTagField.value += `${tag}, `;
     // 触发一下 input 事件
-    newTagInput.dispatchEvent(new Event('input'));
+    newTagField.dispatchEvent(new Event('input'));
   };
-  newTagInput.addEventListener('drop', handleDrop);
+  newTagField.addEventListener('drop', handleDrop);
 
   // 增大拖拽标签的放置范围，不用非得拖进框
   const taglist = querySelector('#taglist')!;

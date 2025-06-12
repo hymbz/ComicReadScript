@@ -3,7 +3,7 @@ import { render } from 'solid-js/web';
 import { request, toast } from 'main';
 import { t, domParse, querySelector, querySelectorAll } from 'helper';
 
-import { type PageType } from '.';
+import type { EhContext } from './context';
 
 let hasStyle = false;
 const addQuickFavorite = (
@@ -190,19 +190,18 @@ const addQuickFavorite = (
 };
 
 /** 快捷收藏的界面 */
-export const quickFavorite = (pageType: PageType) => {
-  if (pageType === 'gallery') {
-    const button = querySelector('#gdf')!;
-    const root = querySelector('#gd3')!;
-    addQuickFavorite(button, root, `${unsafeWindow.popbase}addfav`, [
-      0,
-      (button.firstElementChild as HTMLElement).offsetTop,
-    ]);
-    return;
-  }
+export const quickFavorite = (context: EhContext) => {
+  switch (context.type) {
+    case 'gallery': {
+      const button = querySelector('#gdf')!;
+      const root = querySelector('#gd3')!;
+      addQuickFavorite(button, root, `${unsafeWindow.popbase}addfav`, [
+        0,
+        (button.firstElementChild as HTMLElement).offsetTop,
+      ]);
+      break;
+    }
 
-  // 列表页根据不同显示方式分别处理
-  switch (pageType) {
     case 't': {
       for (const item of querySelectorAll('.gl1t')) {
         const button = item.querySelector<HTMLElement>('[id^=posted_]')!;

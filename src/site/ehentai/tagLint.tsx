@@ -17,13 +17,10 @@ import {
   splitTagNamespace,
 } from 'userscript/ehTagRules';
 
-import { getTaglist, getTagNameFull } from './other';
+import { getTaglist, getTagNameFull } from './helper';
+import { type GalleryContext } from './context';
 
-import type { PageType } from '.';
-
-export const tagLint = (pageType: PageType) => {
-  if (pageType !== 'gallery') return;
-
+export const tagLint = ({ dom: { newTagField } }: GalleryContext) => {
   /** 是否是「Doujinshi」「Manga」「Non-H」 */
   const isManga = querySelector('#gdc > .cs:is(.ct2, .ct3, .ct9)');
 
@@ -227,7 +224,6 @@ export const tagLint = (pageType: PageType) => {
   hijackFn('tag_update_vote', updateLint);
 
   // 输入标签高亮
-  const newTagInput = querySelector<HTMLInputElement>('#newtagfield')!;
   const [inputTagList, setInputTagList] = createEqualsSignal<string[]>([]);
   useStyle(
     createRootMemo(() =>
@@ -241,12 +237,12 @@ export const tagLint = (pageType: PageType) => {
   );
   const updateInputTagList = () =>
     setInputTagList(
-      newTagInput.value
+      newTagField.value
         .split(',')
         .map((tag) => getTagNameFull(tag.trim()))
         .filter(Boolean),
     );
-  newTagInput.addEventListener('input', updateInputTagList);
-  newTagInput.addEventListener('keydown', updateInputTagList);
+  newTagField.addEventListener('input', updateInputTagList);
+  newTagField.addEventListener('keydown', updateInputTagList);
   hijackFn('tag_update_vote', updateInputTagList);
 };

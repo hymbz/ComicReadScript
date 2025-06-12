@@ -1,8 +1,7 @@
-import { createMemo, createSignal, type Component } from 'solid-js';
+import { createSignal } from 'solid-js';
 import { render } from 'solid-js/web';
-import { request, useInit, toast, ReactiveSet, type LoadImgFn } from 'main';
-import { type MangaProps, imgList } from 'components/Manga';
-import { getAdPageByFileName, getAdPageByContent } from 'userscript/detectAd';
+import { request, toast, type LoadImgFn } from 'main';
+import { type MangaProps, imgList as MangaImgList } from 'components/Manga';
 import {
   t,
   querySelector,
@@ -13,7 +12,6 @@ import {
   log,
   testImgUrl,
   singleThreaded,
-  useStyle,
   createRootMemo,
   requestIdleCallback,
   linstenKeydown,
@@ -24,7 +22,8 @@ import {
   sleep,
 } from 'helper';
 
-import { escHandler } from './other';
+import { createEhContext } from './context';
+import { escHandler } from './helper';
 import { quickFavorite } from './quickFavorite';
 import { crossSiteLink } from './crossSiteLink';
 import { hotkeysPageTurn } from './hotkeys';
@@ -34,42 +33,12 @@ import { quickTagDefine } from './quickTagDefine';
 import { floatTagList } from './floatTagList';
 import { sortTags } from './sortTags';
 import { tagLint } from './tagLint';
+import { detectAd } from './detectAd';
 
 // [ehentai 图像限额](https://github.com/ccloli/E-Hentai-Downloader/wiki/E−Hentai-Image-Viewing-Limits-(Chinese))
 
-type ListPageType =
-  | 'm' // 最小化
-  | 'p' // 最小化 + 关注标签
-  | 'l' // 紧凑 + 标签
-  | 'e' // 扩展
-  | 't'; // 缩略图;
-
-export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
-
 (async () => {
-  let pageType: PageType | undefined;
-
-  if (Reflect.has(unsafeWindow, 'display_comment_field')) pageType = 'gallery';
-  else if (location.pathname === '/mytags') pageType = 'mytags';
-  else if (Reflect.has(unsafeWindow, 'mpvkey')) pageType = 'mpv';
-  else
-    pageType = (
-      querySelector('option[value="t"]')?.parentElement as HTMLSelectElement
-    )?.value as PageType | undefined;
-
-  if (!pageType) return;
-  const {
-    options,
-    setComicLoad,
-    dynamicLoad,
-    showComic,
-    comicMap,
-    setComicMap,
-    setImgList,
-    setFab,
-    setManga,
-    mangaProps,
-  } = await useInit('ehentai', {
+  const context = await createEhContext({
     /** 关联外站 */
     cross_site_link: true,
     /** 快捷键 */
@@ -92,8 +61,20 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     tag_lint: false,
     autoShow: false,
   });
+  if (!context) return;
 
-  if (pageType === 'mpv') {
+  const {
+    options,
+    setComicLoad,
+    dynamicLoad,
+    showComic,
+    setComicMap,
+    setImgList,
+    setFab,
+    setManga,
+  } = context;
+
+  if (context.type === 'mpv') {
     return setComicLoad(() => {
       const imgEleList = querySelectorAll('.mimg[id]');
       const loadImgList: LoadImgFn = async (setImg) => {
@@ -130,23 +111,18 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
 
   // 标签染色
   if (options.colorize_tag) {
-    colorizeTag(pageType);
-    sortTags(pageType);
+    colorizeTag(context);
+    sortTags(context);
   }
-  // 悬浮标签列表
-  if (options.float_tag_list)
-    requestIdleCallback(() => floatTagList(pageType, mangaProps));
   // 快捷收藏。必须处于登录状态
   if (unsafeWindow.apiuid !== -1 && options.quick_favorite)
-    requestIdleCallback(() => quickFavorite(pageType));
+    requestIdleCallback(() => quickFavorite(context));
   // 快捷评分
   if (options.quick_rating)
-    requestIdleCallback(() => quickRating(pageType), 1000);
-  // 快捷查看标签定义
-  if (options.quick_tag_define)
-    requestIdleCallback(() => quickTagDefine(pageType), 1000);
-  // 标签检查
-  if (options.tag_lint) requestIdleCallback(() => tagLint(pageType), 1000);
+    requestIdleCallback(() => quickRating(context), 1000);
+
+  // 不是漫画页就退出
+  if (context.type !== 'gallery') return hotkeysPageTurn(context);
 
   // 自动调整阅读配置
   if (
@@ -164,9 +140,13 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     setManga({ option });
   }
 
-  // 不是漫画页的话
-  if (pageType !== 'gallery')
-    return options.hotkeys && hotkeysPageTurn(pageType);
+  // 悬浮标签列表
+  if (options.float_tag_list) requestIdleCallback(() => floatTagList(context));
+  // 快捷查看标签定义
+  if (options.quick_tag_define)
+    requestIdleCallback(() => quickTagDefine(context), 1000);
+  // 标签检查
+  if (options.tag_lint) requestIdleCallback(() => tagLint(context), 1000);
 
   const sidebarDom = document.getElementById('gd5')!;
 
@@ -193,106 +173,15 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     #gmid #ehs-introduce-box { width: 100%; }
   `);
 
-  const LoadButton: Component<{
-    id: string;
-    onClick?: (e: MouseEvent) => unknown;
-  }> = (props) => {
-    const tip = createMemo(() => {
-      const _imgList = comicMap[props.id]?.imgList;
-      const progress = _imgList?.filter(Boolean).length;
-
-      switch (_imgList?.length) {
-        case undefined:
-          return ' Load comic';
-        case progress:
-          return ' Read';
-        default:
-          return ` loading - ${progress}/${_imgList!.length}`;
-      }
-    });
-
-    return (
-      <a
-        href="javascript:;"
-        onClick={async (e) => {
-          await props.onClick?.(e);
-          showComic(props.id);
-        }}
-        children={tip()}
-      />
-    );
-  };
-
   // 关联外站
   if (options.cross_site_link)
-    requestIdleCallback(
-      () => crossSiteLink(dynamicLoad, setComicLoad, LoadButton),
-      1000,
-    );
+    requestIdleCallback(() => crossSiteLink(context), 1000);
 
-  let totalImgNum = 0;
-  totalImgNum = Number(
-    querySelector('.gtb .gpc')
-      ?.textContent?.replaceAll(',', '')
-      .match(/\d+/g)
-      ?.at(-1),
-  );
-  if (Number.isNaN(totalImgNum)) {
-    totalImgNum = Number(
-      /(?<=<td class="gdt2">)\d+(?= pages<\/td>)/.exec(
-        (await request(window.location.href)).responseText,
-      )?.[0],
-    );
-  }
-  if (Number.isNaN(totalImgNum)) toast.error(t('site.changed_load_failed'));
+  if (Number.isNaN(context.imgNum))
+    return toast.error(t('site.changed_load_failed'));
 
-  const ehImgList: string[] = [];
-  const ehImgPageList: string[] = [];
-  const ehImgFileNameList: string[] = [];
-
-  const enableDetectAd =
-    options.detect_ad && document.getElementById('ta_other:extraneous_ads');
-  if (enableDetectAd) {
-    setComicMap('', { adList: new ReactiveSet() });
-    /** 缩略图列表 */
-    const thumbnailList: Array<string | HTMLImageElement> = [];
-    for (const e of querySelectorAll<HTMLAnchorElement>('#gdt > a')) {
-      const index = Number(/.+-(\d+)/.exec(e.href)?.[1]) - 1;
-      if (Number.isNaN(index)) continue;
-      ehImgPageList[index] = e.href;
-
-      const thumbnail = e.querySelector<HTMLElement>('[title]')!;
-      ehImgFileNameList[index] = thumbnail.title.split(/：|: /)[1];
-      thumbnailList[index] =
-        thumbnail.tagName === 'IMG'
-          ? (thumbnail as HTMLImageElement)
-          : /url\("(.+)"\)/.exec(thumbnail.style.backgroundImage)![1];
-    }
-
-    (async () => {
-      // 先根据文件名判断一次
-      await getAdPageByFileName(ehImgFileNameList, comicMap[''].adList!);
-      // 不行的话再用缩略图识别
-      if (comicMap[''].adList!.size === 0)
-        await getAdPageByContent(thumbnailList, comicMap[''].adList!);
-
-      // 模糊广告页的缩略图
-      useStyle(
-        createRootMemo(() => {
-          if (!comicMap['']?.adList?.size) return '';
-          return [...comicMap[''].adList]
-            .map(
-              (i) => `a[href="${ehImgPageList[i]}"] [title]:not(:hover) {
-              filter: blur(8px);
-              clip-path: border-box;
-              backdrop-filter: blur(8px);
-            }`,
-            )
-            .join('\n');
-        }),
-      );
-    })();
-  }
+  /** 在图片加载后识别广告 */
+  const checkAd = await detectAd(context);
 
   const checkIpBanned = (text: string) =>
     text.includes('IP address has been temporarily banned') &&
@@ -340,11 +229,11 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     return pageList;
   };
 
-  const [loadImgsText, setLoadImgsText] = createSignal(`1-${totalImgNum}`);
+  const [loadImgsText, setLoadImgsText] = createSignal(`1-${context.imgNum}`);
 
   const loadImgs = createRootMemo(() =>
     // eslint-disable-next-line unicorn/explicit-length-check
-    extractRange(loadImgsText(), ehImgList.length || totalImgNum),
+    extractRange(loadImgsText(), context.imgList.length || context.imgNum),
   );
 
   const totalPageNum = Number(
@@ -354,18 +243,18 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
   const loadImgList: LoadImgFn = async (setImg) => {
     // 在不知道每页显示多少张图片的情况下，没办法根据图片序号反推出它所在的页数
     // 所以只能一次性获取所有页数上的图片页地址
-    if (ehImgPageList.length !== totalPageNum) {
+    if (context.pageList.length !== totalPageNum) {
       const allPageList = await plimit(
         createSequence(totalPageNum).map(
           (pageNum) => () => getImgPageUrl(pageNum),
         ),
       );
-      ehImgPageList.length = 0;
-      ehImgFileNameList.length = 0;
+      context.pageList.length = 0;
+      context.fileNameList.length = 0;
       for (const pageList of allPageList) {
         for (const [url, fileName] of pageList) {
-          ehImgPageList.push(url);
-          ehImgFileNameList.push(fileName);
+          context.pageList.push(url);
+          context.fileNameList.push(fileName);
         }
       }
     }
@@ -373,14 +262,11 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     await plimit(
       [...loadImgs()].map((i, order) => async () => {
         if (i < 0) return;
-        ehImgList[i] ||= await getImgUrl(ehImgPageList[i]);
-        setImg(order, ehImgList[i]);
+        context.imgList[i] ||= await getImgUrl(context.pageList[i]);
+        setImg(order, context.imgList[i]);
       }),
     );
-    if (enableDetectAd) {
-      getAdPageByFileName(ehImgFileNameList, comicMap[''].adList!);
-      getAdPageByContent(ehImgList, comicMap[''].adList!);
-    }
+    checkAd?.();
   };
   setComicLoad(dynamicLoad(loadImgList, () => loadImgs().size));
 
@@ -402,11 +288,11 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
       );
       if (!range) return;
       await cache.set('pageRange', {
-        id: unsafeWindow.gid ?? Number(location.pathname.split('/')[2]),
+        id: unsafeWindow.gid ?? context.galleryId,
         range,
       });
 
-      setLoadImgsText(range ?? `1-${totalImgNum}`);
+      setLoadImgsText(range ?? `1-${context.imgNum}`);
       // 删掉当前的图片列表以便触发重新加载
       setComicMap('', 'imgList', undefined);
       showComic();
@@ -423,13 +309,13 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
         oncapture:click={handleClick}
       >
         <img src="https://ehgt.org/g/mr.gif" />
-        <LoadButton id="" />
+        <context.LoadButton id="" />
       </p>
     );
   }, sidebarDom);
 
   // 等加载按钮渲染好后再绑定快捷键，防止在还没准备好时就触发加载导致出错
-  if (options.hotkeys) hotkeysPageTurn(pageType);
+  if (options.hotkeys) hotkeysPageTurn(context);
 
   /** 获取新的图片页地址 */
   const getNewImgPageUrl = async (url: string) => {
@@ -446,27 +332,26 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
 
   /** 刷新指定图片 */
   const reloadImg = singleThreaded(async (_, url: string): Promise<void> => {
-    const i = ehImgList.indexOf(url);
+    const i = context.imgList.indexOf(url);
     if (i === -1) return;
-    ehImgList[i] = await getImgUrl(ehImgPageList[i]);
-    if (!(await testImgUrl(ehImgList[i]))) {
-      ehImgPageList[i] = await getNewImgPageUrl(ehImgPageList[i]);
-      ehImgList[i] = await getImgUrl(ehImgPageList[i]);
+    context.imgList[i] = await getImgUrl(context.pageList[i]);
+    if (!(await testImgUrl(context.imgList[i]))) {
+      context.pageList[i] = await getNewImgPageUrl(context.pageList[i]);
+      context.imgList[i] = await getImgUrl(context.pageList[i]);
       toast.warn(t('alert.retry_get_img_url', { i }));
-      if (!(await testImgUrl(ehImgList[i]))) {
+      if (!(await testImgUrl(context.imgList[i]))) {
         await sleep(500);
         return reloadImg(url);
       }
     }
-    setImgList('', i, ehImgList[i]);
+    setImgList('', i, context.imgList[i]);
 
-    for (const img of imgList())
+    for (const img of MangaImgList())
       if (img.loadType === 'error') return reloadImg(img.src);
   });
 
   setManga({
-    title:
-      querySelector('#gj')?.textContent || querySelector('#gn')?.textContent,
+    title: context.japanTitle || context.galleryTitle,
     onExit(isEnd) {
       if (isEnd) scrollIntoView('#cdiv');
       setManga('show', false);

@@ -3,18 +3,13 @@ import { render } from 'solid-js/web';
 import { request, toast } from 'main';
 import { querySelectorAll, t } from 'helper';
 
-import { type PageType } from '.';
+import { type EhContext } from './context';
 
 /** 快捷评分 */
-export const quickRating = (pageType: PageType) => {
+export const quickRating = (context: EhContext) => {
   let list: HTMLElement[];
 
-  switch (pageType) {
-    case 'gallery':
-    case 'mytags':
-    case 'mpv':
-      return;
-
+  switch (context.type) {
     case 'e':
       list = querySelectorAll('#favform > table > tbody > tr');
       break;
@@ -26,6 +21,9 @@ export const quickRating = (pageType: PageType) => {
     case 't':
       list = querySelectorAll('.gl1t');
       break;
+
+    default:
+      return;
   }
 
   GM_addStyle(`
@@ -144,7 +142,7 @@ export const quickRating = (pageType: PageType) => {
   for (const [index, item] of list.entries()) {
     const ir = [...item.querySelectorAll<HTMLElement>('.ir')].at(-1);
     if (!ir) continue;
-    // 快捷评分使用得并不多，所以等鼠标移上去再处理，减少性能损耗
+    // 快捷评分使用得并不多，所以等鼠标移上去再处理，减少性能消耗
     ir.addEventListener(
       'mouseenter',
       () => renderQuickRating(item, ir, index),

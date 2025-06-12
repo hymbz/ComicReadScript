@@ -1,8 +1,7 @@
 import { debounce, getGmValue, hijackFn } from 'helper';
 
 import { updateMyTags, handleMyTagsChange, type Tag } from './myTags';
-
-import { type PageType } from '.';
+import { type EhContext } from './context';
 
 // 为每个标签单独生成 css。用于方便调试时排查和修改样式时使用
 // const buildTagColorCss = (
@@ -80,10 +79,10 @@ export const updateTagColor = async (tagList: Tag[]) => {
 };
 
 /** 标签染色 */
-export const colorizeTag = async (pageType: PageType) => {
+export const colorizeTag = async (context: EhContext) => {
   handleMyTagsChange.add(updateTagColor);
 
-  switch (pageType) {
+  switch (context.type) {
     case 'gallery': {
       let css =
         location.origin === 'https://exhentai.org'
