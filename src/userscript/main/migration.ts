@@ -158,4 +158,18 @@ export const migration = async (version: string) => {
           await renameOption(key, ['option.translation => ']);
       }
     }
+
+  // 11.11 => 11.12
+  if (versionLt(version, '11.12'))
+    for (const key of values) {
+      switch (key) {
+        case 'Version':
+        case 'Languages':
+        case 'HotKeys':
+          continue;
+
+        default:
+          await renameOption(key, ['associate_nhentai => cross_site_link']);
+      }
+    }
 };

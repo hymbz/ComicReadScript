@@ -197,12 +197,12 @@
   },
   "site": {
     "add_feature": {
-      "associate_nhentai": "关联nhentai",
       "auto_adjust_option": "自动调整阅读配置",
       "auto_page_turn": "无限滚动",
       "auto_show": "自动进入阅读模式",
       "block_totally": "彻底屏蔽漫画",
       "colorize_tag": "标签染色",
+      "cross_site_link": "Helyközi link",
       "detect_ad": "识别广告页",
       "float_tag_list": "悬浮标签列表",
       "load_original_image": "加载原图",
@@ -224,9 +224,10 @@
       "fetch_img_page_source_failed": "获取图片页源码失败",
       "fetch_img_page_url_failed": "从详情页获取图片页地址失败",
       "fetch_img_url_failed": "从图片页获取图片地址失败",
-      "html_changed_nhentai_failed": "页面结构发生改变，关联 nhentai 漫画功能无法正常生效",
+      "hitomi_error": "hitomi egyeztetési hiba",
+      "html_changed_link_failed": "Az oldalszerkezet megváltozott, és a kapcsolódó külső webhely funkciók nem működnek megfelelően",
       "ip_banned": "IP地址被禁",
-      "nhentai_error": "nhentai 匹配出错",
+      "nhentai_error": "nhentai egyeztetési hiba",
       "nhentai_failed": "匹配失败，请在确认登录 {{nhentai}} 后刷新"
     },
     "nhentai": {

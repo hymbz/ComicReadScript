@@ -197,12 +197,12 @@
   },
   "site": {
     "add_feature": {
-      "associate_nhentai": "Ассоциация с nhentai",
       "auto_adjust_option": "Автоматическая настройка параметра чтения",
       "auto_page_turn": "Автопереворот страниц",
       "auto_show": "Автоматически включать режим чтения",
       "block_totally": "Глобально заблокировать комиксы",
       "colorize_tag": "Раскрасить теги",
+      "cross_site_link": "Кросс-сайтовая ссылка",
       "detect_ad": "Detect advertise page",
       "float_tag_list": "Плавающий список тегов",
       "load_original_image": "Загружать оригинальное изображение",
@@ -224,9 +224,10 @@
       "fetch_img_page_source_failed": "Не удалось получить исходный код страницы с изображениями",
       "fetch_img_page_url_failed": "Не удалось получить адрес страницы изображений из деталей",
       "fetch_img_url_failed": "Не удалось получить адрес изображения",
-      "html_changed_nhentai_failed": "Структура страницы изменилась, функция nhentai manga работает некорректно",
+      "hitomi_error": "Ошибка сопоставления hitomi",
+      "html_changed_link_failed": "Структура страницы изменилась, и связанные функции внешнего сайта не работают должным образом",
       "ip_banned": "IP адрес забанен",
-      "nhentai_error": "Ошибка сопоставления с nhentai",
+      "nhentai_error": "Ошибка сопоставления nhentai",
       "nhentai_failed": "Ошибка сопостовления. Пожалуйста перезагрузите страницу после входа на {{nhentai}}"
     },
     "nhentai": {

@@ -175,7 +175,7 @@ export const useInit = async <T extends Record<string, any>>(
   const needAutoShow = { val: true };
 
   const loadComic = async (id: string | number = nowComic()) => {
-    if (!Reflect.has(comicMap, id)) throw new Error('comic id error');
+    if (!Reflect.has(comicMap, id)) throw new Error('comic not found');
 
     try {
       setComicMap(id, 'imgList', []);
@@ -191,7 +191,7 @@ export const useInit = async <T extends Record<string, any>>(
   };
 
   const showComic = async (id: string | number = nowComic()) => {
-    if (!Reflect.has(comicMap, id)) throw new Error('comic id error');
+    if (!Reflect.has(comicMap, id)) throw new Error('comic not found');
     if (id !== nowComic()) switchComic(id);
 
     switch (comicMap[id].imgList?.length) {

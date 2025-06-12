@@ -102,7 +102,7 @@ try {
       break;
     }
 
-    // #E-Hentai（关联 nhentai、快捷收藏、标签染色、识别广告页等）
+    // #E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）
     case 'exhentai.org':
     case 'e-hentai.org': {
       inject('site/ehentai');

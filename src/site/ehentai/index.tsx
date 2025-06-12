@@ -26,7 +26,7 @@ import {
 
 import { escHandler } from './other';
 import { quickFavorite } from './quickFavorite';
-import { associateNhentai } from './associateNhentai';
+import { crossSiteLink } from './crossSiteLink';
 import { hotkeysPageTurn } from './hotkeys';
 import { colorizeTag } from './colorizeTag';
 import { quickRating } from './quickRating';
@@ -58,7 +58,6 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     )?.value as PageType | undefined;
 
   if (!pageType) return;
-
   const {
     options,
     setComicLoad,
@@ -71,8 +70,8 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     setManga,
     mangaProps,
   } = await useInit('ehentai', {
-    /** 关联 nhentai */
-    associate_nhentai: true,
+    /** 关联外站 */
+    cross_site_link: true,
     /** 快捷键 */
     hotkeys: true,
     /** 识别广告页 */
@@ -224,10 +223,10 @@ export type PageType = 'gallery' | 'mytags' | 'mpv' | ListPageType;
     );
   };
 
-  // 关联 nhentai
-  if (options.associate_nhentai)
+  // 关联外站
+  if (options.cross_site_link)
     requestIdleCallback(
-      () => associateNhentai(dynamicLoad, setComicLoad, LoadButton),
+      () => crossSiteLink(dynamicLoad, setComicLoad, LoadButton),
       1000,
     );
 
