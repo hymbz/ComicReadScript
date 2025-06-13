@@ -6,12 +6,12 @@ import { store } from '../store';
 export const [defaultHotkeys, setDefaultHotkeys] = createSignal<
   Record<string, string[]>
 >({
-  scroll_up: ['w', 'Shift + w', 'ArrowUp'],
-  scroll_down: ['s', 'Shift + s', 'ArrowDown', ' '],
+  scroll_up: ['w', 'ArrowUp'],
+  scroll_down: ['s', 'ArrowDown', ' '],
   scroll_left: ['a', 'Shift + a', ',', 'ArrowLeft'],
   scroll_right: ['d', 'Shift + d', '.', 'ArrowRight'],
-  page_up: ['PageUp'],
-  page_down: [' ', 'PageDown'],
+  page_up: ['PageUp', 'Shift + w'],
+  page_down: [' ', 'PageDown', 'Shift + s'],
   jump_to_home: ['Home'],
   jump_to_end: ['End'],
   exit: ['Escape'],

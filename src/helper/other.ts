@@ -590,3 +590,19 @@ export const waitUrlChange = async (isValidUrl: () => unknown) => {
     });
   });
 };
+
+// TODO: 用这个重构相关实现
+export abstract class AnimationFrame {
+  animationId = 0;
+  abstract frame: (timestamp: DOMHighResTimeStamp) => unknown;
+
+  call = () => {
+    this.animationId = requestAnimationFrame(this.frame);
+  };
+
+  cancel = () => {
+    if (!this.animationId) return;
+    cancelAnimationFrame(this.animationId);
+    this.animationId = 0;
+  };
+}

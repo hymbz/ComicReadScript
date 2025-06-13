@@ -23,6 +23,7 @@ import { hotkeysMap } from './hotkeys';
 import { zoom } from './zoom';
 import { closeScrollLock, turnPage } from './turnPage';
 import {
+  constantScroll,
   scrollLength,
   scrollProgress,
   scrollTo,
@@ -47,12 +48,9 @@ export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
 };
 
 /** 卷轴模式下的页面滚动 */
-const scrollModeScrollPage = (dir: 'next' | 'prev') => {
+const scrollModeScrollPage = (x: number) => {
   if (!store.show.endPage) {
-    scrollTo(
-      scrollTop() + store.rootSize.height * 0.8 * (dir === 'next' ? 1 : -1),
-      true,
-    );
+    scrollTo(scrollTop() + x, true);
     _setState('scrollLock', true);
   }
   closeScrollLock();
@@ -62,6 +60,33 @@ const scrollModeScrollPage = (dir: 'next' | 'prev') => {
 const handleSwapPageTurnKey = (nextPage: boolean) => {
   const next = store.option.swapPageTurnKey ? !nextPage : nextPage;
   return next ? 'next' : 'prev';
+};
+
+/** 处理快捷键长按的情况 */
+export const handleHoldKey = new (class {
+  holdKeys = new Map<string, () => void>();
+
+  linsten(code: string, holdFn: () => void, upFn: () => void) {
+    if (this.holdKeys.has(code)) return;
+    holdFn();
+    this.holdKeys.set(code, upFn);
+  }
+
+  onKeyUp = (e: KeyboardEvent) => {
+    const code = getKeyboardCode(e);
+    if (!this.holdKeys.has(code)) return;
+    this.holdKeys.get(code)!();
+    this.holdKeys.delete(code);
+  };
+})();
+
+/** 处理长按滚动 */
+const handleHoldScroll = (code: string, speed: number) => {
+  handleHoldKey.linsten(
+    code,
+    () => constantScroll.start(speed),
+    () => constantScroll.cancel(),
+  );
 };
 
 export const handleKeyDown = (e: KeyboardEvent) => {
@@ -128,29 +153,31 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     e.preventDefault();
   } else return;
 
+  const hotkey = hotkeysMap()[code];
+
   // 并排卷轴模式下的快捷键
   if (isAbreastMode()) {
-    switch (hotkeysMap()[code]) {
+    switch (hotkey) {
       case 'scroll_up':
-        setAbreastScrollFill(
-          abreastScrollFill() - store.rootSize.height * 0.02,
-        );
+        setAbreastScrollFill(abreastScrollFill() - 20);
         return;
       case 'scroll_down':
-        setAbreastScrollFill(
-          abreastScrollFill() + store.rootSize.height * 0.02,
-        );
+        setAbreastScrollFill(abreastScrollFill() + 20);
         return;
 
       case 'scroll_left':
-        return scrollTo(scrollProgress() + abreastColumnWidth());
+        return scrollTo(
+          scrollProgress() - (store.option.dir === 'rtl' ? 20 : -20),
+        );
       case 'scroll_right':
-        return scrollTo(scrollProgress() - abreastColumnWidth());
+        return scrollTo(
+          scrollProgress() + (store.option.dir === 'rtl' ? 20 : -20),
+        );
 
       case 'page_up':
-        return scrollTo(scrollProgress() - store.rootSize.width * 0.8);
+        return scrollTo(scrollProgress() - abreastColumnWidth());
       case 'page_down':
-        return scrollTo(scrollProgress() + store.rootSize.width * 0.8);
+        return scrollTo(scrollProgress() + abreastColumnWidth());
 
       case 'jump_to_home':
         return scrollTo(0);
@@ -159,18 +186,31 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     }
   }
 
-  switch (hotkeysMap()[code]) {
-    case 'page_up':
-    case 'scroll_up': {
-      if (isScrollMode()) scrollModeScrollPage('prev');
-      return turnPage('prev');
+  // 普通卷轴模式下的快捷键
+  if (isScrollMode()) {
+    switch (hotkey) {
+      case 'page_up':
+        return scrollModeScrollPage(-store.rootSize.height * 0.8);
+      case 'page_down':
+        return scrollModeScrollPage(store.rootSize.height * 0.8);
+
+      case 'scroll_up':
+        if (e.repeat) return handleHoldScroll(code, -1);
+        return scrollModeScrollPage(-20);
+      case 'scroll_down':
+        if (e.repeat) return handleHoldScroll(code, 1);
+        return scrollModeScrollPage(20);
     }
+  }
+
+  switch (hotkey) {
+    case 'page_up':
+    case 'scroll_up':
+      return turnPage('prev');
 
     case 'page_down':
-    case 'scroll_down': {
-      if (isScrollMode()) scrollModeScrollPage('next');
+    case 'scroll_down':
       return turnPage('next');
-    }
 
     case 'scroll_left':
       return turnPage(handleSwapPageTurnKey(store.option.dir === 'rtl'));

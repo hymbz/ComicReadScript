@@ -21,6 +21,7 @@ import { type Option } from './store/option';
 import {
   bindRef,
   focus,
+  handleHoldKey,
   handleKeyDown,
   handleMouseDown,
   handleWheel,
@@ -79,6 +80,7 @@ export const Manga: Component<MangaProps> = (props) => {
         on:mousedown={handleMouseDown}
         on:wheel={handleWheel}
         oncapture:keydown={handleKeyDown}
+        oncapture:keyup={handleHoldKey.onKeyUp}
         data-mobile={boolDataVal(store.isMobile)}
         data-scroll-mode={boolDataVal(store.option.scrollMode.enabled)}
         data-grid-mode={boolDataVal(store.gridMode)}
