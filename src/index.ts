@@ -16,6 +16,7 @@ import {
   waitDom,
   requestIdleCallback,
   debounce,
+  fileType,
 } from 'helper';
 import {
   request,
@@ -912,6 +913,27 @@ try {
         getImgList,
         onNext: querySelectorClick('.rd_top-right.next:not(.disabled)'),
         onPrev: querySelectorClick('.rd_top-left.prev:not(.disabled)'),
+      };
+      break;
+    }
+
+    // #[HentaiZap](https://hentaizap.com)
+    case 'hentaizap.com': {
+      if (!location.pathname.startsWith('/g/')) break;
+
+      options = {
+        name: 'hentaizap',
+        getImgList() {
+          const max = Number(querySelector<HTMLInputElement>('#pages')!.value);
+          const img = querySelector<HTMLImageElement>('#fimg')!;
+          const imgUrl = img.dataset.src || img.src;
+          const baseUrl = imgUrl.split('/').slice(0, -1).join('/');
+          return range(
+            max,
+            (i) =>
+              `${baseUrl}/${i + 1}.${fileType[unsafeWindow.g_th[i + 1].slice(0, 1)]}`,
+          );
+        },
       };
       break;
     }

@@ -9,6 +9,15 @@ export { createScheduled } from '@solid-primitives/scheduled';
 
 export { default as isEqual } from 'fast-deep-equal/es6/index.js';
 
+/** 图片文件扩展名缩写 */
+export const fileType = {
+  j: 'jpg',
+  p: 'png',
+  g: 'gif',
+  w: 'webp',
+  b: 'bmp',
+} as const;
+
 export const throttle: ScheduleCallback = (fn, wait = 100) =>
   leadingAndTrailing(_throttle, fn, wait);
 

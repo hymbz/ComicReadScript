@@ -1,5 +1,12 @@
 import { request, toast } from 'main';
-import { t, querySelector, plimit, hijackFn, querySelectorAll } from 'helper';
+import {
+  t,
+  querySelector,
+  plimit,
+  hijackFn,
+  querySelectorAll,
+  fileType,
+} from 'helper';
 import { For, Show, type Component, type JSX } from 'solid-js';
 import { render } from 'solid-js/web';
 import { createStore } from 'solid-js/store';
@@ -28,13 +35,6 @@ const nhentai = async ({
   }
 
   // nhentai api 对应的扩展名
-  const fileType = {
-    j: 'jpg',
-    p: 'png',
-    g: 'gif',
-    w: 'webp',
-    b: 'bmp',
-  } as const;
 
   // 只要带上 cf_clearance cookie 就能通过 Cloudflare 验证，但其是 httpOnly
   // 目前暴力猴还不支持 GM_Cookie，篡改猴也需要去设置里手动设置才能支持 httpOnly
