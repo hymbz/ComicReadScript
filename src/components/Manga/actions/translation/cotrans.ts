@@ -111,7 +111,28 @@ const resize = async (blob: Blob, w: number, h: number): Promise<Blob> => {
 
   return canvasToBlob(canvas);
 };
-
+async function serializeFormData(formData: FormData): Promise<{ body: Blob; contentType: string }> {
+  const boundary = "----WebKitFormBoundary" + Math.random().toString(36).slice(2);
+  const parts: (string | Blob)[] = [];
+  formData.forEach((value, name) => {
+      parts.push(`--${boundary}\r\n`);
+      if (value instanceof Blob) {
+        const fileName = value instanceof File ? value.name : "blob";
+        parts.push(`Content-Disposition: form-data; name="${name}"; filename="${fileName}"\r\n`);
+        parts.push(`Content-Type: ${value.type || "application/octet-stream"}\r\n\r\n`);
+        parts.push(value);
+        parts.push("\r\n");
+      } else {
+        parts.push(`Content-Disposition: form-data; name="${name}"\r\n\r\n`);
+        parts.push(`${value}\r\n`);
+      }
+  })
+  parts.push(`--${boundary}--\r\n`);
+  return {
+      body: new Blob(parts),
+      contentType: "multipart/form-data; boundary=" + boundary,
+  };
+}
 /** 使用 cotrans 翻译指定图片 */
 export const cotransTranslation = async (url: string) => {
   const img = store.imgMap[url];
@@ -134,13 +155,16 @@ export const cotransTranslation = async (url: string) => {
 
   setMessage(url, t('translation.tip.upload'));
   let res: Response;
+  let formData = createFormData(imgBlob, 'cotrans')
+  const { body, contentType } = await serializeFormData(formData);
   try {
     res = await request('https://api.cotrans.touhou.ai/task/upload/v1', {
       method: 'POST',
-      data: createFormData(imgBlob, 'cotrans'),
+      data: body,
       headers: {
         Origin: 'https://cotrans.touhou.ai',
         Referer: 'https://cotrans.touhou.ai/',
+        'Content-Type': contentType
       },
     });
   } catch (error) {
