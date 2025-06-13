@@ -271,6 +271,45 @@ export const defaultSettingList: () => SettingList = () => [
     ),
   ],
   [
+    t('button.auto_scroll'),
+    () => (
+      <>
+        <SettingsItemSwitch
+          name={t('other.enabled')}
+          {...bindOption('autoScroll', 'enabled')}
+        />
+
+        <SettingsItemNumber
+          name={t('other.interval')}
+          maxLength={3}
+          suffix="s"
+          step={1}
+          onChange={(val) => {
+            if (!Number.isNaN(val))
+              _setState('option', 'autoScroll', 'interval', val * 1000);
+          }}
+          value={store.option.autoScroll.interval / 1000}
+        />
+        <SettingsItemNumber
+          name={t('other.distance')}
+          maxLength={3}
+          suffix="px"
+          step={20}
+          onChange={(val) => {
+            if (!Number.isNaN(val))
+              _setState('option', 'autoScroll', 'distance', val);
+          }}
+          value={store.option.autoScroll.distance}
+        />
+
+        <SettingsItemSwitch
+          name={t('setting.option.auto_scroll_trigger_end')}
+          {...bindOption('autoScroll', 'triggerEnd')}
+        />
+      </>
+    ),
+  ],
+  [
     t('setting.option.img_recognition'),
     () => (
       <>

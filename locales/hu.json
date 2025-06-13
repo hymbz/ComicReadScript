@@ -10,6 +10,7 @@
     "server_connect_failed": "Nem sikerült csatlakozni a szerverhez."
   },
   "button": {
+    "auto_scroll": "Automatikus görgetés",
     "close_current_page_translation": "A jelenlegi oldal fordításának bezárása.",
     "download_completed": "Letöltés befejezve",
     "download_completed_error": "Letöltés befejezve, de {{errorNum}} kép letöltése sikertelen",
@@ -71,6 +72,7 @@
   "other": {
     "auto": "自动",
     "disable": "Letiltás",
+    "distance": "távolság",
     "download": "Letöltés",
     "enabled": "Engedélyezés",
     "enter_comic_read_mode": "Belépés a manga olvasó módba",
@@ -80,6 +82,7 @@
     "fill_page": "填充页",
     "hotkeys": "快捷键",
     "img_loading": "图片加载中",
+    "interval": "intervallum",
     "loading_img": "加载图片中",
     "none": "无",
     "or": "或",
@@ -128,6 +131,7 @@
       "always_load_all_img": "始终加载所有图片",
       "autoFullscreen": "Automatikus teljes képernyő",
       "autoHiddenMouse": "自动隐藏鼠标",
+      "auto_scroll_trigger_end": "Görgetés folytatása a végoldalon",
       "auto_switch_page_mode": "根据屏幕比例切换单双页",
       "background_color": "背景颜色",
       "click_page_turn_area": "点击区域",

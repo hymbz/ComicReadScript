@@ -16,6 +16,7 @@ import {
   switchDir,
   switchGridMode,
   switchFullscreen,
+  switchAutoScroll,
 } from './switch';
 import { handleTrackpadWheel } from './pointer';
 import { setOption } from './helper';
@@ -48,7 +49,7 @@ export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
 };
 
 /** 卷轴模式下的页面滚动 */
-const scrollModeScrollPage = (x: number) => {
+export const scrollModeScrollPage = (x: number) => {
   if (!store.show.endPage) {
     scrollTo(scrollTop() + x, true);
     _setState('scrollLock', true);
@@ -159,11 +160,9 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   if (isAbreastMode()) {
     switch (hotkey) {
       case 'scroll_up':
-        setAbreastScrollFill(abreastScrollFill() - 20);
-        return;
+        return setAbreastScrollFill(abreastScrollFill() - 20);
       case 'scroll_down':
-        setAbreastScrollFill(abreastScrollFill() + 20);
-        return;
+        return setAbreastScrollFill(abreastScrollFill() + 20);
 
       case 'scroll_left':
         return scrollTo(
@@ -243,6 +242,8 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     case 'translate_to_end':
       return translateToEnd();
 
+    case 'auto_scroll':
+      return switchAutoScroll();
     case 'fullscreen':
       return switchFullscreen();
 

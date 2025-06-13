@@ -48,6 +48,7 @@ const meta = {
               : props.imgList,
             option: Object.assign(defaultOption(), props.option ?? {}, {
               alwaysLoadAllImg: true,
+              autoScroll: { enabled: true, triggerEnd: true },
             }),
           })}
         />

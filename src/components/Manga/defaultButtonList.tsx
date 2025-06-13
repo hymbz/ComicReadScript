@@ -17,6 +17,7 @@ import { IconButton } from '../IconButton';
 
 import { _setState, refs, store } from './store';
 import { SettingPanel } from './components/SettingPanel';
+import { AutoScrollButton } from './components/autoScroll';
 import {
   nowFillIndex,
   zoomScrollModeImg,
@@ -120,6 +121,13 @@ export const defaultButtonList: ToolbarButtonList = [
         onClick={translateToEnd}
         children={<MdLowPriority />}
       />
+    </Show>
+  ),
+  // 自动滚动
+  () => (
+    <Show when={store.option.autoScroll.enabled}>
+      <hr />
+      <AutoScrollButton />
     </Show>
   ),
   () => <hr />,

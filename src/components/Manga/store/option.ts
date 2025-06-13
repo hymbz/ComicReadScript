@@ -112,6 +112,15 @@ export interface Option {
     /** 只下载完成翻译的图片 */
     onlyDownloadTranslated: boolean;
   };
+
+  /** 自动滚动 */
+  autoScroll: {
+    enabled: boolean;
+    interval: number;
+    distance: number;
+    /** 是否触发退出和上/下话 */
+    triggerEnd: boolean;
+  };
 }
 
 const _defaultOption: Readonly<Option> = {
@@ -184,6 +193,13 @@ const _defaultOption: Readonly<Option> = {
       mask_dilation_offset: 30,
     },
     onlyDownloadTranslated: false,
+  },
+
+  autoScroll: {
+    enabled: false,
+    interval: 3000,
+    distance: 200,
+    triggerEnd: false,
   },
 };
 

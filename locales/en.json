@@ -10,6 +10,7 @@
     "server_connect_failed": "Unable to connect to the server"
   },
   "button": {
+    "auto_scroll": "Auto scroll",
     "close_current_page_translation": "Close translation of the current page",
     "download_completed": "Download completed",
     "download_completed_error": "Download complete, but {{errorNum}} images failed to download",
@@ -71,6 +72,7 @@
   "other": {
     "auto": "Auto",
     "disable": "Disable",
+    "distance": "distance",
     "download": "Download",
     "enabled": "Enabled",
     "enter_comic_read_mode": "Enter comic reading mode",
@@ -80,6 +82,7 @@
     "fill_page": "Fill Page",
     "hotkeys": "Hotkeys",
     "img_loading": "Image loading",
+    "interval": "interval",
     "loading_img": "Loading image",
     "none": "None",
     "or": "or",
@@ -128,6 +131,7 @@
       "always_load_all_img": "Always load all images",
       "autoFullscreen": "Auto fullscreen",
       "autoHiddenMouse": "Auto hide mouse",
+      "auto_scroll_trigger_end": "Continue scrolling on the end page",
       "auto_switch_page_mode": "Auto switch single/double page mode by aspect ratio",
       "background_color": "Background Color",
       "click_page_turn_area": "Touch area",

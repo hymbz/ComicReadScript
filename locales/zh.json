@@ -10,6 +10,7 @@
     "server_connect_failed": "无法连接到服务器"
   },
   "button": {
+    "auto_scroll": "自动滚动",
     "close_current_page_translation": "关闭当前页的翻译",
     "download_completed": "下载完成",
     "download_completed_error": "下载完成，但有 {{errorNum}} 张图片下载失败",
@@ -71,6 +72,7 @@
   "other": {
     "auto": "自动",
     "disable": "禁用",
+    "distance": "距离",
     "download": "下载",
     "enabled": "启用",
     "enter_comic_read_mode": "进入漫画阅读模式",
@@ -80,6 +82,7 @@
     "fill_page": "填充页",
     "hotkeys": "快捷键",
     "img_loading": "图片加载中",
+    "interval": "间隔",
     "loading_img": "加载图片中",
     "none": "无",
     "or": "或",
@@ -128,6 +131,7 @@
       "always_load_all_img": "始终加载所有图片",
       "autoFullscreen": "自动全屏",
       "autoHiddenMouse": "自动隐藏鼠标",
+      "auto_scroll_trigger_end": "在结束页上继续滚动",
       "auto_switch_page_mode": "根据屏幕比例切换单双页",
       "background_color": "背景颜色",
       "click_page_turn_area": "点击区域",

@@ -1,4 +1,4 @@
-import { refs, setState, store } from '../store';
+import { _setState, refs, setState, store } from '../store';
 
 import { zoom } from './zoom';
 import { setOption } from './helper';
@@ -91,3 +91,7 @@ export const switchFullscreen = () => {
   if (document.fullscreenElement) document.exitFullscreen();
   else refs.root.requestFullscreen();
 };
+
+/** 切换自动滚动 */
+export const switchAutoScroll = () =>
+  _setState('autoScroll', 'play', (val) => !val);

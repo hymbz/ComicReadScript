@@ -22,6 +22,7 @@ interface IconButtonProps {
   popperClassName?: string | boolean;
   children?: JSX.Element;
   onClick?: EventHandler['on:click'];
+  style?: JSX.CSSProperties;
 }
 
 /** 图标按钮 */
@@ -46,6 +47,7 @@ export const IconButton: Component<IconButtonProps> = (_props) => {
         aria-label={props.tip}
         type="button"
         class={classes.iconButton}
+        style={props.style}
         classList={{
           [classes.hidden]: props.hidden,
           [classes.enabled]: props.enabled,

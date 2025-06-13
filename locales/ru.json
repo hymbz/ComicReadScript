@@ -10,6 +10,7 @@
     "server_connect_failed": "Не удалось подключиться к серверу"
   },
   "button": {
+    "auto_scroll": "Автопрокрутка",
     "close_current_page_translation": "Скрыть перевод текущей страницы",
     "download_completed": "Загрузка завершена",
     "download_completed_error": "Загрузка завершена, но {{errorNum}} изображений не удалось загрузить",
@@ -71,6 +72,7 @@
   "other": {
     "auto": "Авто",
     "disable": "Отключить",
+    "distance": "расстояние",
     "download": "Скачать",
     "enabled": "Включено",
     "enter_comic_read_mode": "Режим чтения комиксов",
@@ -80,6 +82,7 @@
     "fill_page": "Заполнить страницу",
     "hotkeys": "Горячие клавиши",
     "img_loading": "Изображение загружается",
+    "interval": "интервал",
     "loading_img": "Загрузка изображения",
     "none": "Отсутствует",
     "or": "или",
@@ -128,6 +131,7 @@
       "always_load_all_img": "Всегда загружать все изображения",
       "autoFullscreen": "Авто полный экран",
       "autoHiddenMouse": "Автоматически скрывать курсор мыши",
+      "auto_scroll_trigger_end": "Продолжить прокрутку на конечной странице",
       "auto_switch_page_mode": "Автоматическое переключение режима одной/двойной страницы в зависимости от соотношения сторон",
       "background_color": "Цвет фона",
       "click_page_turn_area": "Область нажатия",
