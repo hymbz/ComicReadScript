@@ -1,6 +1,7 @@
 /* eslint-disable i18next/no-literal-string */
+import { render } from 'solid-js/web';
 import { For, type Component, Show } from 'solid-js';
-import { request, useInit } from 'main';
+import { request, toast, useInit } from 'main';
 import {
   querySelectorClick,
   wait,
@@ -8,18 +9,37 @@ import {
   querySelectorAll,
   log,
 } from 'helper';
-import { render } from 'solid-js/web';
 
 // API 参考：https://github.com/fumiama/copymanga/blob/279e08b06a70307bf20162900103ec1fdcb97751/app/src/main/res/values/strings.xml
 
-const headers = {
-  webp: '1',
-  region: '1',
-  'User-Agent': 'COPY/2.0.7|',
-  version: '2.0.7',
-  source: 'copyApp',
-  referer: 'com.copymanga.app-2.0.7',
-};
+const mobileApi = new (class {
+  headers = {
+    webp: '1',
+    region: '1',
+    'User-Agent': 'COPY/2.0.7|',
+    version: '2.0.7',
+    source: 'copyApp',
+    referer: 'com.copymanga.app-2.0.7',
+  };
+
+  get: typeof request = async (url, details, ...args) =>
+    request(
+      url,
+      { responseType: 'json', headers: this.headers, ...details },
+      ...args,
+    );
+})();
+
+const pcApi = new (class {
+  headers = { 'User-Agent': navigator.userAgent, referer: location.href };
+
+  get: typeof request = async (url, details, ...args) =>
+    request(
+      `https://mapi.copy20.com${url}`,
+      { responseType: 'json', headers: this.headers, fetch: false, ...details },
+      ...args,
+    );
+})();
 
 // 在目录页显示上次阅读记录
 const handleLastChapter = (comicName: string) => {
@@ -45,11 +65,7 @@ const handleLastChapter = (comicName: string) => {
 
     a.textContent = '獲取中';
     a.removeAttribute('href');
-    const res = await request(`/api/v3/comic2/${comicName}/query?platform=3`, {
-      responseType: 'json',
-      fetch: false,
-      headers,
-    });
+    const res = await pcApi.get(`/api/v3/comic2/${comicName}/query?platform=3`);
 
     const data = res.response?.results?.browse;
     if (!data) {
@@ -88,12 +104,10 @@ type HiddenType = 'web' | 'mobile' | '404';
 const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
   const {
     response: { results },
-  } = await request<{ results: string }>(`/comicdetail/${comicName}/chapters`, {
-    responseType: 'json',
-    errorText: '加載漫畫目錄失敗',
-    headers,
-    fetch: false,
-  });
+  } = await mobileApi.get<{ results: string }>(
+    `/comicdetail/${comicName}/chapters`,
+    { errorText: '加載漫畫目錄失敗' },
+  );
 
   interface ChaptersGroup {
     name: string;
@@ -131,7 +145,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
 
   const data = await decryptData(
     results.slice(16),
-    unsafeWindow.dio || 'xxxmanga.woo.key',
+    unsafeWindow.dio || 'xxymanga.zzl.key',
     results.slice(0, 16),
   );
   log(data);
@@ -352,7 +366,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
     .split('; ')
     .find((cookie) => cookie.startsWith('token='))
     ?.replace('token=', '');
-  if (token) Reflect.set(headers, 'Authorization', `Token ${token}`);
+  if (token) Reflect.set(mobileApi.headers, 'Authorization', `Token ${token}`);
 
   let comicName = '';
   let id = '';
@@ -383,15 +397,14 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
             next: string | null;
             prev: string | null;
           };
-          comic: {
-            name: string;
-          };
+          comic: { name: string };
         };
       };
-      const res = await request<ResData>(
+      const res = await pcApi.get<ResData>(
         `/api/v3/comic/${comicName}/chapter2/${id}?platform=3`,
-        { responseType: 'json', headers, noCheckCode: true },
+        { noCheckCode: true },
       );
+
       if (res.status !== 200) {
         const message = `漫畫加載失敗：${res.response.message || res.status}`;
         if (titleDom) titleDom.textContent = message;
@@ -441,9 +454,9 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
 
     const getCommentList = async () => {
       const chapter_id = window.location.pathname.split('/').at(-1);
-      const res = await request(
+      const res = await pcApi.get(
         `/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`,
-        { responseType: 'json', errorText: '获取漫画评论失败' },
+        { errorText: '获取漫画评论失败' },
       );
       return res.response.results.list.map(
         ({ comment }) => comment as string,
@@ -510,7 +523,13 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
         titleDom.textContent =
           'ComicRead 提示您：你訪問的內容暫不存在，請坐和放寬，等待目錄生成';
       }
-      await buildChapters(comicName, hiddenType);
+
+      try {
+        await buildChapters(comicName, hiddenType);
+      } catch {
+        if (titleDom) titleDom.textContent = 'ComicRead 提示您：目錄生成失敗😢';
+        toast.error('目錄生成失敗😢', { duration: Number.POSITIVE_INFINITY });
+      }
     }
 
     if (!isMobile && token) handleLastChapter(comicName);
