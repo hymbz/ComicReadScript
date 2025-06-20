@@ -1,5 +1,11 @@
 # Changelog
 
+## [11.12.1](https://github.com/hymbz/ComicReadScript/compare/v11.12.0...v11.12.1) (2025-06-20)
+
+### Bug Fixes
+
+* :bug: 修复拷贝漫画加载出错的 bug ([ba460c9](https://github.com/hymbz/ComicReadScript/commit/ba460c994251342e8b7bb3e58a1a0c90844efa05)), closes [#257](https://github.com/hymbz/ComicReadScript/issues/257)
+
 ## [11.12.0](https://github.com/hymbz/ComicReadScript/compare/v11.11.0...v11.12.0) (2025-06-13)
 
 ### Features

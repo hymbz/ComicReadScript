@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         11.12.0
+// @version         11.12.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、PonpomuYuri、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、漫画DB(manhuadb)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、新新漫画、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、welovemanga、HentaiZap、Tachidesk
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -9685,7 +9685,7 @@ const handleVersionUpdate = async () => {
         _el$.firstChild;
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>实现自动滚动功能 </p></li><li><p>支持 HentaiZap </p></li><li><p>ehentai 的「关联 nhentai」功能改为「关联外站」，增加关联 hitomi 的漫画\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>调整滚动和翻页快捷键在卷轴模式下的行为，使之分别更接近方向键和 PageDown/PageUp 的表现 </p></li><li><p>修复在 pixiv 上失效的 bug\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li>修复拷贝漫画加载出错的 bug （提示「請下載安裝正版之後等待1小時」的话，重新登录一下就可以了）\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '10.8.0');
       },
@@ -13022,14 +13022,33 @@ const main = require('main');
 const helper = require('helper');
 
 
-const headers = {
-  webp: '1',
-  region: '1',
-  'User-Agent': 'COPY/2.0.7|',
-  version: '2.0.7',
-  source: 'copyApp',
-  referer: 'com.copymanga.app-2.0.7'
-};
+const mobileApi = new class {
+  headers = {
+    webp: '1',
+    region: '1',
+    'User-Agent': 'COPY/2.0.7|',
+    version: '2.0.7',
+    source: 'copyApp',
+    referer: 'com.copymanga.app-2.0.7'
+  };
+  get = async (url, details, ...args) => main.request(url, {
+    responseType: 'json',
+    headers: this.headers,
+    ...details
+  }, ...args);
+}();
+const pcApi = new class {
+  headers = {
+    'User-Agent': navigator.userAgent,
+    referer: location.href
+  };
+  get = async (url, details, ...args) => main.request(`https://mapi.copy20.com${url}`, {
+    responseType: 'json',
+    headers: this.headers,
+    fetch: false,
+    ...details
+  }, ...args);
+}();
 
 // 在目录页显示上次阅读记录
 const handleLastChapter = comicName => {
@@ -13049,11 +13068,7 @@ const handleLastChapter = comicName => {
     })();
     a.textContent = '獲取中';
     a.removeAttribute('href');
-    const res = await main.request(`/api/v3/comic2/${comicName}/query?platform=3`, {
-      responseType: 'json',
-      fetch: false,
-      headers
-    });
+    const res = await pcApi.get(`/api/v3/comic2/${comicName}/query?platform=3`);
     const data = res.response?.results?.browse;
     if (!data) {
       a.textContent = data === null ? '無' : '未返回數據';
@@ -13084,11 +13099,8 @@ const buildChapters = async (comicName, hiddenType) => {
     response: {
       results
     }
-  } = await main.request(`/comicdetail/${comicName}/chapters`, {
-    responseType: 'json',
-    errorText: '加載漫畫目錄失敗',
-    headers,
-    fetch: false
+  } = await mobileApi.get(`/comicdetail/${comicName}/chapters`, {
+    errorText: '加載漫畫目錄失敗'
   });
   // 解码 api 返回的数据
   const decryptData = async (cipher, key, iv) => {
@@ -13100,7 +13112,7 @@ const buildChapters = async (comicName, hiddenType) => {
     }, false, ['decrypt']), new Uint8Array(cipher.match(/.{1,2}/g).map(byte => Number.parseInt(byte, 16))).buffer);
     return JSON.parse(new TextDecoder().decode(decryptedBuffer));
   };
-  const data = await decryptData(results.slice(16), unsafeWindow.dio || 'xxxmanga.woo.key', results.slice(0, 16));
+  const data = await decryptData(results.slice(16), unsafeWindow.dio || 'xxymanga.zzl.key', results.slice(0, 16));
   helper.log(data);
   const {
     build: {
@@ -13333,7 +13345,7 @@ const buildChapters = async (comicName, hiddenType) => {
 };
 (async () => {
   const token = document.cookie.split('; ').find(cookie => cookie.startsWith('token='))?.replace('token=', '');
-  if (token) Reflect.set(headers, 'Authorization', `Token ${token}`);
+  if (token) Reflect.set(mobileApi.headers, 'Authorization', `Token ${token}`);
   let comicName = '';
   let id = '';
   if (window.location.href.includes('/chapter/')) [,, comicName,, id] = window.location.pathname.split('/');else if (window.location.href.includes('/comicContent/')) [,,, comicName, id] = window.location.pathname.split('/');
@@ -13348,9 +13360,7 @@ const buildChapters = async (comicName, hiddenType) => {
     if (titleDom) titleDom.textContent = 'ComicRead 提示您：你訪問的內容暫不存在，請點選右下角按鈕嘗試加載漫畫';
     setComicLoad(async () => {
       if (titleDom) titleDom.textContent = '漫畫加載中，請坐和放寬';
-      const res = await main.request(`/api/v3/comic/${comicName}/chapter2/${id}?platform=3`, {
-        responseType: 'json',
-        headers,
+      const res = await pcApi.get(`/api/v3/comic/${comicName}/chapter2/${id}?platform=3`, {
         noCheckCode: true
       });
       if (res.status !== 200) {
@@ -13395,8 +13405,7 @@ const buildChapters = async (comicName, hiddenType) => {
     });
     const getCommentList = async () => {
       const chapter_id = window.location.pathname.split('/').at(-1);
-      const res = await main.request(`/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`, {
-        responseType: 'json',
+      const res = await pcApi.get(`/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`, {
         errorText: '获取漫画评论失败'
       });
       return res.response.results.list.map(({
@@ -13455,7 +13464,14 @@ const buildChapters = async (comicName, hiddenType) => {
       if (titleDom) {
         titleDom.textContent = 'ComicRead 提示您：你訪問的內容暫不存在，請坐和放寬，等待目錄生成';
       }
-      await buildChapters(comicName, hiddenType);
+      try {
+        await buildChapters(comicName, hiddenType);
+      } catch {
+        if (titleDom) titleDom.textContent = 'ComicRead 提示您：目錄生成失敗😢';
+        main.toast.error('目錄生成失敗😢', {
+          duration: Number.POSITIVE_INFINITY
+        });
+      }
     }
     if (!isMobile && token) handleLastChapter(comicName);
   }
@@ -13607,9 +13623,9 @@ const buildChapters = async (comicName, hiddenType) => {
     // #[禁漫天堂](https://18comic.vip)
     case 'jmcomic-zzz.one':
     case 'jmcomic-zzz.org':
-    case '18comic-phliu.club':
-    case '18comic-phliu.vip':
-    case '18comic-phliu.cc':
+    case '18comic-cnye.club':
+    case '18comic-cnye.org':
+    case '18comic-xq.cc':
     case '18comic.org':
     case '18comic.vip':
       {
