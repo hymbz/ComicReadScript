@@ -17,13 +17,17 @@ const useStyleSheet = (e?: Element) => {
   return styleSheet;
 };
 
+const addedCss = new Set<string>();
 export const useStyle = (css: string | Accessor<string>, e?: Element) => {
   const styleSheet = useStyleSheet(e);
-  if (typeof css === 'string') styleSheet.replaceSync(css);
-  else
-    createEffectOn(createRootMemo(css), (style) =>
+  if (typeof css !== 'string')
+    return createEffectOn(createRootMemo(css), (style) =>
       styleSheet.replaceSync(style),
     );
+
+  if (addedCss.has(css)) return;
+  styleSheet.replaceSync(css);
+  addedCss.add(css);
 };
 
 export type StyleMap = {

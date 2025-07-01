@@ -11,7 +11,7 @@ import { For, Show, type Component, type JSX } from 'solid-js';
 import { render } from 'solid-js/web';
 import { createStore } from 'solid-js/store';
 
-import { type GalleryContext } from './context';
+import { type GalleryContext } from './helper';
 
 type ItemData = {
   id: string;

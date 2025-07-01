@@ -17,8 +17,7 @@ import {
   splitTagNamespace,
 } from 'userscript/ehTagRules';
 
-import { getTaglist, getTagNameFull } from './helper';
-import { type GalleryContext } from './context';
+import { getTaglist, getTagNameFull, type GalleryContext } from './helper';
 
 export const tagLint = ({ dom: { newTagField } }: GalleryContext) => {
   /** 是否是「Doujinshi」「Manga」「Non-H」 */

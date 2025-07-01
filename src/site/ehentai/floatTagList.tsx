@@ -13,8 +13,7 @@ import {
   hijackFn,
 } from 'helper';
 
-import { setEscHandler } from './helper';
-import type { GalleryContext } from './context';
+import { setEscHandler, type GalleryContext } from './helper';
 
 const getDomPosition = (dom: HTMLElement) => {
   const rect = dom.getBoundingClientRect();

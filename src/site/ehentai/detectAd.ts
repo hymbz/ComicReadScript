@@ -2,7 +2,7 @@ import { ReactiveSet } from 'main';
 import { getAdPageByFileName, getAdPageByContent } from 'userscript/detectAd';
 import { querySelectorAll, useStyle, createRootMemo } from 'helper';
 
-import type { GalleryContext } from './context';
+import type { GalleryContext } from './helper';
 
 /** 识别广告 */
 export const detectAd = async ({

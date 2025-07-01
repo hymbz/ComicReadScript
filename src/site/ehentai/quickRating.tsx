@@ -3,7 +3,7 @@ import { render } from 'solid-js/web';
 import { request, toast } from 'main';
 import { querySelectorAll, t } from 'helper';
 
-import { type EhContext } from './context';
+import { type EhContext } from './helper';
 
 /** 快捷评分 */
 export const quickRating = (context: EhContext) => {

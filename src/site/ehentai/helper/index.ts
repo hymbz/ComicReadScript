@@ -58,3 +58,5 @@ export const getTagNameFull = (tag: string) => {
     if (target.includes(namespace)) return `${target[0]}:${name}`;
   return tag;
 };
+
+export * from './context';

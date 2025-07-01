@@ -1,7 +1,6 @@
 import { linstenKeydown, querySelector } from 'helper';
 
-import { setEscHandler } from './helper';
-import { type EhContext } from './context';
+import { setEscHandler, type EhContext } from './helper';
 
 /** 快捷键翻页 */
 export const hotkeysPageTurn = (context: EhContext) => {

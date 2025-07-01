@@ -22,8 +22,7 @@ import {
   sleep,
 } from 'helper';
 
-import { createEhContext } from './context';
-import { escHandler } from './helper';
+import { escHandler, createEhContext } from './helper';
 import { quickFavorite } from './quickFavorite';
 import { crossSiteLink } from './crossSiteLink';
 import { hotkeysPageTurn } from './hotkeys';
@@ -111,7 +110,7 @@ import { detectAd } from './detectAd';
 
   // 标签染色
   if (options.colorize_tag) {
-    colorizeTag(context);
+    colorizeTag(context.type);
     sortTags(context);
   }
   // 快捷收藏。必须处于登录状态

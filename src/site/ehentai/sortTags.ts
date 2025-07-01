@@ -1,7 +1,7 @@
 import { getGmValue } from 'helper';
 
 import { updateMyTags, handleMyTagsChange, type Tag } from './myTags';
-import { type EhContext } from './context';
+import { type EhContext } from './helper';
 
 const updateSortCss = (tagList: Tag[]) => {
   let css = 'tr a :is(.gltm, .glink + div:not([class])) { display: flex; }';

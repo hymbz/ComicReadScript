@@ -1,20 +1,18 @@
 import { type Accessor, For, createSignal, Show } from 'solid-js';
 import { render } from 'solid-js/web';
 import { request, toast } from 'main';
-import { t, domParse, querySelector, querySelectorAll } from 'helper';
+import { t, domParse, querySelector, querySelectorAll, useStyle } from 'helper';
 
-import type { EhContext } from './context';
+import type { EhContext } from './helper';
 
-let hasStyle = false;
 const addQuickFavorite = (
   favoriteButton: HTMLElement,
   root: HTMLElement,
   apiUrl: string,
-  position: [number, number],
+  height: number,
+  top = 0,
 ) => {
-  if (!hasStyle) {
-    hasStyle = true;
-    GM_addStyle(`
+  useStyle(`
       .comidread-favorites {
         position: absolute;
         z-index: 75;
@@ -31,42 +29,40 @@ const addQuickFavorite = (
         border-radius: 0;
       }
 
-      .comidread-favorites-item {
-        cursor: pointer;
+    .comidread-favorites-item {
+      cursor: pointer;
 
-        display: flex;
-        align-items: center;
+      display: flex;
+      align-items: center;
 
-        width: 100%;
-        margin: 1em 0;
+      width: 100%;
+      margin: 1em 0;
 
-        text-align: left;
-        overflow-wrap: anywhere;
-      }
+      text-align: left;
+      overflow-wrap: anywhere;
+    }
 
-      .comidread-favorites-item > input {
-        pointer-events: none;
-        margin: 0 0.5em 0 0;
-      }
+    .comidread-favorites-item > input {
+      pointer-events: none;
+      margin: 0 0.5em 0 0;
+    }
 
-      .comidread-favorites-item > div {
-        flex-shrink: 0;
+    .comidread-favorites-item > div {
+      flex-shrink: 0;
 
-        width: 15px;
-        height: 15px;
-        margin: 0 0.5em 0 0;
+      width: 15px;
+      height: 15px;
+      margin: 0 0.5em 0 0;
 
-        background-image: url("https://ehgt.org/g/fav.png");
-        background-repeat: no-repeat;
-      }
+      background-image: url("https://ehgt.org/g/fav.png");
+      background-repeat: no-repeat;
+    }
 
       .gl1t > .comidread-favorites {
         padding: 1em 1.5em;
       }
-    `);
-  }
+  `);
   root.style.position = 'relative';
-  root.style.height = '100%';
 
   const [show, setShow] = createSignal(false);
 
@@ -155,8 +151,8 @@ const addQuickFavorite = (
             class="comidread-favorites"
             style={{
               background,
-              height: `${position[1] - position[0]}px`,
-              top: `${position[0]}px`,
+              height: `${height}px`,
+              top: `${top}px`,
             }}
           >
             <For
@@ -195,10 +191,8 @@ export const quickFavorite = (context: EhContext) => {
     case 'gallery': {
       const button = querySelector('#gdf')!;
       const root = querySelector('#gd3')!;
-      addQuickFavorite(button, root, `${unsafeWindow.popbase}addfav`, [
-        0,
-        (button.firstElementChild as HTMLElement).offsetTop,
-      ]);
+      const height = (button.firstElementChild as HTMLElement).offsetTop;
+      addQuickFavorite(button, root, `${unsafeWindow.popbase}addfav`, height);
       break;
     }
 
@@ -212,7 +206,7 @@ export const quickFavorite = (context: EhContext) => {
           item.lastElementChild!.getBoundingClientRect().top -
           item.getBoundingClientRect().top;
         const apiUrl = /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0];
-        addQuickFavorite(button, item, apiUrl, [top, bottom]);
+        addQuickFavorite(button, item, apiUrl, bottom - top, top);
       }
       break;
     }
@@ -221,9 +215,9 @@ export const quickFavorite = (context: EhContext) => {
       for (const item of querySelectorAll('.gl1e')) {
         const button =
           item.nextElementSibling!.querySelector<HTMLElement>('[id^=posted_]')!;
-        const bottom = Number.parseInt(getComputedStyle(item).height, 10);
+        const height = Number.parseInt(getComputedStyle(item).height, 10);
         const apiUrl = /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0];
-        addQuickFavorite(button, item, apiUrl, [0, bottom]);
+        addQuickFavorite(button, item, apiUrl, height);
       }
       break;
     }

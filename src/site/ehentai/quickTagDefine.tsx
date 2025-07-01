@@ -5,8 +5,7 @@ import { createMutable } from 'solid-js/store';
 import { request } from 'main';
 import { querySelector, domParse, hijackFn } from 'helper';
 
-import { setEscHandler } from './helper';
-import { type GalleryContext } from './context';
+import { setEscHandler, type GalleryContext } from './helper';
 
 /** 快捷查看标签定义 */
 export const quickTagDefine = (_: GalleryContext) => {
