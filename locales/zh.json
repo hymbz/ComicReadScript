@@ -208,6 +208,7 @@
       "colorize_tag": "标签染色",
       "cross_site_link": "关联外站",
       "detect_ad": "识别广告页",
+      "expand_tag_list": "展开标签列表",
       "float_tag_list": "悬浮标签列表",
       "load_original_image": "加载原图",
       "lock_option": "锁定站点配置",

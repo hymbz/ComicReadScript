@@ -3,19 +3,6 @@ import { debounce, getGmValue, hijackFn } from 'helper';
 import { updateMyTags, handleMyTagsChange, type Tag } from './myTags';
 import { type EhContext } from './helper';
 
-// 为每个标签单独生成 css。用于方便调试时排查和修改样式时使用
-// const buildTagColorCss = (
-//   tag: string,
-//   color: string,
-//   border: string,
-//   background: string,
-// ) => `
-//   #td_${tag} { background: ${background}; }
-//   #td_${tag}.gt { border-color: ${border}; }
-//   #td_${tag}:not(.gt) { border-color: ${color}; }
-//   #taglist a#ta_${tag} { color: ${color} !important; position: relative; }
-// `;
-
 const buildTagList = (tagList: Set<string>, prefix: string) =>
   `\n${[...tagList].map((tag) => `${prefix}${CSS.escape(tag)}`).join(',\n')}\n`;
 
@@ -49,13 +36,13 @@ export const updateTagColor = async (tagList: Tag[]) => {
     css += `{ border-color: ${color}; }\n\n`;
 
     css += `#taglist a:is(${buildTagList(tags, '#ta_')})`;
-    css += `{ color: ${color} !important; position: relative; }\n\n`;
+    css += `{ color: ${color}; position: relative; }\n\n`;
   }
 
   css += `
     /* 禁用 eh 的变色效果 */
-    #taglist a[id] { color: var(--tag) !important; position: relative; }
-    #taglist a[id]:hover { color: var(--tag-hover) !important; }
+    #taglist a[id] { color: var(--tag); position: relative; }
+    #taglist a[id]:hover { color: var(--tag-hover); }
 
     #taglist a[id]::after {
       content: "";

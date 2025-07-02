@@ -33,6 +33,7 @@ import { floatTagList } from './floatTagList';
 import { sortTags } from './sortTags';
 import { tagLint } from './tagLint';
 import { detectAd } from './detectAd';
+import { expandTagList } from './expandTagList';
 
 // [ehentai 图像限额](https://github.com/ccloli/E-Hentai-Downloader/wiki/E−Hentai-Image-Viewing-Limits-(Chinese))
 
@@ -58,6 +59,8 @@ import { detectAd } from './detectAd';
     auto_adjust_option: false,
     /** 标签检查 */
     tag_lint: false,
+    /** 展开标签列表 */
+    expand_tag_list: true,
     autoShow: false,
   });
   if (!context) return;
@@ -119,6 +122,9 @@ import { detectAd } from './detectAd';
   // 快捷评分
   if (options.quick_rating)
     requestIdleCallback(() => quickRating(context), 1000);
+  // 展开标签列表
+  if (options.expand_tag_list)
+    requestIdleCallback(() => expandTagList(context), 1000);
 
   // 不是漫画页就退出
   if (context.type !== 'gallery') return hotkeysPageTurn(context);
