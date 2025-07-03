@@ -89,7 +89,7 @@ const KeyItem: Component<{
   );
 };
 
-const ShowHotkeys: Component<{ keys: string[] }> = (props) => (
+export const SettingHotkeys: Component<{ keys: string[] }> = (props) => (
   <For each={props.keys}>
     {(name) => (
       <div class={classes.hotkeys}>
@@ -150,7 +150,7 @@ const OtherHotkeys: Component<{ keys: string[] }> = (props) => {
   );
 };
 
-export const SettingHotkeys: Component = () => {
+export const SettingHotkeysBlock: Component = () => {
   const hotkeys = createRootMemo(() => {
     const show: string[] = [];
     const other: string[] = [];
@@ -161,7 +161,7 @@ export const SettingHotkeys: Component = () => {
 
   return (
     <>
-      <ShowHotkeys keys={hotkeys().show} />
+      <SettingHotkeys keys={hotkeys().show} />
       <Show when={hotkeys().other.length}>
         <OtherHotkeys keys={hotkeys().other} />
       </Show>

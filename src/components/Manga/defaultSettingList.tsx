@@ -5,7 +5,7 @@ import { lang, setLang, t, clamp, throttle, needDarkMode } from 'helper';
 
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemSwitch } from './components/SettingsItemSwitch';
-import { SettingHotkeys } from './components/SettingHotkeys';
+import { SettingHotkeysBlock } from './components/SettingHotkeys';
 import { SettingTranslation } from './components/SettingTranslation';
 import { SettingsShowItem } from './components/SettingsShowItem';
 import { SettingsItemSelect } from './components/SettingsItemSelect';
@@ -388,7 +388,7 @@ export const defaultSettingList: () => SettingList = () => [
     SettingTranslation,
     () => store.option.translation.server !== 'disable',
   ],
-  [t('other.hotkeys'), SettingHotkeys],
+  [t('other.hotkeys'), SettingHotkeysBlock],
   [
     t('other.other'),
     () => (

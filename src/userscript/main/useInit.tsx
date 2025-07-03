@@ -242,6 +242,7 @@ export const useInit = async <T extends Record<string, any>>(
     fabProps,
     needAutoShow,
     isStored,
+    placement,
 
     comicMap,
     setComicMap,

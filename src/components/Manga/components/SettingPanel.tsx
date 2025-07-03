@@ -1,4 +1,9 @@
-import { type Component, For, createSignal } from 'solid-js';
+import {
+  type Component,
+  type ParentComponent,
+  For,
+  createSignal,
+} from 'solid-js';
 import { lang, createEffectOn } from 'helper';
 
 import { defaultSettingList } from '../defaultSettingList';
@@ -6,6 +11,16 @@ import { refs, store } from '../store';
 import { stopPropagation } from '../helper';
 import { bindRef } from '../actions';
 import classes from '../index.module.css';
+
+export const SettingBlockSubtitle: ParentComponent<{
+  onClick?: () => void;
+}> = (props) => (
+  <div
+    class={classes.SettingBlockSubtitle}
+    on:click={props.onClick}
+    children={props.children}
+  />
+);
 
 /** 菜单面板 */
 export const SettingPanel: Component = () => (
@@ -31,13 +46,10 @@ export const SettingPanel: Component = () => (
           <>
             {i() ? <hr /> : null}
             <div class={classes.SettingBlock} data-show={show()}>
-              <div
-                class={classes.SettingBlockSubtitle}
-                on:click={() => setShwo((prev) => !prev)}
-              >
+              <SettingBlockSubtitle onClick={() => setShwo((prev) => !prev)}>
                 {name}
-                {show() ? null : ' …'}
-              </div>
+                {show() ? null : '…'}
+              </SettingBlockSubtitle>
               <div class={classes.SettingBlockBody}>
                 <SettingItem />
               </div>

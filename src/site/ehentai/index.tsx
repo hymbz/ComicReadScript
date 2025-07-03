@@ -1,7 +1,13 @@
-import { createSignal } from 'solid-js';
+import { createSignal, type Component, For, Show } from 'solid-js';
 import { render } from 'solid-js/web';
-import { request, toast, type LoadImgFn } from 'main';
-import { type MangaProps, imgList as MangaImgList } from 'components/Manga';
+import { request, toast, useSpeedDial, type LoadImgFn } from 'main';
+import {
+  type MangaProps,
+  imgList as MangaImgList,
+  SettingsItemSwitch,
+  SettingHotkeys,
+  SettingBlockSubtitle,
+} from 'components/Manga';
 import {
   t,
   querySelector,
@@ -74,7 +80,55 @@ import { expandTagList } from './expandTagList';
     setImgList,
     setFab,
     setManga,
+    setOptions,
   } = context;
+
+  const SiteSettings: Component = () => (
+    <>
+      <For
+        each={[
+          'float_tag_list', // 悬浮标签列表
+          'expand_tag_list', // 展开标签列表
+          'tag_lint', // 标签检查
+          'colorize_tag', // 标签染色
+          '',
+          'quick_favorite', // 快捷收藏
+          'quick_rating', // 快捷评分
+          'quick_tag_define', // 快捷查看标签定义
+          '',
+          'cross_site_link', // 关联外站
+          'detect_ad', // 识别广告页
+          'auto_adjust_option', // 自动调整配置
+        ]}
+      >
+        {(name) => (
+          <Show when={name} fallback={<hr />}>
+            <SettingsItemSwitch
+              name={t(`site.add_feature.${name}`)}
+              value={options[name]}
+              onChange={(v) => setOptions({ [name]: v })}
+            />
+          </Show>
+        )}
+      </For>
+      <hr />
+      <SettingBlockSubtitle>{t('other.hotkeys')}</SettingBlockSubtitle>
+      <SettingHotkeys keys={['float_tag_list']} />
+    </>
+  );
+  setManga({
+    editSettingList: (list) => [...list, ['E-Hentai', SiteSettings]],
+  });
+  setFab({
+    speedDial: [
+      ...useSpeedDial(options, setOptions, context.placement, [
+        'tag_lint',
+        'colorize_tag',
+        'cross_site_link',
+        'detect_ad',
+      ]),
+    ],
+  });
 
   if (context.type === 'mpv') {
     return setComicLoad(() => {

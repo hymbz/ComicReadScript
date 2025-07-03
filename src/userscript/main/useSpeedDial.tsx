@@ -17,6 +17,7 @@ export const useSpeedDial = <
   options: SaveOptions,
   setOptions: (newOptions: Partial<SaveOptions>) => Promise<void>,
   placement: () => 'left' | 'right',
+  showOtherList?: string[],
 ) => {
   const DefaultButton: Component<{
     optionName: keyof SaveOptions & string;
@@ -44,36 +45,43 @@ export const useSpeedDial = <
     />
   );
 
-  const list = Object.keys(options)
-    .map((optionName) => {
-      switch (optionName) {
-        case 'hiddenFAB':
-        case 'option':
-          return null;
+  const list: Component[] = [];
 
-        case 'autoShow':
-          return () => (
-            <DefaultButton
-              optionName="autoShow"
-              showName={t('site.add_feature.auto_show')}
-              children={options.autoShow ? <MdFlashOn /> : <MdFlashOff />}
-            />
-          );
-        case 'lockOption':
-          return () => (
-            <DefaultButton
-              optionName="lockOption"
-              showName={t('site.add_feature.lock_option')}
-              children={options.lockOption ? <MdLock /> : <MdLockOpen />}
-            />
-          );
+  for (const optionName of Object.keys(options)) {
+    switch (optionName) {
+      case 'hiddenFAB':
+      case 'option':
+        continue;
 
-        default:
-          if (typeof options[optionName] !== 'boolean') return null;
-          return () => <DefaultButton optionName={optionName} />;
-      }
-    })
-    .filter(Boolean) as Component[];
+      case 'autoShow':
+        list.push(() => (
+          <DefaultButton
+            optionName="autoShow"
+            showName={t('site.add_feature.auto_show')}
+            children={options.autoShow ? <MdFlashOn /> : <MdFlashOff />}
+          />
+        ));
+        break;
+
+      case 'lockOption':
+        list.push(() => (
+          <DefaultButton
+            optionName="lockOption"
+            showName={t('site.add_feature.lock_option')}
+            children={options.lockOption ? <MdLock /> : <MdLockOpen />}
+          />
+        ));
+        break;
+
+      default:
+        if (!showOtherList && typeof options[optionName] === 'boolean')
+          list.push(() => <DefaultButton optionName={optionName} />);
+    }
+  }
+
+  if (showOtherList)
+    for (const optionName of showOtherList)
+      list.push(() => <DefaultButton optionName={optionName} />);
 
   return list;
 };

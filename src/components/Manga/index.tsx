@@ -95,6 +95,11 @@ export const Manga: Component<MangaProps> = (props) => {
   );
 };
 
-export { store, setState, _setState, refs } from './store/index';
-export { downloadImg } from './helper';
 export * from './actions';
+export { downloadImg } from './helper';
+export { store, setState, _setState, refs } from './store/index';
+export { SettingsItem } from './components/SettingsItem';
+export { SettingsItemSwitch } from './components/SettingsItemSwitch';
+export { SettingsItemNumber } from './components/SettingsItemNumber';
+export { SettingHotkeys } from './components/SettingHotkeys';
+export { SettingBlockSubtitle } from './components/SettingPanel';
