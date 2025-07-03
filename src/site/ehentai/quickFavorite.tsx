@@ -5,6 +5,57 @@ import { t, domParse, querySelector, querySelectorAll, useStyle } from 'helper';
 
 import type { EhContext } from './helper';
 
+const style = `
+  .comidread-favorites {
+    position: absolute;
+    z-index: 75;
+    left: 0;
+
+    overflow: auto;
+    align-content: center;
+
+    box-sizing: border-box;
+    width: 100%;
+    padding-left: 0.6em;
+
+    border: none;
+    border-radius: 0;
+  }
+
+  .comidread-favorites-item {
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+
+    width: 100%;
+    margin: 1em 0;
+
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .comidread-favorites-item > input {
+    pointer-events: none;
+    margin: 0 0.5em 0 0;
+  }
+
+  .comidread-favorites-item > div {
+    flex-shrink: 0;
+
+    width: 15px;
+    height: 15px;
+    margin: 0 0.5em 0 0;
+
+    background-image: url("https://ehgt.org/g/fav.png");
+    background-repeat: no-repeat;
+  }
+
+  .gl1t > .comidread-favorites {
+    padding: 1em 1.5em;
+  }
+`;
+
 const addQuickFavorite = (
   favoriteButton: HTMLElement,
   root: HTMLElement,
@@ -12,56 +63,6 @@ const addQuickFavorite = (
   height: number,
   top = 0,
 ) => {
-  useStyle(`
-      .comidread-favorites {
-        position: absolute;
-        z-index: 75;
-        left: 0;
-
-        overflow: auto;
-        align-content: center;
-
-        box-sizing: border-box;
-        width: 100%;
-        padding-left: 0.6em;
-
-        border: none;
-        border-radius: 0;
-      }
-
-    .comidread-favorites-item {
-      cursor: pointer;
-
-      display: flex;
-      align-items: center;
-
-      width: 100%;
-      margin: 1em 0;
-
-      text-align: left;
-      overflow-wrap: anywhere;
-    }
-
-    .comidread-favorites-item > input {
-      pointer-events: none;
-      margin: 0 0.5em 0 0;
-    }
-
-    .comidread-favorites-item > div {
-      flex-shrink: 0;
-
-      width: 15px;
-      height: 15px;
-      margin: 0 0.5em 0 0;
-
-      background-image: url("https://ehgt.org/g/fav.png");
-      background-repeat: no-repeat;
-    }
-
-      .gl1t > .comidread-favorites {
-        padding: 1em 1.5em;
-      }
-  `);
   root.style.position = 'relative';
 
   const [show, setShow] = createSignal(false);
@@ -189,6 +190,7 @@ const addQuickFavorite = (
 export const quickFavorite = (context: EhContext) => {
   switch (context.type) {
     case 'gallery': {
+      useStyle(style);
       const button = querySelector('#gdf')!;
       const root = querySelector('#gd3')!;
       const height = (button.firstElementChild as HTMLElement).offsetTop;
@@ -197,6 +199,7 @@ export const quickFavorite = (context: EhContext) => {
     }
 
     case 't': {
+      useStyle(style);
       for (const item of querySelectorAll('.gl1t')) {
         const button = item.querySelector<HTMLElement>('[id^=posted_]')!;
         const top =
@@ -212,6 +215,7 @@ export const quickFavorite = (context: EhContext) => {
     }
 
     case 'e': {
+      useStyle(style);
       for (const item of querySelectorAll('.gl1e')) {
         const button =
           item.nextElementSibling!.querySelector<HTMLElement>('[id^=posted_]')!;
