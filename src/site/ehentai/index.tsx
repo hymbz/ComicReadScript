@@ -31,7 +31,7 @@ import {
 import { escHandler, createEhContext } from './helper';
 import { quickFavorite } from './quickFavorite';
 import { crossSiteLink } from './crossSiteLink';
-import { hotkeysPageTurn } from './hotkeys';
+import { addHotkeysActions } from './hotkeys';
 import { colorizeTag } from './colorizeTag';
 import { quickRating } from './quickRating';
 import { quickTagDefine } from './quickTagDefine';
@@ -47,8 +47,8 @@ import { expandTagList } from './expandTagList';
   const context = await createEhContext({
     /** 关联外站 */
     cross_site_link: true,
-    /** 快捷键 */
-    hotkeys: true,
+    /** 增加快捷键操作 */
+    add_hotkeys_actions: true,
     /** 识别广告页 */
     detect_ad: true,
     /** 快捷收藏 */
@@ -87,10 +87,10 @@ import { expandTagList } from './expandTagList';
     <>
       <For
         each={[
+          'colorize_tag', // 标签染色
           'float_tag_list', // 悬浮标签列表
           'expand_tag_list', // 展开标签列表
           'tag_lint', // 标签检查
-          'colorize_tag', // 标签染色
           '',
           'quick_favorite', // 快捷收藏
           'quick_rating', // 快捷评分
@@ -98,6 +98,7 @@ import { expandTagList } from './expandTagList';
           '',
           'cross_site_link', // 关联外站
           'detect_ad', // 识别广告页
+          'add_hotkeys_actions', // 增加快捷键操作
           'auto_adjust_option', // 自动调整配置
         ]}
       >
@@ -181,7 +182,7 @@ import { expandTagList } from './expandTagList';
     requestIdleCallback(() => expandTagList(context), 1000);
 
   // 不是漫画页就退出
-  if (context.type !== 'gallery') return hotkeysPageTurn(context);
+  if (context.type !== 'gallery') return addHotkeysActions(context);
 
   // 自动调整阅读配置
   if (
@@ -374,7 +375,7 @@ import { expandTagList } from './expandTagList';
   }, sidebarDom);
 
   // 等加载按钮渲染好后再绑定快捷键，防止在还没准备好时就触发加载导致出错
-  if (options.hotkeys) hotkeysPageTurn(context);
+  addHotkeysActions(context);
 
   /** 获取新的图片页地址 */
   const getNewImgPageUrl = async (url: string) => {

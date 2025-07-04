@@ -1,10 +1,10 @@
-import { linstenKeydown, querySelector } from 'helper';
+import { hotkeysMap } from 'components/Manga';
+import { getKeyboardCode, linstenKeydown, querySelector } from 'helper';
 
 import { setEscHandler, type EhContext } from './helper';
 
-/** 快捷键翻页 */
-export const hotkeysPageTurn = (context: EhContext) => {
-  if (!context.options.hotkeys) return;
+export const addHotkeysActions = (context: EhContext) => {
+  if (!context.options.add_hotkeys_actions) return;
 
   if (context.type === 'gallery') {
     setEscHandler(0, () =>
@@ -12,39 +12,34 @@ export const hotkeysPageTurn = (context: EhContext) => {
     );
 
     linstenKeydown((e) => {
-      switch (e.key) {
-        case 'ArrowRight':
-        case 'd':
-          e.preventDefault();
-          return querySelector('.ptt td:last-child:not(.ptdd)')?.click();
-
-        case 'ArrowLeft':
-        case 'a':
-          e.preventDefault();
-          return querySelector('.ptt td:first-child:not(.ptdd)')?.click();
+      // 使用上下方向键进行投票
+      if (unsafeWindow.selected_tagid) {
+        switch (e.key) {
+          case 'ArrowUp':
+            e.preventDefault();
+            return unsafeWindow?.tag_vote_up();
+          case 'ArrowDown':
+            e.preventDefault();
+            return unsafeWindow?.tag_vote_down();
+        }
       }
 
-      // 使用上下方向键进行投票
-      if (!unsafeWindow.selected_tagid) return;
-      switch (e.key) {
-        case 'ArrowUp':
+      switch (hotkeysMap()[getKeyboardCode(e)]) {
+        case 'scroll_right':
           e.preventDefault();
-          return unsafeWindow?.tag_vote_up();
-        case 'ArrowDown':
+          return querySelector('.ptt td:last-child:not(.ptdd)')?.click();
+        case 'scroll_left':
           e.preventDefault();
-          return unsafeWindow?.tag_vote_down();
+          return querySelector('.ptt td:first-child:not(.ptdd)')?.click();
       }
     });
   } else {
     linstenKeydown((e) => {
-      switch (e.key) {
-        case 'ArrowRight':
-        case 'd':
+      switch (hotkeysMap()[getKeyboardCode(e)]) {
+        case 'scroll_right':
           e.preventDefault();
           return querySelector('#unext')?.click();
-
-        case 'ArrowLeft':
-        case 'a':
+        case 'scroll_left':
           e.preventDefault();
           return querySelector('#uprev')?.click();
       }

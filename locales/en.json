@@ -201,6 +201,7 @@
   },
   "site": {
     "add_feature": {
+      "add_hotkeys_actions": "Add hotkeys actions",
       "auto_adjust_option": "Auto adjust reading option",
       "auto_page_turn": "Infinite scroll",
       "auto_show": "Auto enter reading mode",

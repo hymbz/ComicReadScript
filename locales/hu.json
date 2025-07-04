@@ -201,6 +201,7 @@
   },
   "site": {
     "add_feature": {
+      "add_hotkeys_actions": "Gyorsbillentyű-műveletek hozzáadása",
       "auto_adjust_option": "自动调整阅读配置",
       "auto_page_turn": "无限滚动",
       "auto_show": "自动进入阅读模式",
