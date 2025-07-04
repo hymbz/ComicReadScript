@@ -9,11 +9,10 @@
 
   padding: 0.2em;
   padding-top: 2em;
+  border-bottom: 1px solid var(--secondary-bg);
 
   font-size: 0.9em;
   color: var(--text);
-
-  border-bottom: 1px solid var(--secondary-bg);
 
   & + & {
     margin-top: 0.5em;
@@ -34,10 +33,10 @@
   height: 1em;
   margin: 0.3em;
   padding: 0.2em 1.2em;
+  border-radius: 0.3em;
 
   font-family: serif;
 
-  border-radius: 0.3em;
   outline: 1px solid;
   outline-color: var(--secondary-bg);
 
@@ -46,12 +45,12 @@
 
     height: 1em;
     margin-left: 0.4em;
+    border-radius: 1em;
 
     color: var(--page-bg);
 
     opacity: 0.5;
     background-color: var(--text);
-    border-radius: 1em;
 
     &:hover {
       opacity: 0.9;

@@ -46,11 +46,11 @@
 
   transition: transform 1s;
 
-  &[data-type="loaded"] {
+  &[data-type='loaded'] {
     transform: scaleY(0);
   }
 
-  &[data-type="wait"] {
+  &[data-type='wait'] {
     opacity: 0.5;
   }
 
@@ -64,19 +64,19 @@
     background-color: transparent;
   }
 
-  &[data-translation-type="wait"] {
+  &[data-translation-type='wait'] {
     background-color: #81c784;
   }
 
-  &[data-translation-type="show"] {
+  &[data-translation-type='show'] {
     background-color: #4caf50;
   }
 
-  &[data-translation-type="error"] {
+  &[data-translation-type='error'] {
     background-color: #f005;
   }
 
-  &[data-type="error"] {
+  &[data-type='error'] {
     background-color: #f005;
   }
 }
@@ -130,7 +130,7 @@
 
 /* 悬浮框箭头 */
 .scrollbar::before {
-  content: "";
+  content: '';
 
   position: absolute;
   right: 2em;
@@ -189,11 +189,11 @@
  * 滚动条位置
  */
 
-.scrollbar[data-position="hidden"] {
+.scrollbar[data-position='hidden'] {
   display: none;
 }
 
-.scrollbar[data-position="top"] {
+.scrollbar[data-position='top'] {
   top: 1px;
 
   /* 扩大触发范围 */
@@ -211,7 +211,7 @@
   }
 }
 
-.scrollbar[data-position="bottom"] {
+.scrollbar[data-position='bottom'] {
   top: unset;
   bottom: 1px;
 
@@ -230,8 +230,8 @@
   }
 }
 
-.scrollbar[data-position="top"],
-.scrollbar[data-position="bottom"] {
+.scrollbar[data-position='top'],
+.scrollbar[data-position='bottom'] {
   --arrow-x: calc(var(--arrow-y) * -1 + 50%);
 
   right: 1%;
@@ -259,7 +259,7 @@
     padding: 0.1em 0.3em;
   }
 
-  &[data-dir="ltr"] {
+  &[data-dir='ltr'] {
     --arrow-x: calc(var(--arrow-y) - 50%);
 
     flex-direction: row;
@@ -283,7 +283,7 @@
   & .scrollbarPage {
     transform: scaleX(1);
 
-    &[data-type="loaded"] {
+    &[data-type='loaded'] {
       transform: scaleX(0);
     }
 
@@ -301,7 +301,7 @@
     text-orientation: upright;
   }
 
-  &[data-dir="ltr"] .scrollbarPoper {
+  &[data-dir='ltr'] .scrollbarPoper {
     writing-mode: vertical-lr;
   }
 }

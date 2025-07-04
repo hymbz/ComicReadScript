@@ -49,9 +49,9 @@
   }
 
   /* 遮住默认的出错图片标识 */
-  &[data-load-type="error"] > picture::after {
+  &[data-load-type='error'] > picture::after {
     pointer-events: none;
-    content: "";
+    content: '';
 
     position: absolute;
     top: 0;
@@ -64,7 +64,7 @@
     background-image: var(--md-image-not-supported);
   }
 
-  &[data-load-type="loading"] > picture {
+  &[data-load-type='loading'] > picture {
     background-image: var(--md-cloud-download);
 
     /* 加载中的图片先隐藏一下，避免出错图片的元素被直接显示出来 */
@@ -74,14 +74,14 @@
   }
 }
 
-.mangaFlow[dir="ltr"] .img[data-show="1"],
-.mangaFlow[dir="rtl"] .img[data-show="0"] {
+.mangaFlow[dir='ltr'] .img[data-show='1'],
+.mangaFlow[dir='rtl'] .img[data-show='0'] {
   margin-right: auto;
   margin-left: 0;
 }
 
-.mangaFlow[dir="ltr"] .img[data-show="0"],
-.mangaFlow[dir="rtl"] .img[data-show="1"] {
+.mangaFlow[dir='ltr'] .img[data-show='0'],
+.mangaFlow[dir='rtl'] .img[data-show='1'] {
   margin-right: 0;
   margin-left: auto;
 }
@@ -115,7 +115,7 @@
     height: fit-content;
   }
 
-  &[data-hidden-mouse="true"] {
+  &[data-hidden-mouse='true'] {
     cursor: none;
   }
 
@@ -134,8 +134,8 @@
 
   transition-duration: 0ms;
 
-  &[data-animation="page"] .mangaFlow,
-  &[data-animation="zoom"] {
+  &[data-animation='page'] .mangaFlow,
+  &[data-animation='zoom'] {
     transition-duration: 300ms;
   }
 }
@@ -189,9 +189,9 @@
       opacity: 0.5;
     }
 
-    &[data-load-type="error"],
-    &[data-load-type="wait"],
-    &[src=""] {
+    &[data-load-type='error'],
+    &[data-load-type='wait'],
+    &[src=''] {
       height: 100%;
     }
   }

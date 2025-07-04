@@ -29,11 +29,11 @@
     opacity: 1;
   }
 
-  &[data-type="start"] .tip {
+  &[data-type='start'] .tip {
     transform: translateY(-10em);
   }
 
-  &[data-type="end"] .tip {
+  &[data-type='end'] .tip {
     transform: translateY(10em);
   }
 

@@ -3,7 +3,7 @@
   font-size: 1.1em;
   transition: transform 200ms;
 
-  &[data-show="false"] {
+  &[data-show='false'] {
     pointer-events: none;
 
     & > button {
@@ -11,7 +11,7 @@
     }
   }
 
-  &[data-trans="true"] {
+  &[data-trans='true'] {
     opacity: 0.8;
 
     &:hover,
@@ -90,7 +90,7 @@
   }
 
   /* 在进度条满后自动隐藏 */
-  &[aria-valuenow="1"] {
+  &[aria-valuenow='1'] {
     opacity: 0;
     transition: opacity 200ms 150ms;
   }
@@ -125,13 +125,13 @@
   transition-delay: var(--hide-delay);
 }
 
-.fabRoot[data-placement="right"] .popper {
+.fabRoot[data-placement='right'] .popper {
   right: unset;
   left: calc(100% + 1.5em);
   transform-origin: left;
 }
 
-.fabRoot:is(:hover, [data-focus="true"]) .popper {
+.fabRoot:is(:hover, [data-focus='true']) .popper {
   transform: translateY(-50%) scale(1);
   opacity: 1;
   transition-delay: 0ms;
@@ -155,7 +155,7 @@
 
   font-size: 1.1em;
 
-  &[data-placement="bottom"] {
+  &[data-placement='bottom'] {
     top: 0;
     bottom: unset;
 
@@ -183,7 +183,7 @@
   pointer-events: all;
 }
 
-.fabRoot:is(:hover:not([data-show="false"]), [data-focus="true"]) .speedDial {
+.fabRoot:is(:hover:not([data-show='false']), [data-focus='true']) .speedDial {
   pointer-events: all;
 
   & > .speedDialItem {
@@ -210,13 +210,13 @@
   transition: opacity 500ms;
 }
 
-.fabRoot[data-focus="true"] .backdrop {
+.fabRoot[data-focus='true'] .backdrop {
   pointer-events: unset;
 }
 
 :is(
-    .fabRoot:hover:not([data-show="false"]),
-    .fabRoot[data-focus="true"],
+    .fabRoot:hover:not([data-show='false']),
+    .fabRoot[data-focus='true'],
     .speedDial:hover
   )
   .backdrop {

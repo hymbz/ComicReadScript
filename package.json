@@ -12,6 +12,7 @@
     "release:push": "node release.mjs push",
     "test": "vitest",
     "check": "tsc -noEmit && xo .",
+    "stylelint": "stylelint \"**/*.css\" --fix",
     "pwa-assets-generator": "pwa-assets-generator",
     "pwa:dev": "vite serve src/pwa",
     "pwa:build": "vite build src/pwa",

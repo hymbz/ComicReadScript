@@ -27,11 +27,11 @@
   max-width: min(30em, 100vw);
   margin: 1em;
   padding: 0.8em 1em;
+  border-radius: 4px;
 
   color: #000;
 
   background: #fff;
-  border-radius: 4px;
   box-shadow:
     0 1px 10px 0 #0000001a,
     0 2px 15px 0 #0000000d;
@@ -99,12 +99,12 @@
 
     margin: 0 0.5em;
     padding: 0.2em 0.6em;
+    border: none;
+    border-radius: 0.4em;
 
     font-size: inherit;
 
     background-color: #eee;
-    border: none;
-    border-radius: 0.4em;
     outline: none;
 
     &:hover {

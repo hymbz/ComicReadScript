@@ -65,8 +65,8 @@ select {
   box-sizing: border-box;
   height: 100%;
   padding: 1em;
-
   border-radius: 1em;
+
   outline: 4px dashed #607d8b;
 
   /* 隐藏滚动条但不影响滚动 */
@@ -74,7 +74,7 @@ select {
     display: none;
   }
 
-  &[data-drag="true"] {
+  &[data-drag='true'] {
     pointer-events: none;
     outline: 4px solid #607d8b;
   }
@@ -130,7 +130,7 @@ button[data-loading] {
   overflow: hidden;
 
   &::after {
-    content: "";
+    content: '';
 
     position: absolute;
     inset: auto 0 0;

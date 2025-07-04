@@ -63,7 +63,7 @@
     }
   }
 
-  &[data-show="false"] {
+  &[data-show='false'] {
     grid-template-rows: max-content 0fr;
     padding-bottom: unset;
 
@@ -150,7 +150,7 @@
   transition: transform 100ms;
 }
 
-.SettingsItemSwitch[data-checked="true"] {
+.SettingsItemSwitch[data-checked='true'] {
   background: var(--secondary-bg);
 
   & .SettingsItemSwitchRound {

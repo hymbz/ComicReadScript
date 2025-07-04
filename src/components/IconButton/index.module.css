@@ -15,13 +15,13 @@
   height: 1.5em;
   margin: 0.1em;
   padding: 0;
+  border-style: none;
+  border-radius: 9999px;
 
   font-size: 1.5em;
   color: var(--text, white);
 
   background-color: transparent;
-  border-style: none;
-  border-radius: 9999px;
   outline: none;
 
   &:focus,
@@ -63,6 +63,7 @@
   align-items: center;
 
   padding: 0.4em 0.5em;
+  border-radius: 0.3em;
 
   font-size: 0.8em;
   color: white;
@@ -70,9 +71,8 @@
 
   opacity: 0;
   background-color: #303030;
-  border-radius: 0.3em;
 
-  &[data-placement="right"] {
+  &[data-placement='right'] {
     left: calc(100% + 1.5em);
 
     &::before {
@@ -82,7 +82,7 @@
     }
   }
 
-  &[data-placement="left"] {
+  &[data-placement='left'] {
     right: calc(100% + 1.5em);
 
     &::before {
@@ -96,20 +96,21 @@
 /* 工具栏按钮的悬浮框的箭头 */
 .iconButtonPopper::before {
   pointer-events: none;
-  content: "";
+  content: '';
 
   position: absolute;
 
-  background-color: transparent;
   border-color: transparent;
   border-style: solid;
   border-width: 0.4em;
+
+  background-color: transparent;
 
   transition: opacity 150ms;
 }
 
 /* 控制悬浮框的显示 */
-.iconButtonItem:is(:hover, :focus, [data-show="true"]) .iconButtonPopper {
+.iconButtonItem:is(:hover, :focus, [data-show='true']) .iconButtonPopper {
   opacity: 1;
 }
 

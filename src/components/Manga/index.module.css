@@ -1,10 +1,10 @@
-@import "./components/ComicImg.module.css";
-@import "./components/EndPage.module.css";
-@import "./components/Toolbar.module.css";
-@import "./components/Setting.module.css";
-@import "./components/SettingHotkeys.module.css";
-@import "./components/Scrollbar.module.css";
-@import "./components/TouchArea.module.css";
+@import './components/ComicImg.module.css';
+@import './components/EndPage.module.css';
+@import './components/Toolbar.module.css';
+@import './components/Setting.module.css';
+@import './components/SettingHotkeys.module.css';
+@import './components/Scrollbar.module.css';
+@import './components/TouchArea.module.css';
 
 .root {
   position: relative;
@@ -71,6 +71,7 @@ blockquote {
   margin-top: 0.5em;
   padding: 0;
   padding-left: 1em;
+  border-left: 0.25em solid var(--text-secondary, #607d8b);
 
   font-size: 0.9em;
   font-style: italic;
@@ -79,8 +80,6 @@ blockquote {
   text-align: start;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
-
-  border-left: 0.25em solid var(--text-secondary, #607d8b);
 }
 
 svg {
