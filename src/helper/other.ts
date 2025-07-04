@@ -615,3 +615,31 @@ export abstract class AnimationFrame {
     this.animationId = 0;
   };
 }
+
+/** 锁定屏幕禁止自动熄屏 */
+export class WakeLock {
+  isSupported = false;
+
+  lock: WakeLockSentinel | null = null;
+
+  constructor() {
+    if (!('wakeLock' in navigator)) return;
+    this.isSupported = true;
+  }
+
+  on = async () => {
+    if (!this.isSupported) return null;
+    try {
+      this.lock = await navigator.wakeLock.request('screen');
+      return this.lock.released;
+    } catch {
+      return false;
+    }
+  };
+
+  off = async () => {
+    if (!this.lock) return;
+    await this.lock.release();
+    this.lock = null;
+  };
+}

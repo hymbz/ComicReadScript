@@ -70,11 +70,11 @@ export const useInit = (props: MangaProps) => {
       state.prop.onExit = (isEnd?: boolean | Event) => {
         playAnimation(refs.exit);
         props.onExit?.(Boolean(isEnd));
-        document.exitFullscreen();
         setState((draftState) => {
           if (isEnd) draftState.activePageIndex = 0;
           draftState.show.endPage = undefined;
         });
+        if (document.fullscreenElement) document.exitFullscreen();
       };
     },
     onPrev(state) {

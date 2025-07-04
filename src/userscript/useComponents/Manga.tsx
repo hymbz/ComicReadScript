@@ -8,6 +8,7 @@ import {
   createRootMemo,
   mountComponents,
   querySelector,
+  WakeLock,
 } from 'helper';
 
 import { DownloadButton } from '../../components/DownloadButton';
@@ -68,6 +69,8 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   const htmlStyle = document.documentElement.style;
   let lastOverflow = htmlStyle.overflow;
 
+  const wakeLock = new WakeLock();
+
   createEffectOn(
     createRootMemo(() => props.show && props.imgList.length > 0),
     (show) => {
@@ -77,10 +80,12 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
         htmlStyle.setProperty('overflow', 'hidden', 'important');
         htmlStyle.setProperty('scrollbar-width', 'none', 'important');
         if (store.option.autoFullscreen) refs.root.requestFullscreen();
+        wakeLock.on();
       } else {
         dom.removeAttribute('show');
         htmlStyle.overflow = lastOverflow;
         htmlStyle.removeProperty('scrollbar-width');
+        wakeLock.off();
       }
     },
     { defer: true },
