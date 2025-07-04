@@ -36,13 +36,13 @@ export const updateTagColor = async (tagList: Tag[]) => {
     css += `{ border-color: ${color}; }\n\n`;
 
     css += `#taglist a:is(${buildTagList(tags, '#ta_')})`;
-    css += `{ color: ${color}; position: relative; }\n\n`;
+    css += `{ color: ${color} !important; position: relative; }\n\n`;
   }
 
   css += `
-    /* 禁用 eh 的变色效果 */
-    #taglist a[id] { color: var(--tag); position: relative; }
-    #taglist a[id]:hover { color: var(--tag-hover); }
+    /* 禁用 eh 的变色效果，必须使用 !important */
+    #taglist a[id] { color: var(--tag) !important; position: relative; }
+    #taglist a[id]:hover { color: var(--tag-hover) !important; }
 
     #taglist a[id]::after {
       content: "";
