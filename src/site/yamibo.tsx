@@ -211,7 +211,7 @@ interface History {
           const newList = [...res.responseText.matchAll(reg)].map(([tid]) =>
             Number(tid),
           );
-          threadList = threadList.concat(newList);
+          threadList = [...threadList, ...newList];
 
           const index = threadList.indexOf(unsafeWindow.tid);
           if (newList.length > 0 && (index === -1 || !threadList[index + 1]))
@@ -381,11 +381,11 @@ interface History {
         const tid = getTid(e);
 
         render(
-          // eslint-disable-next-line @typescript-eslint/no-loop-func
           () => {
             const [data, setData] = createSignal<History | undefined>();
 
             createEffectOn(updateFlag, () =>
+              // eslint-disable-next-line promise/prefer-await-to-then
               cache.get('history', tid).then(setData),
             );
 

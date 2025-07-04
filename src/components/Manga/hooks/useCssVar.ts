@@ -6,6 +6,10 @@ import classes from '../index.module.css';
 
 import { useStyleMemo } from './useStyle';
 
+// TODO: 使用 light-dark()
+// https://developer.mozilla.org/docs/Web/CSS/color_value/light-dark
+// https://caniuse.com/css-relative-colors
+
 /** 深色模式 */
 const darkStyle: JSX.CSSProperties = {
   '--hover-bg-color': '#FFF3',

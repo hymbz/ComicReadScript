@@ -38,7 +38,7 @@ const initSiteUrlMap = async () => {
 export const siteUrl: OutputPluginOption = {
   name: 'self-siteUrl',
   async renderChunk(code) {
-    siteUrlMap ||= await initSiteUrlMap();
+    siteUrlMap ??= await initSiteUrlMap();
 
     return code.replaceAll(
       /case 'siteUrl#(.+?)':(.+?)(?={)/gs,

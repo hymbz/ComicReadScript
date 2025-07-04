@@ -115,7 +115,7 @@ export const tagLint = ({ dom: { newTagField } }: GalleryContext) => {
       for (const targetTag of rules.get(tag)!) {
         // 检测应该存在的标签时，只检查锁定标签，方便快速点赞
         if (hasTag(has ? lockTags : tagList, targetTag) === has) continue;
-        newWarnList[ruleName] ||= new Map([[tag, []]]);
+        newWarnList[ruleName] ??= new Map([[tag, []]]);
         const warn = newWarnList[ruleName];
         if (!warn.has(tag)) warn.set(tag, []);
         warn.get(tag)!.push(targetTag);
@@ -130,7 +130,7 @@ export const tagLint = ({ dom: { newTagField } }: GalleryContext) => {
     }
 
     const addOtherWarn = (text: string, tags: string[]) => {
-      newWarnList.other ||= [];
+      newWarnList.other ??= [];
       newWarnList.other.push([text, tags]);
     };
 

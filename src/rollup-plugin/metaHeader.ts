@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 
-import pkg from '../../package.json' assert { type: 'json' };
-import zh from '../../locales/zh.json' assert { type: 'json' };
-import en from '../../locales/en.json' assert { type: 'json' };
-import ru from '../../locales/ru.json' assert { type: 'json' };
-import ta from '../../locales/ta.json' assert { type: 'json' };
+import pkg from '../../package.json' with { type: 'json' };
+import zh from '../../locales/zh.json' with { type: 'json' };
+import en from '../../locales/en.json' with { type: 'json' };
+import ru from '../../locales/ru.json' with { type: 'json' };
+import ta from '../../locales/ta.json' with { type: 'json' };
 
 /**
  * 脚本依赖库与对应的 cdn url

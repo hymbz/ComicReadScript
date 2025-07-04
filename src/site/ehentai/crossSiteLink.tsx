@@ -135,7 +135,7 @@ const hitomi = async ({
           },
         );
 
-        // eslint-disable-next-line no-autofix/prefer-const
+        // eslint-disable-next-line prefer-const
         let gg = {} as {
           m: (g: number) => number;
           s: (h: string) => number;

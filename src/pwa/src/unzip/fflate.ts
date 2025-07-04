@@ -23,6 +23,7 @@ export const fflate = async ({ zipFile, extension }: ZipData) => {
   try {
     const fileData = await zipFile
       .arrayBuffer()
+      // eslint-disable-next-line promise/prefer-await-to-then
       .then((buff) => new Uint8Array(buff));
 
     const res = await fflateUnzip(fileData, {

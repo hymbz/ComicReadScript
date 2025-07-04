@@ -86,7 +86,7 @@ export const isLazyLoaded = (e: HTMLElement, oldSrc?: string) => {
 };
 
 export const imgMap = new WeakMap<HTMLElement, ImgData>();
-// eslint-disable-next-line no-autofix/prefer-const
+// eslint-disable-next-line prefer-const
 let imgShowObserver: IntersectionObserver;
 
 const getImg = (e: HTMLElement) => imgMap.get(e) ?? createImgData();

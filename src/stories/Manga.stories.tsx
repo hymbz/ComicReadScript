@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from 'storybook-solidjs';
+import type { Meta, StoryObj } from 'storybook-solidjs-vite';
 import { mergeProps } from 'solid-js';
 import rfdc from 'rfdc';
-import { request } from 'request';
+import { request, type RequestDetails } from 'request';
 
 import { _setState, Manga, type MangaProps } from '../components/Manga';
 import { defaultOption } from '../components/Manga/store/option';
@@ -21,10 +21,8 @@ export type Props = MangaProps & {
 };
 export type PartialProps = Partial<Props>;
 
-window.GM_xmlhttpRequest = (async (details: Tampermonkey.Request) => {
-  const res = await request(details.url, { ...details, fetch: true });
-  details.onload?.call(res as any, res as any);
-}) as any;
+window.GM_xmlhttpRequest = ((details: RequestDetails<any>) =>
+  request(details.url!, { ...details, fetch: true })) as any;
 
 const meta = {
   title: '漫画',

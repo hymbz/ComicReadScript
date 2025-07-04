@@ -1,4 +1,3 @@
-/* eslint-disable no-shadow */
 import type { JSX, Component } from 'solid-js';
 
 declare global {

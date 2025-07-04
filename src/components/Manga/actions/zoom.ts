@@ -155,8 +155,7 @@ export const handleZoomDrag: UseDrag = ({
       if (animationId) cancelAnimation();
       mouse.x += x - lx;
       mouse.y += y - ly;
-      if (animationId === null)
-        animationId = requestAnimationFrame(handleDragAnima);
+      animationId ??= requestAnimationFrame(handleDragAnima);
       resetVelocity();
       break;
     }
@@ -228,8 +227,7 @@ export const handlePinchZoom: UseDrag = ({ type }) => {
     }
 
     case 'move': {
-      if (animationId === null)
-        animationId = requestAnimationFrame(handlePinchZoomAnima);
+      animationId ??= requestAnimationFrame(handlePinchZoomAnima);
       break;
     }
 

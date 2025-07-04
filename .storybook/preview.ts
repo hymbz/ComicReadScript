@@ -1,5 +1,5 @@
-import { type Preview } from 'storybook-solidjs';
-import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport';
+import { type Preview } from 'storybook-solidjs-vite';
+import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 
 import './global.css';
 import 'normalize.css';

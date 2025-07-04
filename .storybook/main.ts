@@ -4,11 +4,7 @@ const config: StorybookConfig = {
   stories: ["../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
   staticDirs: ['../src/stories/public'],
   framework: "storybook-solidjs-vite",
-  addons: [
-    "@storybook/addon-essentials",
-    "@storybook/addon-interactions",
-    'storybook-dark-mode',
-  ],
+  addons: ['@vueless/storybook-dark-mode', "@storybook/addon-docs"],
   core: {
     disableTelemetry: true,
     disableWhatsNewNotifications: true,

@@ -1,12 +1,17 @@
 {
   "todo-tree.filtering.excludeGlobs": ["**/node_modules/*/**", "**/*.js"],
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "css.validate": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.xo": "explicit",
+    "source.fixAll.stylelint": "explicit"
+  },
   // "i18n-ally.localesPaths": ["locales"],
   "i18n-ally.localesPaths": ["locales", "src/userscript/ehTagRules"],
   "i18n-ally.pathMatcher": "{locale}.{ext}",
   "i18n-ally.keystyle": "nested",
   "i18n-ally.sortKeys": true,
-  "typescript.preferences.importModuleSpecifier": "relative",
-  "typescript.tsdk": "node_modules\\typescript\\lib",
   "i18n-ally.keysInUse": [
     "translation.status.colorizing",
     "translation.status.default",

@@ -115,7 +115,7 @@ export const handleComicData = (
     pageList = [...pageList, ...arrangePage(cacheList, context), [i]];
     cacheList = [];
 
-    if (fillEffect[i] === undefined) fillEffect[i] = false;
+    fillEffect[i] ??= false;
     context.nowFillIndex = i;
   }
 

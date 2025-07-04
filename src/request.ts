@@ -29,6 +29,7 @@ export type RequestDetails<T> = Partial<Tampermonkey.Request<T>> & {
   noTip?: boolean;
   noCheckCode?: boolean;
   retryFetch?: boolean | ((details: RequestDetails<T>) => void);
+  onload?: (response: Response<T>) => void;
 };
 
 export type Response<T = any> = {
@@ -83,12 +84,14 @@ export const request = async <T = any>(
           break;
       }
 
-      return {
+      const _res: Response<T> = {
         status: res.status,
         statusText: res.statusText,
         response,
         responseText: response ? '' : await res.text(),
       };
+      details?.onload?.call(_res, _res);
+      return _res;
     }
 
     if (typeof GM_xmlhttpRequest === 'undefined')

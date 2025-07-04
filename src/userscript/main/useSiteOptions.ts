@@ -17,7 +17,7 @@ export interface SiteOptions {
 }
 
 /** 清理多余的配置项 */
-const clear = <T extends Record<string, any> = {}>(
+const clear = <T extends Record<string, any> = object>(
   options: T,
   defaultOptions: T,
 ) => {
@@ -58,7 +58,7 @@ export const useSiteOptions = async <T = Record<string, any>>(
   );
 
   const setOptions = async (newOptions?: Partial<SaveOptions>) => {
-    const lockOption = options.lockOption;
+    const { lockOption } = options;
     if (newOptions) Object.assign(options, newOptions);
     if (lockOption && newOptions?.lockOption !== false) return;
     // 只保存和默认设置不同的部分

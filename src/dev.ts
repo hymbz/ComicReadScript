@@ -10,6 +10,6 @@ GM_xmlhttpRequest({
   },
   onerror(e) {
     if (e?.status === 0) throw new Error('dev server not running');
-    throw new Error(String(e));
+    throw new Error(String(e)); // eslint-disable-line @typescript-eslint/no-base-to-string
   },
 });

@@ -96,7 +96,7 @@ const addQuickFavorite = (
     hasRender = true;
 
     const FavoriteItem = (e: HTMLElement, index: Accessor<number>) => {
-      const checked = e.querySelector('input')!.checked;
+      const { checked } = e.querySelector('input')!;
 
       const handleClick = async () => {
         if (checked) return;

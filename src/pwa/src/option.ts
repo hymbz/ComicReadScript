@@ -1,7 +1,7 @@
 import type { MangaProps } from 'components/Manga';
 import { versionLt } from 'userscript/main/migration';
 
-import { version } from '../../../package.json' assert { type: 'json' };
+import { version } from '../../../package.json' with { type: 'json' };
 
 let saveOption: MangaProps['option'] | undefined;
 

@@ -101,7 +101,6 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
     const reader = res.body.getReader();
     const decoder = new TextDecoder('utf8');
     let buffer = new Uint8Array();
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;

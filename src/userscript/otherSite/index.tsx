@@ -269,7 +269,7 @@ export const otherSite = async () => {
       while (parent?.parentElement) {
         const siblingList = parent.parentElement.children;
         if (siblingList.length >= 5) {
-          const dataset = parent.dataset;
+          const { dataset } = parent;
           let sameNum = 0;
           for (const siblingDom of siblingList) {
             if (siblingDom === parent) continue;

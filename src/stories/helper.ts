@@ -1,4 +1,4 @@
-import { userEvent } from '@storybook/test';
+import { userEvent } from 'storybook/test';
 import { sleep, t, wait } from 'helper';
 
 import { refs } from '../components/Manga/store';

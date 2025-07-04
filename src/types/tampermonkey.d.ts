@@ -22,7 +22,6 @@ declare namespace Tampermonkey {
 
   // Response
 
-  // eslint-disable-next-line no-shadow
   enum ReadyState {
     Unsent = 0,
     Opened = 1,
