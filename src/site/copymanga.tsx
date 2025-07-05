@@ -366,7 +366,10 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
     .split('; ')
     .find((cookie) => cookie.startsWith('token='))
     ?.replace('token=', '');
-  if (token) Reflect.set(mobileApi.headers, 'Authorization', `Token ${token}`);
+  if (token) {
+    Reflect.set(mobileApi.headers, 'Authorization', `Token ${token}`);
+    Reflect.set(pcApi.headers, 'Authorization', `Token ${token}`);
+  }
 
   let comicName = '';
   let id = '';
