@@ -52,11 +52,11 @@ export function range<T = number>(
 ) {
   switch (typeof b) {
     case 'undefined':
-      return [...Array.from({ length: a + 1 }).keys()];
+      return [...Array.from({ length: a }).keys()];
 
     case 'number': {
       const list: Array<T | number> = [];
-      for (let i = a; i <= b; i++) list.push(c ? c(i) : i);
+      for (let i = a; i < b; i++) list.push(c ? c(i) : i);
       return list;
     }
 
@@ -111,11 +111,6 @@ export const getMostItem = <T>(list: T[]) => {
     maxItem[1] > item[1] ? maxItem : item,
   )[0];
 };
-
-/** 创建顺序数组 */
-export const createSequence = (length: number) => [
-  ...Array.from({ length }).keys(),
-];
 
 /** 判断字符串是否为 URL */
 export const isUrl = (text: string) => {

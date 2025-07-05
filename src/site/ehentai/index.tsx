@@ -22,10 +22,10 @@ import {
   requestIdleCallback,
   linstenKeydown,
   assign,
-  createSequence,
   extractRange,
   useCache,
   sleep,
+  range,
 } from 'helper';
 
 import { escHandler, createEhContext } from './helper';
@@ -305,9 +305,7 @@ import { expandTagList } from './expandTagList';
     // 所以只能一次性获取所有页数上的图片页地址
     if (context.pageList.length !== totalPageNum) {
       const allPageList = await plimit(
-        createSequence(totalPageNum).map(
-          (pageNum) => () => getImgPageUrl(pageNum),
-        ),
+        range(totalPageNum, (pageNum) => () => getImgPageUrl(pageNum)),
       );
       context.pageList.length = 0;
       context.fileNameList.length = 0;
@@ -342,17 +340,17 @@ import { expandTagList } from './expandTagList';
       e.stopPropagation();
 
       // eslint-disable-next-line no-alert
-      const range = prompt(
+      const pageRange = prompt(
         t('other.page_range'),
         (await cache.get('pageRange', unsafeWindow.gid))?.range,
       );
-      if (!range) return;
+      if (!pageRange) return;
       await cache.set('pageRange', {
         id: unsafeWindow.gid ?? context.galleryId,
-        range,
+        range: pageRange,
       });
 
-      setLoadImgsText(range ?? `1-${context.imgNum}`);
+      setLoadImgsText(pageRange ?? `1-${context.imgNum}`);
       // 删掉当前的图片列表以便触发重新加载
       setComicMap('', 'imgList', undefined);
       showComic();

@@ -152,10 +152,10 @@ const createTranslateRange = (imgs: Accessor<number[]>) => {
 
 // 翻译全部图片
 export const [isTranslatingAll, translateAll] = createTranslateRange(
-  createRootMemo(() => range(store.imgList.length - 1)),
+  createRootMemo(() => range(store.imgList.length)),
 );
 
 // 翻译当前页以后的全部图片
 export const [isTranslatingToEnd, translateToEnd] = createTranslateRange(
-  createRootMemo(() => range(activeImgIndex(), store.imgList.length - 1)),
+  createRootMemo(() => range(activeImgIndex(), store.imgList.length)),
 );

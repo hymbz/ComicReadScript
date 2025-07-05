@@ -1,10 +1,10 @@
 import { type Component, createMemo, onMount, Index } from 'solid-js';
 import {
   boolDataVal,
-  createSequence,
   createEffectOn,
   type UseDrag,
   useDrag,
+  range,
 } from 'helper';
 
 import { useStyleMemo, useStyle } from '../hooks/useStyle';
@@ -116,14 +116,12 @@ export const ComicImgFlow: Component = () => {
 
     if (store.option.scrollMode.enabled) {
       if (store.option.scrollMode.abreastMode)
-        return `"${createSequence(abreastArea().columns.length)
-          .map((i) => `_${i}`)
-          .join(' ')}"`;
+        return `"${range(abreastArea().columns.length, (i) => `_${i}`).join(
+          ' ',
+        )}"`;
       if (store.option.scrollMode.doubleMode)
         return store.pageList.map((page) => `"${pageToText(page)}"`).join('\n');
-      return createSequence(store.imgList.length)
-        .map((i) => `"_${i}"`)
-        .join('\n');
+      return range(store.imgList.length, (i) => `"_${i}"`).join('\n');
     }
 
     return store.page.vertical

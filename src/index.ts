@@ -1,7 +1,6 @@
 import { getInitLang } from 'helper/languages';
 import { otherSite } from 'userscript/otherSite';
 import {
-  createSequence,
   isUrl,
   log,
   plimit,
@@ -67,7 +66,8 @@ try {
 
       const loadImgFn: LoadImgFn = (setImg) =>
         plimit(
-          createSequence(totalPageNum).map(
+          range(
+            totalPageNum,
             (i) => async () => setImg(i, await getImg(i + 1)),
           ),
         );
@@ -301,7 +301,7 @@ try {
           )
             throw new Error('获取图片列表时出错');
 
-          return plimit<string>(createSequence(pageList.length).map(getImgUrl));
+          return plimit<string>(range(pageList.length, getImgUrl));
         },
         SPA: {
           isMangaPage: () => window.location.href.includes('episode'),
