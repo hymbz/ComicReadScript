@@ -74,7 +74,7 @@ try {
 
       options = {
         name: 'newYamibo',
-        getImgList: ({ dynamicLoad }) => dynamicLoad(loadImgFn, totalPageNum)(),
+        getImgList: ({ dynamicLoad }) => dynamicLoad(loadImgFn, totalPageNum),
         onNext: querySelectorClick('#btnNext'),
         onPrev: querySelectorClick('#btnPrev'),
         onExit: (isEnd) => isEnd && scrollIntoView('#w1'),
@@ -229,7 +229,7 @@ try {
 
       options = {
         name: 'zaiManHua',
-        async getImgList({ setManga }) {
+        async getImgList({ _setState }) {
           const urlParams = new URLSearchParams(window.location.search);
           const comicId = Number(urlParams.get('comic_id'));
           const chapterId = Number(urlParams.get('chapter_id'));
@@ -249,7 +249,7 @@ try {
           const chapterIndex = chapter.findIndex(
             (data) => data.chapter_id === chapterId,
           );
-          setManga({
+          _setState('manga', {
             onPrev:
               chapterIndex > 0
                 ? () =>
@@ -478,7 +478,7 @@ try {
                 setImg(imgList.size - 1, url);
               }
             }
-          }, imgNum)();
+          }, imgNum);
         },
         onPrev: handlePrevNext('.logo_1', '上一章'),
         onNext: handlePrevNext('.logo_2', '下一章'),
@@ -564,7 +564,7 @@ try {
                 setImg(imgList.size - 1, url);
               }
             }
-          }, imgNum)(),
+          }, imgNum),
         onNext: handlePrevNext(
           'body > .container a[href^="/"]:last-child',
           '下一',
@@ -853,7 +853,7 @@ try {
               setImg(i, await downloadImg(`${base}${path}?w=${dimensions[0]}`));
               await sleep(500 - (performance.now() - startTime));
             }
-          }, totalPageNum)();
+          }, totalPageNum);
         },
         SPA: { isMangaPage },
       };
@@ -993,7 +993,7 @@ try {
             isMangaPage: () =>
               /\/manga\/\d+\/chapter\/\d+/.test(window.location.pathname),
           },
-          async getImgList({ setManga }) {
+          async getImgList({ _setState }) {
             const [, , mangaId, , chapterId] = window.location.pathname
               .split('/')
               .map(Number);
@@ -1001,7 +1001,7 @@ try {
             const { pageCount } = data.chapters.nodes[0];
             const chapterCount = data.manga.chapters.totalCount;
 
-            setManga({
+            _setState('manga', {
               onPrev:
                 chapterId > 0 ? () => jump(mangaId, chapterId - 1) : undefined,
               onNext:

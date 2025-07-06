@@ -10,6 +10,7 @@ import {
   log,
   createEffectOn,
   hijackFn,
+  useStyle,
 } from 'helper';
 
 // 多页
@@ -25,14 +26,7 @@ interface History {
 }
 
 (async () => {
-  const {
-    options,
-    setComicLoad,
-    showComic,
-    loadComic,
-    setManga,
-    needAutoShow,
-  } = await useInit('yamibo', {
+  const { _setState, options, showComic, loadComic } = await useInit('yamibo', {
     记录阅读进度: true,
     关闭快捷导航的跳转: true,
     修正点击页数时的跳转判定: true,
@@ -40,7 +34,7 @@ interface History {
     自动签到: true,
   });
 
-  GM_addStyle(
+  useStyle(
     `#fab { --fab: #6E2B19; }
 
     ${
@@ -125,13 +119,13 @@ interface History {
     const readMode = () => {
       const isFirstPage = !querySelector('.pg > .prev');
       // 第一页以外不自动加载
-      if (!isFirstPage) needAutoShow.val = false;
+      if (!isFirstPage) _setState('flag', 'needAutoShow', false);
 
       let imgList = querySelectorAll<HTMLImageElement>(
         ':is(.t_fsz, .message) img',
       );
 
-      const updateImgList = () => {
+      const getImgList = () => {
         let i = imgList.length;
         while (i--) {
           const img = imgList[i];
@@ -159,10 +153,9 @@ interface History {
 
         return imgList.map((img) => img.src);
       };
+      _setState('comicMap', '', { getImgList });
 
-      setComicLoad(updateImgList);
-
-      setManga({
+      _setState('manga', {
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
         onLoading(_imgList, img) {
           if (img && img.width! < 500 && img.height! < 500) return loadComic();
@@ -171,7 +164,7 @@ interface History {
           if (isEnd)
             scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
 
-          setManga('show', false);
+          _setState('manga', 'show', false);
         },
       });
 
@@ -190,7 +183,7 @@ interface History {
         // 在网页通过 ajax 更新对应内容后重新获取漫画图片
         hijackFn('ajaxinnerhtml', () => {
           imgList = querySelectorAll<HTMLImageElement>('.t_fsz img');
-          if (imgList.length === 0 || updateImgList().length === 0) return;
+          if (imgList.length === 0 || getImgList().length === 0) return;
           if (options.autoShow) showComic();
         });
       }
@@ -217,7 +210,7 @@ interface History {
           if (newList.length > 0 && (index === -1 || !threadList[index + 1]))
             return setPrevNext(pageNum + 1);
 
-          return setManga({
+          return _setState('manga', {
             onPrev: threadList[index - 1]
               ? () =>
                   window.location.assign(

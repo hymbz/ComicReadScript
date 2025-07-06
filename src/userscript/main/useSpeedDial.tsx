@@ -6,26 +6,26 @@ import MdLockOpen from '@material-design-icons/svg/round/lock_open.svg';
 import MdLock from '@material-design-icons/svg/round/lock.svg';
 import type { Component, JSX } from 'solid-js';
 import { IconButton } from 'components/IconButton';
-import { t } from 'helper';
+import { createEffectOn, t } from 'helper';
 
-import type { SiteOptions } from './useSiteOptions';
+import type { MainContext, SiteOptions } from '.';
 
 export const useSpeedDial = <
   T extends Record<string, any>,
   SaveOptions extends T & SiteOptions = T & SiteOptions,
->(
-  options: SaveOptions,
-  setOptions: (newOptions: Partial<SaveOptions>) => Promise<void>,
-  placement: () => 'left' | 'right',
-  showOtherList?: string[],
-) => {
+>({
+  store,
+  _setState,
+  options,
+  setOptions,
+}: MainContext<T>) => {
   const DefaultButton: Component<{
     optionName: keyof SaveOptions & string;
     showName?: string;
     children?: JSX.Element;
   }> = (props) => (
     <IconButton
-      placement={placement()}
+      placement={store.fab.placement}
       showTip={true}
       tip={
         props.showName ??
@@ -34,9 +34,7 @@ export const useSpeedDial = <
           props.optionName)
       }
       onClick={() =>
-        setOptions({
-          [props.optionName]: !options[props.optionName],
-        } as Partial<SaveOptions>)
+        setOptions({ [props.optionName]: !options[props.optionName] })
       }
       children={
         props.children ??
@@ -45,43 +43,46 @@ export const useSpeedDial = <
     />
   );
 
-  const list: Component[] = [];
-
-  for (const optionName of Object.keys(options)) {
-    switch (optionName) {
-      case 'hiddenFAB':
-      case 'option':
-        continue;
-
-      case 'autoShow':
-        list.push(() => (
+  createEffectOn(
+    () => store.fab.otherSpeedDial,
+    () => {
+      const list: Component[] = [
+        () => (
           <DefaultButton
             optionName="autoShow"
             showName={t('site.add_feature.auto_show')}
             children={options.autoShow ? <MdFlashOn /> : <MdFlashOff />}
           />
-        ));
-        break;
-
-      case 'lockOption':
-        list.push(() => (
+        ),
+        () => (
           <DefaultButton
             optionName="lockOption"
             showName={t('site.add_feature.lock_option')}
             children={options.lockOption ? <MdLock /> : <MdLockOpen />}
           />
-        ));
-        break;
+        ),
+      ];
 
-      default:
-        if (!showOtherList && typeof options[optionName] === 'boolean')
+      if (store.fab.otherSpeedDial) {
+        for (const optionName of store.fab.otherSpeedDial)
           list.push(() => <DefaultButton optionName={optionName} />);
-    }
-  }
+      } else {
+        for (const optionName of Object.keys(options)) {
+          switch (optionName) {
+            case 'hiddenFAB':
+            case 'option':
+            case 'autoShow':
+            case 'lockOption':
+              continue;
 
-  if (showOtherList)
-    for (const optionName of showOtherList)
-      list.push(() => <DefaultButton optionName={optionName} />);
+            default:
+              if (typeof options[optionName] === 'boolean')
+                list.push(() => <DefaultButton optionName={optionName} />);
+          }
+        }
+      }
 
-  return list;
+      _setState('fab', 'speedDial', list);
+    },
+  );
 };

@@ -1,14 +1,10 @@
 import { querySelectorAll } from 'helper';
-
-import type { MangaProps } from '../../components/Manga';
-import type { useInit } from '../main';
+import type { MangaProps } from 'components/Manga';
 
 const prevRe = /^(上一?((章|章节|話|话))|prev|prev chapter|前の章)$/i;
 const nextRe = /^(下一?((章|章节|話|话))|next|next chapter|次の章)$/i;
 
-export const handleSwitchChapter = (
-  setManga: AsyncReturnType<typeof useInit>['setManga'],
-) => {
+export const getChapterSwitch = () => {
   let onPrev: MangaProps['onPrev'];
   let onNext: MangaProps['onNext'];
 
@@ -40,5 +36,5 @@ export const handleSwitchChapter = (
     }
   }
 
-  setManga({ onPrev, onNext });
+  return { onPrev, onNext };
 };

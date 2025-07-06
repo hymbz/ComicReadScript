@@ -1,7 +1,6 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
-import { createStore } from 'solid-js/store';
 import { IconButton } from 'components/IconButton';
-import { type MangaProps, Manga, refs, store } from 'components/Manga';
+import { Manga, refs, store as mangaStore } from 'components/Manga';
 import {
   t,
   createEffectOn,
@@ -9,17 +8,25 @@ import {
   mountComponents,
   querySelector,
   WakeLock,
+  useStyle,
 } from 'helper';
 
 import { DownloadButton } from '../../components/DownloadButton';
+
+import type { MainContext } from '.';
 
 let dom: HTMLDivElement;
 
 /**
  * 显示漫画阅读窗口
  */
-export const useManga = async (initProps?: Partial<MangaProps>) => {
-  GM_addStyle(`
+export const useManga = async <T extends Record<string, any>>({
+  store,
+  _setState,
+  options,
+  setOptions,
+}: MainContext<T>) => {
+  useStyle(`
     #comicRead {
       position: fixed;
       top: 0;
@@ -53,13 +60,20 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
     }
   `);
 
-  const [props, setProps] = createStore<MangaProps>({
-    imgList: [],
+  _setState('manga', {
     show: false,
-    ...initProps,
+    option: options.option,
+    defaultOption: options.defaultOption,
+    onOptionChange: (option) => setOptions({ option }),
+
+    hotkeys: store.hotkeys,
+    onHotkeysChange(newValue: Record<string, string[]>) {
+      GM.setValue('Hotkeys', newValue);
+      _setState('hotkeys', newValue);
+    },
   });
 
-  dom = mountComponents('comicRead', () => <Manga {...props} />);
+  dom = mountComponents('comicRead', () => <Manga {...store.manga} />);
   dom.style.setProperty('z-index', '2147483647', 'important');
 
   // 确保 toast 可以显示在漫画之上
@@ -72,14 +86,14 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   const wakeLock = new WakeLock();
 
   createEffectOn(
-    createRootMemo(() => props.show && props.imgList.length > 0),
+    createRootMemo(() => store.manga.show && store.manga.imgList.length > 0),
     (show) => {
       if (show) {
         dom.setAttribute('show', '');
         lastOverflow = htmlStyle.overflow;
         htmlStyle.setProperty('overflow', 'hidden', 'important');
         htmlStyle.setProperty('scrollbar-width', 'none', 'important');
-        if (store.option.autoFullscreen) refs.root.requestFullscreen();
+        if (mangaStore.option.autoFullscreen) refs.root.requestFullscreen();
         wakeLock.on();
       } else {
         dom.removeAttribute('show');
@@ -92,13 +106,16 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
   );
 
   const ExitButton = () => (
-    <IconButton tip={t('other.exit')} onClick={() => store.prop.onExit?.()}>
+    <IconButton
+      tip={t('other.exit')}
+      onClick={() => mangaStore.prop.onExit?.()}
+    >
       <MdClose />
     </IconButton>
   );
 
-  setProps({
-    onExit: () => setProps('show', false),
+  _setState('manga', {
+    onExit: () => _setState('manga', 'show', false),
     editButtonList(list) {
       // 在设置按钮上方放置下载按钮
       list.splice(-1, 0, DownloadButton);
@@ -110,6 +127,4 @@ export const useManga = async (initProps?: Partial<MangaProps>) => {
       ];
     },
   });
-
-  return [setProps, props] as const;
 };

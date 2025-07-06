@@ -1,6 +1,6 @@
 import { createSignal, type Component, For, Show } from 'solid-js';
 import { render } from 'solid-js/web';
-import { request, toast, useSpeedDial, type LoadImgFn } from 'main';
+import { request, toast, type LoadImgFn } from 'main';
 import {
   type MangaProps,
   imgList as MangaImgList,
@@ -26,6 +26,7 @@ import {
   useCache,
   sleep,
   range,
+  useStyle,
 } from 'helper';
 
 import { escHandler, createEhContext } from './helper';
@@ -44,44 +45,10 @@ import { expandTagList } from './expandTagList';
 // [ehentai 图像限额](https://github.com/ccloli/E-Hentai-Downloader/wiki/E−Hentai-Image-Viewing-Limits-(Chinese))
 
 (async () => {
-  const context = await createEhContext({
-    /** 关联外站 */
-    cross_site_link: true,
-    /** 增加快捷键操作 */
-    add_hotkeys_actions: true,
-    /** 识别广告页 */
-    detect_ad: true,
-    /** 快捷收藏 */
-    quick_favorite: true,
-    /** 标签染色 */
-    colorize_tag: false,
-    /** 快捷评分 */
-    quick_rating: true,
-    /** 快捷查看标签定义 */
-    quick_tag_define: true,
-    /** 悬浮标签列表 */
-    float_tag_list: false,
-    /** 自动调整配置 */
-    auto_adjust_option: false,
-    /** 标签检查 */
-    tag_lint: false,
-    /** 展开标签列表 */
-    expand_tag_list: true,
-    autoShow: false,
-  });
+  const context = await createEhContext();
   if (!context) return;
 
-  const {
-    options,
-    setComicLoad,
-    dynamicLoad,
-    showComic,
-    setComicMap,
-    setImgList,
-    setFab,
-    setManga,
-    setOptions,
-  } = context;
+  const { _setState, setState, options, setOptions, showComic } = context;
 
   const SiteSettings: Component = () => (
     <>
@@ -117,45 +84,47 @@ import { expandTagList } from './expandTagList';
       <SettingHotkeys keys={['float_tag_list']} />
     </>
   );
-  setManga({
-    editSettingList: (list) => [...list, ['E-Hentai', SiteSettings]],
-  });
-  setFab({
-    speedDial: [
-      ...useSpeedDial(options, setOptions, context.placement, [
-        'tag_lint',
-        'colorize_tag',
-        'cross_site_link',
-        'detect_ad',
-      ]),
-    ],
+
+  setState((state) => {
+    state.manga.editSettingList = (list) => [
+      ...list,
+      ['E-Hentai', SiteSettings],
+    ];
+    state.fab.otherSpeedDial = [
+      'tag_lint',
+      'colorize_tag',
+      'cross_site_link',
+      'detect_ad',
+    ];
   });
 
   if (context.type === 'mpv') {
-    return setComicLoad(() => {
-      const imgEleList = querySelectorAll('.mimg[id]');
-      const loadImgList: LoadImgFn = async (setImg) => {
-        const imagelist = unsafeWindow.imagelist as Array<{
-          i: string;
-          xhr: XMLHttpRequest;
-        }>;
-        plimit(
-          imagelist.map((_, i) => async () => {
-            const url = () => imagelist[i].i;
-            while (!url()) {
-              if (!Reflect.has(imagelist[i], 'xhr')) {
-                unsafeWindow.load_image(i + 1);
-                unsafeWindow.next_possible_request = 0;
+    return _setState('comicMap', '', {
+      getImgList({ dynamicLoad }) {
+        const imgEleList = querySelectorAll('.mimg[id]');
+        const loadImgList: LoadImgFn = async (setImg) => {
+          const imagelist = unsafeWindow.imagelist as Array<{
+            i: string;
+            xhr: XMLHttpRequest;
+          }>;
+          plimit(
+            imagelist.map((_, i) => async () => {
+              const url = () => imagelist[i].i;
+              while (!url()) {
+                if (!Reflect.has(imagelist[i], 'xhr')) {
+                  unsafeWindow.load_image(i + 1);
+                  unsafeWindow.next_possible_request = 0;
+                }
+                await wait(url);
               }
-              await wait(url);
-            }
-            setImg(i, url());
-          }),
-          undefined,
-          4,
-        );
-      };
-      return dynamicLoad(loadImgList, imgEleList.length)();
+              setImg(i, url());
+            }),
+            undefined,
+            4,
+          );
+        };
+        return dynamicLoad(loadImgList, imgEleList.length);
+      },
     });
   }
 
@@ -197,7 +166,7 @@ import { expandTagList } from './expandTagList';
       imgRecognition: { enabled: false },
     };
     if (options.option) option = assign(options.option, option);
-    setManga({ option });
+    _setState('manga', 'option', option);
   }
 
   // 悬浮标签列表
@@ -217,7 +186,7 @@ import { expandTagList } from './expandTagList';
     if (sidebarDom.scrollHeight > 352) sidebarDom.dataset.long = '';
   });
   resizeObserver.observe(sidebarDom);
-  GM_addStyle(`
+  useStyle(`
     #gd5[data-long] {
       --scrollbar-slider: ${getComputedStyle(querySelector('.gm')!).borderColor};
       scrollbar-color: var(--scrollbar-slider) transparent;
@@ -231,6 +200,13 @@ import { expandTagList } from './expandTagList';
     /* 在显示 ehs 时隐藏 gd5 上的滚动条，避免同时显示两个滚动条 */
     #gd5[data-long]:has(#ehs-introduce-box .ehs-content) { overflow: hidden; }
     #gmid #ehs-introduce-box { width: 100%; }
+
+
+    /*
+      消除 ehs 针对按钮太多时的解决办法，用脚本的处理方式就好了，避免在浮动标签栏时导致滚动
+      https://github.com/EhTagTranslation/EhSyringe/commit/009054cc34ee818972d2a042990bf89bdff1895a
+     */
+    body #gmid #gd5 { --ehs-gap: 1; justify-content: unset; }
   `);
 
   // 关联外站
@@ -326,7 +302,10 @@ import { expandTagList } from './expandTagList';
     );
     checkAd?.();
   };
-  setComicLoad(dynamicLoad(loadImgList, () => loadImgs().size));
+  _setState('comicMap', '', {
+    getImgList: ({ dynamicLoad }) =>
+      dynamicLoad(loadImgList, () => loadImgs().size),
+  });
 
   const cache = await useCache<{ pageRange: { id: number; range: string } }>({
     pageRange: 'id',
@@ -352,7 +331,7 @@ import { expandTagList } from './expandTagList';
 
       setLoadImgsText(pageRange ?? `1-${context.imgNum}`);
       // 删掉当前的图片列表以便触发重新加载
-      setComicMap('', 'imgList', undefined);
+      _setState('comicMap', '', 'imgList', undefined);
       showComic();
     };
 
@@ -402,20 +381,20 @@ import { expandTagList } from './expandTagList';
         return reloadImg(url);
       }
     }
-    setImgList('', i, context.imgList[i]);
+    _setState('comicMap', '', 'imgList', i, context.imgList[i]);
 
     for (const img of MangaImgList())
       if (img.loadType === 'error') return reloadImg(img.src);
   });
 
-  setManga({
-    title: context.japanTitle || context.galleryTitle,
-    onExit(isEnd) {
+  setState((state) => {
+    state.manga.title = context.japanTitle || context.galleryTitle;
+    state.manga.onExit = (isEnd) => {
       if (isEnd) scrollIntoView('#cdiv');
-      setManga('show', false);
-    },
-    onImgError: reloadImg,
-  });
+      _setState('manga', 'show', false);
+    };
+    state.manga.onImgError = reloadImg;
 
-  setFab('initialShow', options.autoShow);
+    state.fab.initialShow = options.autoShow;
+  });
 })().catch((error) => log.error(error));

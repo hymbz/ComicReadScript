@@ -33,7 +33,7 @@ const getDomPosition = (dom: HTMLElement) => {
 };
 
 export const floatTagList = ({
-  mangaProps,
+  store: { manga },
   dom: { newTagField },
 }: GalleryContext) => {
   const gd4 = querySelector('#gd4')!;
@@ -155,7 +155,7 @@ export const floatTagList = ({
   placeholder.style.display = 'none';
   placeholder.addEventListener('click', () => _setState('open', false));
   placeholder.innerHTML = MdPictureInPicture;
-  gd4.before(placeholder);
+  gd4.parentElement!.append(placeholder);
 
   const ref = document.createElement('div');
   ref.id = 'comicread-tag-box';
@@ -196,7 +196,7 @@ export const floatTagList = ({
         case 'up':
           setState((state) => {
             // 窗口移到原位附近时自动收回
-            if (mangaProps.show) return;
+            if (manga.show) return;
             const rect = placeholder.getBoundingClientRect();
             if (
               approx(state.top, rect.top, 50) &&

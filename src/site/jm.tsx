@@ -15,7 +15,7 @@ import {
   // 只在漫画页内运行
   if (!window.location.pathname.includes('/photo/')) return;
 
-  const { setComicLoad, setManga, dynamicLoad } = await useInit('jm');
+  const { _setState } = await useInit('jm');
 
   while (!unsafeWindow?.onImageLoaded) {
     if (document.readyState === 'complete') {
@@ -26,7 +26,7 @@ import {
     await sleep(100);
   }
 
-  setManga({
+  _setState('manga', {
     onPrev: querySelectorClick(
       () =>
         querySelector('.menu-bolock-ul .fa-angle-double-left')?.parentElement,
@@ -44,7 +44,9 @@ import {
   // 判断当前漫画是否有被分割，没有就直接获取图片链接加载
   // 判断条件来自页面上的 scramble_image 函数
   if (unsafeWindow.aid < unsafeWindow.scramble_id || unsafeWindow.speed === '1')
-    return setComicLoad(() => imgEleList.map((e) => e.dataset.original ?? ''));
+    return _setState('comicMap', '', {
+      getImgList: () => imgEleList.map((e) => e.dataset.original ?? ''),
+    });
 
   const downloadImg = async (url: string) => {
     try {
@@ -117,5 +119,8 @@ import {
         setImg(i, await getImgUrl(img));
       }),
     );
-  setComicLoad(dynamicLoad(loadImgList, imgEleList.length));
+  _setState('comicMap', '', {
+    getImgList: ({ dynamicLoad }) =>
+      dynamicLoad(loadImgList, imgEleList.length),
+  });
 })().catch((error) => log.error(error));

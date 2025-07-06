@@ -22,9 +22,8 @@ type ItemData = {
 };
 
 const nhentai = async ({
+  _setState,
   galleryTitle,
-  setComicLoad,
-  dynamicLoad,
 }: GalleryContext): Promise<ItemData[]> => {
   interface ComicInfo {
     id: number;
@@ -67,21 +66,20 @@ const nhentai = async ({
 
   return result.map(({ id, title, images, num_pages, media_id }) => {
     const itemId = `@nh:${id}`;
-    setComicLoad(
-      dynamicLoad(
-        (setImg) => {
-          plimit(
-            images.pages.map(
-              (page, i) => async () =>
-                setImg(i, await downImg(i, media_id, page.t)),
+    _setState('comicMap', itemId, {
+      getImgList: ({ dynamicLoad }) =>
+        dynamicLoad(
+          (setImg) =>
+            plimit(
+              images.pages.map(
+                (page, i) => async () =>
+                  setImg(i, await downImg(i, media_id, page.t)),
+              ),
             ),
-          );
-        },
-        num_pages,
-        itemId,
-      ),
-      itemId,
-    );
+          num_pages,
+          itemId,
+        ),
+    });
 
     return {
       id: itemId,
@@ -98,8 +96,7 @@ nhentai.errorTip = (context: GalleryContext) =>
   });
 
 const hitomi = async ({
-  setComicLoad,
-  dynamicLoad,
+  _setState,
   galleryId,
 }: GalleryContext): Promise<ItemData[]> => {
   const domain = 'gold-usergeneratedcontent.net';
@@ -124,40 +121,41 @@ const hitomi = async ({
   };
 
   const itemId = `@hitomi:${data.id}`;
-  setComicLoad(
-    dynamicLoad(
-      async (setImg) => {
-        const { responseText: ggScript } = await request(
-          `https://ltn.${domain}/gg.js?_=${Date.now()}`,
-          {
-            errorText: t('site.ehentai.hitomi_error'),
-            noTip: true,
-          },
-        );
+  _setState('comicMap', itemId, {
+    getImgList: ({ dynamicLoad }) =>
+      dynamicLoad(
+        async (setImg) => {
+          const { responseText: ggScript } = await request(
+            `https://ltn.${domain}/gg.js?_=${Date.now()}`,
+            {
+              errorText: t('site.ehentai.hitomi_error'),
+              noTip: true,
+            },
+          );
 
-        // eslint-disable-next-line prefer-const
-        let gg = {} as {
-          m: (g: number) => number;
-          s: (h: string) => number;
-          b: string;
-        };
-        eval(ggScript); // eslint-disable-line no-eval
+          // eslint-disable-next-line prefer-const
+          let gg = {} as {
+            m: (g: number) => number;
+            s: (h: string) => number;
+            b: string;
+          };
+          eval(ggScript); // eslint-disable-line no-eval
 
-        const imgList = data.files.map(({ hash }) => {
-          const imageId = gg.s(hash);
-          const m = /[\da-f]{61}([\da-f]{2})([\da-f])/.exec(hash)!;
-          const g = Number.parseInt(m[2] + m[1], 16);
-          return `https://w${gg.m(g) + 1}.${domain}/${gg.b}${imageId}/${hash}.webp`;
-        });
+          const imgList = data.files.map(({ hash }) => {
+            const imageId = gg.s(hash);
+            const m = /[\da-f]{61}([\da-f]{2})([\da-f])/.exec(hash)!;
+            const g = Number.parseInt(m[2] + m[1], 16);
+            return `https://w${gg.m(g) + 1}.${domain}/${gg.b}${imageId}/${hash}.webp`;
+          });
 
-        // 顺序下载避免触发反爬限制
-        for (const [i, img] of imgList.entries()) setImg(i, await downImg(img));
-      },
-      data.files.length,
-      itemId,
-    ),
-    itemId,
-  );
+          // 顺序下载避免触发反爬限制
+          for (const [i, img] of imgList.entries())
+            setImg(i, await downImg(img));
+        },
+        data.files.length,
+        itemId,
+      ),
+  });
 
   return [
     {
@@ -272,11 +270,12 @@ export const crossSiteLink = async (context: GalleryContext) => {
     }
   }
 
-  const { adList } = context.comicMap[''];
+  const { adList } = context.store.comicMap[''];
   if (!adList) return;
   // 如果外站源只匹配到了一个漫画，就直接为其加上当前识别出的广告列表
   for (const itemList of Object.values(comicMap)) {
     if (typeof itemList === 'string') continue;
-    if (itemList.length === 1) context.setComicMap(itemList[0].id, { adList });
+    if (itemList.length === 1)
+      context._setState('comicMap', itemList[0].id, { adList });
   }
 };

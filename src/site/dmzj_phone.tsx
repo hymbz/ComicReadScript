@@ -174,32 +174,30 @@ import {
 
       document.title = `${chapter_name} ${folder.split('/').at(1)}`;
 
-      const { setManga, setComicLoad } = await useInit('dmzj');
+      const { setState, _setState } = await useInit('dmzj');
 
-      setManga({
-        // 进入阅读模式后禁止退出，防止返回空白页面
-        onExit: undefined,
-        onNext: next_chap_id
+      setState((state) => {
+        state.manga.onExit = undefined;
+        state.manga.onNext = next_chap_id
           ? () => {
               window.location.href = `https://m.dmzj.com/view/${comic_id}/${next_chap_id}.html`;
             }
-          : undefined,
-        onPrev: prev_chap_id
+          : undefined;
+        state.manga.onPrev = prev_chap_id
           ? () => {
               window.location.href = `https://m.dmzj.com/view/${comic_id}/${prev_chap_id}.html`;
             }
-          : undefined,
-        editButtonList: (e) => e,
+          : undefined;
+        state.manga.editButtonList = (e) => e;
+
+        state.comicMap[''].getImgList = () => {
+          if (page_url.length > 0) return page_url;
+          tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
+          return [];
+        };
       });
 
-      setComicLoad(() => {
-        if (page_url.length > 0) return page_url;
-
-        tipDom.innerHTML = `无法获得漫画数据，请通过 <a href="https://github.com/hymbz/ComicReadScript/issues" target="_blank">Github</a> 或 <a href="https://sleazyfork.org/zh-CN/scripts/374903-comicread/feedback#post-discussion" target="_blank">Greasy Fork</a> 进行反馈`;
-        return [];
-      });
-
-      setManga('commentList', await getViewpoint(comicId, chapterId));
+      _setState('manga', 'commentList', await getViewpoint(comicId, chapterId));
       break;
     }
   }

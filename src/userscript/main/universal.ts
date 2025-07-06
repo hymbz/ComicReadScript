@@ -2,7 +2,8 @@ import { type MangaProps } from 'components/Manga';
 import { onUrlChange, wait, waitUrlChange } from 'helper';
 
 import { useInit } from './useInit';
-import { type SiteOptions } from './useSiteOptions';
+
+import type { MainContext, SiteOptions } from '.';
 
 export type UseInitFnMap = AsyncReturnType<typeof useInit>;
 
@@ -11,7 +12,7 @@ export interface InitOptions {
   /** 等待返回 true 后才开始运行。用于等待元素渲染 */
   wait?: () => unknown | Promise<unknown>;
 
-  getImgList: (fnMap: UseInitFnMap) => Promise<string[]> | string[];
+  getImgList: (mainContext: MainContext) => Promise<string[]> | string[];
   onPrev?: MangaProps['onPrev'];
   onNext?: MangaProps['onNext'];
   onExit?: MangaProps['onExit'];
@@ -48,59 +49,54 @@ export const universal = async ({
   if (SPA?.isMangaPage) await waitUrlChange(SPA.isMangaPage);
   if (waitFn) await wait(waitFn);
 
-  const fnMap = await useInit(name, initOptions);
-  const {
-    options,
-    setComicLoad,
-    setManga,
-    setFab,
-    needAutoShow,
-    setComicMap,
-    showComic,
-  } = fnMap;
+  const mainContext = await useInit(name, initOptions);
+  const { store, _setState, setState, showComic } = mainContext;
 
-  setComicLoad(() => getImgList(fnMap));
+  _setState('comicMap', '', { getImgList: () => getImgList(mainContext) });
 
-  setManga({ onShowImgsChange });
+  _setState('manga', 'onShowImgsChange', onShowImgsChange);
   if (onExit)
-    setManga({
-      onExit(isEnd) {
-        onExit?.(isEnd);
-        setManga({ show: false });
-      },
+    _setState('manga', 'onExit', (isEnd: boolean) => {
+      onExit?.(isEnd);
+      _setState('manga', 'show', false);
     });
 
   if (!SPA) {
-    if (onNext ?? onPrev) setManga({ onNext, onPrev });
-    if (getCommentList) setManga({ commentList: await getCommentList() });
+    if (onNext ?? onPrev) _setState('manga', { onNext, onPrev });
+    if (getCommentList)
+      _setState('manga', 'commentList', await getCommentList());
     return;
   }
 
-  const { isMangaPage, getOnPrev, getOnNext } = SPA;
-
   onUrlChange(async () => {
-    if (isMangaPage && !(await isMangaPage())) {
-      setFab('show', false);
-      setManga({ show: false });
-      setComicMap('', 'imgList', undefined);
-      return;
-    }
+    if (SPA.isMangaPage && !(await SPA.isMangaPage()))
+      return setState((state) => {
+        state.fab.show = false;
+        state.manga.show = false;
+        state.comicMap[''].imgList = undefined;
+      });
 
     if (waitFn) await wait(waitFn);
 
-    setFab('show', undefined);
-    setManga({ onPrev: undefined, onNext: undefined });
-    needAutoShow.val = options.autoShow;
-    setComicMap('', 'imgList', undefined);
-    if (needAutoShow.val && options.autoShow) await showComic('');
+    setState((state) => {
+      state.fab.show = undefined;
+      state.manga.onPrev = undefined;
+      state.manga.onNext = undefined;
+      state.flag.needAutoShow = state.options.autoShow;
+      state.comicMap[''].imgList = undefined;
+    });
+    if (store.options.autoShow) await showComic('');
 
     await Promise.all([
       (async () =>
-        getCommentList && setManga({ commentList: await getCommentList() }))(),
+        getCommentList &&
+        _setState('manga', 'commentList', await getCommentList()))(),
       (async () =>
-        getOnPrev && setManga({ onPrev: await wait(getOnPrev, 5000) }))(),
+        SPA.getOnPrev &&
+        _setState('manga', 'onPrev', await wait(SPA.getOnPrev, 5000)))(),
       (async () =>
-        getOnNext && setManga({ onNext: await wait(getOnNext, 5000) }))(),
+        SPA.getOnNext &&
+        _setState('manga', 'onNext', await wait(SPA.getOnNext, 5000)))(),
     ]);
   }, SPA?.handleUrl);
 };

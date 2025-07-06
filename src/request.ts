@@ -151,6 +151,9 @@ export const request = async <T = any>(
   }
 };
 
+if (isDevMode)
+  Object.assign((window as any).unsafeWindow ?? window, { request });
+
 /** 轮流向多个 api 发起请求 */
 export const eachApi = async <T = any>(
   url: string,

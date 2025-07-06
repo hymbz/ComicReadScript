@@ -22,15 +22,7 @@ type Images = {
 declare const _gallery: { num_pages: number; media_id: string; images: Images };
 
 (async () => {
-  const {
-    options,
-    setFab,
-    setManga,
-    setComicLoad,
-    showComic,
-    comicMap,
-    setComicMap,
-  } = await useInit('nhentai', {
+  const { store, options, _setState, showComic } = await useInit('nhentai', {
     /** 无限滚动 */
     auto_page_turn: true,
     /** 彻底屏蔽漫画 */
@@ -43,10 +35,10 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
 
   // 在漫画详情页
   if (Reflect.has(unsafeWindow, 'gallery')) {
-    setManga({
+    _setState('manga', {
       onExit(isEnd) {
         if (isEnd) scrollIntoView('#comment-container');
-        setManga('show', false);
+        _setState('manga', 'show', false);
       },
     });
 
@@ -54,13 +46,13 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
     // 在图片元素的 data-src 里也是随机的，加载图片时还要用 get_cdn_url 函数替换
     // 但目前实测 i1 到 i4 都能直接用，或许是反爬虫的新机制？
     const hostIndex = unsafeWindow._n_app.options.media_server as number;
-    setComicLoad(() =>
+    const getImgList = () =>
       _gallery.images.pages.map(
         (img, i) =>
           `https://i${hostIndex}.nhentai.net/galleries/${_gallery.media_id}/${i + 1}.${fileType[img.t]}`,
-      ),
-    );
-    setFab('initialShow', options.autoShow);
+      );
+    _setState('comicMap', '', { getImgList });
+    _setState('fab', 'initialShow', options.autoShow);
 
     const comicReadModeDom = (
       <a
@@ -78,27 +70,28 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
     const enableDetectAd =
       options.detect_ad && querySelector('#tags .tag.tag-144644');
     if (enableDetectAd) {
-      setComicMap('', 'adList', new ReactiveSet());
+      _setState('comicMap', '', 'adList', new ReactiveSet());
 
       // 先使用缩略图识别
       await getAdPageByContent(
         querySelectorAll<HTMLImageElement>('.thumb-container img').map(
           (img) => img.dataset.src,
         ),
-        comicMap[''].adList!,
+        store.comicMap[''].adList!,
       );
 
       // 加载了原图后再用原图识别
       createEffectOn(
-        () => comicMap[''].imgList,
+        () => store.comicMap[''].imgList,
         (imgList) =>
-          imgList?.length && getAdPageByContent(imgList, comicMap[''].adList!),
+          imgList?.length &&
+          getAdPageByContent(imgList, store.comicMap[''].adList!),
       );
 
       // 模糊广告页的缩略图
       useStyle(() => {
-        if (!comicMap['']?.adList?.size) return '';
-        const styleList = [...comicMap[''].adList].map(
+        if (!store.comicMap['']?.adList?.size) return '';
+        const styleList = [...store.comicMap[''].adList].map(
           (i) => `
             .thumb-container:nth-of-type(${i + 1}):not(:hover) {
               filter: blur(8px);

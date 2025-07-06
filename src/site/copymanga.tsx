@@ -379,7 +379,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
     [, , , comicName, id] = window.location.pathname.split('/');
 
   if (comicName && id) {
-    const { setComicLoad, setManga } = await useInit('copymanga');
+    const { _setState } = await useInit('copymanga');
 
     /** 漫画不存在时才会出现的提示 */
     const titleDom = querySelector('main .img+.title');
@@ -387,72 +387,74 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
       titleDom.textContent =
         'ComicRead 提示您：你訪問的內容暫不存在，請點選右下角按鈕嘗試加載漫畫';
 
-    setComicLoad(async () => {
-      if (titleDom) titleDom.textContent = '漫畫加載中，請坐和放寬';
+    _setState('comicMap', '', {
+      async getImgList() {
+        if (titleDom) titleDom.textContent = '漫畫加載中，請坐和放寬';
 
-      type ResData = {
-        message: string;
-        results: {
-          chapter: {
-            contents: Array<{ url: string }>;
-            words: number[];
-            name: string;
-            next: string | null;
-            prev: string | null;
+        type ResData = {
+          message: string;
+          results: {
+            chapter: {
+              contents: Array<{ url: string }>;
+              words: number[];
+              name: string;
+              next: string | null;
+              prev: string | null;
+            };
+            comic: { name: string };
           };
-          comic: { name: string };
         };
-      };
-      const res = await pcApi.get<ResData>(
-        `/api/v3/comic/${comicName}/chapter2/${id}?platform=3`,
-        { noCheckCode: true },
-      );
-
-      if (res.status !== 200) {
-        const message = `漫畫加載失敗：${res.response.message || res.status}`;
-        if (titleDom) titleDom.textContent = message;
-        throw new Error(message);
-      }
-      if (titleDom) {
-        titleDom.textContent = '漫畫加載成功🥳';
-        const {
-          chapter: { name: chapterName },
-          comic: { name },
-        } = res.response.results;
-        document.title = `${name} - ${chapterName} - 拷貝漫畫 拷贝漫画`;
-      }
-
-      if (titleDom ?? !querySelector('.comicContent-next')) {
-        const {
-          chapter: { next, prev },
-        } = res.response.results;
-
-        setManga({
-          onNext: next
-            ? () =>
-                window.location.assign(`/comic/${comicName}/chapter/${next}`)
-            : undefined,
-          onPrev: prev
-            ? () =>
-                window.location.assign(`/comic/${comicName}/chapter/${prev}`)
-            : undefined,
-        });
-      } else
-        setManga({
-          onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
-          onPrev: querySelectorClick(
-            '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
-          ),
-        });
-
-      const imgList: string[] = [];
-      const { words, contents } = res.response.results.chapter;
-      for (let i = 0; i < contents.length; i++)
-        imgList[words[i]] = contents[i].url.replace(
-          /(?<=.*(\/|\.))c800x/,
-          'c1500x',
+        const res = await pcApi.get<ResData>(
+          `/api/v3/comic/${comicName}/chapter2/${id}?platform=3`,
+          { noCheckCode: true },
         );
-      return imgList;
+
+        if (res.status !== 200) {
+          const message = `漫畫加載失敗：${res.response.message || res.status}`;
+          if (titleDom) titleDom.textContent = message;
+          throw new Error(message);
+        }
+        if (titleDom) {
+          titleDom.textContent = '漫畫加載成功🥳';
+          const {
+            chapter: { name: chapterName },
+            comic: { name },
+          } = res.response.results;
+          document.title = `${name} - ${chapterName} - 拷貝漫畫 拷贝漫画`;
+        }
+
+        if (titleDom ?? !querySelector('.comicContent-next')) {
+          const {
+            chapter: { next, prev },
+          } = res.response.results;
+
+          _setState('manga', {
+            onNext: next
+              ? () =>
+                  window.location.assign(`/comic/${comicName}/chapter/${next}`)
+              : undefined,
+            onPrev: prev
+              ? () =>
+                  window.location.assign(`/comic/${comicName}/chapter/${prev}`)
+              : undefined,
+          });
+        } else
+          _setState('manga', {
+            onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
+            onPrev: querySelectorClick(
+              '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
+            ),
+          });
+
+        const imgList: string[] = [];
+        const { words, contents } = res.response.results.chapter;
+        for (let i = 0; i < contents.length; i++)
+          imgList[words[i]] = contents[i].url.replace(
+            /(?<=.*(\/|\.))c800x/,
+            'c1500x',
+          );
+        return imgList;
+      },
     });
 
     const getCommentList = async () => {
@@ -465,7 +467,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
         ({ comment }) => comment as string,
       ) as string[];
     };
-    setManga({ commentList: await getCommentList() });
+    _setState('manga', 'commentList', await getCommentList());
 
     return;
   }

@@ -6,9 +6,9 @@ import type { GalleryContext } from './helper';
 
 /** 识别广告 */
 export const detectAd = async ({
-  setComicMap,
+  store: { comicMap },
+  _setState,
   options,
-  comicMap,
   imgList,
   pageList,
   fileNameList,
@@ -17,7 +17,7 @@ export const detectAd = async ({
     options.detect_ad && document.getElementById('ta_other:extraneous_ads');
   if (!enableDetectAd) return;
 
-  setComicMap('', { adList: new ReactiveSet() });
+  _setState('comicMap', '', 'adList', new ReactiveSet());
 
   /** 缩略图列表 */
   const thumbnailList: Array<string | HTMLImageElement> = [];

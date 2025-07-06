@@ -2,6 +2,32 @@ import { querySelector } from 'helper';
 import { createMemo, type Component } from 'solid-js';
 import { request, useInit } from 'main';
 
+const defaultOptions = {
+  /** 关联外站 */
+  cross_site_link: true,
+  /** 增加快捷键操作 */
+  add_hotkeys_actions: true,
+  /** 识别广告页 */
+  detect_ad: true,
+  /** 快捷收藏 */
+  quick_favorite: true,
+  /** 标签染色 */
+  colorize_tag: false,
+  /** 快捷评分 */
+  quick_rating: true,
+  /** 快捷查看标签定义 */
+  quick_tag_define: true,
+  /** 悬浮标签列表 */
+  float_tag_list: false,
+  /** 自动调整配置 */
+  auto_adjust_option: false,
+  /** 标签检查 */
+  tag_lint: false,
+  /** 展开标签列表 */
+  expand_tag_list: true,
+  autoShow: false,
+};
+
 export const listPageTypes = [
   'm', // 最小化
   'p', // 最小化 + 关注标签
@@ -34,17 +60,15 @@ export type GalleryContext = {
     /** 标签输入框 */
     newTagField: HTMLInputElement;
   };
-} & AsyncReturnType<typeof useInit>;
+} & AsyncReturnType<typeof useInit<typeof defaultOptions>>;
 
 type OtherContext = { type: Exclude<PageType, 'gallery'> } & AsyncReturnType<
-  typeof useInit
+  typeof useInit<typeof defaultOptions>
 >;
 
 export type EhContext = OtherContext | GalleryContext;
 
-export const createEhContext = async (
-  options: Record<string, any>,
-): Promise<EhContext | null> => {
+export const createEhContext = async (): Promise<EhContext | null> => {
   let type: PageType | undefined;
   if (Reflect.has(unsafeWindow, 'display_comment_field')) type = 'gallery';
   else if (location.pathname === '/mytags') type = 'mytags';
@@ -55,9 +79,9 @@ export const createEhContext = async (
     )?.value as Exclude<PageType, 'gallery'> | undefined;
 
   if (!type) return null;
-  const fnMap = await useInit('ehentai', options);
+  const mainContext = await useInit('ehentai', defaultOptions);
 
-  if (type !== 'gallery') return { type, ...fnMap };
+  if (type !== 'gallery') return { type, ...mainContext };
 
   let imgNum = 0;
   imgNum = Number(
@@ -76,7 +100,7 @@ export const createEhContext = async (
 
   return {
     type: 'gallery',
-    ...fnMap,
+    ...mainContext,
     galleryId: Number(location.pathname.split('/')[2]),
     galleryTitle: querySelector('#gn')?.textContent || undefined,
     japanTitle: querySelector('#gj')?.textContent || undefined,
@@ -88,7 +112,7 @@ export const createEhContext = async (
 
     LoadButton(props) {
       const tip = createMemo(() => {
-        const _imgList = fnMap.comicMap[props.id]?.imgList;
+        const _imgList = mainContext.store.comicMap[props.id]?.imgList;
         const progress = _imgList?.filter(Boolean).length;
 
         switch (_imgList?.length) {
@@ -105,7 +129,7 @@ export const createEhContext = async (
           href="javascript:;"
           onClick={async (e) => {
             await props.onClick?.(e);
-            fnMap.showComic(props.id);
+            mainContext.showComic(props.id);
           }}
           children={tip()}
         />

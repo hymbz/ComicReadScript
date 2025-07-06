@@ -47,15 +47,15 @@ export const getChapterInfo = async (comicId: Text, chapterId: Text) => {
 export const getViewpoint = async (comicId: Text, chapterId: Text) => {
   try {
     const res = await request(
-      `https://manhua.dmzj.com/tpi/api/viewpoint/getViewpoint?type=0&type_id=${comicId}&chapter_id=${chapterId}&more=1`,
+      `http://v3api.dmzj.com/viewPoint/0/${comicId}/${chapterId}.json`,
       { responseType: 'json', errorText: '获取章节评论失败' },
     );
 
     // 还有另一个 api
-    // http://v3api.dmzj.com/viewPoint/0/${comic_id}/${chapter_id}.json
+    // https://manhua.dmzj.com/tpi/api/viewpoint/getViewpoint?type=0&type_id=${comicId}&chapter_id=${chapterId}&more=1
 
-    return res.response.data.list.map(
-      ({ title, num }) => `${title} [+${num}]`,
+    return res.response.map(
+      ({ content, num }) => `${content} [+${num}]`,
     ) as string[];
   } catch {
     return [];

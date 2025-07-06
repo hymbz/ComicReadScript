@@ -21,17 +21,17 @@ const turnPage = (chapterId?: number) => {
 
   if (!comicId || !chapterId) return;
 
-  const { setManga, setComicLoad } = await useInit('dmzj');
+  const { setState } = await useInit('dmzj');
 
   try {
     const { next_chap_id, prev_chap_id, page_url } = await getChapterInfo(
       comicId,
       chapterId,
     );
-    setComicLoad(() => page_url);
-    setManga({
-      onNext: turnPage(next_chap_id),
-      onPrev: turnPage(prev_chap_id),
+    setState((state) => {
+      state.comicMap[''].getImgList = () => page_url;
+      state.manga.onNext = turnPage(next_chap_id);
+      state.manga.onPrev = turnPage(prev_chap_id);
     });
   } catch {
     toast.error('获取漫画数据失败', { duration: Number.POSITIVE_INFINITY });

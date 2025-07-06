@@ -2,21 +2,25 @@ import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 import MdImageSearch from '@material-design-icons/svg/round/image_search.svg';
 import MdImportContacts from '@material-design-icons/svg/round/import_contacts.svg';
 import MdCloudDownload from '@material-design-icons/svg/round/cloud_download.svg';
+import { createEffect } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
-import { createStore } from 'solid-js/store';
-import { type FabProps, Fab } from 'components/Fab';
-import { mountComponents, useDrag, useStyleMemo, type UseDrag } from 'helper';
+import { Fab } from 'components/Fab';
+import {
+  mountComponents,
+  useDrag,
+  useStyle,
+  useStyleMemo,
+  type UseDrag,
+} from 'helper';
 
-import { type useSiteOptions } from '../main/useSiteOptions';
+import { useSpeedDial, type MainContext } from '.';
 
-let dom: HTMLDivElement;
-
-export const useFab = async <T = Record<string, any>,>(
-  initProps: FabProps,
-  options: AsyncReturnType<typeof useSiteOptions<T>>['options'],
-  setOptions: AsyncReturnType<typeof useSiteOptions<any>>['setOptions'],
+export const useFab = async <T extends Record<string, any>>(
+  mainContext: MainContext<T>,
 ) => {
-  GM_addStyle(`
+  const { store, _setState, options, setOptions } = mainContext;
+
+  useStyle(`
     #fab {
       --text-bg: transparent;
 
@@ -28,22 +32,20 @@ export const useFab = async <T = Record<string, any>,>(
     }
   `);
 
-  const [props, setProps] = createStore<typeof initProps>(initProps);
-
   useStyleMemo('#fab', {
     '--left': () => `${options.fabPosition.left}px`,
     '--top': () => `${options.fabPosition.top}px`,
   });
 
   const FabIcon = () => {
-    switch (props.progress) {
+    switch (store.fab.progress) {
       case undefined:
         return MdImportContacts; // 没有内容的书
       case 1:
       case 2:
         return MdMenuBook; // 有内容的书
       default:
-        return props.progress > 1 ? MdCloudDownload : MdImageSearch;
+        return store.fab.progress > 1 ? MdCloudDownload : MdImageSearch;
     }
   };
 
@@ -66,12 +68,23 @@ export const useFab = async <T = Record<string, any>,>(
     observer.observe(ref);
   };
 
-  dom = mountComponents('fab', () => (
-    <Fab ref={handleMount} {...props}>
-      {props.children ?? <Dynamic component={FabIcon()} />}
-    </Fab>
-  ));
+  const dom = mountComponents('fab', () => {
+    createEffect(() => {
+      _setState('fab', {
+        placement:
+          -options.fabPosition.left < window.innerWidth / 2 ? 'left' : 'right',
+        speedDialPlacement:
+          -options.fabPosition.top < window.innerHeight / 2 ? 'top' : 'bottom',
+      });
+    });
+
+    return (
+      <Fab ref={handleMount} {...store.fab}>
+        {store.fab.children ?? <Dynamic component={FabIcon()} />}
+      </Fab>
+    );
+  });
   dom.style.setProperty('z-index', '2147483646', 'important');
 
-  return [setProps, props] as const;
+  useSpeedDial(mainContext);
 };
