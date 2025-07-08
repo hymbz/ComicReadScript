@@ -1,0 +1,6 @@
+**/*.md
+**/*.yaml
+**/*.yml
+**/*.json5
+**/public/*
+*.user.js

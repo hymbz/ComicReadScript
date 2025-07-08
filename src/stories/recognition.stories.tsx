@@ -1,11 +1,12 @@
 import { sleep, wait } from 'helper';
 import { isAdImg } from 'userscript/detectAd';
 
-import { store } from '../components/Manga/store';
-import { activePage, getImgEle } from '../components/Manga';
+import type { PartialProps } from './Manga.stories';
 
-import MangaMeta, { type PartialProps } from './Manga.stories';
+import { activePage, getImgEle } from '../components/Manga';
+import { store } from '../components/Manga/store';
 import { imgList, waitImgLoaded } from './helper';
+import MangaMeta from './Manga.stories';
 
 export default {
   ...MangaMeta,

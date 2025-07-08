@@ -1,9 +1,10 @@
 import { userEvent } from 'storybook/test';
+
 import { sleep, t, wait } from 'helper';
 
-import { refs } from '../components/Manga/store';
-import classes from '../components/Manga/index.module.css';
 import { imgList as comicImgList } from '../components/Manga';
+import classes from '../components/Manga/index.module.css';
+import { refs } from '../components/Manga/store';
 
 /** 点击侧边栏按钮 */
 export const clickToolbarButton = (name = t('other.setting')) => {

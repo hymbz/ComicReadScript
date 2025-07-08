@@ -1,13 +1,13 @@
+import { createRootMemo, querySelectorAll, useStyle } from 'helper';
 import { ReactiveSet } from 'main';
-import { getAdPageByFileName, getAdPageByContent } from 'userscript/detectAd';
-import { querySelectorAll, useStyle, createRootMemo } from 'helper';
+import { getAdPageByContent, getAdPageByFileName } from 'userscript/detectAd';
 
 import type { GalleryContext } from './helper';
 
 /** 识别广告 */
-export const detectAd = async ({
+export const detectAd = ({
   store: { comicMap },
-  _setState,
+  setState,
   options,
   imgList,
   pageList,
@@ -17,10 +17,10 @@ export const detectAd = async ({
     options.detect_ad && document.getElementById('ta_other:extraneous_ads');
   if (!enableDetectAd) return;
 
-  _setState('comicMap', '', 'adList', new ReactiveSet());
+  setState('comicMap', '', 'adList', new ReactiveSet());
 
   /** 缩略图列表 */
-  const thumbnailList: Array<string | HTMLImageElement> = [];
+  const thumbnailList: (string | HTMLImageElement)[] = [];
   for (const e of querySelectorAll<HTMLAnchorElement>('#gdt > a')) {
     const index = Number(/.+-(\d+)/.exec(e.href)?.[1]) - 1;
     if (Number.isNaN(index)) continue;

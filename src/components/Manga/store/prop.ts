@@ -1,9 +1,9 @@
 import type { ToolbarButtonList } from '../defaultButtonList';
 import type { SettingList } from '../defaultSettingList';
-
+import type { ComicImg } from './image';
 import type { Option } from './option';
 
-interface PropState {
+type PropState = {
   /** 评论列表 */
   commentList: string[] | undefined;
 
@@ -36,7 +36,7 @@ interface PropState {
     editButtonList: (list: ToolbarButtonList) => ToolbarButtonList;
     editSettingList: (list: SettingList) => SettingList;
   };
-}
+};
 
 export const propState: PropState = {
   commentList: undefined,

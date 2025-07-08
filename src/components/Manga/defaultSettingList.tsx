@@ -1,14 +1,13 @@
+import type { Component } from 'solid-js';
+
 import MdOutlineFormatTextdirectionLToR from '@material-design-icons/svg/round/format_textdirection_l_to_r.svg';
 import MdOutlineFormatTextdirectionRToL from '@material-design-icons/svg/round/format_textdirection_r_to_l.svg';
-import { Show, type Component } from 'solid-js';
-import { lang, setLang, t, clamp, throttle, needDarkMode } from 'helper';
+import { Show } from 'solid-js';
 
-import { SettingsItem } from './components/SettingsItem';
-import { SettingsItemSwitch } from './components/SettingsItemSwitch';
-import { SettingHotkeysBlock } from './components/SettingHotkeys';
-import { SettingTranslation } from './components/SettingTranslation';
-import { SettingsShowItem } from './components/SettingsShowItem';
-import { SettingsItemSelect } from './components/SettingsItemSelect';
+import { clamp, lang, needDarkMode, setLang, t, throttle } from 'helper';
+
+import type { Option } from './store/option';
+
 import {
   autoPageNum,
   bindOption,
@@ -21,16 +20,22 @@ import {
   zoom,
   zoomScrollModeImg,
 } from './actions';
-import { _setState, store } from './store';
-import classes from './index.module.css';
-import { SettingsItemNumber } from './components/SettingsItemNumber';
-import { areaArrayMap } from './components/TouchArea';
 import { handleImgRecognition } from './actions/imageRecognition';
-import type { Option } from './store/option';
+import { SettingHotkeysBlock } from './components/SettingHotkeys';
+import { SettingsItem } from './components/SettingsItem';
+import { SettingsItemNumber } from './components/SettingsItemNumber';
+import { SettingsItemSelect } from './components/SettingsItemSelect';
+import { SettingsItemSwitch } from './components/SettingsItemSwitch';
+import { SettingsShowItem } from './components/SettingsShowItem';
+import { SettingTranslation } from './components/SettingTranslation';
+import { areaArrayMap } from './components/TouchArea';
+import classes from './index.module.css';
+import { setState, store } from './store';
 
-export type SettingList = Array<
-  [string, Component] | [string, Component, boolean | (() => boolean)]
->;
+export type SettingList = (
+  | [string, Component]
+  | [string, Component, boolean | (() => boolean)]
+)[];
 
 /** 默认菜单项 */
 export const defaultSettingList: () => SettingList = () => [
@@ -265,7 +270,7 @@ export const defaultSettingList: () => SettingList = () => [
         <SettingsItemSwitch
           name={t('setting.option.show_clickable_area')}
           value={store.show.touchArea}
-          onChange={() => _setState('show', 'touchArea', !store.show.touchArea)}
+          onChange={() => setState('show', 'touchArea', !store.show.touchArea)}
         />
       </>
     ),
@@ -286,7 +291,7 @@ export const defaultSettingList: () => SettingList = () => [
           step={1}
           onChange={(val) => {
             if (!Number.isNaN(val))
-              _setState('option', 'autoScroll', 'interval', val * 1000);
+              setState('option', 'autoScroll', 'interval', val * 1000);
           }}
           value={store.option.autoScroll.interval / 1000}
         />
@@ -297,7 +302,7 @@ export const defaultSettingList: () => SettingList = () => [
           step={20}
           onChange={(val) => {
             if (!Number.isNaN(val))
-              _setState('option', 'autoScroll', 'distance', val);
+              setState('option', 'autoScroll', 'distance', val);
           }}
           value={store.option.autoScroll.distance}
         />

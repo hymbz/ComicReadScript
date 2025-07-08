@@ -1,20 +1,21 @@
 /* eslint-disable i18next/no-literal-string */
 import { For } from 'solid-js';
 import { render } from 'solid-js/web';
-import { toast, universal } from 'main';
-import { getComicId, getViewpoint, useComicDetail } from 'userscript/dmzjApi';
+
 import {
   log,
   querySelector,
   querySelectorAll,
-  waitDom,
-  wait,
   scrollIntoView,
+  wait,
+  waitDom,
 } from 'helper';
+import { toast, universal } from 'main';
+import { getComicId, getViewpoint, useComicDetail } from 'userscript/dmzjApi';
 
 (async () => {
   const getId = async () => {
-    const [, comicPy, chapterId] = window.location.pathname.split(/\/|\./);
+    const [, comicPy, chapterId] = location.pathname.split(/\/|\./);
     if (!comicPy) {
       toast.error('漫画数据获取失败', {
         duration: Number.POSITIVE_INFINITY,
@@ -115,8 +116,8 @@ import {
   };
 
   const isMangaPage = () => {
-    if (/^\/[^/]*?\/?$/.test(window.location.pathname)) return handleListPage();
-    return /^\/.*?\/\d+\.shtml$/.test(window.location.pathname);
+    if (/^\/[^/]*\/?$/.test(location.pathname)) return handleListPage();
+    return /^\/.*?\/\d+\.shtml$/.test(location.pathname);
   };
 
   await universal({

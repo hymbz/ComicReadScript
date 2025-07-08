@@ -1,4 +1,4 @@
-import type { JSX, Component } from 'solid-js';
+import type { Component, JSX } from 'solid-js';
 
 declare global {
   declare const isDevMode: boolean;
@@ -47,7 +47,6 @@ declare global {
 
 declare module 'solid-js' {
   namespace JSX {
-    // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
     interface ExplicitAttributes {
       // attr:___
       [k: string]: string;

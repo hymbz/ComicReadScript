@@ -1,7 +1,10 @@
-import { type Accessor, For, createSignal, Show } from 'solid-js';
+import type { Accessor } from 'solid-js';
+
+import { createSignal, For, Show } from 'solid-js';
 import { render } from 'solid-js/web';
+
+import { domParse, querySelector, querySelectorAll, t, useStyle } from 'helper';
 import { request, toast } from 'main';
-import { t, domParse, querySelector, querySelectorAll, useStyle } from 'helper';
 
 import type { EhContext } from './helper';
 
@@ -120,7 +123,7 @@ const addQuickFavorite = (
         const updateCode = /\nif\(window.opener.document.+\n/
           .exec(res.responseText)?.[0]
           ?.replaceAll('window.opener.document', 'window.document');
-        if (updateCode) eval(updateCode); // eslint-disable-line no-eval
+        if (updateCode) eval(updateCode); // oxlint-disable-line no-eval
 
         await updateFavorite();
       };

@@ -1,29 +1,29 @@
+import type { Accessor } from 'solid-js';
+
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
-import { type Accessor } from 'solid-js';
-import { toast } from 'components/Toast';
+
 import { hotkeysMap, imgList, setDefaultHotkeys } from 'components/Manga';
+import { toast } from 'components/Toast';
 import {
+  createEffectOn,
+  createRootMemo,
+  difference,
   getKeyboardCode,
   linstenKeydown,
+  log,
   setInitLang,
   t,
-  log,
-  createRootMemo,
-  createEffectOn,
-  difference,
   useStore,
 } from 'helper';
 
-import { handleVersionUpdate } from './version';
-import { useManga } from './useManga';
-import { useFab } from './useFab';
-
 import type { LoadImgFn, MainContext, MainStore, SiteOptions } from '.';
 
+import { useFab } from './useFab';
+import { useManga } from './useManga';
+import { handleVersionUpdate } from './version';
+
 /** 对基础的初始化操作的封装 */
-export const useInit = async <
-  T extends Record<Exclude<string, keyof SiteOptions>, any>,
->(
+export const useInit = async <T extends Record<string, any>>(
   name: string,
   initSiteOptions = {} as T,
 ) => {
@@ -49,13 +49,13 @@ export const useInit = async <
     }
   } else await GM.setValue(name, {});
 
-  const { store, setState, _setState } = useStore<MainStore<T>>({
+  const { store, setState } = useStore<MainStore<T>>({
     fab: { tip: t('other.read_mode'), show: false },
     manga: { imgList: [] },
     hotkeys: await GM.getValue<Record<string, string[]>>('Hotkeys', {}),
     name,
     options: {
-      ...JSON.parse(JSON.stringify(defaultOptions)),
+      ...structuredClone(defaultOptions),
       ...saveOptions,
     },
     comicMap: { '': { getImgList: () => [] } },
@@ -69,7 +69,7 @@ export const useInit = async <
   setDefaultHotkeys((_hotkeys) => ({ ..._hotkeys, enter_read_mode: ['v'] }));
 
   const { options } = store;
-  const setOptions = async <K = T,>(newOptions: Partial<K & SiteOptions>) => {
+  const setOptions: MainContext<T>['setOptions'] = function (newOptions) {
     const { lockOption } = options;
     if (newOptions)
       setState((state) => Object.assign(state.options, newOptions));
@@ -85,13 +85,13 @@ export const useInit = async <
     if (!Reflect.has(store.comicMap, id)) throw new Error('comic not found');
 
     try {
-      _setState('comicMap', id, 'imgList', []);
+      setState('comicMap', id, 'imgList', []);
       const newImgList = await store.comicMap[id].getImgList(main);
       if (newImgList.length === 0)
         throw new Error(t('alert.fetch_comic_img_failed'));
-      _setState('comicMap', id, 'imgList', newImgList);
+      setState('comicMap', id, 'imgList', newImgList);
     } catch (error) {
-      _setState('comicMap', id, 'imgList', undefined);
+      setState('comicMap', id, 'imgList', undefined);
       log.error(error);
       throw error;
     }
@@ -99,7 +99,7 @@ export const useInit = async <
 
   const showComic = async (id: string | number = store.nowComic) => {
     if (!Reflect.has(store.comicMap, id)) throw new Error('comic not found');
-    if (id !== store.nowComic) _setState('nowComic', id);
+    if (id !== store.nowComic) setState('nowComic', id);
 
     switch (store.comicMap[id].imgList?.length) {
       case 0:
@@ -108,13 +108,13 @@ export const useInit = async <
       case undefined: {
         try {
           await loadComic(id);
-          _setState('flag', 'needAutoShow', false);
+          setState('flag', 'needAutoShow', false);
         } catch (error) {
           return toast.error((error as Error).message);
         }
       }
     }
-    _setState('manga', 'show', true);
+    setState('manga', 'show', true);
   };
 
   let inited = false;
@@ -122,7 +122,7 @@ export const useInit = async <
     if (inited) return;
     inited = true;
 
-    _setState('fab', {
+    setState('fab', {
       onClick: showComic,
       show: !options.hiddenFAB && undefined,
     });
@@ -159,7 +159,7 @@ export const useInit = async <
   ) => {
     if (store.comicMap[id].imgList?.length) return store.comicMap[id].imgList;
 
-    _setState(
+    setState(
       'comicMap',
       id,
       'imgList',
@@ -167,11 +167,13 @@ export const useInit = async <
         length: typeof length === 'number' ? length : length(),
       }).fill(''),
     );
-    // eslint-disable-next-line no-async-promise-executor
+    // oxlint-disable-next-line no-async-promise-executor
     await new Promise(async (resolve) => {
       try {
         await loadImgFn((i, url) =>
-          resolve(_setState('comicMap', id, 'imgList', i, url)),
+          resolve(
+            setState('comicMap', id, 'imgList', (list) => list!.with(i, url)),
+          ),
         );
       } catch (error) {
         toast.error((error as Error).message);
@@ -183,7 +185,6 @@ export const useInit = async <
   const main: MainContext<T> = {
     store,
     setState,
-    _setState,
     options,
     setOptions,
     loadComic,
@@ -192,8 +193,8 @@ export const useInit = async <
     init,
   };
 
-  await useFab(main);
-  await useManga(main);
+  useFab(main);
+  useManga(main);
 
   const nowImgList = createRootMemo(() => {
     const comic = store.comicMap[store.nowComic];
@@ -204,7 +205,7 @@ export const useInit = async <
 
   createEffectOn(
     nowImgList,
-    (list) => list && _setState('manga', 'imgList', list),
+    (list) => list && setState('manga', 'imgList', list),
   );
 
   /** 当前已取得 url 的图片数量 */
@@ -224,29 +225,29 @@ export const useInit = async <
     [doneImgNum, loadedImgNum, () => nowImgList()?.length],
     ([doneNum, loadNum, totalNum]) => {
       if (!totalNum || doneNum === undefined)
-        return _setState('fab', 'progress', undefined);
+        return setState('fab', 'progress', undefined);
 
       if (totalNum === 0)
-        return _setState('fab', {
+        return setState('fab', {
           progress: 0,
           tip: `${t('other.loading_img')} - ${doneNum}/${totalNum}`,
         });
 
       // 加载图片 url 阶段的进度
       if (doneNum < totalNum)
-        return _setState('fab', {
+        return setState('fab', {
           progress: doneNum / totalNum,
           tip: `${t('other.loading_img')} - ${doneNum}/${totalNum}`,
         });
 
       // 图片加载阶段的进度
       if (loadNum < totalNum)
-        return _setState('fab', {
+        return setState('fab', {
           progress: 1 + loadNum / totalNum,
           tip: `${t('other.img_loading')} - ${loadNum}/${totalNum}`,
         });
 
-      return _setState('fab', {
+      return setState('fab', {
         progress: 1 + loadNum / totalNum,
         tip: t('other.read_mode'),
         show: !options.hiddenFAB && undefined,
@@ -262,19 +263,19 @@ export const useInit = async <
       options.hiddenFAB ? t('other.fab_show') : t('other.fab_hidden'),
       async () => {
         await setOptions({ hiddenFAB: !options.hiddenFAB });
-        _setState('fab', 'show', !options.hiddenFAB && undefined);
+        setState('fab', 'show', !options.hiddenFAB && undefined);
         await updateHideFabMenu();
       },
     );
   };
 
   await GM.registerMenuCommand(t('site.show_settings_menu'), () =>
-    _setState('fab', {
+    setState('fab', {
       show: true,
       focus: true,
       tip: t('other.setting'),
       children: <MdSettings />,
-      onBackdropClick: () => _setState('fab', { show: false, focus: false }),
+      onBackdropClick: () => setState('fab', { show: false, focus: false }),
     }),
   );
 

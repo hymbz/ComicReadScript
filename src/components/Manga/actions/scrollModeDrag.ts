@@ -1,11 +1,10 @@
 import type { UseDrag } from 'helper';
 
 import { refs, store } from '../store';
-
-import { scrollTop } from './memo';
 import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
-import { scrollTo } from './scroll';
+import { scrollTop } from './memo';
 import { saveReadProgress } from './readProgress';
+import { scrollTo } from './scroll';
 
 /** 摩擦系数 */
 const FRICTION_COEFF = 0.96;

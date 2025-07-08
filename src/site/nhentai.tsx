@@ -1,8 +1,5 @@
-import { ReactiveSet, request, toast, useInit } from 'main';
-import { getAdPageByContent } from 'userscript/detectAd';
 import {
   createEffectOn,
-  useStyle,
   domParse,
   log,
   querySelector,
@@ -10,19 +7,22 @@ import {
   scrollIntoView,
   singleThreaded,
   t,
+  useStyle,
 } from 'helper';
+import { ReactiveSet, request, toast, useInit } from 'main';
+import { getAdPageByContent } from 'userscript/detectAd';
 
 /** 用于转换获得图片文件扩展名 */
 const fileType = { j: 'jpg', p: 'png', g: 'gif', w: 'webp', b: 'bmp' } as const;
 
 type Images = {
   thumbnail: { h: number; w: number; t: keyof typeof fileType };
-  pages: Array<{ t: keyof typeof fileType }>;
+  pages: { t: keyof typeof fileType }[];
 };
 declare const _gallery: { num_pages: number; media_id: string; images: Images };
 
 (async () => {
-  const { store, options, _setState, showComic } = await useInit('nhentai', {
+  const { store, options, setState, showComic } = await useInit('nhentai', {
     /** 无限滚动 */
     auto_page_turn: true,
     /** 彻底屏蔽漫画 */
@@ -35,10 +35,10 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
 
   // 在漫画详情页
   if (Reflect.has(unsafeWindow, 'gallery')) {
-    _setState('manga', {
+    setState('manga', {
       onExit(isEnd) {
         if (isEnd) scrollIntoView('#comment-container');
-        _setState('manga', 'show', false);
+        setState('manga', 'show', false);
       },
     });
 
@@ -51,8 +51,8 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
         (img, i) =>
           `https://i${hostIndex}.nhentai.net/galleries/${_gallery.media_id}/${i + 1}.${fileType[img.t]}`,
       );
-    _setState('comicMap', '', { getImgList });
-    _setState('fab', 'initialShow', options.autoShow);
+    setState('comicMap', '', { getImgList });
+    setState('fab', 'initialShow', options.autoShow);
 
     const comicReadModeDom = (
       <a
@@ -70,7 +70,7 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
     const enableDetectAd =
       options.detect_ad && querySelector('#tags .tag.tag-144644');
     if (enableDetectAd) {
-      _setState('comicMap', '', 'adList', new ReactiveSet());
+      setState('comicMap', '', 'adList', new ReactiveSet());
 
       // 先使用缩略图识别
       await getAdPageByContent(
@@ -118,13 +118,13 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
     // blacklist === null 时是未登录
 
     if (options.block_totally && blacklist?.length)
-      GM_addStyle('.blacklisted.gallery { display: none; }');
+      useStyle('.blacklisted.gallery { display: none; }');
 
     if (options.auto_page_turn) {
       let nextUrl = querySelector<HTMLAnchorElement>('a.next')?.href;
       if (!nextUrl) return;
 
-      GM_addStyle(`
+      useStyle(`
         hr { bottom: 1px; box-sizing: border-box; margin: -1em auto 2em; }
         hr:last-child { position: relative; animation: load .8s linear alternate infinite; }
         hr:not(:last-child) { display: none; }

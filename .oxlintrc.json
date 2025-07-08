@@ -1,0 +1,157 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "oxc",
+    "typescript",
+    "promise",
+    "unicorn",
+    "import",
+    "jsdoc",
+    "vitest"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "error",
+    "perf": "error",
+    "style": "warn"
+  },
+  "env": {
+    "builtin": true
+  },
+  // 有 bug，只能使用 .eslintignore 来禁用，暂时注释
+  // "ignorePatterns": [
+  //   "**/dist/**",
+  //   "**/public/**",
+  //   "**/dev-dist/**",
+  //   "*.user.js"
+  // ],
+  "rules": {
+    // 目前不支持跳过 return new Promise 的，只能暂时关掉
+    "require-await": "off",
+
+    // 和 eslint 冲突的
+    "no-duplicate-imports": "off",
+
+    // 新增的
+    "curly": "off",
+    "id-length": "off",
+    "promise/avoid-new": "off",
+    "init-declarations": "off",
+    "func-names": ["error", "as-needed"],
+    "yoda": ["error", { "always": true }],
+    "new-cap": ["error", { "capIsNew": false }],
+
+    "max-lines": "off",
+    "max-depth": "off",
+    "max-params": "off",
+    "max-classes-per-file": "off",
+    "max-lines-per-function": "off",
+
+    "no-ternary": "off",
+    "no-debugger": "off",
+    "no-continue": "off",
+    "no-script-url": "off",
+    "no-magic-numbers": "off",
+    "no-await-in-loop": "off",
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-unused-vars": ["warn", { "args": "all", "argsIgnorePattern": "^_" }],
+
+    "sort-keys": "off",
+    "sort-vars": "off",
+    "sort-imports": "off",
+
+    "import/extensions": "off",
+    "import/consistent-type-specifier-style": "off",
+    "import/exports-last": "off",
+    "import/group-exports": "off",
+    "import/prefer-default-export": "off",
+    "import/max-dependencies": "off",
+    "import/no-namespace": "off",
+    "import/no-unassigned-import": "off",
+    "import/no-anonymous-default-export": "off",
+    "import/no-named-as-default": "off",
+
+    "jsdoc/require-param": "off",
+    "jsdoc/require-returns": "off",
+    "jsdoc/require-param-type": "off",
+    "jsdoc/require-returns-type": "off",
+    "jsdoc/check-tag-names": "off",
+
+    "unicorn/consistent-function-scoping": "off",
+    "unicorn/filename-case": "off",
+    "unicorn/switch-case-braces": "off",
+    "unicorn/prefer-query-selector": "off",
+    "unicorn/prefer-global-this": "off",
+    "unicorn/prefer-add-event-listener": "off",
+    "unicorn/no-null": "off",
+    "unicorn/no-useless-undefined": "off",
+    "unicorn/no-anonymous-default-export": "off",
+    "unicorn/no-unreadable-array-destructuring": "off",
+    "unicorn/no-negation-in-equality-check": "off",
+
+    "typescript/consistent-indexed-object-style": "error",
+    "typescript/prefer-as-const": "error",
+    "typescript/consistent-type-definitions": ["warn", "type"],
+    "typescript/consistent-type-imports": [
+      "error",
+      { "disallowTypeAnnotations": false }
+    ],
+
+    "promise/prefer-await-to-callbacks": "off",
+    "promise/prefer-await-to-then": "off",
+
+    "jest/require-hook": "off",
+    "jest/prefer-lowercase-title": "off",
+    "jest/require-top-level-describe": "off",
+    "jest/no-hooks": "off",
+    "jest/no-standalone-expect": "off",
+    "jest/no-conditional-in-test": "off",
+    "jest/consistent-test-it": [
+      "error",
+      { "fn": "it", "withinDescribe": "it" }
+    ],
+
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": ["helper/**/*", "!helper/languages"],
+            "message": "只能直接通过 helper 导入"
+          },
+          {
+            "group": ["**/request", "!request"],
+            "message": "必须直接导入"
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/site/**/*"],
+      "rules": {
+        "no-restricted-imports": [
+          "warn",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*/**/*",
+                  "!solid-js/**/*",
+                  "!components/**/*",
+                  "!userscript/**/*",
+                  "!@material*/**/*",
+                  "../**/*",
+                  "!.*/**/*"
+                ],
+                "message": "只能通过 main 导入"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

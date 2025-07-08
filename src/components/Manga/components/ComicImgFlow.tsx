@@ -1,46 +1,44 @@
-import { type Component, createMemo, onMount, Index } from 'solid-js';
-import {
-  boolDataVal,
-  createEffectOn,
-  type UseDrag,
-  useDrag,
-  range,
-} from 'helper';
+import type { Component } from 'solid-js';
 
-import { useStyleMemo, useStyle } from '../hooks/useStyle';
-import { refs, setState, store } from '../store';
-import { useHiddenMouse } from '../hooks/useHiddenMouse';
+import { createMemo, Index, onMount } from 'solid-js';
+
+import type { UseDrag } from 'helper';
+
+import { boolDataVal, createEffectOn, range, useDrag } from 'helper';
+
 import {
-  bindRef,
-  handleClick,
-  resetPage,
-  handlePinchZoom,
-  handleZoomDrag,
-  handleMangaFlowDrag,
-  handleScrollModeDrag,
-  touches,
-  bound,
-  imgTopList,
-  bindScrollTop,
-  scrollTo,
-  scrollTop,
-  isOnePageMode,
-  isScrollMode,
-  abreastColumnWidth,
   abreastArea,
-  imgAreaStyle,
+  abreastColumnWidth,
   activeImgIndex,
-  imgList,
-  getImg,
-  isEnableBg,
-  isDoubleMode,
+  bindRef,
+  bindScrollTop,
+  bound,
   doubleScrollLineHeight,
   focus,
+  getImg,
+  handleClick,
+  handleMangaFlowDrag,
+  handlePinchZoom,
+  handleScrollModeDrag,
+  handleZoomDrag,
+  imgAreaStyle,
+  imgList,
+  imgTopList,
+  isDoubleMode,
+  isEnableBg,
+  isOnePageMode,
+  isScrollMode,
+  resetPage,
+  scrollTo,
+  scrollTop,
+  touches,
 } from '../actions';
+import { useHiddenMouse } from '../hooks/useHiddenMouse';
+import { useStyle, useStyleMemo } from '../hooks/useStyle';
 import classes from '../index.module.css';
-
-import { EmptyTip } from './EmptyTip';
+import { refs, setState, store } from '../store';
 import { ComicImg } from './ComicImg';
+import { EmptyTip } from './EmptyTip';
 
 export const ComicImgFlow: Component = () => {
   const { hiddenMouse, onMouseMove } = useHiddenMouse();
@@ -156,7 +154,7 @@ export const ComicImgFlow: Component = () => {
     top: () =>
       `${store.page.offset.y.pct * store.rootSize.height + store.page.offset.y.px}px`,
 
-    'touch-action'() {
+    'touch-action': function () {
       if (store.gridMode) return 'auto';
       if (store.option.zoom.ratio !== 100) {
         if (!store.option.scrollMode.enabled) return 'none';
@@ -165,7 +163,7 @@ export const ComicImgFlow: Component = () => {
       }
     },
     'grid-template-areas': gridAreas,
-    'grid-template-columns'() {
+    'grid-template-columns': function () {
       if (store.imgList.length === 0 || store.gridMode) return undefined;
       if (store.option.scrollMode.enabled) {
         if (store.option.scrollMode.abreastMode)
@@ -176,7 +174,7 @@ export const ComicImgFlow: Component = () => {
       if (store.page.vertical) return '50% 50%';
       return `repeat(${gridAreas()?.split(' ').length ?? 0}, 50%)`;
     },
-    'grid-template-rows'() {
+    'grid-template-rows': function () {
       if (store.gridMode) return undefined;
       if (isDoubleMode())
         return doubleScrollLineHeight()

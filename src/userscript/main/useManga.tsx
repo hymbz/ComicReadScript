@@ -1,28 +1,29 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
+
 import { IconButton } from 'components/IconButton';
-import { Manga, refs, store as mangaStore } from 'components/Manga';
+import { Manga, store as mangaStore, refs } from 'components/Manga';
 import {
-  t,
   createEffectOn,
   createRootMemo,
   mountComponents,
   querySelector,
-  WakeLock,
+  t,
   useStyle,
+  WakeLock,
 } from 'helper';
 
-import { DownloadButton } from '../../components/DownloadButton';
-
 import type { MainContext } from '.';
+
+import { DownloadButton } from '../../components/DownloadButton';
 
 let dom: HTMLDivElement;
 
 /**
  * 显示漫画阅读窗口
  */
-export const useManga = async <T extends Record<string, any>>({
+export const useManga = <T extends Record<string, any>>({
   store,
-  _setState,
+  setState,
   options,
   setOptions,
 }: MainContext<T>) => {
@@ -60,7 +61,7 @@ export const useManga = async <T extends Record<string, any>>({
     }
   `);
 
-  _setState('manga', {
+  setState('manga', {
     show: false,
     option: options.option,
     defaultOption: options.defaultOption,
@@ -69,7 +70,7 @@ export const useManga = async <T extends Record<string, any>>({
     hotkeys: store.hotkeys,
     onHotkeysChange(newValue: Record<string, string[]>) {
       GM.setValue('Hotkeys', newValue);
-      _setState('hotkeys', newValue);
+      setState('hotkeys', newValue);
     },
   });
 
@@ -114,8 +115,8 @@ export const useManga = async <T extends Record<string, any>>({
     </IconButton>
   );
 
-  _setState('manga', {
-    onExit: () => _setState('manga', 'show', false),
+  setState('manga', {
+    onExit: () => setState('manga', 'show', false),
     editButtonList(list) {
       // 在设置按钮上方放置下载按钮
       list.splice(-1, 0, DownloadButton);

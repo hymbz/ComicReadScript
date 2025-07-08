@@ -14,7 +14,7 @@ export const initStore = {
   ...otherState,
 };
 
-export const { store, setState, _state, _setState } = useStore({
+export const { store, setState } = useStore({
   ...initStore,
 });
 
@@ -42,6 +42,5 @@ if (isDevMode)
   Object.assign((window as any).unsafeWindow ?? window, {
     store,
     setState,
-    _setState,
     refs,
   });

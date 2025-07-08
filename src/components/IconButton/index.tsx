@@ -1,9 +1,12 @@
-import { type Component, type JSX, mergeProps } from 'solid-js';
+import type { Component, JSX } from 'solid-js';
+
+import { mergeProps } from 'solid-js';
+
 import { useStyle } from 'helper';
 
 import classes, { css as style } from './index.module.css';
 
-interface IconButtonProps {
+type IconButtonProps = {
   /** 文字提示 */
   tip?: string;
   /** 是否显示文字提示 */
@@ -23,7 +26,7 @@ interface IconButtonProps {
   children?: JSX.Element;
   onClick?: EventHandler['on:click'];
   style?: JSX.CSSProperties;
-}
+};
 
 /** 图标按钮 */
 export const IconButton: Component<IconButtonProps> = (_props) => {

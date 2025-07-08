@@ -1,28 +1,24 @@
+import type { ChapterInfo } from 'userscript/dmzjApi';
+
 import dmzjDecrypt from 'dmzjDecrypt';
 import {
-  type ChapterInfo,
-  getChapterInfo,
-  getViewpoint,
-} from 'userscript/dmzjApi';
-import { request, toast, useInit, universal } from 'main';
-import {
+  log,
   querySelector,
   querySelectorAll,
   querySelectorClick,
-  log,
+  useStyle,
 } from 'helper';
+import { request, toast, universal, useInit } from 'main';
+import { getChapterInfo, getViewpoint } from 'userscript/dmzjApi';
 
 (async () => {
   // 分别处理目录页和漫画页
-  switch (window.location.pathname.split('/')[1]) {
+  switch (location.pathname.split('/')[1]) {
     case 'info': {
       // 跳过正常漫画
       if (Reflect.has(unsafeWindow, 'obj_id')) return;
 
-      const comicId = Number.parseInt(
-        window.location.pathname.split('/')[2],
-        10,
-      );
+      const comicId = Number.parseInt(location.pathname.split('/')[2], 10);
       if (Number.isNaN(comicId)) {
         document.body.innerHTML = '';
         document.body.insertAdjacentHTML(
@@ -43,14 +39,12 @@ import {
             { errorText: '搜索漫画时出错' },
           );
 
-          const comicList = JSON.parse(
-            res.responseText.slice(20, -1),
-          ) as Array<{
+          const comicList = JSON.parse(res.responseText.slice(20, -1)) as {
             id: number;
             comic_name: string;
             comic_author: string;
             comic_url: string;
-          }>;
+          }[];
 
           querySelector('#list')!.innerHTML = comicList
             .map(
@@ -96,21 +90,11 @@ import {
       }
 
       document.body.childNodes[0].remove();
-      GM_addStyle(
+      useStyle(
         `
-          h1 {
-            margin: 0 -20vw;
-          }
-
-          h1,
-          h2 {
-            text-align: center;
-          }
-
-          body {
-            padding: 0 20vw;
-          }
-
+          h1 { margin: 0 -20vw; }
+          h1, h2 { text-align: center; }
+          body { padding: 0 20vw; }
           a {
             display: inline-block;
 
@@ -128,7 +112,7 @@ import {
     case 'view': {
       // 如果不是隐藏漫画，直接进入阅读模式
       if (unsafeWindow.comic_id) {
-        GM_addStyle('.subHeader{display:none !important}');
+        useStyle('.subHeader{display:none !important}');
 
         await universal({
           name: 'dmzj',
@@ -153,7 +137,7 @@ import {
       let comicId: string;
       let chapterId: string;
       try {
-        [, comicId, chapterId] = /(\d+)\/(\d+)/.exec(window.location.pathname)!;
+        [, comicId, chapterId] = /(\d+)\/(\d+)/.exec(location.pathname)!;
         data = await getChapterInfo(comicId, chapterId);
       } catch (error) {
         toast.error('获取漫画数据失败', { duration: Number.POSITIVE_INFINITY });
@@ -174,18 +158,18 @@ import {
 
       document.title = `${chapter_name} ${folder.split('/').at(1)}`;
 
-      const { setState, _setState } = await useInit('dmzj');
+      const { setState } = await useInit('dmzj');
 
       setState((state) => {
         state.manga.onExit = undefined;
         state.manga.onNext = next_chap_id
           ? () => {
-              window.location.href = `https://m.dmzj.com/view/${comic_id}/${next_chap_id}.html`;
+              location.href = `https://m.dmzj.com/view/${comic_id}/${next_chap_id}.html`;
             }
           : undefined;
         state.manga.onPrev = prev_chap_id
           ? () => {
-              window.location.href = `https://m.dmzj.com/view/${comic_id}/${prev_chap_id}.html`;
+              location.href = `https://m.dmzj.com/view/${comic_id}/${prev_chap_id}.html`;
             }
           : undefined;
         state.manga.editButtonList = (e) => e;
@@ -197,7 +181,7 @@ import {
         };
       });
 
-      _setState('manga', 'commentList', await getViewpoint(comicId, chapterId));
+      setState('manga', 'commentList', await getViewpoint(comicId, chapterId));
       break;
     }
   }

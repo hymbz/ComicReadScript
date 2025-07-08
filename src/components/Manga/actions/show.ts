@@ -1,7 +1,8 @@
-import { t, inRange, throttle, createEffectOn } from 'helper';
+import { createEffectOn, inRange, t, throttle } from 'helper';
 
-import { type State, _setState, setState, store } from '../store';
+import type { State } from '../store';
 
+import { setState, store } from '../store';
 import { getImg, resetUI } from './helper';
 import { activePage } from './memo';
 import { updateShowRange } from './renderPage';
@@ -61,7 +62,7 @@ export const getPageTip = (pageIndex: number): string => {
 
 createEffectOn(
   () => store.activePageIndex,
-  () => store.show.endPage && _setState('show', 'endPage', undefined),
+  () => store.show.endPage && setState('show', 'endPage', undefined),
   { defer: true },
 );
 
@@ -76,7 +77,7 @@ createEffectOn(
   () =>
     store.show.scrollbar &&
     !store.show.toolbar &&
-    _setState('show', 'scrollbar', false),
+    setState('show', 'scrollbar', false),
   { defer: true },
 );
 

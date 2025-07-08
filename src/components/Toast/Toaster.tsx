@@ -1,15 +1,12 @@
-import {
-  type Component,
-  For,
-  createSignal,
-  onCleanup,
-  onMount,
-} from 'solid-js';
+import type { Component } from 'solid-js';
+
+import { createSignal, For, onCleanup, onMount } from 'solid-js';
+
 import { mountComponents, useStyle } from 'helper';
 
-import { _setState, store } from './store';
-import { ToastItem } from './ToastItem';
 import classes, { css as style } from './index.module.css';
+import { setState, store } from './store';
+import { ToastItem } from './ToastItem';
 
 export const Toaster: Component = () => {
   const [visible, setVisible] = createSignal(
@@ -31,7 +28,7 @@ export const Toaster: Component = () => {
 
   return (
     <div
-      ref={(ref) => _setState('ref', ref)}
+      ref={(ref) => setState('ref', ref)}
       class={classes.root}
       data-paused={visible() ? undefined : ''}
     >

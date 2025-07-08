@@ -1,4 +1,5 @@
 import type { PixelList } from '../helper';
+import type { ImgContext, ImgContextMargin, TBLR } from './workHelper';
 
 import {
   getAreaColor,
@@ -6,12 +7,7 @@ import {
   getEdgeArea,
   getSquareAreaColor,
 } from './colorArea';
-import {
-  boil,
-  type ImgContext,
-  type ImgContextMargin,
-  type TBLR,
-} from './workHelper';
+import { boil } from './workHelper';
 
 /** 根据边缘颜色区域获取背景颜色 */
 const byEdgeArea = ({ data, grayList, width, height }: ImgContext) => {

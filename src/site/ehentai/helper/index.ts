@@ -1,6 +1,6 @@
 import { querySelectorAll } from 'helper';
 
-type EscHandler = Array<{ (): true | unknown; order: number }>;
+type EscHandler = { (): true | unknown; order: number }[];
 export const escHandler: EscHandler = [];
 
 export const setEscHandler = (order: number, handler: () => true | unknown) => {
@@ -26,7 +26,7 @@ export const getTaglist = () => {
 const handleTagName = (tag: string) => {
   const [namespace, name] = tag.trim().split(':');
   if (!name) return ['', ''];
-  return [namespace, name.replaceAll(/[^a-zA-Z-_ ]/g, '')];
+  return [namespace, name.replaceAll(/[^a-z-_ ]/gi, '')];
 };
 
 /** 命名空间缩写 */

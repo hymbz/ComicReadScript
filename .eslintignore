@@ -1,0 +1,5 @@
+**/dist/**
+**/public/**
+**/dev-dist/**
+**/assets/**
+*.user.js

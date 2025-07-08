@@ -1,14 +1,17 @@
+import type { Component } from 'solid-js';
+
+import { createSignal, For, Show } from 'solid-js';
+import { render } from 'solid-js/web';
+
 import {
+  createEqualsSignal,
   createRootMemo,
   hijackFn,
   querySelector,
-  useStyle,
   singleThreaded,
   t,
-  createEqualsSignal,
+  useStyle,
 } from 'helper';
-import { createSignal, For, Show, type Component } from 'solid-js';
-import { render } from 'solid-js/web';
 import {
   getTagLintRules,
   hasTag,
@@ -17,7 +20,9 @@ import {
   splitTagNamespace,
 } from 'userscript/ehTagRules';
 
-import { getTaglist, getTagNameFull, type GalleryContext } from './helper';
+import type { GalleryContext } from './helper';
+
+import { getTaglist, getTagNameFull } from './helper';
 
 export const tagLint = ({ dom: { newTagField } }: GalleryContext) => {
   /** 是否是「Doujinshi」「Manga」「Non-H」 */
@@ -27,12 +32,12 @@ export const tagLint = ({ dom: { newTagField } }: GalleryContext) => {
   type RuleNames = keyof typeof lintRules;
   type WarnList = Partial<
     Record<RuleNames, Map<string, string[]>> & {
-      other: Array<[string, string[]]>;
+      other: [string, string[]][];
     }
   >;
   const [warnList, setWarnList] = createSignal<WarnList>({});
 
-  GM_addStyle(`
+  useStyle(`
     #comidread-tag-lint [id^=td_] {
       display: inline-block;
       float: none;
@@ -137,7 +142,7 @@ export const tagLint = ({ dom: { newTagField } }: GalleryContext) => {
     const correctTags: string[] = [];
     for (const tag of weakTags) {
       // 作者、社团则要检查漫画标题中是否包含其名字
-      if (/^(artist|group):/.test(tag)) {
+      if (/^(?:artist|group):/.test(tag)) {
         const title = querySelector('#gd2')!.textContent!.toLowerCase();
         if (title.includes(tag.replaceAll(/^(artist|group):|_/g, ' ').trim()))
           correctTags.push(tag);

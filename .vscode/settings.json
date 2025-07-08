@@ -3,10 +3,29 @@
   "typescript.preferences.importModuleSpecifier": "relative",
   "typescript.tsdk": "node_modules\\typescript\\lib",
   "css.validate": false,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.xo": "explicit",
-    "source.fixAll.stylelint": "explicit"
+
+  "[typescript]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.oxc": "explicit",
+      "source.fixAll.eslint": "explicit"
+    }
   },
+  "[typescriptreact]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.oxc": "explicit",
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[css]": {
+    "editor.codeActionsOnSave": { "source.fixAll.stylelint": "explicit" }
+  },
+
+  "eslint.rules.customizations": [
+    { "rule": "style/*", "fixable": true, "severity": "warn" },
+    { "rule": "perfectionist/*", "fixable": true, "severity": "warn" },
+    { "rule": "import/*", "fixable": true, "severity": "warn" }
+  ],
+
   // "i18n-ally.localesPaths": ["locales"],
   "i18n-ally.localesPaths": ["locales", "src/userscript/ehTagRules"],
   "i18n-ally.pathMatcher": "{locale}.{ext}",

@@ -1,4 +1,4 @@
-import { type PixelList } from '../helper';
+import type { PixelList } from '../helper';
 
 import { forEachEdge, getEdgeScope } from './workHelper';
 

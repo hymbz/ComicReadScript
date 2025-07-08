@@ -1,16 +1,14 @@
-import {
-  type Component,
-  type ParentComponent,
-  For,
-  createSignal,
-} from 'solid-js';
-import { lang, createEffectOn } from 'helper';
+import type { Component, ParentComponent } from 'solid-js';
 
-import { defaultSettingList } from '../defaultSettingList';
-import { refs, store } from '../store';
-import { stopPropagation } from '../helper';
+import { createSignal, For } from 'solid-js';
+
+import { createEffectOn, lang } from 'helper';
+
 import { bindRef } from '../actions';
+import { defaultSettingList } from '../defaultSettingList';
+import { stopPropagation } from '../helper';
 import classes from '../index.module.css';
+import { refs, store } from '../store';
 
 export const SettingBlockSubtitle: ParentComponent<{
   onClick?: () => void;

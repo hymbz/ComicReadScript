@@ -1,14 +1,18 @@
 /* eslint-disable i18next/no-literal-string */
+import type { Component } from 'solid-js';
+
+import { For, Show } from 'solid-js';
 import { render } from 'solid-js/web';
-import { For, type Component, Show } from 'solid-js';
-import { request, toast, useInit } from 'main';
+
 import {
-  querySelectorClick,
-  wait,
+  log,
   querySelector,
   querySelectorAll,
-  log,
+  querySelectorClick,
+  useStyle,
+  wait,
 } from 'helper';
+import { request, toast, useInit } from 'main';
 
 // API 参考：https://github.com/fumiama/copymanga/blob/279e08b06a70307bf20162900103ec1fdcb97751/app/src/main/res/values/strings.xml
 
@@ -22,7 +26,7 @@ const mobileApi = new (class {
     referer: 'com.copymanga.app-2.0.7',
   };
 
-  get: typeof request = async (url, details, ...args) =>
+  get: typeof request = (url, details, ...args) =>
     request(
       url,
       { responseType: 'json', headers: this.headers, ...details },
@@ -33,7 +37,7 @@ const mobileApi = new (class {
 const pcApi = new (class {
   headers = { 'User-Agent': navigator.userAgent, referer: location.href };
 
-  get: typeof request = async (url, details, ...args) =>
+  get: typeof request = (url, details, ...args) =>
     request(
       `https://mapi.copy20.com${url}`,
       { responseType: 'json', headers: this.headers, fetch: false, ...details },
@@ -57,10 +61,10 @@ const handleLastChapter = (comicName: string) => {
           querySelector('.table-default-right'),
         );
         a.target = '_blank';
-        tableRight.insertBefore(a, tableRight.firstElementChild);
+        tableRight.firstElementChild?.before(a);
         const span = document.createElement('span');
         span.textContent = '最後閱讀：';
-        tableRight.insertBefore(span, tableRight.firstElementChild);
+        tableRight.firstElementChild?.before(span);
       })();
 
     a.textContent = '獲取中';
@@ -84,7 +88,7 @@ const handleLastChapter = (comicName: string) => {
         background: #1790E6;
       }`);
 
-    a.href = `${window.location.pathname}/chapter/${lastChapterId}`;
+    a.href = `${location.pathname}/chapter/${lastChapterId}`;
     a.textContent = data.chapter_name as string;
   };
 
@@ -109,21 +113,21 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
     { errorText: '加載漫畫目錄失敗' },
   );
 
-  interface ChaptersGroup {
+  type ChaptersGroup = {
     name: string;
     path_word: string;
-    chapters: Array<{ type: number; name: string; id: string }>;
+    chapters: { type: number; name: string; id: string }[];
     last_chapter: {
       comic_id: string;
       name: string;
       datetime_created: string;
       uuid: string;
     };
-  }
-  interface Chapters {
-    build: { type: Array<{ id: number; name: string }> };
+  };
+  type Chapters = {
+    build: { type: { id: number; name: string }[] };
     groups: Record<string, ChaptersGroup>;
-  }
+  };
 
   // 解码 api 返回的数据
   const decryptData = async (cipher: string, key: string, iv: string) => {
@@ -160,7 +164,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
     for (const chapter of props.chapters) chapters[chapter.type].push(chapter);
 
     switch (hiddenType) {
-      case 'mobile': {
+      case 'mobile':
         // 删掉占位置的分隔线
         for (const dom of querySelectorAll('.van-divider')) dom.remove();
 
@@ -227,9 +231,8 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
             </For>
           </div>
         );
-      }
 
-      case 'web': {
+      case 'web':
         return (
           <>
             <span>{props.name}</span>
@@ -295,9 +298,8 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
             </div>
           </>
         );
-      }
 
-      default: {
+      default:
         return (
           <For each={type}>
             {({ id, name }) => (
@@ -329,7 +331,6 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
             )}
           </For>
         );
-      }
     }
   };
 
@@ -348,7 +349,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
       root = querySelector('main')!;
       root.textContent = '';
 
-      GM_addStyle(
+      useStyle(
         `ul .btn { height: fit-content; width: fit-content; margin: 1em; }`,
       );
       break;
@@ -373,13 +374,13 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
 
   let comicName = '';
   let id = '';
-  if (window.location.href.includes('/chapter/'))
-    [, , comicName, , id] = window.location.pathname.split('/');
-  else if (window.location.href.includes('/comicContent/'))
-    [, , , comicName, id] = window.location.pathname.split('/');
+  if (location.href.includes('/chapter/'))
+    [, , comicName, , id] = location.pathname.split('/');
+  else if (location.href.includes('/comicContent/'))
+    [, , , comicName, id] = location.pathname.split('/');
 
   if (comicName && id) {
-    const { _setState } = await useInit('copymanga');
+    const { setState } = await useInit('copymanga');
 
     /** 漫画不存在时才会出现的提示 */
     const titleDom = querySelector('main .img+.title');
@@ -387,7 +388,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
       titleDom.textContent =
         'ComicRead 提示您：你訪問的內容暫不存在，請點選右下角按鈕嘗試加載漫畫';
 
-    _setState('comicMap', '', {
+    setState('comicMap', '', {
       async getImgList() {
         if (titleDom) titleDom.textContent = '漫畫加載中，請坐和放寬';
 
@@ -395,7 +396,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
           message: string;
           results: {
             chapter: {
-              contents: Array<{ url: string }>;
+              contents: { url: string }[];
               words: number[];
               name: string;
               next: string | null;
@@ -428,18 +429,16 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
             chapter: { next, prev },
           } = res.response.results;
 
-          _setState('manga', {
+          setState('manga', {
             onNext: next
-              ? () =>
-                  window.location.assign(`/comic/${comicName}/chapter/${next}`)
+              ? () => location.assign(`/comic/${comicName}/chapter/${next}`)
               : undefined,
             onPrev: prev
-              ? () =>
-                  window.location.assign(`/comic/${comicName}/chapter/${prev}`)
+              ? () => location.assign(`/comic/${comicName}/chapter/${prev}`)
               : undefined,
           });
         } else
-          _setState('manga', {
+          setState('manga', {
             onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
             onPrev: querySelectorClick(
               '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
@@ -450,7 +449,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
         const { words, contents } = res.response.results.chapter;
         for (let i = 0; i < contents.length; i++)
           imgList[words[i]] = contents[i].url.replace(
-            /(?<=.*(\/|\.))c800x/,
+            /(?<=(\/|\.))c800x/,
             'c1500x',
           );
         return imgList;
@@ -458,7 +457,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
     });
 
     const getCommentList = async () => {
-      const chapter_id = window.location.pathname.split('/').at(-1);
+      const chapter_id = location.pathname.split('/').at(-1);
       const res = await pcApi.get(
         `/api/v3/roasts?chapter_id=${chapter_id}&limit=100&offset=0&_update=true`,
         { errorText: '获取漫画评论失败' },
@@ -467,18 +466,18 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
         ({ comment }) => comment as string,
       ) as string[];
     };
-    _setState('manga', 'commentList', await getCommentList());
+    setState('manga', 'commentList', await getCommentList());
 
     return;
   }
 
   // 目录页
-  if (!id && window.location.href.includes('/comic/')) {
-    comicName = window.location.href.split('/comic/')[1];
+  if (!id && location.href.includes('/comic/')) {
+    comicName = location.href.split('/comic/')[1];
     if (!comicName) return;
 
     let hiddenType: HiddenType | undefined;
-    const isMobile = window.location.href.includes('/h5/');
+    const isMobile = location.href.includes('/h5/');
 
     if (document.title === '404 - 拷貝漫畫') {
       // 移动端可以直接复用代码来实现相同的样式

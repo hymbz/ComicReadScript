@@ -1,12 +1,13 @@
-import { request } from 'main';
 import * as Comlink from 'comlink';
-import * as worker from 'worker/detectAd';
+
 import { log, waitImgLoad } from 'helper';
+import { request } from 'main';
+import * as worker from 'worker/detectAd';
 
 import { showCanvas, showGrayList } from '../worker/helper';
 
 const getAdPage = async <T>(
-  list: Array<T | undefined>,
+  list: (T | undefined)[],
   isAdPage: (item: T) => boolean | Promise<boolean>,
   adList: Set<number>,
 ) => {
@@ -73,21 +74,17 @@ const imgToCanvas = async (
 
 /** 通过文件名判断是否是广告 */
 export const getAdPageByFileName = (
-  fileNameList: Array<string | undefined>,
+  fileNameList: (string | undefined)[],
   adList: Set<number>,
 ) =>
-  getAdPage(
-    fileNameList,
-    (fileName: string) => /^[zZ]+/.test(fileName),
-    adList,
-  );
+  getAdPage(fileNameList, (fileName: string) => /^z+/i.test(fileName), adList);
 
 export const isAdImg = (imgBitmap: ImageBitmap) =>
   worker.isAdImg(Comlink.transfer(imgBitmap, [imgBitmap]));
 
 /** 通过图片内容判断是否是广告 */
-export const getAdPageByContent = async (
-  imgList: Array<HTMLImageElement | string | undefined>,
+export const getAdPageByContent = (
+  imgList: (HTMLImageElement | string | undefined)[],
   adList: Set<number>,
 ) =>
   getAdPage(

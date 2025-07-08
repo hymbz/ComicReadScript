@@ -1,5 +1,6 @@
+import { createSignal } from 'solid-js';
+
 import { hotkeysMap, setDefaultHotkeys } from 'components/Manga';
-import { request } from 'main';
 import {
   domParse,
   getKeyboardCode,
@@ -8,9 +9,10 @@ import {
   querySelectorAll,
   useStyle,
 } from 'helper';
-import { createSignal } from 'solid-js';
+import { request } from 'main';
 
 import type { EhContext } from './helper/context';
+
 import { colorizeTag } from './colorizeTag';
 
 /** 展开标签列表 */
@@ -80,7 +82,7 @@ export const expandTagList = (context: EhContext) => {
   for (const item of querySelectorAll('.gl1t')) {
     item.addEventListener(
       'click',
-      async (e) =>
+      (e) =>
         (e.target as HTMLElement).matches(
           ':not(a):is(.gl1t, .gl6t, .gl6t *, #taglist, #taglist *)',
         ) && handleShow(item),

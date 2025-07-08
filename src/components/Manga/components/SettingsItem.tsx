@@ -2,14 +2,14 @@ import type { Component, JSX } from 'solid-js';
 
 import classes from '../index.module.css';
 
-export interface SettingsItemProps {
+export type SettingsItemProps = {
   name: string;
   children?: JSX.Element | JSX.Element[];
 
   class?: string;
   classList?: ClassList;
   style?: JSX.CSSProperties;
-}
+};
 
 /** 设置菜单项 */
 export const SettingsItem: Component<SettingsItemProps> = (props) => (

@@ -3,7 +3,7 @@ name: updateDocsPage
 on:
   push:
     paths:
-      - "**.md"
+      - '**.md'
 
 jobs:
   deploy:
@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
@@ -40,6 +40,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: "comic-read-docs"
-          directory: "docs/.vitepress/dist"
+          projectName: 'comic-read-docs'
+          directory: 'docs/.vitepress/dist'
           branch: main

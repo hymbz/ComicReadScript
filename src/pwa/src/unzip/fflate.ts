@@ -1,15 +1,14 @@
-import {
-  type AsyncUnzipOptions,
-  type Unzipped,
-  unzip as unzipCb,
-} from 'fflate';
+import type { AsyncUnzipOptions, Unzipped } from 'fflate';
+
+import { unzip as unzipCb } from 'fflate';
 import { fileTypeFromBuffer } from 'file-type';
+
 import { toast } from 'components/Toast';
 import { t } from 'helper';
 
-import { createObjectURL, isSupportFile } from '../helper';
+import type { ZipData } from '.';
 
-import { type ZipData } from '.';
+import { createObjectURL, isSupportFile } from '../helper';
 
 const fflateUnzip = (data: Uint8Array, opts: AsyncUnzipOptions) =>
   new Promise<Unzipped>((resolve, reject) => {
@@ -23,7 +22,6 @@ export const fflate = async ({ zipFile, extension }: ZipData) => {
   try {
     const fileData = await zipFile
       .arrayBuffer()
-      // eslint-disable-next-line promise/prefer-await-to-then
       .then((buff) => new Uint8Array(buff));
 
     const res = await fflateUnzip(fileData, {

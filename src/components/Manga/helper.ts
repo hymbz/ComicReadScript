@@ -1,7 +1,9 @@
-import { request, type RequestDetails } from 'request';
-import { t } from 'helper';
+import type { RequestDetails } from 'request';
 
-import { _setState, store } from './store';
+import { t } from 'helper';
+import { request } from 'request';
+
+import { setState, store } from './store';
 
 /** 阻止事件冒泡 */
 export const stopPropagation = (e: Event) => {
@@ -20,7 +22,7 @@ export const playAnimation = (e?: HTMLElement) => {
 const headers = {
   Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
   'User-Agent': navigator.userAgent,
-  Referer: window.location.href,
+  Referer: location.href,
 };
 export const downloadImg = async (
   imgUrl: string,
@@ -42,7 +44,7 @@ export const downloadImg = async (
   });
 
   if (Reflect.has(store.imgMap, imgUrl))
-    _setState('imgMap', imgUrl, 'blobUrl', URL.createObjectURL(res.response));
+    setState('imgMap', imgUrl, 'blobUrl', URL.createObjectURL(res.response));
 
   return res.response;
 };

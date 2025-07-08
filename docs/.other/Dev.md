@@ -1,5 +1,10 @@
 ## TODO
 
+- 不再搞两个 _setState
+
+- 用个函数打包一下 if (isDevMode) Object.assign((window as any).unsafeWindow ?? window, { request });
+- imageLoad ，现在图片加载是通过 index 来标识的，这会导致出现重复 url 的图片时无法正常加载
+
 ## 暂不考虑实现的功能
 
 - 切白边

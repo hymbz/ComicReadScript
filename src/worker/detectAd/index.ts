@@ -1,4 +1,6 @@
-import jsQR, { type Options } from 'jsqr';
+import type { Options } from 'jsqr';
+
+import jsQR from 'jsqr';
 
 import { mainFn, toGray } from './workHelper';
 
@@ -134,7 +136,7 @@ const scanImgBlock = (
   return getQrCode(data, w, h);
 };
 
-export const isAdImg = async (imgBitmap: ImageBitmap) => {
+export const isAdImg = (imgBitmap: ImageBitmap) => {
   const imgData = getImgData(imgBitmap);
 
   // 黑白图肯定不是广告
@@ -168,7 +170,7 @@ export const isAdImg = async (imgBitmap: ImageBitmap) => {
       [0, h], // ↙
       [w, 0], // ↗
       [0, 0], // ↖
-    ] as Array<[number, number]>) {
+    ] as [number, number][]) {
       text = scanImgBlock(imgData, ...args, w, h);
       if (text) break;
     }

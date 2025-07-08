@@ -1,10 +1,12 @@
+import type { Component, JSX } from 'solid-js';
+
 import MdAutoFixHigh from '@material-design-icons/svg/round/auto_fix_high.svg';
 import MdAutoFixOff from '@material-design-icons/svg/round/auto_fix_off.svg';
-import MdFlashOn from '@material-design-icons/svg/round/flash_on.svg';
 import MdFlashOff from '@material-design-icons/svg/round/flash_off.svg';
+import MdFlashOn from '@material-design-icons/svg/round/flash_on.svg';
 import MdLockOpen from '@material-design-icons/svg/round/lock_open.svg';
 import MdLock from '@material-design-icons/svg/round/lock.svg';
-import type { Component, JSX } from 'solid-js';
+
 import { IconButton } from 'components/IconButton';
 import { createEffectOn, t } from 'helper';
 
@@ -15,7 +17,7 @@ export const useSpeedDial = <
   SaveOptions extends T & SiteOptions = T & SiteOptions,
 >({
   store,
-  _setState,
+  setState,
   options,
   setOptions,
 }: MainContext<T>) => {
@@ -82,7 +84,7 @@ export const useSpeedDial = <
         }
       }
 
-      _setState('fab', 'speedDial', list);
+      setState('fab', 'speedDial', list);
     },
   );
 };

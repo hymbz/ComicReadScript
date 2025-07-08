@@ -1,28 +1,17 @@
 import { getKeyboardCode } from 'helper';
 
-import { store, refs, _setState } from '../store';
 import classes from '../index.module.css';
-
+import { refs, setState, store } from '../store';
+import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
+import { setOption } from './helper';
+import { hotkeysMap } from './hotkeys';
 import {
   abreastColumnWidth,
   isAbreastMode,
   isScrollMode,
   scrollTop,
 } from './memo';
-import {
-  switchFillEffect,
-  switchScrollMode,
-  switchOnePageMode,
-  switchDir,
-  switchGridMode,
-  switchFullscreen,
-  switchAutoScroll,
-} from './switch';
 import { handleTrackpadWheel } from './pointer';
-import { setOption } from './helper';
-import { hotkeysMap } from './hotkeys';
-import { zoom } from './zoom';
-import { closeScrollLock, turnPage } from './turnPage';
 import {
   constantScroll,
   scrollLength,
@@ -30,8 +19,18 @@ import {
   scrollTo,
   zoomScrollModeImg,
 } from './scroll';
-import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
+import {
+  switchAutoScroll,
+  switchDir,
+  switchFillEffect,
+  switchFullscreen,
+  switchGridMode,
+  switchOnePageMode,
+  switchScrollMode,
+} from './switch';
 import { translateAll, translateCurrent, translateToEnd } from './translation';
+import { closeScrollLock, turnPage } from './turnPage';
+import { zoom } from './zoom';
 
 // 特意使用 requestAnimationFrame 和 .click() 是为了能和 Vimium 兼容
 // （虽然因为使用了 shadow dom 的缘故实际还是不能兼容，但说不定之后就改了呢
@@ -52,7 +51,7 @@ export const handleMouseDown: EventHandler['on:mousedown'] = (e) => {
 export const scrollModeScrollPage = (x: number) => {
   if (!store.show.endPage) {
     scrollTo(scrollTop() + x, true);
-    _setState('scrollLock', true);
+    setState('scrollLock', true);
   }
   closeScrollLock();
 };
@@ -105,20 +104,20 @@ export const handleKeyDown = (e: KeyboardEvent) => {
     if (store.gridMode) {
       e.stopPropagation();
       e.preventDefault();
-      return _setState('gridMode', false);
+      return setState('gridMode', false);
     }
 
     if (store.show.endPage) {
       e.stopPropagation();
       e.preventDefault();
-      return _setState('show', 'endPage', undefined);
+      return setState('show', 'endPage', undefined);
     }
   }
 
   // 处理标注了 data-only-number 的元素
   if ((e.target as HTMLElement).dataset.onlyNumber !== undefined) {
     // 拦截能输入数字外的按键
-    if (/^(Shift \+ )?[a-zA-Z]$/.test(code)) {
+    if (/^(?:Shift \+ )?[a-zA-Z]$/.test(code)) {
       e.stopPropagation();
       e.preventDefault();
     }
@@ -217,9 +216,9 @@ export const handleKeyDown = (e: KeyboardEvent) => {
       return turnPage(handleSwapPageTurnKey(store.option.dir !== 'rtl'));
 
     case 'jump_to_home':
-      return _setState('activePageIndex', 0);
+      return setState('activePageIndex', 0);
     case 'jump_to_end':
-      return _setState(
+      return setState(
         'activePageIndex',
         Math.max(0, store.pageList.length - 1),
       );
@@ -323,7 +322,7 @@ export const handleWheel = (e: WheelEvent) => {
     wheelType = 'trackpad';
     if (timeoutId) clearTimeout(timeoutId);
     // 如果是触摸板滚动，且上次成功触发了翻页，就重新翻页回去
-    if (lastPageNum !== -1) _setState('activePageIndex', lastPageNum);
+    if (lastPageNum !== -1) setState('activePageIndex', lastPageNum);
   }
 
   // 为了避免因临时卡顿而误判为触摸板
@@ -355,7 +354,6 @@ export const handleWheel = (e: WheelEvent) => {
         );
         return;
       }
-
       wheelType = 'mouse';
     }
     // falls through

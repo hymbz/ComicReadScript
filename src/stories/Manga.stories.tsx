@@ -1,17 +1,22 @@
 import type { Meta, StoryObj } from 'storybook-solidjs-vite';
-import { mergeProps } from 'solid-js';
+
 import rfdc from 'rfdc';
-import { request, type RequestDetails } from 'request';
+import { mergeProps } from 'solid-js';
 
-import { _setState, Manga, type MangaProps } from '../components/Manga';
-import { defaultOption } from '../components/Manga/store/option';
+import type { RequestDetails } from 'request';
+
+import { request } from 'request';
+
+import type { MangaProps } from '../components/Manga';
+
+import { Manga } from '../components/Manga';
 import { initStore, refs, setState } from '../components/Manga/store';
+import { defaultOption } from '../components/Manga/store/option';
 import { Toaster } from '../components/Toast';
-
 import { imgList, waitImgLoaded } from './helper';
 
 const cloneArray = (arr: string[], count: number) =>
-  ([] as string[]).concat(...Array.from<string[]>({ length: count }).fill(arr));
+  Array.from<string[]>({ length: count }).fill(arr).flat();
 
 const deepClone = rfdc({ proto: true, circles: false });
 
@@ -99,7 +104,7 @@ export const 网格模式: Story = {
     图源: '饮茶之时、女仆之梦（彩图）',
   } satisfies PartialProps,
   async play() {
-    _setState('gridMode', true);
+    setState('gridMode', true);
     await waitImgLoaded();
   },
 };

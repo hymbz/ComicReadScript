@@ -1,19 +1,22 @@
+import type { Component } from 'solid-js';
+
 import {
-  type Component,
-  createMemo,
   createEffect,
+  createMemo,
   createSignal,
-  onMount,
   For,
+  onMount,
   Show,
 } from 'solid-js';
-import { boolDataVal, t, useDrag, type UseDrag } from 'helper';
 
-import { stopPropagation } from '../helper';
-import { _setState, store } from '../store';
+import type { UseDrag } from 'helper';
+
+import { boolDataVal, t, useDrag } from 'helper';
+
 import { bindRef, focus, getTurnPageDir, turnPage } from '../actions';
+import { stopPropagation } from '../helper';
 import classes from '../index.module.css';
-
+import { setState, store } from '../store';
 import { dir } from './TouchArea';
 
 let delayTypeTimer = 0;
@@ -21,8 +24,7 @@ let delayTypeTimer = 0;
 export const EndPage: Component = () => {
   const handleClick: EventHandler['onClick'] = (e) => {
     e.stopPropagation();
-    if (e.target?.nodeName !== 'BUTTON')
-      _setState('show', 'endPage', undefined);
+    if (e.target?.nodeName !== 'BUTTON') setState('show', 'endPage', undefined);
     focus();
   };
 

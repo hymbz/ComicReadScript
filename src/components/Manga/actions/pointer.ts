@@ -1,20 +1,22 @@
-import { debounce, type UseDrag } from 'helper';
+import type { UseDrag } from 'helper';
 
-import { type Area } from '../components/TouchArea';
+import { debounce } from 'helper';
+
+import type { Area } from '../components/TouchArea';
+
 import { useDoubleClick } from '../hooks/useDoubleClick';
-import { store, setState, refs } from '../store';
 import classes from '../index.module.css';
-
+import { refs, setState, store } from '../store';
 import { resetUI } from './helper';
-import { resetPage } from './show';
-import { zoom } from './zoom';
-import {
-  turnPageFn,
-  turnPageAnimation,
-  turnPage,
-  getTurnPageDir,
-} from './turnPage';
 import { isBottom, isTop, jumpToImg } from './scroll';
+import { resetPage } from './show';
+import {
+  getTurnPageDir,
+  turnPage,
+  turnPageAnimation,
+  turnPageFn,
+} from './turnPage';
+import { zoom } from './zoom';
 
 /** 根据坐标判断点击的元素 */
 const findClickEle = <T extends Element>(

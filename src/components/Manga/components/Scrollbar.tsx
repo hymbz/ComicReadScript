@@ -1,35 +1,30 @@
-import {
-  type JSX,
-  type Component,
-  createSignal,
-  createMemo,
-  Show,
-  onMount,
-} from 'solid-js';
-import { boolDataVal, debounce, createThrottleMemo, useDrag } from 'helper';
+import type { Component, JSX } from 'solid-js';
 
-import { refs, store } from '../store';
-import { useStyleMemo } from '../hooks/useStyle';
+import { createMemo, createSignal, onMount, Show } from 'solid-js';
+
+import { boolDataVal, createThrottleMemo, debounce, useDrag } from 'helper';
+
 import {
+  abreastArea,
+  abreastShowColumn,
   bindRef,
   getPageTip,
-  scrollPosition,
   handleScrollbarSlider,
-  sliderMidpoint,
-  sliderHeight,
-  scrollDomLength,
-  isScrollMode,
-  isOnePageMode,
-  abreastShowColumn,
   isAbreastMode,
-  abreastArea,
+  isDoubleMode,
+  isDrag,
+  isOnePageMode,
+  isScrollMode,
+  scrollDomLength,
+  scrollPosition,
+  sliderHeight,
+  sliderMidpoint,
   sliderTop,
   watchDomSize,
-  isDrag,
-  isDoubleMode,
 } from '../actions';
+import { useStyleMemo } from '../hooks/useStyle';
 import classes from '../index.module.css';
-
+import { refs, store } from '../store';
 import { ScrollbarPageStatus } from './ScrollbarPageStatus';
 
 /** 滚动条 */

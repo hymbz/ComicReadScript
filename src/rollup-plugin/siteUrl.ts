@@ -1,5 +1,6 @@
-import axios from 'axios';
 import type { OutputPluginOption } from 'rollup';
+
+import axios from 'axios';
 
 const siteUrlFnMap = {
   async jm() {
@@ -8,7 +9,7 @@ const siteUrlFnMap = {
   },
   async wnacg() {
     const res = await axios<string>('https://wnacg.date');
-    return [...res.data.matchAll(/(?<=<i>)[-A-Za-z\d.]+?(?=<\/i>)/g)].flat();
+    return [...res.data.matchAll(/(?<=<i>)[-A-Za-z\d.]+(?=<\/i>)/g)].flat();
   },
   async noy() {
     const res = await axios<string>('https://noy.icu/atom.xml');
@@ -41,7 +42,7 @@ export const siteUrl: OutputPluginOption = {
     siteUrlMap ??= await initSiteUrlMap();
 
     return code.replaceAll(
-      /case 'siteUrl#(.+?)':(.+?)(?={)/gs,
+      /case 'siteUrl#(.+?)':(.+?)(?=\{)/gs,
       (_, name, other) => {
         if (!Reflect.has(siteUrlMap!, name)) {
           console.error(`未知站点: ${name}`);

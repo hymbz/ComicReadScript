@@ -1,4 +1,4 @@
-interface ShowState {
+type ShowState = {
   /** 当前设备是否是移动端 */
   isMobile: boolean;
   /** 是否处于拖拽模式 */
@@ -33,7 +33,7 @@ interface ShowState {
       y: { pct: number; px: number };
     };
   };
-}
+};
 
 export const showState: ShowState = {
   isMobile: false,

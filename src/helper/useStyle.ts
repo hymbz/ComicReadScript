@@ -1,4 +1,4 @@
-import { type Accessor, type JSX } from 'solid-js';
+import type { Accessor, JSX } from 'solid-js';
 
 import { createEffectOn, createRootMemo, onAutoMount } from './solidJs';
 

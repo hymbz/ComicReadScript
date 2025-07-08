@@ -1,10 +1,9 @@
-import { _setState, refs, setState, store } from '../store';
-
-import { zoom } from './zoom';
+import { refs, setState, store } from '../store';
 import { setOption } from './helper';
 import { updatePageData } from './image';
+import { activeImgIndex, autoPageNum, nowFillIndex, pageNum } from './memo';
 import { jumpToImg, saveScrollProgress } from './scroll';
-import { activeImgIndex, nowFillIndex, pageNum, autoPageNum } from './memo';
+import { zoom } from './zoom';
 
 /** 切换页面填充 */
 export const switchFillEffect = () => {
@@ -94,4 +93,4 @@ export const switchFullscreen = () => {
 
 /** 切换自动滚动 */
 export const switchAutoScroll = () =>
-  _setState('autoScroll', 'play', (val) => !val);
+  setState('autoScroll', 'play', (val) => !val);

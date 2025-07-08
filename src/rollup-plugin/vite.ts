@@ -1,6 +1,7 @@
 import type { PluginOption } from 'vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
+
 import solidPlugin from 'vite-plugin-solid';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 import { solidSvg } from './rollup-solid-svg';
 
@@ -32,7 +33,7 @@ export default worker;`;
       if (/src\/worker\/.+?\/index.ts/.test(path)) {
         const exports: string[] = [];
         let newCode = code
-          .replaceAll(/export {\s+(.+?)\s+}/g, (_, varName) => {
+          .replaceAll(/export \{\s+(\S+)\s+\}/g, (_, varName) => {
             exports.push(varName);
             return `import { ${varName} }`;
           })
@@ -68,7 +69,7 @@ export const vitePlugins: PluginOption[] = [
           .replace('isDevMode', `${isDevMode}`)
           // 将 vite 不支持的 rollup-plugin-styles 相关 css 导出代码改成正常的代码
           .replaceAll(
-            /import classes(, { css as style })? from '(.+?)'/g,
+            /import classes(, \{ css as style \})? from '(.+?)'/g,
             (_, styleVar, path) =>
               `import classes from '${path}';${styleVar ? `\nimport style from '${path}?inline'` : ''}`,
           )

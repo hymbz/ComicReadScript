@@ -1,19 +1,20 @@
-import type { SetStoreFunction } from 'solid-js/store';
-import type { FabProps } from 'components/Fab';
-import type { MangaProps } from 'components/Manga';
 import type { Accessor } from 'solid-js';
 
-export { ReactiveSet } from '@solid-primitives/set';
+import type { FabProps } from 'components/Fab';
+import type { MangaProps } from 'components/Manga';
+import type { SetStateFunction } from 'helper';
 
 export * from './universal';
+
 export * from './useInit';
 export * from './useSpeedDial';
 export * from './version';
+export { ReactiveSet } from '@solid-primitives/set';
 
-export { request } from 'request';
 export { toast } from 'components/Toast';
+export { request } from 'request';
 
-export interface SiteOptions {
+export type SiteOptions = {
   option: MangaProps['option'];
   defaultOption: MangaProps['defaultOption'];
 
@@ -25,9 +26,9 @@ export interface SiteOptions {
   hiddenFAB: boolean;
   /** FAB 位置偏移 */
   fabPosition: { top: number; left: number };
-}
+};
 
-export interface MainStore<T extends Record<string, any>> {
+export type MainStore<T extends Record<string, any>> = {
   fab: FabProps & { otherSpeedDial?: string[] };
   manga: MangaProps;
   hotkeys: Record<string, string[]>;
@@ -54,20 +55,17 @@ export interface MainStore<T extends Record<string, any>> {
     /** 当前是否还需要判断 autoShow */
     needAutoShow: boolean;
   };
-}
+};
 
 export type LoadImgFn = (setImg: (i: number, url: string) => void) => unknown;
 
-export interface MainContext<
-  T extends Record<string, any> = Record<string, any>,
-> {
+export type MainContext<T extends Record<string, any> = Record<string, any>> = {
   store: MainStore<T>;
-  setState: (fn: (state: MainStore<T>) => void) => void;
-  _setState: SetStoreFunction<MainStore<T>>;
+  setState: SetStateFunction<MainStore<T>>;
 
   options: MainStore<T>['options'];
   // TODO: 不知道为啥，这里必须使用 K = T 来中转一下，不然就会报错，应该是 bug 吧
-  setOptions: <K = T>(newOptions: Partial<K & SiteOptions>) => Promise<void>;
+  setOptions: <K = T>(newOptions: Partial<K & SiteOptions>) => void;
   showComic: (id?: string | number) => Promise<void>;
   loadComic: (id?: string | number) => Promise<void>;
   dynamicLoad: (
@@ -76,4 +74,4 @@ export interface MainContext<
     id?: string | number,
   ) => Promise<string[]>;
   init: () => void;
-}
+};

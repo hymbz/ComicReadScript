@@ -1,12 +1,14 @@
-import { Show, type Component } from 'solid-js';
+import type { Component } from 'solid-js';
 
-export interface NumberInputProps {
+import { Show } from 'solid-js';
+
+export type NumberInputProps = {
   value: number;
   maxLength?: number;
   step?: number;
   suffix?: string;
   onChange: (val: number) => void;
-}
+};
 
 /** 数值输入框 */
 export const NumberInput: Component<NumberInputProps> = (props) => {

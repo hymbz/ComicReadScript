@@ -1,9 +1,10 @@
 import MdPlayArrow from '@material-design-icons/svg/round/play_arrow.svg';
 import MdStop from '@material-design-icons/svg/round/stop.svg';
-import { AnimationFrame, createEffectOn, t } from 'helper';
 import { createMemo } from 'solid-js';
 
-import { _setState, store } from '../store';
+import { AnimationFrame, createEffectOn, t } from 'helper';
+
+import { IconButton } from '../../IconButton';
 import {
   isAbreastMode,
   isBottom,
@@ -14,7 +15,7 @@ import {
   switchAutoScroll,
   turnPage,
 } from '../actions';
-import { IconButton } from '../../IconButton';
+import { setState, store } from '../store';
 
 const autoScroll = new (class extends AnimationFrame {
   /** 上次滚动的时间 */
@@ -40,7 +41,7 @@ const autoScroll = new (class extends AnimationFrame {
 
     if (!isBottom()) return;
     if (!store.prop.onExit) return this.stop();
-    return _setState('show', 'endPage', 'end');
+    return setState('show', 'endPage', 'end');
   };
 
   frame = (timestamp: DOMHighResTimeStamp) => {
@@ -54,7 +55,7 @@ const autoScroll = new (class extends AnimationFrame {
     if (!store.autoScroll.play) return;
 
     progress ||= elapsed / store.option.autoScroll.interval;
-    _setState('autoScroll', 'progress', progress);
+    setState('autoScroll', 'progress', progress);
     this.call();
   };
 
@@ -65,7 +66,7 @@ const autoScroll = new (class extends AnimationFrame {
 
   stop = () => {
     this.cancel();
-    _setState('autoScroll', 'play', false);
+    setState('autoScroll', 'play', false);
   };
 })();
 

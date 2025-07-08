@@ -1,8 +1,10 @@
-import { isEqual, throttle, createEffectOn } from 'helper';
+import { createEffectOn, isEqual, throttle } from 'helper';
+
+import type { State } from '../store';
+import type { PageList } from '../store/image';
 
 import { handleComicData } from '../handleComicData';
-import { setState, type State } from '../store';
-
+import { setState } from '../store';
 import { activeImgIndex, isOnePageMode, pageNum } from './memo/common';
 
 /** 重新计算图片排列 */

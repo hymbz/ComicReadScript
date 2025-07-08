@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { defineConfig } from 'vite';
 
 import { vitePlugins } from './src/rollup-plugin/vite';

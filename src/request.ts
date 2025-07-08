@@ -1,5 +1,5 @@
-import { sleep, t, log } from 'helper';
 import { toast } from 'components/Toast';
+import { log, sleep, t } from 'helper';
 
 // 将 xmlHttpRequest 包装为 Promise
 const xmlHttpRequest = <T = any>(
@@ -46,7 +46,7 @@ export const request = async <T = any>(
   retryNum = 0,
   errorNum = 0,
 ): Promise<Response<T>> => {
-  const headers = { Referer: window.location.href };
+  const headers = { Referer: location.href };
   const errorText = `${
     details?.errorText ?? t('alert.comic_load_error')
   }\nurl: ${url}`;
@@ -56,13 +56,12 @@ export const request = async <T = any>(
     // 为了支持 ios 端只能自己实现一下了
     if (
       details?.fetch ??
-      (url.startsWith('/') || url.startsWith(window.location.origin))
+      (url.startsWith('/') || url.startsWith(location.origin))
     ) {
       const res = await fetch(url, {
         method: 'GET',
         headers,
         signal: AbortSignal.timeout?.(details?.timeout ?? 1000 * 10),
-        // eslint-disable-next-line unicorn/no-invalid-fetch-options
         body: details?.data,
         ...details,
       });
@@ -105,7 +104,7 @@ export const request = async <T = any>(
     // 不过以防万一还是在这里手动处理下
     if (url.startsWith('//')) targetUrl = `http:${url}`;
     // stay 没法处理相对路径，也得转换一下
-    else if (url.startsWith('/')) targetUrl = `${window.location.origin}${url}`;
+    else if (url.startsWith('/')) targetUrl = `${location.origin}${url}`;
 
     const res = await xmlHttpRequest<T>({
       method: 'GET',

@@ -1,5 +1,8 @@
+import type { Component } from 'solid-js';
+
+import { createMemo } from 'solid-js';
+
 import { querySelector } from 'helper';
-import { createMemo, type Component } from 'solid-js';
 import { request, useInit } from 'main';
 
 const defaultOptions = {
@@ -68,7 +71,7 @@ type OtherContext = { type: Exclude<PageType, 'gallery'> } & AsyncReturnType<
 
 export type EhContext = OtherContext | GalleryContext;
 
-export const createEhContext = async (): Promise<EhContext | null> => {
+export const createEhContext = async (): Promise<EhContext | undefined> => {
   let type: PageType | undefined;
   if (Reflect.has(unsafeWindow, 'display_comment_field')) type = 'gallery';
   else if (location.pathname === '/mytags') type = 'mytags';
@@ -78,7 +81,7 @@ export const createEhContext = async (): Promise<EhContext | null> => {
       querySelector('option[value="t"]')?.parentElement as HTMLSelectElement
     )?.value as Exclude<PageType, 'gallery'> | undefined;
 
-  if (!type) return null;
+  if (!type) return;
   const mainContext = await useInit('ehentai', defaultOptions);
 
   if (type !== 'gallery') return { type, ...mainContext };
@@ -91,11 +94,8 @@ export const createEhContext = async (): Promise<EhContext | null> => {
       ?.at(-1),
   );
   if (Number.isNaN(imgNum)) {
-    imgNum = Number(
-      /(?<=<td class="gdt2">)\d+(?= pages<\/td>)/.exec(
-        (await request(window.location.href)).responseText,
-      )?.[0],
-    );
+    const { responseText: html } = await request(location.href);
+    imgNum = Number(/(?<=class="gdt2">)\d+(?= pages<\/td>)/.exec(html)?.[0]);
   }
 
   return {

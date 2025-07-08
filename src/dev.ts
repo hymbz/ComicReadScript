@@ -5,11 +5,10 @@ GM_xmlhttpRequest({
   onload(r) {
     if (r.status !== 200)
       throw new Error(`${r.finalUrl}: ${r.status} ${r.statusText}`);
-    // eslint-disable-next-line no-eval
-    eval(`(async () => {${r.responseText}})();`);
+    eval(`(async () => {${r.responseText}})();`); // oxlint-disable-line no-eval
   },
   onerror(e) {
     if (e?.status === 0) throw new Error('dev server not running');
-    throw new Error(String(e)); // eslint-disable-line @typescript-eslint/no-base-to-string
+    throw new Error(String(e));
   },
 });

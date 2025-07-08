@@ -1,4 +1,3 @@
-import { type Languages, getInitLang, setSaveLang } from 'helper/languages';
 import {
   createEffect,
   createMemo,
@@ -7,19 +6,22 @@ import {
   on,
 } from 'solid-js';
 
-import zh from '../../locales/zh.json' with { type: 'json' };
+import type { Languages } from 'helper/languages';
+
+import { getInitLang, setSaveLang } from 'helper/languages';
+
 import en from '../../locales/en.json' with { type: 'json' };
 import ru from '../../locales/ru.json' with { type: 'json' };
-
-import { byPath } from './other';
+import zh from '../../locales/zh.json' with { type: 'json' };
 import { log } from './logger';
+import { byPath } from './other';
 
 export const [lang, setLang] = createSignal<Languages>('zh');
 
 export const setInitLang = async () => setLang(await getInitLang());
 
 export const t = createRoot(() => {
-  createEffect(on(lang, async () => setSaveLang(lang()), { defer: true }));
+  createEffect(on(lang, () => setSaveLang(lang()), { defer: true }));
 
   const locales = createMemo(() => {
     switch (lang()) {

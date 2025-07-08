@@ -26,7 +26,7 @@ const migrationOption = async (
 };
 
 /** 重命名配置项 */
-const renameOption = async (name: string, list: string[]) =>
+const renameOption = (name: string, list: string[]) =>
   migrationOption(name, (option, save) => {
     for (const itemText of list) {
       const [path, newName] = itemText.split(' => ');

@@ -1,9 +1,9 @@
-import { type JSX } from 'solid-js';
+import type { JSX } from 'solid-js';
+
 import { t } from 'helper';
 
-import { store } from '../store';
 import classes from '../index.module.css';
-
+import { store } from '../store';
 import { useStyleMemo } from './useStyle';
 
 // TODO: 使用 light-dark()

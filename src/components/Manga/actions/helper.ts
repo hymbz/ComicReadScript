@@ -1,9 +1,12 @@
 import { onCleanup } from 'solid-js';
-import { difference, byPath, throttle } from 'helper';
 
-import { type State, store, setState, refs } from '../store';
-import { type Option } from '../store/option';
-import { type FillEffect } from '../store/image';
+import { byPath, difference, throttle } from 'helper';
+
+import type { State } from '../store';
+import type { FillEffect } from '../store/image';
+import type { Option } from '../store/option';
+
+import { refs, setState, store } from '../store';
 
 export const getImg = (i: number, state = store) =>
   state.imgMap[state.imgList[i]];
@@ -76,7 +79,7 @@ type SetOptionsFunctionReturn<T> = {
   onChange: (val: T) => void;
 };
 
-export interface SetOptionsFunction<T> {
+export type SetOptionsFunction<T> = {
   <
     K1 extends keyof T,
     K2 extends keyof T[K1],
@@ -115,7 +118,7 @@ export interface SetOptionsFunction<T> {
   ): SetOptionsFunctionReturn<T[K1][K2]>;
 
   <K1 extends keyof T>(k1: K1): SetOptionsFunctionReturn<T[K1]>;
-}
+};
 export const bindOption: SetOptionsFunction<Option> = (...path: string[]) => ({
   value: byPath(store.option, path),
   onChange: (val: unknown) =>

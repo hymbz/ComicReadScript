@@ -1,7 +1,9 @@
-import { debounce, getGmValue, hijackFn } from 'helper';
+import { debounce, getGmValue, hijackFn, useStyle } from 'helper';
 
-import { updateMyTags, handleMyTagsChange, type Tag } from './myTags';
-import { type EhContext } from './helper';
+import type { EhContext } from './helper';
+import type { Tag } from './myTags';
+
+import { handleMyTagsChange, updateMyTags } from './myTags';
 
 const buildTagList = (tagList: Set<string>, prefix: string) =>
   `\n${[...tagList].map((tag) => `${prefix}${CSS.escape(tag)}`).join(',\n')}\n`;
@@ -77,7 +79,7 @@ export const colorizeTag = async (contextType: EhContext['type']) => {
           : '--tag: #5C0D11; --tag-hover: #8F4701; --tup: green; --tdn: red;';
       css = `#taglist { ${css} }\n\n`;
       css += await getGmValue('ehTagColorizeCss', updateMyTags);
-      return GM_addStyle(css);
+      return useStyle(css);
     }
 
     case 'mytags': {

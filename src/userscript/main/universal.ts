@@ -1,13 +1,14 @@
-import { type MangaProps } from 'components/Manga';
-import { onUrlChange, wait, waitUrlChange } from 'helper';
+import type { MangaProps } from 'components/Manga';
 
-import { useInit } from './useInit';
+import { onUrlChange, wait, waitUrlChange } from 'helper';
 
 import type { MainContext, SiteOptions } from '.';
 
+import { useInit } from './useInit';
+
 export type UseInitFnMap = AsyncReturnType<typeof useInit>;
 
-export interface InitOptions {
+export type InitOptions = {
   name: string;
   /** 等待返回 true 后才开始运行。用于等待元素渲染 */
   wait?: () => unknown | Promise<unknown>;
@@ -31,7 +32,7 @@ export interface InitOptions {
     /** 有些 SPA 会在页数变更时修改 url，导致脚本误以为换章节了，需要处理下 */
     handleUrl?: (location: Location) => string;
   };
-}
+};
 
 /** 对简单站点的通用解 */
 export const universal = async ({
@@ -50,21 +51,21 @@ export const universal = async ({
   if (waitFn) await wait(waitFn);
 
   const mainContext = await useInit(name, initOptions);
-  const { store, _setState, setState, showComic } = mainContext;
+  const { store, setState, showComic } = mainContext;
 
-  _setState('comicMap', '', { getImgList: () => getImgList(mainContext) });
+  setState('comicMap', '', { getImgList: () => getImgList(mainContext) });
 
-  _setState('manga', 'onShowImgsChange', onShowImgsChange);
+  setState('manga', 'onShowImgsChange', onShowImgsChange);
   if (onExit)
-    _setState('manga', 'onExit', (isEnd: boolean) => {
+    setState('manga', 'onExit', (isEnd: boolean) => {
       onExit?.(isEnd);
-      _setState('manga', 'show', false);
+      setState('manga', 'show', false);
     });
 
   if (!SPA) {
-    if (onNext ?? onPrev) _setState('manga', { onNext, onPrev });
+    if (onNext ?? onPrev) setState('manga', { onNext, onPrev });
     if (getCommentList)
-      _setState('manga', 'commentList', await getCommentList());
+      setState('manga', 'commentList', await getCommentList());
     return;
   }
 
@@ -90,13 +91,13 @@ export const universal = async ({
     await Promise.all([
       (async () =>
         getCommentList &&
-        _setState('manga', 'commentList', await getCommentList()))(),
+        setState('manga', 'commentList', await getCommentList()))(),
       (async () =>
         SPA.getOnPrev &&
-        _setState('manga', 'onPrev', await wait(SPA.getOnPrev, 5000)))(),
+        setState('manga', 'onPrev', await wait(SPA.getOnPrev, 5000)))(),
       (async () =>
         SPA.getOnNext &&
-        _setState('manga', 'onNext', await wait(SPA.getOnNext, 5000)))(),
+        setState('manga', 'onNext', await wait(SPA.getOnNext, 5000)))(),
     ]);
   }, SPA?.handleUrl);
 };

@@ -1,12 +1,12 @@
-import { type Accessor } from 'solid-js';
-import { t, singleThreaded, createRootMemo, range } from 'helper';
+import type { Accessor } from 'solid-js';
 
-import { store, setState, _setState } from '../../store';
+import { createRootMemo, range, singleThreaded, t } from 'helper';
+
+import { setState, store } from '../../store';
 import { activeImgIndex, activePage, imgList } from '../memo';
-
+import { cotransTranslation, cotransTranslators } from './cotrans';
 import { createOptions, setMessage } from './helper';
 import { selfhostedOptions, selfhostedTranslation } from './selfhosted';
-import { cotransTranslation, cotransTranslators } from './cotrans';
 
 declare const toast: typeof import('components/Toast/toast').toast | undefined;
 
@@ -24,7 +24,7 @@ export const translationImage = async (url: string) => {
     if (img.translationType !== 'wait') return;
 
     if (img.translationUrl)
-      return _setState('imgMap', url, 'translationType', 'show');
+      return setState('imgMap', url, 'translationType', 'show');
 
     if (img.loadType !== 'loaded')
       return setMessage(url, t('translation.tip.img_not_fully_loaded'));
@@ -35,15 +35,15 @@ export const translationImage = async (url: string) => {
         : selfhostedTranslation
     )(url);
 
-    _setState('imgMap', url, {
+    setState('imgMap', url, {
       translationUrl,
       translationMessage: t('translation.tip.translation_completed'),
       translationType: 'show',
     });
   } catch (error) {
-    _setState('imgMap', url, 'translationType', 'error');
+    setState('imgMap', url, 'translationType', 'error');
     if ((error as Error)?.message)
-      _setState('imgMap', url, 'translationMessage', (error as Error).message);
+      setState('imgMap', url, 'translationMessage', (error as Error).message);
   }
 };
 

@@ -1,8 +1,8 @@
 import type { log } from 'helper';
 
 import type { updatePageData } from '../../components/Manga/actions/image';
+import type { ComicImg } from '../../components/Manga/store/image';
 import type { showCanvas, showColorArea, showGrayList } from '../helper';
-
 import type { getBlankMargin } from './blankMargin';
 
 export type TBLR = 'top' | 'bottom' | 'left' | 'right';
@@ -140,5 +140,5 @@ export const boil = <T>(
   compareFunc: (a: T, b: T) => T,
 ) => {
   if (!array || (array.length ?? 0) === 0) return null;
-  return array.reduce(compareFunc); // eslint-disable-line unicorn/no-array-reduce
+  return array.reduce(compareFunc);
 };

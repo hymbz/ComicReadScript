@@ -1,12 +1,11 @@
-import fs from 'node:fs';
-
 import type { InputPluginOption, OutputPluginOption } from 'rollup';
 
-import { byPath } from '../helper/other';
-import { langList } from '../helper/languages';
+import fs from 'node:fs';
 
-import { siteUrl } from './siteUrl';
+import { langList } from '../helper/languages';
+import { byPath } from '../helper/other';
 import { ehRules } from './ehRules';
+import { siteUrl } from './siteUrl';
 
 export { solidSvg } from './rollup-solid-svg';
 
@@ -37,12 +36,12 @@ export const outputPlugins: OutputPluginOption[] = [
     renderChunk: (code) =>
       code
         // 删除 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" }); 语句
-        .replace(/Object\.defineProperty.+?\n\n/, '')
+        .replace(/Object\.defineProperty.+\n\n/, '')
         // 删除 exports.require 语句
         .replace(/\n\nexports\.require.+;/, '')
         // 删除单独的 require 语句和注释
         .replaceAll(
-          /\nrequire.+;|\n\/\*\*.+?\*\/\n(?=\n)|\n\/\/ .+?\n(?=\n)/g,
+          /\nrequire.+;|\n\/\*\*.+?\*\/\n(?=\n)|\n\/\/ .+\n(?=\n)/g,
           '',
         ),
   },
@@ -85,7 +84,7 @@ switch (lang) {
 
       const map = new Map<string, string>();
       code = code.replaceAll(
-        /(\nvar)?\s+?(_tmpl.+?) = \/\*#__PURE__\*\/(web.template\(`.+?`\))(,|;)/g,
+        /(\nvar)?\s+(_tmpl.+?) = \/\*#__PURE__\*\/(web.template\(`.+?`\))(,|;)/g,
         (_, __, name, tmpl) => {
           map.set(name, tmpl);
           return '';
@@ -104,11 +103,11 @@ switch (lang) {
 export const inputPlugins: InputPluginOption[] = [
   {
     name: 'self-import',
-    async transform(code, path) {
+    transform(code, path) {
       if (!/.+\.tsx?$/.test(path)) return null;
       // rollup 对 import * as 的处理会导致脚本加载机制失效，
       // 为了兼容 vite，不能直接删掉 `* as`，只能在这里修改代码
-      return code.replaceAll(/import \* as (?=\w)/g, 'import ');
+      return code.replaceAll(/import \* as \b/g, 'import ');
     },
   },
 ];

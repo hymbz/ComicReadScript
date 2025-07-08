@@ -1,19 +1,19 @@
 import {
-  t,
-  getMostItem,
-  querySelectorAll,
-  wait,
-  testImgUrl,
   canvasToBlob,
-  plimit,
-  singleThreaded,
-  throttle,
   createEffectOn,
-  sleep,
+  getMostItem,
   isEqual,
   onUrlChange,
+  plimit,
+  querySelectorAll,
+  singleThreaded,
+  sleep,
+  t,
+  testImgUrl,
+  throttle,
+  wait,
 } from 'helper';
-import { useInit, toast } from 'main';
+import { toast, useInit } from 'main';
 
 import { getChapterSwitch } from './chapterSwitch';
 import { getEleSelector, isEleSelector } from './eleSelector';
@@ -37,8 +37,8 @@ import {
 export const otherSite = async () => {
   let laseScroll = window.scrollY;
 
-  const { store, _setState, setState, options, setOptions } = await useInit(
-    window.location.hostname,
+  const { store, setState, options, setOptions } = await useInit(
+    location.hostname,
     { remember_current_site: true, selector: '' },
   );
 
@@ -47,7 +47,7 @@ export const otherSite = async () => {
     () => options.remember_current_site,
     async (remember) => {
       if (remember) return;
-      await GM.deleteValue(window.location.hostname);
+      await GM.deleteValue(location.hostname);
       location.reload();
     },
   );
@@ -103,7 +103,7 @@ export const otherSite = async () => {
 
   const handleImgUrl = async (e: HTMLImageElement) => {
     const url = await handleBlobImg(e);
-    if (url.startsWith('http:') && window.location.protocol === 'https:')
+    if (url.startsWith('http:') && location.protocol === 'https:')
       return url.replace('http:', 'https:');
     return url;
   };
@@ -158,7 +158,7 @@ export const otherSite = async () => {
     ((e.naturalHeight > 500 && e.naturalWidth > 500) ||
       isEleSelector(e, options.selector));
 
-  let imgEleList: Array<HTMLImageElement | undefined>;
+  let imgEleList: (HTMLImageElement | undefined)[];
 
   /** 检查筛选符合标准的图片元素用于更新 imgList */
   const updateImgList = singleThreaded(async (_state) => {
@@ -187,7 +187,7 @@ export const otherSite = async () => {
 
     // 随着图片的增加，需要补上空缺位置，避免变成稀疏数组
     if (store.manga.imgList.length < imgEleList.length)
-      _setState('comicMap', '', 'imgList', [
+      setState('comicMap', '', 'imgList', [
         ...store.manga.imgList,
         ...Array.from(
           { length: imgEleList.length - store.manga.imgList.length },
@@ -196,7 +196,7 @@ export const otherSite = async () => {
       ]);
     // colamanga 会创建随机个数的假 img 元素，导致刚开始时高估页数，需要删掉多余的页数
     else if (store.manga.imgList.length > imgEleList.length)
-      _setState(
+      setState(
         'comicMap',
         '',
         'imgList',
@@ -214,7 +214,7 @@ export const otherSite = async () => {
         if (newUrl === store.manga.imgList[i]) return;
 
         isEdited ||= true;
-        _setState('comicMap', '', 'imgList', i, newUrl);
+        setState('comicMap', '', 'imgList', i, newUrl);
       }),
     );
     if (isEdited)
@@ -288,12 +288,12 @@ export const otherSite = async () => {
   const handleMutation = () => {
     updateImgList();
     triggerAllLazyLoad();
-    _setState('manga', getChapterSwitch());
+    setState('manga', getChapterSwitch());
   };
   /** 监视页面元素发生变化的 Observer */
   const imgDomObserver = new MutationObserver(handleMutation);
 
-  _setState('comicMap', '', {
+  setState('comicMap', '', {
     async getImgList() {
       if (!imgEleList) {
         imgEleList = [];
@@ -313,7 +313,7 @@ export const otherSite = async () => {
             duration: Number.POSITIVE_INFINITY,
             async onClick() {
               await setOptions({ remember_current_site: false });
-              window.location.reload();
+              location.reload();
             },
           });
         }, 3000);
@@ -329,7 +329,7 @@ export const otherSite = async () => {
   });
 
   // 同步滚动显示网页上的图片，用于以防万一保底触发漏网之鱼
-  _setState(
+  setState(
     'manga',
     'onShowImgsChange',
     throttle((showImgs) => {
@@ -354,6 +354,6 @@ export const otherSite = async () => {
   onUrlChange((lastUrl, nowUrl) => {
     if (!lastUrl || lastUrl.split('/').length === nowUrl.split('/').length)
       return;
-    _setState('comicMap', '', 'imgList', undefined);
+    setState('comicMap', '', 'imgList', undefined);
   });
 };

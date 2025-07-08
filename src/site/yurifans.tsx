@@ -1,5 +1,5 @@
-import { request, toast, useInit } from 'main';
 import { querySelector, querySelectorAll, wait } from 'helper';
+import { request, toast, useInit } from 'main';
 
 declare const b2token: string;
 
@@ -14,7 +14,7 @@ declare const b2token: string;
 // https://yuri.website/40064/
 
 (async () => {
-  const { store, _setState, showComic, init } = await useInit('yurifans', {
+  const { store, setState, showComic, init } = await useInit('yurifans', {
     自动签到: true,
   });
 
@@ -56,19 +56,19 @@ declare const b2token: string;
     const imgList = imgBody.getElementsByTagName('img');
     if (await wait(() => imgList.length, 1000)) {
       const getImgList = () => [...imgList].map((e) => e.src);
-      _setState('comicMap', '', { getImgList });
+      setState('comicMap', '', { getImgList });
     }
     return;
   }
 
   // 有折叠内容的漫画
   if (querySelector('.xControl')) {
-    _setState('flag', 'needAutoShow', false);
+    setState('flag', 'needAutoShow', false);
 
-    const switchChapter = async (i: number) => {
+    const switchChapter = (i: number) => {
       showComic(i);
 
-      _setState('manga', {
+      setState('manga', {
         onPrev: Reflect.has(store.comicMap, i - 1)
           ? () => switchChapter(i - 1)
           : undefined,
@@ -82,7 +82,7 @@ declare const b2token: string;
       const item = a.parentElement!.nextElementSibling! as HTMLElement;
       const getImgList = () =>
         [...item.querySelectorAll('img')].map((e) => e.dataset.src ?? e.src);
-      _setState('comicMap', i, { getImgList });
+      setState('comicMap', i, { getImgList });
 
       // 只在打开折叠内容时进入阅读模式
       a.addEventListener('click', () => item.style.display && switchChapter(i));
@@ -98,5 +98,5 @@ declare const b2token: string;
     querySelectorAll<HTMLImageElement>('.entry-content img').map(
       (e) => e.dataset.src || e.src,
     );
-  _setState('comicMap', '', { getImgList });
+  setState('comicMap', '', { getImgList });
 })();

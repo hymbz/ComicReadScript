@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 
-import pkg from '../../package.json' with { type: 'json' };
-import zh from '../../locales/zh.json' with { type: 'json' };
 import en from '../../locales/en.json' with { type: 'json' };
 import ru from '../../locales/ru.json' with { type: 'json' };
 import ta from '../../locales/ta.json' with { type: 'json' };
+import zh from '../../locales/zh.json' with { type: 'json' };
+import pkg from '../../package.json' with { type: 'json' };
 
 /**
  * 脚本依赖库与对应的 cdn url
@@ -90,7 +90,7 @@ export const getMetaData = (isDevMode: boolean) => {
     namespace: 'ComicRead',
     version: pkg.version,
     description: `${zh.description}${getSupportSiteList()
-      .map((site) => site.replace(/\[(.+)]\(.+\)/, '$1'))
+      .map((site) => site.replace(/\[(.+)\]\(.+\)/, '$1'))
       .join('、')}`,
     'description:en': `${en.description} ${enSupportSite.join(' | ')}.`,
     'description:ru': ru.description,
@@ -124,7 +124,6 @@ export const getMetaData = (isDevMode: boolean) => {
     grant: [
       'GM_addElement',
       'GM_getResourceText',
-      'GM_addStyle',
       'GM_xmlhttpRequest',
       'GM.addValueChangeListener',
       'GM.removeValueChangeListener',

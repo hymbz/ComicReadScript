@@ -1,4 +1,5 @@
-import { type Preview } from 'storybook-solidjs-vite';
+import type { Preview } from 'storybook-solidjs-vite';
+
 import { INITIAL_VIEWPORTS } from 'storybook/viewport';
 
 import './global.css';

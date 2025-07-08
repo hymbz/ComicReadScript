@@ -1,24 +1,23 @@
-import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
+import MdCloudDownload from '@material-design-icons/svg/round/cloud_download.svg';
 import MdImageSearch from '@material-design-icons/svg/round/image_search.svg';
 import MdImportContacts from '@material-design-icons/svg/round/import_contacts.svg';
-import MdCloudDownload from '@material-design-icons/svg/round/cloud_download.svg';
+import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 import { createEffect } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
+
+import type { UseDrag } from 'helper';
+
 import { Fab } from 'components/Fab';
-import {
-  mountComponents,
-  useDrag,
-  useStyle,
-  useStyleMemo,
-  type UseDrag,
-} from 'helper';
+import { mountComponents, useDrag, useStyle, useStyleMemo } from 'helper';
 
-import { useSpeedDial, type MainContext } from '.';
+import type { MainContext } from '.';
 
-export const useFab = async <T extends Record<string, any>>(
+import { useSpeedDial } from '.';
+
+export const useFab = <T extends Record<string, any>>(
   mainContext: MainContext<T>,
 ) => {
-  const { store, _setState, options, setOptions } = mainContext;
+  const { store, setState, options, setOptions } = mainContext;
 
   useStyle(`
     #fab {
@@ -70,7 +69,7 @@ export const useFab = async <T extends Record<string, any>>(
 
   const dom = mountComponents('fab', () => {
     createEffect(() => {
-      _setState('fab', {
+      setState('fab', {
         placement:
           -options.fabPosition.left < window.innerWidth / 2 ? 'left' : 'right',
         speedDialPlacement:

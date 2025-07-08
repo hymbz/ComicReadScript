@@ -1,14 +1,16 @@
+import type { Component } from 'solid-js';
+
 import MdCheckCircle from '@material-design-icons/svg/round/check_circle.svg';
-import MdWarning from '@material-design-icons/svg/round/warning.svg';
 import MdError from '@material-design-icons/svg/round/error.svg';
 import MdInfo from '@material-design-icons/svg/round/info.svg';
-import { type Component, createEffect, createMemo, Show } from 'solid-js';
+import MdWarning from '@material-design-icons/svg/round/warning.svg';
+import { createEffect, createMemo, Show } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 
-import { _setState, dismiss, setState } from './store';
-import classes from './index.module.css';
-
 import type { Toast } from '.';
+
+import classes from './index.module.css';
+import { dismiss, setState } from './store';
 
 const iconMap = {
   info: MdInfo,
@@ -36,7 +38,7 @@ const dismissToast = (id: string) =>
 
 /** 重置 toast 的 update 属性 */
 const resetToastUpdate = (id: string) =>
-  _setState('map', id, 'update', undefined);
+  setState('map', id, 'update', undefined);
 
 export const ToastItem: Component<Toast> = (props) => {
   /** 是否要显示进度 */

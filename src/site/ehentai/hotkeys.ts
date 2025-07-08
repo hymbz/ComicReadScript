@@ -1,7 +1,9 @@
 import { hotkeysMap } from 'components/Manga';
 import { getKeyboardCode, linstenKeydown, querySelector } from 'helper';
 
-import { setEscHandler, type EhContext } from './helper';
+import type { EhContext } from './helper';
+
+import { setEscHandler } from './helper';
 
 export const addHotkeysActions = (context: EhContext) => {
   if (!context.options.add_hotkeys_actions) return;

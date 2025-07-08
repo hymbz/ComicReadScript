@@ -1,4 +1,3 @@
-import { useInit } from 'main';
 import {
   createEffectOn,
   onUrlChange,
@@ -8,24 +7,24 @@ import {
   waitDom,
   waitUrlChange,
 } from 'helper';
+import { useInit } from 'main';
 
 (async () => {
   const isMangaPage = () => location.pathname.includes('/post/');
   await waitUrlChange(isMangaPage);
 
-  const { store, _setState, setState, options, showComic, init } =
-    await useInit('kemono', {
-      autoShow: false,
-      defaultOption: { pageNum: 1 },
-      /** 加载原图 */
-      load_original_image: true,
-    });
+  const { store, setState, showComic, init } = await useInit('kemono', {
+    autoShow: false,
+    defaultOption: { pageNum: 1 },
+    /** 加载原图 */
+    load_original_image: true,
+  });
 
   // 在切换时重新获取图片
   createEffectOn(
-    () => options.load_original_image,
+    () => store.options.load_original_image,
     (isOriginal, prev) => {
-      _setState('nowComic', isOriginal ? 'original' : 'thumbnail');
+      setState('nowComic', isOriginal ? 'original' : 'thumbnail');
       if (prev) showComic();
     },
   );
@@ -79,6 +78,6 @@ import {
       state.comicMap.original.imgList = original();
       state.comicMap.thumbnail.imgList = thumbnail();
     });
-    if (options.autoShow) await showComic();
+    if (store.options.autoShow) await showComic();
   });
 })();

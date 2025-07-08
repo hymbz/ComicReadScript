@@ -1,17 +1,22 @@
-import { type Component, For, createMemo } from 'solid-js';
+import type { Component } from 'solid-js';
+
+import { createMemo, For } from 'solid-js';
+
 import { boolDataVal, createThrottleMemo } from 'helper';
 
-import { store } from '../store';
+import type { ComicImg } from '../store/image';
+
 import { contentHeight, getImg, isOnePageMode } from '../actions';
 import classes from '../index.module.css';
+import { store } from '../store';
 
-interface ScrollbarPageItem {
+type ScrollbarPageItem = {
   /** 翻页模式下是图片数量，卷轴模式下是图片长度之和 */
   num: number;
   loadType: ComicImg['loadType'];
   isNull: boolean;
   translationType: ComicImg['translationType'];
-}
+};
 
 const getScrollbarPage = (
   img: ComicImg,
@@ -80,9 +85,7 @@ export const ScrollbarPageStatus = () => {
       }
     };
 
-    for (let i = 0; i < store.pageList.length; i++) {
-      const [a, b] = store.pageList[i];
-
+    for (const [a, b] of store.pageList) {
       if (b === undefined) handleImg(a, !isOnePageMode());
       else if (a === -1) {
         handleImg(b);

@@ -6,7 +6,6 @@ const gmApi = {
     typeof GM_addElement === 'undefined' ? undefined : GM_addElement,
   GM_getResourceText,
   GM_xmlhttpRequest,
-  GM_addStyle,
   unsafeWindow,
 };
 const gmApiList = Object.keys(gmApi);
@@ -27,7 +26,7 @@ const evalCode = (code: string) => {
   if (gmApi.GM_addElement)
     return GM_addElement('script', { textContent: code })?.remove();
 
-  eval.call(unsafeWindow, code); // eslint-disable-line no-eval
+  eval.call(unsafeWindow, code);
 };
 
 /**
@@ -60,7 +59,7 @@ const Comlink = require('comlink');
 ${code}
 Comlink.expose(exports);
 `.replaceAll(
-        /const (\w+?) = require\('(.+?)'\);/g,
+        /const (\w+) = require\('(.+?)'\);/g,
         (_, varName, module) => `
 let ${varName} = {};
 (function (exports, module) { ${GM_getResourceText(module)} }) (
@@ -122,13 +121,13 @@ let ${varName} = {};
   Reflect.deleteProperty(unsafeWindow, tempName);
 };
 
-interface SelfModule {
+type SelfModule = {
   [key: string | symbol]: unknown;
   default: {
     (...args: unknown[]): unknown;
     [key: string | symbol]: unknown;
   };
-}
+};
 
 /**
  * 创建一个外部模块的 Proxy，等到读取对象属性时才加载模块

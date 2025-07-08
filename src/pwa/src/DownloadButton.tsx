@@ -1,8 +1,11 @@
-import { createSignal, type Component } from 'solid-js';
+import type { Component } from 'solid-js';
+
 import { filetypeinfo } from 'magic-bytes.js';
+import { createSignal } from 'solid-js';
+
 import { toast } from 'components/Toast';
+import { boolDataVal, isUrl, t, wait } from 'helper';
 import { request } from 'userscript/main';
-import { t, boolDataVal, isUrl, wait } from 'helper';
 
 import { loadNewImglist } from './store';
 
@@ -45,12 +48,12 @@ export const loadUrl = async (url: string | null | undefined) => {
 
 // 自动根据查询字符串加载 url
 const handleUrl = () => {
-  const urlParams = new URLSearchParams(window.location.search);
+  const urlParams = new URLSearchParams(location.search);
   return loadUrl(urlParams.get('url'));
 };
 
 setTimeout(handleUrl);
-window.onpopstate = handleUrl;
+window.addEventListener('popstate', handleUrl);
 
 export const DownloadButton: Component = () => (
   <button
@@ -63,7 +66,7 @@ export const DownloadButton: Component = () => (
       const downUrl = prompt(t('pwa.tip_enter_url'));
       if (!downUrl) return;
 
-      const url = new URL(window.location.href);
+      const url = new URL(location.href);
       url.searchParams.set('url', downUrl);
       window.history.pushState({}, '', url);
       return handleUrl();

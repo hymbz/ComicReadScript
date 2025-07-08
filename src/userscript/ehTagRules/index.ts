@@ -274,7 +274,7 @@ export const getTagLintRules = () => {
         ['f', 'female'],
         ['x', 'mixed'],
         ['o', 'other'],
-      ] as Array<[string, string]>
+      ] as [string, string][]
     ).map(([short, full]) => [new RegExp(`\\b${short}\\b(?=.*:)`), full]),
   );
   // 将缩写的命名空间转回全拼

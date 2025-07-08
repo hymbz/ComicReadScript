@@ -2,8 +2,9 @@
 
 import { describe, expect, it } from 'vitest';
 
+import type { ComicImg, FillEffect } from './store/image';
+
 import { handleComicData } from './handleComicData';
-import type { FillEffect } from './store/image';
 
 // 例子
 // https://www.copymanga.site/comic/yiquanchaoren/chapter/c4ba81ae-5ace-11e9-8b68-024352452ce0
@@ -12,7 +13,7 @@ import type { FillEffect } from './store/image';
 // https://bbs.yamibo.com/thread-499050-1-1.html
 
 const testWide = (
-  imgTypeList: Array<ComicImg['type']>,
+  imgTypeList: ComicImg['type'][],
   initFillEffect?: FillEffect,
 ) => {
   const fillEffect = { '-1': true, ...initFillEffect };
@@ -88,7 +89,7 @@ it('没有跨页，但有缺页', () => {
 });
 
 const testMargin = (
-  imgTypeList: Array<'' | 'left' | 'right' | 'both' | 'wide'>,
+  imgTypeList: ('' | 'left' | 'right' | 'both' | 'wide')[],
   initFillEffect?: FillEffect,
 ) => {
   const fillEffect = { '-1': true, ...initFillEffect };

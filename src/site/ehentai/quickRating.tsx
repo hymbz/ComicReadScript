@@ -1,9 +1,10 @@
 import { For } from 'solid-js';
 import { render } from 'solid-js/web';
-import { request, toast } from 'main';
-import { querySelectorAll, t } from 'helper';
 
-import { type EhContext } from './helper';
+import { querySelectorAll, t, useStyle } from 'helper';
+import { request, toast } from 'main';
+
+import type { EhContext } from './helper';
 
 /** 快捷评分 */
 export const quickRating = (context: EhContext) => {
@@ -26,7 +27,7 @@ export const quickRating = (context: EhContext) => {
       return;
   }
 
-  GM_addStyle(`
+  useStyle(`
     .comidread-quick-rating {
       position: absolute;
       width: 100%;
@@ -56,7 +57,7 @@ export const quickRating = (context: EhContext) => {
         noTip: true,
       });
       const reRes =
-        /api_url = "(.+?)".+?gid = (\d+).+?token = "(.+?)".+?apiuid = (\d+).+?apikey = "(.+?)"/s.exec(
+        /api_url = "(.+?)";.+?gid = (\d+);.+?token = "(.+?)";.+?apiuid = (\d+);.+?apikey = "(.+?)"/s.exec(
           dataRes.responseText,
         );
       if (!reRes) throw new Error(t('site.ehentai.change_rating_failed'));

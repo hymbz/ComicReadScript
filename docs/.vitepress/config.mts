@@ -2,7 +2,6 @@ import { defineConfig } from 'vitepress';
 
 import { imgSize } from './imgSize';
 
-
 export default defineConfig({
   lang: 'zh-CN',
   title: 'ComicRead Script',

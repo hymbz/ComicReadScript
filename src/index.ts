@@ -1,6 +1,8 @@
-import { getInitLang } from 'helper/languages';
-import { otherSite } from 'userscript/otherSite';
+import type { InitOptions, LoadImgFn } from 'main';
+
 import {
+  debounce,
+  fileType,
   isUrl,
   log,
   plimit,
@@ -8,29 +10,24 @@ import {
   querySelectorAll,
   querySelectorClick,
   range,
+  requestIdleCallback,
   scrollIntoView,
   sleep,
   t,
+  useStyle,
   wait,
   waitDom,
-  requestIdleCallback,
-  debounce,
-  fileType,
 } from 'helper';
-import {
-  request,
-  toast,
-  universal,
-  type InitOptions,
-  type LoadImgFn,
-} from 'main';
+import { getInitLang } from 'helper/languages';
+import { request, toast, universal } from 'main';
+import { otherSite } from 'userscript/otherSite';
 
 /** 站点配置 */
 let options: InitOptions | undefined;
 
 try {
   // 匹配站点
-  switch (window.location.hostname) {
+  switch (location.hostname) {
     // #百合会（记录阅读历史、自动签到等）
     case 'bbs.yamibo.com': {
       inject('site/yamibo');
@@ -39,9 +36,9 @@ try {
 
     // #百合会新站
     case 'www.yamibo.com': {
-      if (!window.location.pathname.includes('/manga/view-chapter')) break;
+      if (!location.pathname.includes('/manga/view-chapter')) break;
 
-      const id = new URLSearchParams(window.location.search).get('id');
+      const id = new URLSearchParams(location.search).get('id');
       if (!id) break;
 
       /** 总页数 */
@@ -139,13 +136,13 @@ try {
         getImgList: () => imgList,
         SPA: {
           async isMangaPage() {
-            const id = Number(window.location.pathname.split('/')[2]);
-            if (!id || !window.location.pathname.startsWith('/artworks/')) {
+            const id = Number(location.pathname.split('/')[2]);
+            if (!id || !location.pathname.startsWith('/artworks/')) {
               imgList.length = 0;
               return false;
             }
 
-            type resData = { body: Array<{ urls: { original: string } }> };
+            type resData = { body: { urls: { original: string } }[] };
             const res = await request<resData>(`/ajax/illust/${id}/pages`, {
               responseType: 'json',
             });
@@ -168,7 +165,7 @@ try {
             (e) => e.dataset.srcset!,
           ),
         SPA: {
-          isMangaPage: () => window.location.href.includes('/comic/'),
+          isMangaPage: () => location.href.includes('/comic/'),
           getOnPrev: () => querySelectorClick('.prev-btn:not(.invisible) a'),
           getOnNext: () => querySelectorClick('.next-btn:not(.invisible) a'),
         },
@@ -186,7 +183,7 @@ try {
         wait: () => Boolean(querySelector('.scrollbar-demo-item')),
         getImgList,
         SPA: {
-          isMangaPage: () => window.location.pathname.startsWith('/view/'),
+          isMangaPage: () => location.pathname.startsWith('/view/'),
           getOnNext: () => querySelectorClick('#next_chapter'),
           getOnPrev: () => querySelectorClick('#prev_chapter'),
         },
@@ -221,16 +218,16 @@ try {
             { throw: true },
           );
         return res.response.data.data as {
-          chapters: Array<{
-            data: Array<{ chapter_id: number; chapter_order: number }>;
-          }>;
+          chapters: {
+            data: { chapter_id: number; chapter_order: number }[];
+          }[];
         };
       };
 
       options = {
         name: 'zaiManHua',
-        async getImgList({ _setState }) {
-          const urlParams = new URLSearchParams(window.location.search);
+        async getImgList({ setState }) {
+          const urlParams = new URLSearchParams(location.search);
           const comicId = Number(urlParams.get('comic_id'));
           const chapterId = Number(urlParams.get('chapter_id'));
           if (!comicId || !chapterId)
@@ -249,18 +246,18 @@ try {
           const chapterIndex = chapter.findIndex(
             (data) => data.chapter_id === chapterId,
           );
-          _setState('manga', {
+          setState('manga', {
             onPrev:
               chapterIndex > 0
                 ? () =>
-                    window.location.assign(
+                    location.assign(
                       `/pages/comic/page?comic_id=${comicId}&chapter_id=${chapter[chapterIndex - 1].chapter_id}`,
                     )
                 : undefined,
             onNext:
               chapterIndex + 1 < chapter.length
                 ? () =>
-                    window.location.assign(
+                    location.assign(
                       `/pages/comic/page?comic_id=${comicId}&chapter_id=${chapter[chapterIndex + 1].chapter_id}`,
                     )
                 : undefined,
@@ -270,7 +267,7 @@ try {
           return pageData.page_url_hd;
         },
         SPA: {
-          isMangaPage: () => window.location.pathname === '/pages/comic/page',
+          isMangaPage: () => location.pathname === '/pages/comic/page',
         },
       };
       break;
@@ -279,7 +276,7 @@ try {
     // #[明日方舟泰拉记事社](https://terra-historicus.hypergryph.com)
     case 'terra-historicus.hypergryph.com': {
       const apiUrl = () =>
-        `https://terra-historicus.hypergryph.com/api${window.location.pathname}`;
+        `https://terra-historicus.hypergryph.com/api${location.pathname}`;
 
       const getImgUrl = (i: number) => async () => {
         const res = await request(`${apiUrl()}/page?pageNum=${i + 1}`);
@@ -295,16 +292,13 @@ try {
             { responseType: 'json' },
           );
           const pageList = res.response.data.pageInfos;
-          if (
-            pageList.length === 0 &&
-            window.location.pathname.includes('episode')
-          )
+          if (pageList.length === 0 && location.pathname.includes('episode'))
             throw new Error('获取图片列表时出错');
 
           return plimit<string>(range(pageList.length, getImgUrl));
         },
         SPA: {
-          isMangaPage: () => window.location.href.includes('episode'),
+          isMangaPage: () => location.href.includes('episode'),
           getOnPrev: () => querySelectorClick('footer .HG_COMIC_READER_prev a'),
           getOnNext: () =>
             querySelectorClick(
@@ -328,7 +322,7 @@ try {
     case 'm.manhuagui.com':
     case 'www.mhgui.com':
     case 'www.manhuagui.com': {
-      if (!/\/comic\/\d+\/\d+\.html/.test(window.location.pathname)) break;
+      if (!/\/comic\/\d+\/\d+\.html/.test(location.pathname)) break;
 
       let comicInfo: {
         sl: Record<string, string>;
@@ -344,8 +338,8 @@ try {
         if (!dataScript) throw new Error(t('site.changed_load_failed'));
         comicInfo = JSON.parse(
           // 只能通过 eval 获得数据
-          // eslint-disable-next-line no-eval
-          eval(dataScript.innerHTML.slice(26)).match(/(?<=.*?\(){.+}/)[0],
+          // oxlint-disable-next-line no-eval
+          eval(dataScript.innerHTML.slice(26)).match(/(?<=\()\{.+\}/)[0],
         );
       } catch {
         toast.error(t('site.changed_load_failed'));
@@ -353,15 +347,15 @@ try {
       }
 
       // 让切换章节的提示可以显示在漫画页上
-      GM_addStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
+      useStyle(`#smh-msg-box { z-index: 2147483647 !important }`);
 
       const handlePrevNext = (cid: number) => {
         if (cid === 0) return undefined;
-        const newUrl = window.location.pathname.replace(
+        const newUrl = location.pathname.replace(
           /(?<=\/)\d+(?=\.html)/,
           `${cid}`,
         );
-        return () => window.location.assign(newUrl);
+        return () => location.assign(newUrl);
       };
 
       options = {
@@ -398,7 +392,7 @@ try {
       options = {
         name: 'manhuaDB',
         getImgList: () =>
-          (unsafeWindow.img_data_arr as Array<{ img: string }>).map(
+          (unsafeWindow.img_data_arr as { img: string }[]).map(
             (data) =>
               `${unsafeWindow.img_host}/${unsafeWindow.img_pre}/${data.img}`,
           ),
@@ -445,8 +439,7 @@ try {
             _sign: unsafeWindow.DM5_VIEWSIGN,
           },
         });
-        // eslint-disable-next-line no-eval
-        return eval(res) as string[];
+        return eval(res) as string[]; // oxlint-disable-line no-eval
       };
 
       const handlePrevNext = (pcSelector: string, mobileText: string) =>
@@ -503,11 +496,11 @@ try {
       options = {
         name: 'wnacg',
         getImgList: () =>
-          (unsafeWindow.imglist as Array<{ url: string; caption: string }>)
+          (unsafeWindow.imglist as { url: string; caption: string }[])
             .filter(
               ({ caption }) => caption !== '喜歡紳士漫畫的同學請加入收藏哦！',
             )
-            .map(({ url }) => new URL(url, window.location.origin).href),
+            .map(({ url }) => new URL(url, location.origin).href),
       };
       break;
     }
@@ -538,8 +531,7 @@ try {
             _sign: unsafeWindow.MANGABZ_VIEWSIGN,
           },
         });
-        // eslint-disable-next-line no-eval
-        return eval(res) as string[];
+        return eval(res) as string[]; // oxlint-disable-line no-eval
       };
 
       const handlePrevNext = (pcSelector: string, mobileText: string) =>
@@ -591,7 +583,7 @@ try {
         }`;
 
       const getImgList = async (): Promise<string[]> => {
-        const chapterId = /chapter\/(\d+)/.exec(window.location.pathname)?.[1];
+        const chapterId = /chapter\/(\d+)/.exec(location.pathname)?.[1];
         if (!chapterId) throw new Error(t('site.changed_load_failed'));
 
         const res = await request('/api/query', {
@@ -604,9 +596,9 @@ try {
             query,
           }),
         });
-        return (
-          res.response.data.imagesByChapterId as Array<{ kid: string }>
-        ).map(({ kid }) => `https://komiic.com/api/image/${kid}`);
+        return (res.response.data.imagesByChapterId as { kid: string }[]).map(
+          ({ kid }) => `https://komiic.com/api/image/${kid}`,
+        );
       };
 
       const handlePrevNext = (text: string) => async () => {
@@ -622,7 +614,7 @@ try {
         getImgList,
         SPA: {
           isMangaPage: () =>
-            /comic\/\d+\/chapter\/\d+\/images\//.test(window.location.href),
+            /comic\/\d+\/chapter\/\d+\/images\//.test(location.href),
           getOnPrev: handlePrevNext('上一'),
           getOnNext: handlePrevNext('下一'),
         },
@@ -635,7 +627,7 @@ try {
       options = {
         name: 'mangadex',
         async getImgList() {
-          const chapter_id = window.location.pathname.split('/').at(2);
+          const chapter_id = location.pathname.split('/').at(2);
           const {
             response: {
               baseUrl,
@@ -648,10 +640,10 @@ try {
             `https://api.mangadex.org/at-home/server/${chapter_id}?forcePort443=false`,
             { responseType: 'json' },
           );
-          return data.map((e) => baseUrl + '/data/' + hash + '/' + e);
+          return data.map((e) => `${baseUrl}/data/${hash}/${e}`);
         },
         SPA: {
-          isMangaPage: () => /^\/chapter\/.+/.test(window.location.pathname),
+          isMangaPage: () => /^\/chapter\/.+/.test(location.pathname),
           getOnPrev: () =>
             querySelectorClick(
               `#chapter-selector > a[href^="/chapter/"]:nth-of-type(1)`,
@@ -673,7 +665,7 @@ try {
       options = {
         name: 'NoyAcg',
         async getImgList() {
-          const [, , id] = window.location.hash.split('/');
+          const [, , id] = location.hash.split('/');
 
           // 随便拿一个图片来获取 cdn url
           const img = await wait(() =>
@@ -686,7 +678,7 @@ try {
           );
           return range(imgNum, (i) => `${cdn}${id}/${i + 1}.webp`);
         },
-        SPA: { isMangaPage: () => window.location.hash.startsWith('#/read/') },
+        SPA: { isMangaPage: () => location.hash.startsWith('#/read/') },
       };
       break;
     }
@@ -726,7 +718,7 @@ try {
 
       options = {
         name: '77mh',
-        async getImgList() {
+        getImgList() {
           const baseUrl: string =
             unsafeWindow.img_qianz ?? unsafeWindow.ImgSvrList;
 
@@ -745,14 +737,14 @@ try {
     case 'www.manga2024.com':
     case 'www.2024manga.com': {
       if (
-        !window.location.pathname.includes('/chapter/') &&
+        !location.pathname.includes('/chapter/') &&
         !document.querySelector('.disData[contentkey]')
       )
         break;
       const getImgList = async () => {
-        const [, , word, , id] = window.location.pathname.split('/');
+        const [, , word, , id] = location.pathname.split('/');
         const res = await request<{
-          results: { chapter: { contents: Array<{ url: string }> } };
+          results: { chapter: { contents: { url: string }[] } };
         }>(
           `https://mapi.fgjfghkk.club/api/v3/comic/${word}/chapter/${id}?platform=1&_update=true`,
           { responseType: 'json' },
@@ -781,7 +773,7 @@ try {
           Reflect.has(unsafeWindow.galleryinfo, 'files') &&
           unsafeWindow.galleryinfo.type !== 'anime',
         getImgList: () =>
-          (unsafeWindow.galleryinfo?.files as object[]).map(
+          (unsafeWindow.galleryinfo!.files as object[]).map(
             (img) =>
               unsafeWindow.url_from_url_from_hash(
                 unsafeWindow.galleryinfo.id,
@@ -797,7 +789,7 @@ try {
     case 'shupogaki.moe':
     case 'hoshino.one':
     case 'niyaniya.moe': {
-      const downloadImg = async (url: string) =>
+      const downloadImg = (url: string) =>
         new Promise<string>((resolve) => {
           const xhr = new XMLHttpRequest();
           xhr.responseType = 'blob';
@@ -808,22 +800,21 @@ try {
           xhr.send();
         });
 
-      const isMangaPage = () => window.location.href.includes('/g/');
+      const isMangaPage = () => location.href.includes('/g/');
       const crt = localStorage.getItem('clearance');
       options = {
         name: 'schale',
         async getImgList({ dynamicLoad }) {
-          const [, , galleryId, galleryKey] =
-            window.location.pathname.split('/');
+          const [, , galleryId, galleryKey] = location.pathname.split('/');
 
           type DetailRes = {
             created_at: number;
             updated_at: number;
-            data: Array<{
+            data: {
               id: number;
               key: string;
               size: number;
-            }>;
+            }[];
           };
           const detailRes = await request<DetailRes>(
             `https://api.schale.network/books/detail/${galleryId}/${galleryKey}?crt=${crt}`,
@@ -835,7 +826,7 @@ try {
 
           type DataRes = {
             base: string;
-            entries: Array<{ path: string; dimensions: [number, number] }>;
+            entries: { path: string; dimensions: [number, number] }[];
           };
           const dataRes = await request<DataRes>(
             `https://api.schale.network/books/data/${galleryId}/${galleryKey}/${
@@ -954,13 +945,13 @@ try {
         )
       ) {
         const jump = (mangaId: number, chapterId: number) => {
-          window.location.pathname = `/manga/${mangaId}/chapter/${chapterId}`;
+          location.pathname = `/manga/${mangaId}/chapter/${chapterId}`;
         };
 
         const getChapters = async (mangaId: number, chapterId: number) => {
           type ChapterDataRes = {
             data: {
-              chapters: { nodes: Array<{ pageCount: number }> };
+              chapters: { nodes: { pageCount: number }[] };
               manga: { chapters: { totalCount: number } };
             };
           };
@@ -991,17 +982,17 @@ try {
           name: 'Tachidesk',
           SPA: {
             isMangaPage: () =>
-              /\/manga\/\d+\/chapter\/\d+/.test(window.location.pathname),
+              /\/manga\/\d+\/chapter\/\d+/.test(location.pathname),
           },
-          async getImgList({ _setState }) {
-            const [, , mangaId, , chapterId] = window.location.pathname
+          async getImgList({ setState }) {
+            const [, , mangaId, , chapterId] = location.pathname
               .split('/')
               .map(Number);
             const data = await getChapters(mangaId, chapterId);
             const { pageCount } = data.chapters.nodes[0];
             const chapterCount = data.manga.chapters.totalCount;
 
-            _setState('manga', {
+            setState('manga', {
               onPrev:
                 chapterId > 0 ? () => jump(mangaId, chapterId - 1) : undefined,
               onNext:
@@ -1026,7 +1017,7 @@ try {
         };
       } else {
         (async () => {
-          if ((await GM.getValue(window.location.hostname)) !== undefined)
+          if ((await GM.getValue(location.hostname)) !== undefined)
             return requestIdleCallback(otherSite);
 
           await GM.registerMenuCommand(

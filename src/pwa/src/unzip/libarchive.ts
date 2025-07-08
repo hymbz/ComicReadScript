@@ -1,12 +1,13 @@
-import { Archive } from 'libarchive.js';
 import { fileTypeFromBuffer } from 'file-type';
+import { Archive } from 'libarchive.js';
+
 import { toast } from 'components/Toast';
 import { plimit, t } from 'helper';
 
-import type { ImgFile } from '../store';
-import { createObjectURL, isSupportFile } from '../helper';
-
 import type { ZipData } from '.';
+import type { ImgFile } from '../store';
+
+import { createObjectURL, isSupportFile } from '../helper';
 
 const initLibarchive = false;
 /**
@@ -20,7 +21,7 @@ const initLibarchive = false;
 export const libarchive = async ({
   zipFile,
   tip,
-}: ZipData): Promise<Array<ImgFile | undefined>> => {
+}: ZipData): Promise<(ImgFile | undefined)[]> => {
   if (!initLibarchive)
     Archive.init({ workerUrl: '/libarchive.js/worker-bundle.js' });
 

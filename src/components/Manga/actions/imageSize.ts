@@ -1,7 +1,11 @@
 import { createEffectOn, createRootMemo } from 'helper';
 
-import { type State, store, setState } from '../store';
+import type { State } from '../store';
+import type { ComicImg } from '../store/image';
 
+import { setState, store } from '../store';
+import { getImg } from './helper';
+import { updateImgType } from './imageType';
 import {
   abreastColumnWidth,
   imgList,
@@ -10,8 +14,6 @@ import {
   isScrollMode,
   placeholderSize,
 } from './memo';
-import { updateImgType } from './imageType';
-import { getImg } from './helper';
 
 /** 获取指定图片的显示尺寸 */
 const getImgDisplaySize = (state: State, url: string) => {

@@ -1,11 +1,16 @@
-import MDLaunch from '@material-design-icons/svg/round/launch.svg';
-import { createSignal, type JSX, Show } from 'solid-js';
-import { render } from 'solid-js/web';
-import { createMutable } from 'solid-js/store';
-import { request } from 'main';
-import { querySelector, domParse, hijackFn } from 'helper';
+import type { JSX } from 'solid-js';
 
-import { setEscHandler, type GalleryContext } from './helper';
+import MDLaunch from '@material-design-icons/svg/round/launch.svg';
+import { createSignal, Show } from 'solid-js';
+import { createMutable } from 'solid-js/store';
+import { render } from 'solid-js/web';
+
+import { domParse, hijackFn, querySelector, useStyle } from 'helper';
+import { request } from 'main';
+
+import type { GalleryContext } from './helper';
+
+import { setEscHandler } from './helper';
 
 /** 快捷查看标签定义 */
 export const quickTagDefine = (_: GalleryContext) => {
@@ -52,7 +57,7 @@ export const quickTagDefine = (_: GalleryContext) => {
     );
   };
 
-  GM_addStyle(`
+  useStyle(`
     #comidread-tag-define {
       position: absolute;
       z-index: 1;

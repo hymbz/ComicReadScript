@@ -1,10 +1,13 @@
-import { type Component, For } from 'solid-js';
+import type { Component } from 'solid-js';
+
+import { For } from 'solid-js';
+
 import { boolDataVal, createEffectOn } from 'helper';
 
-import { defaultButtonList } from '../defaultButtonList';
-import { store } from '../store';
-import classes from '../index.module.css';
 import { focus } from '../actions';
+import { defaultButtonList } from '../defaultButtonList';
+import classes from '../index.module.css';
+import { store } from '../store';
 
 /** 左侧工具栏 */
 export const Toolbar: Component = () => {

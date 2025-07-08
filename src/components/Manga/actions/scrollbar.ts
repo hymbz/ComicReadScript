@@ -1,22 +1,20 @@
 import { createSignal } from 'solid-js';
-import {
-  clamp,
-  debounce,
-  createRootMemo,
-  type PointerState,
-  type UseDrag,
-} from 'helper';
 
-import { type State, store, refs, _setState } from '../store';
+import type { PointerState, UseDrag } from 'helper';
 
+import { clamp, createRootMemo, debounce } from 'helper';
+
+import type { State } from '../store';
+
+import { refs, setState, store } from '../store';
 import { isAbreastMode } from './memo';
+import { saveReadProgress } from './readProgress';
 import {
   scrollLength,
   scrollPercentage,
   scrollTo,
   sliderHeight,
 } from './scroll';
-import { saveReadProgress } from './readProgress';
 
 /** 滚动条元素的长度 */
 export const scrollDomLength = createRootMemo(() =>
@@ -125,6 +123,6 @@ export const handleScrollbarSlider: UseDrag = ({ type, xy, initial }, e) => {
       newPageIndex = store.pageList.length - 1;
 
     if (newPageIndex !== store.activePageIndex)
-      _setState('activePageIndex', newPageIndex);
+      setState('activePageIndex', newPageIndex);
   }
 };

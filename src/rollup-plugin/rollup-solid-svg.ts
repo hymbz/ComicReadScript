@@ -1,8 +1,9 @@
-import { readFile } from 'node:fs/promises';
+import type { TransformResult } from 'rollup';
+import type { Config } from 'svgo';
+import type { Plugin } from 'vite';
 
-import { type TransformResult } from 'rollup';
-import { type Config, optimize } from 'svgo';
-import { type Plugin } from 'vite';
+import { readFile } from 'node:fs/promises';
+import { optimize } from 'svgo';
 import solid from 'vite-plugin-solid';
 
 /** svgo 配置 */
@@ -37,7 +38,7 @@ const getSvgCode = async (path: string) => {
 };
 
 /** 将导入的 svg 转为 solidjs 组件 */
-export function solidSvg(): Plugin {
+export const solidSvg = (): Plugin => {
   const solidPlugin = solid();
 
   return {
@@ -50,6 +51,7 @@ export function solidSvg(): Plugin {
       const code = await getSvgCode(path);
       return `export default (props = {}) => ${code
         .replaceAll(/([{}])/g, "{'$1'}")
+        // eslint-disable-next-line regexp/no-super-linear-backtracking
         .replaceAll(/<!--\s*([\s\S]*?)\s*-->/g, '{/* $1 */}')
         .replace(/(?<=<svg.*?)(>)/i, ' {...props}>')}`;
     },
@@ -65,7 +67,7 @@ export function solidSvg(): Plugin {
 
       // 将结尾带有 `?raw` 的导入替换成对应的字符串变量
       for (const [raw, name, _path] of rawCode.matchAll(
-        /import (\w+) from '(.+.svg)\?raw';/g,
+        /import (\w+) from '(.+\.svg)\?raw';/g,
       )) {
         const svgPath = (await this.resolve(_path))!.id;
         const svgCode = await getSvgCode(svgPath);
@@ -76,4 +78,4 @@ export function solidSvg(): Plugin {
       return code;
     },
   };
-}
+};

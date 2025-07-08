@@ -1,36 +1,37 @@
 import { fileTypeFromBuffer } from 'file-type';
+
 import { plimit, t, wait } from 'helper';
 
+import type { ZipData } from '.';
 import type { ImgFile } from '../store';
+
 import { toast } from '../../../components/Toast';
 import { createObjectURL, isSupportFile, loadScript } from '../helper';
-
-import type { ZipData } from '.';
 
 loadScript('/libunrar/rpc.js');
 
 declare const RPC: any;
 
-interface FileEntry {
+type FileEntry = {
   type: 'file';
   fullFileName: string;
   fileContent: Uint8Array;
   fileSize: number;
-}
+};
 
-interface DirEntry {
+type DirEntry = {
   type: 'dir';
   ls: Record<string, FileEntry | DirEntry>;
-}
+};
 
-declare interface LibunrarRPC {
+declare type LibunrarRPC = {
   transferables: ArrayBuffer[];
 
   unrar: (
-    data: Array<{ name: string; content: ArrayBuffer }>,
+    data: { name: string; content: ArrayBuffer }[],
     password?: string,
   ) => Promise<DirEntry>;
-}
+};
 
 let rpc: LibunrarRPC;
 
@@ -38,7 +39,7 @@ const findImgFile = async (
   entry: FileEntry | DirEntry,
   tip: string,
   path: string[] = [],
-): Promise<Array<ImgFile | undefined>> => {
+): Promise<(ImgFile | undefined)[]> => {
   if (entry.type === 'file') {
     if (isSupportFile(entry.fullFileName) !== 'img') return [undefined];
 
@@ -53,7 +54,7 @@ const findImgFile = async (
   const list = await plimit(
     Object.entries(entry.ls).map(
       ([name, itemEntry]) =>
-        async () =>
+        () =>
           findImgFile(itemEntry, tip, [...path, name]),
     ),
     (doneNum, totalNum) =>
@@ -69,7 +70,7 @@ const findImgFile = async (
 export const libunrar = async (
   zipData: ZipData,
   password?: string,
-): Promise<Array<ImgFile | undefined>> => {
+): Promise<(ImgFile | undefined)[]> => {
   const { zipFile, tip, extension } = zipData;
   if (extension !== '.rar' && extension !== '.cbr') return [];
   if (!rpc) {

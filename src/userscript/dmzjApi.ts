@@ -1,30 +1,31 @@
-import { createMutable } from 'solid-js/store';
 import { onMount } from 'solid-js';
-import { toast, request } from 'main';
+import { createMutable } from 'solid-js/store';
+
 import dmzjDecrypt from 'dmzjDecrypt';
 import { log } from 'helper';
+import { request, toast } from 'main';
 
 type Text = number | string;
 
-interface chapterData {
+type chapterData = {
   id: Text;
   title: string;
   updatetime: Text;
-}
+};
 
 /** dmzj 的漫画详情 */
-export interface ComicDetail {
+export type ComicDetail = {
   title: string;
   last_updatetime: Text;
   last_update_chapter_id: number | undefined;
-  chapters: Array<{
+  chapters: {
     name: string;
     list: chapterData[];
-  }>;
-}
+  }[];
+};
 
 /** dmzj 的章节信息 */
-export interface ChapterInfo {
+export type ChapterInfo = {
   folder: string;
   chapter_name: string;
   next_chap_id?: number;
@@ -32,7 +33,7 @@ export interface ChapterInfo {
   comic_id: number;
   page_url: string[];
   updatetime: number;
-}
+};
 
 /** 根据漫画 id 和章节 id 获取章节数据 */
 export const getChapterInfo = async (comicId: Text, chapterId: Text) => {
@@ -69,11 +70,11 @@ const getComicDetail_base = async (comicId: string): Promise<ComicDetail> => {
         last_updatetime: string;
         title: string;
       };
-      list: Array<{
+      list: {
         id: string;
         chapter_name: string;
         updatetime: string;
-      }>;
+      }[];
     };
   };
   const res = await request<resData>(

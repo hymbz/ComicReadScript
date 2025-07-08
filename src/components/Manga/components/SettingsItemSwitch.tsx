@@ -1,13 +1,14 @@
 import type { Component } from 'solid-js';
 
+import type { SettingsItemProps } from './SettingsItem';
+
 import classes from '../index.module.css';
+import { SettingsItem } from './SettingsItem';
 
-import { SettingsItem, type SettingsItemProps } from './SettingsItem';
-
-export interface SettingsItemSwitchProps extends SettingsItemProps {
+export type SettingsItemSwitchProps = {
   value: boolean;
   onChange: (val: boolean) => void;
-}
+} & SettingsItemProps;
 
 /** 开关式菜单项 */
 export const SettingsItemSwitch: Component<SettingsItemSwitchProps> = (

@@ -1,9 +1,9 @@
 import { createSignal } from 'solid-js';
-import { inRange, createEffectOn, createRootMemo } from 'helper';
 
-import { store, setState, _setState } from '../../store';
+import { createEffectOn, createRootMemo, inRange } from 'helper';
+
+import { setState, store } from '../../store';
 import { resetImgState, updatePageData } from '../image';
-
 import { isAbreastMode } from './common';
 
 /** 记录每张图片所在的页面 */
@@ -34,7 +34,7 @@ const darkModeQuery = matchMedia('(prefers-color-scheme: dark)');
 const autoSwitchDarkMode = (query: MediaQueryList | MediaQueryListEvent) => {
   if (!store.option.autoDarkMode) return;
   if (query.matches === store.option.darkMode) return;
-  _setState('option', 'darkMode', query.matches);
+  setState('option', 'darkMode', query.matches);
 };
 darkModeQuery.addEventListener('change', autoSwitchDarkMode);
 autoSwitchDarkMode(darkModeQuery);

@@ -1,32 +1,33 @@
 /* eslint-disable i18next/no-literal-string */
+import { createMemo, createSignal, Show } from 'solid-js';
 import { render } from 'solid-js/web';
-import { Show, createMemo, createSignal } from 'solid-js';
-import { request, useInit, toast } from 'main';
+
 import {
+  createEffectOn,
+  hijackFn,
+  log,
   querySelector,
   querySelectorAll,
   scrollIntoView,
   useCache,
-  log,
-  createEffectOn,
-  hijackFn,
   useStyle,
 } from 'helper';
+import { request, toast, useInit } from 'main';
 
 // 多页
 // https://bbs.yamibo.com/thread-43598-2-694.html
 // 目录页
 // https://bbs.yamibo.com/thread-496210-1-1.html
 
-interface History {
+type History = {
   tid: string;
   lastPageNum: number;
   lastReplies: number;
   lastAnchor: string;
-}
+};
 
 (async () => {
-  const { _setState, options, showComic, loadComic } = await useInit('yamibo', {
+  const { setState, options, showComic, loadComic } = await useInit('yamibo', {
     记录阅读进度: true,
     关闭快捷导航的跳转: true,
     修正点击页数时的跳转判定: true,
@@ -111,7 +112,7 @@ interface History {
     querySelector('#qmenu a')?.setAttribute('href', 'javascript:;');
 
   // 判断当前页是帖子
-  if (/thread(-\d+){3}|mod=viewthread/.test(document.URL)) {
+  if (/thread(?:-\d+){3}|mod=viewthread/.test(document.URL)) {
     // 修复微博图床的链接
     for (const e of querySelectorAll('img[file*="sinaimg.cn"]'))
       e.setAttribute('referrerpolicy', 'no-referrer');
@@ -119,7 +120,7 @@ interface History {
     const readMode = () => {
       const isFirstPage = !querySelector('.pg > .prev');
       // 第一页以外不自动加载
-      if (!isFirstPage) _setState('flag', 'needAutoShow', false);
+      if (!isFirstPage) setState('flag', 'needAutoShow', false);
 
       let imgList = querySelectorAll<HTMLImageElement>(
         ':is(.t_fsz, .message) img',
@@ -153,9 +154,9 @@ interface History {
 
         return imgList.map((img) => img.src);
       };
-      _setState('comicMap', '', { getImgList });
+      setState('comicMap', '', { getImgList });
 
-      _setState('manga', {
+      setState('manga', {
         // 在图片加载完成后再检查一遍有没有小图，有就删掉
         onLoading(_imgList, img) {
           if (img && img.width! < 500 && img.height! < 500) return loadComic();
@@ -164,7 +165,7 @@ interface History {
           if (isEnd)
             scrollIntoView('.psth, .rate, #postlist > div:nth-of-type(2)');
 
-          _setState('manga', 'show', false);
+          setState('manga', 'show', false);
         },
       });
 
@@ -210,18 +211,14 @@ interface History {
           if (newList.length > 0 && (index === -1 || !threadList[index + 1]))
             return setPrevNext(pageNum + 1);
 
-          return _setState('manga', {
+          return setState('manga', {
             onPrev: threadList[index - 1]
               ? () =>
-                  window.location.assign(
-                    `thread-${threadList[index - 1]}-1-1.html`,
-                  )
+                  location.assign(`thread-${threadList[index - 1]}-1-1.html`)
               : undefined,
             onNext: threadList[index + 1]
               ? () =>
-                  window.location.assign(
-                    `thread-${threadList[index + 1]}-1-1.html`,
-                  )
+                  location.assign(`thread-${threadList[index + 1]}-1-1.html`)
               : undefined,
           });
         };
@@ -257,8 +254,8 @@ interface History {
     if (options.记录阅读进度) {
       const tid =
         unsafeWindow.tid ??
-        new URLSearchParams(window.location.search).get('tid') ??
-        /\/thread-(\d+)-\d+-\d+.html/.exec(window.location.pathname)?.[1];
+        new URLSearchParams(location.search).get('tid') ??
+        /\/thread-(\d+)-\d+-\d+.html/.exec(location.pathname)?.[1];
       if (!tid) return;
 
       /** 回复数 */
@@ -342,7 +339,7 @@ interface History {
   }
 
   // 判断当前页是板块
-  if (/forum(-\d+){2}|mod=forumdisplay/.test(document.URL)) {
+  if (/forum(?:-\d+){2}|mod=forumdisplay/.test(document.URL)) {
     if (options.修正点击页数时的跳转判定) {
       const List = querySelectorAll('.tps>a');
       let i = List.length;
@@ -378,7 +375,6 @@ interface History {
             const [data, setData] = createSignal<History | undefined>();
 
             createEffectOn(updateFlag, () =>
-              // eslint-disable-next-line promise/prefer-await-to-then
               cache.get('history', tid).then(setData),
             );
 

@@ -1,2 +1,2 @@
-export * from './observer';
 export * from './common';
+export * from './observer';

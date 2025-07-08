@@ -1,23 +1,19 @@
 import {
-  t,
-  log,
-  createEqualsSignal,
   createEffectOn,
+  createEqualsSignal,
   lang,
+  log,
   sleep,
+  t,
 } from 'helper';
 import { request } from 'request';
 
+import type { TaskState } from './helper';
+
+import { downloadImg } from '../../helper';
 import { store } from '../../store';
 import { setOption } from '../helper';
-import { downloadImg } from '../../helper';
-
-import {
-  setMessage,
-  createFormData,
-  createOptions,
-  type TaskState,
-} from './helper';
+import { createFormData, createOptions, setMessage } from './helper';
 
 const apiUrl = () =>
   store.option.translation.localUrl || 'http://127.0.0.1:5003';
@@ -171,12 +167,12 @@ export const updateSelfhostedOptions = async (noTip = false) => {
       noTip,
       errorText: `${t('setting.option.paragraph_translation')} - ${t('alert.server_connect_failed')}`,
     });
-    const translatorsText = /(?<=validTranslators: )\[.+?](?=,)/s.exec(
+    const translatorsText = /(?<=validTranslators: )\[.+?\](?=,)/s.exec(
       res.responseText,
     )?.[0];
     if (!translatorsText) return undefined;
     const list = JSON.parse(
-      translatorsText.replaceAll(/\s|,\s*(?=])/g, ``).replaceAll(`'`, `"`),
+      translatorsText.replaceAll(/\s|,\s*(?=\])/g, ``).replaceAll(`'`, `"`),
     ) as string[];
     setSelfOptions(createOptions(list));
   } catch (error) {

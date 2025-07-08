@@ -1,16 +1,16 @@
-import { For, createEffect } from 'solid-js';
+import { createEffect, For } from 'solid-js';
+
+import type { SettingsItemProps } from './SettingsItem';
 
 import classes from '../index.module.css';
+import { SettingsItem } from './SettingsItem';
 
-import { SettingsItem, type SettingsItemProps } from './SettingsItem';
-
-export interface SettingsItemSelectProps<T extends string>
-  extends SettingsItemProps {
-  options: Array<[string, string] | [string]>;
+export type SettingsItemSelectProps<T extends string> = {
+  options: ([string, string] | [string])[];
   value: T;
   onChange: (val: T) => void;
   onClick?: () => void;
-}
+} & SettingsItemProps;
 
 /** 选择器式菜单项 */
 export const SettingsItemSelect = <T extends string = string>(

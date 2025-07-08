@@ -1,9 +1,9 @@
 import type { Component } from 'solid-js';
 
-export { Toaster } from './Toaster';
 export { toast } from './toast';
+export { Toaster } from './Toaster';
 
-export interface Toast {
+export type Toast = {
   id: string;
   duration: number;
   type: 'info' | 'success' | 'warn' | 'error' | 'custom';
@@ -16,7 +16,7 @@ export interface Toast {
   onClick?: () => void;
   exit?: true;
   update?: true;
-}
+};
 
 export type Options = Omit<Toast, 'msg' | 'exit' | 'update'>;
 

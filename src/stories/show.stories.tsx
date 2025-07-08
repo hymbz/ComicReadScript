@@ -1,9 +1,10 @@
 import { sleep } from 'helper';
 
-import { _setState } from '../components/Manga/store';
+import type { PartialProps } from './Manga.stories';
 
-import MangaMeta, { type PartialProps } from './Manga.stories';
+import { setState } from '../components/Manga/store';
 import { imgList, waitImgLoaded } from './helper';
+import MangaMeta from './Manga.stories';
 
 export default {
   ...MangaMeta,
@@ -39,7 +40,7 @@ export const 异常状态 = {
     imgList: ['', 'xxx'],
   } satisfies PartialProps,
   async play() {
-    _setState('show', 'scrollbar', true);
+    setState('show', 'scrollbar', true);
     await sleep(1000);
   },
 };
@@ -78,7 +79,7 @@ export const 尾页 = {
     onNext() {},
   } satisfies PartialProps,
   async play() {
-    _setState('show', 'endPage', 'end');
+    setState('show', 'endPage', 'end');
     await sleep(1000);
   },
 };

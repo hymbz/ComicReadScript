@@ -54,10 +54,7 @@ export const useCache = async <Schema extends Record<string, unknown>>(
           .put(value),
       ),
 
-    get: async <K extends keyof Schema & string>(
-      storeName: K,
-      query: IDBValidKey,
-    ) =>
+    get: <K extends keyof Schema & string>(storeName: K, query: IDBValidKey) =>
       promisifyRequest<Schema[K] | undefined>(
         db.transaction(storeName, 'readonly').objectStore(storeName).get(query),
       ),
@@ -73,7 +70,7 @@ export const useCache = async <Schema extends Record<string, unknown>>(
           .delete(query),
       ),
 
-    async each<K extends keyof Schema & string>(
+    each<K extends keyof Schema & string>(
       storeName: K,
       callback: (
         value: Schema[K],
@@ -84,7 +81,7 @@ export const useCache = async <Schema extends Record<string, unknown>>(
         .transaction(storeName, 'readwrite')
         .objectStore(storeName)
         .openCursor();
-      request.onsuccess = async function (event) {
+      request.onsuccess = async function onsuccess(event) {
         const cursor = (event.target as IDBRequest<IDBCursorWithValue | null>)
           .result;
         if (!cursor) return;

@@ -1,13 +1,14 @@
 import { debounce } from 'helper';
 
-import { type State, store, setState, _setState } from '../store';
+import type { State } from '../store';
 
-import { resetPage } from './show';
-import { isBottom, isTop } from './scroll';
+import { setState, store } from '../store';
 import { saveReadProgress } from './readProgress';
+import { isBottom, isTop } from './scroll';
+import { resetPage } from './show';
 
 export const closeScrollLock = debounce(
-  () => _setState('scrollLock', false),
+  () => setState('scrollLock', false),
   100,
 );
 

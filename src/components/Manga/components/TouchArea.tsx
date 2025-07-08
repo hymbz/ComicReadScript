@@ -1,9 +1,12 @@
-import { For, type Component } from 'solid-js';
+import type { Component } from 'solid-js';
+
+import { For } from 'solid-js';
+
 import { boolDataVal, createRootMemo } from 'helper';
 
-import { store } from '../store';
 import { bindRef } from '../actions';
 import classes from '../index.module.css';
+import { store } from '../store';
 
 // 用大写表示要在此区块上显示提示
 export type Area = 'prev' | 'menu' | 'next' | 'PREV' | 'MENU' | 'NEXT';

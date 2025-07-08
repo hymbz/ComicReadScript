@@ -1,21 +1,20 @@
-import { request } from 'request';
 import {
   clamp,
-  debounce,
-  singleThreaded,
   createEffectOn,
   createRootMemo,
-  t,
+  debounce,
   log,
+  singleThreaded,
+  t,
 } from 'helper';
+import { request } from 'request';
 
-import { store, setState, _setState } from '../store';
-
-import { imgList, preloadNum } from './memo/common';
-import { updateImgSize } from './imageSize';
-import { renderImgList, showImgList } from './renderPage';
-import { handleImgRecognition } from './imageRecognition';
+import { setState, store } from '../store';
 import { getImg, getImgEle, getImgIndexs } from './helper';
+import { handleImgRecognition } from './imageRecognition';
+import { updateImgSize } from './imageSize';
+import { imgList, preloadNum } from './memo/common';
+import { renderImgList, showImgList } from './renderPage';
 import { translationAll } from './translation';
 
 /** 图片上次加载出错的时间 */
@@ -31,7 +30,7 @@ export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
   const img = store.imgMap[url];
   if (img.translationType === 'show') return;
   if (img.loadType !== 'loaded') {
-    _setState('imgMap', url, 'loadType', 'loaded');
+    setState('imgMap', url, 'loadType', 'loaded');
     updateImgLoadType();
     store.prop.onLoading?.(imgList(), store.imgMap[url]);
   }
@@ -199,7 +198,7 @@ createEffectOn(
     if (imgErrorTime.size === 0) return;
     for (const img of [..._showImgList].map((i) => getImg(i))) {
       if (img?.loadType !== 'error') continue;
-      _setState('imgMap', img.src, 'loadType', 'wait');
+      setState('imgMap', img.src, 'loadType', 'wait');
       updateImgLoadType();
     }
   }, 500),
@@ -212,7 +211,7 @@ const retryErrorImg = () => {
     const retryTime = Date.now() - 1000 * 60 * 3;
     for (const [url, time] of imgErrorTime.entries()) {
       if (time > retryTime) continue;
-      _setState('imgMap', url, 'loadType', 'wait');
+      setState('imgMap', url, 'loadType', 'wait');
       updateImgLoadType();
     }
   }
@@ -238,7 +237,7 @@ const timeoutAbort = (url: string) => {
   handleImgError(url);
 };
 
-createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
+createEffectOn(loadingImgList, (downImgList, prevImgList) => {
   if (!store.option.imgRecognition.enabled) return;
 
   if (prevImgList) {
@@ -267,13 +266,13 @@ createEffectOn(loadingImgList, async (downImgList, prevImgList) => {
       noTip: true,
       onerror: () => handleImgError(url),
       onprogress({ loaded, total }) {
-        _setState('imgMap', url, 'progress', (loaded / total) * 100);
+        setState('imgMap', url, 'progress', (loaded / total) * 100);
         // 一段时间内都没进度后超时中断
         handleTimeout();
       },
       onload({ response }) {
         abortMap.delete(url);
-        _setState('imgMap', url, {
+        setState('imgMap', url, {
           blobUrl: URL.createObjectURL(response),
           progress: undefined,
         });

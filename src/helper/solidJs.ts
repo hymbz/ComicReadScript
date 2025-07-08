@@ -1,20 +1,18 @@
+import type { Accessor, EffectFunction, MemoOptions, Owner } from 'solid-js';
+
 import {
-  type Accessor,
-  type EffectFunction,
-  type MemoOptions,
   createEffect,
+  createMemo,
   createRoot,
+  createSignal,
   getOwner,
   on,
-  createSignal,
-  createMemo,
-  onMount,
   onCleanup,
-  type Owner,
+  onMount,
   runWithOwner,
 } from 'solid-js';
 
-import { isEqual, throttle, createScheduled } from './other';
+import { createScheduled, isEqual, throttle } from './other';
 
 let publicOwner: Owner;
 createRoot(() => {

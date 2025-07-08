@@ -1,5 +1,5 @@
-import { request } from 'main';
 import { domParse } from 'helper';
+import { request } from 'main';
 
 const getTagSetHtml = async (tagset?: string) => {
   const url = tagset ? `/mytags?tagset=${tagset}` : '/mytags';
@@ -7,7 +7,7 @@ const getTagSetHtml = async (tagset?: string) => {
   return domParse(res.responseText);
 };
 
-export interface Tag {
+export type Tag = {
   e: HTMLElement;
   id: number;
   title: string;
@@ -20,7 +20,7 @@ export interface Tag {
   watch: boolean;
   hidden: boolean;
   order: number;
-}
+};
 
 const collectTags = (html: Document, tagList: Tag[] = []) => {
   const defaultColor =

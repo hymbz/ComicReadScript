@@ -1,5 +1,6 @@
+import type { Component } from 'solid-js';
+
 import { onAutoMount } from 'helper';
-import { type Component } from 'solid-js';
 
 export const EmptyTip: Component = () => {
   let ref!: HTMLHeadingElement;

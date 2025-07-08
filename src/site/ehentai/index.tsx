@@ -1,46 +1,51 @@
-import { createSignal, type Component, For, Show } from 'solid-js';
+import type { Component } from 'solid-js';
+
+import { createSignal, For, Show } from 'solid-js';
 import { render } from 'solid-js/web';
-import { request, toast, type LoadImgFn } from 'main';
+
+import type { MangaProps } from 'components/Manga';
+import type { LoadImgFn } from 'main';
+
 import {
-  type MangaProps,
   imgList as MangaImgList,
-  SettingsItemSwitch,
-  SettingHotkeys,
   SettingBlockSubtitle,
+  SettingHotkeys,
+  SettingsItemSwitch,
 } from 'components/Manga';
 import {
-  t,
-  querySelector,
-  scrollIntoView,
-  plimit,
-  querySelectorAll,
-  wait,
-  log,
-  testImgUrl,
-  singleThreaded,
-  createRootMemo,
-  requestIdleCallback,
-  linstenKeydown,
   assign,
+  createRootMemo,
   extractRange,
-  useCache,
-  sleep,
+  linstenKeydown,
+  log,
+  plimit,
+  querySelector,
+  querySelectorAll,
   range,
+  requestIdleCallback,
+  scrollIntoView,
+  singleThreaded,
+  sleep,
+  t,
+  testImgUrl,
+  useCache,
   useStyle,
+  wait,
 } from 'helper';
+import { request, toast } from 'main';
 
-import { escHandler, createEhContext } from './helper';
-import { quickFavorite } from './quickFavorite';
-import { crossSiteLink } from './crossSiteLink';
-import { addHotkeysActions } from './hotkeys';
 import { colorizeTag } from './colorizeTag';
-import { quickRating } from './quickRating';
-import { quickTagDefine } from './quickTagDefine';
-import { floatTagList } from './floatTagList';
-import { sortTags } from './sortTags';
-import { tagLint } from './tagLint';
+import { crossSiteLink } from './crossSiteLink';
 import { detectAd } from './detectAd';
 import { expandTagList } from './expandTagList';
+import { floatTagList } from './floatTagList';
+import { createEhContext, escHandler } from './helper';
+import { addHotkeysActions } from './hotkeys';
+import { quickFavorite } from './quickFavorite';
+import { quickRating } from './quickRating';
+import { quickTagDefine } from './quickTagDefine';
+import { sortTags } from './sortTags';
+import { tagLint } from './tagLint';
 
 // [ehentai 图像限额](https://github.com/ccloli/E-Hentai-Downloader/wiki/E−Hentai-Image-Viewing-Limits-(Chinese))
 
@@ -48,7 +53,7 @@ import { expandTagList } from './expandTagList';
   const context = await createEhContext();
   if (!context) return;
 
-  const { _setState, setState, options, setOptions, showComic } = context;
+  const { setState, options, setOptions, showComic } = context;
 
   const SiteSettings: Component = () => (
     <>
@@ -99,14 +104,14 @@ import { expandTagList } from './expandTagList';
   });
 
   if (context.type === 'mpv') {
-    return _setState('comicMap', '', {
+    return setState('comicMap', '', {
       getImgList({ dynamicLoad }) {
         const imgEleList = querySelectorAll('.mimg[id]');
-        const loadImgList: LoadImgFn = async (setImg) => {
-          const imagelist = unsafeWindow.imagelist as Array<{
+        const loadImgList: LoadImgFn = (setImg) => {
+          const imagelist = unsafeWindow.imagelist as {
             i: string;
             xhr: XMLHttpRequest;
-          }>;
+          }[];
           plimit(
             imagelist.map((_, i) => async () => {
               const url = () => imagelist[i].i;
@@ -166,7 +171,7 @@ import { expandTagList } from './expandTagList';
       imgRecognition: { enabled: false },
     };
     if (options.option) option = assign(options.option, option);
-    _setState('manga', 'option', option);
+    setState('manga', 'option', option);
   }
 
   // 悬浮标签列表
@@ -245,19 +250,17 @@ import { expandTagList } from './expandTagList';
   };
 
   /** 从详情页获取图片页的地址 */
-  const getImgPageUrl = async (
-    pageNum = 0,
-  ): Promise<Array<[string, string]>> => {
+  const getImgPageUrl = async (pageNum = 0): Promise<[string, string][]> => {
     const res = await request(
-      `${window.location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
+      `${location.pathname}${pageNum ? `?p=${pageNum}` : ''}`,
       { fetch: true, errorText: t('site.ehentai.fetch_img_page_url_failed') },
     );
     checkIpBanned(res.responseText);
-    const pageList: Array<[string, string]> = [
+    const pageList: [string, string][] = [
       ...res.responseText.matchAll(
         // 缩略图有三种显示方式：
         // 使用 img 的旧版，不显示页码的单个 div，显示页码的嵌套 div
-        /<a href="(.{20,50})"><(img alt=.+?|div><div |div )title=".+?: (.+?)"/gm,
+        /<a href="(.{20,50})"><(img alt=.+?|div><div |div )title=".+?: (.+?)"/g,
       ),
     ].map(([, url, , fileName]) => [url, fileName]);
     if (pageList.length === 0)
@@ -268,7 +271,7 @@ import { expandTagList } from './expandTagList';
   const [loadImgsText, setLoadImgsText] = createSignal(`1-${context.imgNum}`);
 
   const loadImgs = createRootMemo(() =>
-    // eslint-disable-next-line unicorn/explicit-length-check
+    // oxlint-disable-next-line explicit-length-check
     extractRange(loadImgsText(), context.imgList.length || context.imgNum),
   );
 
@@ -302,7 +305,7 @@ import { expandTagList } from './expandTagList';
     );
     checkAd?.();
   };
-  _setState('comicMap', '', {
+  setState('comicMap', '', {
     getImgList: ({ dynamicLoad }) =>
       dynamicLoad(loadImgList, () => loadImgs().size),
   });
@@ -318,11 +321,9 @@ import { expandTagList } from './expandTagList';
       if (!e.shiftKey) return;
       e.stopPropagation();
 
+      const saveRange = await cache.get('pageRange', unsafeWindow.gid);
       // eslint-disable-next-line no-alert
-      const pageRange = prompt(
-        t('other.page_range'),
-        (await cache.get('pageRange', unsafeWindow.gid))?.range,
-      );
+      const pageRange = prompt(t('other.page_range'), saveRange?.range);
       if (!pageRange) return;
       await cache.set('pageRange', {
         id: unsafeWindow.gid ?? context.galleryId,
@@ -331,7 +332,7 @@ import { expandTagList } from './expandTagList';
 
       setLoadImgsText(pageRange ?? `1-${context.imgNum}`);
       // 删掉当前的图片列表以便触发重新加载
-      _setState('comicMap', '', 'imgList', undefined);
+      setState('comicMap', '', 'imgList', undefined);
       showComic();
     };
 
@@ -381,7 +382,7 @@ import { expandTagList } from './expandTagList';
         return reloadImg(url);
       }
     }
-    _setState('comicMap', '', 'imgList', i, context.imgList[i]);
+    setState('comicMap', '', 'imgList', i, context.imgList[i]);
 
     for (const img of MangaImgList())
       if (img.loadType === 'error') return reloadImg(img.src);
@@ -391,7 +392,7 @@ import { expandTagList } from './expandTagList';
     state.manga.title = context.japanTitle || context.galleryTitle;
     state.manga.onExit = (isEnd) => {
       if (isEnd) scrollIntoView('#cdiv');
-      _setState('manga', 'show', false);
+      setState('manga', 'show', false);
     };
     state.manga.onImgError = reloadImg;
 

@@ -1,16 +1,19 @@
+import type { Zippable } from 'fflate';
+
 import MdFileDownload from '@material-design-icons/svg/round/file_download.svg';
-import { zipSync, type Zippable } from 'fflate';
+import { zipSync } from 'fflate';
 import { createMemo } from 'solid-js';
-import { createEffectOn, saveAs, t, FaviconProgress, useStore } from 'helper';
-import { store, imgList, downloadImg } from 'components/Manga';
+
 import { IconButton } from 'components/IconButton';
+import { downloadImg, imgList, store } from 'components/Manga';
 import { toast } from 'components/Toast';
+import { createEffectOn, FaviconProgress, saveAs, t, useStore } from 'helper';
 
 const getExtName = (mime: string) => /.+\/([^;]+)/.exec(mime)?.[1] ?? 'jpg';
 
 /** 下载按钮 */
 export const DownloadButton = () => {
-  const { store: state, _setState: setState } = useStore({
+  const { store: state, setState } = useStore({
     length: 0,
     /** undefined 表示未开始下载，等于 length 表示正在打包，-1 表示下载完成 */
     completedNum: undefined as undefined | number,
@@ -63,7 +66,7 @@ export const DownloadButton = () => {
     setState('completedNum', state.length);
     const zipped = zipSync(fileData, {
       level: 0,
-      comment: window.location.href,
+      comment: location.href,
     });
     saveAs(new Blob([zipped]), `${store.title || state.rawTitle}.zip`);
     setState('completedNum', -1);

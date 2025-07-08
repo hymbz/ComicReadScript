@@ -1,12 +1,13 @@
-import { clamp, throttle, createEffectOn, createRootMemo } from 'helper';
+import { clamp, createEffectOn, createRootMemo, throttle } from 'helper';
 
-import { type State, setState, store, _setState } from '../store';
+import type { State } from '../store';
 
+import { setState, store } from '../store';
 import { abreastArea, abreastShowColumn } from './abreastScroll';
-import { scrollLength } from './scroll';
-import { scrollTop } from './memo/observer';
 import { contentHeight, doubleScrollLineHeight, imgTopList } from './imageSize';
 import { imgList } from './memo';
+import { scrollTop } from './memo/observer';
+import { scrollLength } from './scroll';
 
 /** 找到普通卷轴模式下指定高度上的图片 */
 const findTopImg = (top: number, initIndex = 0) => {
@@ -179,7 +180,7 @@ createEffectOn(
   () => store.showRange,
   ([firstPage]) => {
     if (!store.gridMode && store.option.scrollMode.enabled)
-      _setState('activePageIndex', firstPage ?? 0);
+      setState('activePageIndex', firstPage ?? 0);
   },
 );
 

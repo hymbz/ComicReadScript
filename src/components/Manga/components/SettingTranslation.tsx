@@ -1,31 +1,30 @@
-import { createSignal, Show, type Component } from 'solid-js';
+import type { Component } from 'solid-js';
+
+import { createSignal, Show } from 'solid-js';
+
 import { createEffectOn, descRange, extractRange, t } from 'helper';
 
-import {
-  bindOption as _bindOption,
-  imgList,
-  setOption,
-  type SetOptionsFunction,
-} from '../actions';
-import {
-  isTranslatingToEnd,
-  isTranslatingAll,
-  translateToEnd,
-  translateAll,
-  translatorOptions,
-  setImgTranslationEnbale,
-  translationImgs,
-} from '../actions/translation';
-import { store } from '../store';
-import { updateSelfhostedOptions } from '../actions/translation/selfhosted';
-import { RangeInput } from '../../RangeInput';
-import classes from '../index.module.css';
+import type { SetOptionsFunction } from '../actions';
 import type { Option } from '../store/option';
 
+import { RangeInput } from '../../RangeInput';
+import { bindOption as _bindOption, imgList, setOption } from '../actions';
+import {
+  isTranslatingAll,
+  isTranslatingToEnd,
+  setImgTranslationEnbale,
+  translateAll,
+  translateToEnd,
+  translationImgs,
+  translatorOptions,
+} from '../actions/translation';
+import { updateSelfhostedOptions } from '../actions/translation/selfhosted';
+import classes from '../index.module.css';
+import { store } from '../store';
+import { SettingsItem } from './SettingsItem';
+import { SettingsItemNumber } from './SettingsItemNumber';
 import { SettingsItemSelect } from './SettingsItemSelect';
 import { SettingsItemSwitch } from './SettingsItemSwitch';
-import { SettingsItemNumber } from './SettingsItemNumber';
-import { SettingsItem } from './SettingsItem';
 
 const bindOption: SetOptionsFunction<Option['translation']> = (
   ...args: [any]

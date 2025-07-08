@@ -1,13 +1,13 @@
-import { getChapterInfo } from 'userscript/dmzjApi';
-import { toast, useInit } from 'main';
 import { log, querySelector, waitDom } from 'helper';
+import { toast, useInit } from 'main';
+import { getChapterInfo } from 'userscript/dmzjApi';
 
 const turnPage = (chapterId?: number) => {
   if (!chapterId) return undefined;
 
   return () => {
     window.open(
-      window.location.href.replace(/(?<=\/)\d+(?=\.html)/, `${chapterId}`),
+      location.href.replace(/(?<=\/)\d+(?=\.html)/, `${chapterId}`),
       '_self',
     );
   };
@@ -17,7 +17,7 @@ const turnPage = (chapterId?: number) => {
   await waitDom('.head_wz');
   // 只在漫画页内运行
   const comicId = querySelector('.head_wz [id]')?.id;
-  const chapterId = /(?<=\/)\d+(?=\.html)/.exec(window.location.pathname)?.[0];
+  const chapterId = /(?<=\/)\d+(?=\.html)/.exec(location.pathname)?.[0];
 
   if (!comicId || !chapterId) return;
 

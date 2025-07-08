@@ -1,9 +1,8 @@
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
 import { readFileSync } from 'node:fs';
-
-import shell from 'shelljs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import release from 'release-it';
+import shell from 'shelljs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

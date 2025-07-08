@@ -1,14 +1,11 @@
 import { toast } from 'components/Toast';
 import { createEffectOn, t, useStore } from 'helper';
 
-import { unzip } from './unzip';
 import { isSupportFile } from './helper';
+import { unzip } from './unzip';
 
-export interface ImgFile {
-  name: string;
-  url: string;
-}
-export const { store, setState, _state, _setState } = useStore({
+export type ImgFile = { name: string; url: string };
+export const { store, setState } = useStore({
   /** 图片文件数据列表 */
   imgList: [] as ImgFile[],
   /** 是否显示漫画 */
@@ -21,10 +18,10 @@ export const { store, setState, _state, _setState } = useStore({
   hiddenInstallTip:
     (localStorage.getItem('InstallTip') as '' | 'init' | 'TD') ?? 'init',
 });
-export type State = typeof _state;
+export type State = typeof store;
 
 /** 自动从句柄中找出并处理为图片数据 */
-const getImgData = async (file: File): Promise<ImgFile[]> => {
+const getImgData = (file: File): Promise<ImgFile[]> | ImgFile[] => {
   const fileType = isSupportFile(file.name);
   switch (fileType) {
     case null:
@@ -36,7 +33,7 @@ const getImgData = async (file: File): Promise<ImgFile[]> => {
   }
 };
 
-export const handleExit = () => _setState('show', false);
+export const handleExit = () => setState('show', false);
 
 const collator = new Intl.Collator(undefined, { numeric: true });
 
@@ -49,7 +46,7 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
     return;
   }
 
-  _setState('loading', true);
+  setState('loading', true);
 
   try {
     const imgListRaw = await Promise.all(files.map(getImgData));
@@ -77,7 +74,7 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
   } catch (error) {
     toast.error((error as Error).message, { throw: error as Error });
   } finally {
-    _setState('loading', false);
+    setState('loading', false);
   }
 };
 

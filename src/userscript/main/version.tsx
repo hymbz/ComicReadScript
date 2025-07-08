@@ -1,6 +1,7 @@
 import { Show } from 'solid-js';
-import { lang } from 'helper';
+
 import { toast } from 'components/Toast';
+import { lang } from 'helper';
 
 import { migration, versionLt } from './migration';
 

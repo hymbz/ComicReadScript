@@ -1,7 +1,9 @@
 import MdClose from '@material-design-icons/svg/round/close.svg';
-import { IconButton } from 'components/IconButton';
-import { type MangaProps } from 'components/Manga';
+
+import type { MangaProps } from 'components/Manga';
+
 import { DownloadButton } from 'components/DownloadButton';
+import { IconButton } from 'components/IconButton';
 import { t } from 'helper';
 
 import { handleExit } from './store';

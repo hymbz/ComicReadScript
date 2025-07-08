@@ -1,5 +1,7 @@
-import { waitForPageReady, type TestRunnerConfig } from '@storybook/test-runner';
+import type { TestRunnerConfig } from '@storybook/test-runner';
+
 import percySnapshot from '@percy/playwright';
+import { waitForPageReady } from '@storybook/test-runner';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

@@ -1,8 +1,9 @@
+import type { ScheduleCallback } from '@solid-primitives/scheduled';
+
 import {
-  type ScheduleCallback,
-  leadingAndTrailing,
-  throttle as _throttle,
   debounce as _debounce,
+  throttle as _throttle,
+  leadingAndTrailing,
 } from '@solid-primitives/scheduled';
 
 export { createScheduled } from '@solid-primitives/scheduled';
@@ -45,6 +46,7 @@ export function range<T = number>(
   b: number,
   c: (K: number) => T,
 ): T[] | number[];
+// oxlint-disable-next-line func-style
 export function range<T = number>(
   a: number,
   b?: number | T | ((K: number) => T),
@@ -55,7 +57,7 @@ export function range<T = number>(
       return [...Array.from({ length: a }).keys()];
 
     case 'number': {
-      const list: Array<T | number> = [];
+      const list: (T | number)[] = [];
       for (let i = a; i < b; i++) list.push(c ? c(i) : i);
       return list;
     }
@@ -106,7 +108,6 @@ export const getMostItem = <T>(list: T[]) => {
   const counts = new Map<T, number>();
   for (const val of list) counts.set(val, (counts.get(val) ?? 0) + 1);
 
-  // eslint-disable-next-line unicorn/no-array-reduce
   return [...counts.entries()].reduce((maxItem, item) =>
     maxItem[1] > item[1] ? maxItem : item,
   )[0];
@@ -197,7 +198,7 @@ export const singleThreaded = <T extends any[]>(
  * @returns 所有 Promise 的返回值
  */
 export const plimit = async <T>(
-  fnList: Array<() => Promise<T> | T>,
+  fnList: (() => Promise<T> | T)[],
   callBack = undefined as
     | ((doneNum: number, totalNum: number, resList: T[], i: number) => void)
     | undefined,
@@ -251,6 +252,7 @@ export async function wait<T>(
   timeout?: number,
   waitTime?: number,
 ): Promise<T>;
+// oxlint-disable-next-line func-style
 export async function wait<T>(
   fn: () => T | undefined | Promise<T | undefined>,
   timeout = Number.POSITIVE_INFINITY,
@@ -312,7 +314,7 @@ export const testImgUrl = (url: string) =>
     img.src = url;
   });
 
-export const canvasToBlob = async (
+export const canvasToBlob = (
   canvas: HTMLCanvasElement | OffscreenCanvas,
   type?: string,
   quality = 1,
@@ -349,6 +351,7 @@ export const difference = <T extends object>(a: T, b: T): Partial<T> => {
 };
 
 const _assign = <T extends object>(a: T, b: Partial<T>): T => {
+  // oxlint-disable-next-line prefer-structured-clone
   const res = JSON.parse(JSON.stringify(a)) as T;
   const keys = Object.keys(b);
   for (const key of keys) {
@@ -369,7 +372,7 @@ const _assign = <T extends object>(a: T, b: Partial<T>): T => {
  */
 export const assign = <T extends object>(
   target: T,
-  ...sources: Array<Partial<T> | undefined>
+  ...sources: (Partial<T> | undefined)[]
 ): T => {
   let res = target;
   for (const source of sources)
@@ -493,15 +496,15 @@ export const hijackFn = <T extends unknown[] = unknown[], R = unknown>(
       : (...args: T) => fn(rawFn, args);
 };
 
-export async function getGmValue<T extends string | number | object = string>(
+export const getGmValue = async <T extends string | number | object = string>(
   name: string,
   setValueFn: () => unknown | Promise<unknown>,
-) {
+) => {
   const value = await GM.getValue<T>(name);
   if (value !== undefined) return value;
   await setValueFn();
   return await GM.getValue<T>(name);
-}
+};
 
 /** 根据范围文本提取指定范围的元素的 index */
 export const extractRange = (rangeText: string, length: number) => {
@@ -559,15 +562,14 @@ export const descRange = (list: Iterable<number>, length: number) => {
 };
 
 /** 监听 url 变化 */
-export const onUrlChange = async (
+export const onUrlChange = (
   fn: (lastUrl: string, nowUrl: string) => unknown,
   handleUrl = (location: Location) => location.href,
 ) => {
   let lastUrl = '';
   const refresh = singleThreaded(async () => {
-    if (!(await wait(() => handleUrl(window.location) !== lastUrl, 5000)))
-      return;
-    const nowUrl = handleUrl(window.location);
+    if (!(await wait(() => handleUrl(location) !== lastUrl, 5000))) return;
+    const nowUrl = handleUrl(location);
     await fn(lastUrl, nowUrl);
     lastUrl = nowUrl;
   });
@@ -584,16 +586,14 @@ export const onUrlChange = async (
 };
 
 /** wait，但是只在 url 变化时判断 */
-export const waitUrlChange = async (isValidUrl: () => unknown) => {
-  // eslint-disable-next-line no-async-promise-executor
-  return new Promise<void>(async (resolve) => {
-    const abort = await onUrlChange(() => {
+export const waitUrlChange = (isValidUrl: () => unknown) =>
+  new Promise<void>((resolve) => {
+    const abort = onUrlChange(() => {
       if (!isValidUrl()) return;
       resolve();
       abort();
     });
   });
-};
 
 // TODO: 用这个重构相关实现
 export abstract class AnimationFrame {

@@ -1,16 +1,16 @@
 import { toast } from 'components/Toast';
-import { t, log } from 'helper';
+import { log, t } from 'helper';
 
 import type { ZipExtension } from '../helper';
 import type { ImgFile } from '../store';
 
 import { fflate } from './fflate';
-import { libunrar } from './libunrar';
 import { libarchive } from './libarchive';
+import { libunrar } from './libunrar';
 
 const unzipFnMap = new Map<
   string,
-  (data: ZipData) => Promise<Array<ImgFile | undefined>>
+  (data: ZipData) => Promise<(ImgFile | undefined)[]>
 >();
 // fflate 速度最快所以最先尝试
 unzipFnMap.set('fflate', fflate);
@@ -19,18 +19,18 @@ unzipFnMap.set('libunrar', libunrar);
 // 最后 7z 或有密码的给 libarchive
 unzipFnMap.set('libarchive', libarchive);
 
-export interface ZipData {
+export type ZipData = {
   zipFile: File;
   tip: string;
   extension: 'img' | ZipExtension;
-}
+};
 
 /** 解压缩文件 */
 export const unzip = async (zipFile: File, extension: ZipExtension) => {
   const tip = `「${zipFile.name}」${t('pwa.message.unzipping')}`;
   toast(tip, { duration: Number.POSITIVE_INFINITY });
 
-  let imgDataList: Array<ImgFile | undefined> = [];
+  let imgDataList: (ImgFile | undefined)[] = [];
 
   for (const [name, unzipFn] of unzipFnMap.entries()) {
     try {

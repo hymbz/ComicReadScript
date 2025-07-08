@@ -1,21 +1,21 @@
 import { createSignal } from 'solid-js';
-import { createRootMemo, createThrottleMemo, clamp } from 'helper';
+
+import { clamp, createRootMemo, createThrottleMemo } from 'helper';
 
 import { store } from '../store';
-
-import { abreastColumnWidth, isAbreastMode } from './memo/common';
 import { getImg } from './helper';
+import { abreastColumnWidth, isAbreastMode } from './memo/common';
 
 /** 并排卷轴模式下的全局滚动填充 */
 export const [abreastScrollFill, _setAbreastScrollFill] = createSignal(0);
 
-type Position = Array<{ column: number; top: number }>;
+type Position = { column: number; top: number }[];
 
-interface Area {
+type Area = {
   columns: number[][];
   position: Record<number, Position>;
   length: number;
-}
+};
 
 /** 并排卷轴模式下的每列布局 */
 export const abreastArea = createRootMemo<Area>(

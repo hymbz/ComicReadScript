@@ -1,9 +1,9 @@
 import { log } from 'helper';
 
-import { creatId, setState, store, dismiss } from './store';
-import { init } from './Toaster';
-
 import type { Message, Toast } from '.';
+
+import { creatId, dismiss, setState, store } from './store';
+import { init } from './Toaster';
 
 export const toast = (msg: Message, options?: Partial<Toast>) => {
   if (!msg) return;

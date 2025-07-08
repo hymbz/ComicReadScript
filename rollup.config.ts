@@ -1,22 +1,22 @@
-import fs from 'node:fs';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-import shell from 'shelljs';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import { babel } from '@rollup/plugin-babel';
-import styles from 'rollup-plugin-styles';
-import json from '@rollup/plugin-json';
-import alias from '@rollup/plugin-alias';
-import replace from '@rollup/plugin-replace';
-import { watchExternal } from 'rollup-plugin-watch-external';
 import type {
   InputPluginOption,
   OutputPluginOption,
   RollupOptions,
 } from 'rollup';
+
+import alias from '@rollup/plugin-alias';
+import { babel } from '@rollup/plugin-babel';
+import commonjs from '@rollup/plugin-commonjs';
+import json from '@rollup/plugin-json';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import replace from '@rollup/plugin-replace';
 import { parse as parseMd } from 'marked';
+import fs from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import styles from 'rollup-plugin-styles';
+import { watchExternal } from 'rollup-plugin-watch-external';
+import shell from 'shelljs';
 
 import { inputPlugins, outputPlugins, solidSvg } from './src/rollup-plugin';
 import { getMetaData, updateReadme } from './src/rollup-plugin/metaHeader';
@@ -31,7 +31,7 @@ const latestChangeHtml = await (() => {
     .toString();
 
   const newMd = md
-    .match(/^### [^[].+?$|^\* .+?$/gm)!
+    .match(/^### [^[].+$|^\* .+$/gm)!
     .map((mdText) => {
       switch (mdText[0]) {
         case '#':
@@ -40,7 +40,7 @@ const latestChangeHtml = await (() => {
             .replaceAll('Bug Fixes', '修复')
             .replaceAll('Performance Improvements', '优化');
         case '*':
-          return mdText.replaceAll(/(?<=^\* ):\w+?: |(?<=^.*)\(\[.*/g, '');
+          return mdText.replaceAll(/(?<=^\* ):\w+: |(?<=^.*)\(\[.*/g, '');
         default:
           return '';
       }

@@ -1,7 +1,9 @@
-import { defineConfig } from 'vite';
-import { type ManifestOptions, VitePWA } from 'vite-plugin-pwa';
+import type { ManifestOptions } from 'vite-plugin-pwa';
+
 import markdown from '@jackfranklin/rollup-plugin-markdown';
 import replace from '@rollup/plugin-replace';
+import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 import { vitePlugins } from '../rollup-plugin/vite';
 

@@ -1,20 +1,21 @@
+import type { Component, JSX } from 'solid-js';
+
 import MdMenuBook from '@material-design-icons/svg/round/menu_book.svg';
 import {
-  type Component,
-  type JSX,
-  For,
-  onCleanup,
-  onMount,
   createEffect,
   createSignal,
+  For,
   mergeProps,
+  onCleanup,
+  onMount,
   Show,
 } from 'solid-js';
+
 import { throttle, useStyle } from 'helper';
 
 import classes, { css as style } from './index.module.css';
 
-export interface FabProps {
+export type FabProps = {
   /** 百分比进度值，小数 */
   progress?: number;
   /** 提示文本 */
@@ -39,7 +40,7 @@ export interface FabProps {
   ref?: (val: HTMLElement) => void;
   onClick?: () => void;
   onBackdropClick?: () => void;
-}
+};
 
 /**
  * Fab 按钮
@@ -83,7 +84,7 @@ export const Fab: Component<FabProps> = (_props) => {
       data-placement={props.placement}
       style={{
         ...props.style,
-        '--hide-delay': `${props.speedDial?.length ?? 0 * 50}ms`,
+        '--hide-delay': `${(props.speedDial?.length ?? 0) * 50}ms`,
       }}
     >
       <button

@@ -1,16 +1,15 @@
 import { AnimationFrame, clamp, createRootMemo } from 'helper';
 
-import { _setState, refs, setState, store } from '../store';
-
+import { refs, setState, store } from '../store';
 import {
-  abreastScrollWidth,
-  abreastContentWidth,
   abreastArea,
+  abreastContentWidth,
+  abreastScrollWidth,
 } from './abreastScroll';
-import { isScrollMode, isAbreastMode, abreastColumnWidth } from './memo/common';
-import { contentHeight, doubleScrollLineHeight, imgTopList } from './imageSize';
-import { imgPageMap, scrollTop } from './memo/observer';
 import { setOption } from './helper';
+import { contentHeight, doubleScrollLineHeight, imgTopList } from './imageSize';
+import { abreastColumnWidth, isAbreastMode, isScrollMode } from './memo/common';
+import { imgPageMap, scrollTop } from './memo/observer';
 
 /** 滚动内容的总长度 */
 export const scrollLength = createRootMemo(() => {
@@ -117,7 +116,7 @@ export const scrollTo = (x: number, smooth = false) => {
   if (store.option.scrollMode.abreastMode) {
     _scrollTo(0);
     const val = clamp(0, x, abreastScrollWidth());
-    return _setState('page', 'offset', 'x', 'px', val);
+    return setState('page', 'offset', 'x', 'px', val);
   }
 
   if (!smooth) {

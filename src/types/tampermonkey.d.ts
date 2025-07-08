@@ -1,5 +1,3 @@
-/* eslint-disable jsdoc/check-param-names */
-/* eslint-disable @typescript-eslint/member-ordering */
 // This definition is based on the API reference of Tampermonkey
 // https://tampermonkey.net/documentation.php
 // TypeScript Version: 3.3

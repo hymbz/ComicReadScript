@@ -1,9 +1,6 @@
-import {
-  forEachCols,
-  forEachRows,
-  type ImgContextBase,
-  type TBLR,
-} from './workHelper';
+import type { ImgContextBase, TBLR } from './workHelper';
+
+import { forEachCols, forEachRows } from './workHelper';
 
 /** 获取图片空白边缘的长度 */
 export const getBlankMargin = ({

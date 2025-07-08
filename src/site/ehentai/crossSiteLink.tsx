@@ -1,17 +1,20 @@
-import { request, toast } from 'main';
-import {
-  t,
-  querySelector,
-  plimit,
-  hijackFn,
-  querySelectorAll,
-  fileType,
-} from 'helper';
-import { For, Show, type Component, type JSX } from 'solid-js';
-import { render } from 'solid-js/web';
-import { createStore } from 'solid-js/store';
+import type { Component, JSX } from 'solid-js';
 
-import { type GalleryContext } from './helper';
+import { For, Show } from 'solid-js';
+import { createStore } from 'solid-js/store';
+import { render } from 'solid-js/web';
+
+import {
+  fileType,
+  hijackFn,
+  plimit,
+  querySelector,
+  querySelectorAll,
+  t,
+} from 'helper';
+import { request, toast } from 'main';
+
+import type { GalleryContext } from './helper';
 
 type ItemData = {
   id: string;
@@ -22,16 +25,16 @@ type ItemData = {
 };
 
 const nhentai = async ({
-  _setState,
+  setState,
   galleryTitle,
 }: GalleryContext): Promise<ItemData[]> => {
-  interface ComicInfo {
+  type ComicInfo = {
     id: number;
     media_id: string;
     num_pages: number;
-    images: { pages: Array<{ t: string }> };
+    images: { pages: { t: string }[] };
     title: { japanese: string; english: string };
-  }
+  };
 
   // nhentai api 对应的扩展名
 
@@ -66,7 +69,7 @@ const nhentai = async ({
 
   return result.map(({ id, title, images, num_pages, media_id }) => {
     const itemId = `@nh:${id}`;
-    _setState('comicMap', itemId, {
+    setState('comicMap', itemId, {
       getImgList: ({ dynamicLoad }) =>
         dynamicLoad(
           (setImg) =>
@@ -96,7 +99,7 @@ nhentai.errorTip = (context: GalleryContext) =>
   });
 
 const hitomi = async ({
-  _setState,
+  setState,
   galleryId,
 }: GalleryContext): Promise<ItemData[]> => {
   const domain = 'gold-usergeneratedcontent.net';
@@ -117,11 +120,11 @@ const hitomi = async ({
   const data = JSON.parse(res.responseText.slice(18)) as {
     id: string;
     title: string;
-    files: Array<{ name: string; hash: string }>;
+    files: { name: string; hash: string }[];
   };
 
   const itemId = `@hitomi:${data.id}`;
-  _setState('comicMap', itemId, {
+  setState('comicMap', itemId, {
     getImgList: ({ dynamicLoad }) =>
       dynamicLoad(
         async (setImg) => {
@@ -139,7 +142,7 @@ const hitomi = async ({
             s: (h: string) => number;
             b: string;
           };
-          eval(ggScript); // eslint-disable-line no-eval
+          eval(ggScript); // oxlint-disable-line no-eval
 
           const imgList = data.files.map(({ hash }) => {
             const imageId = gg.s(hash);
@@ -276,6 +279,6 @@ export const crossSiteLink = async (context: GalleryContext) => {
   for (const itemList of Object.values(comicMap)) {
     if (typeof itemList === 'string') continue;
     if (itemList.length === 1)
-      context._setState('comicMap', itemList[0].id, { adList });
+      context.setState('comicMap', itemList[0].id, { adList });
   }
 };

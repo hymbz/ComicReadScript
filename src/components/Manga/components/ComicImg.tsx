@@ -1,19 +1,23 @@
-import { type Component, Show, createMemo, For } from 'solid-js';
+import type { Component } from 'solid-js';
 
-import { _setState, store } from '../store';
-import { useStyleMemo } from '../hooks/useStyle';
+import { createMemo, For, Show } from 'solid-js';
+
+import type { ComicImg as _ComicImg } from '../store/image';
+
 import {
-  getImgTip,
-  imgShowState,
-  isAbreastMode,
   abreastArea,
+  getImgTip,
   handleImgError,
   handleImgLoaded,
+  imgShowState,
+  isAbreastMode,
   isEnableBg,
 } from '../actions';
+import { useStyleMemo } from '../hooks/useStyle';
 import classes from '../index.module.css';
+import { store } from '../store';
 
-export const ComicImg: Component<ComicImg & { index: number }> = (img) => {
+export const ComicImg: Component<_ComicImg & { index: number }> = (img) => {
   const showState = () => imgShowState().get(img.index);
 
   const src = () => {

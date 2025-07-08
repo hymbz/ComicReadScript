@@ -1,16 +1,12 @@
-import { createStore, produce } from 'solid-js/store';
+import { useStore } from 'helper';
 
 import type { Toast } from '.';
 
-export const [_state, _setState] = createStore({
+export const { store, setState } = useStore({
   ref: null as HTMLElement | null,
-  list: [] as Array<Toast['id']>,
+  list: [] as Toast['id'][],
   map: {} as Record<Toast['id'], Toast>,
 });
-export type State = typeof _state;
-
-export const setState = (fn: (state: State) => void) => _setState(produce(fn));
-export const store: Readonly<State> = _state;
 
 export const creatId = (): string => {
   let id = `${Date.now()}`;
@@ -18,7 +14,5 @@ export const creatId = (): string => {
   return id;
 };
 
-export const dismiss = (id: string) => {
-  if (!Reflect.has(store.map, id)) return;
-  _setState('map', id, 'exit', true);
-};
+export const dismiss = (id: string) =>
+  Reflect.has(store.map, id) && setState('map', id, 'exit', true);

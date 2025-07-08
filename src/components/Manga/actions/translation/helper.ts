@@ -1,6 +1,6 @@
 import { t } from 'helper';
 
-import { _setState, store } from '../../store';
+import { setState, store } from '../../store';
 
 export type TaskState = {
   state: 'saved' | 'finished' | 'error' | 'error-lang';
@@ -9,7 +9,7 @@ export type TaskState = {
 };
 
 export const setMessage = (url: string, msg: string) =>
-  _setState('imgMap', url, 'translationMessage', msg);
+  setState('imgMap', url, 'translationMessage', msg);
 
 const sizeDict = { '1024': 'S', '1536': 'M', '2048': 'L', '2560': 'X' };
 

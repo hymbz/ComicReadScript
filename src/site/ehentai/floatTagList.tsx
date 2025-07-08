@@ -1,19 +1,25 @@
+import type { Writable } from 'type-fest';
+
 import MdPictureInPicture from '@material-design-icons/svg/round/picture_in_picture.svg?raw';
+
 import { focus, hotkeysMap, setDefaultHotkeys } from 'components/Manga';
 import {
   approx,
   clamp,
   createEffectOn,
-  linstenKeydown,
-  querySelector,
-  useStyleMemo,
-  useStore,
-  useDrag,
   getKeyboardCode,
   hijackFn,
+  linstenKeydown,
+  querySelector,
+  useDrag,
+  useStore,
+  useStyle,
+  useStyleMemo,
 } from 'helper';
 
-import { setEscHandler, type GalleryContext } from './helper';
+import type { GalleryContext } from './helper';
+
+import { setEscHandler } from './helper';
 
 const getDomPosition = (dom: HTMLElement) => {
   const rect = dom.getBoundingClientRect();
@@ -50,7 +56,7 @@ export const floatTagList = ({
   /** 边框样式 */
   const border = `1px solid ${borderColor}`;
 
-  GM_addStyle(`
+  useStyle(`
       #comicread-tag-box {
         position: fixed;
         z-index: 2147483647;
@@ -104,7 +110,7 @@ export const floatTagList = ({
       }
     `);
 
-  const { store, setState, _setState, _state } = useStore({
+  const { store, setState } = useStore({
     open: false,
     top: 0,
     left: 0,
@@ -113,15 +119,15 @@ export const floatTagList = ({
     bound: { width: 0, height: 0 },
   });
 
-  type State = typeof _state;
+  type State = typeof store;
 
-  const setPos = (state: State, top: number, left: number) => {
+  const setPos = (state: Writable<State>, top: number, left: number) => {
     state.top = clamp(-gd4.clientHeight * 0.75, top, state.bound.height);
     state.left = clamp(-gd4.clientWidth * 0.75, left, state.bound.width);
   };
 
   const setOpacity = (opacity: number) =>
-    _setState('opacity', clamp(0.5, opacity, 1));
+    setState('opacity', clamp(0.5, opacity, 1));
   setOpacity(Number(localStorage.getItem('floatTagListOpacity')) || 1);
 
   // 监视鼠标位置，以便在通过快捷键唤出时出现在鼠标所在位置
@@ -153,7 +159,7 @@ export const floatTagList = ({
   const placeholder = gd4.cloneNode() as HTMLDivElement;
   placeholder.id = 'comicread-tag-box-placeholder';
   placeholder.style.display = 'none';
-  placeholder.addEventListener('click', () => _setState('open', false));
+  placeholder.addEventListener('click', () => setState('open', false));
   placeholder.innerHTML = MdPictureInPicture;
   gd4.parentElement!.append(placeholder);
 
@@ -271,7 +277,7 @@ export const floatTagList = ({
 
   setDefaultHotkeys((hotkeys) => ({ ...hotkeys, float_tag_list: ['q'] }));
 
-  setEscHandler(0, () => (store.open ? _setState('open', false) : true));
+  setEscHandler(0, () => (store.open ? setState('open', false) : true));
 
   linstenKeydown((e) => {
     const code = getKeyboardCode(e);

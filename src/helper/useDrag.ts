@@ -1,7 +1,7 @@
-import { onAutoMount } from './solidJs';
 import { approx } from './other';
+import { onAutoMount } from './solidJs';
 
-export interface PointerState {
+export type PointerState = {
   id: number;
   /** 事件类型 */
   type: 'down' | 'move' | 'up' | 'cancel';
@@ -17,7 +17,7 @@ export interface PointerState {
   // 受 setPointerCapture 影响，除 down 外其他事件拿不到正确的 target，需要手动存一下
   /** 触发元素 */
   target: HTMLElement;
-}
+};
 
 const createPointerState = (
   e: PointerEvent,

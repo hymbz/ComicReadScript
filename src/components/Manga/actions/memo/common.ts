@@ -1,5 +1,7 @@
 import { createRootMemo, createThrottleMemo } from 'helper';
 
+import type { ComicImg } from '../../store/image';
+
 import { store } from '../../store';
 import { findFillIndex } from '../helper';
 

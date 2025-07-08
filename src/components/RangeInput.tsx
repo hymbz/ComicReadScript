@@ -1,13 +1,13 @@
-import { type Component, type JSX } from 'solid-js';
+import type { Component, JSX } from 'solid-js';
 
-export interface RangeInputProps {
+export type RangeInputProps = {
   value: string;
   placeholder?: string;
   onChange?: (val: string) => void;
 
   class?: string;
   style?: JSX.CSSProperties;
-}
+};
 
 /** 范围输入框 */
 export const RangeInput: Component<RangeInputProps> = (props) => {

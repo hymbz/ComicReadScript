@@ -78,7 +78,7 @@
 
   line-height: 1.4em;
   text-align: start;
-  word-break: break-word;
+  overflow-wrap: anywhere;
   white-space: break-spaces;
 
   & h2 {

@@ -1,12 +1,13 @@
-import { unwrap } from 'solid-js/store';
 import * as Comlink from 'comlink';
-import * as worker from 'worker/ImageRecognition';
-import { type MainFn } from 'worker/ImageRecognition';
+import { unwrap } from 'solid-js/store';
+
+import type { MainFn } from 'worker/ImageRecognition';
+
 import { log, throttle } from 'helper';
 import { showCanvas, showColorArea, showGrayList } from 'worker/helper';
+import * as worker from 'worker/ImageRecognition';
 
-import { _setState, setState, store } from '../store';
-
+import { setState, store } from '../store';
 import { updatePageData } from './image';
 
 const getImageData = (img: HTMLImageElement) => {
@@ -33,7 +34,7 @@ const mainFn = {
   log,
   updatePageData: throttle(() => setState(updatePageData), 1000),
   setImg: (url, key, val) =>
-    Reflect.has(store.imgMap, url) && _setState('imgMap', url, key, val),
+    Reflect.has(store.imgMap, url) && setState('imgMap', url, key, val),
 } as MainFn;
 if (isDevMode)
   Object.assign(mainFn, { showCanvas, showColorArea, showGrayList });

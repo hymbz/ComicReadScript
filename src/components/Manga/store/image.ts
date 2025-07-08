@@ -1,25 +1,23 @@
-declare global {
-  type ComicImg = {
-    loadType: 'loading' | 'loaded' | 'error' | 'wait';
-    type?: 'long' | 'wide' | 'vertical' | '';
-    src: string;
-    width?: number;
-    height?: number;
+export type ComicImg = {
+  loadType: 'loading' | 'loaded' | 'error' | 'wait';
+  type?: 'long' | 'wide' | 'vertical' | '';
+  src: string;
+  width?: number;
+  height?: number;
 
-    size: { height: number; width: number };
-    blobUrl?: string;
-    progress?: number;
+  size: { height: number; width: number };
+  blobUrl?: string;
+  progress?: number;
 
-    background?: string;
-    blankMargin?: { left: number; right: number } | null;
+  background?: string;
+  blankMargin?: { left: number; right: number } | null;
 
-    translationUrl?: string;
-    translationMessage?: string;
-    translationType?: 'wait' | 'show' | 'hide' | 'error';
-  };
+  translationUrl?: string;
+  translationMessage?: string;
+  translationType?: 'wait' | 'show' | 'hide' | 'error';
+};
 
-  type PageList = Array<[number] | [number, number]>;
-}
+export type PageList = ([number] | [number, number])[];
 
 /** 值为 boolean 表示是自动修改的，值为 number 表示是手动修改 */
 export type FillEffect = Record<number, boolean | 1 | 0>;

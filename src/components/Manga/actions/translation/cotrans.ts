@@ -1,10 +1,11 @@
-import { t, log, canvasToBlob, waitImgLoad, sleep } from 'helper';
-import { request, type Response } from 'request';
+import type { Response } from 'request';
 
-import { store } from '../../store';
+import { canvasToBlob, log, sleep, t, waitImgLoad } from 'helper';
+import { request } from 'request';
+
 import { downloadImg } from '../../helper';
-
-import { setMessage, createFormData } from './helper';
+import { store } from '../../store';
+import { createFormData, setMessage } from './helper';
 
 type QueryV1Message =
   | {
@@ -61,7 +62,7 @@ const waitTranslationPolling = async (id: string, url: string) => {
 };
 
 /** 等待翻译完成 */
-const waitTranslation = (id: string, url: string) => {
+const waitTranslation = async (id: string, url: string) => {
   const ws = new WebSocket(`wss://api.cotrans.touhou.ai/task/${id}/event/v1`);
 
   // 如果网站设置了 CSP connect-src 就只能轮询了

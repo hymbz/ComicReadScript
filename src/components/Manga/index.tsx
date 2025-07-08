@@ -1,23 +1,14 @@
-import {
-  type Component,
-  createEffect,
-  enableScheduling,
-  onMount,
-} from 'solid-js';
-import { boolDataVal } from 'helper';
-import { type PartialDeep } from 'type-fest';
+import type { Component } from 'solid-js';
+import type { PartialDeep } from 'type-fest';
 
-import { ComicImgFlow } from './components/ComicImgFlow';
-import { Toolbar } from './components/Toolbar';
-import { Scrollbar } from './components/Scrollbar';
-import { TouchArea } from './components/TouchArea';
-import { EndPage } from './components/EndPage';
-import { useInit } from './hooks/useInit';
-import { useStyle } from './hooks/useStyle';
-import { useCssVar } from './hooks/useCssVar';
-import { store, type State } from './store/index';
-import { type FillEffect } from './store/image';
-import { type Option } from './store/option';
+import { createEffect, enableScheduling, onMount } from 'solid-js';
+
+import { boolDataVal } from 'helper';
+
+import type { FillEffect } from './store/image';
+import type { State } from './store/index';
+import type { Option } from './store/option';
+
 import {
   bindRef,
   focus,
@@ -26,8 +17,17 @@ import {
   handleMouseDown,
   handleWheel,
 } from './actions';
-import classes, { css as style } from './index.module.css';
+import { ComicImgFlow } from './components/ComicImgFlow';
+import { EndPage } from './components/EndPage';
+import { Scrollbar } from './components/Scrollbar';
+import { Toolbar } from './components/Toolbar';
+import { TouchArea } from './components/TouchArea';
 import { stopPropagation } from './helper';
+import { useCssVar } from './hooks/useCssVar';
+import { useInit } from './hooks/useInit';
+import { useStyle } from './hooks/useStyle';
+import classes, { css as style } from './index.module.css';
+import { store } from './store/index';
 
 enableScheduling();
 
@@ -96,10 +96,10 @@ export const Manga: Component<MangaProps> = (props) => {
 };
 
 export * from './actions';
-export { downloadImg } from './helper';
-export { store, setState, _setState, refs } from './store/index';
-export { SettingsItem } from './components/SettingsItem';
-export { SettingsItemSwitch } from './components/SettingsItemSwitch';
-export { SettingsItemNumber } from './components/SettingsItemNumber';
 export { SettingHotkeys } from './components/SettingHotkeys';
 export { SettingBlockSubtitle } from './components/SettingPanel';
+export { SettingsItem } from './components/SettingsItem';
+export { SettingsItemNumber } from './components/SettingsItemNumber';
+export { SettingsItemSwitch } from './components/SettingsItemSwitch';
+export { downloadImg } from './helper';
+export { refs, setState, store } from './store/index';

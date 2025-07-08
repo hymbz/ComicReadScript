@@ -1,29 +1,34 @@
 import { createEffect, on } from 'solid-js';
+
 import {
   assign,
-  debounce,
-  throttle,
   createEffectOn,
   createRootMemo,
+  debounce,
+  throttle,
 } from 'helper';
 
-import { type MangaProps } from '..';
-import { type State, _setState, refs, setState } from '../store';
+import type { MangaProps } from '..';
+import type { State } from '../store';
+import type { ComicImg } from '../store/image';
+import type { Option } from '../store/option';
+
 import {
   defaultHotkeys,
   focus,
-  watchDomSize,
+  placeholderSize,
   resetImgState,
+  resumeReadProgress,
   scrollTo,
   updatePageData,
-  updateShowRange,
-  placeholderSize,
-  resumeReadProgress,
   updateSelfhostedOptions,
+  updateShowRange,
+  watchDomSize,
 } from '../actions';
-import { defaultOption, type Option } from '../store/option';
 import { playAnimation, stopPropagation } from '../helper';
 import classes from '../index.module.css';
+import { refs, setState } from '../store';
+import { defaultOption } from '../store/option';
 
 const createComicImg = (src: string): ComicImg => ({
   src,
@@ -121,7 +126,7 @@ export const useInit = (props: MangaProps) => {
   createEffect(() => {
     setState((state) => {
       state.hotkeys = {
-        ...JSON.parse(JSON.stringify(defaultHotkeys())),
+        ...structuredClone(defaultHotkeys()),
         ...props.hotkeys,
       };
     });
@@ -235,17 +240,17 @@ export const useInit = (props: MangaProps) => {
       new Blob(['self.close();'], { type: 'text/javascript' }),
     );
     setTimeout(URL.revokeObjectURL, 0, codeUrl);
-    _setState('supportWorker', Boolean(new Worker(codeUrl)));
+    setState('supportWorker', Boolean(new Worker(codeUrl)));
   }, 0);
 
   // 更新 fullscreen 参数
   refs.root.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement) return _setState('fullscreen', false);
+    if (!document.fullscreenElement) return setState('fullscreen', false);
     if (
       document.fullscreenElement.id === 'comicRead' ||
       document.fullscreenElement.classList.contains(classes.root)
     )
-      _setState('fullscreen', true);
+      setState('fullscreen', true);
   });
 
   for (const eventName of [
@@ -254,7 +259,7 @@ export const useInit = (props: MangaProps) => {
     'touchstart',
     'touchmove',
     'touchend',
-  ] as Array<keyof HTMLElementEventMap>)
+  ] as (keyof HTMLElementEventMap)[])
     refs.root.addEventListener(eventName, stopPropagation, { capture: true });
 
   focus();

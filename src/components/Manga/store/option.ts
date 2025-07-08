@@ -2,7 +2,7 @@ import { lang } from 'helper';
 
 import type { areaArrayMap } from '../components/TouchArea';
 
-export interface Option {
+export type Option = {
   /** 漫画方向 */
   dir: 'ltr' | 'rtl';
   /** 默认启用首页填充 */
@@ -121,7 +121,7 @@ export interface Option {
     /** 是否触发退出和上/下话 */
     triggerEnd: boolean;
   };
-}
+};
 
 const _defaultOption: Readonly<Option> = {
   dir: 'rtl',
@@ -203,8 +203,7 @@ const _defaultOption: Readonly<Option> = {
   },
 };
 
-export const defaultOption = () =>
-  JSON.parse(JSON.stringify(_defaultOption)) as Option;
+export const defaultOption = () => structuredClone(_defaultOption) as Option;
 
 export const optionState = {
   defaultOption: defaultOption(),

@@ -1,19 +1,14 @@
 import type { State } from '../../components/Manga/store';
+import type { ImgContext, ImgContextMargin } from './workHelper';
 
 import { getBackground } from './background';
 import { getBlankMargin } from './blankMargin';
-import {
-  mainFn,
-  resizeImg,
-  toGrayList,
-  type ImgContext,
-  type ImgContextMargin,
-} from './workHelper';
+import { mainFn, resizeImg, toGrayList } from './workHelper';
 
 export { setMainFn } from './workHelper';
 export type { MainFn } from './workHelper';
 
-export const handleImg = async (
+export const handleImg = (
   imgData: Uint8ClampedArray,
   width: number,
   height: number,

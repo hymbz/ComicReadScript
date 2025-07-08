@@ -1,13 +1,13 @@
-import { createScheduled, singleThreaded, wait, throttle, sleep } from 'helper';
+import { createScheduled, singleThreaded, sleep, throttle, wait } from 'helper';
 
-interface ImgData {
+type ImgData = {
   /** 触发次数 */
   triggedNum: number;
   /** observer 的 timeout id */
   observerTimeout: number;
   /** 最初的 src */
   oldSrc: string;
-}
+};
 
 const createImgData = (oldSrc = ''): ImgData => ({
   triggedNum: 0,
@@ -17,7 +17,7 @@ const createImgData = (oldSrc = ''): ImgData => ({
 
 /** 用于判断是否是图片 url 的正则 */
 const isImgUrlRe =
-  /^(((https?|ftp|file):)?\/)?\/[-\w+&@#/%?=~|!:,.;]+[-\w+&@#%=~|]$/;
+  /^(?:(?:(?:https?|ftp|file):)?\/)?\/[-\w+&@#/%?=~|!:,.;]+[-\w+&@#%=~|]$/;
 
 /** 找出格式为图片 url 的元素属性 */
 export const getDatasetUrl = (e: Element) => {
@@ -64,9 +64,8 @@ const triggerEleLazyLoad = async (
   }
 };
 
-function isImageElement(e: HTMLElement): e is HTMLImageElement {
-  return e.tagName === 'IMG';
-}
+const isImageElement = (e: HTMLElement): e is HTMLImageElement =>
+  e.tagName === 'IMG';
 
 /** 判断一个元素是否已经成功触发完懒加载 */
 export const isLazyLoaded = (e: HTMLElement, oldSrc?: string) => {
@@ -86,7 +85,6 @@ export const isLazyLoaded = (e: HTMLElement, oldSrc?: string) => {
 };
 
 export const imgMap = new WeakMap<HTMLElement, ImgData>();
-// eslint-disable-next-line prefer-const
 let imgShowObserver: IntersectionObserver;
 
 const getImg = (e: HTMLElement) => imgMap.get(e) ?? createImgData();

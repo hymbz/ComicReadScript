@@ -1,18 +1,23 @@
-import { Show, type Component } from 'solid-js';
-import { pwaInstallHandler } from 'pwa-install-handler';
+import type { Component } from 'solid-js';
+
 import { directoryOpen, fileOpen } from 'browser-fs-access';
 import { parse as parseMd } from 'marked';
-import { type MangaProps, Manga } from 'components/Manga';
-import { Toaster, toast } from 'components/Toast';
+import { pwaInstallHandler } from 'pwa-install-handler';
+import { Show } from 'solid-js';
+
+import type { MangaProps } from 'components/Manga';
+
+import { Manga } from 'components/Manga';
+import { toast, Toaster } from 'components/Toast';
 import { setInitLang, t } from 'helper';
 
-import { store, handleExit, loadNewImglist, _setState } from './store';
-import { FileSystemToFile, imgExtension } from './helper';
-import { handleDrag } from './handleDrag';
-import { editButtonList } from './handleButtonList';
-import { getSaveOption } from './option';
 import { DownloadButton, loadUrl } from './DownloadButton';
+import { editButtonList } from './handleButtonList';
+import { handleDrag } from './handleDrag';
+import { FileSystemToFile, imgExtension } from './helper';
 import classes from './index.module.css';
+import { getSaveOption } from './option';
+import { handleExit, loadNewImglist, setState, store } from './store';
 
 setTimeout(setInitLang);
 
@@ -23,7 +28,7 @@ const handleSelectFiles = async () => {
     ['application/zip', ['.zip', '.cbz']],
     ['application/x-rar-compressed', ['.rar', '.cbr']],
     ['application/x-7z-compressed', ['.7z', '.cb7']],
-  ] as Array<[string, string[]]>;
+  ] as [string, string[]][];
 
   const files: File[] = await fileOpen([
     { multiple: true },
@@ -74,7 +79,7 @@ export const Root: Component = () => (
           </button>
           <DownloadButton />
           <Show when={store.imgList.length}>
-            <button type="button" on:click={() => _setState('show', true)}>
+            <button type="button" on:click={() => setState('show', true)}>
               {t('pwa.button.resume_read')}
             </button>
           </Show>
@@ -90,7 +95,7 @@ export const Root: Component = () => (
             <button type="button" on:click={pwaInstallHandler.install}>
               {t('pwa.button.install')}
             </button>
-            <a on:click={() => _setState('hiddenInstallTip', 'TD')}>
+            <a on:click={() => setState('hiddenInstallTip', 'TD')}>
               {t('pwa.button.no_more_prompt')}
             </a>
           </div>

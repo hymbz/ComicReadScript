@@ -3,11 +3,11 @@ import type { OutputPluginOption } from 'rollup';
 /** 调整 ehRules 结构以减少代码量 */
 export const ehRules: OutputPluginOption = {
   name: 'self-ehRules',
-  async renderChunk(code, chunk) {
+  renderChunk(code, chunk) {
     if (chunk.fileName !== 'ehTagRules.js') return code;
 
-    return code.replace(/(?<=const \S+ = ){.+?}(?=;)/s, (json) => {
-      // eslint-disable-next-line no-eval
+    return code.replace(/(?<=const \S+ = )\{.+?\}(?=;)/s, (json) => {
+      // oxlint-disable-next-line no-eval
       const data = eval(`(${json})`) as Record<
         string,
         Record<string, string[]>

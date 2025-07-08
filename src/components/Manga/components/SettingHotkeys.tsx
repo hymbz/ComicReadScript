@@ -1,7 +1,10 @@
+import type { Component } from 'solid-js';
+
+import MdAdd from '@material-design-icons/svg/round/add.svg';
 import MdClose from '@material-design-icons/svg/round/close.svg';
 import MdRefresh from '@material-design-icons/svg/round/refresh.svg';
-import MdAdd from '@material-design-icons/svg/round/add.svg';
-import { type Component, For, Index, Show } from 'solid-js';
+import { For, Index, Show } from 'solid-js';
+
 import {
   createRootMemo,
   getKeyboardCode,
@@ -10,12 +13,12 @@ import {
   t,
 } from 'helper';
 
-import { _setState, store } from '../store';
 import { defaultHotkeys, focus, hotkeysMap } from '../actions';
 import classes from '../index.module.css';
+import { setState, store } from '../store';
 
 const setHotkeys = (...args: any[]) => {
-  _setState(...(['hotkeys', ...args] as [any]));
+  setState(...(['hotkeys', ...args] as [any]));
   store.prop.onHotkeysChange?.(
     Object.fromEntries(
       Object.entries(store.hotkeys).filter(

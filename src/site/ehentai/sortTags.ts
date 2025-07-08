@@ -1,7 +1,9 @@
-import { getGmValue } from 'helper';
+import { getGmValue, useStyle } from 'helper';
 
-import { updateMyTags, handleMyTagsChange, type Tag } from './myTags';
-import { type EhContext } from './helper';
+import type { EhContext } from './helper';
+import type { Tag } from './myTags';
+
+import { handleMyTagsChange, updateMyTags } from './myTags';
 
 const updateSortCss = (tagList: Tag[]) => {
   let css = 'tr a :is(.gltm, .glink + div:not([class])) { display: flex; }';
@@ -17,7 +19,7 @@ export const sortTags = async (context: EhContext) => {
     case 'p':
     case 'l':
     case 't':
-      return GM_addStyle(await getGmValue('ehTagSortCss', updateMyTags));
+      return useStyle(await getGmValue('ehTagSortCss', updateMyTags));
 
     case 'mytags': {
       let style: HTMLStyleElement;

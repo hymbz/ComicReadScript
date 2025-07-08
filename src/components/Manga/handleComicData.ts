@@ -1,7 +1,8 @@
 import { log } from 'helper';
 
+import type { ComicImg, FillEffect, PageList } from './store/image';
+
 import { store } from './store';
-import type { FillEffect } from './store/image';
 
 // 1. 因为不同汉化组处理情况不同不可能全部适配，所以只能是尽量适配*出现频率更多*的情况
 // 2. 因为大部分用户都不会在意正确页序，所以应该尽量少加填充页
@@ -89,8 +90,8 @@ export const handleComicData = (
     switchFill,
   };
 
-  let pageList: PageList = [];
-  let cacheList: number[] = [];
+  const pageList: PageList = [];
+  const cacheList: number[] = [];
 
   for (let i = 0; i < imgList.length; i += 1) {
     const img = imgList[i];
@@ -112,15 +113,14 @@ export const handleComicData = (
       return handleComicData(imgList, fillEffect, switchFill);
     }
 
-    pageList = [...pageList, ...arrangePage(cacheList, context), [i]];
-    cacheList = [];
+    pageList.push(...arrangePage(cacheList, context), [i]);
+    cacheList.length = 0;
 
-    fillEffect[i] ??= false;
+    if (fillEffect[i] === undefined) fillEffect[i] = false;
     context.nowFillIndex = i;
   }
 
-  if (cacheList.length > 0)
-    pageList = [...pageList, ...arrangePage(cacheList, context)];
+  if (cacheList.length > 0) pageList.push(...arrangePage(cacheList, context));
 
   return pageList;
 };

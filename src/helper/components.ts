@@ -1,4 +1,5 @@
 import type { JSX } from 'solid-js';
+
 import { render } from 'solid-js/web';
 
 const getDom = (id: string) => {

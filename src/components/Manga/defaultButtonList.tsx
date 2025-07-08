@@ -1,40 +1,42 @@
+import type { Component } from 'solid-js';
+
+import MdFullscreenExit from '@material-design-icons/svg/round/fullscreen_exit.svg';
+import MdFullscreen from '@material-design-icons/svg/round/fullscreen.svg';
+import MdGrid from '@material-design-icons/svg/round/grid_4x4.svg';
 import MdLooksOne from '@material-design-icons/svg/round/looks_one.svg';
 import MdLooksTwo from '@material-design-icons/svg/round/looks_two.svg';
-import MdViewDay from '@material-design-icons/svg/round/view_day.svg';
+import MdLowPriority from '@material-design-icons/svg/round/low_priority.svg';
 import MdQueue from '@material-design-icons/svg/round/queue.svg';
 import MdSettings from '@material-design-icons/svg/round/settings.svg';
 import MdTranslate from '@material-design-icons/svg/round/translate.svg';
-import MdGrid from '@material-design-icons/svg/round/grid_4x4.svg';
+import MdViewDay from '@material-design-icons/svg/round/view_day.svg';
 import MdZoomIn from '@material-design-icons/svg/round/zoom_in.svg';
 import MdZoomOut from '@material-design-icons/svg/round/zoom_out.svg';
-import MdFullscreen from '@material-design-icons/svg/round/fullscreen.svg';
-import MdFullscreenExit from '@material-design-icons/svg/round/fullscreen_exit.svg';
-import MdLowPriority from '@material-design-icons/svg/round/low_priority.svg';
-import { type Component, createSignal, Show } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
+
 import { createEffectOn, t } from 'helper';
 
 import { IconButton } from '../IconButton';
-
-import { _setState, refs, store } from './store';
-import { SettingPanel } from './components/SettingPanel';
-import { AutoScrollButton } from './components/autoScroll';
 import {
-  nowFillIndex,
-  zoomScrollModeImg,
-  switchFillEffect,
-  switchScrollMode,
-  switchOnePageMode,
   doubleClickZoom,
-  switchGridMode,
-  translateCurrent,
-  isTranslatingImage,
   isOnePageMode,
   isScrollMode,
-  switchFullscreen,
+  isTranslatingImage,
   isTranslatingToEnd,
+  nowFillIndex,
+  switchFillEffect,
+  switchFullscreen,
+  switchGridMode,
+  switchOnePageMode,
+  switchScrollMode,
+  translateCurrent,
   translateToEnd,
+  zoomScrollModeImg,
 } from './actions';
+import { AutoScrollButton } from './components/autoScroll';
+import { SettingPanel } from './components/SettingPanel';
 import classes from './index.module.css';
+import { refs, setState, store } from './store';
 
 export type ToolbarButtonList = Component[];
 
@@ -165,7 +167,7 @@ export const defaultButtonList: ToolbarButtonList = [
 
     const handleClick = () => {
       const _showPanel = !showPanel();
-      _setState('show', 'toolbar', _showPanel);
+      setState('show', 'toolbar', _showPanel);
       setShowPanel(_showPanel);
     };
 
