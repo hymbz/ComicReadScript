@@ -819,6 +819,7 @@ try {
     // test: https://kemono.cr/fanbox/user/41106591/post/6813818
     case 'kemono.cr':
     case 'kemono.su':
+    case 'kemono.cr':
     case 'kemono.party': {
       inject('site/kemono');
       break;
