@@ -21,6 +21,11 @@ type Images = {
 };
 declare const _gallery: { num_pages: number; media_id: string; images: Images };
 
+function imageCdn() {
+  const cdn = unsafeWindow._n_app.options.image_cdn_urls as string[]
+  return cdn[Math.floor(Math.random() * cdn.length)];
+}
+
 (async () => {
   const {
     options,
@@ -53,11 +58,10 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
     // 图片域名编号目前是完全随机的，每次刷新都会出现不同的编号
     // 在图片元素的 data-src 里也是随机的，加载图片时还要用 get_cdn_url 函数替换
     // 但目前实测 i1 到 i4 都能直接用，或许是反爬虫的新机制？
-    const hostIndex = unsafeWindow._n_app.options.media_server as number;
     setComicLoad(() =>
       _gallery.images.pages.map(
         (img, i) =>
-          `https://i${hostIndex}.nhentai.net/galleries/${_gallery.media_id}/${i + 1}.${fileType[img.t]}`,
+          `https://${imageCdn()}/galleries/${_gallery.media_id}/${i + 1}.${fileType[img.t]}`,
       ),
     );
     setFab('initialShow', options.autoShow);
