@@ -1,4 +1,4 @@
-import { querySelector, querySelectorAll, wait } from 'helper';
+import { querySelector, querySelectorAll, wait, waitDom } from 'helper';
 import { request, toast, useInit } from 'main';
 
 declare const b2token: string;
@@ -48,7 +48,7 @@ declare const b2token: string;
     })();
 
   // 跳过漫画区外的页面
-  if (!querySelector('a.post-list-cat-item[title="在线区-漫画"]')) return;
+  if (!(await waitDom('a.post-list-cat-item[title="在线区-漫画"]'))) return;
 
   // 需要购买的漫画
   if (querySelector('.content-hidden')) {
