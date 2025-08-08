@@ -97,6 +97,12 @@ export default antfu(
       ],
     },
   },
+  {
+    files: ['**/*.test.*'],
+    rules: {
+      'no-debugger': 'off',
+    },
+  },
   prettierConflicts,
   ...oxlint.buildFromOxlintConfigFile('./.oxlintrc.json'),
 )

@@ -89,3 +89,13 @@ while (id--) clearInterval(id);
 1. 打包代码到 dist
 2. 创建 dist 的文件服务器，用于在浏览器获取最新的脚本代码
 3. 使用 vite 加载 src\components\display.tsx 以便单独测试组件
+
+## 浏览器测试
+
+`test/xpi` 里的 xpi 文件会全部安装上，需要在里面放上 violentmonkey 和 uBlock 的 xpi 文件。
+
+`test/cookie.ts` 用于存储通过 EditThisCookie 扩展导出的 cookie，测试时会自动检查当前站点名是否有对应的 cookie，有就加载上。
+
+<!-- wdio 可以和 percy 集成，不过之前已经折腾好了 storybook + percy，感觉没必要这里再搞，所以就用 wdio 自己的视觉测试好了 -->
+
+通过在测试文件中取消 `browser.saveScreen` 的注释，就可以将截图存至 `test/__snapshots__` 作为基准，之后用 `toMatchScreenSnapshot` 来对比检测。

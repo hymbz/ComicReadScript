@@ -28,7 +28,7 @@ declare namespace Tampermonkey {
     Done = 4,
   }
 
-  interface ResponseBase<T = any> {
+  type ResponseBase<T = any> = {
     readonly responseHeaders: string;
     /** The request's `readyState`. */
     readonly readyState: ReadyState;
@@ -40,30 +40,30 @@ declare namespace Tampermonkey {
     readonly responseXML: Document | null;
     readonly status: number;
     readonly statusText: string;
-  }
+  };
 
-  interface ProgressResponseBase {
+  type ProgressResponseBase = {
     done: number;
     lengthComputable: boolean;
     loaded: number;
     position: number;
     total: number;
     totalSize: number;
-  }
+  };
 
-  interface ErrorResponse extends ResponseBase {
+  type ErrorResponse = {
     readonly error: string;
-  }
+  } & ResponseBase;
 
-  interface Response<TContext> extends ResponseBase {
+  type Response<TContext> = {
     /** The final URL after all redirects from where the data was loaded. */
     readonly finalUrl: string;
     readonly context: TContext;
-  }
+  } & ResponseBase;
 
-  interface ProgressResponse<TContext>
-    extends Response<TContext>,
-      ProgressResponseBase {}
+  // oxlint-disable-next-line ban-types
+  type ProgressResponse<TContext> = {} & Response<TContext> &
+    ProgressResponseBase;
 
   // Request
 
@@ -74,7 +74,7 @@ declare namespace Tampermonkey {
     response: TResponse,
   ) => void;
 
-  interface Request<TContext = object> {
+  type Request<TContext = object> = {
     method?: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'DELETE';
     /** The destination URL */
     url: string;
@@ -137,15 +137,15 @@ declare namespace Tampermonkey {
     ontimeout?: ((res: ErrorResponse) => void) | undefined;
     /** Callback to be executed if the request was loaded */
     onload?: RequestEventListener<Response<TContext>>;
-  }
+  };
 
   // Download Response
 
-  interface DownloadProgressResponse extends ProgressResponseBase {
+  type DownloadProgressResponse = {
     readonly finalUrl: string;
-  }
+  } & ProgressResponseBase;
 
-  interface DownloadErrorResponse {
+  type DownloadErrorResponse = {
     /**
      * Error reason
      * - `not_enabled` - the download feature isn't enabled by the user
@@ -166,11 +166,11 @@ declare namespace Tampermonkey {
       | 'not_succeeded';
     /** Detail about that error */
     details?: string;
-  }
+  };
 
   // Download Request
 
-  interface DownloadRequest {
+  type DownloadRequest = {
     /**
      * The URL of the file to download. This must be a valid URL and
      * must point to a file that is accessible to the user.
@@ -209,13 +209,13 @@ declare namespace Tampermonkey {
     onload?(): void;
     /** Callback to be executed if this download failed due to a timeout */
     onprogress?: RequestEventListener<DownloadProgressResponse>;
-  }
+  };
 
-  interface AbortHandle<TReturn> {
+  type AbortHandle<TReturn> = {
     abort(): TReturn;
-  }
+  };
 
-  interface OpenTabOptions {
+  type OpenTabOptions = {
     /** A boolean value indicating whether the new tab should be active (selected) or not (default is `false`). */
     active?: boolean;
     /**
@@ -227,25 +227,25 @@ declare namespace Tampermonkey {
     setParent?: boolean;
     /** A boolean value that makes the tab being opened inside a incognito mode/private mode window. */
     incognito?: boolean;
-  }
+  };
 
-  interface OpenTabObject {
+  type OpenTabObject = {
     /** Closes tab */
     close(): void;
     /** Set closed listener */
     onclose?(): void;
     closed: boolean;
-  }
+  };
 
-  interface NotificationThis extends Notification {
+  type NotificationThis = {
     id: string;
-  }
+  } & Notification;
 
   type NotificationOnClick = (this: NotificationThis) => void;
   /** `clicked` is `true` when `text` was set */
   type NotificationOnDone = (this: NotificationThis, clicked: boolean) => void;
 
-  interface Notification {
+  type Notification = {
     /** A string containing the message to display in the notification (optional if highlight is set). */
     text?: string;
     /** The title of the notification. If not specified the script name is used. */
@@ -279,19 +279,19 @@ declare namespace Tampermonkey {
     onclick?: NotificationOnClick;
     /** Called in case the user clicks the notification. */
     ondone?: NotificationOnDone;
-  }
+  };
 
-  interface TextNotification extends Notification {
+  type TextNotification = {
     /** Text of the notification (optional if highlight is set) */
     text: string;
-  }
+  } & Notification;
 
-  interface HighlightNotification extends Notification {
+  type HighlightNotification = {
     /** A string containing the message to display in the notification. */
     text?: undefined;
     /** Whether to highlight the tab that sends the notfication (required unless text is set) */
     highlight: true;
-  }
+  } & Notification;
 
   type NotificationDetails = TextNotification | HighlightNotification;
 
@@ -301,7 +301,7 @@ declare namespace Tampermonkey {
    * The metadata that the user can override in the settings
    * for example run-at or excludes
    */
-  interface ScriptMetadataOverrides {
+  type ScriptMetadataOverrides = {
     merge_connects: boolean;
     merge_excludes: boolean;
     merge_includes: boolean;
@@ -317,13 +317,13 @@ declare namespace Tampermonkey {
     use_excludes: string[];
     use_includes: string[];
     use_matches: string[];
-  }
+  };
 
   /**
    * The options that the user of the userscript
    * can set in the settings (!== overrides)
    */
-  interface ScriptSettings {
+  type ScriptSettings = {
     check_for_updates: boolean;
     comment: string | null;
     compat_foreach: boolean;
@@ -339,21 +339,21 @@ declare namespace Tampermonkey {
     unwrap: boolean | null;
 
     override: ScriptMetadataOverrides;
-  }
+  };
 
   /**
    * The resources from the metadata block (@resources)
    * that tampermonkey should preload
    */
-  interface ScriptResource {
+  type ScriptResource = {
     name: string;
     url?: string;
     content?: string;
     meta?: string;
     error?: string;
-  }
+  };
 
-  interface WebRequestRule {
+  type WebRequestRule = {
     selector:
       | {
           include?: string | string[];
@@ -373,13 +373,13 @@ declare namespace Tampermonkey {
               }
             | string;
         };
-  }
+  };
 
   /**
    * `.. | null` means if it was not explicitely set in the metadata
    * block it is null
    */
-  interface ScriptMetadata {
+  type ScriptMetadata = {
     antifeatures: Record<string, Record<string, string>>;
     author: string | null;
 
@@ -425,9 +425,9 @@ declare namespace Tampermonkey {
     uuid: string;
     version: string;
     webRequest: WebRequestRule[] | null;
-  }
+  };
 
-  interface ScriptInfo {
+  type ScriptInfo = {
     downloadMode: 'native' | 'browser' | 'disabled';
     isFirstPartyIsolation?: boolean;
     isIncognito: boolean;
@@ -448,12 +448,12 @@ declare namespace Tampermonkey {
 
     /** This refers to tampermonkey's version */
     version?: string;
-  }
+  };
 
   type ContentType = string | { type?: string; mimetype?: string };
 
   // GM_webRequest
-  interface WebRequestRuleParam {
+  type WebRequestRuleParam = {
     /**
      * Specifies the URLs for which the rule should be triggered.
      * String value is shortening for `{ include: [selector] }`.
@@ -491,7 +491,7 @@ declare namespace Tampermonkey {
                 to: string;
               };
         };
-  }
+  };
 
   type WebRequestListener = (
     /** The type of the action. */
@@ -511,7 +511,7 @@ declare namespace Tampermonkey {
   ) => void;
 
   // GM_cookie.*
-  interface Cookie {
+  type Cookie = {
     /** The domain of the cookie. */
     domain: string;
     /** The first-party domain of the cookie. */
@@ -539,9 +539,9 @@ declare namespace Tampermonkey {
     value: string;
     /** The date the cookie expires in seconds since the Unix epoch. */
     expirationDate?: number;
-  }
+  };
 
-  interface ListCookiesDetails {
+  type ListCookiesDetails = {
     /** The URL to retrieve cookies from (defaults to current document URL). */
     url?: string;
     /** The domain of the cookies to retrieve. */
@@ -558,7 +558,7 @@ declare namespace Tampermonkey {
       /** String representing the top frame site of the cookies */
       topLevelSite?: string;
     };
-  }
+  };
 
   type ListCookiesCallback = (
     /** An array containing the retrieved cookies. */
@@ -567,7 +567,7 @@ declare namespace Tampermonkey {
     error: string | null,
   ) => void;
 
-  interface SetCookiesDetails {
+  type SetCookiesDetails = {
     /**
      * The URL to associate the cookie with. If not specified,
      * the cookie is associated with the current document's URL.
@@ -597,9 +597,9 @@ declare namespace Tampermonkey {
      * If not specified, the cookie never expires.
      */
     expirationDate?: number;
-  }
+  };
 
-  interface DeleteCookiesDetails {
+  type DeleteCookiesDetails = {
     /**
      * The URL associated with the cookie. If `url` is not specified,
      * the current document's URL will be used.
@@ -614,7 +614,7 @@ declare namespace Tampermonkey {
       /** The top frame site of the cookies. */
       topLevelSite?: string;
     };
-  }
+  };
 }
 
 /**
@@ -647,14 +647,13 @@ declare let unsafeWindow: Window &
     | 'GM_unregisterMenuCommand'
     | 'GM_xmlhttpRequest'
     | 'GM'
-  > &
-  Record<string, any>;
+  > & { $: any } & Record<string, any>;
 
 /**
  * Patched onurlchange attribute based on document {@link https://www.tampermonkey.net/documentation.php#meta:grant}
  * @url https://www.tampermonkey.net/documentation.php#meta:grant
  */
-interface Window {
+type Window = {
   /**
    * check before use addEventListener
    *
@@ -670,7 +669,7 @@ interface Window {
     type: 'urlchange',
     listener: (urlObject: { url: string }) => void,
   ): void;
-}
+};
 
 /**
  * `GM_addElement` allows Tampermonkey scripts to add new elements to the page

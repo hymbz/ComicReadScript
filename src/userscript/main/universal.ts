@@ -57,9 +57,11 @@ export const universal = async ({
 
   setState('manga', 'onShowImgsChange', onShowImgsChange);
   if (onExit)
-    setState('manga', 'onExit', (isEnd: boolean) => {
-      onExit?.(isEnd);
-      setState('manga', 'show', false);
+    setState('manga', {
+      onExit: (isEnd?: boolean) => {
+        onExit?.(isEnd);
+        setState('manga', 'show', false);
+      },
     });
 
   if (!SPA) {
@@ -94,10 +96,10 @@ export const universal = async ({
         setState('manga', 'commentList', await getCommentList()))(),
       (async () =>
         SPA.getOnPrev &&
-        setState('manga', 'onPrev', await wait(SPA.getOnPrev, 5000)))(),
+        setState('manga', { onPrev: await wait(SPA.getOnPrev, 5000) }))(),
       (async () =>
         SPA.getOnNext &&
-        setState('manga', 'onNext', await wait(SPA.getOnNext, 5000)))(),
+        setState('manga', { onNext: await wait(SPA.getOnNext, 5000) }))(),
     ]);
   }, SPA?.handleUrl);
 };

@@ -1,0 +1,23 @@
+{
+  // 使用 IntelliSense 了解相关属性。
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "run select spec",
+      "type": "node",
+      "request": "launch",
+      "args": ["wdio.conf.ts"],
+      "cwd": "${workspaceFolder}",
+      "autoAttachChildProcesses": true,
+      "program": "${workspaceRoot}/node_modules/@wdio/cli/bin/wdio.js",
+      "console": "integratedTerminal",
+      "skipFiles": [
+        "${workspaceFolder}/node_modules/**/*.js",
+        "${workspaceFolder}/lib/**/*.js",
+        "<node_internals>/**/*.js"
+      ]
+    }
+  ]
+}

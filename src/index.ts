@@ -29,12 +29,14 @@ try {
   // 匹配站点
   switch (location.hostname) {
     // #百合会（记录阅读历史、自动签到等）
+    // test: https://bbs.yamibo.com/thread-559899-1-1.html
     case 'bbs.yamibo.com': {
       inject('site/yamibo');
       break;
     }
 
     // #百合会新站
+    // test: https://www.yamibo.com/manga/view-chapter?id=251
     case 'www.yamibo.com': {
       if (!location.pathname.includes('/manga/view-chapter')) break;
 
@@ -80,6 +82,8 @@ try {
     }
 
     // #动漫之家（解锁隐藏漫画）
+    // TODO: 动漫之家是似了吗？怎么所有网页都没法正常使用
+    // test: todo
     case 'comic.idmzj.com':
     case 'comic.dmzj.com':
     case 'manhua.idmzj.com':
@@ -101,6 +105,7 @@ try {
     }
 
     // #E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）
+    // test: https://e-hentai.org/g/2945358/699f8eb501
     case 'exhentai.org':
     case 'e-hentai.org': {
       inject('site/ehentai');
@@ -108,18 +113,21 @@ try {
     }
 
     // #nhentai（彻底屏蔽漫画、无限滚动）
+    // test: https://nhentai.net/g/582446/
     case 'nhentai.net': {
       inject('site/nhentai');
       break;
     }
 
     // #Yurifans（自动签到）
+    // test: https://yuri.website/95131/
     case 'yuri.website': {
       inject('site/yurifans');
       break;
     }
 
     // #拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）
+    // test: https://www.mangacopy.com/comic/lianggrendeetaobixianshi/chapter/33cde95c-c8ea-11ea-a67e-00163e0ca5bd
     case 'www.copy20.com':
     case 'mangacopy.com':
     case 'www.mangacopy.com': {
@@ -128,6 +136,7 @@ try {
     }
 
     // #[Pixiv](https://www.pixiv.net)
+    // test: https://www.pixiv.net/artworks/128841242
     case 'www.pixiv.net': {
       let imgList: string[] = [];
 
@@ -155,25 +164,26 @@ try {
       break;
     }
 
-    // #[PonpomuYuri](https://www.ponpomu.com)
-    case 'www.ponpomu.com': {
-      options = {
-        name: 'terraHistoricus',
-        wait: () => Boolean(querySelector('.comic-page-container img')),
-        getImgList: () =>
-          querySelectorAll('.comic-page-container img').map(
-            (e) => e.dataset.srcset!,
-          ),
-        SPA: {
-          isMangaPage: () => location.href.includes('/comic/'),
-          getOnPrev: () => querySelectorClick('.prev-btn:not(.invisible) a'),
-          getOnNext: () => querySelectorClick('.next-btn:not(.invisible) a'),
-        },
-      };
-      break;
-    }
+    // // #[PonpomuYuri](https://www.ponpomu.com)
+    // case 'www.ponpomu.com': {
+    //   options = {
+    //     name: 'terraHistoricus',
+    //     wait: () => Boolean(querySelector('.comic-page-container img')),
+    //     getImgList: () =>
+    //       querySelectorAll('.comic-page-container img').map(
+    //         (e) => e.dataset.srcset!,
+    //       ),
+    //     SPA: {
+    //       isMangaPage: () => location.href.includes('/comic/'),
+    //       getOnPrev: () => querySelectorClick('.prev-btn:not(.invisible) a'),
+    //       getOnNext: () => querySelectorClick('.next-btn:not(.invisible) a'),
+    //     },
+    //   };
+    //   break;
+    // }
 
     // #[再漫画](https://manhua.zaimanhua.com/)
+    // test: https://manhua.zaimanhua.com/view/heimaohemonvdeketang/64175/133789
     case 'manhua.zaimanhua.com': {
       const getImgList = () =>
         unsafeWindow.__NUXT__.data.getChapters?.data?.chapterInfo
@@ -190,10 +200,11 @@ try {
       };
       break;
     }
+    // TODO: 移动端网页的测试
     case 'm.zaimanhua.com': {
       const getPageData = async (comicId: number, chapterId: number) => {
         const res = await request(
-          `https://v4api.zaimanhua.com/app/v1/comic/chapter/${comicId}/${chapterId}`,
+          `https://v4api.zaimanhua.com/app/v1/comic/chapter/${comicId}/${chapterId}?_v=15`,
           { responseType: 'json' },
         );
         if (res.response.errno)
@@ -209,7 +220,7 @@ try {
 
       const getComicData = async (comicId: number) => {
         const res = await request(
-          `https://v4api.zaimanhua.com/app/v1/comic/detail/${comicId}`,
+          `https://v4api.zaimanhua.com/app/v1/comic/detail/${comicId}?_v=15`,
           { responseType: 'json' },
         );
         if (res.response.errno)
@@ -274,6 +285,7 @@ try {
     }
 
     // #[明日方舟泰拉记事社](https://terra-historicus.hypergryph.com)
+    // test: https://terra-historicus.hypergryph.com/comic/6253/episode/3156
     case 'terra-historicus.hypergryph.com': {
       const apiUrl = () =>
         `https://terra-historicus.hypergryph.com/api${location.pathname}`;
@@ -310,6 +322,7 @@ try {
     }
 
     // #[禁漫天堂](https://18comic.vip)
+    // test: https://18comic.vip/photo/1198559
     case 'siteUrl#jm':
     case '18comic.org':
     case '18comic.vip': {
@@ -318,6 +331,7 @@ try {
     }
 
     // #[漫画柜(manhuagui)](https://www.manhuagui.com)
+    // test: https://www.manhuagui.com/comic/36584/508218.html
     case 'tw.manhuagui.com':
     case 'm.manhuagui.com':
     case 'www.mhgui.com':
@@ -385,24 +399,25 @@ try {
       break;
     }
 
-    // #[漫画DB(manhuadb)](https://www.manhuadb.com)
-    case 'www.manhuadb.com': {
-      if (!Reflect.has(unsafeWindow, 'img_data_arr')) break;
+    // // #[漫画DB(manhuadb)](https://www.manhuadb.com)
+    // case 'www.manhuadb.com': {
+    //   if (!Reflect.has(unsafeWindow, 'img_data_arr')) break;
 
-      options = {
-        name: 'manhuaDB',
-        getImgList: () =>
-          (unsafeWindow.img_data_arr as { img: string }[]).map(
-            (data) =>
-              `${unsafeWindow.img_host}/${unsafeWindow.img_pre}/${data.img}`,
-          ),
-        onPrev: () => unsafeWindow.goNumPage('pre') as void,
-        onNext: () => unsafeWindow.goNumPage('next') as void,
-      };
-      break;
-    }
+    //   options = {
+    //     name: 'manhuaDB',
+    //     getImgList: () =>
+    //       (unsafeWindow.img_data_arr as { img: string }[]).map(
+    //         (data) =>
+    //           `${unsafeWindow.img_host}/${unsafeWindow.img_pre}/${data.img}`,
+    //       ),
+    //     onPrev: () => unsafeWindow.goNumPage('pre') as void,
+    //     onNext: () => unsafeWindow.goNumPage('next') as void,
+    //   };
+    //   break;
+    // }
 
     // #[动漫屋(dm5)](https://www.dm5.com)
+    // test: https://www.dm5.cn/m1033552/
     case 'www.manhuaren.com':
     case 'm.1kkk.com':
     case 'www.1kkk.com':
@@ -481,6 +496,7 @@ try {
     }
 
     // #[绅士漫画(wnacg)](https://www.wnacg.com)
+    // test: https://www.wnacg.com/photos-slide-aid-284931.html
     case 'siteUrl#wnacg':
     case 'www.wnacg.com':
     case 'wnacg.com': {
@@ -506,6 +522,7 @@ try {
     }
 
     // #[mangabz](https://mangabz.com)
+    // test: https://mangabz.com/m131128/
     case 'www.mangabz.com':
     case 'mangabz.com': {
       if (!Reflect.has(unsafeWindow, 'MANGABZ_CID')) break;
@@ -570,6 +587,7 @@ try {
     }
 
     // #[komiic](https://komiic.com)
+    // test: https://komiic.com/comic/2299/chapter/66668/images/all
     case 'komiic.com': {
       const query = `
         query imagesByChapterId($chapterId: ID!) {
@@ -623,6 +641,7 @@ try {
     }
 
     // #[MangaDex](https://mangadex.org)
+    // test: https://mangadex.org/chapter/4c419c16-ef49-4305-9c46-d3adbe1f60b7
     case 'mangadex.org': {
       options = {
         name: 'mangadex',
@@ -660,6 +679,7 @@ try {
     }
 
     // #[NoyAcg](https://noy1.top)
+    // test: https://noy1.top/#/read/13349
     case 'siteUrl#noy':
     case 'noy1.top': {
       options = {
@@ -684,6 +704,7 @@ try {
     }
 
     // #[無限動漫](https://www.comicabc.com)
+    // test: 直接访问漫画页会因为 referer 检测不过而被拦截，跳过
     case '8.twobili.com':
     case 'a.twobili.com':
     case 'articles.onemoreplace.tw':
@@ -707,32 +728,33 @@ try {
       break;
     }
 
-    // #[新新漫画](https://www.77mh.nl)
-    case 'm.77mh.me':
-    case 'www.77mh.me':
-    case 'm.77mh.xyz':
-    case 'www.77mh.xyz':
-    case 'm.77mh.nl':
-    case 'www.77mh.nl': {
-      if (!Reflect.has(unsafeWindow, 'msg')) break;
+    // // #[新新漫画](https://www.77mh.nl)
+    // case 'm.77mh.me':
+    // case 'www.77mh.me':
+    // case 'm.77mh.xyz':
+    // case 'www.77mh.xyz':
+    // case 'm.77mh.nl':
+    // case 'www.77mh.nl': {
+    //   if (!Reflect.has(unsafeWindow, 'msg')) break;
 
-      options = {
-        name: '77mh',
-        getImgList() {
-          const baseUrl: string =
-            unsafeWindow.img_qianz ?? unsafeWindow.ImgSvrList;
+    //   options = {
+    //     name: '77mh',
+    //     getImgList() {
+    //       const baseUrl: string =
+    //         unsafeWindow.img_qianz ?? unsafeWindow.ImgSvrList;
 
-          return (unsafeWindow.msg as string)
-            .split('|')
-            .map((path) => `${baseUrl}${path}`);
-        },
-        onNext: querySelectorClick('#pnpage > a', '下一'),
-        onPrev: querySelectorClick('#pnpage > a', '上一'),
-      };
-      break;
-    }
+    //       return (unsafeWindow.msg as string)
+    //         .split('|')
+    //         .map((path) => `${baseUrl}${path}`);
+    //     },
+    //     onNext: querySelectorClick('#pnpage > a', '下一'),
+    //     onPrev: querySelectorClick('#pnpage > a', '上一'),
+    //   };
+    //   break;
+    // }
 
     // #[熱辣漫畫](https://www.relamanhua.org/)
+    // test: https://www.relamanhua.org/comic/lianggrendeetaobixianshi/chapter/33cde95c-c8ea-11ea-a67e-00163e0ca5bd
     case 'www.relamanhua.org':
     case 'www.manga2024.com':
     case 'www.2024manga.com': {
@@ -742,11 +764,11 @@ try {
       )
         break;
       const getImgList = async () => {
-        const [, , word, , id] = location.pathname.split('/');
+        const [, , comicName, , id] = location.pathname.split('/');
         const res = await request<{
           results: { chapter: { contents: { url: string }[] } };
         }>(
-          `https://mapi.fgjfghkk.club/api/v3/comic/${word}/chapter/${id}?platform=1&_update=true`,
+          `https://api.manga2025.com/api/v3/comic/${comicName}/chapter/${id}`,
           { responseType: 'json' },
         );
         return res.response.results.chapter.contents.map(({ url }) =>
@@ -765,6 +787,7 @@ try {
     }
 
     // #[hitomi](https://hitomi.la)
+    // test: https://hitomi.la/reader/3427121.html
     case 'hitomi.la': {
       options = {
         name: 'hitomi',
@@ -786,6 +809,7 @@ try {
     }
 
     // #[SchaleNetwork](https://schale.network/)
+    // test: 有cf验证，跳过
     case 'shupogaki.moe':
     case 'hoshino.one':
     case 'niyaniya.moe': {
@@ -852,6 +876,8 @@ try {
     }
 
     // #[kemono](https://kemono.su)
+    // test: https://kemono.cr/fanbox/user/41106591/post/6813818
+    case 'kemono.cr':
     case 'kemono.su':
     case 'kemono.party': {
       inject('site/kemono');
@@ -859,7 +885,9 @@ try {
     }
 
     // #[nekohouse](https://nekohouse.su)
+    // test: https://nekohouse.su/fanbox/user/159912/post/1350453
     case 'nekohouse.su': {
+      if (!location.pathname.includes('/post/')) break;
       options = {
         name: 'nekohouse',
         getImgList: () =>
@@ -872,6 +900,7 @@ try {
     }
 
     // #[welovemanga](https://welovemanga.one)
+    // test: https://nicomanga.com/read-yuri-no-hajimari-wa-dorei-kara-chapter-6.2.html
     case 'nicomanga.com':
     case 'weloma.art':
     case 'welovemanga.one': {
@@ -909,6 +938,7 @@ try {
     }
 
     // #[HentaiZap](https://hentaizap.com)
+    // test: https://hentaizap.com/g/1290854/1/
     case 'hentaizap.com': {
       if (!location.pathname.startsWith('/g/')) break;
 

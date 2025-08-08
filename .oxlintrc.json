@@ -107,6 +107,7 @@
     "jest/no-hooks": "off",
     "jest/no-standalone-expect": "off",
     "jest/no-conditional-in-test": "off",
+    "jest/valid-describe-callback": "off",
     "jest/consistent-test-it": [
       "error",
       { "fn": "it", "withinDescribe": "it" }
@@ -151,6 +152,12 @@
             ]
           }
         ]
+      }
+    },
+    {
+      "files": ["**/*.test.*"],
+      "rules": {
+        "no-console": "off"
       }
     }
   ]

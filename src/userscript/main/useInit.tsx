@@ -58,7 +58,13 @@ export const useInit = async <T extends Record<string, any>>(
       ...structuredClone(defaultOptions),
       ...saveOptions,
     },
-    comicMap: { '': { getImgList: () => [] } },
+    comicMap: {
+      '': {
+        getImgList: function init() {
+          return [];
+        },
+      },
+    },
     nowComic: '',
 
     flag: {

@@ -6,3 +6,7 @@ rollup.config-*.mjs
 storybook-static
 *storybook.log
 .env
+.tmp
+test/__snapshots__
+test/xpi
+test/cookie.ts

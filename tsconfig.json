@@ -57,7 +57,10 @@
       "@types/wicg-file-system-access",
       "@types/wicg-web-app-launch",
       "vite-plugin-pwa/client",
-      "vite/client"
+      "vite/client",
+      "@wdio/mocha-framework",
+      "@wdio/globals/types",
+      "@wdio/visual-service"
     ] /* Type declaration files to be included in compilation. */,
     "allowSyntheticDefaultImports": true /* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */,
     "esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */,
@@ -83,6 +86,6 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js"
   },
-  "include": ["src", "*.ts"],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["**/dist/**", "**/public/**", "**/dev-dist/**"]
 }
