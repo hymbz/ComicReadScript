@@ -181,7 +181,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
   - [识别广告页](#识别广告页)
 - [Yurifans](https://www.yurifans.com)
   - 自动签到
-- [拷贝漫画](https://www.copymanga.com)
+- [拷贝漫画](https://www.2025copy.com/)
   - 在目录页显示上次阅读记录
   - 解锁隐藏漫画
 
@@ -189,12 +189,10 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 <!-- supportSiteList -->
 
 - [Pixiv](https://www.pixiv.net)
-- [PonpomuYuri](https://www.ponpomu.com)
 - [再漫画](https://manhua.zaimanhua.com/)
 - [明日方舟泰拉记事社](https://terra-historicus.hypergryph.com)
 - [禁漫天堂](https://18comic.vip)
 - [漫画柜(manhuagui)](https://www.manhuagui.com)
-- [漫画DB(manhuadb)](https://www.manhuadb.com)
 - [动漫屋(dm5)](https://www.dm5.com)
 - [绅士漫画(wnacg)](https://www.wnacg.com)
 - [mangabz](https://mangabz.com)
@@ -202,7 +200,6 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - [MangaDex](https://mangadex.org)
 - [NoyAcg](https://noy1.top)
 - [無限動漫](https://www.comicabc.com)
-- [新新漫画](https://www.77mh.nl)
 - [熱辣漫畫](https://www.relamanhua.org/)
 - [hitomi](https://hitomi.la)
 - [SchaleNetwork](https://schale.network/)

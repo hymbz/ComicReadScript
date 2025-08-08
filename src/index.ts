@@ -164,24 +164,6 @@ try {
       break;
     }
 
-    // // #[PonpomuYuri](https://www.ponpomu.com)
-    // case 'www.ponpomu.com': {
-    //   options = {
-    //     name: 'terraHistoricus',
-    //     wait: () => Boolean(querySelector('.comic-page-container img')),
-    //     getImgList: () =>
-    //       querySelectorAll('.comic-page-container img').map(
-    //         (e) => e.dataset.srcset!,
-    //       ),
-    //     SPA: {
-    //       isMangaPage: () => location.href.includes('/comic/'),
-    //       getOnPrev: () => querySelectorClick('.prev-btn:not(.invisible) a'),
-    //       getOnNext: () => querySelectorClick('.next-btn:not(.invisible) a'),
-    //     },
-    //   };
-    //   break;
-    // }
-
     // #[再漫画](https://manhua.zaimanhua.com/)
     // test: https://manhua.zaimanhua.com/view/heimaohemonvdeketang/64175/133789
     case 'manhua.zaimanhua.com': {
@@ -398,23 +380,6 @@ try {
       };
       break;
     }
-
-    // // #[漫画DB(manhuadb)](https://www.manhuadb.com)
-    // case 'www.manhuadb.com': {
-    //   if (!Reflect.has(unsafeWindow, 'img_data_arr')) break;
-
-    //   options = {
-    //     name: 'manhuaDB',
-    //     getImgList: () =>
-    //       (unsafeWindow.img_data_arr as { img: string }[]).map(
-    //         (data) =>
-    //           `${unsafeWindow.img_host}/${unsafeWindow.img_pre}/${data.img}`,
-    //       ),
-    //     onPrev: () => unsafeWindow.goNumPage('pre') as void,
-    //     onNext: () => unsafeWindow.goNumPage('next') as void,
-    //   };
-    //   break;
-    // }
 
     // #[动漫屋(dm5)](https://www.dm5.com)
     // test: https://www.dm5.cn/m1033552/
@@ -727,31 +692,6 @@ try {
       };
       break;
     }
-
-    // // #[新新漫画](https://www.77mh.nl)
-    // case 'm.77mh.me':
-    // case 'www.77mh.me':
-    // case 'm.77mh.xyz':
-    // case 'www.77mh.xyz':
-    // case 'm.77mh.nl':
-    // case 'www.77mh.nl': {
-    //   if (!Reflect.has(unsafeWindow, 'msg')) break;
-
-    //   options = {
-    //     name: '77mh',
-    //     getImgList() {
-    //       const baseUrl: string =
-    //         unsafeWindow.img_qianz ?? unsafeWindow.ImgSvrList;
-
-    //       return (unsafeWindow.msg as string)
-    //         .split('|')
-    //         .map((path) => `${baseUrl}${path}`);
-    //     },
-    //     onNext: querySelectorClick('#pnpage > a', '下一'),
-    //     onPrev: querySelectorClick('#pnpage > a', '上一'),
-    //   };
-    //   break;
-    // }
 
     // #[熱辣漫畫](https://www.relamanhua.org/)
     // test: https://www.relamanhua.org/comic/lianggrendeetaobixianshi/chapter/33cde95c-c8ea-11ea-a67e-00163e0ca5bd
