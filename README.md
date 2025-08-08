@@ -181,7 +181,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
   - [识别广告页](#识别广告页)
 - [Yurifans](https://www.yurifans.com)
   - 自动签到
-- [拷贝漫画](https://www.2025copy.com/)
+- [拷贝漫画](https://www.mangacopy.com/)
   - 在目录页显示上次阅读记录
   - 解锁隐藏漫画
 

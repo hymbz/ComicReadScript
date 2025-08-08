@@ -128,6 +128,9 @@ try {
 
     // #拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）
     // test: https://www.mangacopy.com/comic/lianggrendeetaobixianshi/chapter/33cde95c-c8ea-11ea-a67e-00163e0ca5bd
+    case '2025copy.com':
+    case 'www.2025copy.com':
+    case 'copy20.com':
     case 'www.copy20.com':
     case 'mangacopy.com':
     case 'www.mangacopy.com': {
