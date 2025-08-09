@@ -9,6 +9,7 @@ import {
 } from 'helper';
 import { request } from 'request';
 
+import { downloadImgHeaders as headers } from '../helper';
 import { setState, store } from '../store';
 import { getImg, getImgEle, getImgIndexs } from './helper';
 import { handleImgRecognition } from './imageRecognition';
@@ -264,6 +265,7 @@ createEffectOn(loadingImgList, (downImgList, prevImgList) => {
       signal: controller.signal,
       timeout: undefined,
       noTip: true,
+      headers,
       onerror: () => handleImgError(url),
       onprogress({ loaded, total }) {
         setState('imgMap', url, 'progress', (loaded / total) * 100);

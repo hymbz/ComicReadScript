@@ -199,7 +199,7 @@ Cotrans 也有自己的油猴脚本 —— 「[Cotrans 漫画/图片翻译器](h
 - [komiic](https://komiic.com)
 - [MangaDex](https://mangadex.org)
 - [NoyAcg](https://noy1.top)
-- [無限動漫](https://www.comicabc.com)
+- [無限動漫](https://www.8comic.com)
 - [熱辣漫畫](https://www.relamanhua.org/)
 - [hitomi](https://hitomi.la)
 - [SchaleNetwork](https://schale.network/)

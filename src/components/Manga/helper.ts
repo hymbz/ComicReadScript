@@ -19,7 +19,7 @@ export const playAnimation = (e?: HTMLElement) => {
   }
 };
 
-const headers = {
+export const downloadImgHeaders = {
   Accept: 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
   'User-Agent': navigator.userAgent,
   Referer: location.href,
@@ -38,7 +38,7 @@ export const downloadImg = async (
   const res = await request<Blob>(url, {
     responseType: 'blob',
     errorText: t('translation.tip.download_img_failed'),
-    headers,
+    headers: downloadImgHeaders,
     retryFetch: true,
     ...details,
   });

@@ -101,5 +101,6 @@ export { SettingBlockSubtitle } from './components/SettingPanel';
 export { SettingsItem } from './components/SettingsItem';
 export { SettingsItemNumber } from './components/SettingsItemNumber';
 export { SettingsItemSwitch } from './components/SettingsItemSwitch';
-export { downloadImg } from './helper';
+export { downloadImg, downloadImgHeaders } from './helper';
+export type { ComicImg } from './store/image';
 export { refs, setState, store } from './store/index';

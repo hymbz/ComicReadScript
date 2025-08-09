@@ -1,5 +1,6 @@
 import type { InitOptions, LoadImgFn } from 'main';
 
+import { downloadImgHeaders } from 'components/Manga';
 import {
   debounce,
   fileType,
@@ -671,15 +672,14 @@ try {
       break;
     }
 
-    // #[無限動漫](https://www.comicabc.com)
+    // #[無限動漫](https://www.8comic.com)
     // test: 直接访问漫画页会因为 referer 检测不过而被拦截，跳过
     case '8.twobili.com':
     case 'a.twobili.com':
     case 'articles.onemoreplace.tw':
-    case 'www.comicabc.com': {
-      const pathStartList = ['/online/', '/ReadComic/', '/comic/'];
-      if (!pathStartList.some((path) => location.pathname.startsWith(path)))
-        break;
+    case 'www.8comic.com': {
+      if (!/^\/(?:online|ReadComic|comic)\//.test(location.pathname)) break;
+      downloadImgHeaders.Referer = 'https://www.8comic.com/';
 
       // by: https://sleazyfork.org/zh-CN/scripts/374903-comicread/discussions/241035
       const getImgList = () =>
