@@ -67,21 +67,21 @@ export const handleImgError = (url: string, e?: HTMLImageElement) => {
 
 /** 需要加载的图片 */
 const needLoadImgList = createRootMemo(() => {
-  const list = new Set<number>();
-  for (const [index, img] of imgList().entries())
-    if (img.loadType !== 'loaded' && img.src) list.add(index);
+  const list = new Set<string>();
+  for (const img of imgList())
+    if (img.loadType !== 'loaded' && img.src) list.add(img.src);
   return list;
 });
 
-/** 当前需要加载的图片 */
-const loadImgList = new Set<number>();
+/** 当前加载的图片 */
+const loadImgList = new Set<string>();
 
 /** 加载指定图片。返回是否已加载完成 */
-const loadImg = (index: number) => {
-  if (index === -1 || !needLoadImgList().has(index)) return true;
-  const img = getImg(index);
+const loadImg = (url: string) => {
+  const img = store.imgMap[url];
+  if (!needLoadImgList().has(img.src)) return true;
   if (img.loadType === 'error') return true;
-  loadImgList.add(index);
+  loadImgList.add(url);
   return false;
 };
 
@@ -123,7 +123,7 @@ const loadRangeImg = (target = 0, loadNum = 2) => {
   const step = start <= end ? 1 : -1;
 
   while (condition()) {
-    if (!loadImg(index)) hasUnloadedImg = true;
+    if (!loadImg(getImg(index).src)) hasUnloadedImg = true;
     if (loadImgList.size >= loadNum) return index !== end || hasUnloadedImg;
     index += step;
   }
@@ -170,9 +170,9 @@ export const updateImgLoadType = singleThreaded(() => {
   }
 
   setState((state) => {
-    for (const index of needLoadImgList()) {
-      const img = getImg(index, state);
-      if (loadImgList.has(index)) {
+    for (const url of needLoadImgList()) {
+      const img = state.imgMap[url];
+      if (loadImgList.has(url)) {
         if (img.loadType !== 'loading') {
           img.loadType = 'loading';
           if (!store.option.imgRecognition.enabled && img.width === undefined)
