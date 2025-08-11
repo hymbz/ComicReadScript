@@ -12,16 +12,16 @@ import pkg from '../../package.json' with { type: 'json' };
  */
 const resourceList: Record<string, [string, string] | [string]> = {
   'solid-js': [
-    'https://registry.npmmirror.com/solid-js/1.9.7/files/dist/solid.cjs',
-    'https://registry.npmmirror.com/solid-js/1.9.7/files/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.8/files/dist/solid.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.8/files/dist/dev.cjs',
   ],
   'solid-js/store': [
-    'https://registry.npmmirror.com/solid-js/1.9.7/files/store/dist/store.cjs',
-    'https://registry.npmmirror.com/solid-js/1.9.7/files/store/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.8/files/store/dist/store.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.8/files/store/dist/dev.cjs',
   ],
   'solid-js/web': [
-    'https://registry.npmmirror.com/solid-js/1.9.7/files/web/dist/web.cjs',
-    'https://registry.npmmirror.com/solid-js/1.9.7/files/web/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.8/files/web/dist/web.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.8/files/web/dist/dev.cjs',
   ],
   fflate: ['https://registry.npmmirror.com/fflate/0.8.2/files/umd/index.js'],
   jsqr: ['https://registry.npmmirror.com/jsqr/1.4.0/files/dist/jsQR.js'],

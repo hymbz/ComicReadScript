@@ -10,6 +10,7 @@ import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
+import terser from '@rollup/plugin-terser';
 import { parse as parseMd } from 'marked';
 import fs from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -24,6 +25,7 @@ import { getMetaData, updateReadme } from './src/rollup-plugin/metaHeader';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const isDevMode = process.env.NODE_ENV === 'development';
+const isNpmMode = process.env.NODE_ENV === 'npm';
 
 const latestChangeHtml = await (() => {
   const md = fs
@@ -113,6 +115,40 @@ const baseOptions = {
   },
 } satisfies RollupOptions;
 
+const getPlugins = (...otherPlugins: InputPluginOption[]) => [
+  replace({
+    values: {
+      isDevMode: `${isDevMode}`,
+      'process.env.NODE_ENV': isDevMode ? `'development'` : `'production'`,
+      'inject@LatestChange': latestChangeHtml,
+    },
+    preventAssignment: true,
+  }),
+  alias({
+    entries: {
+      helper: resolve(__dirname, 'src/helper'),
+      worker: resolve(__dirname, 'src/worker'),
+    },
+  }),
+  json({ namedExports: false, compact: true }),
+  nodeResolve({ browser: true, extensions: ['.js', '.ts', '.tsx'] }),
+  commonjs({ strictRequires: 'auto' }),
+  styles({ mode: 'extract', modules: { generateScopedName } }),
+  solidSvg(),
+
+  // ts({ transpiler: 'babel', transpileOnly: true, babelConfig }),
+
+  babel({
+    babelHelpers: 'runtime',
+    extensions: ['.ts', '.tsx'],
+    exclude: ['node_modules/**'],
+    ...babelConfig,
+  }),
+
+  ...inputPlugins,
+  ...otherPlugins,
+];
+
 export const buildOptions = (
   path: string,
   watchFiles?: string[],
@@ -124,39 +160,11 @@ export const buildOptions = (
     ? path
     : resolve(__dirname, 'src', path);
 
-  options.plugins = [
-    replace({
-      values: {
-        isDevMode: `${isDevMode}`,
-        'process.env.NODE_ENV': isDevMode ? `'development'` : `'production'`,
-        'inject@LatestChange': latestChangeHtml,
-      },
-      preventAssignment: true,
-    }),
-    alias({
-      entries: {
-        helper: resolve(__dirname, 'src/helper'),
-        worker: resolve(__dirname, 'src/worker'),
-      },
-    }),
-    json({ namedExports: false, compact: true }),
-    nodeResolve({ browser: true, extensions: ['.js', '.ts', '.tsx'] }),
-    commonjs({ strictRequires: 'auto' }),
-    styles({ mode: 'extract', modules: { generateScopedName } }),
-    solidSvg(),
-
-    // ts({ transpiler: 'babel', transpileOnly: true, babelConfig }),
-
-    babel({
-      babelHelpers: 'runtime',
-      extensions: ['.ts', '.tsx'],
-      exclude: ['node_modules/**'],
-      ...babelConfig,
-    }),
-
-    ...inputPlugins,
+  options.plugins = getPlugins(
     watchFiles && isDevMode && watchExternal({ entries: watchFiles }),
-  ];
+  );
+
+  if (isNpmMode) options.plugins.push(terser());
 
   Object.assign(options.output, {
     file: `dist/${path.replace(/(\/index)?\.tsx?/, '')}.js`,
@@ -212,12 +220,13 @@ export const buildOptions = (
 };
 
 // 清空 dist 文件夹
-shell.rm('-rf', resolve(__dirname, 'dist/*'));
+shell.rm('-rf', resolve(__dirname, 'dist'));
 // 创建 dist 的文件服务器
 if (isDevMode)
   shell.exec('serve dist --cors -l 2405', { async: true, silent: true });
 
-const optionList: RollupOptions[] = [
+// oxlint-disable-next-line no-mutable-exports
+let optionList: RollupOptions[] = [
   buildOptions('dev'),
 
   ...packlist.map((path) => buildOptions(path)),
@@ -329,5 +338,7 @@ if (!isDevMode)
       return options;
     }),
   );
+
+if (isNpmMode) optionList = [buildOptions('userscript/dmzjDecrypt')];
 
 export default optionList;
