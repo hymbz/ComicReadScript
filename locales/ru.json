@@ -311,7 +311,7 @@
     }
   },
   "upscale": {
-    "module_download_complete": "图片放大模型下载完成",
+    "module_download_complete": "Загрузка модели увеличения изображений завершена",
     "module_download_failed": "Сбой загрузки модели увеличения изображений",
     "module_downloading": "Загрузка модели увеличения изображений...",
     "title": "Увеличение изображения",

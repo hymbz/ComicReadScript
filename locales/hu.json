@@ -311,7 +311,7 @@
     }
   },
   "upscale": {
-    "module_download_complete": "图片放大模型下载完成",
+    "module_download_complete": "Képnagyító modell letöltése befejeződött",
     "module_download_failed": "Képnagyító modell letöltése sikertelen",
     "module_downloading": "Képnagyító modell letöltése folyamatban...",
     "title": "Kép nagyítása",
