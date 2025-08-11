@@ -16,13 +16,13 @@ const getBrowserLang = () => {
 
 const getSaveLang = () =>
   typeof GM === 'undefined'
-    ? localStorage.getItem('Languages')
-    : GM.getValue<string>('Languages');
+    ? localStorage.getItem('@Languages')
+    : GM.getValue<string>('@Languages');
 
 export const setSaveLang = (val: string) =>
   typeof GM === 'undefined'
-    ? localStorage.setItem('Languages', val)
-    : GM.setValue('Languages', val);
+    ? localStorage.setItem('@Languages', val)
+    : GM.setValue('@Languages', val);
 
 export const getInitLang = async () => {
   const saveLang = await getSaveLang();

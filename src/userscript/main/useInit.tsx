@@ -52,7 +52,7 @@ export const useInit = async <T extends Record<string, any>>(
   const { store, setState } = useStore<MainStore<T>>({
     fab: { tip: t('other.read_mode'), show: false },
     manga: { imgList: [] },
-    hotkeys: await GM.getValue<Record<string, string[]>>('Hotkeys', {}),
+    hotkeys: await GM.getValue<Record<string, string[]>>('@Hotkeys', {}),
     name,
     options: {
       ...structuredClone(defaultOptions),

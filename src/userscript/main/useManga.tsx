@@ -69,7 +69,7 @@ export const useManga = <T extends Record<string, any>>({
 
     hotkeys: store.hotkeys,
     onHotkeysChange(newValue: Record<string, string[]>) {
-      GM.setValue('Hotkeys', newValue);
+      GM.setValue('@Hotkeys', newValue);
       setState('hotkeys', newValue);
     },
   });

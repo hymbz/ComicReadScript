@@ -151,7 +151,7 @@ export const migration = async (version: string) => {
       switch (key) {
         case 'Version':
         case 'Languages':
-        case 'HotKeys':
+        case 'Hotkeys':
           continue;
 
         default:
@@ -165,7 +165,7 @@ export const migration = async (version: string) => {
       switch (key) {
         case 'Version':
         case 'Languages':
-        case 'HotKeys':
+        case 'Hotkeys':
           continue;
 
         default:
@@ -173,13 +173,16 @@ export const migration = async (version: string) => {
       }
     }
 
-  if (versionLt(version, '11.13'))
+  if (versionLt(version, '12'))
     for (const key of values) {
       switch (key) {
         case 'Version':
         case 'Languages':
-        case 'HotKeys':
+        case 'Hotkeys': {
+          await GM.setValue(`@${key}`, await GM.getValue(key));
+          await GM.deleteValue(key);
           continue;
+        }
 
         default:
           await renameOption(key, ['hotkeys => add_hotkeys_actions']);
