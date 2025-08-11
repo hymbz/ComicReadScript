@@ -309,5 +309,14 @@
       "original": "原文",
       "youdao": "有道"
     }
+  },
+  "upscale": {
+    "module_download_complete": "图片放大模型下载完成",
+    "module_download_failed": "图片放大模型下载失败",
+    "module_downloading": "图片放大模型下载中...",
+    "title": "放大图片",
+    "upscaled": "已放大",
+    "upscaling": "放大中",
+    "webgpu_tip": "无法使用 WebGPU 放大图片，处理速度将变慢"
   }
 }

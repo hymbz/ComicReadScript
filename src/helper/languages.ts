@@ -1,4 +1,4 @@
-export const langList = ['zh', 'en', 'ru', 'ta'] as const;
+export const langList = ['zh', 'en', 'ru'] as const;
 export type Languages = (typeof langList)[number];
 
 /** 判断传入的字符串是否是支持的语言类型代码 */

@@ -4,6 +4,8 @@ import { log, waitImgLoad } from 'helper';
 import { request } from 'main';
 import * as worker from 'worker/detectAd';
 
+import type { MainFn } from '../worker/detectAd/workHelper';
+
 import { showCanvas, showGrayList } from '../worker/helper';
 
 const getAdPage = async <T>(
@@ -93,6 +95,6 @@ export const getAdPageByContent = (
     adList,
   );
 
-const mainFn = { log };
+const mainFn = { log } satisfies MainFn;
 if (isDevMode) Object.assign(mainFn, { showCanvas, showGrayList });
 worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));

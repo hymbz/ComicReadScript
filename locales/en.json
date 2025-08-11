@@ -309,5 +309,14 @@
       "original": "Original",
       "youdao": "youdao"
     }
+  },
+  "upscale": {
+    "module_download_complete": "Image Upscaling Model Download Complete",
+    "module_download_failed": "Image Upscaling Model Download Failed",
+    "module_downloading": "Image Upscaling Model Downloading...",
+    "title": "Upscale Image",
+    "upscaled": "upscaled",
+    "upscaling": "upscaling",
+    "webgpu_tip": "Unable to upscale images using WebGPU, processing will be slower"
   }
 }

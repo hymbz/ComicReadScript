@@ -105,6 +105,11 @@
   :is(&, .SettingsShowItem) + & {
     margin-top: 1em;
   }
+
+  button[disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 }
 
 .SettingsItemName {

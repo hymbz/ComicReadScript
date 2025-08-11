@@ -1,6 +1,8 @@
-import { refs, setState, store } from '../store';
-import { setOption } from './helper';
+import { refs, setState, type State, store } from '../store';
+import { getImgEle, setOption } from './helper';
 import { updatePageData } from './image';
+import { updateImgLoadType } from './imageLoad';
+import { handleImgRecognition } from './imageRecognition';
 import { activeImgIndex, autoPageNum, nowFillIndex, pageNum } from './memo';
 import { jumpToImg, saveScrollProgress } from './scroll';
 import { zoom } from './zoom';
@@ -94,3 +96,22 @@ export const switchFullscreen = () => {
 /** 切换自动滚动 */
 export const switchAutoScroll = () =>
   setState('autoScroll', 'play', (val) => !val);
+
+/** 切换图片识别相关功能 */
+export const switchImgRecognition = (
+  ...path: (keyof State['option']['imgRecognition'])[]
+) =>
+  setOption((draftOption, state) => {
+    const option = draftOption.imgRecognition;
+    if (path.length === 0) path.push('enabled');
+    for (const key of path) option[key] = !option[key];
+
+    if (!option.enabled) return;
+
+    for (const img of Object.values(state.imgMap)) {
+      if (!img.blobUrl) img.loadType = 'wait';
+      if (img.loadType !== 'loaded') continue;
+      handleImgRecognition(img.src);
+    }
+    if (path.includes('enabled')) updateImgLoadType();
+  });

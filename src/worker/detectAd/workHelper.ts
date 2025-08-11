@@ -1,11 +1,7 @@
-import type { log } from 'helper';
-
-import type { showCanvas, showGrayList } from '../helper';
-
 export type MainFn = {
-  log: typeof log;
-  showCanvas?: typeof showCanvas;
-  showGrayList?: typeof showGrayList;
+  log: typeof import('helper').log;
+  showCanvas?: typeof import('worker/helper').showCanvas;
+  showGrayList?: typeof import('worker/helper').showGrayList;
 };
 export const mainFn = {} as MainFn;
 export const setMainFn = (helper: MainFn, keys: string[]) => {

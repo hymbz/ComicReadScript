@@ -7,6 +7,7 @@ import { SettingsItem } from './SettingsItem';
 
 export type SettingsItemSwitchProps = {
   value: boolean;
+  disabled?: boolean;
   onChange: (val: boolean) => void;
 } & SettingsItemProps;
 
@@ -27,6 +28,7 @@ export const SettingsItemSwitch: Component<SettingsItemSwitchProps> = (
         type="button"
         on:click={handleClick}
         data-checked={props.value}
+        disabled={props.disabled}
       >
         <div class={classes.SettingsItemSwitchRound} />
       </button>

@@ -18,6 +18,18 @@ const crsLib: Window['crsLib'] = {
 
 const tempName = Math.random().toString(36).slice(2);
 
+const getResource = (name: string) => {
+  const text = GM_getResourceText(
+    name.replaceAll('/', '|').replaceAll('@', '_'),
+  );
+  if (!text) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
+
+  if (name === '@tensorflow/tfjs-backend-webgpu')
+    return text.replace('@tensorflow/tfjs-core', '@tensorflow/tfjs');
+
+  return text;
+};
+
 const evalCode = (code: string) => {
   if (!code) return;
 
@@ -45,40 +57,49 @@ const selfImportSync = (name: string) => {
       break;
 
     default:
-      code = GM_getResourceText(name.replaceAll('/', '|'))!;
+      code = getResource(name);
   }
-
-  if (!code) throw new Error(`外部模块 ${name} 未在 @Resource 中声明`);
 
   if (name.startsWith('worker/') && supportWorker) {
     try {
       // 如果浏览器支持 worker，就将模块转为 worker
-      const workerCode = `
-const exports = {};
-const Comlink = require('comlink');
-${code}
-Comlink.expose(exports);
-`.replaceAll(
-        /const (\w+) = require\('(.+?)'\);/g,
-        (_, varName, module) => `
-let ${varName} = {};
-(function (exports, module) { ${GM_getResourceText(module)} }) (
-  ${varName},
+
+      const importModule = new Map<string, string>();
+      importModule.set('Comlink', getResource('comlink'));
+
+      // 统计 require 导入的模块，统一放到 moduleMap 里
+      const handleCode = (code: string) =>
+        code.replaceAll(/require\('(.+?)'\)/g, (_, moduleName) => {
+          if (!importModule.has(moduleName))
+            importModule.set(moduleName, handleCode(getResource(moduleName)));
+          return `moduleMap['${moduleName}']`;
+        });
+
+      let workerCode = `const moduleMap = {};\n`;
+      for (const [moduleName, code] of importModule) {
+        workerCode += `
+moduleMap['${moduleName}'] = {};
+(function (exports, module) { ${code} }) (
+  moduleMap['${moduleName}'],
   {
-    set exports(value) { ${varName} = value },
-    get exports() { return ${varName} }
-  }
-);`,
-      );
+    set exports(value) { moduleMap['${moduleName}'] = value; },
+    get exports() { return moduleMap['${moduleName}']; }
+  },
+);\n`;
+      }
+      workerCode += `
+const exports = {};
+${handleCode(code)}
+moduleMap['Comlink'].expose(exports);`;
 
       const codeUrl = URL.createObjectURL(
         new Blob([workerCode], { type: 'text/javascript' }),
       );
       setTimeout(URL.revokeObjectURL, 0, codeUrl);
       const worker = new Worker(codeUrl);
-      unsafeWindow[tempName][name] = (
-        require('comlink') as typeof import('comlink')
-      ).wrap(worker);
+      crsLib[name] = (require('comlink') as typeof import('comlink')).wrap(
+        worker,
+      );
       return;
     } catch {
       supportWorker = false;
@@ -95,12 +116,8 @@ let ${varName} = {};
       window['${tempName}'].require,
       window['${tempName}']['${name}'],
       ((module) => ({
-        set exports(value) {
-          module['${name}'] = value;
-        },
-        get exports() {
-          return module['${name}'];
-        },
+        set exports(value) { module['${name}'] = value; },
+        get exports() { return module['${name}']; },
       }))(window['${tempName}']),
       ${gmApiList
         .map((apiName) => `window['${tempName}'].${apiName}`)
@@ -121,14 +138,6 @@ let ${varName} = {};
   Reflect.deleteProperty(unsafeWindow, tempName);
 };
 
-type SelfModule = {
-  [key: string | symbol]: unknown;
-  default: {
-    (...args: unknown[]): unknown;
-    [key: string | symbol]: unknown;
-  };
-};
-
 /**
  * 创建一个外部模块的 Proxy，等到读取对象属性时才加载模块
  * @param name 外部模块名
@@ -145,13 +154,12 @@ export const require = (name: string) => {
       if (prop === '__esModule') return __esModule;
       if (prop === 'default') return selfDefault as unknown;
       if (!crsLib[name]) selfImportSync(name);
-      const module: SelfModule = crsLib[name];
       if (
         Reflect.has(crsLib[name], 'default') &&
         Reflect.has(crsLib[name].default, prop)
       )
-        return module.default?.[prop];
-      return module?.[prop];
+        return crsLib[name].default[prop];
+      return crsLib[name][prop];
     },
     apply(_, __, args) {
       if (!crsLib[name]) selfImportSync(name);

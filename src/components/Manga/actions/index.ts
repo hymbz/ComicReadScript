@@ -6,6 +6,7 @@ export * from './image';
 export * from './imageLoad';
 export * from './imageSize';
 export * from './imageType';
+export * from './imageUpscale';
 export * from './memo';
 export * from './operate';
 export * from './pointer';

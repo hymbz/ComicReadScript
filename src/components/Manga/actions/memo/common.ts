@@ -31,6 +31,14 @@ export const isEnableBg = createRootMemo(
     store.option.imgRecognition.background,
 );
 
+/** 当前是否开启了图像放大 */
+export const isUpscale = createRootMemo(
+  () =>
+    !store.isMobile &&
+    store.option.imgRecognition.enabled &&
+    store.option.imgRecognition.upscale,
+);
+
 /** 当前显示页面 */
 export const activePage = createRootMemo(
   () => store.pageList[store.activePageIndex] ?? [],

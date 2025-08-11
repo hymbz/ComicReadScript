@@ -86,6 +86,8 @@ export type Option = {
     background: boolean;
     /** 自动调整页面填充 */
     pageFill: boolean;
+    /** 图片放大 */
+    upscale: boolean;
   };
 
   /** 翻译 */
@@ -169,6 +171,7 @@ const _defaultOption: Readonly<Option> = {
     enabled: false,
     background: true,
     pageFill: true,
+    upscale: true,
   },
 
   translation: {

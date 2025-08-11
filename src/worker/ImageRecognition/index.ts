@@ -8,7 +8,7 @@ import { mainFn, resizeImg, toGrayList } from './workHelper';
 export { setMainFn } from './workHelper';
 export type { MainFn } from './workHelper';
 
-export const handleImg = (
+export const recognitionImg = async (
   imgData: Uint8ClampedArray,
   width: number,
   height: number,

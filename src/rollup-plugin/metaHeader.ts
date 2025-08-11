@@ -2,7 +2,6 @@ import fs from 'node:fs';
 
 import en from '../../locales/en.json' with { type: 'json' };
 import ru from '../../locales/ru.json' with { type: 'json' };
-import ta from '../../locales/ta.json' with { type: 'json' };
 import zh from '../../locales/zh.json' with { type: 'json' };
 import pkg from '../../package.json' with { type: 'json' };
 
@@ -13,28 +12,35 @@ import pkg from '../../package.json' with { type: 'json' };
  */
 const resourceList: Record<string, [string, string] | [string]> = {
   'solid-js': [
-    'https://registry.npmmirror.com/solid-js/1.9.1/files/dist/solid.cjs',
-    'https://registry.npmmirror.com/solid-js/1.9.1/files/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.7/files/dist/solid.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.7/files/dist/dev.cjs',
   ],
   'solid-js/store': [
-    'https://registry.npmmirror.com/solid-js/1.9.1/files/store/dist/store.cjs',
-    'https://registry.npmmirror.com/solid-js/1.9.1/files/store/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.7/files/store/dist/store.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.7/files/store/dist/dev.cjs',
   ],
   'solid-js/web': [
-    'https://registry.npmmirror.com/solid-js/1.9.1/files/web/dist/web.cjs',
-    'https://registry.npmmirror.com/solid-js/1.9.1/files/web/dist/dev.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.7/files/web/dist/web.cjs',
+    'https://registry.npmmirror.com/solid-js/1.9.7/files/web/dist/dev.cjs',
   ],
   fflate: ['https://registry.npmmirror.com/fflate/0.8.2/files/umd/index.js'],
   jsqr: ['https://registry.npmmirror.com/jsqr/1.4.0/files/dist/jsQR.js'],
   comlink: [
-    'https://registry.npmmirror.com/comlink/4.4.1/files/dist/umd/comlink.js',
+    'https://registry.npmmirror.com/comlink/4.4.2/files/dist/umd/comlink.min.js',
+    'https://registry.npmmirror.com/comlink/4.4.2/files/dist/umd/comlink.js',
+  ],
+  '@tensorflow/tfjs': [
+    'https://registry.npmmirror.com/@tensorflow/tfjs/4.22.0/files/dist/tf.min.js',
+  ],
+  '@tensorflow/tfjs-backend-webgpu': [
+    'https://registry.npmmirror.com/@tensorflow/tfjs-backend-webgpu/4.22.0/files/dist/tf-backend-webgpu.js',
   ],
   dmzjDecrypt: [
     'https://update.sleazyfork.org/scripts/467177/1207199/dmzjDecrypt.js',
   ],
 };
 
-const resource = {
+export const resource = {
   dev: {} as Record<string, string | undefined>,
   prod: {} as Record<string, string | undefined>,
 };
@@ -94,7 +100,6 @@ export const getMetaData = (isDevMode: boolean) => {
       .join('、')}`,
     'description:en': `${en.description} ${enSupportSite.join(' | ')}.`,
     'description:ru': ru.description,
-    'description:ta': ta.description,
     author: pkg.author,
     license: pkg.license,
     noframes: true,
@@ -153,7 +158,8 @@ export const getMetaData = (isDevMode: boolean) => {
     // 将 @resource 中的 / 替换为 |，以兼容 ios 的油猴扩展
     for (const key of Object.keys(_metaData.resource)) {
       if (!key.includes('/')) continue;
-      _metaData.resource[key.replaceAll('/', '|')] = _metaData.resource[key];
+      _metaData.resource[key.replaceAll('/', '|').replaceAll('@', '_')] =
+        _metaData.resource[key];
       Reflect.deleteProperty(_metaData.resource, key);
     }
 

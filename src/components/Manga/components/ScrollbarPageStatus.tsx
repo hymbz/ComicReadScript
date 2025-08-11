@@ -6,7 +6,7 @@ import { boolDataVal, createThrottleMemo } from 'helper';
 
 import type { ComicImg } from '../store/image';
 
-import { contentHeight, getImg, isOnePageMode } from '../actions';
+import { contentHeight, getImg, isOnePageMode, isUpscale } from '../actions';
 import classes from '../index.module.css';
 import { store } from '../store';
 
@@ -16,6 +16,7 @@ type ScrollbarPageItem = {
   loadType: ComicImg['loadType'];
   isNull: boolean;
   translationType: ComicImg['translationType'];
+  upscale?: 'loading' | true;
 };
 
 const getScrollbarPage = (
@@ -27,11 +28,16 @@ const getScrollbarPage = (
   if (store.option.scrollMode.enabled) num = getImg(i).size.height;
   else num = double ? 2 : 1;
 
+  let upscale: ScrollbarPageItem['upscale'];
+  if (isUpscale() && img.upscaleUrl !== undefined)
+    upscale = img.upscaleUrl === '' ? 'loading' : true;
+
   return {
     num,
     loadType: img.loadType,
     isNull: !img.src,
     translationType: img.translationType,
+    upscale,
   };
 };
 
@@ -51,9 +57,16 @@ const ScrollbarPage: Component<ScrollbarPageItem> = (props) => {
       data-type={props.loadType}
       data-null={boolDataVal(props.isNull)}
       data-translation-type={props.translationType}
+      data-upscale={props.upscale}
     />
   );
 };
+
+const isSameItem = (a: ScrollbarPageItem, b: ScrollbarPageItem) =>
+  a.loadType === b.loadType &&
+  a.isNull === b.isNull &&
+  a.translationType === b.translationType &&
+  a.upscale === b.upscale;
 
 /** 显示对应图片加载情况的元素 */
 export const ScrollbarPageStatus = () => {
@@ -66,17 +79,14 @@ export const ScrollbarPageStatus = () => {
 
     const handleImg = (i: number, double = false) => {
       const img = getImg(i);
+      const imgItem = getScrollbarPage(img, i, double);
 
       if (!item) {
-        item = getScrollbarPage(img, i, double);
+        item = imgItem;
         return;
       }
 
-      if (
-        img.loadType === item.loadType &&
-        !img.src === item.isNull &&
-        img.translationType === item.translationType
-      ) {
+      if (isSameItem(item, imgItem)) {
         if (store.option.scrollMode.enabled) item.num += img.size.height;
         else item.num += double ? 2 : 1;
       } else {

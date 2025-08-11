@@ -50,12 +50,13 @@
     transform: scaleY(0);
   }
 
-  &[data-type='wait'] {
-    opacity: 0.5;
+  &[data-upscale] {
+    transform: scaleY(1);
+    background-color: #b39ddb;
   }
 
-  &[data-null] {
-    background-color: #fbc02d;
+  &[data-upscale='loading'] {
+    background-color: #d1c4e9;
   }
 
   &[data-translation-type] {
@@ -74,6 +75,14 @@
 
   &[data-translation-type='error'] {
     background-color: #f005;
+  }
+
+  &[data-type='wait'] {
+    opacity: 0.5;
+  }
+
+  &[data-null] {
+    background-color: #fbc02d;
   }
 
   &[data-type='error'] {

@@ -23,7 +23,11 @@ export const ComicImg: Component<_ComicImg & { index: number }> = (img) => {
   const src = () => {
     if (img.loadType === 'wait') return '';
     if (img.translationType === 'show') return img.translationUrl;
-    if (store.option.imgRecognition.enabled) return img.blobUrl;
+    if (store.option.imgRecognition.enabled) {
+      if (store.option.imgRecognition.upscale && img.upscaleUrl)
+        return img.upscaleUrl;
+      return img.blobUrl;
+    }
     // 有些浏览器不支持显示带有 hash 标识的图片 url
     if (img.src.startsWith('blob:')) return img.src.replace(/#\..+/, '');
     return img.src;

@@ -16,11 +16,13 @@ import {
 } from './memo';
 
 /** 获取指定图片的显示尺寸 */
-const getImgDisplaySize = (state: State, url: string) => {
+export const getImgDisplaySize = (state: State, url: string) => {
   const img = state.imgMap[url];
 
   let height = img.height ?? placeholderSize().height;
   let width = img.width ?? placeholderSize().width;
+
+  if (!state.option.scrollMode.enabled) return { height, width };
 
   const setWidth = (w: number) => {
     height *= w / width;
@@ -28,7 +30,6 @@ const getImgDisplaySize = (state: State, url: string) => {
     return { height, width };
   };
 
-  if (!state.option.scrollMode.enabled) return { height, width };
   if (isAbreastMode()) return setWidth(abreastColumnWidth());
   if (state.option.scrollMode.fitToWidth) return setWidth(state.rootSize.width);
 

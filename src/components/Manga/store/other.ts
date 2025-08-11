@@ -16,4 +16,6 @@ export const otherState = {
   autoScroll: { play: false, progress: 0 },
 
   supportWorker: false,
+
+  supportUpscaleImage: true,
 };

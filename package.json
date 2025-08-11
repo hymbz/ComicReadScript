@@ -31,6 +31,8 @@
     "@placemarkio/flat-drop-files": "^1.0.2",
     "@solid-primitives/scheduled": "^1.5.2",
     "@solid-primitives/set": "^0.7.2",
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-backend-webgpu": "^4.22.0",
     "browser-fs-access": "^0.38.0",
     "comlink": "^4.4.2",
     "fast-deep-equal": "^3.1.3",

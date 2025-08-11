@@ -1,9 +1,27 @@
-import type { log } from 'helper';
+import type { updatePageData } from 'components/Manga/actions/image';
+import type { ComicImg } from 'components/Manga/store/image';
 
-import type { updatePageData } from '../../components/Manga/actions/image';
-import type { ComicImg } from '../../components/Manga/store/image';
-import type { showCanvas, showColorArea, showGrayList } from '../helper';
 import type { getBlankMargin } from './blankMargin';
+
+export type MainFn = {
+  showCanvas?: typeof import('worker/helper').showCanvas;
+  showColorArea?: typeof import('worker/helper').showColorArea;
+  showGrayList?: typeof import('worker/helper').showGrayList;
+  log: typeof import('helper').log;
+  setImg: <K extends keyof ComicImg>(
+    url: string,
+    key: K,
+    val: ComicImg[K],
+  ) => void;
+  updatePageData: typeof updatePageData.throttle;
+};
+export const mainFn = {} as MainFn;
+export const setMainFn = (helper: MainFn, keys: string[]) => {
+  for (const name of keys)
+    Reflect.set(mainFn, name, (...args: any[]) =>
+      Reflect.apply(helper[name], helper, args),
+    );
+};
 
 export type TBLR = 'top' | 'bottom' | 'left' | 'right';
 
@@ -82,26 +100,6 @@ export const forEachEdge = (
     forEachCols(width, height, i, fn, scope, height - scope);
     forEachCols(width, height, width - i - 1, fn, scope, height - scope);
   }
-};
-
-export type MainFn = {
-  showCanvas: typeof showCanvas;
-  showColorArea: typeof showColorArea;
-  showGrayList: typeof showGrayList;
-  log: typeof log;
-  setImg: <K extends keyof ComicImg>(
-    url: string,
-    key: K,
-    val: ComicImg[K],
-  ) => void;
-  updatePageData: typeof updatePageData.throttle;
-};
-export const mainFn = {} as MainFn;
-export const setMainFn = (helper: MainFn, keys: string[]) => {
-  for (const name of keys)
-    Reflect.set(mainFn, name, (...args: any[]) =>
-      Reflect.apply(helper[name], helper, args),
-    );
 };
 
 /** 缩小图像 */

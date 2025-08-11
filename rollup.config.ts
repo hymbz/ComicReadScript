@@ -66,8 +66,9 @@ const packlist = [
   'userscript/dmzjApi',
   'userscript/detectAd',
   'userscript/main',
-  'worker/ImageRecognition',
   'worker/detectAd',
+  'worker/ImageRecognition',
+  'worker/ImageUpscale',
   'userscript/otherSite',
   'userscript/ehTagRules',
 ];
@@ -84,7 +85,6 @@ const babelConfig = {
 };
 
 const baseOptions = {
-  treeshake: true,
   external: [
     ...Object.keys(meta.resource ?? {}),
     ...packlist,
@@ -104,6 +104,12 @@ const baseOptions = {
     generatedCode: 'es2015',
     extend: true,
     plugins: [] as OutputPluginOption[],
+    externalLiveBindings: false,
+    reexportProtoFromExternal: false,
+  },
+  treeshake: {
+    preset: 'smallest',
+    tryCatchDeoptimization: true,
   },
 } satisfies RollupOptions;
 

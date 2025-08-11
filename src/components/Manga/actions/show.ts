@@ -4,7 +4,7 @@ import type { State } from '../store';
 
 import { setState, store } from '../store';
 import { getImg, resetUI } from './helper';
-import { activePage } from './memo';
+import { activePage, isUpscale } from './memo';
 import { updateShowRange } from './renderPage';
 
 /** 将页面移回原位 */
@@ -44,6 +44,9 @@ export const getImgTip = (i: number) => {
     img.translationMessage
   )
     return `${i + 1}：${img.translationMessage}`;
+
+  if (isUpscale() && img.upscaleUrl !== undefined)
+    return `${i + 1} (${img.upscaleUrl ? t('upscale.upscaled') : t('upscale.upscaling')})`;
 
   return `${i + 1}`;
 };

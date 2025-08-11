@@ -15,6 +15,8 @@ export type ComicImg = {
   translationUrl?: string;
   translationMessage?: string;
   translationType?: 'wait' | 'show' | 'hide' | 'error';
+
+  upscaleUrl?: string;
 };
 
 export type PageList = ([number] | [number, number])[];

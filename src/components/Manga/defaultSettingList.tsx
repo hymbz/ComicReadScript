@@ -11,16 +11,14 @@ import type { Option } from './store/option';
 import {
   autoPageNum,
   bindOption,
-  getImgEle,
   saveScrollProgress,
   setOption,
   switchDir,
   switchFitToWidth,
-  updateImgLoadType,
+  switchImgRecognition,
   zoom,
   zoomScrollModeImg,
 } from './actions';
-import { handleImgRecognition } from './actions/imageRecognition';
 import { SettingHotkeysBlock } from './components/SettingHotkeys';
 import { SettingsItem } from './components/SettingsItem';
 import { SettingsItemNumber } from './components/SettingsItemNumber';
@@ -201,7 +199,6 @@ export const defaultSettingList: () => SettingList = () => [
             ['zh', '中文'],
             ['en', 'English'],
             ['ru', 'Русский'],
-            ['ta', 'தமிழ்'],
           ]}
           value={lang()}
           onChange={setLang}
@@ -321,17 +318,7 @@ export const defaultSettingList: () => SettingList = () => [
         <SettingsItemSwitch
           name={t('other.enabled')}
           value={store.option.imgRecognition.enabled}
-          onChange={() =>
-            setOption((draftOption, state) => {
-              const enabled = !draftOption.imgRecognition.enabled;
-              draftOption.imgRecognition.enabled = enabled;
-
-              if (!enabled) return;
-              for (const img of Object.values(state.imgMap))
-                if (!img.blobUrl) img.loadType = 'wait';
-              updateImgLoadType();
-            })
-          }
+          onChange={() => switchImgRecognition('enabled')}
         />
 
         <Show when={typeof Worker === 'undefined'}>
@@ -352,38 +339,22 @@ export const defaultSettingList: () => SettingList = () => [
           <SettingsItemSwitch
             name={t('setting.option.img_recognition_background')}
             value={store.option.imgRecognition.background}
-            onChange={() =>
-              setOption((draftOption, state) => {
-                const enabled = !draftOption.imgRecognition.background;
-                draftOption.imgRecognition.background = enabled;
-
-                if (!enabled) return;
-                for (const img of Object.values(state.imgMap)) {
-                  if (img.background === undefined && img.loadType === 'loaded')
-                    handleImgRecognition(getImgEle(img.src)!, img.src);
-                }
-              })
-            }
+            onChange={() => switchImgRecognition('background')}
           />
           <SettingsItemSwitch
             name={t('setting.option.img_recognition_pageFill')}
             value={store.option.imgRecognition.pageFill}
-            onChange={() =>
-              setOption((draftOption, state) => {
-                const enabled = !draftOption.imgRecognition.pageFill;
-                draftOption.imgRecognition.pageFill = enabled;
-
-                if (!enabled) return;
-                for (const img of Object.values(state.imgMap)) {
-                  if (
-                    img.blankMargin === undefined &&
-                    img.loadType === 'loaded'
-                  )
-                    handleImgRecognition(getImgEle(img.src)!, img.src);
-                }
-              })
-            }
+            onChange={() => switchImgRecognition('pageFill')}
           />
+
+          <Show when={!store.isMobile}>
+            <SettingsItemSwitch
+              name={t('upscale.title')}
+              value={store.option.imgRecognition.upscale}
+              disabled={!store.supportUpscaleImage}
+              onChange={() => switchImgRecognition('upscale')}
+            />
+          </Show>
         </SettingsShowItem>
       </>
     ),
