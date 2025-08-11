@@ -194,10 +194,10 @@ export const handleKeyDown = (e: KeyboardEvent) => {
 
       case 'scroll_up':
         if (e.repeat) return handleHoldScroll(code, -1);
-        return scrollModeScrollPage(-20);
+        return scrollModeScrollPage(-40);
       case 'scroll_down':
         if (e.repeat) return handleHoldScroll(code, 1);
-        return scrollModeScrollPage(20);
+        return scrollModeScrollPage(40);
     }
   }
 
