@@ -171,7 +171,7 @@ const _defaultOption: Readonly<Option> = {
     enabled: false,
     background: true,
     pageFill: true,
-    upscale: true,
+    upscale: false,
   },
 
   translation: {

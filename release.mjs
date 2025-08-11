@@ -51,6 +51,7 @@ const exec = (...commands) => {
   // 使用 release-it 更新版本，并获得更新日志
   const { changelog } = await release({
     ci: true,
+    npm: { publish: false },
     git: {
       requireCommits: true,
       commit: false,
