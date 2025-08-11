@@ -126,7 +126,7 @@ export const SettingHotkeys: Component<{ keys: string[] }> = (props) => (
 );
 
 const OtherHotkeys: Component<{ keys: string[] }> = (props) => {
-  let ref!: HTMLSelectElement;
+  let ref!: HTMLSelectElement; // oxlint-disable-line no-unassigned-vars
 
   const handleChange: EventHandler<HTMLSelectElement>['onChange'] = (e) => {
     const name = e.target.value;

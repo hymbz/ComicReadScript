@@ -27,7 +27,7 @@ export const detectAd = ({
     pageList[index] = e.href;
 
     const thumbnail = e.querySelector<HTMLElement>('[title]')!;
-    fileNameList[index] = thumbnail.title.split(/：|: /)[1];
+    [, fileNameList[index]] = thumbnail.title.split(/：|: /);
     thumbnailList[index] =
       thumbnail.tagName === 'IMG'
         ? (thumbnail as HTMLImageElement)

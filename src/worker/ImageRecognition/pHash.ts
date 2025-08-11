@@ -11,7 +11,9 @@ const resizeImg = async (
   height: number,
   size = 8,
 ) => {
-  const imgBitmap = await createImageBitmap(new ImageData(data, width, height));
+  const imgBitmap = await createImageBitmap(
+    new ImageData(data as ImageDataArray, width, height),
+  );
   const canvas = new OffscreenCanvas(size, size);
   const ctx = canvas.getContext('2d')!;
   ctx.drawImage(imgBitmap, 0, 0, size, size);

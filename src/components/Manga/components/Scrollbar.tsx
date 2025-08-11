@@ -68,7 +68,7 @@ export const Scrollbar: Component = () => {
     }
 
     const tipList: string[] = [];
-    for (let i = store.showRange[0]; i <= store.showRange[1]; i++)
+    for (let [i] = store.showRange; i <= store.showRange[1]; i++)
       tipList.push(getPageTip(i));
 
     if (isOnePageMode() || isDoubleMode()) return tipList.join('\n');

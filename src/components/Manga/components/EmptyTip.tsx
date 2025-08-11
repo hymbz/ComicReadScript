@@ -3,7 +3,7 @@ import type { Component } from 'solid-js';
 import { onAutoMount } from 'helper';
 
 export const EmptyTip: Component = () => {
-  let ref!: HTMLHeadingElement;
+  let ref!: HTMLHeadingElement; // oxlint-disable-line no-unassigned-vars
 
   onAutoMount(() => {
     let timeoutId = 0;

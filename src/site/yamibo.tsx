@@ -192,7 +192,7 @@ type History = {
       const tagDom = querySelector<HTMLAnchorElement>('.ptg.mbm.mtn > a');
       // 通过标签确定上/下一话
       if (tagDom) {
-        const tagId = tagDom.href.split('id=')[1];
+        const [, tagId] = tagDom.href.split('id=');
         const reg = /(?<=<th>\s<a href="thread-)\d+(?=-)/g;
         let threadList: number[] = [];
 

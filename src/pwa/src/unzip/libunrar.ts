@@ -45,7 +45,9 @@ const findImgFile = async (
 
     const filtType = await fileTypeFromBuffer(entry.fileContent);
     const url = await createObjectURL(
-      new Blob([entry.fileContent], { type: filtType?.mime || 'image/jpeg' }),
+      new Blob([entry.fileContent as BlobPart], {
+        type: filtType?.mime || 'image/jpeg',
+      }),
     );
     if (!url) throw new Error(t('pwa.alert.img_data_error'));
     return [{ name: path.join('-'), url }];

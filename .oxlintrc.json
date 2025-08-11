@@ -17,7 +17,9 @@
     "style": "warn"
   },
   "env": {
-    "builtin": true
+    "browser": true,
+    "worker": true,
+    "es2024": true
   },
   // 有 bug，只能使用 .eslintignore 来禁用，暂时注释
   // "ignorePatterns": [

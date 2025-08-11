@@ -473,7 +473,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
 
   // 目录页
   if (!id && location.href.includes('/comic/')) {
-    comicName = location.href.split('/comic/')[1];
+    [, comicName] = location.href.split('/comic/');
     if (!comicName) return;
 
     let hiddenType: HiddenType | undefined;

@@ -382,7 +382,7 @@ import { tagLint } from './tagLint';
         return reloadImg(url);
       }
     }
-    setState('comicMap', '', 'imgList', i, context.imgList[i]);
+    setState('comicMap', '', 'imgList', context.imgList);
 
     for (const img of MangaImgList())
       if (img.loadType === 'error') return reloadImg(img.src);

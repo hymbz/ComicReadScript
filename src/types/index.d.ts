@@ -1,3 +1,4 @@
+// oxlint-disable consistent-type-definitions
 import type { Component, JSX } from 'solid-js';
 
 declare global {
@@ -49,7 +50,7 @@ declare module 'solid-js' {
   namespace JSX {
     interface ExplicitAttributes {
       // attr:___
-      [k: string]: string;
+      [k: string]: string; // oxlint-disable-line consistent-indexed-object-style
     }
 
     type KeyboardEventSelf = KeyboardEvent & {

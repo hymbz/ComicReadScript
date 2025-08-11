@@ -60,7 +60,7 @@ export const ToastItem: Component<Toast> = (props) => {
     dismissToast(props.id);
   };
 
-  let scheduleRef!: HTMLDivElement;
+  let scheduleRef!: HTMLDivElement; // oxlint-disable-line no-unassigned-vars
   createEffect(() => {
     if (!props.update) return;
     resetToastUpdate(props.id);

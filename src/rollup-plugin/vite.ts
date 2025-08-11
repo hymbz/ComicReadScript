@@ -22,7 +22,7 @@ const worker: PluginOption[] = [
     transform(code, path) {
       // 修改 vite 对 ?worker 模块的导入代码，改成返回 comlink 包装后的 worker
       if (path.endsWith('?worker')) {
-        const workerUrl = /Worker\(\s+"(.+?)"/.exec(code)![1];
+        const [, workerUrl] = /Worker\(\s+"(.+?)"/.exec(code)!;
         return `
 import * as Comlink from 'comlink';
 const worker = Comlink.wrap(new Worker("${workerUrl}", { type: "module" }));

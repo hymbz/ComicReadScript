@@ -31,7 +31,7 @@ type IconButtonProps = {
 /** 图标按钮 */
 export const IconButton: Component<IconButtonProps> = (_props) => {
   const props = mergeProps({ placement: 'right' }, _props);
-  let buttonRef!: HTMLButtonElement;
+  let buttonRef!: HTMLButtonElement; // oxlint-disable-line no-unassigned-vars
   const handleClick: EventHandler['on:click'] = (e) => {
     if (props.disable) return;
     (props.onClick as JSX.EventHandler<HTMLElement, MouseEvent>)?.(e);

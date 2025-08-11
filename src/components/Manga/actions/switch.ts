@@ -1,5 +1,5 @@
 import { refs, setState, type State, store } from '../store';
-import { getImgEle, setOption } from './helper';
+import { setOption } from './helper';
 import { updatePageData } from './image';
 import { updateImgLoadType } from './imageLoad';
 import { handleImgRecognition } from './imageRecognition';

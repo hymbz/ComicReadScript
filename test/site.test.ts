@@ -108,7 +108,7 @@ const getSiteTestInfo = () => {
       skip.push(name);
       continue;
     }
-    const [, url] = commentRes[0];
+    const [[, url]] = commentRes;
     if (!url.startsWith('http')) continue;
 
     const only = comment.includes('// only');

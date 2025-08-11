@@ -11,7 +11,7 @@ export type RangeInputProps = {
 
 /** 范围输入框 */
 export const RangeInput: Component<RangeInputProps> = (props) => {
-  let ref!: HTMLTextAreaElement;
+  let ref!: HTMLTextAreaElement; // oxlint-disable-line no-unassigned-vars
 
   /** 在保持光标位置不变的情况下修改文本 */
   const editText = (text: string) => {

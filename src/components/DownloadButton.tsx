@@ -68,7 +68,10 @@ export const DownloadButton = () => {
       level: 0,
       comment: location.href,
     });
-    saveAs(new Blob([zipped]), `${store.title || state.rawTitle}.zip`);
+    saveAs(
+      new Blob([zipped as BlobPart]),
+      `${store.title || state.rawTitle}.zip`,
+    );
     setState('completedNum', -1);
     toast(
       state.errorNum > 0

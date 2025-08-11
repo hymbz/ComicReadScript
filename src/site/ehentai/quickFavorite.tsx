@@ -211,7 +211,7 @@ export const quickFavorite = (context: EhContext) => {
         const bottom =
           item.lastElementChild!.getBoundingClientRect().top -
           item.getBoundingClientRect().top;
-        const apiUrl = /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0];
+        const [apiUrl] = /http.+?(?=')/.exec(button.getAttribute('onclick')!)!;
         addQuickFavorite(button, item, apiUrl, bottom - top, top);
       }
       break;
@@ -223,7 +223,7 @@ export const quickFavorite = (context: EhContext) => {
         const button =
           item.nextElementSibling!.querySelector<HTMLElement>('[id^=posted_]')!;
         const height = Number.parseInt(getComputedStyle(item).height, 10);
-        const apiUrl = /http.+?(?=')/.exec(button.getAttribute('onclick')!)![0];
+        const [apiUrl] = /http.+?(?=')/.exec(button.getAttribute('onclick')!)!;
         addQuickFavorite(button, item, apiUrl, height);
       }
       break;

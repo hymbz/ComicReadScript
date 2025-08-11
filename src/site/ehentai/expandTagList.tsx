@@ -61,6 +61,14 @@ export const expandTagList = (context: EhContext) => {
         html = domParse(res.responseText);
         taglist = html.querySelector<HTMLElement>('#taglist');
         if (!taglist) throw new Error('Fetch tag list error');
+
+        // 因为 eh 目录页的缩略图是用精灵图的方式实现的，
+        // 所以在这里顺便预载一下这张图，点进去后就能立刻显示缩略图了
+        const [, thumbnail] = html
+          .querySelector<HTMLElement>('#gdt div[title][style]')!
+          .style.background.split('"');
+        new Image().src = thumbnail;
+
         for (const a of taglist.querySelectorAll<HTMLAnchorElement>('a'))
           a.target = '_blank';
       } catch {

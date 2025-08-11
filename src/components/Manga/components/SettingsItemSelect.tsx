@@ -16,7 +16,7 @@ export type SettingsItemSelectProps<T extends string> = {
 export const SettingsItemSelect = <T extends string = string>(
   props: SettingsItemSelectProps<T>,
 ) => {
-  let ref!: HTMLSelectElement;
+  let ref!: HTMLSelectElement; // oxlint-disable-line no-unassigned-vars
 
   createEffect(() => {
     ref.value = props.options?.some(([val]) => val === props.value)

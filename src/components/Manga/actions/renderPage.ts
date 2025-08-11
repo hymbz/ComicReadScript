@@ -160,7 +160,7 @@ export const imgShowState = createRootMemo<Map<number, 0 | 1 | ''>>(() => {
     : store.renderRange;
 
   const stateList = new Map<number, 0 | 1 | ''>();
-  for (let i = showRange[0]; i <= showRange[1]; i++) {
+  for (let [i] = showRange; i <= showRange[1]; i++) {
     const page = store.pageList[i];
     if (!page) continue;
     const [a, b] = page;

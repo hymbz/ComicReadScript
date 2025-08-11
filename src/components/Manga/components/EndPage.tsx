@@ -28,7 +28,7 @@ export const EndPage: Component = () => {
     focus();
   };
 
-  let ref!: HTMLDivElement;
+  let ref!: HTMLDivElement; // oxlint-disable-line no-unassigned-vars
 
   const [isDrag, setIsDrag] = createSignal(false);
   const [dragY, setDragY] = createSignal(0);

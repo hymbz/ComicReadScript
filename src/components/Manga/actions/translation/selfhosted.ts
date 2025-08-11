@@ -51,7 +51,7 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
         responseType: 'json',
         data: createFormData(imgBlob, 'selfhosted-old'),
       });
-      task_id = res.response.task_id;
+      ({ task_id } = res.response);
     } catch (error) {
       log.error(error);
       throw new Error(t('translation.tip.upload_error'));
@@ -155,7 +155,7 @@ export const selfhostedTranslation = async (url: string): Promise<string> => {
 };
 
 export const [selfhostedOptions, setSelfOptions] = createEqualsSignal<
-  Array<[string, string]>
+  [string, string][]
 >([]);
 
 /** 更新部署服务的可用翻译 */

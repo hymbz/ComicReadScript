@@ -660,7 +660,7 @@ try {
           const img = await wait(() =>
             querySelector<HTMLImageElement>('.lazy-load-image-background img'),
           );
-          const cdn = img.src.split(id)[0];
+          const [cdn] = img.src.split(id);
 
           const imgNum = await wait(
             () => querySelectorAll('.lazy-load-image-background').length,
@@ -962,7 +962,7 @@ try {
               .split('/')
               .map(Number);
             const data = await getChapters(mangaId, chapterId);
-            const { pageCount } = data.chapters.nodes[0];
+            const [{ pageCount }] = data.chapters.nodes;
             const chapterCount = data.manga.chapters.totalCount;
 
             setState('manga', {
