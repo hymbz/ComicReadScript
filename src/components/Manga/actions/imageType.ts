@@ -10,7 +10,6 @@ import { placeholderSize } from './memo';
 const isWideType = (type: ComicImg['type']) =>
   type === 'wide' || type === 'long';
 
-// https://www.figma.com/design/h0x2ZHVh3P3bCbnszonRqk/漫画双页阅读比例图
 // https://github.com/hymbz/ComicReadScript/issues/174#issuecomment-2252114640
 // 用于判断图片类型的比例
 const 单页比例 = 1920 / 2 / 1080;
