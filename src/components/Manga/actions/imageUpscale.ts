@@ -3,7 +3,7 @@ import * as Comlink from 'comlink';
 import type { MainFn } from 'worker/ImageUpscale';
 
 import { toast } from 'components/Toast';
-import { createEffectOn, getImageData, log, t, wait } from 'helper';
+import { createEffectOn, getImageData, log, onec, t, wait } from 'helper';
 import { request } from 'request';
 import * as worker from 'worker/ImageUpscale';
 
@@ -14,6 +14,7 @@ import { activeImgIndex, imgList, isUpscale } from './memo';
 export const upscaleImage = async (url: string, imgEle: HTMLImageElement) => {
   setState('imgMap', url, 'upscaleUrl', '');
   const { data, width, height } = getImageData(imgEle);
+  initWorker();
   await worker.upscaleImage(
     Comlink.transfer(data, [data.buffer]),
     width,
@@ -105,12 +106,14 @@ const getModel = async () => {
   }
 };
 
-const mainFn = {
-  log,
-  toast,
-  t,
-  setImg: (url, key, val) =>
-    Reflect.has(store.imgMap, url) && setState('imgMap', url, key, val),
-  getModel,
-} satisfies MainFn;
-worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
+const initWorker = onec(() => {
+  const mainFn = {
+    log,
+    toast,
+    t,
+    setImg: (url, key, val) =>
+      Reflect.has(store.imgMap, url) && setState('imgMap', url, key, val),
+    getModel,
+  } satisfies MainFn;
+  worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
+});

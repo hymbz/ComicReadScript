@@ -38,6 +38,17 @@ export const inRange = (min: number, val: number, max: number) =>
 export const approx = (val: number, target: number, range: number) =>
   Math.abs(target - val) <= range;
 
+/** 创建一个只会执行一次的函数 */
+export const onec = (fn: () => unknown) => {
+  let hasRun = false;
+
+  return () => {
+    if (hasRun) return;
+    hasRun = true;
+    fn();
+  };
+};
+
 /** 创建顺序递增的数组 */
 export function range(a: number, b?: number): number[];
 export function range<T = number>(a: number, b: (K: number) => T): T[];

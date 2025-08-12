@@ -1,6 +1,6 @@
 import * as Comlink from 'comlink';
 
-import { log, waitImgLoad } from 'helper';
+import { log, onec, waitImgLoad } from 'helper';
 import { request } from 'main';
 import * as worker from 'worker/detectAd';
 
@@ -81,8 +81,10 @@ export const getAdPageByFileName = (
 ) =>
   getAdPage(fileNameList, (fileName: string) => /^z+/i.test(fileName), adList);
 
-export const isAdImg = (imgBitmap: ImageBitmap) =>
-  worker.isAdImg(Comlink.transfer(imgBitmap, [imgBitmap]));
+export const isAdImg = (imgBitmap: ImageBitmap) => {
+  initWorker();
+  return worker.isAdImg(Comlink.transfer(imgBitmap, [imgBitmap]));
+};
 
 /** 通过图片内容判断是否是广告 */
 export const getAdPageByContent = (
@@ -95,6 +97,8 @@ export const getAdPageByContent = (
     adList,
   );
 
-const mainFn = { log } satisfies MainFn;
-if (isDevMode) Object.assign(mainFn, { showCanvas, showGrayList });
-worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
+const initWorker = onec(() => {
+  const mainFn = { log } satisfies MainFn;
+  if (isDevMode) Object.assign(mainFn, { showCanvas, showGrayList });
+  worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
+});

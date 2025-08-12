@@ -3,7 +3,7 @@ import { unwrap } from 'solid-js/store';
 
 import type { MainFn } from 'worker/ImageRecognition';
 
-import { getImageData, log, throttle, wait } from 'helper';
+import { getImageData, log, onec, throttle, wait } from 'helper';
 import { showCanvas, showColorArea, showGrayList } from 'worker/helper';
 import * as worker from 'worker/ImageRecognition';
 
@@ -23,6 +23,7 @@ export const handleImgRecognition = async (
     imgEle ??= await wait(() => getImgEle(url), 1000);
     if (!imgEle) return log.warn('获取图片元素失败');
     const { data, width, height } = getImageData(imgEle);
+    initWorker();
     return worker.recognitionImg(
       Comlink.transfer(data, [data.buffer]),
       width,
@@ -33,12 +34,14 @@ export const handleImgRecognition = async (
   }
 };
 
-const mainFn = {
-  log,
-  updatePageData: throttle(() => setState(updatePageData), 1000),
-  setImg: (url, key, val) =>
-    Reflect.has(store.imgMap, url) && setState('imgMap', url, key, val),
-} satisfies MainFn;
-if (isDevMode)
-  Object.assign(mainFn, { showCanvas, showColorArea, showGrayList });
-worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
+const initWorker = onec(() => {
+  const mainFn = {
+    log,
+    updatePageData: throttle(() => setState(updatePageData), 1000),
+    setImg: (url, key, val) =>
+      Reflect.has(store.imgMap, url) && setState('imgMap', url, key, val),
+  } satisfies MainFn;
+  if (isDevMode)
+    Object.assign(mainFn, { showCanvas, showColorArea, showGrayList });
+  worker.setMainFn(Comlink.proxy(mainFn), Object.keys(mainFn));
+});
