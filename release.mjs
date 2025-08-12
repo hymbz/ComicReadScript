@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import release from 'release-it';
@@ -32,6 +32,18 @@ const exec = (...commands) => {
       '-f',
       path.join(__dirname, './dist/adguard.js'),
       path.join(__dirname, './ComicRead-AdGuard.user.js'),
+    );
+
+    const code = readFileSync(
+      path.join(__dirname, './ComicRead.user.js'),
+      'utf8',
+    );
+    writeFileSync(
+      path.join(__dirname, './ComicRead-jsDelivr.user.js'),
+      code.replaceAll(
+        /registry\.npmmirror\.com\/([^/]+)\/([^/]+)\/files\/(.+)/g,
+        'cdn.jsdelivr.net/npm/$1@$2/$3',
+      ),
     );
 
     // 提交上传更改

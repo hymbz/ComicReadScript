@@ -278,18 +278,11 @@ if (!isDevMode)
         renderChunk(rawCode) {
           let code = rawCode;
 
-          // 不知道为啥俄罗斯访问不了 npmmirror
+          // 不知道为啥俄罗斯访问不了 npmmirror，只能改用 jsdelivr
           // https://github.com/hymbz/ComicReadScript/issues/170
-          // 或许和 unpkg 功能的白名单<https://github.com/cnpm/unpkg-white-list>有关
-          // <https://sleazyfork.org/zh-CN/scripts/374903/discussions/248665>
-          // 可能再过一段时间就能恢复？但总之目前只能先改用 jsdelivr
           code = code.replaceAll(
-            /@resource .+? https:\/\/registry.npmmirror.com\/.+(?=\n)/g,
-            (text) =>
-              text
-                .replace('registry.npmmirror.com/', 'cdn.jsdelivr.net/npm/')
-                .replace(/(npm\/[^/]+)\//, '$1@')
-                .replace('files/', ''),
+            /registry\.npmmirror\.com\/([^/]+)\/([^/]+)\/files\/(.+)/g,
+            'cdn.jsdelivr.net/npm/$1@$2/$3',
           );
 
           // AdGuard 无法支持简易阅读模式，所以改为只在支持网站上运行
