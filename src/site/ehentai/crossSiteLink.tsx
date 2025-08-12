@@ -14,7 +14,7 @@ import {
 } from 'helper';
 import { request, toast } from 'main';
 
-import { isInCategories, type GalleryContext } from './helper';
+import { type GalleryContext, isInCategories } from './helper';
 
 type ItemData = {
   id: string;
