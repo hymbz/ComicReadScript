@@ -41,7 +41,7 @@ const exec = (...commands) => {
     writeFileSync(
       path.join(__dirname, './ComicRead-jsDelivr.user.js'),
       code.replaceAll(
-        /registry\.npmmirror\.com\/([^/]+)\/([^/]+)\/files\/(.+)/g,
+        /registry\.npmmirror\.com\/(.+)\/(\d+\.\d+\.\d)\/files\/(.+)/g,
         'cdn.jsdelivr.net/npm/$1@$2/$3',
       ),
     );

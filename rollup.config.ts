@@ -281,7 +281,7 @@ if (!isDevMode)
           // 不知道为啥俄罗斯访问不了 npmmirror，只能改用 jsdelivr
           // https://github.com/hymbz/ComicReadScript/issues/170
           code = code.replaceAll(
-            /registry\.npmmirror\.com\/([^/]+)\/([^/]+)\/files\/(.+)/g,
+            /registry\.npmmirror\.com\/(.+)\/(\d+\.\d+\.\d)\/files\/(.+)/g,
             'cdn.jsdelivr.net/npm/$1@$2/$3',
           );
 
