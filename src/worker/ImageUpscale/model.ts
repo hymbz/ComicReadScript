@@ -3,7 +3,7 @@ import type { GraphModel } from '@tensorflow/tfjs';
 import { env, loadGraphModel, setBackend } from '@tensorflow/tfjs';
 import { webgpu_util } from '@tensorflow/tfjs-backend-webgpu';
 
-import { log, wait } from 'helper';
+import { wait } from 'helper';
 
 import { base64ToArrayBuffer, mainFn } from './workHelper';
 
@@ -24,7 +24,7 @@ export const getModel = async () => {
     await setBackend('webgpu');
   } catch (error) {
     mainFn.toast.warn(mainFn.t('upscale.webgpu_tip'));
-    log.error('切换 WebGPU 出错', error);
+    mainFn.log.error('切换 WebGPU 出错', error);
   }
 
   const { buffer, base64, json } = await mainFn.getModel();
