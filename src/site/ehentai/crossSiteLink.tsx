@@ -14,7 +14,7 @@ import {
 } from 'helper';
 import { request, toast } from 'main';
 
-import type { GalleryContext } from './helper';
+import { isInCategories, type GalleryContext } from './helper';
 
 type ItemData = {
   id: string;
@@ -24,10 +24,12 @@ type ItemData = {
   class: string;
 };
 
-const nhentai = async ({
-  setState,
-  galleryTitle,
-}: GalleryContext): Promise<ItemData[]> => {
+type SiteFn = {
+  (context: GalleryContext): Promise<ItemData[]>;
+  errorTip: (context: GalleryContext) => string;
+};
+
+const nhentai: SiteFn = async ({ setState, galleryTitle }) => {
   type ComicInfo = {
     id: number;
     media_id: string;
@@ -93,15 +95,12 @@ const nhentai = async ({
     };
   });
 };
-nhentai.errorTip = (context: GalleryContext) =>
+nhentai.errorTip = (context) =>
   t('site.ehentai.nhentai_failed', {
     nhentai: `<a href='https://nhentai.net/search/?q=${context.galleryTitle}' target="_blank"> <u> nhentai </u> </a>`,
   });
 
-const hitomi = async ({
-  setState,
-  galleryId,
-}: GalleryContext): Promise<ItemData[]> => {
+const hitomi = async ({ setState, galleryId }) => {
   const domain = 'gold-usergeneratedcontent.net';
 
   const downImg = async (url: string) => {
@@ -174,10 +173,16 @@ hitomi.errorTip = () => t('site.ehentai.hitomi_error');
 
 /** 关联外站 */
 export const crossSiteLink = async (context: GalleryContext) => {
-  /** 只处理「Doujinshi」「Manga」 */
-  if (!querySelector('#gdc > .cs:is(.ct2, .ct3)')) return;
   if (!context.galleryTitle)
     return toast.error(t('site.ehentai.html_changed_link_failed'));
+
+  // 根据当前分类判断要匹配哪些站点
+  const siteList: SiteFn[] = [];
+  if (isInCategories('Doujinshi', 'Manga', 'Artist CG', 'Game CG', 'Image Set'))
+    siteList.push(hitomi);
+  if (isInCategories('Doujinshi', 'Manga')) siteList.push(nhentai);
+
+  if (siteList.length === 0) return;
 
   const [comicMap, setComicMap] = createStore<
     Record<string, ItemData[] | string>
@@ -260,7 +265,7 @@ export const crossSiteLink = async (context: GalleryContext) => {
   });
 
   // 获取外站数据
-  for (const getSiteComic of [hitomi, nhentai]) {
+  for (const getSiteComic of siteList) {
     setComicMap(getSiteComic.name, 'searching...');
     try {
       const itemList = await getSiteComic(context);

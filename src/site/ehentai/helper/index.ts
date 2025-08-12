@@ -1,4 +1,6 @@
-import { querySelectorAll } from 'helper';
+import { querySelector, querySelectorAll } from 'helper';
+
+export * from './context';
 
 type EscHandler = { (): true | unknown; order: number }[];
 export const escHandler: EscHandler = [];
@@ -59,4 +61,24 @@ export const getTagNameFull = (tag: string) => {
   return tag;
 };
 
-export * from './context';
+/** 画廊分类图标对应的 class。在列表页是「.ct2」，在画廊里是「.gt2」 */
+const categoriesMap = {
+  Western: 'ta',
+  Misc: 't1',
+  Doujinshi: 't2',
+  Manga: 't3',
+  'Artist CG': 't4',
+  'Game CG': 't5',
+  'Image Set': 't6',
+  Cosplay: 't7',
+  'Asian Porn': 't8',
+  'Non-H': 't9',
+} as const;
+
+/** 判断是否当前画廊是否是指定的分类 */
+export const isInCategories = (...name: (keyof typeof categoriesMap)[]) =>
+  Boolean(
+    querySelector(
+      `#gdc > .cs:is(${name.map((c) => `.c${categoriesMap[c]}`).join(', ')})`,
+    ),
+  );

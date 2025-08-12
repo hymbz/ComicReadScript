@@ -39,7 +39,7 @@ import { crossSiteLink } from './crossSiteLink';
 import { detectAd } from './detectAd';
 import { expandTagList } from './expandTagList';
 import { floatTagList } from './floatTagList';
-import { createEhContext, escHandler } from './helper';
+import { createEhContext, escHandler, isInCategories } from './helper';
 import { addHotkeysActions } from './hotkeys';
 import { quickFavorite } from './quickFavorite';
 import { quickRating } from './quickRating';
@@ -161,8 +161,7 @@ import { tagLint } from './tagLint';
   // 自动调整阅读配置
   if (
     options.auto_adjust_option &&
-    // 在「Doujinshi」「Manga」「Non-H」以外的分类下
-    !querySelector('#gdc > .cs:is(.ct2, .ct3, .ct9)')
+    !isInCategories('Doujinshi', 'Manga', 'Non-H')
   ) {
     let option: MangaProps['defaultOption'] = {
       // 使用单页模式

@@ -22,11 +22,11 @@ import {
 
 import type { GalleryContext } from './helper';
 
-import { getTaglist, getTagNameFull } from './helper';
+import { getTaglist, getTagNameFull, isInCategories } from './helper';
 
 export const tagLint = ({ dom: { newTagField } }: GalleryContext) => {
   /** 是否是「Doujinshi」「Manga」「Non-H」 */
-  const isManga = querySelector('#gdc > .cs:is(.ct2, .ct3, .ct9)');
+  const isManga = isInCategories('Doujinshi', 'Manga', 'Non-H');
 
   const lintRules = getTagLintRules();
   type RuleNames = keyof typeof lintRules;
@@ -157,10 +157,7 @@ export const tagLint = ({ dom: { newTagField } }: GalleryContext) => {
       addOtherWarn(t('eh_tag_lint.correct_tag'), correctTags);
 
     // 涉及到图库类型的，比较复杂的检查
-    if (
-      querySelector('#gdc > .cs.ct2') &&
-      isMissingNamespace(tagList, 'parody')
-    )
+    if (isInCategories('Doujinshi') && isMissingNamespace(tagList, 'parody'))
       addOtherWarn(t('eh_tag_lint.miss_parody'), ['parody:original']);
     if (
       isManga &&
