@@ -902,6 +902,46 @@ try {
       break;
     }
 
+    // #[最前線](https://sai-zen-sen.jp)
+    // test: https://sai-zen-sen.jp/works/comics/karanokyoukai/01/01.html
+    case 'sai-zen-sen.jp': {
+      options = {
+        name: 'sai-zen-sen',
+        getImgList: () => [],
+      };
+
+      switch (location.pathname.match(/\/[^/]+\/[^/]+\//)?.[0]) {
+        case '/special/4pages-comics/':
+        case '/works/comics/':
+          options.getImgList = () =>
+            Object.values(
+              unsafeWindow.B.Package.Manifest.items as { href: string }[],
+            )
+              .map(({ href }) => href)
+              .filter(Boolean)
+              .map((path) => `${unsafeWindow.B.Path}/${path}`);
+          options.onPrev = querySelectorClick(
+            'ul.volumes > li:nth-child(2) > a[href]',
+          );
+          options.onNext = querySelectorClick(
+            'ul.volumes > li:nth-child(3) > a[href]',
+          );
+          break;
+
+        case '/comics/twi4/':
+          options.getImgList = () =>
+            unsafeWindow.t4.Meta.Items.map(
+              ({ ImageFileName }) =>
+                `${unsafeWindow.t4.GA.Gate.x_directory}works/${ImageFileName}`,
+            );
+          break;
+
+        default:
+          options = undefined;
+      }
+      break;
+    }
+
     // 为 pwa 版页面提供 api，以便翻译功能能正常运作
     // case 'localhost':
     case 'comic-read.pages.dev': {

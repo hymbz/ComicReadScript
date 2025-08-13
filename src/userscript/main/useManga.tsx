@@ -33,16 +33,20 @@ export const useManga = <T extends Record<string, any>>({
       top: 0;
       left: 0;
       transform: scale(0);
+
       contain: strict;
 
       width: 100%;
       height: 100%;
 
+      writing-mode: initial;
       font-size: 16px;
 
       opacity: 0;
 
-      transition: opacity 300ms, transform 0s 300ms;
+      transition:
+        opacity 300ms,
+        transform 0s 300ms;
     }
 
     #comicRead[show] {
