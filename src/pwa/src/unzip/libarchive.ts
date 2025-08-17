@@ -49,7 +49,7 @@ export const libarchive = async ({
             new Blob([buffer], { type: filtType?.mime || 'image/jpeg' }),
           );
           if (!url) throw new Error(t('pwa.alert.img_data_error'));
-          return { name: file.name, url };
+          return { name: file.name, src: url };
         } catch (error) {
           // 如果输入了错误的密码，所有文件都会解压出错
           // 所以为了避免错误提示刷屏，就统一用一个提示框来提示

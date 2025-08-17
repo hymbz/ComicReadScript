@@ -106,7 +106,7 @@ export const Root: Component = () => (
     <Manga
       class={classes.manga}
       show={store.show}
-      imgList={store.imgList.map(({ url }) => url)}
+      imgList={store.imgList}
       option={{ alwaysLoadAllImg: true, ...getSaveOption() }}
       onOptionChange={handleOptionChange}
       editButtonList={editButtonList}

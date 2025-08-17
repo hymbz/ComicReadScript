@@ -34,6 +34,8 @@ export const clamp = (min: number, val: number, max: number) =>
 export const inRange = (min: number, val: number, max: number) =>
   val >= min && val <= max;
 
+export const getFileName = (url: string) => url.match(/.+\/([^?]+)/)?.[1];
+
 /** 判断两个数是否在指定误差范围内相等 */
 export const approx = (val: number, target: number, range: number) =>
   Math.abs(target - val) <= range;
@@ -281,8 +283,14 @@ export async function wait<T>(
 }
 
 /** 等到指定的 dom 出现 */
-export const waitDom = (selector: string, timeout?: number) =>
-  wait(() => querySelector(selector), timeout);
+export async function waitDom(selector: string): Promise<HTMLElement>;
+export async function waitDom(
+  selector: string,
+  timeout?: number,
+): Promise<HTMLElement | null>;
+export async function waitDom(selector: string, timeout?: number) {
+  return wait(() => querySelector(selector), timeout);
+}
 
 /** 等待指定的图片元素加载完成 */
 export const waitImgLoad = (

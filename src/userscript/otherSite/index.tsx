@@ -112,13 +112,15 @@ export const otherSite = async () => {
   const placeholderImgList = new Set<string>();
   createEffectOn(
     () =>
-      store.manga.imgList.filter((url) => url && !placeholderImgList.has(url)),
+      store.manga.imgList.filter(
+        (url) => url && !placeholderImgList.has(url as string),
+      ),
     throttle((imgList) => {
       if (!imgList?.length || imgList.length - new Set(imgList).size <= 4)
         return;
 
       const repeatNumMap = new Map<string, number>();
-      for (const url of imgList) {
+      for (const url of imgList as string[]) {
         const repeatNum = (repeatNumMap.get(url) ?? 0) + 1;
         repeatNumMap.set(url, repeatNum);
         if (repeatNum > 5) placeholderImgList.add(url);

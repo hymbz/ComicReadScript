@@ -50,7 +50,7 @@ const findImgFile = async (
       }),
     );
     if (!url) throw new Error(t('pwa.alert.img_data_error'));
-    return [{ name: path.join('-'), url }];
+    return [{ name: path.join('-'), src: url }];
   }
 
   const list = await plimit(

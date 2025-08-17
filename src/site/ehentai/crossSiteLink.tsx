@@ -34,7 +34,7 @@ const nhentai: SiteFn = async ({ setState, galleryTitle }) => {
     id: number;
     media_id: string;
     num_pages: number;
-    images: { pages: { t: string }[] };
+    images: { pages: { t: string; w: number; h: number }[] };
     title: { japanese: string; english: string };
   };
 
@@ -100,7 +100,7 @@ nhentai.errorTip = (context) =>
     nhentai: `<a href='https://nhentai.net/search/?q=${context.galleryTitle}' target="_blank"> <u> nhentai </u> </a>`,
   });
 
-const hitomi = async ({ setState, galleryId }) => {
+const hitomi: SiteFn = async ({ setState, galleryId }) => {
   const domain = 'gold-usergeneratedcontent.net';
 
   const downImg = async (url: string) => {
@@ -119,7 +119,7 @@ const hitomi = async ({ setState, galleryId }) => {
   const data = JSON.parse(res.responseText.slice(18)) as {
     id: string;
     title: string;
-    files: { name: string; hash: string }[];
+    files: { name: string; hash: string; width: number; height: number }[];
   };
 
   const itemId = `@hitomi:${data.id}`;
@@ -143,16 +143,15 @@ const hitomi = async ({ setState, galleryId }) => {
           };
           eval(ggScript); // oxlint-disable-line no-eval
 
-          const imgList = data.files.map(({ hash }) => {
+          // 顺序下载避免触发反爬限制
+          for (const [i, { hash, name }] of data.files.entries()) {
             const imageId = gg.s(hash);
             const m = /[\da-f]{61}([\da-f]{2})([\da-f])/.exec(hash)!;
             const g = Number.parseInt(m[2] + m[1], 16);
-            return `https://w${gg.m(g) + 1}.${domain}/${gg.b}${imageId}/${hash}.webp`;
-          });
-
-          // 顺序下载避免触发反爬限制
-          for (const [i, img] of imgList.entries())
-            setImg(i, await downImg(img));
+            const url = `https://w${gg.m(g) + 1}.${domain}/${gg.b}${imageId}/${hash}.webp`;
+            const src = await downImg(url);
+            setImg(i, { src, name });
+          }
         },
         data.files.length,
         itemId,

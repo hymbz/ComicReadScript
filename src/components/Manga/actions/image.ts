@@ -41,6 +41,11 @@ updatePageData.throttle = throttle(() => setState(updatePageData), 100);
  * 3. updatePageData
  */
 export const resetImgState = (state: State) => {
+  if (state.imgList.length === 0) {
+    state.fillEffect = { '-1': true };
+    return;
+  }
+
   // 如果用户没有手动修改过首页填充，才将其恢复初始
   if (typeof state.fillEffect['-1'] === 'boolean')
     state.fillEffect['-1'] =

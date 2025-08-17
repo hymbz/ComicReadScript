@@ -4,7 +4,7 @@ import { createEffectOn, t, useStore } from 'helper';
 import { isSupportFile } from './helper';
 import { unzip } from './unzip';
 
-export type ImgFile = { name: string; url: string };
+export type ImgFile = { name: string; src: string };
 export const { store, setState } = useStore({
   /** 图片文件数据列表 */
   imgList: [] as ImgFile[],
@@ -27,7 +27,7 @@ const getImgData = (file: File): Promise<ImgFile[]> | ImgFile[] => {
     case null:
       return [];
     case 'img':
-      return [{ name: file.name, url: URL.createObjectURL(file) }];
+      return [{ name: file.name, src: URL.createObjectURL(file) }];
     default:
       return unzip(file, fileType);
   }
@@ -41,10 +41,7 @@ const collator = new Intl.Collator(undefined, { numeric: true });
 export const loadNewImglist = async (files: File[], errorTip?: string) => {
   if (files.length === 0) return;
 
-  if (store.loading) {
-    toast.warn(t('pwa.alert.repeat_load'));
-    return;
-  }
+  if (store.loading) return toast.warn(t('pwa.alert.repeat_load'));
 
   setState('loading', true);
 
@@ -59,7 +56,7 @@ export const loadNewImglist = async (files: File[], errorTip?: string) => {
     handleExit();
     setState((state) => {
       // 在清空上次的列表前把创建的 URL 对象释放掉
-      state.imgList.map(({ url }) => URL.revokeObjectURL(url));
+      for (const { src } of state.imgList) URL.revokeObjectURL(src);
       state.imgList = [];
     });
     setState((state) => {

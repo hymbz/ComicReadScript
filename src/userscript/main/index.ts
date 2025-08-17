@@ -1,7 +1,7 @@
 import type { Accessor } from 'solid-js';
 
 import type { FabProps } from 'components/Fab';
-import type { MangaProps } from 'components/Manga';
+import type { ComicImgData, MangaProps } from 'components/Manga';
 import type { SetStateFunction } from 'helper';
 
 export * from './universal';
@@ -37,8 +37,10 @@ export type MainStore<T extends Record<string, any>> = {
     string | number,
     {
       /** undefined 表示还未开始加载，空数组表示刚开始加载 */
-      imgList?: string[];
-      getImgList: (mainContext: MainContext<T>) => Promise<string[]> | string[];
+      imgList?: MangaProps['imgList'];
+      getImgList: (
+        mainContext: MainContext<T>,
+      ) => Promise<MangaProps['imgList']> | MangaProps['imgList'];
       adList?: Set<number>;
     }
   >;
@@ -57,7 +59,9 @@ export type MainStore<T extends Record<string, any>> = {
   };
 };
 
-export type LoadImgFn = (setImg: (i: number, url: string) => void) => unknown;
+export type LoadImgFn = (
+  setImg: (i: number, url: string | ComicImgData) => void,
+) => unknown;
 
 export type MainContext<T extends Record<string, any> = Record<string, any>> = {
   store: MainStore<T>;
@@ -72,6 +76,6 @@ export type MainContext<T extends Record<string, any> = Record<string, any>> = {
     loadImgFn: LoadImgFn,
     length: number | Accessor<number>,
     id?: string | number,
-  ) => Promise<string[]>;
+  ) => Promise<MangaProps['imgList']>;
   init: () => void;
 };

@@ -176,9 +176,9 @@ export const useInit = async <T extends Record<string, any>>(
     // oxlint-disable-next-line no-async-promise-executor
     await new Promise(async (resolve) => {
       try {
-        await loadImgFn((i, url) =>
+        await loadImgFn((i, img) =>
           resolve(
-            setState('comicMap', id, 'imgList', (list) => list!.with(i, url)),
+            setState('comicMap', id, 'imgList', (list) => list!.with(i, img)),
           ),
         );
       } catch (error) {

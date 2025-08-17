@@ -40,7 +40,7 @@ export const handleImgLoaded = (url: string, e?: HTMLImageElement) => {
   updateImgSize(url, e.naturalWidth, e.naturalHeight);
 
   if (store.option.imgRecognition.enabled && e.src === img.blobUrl)
-    setTimeout(handleImgRecognition, 0, e, url);
+    setTimeout(handleImgRecognition, 0, url, e);
 
   translationAll();
 };

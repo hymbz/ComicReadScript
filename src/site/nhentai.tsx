@@ -1,6 +1,7 @@
 import {
   createEffectOn,
   domParse,
+  fileType,
   log,
   querySelector,
   querySelectorAll,
@@ -12,12 +13,9 @@ import {
 import { ReactiveSet, request, toast, useInit } from 'main';
 import { getAdPageByContent } from 'userscript/detectAd';
 
-/** 用于转换获得图片文件扩展名 */
-const fileType = { j: 'jpg', p: 'png', g: 'gif', w: 'webp', b: 'bmp' } as const;
-
 type Images = {
-  thumbnail: { h: number; w: number; t: keyof typeof fileType };
-  pages: { t: keyof typeof fileType }[];
+  thumbnail: { t: keyof typeof fileType; w: number; h: number };
+  pages: { t: keyof typeof fileType; w: number; h: number }[];
 };
 declare const _gallery: { num_pages: number; media_id: string; images: Images };
 
@@ -45,10 +43,10 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
     // nh 自己是每张图随机选一个 cdn，但反正只是分流，简单点顺序分配应该也没问题吧
     const cdn = unsafeWindow._n_app.options.image_cdn_urls as string[];
     const getImgList = () =>
-      _gallery.images.pages.map(
-        (img, i) =>
-          `https://${cdn[i % cdn.length]}/galleries/${_gallery.media_id}/${i + 1}.${fileType[img.t]}`,
-      );
+      _gallery.images.pages.map(({ t, w: width, h: height }, i) => {
+        const src = `https://${cdn[i % cdn.length]}/galleries/${_gallery.media_id}/${i + 1}.${fileType[t]}`;
+        return { src, width, height };
+      });
     setState('comicMap', '', { getImgList });
     setState('fab', 'initialShow', options.autoShow);
 
@@ -83,7 +81,10 @@ declare const _gallery: { num_pages: number; media_id: string; images: Images };
         () => store.comicMap[''].imgList,
         (imgList) =>
           imgList?.length &&
-          getAdPageByContent(imgList, store.comicMap[''].adList!),
+          getAdPageByContent(
+            imgList.map((img) => (typeof img === 'string' ? img : img.src)),
+            store.comicMap[''].adList!,
+          ),
       );
 
       // 模糊广告页的缩略图

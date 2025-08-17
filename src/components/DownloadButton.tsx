@@ -49,7 +49,7 @@ export const DownloadButton = () => {
       let fileName: string;
       try {
         data = await downloadImg(url);
-        fileName = `${index}.${getExtName(data.type)}`;
+        fileName = img.name || `${index}.${getExtName(data.type)}`;
       } catch {
         fileName = `${index} - ${t('alert.download_failed')}`;
         setState('errorNum', (num) => num + 1);

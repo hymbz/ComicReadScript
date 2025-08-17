@@ -17,7 +17,7 @@ const 横幅比例 = 1920 / 1080;
 const 条漫比例 = 1920 / 2 / 1080 / 2;
 
 /** 根据比例判断图片类型 */
-const getImgType = (img: { width: number; height: number }) => {
+export const getImgType = (img: { width: number; height: number }) => {
   const imgRatio = img.width / img.height;
   if (imgRatio <= 单页比例) return imgRatio < 条漫比例 ? 'vertical' : '';
   return imgRatio > 横幅比例 ? 'long' : 'wide';

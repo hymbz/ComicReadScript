@@ -5,7 +5,7 @@ import { createEffect, enableScheduling, onMount } from 'solid-js';
 
 import { boolDataVal } from 'helper';
 
-import type { FillEffect } from './store/image';
+import type { ComicImg, FillEffect } from './store/image';
 import type { State } from './store/index';
 import type { Option } from './store/option';
 
@@ -31,12 +31,14 @@ import { store } from './store/index';
 
 enableScheduling();
 
+export type ComicImgData = Partial<ComicImg> & { src: string };
+
 export type MangaProps = {
   class?: string;
   classList?: ClassList;
 
   /** 图片url列表 */
-  imgList: string[];
+  imgList: (ComicImgData | string)[];
   /** 页面填充数据 */
   fillEffect?: FillEffect;
   /** 初始化配置 */

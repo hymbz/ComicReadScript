@@ -37,7 +37,7 @@ export const fflate = async ({ zipFile, extension }: ZipData) => {
           }),
         );
         if (!url) throw new Error(t('pwa.alert.img_data_error'));
-        return { name, url };
+        return { name, src: url };
       }),
     );
   } catch {

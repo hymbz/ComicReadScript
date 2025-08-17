@@ -1,7 +1,9 @@
+import type { ComicImgData } from 'components/Manga';
 import type { LoadImgFn } from 'main';
 
 import {
   canvasToBlob,
+  getFileName,
   log,
   plimit,
   querySelector,
@@ -67,10 +69,14 @@ import { request, toast, useInit } from 'main';
     }
   };
 
-  const getImgUrl = async (imgEle: HTMLImageElement) => {
-    if (imgEle.src.startsWith('blob:')) return imgEle.src;
-
+  const getImgUrl = async (
+    imgEle: HTMLImageElement,
+  ): Promise<string | ComicImgData> => {
     const originalUrl = imgEle.dataset.original!;
+    const name = getFileName(originalUrl);
+
+    if (imgEle.src.startsWith('blob:')) return { name, src: imgEle.src };
+
     const res = await downloadImg(imgEle.dataset.original!);
     if (res.response.size === 0) {
       toast.warn(`下载原图时出错: ${imgEle.dataset.page}`);
@@ -99,7 +105,7 @@ import { request, toast, useInit } from 'main';
       );
       URL.revokeObjectURL(imgEle.src);
       if (!blob) throw new Error('转换图片时出错');
-      return `${URL.createObjectURL(blob)}#.webp`;
+      return { name, src: URL.createObjectURL(blob) };
     } catch (error) {
       imgEle.src = originalUrl;
       toast.warn(

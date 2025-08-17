@@ -299,7 +299,10 @@ import { tagLint } from './tagLint';
       [...loadImgs()].map((i, order) => async () => {
         if (i < 0) return;
         context.imgList[i] ||= await getImgUrl(context.pageList[i]);
-        setImg(order, context.imgList[i]);
+        setImg(order, {
+          src: context.imgList[i],
+          name: context.fileNameList[i],
+        });
       }),
     );
     checkAd?.();

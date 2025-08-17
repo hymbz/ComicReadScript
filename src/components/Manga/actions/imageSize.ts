@@ -16,9 +16,10 @@ import {
 } from './memo';
 
 /** 获取指定图片的显示尺寸 */
-export const getImgDisplaySize = (state: State, url: string) => {
-  const img = state.imgMap[url];
-
+export const getImgDisplaySize = (
+  state: State,
+  img: { width?: number; height?: number },
+) => {
   let height = img.height ?? placeholderSize().height;
   let width = img.width ?? placeholderSize().width;
 
@@ -48,7 +49,7 @@ export const updateImgSize = (url: string, width: number, height: number) =>
     if (img.width === width && img.height === height) return;
     img.width = width;
     img.height = height;
-    img.size = getImgDisplaySize(state, url);
+    img.size = getImgDisplaySize(state, img);
     updateImgType(state, img);
   });
 
@@ -66,7 +67,7 @@ createEffectOn(
     if (length === 0) return;
     setState((state) => {
       for (const url of state.imgList)
-        state.imgMap[url].size = getImgDisplaySize(state, url);
+        state.imgMap[url].size = getImgDisplaySize(state, state.imgMap[url]);
     });
   },
 );

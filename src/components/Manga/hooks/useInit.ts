@@ -1,4 +1,7 @@
+import type { SetRequired } from 'type-fest';
+
 import { createEffect, on } from 'solid-js';
+import { unwrap } from 'solid-js/store';
 
 import {
   assign,
@@ -8,7 +11,7 @@ import {
   throttle,
 } from 'helper';
 
-import type { MangaProps } from '..';
+import type { ComicImgData, MangaProps } from '..';
 import type { State } from '../store';
 import type { ComicImg } from '../store/image';
 import type { Option } from '../store/option';
@@ -16,6 +19,8 @@ import type { Option } from '../store/option';
 import {
   defaultHotkeys,
   focus,
+  getImgDisplaySize,
+  getImgType,
   placeholderSize,
   resetImgState,
   resumeReadProgress,
@@ -29,13 +34,6 @@ import { playAnimation, stopPropagation } from '../helper';
 import classes from '../index.module.css';
 import { refs, setState } from '../store';
 import { defaultOption } from '../store/option';
-
-const createComicImg = (src: string): ComicImg => ({
-  src,
-  loadType: 'wait',
-  size: placeholderSize(),
-  blobUrl: src.startsWith('blob:') ? src : undefined,
-});
 
 export const useInit = (props: MangaProps) => {
   watchDomSize('rootSize', refs.root);
@@ -134,8 +132,36 @@ export const useInit = (props: MangaProps) => {
 
   const handleImgList = () => {
     setState((state) => {
-      // 使用相对协议路径，防止 Mixed Content 报错
-      const imgList = props.imgList.map((url) => url?.replace(/^http:/, ''));
+      const newImgMap: State['imgMap'] = {};
+      const newImgList: string[] = []; // 因为会有相同 url 的图片，所以不能用 Set
+      for (const img of unwrap(props.imgList)) {
+        // 使用相对协议路径，防止 Mixed Content 报错
+        const url =
+          (typeof img === 'object' ? img.src : img)?.replace(/^http:/, '') ??
+          '';
+        newImgList.push(url);
+
+        if (Reflect.has(newImgMap, url)) continue;
+        if (Reflect.has(state.imgMap, url)) {
+          newImgMap[url] = state.imgMap[url];
+          continue;
+        }
+
+        const imgItem: ComicImgData =
+          typeof img === 'string' ? { src: url } : img;
+        imgItem.loadType ??= 'wait';
+        if (imgItem.width && imgItem.height) {
+          imgItem.size = getImgDisplaySize(state, imgItem);
+          imgItem.type = getImgType(
+            imgItem as SetRequired<ComicImg, 'width' | 'height'>,
+          );
+        }
+        imgItem.size ??= placeholderSize();
+        if (!imgItem.blobUrl && url.startsWith('blob:'))
+          imgItem.blobUrl = imgItem.src;
+
+        newImgMap[url] = imgItem as ComicImg;
+      }
 
       /** 修改前的当前显示图片 */
       const oldActiveImg =
@@ -147,21 +173,22 @@ export const useInit = (props: MangaProps) => {
       const fillEffectList = Object.keys(state.fillEffect).map(Number);
       for (const pageIndex of fillEffectList) {
         if (pageIndex === -1) continue;
-        if (state.imgList[pageIndex] === imgList[pageIndex]) continue;
+        if (state.imgList[pageIndex] === newImgList[pageIndex]) continue;
         needResetFillEffect = true;
         break;
       }
 
-      const newImgList = new Set(imgList);
       const oldImgList = new Set(state.imgList);
 
-      if (oldImgList.size === 0 && newImgList.size > 0) {
+      if (oldImgList.size === 0 && newImgList.length > 0) {
         resumeReadProgress(state);
         updateSelfhostedOptions(true);
       }
 
       /** 被删除的图片 */
-      const deleteList = [...oldImgList].filter((url) => !newImgList.has(url));
+      const deleteList = [...oldImgList].filter(
+        (url) => !newImgList.includes(url),
+      );
       for (const url of deleteList)
         if (state.imgMap[url].blobUrl && state.imgMap[url].blobUrl !== url)
           URL.revokeObjectURL(state.imgMap[url].blobUrl);
@@ -175,15 +202,11 @@ export const useInit = (props: MangaProps) => {
       /** 是否需要更新页面 */
       const needUpdatePageData =
         needResetFillEffect ||
-        state.imgList.length !== imgList.length ||
+        state.imgList.length !== newImgList.length ||
         deleteNum > 0;
 
-      const newImgMap: State['imgMap'] = {};
-      for (const url of imgList)
-        newImgMap[url] = state.imgMap[url] ?? createComicImg(url);
-
       state.imgMap = newImgMap;
-      state.imgList = imgList;
+      state.imgList = [...newImgList];
 
       state.prop.onLoading?.(state.imgList.map((url) => state.imgMap[url]));
 
@@ -211,7 +234,7 @@ export const useInit = (props: MangaProps) => {
       // 尽量使当前显示的图片在修改后依然不变
       oldActiveImg.some((url) => {
         // 跳过填充页和已被删除的图片
-        if (!url || imgList.includes(url)) return false;
+        if (!url || newImgList.includes(url)) return false;
 
         const newPageIndex = state.pageList.findIndex((page) =>
           page.some((index) => state.imgList?.[index] === url),

@@ -4,6 +4,7 @@ export type ComicImg = {
   src: string;
   width?: number;
   height?: number;
+  name?: string;
 
   size: { height: number; width: number };
   blobUrl?: string;
