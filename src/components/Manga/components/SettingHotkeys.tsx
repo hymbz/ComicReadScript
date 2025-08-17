@@ -5,6 +5,7 @@ import MdClose from '@material-design-icons/svg/round/close.svg';
 import MdRefresh from '@material-design-icons/svg/round/refresh.svg';
 import { For, Index, Show } from 'solid-js';
 
+import { toast } from 'components/Toast';
 import {
   createRootMemo,
   getKeyboardCode,
@@ -71,9 +72,16 @@ const KeyItem: Component<{
         return;
     }
 
+    unsafeWindow.toast = toast;
+
     const newCode = getKeyboardCode(e);
-    if (!Reflect.has(hotkeysMap(), newCode))
-      setHotkeys(props.operateName, props.i, newCode);
+    if (Reflect.has(hotkeysMap(), newCode))
+      toast.error(
+        t('hotkeys.repeat_tip', {
+          hotkey: t(`hotkeys.${hotkeysMap()[newCode]}`),
+        }),
+      );
+    else setHotkeys(props.operateName, props.i, newCode);
   };
 
   return (

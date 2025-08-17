@@ -53,6 +53,7 @@
     "jump_to_home": "跳至首页",
     "page_down": "向下翻页",
     "page_up": "向上翻页",
+    "repeat_tip": "此快捷键已被绑定至「{{hotkey}}」",
     "scroll_down": "向下滚动",
     "scroll_left": "向左滚动",
     "scroll_right": "向右滚动",

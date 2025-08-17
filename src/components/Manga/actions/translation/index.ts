@@ -1,5 +1,6 @@
 import type { Accessor } from 'solid-js';
 
+import { toast } from 'components/Toast';
 import { createRootMemo, range, singleThreaded, t } from 'helper';
 
 import { setState, store } from '../../store';
@@ -7,8 +8,6 @@ import { activeImgIndex, activePage, imgList } from '../memo';
 import { cotransTranslation, cotransTranslators } from './cotrans';
 import { createOptions, setMessage } from './helper';
 import { selfhostedOptions, selfhostedTranslation } from './selfhosted';
-
-declare const toast: typeof import('components/Toast/toast').toast | undefined;
 
 /** 翻译指定图片 */
 export const translationImage = async (url: string) => {
