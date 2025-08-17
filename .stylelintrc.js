@@ -1,5 +1,11 @@
 module.exports = {
-  ignoreFiles: ['**/node_modules/**/*.css', '**/dist/**/*.css'],
+  ignoreFiles: [
+    '**/node_modules/**',
+    '**/dist/**',
+    '**/public/**',
+    '**/dev-dist/**',
+    '**/assets/**',
+  ],
   extends: [
     'stylelint-config-standard',
     'stylelint-prettier/recommended',

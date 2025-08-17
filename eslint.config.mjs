@@ -24,7 +24,13 @@ export default antfu(
     imports: false,
     unicorn: false,
 
-    ignores: ['**/dist/**', '**/public/**', '**/dev-dist/**', '*.user.js'],
+    ignores: [
+      '**/dist/**',
+      '**/public/**',
+      '**/dev-dist/**',
+      '**/assets/**',
+      '**/**.js',
+    ],
   },
   {
     rules: {

@@ -96,11 +96,9 @@ const getSiteTestInfo = () => {
     /(\n\s+\/\/ #.+?)(case.+?break;\n {4}\})/gs,
   )) {
     const codeRes = code.match(
-      /inject\('site\/(\w+)'\)| options = \{.+?name: '(\w+)'/s,
+      /inject\('site\/(\w+)'\)| options = \{.+?name: '(.+?)'/s,
     );
-    if (!codeRes) {
-      throw new Error('index.ts 注释解析出错');
-    }
+    if (!codeRes) throw new Error('index.ts 注释解析出错');
     const name = codeRes[1] || codeRes[2];
 
     const commentRes = [...comment.matchAll(/\/\/ test: (.+)(?=\n)/g)];

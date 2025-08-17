@@ -8,7 +8,7 @@ import { wait } from 'helper';
 import { base64ToArrayBuffer, mainFn } from './workHelper';
 
 // 引用一下，避免被 rullup treeshake 掉
-console.log(webgpu_util); // oxlint-disable-line no-console
+console.debug(webgpu_util); // oxlint-disable-line no-console
 
 let model: GraphModel | undefined;
 

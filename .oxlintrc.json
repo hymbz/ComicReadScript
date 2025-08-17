@@ -21,13 +21,13 @@
     "worker": true,
     "es2024": true
   },
-  // 有 bug，只能使用 .eslintignore 来禁用，暂时注释
-  // "ignorePatterns": [
-  //   "**/dist/**",
-  //   "**/public/**",
-  //   "**/dev-dist/**",
-  //   "*.user.js"
-  // ],
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/public/**",
+    "**/dev-dist/**",
+    "**/assets/**",
+    "**/**.js"
+  ],
   "rules": {
     // 目前不支持跳过 return new Promise 的，只能暂时关掉
     "require-await": "off",

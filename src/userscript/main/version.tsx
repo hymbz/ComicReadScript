@@ -21,14 +21,11 @@ export const handleVersionUpdate = async () => {
         <>
           <h2>🥳 ComicRead 已更新到 v{GM.info.script.version}</h2>
           inject@LatestChange
-          <Show when={versionLt(version, '10.8.0')}>
-            <h3>改动</h3>
+          <Show when={versionLt(version, '12')}>
+            <h3>新增</h3>
             <ul>
-              <li>
-                ehentai 悬浮标签列表的透明度调节
-                <br />
-                由「鼠标滚轮」改为「Shift + 鼠标滚轮」
-              </li>
+              <li>实现图片放大功能（需要打开「图像识别」功能）</li>
+              <li>增加 ehentai 在缩略图列表页里展开标签列表功能</li>
             </ul>
           </Show>
         </>
