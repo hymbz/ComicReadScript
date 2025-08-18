@@ -65,10 +65,8 @@ export const ToastItem: Component<Toast> = (props) => {
     if (!props.update) return;
     resetToastUpdate(props.id);
     if (!scheduleRef) return;
-    for (const animation of scheduleRef.getAnimations()) {
-      animation.cancel();
-      animation.play();
-    }
+    for (const animation of scheduleRef.getAnimations())
+      animation.currentTime = 0;
   });
 
   const handleClick: EventHandler['on:click'] = (e) => {
