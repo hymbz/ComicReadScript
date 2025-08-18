@@ -1,5 +1,6 @@
 import { getFilesFromDataTransferItems } from '@placemarkio/flat-drop-files';
 
+import { setTitle } from './helper';
 import classes from './index.module.css';
 import { loadNewImglist, setState } from './store';
 
@@ -10,6 +11,7 @@ export const handleDrag = (ref: HTMLElement) => {
     setDragging(false);
     e.preventDefault();
     if (!e.dataTransfer) return;
+    setTitle(e.dataTransfer.files);
     return loadNewImglist(
       await getFilesFromDataTransferItems(e.dataTransfer.items),
     );

@@ -1,4 +1,5 @@
 import { testImgUrl } from 'helper';
+import { setState } from './store';
 
 export const imgExtension = new Set([
   '.png',
@@ -46,3 +47,13 @@ export const createObjectURL = async (obj: Blob | MediaSource) => {
 export const FileSystemToFile = (
   list: readonly FileSystemHandle[] | FileSystemHandle[],
 ) => Promise.all(list.map((file) => (file as FileSystemFileHandle).getFile()));
+
+/** 设置网页标题 */
+export const setTitle = (fileList: Iterable<File>) => {
+  let title: string | undefined;
+  for (const file of fileList) {
+    if (title) return setState('title', '');
+    title = file.name;
+  }
+  setState('title', title ?? '');
+};

@@ -6,6 +6,8 @@ import { unzip } from './unzip';
 
 export type ImgFile = { name: string; src: string };
 export const { store, setState } = useStore({
+  /** 传入单个文件/文件夹时的标题 */
+  title: '',
   /** 图片文件数据列表 */
   imgList: [] as ImgFile[],
   /** 是否显示漫画 */
