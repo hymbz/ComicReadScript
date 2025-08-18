@@ -2,8 +2,9 @@ import type { MangaProps } from 'components/Manga';
 
 import { querySelectorAll } from 'helper';
 
-const prevRe = /^(?:上一?(?:[章話话]|章节)|prev|prev chapter|前の章)$/i;
-const nextRe = /^(?:下一?(?:[章話话]|章节)|next|next chapter|次の章)$/i;
+const prevRe =
+  /^上一?(?:[章話话]|章节)$|^(?:prev|previous)(?:\s+chapter)?$|^前の章$/i;
+const nextRe = /^下一?(?:[章話话]|章节)$|^next(?:\s+chapter)?$|^次の章$/i;
 
 export const getChapterSwitch = () => {
   let onPrev: MangaProps['onPrev'];
