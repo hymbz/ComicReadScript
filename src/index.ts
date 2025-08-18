@@ -170,6 +170,7 @@ try {
 
     // #[再漫画](https://manhua.zaimanhua.com/)
     // test: https://manhua.zaimanhua.com/view/heimaohemonvdeketang/64175/133789
+    case 'www.zaimanhua.com':
     case 'manhua.zaimanhua.com': {
       const getImgList = () =>
         unsafeWindow.__NUXT__.data.getChapters?.data?.chapterInfo
