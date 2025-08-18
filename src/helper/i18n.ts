@@ -13,7 +13,6 @@ import { getInitLang, setSaveLang } from 'helper/languages';
 import en from '../../locales/en.json' with { type: 'json' };
 import ru from '../../locales/ru.json' with { type: 'json' };
 import zh from '../../locales/zh.json' with { type: 'json' };
-import { log } from './logger';
 import { byPath } from './other';
 
 export const [lang, setLang] = createSignal<Languages>('zh');
@@ -40,7 +39,6 @@ export const t = createRoot(() => {
       for (const [k, v] of Object.entries(variables))
         text = text.replaceAll(`{{${k}}}`, `${String(v)}`);
 
-    if (isDevMode && !text) log.warn('unknown i18n key', keys);
     return text;
   };
 });

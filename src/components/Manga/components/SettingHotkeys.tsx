@@ -78,7 +78,7 @@ const KeyItem: Component<{
     if (Reflect.has(hotkeysMap(), newCode))
       toast.error(
         t('hotkeys.repeat_tip', {
-          hotkey: t(`hotkeys.${hotkeysMap()[newCode]}`),
+          hotkey: getHotkeyName(hotkeysMap()[newCode]),
         }),
       );
     else setHotkeys(props.operateName, props.i, newCode);
