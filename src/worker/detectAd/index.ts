@@ -54,7 +54,8 @@ const getQrCode = (img: Uint8ClampedArray, width: number, height: number) => {
     const text = new TextDecoder().decode(Uint8Array.from(binaryData));
     mainFn.log(`检测到二维码： ${text}`);
     return text;
-  } catch {
+  } catch (error) {
+    mainFn.log(error);
     return undefined;
   }
 };

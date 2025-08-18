@@ -74,6 +74,7 @@ const selfImportSync = (name: string) => {
             importModule.set(moduleName, handleCode(getResource(moduleName)));
           return `moduleMap['${moduleName}']`;
         });
+      const moduleCode = handleCode(code);
 
       let workerCode = `const moduleMap = {};\n`;
       for (const [moduleName, code] of importModule) {
@@ -89,7 +90,7 @@ moduleMap['${moduleName}'] = {};
       }
       workerCode += `
 const exports = {};
-${handleCode(code)}
+${moduleCode}
 moduleMap['Comlink'].expose(exports);`;
 
       const codeUrl = URL.createObjectURL(
