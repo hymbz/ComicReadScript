@@ -53,6 +53,7 @@ export const scrollModeScrollPage = (x: number) => {
     scrollTo(scrollTop() + x, true);
     setState('scrollLock', true);
   }
+  turnPage(x > 0 ? 'next' : 'prev');
   closeScrollLock();
 };
 
