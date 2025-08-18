@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            ComicRead
 // @namespace       ComicRead
-// @version         12.1.0
+// @version         12.1.1
 // @description     为漫画站增加双页阅读、翻译等优化体验的增强功能。百合会（记录阅读历史、自动签到等）、百合会新站、动漫之家（解锁隐藏漫画）、E-Hentai（关联外站、快捷收藏、标签染色、识别广告页等）、nhentai（彻底屏蔽漫画、无限滚动）、Yurifans（自动签到）、拷贝漫画(copymanga)（显示最后阅读记录、解锁隐藏漫画）、Pixiv、再漫画、明日方舟泰拉记事社、禁漫天堂、漫画柜(manhuagui)、动漫屋(dm5)、绅士漫画(wnacg)、mangabz、komiic、MangaDex、NoyAcg、無限動漫、熱辣漫畫、hitomi、SchaleNetwork、kemono、nekohouse、welovemanga、HentaiZap、最前線、Tachidesk
 // @description:en  Add enhanced features to the comic site for optimized experience, including dual-page reading and translation. E-Hentai (Associate nhentai, Quick favorite, Colorize tags, Floating tag list, etc.) | nhentai (Totally block comics, Auto page turning) | hitomi | Anchira | kemono | nekohouse | welovemanga.
 // @description:ru  Добавляет расширенные функции для удобства на сайт, такие как двухстраничный режим и перевод.
@@ -8089,7 +8089,8 @@ const getQrCode = (img, width, height) => {
     const text = new TextDecoder().decode(Uint8Array.from(binaryData));
     mainFn.log(\`检测到二维码： \${text}\`);
     return text;
-  } catch {
+  } catch (error) {
+    mainFn.log(error);
     return undefined;
   }
 };
@@ -8808,8 +8809,8 @@ const web = require('solid-js/web');
 const helper = require('helper');
 const main = require('main');
 
-const prevRe = /^(?:上一?(?:[章話话]|章节)|prev|prev chapter|前の章)$/i;
-const nextRe = /^(?:下一?(?:[章話话]|章节)|next|next chapter|次の章)$/i;
+const prevRe = /^上一?(?:[章話话]|章节)$|^(?:prev|previous)(?:\\s+chapter)?$|^前の章$/i;
+const nextRe = /^下一?(?:[章話话]|章节)$|^next(?:\\s+chapter)?$|^次の章$/i;
 const getChapterSwitch = () => {
   let onPrev;
   let onNext;
@@ -9879,7 +9880,7 @@ const handleVersionUpdate = async () => {
       var _el$ = web.template(\`<h2>🥳 ComicRead 已更新到 v\`)();
       web.insert(_el$, () => GM.info.script.version, null);
       return _el$;
-    })(), web.template(\`<h3>新增\`)(), web.template(\`<ul><li><p>尽量在下载时保持原文件名 </p></li><li><p>增加站点 最前線 的支持\`)(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复 AdGuard 版和 jsDelivr 版资源链接错误导致无法运行的 bug </p></li><li><p>修复 ehentai 匹配 hitomi 功能在 CG 类画廊上未启用的 bug </p></li><li><p>修复开启 AdGuard 后脚本在 hitomi 上无法运行的 bug\`)(), web.createComponent(solidJs.Show, {
+    })(), web.template(\`<h3>修复\`)(), web.template(\`<ul><li><p>修复识别广告功能未生效的 bug </p></li><li><p>修复再漫画部分漫画未正确加载的 bug\`)(), web.createComponent(solidJs.Show, {
       get when() {
         return versionLt(version, '12');
       },
@@ -10434,6 +10435,7 @@ exports.useSpeedDial = useSpeedDial;
         if (!importModule.has(moduleName)) importModule.set(moduleName, handleCode(getResource(moduleName)));
         return `moduleMap['${moduleName}']`;
       });
+      const moduleCode = handleCode(code);
       let workerCode = `const moduleMap = {};\n`;
       for (const [moduleName, code] of importModule) {
         workerCode += `
@@ -10448,7 +10450,7 @@ moduleMap['${moduleName}'] = {};
       }
       workerCode += `
 const exports = {};
-${handleCode(code)}
+${moduleCode}
 moduleMap['Comlink'].expose(exports);`;
       const codeUrl = URL.createObjectURL(new Blob([workerCode], {
         type: 'text/javascript'
@@ -14021,6 +14023,7 @@ const buildChapters = async (comicName, hiddenType) => {
 
     // #[再漫画](https://manhua.zaimanhua.com/)
     // test: https://manhua.zaimanhua.com/view/heimaohemonvdeketang/64175/133789
+    case 'www.zaimanhua.com':
     case 'manhua.zaimanhua.com':
       {
         const getImgList = () => unsafeWindow.__NUXT__.data.getChapters?.data?.chapterInfo?.page_url;
