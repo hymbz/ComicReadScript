@@ -115,7 +115,18 @@ const hitomi: SiteFn = async ({ setState, galleryId }) => {
   const res = await request(`https://ltn.${domain}/galleries/${galleryId}.js`, {
     errorText: t('site.ehentai.hitomi_error'),
     noTip: true,
+    noCheckCode: true,
   });
+
+  switch (res.status) {
+    case 404:
+      return [];
+    case 200:
+      break;
+    default:
+      throw new Error(t('site.ehentai.hitomi_error'));
+  }
+
   const data = JSON.parse(res.responseText.slice(18)) as {
     id: string;
     title: string;
