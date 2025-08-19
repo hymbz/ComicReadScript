@@ -161,7 +161,7 @@ export const floatTagList = ({
   placeholder.style.display = 'none';
   placeholder.addEventListener('click', () => setState('open', false));
   placeholder.innerHTML = MdPictureInPicture;
-  gd4.parentElement!.append(placeholder);
+  gd4.before(placeholder);
 
   const ref = document.createElement('div');
   ref.id = 'comicread-tag-box';
