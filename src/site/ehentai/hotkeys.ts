@@ -3,13 +3,13 @@ import { getKeyboardCode, linstenKeydown, querySelector } from 'helper';
 
 import type { EhContext } from './helper';
 
-import { setEscHandler } from './helper';
+import { escHandler } from './helper';
 
 export const addHotkeysActions = (context: EhContext) => {
   if (!context.options.add_hotkeys_actions) return;
 
   if (context.type === 'gallery') {
-    setEscHandler(0, () =>
+    escHandler.set('取消选中当前标签', () =>
       unsafeWindow.selected_tagname ? unsafeWindow.toggle_tagmenu() : true,
     );
 

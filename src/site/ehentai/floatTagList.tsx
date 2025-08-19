@@ -19,7 +19,7 @@ import {
 
 import type { GalleryContext } from './helper';
 
-import { setEscHandler } from './helper';
+import { escHandler } from './helper';
 
 const getDomPosition = (dom: HTMLElement) => {
   const rect = dom.getBoundingClientRect();
@@ -277,7 +277,9 @@ export const floatTagList = ({
 
   setDefaultHotkeys((hotkeys) => ({ ...hotkeys, float_tag_list: ['q'] }));
 
-  setEscHandler(0, () => (store.open ? setState('open', false) : true));
+  escHandler.set('关闭浮动标签栏', () =>
+    store.open ? setState('open', false) : true,
+  );
 
   linstenKeydown((e) => {
     const code = getKeyboardCode(e);

@@ -2,13 +2,11 @@ import { querySelector, querySelectorAll } from 'helper';
 
 export * from './context';
 
-type EscHandler = { (): true | unknown; order: number }[];
-export const escHandler: EscHandler = [];
-
-export const setEscHandler = (order: number, handler: () => true | unknown) => {
-  escHandler.push(Object.assign(handler, { order }));
-  escHandler.sort((a, b) => b.order - a.order);
-};
+export const escHandler = new Map(
+  (['关闭显示标签定义', '取消选中当前标签', '关闭浮动标签栏'] as const).map(
+    (name) => [name, (): unknown => true],
+  ),
+);
 
 /** 获取所有标签 */
 export const getTaglist = () => {

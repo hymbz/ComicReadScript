@@ -10,7 +10,7 @@ import { request } from 'main';
 
 import type { GalleryContext } from './helper';
 
-import { setEscHandler } from './helper';
+import { escHandler } from './helper';
 
 /** 快捷查看标签定义 */
 export const quickTagDefine = (_: GalleryContext) => {
@@ -147,6 +147,5 @@ export const quickTagDefine = (_: GalleryContext) => {
 
   hijackFn('toggle_tagmenu', () => setShow(false));
 
-  // Esc 关闭
-  setEscHandler(2, () => (show() ? setShow(false) : true));
+  escHandler.set('关闭显示标签定义', () => (show() ? setShow(false) : true));
 };

@@ -136,7 +136,7 @@ import { tagLint } from './tagLint';
   // 按顺序处理 esc 按键
   linstenKeydown((e) => {
     if (e.key !== 'Escape') return;
-    for (const handler of escHandler)
+    for (const handler of escHandler.values())
       if (handler() !== true) return e.stopImmediatePropagation();
   });
 

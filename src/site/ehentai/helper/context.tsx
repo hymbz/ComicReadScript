@@ -98,6 +98,13 @@ export const createEhContext = async (): Promise<EhContext | undefined> => {
     imgNum = Number(/(?<=class="gdt2">)\d+(?= pages<\/td>)/.exec(html)?.[0]);
   }
 
+  const newTagField = querySelector<HTMLInputElement>('#newtagfield')!;
+  // esc 取消焦点
+  newTagField?.addEventListener(
+    'keydown',
+    (e) => e.key === 'Escape' && newTagField.blur(),
+  );
+
   return {
     type: 'gallery',
     ...mainContext,
@@ -135,8 +142,6 @@ export const createEhContext = async (): Promise<EhContext | undefined> => {
         />
       );
     },
-    dom: {
-      newTagField: document.getElementById('newtagfield') as HTMLInputElement,
-    },
+    dom: { newTagField },
   };
 };
