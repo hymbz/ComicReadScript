@@ -5,12 +5,7 @@ import { refs, setState, store } from '../store';
 import { abreastScrollFill, setAbreastScrollFill } from './abreastScroll';
 import { setOption } from './helper';
 import { hotkeysMap } from './hotkeys';
-import {
-  abreastColumnWidth,
-  isAbreastMode,
-  isScrollMode,
-  scrollTop,
-} from './memo';
+import { isAbreastMode, isScrollMode, scrollTop } from './memo';
 import { handleTrackpadWheel } from './pointer';
 import {
   constantScroll,
@@ -160,23 +155,23 @@ export const handleKeyDown = (e: KeyboardEvent) => {
   if (isAbreastMode()) {
     switch (hotkey) {
       case 'scroll_up':
-        return setAbreastScrollFill(abreastScrollFill() - 20);
+        return setAbreastScrollFill(abreastScrollFill() - 40);
       case 'scroll_down':
-        return setAbreastScrollFill(abreastScrollFill() + 20);
+        return setAbreastScrollFill(abreastScrollFill() + 40);
 
       case 'scroll_left':
         return scrollTo(
-          scrollProgress() - (store.option.dir === 'rtl' ? 20 : -20),
+          scrollProgress() - (store.option.dir === 'rtl' ? 40 : -40),
         );
       case 'scroll_right':
         return scrollTo(
-          scrollProgress() + (store.option.dir === 'rtl' ? 20 : -20),
+          scrollProgress() + (store.option.dir === 'rtl' ? 40 : -40),
         );
 
       case 'page_up':
-        return scrollTo(scrollProgress() - abreastColumnWidth());
+        return scrollTo(scrollProgress() - store.rootSize.width * 0.8);
       case 'page_down':
-        return scrollTo(scrollProgress() + abreastColumnWidth());
+        return scrollTo(scrollProgress() + store.rootSize.width * 0.8);
 
       case 'jump_to_home':
         return scrollTo(0);
