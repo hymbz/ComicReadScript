@@ -1,5 +1,3 @@
-import type { OutputPluginOption } from 'rollup';
-
 import axios from 'axios';
 
 const siteUrlFnMap = {
@@ -36,9 +34,9 @@ const initSiteUrlMap = async () => {
 };
 
 /** 根据发布页自动获取可用网址 */
-export const siteUrl: OutputPluginOption = {
+export const siteUrl = {
   name: 'self-siteUrl',
-  async renderChunk(code) {
+  renderChunk: async (code: string) => {
     siteUrlMap ??= await initSiteUrlMap();
 
     return code.replaceAll(

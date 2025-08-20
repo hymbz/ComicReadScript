@@ -21,6 +21,7 @@ import shell from 'shelljs';
 
 import { inputPlugins, outputPlugins, solidSvg } from './src/rollup-plugin';
 import { getMetaData, updateReadme } from './src/rollup-plugin/metaHeader';
+import { siteUrl } from './src/rollup-plugin/siteUrl';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -275,7 +276,7 @@ if (!isDevMode)
       Reflect.deleteProperty(options.output, 'dir');
       options.output.plugins.push({
         name: 'selfAdGuardPlugin',
-        renderChunk(rawCode) {
+        async renderChunk(rawCode) {
           let code = rawCode;
 
           // 不知道为啥俄罗斯访问不了 npmmirror，只能改用 jsdelivr
@@ -286,15 +287,14 @@ if (!isDevMode)
           );
 
           // AdGuard 无法支持简易阅读模式，所以改为只在支持网站上运行
-          const indexCode = fs.readFileSync(
+          let indexCode = fs.readFileSync(
             resolve(__dirname, 'src/index.ts'),
             'utf8',
           );
+          indexCode = await siteUrl.renderChunk(indexCode);
           const matchList = [
-            ...indexCode.matchAll(/(?<=\n\s+case ').+?(?=':)/g),
-          ]
-            .filter(([url]) => !url.includes('siteUrl#'))
-            .flatMap(([url]) => `// @match           *://${url}/*`);
+            ...indexCode.matchAll(/(?<=\n {4}case ').+?(?=':)/g),
+          ].flatMap(([url]) => `// @match           *://${url}/*`);
           code = code.replace(
             /\/\/ @match \s+ \*:\/\/\*\/\*/,
             matchList.join('\n'),
