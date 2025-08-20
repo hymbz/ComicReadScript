@@ -16,14 +16,20 @@ import { request, toast, useInit } from 'main';
 
 // API 参考：https://github.com/fumiama/copymanga/blob/279e08b06a70307bf20162900103ec1fdcb97751/app/src/main/res/values/strings.xml
 
+// 拷贝有些漫画虽然可以通过 api 获取到数据，但网页上的目录被隐藏了
+//  web - https://www.mangacopy.com/comic/lianyuqingchang
+//  mobile - https://www.mangacopy.com/h5/details/comic/lianyuqingchang
+// 还有些漫画连网页端介绍都被删了
+//  404 - https://www.mangacopy.com/comic/Hyakkasou
+
 const mobileApi = new (class {
   headers = {
     webp: '1',
     region: '1',
-    'User-Agent': 'COPY/2.0.7|',
-    version: '2.0.7',
+    'User-Agent': 'COPY/3.0.0',
+    version: '2025.08.15',
     source: 'copyApp',
-    referer: 'com.copymanga.app-2.0.7',
+    referer: 'com.copymanga.app-3.0.0',
   };
 
   get: typeof request = (url, details, ...args) =>
@@ -45,35 +51,35 @@ const pcApi = new (class {
     );
 })();
 
+// by: https://github.com/MapoMagpie/comic-looms/blob/7799f87fdd5a8ac73c878f338b7ae6aa5c0b2d18/src/platform/matchers/mangacopy.ts#L96-L125
+const decryptData = async (
+  raw: string,
+  key: string = unsafeWindow.cct || 'oppzzivv.nzm.oip',
+) => {
+  const cipher = raw.slice(16);
+  const iv = raw.slice(0, 16);
+
+  const decryptedBuffer = await crypto.subtle.decrypt(
+    { name: 'AES-CBC', iv: new TextEncoder().encode(iv) },
+    await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(key),
+      { name: 'AES-CBC' },
+      false,
+      ['decrypt'],
+    ),
+    new Uint8Array(
+      cipher.match(/.{1,2}/g)!.map((byte) => Number.parseInt(byte, 16)),
+    ).buffer,
+  );
+  return JSON.parse(new TextDecoder().decode(decryptedBuffer));
+};
+
 declare const contentKey: string;
 declare const cct: string;
 
 /** 通过解析网页变量获取图片列表 */
 const getImglistByHtml = async (comicName: string, id: string) => {
-  // by: https://github.com/MapoMagpie/comic-looms/blob/7799f87fdd5a8ac73c878f338b7ae6aa5c0b2d18/src/platform/matchers/mangacopy.ts#L96-L125
-  const decrypt = async (raw: string, key: string): Promise<string> => {
-    const encoder = new TextEncoder();
-    const bodyBytes = new Uint8Array(
-      raw
-        .slice(16)
-        .match(/.{1,2}/g)!
-        .map((byte) => parseInt(byte, 16)),
-    );
-    const cryptoKey = await crypto.subtle.importKey(
-      'raw',
-      encoder.encode(key),
-      { name: 'AES-CBC' },
-      false,
-      ['decrypt'],
-    );
-    const decryptedBytes = await crypto.subtle.decrypt(
-      { name: 'AES-CBC', iv: encoder.encode(raw.slice(0, 16)) },
-      cryptoKey,
-      bodyBytes,
-    );
-    return new TextDecoder().decode(decryptedBytes);
-  };
-
   const getKeys = async (): Promise<[string, string]> => {
     // 移动端没有 contentKey，就从 PC 端的网页获取
     if (!unsafeWindow.contentKey) {
@@ -97,8 +103,7 @@ const getImglistByHtml = async (comicName: string, id: string) => {
   };
 
   const keys = await getKeys();
-  const decryption = await decrypt(...keys);
-  const res = JSON.parse(decryption) as { url: string }[];
+  const res: { url: string }[] = await decryptData(...keys);
   return res.map(({ url }) => url.replace(/(?<=(\/|\.))c800x/, 'c1500x'));
 };
 
@@ -155,12 +160,6 @@ const handleLastChapter = (comicName: string) => {
 
 type HiddenType = 'web' | 'mobile' | '404';
 
-// 拷贝有些漫画虽然可以通过 api 获取到数据，但网页上的目录被隐藏了
-//  web - https://www.mangacopy.com/comic/lianyuqingchang
-//  mobile - https://www.mangacopy.com/h5/details/comic/lianyuqingchang
-// 还有些漫画连网页端介绍都被删了
-//  404 - https://www.mangacopy.com/comic/Hyakkasou
-
 // 生成目录
 const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
   const {
@@ -186,29 +185,7 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
     groups: Record<string, ChaptersGroup>;
   };
 
-  // 解码 api 返回的数据
-  const decryptData = async (cipher: string, key: string, iv: string) => {
-    const decryptedBuffer = await crypto.subtle.decrypt(
-      { name: 'AES-CBC', iv: new TextEncoder().encode(iv) },
-      await crypto.subtle.importKey(
-        'raw',
-        new TextEncoder().encode(key),
-        { name: 'AES-CBC' },
-        false,
-        ['decrypt'],
-      ),
-      new Uint8Array(
-        cipher.match(/.{1,2}/g)!.map((byte) => Number.parseInt(byte, 16)),
-      ).buffer,
-    );
-    return JSON.parse(new TextDecoder().decode(decryptedBuffer)) as Chapters;
-  };
-
-  const data = await decryptData(
-    results.slice(16),
-    unsafeWindow.dio || 'xxymanga.zzl.key',
-    results.slice(0, 16),
-  );
+  const data: Chapters = await decryptData(results);
   log(data);
   const {
     build: { type },
@@ -439,16 +416,93 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
   if (comicName && id) {
     const { setState } = await useInit('copymanga');
 
+    /** 漫画不存在时才会出现的提示 */
+    const titleDom = querySelector('main .img+.title');
+    if (titleDom)
+      titleDom.textContent =
+        'ComicRead 提示您：你訪問的內容暫不存在，請點選右下角按鈕嘗試加載漫畫';
+
+    /** 通过网页 API 加载漫画（可以获取隐藏漫画） */
+    const getImglistByApi = async () => {
+      type ResData = {
+        message: string;
+        results: {
+          chapter: {
+            contents: { url: string }[];
+            words: number[];
+            name: string;
+            next: string | null;
+            prev: string | null;
+          };
+          comic: { name: string };
+        };
+      };
+      const res = await pcApi.get<ResData>(
+        `/api/v3/comic/${comicName}/chapter2/${id}?platform=3`,
+        { noCheckCode: true },
+      );
+
+      if (res.status !== 200) {
+        const message = `漫畫加載失敗：${res.response.message || res.status}`;
+        if (titleDom) titleDom.textContent = message;
+        throw new Error(message);
+      }
+
+      if (titleDom) {
+        titleDom.textContent = '漫畫加載成功🥳';
+        const {
+          chapter: { name: chapterName },
+          comic: { name },
+        } = res.response.results;
+        document.title = `${name} - ${chapterName} - 拷貝漫畫 拷贝漫画`;
+      }
+
+      if (titleDom ?? !querySelector('.comicContent-next')) {
+        const {
+          chapter: { next, prev },
+        } = res.response.results;
+
+        setState('manga', {
+          onNext: next
+            ? () => location.assign(`/comic/${comicName}/chapter/${next}`)
+            : undefined,
+          onPrev: prev
+            ? () => location.assign(`/comic/${comicName}/chapter/${prev}`)
+            : undefined,
+        });
+      }
+
+      const imgList: string[] = [];
+      const { words, contents } = res.response.results.chapter;
+      for (let i = 0; i < contents.length; i++)
+        imgList[words[i]] = contents[i].url.replace(
+          /(?<=(\/|\.))c800x/,
+          'c1500x',
+        );
+      return imgList;
+    };
+
     setState('comicMap', '', {
       async getImgList() {
-        setState('manga', {
-          onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
-          onPrev: querySelectorClick(
-            '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
-          ),
-        });
+        if (querySelector('.comicContent-next'))
+          setState('manga', {
+            onNext: querySelectorClick('.comicContent-next a:not(.prev-null)'),
+            onPrev: querySelectorClick(
+              '.comicContent-prev:not(.index,.list) a:not(.prev-null)',
+            ),
+          });
 
-        return getImglistByHtml(comicName, id);
+        // 隐藏漫画只能通过 api 加载，不能的话就没办法了
+        if (titleDom) return getImglistByApi();
+        // 其他普通漫画优先通过解析网页变量加载，避免触发 api 的限制
+        try {
+          const imgList = await getImglistByHtml(comicName, id);
+          if (imgList.length === 0) throw new Error('解析网页变量失败');
+          return imgList;
+        } catch (error) {
+          log.error(error);
+          return getImglistByApi();
+        }
       },
     });
 
@@ -526,7 +580,8 @@ const buildChapters = async (comicName: string, hiddenType: HiddenType) => {
 
       try {
         await buildChapters(comicName, hiddenType);
-      } catch {
+      } catch (error) {
+        log.error(error);
         if (titleDom) titleDom.textContent = 'ComicRead 提示您：目錄生成失敗😢';
         toast.error('目錄生成失敗😢', { duration: Number.POSITIVE_INFINITY });
       }
